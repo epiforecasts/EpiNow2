@@ -1,6 +1,6 @@
 #' Clean Nowcasts for a Supplied Date
 #'
-#' @description This function removes nowcasts in the format produced by `EpiNow` from a target
+#' @description This function removes nowcasts in the format produced by `EpiNow2` from a target
 #' directory for the date supplied.
 #' @param date Date object. Defaults to todays date
 #' @param nowcast_dir Character string giving the filepath to the nowcast results directory.
@@ -37,29 +37,6 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = NULL) {
   
   
 }
-
-
-#' Add Dates from Daata
-#'
-#' @description Pulls the last n dates from a vector
-#' @param dates Character vector of dates to pull from.
-#' @param n Number of dates required
-#' @return Character vector of dates of length N
-#' @export
-#'
-#' @examples
-#'
-#' dates <- rep(1:10)
-#'
-#' add_dates(dates, 3)
-add_dates <- function(dates, n) {
-  dates <-
-    dates[seq(length(dates) + 1 - n,
-              length(dates))]
-  
-  return(dates)
-}
-
 
 #' Format Credible Intervals
 #' 

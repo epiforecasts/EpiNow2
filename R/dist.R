@@ -137,7 +137,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @import Rcpp
 #' @import methods
 #' @importFrom rstan sampling extract
-#' @useDynLib EpiNow, .registration=TRUE
+#' @useDynLib EpiNow2, .registration=TRUE
 #' @examples
 #' 
 #' dist_fit(rexp(1:100, 2), samples = 1000, dist = "exp")
@@ -351,7 +351,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' 
 #' 
 #' ## Load into skeleton and sample with truncation
-#' EpiNow::dist_skel(10, model = out$model[[1]],
+#' EpiNow2::dist_skel(10, model = out$model[[1]],
 #'                   params = out$params[[1]],
 #'                   max_value = out$max_value[[1]])
 #'}
@@ -378,12 +378,12 @@ get_dist_def <- function(values, verbose = FALSE, samples = 1,
     )
     
     # Fit gamma and exponential models
-    fit_exp <- EpiNow::dist_fit(values, samples = samples, dist = "exp")
+    fit_exp <- EpiNow2::dist_fit(values, samples = samples, dist = "exp")
     
     # If there is enough data, try fitting a gamma  
     if(length(values) >= 30) {
       
-      fit_gam <- EpiNow::dist_fit(values, samples = samples, dist = "gamma")
+      fit_gam <- EpiNow2::dist_fit(values, samples = samples, dist = "gamma")
       
       # Extract log likelihoods
       log_lik_exp <- loo::extract_log_lik(fit_exp, merge_chains = FALSE)

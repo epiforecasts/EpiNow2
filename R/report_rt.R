@@ -12,7 +12,7 @@
 #' @param approx_threshold Numeric, defaults to 10,000. Threshold of cases below which explicit sampling of onsets
 #' always occurs.
 #' @param generation_times A matrix with columns representing samples and rows representing the probability of the serial intervel being on
-#' that day. Defaults to `EpiNow::covid_generation_times`.
+#' that day. Defaults to `EpiNow2::covid_generation_times`.
 #' @param min_forecast_cases Numeric, defaults to 200. The minimum number of cases required in the last 7 days
 #' of data in order for a forecast to be run. This prevents spurious forecasts based on highly uncertain Rt estimates.
 #' @param rt_samples Numeric, the number of samples to take from the estimated R distribution for each time point.
@@ -37,7 +37,7 @@
 #' ## Construct example distributions
 #' ## reporting delay dist
 #' delay_dist <- suppressWarnings(
-#'                EpiNow::get_dist_def(rexp(25, 1/10), 
+#'                EpiNow2::get_dist_def(rexp(25, 1/10), 
 #'                                     samples = 5, bootstraps = 1))
 #' 
 #' ## Uses example case vector from EpiSoon
@@ -99,12 +99,12 @@ rt_pipeline <- function(cases = NULL, linelist = NULL,
   if (is.null(incubation_defs)) {
     if (verbose) {
       message("Using default incubation period based on of:", 
-              EpiNow::covid_incubation_period[1, ]$as_reported)
+              EpiNow2::covid_incubation_period[1, ]$as_reported)
     }
-    incubation_defs <- EpiNow::lognorm_dist_def(mean = EpiNow::covid_incubation_period[1, ]$mean,
-                                                mean_sd = EpiNow::covid_incubation_period[1, ]$mean_sd,
-                                                sd = EpiNow::covid_incubation_period[1, ]$sd,
-                                                sd_sd = EpiNow::covid_incubation_period[1, ]$sd_sd,
+    incubation_defs <- EpiNow2::lognorm_dist_def(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+                                                mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+                                                sd = EpiNow2::covid_incubation_period[1, ]$sd,
+                                                sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
                                                 max_value = 30, samples = nrow(delay_defs))
   }
 
@@ -123,7 +123,7 @@ rt_pipeline <- function(cases = NULL, linelist = NULL,
     if (verbose) {
       message("Using default sample of generation times with mean (sd) of 3.6 (3.1)")
     }
-    generation_times <- EpiNow::covid_generation_times
+    generation_times <- EpiNow2::covid_generation_times
   }
 
 
@@ -196,7 +196,7 @@ rt_pipeline <- function(cases = NULL, linelist = NULL,
  
   # Run a nowcast -----------------------------------------------------------
 
-  nowcast <- EpiNow::nowcast_pipeline(
+  nowcast <- EpiNow2::nowcast_pipeline(
     reported_cases = cases, 
     linelist = linelist,
     target_date = target_date, 
@@ -211,7 +211,7 @@ rt_pipeline <- function(cases = NULL, linelist = NULL,
     max_delay = max_delay)
  
 # Report nowcast estimates ------------------------------------------------
-  EpiNow::report_nowcast(nowcast, cases,
+  EpiNow2::report_nowcast(nowcast, cases,
                          target_folder = target_folder,
                          target = "infection_upscaled")
   
@@ -221,7 +221,7 @@ rt_pipeline <- function(cases = NULL, linelist = NULL,
   
   # Estimate time-varying parameters ----------------------------------------
   epi_estimates <-
-    EpiNow::epi_measures_pipeline(
+    EpiNow2::epi_measures_pipeline(
           nowcast = nowcast[type == "infection_upscaled"][, type := "nowcast"],
           min_est_date = min_plot_date,
           generation_times = generation_times,
@@ -253,17 +253,17 @@ rt_pipeline <- function(cases = NULL, linelist = NULL,
 
 # Report estimates --------------------------------------------------------
 
-  EpiNow::report_reff(target_folder)  
+  EpiNow2::report_reff(target_folder)  
 
-  EpiNow::report_littler(target_folder)
+  EpiNow2::report_littler(target_folder)
 
  # Summarise  -------------------------------------------------------
 
-  EpiNow::report_summary(target_folder)
+  EpiNow2::report_summary(target_folder)
 
  # Plot --------------------------------------------------------------------
 
-   EpiNow::plot_pipeline(target_folder = target_folder,
+   EpiNow2::plot_pipeline(target_folder = target_folder,
                          target_date = target_date,
                          min_plot_date = min_plot_date,
                          report_forecast = report_forecast)

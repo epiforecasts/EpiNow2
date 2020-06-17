@@ -10,11 +10,11 @@ RUN apt-get update -y && \
     && apt-get clean
 
 ## Copy files to working directory of server
-ADD . /home/rstudio/EpiNow
+ADD . /home/rstudio/EpiNow2
 
 
 ## Set working directory to be this folder
-WORKDIR /home/rstudio/EpiNow
+WORKDIR /home/rstudio/EpiNow2
 
 ## Install missing packages
 RUN Rscript -e "devtools::install_dev_deps()"

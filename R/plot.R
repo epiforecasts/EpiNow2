@@ -152,7 +152,7 @@ plot_pipeline <- function(target_date = NULL, target_folder = NULL,
   ## Make median NA if type nowcast
   plot_cases <-  summarised_nowcast[date >= min_plot_date][type == "nowcast", median := NA]
   
-  plot_cases <- EpiNow::plot_confidence(plot_cases,
+  plot_cases <- EpiNow2::plot_confidence(plot_cases,
                                         legend = ifelse(report_forecast,
                                                         "bottom", "none")) +
     ggplot2::labs(y = "Daily cases", x = "Date") +
@@ -161,7 +161,7 @@ plot_pipeline <- function(target_date = NULL, target_folder = NULL,
   if (report_forecast) {
     
     plot_cases <- 
-      EpiNow::plot_forecast(plot = plot_cases, 
+      EpiNow2::plot_forecast(plot = plot_cases, 
                             forecast = case_forecast)
   }
   
@@ -181,7 +181,7 @@ plot_pipeline <- function(target_date = NULL, target_folder = NULL,
   
   ## Plot R estimates
   plot_bigr <- 
-    EpiNow::plot_confidence(reff_nowcast[date >= min_plot_date],
+    EpiNow2::plot_confidence(reff_nowcast[date >= min_plot_date],
                             plot_median = FALSE, 
                             legend = ifelse(report_forecast, "bottom", "none")) +
     ggplot2::labs(y = "Effective Reproduction no.", x = "Date") +
@@ -191,7 +191,7 @@ plot_pipeline <- function(target_date = NULL, target_folder = NULL,
   
   if (report_forecast) {
     plot_bigr <- 
-      EpiNow::plot_forecast(plot =  plot_bigr, 
+      EpiNow2::plot_forecast(plot =  plot_bigr, 
                             forecast = reff_forecast)
   }
   
@@ -217,7 +217,7 @@ plot_pipeline <- function(target_date = NULL, target_folder = NULL,
   ## Define generic plotting function
   plot_littler_fn <- function(littler_df, plot_var = "Rate of growth") {
     plot_littler <- 
-      EpiNow::plot_confidence(littler_df[var %in% plot_var], 
+      EpiNow2::plot_confidence(littler_df[var %in% plot_var], 
                               plot_median = FALSE) +
       ggplot2::geom_hline(yintercept = 0, linetype = 2) +
       ggplot2::theme(legend.position = "none") +
@@ -324,7 +324,7 @@ plot_grid <- function(regions = NULL, plot_object = "bigr_eff_plot.rds",
   
   ## Define fn for plot loading
   load_plot <- function(region) {
-    plot <- EpiNow::load_nowcast_result(plot_object, region, 
+    plot <- EpiNow2::load_nowcast_result(plot_object, region, 
                                         date = target_date, results_dir) +
       ggplot2::labs(title = stringr::str_to_title(
         stringr::str_replace(region, "-", " ")

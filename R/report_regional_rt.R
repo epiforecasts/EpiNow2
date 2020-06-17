@@ -1,6 +1,6 @@
-#' Regional Realtime Pipeline
+#' Regional Rt
 #'
-#' @description Runs a pipeline by region.
+#' @description Estimates Rt by region
 #' @param cases A dataframe of cases (`confirm`) by date of confirmation (`date`), import status (`import_status`; ("imp)), and region (`region`).
 #' @param linelist A dataframe of of cases (by row) containing the following variables:
 #' `import_status` (values "local" and "imported"), `date_onset`, `date_confirm`, `report_delay`, and `region`. If a national linelist is not available a proxy linelist may be 
@@ -25,7 +25,7 @@
 #' ## Construct example distributions
 #' ## reporting delay dist
 #' delay_dist <- suppressWarnings(
-#'                EpiNow::get_dist_def(rexp(25, 1/10), 
+#'                EpiNow22::get_dist_def(rexp(25, 1/10), 
 #'                                     samples = 5, bootstraps = 1))
 #' 
 #' ## Uses example case vector from EpiSoon
@@ -38,20 +38,20 @@
 #'   cases[, region := "realland"]))
 #'   
 #' ## Run basic nowcasting pipeline
-#' regional_rt_pipeline(cases = cases,
+#' regional_rt(cases = cases,
 #'             delay_defs = delay_dist,
 #'             target_folder = target_dir)
 #'}
-regional_rt_pipeline <- function(cases = NULL, linelist = NULL, 
-                                 delay_defs = NULL, incubation_defs = NULL,
-                                 target_folder = "results", 
-                                 target_date = NULL,
-                                 merge_onsets = FALSE,
-                                 case_limit = 40,
-                                 onset_modifier = NULL,
-                                 dt_threads = 1,
-                                 verbose = FALSE,
-                                 ...) {
+regional_rt <- function(cases = NULL, linelist = NULL, 
+                        delay_defs = NULL, incubation_defs = NULL,
+                        target_folder = "results", 
+                        target_date = NULL,
+                        merge_onsets = FALSE,
+                        case_limit = 40,
+                        onset_modifier = NULL,
+                        dt_threads = 1,
+                        verbose = FALSE,
+                        ...) {
   
   ## Set input to data.table
   cases <- data.table::as.data.table(cases)
@@ -133,7 +133,7 @@ regional_rt_pipeline <- function(cases = NULL, linelist = NULL,
     
     rm(onset_modifier)
     
-    EpiNow::rt_pipeline(
+    EpiNow2::rt(
       cases = regional_cases,
       linelist = regional_linelist,
       onset_modifier = region_onset_modifier,

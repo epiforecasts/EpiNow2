@@ -1,4 +1,4 @@
-Package: EpiNow
+Package: EpiNow2
 Type: Package
 Title: Estimate Realtime Case Counts and Time-varying Epidemiological Parameters 
 Version: 0.3.0
@@ -27,7 +27,6 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
-    EpiEstim,
     EpiSoon,
     data.table,
     purrr,

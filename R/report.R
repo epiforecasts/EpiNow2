@@ -15,7 +15,7 @@ report_nowcast <- function(nowcast, cases,
                             target, target_folder) {
   
   ## Summarise nowcast
-  summarised_cast <- EpiNow::summarise_cast(
+  summarised_cast <- EpiNow2::summarise_cast(
     nowcast[import_status %in% "local"][type %in% target][, type := "nowcast"]
   )
   
@@ -80,7 +80,7 @@ report_nowcast <- function(nowcast, cases,
 #' cases <- cases[, `:=`(confirm = as.integer(cases), import_status = "local")]
 #' 
 #' ## Define a single report delay distribution
-#' delay_defs <- EpiNow::lognorm_dist_def(mean = 5, 
+#' delay_defs <- EpiNow2::lognorm_dist_def(mean = 5, 
 #'                                        mean_sd = 1,
 #'                                        sd = 3,
 #'                                        sd_sd = 1,
@@ -88,10 +88,10 @@ report_nowcast <- function(nowcast, cases,
 #'                                        samples = 2)
 #'                                        
 #' ## Define a single incubation period
-#' incubation_defs <- EpiNow::lognorm_dist_def(mean = EpiNow::covid_incubation_period[1, ]$mean,
-#'                                             mean_sd = EpiNow::covid_incubation_period[1, ]$mean_sd,
-#'                                             sd = EpiNow::covid_incubation_period[1, ]$sd,
-#'                                             sd_sd = EpiNow::covid_incubation_period[1, ]$sd_sd,
+#' incubation_defs <- EpiNow2::lognorm_dist_def(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+#'                                             mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+#'                                             sd = EpiNow2::covid_incubation_period[1, ]$sd,
+#'                                             sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
 #'                                             max_value = 30, samples = 2)
 #'                                            
 #' 
@@ -140,7 +140,7 @@ report_cases <- function(nowcast,
 
   ## For each sample map to report date
   report <- future.apply::future_lapply(1:max(infections$sample), 
-                     function(id) {EpiNow::adjust_infection_to_report(infections[sample == id], 
+                     function(id) {EpiNow2::adjust_infection_to_report(infections[sample == id], 
                                                           delay_def = delay_defs[id,],
                                                           incubation_def = incubation_defs[id, ],
                                                           type = type,
@@ -178,7 +178,7 @@ report_reff <- function(target_folder) {
   
   extract_bigr_values <- function(max_var, sel_var) {
     
-    out <- EpiNow::pull_max_var(bigr_estimates, max_var,
+    out <- EpiNow2::pull_max_var(bigr_estimates, max_var,
                                 sel_var, type_selected = "nowcast")
     
     return(out)
@@ -333,20 +333,17 @@ report_summary <- function(target_folder) {
   prob_control <- readRDS(paste0(target_folder, "/prob_control_latest.rds"))
   R_latest <- readRDS(paste0(target_folder, "/bigr_eff_latest.rds"))
   doubling_time_latest <- readRDS(paste0(target_folder, "/doubling_time_latest.rds"))
-  adjusted_r_latest <- readRDS(paste0(target_folder, "/adjusted_r_latest.rds"))
   
   ## Regional summary
   region_summary <- data.table::data.table(
     measure = c("New confirmed cases by infection date",
                 "Expected change in daily cases",
                 "Effective reproduction no.",
-                "Doubling/halving time (days)",
-                "Adjusted R-squared"),
-    estimate = c(EpiNow::make_conf(current_cases),
-                 as.character(EpiNow::map_prob_change(prob_control)),
-                 EpiNow::make_conf(R_latest, digits = 1),
-                 doubling_time_latest,
-                 adjusted_r_latest
+                "Doubling/halving time (days)"),
+    estimate = c(EpiNow2::make_conf(current_cases),
+                 as.character(EpiNow2::map_prob_change(prob_control)),
+                 EpiNow2::make_conf(R_latest, digits = 1),
+                 doubling_time_latest
     )
   )
   
