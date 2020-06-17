@@ -303,13 +303,13 @@ estimate_infections <- function(reported_cases, family = "negbin",
  
  ## Summarise samples
  format_out$summarised <- data.table::copy(format_out$samples)[, .(
-   bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[1]])),
-   top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[2]])),
-   lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.5)), ~ .[[1]])),
-   upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.5)), ~ .[[2]])),
-   median = as.numeric(median(cases, na.rm = TRUE)),
-   mean = as.numeric(mean(cases, na.rm = TRUE))
- ), by = .(date, variable)]
+   bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
+   top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
+   lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[1]])),
+   upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
+   median = as.numeric(median(value, na.rm = TRUE)),
+   mean = as.numeric(mean(value, na.rm = TRUE)),
+   sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable)]
  
  ## Order summarised samples
  data.table::setorder(format_out$summarised, variable, date)  
