@@ -21,10 +21,8 @@
 #' @param verbose Logical, defaults to `FALSE`. Should internal nowcasting progress messages be returned.
 #' @return NULL
 #' @export
-#' @inheritParams epi_measures_pipeline
 #' @inheritParams report_nowcast
 #' @inheritParams plot_pipeline
-#' @inheritParams nowcast_pipeline
 #' @importFrom data.table as.data.table
 #' @importFrom lubridate days
 #' 
@@ -161,20 +159,6 @@ rt_pipeline <- function(cases = NULL, linelist = NULL,
    horizon <- horizon + as.numeric(as.Date(target_date) - max(cases$date))
  } 
 
-# Adaptive approximate delay ----------------------------------------------
-
- if (approx_delay) {
-   total_cases <- data.table::copy(cases)[date <= max(date)][,
-                        .(cases = sum(confirm, na.rm = TRUE))]$cases
-   
-   if (total_cases <= approx_threshold) {
-     approx_delay <- FALSE
-     if (verbose){
-       message("Explicitly sampling delays as case count is below thresold (", approx_threshold, ")
-               Use approx_thresold to alter this behaviour")
-     }
-   }
- }
  
  ## Define the min plotting (and estimate date as the first date that
  ## at least 5 local cases were reported
@@ -182,33 +166,6 @@ rt_pipeline <- function(cases = NULL, linelist = NULL,
    import_status %in% "local"][confirm >= 5][
      ,.(date = min(date, na.rm = TRUE))]$date
  
-  # Format input ------------------------------------------------------------
-
- if (!is.null(linelist)) {
-   ## Reformat linelist for use in nowcast_pipeline
-   linelist <- linelist[, .(date_onset_symptoms = date_onset, 
-                            date_confirmation = date_confirm,
-                            delay_confirmation = report_delay,
-                            import_status)]
- }else{
-   merge_actual_onsets <- FALSE
- }
- 
-  # Run a nowcast -----------------------------------------------------------
-
-  nowcast <- EpiNow2::nowcast_pipeline(
-    reported_cases = cases, 
-    linelist = linelist,
-    target_date = target_date, 
-    earliest_allowed_onset = earliest_allowed_onset,
-    merge_actual_onsets = merge_actual_onsets,
-    nowcast_lag = nowcast_lag, 
-    verbose = verbose,
-    delay_defs = delay_defs,
-    incubation_defs = incubation_defs,
-    onset_modifier = onset_modifier, 
-    approx_delay = approx_delay,
-    max_delay = max_delay)
  
 # Report nowcast estimates ------------------------------------------------
   EpiNow2::report_nowcast(nowcast, cases,
@@ -219,17 +176,6 @@ rt_pipeline <- function(cases = NULL, linelist = NULL,
   saveRDS(delay_defs, paste0(target_folder, "/delays.rds"))
   saveRDS(incubation_defs, paste0(target_folder, "/incubation.rds"))
   
-  # Estimate time-varying parameters ----------------------------------------
-  epi_estimates <-
-    EpiNow2::epi_measures_pipeline(
-          nowcast = nowcast[type == "infection_upscaled"][, type := "nowcast"],
-          min_est_date = min_plot_date,
-          generation_times = generation_times,
-          rt_samples = rt_samples,
-          rate_window = rate_window, rt_windows = rt_windows,
-          rt_prior = rt_prior, forecast_model = forecast_model,
-          horizon = horizon, verbose = verbose)
-
   saveRDS(epi_estimates,  paste0(target_folder, "/time_varying_params.rds"))
   saveRDS(epi_estimates$case_forecast, paste0(target_folder, "/case_forecast.rds"))
   saveRDS(epi_estimates$R0, paste0(target_folder, "/summarised_reff.rds"))
