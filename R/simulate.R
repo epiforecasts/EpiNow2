@@ -15,19 +15,19 @@
 #' rts <- c(rep(2, 20), (2 - 1:15 * 0.1), rep(0.5, 10))
 #' rts
 #' ## Use the mean default generation interval for covid
-#' generation_interval <- rowMeans(EpiNow::covid_generation_times)
+#' generation_interval <- rowMeans(EpiNow2::covid_generation_times)
 #' 
 #' ## Sample a report delay as a lognormal
-#' delay_def <- EpiNow::lognorm_dist_def(mean = 5, mean_sd = 1,
+#' delay_def <- EpiNow2::lognorm_dist_def(mean = 5, mean_sd = 1,
 #'                                       sd = 3, sd_sd = 1, max_value = 30,
 #'                                       samples = 1, to_log = TRUE)
 #'                                       
 #' 
 #' ## Sample a incubation period (again using the default for covid)
-#' incubation_def <- EpiNow::lognorm_dist_def(mean = EpiNow::covid_incubation_period[1, ]$mean,
-#'                                           mean_sd = EpiNow::covid_incubation_period[1, ]$mean_sd,
-#'                                           sd = EpiNow::covid_incubation_period[1, ]$sd,
-#'                                           sd_sd = EpiNow::covid_incubation_period[1, ]$sd_sd,
+#' incubation_def <- EpiNow2::lognorm_dist_def(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+#'                                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+#'                                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
+#'                                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
 #'                                           max_value = 30, samples = 1)
 #'
 #' ## Simulate cases with a decrease in reporting at weekends and an increase on Monday                                     
@@ -77,7 +77,7 @@ simulate_cases <- function(rts, initial_cases, initial_date, generation_interval
                      )
   
   ## Mapping with a weekly reporting effect
-  report <- EpiNow::adjust_infection_to_report(simulated_cases,
+  report <- EpiNow2::adjust_infection_to_report(simulated_cases,
                                                delay_def = delay_def,
                                                incubation_def = incubation_def, 
                                                reporting_effect = reporting_effect,

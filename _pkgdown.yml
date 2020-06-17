@@ -1,4 +1,4 @@
-url: epiforecasts.io/EpiNow/
+url: epiforecasts.io/EpiNow2/
 template:
   params:
     bootswatch: lumen
@@ -20,7 +20,7 @@ navbar:
       href: reference/index.html
   right:
     - icon: fa-github
-      href: https://github.com/epiforecasts/EpiNow
+      href: https://github.com/epiforecasts/EpiNow2
 
 
 
@@ -29,14 +29,6 @@ reference:
     desc: Functions to define, fit and parameterise distributions
     contents:
       - contains("dist")
-      - sample_delay
-  - title: Pipelines
-    desc: Functions that wrap multiple package components.
-    contents:
-      - nowcast_pipeline
-      - epi_measures_pipeline
-      - rt_pipeline
-      - regional_rt_pipeline
   - title: Estimate Parameters
     desc: Function to estimate time-varying parameters of interest.
     contents:
@@ -46,15 +38,7 @@ reference:
   - title: Adjust Case Counts
     desc: Adjust case counts for right truncation and from date of report to infection
     contents:
-      - rbinom_size
-      - adjust_for_truncation
       - adjust_infection_to_report
-  - title: Linelist Tools
-    desc: Tools for manipulating linelists
-    contents: 
-      - generate_pseudo_linelist
-      - linelist_from_case_counts
-      - split_linelist_by_day
   - title: Summarise results
     desc: Summarise results
     contents:
@@ -78,7 +62,6 @@ reference:
       - covid_incubation_period
       - covid_serial_intervals
       - covid_generation_times
-      - covid_generation_times_summary
   - title: Map results
     desc: Optional mapping functions (requires additional dependencies)
     contents:
@@ -90,7 +73,6 @@ reference:
       - load_nowcast_result
       - get_timeseries
       - clean_nowcasts
-      - add_dates 
       - make_conf
       - map_prob_change
       - pull_max_var

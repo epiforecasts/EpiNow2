@@ -121,10 +121,10 @@ summarise_results <- function(regions = NULL,
   estimates <- 
     estimates[,
               `:=`(
-                `New confirmed cases by infection date` = EpiNow::make_conf(
+                `New confirmed cases by infection date` = EpiNow2::make_conf(
                   purrr::map(`New confirmed cases by infection date`, ~ .[[1]]),
                   digits = 0),
-                `Effective reproduction no.` = EpiNow::make_conf(
+                `Effective reproduction no.` = EpiNow2::make_conf(
                   purrr::map(`Effective reproduction no.`, ~ .[[1]]),
                   digits = 1))]
   
@@ -190,7 +190,7 @@ regional_summary <- function(results_dir = NULL,
     dir.create(summary_dir)
   }
   
-  regions <- EpiNow::get_regions(results_dir)
+  regions <- EpiNow2::get_regions(results_dir)
   
   if (target_date %in% "latest") {
     plot_date <- Sys.Date() 
@@ -201,7 +201,7 @@ regional_summary <- function(results_dir = NULL,
   ## Get latest date
   latest_date <- 
     purrr::map_chr(regions, ~ as.character(
-      EpiNow::load_nowcast_result("latest_date.rds", region = .,
+      EpiNow2::load_nowcast_result("latest_date.rds", region = .,
                                   target_date, results_dir)))
   latest_date <- as.Date(latest_date)
   latest_date <- max(latest_date, na.rm = TRUE)
@@ -209,7 +209,7 @@ regional_summary <- function(results_dir = NULL,
   saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
   
   ## Summarise results as a table
-  results <- EpiNow::summarise_results(regions, results_dir,
+  results <- EpiNow2::summarise_results(regions, results_dir,
                                        target_date = target_date,
                                        region_scale = region_scale)
   
@@ -234,7 +234,7 @@ regional_summary <- function(results_dir = NULL,
   message("Saving Rt and case csvs")
   
   
-  EpiNow::summarise_to_csv(results_dir = results_dir, 
+  EpiNow2::summarise_to_csv(results_dir = results_dir, 
                            summary_dir = summary_dir, 
                            type = csv_region_label,
                            date = target_date) 
@@ -243,7 +243,7 @@ regional_summary <- function(results_dir = NULL,
   message("Plotting results summary")
   
   ## Summarise cases and Rts
-  summary_plot <- EpiNow::plot_summary(results$data,
+  summary_plot <- EpiNow2::plot_summary(results$data,
                                        x_lab = region_scale, 
                                        log_cases = log_cases)
   
@@ -300,7 +300,7 @@ regional_summary <- function(results_dir = NULL,
   
   high_cases_plot <- suppressWarnings(
     suppressMessages(
-      EpiNow::plot_grid(regions[names(regions) %in% results$regions_by_inc[1:6]],
+      EpiNow2::plot_grid(regions[names(regions) %in% results$regions_by_inc[1:6]],
                         plot_object = "plot_cases.rds",
                         results_dir, target_date = target_date, ncol = 2) &
         ggplot2::scale_x_date(date_breaks = "1 week",
@@ -325,7 +325,7 @@ regional_summary <- function(results_dir = NULL,
   ## Plot all countries
   rt_plot <- suppressWarnings(
     suppressMessages(
-      EpiNow::plot_grid(regions, plot_object = "bigr_eff_plot.rds",
+      EpiNow2::plot_grid(regions, plot_object = "bigr_eff_plot.rds",
                         results_dir, target_date = target_date, ncol = plots_per_row) &
         ggplot2::coord_cartesian(ylim = c(0, 3)) &
         ggplot2::scale_x_date(date_breaks = "1 week",
@@ -370,7 +370,7 @@ summarise_to_csv <- function(results_dir = NULL, summary_dir = NULL,
   
   
   
-  timeseries <- EpiNow::get_timeseries(results_dir, date = date, summarised = TRUE)
+  timeseries <- EpiNow2::get_timeseries(results_dir, date = date, summarised = TRUE)
   
   ## Clean and save Rt estimates
   rt <- data.table::as.data.table(timeseries$rt)[type %in% "nowcast", 

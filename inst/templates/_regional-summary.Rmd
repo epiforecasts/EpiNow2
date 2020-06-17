@@ -89,6 +89,6 @@ summary_tables <- tab_start
 summary_figures <- fig_start + 4
 ```
 
-```{r,  child = system.file("templates/_add-region-reports.Rmd", package = "EpiNow"), eval = !is.null(region_path)}
+```{r,  child = system.file("templates/_add-region-reports.Rmd", package = "EpiNow2"), eval = !is.null(region_path)}
 ```
 

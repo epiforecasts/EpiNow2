@@ -1,9 +1,9 @@
 
-# EpiNow: Estimate realtime case counts and time-varying epidemiological parameters
+# EpiNow2: Estimate realtime case counts and time-varying epidemiological parameters
 
-[![R-CMD-check](https://github.com/epiforecasts/EpiNow/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow/actions)
+[![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions)
 [![Codecov test
-coverage](https://codecov.io/gh/epiforecasts/EpiNow/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow?branch=master)
+coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master)
 [![DOI](https://zenodo.org/badge/247464257.svg)](https://zenodo.org/badge/latestdoi/247464257)
 
 This package estimates the time-varying reproduction number, rate of
@@ -14,7 +14,7 @@ feedback and is under active development. It assumes that only limited
 data is available on cases by date of onset and instead uses cases by
 date of report. These are then imputed to case counts by date of
 infection using an uncertain reporting delay and incubation period.
-Right truncation of cases is dealt with internally by `{EpiNow}`, as is
+Right truncation of cases is dealt with internally by `{EpiNow2}`, as is
 propogating uncertainty from all inputs into the final parameter
 estimates (helping to mitigate spurious findings). Time-varying
 estimates of the reproduction number are estimated using the
@@ -38,35 +38,35 @@ Install the stable version of the package using
 ``` r
 install.packages("drat")
 drat:::add("epiforecasts")
-install.packages("EpiNow")
+install.packages("EpiNow2")
 ```
 
 Install the development version of the package with:
 
 ``` r
-remotes::install_github("epiforecasts/EpiNow")
+remotes::install_github("epiforecasts/EpiNow2")
 ```
 
 For simple deployment/development a prebuilt docker image is also
 available (see documentation
-[here](https://github.com/epiforecasts/EpiNow/wiki/Docker)).
+[here](https://github.com/epiforecasts/EpiNow2/wiki/Docker)).
 
 ## Quick start
 
-`{EpiNow}` is designed to be used at scale with few changes to the
+`{EpiNow2}` is designed to be used at scale with few changes to the
 defaults and a single function call or to be used in an ad-hoc fashion
 via individual function calls. In the following section we give an
 overview of the simple use case. For more on using each function see the
 [function
-documentation](https://epiforecasts.io/EpiNow/reference/index.html) and
+documentation](https://epiforecasts.io/EpiNow2/reference/index.html) and
 [introductory
-vignette](https://epiforecasts.io/EpiNow/articles/getting-started.html).
+vignette](https://epiforecasts.io/EpiNow2/articles/getting-started.html).
 A working implementation for COVID-19 can be found
 [here](https://github.com/epiforecasts/covid-global/blob/master/update_nowcasts.R).
 This quick start requires the following packages:
 
 ``` r
-library(EpiNow)
+library(EpiNow2)
 library(EpiSoon)
 library(data.table)
 ```
@@ -75,7 +75,7 @@ library(data.table)
 
 Reporting delays can either be fitted using package functionality or
 determined elsewhere and then defined with uncertainty for use in
-`{EpiNow}`. When data is supplied an interval censored gamma and
+`{EpiNow2}`. When data is supplied an interval censored gamma and
 exponential distribution will be fit and then compared using the `{loo}`
 package. Note that in this example a single bootstrap is used (i.e no
 bootstrap) but in real scenarios multiple bootstraps should be used to
@@ -88,7 +88,7 @@ of code.
 # future::plan("multiprocess")
 example_delays <- rexp(25, 1/10)
 
-delay_dist <- EpiNow::get_dist_def(example_delays, 
+delay_dist <- EpiNow2::get_dist_def(example_delays, 
                                    samples = 5, bootstraps = 1)
 
 delay_dist
@@ -106,7 +106,7 @@ the log normal and gamma
 distributions.
 
 ``` r
-delay_dist <- EpiNow::lognorm_dist_def(mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
+delay_dist <- EpiNow2::lognorm_dist_def(mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
                                        max_value = 30, samples = 5, to_log = TRUE)
 
 delay_dist
@@ -118,7 +118,7 @@ delay_dist
 #> 5: lognorm <list>        30
 ```
 
-### [Rt pipeline](https://epiforecasts.io/EpiNow/reference/rt_pipeline.html)
+### [Rt pipeline](https://epiforecasts.io/EpiNow2/reference/rt_pipeline.html)
 
 This wraps the core functionality of the package and includes results
 reporting. It requires a data frame of cases by date of report and a
@@ -127,10 +127,10 @@ produced by `get_dist_def` or `lognorm_dist_def` etc.). Internally
 current best estimates of the incubation period, generation time and
 reproduction number are then used but these can also be manually
 specified (see
-[here](https://github.com/epiforecasts/EpiNow/tree/master/data-raw) for
+[here](https://github.com/epiforecasts/EpiNow2/tree/master/data-raw) for
 the code that generates these estimates). Whilst defaults are likely to
 work for most users [the
-documentation](https://epiforecasts.io/EpiNow/reference/rt_pipeline.html)
+documentation](https://epiforecasts.io/EpiNow2/reference/rt_pipeline.html)
 provides additional options. For regions with high cases loads users
 should consider using approximate sampling (`approx_delay`). Forecasting
 is supported via `EpiSoon` and companion packages (see documentation for
@@ -313,7 +313,7 @@ plot.
 knitr::include_graphics(paste0(target_dir, "/latest/rt_cases_plot.png"))
 ```
 
-### [Regional Rt pipeline](https://epiforecasts.io/EpiNow/reference/regional_rt_pipeline.html)
+### [Regional Rt pipeline](https://epiforecasts.io/EpiNow2/reference/regional_rt_pipeline.html)
 
 This function provides a wrapper to `{rt_pipeline}` that allows it to be
 run on multiple regions at once with the same assumed report delay.
@@ -355,7 +355,7 @@ Summarise the results accross all
 regions.
 
 ``` r
-EpiNow::regional_summary(results_dir = file.path(tempdir(), "test-regional"),
+EpiNow2::regional_summary(results_dir = file.path(tempdir(), "test-regional"),
                          summary_dir = file.path(tempdir(), "test-summary"),
                          target_date = "latest",
                          region_scale = "Country",
@@ -378,7 +378,7 @@ understanding our results.
 
 ## Contributing
 
-File an issue [here](https://github.com/epiforecasts/EpiNow/issues) if
+File an issue [here](https://github.com/epiforecasts/EpiNow2/issues) if
 you have identified an issue with the package. Please note that due to
 operational constraints priority will be given to users informing
 government policy or offering methodological insights. We welcome all
