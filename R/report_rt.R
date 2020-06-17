@@ -69,11 +69,16 @@
 #'             forecast_params = list(PI.combination = "mean"), ...)})
 #' 
 #' }
-rt_pipeline <- function(cases = NULL,
-                        generation_times = NULL, rt_prior = NULL,
-                        forecast_model = NULL, horizon = 0, report_forecast = FALSE,  
-                        min_forecast_cases = 200, 
-                        target_folder = NULL, target_date = NULL,
+rt_pipeline <- function(reported_cases, family = "negbin",
+                        generation_time = generation_time,
+                        incubation_period = incubation_period,
+                        reporting_delay = reporting_delay,
+                        rt_prior = rt_prior,
+                        model = model,
+                        cores = 4, chains = 4,
+                        estimate_rt = TRUE, return_fit = FALSE,
+                        forecast_model, horizon = 0, report_forecast = FALSE,  
+                        min_forecast_cases = 200, target_folder = NULL, target_date = NULL,
                         cores = 1, verbose = FALSE) {
  
  
@@ -107,42 +112,40 @@ rt_pipeline <- function(cases = NULL,
    }
  }
  
-
 # Make sure the horizon is as specified from the target date --------------
 
  if (horizon != 0 & !is.null(forecast_model)) {
    horizon <- horizon + as.numeric(as.Date(target_date) - max(cases$date))
  } 
 
- 
- ## Define the min plotting (and estimate date as the first date that
- ## at least 5 local cases were reported
- min_plot_date <- data.table::copy(cases)[
-   import_status %in% "local"][confirm >= 5][
-     ,.(date = min(date, na.rm = TRUE))]$date
-
 
 # Estimate infections and Reproduction no ---------------------------------
 
-   estimates <- estimate_infections(reported_cases, family = "poisson",
+   estimates <- estimate_infections(reported_cases = reported_cases,
+                                    family = family,
                                     generation_time = generation_time,
                                     incubation_period = incubation_period,
                                     reporting_delay = reporting_delay,
                                     rt_prior = rt_prior,
                                     model = model,
-                                    cores = 4, chains = 4,
-                                    estimate_rt = TRUE,
+                                    cores = cores, chains = chains,
+                                    estimate_rt = estimate_rt,
                                     verbose = TRUE, return_fit = TRUE) 
  
 # Report estimates --------------------------------------------------------
 
+  
   saveRDS(estimates$samples,  paste0(target_folder, "/estimate_samples.rds"))
   saveRDS(estimates$samples,  paste0(target_folder, "/summarised_estimates.rds"))
   
-
+  if (return_fit){
+    saveRDS(estimates$fit, paste0(target_folder, "/model_fit.rds"))
+  }
+  
 # Forecast infections and reproduction number -----------------------------
 
-  fore
+  forecasts <- forecast_infections(infections = estimates$samples,
+                                   )
 # Report cases ------------------------------------------------------------
 
   cases_by_report <- report_cases(out$samples[variable %in% "infections"][, variable := NULL],
@@ -171,7 +174,6 @@ rt_pipeline <- function(cases = NULL,
 
    EpiNow2::plot_pipeline(target_folder = target_folder,
                          target_date = target_date,
-                         min_plot_date = min_plot_date,
                          report_forecast = report_forecast)
 
  # Copy all results to latest folder ---------------------------------------
