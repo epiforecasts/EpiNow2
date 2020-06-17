@@ -1,0 +1,94 @@
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, eval = TRUE,
+                      fig.width = 12, fig.height = 12,
+                      message = FALSE,
+                      warning = FALSE,
+                      dpi = 400)
+
+require(knitr)
+require(kableExtra)
+require(here)
+
+if (standalone) {
+  fig_start <- 1
+  tab_start <- 1
+  }else{
+    if (!exists("fig_start")) {
+      fig_start <- 4
+      }
+    
+    if (!exists("tab_start")) {
+      tab_start <- 2
+    }
+  }
+
+if (!exists("case_def")) {
+  case_def <- "case"
+}
+```
+
+`r paste0("### Summary of latest reproduction number and confirmed ",  case_def, " count estimates by date of infection")`
+
+```{r, fig.height = 8, fig.width = 12, out.width = "95%"}
+knitr::include_graphics(here::here(file.path(summary_path, "summary_plot.png")))
+```
+
+<br>
+`r paste0("*Figure ", fig_start, ": Confirmed ", case_def, "s with date of infection on the ", latest_date, " and the time-varying estimate of the effective reproduction number (light bar = 90% credible interval; dark bar = the 50% credible interval.). Regions are ordered by the number of expected daily confirmed ",  case_def, "s and shaded based on the expected change in daily confirmed" , case_def,  "s. The horizontal dotted line indicates the target value of 1 for the effective reproduction no. required for control and a single case required for elimination.*")`
+
+`r paste0("### Reproduction numbers over time in the six regions expected to have the most new confirmed ",  case_def, "s")`
+
+```{r, fig.height = 6, fig.width = 8, layout="l-body-outset", out.width = "95%"}
+knitr::include_graphics(here::here(file.path(summary_path, "high_cases_rt_plot.png")))
+```
+
+<br>
+`r paste0("*Figure ", fig_start + 1, ": Time-varying estimate of the effective reproduction number (light ribbon = 90% credible interval; dark ribbon = the 50% credible interval) in the regions expected to have the highest number of new confirmed ", case_def,  "s. Estimates from existing data are shown up to the ", latest_date, ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""), ". Confidence in the estimated values is indicated by translucency with increased translucency corresponding to reduced confidence. The horizontal dotted line indicates the target value of 1 for the effective reproduction no. required for control. The vertical dashed line indicates the date of report generation.*")`
+
+`r paste0("### Confirmed ",  case_def, "s and their estimated date of infection in the six regions expected to have the most new confirmed ", case_def, "s")`
+
+```{r, fig.height = 6, fig.width = 8, layout="l-body-outset", out.width = "95%"}
+knitr::include_graphics(here::here(file.path(summary_path, "high_cases_plot.png")))
+```
+
+<br>
+`r paste0("*Figure ", fig_start + 2, ": Confirmed ", case_def,  "s by date of report (bars) and their estimated date of infection (light ribbon = 90% credible interval; dark ribbon = the 50% credible interval) in the regions expected to have the highest number of new confirmed ", case_def, "s.  Estimates from existing data are shown up to the ", latest_date,  ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""), ". Confidence in the estimated values is indicated by translucency with increased translucency corresponding to reduced confidence. The vertical dashed line indicates the date of report generation.*")`
+
+### Reproduction numbers over time in all regions
+
+```{r, fig.height = 12, fig.width = 8, layout="l-body-outset", out.width = "95%"}
+knitr::include_graphics(here::here(file.path(summary_path, "rt_plot.png")))
+```
+
+<br>
+`r paste0("*Figure ",  fig_start + 3, ": Time-varying estimate of the effective reproduction number (light ribbon = 90% credible interval; dark ribbon = the 50% credible interval) in all regions. Estimates from existing data are shown up to the ", latest_date,  ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""), ". Confidence in the estimated values is indicated by translucency with increased translucency corresponding to reduced confidence. The horizontal dotted line indicates the target value of 1 for the effective reproduction no. required for control. The vertical dashed line indicates the date of report generation.*")`
+
+`r paste0("### Confirmed ",  case_def, "s and their estimated date of infection in all regions")`
+
+
+```{r, fig.height = 12, fig.width = 8, layout="l-body-outset", out.width = "90%"}
+knitr::include_graphics(here::here(file.path(summary_path, "cases_plot.png")))
+```
+
+`r paste0("*Figure ",  fig_start + 4, ": Confirmed ", case_def,  "s by date of report (bars) and their estimated date of infection (light ribbon = 90% credible interval; dark ribbon = the 50% credible interval) in all regions. Estimates from existing data are shown up to the ", latest_date, ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""),". Confidence in the estimated values is indicated by translucency with increased translucency corresponding to reduced confidence. The vertical dashed line indicates the date of report generation.*")`
+
+`r paste0("### Latest estimates (as of the ", latest_date, ")")`
+
+
+`r paste0("*Table ",  tab_start, ": Latest estimates (as of the ", latest_date, ") of the number of confirmed ", case_def, "s by date of infection, the effective reproduction number, and the doubling time (when negative this corresponds to the halving time) in each region. The mean and 90% credible interval is shown.*")`
+<br>
+```{r, layout="l-body-outset", out.width = "90%"}
+readRDS(here::here(file.path(summary_path, "summary_table.rds"))) %>% 
+ knitr::kable(booktabs = TRUE, longtable = TRUE) %>% 
+ kableExtra::landscape()
+```
+
+```{r}
+summary_tables <- tab_start
+summary_figures <- fig_start + 4
+```
+
+```{r,  child = system.file("templates/_add-region-reports.Rmd", package = "EpiNow"), eval = !is.null(region_path)}
+```
+

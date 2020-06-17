@@ -1,0 +1,75 @@
+Package: EpiNow
+Type: Package
+Title: Estimate Realtime Case Counts and Time-varying Epidemiological Parameters 
+Version: 0.3.0
+Authors@R: c(
+    person(given = "Sam Abbott",
+           role = c("aut", "cre"),
+           email = "contact@samabbott.co.uk",
+           comment = c(ORCID = "0000-0001-8057-8037")),
+    person("Joel", "Hellewell",
+           email = "joel.hellewell@lshtm.ac.uk", 
+           role = c("aut"),
+           comment = c(ORCID = "0000-0003-2683-0849")),
+    person("James", "Munday", 
+           email = "james.munday@lshtm.ac.uk", 
+           role = c("aut")), 
+    person("Robin", "Thompson", 
+           email = "robin.thompson@lshtm.ac.uk", 
+           role = c("aut")), 
+    person("Sebastian", "Funk", 
+            email = "sebastian.funk@lshtm.ac.uk", 
+            role = c("aut")))
+Description: To identify changes in the reproduction number, rate of spread, 
+             and doubling time during the course of outbreaks whilst accounting 
+             for potential biases due to delays in case reporting.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    EpiEstim,
+    EpiSoon,
+    data.table,
+    purrr,
+    Rcpp (>= 0.12.0),
+    rstan (>= 2.18.1),
+    rstantools (>= 2.0.0),
+    methods,
+    loo,
+    HDInterval,
+    future.apply,
+    stringr,
+    lubridate,
+    ggplot2,
+    cowplot,
+    patchwork,
+    R.devices,
+    truncnorm
+Suggests:
+    dplyr,
+    tidyr,
+    knitr,
+    kableExtra,
+    here,
+    magrittr,
+    countrycode,
+    rnaturalearth,
+    rnaturalearthdata,
+    rnaturalearthhires,
+    rmarkdown
+Additional_repositories: 
+  https://epiforecasts.io/drat/,
+  http://packages.ropensci.org/
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.0
+Biarch: true
+Depends: 
+    R (>= 3.4.0)
+LinkingTo: 
+    BH (>= 1.66.0),
+    Rcpp (>= 0.12.0),
+    RcppEigen (>= 0.3.3.3.0),
+    rstan (>= 2.18.1),
+    StanHeaders (>= 2.18.0)
+SystemRequirements: GNU make
+VignetteBuilder: knitr

@@ -1,0 +1,74 @@
+---
+title: "Getting started"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{getting-started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+*Work in progress*
+
+## Introduction
+
+`EpiNow` is designed to be used at scale with few changes to the defaults and a single function call or to be used in an ad-hoc fashion via individual function calls. See the [quick start section](https://epiforecasts.io/EpiNow/) for a dicussion of the wrapper functions available. For more on using each function see the [function documentation](https://epiforecasts.io/EpiNow/reference/index.html) and [introductory vignette](https://epiforecasts.io/EpiNow/articles/introduction.html).
+
+## Case data
+
+`EpiNow` assumes that limited information is available on the dates of onset for cases and so is primarily based on using case counts by date of report. As imported cases may bias estimates of the time-varying reproduction number we support analysis that is based both on local cases and local + imported cases (where imported cases are used to adjust the local reproduction number estimates but are not otherwise used). An example of the required format is supplied in the [`EpiSoon` package](https://epiforecasts.io/EpiSoon) (see below). Here data manipulation is done using `data.table` but this is strictly optional and `EpiNow` makes no assumptions about the form of the inputted data (except that it has the columns required).
+
+```{r get-packages, message = FALSE}
+library(EpiNow)
+library(EpiSoon)
+library(data.table)
+```
+
+```{r load-data}
+cases <- data.table::as.data.table(EpiSoon::example_obs_cases) 
+
+## Here just using local cases if also using imported cases define imports as "imported"
+cases <- cases[, `:=`(confirm = as.integer(cases), import_status = "local")]
+
+tail(cases)
+```
+
+## Reporting delays, incubation period and generation time
+
+In order to map from cases by date of report to cases by date of infection information is needed on reporting delay, and incubation period. This may either be specified (with uncertainty) in the format `EpiNow` supports or can be derived via fitting to supplied data. We first cover specifying the distirbutions. 
+
+Here we define a lognormal distribution for reporting delay with a mean of 5 days (SD: 1 day) and a standard deviation of 3 days (SD: 1 day). Internally this uncertainty is then sampled to produce a `data.frame` that encodes a single distribution on each line in a format that can be processed  by `EpiNow::dist_skel` (used internally when dealing with distributions).
+
+Define the distribution
+
+```{r}
+delay_def <- EpiNow::lognorm_dist_def(mean = 5, 
+                                      mean_sd = 1,
+                                      sd = 3,
+                                      sd_sd = 1,
+                                      max_value = 30,
+                                      samples = 10,
+                                      to_log = TRUE)
+
+head(delay_def)
+```
+
+Example of sampling from one of the distributions
+
+```{r}
+ dist_skel(10, model = delay_def$model[1], params = delay_def$params[[1]])
+```
+
+## Nowcasting cases by date of infection
+
+## Estimating time-varying reproduction numbers, rate of growth and doubling time
+
+## Report results
+
+## Function wrappers

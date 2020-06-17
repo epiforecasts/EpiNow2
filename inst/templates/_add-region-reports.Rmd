@@ -1,0 +1,23 @@
+### Regional reports 
+
+
+```{r, include = FALSE}
+regions <- EpiNow::get_regions(here::here(region_path))
+show_title <- TRUE
+title_depth <- 4
+
+region_summaries <- 1:length(regions) %>% 
+  purrr::map(function(region_index) {
+    index <- region_index
+    region <- regions[region_index]
+    region_name <- names(regions)[region_index]
+    out <- knitr::knit_child(
+      system.file("templates/_add-region-reports.Rmd", package = "EpiNow"),
+                             envir = environment()) 
+  })
+```
+
+
+```{r, results="asis"}
+cat(paste(region_summaries, collapse = '\n'))
+```
