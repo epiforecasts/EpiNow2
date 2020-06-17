@@ -2,9 +2,6 @@
 #'
 #' @description Estimates Rt by region
 #' @param cases A dataframe of cases (`confirm`) by date of confirmation (`date`), import status (`import_status`; ("imp)), and region (`region`).
-#' @param linelist A dataframe of of cases (by row) containing the following variables:
-#' `import_status` (values "local" and "imported"), `date_onset`, `date_confirm`, `report_delay`, and `region`. If a national linelist is not available a proxy linelist may be 
-#' used but in this case `merge_onsets` should be set to `FALSE`.
 #' @param merge_onsets Logical defaults to `FALSE`. Should available onset data be used. Typically if `regional_delay` is
 #' @param case_limit Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 10.
 #' set to `FALSE` this should also be `FALSE`
@@ -25,12 +22,12 @@
 #' ## Construct example distributions
 #' ## reporting delay dist
 #' delay_dist <- suppressWarnings(
-#'                EpiNow22::get_dist_def(rexp(25, 1/10), 
+#'                EpiNow2::get_dist_def(rexp(25, 1/10), 
 #'                                     samples = 5, bootstraps = 1))
 #' 
 #' ## Uses example case vector from EpiSoon
 #' cases <- data.table::setDT(EpiSoon::example_obs_cases)
-#' cases <- cases[, `:=`(confirm = as.integer(cases), import_status = "local")][,
+#' cases <- cases[, `:=`(confirm = as.integer(cases))][,
 #'                   cases := NULL]
 #' 
 #' cases <- data.table::rbindlist(list(
@@ -38,26 +35,19 @@
 #'   cases[, region := "realland"]))
 #'   
 #' ## Run basic nowcasting pipeline
-#' regional_rt(cases = cases,
-#'             delay_defs = delay_dist,
+#' report_regional_rt(cases = cases,
 #'             target_folder = target_dir)
 #'}
-regional_rt <- function(cases = NULL, linelist = NULL, 
-                        delay_defs = NULL, incubation_defs = NULL,
+report_regional_rt <- function(cases = NULL, 
                         target_folder = "results", 
                         target_date = NULL,
-                        merge_onsets = FALSE,
-                        case_limit = 40,
-                        onset_modifier = NULL,
-                        dt_threads = 1,
+                        case_limit = 20,
+                        cores = 1,
                         verbose = FALSE,
                         ...) {
   
   ## Set input to data.table
   cases <- data.table::as.data.table(cases)
-  if (!is.null(linelist)) {
-    linelist <- data.table::as.data.table(linelist)
-  }
   
   if (!is.null(onset_modifier)) {
     onset_modifier <- data.table::as.data.table(onset_modifier)
@@ -80,23 +70,9 @@ regional_rt <- function(cases = NULL, linelist = NULL,
   ## Exclude zero regions
   cases <- cases[!is.na(region)][region %in% eval_regions]
   
-  
   message("Running the pipeline for: ",
           paste(eval_regions, collapse = ", "))
-  
-  rm(eval_regions)
-  ## Make sure all dates have cases numbers
-  cases_grid <- cases[,.(date = seq(min(date), max(date), by = "days"), 
-                         import_status = list(list("local", "imported"))),
-                      by = "region"][,
-                       .(import_status = unlist(import_status)), 
-                       by = c("date", "region")]
-  
-  cases <- cases[cases_grid, on = c("date", "region", "import_status")][is.na(confirm), confirm := 0]
-  cases <- data.table::setorder(cases, region, import_status, date)
- 
-  rm(cases_grid)
-  
+
   ## regional pipelines
   regions <- unique(cases$region)
 
@@ -104,44 +80,16 @@ regional_rt <- function(cases = NULL, linelist = NULL,
   ## Function to run the pipeline in a region
   run_region <- function(target_region, 
                          cases,
-                         linelist,
-                         onset_modifier,
                          ...) { 
     message("Running Rt pipeline for ", target_region)
-    data.table::setDTthreads(threads = dt_threads)
+    data.table::setDTthreads(threads = cores)
     
     regional_cases <- cases[region %in% target_region][, region := NULL]
     
-    rm(cases)
-    
-    if (!is.null(linelist) & merge_onsets) {
-      regional_linelist <- linelist[region %in% target_region][, 
-                                    region := NULL]
-    }else{
-      regional_linelist <- linelist
-    }
-    
-    rm(linelist)
-    
-    if (!is.null(onset_modifier)) {
-      region_onset_modifier <- onset_modifier[region %in% target_region]
-      region_onset_modifier <- region_onset_modifier[,region := NULL]
-      
-    }else{
-      region_onset_modifier <- NULL
-    }
-    
-    rm(onset_modifier)
-    
-    EpiNow2::rt(
+    EpiNow2::report_rt(
       cases = regional_cases,
-      linelist = regional_linelist,
-      onset_modifier = region_onset_modifier,
       target_folder = file.path(target_folder, target_region),
       target_date = target_date, 
-      merge_actual_onsets = merge_onsets, 
-      delay_defs = delay_defs,
-      incubation_defs = incubation_defs,
       verbose = verbose,
       ...)
     
@@ -153,8 +101,6 @@ regional_rt <- function(cases = NULL, linelist = NULL,
   ## Run regions (make parallel using future::plan)
   future.apply::future_lapply(regions, safe_run_region,
                               cases = cases,
-                              linelist = linelist,
-                              onset_modifier = onset_modifier,
                               ...,
                               future.scheduling = Inf)
 

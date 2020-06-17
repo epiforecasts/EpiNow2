@@ -60,51 +60,26 @@
 #' ## Uses the {forecastHybrid} package to produce an unweighted
 #' ## ensemble using the last 3 weeks of data
 #' rt_pipeline(cases = cases,
-#'             delay_defs = delay_dist,
-#'             target_date = max(cases$date),
-#'             approx_delay = TRUE,
 #'             target_folder = target_dir,
 #'             horizon = 14, 
 #'             report_forecast = TRUE
-#'             nowcast_lag = 8,
 #'             forecast_model = function(y, ...){EpiSoon::forecastHybrid_model(
 #'             y = y[max(1, length(y) - 21):length(y)],
 #'             model_params = list(models = "aefz", weights = "equal"),
 #'             forecast_params = list(PI.combination = "mean"), ...)})
 #' 
 #' }
-rt_pipeline <- function(cases = NULL, linelist = NULL,
-                        delay_defs = NULL, incubation_defs = NULL,
-                        delay_cutoff_date = NULL, rt_samples = 5, rt_windows = 1:7, 
-                        rate_window = 7, earliest_allowed_onset = NULL, merge_actual_onsets = TRUE, 
-                        approx_delay = FALSE,  approx_threshold = 10000, max_delay = 120, 
-                        generation_times = NULL, rt_prior = NULL, nowcast_lag = 8,
+rt_pipeline <- function(cases = NULL,
+                        generation_times = NULL, rt_prior = NULL,
                         forecast_model = NULL, horizon = 0, report_forecast = FALSE,  
-                        onset_modifier = NULL, min_forecast_cases = 200, 
-                        target_folder = NULL, target_date = NULL, max_upscale = 5,
-                        dt_threads = 1, verbose = FALSE) {
+                        min_forecast_cases = 200, 
+                        target_folder = NULL, target_date = NULL,
+                        cores = 1, verbose = FALSE) {
  
  
  # Convert input to DT -----------------------------------------------------
-  suppressMessages(data.table::setDTthreads(threads = dt_threads))
+  suppressMessages(data.table::setDTthreads(threads = cores))
   cases <- data.table::as.data.table(cases)
-  if (!is.null(linelist)) {
-    linelist <- data.table::as.data.table(linelist)
-  }
-
-# Make sure incubation and delays have the same number of samples ---------
-
-  if (is.null(incubation_defs)) {
-    if (verbose) {
-      message("Using default incubation period based on of:", 
-              EpiNow2::covid_incubation_period[1, ]$as_reported)
-    }
-    incubation_defs <- EpiNow2::lognorm_dist_def(mean = EpiNow2::covid_incubation_period[1, ]$mean,
-                                                mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
-                                                sd = EpiNow2::covid_incubation_period[1, ]$sd,
-                                                sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
-                                                max_value = 30, samples = nrow(delay_defs))
-  }
 
  # Set up folders ----------------------------------------------------------
 
@@ -114,26 +89,6 @@ rt_pipeline <- function(cases = NULL, linelist = NULL,
   if (!dir.exists(target_folder)) {
     dir.create(target_folder, recursive = TRUE)
   }
- 
- # Default input -----------------------------------------------------------
-
-  if (is.null(generation_times)) {
-    if (verbose) {
-      message("Using default sample of generation times with mean (sd) of 3.6 (3.1)")
-    }
-    generation_times <- EpiNow2::covid_generation_times
-  }
-
-
-  if (is.null(rt_prior)) {
-    if (verbose) {
-      message("Using default Rt prior of 2.6 (2)")
-    }
-    rt_prior <- list(
-      mean_prior = 2.6,
-      std_prior = 2)
-  }
- 
  
 # Control errors by changing options --------------------------------------
 
@@ -165,27 +120,32 @@ rt_pipeline <- function(cases = NULL, linelist = NULL,
  min_plot_date <- data.table::copy(cases)[
    import_status %in% "local"][confirm >= 5][
      ,.(date = min(date, na.rm = TRUE))]$date
- 
- 
-# Report nowcast estimates ------------------------------------------------
-  EpiNow2::report_nowcast(nowcast, cases,
-                         target_folder = target_folder,
-                         target = "infection_upscaled")
-  
-  saveRDS(nowcast,  paste0(target_folder, "/nowcast.rds"))
-  saveRDS(delay_defs, paste0(target_folder, "/delays.rds"))
-  saveRDS(incubation_defs, paste0(target_folder, "/incubation.rds"))
-  
-  saveRDS(epi_estimates,  paste0(target_folder, "/time_varying_params.rds"))
-  saveRDS(epi_estimates$case_forecast, paste0(target_folder, "/case_forecast.rds"))
-  saveRDS(epi_estimates$R0, paste0(target_folder, "/summarised_reff.rds"))
-  saveRDS(epi_estimates$rate_of_spread, paste0(target_folder, "/summarised_littler.rds"))
 
+
+# Estimate infections and Reproduction no ---------------------------------
+
+   estimates <- estimate_infections(reported_cases, family = "poisson",
+                                    generation_time = generation_time,
+                                    incubation_period = incubation_period,
+                                    reporting_delay = reporting_delay,
+                                    rt_prior = rt_prior,
+                                    model = model,
+                                    cores = 4, chains = 4,
+                                    estimate_rt = TRUE,
+                                    verbose = TRUE, return_fit = TRUE) 
+ 
+# Report estimates --------------------------------------------------------
+
+  saveRDS(estimates$samples,  paste0(target_folder, "/estimate_samples.rds"))
+  saveRDS(estimates$samples,  paste0(target_folder, "/summarised_estimates.rds"))
   
 
+# Forecast infections and reproduction number -----------------------------
+
+  fore
 # Report cases ------------------------------------------------------------
 
-  cases_by_report <- report_cases(nowcast,
+  cases_by_report <- report_cases(out$samples[variable %in% "infections"][, variable := NULL],
                                   case_forecast = epi_estimates$raw_case_forecast,
                                   delay_defs = delay_defs,
                                   incubation_defs = incubation_defs,

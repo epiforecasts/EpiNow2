@@ -302,7 +302,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
  format_out$samples <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
  
  ## Summarise samples
- format_out$samples <- data.table::copy(format_out$samples)[, .(
+ format_out$summarised <- data.table::copy(format_out$samples)[, .(
    bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[1]])),
    top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[2]])),
    lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.5)), ~ .[[1]])),
@@ -312,10 +312,10 @@ estimate_infections <- function(reported_cases, family = "negbin",
  ), by = .(date, variable)]
  
  ## Order summarised samples
- data.table::setorder(format_out$samples, variable, date)  
+ data.table::setorder(format_out$summarised, variable, date)  
  
  if (return_fit) {
-    format_out$fit <- fit
+  format_out$fit <- fit
  }
  
   return(format_out)
