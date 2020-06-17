@@ -37,7 +37,7 @@
 #' model <- rstan::stan_model("inst/estimate_infections.stan")
 #' 
 #' ## Run model
-#' out <- estimate_infections(reported_cases, family = "poisson",
+#' out <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            incubation_period = incubation_period,
 #'                            reporting_delay = reporting_delay,
@@ -54,11 +54,11 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 prior_smoothing_window = 7,
                                 model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 1000,
-                                estimate_rt = FALSE, adapt_delta = 0.95,
+                                estimate_rt = FALSE, adapt_delta = 0.99,
                                 max_treedepth = 15, return_fit = FALSE,
                                 verbose = FALSE){
   
-  suppressMessages(data.table::setDTthreads(threads = 1))
+  suppressMessages(data.table::setDTthreads(threads = cores))
   
   # Add prior for R if missing ---------------------------------
   
