@@ -8,7 +8,7 @@ forecast_infections <- function(infections, rts, case_only = TRUE,
 
 # Set up a mean and sd forecast -------------------------------------------
   
-  sample_forecast <- function(df) {
+  sample_forecast <- function(df, samples) {
     
     ## Safe forecast wrapper
     safe_forecast <- purrr::safely(forecast_rt)
@@ -36,7 +36,8 @@ forecast_infections <- function(infections, rts, case_only = TRUE,
     
     ## Sample from assumed lognormal distribution
     rt_forecasts <- rt_forecasts[sd_rt <= 0, sd_rt := 1e-4][,
-                                 rt := purrr::map2_dbl(rt, sd_rt, ~ rlnorm(1, mean = .x, sd = .y))][,
+                                 rt := purrr::map2_dbl(rt, sd_rt, ~ rlnorm(1, mean = log(.x), 
+                                                                           sd = log(.y)))][,
                                  .(sample, date, horizon, rt)]
     
     return(rt_forecasts)
@@ -45,8 +46,7 @@ forecast_infections <- function(infections, rts, case_only = TRUE,
   
 # Forecast Rt -------------------------------------------------------------
 
-  rt_forecast <- sample_forecast(rts)
-  
+  rt_forecast <- sample_forecast(rts, samples = samples)
   
 # Define generation time pmf ----------------------------------------------
   
@@ -77,18 +77,68 @@ forecast_infections <- function(infections, rts, case_only = TRUE,
 # Forecast cases ----------------------------------------------------------
 
   ## Forecast cases from cases
-  case_forecast <- sample_forecast(infections)
+  case_forecast <- sample_forecast(infections)[, forecast_type := "case"]
   
-  ## Forecast cases from rts
+  ## Forecast cases from rts and mean infections
   case_rt_forecast <-
     data.table::setDT(
       EpiSoon::forecast_cases(
-        cases = infections[, .(date, )],
+        cases = infections[, .(date, cases = mean)],
         fit_samples = rt_forecast,
         rdist = rpois,
         serial_interval = generation_pmf
       )
-    )[,rt_type := "forecast"]  
+    )
+  
+  ## Sample case forecast based on last observed infection standard deviation
+  case_rt_forecast <- case_rt_forecast[, cases := purrr::map_dbl(cases,
+                 rlnorm(1, log(.), infections$sd[nrow(infections)]))][,
+                                         forecast_type := "rt"]
   
   
+  case_forecast <- data.table::rbindlist(list(
+    case_forecast, case_rt_forecast))
+  
+
+# Ensemble forecast -------------------------------------------------------
+
+  if (ensemble_type %in% "mean") {
+    
+    ensemble_forecast <- data.table::copy(case_forecast)[, .(cases = mean(cases, na.rm = TRUE),
+                                                             forecast_type = "ensemble"),
+                                                         by = .(sample, date)]
+    
+    case_forecast <- data.table::rbindlist(list(case_forecast, ensemble_forecast))
+  }
+  
+  
+
+# Combine forecasts -------------------------------------------------------
+
+  forecast <- data.table::rbindlist(list(
+    rt_forecast[, value := rt][, rt := NULL][, type := "rt"],
+    case_forecast[, value := cases][, cases := NULL][, type := "type"]
+  ), fill = TRUE)
+  
+  
+
+# Summarise forecasts -----------------------------------------------------
+
+  summarised_forecast <- data.table::copy(forecast)[, .(
+    bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
+    top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
+    lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[1]])),
+    upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
+    median = as.numeric(median(value, na.rm = TRUE)),
+    mean = as.numeric(mean(value, na.rm = TRUE)),
+    sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable)]
+  
+  ## Order summarised samples
+  data.table::setorder(summarised_forecast, variable, date)  
+  
+  
+  ## Combine output
+  out <- list(samples = forecast, summarised = summarised_forecast)
+  
+  return(out)
   }
