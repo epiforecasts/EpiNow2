@@ -6,18 +6,12 @@
 #' @param target_folder Character string indicating the folder into which to save results. 
 #'  Also used to extract previously generated results. 
 #' @return NULL
-#' @inheritParams summarise_cast
 #' @export
 #' @importFrom data.table rbindlist
 #' @importFrom purrr pmap
 #' @inheritParams sample_approx_dist
 report_nowcast <- function(nowcast, cases, 
                             target, target_folder) {
-  
-  ## Summarise nowcast
-  summarised_cast <- EpiNow2::summarise_cast(
-    nowcast[import_status %in% "local"][type %in% target][, type := "nowcast"]
-  )
   
   ## Combine nowcast with observed cases by onset and report
   reported_cases <- cases[import_status %in% "local",
@@ -68,7 +62,6 @@ report_nowcast <- function(nowcast, cases,
 #' @export
 #' @return A `data.table` containing the following variables `sample`, `date` and `cases`
 #' @inheritParams report_nowcast
-#' @inheritParams nowcast_pipeline
 #' @inheritParams adjust_infection_to_report
 #' @importFrom data.table data.table rbindlist
 #' @importFrom future.apply future_lapply

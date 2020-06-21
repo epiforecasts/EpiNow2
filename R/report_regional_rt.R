@@ -7,7 +7,7 @@
 #' set to `FALSE` this should also be `FALSE`
 #' @param verbose Logical, defaults to `FALSE`. Should progress messages be shown for each reigon?
 #' @param ... Pass additional arguments to `rt_pipeline`
-#' @inheritParams rt_pipeline
+#' @inheritParams report_rt
 #' @return NULL
 #' @export
 #' @importFrom future.apply future_lapply

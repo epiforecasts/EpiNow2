@@ -5,20 +5,24 @@
 #' @export
 #' @importFrom rstan sampling extract 
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N
-#' @importFrom purrr tranpose map_dbl
+#' @importFrom purrr transpose map_dbl
 #' @importFrom lubridate wday
 #' @importFrom truncnorm rtruncnorm
+#' @importFrom HDInterval hdi
 #' @examples
+#' \dontrun{
+#' ## Get example case counts and format
 #' reported_cases <- NCoVUtils::get_ecdc_cases(countries = "Russia")
 #' reported_cases <- NCoVUtils::format_ecdc_data(reported_cases)
-#' reported_cases <- data.table::as.data.table(reported_cases)[, confirm := cases][, cases := NULL]
+#' reported_cases <- data.table::as.data.table(reported_cases)[, confirm := cases][, cases := NULL][1:90]
 #'  
-#' generation_time <- list(mean = EpiNow2::covid_generation_times_summary[1, ]$mean,
-#'                         mean_sd = EpiNow2::covid_generation_times_summary[1, ]$mean_sd,
-#'                         sd = EpiNow2::covid_generation_times_summary[1, ]$sd,
-#'                         sd_sd = EpiNow2::covid_generation_times_summary[1, ]$sd_sd,
+#' ## Set up example generation time
+#' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
+#'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
+#'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
+#'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
 #'                         max = 30)
-#'                           
+#' ## Set                   
 #' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
 #'                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
 #'                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
@@ -33,28 +37,27 @@
 #'                         
 #' rt_prior <- list(mean = 2.6, sd = 2)
 #'   
-#' ## Compile model
-#' model <- rstan::stan_model("inst/estimate_infections.stan")
 #' 
 #' ## Run model
-#' out <- estimate_infections(reported_cases, family = "negbin",
-#'                            generation_time = generation_time,
-#'                            incubation_period = incubation_period,
-#'                            reporting_delay = reporting_delay,
-#'                            rt_prior = rt_prior,
-#'                            model = model,
-#'                            cores = 4, chains = 4,
-#'                            estimate_rt = TRUE,
-#'                            verbose = TRUE, return_fit = TRUE)
+#' out <- EpiNow2::estimate_infections(reported_cases, family = "negbin",
+#'                                     generation_time = generation_time,
+#'                                     incubation_period = incubation_period,
+#'                                     reporting_delay = reporting_delay,
+#'                                     samples = 1000, warmup = 500,
+#'                                     rt_prior = rt_prior,
+#'                                     cores = 4, chains = 4,
+#'                                     estimate_rt = TRUE,
+#'                                     verbose = TRUE, return_fit = TRUE)
 #'
-#' out                                   
+#' out   
+#' }                                
 estimate_infections <- function(reported_cases, family = "negbin",
                                 incubation_period, reporting_delay,
                                 generation_time, rt_prior,
                                 prior_smoothing_window = 7,
                                 model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 1000,
-                                estimate_rt = FALSE, adapt_delta = 0.99,
+                                estimate_rt = TRUE, adapt_delta = 0.99,
                                 max_treedepth = 15, return_fit = FALSE,
                                 verbose = FALSE){
   
@@ -268,7 +271,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                                         "Sunday"),
                                                time = 1:7)
     out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][, 
-                                       wday_numeric := time][,time := NULL]
+                                       strat := wday][,`:=`(time = NULL, date = NULL, wday = NULL)]
     
     extract_static_parameter <- function(param) {
       data.table::data.table(
@@ -287,10 +290,10 @@ estimate_infections <- function(reported_cases, family = "negbin",
     
     if (estimate_rt) {
       out$gt_mean <- extract_static_parameter("gt_mean")
-      out$gt_mean[, value := value.V1][, value.V1 := NULL]
+      out$gt_mean <- out$gt_mean[, value := value.V1][, value.V1 := NULL]
       
       out$gt_sd <- extract_static_parameter("gt_sd")
-      out$gt_sd[, value := value.V1][, value.V1 := NULL]
+      out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
     }
   
 
@@ -309,7 +312,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
    upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
    median = as.numeric(median(value, na.rm = TRUE)),
    mean = as.numeric(mean(value, na.rm = TRUE)),
-   sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable)]
+   sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable, strat)]
  
  ## Order summarised samples
  data.table::setorder(format_out$summarised, variable, date)  
