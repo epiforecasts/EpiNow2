@@ -17,11 +17,6 @@ report_regional_rt(
 \arguments{
 \item{cases}{A dataframe of cases (\code{confirm}) by date of confirmation (\code{date}), import status (\code{import_status}; ("imp)), and region (\code{region}).}
 
-\item{target_folder}{Character string indicating the folder into which to save results.
-Also used to extract previously generated results.}
-
-\item{target_date}{Character string, in the form "2020-01-01". Date to cast.}
-
 \item{case_limit}{Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 10.
 set to \code{FALSE} this should also be \code{FALSE}}
 

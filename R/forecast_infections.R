@@ -25,10 +25,10 @@
 #' reported_cases <- NCoVUtils::format_ecdc_data(reported_cases)
 #' reported_cases <- data.table::as.data.table(reported_cases)[, confirm := cases][, cases := NULL][1:90]
 #'  
-#' generation_time <- list(mean = EpiNow2::covid_generation_times_summary[1, ]$mean,
-#'                         mean_sd = EpiNow2::covid_generation_times_summary[1, ]$mean_sd,
-#'                         sd = EpiNow2::covid_generation_times_summary[1, ]$sd,
-#'                         sd_sd = EpiNow2::covid_generation_times_summary[1, ]$sd_sd,
+#' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
+#'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
+#'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
+#'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
 #'                         max = 30)
 #'                           
 #' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
