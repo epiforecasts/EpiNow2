@@ -3,26 +3,12 @@
 #' @description Combine fitting a delay distribution, constructing a set of
 #' complete sampled linelists, nowcast cases by onset date, and estimate
 #' the time-varying effective reproduction number and rate of spread.
-#' @param linelist A dataframe of of cases (by row) containing the following variables:
-#' `import_status` (values "local" and "imported"), `date_onset`, `date_confirm`, `report_delay`.
-#' @param delay_cutoff_date Character string, in the form "2020-01-01". Cutoff date to use
-#' to estimate the delay distribution.
-#' @param earliest_allowed_onset A character string in the form of a date ("2020-01-01") indiciating the earliest
-#' allowed onset.
-#' @param approx_threshold Numeric, defaults to 10,000. Threshold of cases below which explicit sampling of onsets
-#' always occurs.
-#' @param generation_times A matrix with columns representing samples and rows representing the probability of the serial intervel being on
-#' that day. Defaults to `EpiNow2::covid_generation_times`.
 #' @param min_forecast_cases Numeric, defaults to 200. The minimum number of cases required in the last 7 days
 #' of data in order for a forecast to be run. This prevents spurious forecasts based on highly uncertain Rt estimates.
-#' @param rt_samples Numeric, the number of samples to take from the estimated R distribution for each time point.
-#' @param dt_threads Numeric, the number of data.table threads to use. Set internally to avoid issue when running in parallel.
-#' Defaults to 1 thread.
-#' @param verbose Logical, defaults to `FALSE`. Should internal nowcasting progress messages be returned.
 #' @return NULL
 #' @export
-#' @inheritParams report_nowcast
-#' @inheritParams plot_pipeline
+#' @inheritParams estimate_infections
+#' @inheritParams forecast_infections
 #' @importFrom data.table as.data.table
 #' @importFrom lubridate days
 #' 
@@ -75,7 +61,8 @@ report_rt <- function(reported_cases, family = "negbin",
                       reporting_delay = reporting_delay,
                       rt_prior = rt_prior,
                       model = model,
-                      cores = 4, chains = 4,
+                      cores = 2, chains = 2,
+                      samples = 2000, warmup = 500,
                       estimate_rt = TRUE, return_fit = FALSE,
                       forecast_model, horizon = 0, report_forecast = FALSE,  
                       min_forecast_cases = 200, target_folder = NULL, target_date = NULL,
@@ -136,7 +123,7 @@ report_rt <- function(reported_cases, family = "negbin",
 
   
   saveRDS(estimates$samples,  paste0(target_folder, "/estimate_samples.rds"))
-  saveRDS(estimates$samples,  paste0(target_folder, "/summarised_estimates.rds"))
+  saveRDS(estimates$summarised,  paste0(target_folder, "/summarised_estimates.rds"))
   
   if (return_fit){
     saveRDS(estimates$fit, paste0(target_folder, "/model_fit.rds"))
@@ -144,9 +131,15 @@ report_rt <- function(reported_cases, family = "negbin",
   
 # Forecast infections and reproduction number -----------------------------
 
-  forecasts <- forecast_infections(infections = estimates$samples,
-                                   )
+  forecasts <- forecast_infections(infections = estimates$summarised[])
 # Report cases ------------------------------------------------------------
+
+  
+  saveRDS(forecast$samples,  paste0(target_folder, "/forecast_samples.rds"))
+  saveRDS(forecast$summarised,  paste0(target_folder, "/summarised_forecast.rds"))
+  
+# Report forcasts ---------------------------------------------------------
+
 
   cases_by_report <- report_cases(out$samples[variable %in% "infections"][, variable := NULL],
                                   case_forecast = epi_estimates$raw_case_forecast,
