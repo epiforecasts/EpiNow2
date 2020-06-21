@@ -24,6 +24,11 @@ estimate_infections(
   verbose = FALSE
 )
 }
+\arguments{
+\item{chains}{}
+
+\item{adapt_delta}{}
+}
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
 cases. It can optionally then estimate the time-varying reproduction number and the rate of growth.

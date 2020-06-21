@@ -2,6 +2,21 @@
 #'
 #' @description This function uses a non-parametric approach to reconstruct cases by date of infection from reported 
 #' cases. It can optionally then estimate the time-varying reproduction number and the rate of growth.
+#' @param reported_cases
+#' @param familt
+#' @param generation_time
+#' @param incubation_poeriod
+#' @param reporting_delay
+#' @param rt_prior
+#' @param prior_smoothing_window
+#' @param model
+#' @param cores
+#' @param chains 
+#' @param estimate_rt
+#' @param adapt_delta 
+#' @param max_treedepth
+#' @param return_fit
+#' @param verbose
 #' @export
 #' @importFrom rstan sampling extract 
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N
