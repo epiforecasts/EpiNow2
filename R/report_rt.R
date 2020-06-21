@@ -69,17 +69,17 @@
 #'             forecast_params = list(PI.combination = "mean"), ...)})
 #' 
 #' }
-rt_pipeline <- function(reported_cases, family = "negbin",
-                        generation_time = generation_time,
-                        incubation_period = incubation_period,
-                        reporting_delay = reporting_delay,
-                        rt_prior = rt_prior,
-                        model = model,
-                        cores = 4, chains = 4,
-                        estimate_rt = TRUE, return_fit = FALSE,
-                        forecast_model, horizon = 0, report_forecast = FALSE,  
-                        min_forecast_cases = 200, target_folder = NULL, target_date = NULL,
-                        cores = 1, verbose = FALSE) {
+report_rt <- function(reported_cases, family = "negbin",
+                      generation_time = generation_time,
+                      incubation_period = incubation_period,
+                      reporting_delay = reporting_delay,
+                      rt_prior = rt_prior,
+                      model = model,
+                      cores = 4, chains = 4,
+                      estimate_rt = TRUE, return_fit = FALSE,
+                      forecast_model, horizon = 0, report_forecast = FALSE,  
+                      min_forecast_cases = 200, target_folder = NULL, target_date = NULL,
+                      verbose = FALSE) {
  
  
  # Convert input to DT -----------------------------------------------------
