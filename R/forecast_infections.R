@@ -43,7 +43,7 @@
 #'                         sd_sd = log(1.5),
 #'                         max = 30)
 #'                         
-#' ## Run model
+#' ## Estimate Rt and infections from data
 #' out <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            incubation_period = incubation_period,
@@ -54,7 +54,7 @@
 #'                            estimate_rt = TRUE,
 #'                            verbose = TRUE, return_fit = TRUE)
 #'
-#'
+#' ## Forecast Rt and infections from estimates
 #' forecast <- forecast_infections(infections = out$summarised[variable == "infections"],
 #'                                 rts = out$summarised[variable == "R"],
 #'                                 gt_mean = out$summarised[variable == "gt_mean"]$mean,
