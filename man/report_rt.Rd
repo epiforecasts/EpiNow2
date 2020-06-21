@@ -2,7 +2,7 @@
 % Please edit documentation in R/report_rt.R
 \name{report_rt}
 \alias{report_rt}
-\title{Real-time Pipeline}
+\title{Real-time Rt Estimation, Forecasting and Reporting}
 \usage{
 report_rt(
   reported_cases,
@@ -12,98 +12,85 @@ report_rt(
   reporting_delay = reporting_delay,
   rt_prior = rt_prior,
   model = model,
-  cores = 4,
-  chains = 4,
+  cores = 2,
+  chains = 2,
+  samples = 2000,
+  warmup = 500,
   estimate_rt = TRUE,
   return_fit = FALSE,
   forecast_model,
-  horizon = 0,
-  report_forecast = FALSE,
-  min_forecast_cases = 200,
-  target_folder = NULL,
-  target_date = NULL,
+  horizon = 14,
+  ensemble_type = "mean",
+  return_estimates = TRUE,
+  target_folder,
+  target_date,
   verbose = FALSE
 )
 }
 \arguments{
-\item{report_forecast}{Logical, defaults to \code{FALSE}. Should the forecast be reported.}
+\item{chains}{}
 
-\item{min_forecast_cases}{Numeric, defaults to 200. The minimum number of cases required in the last 7 days
-of data in order for a forecast to be run. This prevents spurious forecasts based on highly uncertain Rt estimates.}
+\item{samples}{Numeric, the number of forecast samples to take.}
 
-\item{target_folder}{Character string indicating the folder into which to save results.
-Also used to extract previously generated results.}
+\item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
+for forecasting future Rt and case co An example of the required structure is: \code{function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}}.}
 
-\item{target_date}{Character string, in the form "2020-01-01". Date to cast.}
+\item{horizon}{Numeric, defaults to 14. The horizon over which to forecast Rts and cases.}
 
-\item{verbose}{Logical, defaults to \code{FALSE}. Should internal nowcasting progress messages be returned.}
-
-\item{linelist}{A dataframe of of cases (by row) containing the following variables:
-\code{import_status} (values "local" and "imported"), \code{date_onset}, \code{date_confirm}, \code{report_delay}.}
-
-\item{delay_cutoff_date}{Character string, in the form "2020-01-01". Cutoff date to use
-to estimate the delay distribution.}
-
-\item{earliest_allowed_onset}{A character string in the form of a date ("2020-01-01") indiciating the earliest
-allowed onset.}
-
-\item{approx_threshold}{Numeric, defaults to 10,000. Threshold of cases below which explicit sampling of onsets
-always occurs.}
-
-\item{generation_times}{A matrix with columns representing samples and rows representing the probability of the serial intervel being on
-that day. Defaults to \code{EpiNow2::covid_generation_times}.}
-
-\item{rt_samples}{Numeric, the number of samples to take from the estimated R distribution for each time point.}
-
-\item{dt_threads}{Numeric, the number of data.table threads to use. Set internally to avoid issue when running in parallel.
-Defaults to 1 thread.}
+\item{ensemble_type}{Character string indicating the type of ensemble to use. By default this is
+an unweighted ensemble ("mean") with no other types currently supported.}
+}
+\value{
+Nothing returned
 }
 \description{
-Combine fitting a delay distribution, constructing a set of
-complete sampled linelists, nowcast cases by onset date, and estimate
-the time-varying effective reproduction number and rate of spread.
+Estimate Rt and cases by date of infection, forecast into the future, transform to date
+of report and then save summary measures and plots.
 }
 \examples{
 \dontrun{
-## Save everything to a temporary directory 
-## Change this to inspect locally
-target_dir <- tempdir()
-
-## Construct example distributions
-## reporting delay dist
-delay_dist <- suppressWarnings(
-               EpiNow2::get_dist_def(rexp(25, 1/10), 
-                                    samples = 5, bootstraps = 1))
-
-## Uses example case vector from EpiSoon
-cases <- data.table::setDT(EpiSoon::example_obs_cases)
-cases <- cases[, `:=`(confirm = as.integer(cases), import_status = "local")][,
-                  cases := NULL]
-
-## Run basic nowcasting pipeline
-rt_pipeline(cases = cases,
-            delay_defs = delay_dist,
-            target_date = max(cases$date),
-            target_folder = target_dir)
-            
-            
-## Run with forecasting and approximate delay sampling
-
 ## Requires additional packages:
 library(EpiSoon)
 library(forecastHybrid)
 
-## Runs the estimation pipeline as before but this time with a 14 day Rt and case forecast
-## Uses the {forecastHybrid} package to produce an unweighted
-## ensemble using the last 3 weeks of data
-rt_pipeline(cases = cases,
-            target_folder = target_dir,
-            horizon = 14, 
-            report_forecast = TRUE
-            forecast_model = function(y, ...){EpiSoon::forecastHybrid_model(
-            y = y[max(1, length(y) - 21):length(y)],
-            model_params = list(models = "aefz", weights = "equal"),
-            forecast_params = list(PI.combination = "mean"), ...)})
+## Construct example distributions
+generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
+                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
+                        sd = EpiNow2::covid_generation_times[1, ]$sd,
+                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
+                        max = 30)
+                          
+incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+                          mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+                          sd = EpiNow2::covid_incubation_period[1, ]$sd,
+                          sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
+                          max = 30)
+                   
+reporting_delay <- list(mean = log(10),
+                        mean_sd = 0.8,
+                        sd = log(2),
+                        sd_sd = 0.1,
+                        max = 30)
 
+## Uses example case vector from EpiSoon
+cases <- data.table::setDT(EpiSoon::example_obs_cases)
+cases <- cases[, confirm := as.integer(cases)][,cases := NULL]
+
+## Report Rt along with forecasts
+out <- report_rt(reported_cases = cases,
+                 generation_time = generation_time,
+                 incubation_period = incubation_period,
+                 reporting_delay = reporting_delay,
+                 rt_prior = list(mean = 1, sd = 1),
+                 forecast_model = function(y, ...){
+                   EpiSoon::forecastHybrid_model(
+                     y = y[max(1, length(y) - 21):length(y)],
+                     model_params = list(models = "aefz", weights = "equal"),
+                     forecast_params = list(PI.combination = "mean"), ...)},
+                   samples = 2000, warmup = 500, cores = 2, chains = 2,
+                   verbose = TRUE, return_fit = TRUE
+                 )
+
+out
 }
 }

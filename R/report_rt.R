@@ -1,11 +1,8 @@
-#' Real-time Pipeline
+#' Real-time Rt Estimation, Forecasting and Reporting
 #'
-#' @description Combine fitting a delay distribution, constructing a set of
-#' complete sampled linelists, nowcast cases by onset date, and estimate
-#' the time-varying effective reproduction number and rate of spread.
-#' @param min_forecast_cases Numeric, defaults to 200. The minimum number of cases required in the last 7 days
-#' of data in order for a forecast to be run. This prevents spurious forecasts based on highly uncertain Rt estimates.
-#' @return NULL
+#' @description Estimate Rt and cases by date of infection, forecast into the future, transform to date 
+#' of report and then save summary measures and plots.
+#' @return Nothing returned
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams forecast_infections
@@ -14,46 +11,49 @@
 #' 
 #' @examples
 #' \dontrun{
-#' ## Save everything to a temporary directory 
-#' ## Change this to inspect locally
-#' target_dir <- tempdir()
-#' 
-#' ## Construct example distributions
-#' ## reporting delay dist
-#' delay_dist <- suppressWarnings(
-#'                EpiNow2::get_dist_def(rexp(25, 1/10), 
-#'                                     samples = 5, bootstraps = 1))
-#' 
-#' ## Uses example case vector from EpiSoon
-#' cases <- data.table::setDT(EpiSoon::example_obs_cases)
-#' cases <- cases[, `:=`(confirm = as.integer(cases), import_status = "local")][,
-#'                   cases := NULL]
-#' 
-#' ## Run basic nowcasting pipeline
-#' rt_pipeline(cases = cases,
-#'             delay_defs = delay_dist,
-#'             target_date = max(cases$date),
-#'             target_folder = target_dir)
-#'             
-#'             
-#' ## Run with forecasting and approximate delay sampling
-#' 
 #' ## Requires additional packages:
 #' library(EpiSoon)
 #' library(forecastHybrid)
 #' 
-#' ## Runs the estimation pipeline as before but this time with a 14 day Rt and case forecast
-#' ## Uses the {forecastHybrid} package to produce an unweighted
-#' ## ensemble using the last 3 weeks of data
-#' rt_pipeline(cases = cases,
-#'             target_folder = target_dir,
-#'             horizon = 14, 
-#'             report_forecast = TRUE
-#'             forecast_model = function(y, ...){EpiSoon::forecastHybrid_model(
-#'             y = y[max(1, length(y) - 21):length(y)],
-#'             model_params = list(models = "aefz", weights = "equal"),
-#'             forecast_params = list(PI.combination = "mean"), ...)})
+#' ## Construct example distributions
+#' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
+#'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
+#'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
+#'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
+#'                         max = 30)
+#'                           
+#' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+#'                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+#'                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
+#'                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
+#'                           max = 30)
+#'                    
+#' reporting_delay <- list(mean = log(10),
+#'                         mean_sd = 0.8,
+#'                         sd = log(2),
+#'                         sd_sd = 0.1,
+#'                         max = 30)
 #' 
+#' ## Uses example case vector from EpiSoon
+#' cases <- data.table::setDT(EpiSoon::example_obs_cases)
+#' cases <- cases[, confirm := as.integer(cases)][,cases := NULL]
+#' 
+#' ## Report Rt along with forecasts
+#' out <- report_rt(reported_cases = cases,
+#'                  generation_time = generation_time,
+#'                  incubation_period = incubation_period,
+#'                  reporting_delay = reporting_delay,
+#'                  rt_prior = list(mean = 1, sd = 1),
+#'                  forecast_model = function(y, ...){
+#'                    EpiSoon::forecastHybrid_model(
+#'                      y = y[max(1, length(y) - 21):length(y)],
+#'                      model_params = list(models = "aefz", weights = "equal"),
+#'                      forecast_params = list(PI.combination = "mean"), ...)},
+#'                    samples = 2000, warmup = 500, cores = 2, chains = 2,
+#'                    verbose = TRUE, return_fit = TRUE
+#'                  )
+#' 
+#' out
 #' }
 report_rt <- function(reported_cases, family = "negbin",
                       generation_time = generation_time,
@@ -64,44 +64,34 @@ report_rt <- function(reported_cases, family = "negbin",
                       cores = 2, chains = 2,
                       samples = 2000, warmup = 500,
                       estimate_rt = TRUE, return_fit = FALSE,
-                      forecast_model, horizon = 0, report_forecast = FALSE,  
-                      min_forecast_cases = 200, target_folder = NULL, target_date = NULL,
+                      forecast_model, horizon = 14,
+                      ensemble_type = "mean",
+                      return_estimates = TRUE,
+                      target_folder, target_date,
                       verbose = FALSE) {
  
  
  # Convert input to DT -----------------------------------------------------
   suppressMessages(data.table::setDTthreads(threads = cores))
-  cases <- data.table::as.data.table(cases)
 
  # Set up folders ----------------------------------------------------------
 
- latest_folder <- file.path(target_folder, "latest")
- target_folder <- file.path(target_folder, target_date)
- 
-  if (!dir.exists(target_folder)) {
-    dir.create(target_folder, recursive = TRUE)
+  if (missing(target_date)) {
+    target_date <- max(reported_cases$date)
   }
- 
-# Control errors by changing options --------------------------------------
-
- ##Define the minimum number of recent cases required for a forecast to be run
- if (!is.null(min_forecast_cases)) {
-   current_cases <- data.table::copy(cases)[date <= max(date)][
-     date >= (max(date) - lubridate::days(7))
-   ][, .(cases = sum(confirm, na.rm = TRUE))]$cases
-
-   
-   ## If cases in the last week are fewer than this number then turn off forecasting.
-   if (min_forecast_cases > current_cases) {
-     horizon <- 0
-     report_forecast <- FALSE
-     forecast_model <- NULL
-   }
- }
+  
+  if (!missing(target_folder)) {
+    latest_folder <- file.path(target_folder, "latest")
+    target_folder <- file.path(target_folder, target_date)
+    
+    if (!dir.exists(target_folder)) {
+      dir.create(target_folder, recursive = TRUE)
+    }
+  }
  
 # Make sure the horizon is as specified from the target date --------------
 
- if (horizon != 0 & !is.null(forecast_model)) {
+ if (horizon != 0 & !missing(forecast_model)) {
    horizon <- horizon + as.numeric(as.Date(target_date) - max(cases$date))
  } 
 
@@ -115,76 +105,94 @@ report_rt <- function(reported_cases, family = "negbin",
                                     reporting_delay = reporting_delay,
                                     rt_prior = rt_prior,
                                     model = model,
+                                    samples = ceiling(samples / chains),
                                     cores = cores, chains = chains,
+                                    samples = samples, warmup = warmup,
                                     estimate_rt = estimate_rt,
-                                    verbose = TRUE, return_fit = TRUE) 
+                                    verbose = verbose, return_fit = return_fit) 
  
 # Report estimates --------------------------------------------------------
-
-  
-  saveRDS(estimates$samples,  paste0(target_folder, "/estimate_samples.rds"))
-  saveRDS(estimates$summarised,  paste0(target_folder, "/summarised_estimates.rds"))
-  
-  if (return_fit){
-    saveRDS(estimates$fit, paste0(target_folder, "/model_fit.rds"))
-  }
-  
+  if (!missing(target_folder)) {
+    saveRDS(estimates$samples,  paste0(target_folder, "/estimate_samples.rds"))
+    saveRDS(estimates$summarised,  paste0(target_folder, "/summarised_estimates.rds"))
+    
+    if (return_fit){
+      saveRDS(estimates$fit, paste0(target_folder, "/model_fit.rds"))
+    }
+ }
 # Forecast infections and reproduction number -----------------------------
-
-  forecasts <- forecast_infections(infections = estimates$summarised[])
+if (!missing(forecast_model)) {
+  forecast <- forecast_infections(infections = estimates$summarised[variable == "infections"],
+                                  rts = estimates$summarised[variable == "R"],
+                                  gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
+                                  gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
+                                  gt_max = generation_time$max,
+                                  forecast_model = forecast_model,
+                                  ensemble_type = ensemble_type,
+                                  horizon = horizon,
+                                  samples = samples)
+}
 # Report cases ------------------------------------------------------------
-
-  
+if (!missing(forecast_model) & !missing(target_folder)) {
   saveRDS(forecast$samples,  paste0(target_folder, "/forecast_samples.rds"))
   saveRDS(forecast$summarised,  paste0(target_folder, "/summarised_forecast.rds"))
-  
+}
 # Report forcasts ---------------------------------------------------------
 
 
-  cases_by_report <- report_cases(out$samples[variable %in% "infections"][, variable := NULL],
-                                  case_forecast = epi_estimates$raw_case_forecast,
-                                  delay_defs = delay_defs,
-                                  incubation_defs = incubation_defs,
-                                  type = "median")
-  
-  saveRDS(cases_by_report, paste0(target_folder, "/cases_by_report.rds"))
-  
-  ## Remove everything except folder and reporting arguments
-  rm(list = setdiff(ls(), c("target_folder", "target_date", "min_plot_date",
-                  "report_forecast", "latest_folder")))
-
-# Report estimates --------------------------------------------------------
-
-  EpiNow2::report_reff(target_folder)  
-
-  EpiNow2::report_littler(target_folder)
-
- # Summarise  -------------------------------------------------------
-
-  EpiNow2::report_summary(target_folder)
-
- # Plot --------------------------------------------------------------------
-
-   EpiNow2::plot_pipeline(target_folder = target_folder,
-                         target_date = target_date,
-                         report_forecast = report_forecast)
+#   cases_by_report <- report_cases(estimates$samples[variable %in% "infections"][, variable := NULL],
+#                                   case_forecast = forecast$samples[type == "case"],
+#                                   delay_defs = delay_defs,
+#                                   incubation_defs = incubation_defs,
+#                                   type = "median")
+#   
+#   saveRDS(cases_by_report, paste0(target_folder, "/cases_by_report.rds"))
+#   
+# 
+# # Report estimates --------------------------------------------------------
+# 
+#   EpiNow2::report_reff(target_folder)  
+# 
+#   EpiNow2::report_littler(target_folder)
+# 
+#  # Summarise  -------------------------------------------------------
+# 
+#   EpiNow2::report_summary(target_folder)
+# 
+#  # Plot --------------------------------------------------------------------
+# 
+#    EpiNow2::plot_pipeline(target_folder = target_folder,
+#                          target_date = target_date,
+#                          report_forecast = report_forecast)
 
  # Copy all results to latest folder ---------------------------------------
-  
-  ## Save all results to a latest folder as well
-  suppressWarnings(
-    if (dir.exists(latest_folder)) {
-      unlink(latest_folder)
-    })
+  if (!missing(target_folder)) {  
+    ## Save all results to a latest folder as well
+    suppressWarnings(
+      if (dir.exists(latest_folder)) {
+        unlink(latest_folder)
+      })
     
-  suppressWarnings(
-    dir.create(latest_folder)
-  )
-
-  suppressWarnings(
-    file.copy(file.path(target_folder, "."),
-              latest_folder, recursive = TRUE)
-  )
-  
-  return(invisible(NULL))
+    suppressWarnings(
+      dir.create(latest_folder)
+    )
+    
+    suppressWarnings(
+      file.copy(file.path(target_folder, "."),
+                latest_folder, recursive = TRUE)
+    )
+  }
+   
+   if (return_estimates) {
+     out <- list()
+     out$estimates <- estimates
+     
+     if (!missing(forecast_model)) {
+       out$forecast <- forecast
+     }
+     
+     return(out)
+   }else{
+     return(invisible(NULL))
+   }
 }
