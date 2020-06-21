@@ -35,16 +35,13 @@
 #'                         sd_sd = log(1.5),
 #'                         max = 30)
 #'                         
-#' rt_prior <- list(mean = 2.6, sd = 2)
-#'   
-#' 
 #' ## Run model
 #' out <- EpiNow2::estimate_infections(reported_cases, family = "negbin",
 #'                                     generation_time = generation_time,
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
 #'                                     samples = 1000, warmup = 500,
-#'                                     rt_prior = rt_prior,
+#'                                     rt_prior = list(mean = 1, sd = 1),
 #'                                     cores = 4, chains = 4,
 #'                                     estimate_rt = TRUE,
 #'                                     verbose = TRUE, return_fit = TRUE)
