@@ -15,6 +15,7 @@
 #' @importFrom purrr safely map2_dbl map_dbl
 #' @importFrom EpiSoon forecast_rt
 #' @importFrom HDInterval hdi
+#' @importFrom truncnorm rtruncnorm
 #' @examples
 #' \dontrun{
 #' library(EpiSoon)
@@ -42,16 +43,13 @@
 #'                         sd_sd = log(1.5),
 #'                         max = 30)
 #'                         
-#' rt_prior <- list(mean = 2.6, sd = 2)
-#'   
-#' 
 #' ## Run model
 #' out <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            incubation_period = incubation_period,
 #'                            reporting_delay = reporting_delay,
-#'                            rt_prior = rt_prior,
-#'                            model = model,
+#'                            rt_prior = list(mean = 1, sd = 1),
+#'                            samples = 1000, warmup = 500,
 #'                            cores = 4, chains = 4,
 #'                            estimate_rt = TRUE,
 #'                            verbose = TRUE, return_fit = TRUE)
@@ -61,17 +59,18 @@
 #'                                 rts = out$summarised[variable == "R"],
 #'                                 gt_mean = out$summarised[variable == "gt_mean"]$mean,
 #'                                 gt_sd = out$summarised[variable == "gt_sd"]$mean,
+#'                                 gt_max = 30,
 #'                                 forecast_model = function(y, ...){
-#'                                 EpiSoon::forecastHybrid_model(y = y[max(1, length(y) - 21):length(y)],
-#'                                 model_params = list(models = "aefz", weights = "equal"),
-#'                                 forecast_params = list(PI.combination = "mean"), ...)},
+#'                                    EpiSoon::forecastHybrid_model(y = y[max(1, length(y) - 21):length(y)],
+#'                                    model_params = list(models = "aefz", weights = "equal"),
+#'                                    forecast_params = list(PI.combination = "mean"), ...)},
 #'                                 horizon = 14, 
 #'                                 samples = 1000)
 #'                                 
 #' forecast
 #' }                              
 forecast_infections <- function(infections, rts, 
-                                gt_mean, gt_sd,
+                                gt_mean, gt_sd, gt_max = 30,
                                 ensemble_type = "mean", 
                                 forecast_model, 
                                 horizon = 14,
@@ -114,15 +113,16 @@ if (missing(forecast_model)) {
                       model = forecast_model,
                       horizon = horizon,
                       samples = samples)[[1]]
-      )[, sd_rt := rt][,rt := NULL]
+      )[, sd_rt := rt][, rt := NULL]
     
     ## Join mean and sd forecasts
     rt_forecasts <- rt_forecasts[sd_forecasts, on = c("date", "sample", "horizon")]
     
     ## Sample from assumed lognormal distribution
-    rt_forecasts <- rt_forecasts[sd_rt <= 0, sd_rt := 1e-4][,
-                                 rt := purrr::map2_dbl(rt, sd_rt, ~ rlnorm(1, mean = log(.x), 
-                                                                           sd = log(.y)))][,
+    rt_forecasts <- rt_forecasts[sd_rt <= 0, sd_rt := 1e-3][,
+                                 rt := purrr::map2_dbl(rt, sd_rt, ~ truncnorm::rtruncnorm(1, a = 0,
+                                                                                          mean = .x, 
+                                                                                          sd = .y))][,
                                  .(sample, date, horizon, rt)]
     
     return(rt_forecasts)
@@ -162,7 +162,8 @@ if (missing(forecast_model)) {
 # Forecast cases ----------------------------------------------------------
 
   ## Forecast cases from cases
-  case_forecast <- sample_forecast(infections)[, forecast_type := "case"]
+  case_forecast <- sample_forecast(infections, samples = samples)[,
+                         `:=`(cases = rt, forecast_type = "case")][, rt := NULL]
   
   ## Forecast cases from rts and mean infections
   case_rt_forecast <-
@@ -177,36 +178,31 @@ if (missing(forecast_model)) {
   
   ## Sample case forecast based on last observed infection standard deviation
   case_rt_forecast <- case_rt_forecast[, cases := purrr::map_dbl(cases,
-                 rlnorm(1, log(.), log(infections$sd[nrow(infections)])))][,
+                 ~ as.integer(truncnorm::rtruncnorm(1, a = 0, mean = ., sd = infections$sd[nrow(infections)])))][,
                                          forecast_type := "rt"]
   
   
   case_forecast <- data.table::rbindlist(list(
-    case_forecast, case_rt_forecast))
+    case_forecast, case_rt_forecast), use.names = TRUE)
   
-
 # Ensemble forecast -------------------------------------------------------
 
   if (ensemble_type %in% "mean") {
     
     ensemble_forecast <- data.table::copy(case_forecast)[, .(cases = mean(cases, na.rm = TRUE),
                                                              forecast_type = "ensemble"),
-                                                         by = .(sample, date)]
+                                                         by = .(sample, date, horizon)]
     
     case_forecast <- data.table::rbindlist(list(case_forecast, ensemble_forecast))
   }
   
-  
-
 # Combine forecasts -------------------------------------------------------
 
   forecast <- data.table::rbindlist(list(
     rt_forecast[, value := rt][, rt := NULL][, type := "rt"],
-    case_forecast[, value := cases][, cases := NULL][, type := "type"]
+    case_forecast[, value := cases][, cases := NULL][, type := "case"]
   ), fill = TRUE)
   
-  
-
 # Summarise forecasts -----------------------------------------------------
 
   summarised_forecast <- data.table::copy(forecast)[, .(
@@ -216,10 +212,10 @@ if (missing(forecast_model)) {
     upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
     median = as.numeric(median(value, na.rm = TRUE)),
     mean = as.numeric(mean(value, na.rm = TRUE)),
-    sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable)]
+    sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, type, forecast_type)]
   
   ## Order summarised samples
-  data.table::setorder(summarised_forecast, variable, date)  
+  data.table::setorder(summarised_forecast, type, forecast_type, date)  
 
   
   ## Combine output

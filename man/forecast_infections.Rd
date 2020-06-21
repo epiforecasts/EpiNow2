@@ -9,6 +9,7 @@ forecast_infections(
   rts,
   gt_mean,
   gt_sd,
+  gt_max = 30,
   ensemble_type = "mean",
   forecast_model,
   horizon = 14,
@@ -64,16 +65,13 @@ reporting_delay <- list(mean = log(5),
                         sd_sd = log(1.5),
                         max = 30)
                         
-rt_prior <- list(mean = 2.6, sd = 2)
-  
-
 ## Run model
 out <- estimate_infections(reported_cases, family = "negbin",
                            generation_time = generation_time,
                            incubation_period = incubation_period,
                            reporting_delay = reporting_delay,
-                           rt_prior = rt_prior,
-                           model = model,
+                           rt_prior = list(mean = 1, sd = 1),
+                           samples = 1000, warmup = 500,
                            cores = 4, chains = 4,
                            estimate_rt = TRUE,
                            verbose = TRUE, return_fit = TRUE)
@@ -83,10 +81,11 @@ forecast <- forecast_infections(infections = out$summarised[variable == "infecti
                                 rts = out$summarised[variable == "R"],
                                 gt_mean = out$summarised[variable == "gt_mean"]$mean,
                                 gt_sd = out$summarised[variable == "gt_sd"]$mean,
+                                gt_max = 30,
                                 forecast_model = function(y, ...){
-                                EpiSoon::forecastHybrid_model(y = y[max(1, length(y) - 21):length(y)],
-                                model_params = list(models = "aefz", weights = "equal"),
-                                forecast_params = list(PI.combination = "mean"), ...)},
+                                   EpiSoon::forecastHybrid_model(y = y[max(1, length(y) - 21):length(y)],
+                                   model_params = list(models = "aefz", weights = "equal"),
+                                   forecast_params = list(PI.combination = "mean"), ...)},
                                 horizon = 14, 
                                 samples = 1000)
                                 
