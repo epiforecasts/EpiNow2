@@ -116,11 +116,24 @@ estimate_infections <- function(reported_cases, family = "negbin",
   shifted_reported_cases <- data.table::copy(reported_cases)[,
                     confirm := data.table::shift(confirm, n = mean_shift,
                                                  type = "lead", 
-                                                 fill = mean(data.table::last(confirm, n = 7)))][,
-                                                                                                                                                         confirm := data.table::frollmean(confirm, n = prior_smoothing_window, 
-                                                                                                                                                                                          align = "right", fill = data.table::last(confirm))][,
-                                                                                                                                                                                                                                              confirm := data.table::fifelse(confirm == 0, 1e-4, confirm)]
+                                                 fill = NA)][,
+                    confirm := data.table::frollmean(confirm, n = prior_smoothing_window, 
+                                                     align = "right", fill = 0)][,
+                                                     confirm := data.table::fifelse(confirm == 0, 1e-4, confirm)]
   
+  ## Forecast trend on reported cases using the last week of data
+  final_week <- data.table::data.table(confirm = shifted_reported_cases[!is.na(confirm)][max(1, .N - 6):.N]$confirm)[,
+                                            t := 1:.N]
+  lm_model <- lm(log(confirm) ~ t, data = final_week)
+  
+  
+  ## Estimate unreported future infections using a log linear model
+  shifted_reported_cases <- shifted_reported_cases[, t := 1:.N][, 
+                                                     t := t - (.N - 6 - sum(is.na(confirm)))][,
+                                                     confirm := data.table::fifelse(is.na(confirm), 
+                                                                                    exp(lm_model$coefficients[1] +
+                                                                                          lm_model$coefficients[2] * t),
+                                                                                    confirm)][, t := NULL]
   ##Drop median generation interval initial values
   shifted_reported_cases <- shifted_reported_cases[-(1:prior_smoothing_window)]
   reported_cases <- reported_cases[-(1:prior_smoothing_window)]
