@@ -5,17 +5,18 @@
 \title{Report case counts by date of report}
 \usage{
 report_cases(
-  nowcast,
+  case_estimates,
   case_forecast = NULL,
   reporting_delay,
-  generation_time,
-  type = "median",
-  reporting_effect,
-  samples
+  incubation_period,
+  type = "sample",
+  reporting_effect
 )
 }
 \arguments{
-\item{case_forecast}{A data.table of case forecasts as produced by \code{epi_measures_pipeline} If not supplied the
+\item{case_estimates}{A data.table of case estimates with the following variables: date, sample, cases}
+
+\item{case_forecast}{A data.table of case forecasts with the following variables: date, sample, cases. If not supplied the
 default is not incoperate forecasts.}
 
 \item{type}{Character string indicating the method to use to transfrom counts. Supports either "sample"
@@ -26,43 +27,53 @@ which approximates sampling or "median" would shift by the median of the distrib
 (numeric 1 - 7 (1 = Monday and 7 = Sunday)). If not supplied then no weekly reporting effect is assumed.}
 }
 \value{
-A \code{data.table} containing the following variables \code{sample}, \code{date} and \code{cases}
+A list of \code{data.table}s. The first entry contains the following variables \code{sample}, \code{date} and \code{cases} with the second
+being summarised across samples.
 }
 \description{
 Report case counts by date of report
 }
 \examples{
-
+\dontrun{
 ## Define example cases
 cases <- data.table::as.data.table(EpiSoon::example_obs_cases) 
 
-cases <- cases[, `:=`(confirm = as.integer(cases), import_status = "local")]
+cases <- cases[, `:=`(confirm = as.integer(cases))]
 
-## Define a single report delay distribution
-delay_defs <- EpiNow2::lognorm_dist_def(mean = 5, 
-                                       mean_sd = 1,
-                                       sd = 3,
-                                       sd_sd = 1,
-                                       max_value = 30,
-                                       samples = 2)
-                                       
-## Define a single incubation period
-incubation_defs <- EpiNow2::lognorm_dist_def(mean = EpiNow2::covid_incubation_period[1, ]$mean,
-                                            mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
-                                            sd = EpiNow2::covid_incubation_period[1, ]$sd,
-                                            sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
-                                            max_value = 30, samples = 2)
-                                           
-
-## Perform a nowcast
-nowcast <- nowcast_pipeline(reported_cases = cases, 
-                            target_date = max(cases$date),
-                            delay_defs = delay_defs,
-                            incubation_defs = incubation_defs)
+ 
+## Set up example generation time
+generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
+                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
+                        sd = EpiNow2::covid_generation_times[1, ]$sd,
+                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
+                        max = 30)
+## Set                   
+incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+                          mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+                          sd = EpiNow2::covid_incubation_period[1, ]$sd,
+                          sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
+                          max = 30)
+                   
+reporting_delay <- list(mean = log(5),
+                        mean_sd = log(2),
+                        sd = log(2),
+                        sd_sd = log(1.5),
+                        max = 30)
+                        
+## Run model
+out <- EpiNow2::estimate_infections(cases, family = "negbin",
+                                    generation_time = generation_time,
+                                    incubation_period = incubation_period,
+                                    reporting_delay = reporting_delay,
+                                    samples = 1000, warmup = 500,
+                                    estimate_rt =  FALSE, verbose = TRUE)
                             
                      
-reported_cases <- report_cases(nowcast, delay_defs = delay_defs,
-                               incubation_defs = incubation_defs)
+reported_cases <- report_cases(case_estimates = out$samples[variable == "infections"][, cases := value][, value := NULL],
+                               reporting_delay = reporting_delay,
+                               incubation_period =  incubation_period, 
+                               type = "sample")
                                
 print(reported_cases)
+}
 }
