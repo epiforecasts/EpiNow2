@@ -7,10 +7,11 @@
 report_cases(
   nowcast,
   case_forecast = NULL,
-  delay_defs,
-  incubation_defs,
+  reporting_delay,
+  generation_time,
   type = "median",
-  reporting_effect
+  reporting_effect,
+  samples
 )
 }
 \arguments{

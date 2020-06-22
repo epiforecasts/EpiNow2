@@ -101,11 +101,29 @@ report_nowcast <- function(nowcast, cases,
 #' print(reported_cases)
 report_cases <- function(nowcast,
                          case_forecast = NULL, 
-                         delay_defs,
-                         incubation_defs,
+                         reporting_delay,
+                         generation_time,
                          type = "median",
-                         reporting_effect) {
+                         reporting_effect,
+                         samples) {
   
+  
+  ##Sample report delay and incubation period
+  ## Define a single report delay distribution
+  delay_defs <- EpiNow2::lognorm_dist_def(mean = generation_time$mean,
+                                         mean_sd = generation_time$mean_sd,
+                                         sd = generation_time$sd,
+                                         sd_sd = generation_time$sd_sd,
+                                         max_value = generation_time$max,
+                                         samples = samples)
+
+  ## Define a single incubation period
+  incubation_defs <- EpiNow2::lognorm_dist_def(mean = generation_time$mean,
+                                               mean_sd = generation_time$mean_sd,
+                                               sd = generation_time$sd,
+                                               sd_sd = generation_time$sd_sd,
+                                               max_value = generation_time$max,
+                                               samples = samples)
   ## Add a null reporting effect if missing
   if (missing(reporting_effect)) {
     reporting_effect <- data.table::data.table(
