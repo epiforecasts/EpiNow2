@@ -50,7 +50,7 @@
 #'                      model_params = list(models = "aefz", weights = "equal"),
 #'                      forecast_params = list(PI.combination = "mean"), ...)},
 #'                    samples = 1000, warmup = 500, cores = 2, chains = 2,
-#'                    verbose = TRUE, return_fit = TRUE,
+#'                    verbose = TRUE, return_fit = TRUE, target_folder = "../test"
 #'                  )
 #' 
 #' out
