@@ -96,6 +96,15 @@ report_rt <- function(reported_cases, family = "negbin",
  } 
 
 
+# Save input data ---------------------------------------------------------
+
+if (!missing(target_folder)) {
+  latest_date <- reported_cases[confirm > 0][date == max(date)]$date
+  
+  saveRDS(latest_date, paste0(target_folder, "/latest_date.rds"))
+  saveRDS(reported_cases, paste0(target_folder, "/reported_cases.rds"))
+}  
+
 # Estimate infections and Reproduction no ---------------------------------
 
    estimates <- estimate_infections(reported_cases = reported_cases,
