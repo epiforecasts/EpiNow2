@@ -19,6 +19,16 @@ report_cases(
 \item{case_forecast}{A data.table of case forecasts with the following variables: date, sample, cases. If not supplied the
 default is not incoperate forecasts.}
 
+\item{reporting_delay}{A list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value
+on the log scale).}
+
+\item{incubation_period}{A list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+incubation period (assuming a lognormal distribution with all parameters excepting the max allowed value
+on the log scale).}
+
 \item{type}{Character string indicating the method to use to transfrom counts. Supports either "sample"
 which approximates sampling or "median" would shift by the median of the distribution.}
 

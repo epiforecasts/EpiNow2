@@ -2,24 +2,35 @@
 #'
 #' @description This function uses a non-parametric approach to reconstruct cases by date of infection from reported 
 #' cases. It can optionally then estimate the time-varying reproduction number and the rate of growth.
-#' @param reported_cases
-#' @param familt
-#' @param generation_time
-#' @param incubation_poeriod
-#' @param reporting_delay
-#' @param rt_prior
-#' @param prior_smoothing_window
-#' @param model
-#' @param cores
-#' @param chains 
-#' @param estimate_rt
-#' @param adapt_delta 
-#' @param max_treedepth
-#' @param return_fit
-#' @param verbose
+#' @param reported_cases A data frame of confirmed cases (confirm) by date (date).
+#' @param family A character string indicating the reporting model to use. Defaults to negative 
+#' binomial ("negbin") with poisson ("poisson") also supported.
+#' @param generation_time A list containing the mean, standard deviation of the mean (mean_sd), 
+#' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+#' generation time (assuming a gamma distribution).
+#' @param incubation_period  A list containing the mean, standard deviation of the mean (mean_sd), 
+#' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+#' incubation period (assuming a lognormal distribution with all parameters excepting the max allowed value 
+#' on the log scale).
+#' @param reporting_delay A list containing the mean, standard deviation of the mean (mean_sd), 
+#' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+#' reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value 
+#' on the log scale).
+#' @param rt_prior A list contain the mean and standard deviation (sd) of the gamma distributed prior for
+#' Rt. By default this is assumed to be mean 1 with a standard deviation of 1.
+#' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
+#' for the prior based on reported cases.
+#' @param model A compiled stan model. By default uses the internal package model.
+#' @param cores Numeric, defaults to 2. The number of cores to use when fitting the stan model.
+#' @param chains Numeric, defaults to 2. The number of MCMC chains to use.
+#' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
+#' @param adapt_delta Numeric, defaults to 0.99. See ?rstan::sampling.
+#' @param max_treedepth Numeric, defaults to 15. See ?rstan::sampling.
+#' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
+#' @param verbose Logical, defaults to FALSE. Should verbose progress messages be printed.
 #' @export
 #' @importFrom rstan sampling extract 
-#' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N
+#' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose map_dbl
 #' @importFrom lubridate wday
 #' @importFrom truncnorm rtruncnorm
@@ -74,6 +85,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 verbose = FALSE){
   
   suppressMessages(data.table::setDTthreads(threads = cores))
+  
+  reported_cases <- data.table::setDT(reported_cases)
   
   # Add prior for R if missing ---------------------------------
   

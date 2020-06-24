@@ -20,6 +20,8 @@ report_regional_rt(
 \item{case_limit}{Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 10.
 set to \code{FALSE} this should also be \code{FALSE}}
 
+\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
+
 \item{verbose}{Logical, defaults to \code{FALSE}. Should progress messages be shown for each reigon?}
 
 \item{...}{Pass additional arguments to \code{rt_pipeline}}

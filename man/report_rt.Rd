@@ -28,9 +28,39 @@ report_rt(
 )
 }
 \arguments{
-\item{chains}{}
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date).}
+
+\item{family}{A character string indicating the reporting model to use. Defaults to negative
+binomial ("negbin") with poisson ("poisson") also supported.}
+
+\item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+generation time (assuming a gamma distribution).}
+
+\item{incubation_period}{A list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+incubation period (assuming a lognormal distribution with all parameters excepting the max allowed value
+on the log scale).}
+
+\item{reporting_delay}{A list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value
+on the log scale).}
+
+\item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
+Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
+
+\item{model}{A compiled stan model. By default uses the internal package model.}
+
+\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
+
+\item{chains}{Numeric, defaults to 2. The number of MCMC chains to use.}
 
 \item{samples}{Numeric, the number of forecast samples to take.}
+
+\item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
+
+\item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
 \item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
 for forecasting future Rt and case co An example of the required structure is: \code{function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}}.}
@@ -39,9 +69,11 @@ for forecasting future Rt and case co An example of the required structure is: \
 
 \item{ensemble_type}{Character string indicating the type of ensemble to use. By default this is
 an unweighted ensemble ("mean") with no other types currently supported.}
+
+\item{verbose}{Logical, defaults to FALSE. Should verbose progress messages be printed.}
 }
 \value{
-Nothing returned
+A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 }
 \description{
 Estimate Rt and cases by date of infection, forecast into the future, transform to date
@@ -74,7 +106,7 @@ reporting_delay <- list(mean = log(10),
 
 ## Uses example case vector from EpiSoon
 cases <- data.table::setDT(EpiSoon::example_obs_cases)
-cases <- cases[, confirm := as.integer(cases)][,cases := NULL][1:50]
+cases <- cases[, confirm := as.integer(cases)][,cases := NULL][1:40]
 
 ## Report Rt along with forecasts
 out <- report_rt(reported_cases = cases,
