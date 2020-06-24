@@ -1,57 +1,3 @@
-#' Report Case Nowcast Estimates
-#'
-#' @description Returns a summarised nowcast as well as saving key information to the
-#' results folder.
-#' @param target Character string indicting the data type to use as the "nowcast".
-#' @param target_folder Character string indicating the folder into which to save results. 
-#'  Also used to extract previously generated results. 
-#' @return NULL
-#' @export
-#' @importFrom data.table rbindlist
-#' @importFrom purrr pmap
-#' @inheritParams sample_approx_dist
-report_nowcast <- function(nowcast, cases, 
-                            target, target_folder) {
-  
-  ## Combine nowcast with observed cases by onset and report
-  reported_cases <- cases[import_status %in% "local",
-                          .(median = sum(confirm), 
-                            type = "Observed by report date",
-                            confidence = 1), by = "date"]
-  
-  
-  ## Count cumulative cases
-  all_cases <- data.table::rbindlist(list(summarised_cast, 
-                                          reported_cases), fill = TRUE)
-  
-  ## Save combined data
-  saveRDS(all_cases,  paste0(target_folder, "/summarised_nowcast.rds"))
-  
-  ## Extract latest cases
-  current_cases <- all_cases[type %in% "nowcast"][
-    date == max(date)][, .(date, range = purrr::pmap(
-      list(mean, bottom, top),
-      function(mean, bottom, top) {
-        list(point = mean,
-             lower = bottom, 
-             upper = top,
-             mid_lower = lower,
-             mid_upper = upper)
-      }))]
-  
-  
-  latest_date <- current_cases$date
-  
-  saveRDS(latest_date,  paste0(target_folder, "/latest_date.rds"))
-  
-  current_cases <- current_cases$range
-  
-  saveRDS(current_cases,  paste0(target_folder, "/current_cases.rds"))
-  
-  return(invisible(NULL))
-}
-
-
 #' Report case counts by date of report                        
 #' @param case_estimates A data.table of case estimates with the following variables: date, sample, cases
 #' @param case_forecast A data.table of case forecasts with the following variables: date, sample, cases. If not supplied the
@@ -189,203 +135,78 @@ report_cases <- function(case_estimates,
   return(out)
 }
 
-#' Report Effective Reproduction Number Estimates
-#' @inheritParams report_nowcast
-#' @return NULL
-#' @export
-report_reff <- function(target_folder) {
-  
-  ## Get summarised nowcast 
-  summarised_nowcast <- readRDS(paste0(target_folder, "/summarised_nowcast.rds"))
-  
-  ## Pull out R estimates
-  reff_estimates <- readRDS(paste0(target_folder, "/summarised_reff.rds"))
-  bigr_estimates <- reff_estimates[rt_type %in% "nowcast"]
-  
-  ## Data.table of confidence estimates
-  case_confidence <- summarised_nowcast[, .(type, confidence, date)]
-  
-  ## Join confidence onto R estimates
-  bigr_estimates <- case_confidence[bigr_estimates, on = c("type", "date")][
-    !is.na(confidence)]
-  
-  saveRDS(bigr_estimates,
-          paste0(target_folder, "/bigr_estimates.rds"))
-  
-  # Pull out and plot big R -------------------------------------------------
-  
-  extract_bigr_values <- function(max_var, sel_var) {
-    
-    out <- EpiNow2::pull_max_var(bigr_estimates, max_var,
-                                sel_var, type_selected = "nowcast")
-    
-    return(out)
-  }
-  
-  ## Pull summary measures
-  R_max_estimate <- extract_bigr_values("median", "R0_range")
-  
-  
-  saveRDS(R_max_estimate,
-          paste0(target_folder, "/bigr_eff_max_estimate.rds"))
-  
-  R_latest <- extract_bigr_values("date", "R0_range")
-  
-  saveRDS(R_latest,
-          paste0(target_folder, "/bigr_eff_latest.rds"))
-  
-  ## Pull out probability of control
-  prob_control <- extract_bigr_values("date", "prob_control")
-  prob_control <-  signif(prob_control, 2)
-  
-  saveRDS(prob_control,
-          paste0(target_folder, "/prob_control_latest.rds"))
-  
-  return(invisible(NULL))
-}
 
-#' Report Rate of Growth Estimates
-#' @inheritParams report_nowcast
-#' @return NULL
+#' Provide Summary Statistics for Estimated Infections and Rt
+#' @param summarised_estimates A data.table of summarised estimates containing the following variables:
+#'  variable, median, bottom, and top. It should contain the following estimates: R, infections, and r 
+#'  (rate of growth).
+#' @param rt_samples A data.table containing Rt samples with the following variables: sample and value.
+#' @return A data.table containing formatted and numeric summary measures
 #' @export
-#' @importFrom data.table copy rbindlist as.data.table dcast
-#' @importFrom purrr map
-report_littler <- function(target_folder) {
-  
-  
-  ## Data.table of confidence estimates
-  summarised_nowcast <- readRDS(paste0(target_folder, "/summarised_nowcast.rds"))
-  case_confidence <- summarised_nowcast[, .(type, confidence, date)]
-  case_confidence <- case_confidence[type %in% "nowcast"]
-  
-  ## Merge in case confidence
-  littler_estimates <- readRDS(paste0(target_folder, "/summarised_littler.rds"))
-  littler_estimates$time_varying_r[[1]] <- 
-    case_confidence[littler_estimates$time_varying_r[[1]], on = "date"][
-      !is.na(confidence)][, type := NULL]
-  
-  saveRDS(littler_estimates,
-          paste0(target_folder, "/rate_spread_estimates.rds"))
-  
-  ## get overall estimates
-  report_overall <- data.table::copy(littler_estimates)[,
-                     .(report_overall = purrr::map(overall_little_r,
-                                                   ~ purrr::map_dfr(., function(estimate) {
-                                                     paste0(signif(estimate$mean, 2), " (",
-                                                            signif(estimate$bottom, 2), " -- ",
-                                                            signif(estimate$top, 2),")")})), type)][,
-                     .(data.table::as.data.table(type), data.table::rbindlist(report_overall))]
-                                                                                                                                  
-  
-  report_overall <- report_overall[, .(Data = type,
-                                       `Rate of growth` = little_r,
-                                       `Doubling/halving time (days)` = doubling_time,
-                                       `Adjusted R-squared` = goodness_of_fit)]
-  
-  saveRDS(report_overall,
-          paste0(target_folder, "/rate_spread_overall_summary.rds"))
-  
-  clean_double <- function(var, type) {
-    var <- signif(var, 2)
-    return(var)
-  }
-  
-  ## get latest estimates
-  report_latest <-  littler_estimates[, .(type,
-                                          latest = purrr::map(time_varying_r, function(estimate) {
-                                            estimate <- estimate[date == max(date)]
-                                            
-                                            estimate$bottom <- clean_double(estimate$bottom, 
-                                                                            type = estimate$vars[1])
-                                            estimate$top <- clean_double(estimate$top, 
-                                                                         type = estimate$vars[1])
-                                            estimate$mean <- clean_double(estimate$mean,
-                                                                          type = estimate$vars[1])
-                                            
-                                            out <- data.table::data.table(
-                                              vars = estimate$var,
-                                              range = paste0(estimate$mean, " (",
-                                                             estimate$bottom, " -- ", estimate$top,
-                                                             ")")
-                                            )
-                                            
-                                            return(out)
-                                          }))] 
-  
-  report_latest <- report_latest[, .(data.table::as.data.table(type),
-                                     data.table::rbindlist(latest))][,
-                                   .(type, vars, range)]
-  
-  report_latest <- data.table::dcast(report_latest, type ~ vars, value.var = "range")
-  
-  report_latest <- report_latest[, .(Data = type,
-                                     `Rate of growth` = little_r,
-                                     `Doubling/halving time (days)` = doubling_time,
-                                     `Adjusted R-squared` = goodness_of_fit)]
-  
-  saveRDS(report_latest,
-          paste0(target_folder, "/rate_spread_latest_summary.rds"))
-  
-  
-  ## Get individual estimates
-  rate_spread_latest <- report_latest[Data == "nowcast"]$`Rate of growth`
-  
-  
-  saveRDS(rate_spread_latest,
-          paste0(target_folder, "/rate_spread_latest.rds"))
-  
-  doubling_time_latest <- report_latest[Data == "nowcast"]$`Doubling/halving time (days)`
-  
-  saveRDS(doubling_time_latest,
-          paste0(target_folder, "/doubling_time_latest.rds"))
-  
-  adjusted_r_latest <- report_latest[Data == "nowcast"]$`Adjusted R-squared`
-  
-  saveRDS(adjusted_r_latest,
-          paste0(target_folder, "/adjusted_r_latest.rds"))
-  
-  
-  ## Tidy time-varying little R
-  tidy_littler <- littler_estimates[type %in% "nowcast"][,
-                        .(data.table::as.data.table(type),
-                          data.table::rbindlist(time_varying_r))][,
-                        var := factor(var, levels = c("little_r", "doubling_time", "goodness_of_fit"),
-                        labels = c("Rate of growth", "Doubling/halving time (days)", "Adjusted R-squared"))]
-  
-  saveRDS(tidy_littler,
-          paste0(target_folder, "/time_varying_littler.rds"))
-  
-  return(invisible(NULL))
-}
-
-
-#' Provide Summary Statistics on an Rt Pipeline
-#'
-#' @return NULL
-#' @export
-#' @inheritParams report_nowcast
 #' @importFrom data.table data.table
-report_summary <- function(target_folder) { 
+#' @usage See report_rt for an example of using this function.
+report_summary <- function(summarised_estimates,
+                           rt_samples) { 
   
-  current_cases <- readRDS(paste0(target_folder, "/current_cases.rds"))
-  prob_control <- readRDS(paste0(target_folder, "/prob_control_latest.rds"))
-  R_latest <- readRDS(paste0(target_folder, "/bigr_eff_latest.rds"))
-  doubling_time_latest <- readRDS(paste0(target_folder, "/doubling_time_latest.rds"))
   
+  ## Extract latest cases
+  current_cases <- all_cases[type %in% "nowcast"][
+    date == max(date)][, .(date, range = purrr::pmap(
+      list(mean, bottom, top),
+      function(mean, bottom, top) {
+        list(point = mean,
+             lower = bottom, 
+             upper = top,
+             mid_lower = lower,
+             mid_upper = upper)
+      }))]
+  
+  ## Extract values of interest
+  summarised_estimates <- summarised_estimates[, .(variable, point = median,
+                                                   lower = bottom, upper = top)]
+  ## Extract latest R estimate
+  R_latest <- summarised_estimates[variable == "R"]
+  
+  ## Estimate probability of control
+  prob_control <- rt_samples[, .(prob_control = sum(value <= 1))]$prob_control
+  prob_control <- signif(prob_control, 2)
+  
+  ##Extract current cases
+  current_cases <- summarised_estimates[variable == "infections"]
+  
+
+  ## Get individual estimates
+  r_latest <- summarised_estimates[variable == "r"]
+  
+  doubling_time <- function(r) {
+    log(2) * 1 / r
+  }
+
+  doubling_time_latest <- summarised_estimates[variable == "r"][,
+                                .(point = doubling_time(point),
+                                  lower = doubling_time(upper),
+                                  upper = doubling_time(lower))]
+  
+
   ## Regional summary
-  region_summary <- data.table::data.table(
+ summary <- data.table::data.table(
     measure = c("New confirmed cases by infection date",
                 "Expected change in daily cases",
                 "Effective reproduction no.",
+                "Rate of growth",
                 "Doubling/halving time (days)"),
     estimate = c(EpiNow2::make_conf(current_cases),
                  as.character(EpiNow2::map_prob_change(prob_control)),
                  EpiNow2::make_conf(R_latest, digits = 1),
+                 EpiNow2::make_conf(r_latest),
                  doubling_time_latest
-    )
+    ),
+    numeric_estimate = c(current_cases,
+                         prob_control,
+                         R_latest,
+                         r_latest,
+                         doubling_time_latest)
   )
-  
-  saveRDS(region_summary, paste0(target_folder, '/region_summary.rds'))
-  
-  return(invisible(NULL)) 
+
+  return(summary) 
 }

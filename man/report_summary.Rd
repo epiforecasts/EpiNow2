@@ -2,14 +2,20 @@
 % Please edit documentation in R/report.R
 \name{report_summary}
 \alias{report_summary}
-\title{Provide Summary Statistics on an Rt Pipeline}
+\title{Provide Summary Statistics for Estimated Infections and Rt}
 \usage{
-report_summary(target_folder)
+See report_rt for an example of using this function.
 }
 \arguments{
-\item{target_folder}{Character string indicating the folder into which to save results.
-Also used to extract previously generated results.}
+\item{summarised_estimates}{A data.table of summarised estimates containing the following variables:
+variable, median, bottom, and top. It should contain the following estimates: R, infections, and r
+(rate of growth).}
+
+\item{rt_samples}{A data.table containing Rt samples with the following variables: sample and value.}
+}
+\value{
+A data.table containing formatted and numeric summary measures
 }
 \description{
-Provide Summary Statistics on an Rt Pipeline
+Provide Summary Statistics for Estimated Infections and Rt
 }
