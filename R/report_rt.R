@@ -80,7 +80,7 @@ report_rt <- function(reported_cases, family = "negbin",
     target_date <- max(reported_cases$date)
   }
   
-  if (!missing(target_folder)) {
+  if (!missing(target_folder) & !is.null(target_folder)) {
     latest_folder <- file.path(target_folder, "latest")
     target_folder <- file.path(target_folder, target_date)
     
@@ -98,7 +98,7 @@ report_rt <- function(reported_cases, family = "negbin",
 
 # Save input data ---------------------------------------------------------
 
-if (!missing(target_folder)) {
+if (!missing(target_folder) & !is.null(target_folder)) {
   latest_date <- reported_cases[confirm > 0][date == max(date)]$date
   
   saveRDS(latest_date, paste0(target_folder, "/latest_date.rds"))
@@ -121,7 +121,7 @@ if (!missing(target_folder)) {
                                     verbose = verbose, return_fit = return_fit) 
  
 # Report estimates --------------------------------------------------------
-  if (!missing(target_folder)) {
+  if (!missing(target_folder) & !is.null(target_folder)) {
     saveRDS(estimates$samples,  paste0(target_folder, "/estimate_samples.rds"))
     saveRDS(estimates$summarised,  paste0(target_folder, "/summarised_estimates.rds"))
     
@@ -142,7 +142,7 @@ if (!missing(forecast_model)) {
                                   samples = samples)
 }
 # Report cases ------------------------------------------------------------
-if (!missing(forecast_model) & !missing(target_folder)) {
+if (!missing(forecast_model) & !missing(target_folder) & !is.null(target_folder)) {
   saveRDS(forecast$samples,  paste0(target_folder, "/forecast_samples.rds"))
   saveRDS(forecast$summarised,  paste0(target_folder, "/summarised_forecast.rds"))
 }
@@ -186,7 +186,7 @@ if (missing(forecast_model)) {
   ))
 }
   
-if (!missing(target_folder)){
+if (!missing(target_folder) & !is.null(target_folder)){
   saveRDS(estimated_reported_cases$samples, paste0(target_folder, "/estimated_reported_cases_samples.rds"))
   saveRDS(estimated_reported_cases$summarised, paste0(target_folder, "/summarised_estimated_reported_cases.rds"))
 } 
@@ -198,7 +198,7 @@ if (!missing(target_folder)){
                                                             .(sample, value)])
 
    
-   if(!missing(target_folder)) {
+   if(!missing(target_folder) & !is.null(target_folder)) {
      saveRDS(summary, paste0(target_folder, "/summary.rds"))
    }
    
@@ -209,7 +209,7 @@ if (!missing(target_folder)){
 #                          report_forecast = report_forecast)
 
  # Copy all results to latest folder ---------------------------------------
-  if (!missing(target_folder)) {  
+  if (!missing(target_folder) & !is.null(target_folder)) {  
     ## Save all results to a latest folder as well
     suppressWarnings(
       if (dir.exists(latest_folder)) {

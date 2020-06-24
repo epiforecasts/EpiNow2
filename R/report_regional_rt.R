@@ -1,30 +1,40 @@
-#' Regional Rt
+#' Real-time Rt Estimation, Forecasting and Reporting by Region
 #'
-#' @description Estimates Rt by region
-#' @param cases A dataframe of cases (`confirm`) by date of confirmation (`date`), import status (`import_status`; ("imp)), and region (`region`).
-#' @param merge_onsets Logical defaults to `FALSE`. Should available onset data be used. Typically if `regional_delay` is
-#' @param case_limit Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 10.
-#' set to `FALSE` this should also be `FALSE`
-#' @param verbose Logical, defaults to `FALSE`. Should progress messages be shown for each reigon?
-#' @param ... Pass additional arguments to `rt_pipeline`
+#' @description Estimates Rt by region. See the documentation for `report_rt` for further information.
+#' @param reported_cases A data frame of confirmed cases (confirm) by date (date), and region (`region`).
+#' @param case_limit Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 20.
+#' @param ... Pass additional arguments to `report_rt`
 #' @inheritParams report_rt
-#' @return NULL
+#' @return 
 #' @export
 #' @importFrom future.apply future_lapply
 #' @importFrom data.table as.data.table setDT copy setorder
 #' @importFrom purrr safely
 #' @examples
 #'  \dontrun{
-#' ## Save everything to a temporary directory 
-#' ## Change this to inspect locally
-#' target_dir <- tempdir() 
+#' ## Requires additional packages:
+#' library(EpiSoon)
+#' library(forecastHybrid)
 #' 
 #' ## Construct example distributions
-#' ## reporting delay dist
-#' delay_dist <- suppressWarnings(
-#'                EpiNow2::get_dist_def(rexp(25, 1/10), 
-#'                                     samples = 5, bootstraps = 1))
-#' 
+#' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
+#'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
+#'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
+#'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
+#'                         max = 30)
+#'                           
+#' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+#'                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+#'                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
+#'                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
+#'                           max = 30)
+#'                    
+#' reporting_delay <- list(mean = log(10),
+#'                         mean_sd = 0.8,
+#'                         sd = log(2),
+#'                         sd_sd = 0.1,
+#'                         max = 30)
+#'                         
 #' ## Uses example case vector from EpiSoon
 #' cases <- data.table::setDT(EpiSoon::example_obs_cases)
 #' cases <- cases[, `:=`(confirm = as.integer(cases))][,
@@ -35,75 +45,93 @@
 #'   cases[, region := "realland"]))
 #'   
 #' ## Run basic nowcasting pipeline
-#' report_regional_rt(cases = cases,
-#'             target_folder = target_dir)
+#' out <- report_regional_rt(reported_cases = cases,
+#'                           generation_time = generation_time,
+#'                           incubation_period = incubation_period,
+#'                           reporting_delay = reporting_delay,
+#'                           forecast_model = function(y, ...){
+#'                               EpiSoon::forecastHybrid_model(
+#'                                  y = y[max(1, length(y) - 21):length(y)],
+#'                                  model_params = list(models = "aefz", weights = "equal"),
+#'                                  forecast_params = list(PI.combination = "mean"), ...)},
+#'                                  samples = 1000, warmup = 500, cores = 2, chains = 2,
+#'                           verbose = TRUE)
 #'}
-report_regional_rt <- function(cases = NULL, 
-                        target_folder = "results", 
-                        target_date = NULL,
-                        case_limit = 20,
-                        cores = 1,
-                        verbose = FALSE,
-                        ...) {
+report_regional_rt <- function(reported_cases, 
+                               target_folder, target_date,
+                               case_limit = 20, cores = 1,
+                               return_estimates = TRUE,
+                               ...) {
   
   ## Set input to data.table
   cases <- data.table::as.data.table(cases)
   
-  if (!is.null(onset_modifier)) {
-    onset_modifier <- data.table::as.data.table(onset_modifier)
+  if (missing(target_date)) {
+    target_date <- as.character(max(reported_cases$date))
   }
   
-  if (is.null(target_date)) {
-    target_date <- as.character(max(cases$date))
+  if (missing(target_folder)) {
+    target_folder <- NULL
   }
 
-  message("Running pipeline for ", target_date)
+  message("Reporting estimates using data up to: ", target_date)
    
   
   ## Check for regions more than required cases
-  eval_regions <- data.table::copy(cases)[,.(confirm = sum(confirm, na.rm = TRUE)), 
+  eval_regions <- data.table::copy(reported_cases)[,.(confirm = sum(confirm, na.rm = TRUE)), 
                                           by = c("region", "date")][
                       confirm >= case_limit]$region
   
   eval_regions <- unique(eval_regions)
   
   ## Exclude zero regions
-  cases <- cases[!is.na(region)][region %in% eval_regions]
+  reported_cases <- reported_cases[!is.na(region)][region %in% eval_regions]
   
   message("Running the pipeline for: ",
           paste(eval_regions, collapse = ", "))
 
   ## regional pipelines
-  regions <- unique(cases$region)
+  regions <- unique(reported_cases$region)
 
-  message("Running pipelines by region")
   ## Function to run the pipeline in a region
   run_region <- function(target_region, 
-                         cases,
+                         reported_cases,
                          ...) { 
-    message("Running Rt pipeline for ", target_region)
+    message("Reporting estimates for: ", target_region)
     data.table::setDTthreads(threads = cores)
     
-    regional_cases <- cases[region %in% target_region][, region := NULL]
+    if (!is.null(target_folder)) {
+      target_folder <- file.path(target_folder, target_region)
+    }
     
-    EpiNow2::report_rt(
-      cases = regional_cases,
-      target_folder = file.path(target_folder, target_region),
+    regional_cases <- reported_cases[region %in% target_region][, region := NULL]
+    
+    out <- EpiNow2::report_rt(
+      reported_cases = regional_cases,
+      target_folder = target_folder,
       target_date = target_date, 
-      verbose = verbose,
+      return_estimates = return_estimates,
       ...)
     
-    return(invisible(NULL))}
+    if (return_estimates) {
+      return(out)
+    }else{
+      return(invisible(NULL))
+    }}
   
-
   safe_run_region <- purrr::safely(run_region)
   
   ## Run regions (make parallel using future::plan)
-  future.apply::future_lapply(regions, safe_run_region,
-                              cases = cases,
+  out <- future.apply::future_lapply(regions, safe_run_region,
+                              reported_cases = reported_cases,
                               ...,
                               future.scheduling = Inf)
 
     
-  return(invisible(NULL))
+  if (return_estimates) {
+    names(out) <- regions
+    return(out)
+  }else{
+    return(invisible(NULL))
+  }
 }

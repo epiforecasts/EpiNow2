@@ -2,47 +2,58 @@
 % Please edit documentation in R/report_regional_rt.R
 \name{report_regional_rt}
 \alias{report_regional_rt}
-\title{Regional Rt}
+\title{Real-time Rt Estimation, Forecasting and Reporting by Region}
 \usage{
 report_regional_rt(
-  cases = NULL,
-  target_folder = "results",
-  target_date = NULL,
+  reported_cases,
+  target_folder,
+  target_date,
   case_limit = 20,
   cores = 1,
-  verbose = FALSE,
+  return_estimates = TRUE,
   ...
 )
 }
 \arguments{
-\item{cases}{A dataframe of cases (\code{confirm}) by date of confirmation (\code{date}), import status (\code{import_status}; ("imp)), and region (\code{region}).}
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
-\item{case_limit}{Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 10.
-set to \code{FALSE} this should also be \code{FALSE}}
+\item{case_limit}{Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 20.}
 
 \item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
 
-\item{verbose}{Logical, defaults to \code{FALSE}. Should progress messages be shown for each reigon?}
+\item{...}{Pass additional arguments to \code{report_rt}}
+}
+\value{
 
-\item{...}{Pass additional arguments to \code{rt_pipeline}}
-
-\item{merge_onsets}{Logical defaults to \code{FALSE}. Should available onset data be used. Typically if \code{regional_delay} is}
 }
 \description{
-Estimates Rt by region
+Estimates Rt by region. See the documentation for \code{report_rt} for further information.
 }
 \examples{
  \dontrun{
-## Save everything to a temporary directory 
-## Change this to inspect locally
-target_dir <- tempdir() 
+## Requires additional packages:
+library(EpiSoon)
+library(forecastHybrid)
 
 ## Construct example distributions
-## reporting delay dist
-delay_dist <- suppressWarnings(
-               EpiNow2::get_dist_def(rexp(25, 1/10), 
-                                    samples = 5, bootstraps = 1))
-
+generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
+                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
+                        sd = EpiNow2::covid_generation_times[1, ]$sd,
+                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
+                        max = 30)
+                          
+incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+                          mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+                          sd = EpiNow2::covid_incubation_period[1, ]$sd,
+                          sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
+                          max = 30)
+                   
+reporting_delay <- list(mean = log(10),
+                        mean_sd = 0.8,
+                        sd = log(2),
+                        sd_sd = 0.1,
+                        max = 30)
+                        
 ## Uses example case vector from EpiSoon
 cases <- data.table::setDT(EpiSoon::example_obs_cases)
 cases <- cases[, `:=`(confirm = as.integer(cases))][,
@@ -53,7 +64,16 @@ cases <- data.table::rbindlist(list(
   cases[, region := "realland"]))
   
 ## Run basic nowcasting pipeline
-report_regional_rt(cases = cases,
-            target_folder = target_dir)
+out <- report_regional_rt(reported_cases = cases,
+                          generation_time = generation_time,
+                          incubation_period = incubation_period,
+                          reporting_delay = reporting_delay,
+                          forecast_model = function(y, ...){
+                              EpiSoon::forecastHybrid_model(
+                                 y = y[max(1, length(y) - 21):length(y)],
+                                 model_params = list(models = "aefz", weights = "equal"),
+                                 forecast_params = list(PI.combination = "mean"), ...)},
+                                 samples = 1000, warmup = 500, cores = 2, chains = 2,
+                          verbose = TRUE)
 }
 }
