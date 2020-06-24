@@ -25,6 +25,10 @@ navbar:
 
 
 reference:
+  - title: Perform End-to-End Analyses
+    desc: Functions that faciliate end-to-end analysis including imputing cases by infection, estimating Rt and reporting results.
+    contents:
+      - contains("epinow")
   - title: Define, Fit and Parameterise Distributions
     desc: Functions to define, fit and parameterise distributions
     contents:
@@ -33,10 +37,11 @@ reference:
     desc: Function to estimate time-varying parameters of interest.
     contents:
       - contains("estimate")
+      - contains("forecast")
       - growth_to_R
       - R_to_growth
   - title: Adjust Case Counts
-    desc: Adjust case counts for right truncation and from date of report to infection
+    desc: Adjust case counts from date of infection to report
     contents:
       - adjust_infection_to_report
   - title: Summarise results
@@ -57,7 +62,7 @@ reference:
     contents:
       - simulate_cases
   - title: Data
-    desc: Package datasets that are used as defaults by other functions.
+    desc: Package datasets that may be used to parameterise other functions
     contents:
       - covid_incubation_period
       - covid_serial_intervals
@@ -70,9 +75,8 @@ reference:
     desc: Utility functions
     contents: 
       - get_regions
-      - load_nowcast_result
+      - get_raw_result
       - get_timeseries
       - clean_nowcasts
       - make_conf
       - map_prob_change
-      - pull_max_var

@@ -6,7 +6,8 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "man/figures/"
+  fig.path = "man/figures/",
+  eval = FALSE
 )
 ```
 
