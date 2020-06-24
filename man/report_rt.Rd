@@ -74,7 +74,7 @@ reporting_delay <- list(mean = log(10),
 
 ## Uses example case vector from EpiSoon
 cases <- data.table::setDT(EpiSoon::example_obs_cases)
-cases <- cases[, confirm := as.integer(cases)][,cases := NULL]
+cases <- cases[, confirm := as.integer(cases)][,cases := NULL][1:50]
 
 ## Report Rt along with forecasts
 out <- report_rt(reported_cases = cases,
@@ -88,7 +88,7 @@ out <- report_rt(reported_cases = cases,
                      model_params = list(models = "aefz", weights = "equal"),
                      forecast_params = list(PI.combination = "mean"), ...)},
                    samples = 1000, warmup = 500, cores = 2, chains = 2,
-                   verbose = TRUE, return_fit = TRUE,
+                   verbose = TRUE, return_fit = TRUE, target_folder = "../test"
                  )
 
 out
