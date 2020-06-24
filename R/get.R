@@ -21,7 +21,7 @@ get_regions <- function(results_dir) {
 
 
 
-#' Load nowcast results
+#' Get a Single Raw Result
 #'
 #' @param file Character string giving the result files name.
 #' @param region Character string giving the region of interest.
@@ -29,8 +29,7 @@ get_regions <- function(results_dir) {
 #' @param result_dir Character string giving the location of the target directory 
 #'
 #' @return An R object read in from the targeted .rds file
-#' @export
-load_nowcast_result <- function(file = NULL, region = NULL, 
+get_raw_result <- function(file = NULL, region = NULL, 
                                 date = target_date, result_dir = results_dir) {
   file_path <- file.path(result_dir, region, date, file)
   object <- readRDS(file_path)

@@ -9,7 +9,6 @@
 #' @param region_scale A character string indicating the name to give the regions being summarised.
 #' @importFrom purrr partial map_chr map_dbl map_chr
 #' @importFrom data.table setorderv melt
-#' @importFrom stringr str_split
 #' @return A list of summary data
 #' @export
 summarise_results <- function(regions = NULL,
@@ -18,73 +17,38 @@ summarise_results <- function(regions = NULL,
                               region_scale = "Region") {
   
   ## Utility functions
-  load_data <- purrr::partial(load_nowcast_result,
-                              date = target_date, result_dir = results_dir)
+  load_data <- purrr::partial(get_raw_result,
+                              date = target_date,
+                              result_dir = results_dir)
   
   
-  ## Make reporting table
-  estimates <- data.table::data.table(
-    region = names(regions),
-    `New confirmed cases by infection date` = 
-      purrr::map(regions, ~ load_data("current_cases.rds", .)),
-    `Expected change in daily cases` = map_prob_change(
-      purrr::map_dbl(regions, ~ load_data("prob_control_latest.rds", .))
-    ),
-    `Effective reproduction no.` =
-      purrr::map(regions, ~ load_data("bigr_eff_latest.rds", .)),
-    `Doubling/halving time (days)` = 
-      purrr::map_chr(regions, ~ load_data("doubling_time_latest.rds", .))) 
+  estimates <- purrr::map(regions, ~ load_date(., summary.rds))
   
+  names(estimates) <- names(regions)
   
-  ## Make estimates numeric
-  numeric_estimates <- estimates[,
-                                 .(
-                                   region,
-                                   `New confirmed cases by infection date`, 
-                                   `Effective reproduction no.`, 
-                                   `Expected change in daily cases`  
-                                 )] 
+  estimates <- data.table::rbindlist(estimates, idcol = "region")
   
-  numeric_estimates <- 
-    data.table::melt(numeric_estimates,
-                     measure.vars = c("New confirmed cases by infection date",
-                                      "Effective reproduction no."),
-                     variable.name = "metric", value.name = "value")
-  
-  numeric_estimates  <-  numeric_estimates[,
+  numeric_estimates  <- data.table::copy(estimates)[measure %in% c("New confirmed cases by infection date",
+                                                    "Effective reproduction no.")][,
                                            `:=`(
-                                             lower = purrr::map_dbl(value, ~ .[[1]]$lower),
-                                             upper = purrr::map_dbl(value, ~ .[[1]]$upper),
-                                             mid_lower = purrr::map_dbl(value, ~ .[[1]]$mid_lower),
-                                             mid_upper = purrr::map_dbl(value, ~ .[[1]]$mid_upper)
+                                             lower = purrr::map_dbl(value, ~ .$lower),
+                                             upper = purrr::map_dbl(value, ~ .$upper),
+                                             mid_lower = purrr::map_dbl(value, ~ .$mid_lower),
+                                             mid_upper = purrr::map_dbl(value, ~ .$mid_upper)
                                            )][,
                                               metric :=  
-                                                factor(metric, levels = c("New confirmed cases by infection date",
-                                                                          "Effective reproduction no."))]
+                                                factor(measure, levels = c("New confirmed cases by infection date",
+                                                                          "Effective reproduction no."))][,
+                                              measure := metric]
   
   ## Rank countries by incidence countires
   high_inc_regions <- unique(
-    data.table::setorderv(numeric_estimates, 
-                          cols = "upper", order = -1)$region)
+    data.table::setorderv(numeric_estimates, cols = "upper", order = -1)$region)
   
-  numeric_estimates <- numeric_estimates[,
-                                         region :=  
-                                           factor(region, levels = high_inc_regions)]
-  
-  estimates <- 
-    estimates[,
-              `:=`(
-                `New confirmed cases by infection date` = EpiNow2::make_conf(
-                  purrr::map(`New confirmed cases by infection date`, ~ .[[1]]),
-                  digits = 0),
-                `Effective reproduction no.` = EpiNow2::make_conf(
-                  purrr::map(`Effective reproduction no.`, ~ .[[1]]),
-                  digits = 1))]
+  numeric_estimates <- numeric_estimates[, region := factor(region, levels = high_inc_regions)]
   
   
-  
-  estimates <- 
-    estimates[, (region_scale) := region][, region := NULL]
+  estimates <- estimates[, (region_scale) := region][, region := NULL]
   
   estimates <- estimates[, c((region_scale), 
                              colnames(estimates)[-ncol(estimates)]), with = FALSE]
@@ -154,7 +118,7 @@ regional_summary <- function(results_dir = NULL,
   ## Get latest date
   latest_date <- 
     purrr::map_chr(regions, ~ as.character(
-      EpiNow2::load_nowcast_result("latest_date.rds", region = .,
+      EpiNow2::get_raw_result("latest_date.rds", region = .,
                                   target_date, results_dir)))
   latest_date <- as.Date(latest_date)
   latest_date <- max(latest_date, na.rm = TRUE)
@@ -175,6 +139,7 @@ regional_summary <- function(results_dir = NULL,
                            "Likely decreasing", "Decreasing"))] 
     
   }
+  
   results$table <- force_factor(results$table)
   
   results$data <- force_factor(results$data)
@@ -182,15 +147,13 @@ regional_summary <- function(results_dir = NULL,
   saveRDS(results$table, file.path(summary_dir, "summary_table.rds"))
   saveRDS(results$data, file.path(summary_dir, "summary_data.rds"))
   
-  
   ## Summarise results to csv
   message("Saving Rt and case csvs")
   
-  
   EpiNow2::summarise_to_csv(results_dir = results_dir, 
-                           summary_dir = summary_dir, 
-                           type = csv_region_label,
-                           date = target_date) 
+                            summary_dir = summary_dir, 
+                            type = csv_region_label,
+                            date = target_date) 
   
   
   message("Plotting results summary")
@@ -207,8 +170,6 @@ regional_summary <- function(results_dir = NULL,
                       dpi = 330, height = 12, width = ifelse(length(regions) > 60, 24, 12))
     )
   )
-  
-  
   
   
   message("Plotting summary Rt and case plots")
