@@ -145,7 +145,6 @@ report_cases <- function(case_estimates,
 #' @export
 #' @importFrom data.table data.table
 #' @importFrom purrr map
-#' @usage See report_rt for an example of using this function.
 report_summary <- function(summarised_estimates,
                            rt_samples) { 
   

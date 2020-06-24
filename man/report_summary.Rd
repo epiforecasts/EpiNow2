@@ -4,7 +4,7 @@
 \alias{report_summary}
 \title{Provide Summary Statistics for Estimated Infections and Rt}
 \usage{
-See report_rt for an example of using this function.
+report_summary(summarised_estimates, rt_samples)
 }
 \arguments{
 \item{summarised_estimates}{A data.table of summarised estimates containing the following variables:
