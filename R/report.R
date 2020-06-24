@@ -144,45 +144,35 @@ report_cases <- function(case_estimates,
 #' @return A data.table containing formatted and numeric summary measures
 #' @export
 #' @importFrom data.table data.table
+#' @importFrom purrr map
 #' @usage See report_rt for an example of using this function.
 report_summary <- function(summarised_estimates,
                            rt_samples) { 
-  
-  
-  ## Extract latest cases
-  current_cases <- all_cases[type %in% "nowcast"][
-    date == max(date)][, .(date, range = purrr::pmap(
-      list(mean, bottom, top),
-      function(mean, bottom, top) {
-        list(point = mean,
-             lower = bottom, 
-             upper = top,
-             mid_lower = lower,
-             mid_upper = upper)
-      }))]
   
   ## Extract values of interest
   summarised_estimates <- summarised_estimates[, .(variable, point = median,
                                                    lower = bottom, upper = top)]
   ## Extract latest R estimate
-  R_latest <- summarised_estimates[variable == "R"]
-  
+  R_latest <- summarised_estimates[variable == "R"][, variable := NULL][,
+                                   purrr::map(.SD, ~ round(., 1))]
+   
   ## Estimate probability of control
-  prob_control <- rt_samples[, .(prob_control = sum(value <= 1))]$prob_control
+  prob_control <- rt_samples[, .(prob_control = sum(value <= 1) / .N)]$prob_control
   prob_control <- signif(prob_control, 2)
   
   ##Extract current cases
-  current_cases <- summarised_estimates[variable == "infections"]
+  current_cases <- summarised_estimates[variable == "infections"][, variable := NULL]
   
 
   ## Get individual estimates
-  r_latest <- summarised_estimates[variable == "r"]
+  r_latest <- summarised_estimates[variable == "growth_rate"][, variable := NULL][,
+                                  purrr::map(.SD, ~ round(., 2))]
   
   doubling_time <- function(r) {
-    log(2) * 1 / r
+    round(log(2) * 1 / r, 2)
   }
 
-  doubling_time_latest <- summarised_estimates[variable == "r"][,
+  doubling_time_latest <- summarised_estimates[variable == "growth_rate"][,
                                 .(point = doubling_time(point),
                                   lower = doubling_time(upper),
                                   upper = doubling_time(lower))]
@@ -195,13 +185,12 @@ report_summary <- function(summarised_estimates,
                 "Effective reproduction no.",
                 "Rate of growth",
                 "Doubling/halving time (days)"),
-    estimate = c(EpiNow2::make_conf(current_cases),
+    estimate = c(make_conf(current_cases),
                  as.character(EpiNow2::map_prob_change(prob_control)),
-                 EpiNow2::make_conf(R_latest, digits = 1),
-                 EpiNow2::make_conf(r_latest),
-                 doubling_time_latest
-    ),
-    numeric_estimate = c(current_cases,
+                 make_conf(R_latest, digits = 1),
+                 make_conf(r_latest, digits = 2),
+                 make_conf(doubling_time_latest, digits = 1)),
+    numeric_estimate = list(current_cases,
                          prob_control,
                          R_latest,
                          r_latest,

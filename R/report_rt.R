@@ -36,7 +36,7 @@
 #' 
 #' ## Uses example case vector from EpiSoon
 #' cases <- data.table::setDT(EpiSoon::example_obs_cases)
-#' cases <- cases[, confirm := as.integer(cases)][,cases := NULL][1:50]
+#' cases <- cases[, confirm := as.integer(cases)][,cases := NULL][1:40]
 #' 
 #' ## Report Rt along with forecasts
 #' out <- report_rt(reported_cases = cases,
@@ -184,8 +184,8 @@ if (!missing(target_folder)){
    
 # # Report estimates --------------------------------------------------------
 
-   summary <- report_summary(summarised_estimates = estimates$summarised[date == max(date)],
-                             rt_samples = estimates$samples[variable == "R" & date == max(date),
+   summary <- report_summary(summarised_estimates = estimates$summarised[!is.na(date)][date == max(date)],
+                             rt_samples = estimates$samples[variable == "R"][ date == max(date),
                                                             .(sample, value)])
 
    

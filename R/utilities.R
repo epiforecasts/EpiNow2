@@ -48,7 +48,6 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = NULL) {
 #' @return A character vector formatted for reporting
 #' @export
 #'
-#' @importFrom purrr map_chr
 #' @examples
 #' 
 #' value <- list(list(point = 1, lower = 0, upper = 3))
@@ -59,12 +58,9 @@ make_conf <- function(value, round_type = NULL, digits = 0) {
   if (is.null(round_type)) {
     round_type <- round
   }
-  purrr::map_chr(value, ~ paste0(round_type(.$point, digits),
-                                 " (", 
-                                 round_type(.$lower, digits),
-                                 " -- ", 
-                                 round_type(.$upper, digits),
-                                 ")"))
+  paste0(round_type(value$point, digits), " (", 
+         round_type(value$lower, digits), " -- ", 
+         round_type(value$upper, digits), ")")
 }
 
 
