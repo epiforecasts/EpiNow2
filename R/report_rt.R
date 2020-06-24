@@ -2,7 +2,7 @@
 #'
 #' @description Estimate Rt and cases by date of infection, forecast into the future, transform to date 
 #' of report and then save summary measures and plots.
-#' @return Nothing returned
+#' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams forecast_infections

@@ -25,9 +25,46 @@ estimate_infections(
 )
 }
 \arguments{
-\item{chains}{}
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date).}
 
-\item{adapt_delta}{}
+\item{family}{A character string indicating the reporting model to use. Defaults to negative
+binomial ("negbin") with poisson ("poisson") also supported.}
+
+\item{incubation_period}{A list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+incubation period (assuming a lognormal distribution with all parameters excepting the max allowed value
+on the log scale).}
+
+\item{reporting_delay}{A list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value
+on the log scale).}
+
+\item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+generation time (assuming a gamma distribution).}
+
+\item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
+Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
+
+\item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
+for the prior based on reported cases.}
+
+\item{model}{A compiled stan model. By default uses the internal package model.}
+
+\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
+
+\item{chains}{Numeric, defaults to 2. The number of MCMC chains to use.}
+
+\item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
+
+\item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
+
+\item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
+
+\item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
+
+\item{verbose}{Logical, defaults to FALSE. Should verbose progress messages be printed.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
