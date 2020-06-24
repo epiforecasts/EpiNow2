@@ -103,7 +103,8 @@ report_nowcast <- function(nowcast, cases,
 #'                                     estimate_rt =  FALSE, verbose = TRUE)
 #'                             
 #'                      
-#' reported_cases <- report_cases(case_estimates = out$samples[variable == "infections"][, cases := value][, value := NULL],
+#' reported_cases <- report_cases(case_estimates = out$samples[variable == "infections"][, 
+#'                                                             cases := value][, value := NULL],
 #'                                reporting_delay = reporting_delay,
 #'                                incubation_period =  incubation_period, 
 #'                                type = "sample")
@@ -153,8 +154,8 @@ report_cases <- function(case_estimates,
   if (!is.null(case_forecast)) {
     infections <- data.table::rbindlist(list(
       infections,
-      case_forecast[, .(sample, date, cases = as.integer(cases))]
-    ))
+      case_forecast[, .(date, sample, cases = as.integer(cases))]
+    ), use.names = TRUE)
   }
   
   ## For each sample map to report date

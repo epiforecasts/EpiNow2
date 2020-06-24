@@ -87,8 +87,8 @@ out <- report_rt(reported_cases = cases,
                      y = y[max(1, length(y) - 21):length(y)],
                      model_params = list(models = "aefz", weights = "equal"),
                      forecast_params = list(PI.combination = "mean"), ...)},
-                   samples = 2000, warmup = 500, cores = 2, chains = 2,
-                   verbose = TRUE, return_fit = TRUE
+                   samples = 1000, warmup = 500, cores = 2, chains = 2,
+                   verbose = TRUE, return_fit = TRUE,
                  )
 
 out
