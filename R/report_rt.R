@@ -50,7 +50,7 @@
 #'                      model_params = list(models = "aefz", weights = "equal"),
 #'                      forecast_params = list(PI.combination = "mean"), ...)},
 #'                    samples = 1000, warmup = 500, cores = 2, chains = 2,
-#'                    verbose = TRUE, return_fit = TRUE, target_folder = "../test"
+#'                    verbose = TRUE, return_fit = TRUE
 #'                  )
 #' 
 #' out
@@ -183,15 +183,16 @@ if (!missing(target_folder)){
 } 
    
 # # Report estimates --------------------------------------------------------
-# 
-#   EpiNow2::report_reff(target_folder)  
-# 
-#   EpiNow2::report_littler(target_folder)
-# 
-#  # Summarise  -------------------------------------------------------
-# 
-#   EpiNow2::report_summary(target_folder)
-# 
+
+   summary <- report_summary(summarised_estimates = estimates$summarised[date == max(date)],
+                             rt_samples = estimates$samples[variable == "R" & date == max(date),
+                                                            .(sample, value)])
+
+   
+   if(!missing(target_folder)) {
+     saveRDS(summary, paste0(target_folder, "/summary.rds"))
+   }
+   
 #  # Plot --------------------------------------------------------------------
 # 
 #    EpiNow2::plot_pipeline(target_folder = target_folder,
@@ -225,6 +226,7 @@ if (!missing(target_folder)){
      }
      
      out$estimated_reported_cases <- estimated_reported_cases
+     out$summary <- summary
      return(out)
    }else{
      return(invisible(NULL))
