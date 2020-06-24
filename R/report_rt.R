@@ -36,7 +36,7 @@
 #' 
 #' ## Uses example case vector from EpiSoon
 #' cases <- data.table::setDT(EpiSoon::example_obs_cases)
-#' cases <- cases[, confirm := as.integer(cases)][,cases := NULL]
+#' cases <- cases[, confirm := as.integer(cases)][,cases := NULL][1:50]
 #' 
 #' ## Report Rt along with forecasts
 #' out <- report_rt(reported_cases = cases,
@@ -49,8 +49,8 @@
 #'                      y = y[max(1, length(y) - 21):length(y)],
 #'                      model_params = list(models = "aefz", weights = "equal"),
 #'                      forecast_params = list(PI.combination = "mean"), ...)},
-#'                    samples = 2000, warmup = 500, cores = 2, chains = 2,
-#'                    verbose = TRUE, return_fit = TRUE
+#'                    samples = 1000, warmup = 500, cores = 2, chains = 2,
+#'                    verbose = TRUE, return_fit = TRUE,
 #'                  )
 #' 
 #' out
@@ -105,9 +105,9 @@ report_rt <- function(reported_cases, family = "negbin",
                                     reporting_delay = reporting_delay,
                                     rt_prior = rt_prior,
                                     model = model,
-                                    samples = ceiling(samples / chains),
                                     cores = cores, chains = chains,
-                                    samples = samples, warmup = warmup,
+                                    samples = ceiling(samples / chains),
+                                    warmup = warmup,
                                     estimate_rt = estimate_rt,
                                     verbose = verbose, return_fit = return_fit) 
  
@@ -139,16 +139,49 @@ if (!missing(forecast_model) & !missing(target_folder)) {
 }
 # Report forcasts ---------------------------------------------------------
 
-
-#   cases_by_report <- report_cases(estimates$samples[variable %in% "infections"][, variable := NULL],
-#                                   case_forecast = forecast$samples[type == "case"],
-#                                   delay_defs = delay_defs,
-#                                   incubation_defs = incubation_defs,
-#                                   type = "median")
-#   
-#   saveRDS(cases_by_report, paste0(target_folder, "/cases_by_report.rds"))
-#   
-# 
+if (missing(forecast_model)) {
+  estimated_reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][,
+                                                                              .(date, sample, cases = value)],
+                                           reporting_delay = reporting_delay,
+                                           incubation_period =  incubation_period,
+                                           type = "sample")
+}else{
+  report_cases_with_forecast <- function(model) {
+    reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][,
+                                                                      .(date, sample, cases = value)],
+                                   case_forecast = forecast$samples[type == "case" & 
+                                                                    forecast_type == model][,
+                                                                    .(date, sample, cases = value)],
+                                   reporting_delay = reporting_delay,
+                                   incubation_period =  incubation_period,
+                                   type = "sample")
+    return(reported_cases)
+  }
+  
+  reported_cases_rt <- report_cases_with_forecast(model = "rt")
+  reported_cases_cases <- report_cases_with_forecast(model = "case")
+  reported_cases_ensemble <- report_cases_with_forecast(model = "ensemble")
+  
+  estimated_reported_cases <- list()
+  
+  estimated_reported_cases$samples <- data.table::rbindlist(list(
+    reported_cases_rt$samples[,type := "rt"],
+    reported_cases_cases$samples[,type := "case"],
+    reported_cases_ensemble$samples[,type := "ensemble"]
+  ))
+  
+  estimated_reported_cases$summarised <- data.table::rbindlist(list(
+    reported_cases_rt$summarised[,type := "rt"],
+    reported_cases_cases$summarised[,type := "case"],
+    reported_cases_ensemble$summarised[,type := "ensemble"]
+  ))
+}
+  
+if (!missing(target_folder)){
+  saveRDS(estimated_reported_cases$samples, paste0(target_folder, "/estimated_reported_cases_samples.rds"))
+  saveRDS(estimated_reported_cases$summarised, paste0(target_folder, "/summarised_estimated_reported_cases.rds"))
+} 
+   
 # # Report estimates --------------------------------------------------------
 # 
 #   EpiNow2::report_reff(target_folder)  
@@ -191,6 +224,7 @@ if (!missing(forecast_model) & !missing(target_folder)) {
        out$forecast <- forecast
      }
      
+     out$estimated_reported_cases <- estimated_reported_cases
      return(out)
    }else{
      return(invisible(NULL))

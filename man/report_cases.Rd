@@ -69,7 +69,8 @@ out <- EpiNow2::estimate_infections(cases, family = "negbin",
                                     estimate_rt =  FALSE, verbose = TRUE)
                             
                      
-reported_cases <- report_cases(case_estimates = out$samples[variable == "infections"][, cases := value][, value := NULL],
+reported_cases <- report_cases(case_estimates = out$samples[variable == "infections"][, 
+                                                            cases := value][, value := NULL],
                                reporting_delay = reporting_delay,
                                incubation_period =  incubation_period, 
                                type = "sample")
