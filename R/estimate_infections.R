@@ -294,9 +294,9 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                          samples,
                                          reported_cases$date[-(1:mean_shift)])
     
-    out$reported_cases_from_r <- extract_parameter("imputed_branch_reports", 
-                                                   samples, 
-                                                   reported_cases$date[-(1:mean_shift)])
+    out$reported_cases_rt <- extract_parameter("imputed_branch_reports", 
+                                               samples, 
+                                               reported_cases$date[-(1:mean_shift)])
   }
   
     ## Add prior infections

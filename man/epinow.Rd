@@ -65,7 +65,7 @@ Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 \item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
 for forecasting future Rt and case co An example of the required structure is: \code{function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}}.}
 
-\item{horizon}{Numeric, defaults to 14. The horizon over which to forecast Rts and cases.}
+\item{horizon}{Numeric, defaults to 14. Number of days into the future to forecast.}
 
 \item{ensemble_type}{Character string indicating the type of ensemble to use. By default this is
 an unweighted ensemble ("mean") with no other types currently supported.}

@@ -70,22 +70,24 @@ epinow <- function(reported_cases, family = "negbin",
  
  # Convert input to DT -----------------------------------------------------
   suppressMessages(data.table::setDTthreads(threads = cores))
-
+ 
  # Set up folders ----------------------------------------------------------
 
   if (missing(target_date)) {
     target_date <- max(reported_cases$date)
   }
   
-  if (!missing(target_folder) & !is.null(target_folder)) {
+  if (!missing(target_folder)) {
     latest_folder <- file.path(target_folder, "latest")
     target_folder <- file.path(target_folder, target_date)
     
     if (!dir.exists(target_folder)) {
       dir.create(target_folder, recursive = TRUE)
     }
+  }else{
+    target_folder <- NULL
   }
- 
+  
 # Make sure the horizon is as specified from the target date --------------
 
  if (horizon != 0 & !missing(forecast_model)) {
@@ -95,7 +97,7 @@ epinow <- function(reported_cases, family = "negbin",
 
 # Save input data ---------------------------------------------------------
 
-if (!missing(target_folder) & !is.null(target_folder)) {
+if (!is.null(target_folder)) {
   latest_date <- reported_cases[confirm > 0][date == max(date)]$date
   
   saveRDS(latest_date, paste0(target_folder, "/latest_date.rds"))
@@ -119,7 +121,7 @@ if (!missing(target_folder) & !is.null(target_folder)) {
                                     verbose = verbose, return_fit = return_fit) 
  
 # Report estimates --------------------------------------------------------
-  if (!missing(target_folder) & !is.null(target_folder)) {
+  if (!is.null(target_folder)) {
     saveRDS(estimates$samples,  paste0(target_folder, "/estimate_samples.rds"))
     saveRDS(estimates$summarised,  paste0(target_folder, "/summarised_estimates.rds"))
     
@@ -140,7 +142,7 @@ if (!missing(forecast_model)) {
                                   samples = samples)
 }
 # Report cases ------------------------------------------------------------
-if (!missing(forecast_model) & !missing(target_folder) & !is.null(target_folder)) {
+if (!missing(forecast_model) & !is.null(target_folder)) {
   saveRDS(forecast$samples,  paste0(target_folder, "/forecast_samples.rds"))
   saveRDS(forecast$summarised,  paste0(target_folder, "/summarised_forecast.rds"))
 }
@@ -174,29 +176,37 @@ if (missing(forecast_model)) {
   estimated_reported_cases$samples <- data.table::rbindlist(list(
     reported_cases_rt$samples[,type := "rt"],
     reported_cases_cases$samples[,type := "case"],
-    reported_cases_ensemble$samples[,type := "ensemble"]
-  ))
+    reported_cases_ensemble$samples[,type := "ensemble"],
+    estimates$samples[variable == "reported_cases"][,
+                      .(date, sample, cases = value, type = "gp_case")],
+    estimates$samples[variable == "reported_cases_rt"][,
+                      .(date, sample, cases = value, type = "gp_rt")]
+  ), use.names = TRUE)
   
   estimated_reported_cases$summarised <- data.table::rbindlist(list(
     reported_cases_rt$summarised[,type := "rt"],
     reported_cases_cases$summarised[,type := "case"],
-    reported_cases_ensemble$summarised[,type := "ensemble"]
-  ))
+    reported_cases_ensemble$summarised[,type := "ensemble"],
+    estimates$summarised[variable == "reported_cases"][, type := "gp_case"][,
+                         variable := NULL][, strat := NULL],
+    estimates$summarised[variable == "reported_cases_rt"][, type := "gp_rt"][,
+                        variable := NULL][, strat := NULL]
+  ), use.names = TRUE)
 }
   
-if (!missing(target_folder) & !is.null(target_folder)){
+if (!is.null(target_folder)){
   saveRDS(estimated_reported_cases$samples, paste0(target_folder, "/estimated_reported_cases_samples.rds"))
   saveRDS(estimated_reported_cases$summarised, paste0(target_folder, "/summarised_estimated_reported_cases.rds"))
 } 
    
 # # Report estimates --------------------------------------------------------
 
-   summary <- report_summary(summarised_estimates = estimates$summarised[!is.na(date)][date == max(date)],
-                             rt_samples = estimates$samples[variable == "R"][ date == max(date),
-                                                            .(sample, value)])
+   summary <- report_summary(
+     summarised_estimates = estimates$summarised[!is.na(date)][type == "nowcast"][date == max(date)],
+     rt_samples = estimates$samples[variable == "R"][type == "nowcast"][date == max(date), .(sample, value)])
 
    
-   if(!missing(target_folder) & !is.null(target_folder)) {
+   if(!is.null(target_folder)) {
      saveRDS(summary, paste0(target_folder, "/summary.rds"))
    }
    
@@ -207,7 +217,7 @@ if (!missing(target_folder) & !is.null(target_folder)){
 #                          report_forecast = report_forecast)
 
  # Copy all results to latest folder ---------------------------------------
-  if (!missing(target_folder) & !is.null(target_folder)) {  
+  if (!is.null(target_folder)) {  
     ## Save all results to a latest folder as well
     suppressWarnings(
       if (dir.exists(latest_folder)) {
