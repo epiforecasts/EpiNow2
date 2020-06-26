@@ -64,8 +64,9 @@ functions {
 data {
   int t;                             // number of time steps
   int rt;                            // time over which to estimate rt
+  int horizon;                       // forecast horizon
   int day_of_week[t];                // day of the week indicator (1 - 7)
-  int <lower = 0> cases[t];          // observed cases
+  int <lower = 0> cases[t - horizon];// observed cases
   vector<lower = 0>[t] shifted_cases;// median shifted smoothed cases
   real inc_mean_sd;                  // prior sd of mean incubation period
   real inc_mean_mean;                // prior mean of mean incubation period
@@ -94,6 +95,12 @@ transformed data{
   vector[t] delta;                   // modifier to make GP + definite
   real time[t];                      // time vector
   int no_rt_time;                    // time without estimating Rt
+  int t_h;                           // time minus the forecasting horizon
+  int rt_h;                          // rt estimation time minus the forecasting horizon
+  
+  //Update time varables
+  t_h = t - horizon;
+  rt_h = rt - horizon;
   
   // calculate alpha and beta for gamma distribution
   r_alpha = (r_mean / r_sd)^2;
@@ -261,9 +268,9 @@ model {
   
   // daily cases given reports
   if (model_type) {
-    target += neg_binomial_2_lpmf(cases | reports, rep_phi[model_type]);
+    target += neg_binomial_2_lpmf(cases | reports[1:t_h], rep_phi[model_type]);
   }else{
-    target += poisson_lpmf(cases | reports);
+    target += poisson_lpmf(cases | reports[1:t_h]);
   }
 
   // penalised priors for incubation period, and report delay
@@ -295,15 +302,17 @@ model {
     
     // Likelihood of Rt given infections
     if (model_type) {
-      target += neg_binomial_2_lpmf(cases[(no_rt_time + 1):t] | branch_reports, inf_phi[model_type*estimate_r]);
+      target += neg_binomial_2_lpmf(cases[(no_rt_time + 1):t_h] | branch_reports[1:rt_h], inf_phi[model_type*estimate_r]);
     }else{
-      target += poisson_lpmf(cases[(no_rt_time + 1):t] | branch_reports);
+      target += poisson_lpmf(cases[(no_rt_time + 1):t_h] | branch_reports[1:rt_h]);
     }
   }
 }
   
 generated quantities {
   int imputed_infections[t];
+  int imputed_reports[t]; 
+  int imputed_branch_reports[estimate_r > 0 ? rt : 0];
   real r[estimate_r > 0 ? rt : 0];
   
   // simulated infections - assume poisson (with negative binomial reporting)
@@ -316,4 +325,19 @@ generated quantities {
         r[s] = (pow(R[s], k) - 1) / (k * gt_mean[estimate_r]);
       } 
   }
+  
+  //simulate reported cases
+  if (model_type) {
+    imputed_reports = neg_binomial_2_rng(reports, rep_phi[model_type]);
+   }else{
+    imputed_reports = poisson_rng(reports);
+  }
+  //simulate reported cases from the Rt model
+  if (estimate_r) {
+    if (model_type) {
+    imputed_branch_reports = neg_binomial_2_rng(branch_reports, inf_phi[model_type*estimate_r]);
+   }else{
+    imputed_branch_reports = poisson_rng(branch_reports);
+  }
+ }
 }
