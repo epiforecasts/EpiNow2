@@ -152,9 +152,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   # Add week day info -------------------------------------------------------
   
-  reported_cases <- reported_cases[, day_of_week := lubridate::wday(date, week_start = 1)][,
-                                     `:=`(wkd = ifelse(day_of_week >= 6, 1, 0),
-                                          mon = ifelse(day_of_week == 1, 1, 0))]
+  reported_cases <- reported_cases[, day_of_week := lubridate::wday(date, week_start = 1)]
+  
   # Define stan model parameters --------------------------------------------
   
   data <- list(
@@ -282,6 +281,10 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                       samples,
                                       reported_cases$date)
   
+  out$reported_cases <- extract_parameter("imputed_reports", 
+                                          samples, 
+                                          reported_cases$date)
+  
   if (estimate_rt) {
     out$R <- extract_parameter("R", 
                                samples,
@@ -290,6 +293,10 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$growth_rate <- extract_parameter("r", 
                                          samples,
                                          reported_cases$date[-(1:mean_shift)])
+    
+    out$reported_cases_from_r <- extract_parameter("imputed_branch_reports", 
+                                                   samples, 
+                                                   reported_cases$date[-(1:mean_shift)])
   }
   
     ## Add prior infections
@@ -342,6 +349,11 @@ estimate_infections <- function(reported_cases, family = "negbin",
  ## Bind all samples together
  format_out$samples <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
  
+ ## Add type based on horizon
+ format_out$samples <- format_out$samples[,
+          type := data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon), 
+                                      "forecast", "nowcast")]
+ 
  ## Summarise samples
  format_out$summarised <- data.table::copy(format_out$samples)[, .(
    bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
@@ -350,7 +362,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
    upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
    median = as.numeric(median(value, na.rm = TRUE)),
    mean = as.numeric(mean(value, na.rm = TRUE)),
-   sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable, strat)]
+   sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable, strat, type)]
  
  ## Order summarised samples
  data.table::setorder(format_out$summarised, variable, date)  
