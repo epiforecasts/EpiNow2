@@ -91,7 +91,7 @@ data {
 transformed data{
   real r_alpha;                      // alpha parameter of the R gamma prior
   real r_beta;                       // beta parameter of the R gamma prior
-  real delta;                        // modifier to make GP + definite
+  vector[t] delta;                   // modifier to make GP + definite
   real time[t];                      // time vector
   int no_rt_time;                    // time without estimating Rt
   
@@ -100,8 +100,8 @@ transformed data{
   r_beta = r_mean / (r_sd^2);
   
   // assign + definite term
-   delta = 1e-9;
-  
+   delta = rep_vector(1e-9, t); 
+
   // make time vector
    for (s in 1:t) {
      time[s] = s;
@@ -170,16 +170,14 @@ transformed parameters {
   // GP in noise
   K = cov_exp_quad(time, alpha, rho);
   // diagonal elements with offset to make + definite
-  for (n in 1:t) {
-      K[n, n] = K[n, n] + delta;
-  }
-  
+  K = K + diag_matrix(delta);
+
   L_K = cholesky_decompose(K);
   noise = exp(L_K * eta);
   
   for (s in 1:t) {
     if(noise[s] == 0) {
-      noise[s] = 0.0001;
+      noise[s] = 0.001;
     }
   }
 
@@ -215,9 +213,7 @@ transformed parameters {
      // Construct R over time
       rK = cov_exp_quad(time[1:rt], R_alpha[estimate_r], R_rho[estimate_r]);
      // diagonal elements with offset to make + definite
-      for (n in 1:rt) {
-        rK[n, n] = rK[n, n] + delta;
-        }
+      rK = rK + diag_matrix(delta[1:rt]);
       rL_K = cholesky_decompose(rK);
       R_noise = exp(rL_K * R_eta);
   
@@ -230,7 +226,7 @@ transformed parameters {
          
          // Make sure all dates have a non-zero value
          if (branch_infections[s] == 0){
-            branch_infections[s] = 0.0001; 
+            branch_infections[s] = 0.001; 
          }
        }
      // onsets from infections
