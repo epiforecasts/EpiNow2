@@ -20,6 +20,7 @@
 #' Rt. By default this is assumed to be mean 1 with a standard deviation of 1.
 #' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
 #' for the prior based on reported cases.
+#' @param horizon Numeric, defaults to 14. Number of days into the future to forecast.
 #' @param model A compiled stan model. By default uses the internal package model.
 #' @param cores Numeric, defaults to 2. The number of cores to use when fitting the stan model.
 #' @param chains Numeric, defaults to 2. The number of MCMC chains to use.
@@ -78,6 +79,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 incubation_period, reporting_delay,
                                 generation_time, rt_prior,
                                 prior_smoothing_window = 7,
+                                horizon = 14,
                                 model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 1000,
                                 estimate_rt = TRUE, adapt_delta = 0.99,
@@ -95,18 +97,15 @@ estimate_infections <- function(reported_cases, family = "negbin",
   }
   
   # Make sure there are no missing dates and order cases --------------------
-  reported_cases_grid <- data.table::copy(reported_cases)[, .(date = seq(min(date), max(date), by = "days"))]
+  reported_cases_grid <- data.table::copy(reported_cases)[, .(date = seq(min(date), max(date) + horizon, by = "days"))]
   
-  nowcast <- data.table::merge.data.table(
+  reported_cases <- data.table::merge.data.table(
     reported_cases , reported_cases_grid, 
     by = c("date"), all.y = TRUE)
   
   reported_cases <- reported_cases[is.na(confirm), confirm := 0 ][,.(date = date, confirm)]
   reported_cases <- data.table::setorder(reported_cases, date)
   
-  ## Filter out 0 reported cases from the end of the data
-  reported_cases <- reported_cases[order(-date)][, 
-                                 cum_cases := cumsum(confirm)][cum_cases > 0][, cum_cases := NULL]
   ## Filter out 0 reported cases from the beginning of the data
   reported_cases <- reported_cases[order(date)][,
                                  cum_cases := cumsum(confirm)][cum_cases > 0][, cum_cases := NULL]
@@ -135,15 +134,15 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                                      confirm := data.table::fifelse(confirm == 0, 1e-3, confirm)]
   
   ## Forecast trend on reported cases using the last week of data
-  final_week <- data.table::data.table(confirm = shifted_reported_cases[!is.na(confirm)][max(1, .N - 6):.N]$confirm)[,
+  final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
                                             t := 1:.N]
   lm_model <- lm(log(confirm) ~ t, data = final_week)
   
   
   ## Estimate unreported future infections using a log linear model
   shifted_reported_cases <- shifted_reported_cases[, t := 1:.N][, 
-                                                     t := t - (.N - 6 - sum(is.na(confirm)))][,
-                                                     confirm := data.table::fifelse(is.na(confirm), 
+                                                     t := t - (.N - horizon - mean_shift - 6)][,
+                                                     confirm := data.table::fifelse(t >= 7, 
                                                                                     exp(lm_model$coefficients[1] +
                                                                                           lm_model$coefficients[2] * t),
                                                                                     confirm)][, t := NULL]
@@ -160,10 +159,11 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   data <- list(
     day_of_week = reported_cases$day_of_week,
-    cases = reported_cases$confirm,
+    cases = reported_cases[1:(.N - horizon)]$confirm,
     shifted_cases = shifted_reported_cases$confirm,
     t = length(reported_cases$date),
     rt = length(reported_cases$date) - mean_shift,
+    horizon = horizon,
     inc_mean_mean = incubation_period$mean,
     inc_mean_sd = incubation_period$mean_sd,
     inc_sd_mean = incubation_period$sd,
@@ -232,7 +232,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   }
   
   if (verbose) {
-    message(paste0("Running for ", samples + warmup," samples and ", data$t," time steps"))
+    message(paste0("Running for ", samples + warmup," samples and ", data$t," time steps of which ", horizon, " are a forecast"))
   }
   
   fit <-
