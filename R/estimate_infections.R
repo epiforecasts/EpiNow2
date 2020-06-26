@@ -132,7 +132,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                                  fill = NA)][,
                     confirm := data.table::frollmean(confirm, n = prior_smoothing_window, 
                                                      align = "right", fill = 0)][,
-                                                     confirm := data.table::fifelse(confirm == 0, 1e-4, confirm)]
+                                                     confirm := data.table::fifelse(confirm == 0, 1e-3, confirm)]
   
   ## Forecast trend on reported cases using the last week of data
   final_week <- data.table::data.table(confirm = shifted_reported_cases[!is.na(confirm)][max(1, .N - 6):.N]$confirm)[,

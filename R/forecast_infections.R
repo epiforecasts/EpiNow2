@@ -12,7 +12,7 @@
 #' summarised forecasts.
 #' @export
 #' @importFrom data.table setDT := setorder setDTthreads
-#' @importFrom purrr safely map2_dbl map_dbl
+#' @importFrom purrr safely map_dbl
 #' @importFrom EpiSoon forecast_rt
 #' @importFrom HDInterval hdi
 #' @importFrom truncnorm rtruncnorm
@@ -105,24 +105,14 @@ if (missing(forecast_model)) {
                       horizon = horizon,
                       samples = samples)[[1]]
       )
-    
-    ## Forecast the variance using the same model structure
-    sd_forecasts <-
-      data.table::setDT(
-        safe_forecast(rts = df[, .(date, rt = sd)],
-                      model = forecast_model,
-                      horizon = horizon,
-                      samples = samples)[[1]]
-      )[, sd_rt := rt][, rt := NULL]
-    
-    ## Join mean and sd forecasts
-    rt_forecasts <- rt_forecasts[sd_forecasts, on = c("date", "sample", "horizon")]
+
+    rt_sd <- df[date == max(date, na.rm = TRUE)]$sd
+    rt_sd <- ifelse(rt_sd <= 0, 1e-3, rt_sd)
     
     ## Sample from assumed lognormal distribution
-    rt_forecasts <- rt_forecasts[sd_rt <= 0, sd_rt := 1e-3][,
-                                 rt := purrr::map2_dbl(rt, sd_rt, ~ truncnorm::rtruncnorm(1, a = 0,
-                                                                                          mean = .x, 
-                                                                                          sd = .y))][,
+    rt_forecasts <- rt_forecasts[, rt := purrr::map_dbl(rt, ~ truncnorm::rtruncnorm(1, a = 0,
+                                                                                   mean = ., 
+                                                                                   sd = rt_sd))][,
                                  .(sample, date, horizon, rt)]
     
     return(rt_forecasts)
