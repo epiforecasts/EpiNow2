@@ -13,17 +13,11 @@ parameters {
 }
 
 model {
-  mu ~ normal(prior_mean, 1);
-  sigma ~ normal(prior_sd, 1) T[0,];
+  mu ~ normal(prior_mean, 10);
+  sigma ~ normal(prior_sd, 10) T[0,];
 
   for(i in 1:N){
    target += log(lognormal_cdf(up[i] , mu, sigma) - lognormal_cdf(low[i] , mu, sigma));
   }
 }
 
-generated quantities {
-  vector[N] log_lik;
-  for (n in 1:N) {
-    log_lik[n] = log(lognormal_cdf(up[n] , mu, sigma) - lognormal_cdf(low[n] , mu, sigma));
-  }
-}

@@ -34,7 +34,6 @@ Imports:
     rstan (>= 2.18.1),
     rstantools (>= 2.0.0),
     methods,
-    loo,
     HDInterval,
     future.apply,
     stringr,

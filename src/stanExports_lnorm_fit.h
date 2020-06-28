@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_lnorm_fit");
-    reader.add_event(31, 29, "end", "model_lnorm_fit");
+    reader.add_event(24, 22, "end", "model_lnorm_fit");
     return reader;
 }
 #include <stan_meta_header.hpp>
@@ -238,7 +238,6 @@ public:
         names__.resize(0);
         names__.push_back("mu");
         names__.push_back("sigma");
-        names__.push_back("log_lik");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
@@ -246,9 +245,6 @@ public:
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dims__.push_back(N);
         dimss__.push_back(dims__);
     }
     template <typename RNG>
@@ -278,27 +274,6 @@ public:
         try {
             if (!include_gqs__ && !include_tparams__) return;
             if (!include_gqs__) return;
-            // declare and define generated quantities
-            current_statement_begin__ = 25;
-            validate_non_negative_index("log_lik", "N", N);
-            Eigen::Matrix<double, Eigen::Dynamic, 1> log_lik(N);
-            stan::math::initialize(log_lik, DUMMY_VAR__);
-            stan::math::fill(log_lik, DUMMY_VAR__);
-            // generated quantities statements
-            current_statement_begin__ = 26;
-            for (int n = 1; n <= N; ++n) {
-                current_statement_begin__ = 27;
-                stan::model::assign(log_lik, 
-                            stan::model::cons_list(stan::model::index_uni(n), stan::model::nil_index_list()), 
-                            stan::math::log((lognormal_cdf(get_base1(up, n, "up", 1), mu, sigma) - lognormal_cdf(get_base1(low, n, "low", 1), mu, sigma))), 
-                            "assigning variable log_lik");
-            }
-            // validate, write generated quantities
-            current_statement_begin__ = 25;
-            size_t log_lik_j_1_max__ = N;
-            for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
-                vars__.push_back(log_lik(j_1__));
-            }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return
@@ -339,12 +314,6 @@ public:
         if (include_tparams__) {
         }
         if (!include_gqs__) return;
-        size_t log_lik_j_1_max__ = N;
-        for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "log_lik" << '.' << j_1__ + 1;
-            param_names__.push_back(param_name_stream__.str());
-        }
     }
     void unconstrained_param_names(std::vector<std::string>& param_names__,
                                    bool include_tparams__ = true,
@@ -360,12 +329,6 @@ public:
         if (include_tparams__) {
         }
         if (!include_gqs__) return;
-        size_t log_lik_j_1_max__ = N;
-        for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "log_lik" << '.' << j_1__ + 1;
-            param_names__.push_back(param_name_stream__.str());
-        }
     }
 }; // model
 }  // namespace
