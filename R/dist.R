@@ -184,11 +184,14 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
     
   }else if (dist %in% "gamma") {
     model <- stanmodels$gamma_fit
+    data <- c(data,
+              prior_mean = mean(values),
+              prior_sd = sd(values))
   }else if (dist %in% "lognormal") {
     model <- stanmodels$lnorm_fit
     data <- c(data, 
-              prior_mean = mean(log(values)),
-              prior_sd = sd(log(values)))
+              prior_mean = log(mean(values)),
+              prior_sd = log(sd(values)))
   }
   
   ## Set adapt delta based on the sample size
@@ -330,7 +333,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 
 
   
-#' Get a Parameters that Define a Discrete Distribution
+#' Fit a Subsampled Boostrap to Integer Values and Summarise Distribution Parameters
 #'
 #' @param values Numeric vector of integer values.
 #' @param verbose Logical, defaults to `FALSE`. Should progress messages be printed
@@ -339,48 +342,39 @@ lognorm_dist_def <- function(mean, mean_sd,
 #'  of the delay distribution to take.
 #' @param bootstrap_samples Numeric, defaults to 100. The number of samples to take in each boostrap.
 #' When the sample size of the supplied delay distribution is less than 100 this is used instead.
-#' @return A data.table of distributions and the parameters that define them.
-#' @importFrom purrr map map2 flatten
+#' @return A list summarising the bootstrapped distribution
+#' @importFrom purrr transpose
 #' @importFrom future.apply future_lapply
 #' @importFrom rstan extract
 #' @importFrom data.table data.table rbindlist setDTthreads
-#' @importFrom loo loo relative_eff extract_log_lik
-#' @author Sebastian Funk <sebastian.funk@lshtm.ac.uk>
 #'
 #' @export
 #'
 #' @examples
-#'
-#' ## Example with exponential and a small smaple
-#' delays <- rexp(20, 1)
-#'
-#' get_dist_def(delays, samples = 10, verbose = TRUE)
-#'
+
 #'
 #' \dontrun{
-#' ## Example with gamma and a larger sample
-#' delays <- rgamma(50, 4, 1)
+#' # lognormal
+#' delays <- rlnorm(500, log(5), 1)
 #'
-#' out <- get_dist_def(delays, samples = 2, bootstraps = 2)
+#' out <- bootstrapped_dist_fit(delays, samples = 1000, bootstraps = 10, 
+#'                              dist = "lognormal")
 #'
 #' ## Inspect
 #' out
 #' 
-#' ## Inspect one parameter
-#' out$params[[1]]
-#' 
-#' 
-#' ## Load into skeleton and sample with truncation
-#' EpiNow2::dist_skel(10, model = out$model[[1]],
-#'                   params = out$params[[1]],
-#'                   max_value = out$max_value[[1]])
 #'}
-get_dist_def <- function(values, verbose = FALSE, samples = 1,
-                         bootstraps = 1, bootstrap_samples = 250) {
+bootstrapped_dist_fit <- function(values, verbose = FALSE, samples = 2000,
+                                  bootstraps = 10, bootstrap_samples = 250,
+                                  dist = "lognormal") {
+  
+  if (!dist %in% c("gamma", "lognormal")) {
+    stop("Only lognormal and gamma distributions are supported")
+  }
   
   if (samples < bootstraps) {
     samples <- bootstraps
-  }
+  } 
   ## Make values integer if not
   values <- as.integer(values)
   ## Remove NA values
@@ -388,97 +382,48 @@ get_dist_def <- function(values, verbose = FALSE, samples = 1,
   ## Filter out negative values
   values <- values[values >= 0]
   
-  get_single_dist <- function(values = NULL, samples = 1) {
+  get_single_dist <- function(values, samples = 1) {
     
     data.table::setDTthreads(1)
     
-    ## Structure
-    out <- data.table::data.table(
-      max_value = max(values) + 1
-    )
-    
-    # Fit gamma and exponential models
-    fit_exp <- EpiNow2::dist_fit(values, samples = samples, dist = "exp")
-    
-    # If there is enough data, try fitting a gamma  
-    if(length(values) >= 30) {
-      
-      fit_gam <- EpiNow2::dist_fit(values, samples = samples, dist = "gamma")
-      
-      # Extract log likelihoods
-      log_lik_exp <- loo::extract_log_lik(fit_exp, merge_chains = FALSE)
-      log_lik_gam <- loo::extract_log_lik(fit_gam, merge_chains = FALSE)
-      # Calculate relative efficiencies
-      rel_exp <- loo::relative_eff(exp(log_lik_exp))
-      rel_gam <- loo::relative_eff(exp(log_lik_gam))
-      # Estimate looic
-      loo_exp <- loo::loo(log_lik_exp, r_eff = rel_exp)
-      loo_gam <- loo::loo(log_lik_gam, r_eff = rel_gam)
-      # Choose best model
-      best_model <- ifelse(loo_exp$estimates[3,1] < loo_gam$estimates[3,1], "exp", "gamma")
-      
-    }else{
-      best_model <- "exp"
-    }
-    
-    ## Add model definition to output
-    out <- out[, model := best_model]
-    
-    if(best_model == "exp"){
-      if (verbose) {
-        message("Exponential selected as the best fit for the distribution")
-      }
-      rate <- sample(rstan::extract(fit_exp)$lambda, samples)
-      
-      ## Add parameters to output
-      out <- out[, params := list(purrr::map(rate, ~ list(rate = .)))]
-      
-    }else if(best_model == "gamma"){
-      if (verbose) {
-        message("Gamma selected as the best fit for the distribution")
-      }
-      
-      alpha <- sample(rstan::extract(fit_gam)$alpha, samples)
-      beta <- sample(rstan::extract(fit_gam)$beta, samples)
-      
-      out <- out[, params := list(purrr::map2(alpha, beta,
-                                              ~ list(alpha = .x, beta = .y)))]
-    } 
-    
-    ## Unnest parameter lists
-    if (samples != 1) {
-      out <- out[, .(params = purrr::flatten(params)),
-                 by = c("model", "max_value")]
-    }
-    
+    fit <- EpiNow2::dist_fit(values, samples = samples, dist = dist)
+
+
+    out <- list()
+    out$mean_samples <- sample(rstan::extract(fit)$mu, samples)
+    out$sd_samples <- sample(rstan::extract(fit)$sigma, samples)
+  
     return(out)
   }
   
   
   if (bootstraps == 1) {
-    dist_defs <- get_single_dist(values, samples = samples)
+    dist_samples <- get_single_dist(values, samples = samples)
   }else{
     ## Fit each sub sample
-    dist_defs <- future.apply::future_lapply(1:bootstraps,
+    dist_samples <- future.apply::future_lapply(1:bootstraps,
                                              function(boot){get_single_dist(sample(values, 
                                                                                    min(length(values), bootstrap_samples),
                                                                                    replace = TRUE),
                                                                             samples = ceiling(samples / bootstraps))},
-                                             future.scheduling = 10,
+                                             future.scheduling = Inf,
                                              future.globals = c("values", "bootstraps", "samples",
                                                                 "bootstrap_samples", "get_single_dist"),
                                              future.packages = "data.table")
     
-    ## Bind distributions together               
-    dist_defs <- data.table::rbindlist(dist_defs)
-    
-    ## Resample without replacement to force the correct number of samples.
-    indexes <- sample(1:nrow(dist_defs), samples, replace = FALSE)
-    
-    dist_defs <- dist_defs[indexes]
+
+    dist_samples <- purrr::transpose(dist_samples)
+    dist_samples <- purrr::map(dist_samples, unlist)
   }
   
-  return(dist_defs)
+  out <- list()
+  out$mean <- mean(dist_samples$mean_samples)
+  out$mean_sd <- sd(dist_samples$mean_samples)
+  out$sd <- mean(dist_samples$sd_sample)
+  out$sd_sd <- sd(dist_samples$sd_samples)
+  out$max <- max(values)
+  
+  return(out)
 }
 
 

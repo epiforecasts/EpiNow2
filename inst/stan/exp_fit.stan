@@ -15,9 +15,4 @@ model {
   }
 
 }
-generated quantities {
-  vector[N] log_lik;
-  for (n in 1:N) {
-    log_lik[n] = log(exponential_cdf(up[n] , lambda) - exponential_cdf(low[n] , lambda));
-  }
-}
+
