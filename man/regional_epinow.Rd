@@ -17,9 +17,15 @@ regional_epinow(
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
+\item{target_folder}{Character string specifying where to save results (will create if not present).}
+
+\item{target_date}{Date, defaults to maximum found in the data if not specified.}
+
 \item{case_limit}{Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 20.}
 
 \item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
+
+\item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
 
 \item{...}{Pass additional arguments to \code{epinow}}
 }

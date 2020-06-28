@@ -50,7 +50,7 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = NULL) {
 #'
 #' @examples
 #' 
-#' value <- list(list(point = 1, lower = 0, upper = 3))
+#' value <- list(point = 1, lower = 0, upper = 3)
 #' 
 #' make_conf(value, round_type = round, digits = 0)
 make_conf <- function(value, round_type = NULL, digits = 0) {

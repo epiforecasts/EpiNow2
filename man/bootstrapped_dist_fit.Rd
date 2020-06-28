@@ -16,6 +16,9 @@ bootstrapped_dist_fit(
 \arguments{
 \item{values}{Numeric vector of integer values.}
 
+\item{dist}{Character string, which distribution to fit. Defaults to lognormal (\code{"lognormal"}) but
+gamma (\code{"gamma"}) is also supported.}
+
 \item{samples}{Numeric, number of samples to take overall from the bootstrapped posteriors.}
 
 \item{bootstraps}{Numeric, defaults to 1. The number of bootstrap samples (with replacement)

@@ -56,7 +56,9 @@ Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 
 \item{chains}{Numeric, defaults to 2. The number of MCMC chains to use.}
 
-\item{samples}{Numeric, the number of forecast samples to take.}
+\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
+
+\item{warmup}{Numeric, defaults to 500. Number of iteration of warmup to use.}
 
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
@@ -69,6 +71,12 @@ for forecasting future Rt and case co An example of the required structure is: \
 
 \item{ensemble_type}{Character string indicating the type of ensemble to use. By default this is
 an unweighted ensemble ("mean") with no other types currently supported.}
+
+\item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
+
+\item{target_folder}{Character string specifying where to save results (will create if not present).}
+
+\item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
 \item{verbose}{Logical, defaults to FALSE. Should verbose progress messages be printed.}
 }

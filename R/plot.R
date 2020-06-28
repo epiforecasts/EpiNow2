@@ -324,7 +324,7 @@ plot_grid <- function(regions = NULL, plot_object = "bigr_eff_plot.rds",
   
   ## Define fn for plot loading
   load_plot <- function(region) {
-    plot <- EpiNow2::load_nowcast_result(plot_object, region, 
+    plot <- EpiNow2::get_raw_result(plot_object, region, 
                                         date = target_date, results_dir) +
       ggplot2::labs(title = stringr::str_to_title(
         stringr::str_replace(region, "-", " ")

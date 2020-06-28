@@ -336,6 +336,8 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' Fit a Subsampled Boostrap to Integer Values and Summarise Distribution Parameters
 #'
 #' @param values Numeric vector of integer values.
+#' @param dist Character string, which distribution to fit. Defaults to lognormal (`"lognormal"`) but
+#' gamma (`"gamma"`) is also supported.
 #' @param verbose Logical, defaults to `FALSE`. Should progress messages be printed
 #' @param samples Numeric, number of samples to take overall from the bootstrapped posteriors.
 #' @param bootstraps Numeric, defaults to 1. The number of bootstrap samples (with replacement)
