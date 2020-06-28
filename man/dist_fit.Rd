@@ -2,26 +2,51 @@
 % Please edit documentation in R/dist.R
 \name{dist_fit}
 \alias{dist_fit}
-\title{Fit an integer adjusted exponential or gamma distribution}
+\title{Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions}
 \usage{
-dist_fit(values = NULL, samples = NULL, dist = "exp")
+dist_fit(
+  values = NULL,
+  samples = NULL,
+  cores = 1,
+  chains = 2,
+  dist = "exp",
+  verbose = FALSE
+)
 }
 \arguments{
 \item{values}{Numeric vector of values}
 
 \item{samples}{Numeric, number of samples to take}
 
+\item{cores}{Numeric, defaults to 1. Number of CPU cores to use (no effect if greater than the number of chains).}
+
+\item{chains}{Numeric, defaults to 2. Number of MCMC chains to use. More is better with the minimum being two.}
+
 \item{dist}{Character string, which distribution to fit. Defaults to exponential (\code{"exp"}) but
-gamma is also supported (\code{"gamma"}).}
+gamma (\code{"gamma"}) and lognormal (\code{"lognorma"}) are also supported.}
+
+\item{verbose}{Logical, defaults to FALSE. Should verbose progress messages be printed.}
 }
 \value{
 A \code{stan} fit of an interval censored distribution
 }
 \description{
-Fit an integer adjusted exponential or gamma distribution
+Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
 }
 \examples{
+\dontrun{
+## Integer adjusted exponential model
+dist_fit(rexp(1:100, 2), samples = 1000, dist = "exp", 
+         cores = 2, verbose = TRUE)
 
-dist_fit(rexp(1:100, 2), samples = 1000, dist = "exp")
 
+## Integer adjusted gamma model
+dist_fit(rgamma(1:100, 5, 5), samples = 1000, dist = "gamma", 
+         cores = 2, verbose = TRUE)
+
+## Integer adjusted lognormal model
+dist_fit(rlnorm(1:100, log(5), 0.2), samples = 1000, dist = "lognormal",
+         cores = 2, verbose = TRUE)
+
+}
 }
