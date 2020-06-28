@@ -28,11 +28,9 @@
 #'                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
 #'                           max = 30)
 #'                    
-#' reporting_delay <- list(mean = log(10),
-#'                         mean_sd = 0.8,
-#'                         sd = log(2),
-#'                         sd_sd = 0.1,
-#'                         max = 30)
+#' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1))
+#' ## Set max allowed delay to 60 days to truncate computation
+#' reporting_delay$max <- 60
 #' 
 #' ## Uses example case vector from EpiSoon
 #' cases <- data.table::setDT(EpiSoon::example_obs_cases)

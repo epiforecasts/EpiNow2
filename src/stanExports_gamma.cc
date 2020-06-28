@@ -2,12 +2,12 @@
 
 #include <Rcpp.h>
 using namespace Rcpp ;
-#include "stanExports_exp_fit.h"
+#include "stanExports_gamma.h"
 
-RCPP_MODULE(stan_fit4exp_fit_mod) {
+RCPP_MODULE(stan_fit4gamma_mod) {
 
 
-    class_<rstan::stan_fit<stan_model, boost::random::ecuyer1988> >("model_exp_fit")
+    class_<rstan::stan_fit<stan_model, boost::random::ecuyer1988> >("model_gamma")
 
     .constructor<SEXP,SEXP,SEXP>()
 
