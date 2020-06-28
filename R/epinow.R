@@ -131,8 +131,8 @@ if (!is.null(target_folder)) {
  }
 # Forecast infections and reproduction number -----------------------------
 if (!missing(forecast_model)) {
-  forecast <- forecast_infections(infections = estimates$summarised[variable == "infections"][type == "nowcast"][, type := NULL],
-                                  rts = estimates$summarised[variable == "R"][type == "nowcast"][, type := NULL],
+  forecast <- forecast_infections(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
+                                  rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
                                   gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
                                   gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
                                   gt_max = generation_time$max,
@@ -149,14 +149,14 @@ if (!missing(forecast_model) & !is.null(target_folder)) {
 # Report forcasts ---------------------------------------------------------
 
 if (missing(forecast_model)) {
-  estimated_reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type == "nowcast"][,
+  estimated_reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
                                                                               .(date, sample, cases = value)],
                                            reporting_delay = reporting_delay,
                                            incubation_period =  incubation_period,
                                            type = "sample")
 }else{
   report_cases_with_forecast <- function(model) {
-    reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type == "nowcast"][,
+    reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
                                                                       .(date, sample, cases = value)],
                                    case_forecast = forecast$samples[type == "case" & 
                                                                     forecast_type == model][,
@@ -202,8 +202,8 @@ if (!is.null(target_folder)){
 # # Report estimates --------------------------------------------------------
 
    summary <- report_summary(
-     summarised_estimates = estimates$summarised[!is.na(date)][type == "nowcast"][date == max(date)],
-     rt_samples = estimates$samples[variable == "R"][type == "nowcast"][date == max(date), .(sample, value)])
+     summarised_estimates = estimates$summarised[!is.na(date)][type != "forecast"][date == max(date)],
+     rt_samples = estimates$samples[variable == "R"][type != "forecast"][date == max(date), .(sample, value)])
 
    
    if(!is.null(target_folder)) {
