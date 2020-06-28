@@ -315,7 +315,7 @@ regional_epinow <- function(reported_cases,
                             case_limit = 20, cores = 1,
                             return_estimates = TRUE,
                             ...) {
-  
+   
   ## Set input to data.table
   cases <- data.table::as.data.table(cases)
   
@@ -359,7 +359,7 @@ regional_epinow <- function(reported_cases,
     
     regional_cases <- reported_cases[region %in% target_region][, region := NULL]
     
-    out <- EpiNow2::report_rt(
+    out <- EpiNow2::epinow(
       reported_cases = regional_cases,
       target_folder = target_folder,
       target_date = target_date, 

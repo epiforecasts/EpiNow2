@@ -4,12 +4,7 @@
 \alias{get_raw_result}
 \title{Get a Single Raw Result}
 \usage{
-get_raw_result(
-  file = NULL,
-  region = NULL,
-  date = target_date,
-  result_dir = results_dir
-)
+get_raw_result(file, region, date, result_dir)
 }
 \arguments{
 \item{file}{Character string giving the result files name.}

@@ -68,37 +68,86 @@ summarise_results <- function(regions = NULL,
 #' @param summary_dir A character string giving the directory
 #'  in which to store summary of results.
 #' @param target_date A character string giving the target date for which to extract results
-#' (in the format "yyyy-mm-dd").
+#' (in the format "yyyy-mm-dd"). Defaults to latest available estimates.
 #' @param csv_region_label Character string indicating the label to assign to a region when saving to .csv.
-#' @return NULL
+#' @param return_summary Logical, defaults to `TRUE`. Should summary measures be returned.
+#' @return A list of summary measures and plots
 #' @export
 #' @inheritParams summarise_results
 #' @inheritParams plot_summary
-#' @inheritParams summarise_to_csv
+#' @inheritParams summarise_key_measures
 #' @importFrom purrr map_chr
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
 #' @importFrom cowplot get_legend
 #' @examples
 #' 
 #' \dontrun{
+#' ## Requires additional packages:
+#' library(EpiSoon)
+#' library(forecastHybrid)
 #' 
+#' ## Construct example distributions
+#' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
+#'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
+#'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
+#'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
+#'                         max = 30)
+#'                           
+#' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+#'                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+#'                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
+#'                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
+#'                           max = 30)
+#'                    
+#' reporting_delay <- list(mean = log(10),
+#'                         mean_sd = 0.8,
+#'                         sd = log(2),
+#'                         sd_sd = 0.1,
+#'                         max = 30)
+#'                         
+#' ## Uses example case vector from EpiSoon
+#' cases <- data.table::setDT(EpiSoon::example_obs_cases)
+#' cases <- cases[, `:=`(confirm = as.integer(cases))][,
+#'                   cases := NULL][1:50]
+#' 
+#' cases <- data.table::rbindlist(list(
+#'   data.table::copy(cases)[, region := "testland"],
+#'   cases[, region := "realland"]))
+#'   
+#' ## Run basic nowcasting pipeline
+#' out <- regional_epinow(reported_cases = cases,
+#'                        target_folder = "../test",
+#'                        generation_time = generation_time,
+#'                        incubation_period = incubation_period,
+#'                        reporting_delay = reporting_delay,
+#'                        forecast_model = function(y, ...){
+#'                          EpiSoon::forecastHybrid_model(
+#'                             y = y[max(1, length(y) - 21):length(y)],
+#'                             model_params = list(models = "aefz", weights = "equal"),
+#'                             forecast_params = list(PI.combination = "mean"), ...)},
+#'                        samples = 1000, warmup = 500, cores = 2, chains = 2,
+#'                        verbose = TRUE)
+#'                        
 #'## Example asssumes that CovidGlobalNow (github.com/epiforecasts/covid-global) is  
 #'## in the directory above the root.
-#' regional_summary(results_dir = "../covid-global/national",
-#'                  summary_dir = "../covid-global/national-summary",
-#'                  target_date = "2020-03-19",
+#' regional_summary(results_dir = "../test",
+#'                  summary_dir = "../test-summary",
 #'                  region_scale = "Country")
 #'
 #' }
 #' 
 
-regional_summary <- function(results_dir = NULL, 
-                             summary_dir = NULL,
-                             target_date = NULL,
+regional_summary <- function(results_dir, 
+                             summary_dir,
+                             target_date = "latest",
                              region_scale = "Region",
                              csv_region_label = "region",
-                             log_cases = FALSE) {
+                             log_cases = FALSE,
+                             return_summary = TRUE) {
   
+  if (missing(summary_dir) & !return_summary) {
+    stop("Either allow results to be returned or supply a directory for results to be saved into")
+  }
   
   message("Extracting results from: ", results_dir)
   
@@ -123,8 +172,10 @@ regional_summary <- function(results_dir = NULL,
   latest_date <- as.Date(latest_date)
   latest_date <- max(latest_date, na.rm = TRUE)
   
-  saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
-  
+  if (!missing(summary_dir)) {
+    saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
+  }
+
   ## Summarise results as a table
   results <- EpiNow2::summarise_results(regions, results_dir,
                                        target_date = target_date,
@@ -144,16 +195,18 @@ regional_summary <- function(results_dir = NULL,
   
   results$data <- force_factor(results$data)
   
-  saveRDS(results$table, file.path(summary_dir, "summary_table.rds"))
-  saveRDS(results$data, file.path(summary_dir, "summary_data.rds"))
-  
+  if (!missing(summary_dir)) {
+    saveRDS(results$table, file.path(summary_dir, "summary_table.rds"))
+    saveRDS(results$data, file.path(summary_dir, "summary_data.rds"))
+  }
+
   ## Summarise results to csv
   message("Saving Rt and case csvs")
   
-  EpiNow2::summarise_to_csv(results_dir = results_dir, 
-                            summary_dir = summary_dir, 
-                            type = csv_region_label,
-                            date = target_date) 
+  sum_key_measures <- EpiNow2::summarise_key_measures(results_dir = results_dir, 
+                                                      summary_dir = ifelse(missing(summary_dir), NULL, summary_dir), 
+                                                      type = csv_region_label,
+                                                      date = target_date) 
   
   
   message("Plotting results summary")
@@ -163,13 +216,14 @@ regional_summary <- function(results_dir = NULL,
                                        x_lab = region_scale, 
                                        log_cases = log_cases)
   
-  
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(file.path(summary_dir, "summary_plot.png"),
-                      dpi = 330, height = 12, width = ifelse(length(regions) > 60, 24, 12))
+  if (!missing(summary_dir)) {
+    suppressWarnings(
+      suppressMessages(
+        ggplot2::ggsave(file.path(summary_dir, "summary_plot.png"),
+                        dpi = 330, height = 12, width = ifelse(length(regions) > 60, 24, 12))
+      )
     )
-  )
+  }
   
   
   message("Plotting summary Rt and case plots")
@@ -204,12 +258,14 @@ regional_summary <- function(results_dir = NULL,
   )
   )
   
-  
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(file.path(summary_dir, "high_cases_rt_plot.png"),
-                      high_cases_rt_plot, dpi = 400, width = 12, height = 12)
-    ))
+  if (!missing(summary_dir)) {
+    suppressWarnings(
+      suppressMessages(
+        ggplot2::ggsave(file.path(summary_dir, "high_cases_rt_plot.png"),
+                        high_cases_rt_plot, dpi = 400, width = 12, height = 12)
+      ))
+  }
+
   
   
   high_cases_plot <- suppressWarnings(
@@ -224,12 +280,14 @@ regional_summary <- function(results_dir = NULL,
         ggplot2::theme(legend.position = ifelse(legend, "bottom", "none"))
     ))
   
-  
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(file.path(summary_dir, "high_cases_plot.png"), 
-                      high_cases_plot, dpi = 400, width = 12, height = 12)
-    ))
+  if (!missing(summary_dir)) {
+    suppressWarnings(
+      suppressMessages(
+        ggplot2::ggsave(file.path(summary_dir, "high_cases_plot.png"), 
+                        high_cases_plot, dpi = 400, width = 12, height = 12)
+      ))
+  }
+
   
   
   message("Plotting overall Rt and case plots")
@@ -248,66 +306,104 @@ regional_summary <- function(results_dir = NULL,
         ggplot2::theme(legend.position = ifelse(legend, "bottom", "none"))
     ))
   
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(file.path(summary_dir, "rt_plot.png"), 
-                      rt_plot, dpi = 330, width = 24, height = 4 * round(length(regions) / plots_per_row, 0), limitsize = FALSE)
-      
-    ))
+  if (!missing(summary_dir)) {
+    suppressWarnings(
+      suppressMessages(
+        ggplot2::ggsave(file.path(summary_dir, "rt_plot.png"), 
+                        rt_plot, dpi = 330, width = 24, height = 4 * round(length(regions) / plots_per_row, 0), limitsize = FALSE)
+        
+      ))
+  }
+
   
   cases_plot <- 
     plot_grid(regions, plot_object = "plot_cases.rds",
               results_dir, target_date = target_date, ncol = plots_per_row) &
     ggplot2::theme(legend.position = ifelse(legend, "bottom", "none"))
   
-  suppressWarnings(
-    suppressMessages( 
-      ggplot2::ggsave(file.path(summary_dir, "cases_plot.png"), 
-                      cases_plot, dpi = 330, width = 24, height =  4 * round(length(regions) / plots_per_row, 0), limitsize = FALSE)
-    ))
   
   
-  return(invisible(NULL))
+  if (!missing(summary_dir)) {
+    suppressWarnings(
+      suppressMessages( 
+        ggplot2::ggsave(file.path(summary_dir, "cases_plot.png"), 
+                        cases_plot, dpi = 330, width = 24, height =  4 * round(length(regions) / plots_per_row, 0), limitsize = FALSE)
+      ))
+  }
+
+  
+  
+  if (return_summary) {
+    out <- list()
+    out$latest_date <- latest_date
+    out$summary <- results
+    out$summary_plot <- summary_plot
+    out$summarised_measures <- sum_key_measures
+    out$high_cases_rt_plot <- high_cases_rt_plot
+    out$high_cases_plot <- high_cases_plot
+    out$rt_plot <- rt_plot
+    out$cases_plot <- cases_plot
+    
+    return(out)
+  }else{
+    return(invisible(NULL))
+  }
 }
 
-#' Summarise rt and cases as a csv
+#' Summarise rt and cases
 #'
-#' @param results_dir Character string indicating the directory from which to extract results
-#' @param summary_dir Character string the directory into which to save results
-#' @param type Character string, the region identifier to apply
-#' @inheritParams get_timeseries
-#' @return NULL
+#' @param results_dir Character string indicating the directory from which to extract results.
+#' @param summary_dir Character string the directory into which to save results as a csv.
+#' @param type Character string, the region identifier to apply (defaults to region).
+#' @inheritParams get_regional_results
+#' @return A list of summarised Rt and cases by date of infection
 #' @export
-#' @importFrom data.table as.data.table setnames fwrite
-summarise_to_csv <- function(results_dir = NULL, summary_dir = NULL, 
-                             type = "country", date = NULL) {
+#' @importFrom data.table setnames fwrite
+summarise_key_measures <- function(results_dir, summary_dir, 
+                                   type = "country", date) {
   
+  if (missing(results_dir)) {
+    stop("Missing results directory")
+  }
   
+  if (missing(date)) {
+    date <- "latest"
+  }
   
-  timeseries <- EpiNow2::get_timeseries(results_dir, date = date, summarised = TRUE)
+  timeseries <- EpiNow2::get_regional_results(results_dir, date = date, forecast = FALSE)
   
   ## Clean and save Rt estimates
-  rt <- data.table::as.data.table(timeseries$rt)[type %in% "nowcast", 
-                        .(region, date, type = rt_type, median = round(median, 1),
+  rt <- timeseries$estimates[variable == "R", 
+                        .(region, date, type, median = round(median, 1),
                           lower_90 = round(bottom, 1), upper_90 = round(top, 1),
-                          lower_50 = round(lower, 1), upper_50 = round(upper, 1), 
-                          prob_control = round(prob_control, 2))]
+                          lower_50 = round(lower, 1), upper_50 = round(upper, 1))]
   
   data.table::setnames(rt, "region", type)
   
-  
-  data.table::fwrite(rt, paste0(summary_dir, "/rt.csv"))
+  if (!missing(summary_dir)) {
+     if (!is.null(summary_dir)) {
+       data.table::fwrite(rt, paste0(summary_dir, "/rt.csv"))
+     }
+  }
   
   ## Clean and save case estimates
-  cases <- data.table::as.data.table(timeseries$incidence)[type %in% "nowcast", 
+  cases <- timeseries$estimates[variable == "infections", 
                        .(region, date, median = round(median, 1), lower_90 = round(bottom, 0), 
                          upper_90 = round(top, 0), lower_50 = round(lower, 0), 
-                         upper_50 = round(upper, 0), confidence = round(confidence, 2))]
+                         upper_50 = round(upper, 0))]
   
   data.table::setnames(cases, "region", type)
   
   
-  data.table::fwrite(cases, paste0(summary_dir, "/cases.csv"))
+  if (!missing(summary_dir)) {
+    if (!is.null(summary_dir)) {
+      data.table::fwrite(cases, paste0(summary_dir, "/cases.csv"))
+    }
+  }
   
-  return(invisible(NULL))
+  out <- list()
+  out$rt <- rt
+  out$cases <- cases
+  
+  return(out)
 }
