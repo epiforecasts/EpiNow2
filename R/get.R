@@ -29,76 +29,89 @@ get_regions <- function(results_dir) {
 #' @param result_dir Character string giving the location of the target directory 
 #'
 #' @return An R object read in from the targeted .rds file
-get_raw_result <- function(file = NULL, region = NULL, 
-                                date = target_date, result_dir = results_dir) {
+get_raw_result <- function(file, region, date, 
+                           result_dir) {
   file_path <- file.path(result_dir, region, date, file)
   object <- readRDS(file_path)
   
   return(object)
 }
 
-#' Get Timeseries from EpiNow2
+#' Get Combined Regional Results
 #'
 #' @param results_dir A character string indicating the folder containing the `EpiNow2`
 #' results to extract.
 #' @param date A Character string (in the format "yyyy-mm-dd") indicating the date to extract
 #' data for. Defaults to "latest" which finds the latest results available.
-#' @param summarised Logical, defaults to `FALSE`. Should full or summarised results be 
-#' returned. 
-#' @return A list of reproduction number estimates and nowcast cases
+#' @param forecast Logical, defaults to `FALSE`. Should forecast results be returned.
+#' @return A list of estimates, forecasts and estimated cases by date of report.
 #' @export
-#' @importFrom purrr map_dfr safely
+#' @importFrom purrr map safely
+#' @importFrom data.table rbindlist
 #' @examples
 #'
 #'
 #' \dontrun{
 #' ## Assuming epiforecasts/covid is one repo higher
 #' ## Summary results
-#' get_timeseries("../covid/_posts/global/nowcast/results/", 
-#'                summarised = TRUE)
+#' out <- get_regional_results("../test", forecast = TRUE)
 #' 
-#' ## Simulations
-#' get_timeseries("../covid/_posts/global/nowcast/results/")
+#' out
 #' }
 #' ## Code
-#' get_timeseries
-get_timeseries <- function(results_dir = NULL, date = NULL,
-                           summarised = FALSE) {
+#' get_regional_results
+get_regional_results <- function(results_dir, date,
+                                 forecast = FALSE) {
   
   ## Assign to latest likely date if not given
-  if (is.null(date)) {
+  if (missing(date)) {
     date <- "latest"
-  }
-  
-  if (summarised) {
-    nowcast <- "summarised_nowcast.rds"
-    rt_index <- 1
-  } else{
-    nowcast <- "nowcast.rds"
-    rt_index <- 3
   }
   
   ## Find all regions
   regions <- list.files(results_dir)
   names(regions) <- regions
   
-  load_data <- purrr::safely(EpiNow2::load_nowcast_result)
+  load_data <- purrr::safely(EpiNow2::get_raw_result)
   
-  ## Get rt values and combine
-  rt <- purrr::map_dfr(regions, ~ load_data("time_varying_params.rds", .,
-                                            result_dir = results_dir,
-                                            date = date)[[1]][[rt_index]],
-                       .id = "region")
+
+# Get estimates -----------------------------------------------------------
+
+  get_estimates <- function(samples, summarised) {
+    samples <- purrr::map(regions, ~ load_data("estimate_samples.rds", .,
+                                               result_dir = results_dir,
+                                               date = date)[[1]])
+    
+    samples <- data.table::rbindlist(samples, idcol = "region")
+    
+    
+    ## Get incidence values and combine
+    summarised <- purrr::map(regions, ~ load_data("summarised_estimates.rds", .,
+                                                  result_dir = results_dir,
+                                                  date = date)[[1]])
+    
+    summarised <- data.table::rbindlist(summarised, idcol = "region")
+    
+    out <- list()
+    out$samples <- samples
+    out$summarised <- summarised
+    
+    return(out)
+  }
+
   
+  out <- list()
+  out$estimates <- get_estimates(samples = "forecast_samples.rds",
+                                 summarised = "summarised_forecast.rds")
+  if (forecast) {
+    
+   out$forecast <-  get_estimates(samples = "estimate_samples.rds",
+                                  summarised = "summarised_estimates.rds")
+   
+   out$estimated_reported_cases <- get_estimates(samples = "estimated_reported_cases_samples.rds",
+                                                 summarised = "summarised_estimated_reported_cases.rds")
+  }
   
-  ## Get incidence values and combine
-  incidence <- purrr::map_dfr(regions, ~ load_data(nowcast, .,
-                                                   result_dir = results_dir,
-                                                   date = date)[[1]],
-                              .id = "region")
-  
-  out <- list(rt, incidence)
-  names(out) <- c("rt", "incidence")
   
   return(out)
 }
