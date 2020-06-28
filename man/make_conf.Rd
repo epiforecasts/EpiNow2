@@ -22,7 +22,7 @@ Format Credible Intervals
 }
 \examples{
 
-value <- list(list(point = 1, lower = 0, upper = 3))
+value <- list(point = 1, lower = 0, upper = 3)
 
 make_conf(value, round_type = round, digits = 0)
 }

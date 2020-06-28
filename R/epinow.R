@@ -2,6 +2,9 @@
 #'
 #' @description Estimate Rt and cases by date of infection, forecast into the future, transform to date 
 #' of report and then save summary measures and plots.
+#' @param target_date Date, defaults to maximum found in the data if not specified.
+#' @param target_folder Character string specifying where to save results (will create if not present).
+#' @param return_estimates Logical, defaults to TRUE. Should estimates be returned.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @inheritParams estimate_infections
@@ -65,7 +68,10 @@ epinow <- function(reported_cases, family = "negbin",
                    target_folder, target_date,
                    verbose = FALSE) {
  
- 
+ if (!return_estimates & missing(target_folder)) {
+   stop("Either return estimates or save to a target folder")
+ }
+  
  # Convert input to DT -----------------------------------------------------
   suppressMessages(data.table::setDTthreads(threads = cores))
  

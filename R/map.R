@@ -82,7 +82,7 @@ global_map <- function(data = NULL, variable = NULL,
     ggplot2::coord_sf()
   
   map <- 
-    EpiNow22::theme_map(map, continuous = is.numeric(world_with_data[[variable]]),
+    EpiNow2::theme_map(map, continuous = is.numeric(world_with_data[[variable]]),
                       variable_label = variable_label,
                       trans = trans,
                       fill_labels = fill_labels,

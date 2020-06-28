@@ -24,6 +24,8 @@
 #' @param model A compiled stan model. By default uses the internal package model.
 #' @param cores Numeric, defaults to 2. The number of cores to use when fitting the stan model.
 #' @param chains Numeric, defaults to 2. The number of MCMC chains to use.
+#' @param samples Numeric, defaults to 1000. Number of samples post warmup.
+#' @param warmup Numeric, defaults to 500. Number of iteration of warmup to use.
 #' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
 #' @param adapt_delta Numeric, defaults to 0.99. See ?rstan::sampling.
 #' @param max_treedepth Numeric, defaults to 15. See ?rstan::sampling.

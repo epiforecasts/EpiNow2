@@ -59,6 +59,10 @@ for the prior based on reported cases.}
 
 \item{chains}{Numeric, defaults to 2. The number of MCMC chains to use.}
 
+\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
+
+\item{warmup}{Numeric, defaults to 500. Number of iteration of warmup to use.}
+
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
 \item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
