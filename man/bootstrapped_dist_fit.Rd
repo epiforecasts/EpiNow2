@@ -6,17 +6,15 @@
 \usage{
 bootstrapped_dist_fit(
   values,
-  verbose = FALSE,
+  dist = "lognormal",
   samples = 2000,
   bootstraps = 10,
   bootstrap_samples = 250,
-  dist = "lognormal"
+  verbose = FALSE
 )
 }
 \arguments{
 \item{values}{Numeric vector of integer values.}
-
-\item{verbose}{Logical, defaults to \code{FALSE}. Should progress messages be printed}
 
 \item{samples}{Numeric, number of samples to take overall from the bootstrapped posteriors.}
 
@@ -25,6 +23,8 @@ of the delay distribution to take.}
 
 \item{bootstrap_samples}{Numeric, defaults to 100. The number of samples to take in each boostrap.
 When the sample size of the supplied delay distribution is less than 100 this is used instead.}
+
+\item{verbose}{Logical, defaults to \code{FALSE}. Should progress messages be printed}
 }
 \value{
 A list summarising the bootstrapped distribution
@@ -36,9 +36,9 @@ Fit a Subsampled Boostrap to Integer Values and Summarise Distribution Parameter
 
 \dontrun{
 # lognormal
-delays <- rlnorm(50, log(5), 1)
+delays <- rlnorm(500, log(5), 1)
 
-out <- bootstrapped_dist_fit(delays, samples = 2, bootstraps = 10, 
+out <- bootstrapped_dist_fit(delays, samples = 1000, bootstraps = 10, 
                              dist = "lognormal")
 
 ## Inspect

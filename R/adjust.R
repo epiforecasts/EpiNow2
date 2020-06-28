@@ -1,7 +1,7 @@
 #' Adjust from Case Counts by Infection Date to Date of Report
 #'
-#' @description Stochastic mapping from cases by date of infection to date of report via date of 
-#' onset. Essentially reversal of `nowcast_pipeline`.
+#' @description Maps from cases by date of infection to date of report via date of 
+#' onset.
 #' @param infections `data.table` containing a `date` variable and a numeric `cases` variable.
 #' @param delay_def A single row data.table that defines the delay distribution (model, parameters and maximum delay for each model). 
 #' See `lognorm_dist_def` for an example of the structure.
@@ -23,7 +23,7 @@
 #' ## Define example cases
 #' cases <- data.table::as.data.table(EpiSoon::example_obs_cases) 
 #' 
-#' cases <- cases[, `:=`(confirm = as.integer(cases), import_status = "local")]
+#' cases <- cases[, `:=`(cases = as.integer(cases))]
 #' 
 #' ## Define a single report delay distribution
 #' delay_def <- EpiNow2::lognorm_dist_def(mean = 5, 
@@ -42,38 +42,28 @@
 #'                                            max_value = 30, samples = 1)
 #'                                            
 #' 
-#' ## Perform a nowcast
-#' nowcast <- nowcast_pipeline(reported_cases = cases, 
-#'                             target_date = max(cases$date),
-#'                             delay_defs = delay_def,
-#'                             incubation_defs = incubation_def)
-#'                             
-#' 
-#' infections <- nowcast[type %in% "infection_upscaled" & import_status %in% "local"]
-#' infections <- infections[, `:=`(type = NULL, import_status = NULL)]
-#' 
 #' 
 #' ## Simple mapping
-#' report <- adjust_infection_to_report(infections, delay_def, incubation_def)   
+#' report <- adjust_infection_to_report(cases, delay_def, incubation_def)   
 #' 
 #' print(report)   
 #' 
 #' ## Mapping with a weekly reporting effect
 #' report_weekly <- adjust_infection_to_report(
-#'                       infections, delay_def, incubation_def,
+#'                       cases, delay_def, incubation_def,
 #'                       reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))          
 #'                              
 #' print(report_weekly) 
 #' 
 #'## Map using a deterministic median shift for both delays
-#'report_median <- adjust_infection_to_report(infections, delay_def, 
+#'report_median <- adjust_infection_to_report(cases, delay_def, 
 #'                                            incubation_def, type = "median")      
 #'                                            
 #'                                                    
 #'                                                            
 #' ## Map with a weekly reporting effect and stochastic reporting model
 #' report_stochastic <- adjust_infection_to_report(
-#'                       infections, delay_def, incubation_def,
+#'                       cases, delay_def, incubation_def,
 #'                       reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
 #'                       reporting_model = function(n) {
 #'                       out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))

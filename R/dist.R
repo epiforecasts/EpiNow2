@@ -179,16 +179,16 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
                warmup = 1000)
   
   if (dist %in% "exp") {
-    model <- stanmodels$exp_fit
+    model <- stanmodels$exp
     data <- c(data, lam_mean = mean(values))
     
   }else if (dist %in% "gamma") {
-    model <- stanmodels$gamma_fit
+    model <- stanmodels$gamma
     data <- c(data,
               prior_mean = mean(values),
               prior_sd = sd(values))
   }else if (dist %in% "lognormal") {
-    model <- stanmodels$lnorm_fit
+    model <- stanmodels$lnorm
     data <- c(data, 
               prior_mean = log(mean(values)),
               prior_sd = log(sd(values)))
@@ -364,9 +364,9 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' out
 #' 
 #'}
-bootstrapped_dist_fit <- function(values, verbose = FALSE, samples = 2000,
-                                  bootstraps = 10, bootstrap_samples = 250,
-                                  dist = "lognormal") {
+bootstrapped_dist_fit <- function(values,  dist = "lognormal", 
+                                  samples = 2000, bootstraps = 10, 
+                                  bootstrap_samples = 250, verbose = FALSE) {
   
   if (!dist %in% c("gamma", "lognormal")) {
     stop("Only lognormal and gamma distributions are supported")
