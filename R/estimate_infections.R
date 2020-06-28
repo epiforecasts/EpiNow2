@@ -352,7 +352,10 @@ estimate_infections <- function(reported_cases, family = "negbin",
  ## Add type based on horizon
  format_out$samples <- format_out$samples[,
           type := data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon), 
-                                      "forecast", "nowcast")]
+                                      "forecast", 
+                                      data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon - mean_shift),
+                                      "estimate based on partial data",                    
+                                      "estimate"))]
  
  ## Summarise samples
  format_out$summarised <- data.table::copy(format_out$samples)[, .(
