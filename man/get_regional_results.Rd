@@ -25,8 +25,7 @@ Get Combined Regional Results
 
 
 \dontrun{
-## Assuming epiforecasts/covid is one repo higher
-## Summary results
+# see ?regional_summary for code to produce test results
 out <- get_regional_results("../test", forecast = TRUE)
 
 out

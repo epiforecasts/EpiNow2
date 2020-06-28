@@ -22,3 +22,11 @@ A list of summarised Rt and cases by date of infection
 \description{
 Summarise rt and cases
 }
+\examples{
+\dontrun{
+# see ?regional_summary for code to produce test results
+summarise_key_measures(results_dir = "../test")
+
+
+}
+}

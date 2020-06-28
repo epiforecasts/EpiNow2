@@ -5,10 +5,15 @@
 #'
 #' @return A named character vector containing the results to plot.
 #' @export
+#' @examples
+#' \dontrun{
+#' See ?regional_summary for code to produce test results
+#' get_regions("../test")
+#' }
 get_regions <- function(results_dir) {
   
   # Regions to include - based on folder names
-  regions <- list.files(results_dir)
+  regions <- list.files(results_dir, recursive = FALSE)
   
   ## Put into alphabetical order
   regions <- regions[order(regions)]
@@ -27,8 +32,15 @@ get_regions <- function(results_dir) {
 #' @param region Character string giving the region of interest.
 #' @param date Target date (in the format `"yyyy-mm-dd`).
 #' @param result_dir Character string giving the location of the target directory 
-#'
+#' @export
 #' @return An R object read in from the targeted .rds file
+#' @examples
+#' \dontrun{
+#' # see ?regional_summary for code to produce test results
+#' get_raw_result("summarised_estimates.rds", 
+#'                region = "realland", date = "latest",
+#'                result_dir = "../test")
+#' }
 get_raw_result <- function(file, region, date, 
                            result_dir) {
   file_path <- file.path(result_dir, region, date, file)
@@ -52,8 +64,7 @@ get_raw_result <- function(file, region, date,
 #'
 #'
 #' \dontrun{
-#' ## Assuming epiforecasts/covid is one repo higher
-#' ## Summary results
+#' # see ?regional_summary for code to produce test results
 #' out <- get_regional_results("../test", forecast = TRUE)
 #' 
 #' out
@@ -69,7 +80,7 @@ get_regional_results <- function(results_dir, date,
   }
   
   ## Find all regions
-  regions <- list.files(results_dir)
+  regions <- list.files(results_dir, recursive = FALSE)
   names(regions) <- regions
   
   load_data <- purrr::safely(EpiNow2::get_raw_result)
@@ -78,7 +89,7 @@ get_regional_results <- function(results_dir, date,
 # Get estimates -----------------------------------------------------------
 
   get_estimates <- function(samples, summarised) {
-    samples <- purrr::map(regions, ~ load_data("estimate_samples.rds", .,
+    samples <- purrr::map(regions, ~ load_data(samples, .,
                                                result_dir = results_dir,
                                                date = date)[[1]])
     
@@ -86,7 +97,7 @@ get_regional_results <- function(results_dir, date,
     
     
     ## Get incidence values and combine
-    summarised <- purrr::map(regions, ~ load_data("summarised_estimates.rds", .,
+    summarised <- purrr::map(regions, ~ load_data(summarised, .,
                                                   result_dir = results_dir,
                                                   date = date)[[1]])
     
@@ -101,12 +112,13 @@ get_regional_results <- function(results_dir, date,
 
   
   out <- list()
-  out$estimates <- get_estimates(samples = "forecast_samples.rds",
-                                 summarised = "summarised_forecast.rds")
+  out$estimates <- get_estimates(samples = "estimate_samples.rds",
+                                 summarised = "summarised_estimates.rds")
+
   if (forecast) {
     
-   out$forecast <-  get_estimates(samples = "estimate_samples.rds",
-                                  summarised = "summarised_estimates.rds")
+   out$forecast <- get_estimates(samples = "forecast_samples.rds",
+                                 summarised = "summarised_forecast.rds")
    
    out$estimated_reported_cases <- get_estimates(samples = "estimated_reported_cases_samples.rds",
                                                  summarised = "summarised_estimated_reported_cases.rds")

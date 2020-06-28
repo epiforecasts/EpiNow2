@@ -6,8 +6,8 @@
 \usage{
 summarise_results(
   regions = NULL,
-  results_dir = "results",
-  target_date = NULL,
+  results_dir,
+  target_date,
   region_scale = "Region"
 )
 }
@@ -28,4 +28,16 @@ A list of summary data
 }
 \description{
 Summarise Realtime Results
+}
+\examples{
+\dontrun{
+# see ?regional_summary for code to generate results for this example
+regions <- list(realland = "realland", testland = "testland")
+
+out <- summarise_results(regions = regions,
+                  results_dir = "../test")
+                  
+out
+}
+
 }
