@@ -11,18 +11,33 @@
 #' @importFrom data.table setorderv melt
 #' @return A list of summary data
 #' @export
+#' @examples
+#' \dontrun{
+#' # see ?regional_summary for code to generate results for this example
+#' regions <- list(realland = "realland", testland = "testland")
+#' 
+#' out <- summarise_results(regions = regions,
+#'                   results_dir = "../test")
+#'                   
+#' out
+#' }
+#' 
 summarise_results <- function(regions = NULL,
-                              results_dir = "results",
-                              target_date = NULL,
+                              results_dir,
+                              target_date,
                               region_scale = "Region") {
   
+  if (missing(target_date)) {
+    target_date <- "latest"
+  }
+   
   ## Utility functions
   load_data <- purrr::partial(get_raw_result,
                               date = target_date,
                               result_dir = results_dir)
   
   
-  estimates <- purrr::map(regions, ~ load_date(., summary.rds))
+  estimates <- purrr::map(regions, ~ load_data(file = "summary.rds", region = .))
   
   names(estimates) <- names(regions)
   
@@ -30,12 +45,12 @@ summarise_results <- function(regions = NULL,
   
   numeric_estimates  <- data.table::copy(estimates)[measure %in% c("New confirmed cases by infection date",
                                                     "Effective reproduction no.")][,
-                                           `:=`(
-                                             lower = purrr::map_dbl(value, ~ .$lower),
-                                             upper = purrr::map_dbl(value, ~ .$upper),
-                                             mid_lower = purrr::map_dbl(value, ~ .$mid_lower),
-                                             mid_upper = purrr::map_dbl(value, ~ .$mid_upper)
-                                           )][,
+                                           .(
+                                             lower = numeric_estimate[[1]]$lower,
+                                             upper =numeric_estimate[[1]]$upper,
+                                             mid_lower = numeric_estimate[[1]]$mid_lower,
+                                             mid_upper = numeric_estimate[[1]]$mid_upper
+                                           ), by = .(region, measure)][,
                                               metric :=  
                                                 factor(measure, levels = c("New confirmed cases by infection date",
                                                                           "Effective reproduction no."))][,
@@ -148,7 +163,7 @@ regional_summary <- function(results_dir,
   if (missing(summary_dir) & !return_summary) {
     stop("Either allow results to be returned or supply a directory for results to be saved into")
   }
-  
+   
   message("Extracting results from: ", results_dir)
   
   ## Make summary directory
@@ -359,6 +374,13 @@ regional_summary <- function(results_dir,
 #' @return A list of summarised Rt and cases by date of infection
 #' @export
 #' @importFrom data.table setnames fwrite
+#' @examples 
+#' \dontrun{
+#' # see ?regional_summary for code to produce test results
+#' summarise_key_measures(results_dir = "../test")
+#' 
+#' 
+#' }
 summarise_key_measures <- function(results_dir, summary_dir, 
                                    type = "country", date) {
   
@@ -373,7 +395,7 @@ summarise_key_measures <- function(results_dir, summary_dir,
   timeseries <- EpiNow2::get_regional_results(results_dir, date = date, forecast = FALSE)
   
   ## Clean and save Rt estimates
-  rt <- timeseries$estimates[variable == "R", 
+  rt <- timeseries$estimates$summarised[variable == "R", 
                         .(region, date, type, median = round(median, 1),
                           lower_90 = round(bottom, 1), upper_90 = round(top, 1),
                           lower_50 = round(lower, 1), upper_50 = round(upper, 1))]
@@ -387,8 +409,8 @@ summarise_key_measures <- function(results_dir, summary_dir,
   }
   
   ## Clean and save case estimates
-  cases <- timeseries$estimates[variable == "infections", 
-                       .(region, date, median = round(median, 1), lower_90 = round(bottom, 0), 
+  cases <- timeseries$estimates$summarised[variable == "infections", 
+                       .(region, date, type, median = round(median, 1), lower_90 = round(bottom, 0), 
                          upper_90 = round(top, 0), lower_50 = round(lower, 0), 
                          upper_50 = round(upper, 0))]
   

@@ -21,3 +21,11 @@ An R object read in from the targeted .rds file
 \description{
 Get a Single Raw Result
 }
+\examples{
+\dontrun{
+# see ?regional_summary for code to produce test results
+get_raw_result("summarised_estimates.rds", 
+               region = "realland", date = "latest",
+               result_dir = "../test")
+}
+}
