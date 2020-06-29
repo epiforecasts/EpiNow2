@@ -14,7 +14,8 @@
 #' 
 #' @examples
 #' \dontrun{
-#' ## Requires additional packages:
+#' ## optional additional packages:
+#' ## remove forecast_model argument to no longer require these
 #' library(EpiSoon)
 #' library(forecastHybrid)
 #' 

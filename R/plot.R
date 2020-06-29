@@ -1,107 +1,79 @@
-#' Plot a Time Series with Confidence.
+#' Plot Estimates
 #'
-#' @param data Dataframe containing the follwoing variables: `date`, `median`, `type`, `bottom`,
-#'  `top`, `lower`, `upper`,  and `confidence`
-#' @param outer_alpha Numeric, outer alpha level.
-#' @param inner_alpha Numeric, inner alpha level.
-#' @param plot_median Logical, defaults to `FALSE`. Should the median be plotted.
-#' @param legend Character string defaults to "none". Should a legend be displayed.
-#' @return A `ggplot2` object.
+#' @param estimate A data.table of estimates containing the following variables: date, type
+#' (must contain "estimate", "estimate based on partial data" and optionally "forecast"), 
+#' @param reported 
+#' @param ylab 
+#' @param hline 
+#' @param bar_width 
+#' @param obs_as_col 
+#'
+#' @return
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_line scale_x_date geom_ribbon theme element_text scale_fill_manual theme labs guide_legend guides
-#' @importFrom cowplot theme_cowplot
-#' @importFrom data.table as.data.table copy .N rbindlist
-plot_confidence <- function(data, outer_alpha = 0.1, inner_alpha = 0.2,
-                            plot_median = TRUE, legend = "none") {
+#'
+#' @examples
+#' \dontrun{
+#' # first run the example in ?epinow
+#' 
+#' plot_estimates(estimate = out$estimates$summarised[variable == "reported_cases_rt"],
+#'                reported <- cases[, confirm := cases], 
+#'                ylab = "Cases")
+#' 
+#' 
+#' 
+#' }
+#' 
+#' 
+plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
+                           bar_width = 1.5, obs_as_col = TRUE) {
   
-  plot <-
-    ggplot2::ggplot(data, ggplot2::aes(x = date,
-                                       y = median,
-                                       group = type))
+  ## Map type to presentation form
+  estimate <- estimate[, type := stringr::str_to_sentence(type)]
   
-  if (plot_median) {
-    plot <- plot +
-      ggplot2::geom_col(alpha = 0.4)
-  }
+  ## Initialise plot
+  plot <- ggplot2::ggplot(estimate, ggplot2::aes(x = date, col = type, fill = type))
   
-  plot <- plot +
-    ggplot2::geom_line(ggplot2::aes(y = bottom, alpha = confidence)) +
-    ggplot2::geom_line(ggplot2::aes(y = top, alpha =  confidence)) +
-    ggplot2::scale_alpha(range = c(0, 0.5)) +
-    cowplot::theme_cowplot() +
-    ggplot2::scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90)) +
-    ggplot2::scale_fill_manual(values = c("Nowcast" = "#344b85", "Forecast" = "#b33c00")) +
-    ggplot2::labs(fill = "Estimate")
-  
-  
-  ## Confident ribbons
-  data <- data.table::as.data.table(data)
-  conf_data <- data.table::copy(data)[confidence == 1][type %in% "nowcast"]
-  
-  if (nrow(conf_data) > 0) {
-    plot <- plot +
-      ggplot2::geom_ribbon(data = conf_data,
-                           ggplot2::aes(ymin = bottom, ymax = top, fill = "Nowcast"),
-                           alpha = outer_alpha) +
-      ggplot2::geom_ribbon(data = conf_data,
-                           ggplot2::aes(ymin = lower, ymax = upper, fill = "Nowcast"),
-                           alpha = inner_alpha)
-    
-  }
-  
-  ## Not confident ribbons
-  varying_conf_data <- data.table::rbindlist(list(conf_data[.N],
-                                                  data[confidence != 1]), fill = TRUE)
-  
-  if (nrow(varying_conf_data) > 1) {
-    for (i in seq(2, nrow(varying_conf_data))) {
+  ## Add in reported data if present (either as column or as a line)
+  if (!missing(reported)) {
+    if (obs_as_col) {
       plot <- plot +
-        ggplot2::geom_ribbon(data = varying_conf_data[seq(i - 1, i),],
-                             ggplot2::aes(ymin = bottom, ymax = top, fill = "Nowcast"),
-                             alpha = varying_conf_data$confidence[i] * outer_alpha) +
-        ggplot2::geom_ribbon(data = varying_conf_data[seq(i - 1, i),],
-                             ggplot2::aes(ymin = lower, ymax = upper, fill = "Nowcast"),
-                             alpha = varying_conf_data$confidence[i] * inner_alpha)
-      
+        ggplot2::geom_col(data = reported,
+                          ggplot2::aes(y = confirm), fill = "grey", col = "white",
+                          show.legend = FALSE)
+    }else{
+      plot <- plot +
+        ggplot2::geom_line(data = reported, 
+                           ggplot2::aes(y = confirm, fill = NULL),
+                           size = 1.1, alpha = 0.5, col = "black") +
+        ggplot2::geom_point(data = reported,
+                            ggplot2::aes(y = confirm, fill = NULL),
+                            size = 1.1, alpha = 1, col = "black",
+                            show.legend = FALSE)
     }
   }
   
+  ## Plot estimates
   plot <- plot +
-    ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE,
-                                                 override.aes = list(alpha = 0.3)),
-                    alpha = FALSE, color = FALSE) + 
-    ggplot2::theme(legend.position = legend)
+    ggplot2::geom_vline(xintercept = estimate[type == "Estimate based on partial data"][date == max(date)]$date,
+                        linetype = 2) +
+    ggplot2::geom_linerange(ggplot2::aes(ymin = bottom, ymax = top), 
+                            alpha = 0.3, size = bar_width) +
+    ggplot2::geom_linerange(ggplot2::aes(ymin = lower, ymax = upper), 
+                            alpha = 0.6, size = bar_width) +
+    cowplot::theme_cowplot() +
+    ggplot2::theme(legend.position = "bottom") +
+    ggplot2::scale_color_brewer(palette = "Dark2") +
+    ggplot2::labs(y = ylab, x = "Date", col = "Type") +
+    ggplot2::expand_limits(y = 0) + 
+    ggplot2::scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
   
-  return(plot)
-}
-
-
-#' Add a Forecast to a Plot
-#' 
-#' @param plot `ggplot2` plot.
-#' @param forecast Dataframe containing a forecast with the following variables: `bottom`,
-#' `top`, `lower`, and `upper`.
-#'
-#' @return A `ggplot2` plot
-#' @export
-#' @importFrom ggplot2 geom_ribbon aes geom_line
-plot_forecast <- function(plot = NULL, forecast = NULL) {
-  
-  if (nrow(forecast) > 0) {
+  ## Add in a horiontal line if required
+  if (!missing(hline)) {
     plot <- plot + 
-      ggplot2::geom_ribbon(data = forecast,
-                           ggplot2::aes(ymin = bottom, ymax = top,
-                                        fill = "Forecast"),
-                           alpha = 0.075) +
-      ggplot2::geom_ribbon(data = forecast,
-                           ggplot2::aes(ymin = lower, ymax = upper,
-                                        fill = "Forecast"),
-                           alpha = 0.125) + 
-      ggplot2::geom_line(data = forecast, ggplot2::aes(y = bottom, alpha = 0.5)) +
-      ggplot2::geom_line(data = forecast, ggplot2::aes(y = top, alpha =  0.5))
-    
+      ggplot2::geom_hline(yintercept = hline, linetype = 2)
   }
+  
   
   return(plot)
 }
@@ -354,7 +326,6 @@ plot_grid <- function(regions = NULL, plot_object = "bigr_eff_plot.rds",
   
   return(suppressMessages(plot))
 }
-
 
 #' Plot a Summary of the Latest Results
 #'
