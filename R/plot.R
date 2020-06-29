@@ -2,24 +2,36 @@
 #'
 #' @param estimate A data.table of estimates containing the following variables: date, type
 #' (must contain "estimate", "estimate based on partial data" and optionally "forecast"), 
-#' @param reported 
-#' @param ylab 
-#' @param hline 
-#' @param bar_width 
-#' @param obs_as_col 
+#' @param reported A data.table of reported cases with the following variables: date, confirm.
+#' @param ylab Character string, defaulting to "Cases". Title for the plot y axis.
+#' @param hline Numeric, if supplied gives the horizontal intercept for a indicator line.
+#' @param bar_width Numeric, defaults to 1.5. The width of the estimate bar. Users will likely wish to tune
+#' this as their plot varies in size.
+#' @param obs_as_col Logical, defaults to `TRUE`. Should observed data, if supplied, be plotted using columns or 
+#' as points (linked using a line).
 #'
-#' @return
+#' @return A `ggplot2` object
 #' @export
-#'
+#' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point
+#' @importFrom stringr str_to_sentence
 #' @examples
 #' \dontrun{
 #' # first run the example in ?epinow
 #' 
-#' plot_estimates(estimate = out$estimates$summarised[variable == "reported_cases_rt"],
-#'                reported <- cases[, confirm := cases], 
+#' ## Plot infections
+#' plot_estimates(estimate = out$estimates$summarised[variable == "infections"][date <= as.Date("2020-03-04")],
+#'                reported = cases, 
 #'                ylab = "Cases")
 #' 
-#' 
+#' ## Plot reported cases estimated via Rt
+#' plot_estimates(estimate = out$estimates$summarised[variable == "reported_cases_rt"],
+#'                reported = cases, 
+#'                ylab = "Cases")
+#'                
+#'## Plot Rt estimates
+#'plot_estimates(estimate = out$estimates$summarised[variable == "R"],
+#'                ylab = "Effective Reproduction No.",
+#'                hline = 1)
 #' 
 #' }
 #' 

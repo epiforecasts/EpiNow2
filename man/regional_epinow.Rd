@@ -37,7 +37,10 @@ Estimates Rt by region. See the documentation for \code{epinow} for further info
 }
 \examples{
  \dontrun{
-## Requires additional packages:
+## optional additional packages:
+## remove forecast_model argument to no longer require these
+## install with 
+## install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
 library(EpiSoon)
 library(forecastHybrid)
 

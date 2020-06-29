@@ -91,6 +91,8 @@ of report and then save summary measures and plots.
 \dontrun{
 ## optional additional packages:
 ## remove forecast_model argument to no longer require these
+## install with 
+## install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
 library(EpiSoon)
 library(forecastHybrid)
 

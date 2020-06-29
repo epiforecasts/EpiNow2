@@ -16,6 +16,8 @@
 #' \dontrun{
 #' ## optional additional packages:
 #' ## remove forecast_model argument to no longer require these
+#' ## install with 
+#' ## install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
 #' library(EpiSoon)
 #' library(forecastHybrid)
 #' 
@@ -82,17 +84,19 @@ epinow <- function(reported_cases, family = "negbin",
     target_date <- max(reported_cases$date)
   }
   
-  if (!missing(target_folder)) {
+  if (missing(target_folder)) {
+    target_folder <- NULL
+  }
+  
+  
+  if (!is.null(target_folder)) {
     latest_folder <- file.path(target_folder, "latest")
     target_folder <- file.path(target_folder, target_date)
     
     if (!dir.exists(target_folder)) {
       dir.create(target_folder, recursive = TRUE)
     }
-  }else{
-    target_folder <- NULL
   }
-  
 # Make sure the horizon is as specified from the target date --------------
 
  if (horizon != 0 & !missing(forecast_model)) {
@@ -270,7 +274,10 @@ if (!is.null(target_folder)){
 #' @importFrom purrr safely map
 #' @examples
 #'  \dontrun{
-#' ## Requires additional packages:
+#' ## optional additional packages:
+#' ## remove forecast_model argument to no longer require these
+#' ## install with 
+#' ## install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
 #' library(EpiSoon)
 #' library(forecastHybrid)
 #' 
