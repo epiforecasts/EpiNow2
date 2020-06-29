@@ -186,7 +186,8 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
     model <- stanmodels$gamma
     data <- c(data,
               prior_mean = mean(values),
-              prior_sd = sd(values))
+              prior_sd = sd(values),
+              par_sigma = 1.0)
   }else if (dist %in% "lognormal") {
     model <- stanmodels$lnorm
     data <- c(data, 
