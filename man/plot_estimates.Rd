@@ -17,18 +17,20 @@ plot_estimates(
 \item{estimate}{A data.table of estimates containing the following variables: date, type
 (must contain "estimate", "estimate based on partial data" and optionally "forecast"),}
 
-\item{reported}{}
+\item{reported}{A data.table of reported cases with the following variables: date, confirm.}
 
-\item{ylab}{}
+\item{ylab}{Character string, defaulting to "Cases". Title for the plot y axis.}
 
-\item{hline}{}
+\item{hline}{Numeric, if supplied gives the horizontal intercept for a indicator line.}
 
-\item{bar_width}{}
+\item{bar_width}{Numeric, defaults to 1.5. The width of the estimate bar. Users will likely wish to tune
+this as their plot varies in size.}
 
-\item{obs_as_col}{}
+\item{obs_as_col}{Logical, defaults to \code{TRUE}. Should observed data, if supplied, be plotted using columns or
+as points (linked using a line).}
 }
 \value{
-
+A \code{ggplot2} object
 }
 \description{
 Plot Estimates
@@ -38,20 +40,19 @@ Plot Estimates
 # first run the example in ?epinow
 
 ## Plot infections
-plot_estimates(estimate = out$estimates$summarised[variable == "infections"],
-               reported <- cases[, confirm := cases], 
+plot_estimates(estimate = out$estimates$summarised[variable == "infections"][date <= as.Date("2020-03-04")],
+               reported = cases, 
                ylab = "Cases")
 
 ## Plot reported cases estimated via Rt
 plot_estimates(estimate = out$estimates$summarised[variable == "reported_cases_rt"],
-               reported <- cases[, confirm := cases], 
+               reported = cases, 
                ylab = "Cases")
                
 ## Plot Rt estimates
 plot_estimates(estimate = out$estimates$summarised[variable == "R"],
-               ylab = "Effective Reproduction No.")
-
-
+               ylab = "Effective Reproduction No.",
+               hline = 1)
 
 }
 
