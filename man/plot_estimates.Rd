@@ -37,9 +37,19 @@ Plot Estimates
 \dontrun{
 # first run the example in ?epinow
 
+## Plot infections
+plot_estimates(estimate = out$estimates$summarised[variable == "infections"],
+               reported <- cases[, confirm := cases], 
+               ylab = "Cases")
+
+## Plot reported cases estimated via Rt
 plot_estimates(estimate = out$estimates$summarised[variable == "reported_cases_rt"],
                reported <- cases[, confirm := cases], 
                ylab = "Cases")
+               
+## Plot Rt estimates
+plot_estimates(estimate = out$estimates$summarised[variable == "R"],
+               ylab = "Effective Reproduction No.")
 
 
 
