@@ -2,7 +2,7 @@
 % Please edit documentation in R/forecast_infections.R
 \name{forecast_infections}
 \alias{forecast_infections}
-\title{Estimate Infections and the Time-Varying Reproduction Number}
+\title{Forecast Infections and the Time-Varying Reproduction Number}
 \usage{
 forecast_infections(
   infections,
@@ -36,7 +36,9 @@ A list of \code{data.tables}. The first entry ("samples") contains raw forecast 
 summarised forecasts.
 }
 \description{
-Estimate Infections and the Time-Varying Reproduction Number
+This function provides optional tools for forecasting cases and Rt estimates using the timeseries methods
+(via the \code{EpiSoon} package). It requires the \code{Episoon} package. Installation instructions for the EpiSoon package are
+available \href{https://epiforecasts.io/EpiSoon/}{here}.
 }
 \examples{
 \dontrun{

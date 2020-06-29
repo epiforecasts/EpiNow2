@@ -1,5 +1,8 @@
-#' Estimate Infections and the Time-Varying Reproduction Number
+#' Forecast Infections and the Time-Varying Reproduction Number
 #'
+#' @description This function provides optional tools for forecasting cases and Rt estimates using the timeseries methods
+#' (via the `EpiSoon` package). It requires the `Episoon` package. Installation instructions for the EpiSoon package are
+#' available [here](https://epiforecasts.io/EpiSoon/).
 #' @param infections A data frame of cases by date of infection containing the following variables: date, mean, sd
 #' @param rts  A data frame of Rt estimates by date of infection containing the following variables: date, mean, sd
 #' @param ensemble_type Character string indicating the type of ensemble to use. By default this is 
@@ -13,7 +16,6 @@
 #' @export
 #' @importFrom data.table setDT := setorder setDTthreads
 #' @importFrom purrr safely map_dbl
-#' @importFrom EpiSoon forecast_rt
 #' @importFrom HDInterval hdi
 #' @importFrom truncnorm rtruncnorm
 #' @examples
