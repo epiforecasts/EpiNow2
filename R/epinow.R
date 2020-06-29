@@ -220,10 +220,9 @@ if (!is.null(target_folder)){
    }
    
 #  # Plot --------------------------------------------------------------------
-# 
-#    EpiNow2::plot_pipeline(target_folder = target_folder,
-#                          target_date = target_date,
-#                          report_forecast = report_forecast)
+
+   plots <- report_plots(summarised_estimates = estimates$summarised,
+                         reported = reported_cases, target_folder = target_folder)
 
  # Copy all results to latest folder ---------------------------------------
   if (!is.null(target_folder)) {  
@@ -253,6 +252,7 @@ if (!is.null(target_folder)){
      
      out$estimated_reported_cases <- estimated_reported_cases
      out$summary <- summary
+     out$plots <- plots
      return(out)
    }else{
      return(invisible(NULL))

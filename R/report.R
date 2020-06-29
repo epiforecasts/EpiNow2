@@ -18,7 +18,7 @@
 #' ## Define example cases
 #' cases <- data.table::as.data.table(EpiSoon::example_obs_cases) 
 #' 
-#' cases <- cases[, `:=`(confirm = as.integer(cases))]
+#' cases <- cases[, `:=`(confirm = as.integer(cases))][1:40]
 #' 
 #'  
 #' ## Set up example generation time
@@ -45,7 +45,7 @@
 #'                                     generation_time = generation_time,
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
-#'                                     samples = 1000, warmup = 500,
+#'                                     samples = 1000, warmup = 500, cores = 2
 #'                                     estimate_rt =  FALSE, verbose = TRUE)
 #'                             
 #'                      
@@ -198,4 +198,195 @@ report_summary <- function(summarised_estimates,
   )
 
   return(summary) 
+}
+
+
+
+#' Report plots
+#'
+#' @param summarised_estimates A data.table of summarised estimates containing the following variables:
+#'  variable, median, bottom, and top. It should contain the following estimates: R, infections, reported_cases_rt,
+#'   and r (rate of growth).
+#' @importFrom ggplot2 ggsave theme labs scale_x_date 
+#' @importFrom cowplot theme_cowplot
+#' @importFrom patchwork plot_layout
+#' @inheritParams plot_estimates
+#' @inheritParams epinow
+#' @return A `ggplot2` object
+#' @export
+#' @examples 
+#' \dontrun{
+#' ## Define example cases
+#' cases <- data.table::as.data.table(EpiSoon::example_obs_cases) 
+#' 
+#' cases <- cases[, `:=`(confirm = as.integer(cases))][1:40]
+#' 
+#'  
+#' ## Set up example generation time
+#' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
+#'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
+#'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
+#'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
+#'                         max = 30)
+#' ## Set                   
+#' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+#'                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+#'                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
+#'                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
+#'                           max = 30)
+#'                    
+#' reporting_delay <- list(mean = log(5),
+#'                         mean_sd = log(2),
+#'                         sd = log(2),
+#'                         sd_sd = log(1.5),
+#'                         max = 30)
+#'                         
+#' ## Run model
+#' out <- EpiNow2::estimate_infections(cases, family = "negbin",
+#'                                     generation_time = generation_time,
+#'                                     incubation_period = incubation_period,
+#'                                     reporting_delay = reporting_delay,
+#'                                     samples = 1000, warmup = 500, cores = 2,
+#'                                     horizon = 7, estimate_rt = TRUE, verbose = TRUE)
+#'                             
+#'                      
+#' ## Plot infections
+#' plots <- report_plots(summarised_estimates = out$summarised,
+#'                       reported = cases)
+#'                       
+#' plots
+#' }
+report_plots <- function(summarised_estimates, reported,
+                         target_folder, bar_width = 1.5) {
+  
+  
+  if (missing(target_folder)) {
+    target_folder <- NULL
+  }
+  
+# Infections plot ---------------------------------------------------------
+
+infections <- plot_estimates(estimate = summarised_estimates[variable == "infections"],
+                             reported = reported, bar_width = bar_width,
+                             ylab = "Cases by \n date of infection")
+  
+
+if (!is.null(target_folder)) {
+  suppressWarnings(
+    suppressMessages(
+      ggplot2::ggsave(paste0(target_folder, "/infections_plot.png"),
+                      infections,
+                      width = 12,
+                      height = 3,
+                      dpi = 320)
+    ))
+}
+
+# Cases by report ---------------------------------------------------------
+
+reports <- plot_estimates(estimate = summarised_estimates[variable == "reported_cases_rt"],
+                             reported = reported, bar_width = bar_width, 
+                             ylab = "Cases by \n date of report")
+
+if (!is.null(target_folder)) {
+  suppressWarnings(
+    suppressMessages(
+      ggplot2::ggsave(paste0(target_folder, "/reported_plot.png"),
+                      reports,
+                      width = 12,
+                      height = 3,
+                      dpi = 320)
+    ))
+}
+
+
+# R plot ------------------------------------------------------------------
+
+reff <- plot_estimates(estimate = summarised_estimates[variable == "R"],
+                       ylab = "Effective \n reproduction no.",
+                       hline = 1, bar_width = bar_width)
+
+
+if (!is.null(target_folder)) {
+  suppressWarnings(
+    suppressMessages(
+      ggplot2::ggsave(paste0(target_folder, "/reff_plot.png"),
+                      reff,
+                      width = 12,
+                      height = 3,
+                      dpi = 320)
+    ))
+}
+
+# r plot ------------------------------------------------------------------
+
+growth_rate <- plot_estimates(estimate = summarised_estimates[variable == "growth_rate"],
+                              ylab = "Growth rate",
+                              hline = 0, bar_width = bar_width)
+
+
+if (!is.null(target_folder)) {
+  suppressWarnings(
+    suppressMessages(
+      ggplot2::ggsave(paste0(target_folder, "/growth_rate_plot.png"),
+                      growth_rate,
+                      width = 12,
+                      height = 3,
+                      dpi = 320)
+    ))
+}
+
+
+# Summary plot ------------------------------------------------------------
+
+  
+  summary <- suppressWarnings(
+    suppressMessages(
+        reports +
+          ggplot2::theme(legend.position = "none") +
+          ggplot2::theme(
+            axis.text.x = ggplot2::element_blank(),
+            axis.title.x = ggplot2::element_blank(),
+            axis.ticks.x = ggplot2::element_blank()
+          ) +
+          ggplot2::labs(tag = "A") +
+        infections +
+          ggplot2::theme(legend.position = "none") + 
+          ggplot2::theme(
+            axis.text.x = ggplot2::element_blank(),
+            axis.title.x = ggplot2::element_blank(),
+            axis.ticks.x = ggplot2::element_blank()
+          ) +
+          ggplot2::labs(tag = "B") +
+        reff +
+          ggplot2::labs(tag = "C") +
+        patchwork::plot_layout(ncol = 1) &
+        ggplot2::scale_x_date(date_breaks = "1 week",
+                              date_labels = "%b %d",
+                              limits = c(min(summarised_estimates[variable == "R"]$date),
+                                         max(summarised_estimates[variable == "R"]$date)))
+    ))
+  
+  if (!is.null(target_folder)) {
+    suppressWarnings(
+      suppressMessages(
+        ggplot2::ggsave(paste0(target_folder, "/summary_plot.png"),
+                        summary,
+                        width = 12,
+                        height = 12,
+                        dpi = 320)
+      ))
+  }
+  
+  
+  ## Organise output
+  plots <- list(
+    infections = infections,
+    reports = reports,
+    reff = reff,
+    growth_rate = growth_rate,
+    summary = summary
+  )
+  
+  return(plots)
 }

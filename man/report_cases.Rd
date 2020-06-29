@@ -48,7 +48,7 @@ Report case counts by date of report
 ## Define example cases
 cases <- data.table::as.data.table(EpiSoon::example_obs_cases) 
 
-cases <- cases[, `:=`(confirm = as.integer(cases))]
+cases <- cases[, `:=`(confirm = as.integer(cases))][1:40]
 
  
 ## Set up example generation time
@@ -75,7 +75,7 @@ out <- EpiNow2::estimate_infections(cases, family = "negbin",
                                     generation_time = generation_time,
                                     incubation_period = incubation_period,
                                     reporting_delay = reporting_delay,
-                                    samples = 1000, warmup = 500,
+                                    samples = 1000, warmup = 500, cores = 2
                                     estimate_rt =  FALSE, verbose = TRUE)
                             
                      
