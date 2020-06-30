@@ -282,13 +282,6 @@ if (!is.null(target_folder)){
 #' @importFrom purrr safely map
 #' @examples
 #'  \dontrun{
-#' ## optional additional packages:
-#' ## remove forecast_model argument to no longer require these
-#' ## install with 
-#' ## install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
-#' library(EpiSoon)
-#' library(forecastHybrid)
-#' 
 #' ## Construct example distributions
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
 #'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
@@ -320,11 +313,6 @@ if (!is.null(target_folder)){
 #'                        generation_time = generation_time,
 #'                        incubation_period = incubation_period,
 #'                        reporting_delay = reporting_delay,
-#'                        forecast_model = function(y, ...){
-#'                          EpiSoon::forecastHybrid_model(
-#'                             y = y[max(1, length(y) - 21):length(y)],
-#'                             model_params = list(models = "aefz", weights = "equal"),
-#'                             forecast_params = list(PI.combination = "mean"), ...)},
 #'                        samples = 1000, warmup = 500, cores = 2, chains = 2,
 #'                        verbose = TRUE)
 #'}
