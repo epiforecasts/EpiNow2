@@ -80,6 +80,12 @@ forecast_infections <- function(infections, rts,
                                 samples = 1000){ 
   
 
+  
+  if (!library(EpiSoon, logical.return = TRUE)) {
+    stop('The EpiSoon package is missing. Install it with: 
+         install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")')
+  }
+  
 # Set to data.table if not ------------------------------------------------
 data.table::setDTthreads(1)
   

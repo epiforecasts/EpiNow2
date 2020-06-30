@@ -453,9 +453,9 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
 #' @importFrom lubridate days
 #' @examples
 #' 
-#' cases <- data.table::as.data.table(EpiSoon::example_obs_cases) 
+#' cases <- EpiNow2::example_confirmed
 #' 
-#' cases <- cases[, cases := as.integer(cases)] 
+#' cases <- cases[, cases := as.integer(confirm)] 
 #' 
 #' ## Reported case distribution
 #' print(cases)

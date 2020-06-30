@@ -57,6 +57,10 @@ A dataframe containing three variables: \code{date}, \code{cases} and \code{refe
 Simulate Cases by Date of Infection, Onset and Report
 }
 \examples{
+\dontrun{
+## Requires
+install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
+library(EpiSoon)
 ## Define an initial rt vector 
 rts <- c(rep(2, 20), (2 - 1:15 * 0.1), rep(0.5, 10))
 rts
@@ -97,4 +101,5 @@ simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.D
                       })
                    
 print(simulated_cases)
+}
 }

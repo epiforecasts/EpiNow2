@@ -65,9 +65,7 @@ reporting_delay <- list(mean = log(10),
                         max = 30)
                         
 ## Uses example case vector from EpiSoon
-cases <- data.table::setDT(EpiSoon::example_obs_cases)
-cases <- cases[, `:=`(confirm = as.integer(cases))][,
-                  cases := NULL][1:50]
+cases <- EpiNow2::example_confirmed[1:50]
 
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],

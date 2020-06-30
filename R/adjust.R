@@ -21,9 +21,7 @@
 #' @examples
 #' 
 #' ## Define example cases
-#' cases <- data.table::as.data.table(EpiSoon::example_obs_cases) 
-#' 
-#' cases <- cases[, `:=`(cases = as.integer(cases))]
+#' cases <- EpiNow2::example_confirmed[, `:=`(cases = as.integer(confirm))]
 #' 
 #' ## Define a single report delay distribution
 #' delay_def <- EpiNow2::lognorm_dist_def(mean = 5, 
