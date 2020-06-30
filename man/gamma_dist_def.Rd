@@ -26,6 +26,14 @@ gamma_dist_def(
 
 \item{scale_sd}{Numeric, standard deviation of the scale parameter.}
 
+\item{mean}{Numeric, log mean parameter of the gamma distribution.}
+
+\item{mean_sd}{Numeric, standard deviation of the log mean parameter.}
+
+\item{sd}{Numeric, log sd parameter of the gamma distribution.}
+
+\item{sd_sd}{Numeric, standard deviation of the log sd parameter.}
+
 \item{max_value}{Numeric, the maximum value to allow. Defaults to 120. Samples outside
 of this range are resampled.}
 

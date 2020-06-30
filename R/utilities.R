@@ -152,4 +152,5 @@ globalVariables(
     "sample_R", "sampled_r", "sd_R", "sd_rt", "Std(R)", "t_end", "t_start",
     "target_date", "time", "time_varying_r", "top", "total", "type", "upper", 
     "value", "var", "vars", "viridis_palette", "window", ".", "%>%",
-    "New confirmed cases by infection date", "Data", "R", "reference"))
+    "New confirmed cases by infection date", "Data", "R", "reference",
+    ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate", "point strat"))

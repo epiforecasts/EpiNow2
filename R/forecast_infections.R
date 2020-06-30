@@ -11,6 +11,9 @@
 #' for forecasting future Rt and case co An example of the required structure is: `function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}`.
 #' @param horizon Numeric, defaults to 14. The horizon over which to forecast Rts and cases.
 #' @param samples Numeric, the number of forecast samples to take.
+#' @param gt_mean Numeric, the mean of the gamma distributed generation time.
+#' @param gt_sd Numeric, the standard deviation of the gamma distributed generation time.
+#' @param gt_max Numeric, the maximum allowed value of the gamma distributed generation time.
 #' @return A list of `data.tables`. The first entry ("samples") contains raw forecast samples and the second entry ("summarised") contains
 #' summarised forecasts.
 #' @export
@@ -58,17 +61,18 @@
 #'                            verbose = TRUE, return_fit = TRUE)
 #'
 #' ## Forecast Rt and infections from estimates
-#' forecast <- forecast_infections(infections = out$summarised[variable == "infections"],
-#'                                 rts = out$summarised[variable == "R"],
-#'                                 gt_mean = out$summarised[variable == "gt_mean"]$mean,
-#'                                 gt_sd = out$summarised[variable == "gt_sd"]$mean,
-#'                                 gt_max = 30,
-#'                                 forecast_model = function(y, ...){
-#'                                    EpiSoon::forecastHybrid_model(y = y[max(1, length(y) - 21):length(y)],
-#'                                    model_params = list(models = "aefz", weights = "equal"),
-#'                                    forecast_params = list(PI.combination = "mean"), ...)},
-#'                                 horizon = 14, 
-#'                                 samples = 1000)
+#' forecast <- forecast_infections(
+#'     infections = out$summarised[variable == "infections"],
+#'     rts = out$summarised[variable == "R"],
+#'      gt_mean = out$summarised[variable == "gt_mean"]$mean,
+#'      gt_sd = out$summarised[variable == "gt_sd"]$mean,
+#'      gt_max = 30,
+#'      forecast_model = function(y, ...){
+#'        EpiSoon::forecastHybrid_model(y = y[max(1, length(y) - 21):length(y)],
+#'        model_params = list(models = "aefz", weights = "equal"),
+#'        forecast_params = list(PI.combination = "mean"), ...)},
+#'      horizon = 14, 
+#'      samples = 1000)
 #'                                 
 #' forecast
 #' }                              
@@ -81,7 +85,7 @@ forecast_infections <- function(infections, rts,
   
 
   
-  if (!library(EpiSoon, logical.return = TRUE)) {
+  if (!requireNamespace("EpiSoon", quietly = TRUE)) {
     stop('The EpiSoon package is missing. Install it with: 
          install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")')
   }
@@ -144,7 +148,7 @@ if (missing(forecast_model)) {
     
     ## Define with 0 day padding
     sample_fn <- function(n, ...) {
-      c(0, EpiNow::dist_skel(n = n,
+      c(0, EpiNow2::dist_skel(n = n,
                              model = "gamma",
                              params = params,
                              max_value = max_value,

@@ -33,15 +33,15 @@ Imports:
     rstan (>= 2.18.1),
     rstantools (>= 2.0.0),
     methods,
+    stats,
     HDInterval,
-    future.apply,
+    truncnorm,
     stringr,
     lubridate,
+    future.apply,
     ggplot2,
     cowplot,
-    patchwork,
-    R.devices,
-    truncnorm
+    patchwork
 Suggests:
     EpiSoon,
     dplyr,
