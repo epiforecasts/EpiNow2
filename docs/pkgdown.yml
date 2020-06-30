@@ -1,0 +1,9 @@
+pandoc: 2.3.1
+pkgdown: 1.5.1
+pkgdown_sha: ~
+articles: []
+last_built: 2020-06-30T17:48Z
+urls:
+  reference: epiforecasts.io/EpiNow2//reference
+  article: epiforecasts.io/EpiNow2//articles
+
