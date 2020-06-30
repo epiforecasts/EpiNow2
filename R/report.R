@@ -16,9 +16,7 @@
 #' @examples 
 #' \dontrun{
 #' ## Define example cases
-#' cases <- data.table::as.data.table(EpiSoon::example_obs_cases) 
-#' 
-#' cases <- cases[, `:=`(confirm = as.integer(cases))][1:40]
+#' cases <- EpiNow2::example_confirmed[1:40]
 #' 
 #'  
 #' ## Set up example generation time
@@ -217,9 +215,7 @@ report_summary <- function(summarised_estimates,
 #' @examples 
 #' \dontrun{
 #' ## Define example cases
-#' cases <- data.table::as.data.table(EpiSoon::example_obs_cases) 
-#' 
-#' cases <- cases[, `:=`(confirm = as.integer(cases))][1:40]
+#' cases <- EpiNow2::example_confirmed[1:40]
 #' 
 #'  
 #' ## Set up example generation time
