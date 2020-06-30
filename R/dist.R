@@ -229,6 +229,7 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
 #' @return A data.table definining the distribution as used by `dist_skel`
 #' @export
 #' @inheritParams dist_skel
+#' @inheritParams lognorm_dist_def
 #' @examples
 #' 
 #' ## Using estimated shape and scale

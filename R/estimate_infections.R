@@ -37,6 +37,7 @@
 #' @importFrom purrr transpose map_dbl
 #' @importFrom lubridate wday
 #' @importFrom truncnorm rtruncnorm
+#' @importFrom stats lm
 #' @importFrom HDInterval hdi
 #' @examples
 #' \dontrun{
@@ -136,7 +137,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   ## Forecast trend on reported cases using the last week of data
   final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
                                             t := 1:.N]
-  lm_model <- lm(log(confirm) ~ t, data = final_week)
+  lm_model <- stats::lm(log(confirm) ~ t, data = final_week)
   
   
   ## Estimate unreported future infections using a log linear model

@@ -65,7 +65,27 @@ library(EpiSoon)
 rts <- c(rep(2, 20), (2 - 1:15 * 0.1), rep(0.5, 10))
 rts
 ## Use the mean default generation interval for covid
-generation_interval <- rowMeans(EpiNow2::covid_generation_times)
+## Generation time
+generation_defs <- EpiNow2::gamma_dist_def(mean = generation_time$mean,
+                                          mean_sd = generation_time$mean_sd,
+                                          sd = generation_time$sd,
+                                          sd_sd = generation_time$sd_sd,
+                                          max_value = generation_time$max, samples = 1)
+                                          
+generate_pdf <- function(dist, max_value) {
+   ## Define with 0 day padding
+   sample_fn <- function(n, ...) {
+     c(0, EpiNow2::dist_skel(n = n,
+                 model = dist$model[[1]],
+                 params = dist$params[[1]],
+                 max_value = dist$max_value[[1]] - 1, 
+                 ...))
+                  }
+ dist_pdf <- sample_fn(0:(max_value - 1), dist = TRUE, cum = FALSE)
+ 
+ return(dist_pdf)}
+ 
+ generation_pdf <- generate_pdf(generation_defs, max_value = generation_defs$max)
 
 ## Sample a report delay as a lognormal
 delay_def <- EpiNow2::lognorm_dist_def(mean = 5, mean_sd = 1,
@@ -82,7 +102,7 @@ incubation_def <- EpiNow2::lognorm_dist_def(mean = EpiNow2::covid_incubation_per
 
 ## Simulate cases with a decrease in reporting at weekends and an increase on Monday                                     
 simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.Date("2020-03-01"),
-                    generation_interval = generation_interval, delay_def = delay_def, 
+                    generation_interval = generation_pdf, delay_def = delay_def, 
                    incubation_def = incubation_def, 
                    reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))
                    
@@ -92,7 +112,7 @@ print(simulated_cases)
 
 ## Simulate cases with a weekly reporting effect and stochastic noise in reporting (beyond the delay)                                  
 simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.Date("2020-03-01"),
-                    generation_interval = generation_interval, delay_def = delay_def, 
+                    generation_interval = generation_pdf, delay_def = delay_def, 
                    incubation_def = incubation_def, 
                    reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
                    reporting_model = function(n) {

@@ -37,12 +37,41 @@ Plot Estimates
 }
 \examples{
 \dontrun{
-# first run the example in ?epinow
+## Define example cases
+cases <- EpiNow2::example_confirmed[1:40]
 
+ 
+## Set up example generation time
+generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
+                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
+                        sd = EpiNow2::covid_generation_times[1, ]$sd,
+                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
+                        max = 30)
+## Set                   
+incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+                          mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+                          sd = EpiNow2::covid_incubation_period[1, ]$sd,
+                          sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
+                          max = 30)
+                   
+reporting_delay <- list(mean = log(5),
+                        mean_sd = log(2),
+                        sd = log(2),
+                        sd_sd = log(1.5),
+                        max = 30)
+                        
+## Run model
+out <- EpiNow2::estimate_infections(cases, family = "negbin",
+                                    generation_time = generation_time,
+                                    incubation_period = incubation_period,
+                                    reporting_delay = reporting_delay,
+                                    samples = 1000, warmup = 500, cores = 2,
+                                    horizon = 7, estimate_rt = TRUE, verbose = TRUE)
 ## Plot infections
-plot_estimates(estimate = out$estimates$summarised[variable == "infections"][date <= as.Date("2020-03-04")],
-               reported = cases, 
-               ylab = "Cases")
+plot_estimates(
+  estimate = out$estimates$summarised[variable == "infections"][date <= as.Date("2020-03-04")],
+  reported = cases, 
+  ylab = "Cases")
 
 ## Plot reported cases estimated via Rt
 plot_estimates(estimate = out$estimates$summarised[variable == "reported_cases_rt"],

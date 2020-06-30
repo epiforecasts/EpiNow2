@@ -21,6 +21,12 @@ forecast_infections(
 
 \item{rts}{A data frame of Rt estimates by date of infection containing the following variables: date, mean, sd}
 
+\item{gt_mean}{Numeric, the mean of the gamma distributed generation time.}
+
+\item{gt_sd}{Numeric, the standard deviation of the gamma distributed generation time.}
+
+\item{gt_max}{Numeric, the maximum allowed value of the gamma distributed generation time.}
+
 \item{ensemble_type}{Character string indicating the type of ensemble to use. By default this is
 an unweighted ensemble ("mean") with no other types currently supported.}
 
@@ -80,17 +86,18 @@ out <- estimate_infections(reported_cases, family = "negbin",
                            verbose = TRUE, return_fit = TRUE)
 
 ## Forecast Rt and infections from estimates
-forecast <- forecast_infections(infections = out$summarised[variable == "infections"],
-                                rts = out$summarised[variable == "R"],
-                                gt_mean = out$summarised[variable == "gt_mean"]$mean,
-                                gt_sd = out$summarised[variable == "gt_sd"]$mean,
-                                gt_max = 30,
-                                forecast_model = function(y, ...){
-                                   EpiSoon::forecastHybrid_model(y = y[max(1, length(y) - 21):length(y)],
-                                   model_params = list(models = "aefz", weights = "equal"),
-                                   forecast_params = list(PI.combination = "mean"), ...)},
-                                horizon = 14, 
-                                samples = 1000)
+forecast <- forecast_infections(
+    infections = out$summarised[variable == "infections"],
+    rts = out$summarised[variable == "R"],
+     gt_mean = out$summarised[variable == "gt_mean"]$mean,
+     gt_sd = out$summarised[variable == "gt_sd"]$mean,
+     gt_max = 30,
+     forecast_model = function(y, ...){
+       EpiSoon::forecastHybrid_model(y = y[max(1, length(y) - 21):length(y)],
+       model_params = list(models = "aefz", weights = "equal"),
+       forecast_params = list(PI.combination = "mean"), ...)},
+     horizon = 14, 
+     samples = 1000)
                                 
 forecast
 }                              
