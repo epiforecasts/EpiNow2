@@ -14,13 +14,6 @@
 #' 
 #' @examples
 #' \dontrun{
-#' ## optional additional packages:
-#' ## remove forecast_model argument to no longer require these
-#' ## install with 
-#' ## install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
-#' library(EpiSoon)
-#' library(forecastHybrid)
-#' 
 #' ## Construct example distributions
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
 #'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
@@ -38,9 +31,24 @@
 #' ## Set max allowed delay to 60 days to truncate computation
 #' reporting_delay$max <- 60
 #' 
-#' ## Uses example case vector from EpiSoon
-#' cases <- data.table::setDT(EpiSoon::example_obs_cases)
-#' cases <- cases[, confirm := as.integer(cases)][,cases := NULL][1:40]
+#' ## Example case data
+#' reported_cases <- EpiNow2::example_confirmed[1:40]
+#' 
+#' 
+#' 
+#' ## Report Rt along with forecasts
+#' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
+#'               incubation_period = incubation_period, reporting_delay = reporting_delay,
+#'               rt_prior = list(mean = 1, sd = 1),
+#'               samples = 1000, warmup = 500, cores = 2, chains = 2,
+#'               verbose = TRUE, return_fit = TRUE)
+#' 
+#' out
+#' 
+#' ## For optional forecasting
+#' # install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
+#' library(EpiSoon)
+#' library(forecastHybrid)
 #' 
 #' ## Report Rt along with forecasts
 #' out <- epinow(reported_cases = cases, generation_time = generation_time,

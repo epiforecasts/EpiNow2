@@ -40,11 +40,9 @@
 #' @importFrom HDInterval hdi
 #' @examples
 #' \dontrun{
-#' ## Get example case counts and format
-#' reported_cases <- NCoVUtils::get_ecdc_cases(countries = "Russia")
-#' reported_cases <- NCoVUtils::format_ecdc_data(reported_cases)
-#' reported_cases <- data.table::as.data.table(reported_cases)[, confirm := cases][, cases := NULL][1:90]
-#'  
+#' ## Get example case counts
+#' reported_cases <- EpiNow2::example_confirmed[1:40]
+#' 
 #' ## Set up example generation time
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
 #'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
