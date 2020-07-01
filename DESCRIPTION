@@ -59,7 +59,7 @@ Additional_repositories:
   https://epiforecasts.io/drat/,
   http://packages.ropensci.org/
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Biarch: true
 Depends: 
     R (>= 3.4.0)
