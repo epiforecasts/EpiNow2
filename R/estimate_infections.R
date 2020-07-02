@@ -64,7 +64,7 @@
 #'                         max = 30)
 #'                         
 #' ## Run model
-#' out <- EpiNow2::estimate_infections(reported_cases, family = "negbin",
+#' out <- estimate_infections(reported_cases, family = "negbin",
 #'                                     generation_time = generation_time,
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
@@ -72,7 +72,8 @@
 #'                                     rt_prior = list(mean = 1, sd = 1),
 #'                                     cores = 4, chains = 4,
 #'                                     estimate_rt = TRUE,
-#'                                     verbose = TRUE, return_fit = TRUE)
+#'                                     horizon = 7,
+#'                                     verbose = TRUE, return_fit = TRUE, model = model)
 #'
 #' out   
 #' }                                
@@ -155,6 +156,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   reported_cases <- reported_cases[, day_of_week := lubridate::wday(date, week_start = 1)]
   
+  
   # Define stan model parameters --------------------------------------------
   
   data <- list(
@@ -182,7 +184,15 @@ estimate_infections <- function(reported_cases, family = "negbin",
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0)
-  )  
+  ) 
+  
+  # Parameters for Hilbert space GP -----------------------------------------
+  
+  # no of basis functions for infections
+  data$M <- round(data$t * 0.1)
+  # Boundary value for c
+  data$L <- data$t * 2
+
   
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
@@ -194,7 +204,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   # Set up initial conditions fn --------------------------------------------
   
   init_fun <- function(){out <- list(
-    eta = rnorm(data$t, mean = 0, sd = 1),
+    eta = rnorm(data$M, mean = 0, sd = 1),
     rho = rlnorm(1, 1.609438, 0.5),
     alpha =  truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 1),
     inc_mean = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$mean, sd = incubation_period$mean_sd),
