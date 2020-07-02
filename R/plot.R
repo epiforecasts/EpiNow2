@@ -12,7 +12,7 @@
 #'
 #' @return A `ggplot2` object
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline
+#' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon
 #' @importFrom stringr str_to_sentence
 #' @importFrom cowplot theme_cowplot
 #' @examples
@@ -67,7 +67,7 @@
 #' 
 #' 
 plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
-                           bar_width = 1.5, obs_as_col = TRUE) {
+                           obs_as_col = TRUE) {
   
   ## Map type to presentation form
   estimate <- estimate[, type := stringr::str_to_sentence(type)]
@@ -98,10 +98,10 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   plot <- plot +
     ggplot2::geom_vline(xintercept = estimate[type == "Estimate based on partial data"][date == max(date)]$date,
                         linetype = 2) +
-    ggplot2::geom_linerange(ggplot2::aes(ymin = bottom, ymax = top), 
-                            alpha = 0.3, size = bar_width) +
-    ggplot2::geom_linerange(ggplot2::aes(ymin = lower, ymax = upper), 
-                            alpha = 0.6, size = bar_width) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin = bottom, ymax = top), 
+                         alpha = 0.3, size = bar_width) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper), 
+                         alpha = 0.6, size = bar_width) +
     cowplot::theme_cowplot() +
     ggplot2::theme(legend.position = "bottom") +
     ggplot2::scale_color_brewer(palette = "Dark2") +
