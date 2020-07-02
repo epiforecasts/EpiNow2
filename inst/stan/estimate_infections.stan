@@ -130,7 +130,6 @@ parameters{
   vector<lower = 0>[estimate_r] initial_R;            // baseline reproduction number estimate
   real<lower = 1> gt_mean[estimate_r];                // mean of generation time
   real <lower = 0> gt_sd[estimate_r];                 // sd of generation time
-  real<lower=0> inf_phi[model_type*estimate_r];       // overdispersion of the infection process
   real<lower=0> R_rho[estimate_r];                    // length scale of R GP
   real<lower=0> R_alpha[estimate_r];                  // scale of R GP
   vector[estimate_r > 0 ? rt : 0] R_eta;              // unconstrained R noise
@@ -283,11 +282,6 @@ model {
   // estimate reproduction no from a renewal equation
   //////////////////////////////////////////////////////
   if (estimate_r) {
-    // infection overdispersion
-    if(model_type) {
-      inf_phi ~ exponential(1);
-    }
-
   // prior on R
   initial_R[estimate_r] ~ gamma(r_alpha, r_beta);
     
@@ -302,7 +296,7 @@ model {
     
     // Likelihood of Rt given infections
     if (model_type) {
-      target += neg_binomial_2_lpmf(cases[(no_rt_time + 1):t_h] | branch_reports[1:rt_h], inf_phi[model_type*estimate_r]);
+      target += neg_binomial_2_lpmf(cases[(no_rt_time + 1):t_h] | branch_reports[1:rt_h], rep_phi[model_type]);
     }else{
       target += poisson_lpmf(cases[(no_rt_time + 1):t_h] | branch_reports[1:rt_h]);
     }
@@ -335,7 +329,7 @@ generated quantities {
   //simulate reported cases from the Rt model
   if (estimate_r) {
     if (model_type) {
-    imputed_branch_reports = neg_binomial_2_rng(branch_reports, inf_phi[model_type*estimate_r]);
+    imputed_branch_reports = neg_binomial_2_rng(branch_reports, rep_phi[model_type]);
    }else{
     imputed_branch_reports = poisson_rng(branch_reports);
   }
