@@ -189,10 +189,11 @@ estimate_infections <- function(reported_cases, family = "negbin",
   # Parameters for Hilbert space GP -----------------------------------------
   
   # no of basis functions for infections
-  data$M <- round(data$t * 0.1)
+  data$M <- ceiling(data$t * 0.1)
+  data$rM <- ceiling(data$rt * 0.1)
   # Boundary value for c
   data$L <- data$t * 2
-
+  data$rL <- data$rt * 2
   
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
@@ -219,7 +220,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   if (estimate_rt) {
     out$R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                           scale = (rt_prior$sd^2) / rt_prior$mean))
-    out$R_eta <- rnorm(data$rt, mean = 0, sd = 1)
+    out$R_eta <- rnorm(data$rM, mean = 0, sd = 1)
     out$R_rho <- array(rlnorm(1, 1.609438, 0.5))
     out$R_alpha <-  array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 1))
     out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 1, mean = generation_time$mean,  
