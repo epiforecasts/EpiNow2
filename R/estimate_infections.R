@@ -216,10 +216,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                                sd = generation_time$mean_sd))
     out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
                                               sd = generation_time$sd_sd))
-    
-    if (data$model_type == 1) {
-      out$inf_phi <- array(rexp(1, 1))
-    }
   }
   
   return(out)

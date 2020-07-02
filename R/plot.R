@@ -5,8 +5,6 @@
 #' @param reported A data.table of reported cases with the following variables: date, confirm.
 #' @param ylab Character string, defaulting to "Cases". Title for the plot y axis.
 #' @param hline Numeric, if supplied gives the horizontal intercept for a indicator line.
-#' @param bar_width Numeric, defaults to 1.5. The width of the estimate bar. Users will likely wish to tune
-#' this as their plot varies in size.
 #' @param obs_as_col Logical, defaults to `TRUE`. Should observed data, if supplied, be plotted using columns or 
 #' as points (linked using a line).
 #'
@@ -49,17 +47,17 @@
 #'                                     horizon = 7, estimate_rt = TRUE, verbose = TRUE)
 #' ## Plot infections
 #' plot_estimates(
-#'   estimate = out$estimates$summarised[variable == "infections"][date <= as.Date("2020-03-04")],
+#'   estimate = out$summarised[variable == "infections"],
 #'   reported = cases, 
 #'   ylab = "Cases")
 #' 
 #' ## Plot reported cases estimated via Rt
-#' plot_estimates(estimate = out$estimates$summarised[variable == "reported_cases_rt"],
+#' plot_estimates(estimate = out$summarised[variable == "reported_cases_rt"],
 #'                reported = cases, 
 #'                ylab = "Cases")
 #'                
 #'## Plot Rt estimates
-#'plot_estimates(estimate = out$estimates$summarised[variable == "R"],
+#'plot_estimates(estimate = out$summarised[variable == "R"],
 #'                ylab = "Effective Reproduction No.",
 #'                hline = 1)
 #' 
@@ -99,13 +97,14 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
     ggplot2::geom_vline(xintercept = estimate[type == "Estimate based on partial data"][date == max(date)]$date,
                         linetype = 2) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin = bottom, ymax = top), 
-                         alpha = 0.3, size = bar_width) +
-    ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper), 
-                         alpha = 0.6, size = bar_width) +
+                         alpha = 0.25, size = 0.2) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper, col = NULL), 
+                         alpha = 0.5) +
     cowplot::theme_cowplot() +
     ggplot2::theme(legend.position = "bottom") +
     ggplot2::scale_color_brewer(palette = "Dark2") +
-    ggplot2::labs(y = ylab, x = "Date", col = "Type") +
+    ggplot2::scale_fill_brewer(palette = "Dark2") +
+    ggplot2::labs(y = ylab, x = "Date", col = "Type", fill = "Type") +
     ggplot2::expand_limits(y = 0) + 
     ggplot2::scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
