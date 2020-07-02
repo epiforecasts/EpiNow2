@@ -4,19 +4,14 @@
 \alias{report_plots}
 \title{Report plots}
 \usage{
-report_plots(summarised_estimates, reported, target_folder, bar_width = 1.5)
+report_plots(summarised_estimates, reported, target_folder)
 }
 \arguments{
 \item{summarised_estimates}{A data.table of summarised estimates containing the following variables:
 variable, median, bottom, and top. It should contain the following estimates: R, infections, reported_cases_rt,
 and r (rate of growth).}
 
-\item{reported}{A data.table of reported cases with the following variables: date, confirm.}
-
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
-
-\item{bar_width}{Numeric, defaults to 1.5. The width of the estimate bar. Users will likely wish to tune
-this as their plot varies in size.}
 }
 \value{
 A \code{ggplot2} object
