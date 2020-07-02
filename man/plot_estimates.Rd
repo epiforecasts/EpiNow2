@@ -4,14 +4,7 @@
 \alias{plot_estimates}
 \title{Plot Estimates}
 \usage{
-plot_estimates(
-  estimate,
-  reported,
-  ylab = "Cases",
-  hline,
-  bar_width = 1.5,
-  obs_as_col = TRUE
-)
+plot_estimates(estimate, reported, ylab = "Cases", hline, obs_as_col = TRUE)
 }
 \arguments{
 \item{estimate}{A data.table of estimates containing the following variables: date, type
@@ -22,9 +15,6 @@ plot_estimates(
 \item{ylab}{Character string, defaulting to "Cases". Title for the plot y axis.}
 
 \item{hline}{Numeric, if supplied gives the horizontal intercept for a indicator line.}
-
-\item{bar_width}{Numeric, defaults to 1.5. The width of the estimate bar. Users will likely wish to tune
-this as their plot varies in size.}
 
 \item{obs_as_col}{Logical, defaults to \code{TRUE}. Should observed data, if supplied, be plotted using columns or
 as points (linked using a line).}

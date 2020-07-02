@@ -208,7 +208,6 @@ report_summary <- function(summarised_estimates,
 #' @importFrom ggplot2 ggsave theme labs scale_x_date 
 #' @importFrom cowplot theme_cowplot
 #' @importFrom patchwork plot_layout
-#' @inheritParams plot_estimates
 #' @inheritParams epinow
 #' @return A `ggplot2` object
 #' @export
@@ -253,7 +252,7 @@ report_summary <- function(summarised_estimates,
 #' plots
 #' }
 report_plots <- function(summarised_estimates, reported,
-                         target_folder, bar_width = 1.5) {
+                         target_folder) {
   
   
   if (missing(target_folder)) {
@@ -263,7 +262,7 @@ report_plots <- function(summarised_estimates, reported,
 # Infections plot ---------------------------------------------------------
 
 infections <- plot_estimates(estimate = summarised_estimates[variable == "infections"],
-                             reported = reported, bar_width = bar_width,
+                             reported = reported,
                              ylab = "Cases by \n date of infection")
   
 
@@ -281,8 +280,7 @@ if (!is.null(target_folder)) {
 # Cases by report ---------------------------------------------------------
 
 reports <- plot_estimates(estimate = summarised_estimates[variable == "reported_cases_rt"],
-                             reported = reported, bar_width = bar_width, 
-                             ylab = "Cases by \n date of report")
+                          reported = reported, ylab = "Cases by \n date of report")
 
 if (!is.null(target_folder)) {
   suppressWarnings(
@@ -299,8 +297,7 @@ if (!is.null(target_folder)) {
 # R plot ------------------------------------------------------------------
 
 reff <- plot_estimates(estimate = summarised_estimates[variable == "R"],
-                       ylab = "Effective \n reproduction no.",
-                       hline = 1, bar_width = bar_width)
+                       ylab = "Effective \n reproduction no.", hline = 1)
 
 
 if (!is.null(target_folder)) {
@@ -317,8 +314,7 @@ if (!is.null(target_folder)) {
 # r plot ------------------------------------------------------------------
 
 growth_rate <- plot_estimates(estimate = summarised_estimates[variable == "growth_rate"],
-                              ylab = "Growth rate",
-                              hline = 0, bar_width = bar_width)
+                              ylab = "Growth rate", hline = 0)
 
 
 if (!is.null(target_folder)) {

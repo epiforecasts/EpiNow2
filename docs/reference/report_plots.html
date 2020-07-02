@@ -121,7 +121,7 @@
     <p>Report plots</p>
     </div>
 
-    <pre class="usage"><span class='fu'>report_plots</span>(<span class='no'>summarised_estimates</span>, <span class='no'>reported</span>, <span class='no'>target_folder</span>, <span class='kw'>bar_width</span> <span class='kw'>=</span> <span class='fl'>1.5</span>)</pre>
+    <pre class="usage"><span class='fu'>report_plots</span>(<span class='no'>summarised_estimates</span>, <span class='no'>reported</span>, <span class='no'>target_folder</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -133,17 +133,8 @@ variable, median, bottom, and top. It should contain the following estimates: R,
 and r (rate of growth).</p></td>
     </tr>
     <tr>
-      <th>reported</th>
-      <td><p>A data.table of reported cases with the following variables: date, confirm.</p></td>
-    </tr>
-    <tr>
       <th>target_folder</th>
       <td><p>Character string specifying where to save results (will create if not present).</p></td>
-    </tr>
-    <tr>
-      <th>bar_width</th>
-      <td><p>Numeric, defaults to 1.5. The width of the estimate bar. Users will likely wish to tune
-this as their plot varies in size.</p></td>
     </tr>
     </table>
 

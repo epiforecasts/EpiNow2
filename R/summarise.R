@@ -177,13 +177,11 @@ regional_summary <- function(results_dir,
     plot_date <- as.Date(target_date)
   }
   
+  ## Get estimates
+  results <- EpiNow2::get_regional_results(results_dir, forecast = FALSE)
+  
   ## Get latest date
-  latest_date <- 
-    purrr::map_chr(regions, ~ as.character(
-      EpiNow2::get_raw_result("latest_date.rds", region = .,
-                                  target_date, results_dir)))
-  latest_date <- as.Date(latest_date)
-  latest_date <- max(latest_date, na.rm = TRUE)
+  latest_date <- max(results[, .SD[date == max(date)], by = .(region)]$date)
   
   if (!missing(summary_dir)) {
     saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
@@ -240,6 +238,9 @@ regional_summary <- function(results_dir,
   
   
   message("Plotting summary Rt and case plots")
+  
+  
+  
   
   ## Plot highest incidence countries
   high_cases_rt_plot <- suppressWarnings(
