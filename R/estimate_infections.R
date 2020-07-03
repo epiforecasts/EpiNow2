@@ -79,7 +79,7 @@
 #'                                     samples = 1000, warmup = 200,
 #'                                     rt_prior = list(mean = 1, sd = 1),
 #'                                     cores = 4, chains = 4, model = model,
-#'                                     estimate_rt = TRUE, horizon = 7,
+#'                                     estimate_rt = TRUE, horizon = 0,
 #'                                     verbose = TRUE, return_fit = TRUE)
 #'
 #' out   
@@ -87,8 +87,8 @@
 estimate_infections <- function(reported_cases, family = "negbin",
                                 incubation_period, reporting_delay,
                                 generation_time,
-                                infections_gp = list(basis_prop = 0.25, boundary_scale = 2),
-                                rt_gp = list(basis_prop = 0.25, boundary_scale = 2),
+                                infections_gp = list(basis_prop = 0.3, boundary_scale = 2),
+                                rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
                                 rt_prior = list(mean = 1, sd = 1),
                                 prior_smoothing_window = 7,
                                 horizon = 14,
@@ -228,7 +228,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                           scale = (rt_prior$sd^2) / rt_prior$mean))
     out$R_eta <- rnorm(data$rM, mean = 0, sd = 1)
     out$R_rho <- array(rlnorm(1, 1.609438, 0.5))
-    out$R_alpha <-  array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 1))
+    out$R_alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 1))
     out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 1, mean = generation_time$mean,  
                                                sd = generation_time$mean_sd))
     out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
