@@ -10,7 +10,9 @@ estimate_infections(
   incubation_period,
   reporting_delay,
   generation_time,
-  rt_prior,
+  infections_gp = list(basis_prop = 0.3, boundary_scale = 2),
+  rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
+  rt_prior = list(mean = 1, sd = 1),
   prior_smoothing_window = 7,
   horizon = 14,
   model,
@@ -44,6 +46,15 @@ on the log scale).}
 \item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
+
+\item{infections_gp}{List controlling the Gaussian process approximation for infections. Must contain
+the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
+between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
+Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
+increases the accuracy of the approximation at the cost of additional compute.
+See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.}
+
+\item{rt_gp}{List controlling Gaussian process approximation for Rt estimation. Defined as \code{infections_gp}.}
 
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
@@ -102,7 +113,7 @@ reporting_delay <- list(mean = log(5),
                         max = 30)
                         
 ## Run model
-out <- EpiNow2::estimate_infections(reported_cases, family = "negbin",
+out <- estimate_infections(reported_cases, family = "negbin",
                                     generation_time = generation_time,
                                     incubation_period = incubation_period,
                                     reporting_delay = reporting_delay,
@@ -110,7 +121,8 @@ out <- EpiNow2::estimate_infections(reported_cases, family = "negbin",
                                     rt_prior = list(mean = 1, sd = 1),
                                     cores = 4, chains = 4,
                                     estimate_rt = TRUE,
-                                    verbose = TRUE, return_fit = TRUE)
+                                    horizon = 7,
+                                    verbose = TRUE, return_fit = TRUE, model = model)
 
 out   
 }                                
