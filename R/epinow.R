@@ -59,7 +59,7 @@
 #'                      y = y[max(1, length(y) - 21):length(y)],
 #'                      model_params = list(models = "aefz", weights = "equal"),
 #'                      forecast_params = list(PI.combination = "mean"), ...)},
-#'                samples = 1000, warmup = 500, cores = 2, chains = 2,
+#'                samples = 1000, warmup = 500, cores = 4, chains = 4,
 #'                verbose = TRUE, return_fit = TRUE)
 #' 
 #' out
@@ -67,8 +67,8 @@
 epinow <- function(reported_cases, family = "negbin",
                    generation_time, incubation_period,
                    reporting_delay,
-                   infections_gp = list(basis_prop = 0.3, boundary_scale = 2),
-                   rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
+                   infections_gp = list(basis_prop = 0.25, boundary_scale = 2),
+                   rt_gp = list(basis_prop = 0.25, boundary_scale = 2),
                    rt_prior = list(mean = 1, sd = 1), model,
                    cores = 2, chains = 2,
                    samples = 2000, warmup = 500,
@@ -77,7 +77,7 @@ epinow <- function(reported_cases, family = "negbin",
                    ensemble_type = "mean",
                    return_estimates = TRUE,
                    target_folder, target_date,
-                   verbose = FALSE) {
+                   verbose = FALSE, debug = FALSE) {
  
  if (!return_estimates & missing(target_folder)) {
    stop("Either return estimates or save to a target folder")
@@ -141,7 +141,8 @@ if (!is.null(target_folder)) {
                                     warmup = warmup,
                                     estimate_rt = estimate_rt,
                                     horizon = horizon,
-                                    verbose = verbose, return_fit = return_fit) 
+                                    verbose = verbose, return_fit = return_fit,
+                                    debug = debug) 
  
 # Report estimates --------------------------------------------------------
   if (!is.null(target_folder)) {
