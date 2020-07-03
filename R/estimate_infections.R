@@ -25,7 +25,7 @@
 #' @param cores Numeric, defaults to 2. The number of cores to use when fitting the stan model.
 #' @param chains Numeric, defaults to 2. The number of MCMC chains to use.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
-#' @param warmup Numeric, defaults to 500. Number of iteration of warmup to use.
+#' @param warmup Numeric, defaults to 250. Number of iteration of warmup to use.
 #' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
 #' @param adapt_delta Numeric, defaults to 0.99. See ?rstan::sampling.
 #' @param max_treedepth Numeric, defaults to 15. See ?rstan::sampling.
@@ -76,7 +76,7 @@
 #'                                     generation_time = generation_time,
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
-#'                                     samples = 250, warmup = 250,
+#'                                     samples = 1000, warmup = 200,
 #'                                     rt_prior = list(mean = 1, sd = 1),
 #'                                     cores = 4, chains = 4, model = model,
 #'                                     estimate_rt = TRUE, horizon = 7,
@@ -93,7 +93,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 prior_smoothing_window = 7,
                                 horizon = 14,
                                 model, cores = 1, chains = 2,
-                                samples = 1000, warmup = 1000,
+                                samples = 1000, warmup = 250,
                                 estimate_rt = TRUE, adapt_delta = 0.99,
                                 max_treedepth = 15, return_fit = FALSE,
                                 verbose = FALSE, debug = FALSE){
@@ -166,8 +166,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
   # Define stan model parameters --------------------------------------------
   
   data <- list(
-    day_of_week = reported_cases$day_of_week,
-    cases = reported_cases[1:(.N - horizon)]$confirm,
+    day_of_week = reported_cases[(mean_shift + 1):.N]$day_of_week,
+    cases = reported_cases[(mean_shift + 1):(.N - horizon)]$confirm,
     shifted_cases = shifted_reported_cases$confirm,
     t = length(reported_cases$date),
     rt = length(reported_cases$date) - mean_shift,
@@ -245,7 +245,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   }
   
   if (verbose) {
-    message(paste0("Running for ", chains*samples," samples (across ", chains, 
+    message(paste0("Running for ", samples," samples (across ", chains, 
                    " chains each with a warm up of ", warmup, " iterations) and ",
                    data$t," time steps of which ", horizon, " are a forecast"))
 
@@ -256,7 +256,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                     data = data,
                     chains = chains,
                     init = init_fun,
-                    iter = samples + warmup, 
+                    iter = ceiling(samples / chains) + warmup, 
                     warmup = warmup,
                     cores = cores,
                     control = list(adapt_delta = adapt_delta,
@@ -301,7 +301,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   out$reported_cases <- extract_parameter("imputed_reports", 
                                           samples, 
-                                          reported_cases$date)
+                                          reported_cases$date[-(1:mean_shift)])
   
   if (estimate_rt) {
     out$R <- extract_parameter("R", 
