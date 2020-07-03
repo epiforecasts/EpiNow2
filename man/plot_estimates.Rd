@@ -59,17 +59,17 @@ out <- EpiNow2::estimate_infections(cases, family = "negbin",
                                     horizon = 7, estimate_rt = TRUE, verbose = TRUE)
 ## Plot infections
 plot_estimates(
-  estimate = out$estimates$summarised[variable == "infections"][date <= as.Date("2020-03-04")],
+  estimate = out$summarised[variable == "infections"],
   reported = cases, 
   ylab = "Cases")
 
 ## Plot reported cases estimated via Rt
-plot_estimates(estimate = out$estimates$summarised[variable == "reported_cases_rt"],
+plot_estimates(estimate = out$summarised[variable == "reported_cases_rt"],
                reported = cases, 
                ylab = "Cases")
                
 ## Plot Rt estimates
-plot_estimates(estimate = out$estimates$summarised[variable == "R"],
+plot_estimates(estimate = out$summarised[variable == "R"],
                ylab = "Effective Reproduction No.",
                hline = 1)
 

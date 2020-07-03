@@ -30,6 +30,13 @@
 #' @param adapt_delta Numeric, defaults to 0.99. See ?rstan::sampling.
 #' @param max_treedepth Numeric, defaults to 15. See ?rstan::sampling.
 #' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
+#' @param infections_gp List controlling the Gaussian process approximation for infections. Must contain
+#' the `basis_prop` (number of basis functions based on scaling the time points) which defaults to 0.3 and must be 
+#' between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute. 
+#' Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
+#' increases the accuracy of the approximation at the cost of additional compute. 
+#' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
+#' @param rt_gp List controlling Gaussian process approximation for Rt estimation. Defined as `infections_gp`.
 #' @param verbose Logical, defaults to FALSE. Should verbose progress messages be printed.
 #' @export
 #' @importFrom rstan sampling extract 
@@ -79,7 +86,10 @@
 #' }                                
 estimate_infections <- function(reported_cases, family = "negbin",
                                 incubation_period, reporting_delay,
-                                generation_time, rt_prior,
+                                generation_time,
+                                infections_gp = list(basis_prop = 0.3, boundary_scale = 2),
+                                rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
+                                rt_prior = list(mean = 1, sd = 1),
                                 prior_smoothing_window = 7,
                                 horizon = 14,
                                 model, cores = 1, chains = 2,
@@ -88,15 +98,12 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 max_treedepth = 15, return_fit = FALSE,
                                 verbose = FALSE){
   
+
+  # Set up data.table -------------------------------------------------------
+
   suppressMessages(data.table::setDTthreads(threads = cores))
   
   reported_cases <- data.table::setDT(reported_cases)
-  
-  # Add prior for R if missing ---------------------------------
-  
-  if (missing(rt_prior)) {
-    rt_prior <- list(mean = 1, sd = 1)
-  }
   
   # Make sure there are no missing dates and order cases --------------------
   reported_cases_grid <- data.table::copy(reported_cases)[, .(date = seq(min(date), max(date) + horizon, by = "days"))]
@@ -139,7 +146,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
   final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
                                             t := 1:.N]
   lm_model <- stats::lm(log(confirm) ~ t, data = final_week)
-  
   
   ## Estimate unreported future infections using a log linear model
   shifted_reported_cases <- shifted_reported_cases[, t := 1:.N][, 
@@ -188,12 +194,12 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   # Parameters for Hilbert space GP -----------------------------------------
   
-  # no of basis functions for infections
-  data$M <- ceiling(data$t * 0.1)
-  data$rM <- ceiling(data$rt * 0.1)
+  # no of basis functions
+  data$M <- ceiling(data$t * infections_gp$basis_prop)
+  data$rM <- ceiling(data$rt * rt_gp$basis_prop)
   # Boundary value for c
-  data$L <- data$t * 1.5
-  data$rL <- data$rt * 1.5
+  data$L <- data$t / 2 * infections_gp$boundary_scale
+  data$rL <- data$rt / 2 * rt_gp$boundary_scale
   
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
