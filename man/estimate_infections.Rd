@@ -10,8 +10,8 @@ estimate_infections(
   incubation_period,
   reporting_delay,
   generation_time,
-  infections_gp = list(basis_prop = 0.3, boundary_scale = 2),
-  rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
+  infections_gp = list(basis_prop = 0.25, boundary_scale = 2),
+  rt_gp = list(basis_prop = 0.25, boundary_scale = 2),
   rt_prior = list(mean = 1, sd = 1),
   prior_smoothing_window = 7,
   horizon = 14,
@@ -21,10 +21,11 @@ estimate_infections(
   samples = 1000,
   warmup = 1000,
   estimate_rt = TRUE,
-  adapt_delta = 0.99,
+  adapt_delta = 0.9999,
   max_treedepth = 15,
   return_fit = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  debug = FALSE
 )
 }
 \arguments{
@@ -48,7 +49,7 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 generation time (assuming a gamma distribution).}
 
 \item{infections_gp}{List controlling the Gaussian process approximation for infections. Must contain
-the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
+the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.25 and must be
 between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
 Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
@@ -82,7 +83,9 @@ for the prior based on reported cases.}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
-\item{verbose}{Logical, defaults to FALSE. Should verbose progress messages be printed.}
+\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
+
+\item{debug}{Logical, defaults to \code{FALSE}. Enables debug model in which additional diagnostics are available}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
@@ -117,12 +120,11 @@ out <- estimate_infections(reported_cases, family = "negbin",
                                     generation_time = generation_time,
                                     incubation_period = incubation_period,
                                     reporting_delay = reporting_delay,
-                                    samples = 1000, warmup = 500,
+                                    samples = 250, warmup = 250,
                                     rt_prior = list(mean = 1, sd = 1),
-                                    cores = 4, chains = 4,
-                                    estimate_rt = TRUE,
-                                    horizon = 7,
-                                    verbose = TRUE, return_fit = TRUE, model = model)
+                                    cores = 4, chains = 4, model = model,
+                                    estimate_rt = TRUE, horizon = 7,
+                                    verbose = TRUE, return_fit = TRUE)
 
 out   
 }                                
