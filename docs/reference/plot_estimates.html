@@ -188,17 +188,17 @@ as points (linked using a line).</p></td>
                                     <span class='kw'>horizon</span> <span class='kw'>=</span> <span class='fl'>7</span>, <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 <span class='co'>## Plot infections</span>
 <span class='fu'>plot_estimates</span>(
-  <span class='kw'>estimate</span> <span class='kw'>=</span> <span class='no'>out</span>$<span class='no'>estimates</span>$<span class='no'>summarised</span>[<span class='no'>variable</span> <span class='kw'>==</span> <span class='st'>"infections"</span>][<span class='no'>date</span> <span class='kw'>&lt;=</span> <span class='fu'><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></span>(<span class='st'>"2020-03-04"</span>)],
+  <span class='kw'>estimate</span> <span class='kw'>=</span> <span class='no'>out</span>$<span class='no'>summarised</span>[<span class='no'>variable</span> <span class='kw'>==</span> <span class='st'>"infections"</span>],
   <span class='kw'>reported</span> <span class='kw'>=</span> <span class='no'>cases</span>,
   <span class='kw'>ylab</span> <span class='kw'>=</span> <span class='st'>"Cases"</span>)
 
 <span class='co'>## Plot reported cases estimated via Rt</span>
-<span class='fu'>plot_estimates</span>(<span class='kw'>estimate</span> <span class='kw'>=</span> <span class='no'>out</span>$<span class='no'>estimates</span>$<span class='no'>summarised</span>[<span class='no'>variable</span> <span class='kw'>==</span> <span class='st'>"reported_cases_rt"</span>],
+<span class='fu'>plot_estimates</span>(<span class='kw'>estimate</span> <span class='kw'>=</span> <span class='no'>out</span>$<span class='no'>summarised</span>[<span class='no'>variable</span> <span class='kw'>==</span> <span class='st'>"reported_cases_rt"</span>],
                <span class='kw'>reported</span> <span class='kw'>=</span> <span class='no'>cases</span>,
                <span class='kw'>ylab</span> <span class='kw'>=</span> <span class='st'>"Cases"</span>)
 
 <span class='co'>## Plot Rt estimates</span>
-<span class='fu'>plot_estimates</span>(<span class='kw'>estimate</span> <span class='kw'>=</span> <span class='no'>out</span>$<span class='no'>estimates</span>$<span class='no'>summarised</span>[<span class='no'>variable</span> <span class='kw'>==</span> <span class='st'>"R"</span>],
+<span class='fu'>plot_estimates</span>(<span class='kw'>estimate</span> <span class='kw'>=</span> <span class='no'>out</span>$<span class='no'>summarised</span>[<span class='no'>variable</span> <span class='kw'>==</span> <span class='st'>"R"</span>],
                <span class='kw'>ylab</span> <span class='kw'>=</span> <span class='st'>"Effective Reproduction No."</span>,
                <span class='kw'>hline</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 

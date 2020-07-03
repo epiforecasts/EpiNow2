@@ -129,7 +129,9 @@ cases. It can optionally then estimate the time-varying reproduction number and 
   <span class='no'>incubation_period</span>,
   <span class='no'>reporting_delay</span>,
   <span class='no'>generation_time</span>,
-  <span class='no'>rt_prior</span>,
+  <span class='kw'>infections_gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.3</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
+  <span class='kw'>rt_gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.3</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
+  <span class='kw'>rt_prior</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>sd</span> <span class='kw'>=</span> <span class='fl'>1</span>),
   <span class='kw'>prior_smoothing_window</span> <span class='kw'>=</span> <span class='fl'>7</span>,
   <span class='kw'>horizon</span> <span class='kw'>=</span> <span class='fl'>14</span>,
   <span class='no'>model</span>,
@@ -175,6 +177,19 @@ on the log scale).</p></td>
       <td><p>A list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).</p></td>
+    </tr>
+    <tr>
+      <th>infections_gp</th>
+      <td><p>List controlling the Gaussian process approximation for infections. Must contain
+the <code>basis_prop</code> (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
+between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
+Must also contain the <code>boundary_scale</code> (multiplied by half the range of the input time series). Increasing this
+increases the accuracy of the approximation at the cost of additional compute.
+See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.</p></td>
+    </tr>
+    <tr>
+      <th>rt_gp</th>
+      <td><p>List controlling Gaussian process approximation for Rt estimation. Defined as <code>infections_gp</code>.</p></td>
     </tr>
     <tr>
       <th>rt_prior</th>
@@ -258,7 +273,7 @@ for the prior based on reported cases.</p></td>
                         <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>30</span>)
 
 <span class='co'>## Run model</span>
-<span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='fu'>estimate_infections</span>(<span class='no'>reported_cases</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
+<span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='fu'>estimate_infections</span>(<span class='no'>reported_cases</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
                                     <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
                                     <span class='kw'>incubation_period</span> <span class='kw'>=</span> <span class='no'>incubation_period</span>,
                                     <span class='kw'>reporting_delay</span> <span class='kw'>=</span> <span class='no'>reporting_delay</span>,
@@ -266,7 +281,8 @@ for the prior based on reported cases.</p></td>
                                     <span class='kw'>rt_prior</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>sd</span> <span class='kw'>=</span> <span class='fl'>1</span>),
                                     <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>,
                                     <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-                                    <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+                                    <span class='kw'>horizon</span> <span class='kw'>=</span> <span class='fl'>7</span>,
+                                    <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>model</span> <span class='kw'>=</span> <span class='no'>model</span>)
 
 <span class='no'>out</span>
 }</div></pre>
