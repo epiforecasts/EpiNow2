@@ -137,7 +137,7 @@ if (!is.null(target_folder)) {
                                     rt_prior = rt_prior,
                                     model = model,
                                     cores = cores, chains = chains,
-                                    samples = ceiling(samples / chains),
+                                    samples = samples,
                                     warmup = warmup,
                                     estimate_rt = estimate_rt,
                                     horizon = horizon,

@@ -95,7 +95,7 @@ estimates <- EpiNow2::epinow(reported_cases = reported_cases,
                              generation_time = generation_time,
                              incubation_period = incubation_period, 
                              reporting_delay = reporting_delay,
-                             horizon = 7, samples = 1000, warmup = 250, cores = 4,
+                             horizon = 7, samples = 1000, warmup = 200, cores = 4,
                              chains = 4, verbose = TRUE)
 
 names(estimates)
@@ -149,7 +149,7 @@ estimates <- EpiNow2::regional_epinow(reported_cases = reported_cases,
                                       incubation_period = incubation_period, 
                                       reporting_delay = reporting_delay,
                                       rt_prior = list(mean = 1, sd = 1), horizon = 7,
-                                      samples = 2000, warmup = 500, cores = 4, 
+                                      samples = 1000, warmup = 200, cores = 4, 
                                       chains = 4, verbose = TRUE)
 ```
 
