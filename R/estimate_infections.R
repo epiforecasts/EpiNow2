@@ -192,8 +192,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
   data$M <- ceiling(data$t * 0.1)
   data$rM <- ceiling(data$rt * 0.1)
   # Boundary value for c
-  data$L <- data$t * 2
-  data$rL <- data$rt * 2
+  data$L <- data$t * 1.5
+  data$rL <- data$rt * 1.5
   
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
