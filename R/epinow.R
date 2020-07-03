@@ -69,7 +69,7 @@ epinow <- function(reported_cases, family = "negbin",
                    reporting_delay,
                    infections_gp = list(basis_prop = 0.3, boundary_scale = 2),
                    rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
-                   rt_prior = list(mean = 1, sd = 1),
+                   rt_prior = list(mean = 1, sd = 1), model,
                    cores = 2, chains = 2,
                    samples = 2000, warmup = 500,
                    estimate_rt = TRUE, return_fit = FALSE,
@@ -123,6 +123,10 @@ if (!is.null(target_folder)) {
 
 # Estimate infections and Reproduction no ---------------------------------
 
+  if (missing(model)) {
+    model <- NULL
+  }
+  
    estimates <- estimate_infections(reported_cases = reported_cases,
                                     family = family,
                                     generation_time = generation_time,

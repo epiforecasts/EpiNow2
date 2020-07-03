@@ -239,13 +239,16 @@ estimate_infections <- function(reported_cases, family = "negbin",
   }
   
   # Load and run the stan model ---------------------------------------------
-  
-  if (missing(model)) {
+
+  if (missing(model) | is.null(model)) {
     model <- stanmodels$estimate_infections
   }
   
   if (verbose) {
-    message(paste0("Running for ", samples + warmup," samples and ", data$t," time steps of which ", horizon, " are a forecast"))
+    message(paste0("Running for ", chains*samples," samples (across ", chains, 
+                   " chains each with a warm up of ", warmup, " iterations) and ",
+                   data$t," time steps of which ", horizon, " are a forecast"))
+
   }
   
   fit <-
