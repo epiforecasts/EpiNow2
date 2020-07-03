@@ -13,6 +13,7 @@ epinow(
   infections_gp = list(basis_prop = 0.3, boundary_scale = 2),
   rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
   rt_prior = list(mean = 1, sd = 1),
+  model,
   cores = 2,
   chains = 2,
   samples = 2000,
@@ -59,6 +60,8 @@ See here: https://arxiv.org/abs/2004.11408 for more information on setting these
 
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
+
+\item{model}{A compiled stan model. By default uses the internal package model.}
 
 \item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
 
