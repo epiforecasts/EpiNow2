@@ -50,7 +50,7 @@
 #' @examples
 #' \dontrun{
 #' ## Get example case counts
-#' reported_cases <- EpiNow2::example_confirmed[1:40]
+#' reported_cases <- EpiNow2::example_confirmed[1:50]
 #' 
 #' ## Set up example generation time
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
@@ -94,7 +94,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 horizon = 14,
                                 model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 1000,
-                                estimate_rt = TRUE, adapt_delta = 0.9999,
+                                estimate_rt = TRUE, adapt_delta = 0.99,
                                 max_treedepth = 15, return_fit = FALSE,
                                 verbose = FALSE, debug = FALSE){
   
