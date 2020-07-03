@@ -126,11 +126,13 @@ of report and then save summary measures and plots.</p>
     <pre class="usage"><span class='fu'>epinow</span>(
   <span class='no'>reported_cases</span>,
   <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
-  <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
-  <span class='kw'>incubation_period</span> <span class='kw'>=</span> <span class='no'>incubation_period</span>,
-  <span class='kw'>reporting_delay</span> <span class='kw'>=</span> <span class='no'>reporting_delay</span>,
-  <span class='kw'>rt_prior</span> <span class='kw'>=</span> <span class='no'>rt_prior</span>,
-  <span class='kw'>model</span> <span class='kw'>=</span> <span class='no'>model</span>,
+  <span class='no'>generation_time</span>,
+  <span class='no'>incubation_period</span>,
+  <span class='no'>reporting_delay</span>,
+  <span class='kw'>infections_gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.3</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
+  <span class='kw'>rt_gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.3</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
+  <span class='kw'>rt_prior</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>sd</span> <span class='kw'>=</span> <span class='fl'>1</span>),
+  <span class='no'>model</span>,
   <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>,
   <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>2</span>,
   <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>2000</span>,
@@ -177,6 +179,19 @@ on the log scale).</p></td>
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale).</p></td>
+    </tr>
+    <tr>
+      <th>infections_gp</th>
+      <td><p>List controlling the Gaussian process approximation for infections. Must contain
+the <code>basis_prop</code> (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
+between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
+Must also contain the <code>boundary_scale</code> (multiplied by half the range of the input time series). Increasing this
+increases the accuracy of the approximation at the cost of additional compute.
+See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.</p></td>
+    </tr>
+    <tr>
+      <th>rt_gp</th>
+      <td><p>List controlling Gaussian process approximation for Rt estimation. Defined as <code>infections_gp</code>.</p></td>
     </tr>
     <tr>
       <th>rt_prior</th>
