@@ -199,13 +199,20 @@ transformed parameters {
 
   for (s in 1:t) {
     if(noise[s] == 0) {
-     noise[s] = 0.001;
+     noise[s] = 0.00001;
     }
   }
   
   // generate infections from prior infections and non-parameteric noise
   infections = shifted_cases .* noise;
   
+  // Make sure all infections have some postive value
+  for (s in 1:t) {
+    if (infections[s] == 0){
+      infections[s] = 0.00001; 
+      }
+    }
+       
   // onsets from infections
   onsets = convolve(infections, rev_incubation, 1);
 
@@ -257,7 +264,7 @@ transformed parameters {
          branch_infections[s + no_rt_time] = R[s] * infectiousness[s + no_rt_time];
          // Make sure all dates have a non-zero value
          if (branch_infections[s] == 0){
-            branch_infections[s] = 0.001; 
+            branch_infections[s] = 0.00001; 
          }
        }
        
@@ -282,8 +289,8 @@ transformed parameters {
 model {
   
   // priors for noise GP
-  rho ~ lognormal(1.609438, 1); //log(5)
-  alpha ~ std_normal();
+  rho ~  normal(0,2);
+  alpha ~ normal(0, 0.1);
   eta ~ std_normal();
 
   // reporting overdispersion
@@ -312,8 +319,8 @@ model {
   initial_R[estimate_r] ~ gamma(r_alpha, r_beta);
     
    // priors for R gp
-   R_rho ~ lognormal(1.609438, 1); //log(5)
-   R_alpha ~ std_normal();
+   R_rho ~  normal(0, 2);
+   R_alpha ~ normal(0, 0.1);
    R_eta ~ std_normal();
     
     // penalised_prior on generation interval

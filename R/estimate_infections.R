@@ -76,10 +76,10 @@
 #'                                     generation_time = generation_time,
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
-#'                                     samples = 1000, warmup = 200,
+#'                                     samples = 4000, warmup = 200,
 #'                                     rt_prior = list(mean = 1, sd = 1),
 #'                                     cores = 4, chains = 4, model = model,
-#'                                     estimate_rt = TRUE, horizon = 0,
+#'                                     estimate_rt = TRUE, horizon = 0, adapt_delta = 0.95,
 #'                                     verbose = TRUE, return_fit = TRUE)
 #'
 #' out   
@@ -94,7 +94,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 horizon = 14,
                                 model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 250,
-                                estimate_rt = TRUE, adapt_delta = 0.99,
+                                estimate_rt = TRUE, adapt_delta = 0.95,
                                 max_treedepth = 15, return_fit = FALSE,
                                 verbose = FALSE, debug = FALSE){
   
@@ -198,8 +198,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
   data$M <- ceiling(data$t * infections_gp$basis_prop)
   data$rM <- ceiling(data$rt * rt_gp$basis_prop)
   # Boundary value for c
-  data$L <- data$t / 2 * infections_gp$boundary_scale
-  data$rL <- data$rt / 2 * rt_gp$boundary_scale
+  data$L <- data$t * infections_gp$boundary_scale
+  data$rL <- data$rt * rt_gp$boundary_scale
   
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
@@ -212,8 +212,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   init_fun <- function(){out <- list(
     eta = rnorm(data$M, mean = 0, sd = 1),
-    rho = rlnorm(1, 1.609438, 0.5),
-    alpha =  truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 1),
+    rho = truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.2),
+    alpha =  truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1),
     inc_mean = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$mean, sd = incubation_period$mean_sd),
     inc_sd = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$sd, sd = incubation_period$sd_sd),
     rep_mean = truncnorm::rtruncnorm(1, a = 0, mean = reporting_delay$mean, sd = reporting_delay$mean_sd),
@@ -227,8 +227,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                           scale = (rt_prior$sd^2) / rt_prior$mean))
     out$R_eta <- rnorm(data$rM, mean = 0, sd = 1)
-    out$R_rho <- array(rlnorm(1, 1.609438, 0.5))
-    out$R_alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 1))
+    out$R_rho <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.2))
+    out$R_alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
     out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 1, mean = generation_time$mean,  
                                                sd = generation_time$mean_sd))
     out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
@@ -239,14 +239,17 @@ estimate_infections <- function(reported_cases, family = "negbin",
   }
   
   # Load and run the stan model ---------------------------------------------
-
-  if (missing(model) | is.null(model)) {
+  if (missing(model)) {
+    model <- NULL
+  }
+  
+  if (is.null(model)) {
     model <- stanmodels$estimate_infections
   }
   
   if (verbose) {
     message(paste0("Running for ", samples," samples (across ", chains, 
-                   " chains each with a warm up of ", warmup, " iterations) and ",
+                   " chains each with a warm up of ", warmup, " iterations each) and ",
                    data$t," time steps of which ", horizon, " are a forecast"))
 
   }
