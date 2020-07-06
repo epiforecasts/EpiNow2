@@ -94,7 +94,7 @@ cases. It can optionally then estimate the time-varying reproduction number and 
 \examples{
 \dontrun{
 ## Get example case counts
-reported_cases <- EpiNow2::example_confirmed[1:30]
+reported_cases <- EpiNow2::example_confirmed[1:50]
 
 ## Set up example generation time
 generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
@@ -120,10 +120,9 @@ out <- estimate_infections(reported_cases, family = "negbin",
                                     generation_time = generation_time,
                                     incubation_period = incubation_period,
                                     reporting_delay = reporting_delay,
-                                    samples = 1000, warmup = 200,
                                     rt_prior = list(mean = 1, sd = 1),
-                                    cores = 4, chains = 4,
-                                    estimate_rt = TRUE, horizon = 0,
+                                    cores = 4, chains = 4, 
+                                    estimate_rt = TRUE, 
                                     verbose = TRUE, return_fit = TRUE)
 
 out   
