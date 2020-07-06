@@ -70,7 +70,7 @@ Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
 
-\item{warmup}{Numeric, defaults to 500. Number of iteration of warmup to use.}
+\item{warmup}{Numeric, defaults to 250. Number of iteration of warmup to use.}
 
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 

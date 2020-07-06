@@ -10,8 +10,8 @@ estimate_infections(
   incubation_period,
   reporting_delay,
   generation_time,
-  infections_gp = list(basis_prop = 0.25, boundary_scale = 2),
-  rt_gp = list(basis_prop = 0.25, boundary_scale = 2),
+  infections_gp = list(basis_prop = 0.3, boundary_scale = 2),
+  rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
   rt_prior = list(mean = 1, sd = 1),
   prior_smoothing_window = 7,
   horizon = 14,
@@ -19,9 +19,9 @@ estimate_infections(
   cores = 1,
   chains = 2,
   samples = 1000,
-  warmup = 1000,
+  warmup = 250,
   estimate_rt = TRUE,
-  adapt_delta = 0.9999,
+  adapt_delta = 0.99,
   max_treedepth = 15,
   return_fit = FALSE,
   verbose = FALSE,
@@ -73,7 +73,7 @@ for the prior based on reported cases.}
 
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
 
-\item{warmup}{Numeric, defaults to 500. Number of iteration of warmup to use.}
+\item{warmup}{Numeric, defaults to 250. Number of iteration of warmup to use.}
 
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
@@ -94,7 +94,7 @@ cases. It can optionally then estimate the time-varying reproduction number and 
 \examples{
 \dontrun{
 ## Get example case counts
-reported_cases <- EpiNow2::example_confirmed[1:40]
+reported_cases <- EpiNow2::example_confirmed[1:30]
 
 ## Set up example generation time
 generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
@@ -120,10 +120,10 @@ out <- estimate_infections(reported_cases, family = "negbin",
                                     generation_time = generation_time,
                                     incubation_period = incubation_period,
                                     reporting_delay = reporting_delay,
-                                    samples = 250, warmup = 250,
+                                    samples = 1000, warmup = 200,
                                     rt_prior = list(mean = 1, sd = 1),
-                                    cores = 4, chains = 4, model = model,
-                                    estimate_rt = TRUE, horizon = 7,
+                                    cores = 4, chains = 4,
+                                    estimate_rt = TRUE, horizon = 0,
                                     verbose = TRUE, return_fit = TRUE)
 
 out   
