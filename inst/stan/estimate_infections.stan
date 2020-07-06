@@ -22,29 +22,6 @@ functions {
    return(convolved_cases);
   }
 
-  // apply backsampling and upscaling based on a pdf
-  vector backsample(vector cases, vector pdf) {
-    int t = num_elements(cases);
-    vector[t] backsampled_cases;
-    int max_upscale = min(t, num_elements(pdf));
-    int pdf_length = num_elements(pdf);
-    vector[pdf_length] cdf;
-    
-    backsampled_cases = convolve(cases, pdf, 0);
-    
-    // apply upscaling
-    cdf = cumulative_sum(pdf);
-    
-    for (i in  1:max_upscale) {
-      backsampled_cases[(t - i + 1)] = (backsampled_cases[(t - i + 1)] + 1) / cdf[i];
-    }
-    
-    //bound last day to equal day before
-    backsampled_cases[t] = backsampled_cases[t -1];
-    
-    return(backsampled_cases);
-  }
-  
   // discretised truncated lognormal pmf
   real discretised_lognormal_pmf(int y, real mu, real sigma, int max_val) {
     return((normal_cdf((log(y + 1) - mu) / sigma, 0.0, 1.0) - normal_cdf((log(y) - mu) / sigma, 0.0, 1.0)) / 
@@ -58,6 +35,32 @@ functions {
     real beta = (mu) / (sigma^2);
     return((gamma_cdf(y, alpha, beta) - gamma_cdf(y - 1, alpha, beta)) / gamma_cdf(max_val, alpha, beta));
   }
+  
+  // exponential quadratic kernal
+	real spd_SE(real alpha, real rho, real w) {
+		real S;
+		S = (alpha^2) * sqrt(2*pi()) * rho * exp(-0.5*(rho^2)*(w^2));
+				
+		return S;
+	}
+	
+	// basis function for approximate hilbert space gp
+	// see here for details: https://arxiv.org/pdf/2004.11408.pdf
+	vector phi_SE(real L, int m, vector x) {
+		vector[rows(x)] fi;
+		fi = 1/sqrt(L) * sin(m*pi()/(2*L) * (x+L));
+				
+		return fi;
+	}
+	
+	// eigenvalues for approximate hilbert space gp
+	// see here for details: https://arxiv.org/pdf/2004.11408.pdf
+	real lambda(real L, int m) {
+		real lam;
+		lam = ((m*pi())/(2*L))^2;
+				
+		return lam;
+	}
 }
 
 
@@ -65,8 +68,8 @@ data {
   int t;                             // number of time steps
   int rt;                            // time over which to estimate rt
   int horizon;                       // forecast horizon
-  int day_of_week[t];                // day of the week indicator (1 - 7)
-  int <lower = 0> cases[t - horizon];// observed cases
+  int day_of_week[rt];                // day of the week indicator (1 - 7)
+  int<lower = 0> cases[rt - horizon];// observed cases
   vector<lower = 0>[t] shifted_cases;// median shifted smoothed cases
   real inc_mean_sd;                  // prior sd of mean incubation period
   real inc_mean_mean;                // prior mean of mean incubation period
@@ -87,28 +90,29 @@ data {
   int max_gt;                        // maximum generation time
   int model_type;                    // type of model: 0 = poisson otherwise negative binomial
   int estimate_r;                    // should the reproduction no be estimated (1 = yes)
+  real L;				                     // boundary value for infections gp
+	int<lower=1> M;			               // basis functions for infections gp
+  real rL;				                   // boundary value for Rt gp
+	int<lower=1> rM;			             // basis functions for Rt gp
 }
 
 transformed data{
   real r_alpha;                      // alpha parameter of the R gamma prior
   real r_beta;                       // beta parameter of the R gamma prior
   vector[t] delta;                   // modifier to make GP + definite
-  real time[t];                      // time vector
+  vector[t] time;                    // time vector
   int no_rt_time;                    // time without estimating Rt
-  int t_h;                           // time minus the forecasting horizon
   int rt_h;                          // rt estimation time minus the forecasting horizon
+  matrix[t, M] PHI_inf;              // basis function for infections
+  matrix[rt - 1, rM] PHI_rt;         // basis function for Rt
   
   //Update time varables
-  t_h = t - horizon;
   rt_h = rt - horizon;
   
   // calculate alpha and beta for gamma distribution
   r_alpha = (r_mean / r_sd)^2;
   r_beta = r_mean / (r_sd^2);
   
-  // assign + definite term
-   delta = rep_vector(1e-9, t); 
-
   // make time vector
    for (s in 1:t) {
      time[s] = s;
@@ -116,6 +120,17 @@ transformed data{
    
    // time without estimating Rt is the differrence of t and rt
    no_rt_time = t - rt;
+   
+   // basis functions
+   // see here for details: https://arxiv.org/pdf/2004.11408.pdf
+   for (m in 1:M){ 
+     PHI_inf[,m] = phi_SE(L, m, time); 
+    }
+    
+   for (m in 1:rM){ 
+     PHI_rt[,m] = phi_SE(rL, m, time[1:(rt - 1)]); 
+    }
+    
 }
 parameters{
   simplex[7] day_of_week_eff_raw;                     // day of week reporting effect + control parameters
@@ -126,21 +141,22 @@ parameters{
   real<lower = 0> rep_phi[model_type];                // overdispersion of the reporting process
   real<lower=0> rho;                                  // length scale of noise GP
   real<lower=0> alpha;                                // scale of of noise GP
-  vector[t] eta;                                      // unconstrained noise
+  vector[M] eta;                                      // unconstrained noise
   vector<lower = 0>[estimate_r] initial_R;            // baseline reproduction number estimate
   real<lower = 1> gt_mean[estimate_r];                // mean of generation time
   real <lower = 0> gt_sd[estimate_r];                 // sd of generation time
   real<lower=0> R_rho[estimate_r];                    // length scale of R GP
   real<lower=0> R_alpha[estimate_r];                  // scale of R GP
-  vector[estimate_r > 0 ? rt : 0] R_eta;              // unconstrained R noise
+  vector[estimate_r > 0 ? rM : 0] R_eta;              // unconstrained R noise
 }
 
 transformed parameters {
   // stored transformed parameters
   vector<lower = 0>[t] noise;                             // noise on the mean shifted observed cases
   vector<lower = 0>[t] infections;                        // infections over time
-  vector<lower = 0>[t] reports;                           // reports over time
+  vector<lower = 0>[rt] reports;                          // reports over time
   vector[7] day_of_week_eff;                              // day of the week effect
+  vector[estimate_r > 0 ? t : 0] branch_infections;       // infections generated by the renewal equation
   vector[estimate_r > 0 ? rt : 0] branch_reports;         // reports generated by the renewal equation
   vector[estimate_r > 0 ? rt : 0] R;                      // reproduction number over time
   
@@ -152,12 +168,11 @@ transformed parameters {
   vector[estimate_r > 0 ? max_gt : 0] rev_generation_time;// reversed generation time pdf
   vector[estimate_r > 0 ? t : 0] infectiousness;          // infections over time
   vector[estimate_r > 0 ? t : 0] branch_onsets;           // onsets generated by the renewal equation
-  vector[estimate_r > 0 ? t : 0] branch_infections;       // infections generated by the renewal equation
-  matrix[t, t] K;                                         // covariance matrix 
-  matrix[t, t] L_K;                                       // cholesky docomposed covariance matrix
-  matrix[rt, rt] rK;                                      // covariance matrix for R estimation
-  matrix[rt, rt] rL_K;                                    // cholesky docomposed covariance matrix for R estimation
-  vector[estimate_r > 0 ? rt : 0] R_noise;                // noise on R centred on 1
+  vector[estimate_r > 0 ? rt - 1 : 0] R_noise;            // noise on R centred on 1
+  vector[M] diagSPD;                                      // spectral density for infections     
+	vector[M] SPD_eta;                                      // spectral density * noise for infections
+	vector[rM] R_diagSPD;                                   // spectracl density for Rt
+	vector[rM] R_SPD_eta;                                   // spectral density * noise for Rt
   
   // reverse the distributions to allow vectorised access
   for (j in 1:max_inc) {
@@ -173,30 +188,42 @@ transformed parameters {
   // define day of the week effect
   day_of_week_eff = 7 * day_of_week_eff_raw;
 
-  // GP in noise
-  K = cov_exp_quad(time, alpha, rho);
-  // diagonal elements with offset to make + definite
-  K = K + diag_matrix(delta);
+  // GP in noise - spectral densities
+	for(m in 1:M){ 
+		diagSPD[m] =  sqrt(spd_SE(alpha, rho, sqrt(lambda(L, m)))); 
+	}
+	
+	SPD_eta = diagSPD .* eta;
+	
+  noise = exp(PHI_inf[,] * SPD_eta);
 
-  L_K = cholesky_decompose(K);
-  noise = exp(L_K * eta);
-  
   for (s in 1:t) {
     if(noise[s] == 0) {
-      noise[s] = 0.001;
+     noise[s] = 0.00001;
     }
   }
-
+  
   // generate infections from prior infections and non-parameteric noise
   infections = shifted_cases .* noise;
   
+  // Make sure all infections have some postive value
+  for (s in 1:t) {
+    if (infections[s] == 0){
+      infections[s] = 0.00001; 
+      }
+    }
+       
   // onsets from infections
   onsets = convolve(infections, rev_incubation, 1);
 
   // reports from onsets
-  reports = convolve(onsets, rev_delay, 1);
-
-  for (s in 1:t) {
+ {
+   vector[t] reports_hold;
+   reports_hold = convolve(onsets, rev_delay, 1);
+   reports = reports_hold[(no_rt_time + 1):t];
+ }
+ 
+  for (s in 1:rt) {
     // add reporting effects (adjust for simplex scale)
     reports[s] *= day_of_week_eff[day_of_week[s]];
   }
@@ -215,26 +242,32 @@ transformed parameters {
      rev_generation_time[max_gt] = 0;
      
      infectiousness = convolve(infections, rev_generation_time, 1);
-
+     
      // Construct R over time
-      rK = cov_exp_quad(time[1:rt], R_alpha[estimate_r], R_rho[estimate_r]);
-     // diagonal elements with offset to make + definite
-      rK = rK + diag_matrix(delta[1:rt]);
-      rL_K = cholesky_decompose(rK);
-      R_noise = exp(rL_K * R_eta);
+     	for(m in 1:rM){ 
+     	  R_diagSPD[m] =  sqrt(spd_SE(R_alpha[estimate_r], R_rho[estimate_r], sqrt(lambda(rL, m)))); 
+     	}
+     	  
+     R_SPD_eta = R_diagSPD .* R_eta;
+	
+     R_noise = exp(PHI_rt[,] * R_SPD_eta);
   
+      R[1] = initial_R[estimate_r];
+      for (s in 2:rt) {
+        R[s] = R[s - 1] * R_noise[s - 1];
+      }
+      
      // Estimate infections using renewal equation
      branch_infections[1:no_rt_time] = infections[1:no_rt_time];
-     
+      
       for (s in 1:rt) {
-         R[s] = initial_R[estimate_r] * R_noise[s];
          branch_infections[s + no_rt_time] = R[s] * infectiousness[s + no_rt_time];
-         
          // Make sure all dates have a non-zero value
          if (branch_infections[s] == 0){
-            branch_infections[s] = 0.001; 
+            branch_infections[s] = 0.00001; 
          }
        }
+       
      // onsets from infections
      branch_onsets = convolve(branch_infections, rev_incubation, 1);
 
@@ -247,7 +280,7 @@ transformed parameters {
     
      for (s in 1:rt) {
       // add reporting effects (adjust for simplex scale)
-      branch_reports[s] *= (day_of_week_eff[day_of_week[s + no_rt_time]]);
+      branch_reports[s] *= (day_of_week_eff[day_of_week[s]]);
     }
   }
  }
@@ -256,8 +289,8 @@ transformed parameters {
 model {
   
   // priors for noise GP
-  rho ~ lognormal(1.609438, 0.5); //log(5)
-  alpha ~ std_normal();
+  rho ~  normal(0,2);
+  alpha ~ normal(0, 0.1);
   eta ~ std_normal();
 
   // reporting overdispersion
@@ -267,9 +300,9 @@ model {
   
   // daily cases given reports
   if (model_type) {
-    target += neg_binomial_2_lpmf(cases | reports[1:t_h], rep_phi[model_type]);
+    target += neg_binomial_2_lpmf(cases | reports[1:rt_h], rep_phi[model_type]);
   }else{
-    target += poisson_lpmf(cases | reports[1:t_h]);
+    target += poisson_lpmf(cases | reports[1:rt_h]);
   }
 
   // penalised priors for incubation period, and report delay
@@ -286,8 +319,8 @@ model {
   initial_R[estimate_r] ~ gamma(r_alpha, r_beta);
     
    // priors for R gp
-   R_rho ~ lognormal(1.609438, 0.5); //log(5)
-   R_alpha ~ std_normal();
+   R_rho ~  normal(0, 2);
+   R_alpha ~ normal(0, 0.1);
    R_eta ~ std_normal();
     
     // penalised_prior on generation interval
@@ -296,21 +329,27 @@ model {
     
     // Likelihood of Rt given infections
     if (model_type) {
-      target += neg_binomial_2_lpmf(cases[(no_rt_time + 1):t_h] | branch_reports[1:rt_h], rep_phi[model_type]);
+      target += neg_binomial_2_lpmf(cases | branch_reports[1:rt_h], rep_phi[model_type]);
     }else{
-      target += poisson_lpmf(cases[(no_rt_time + 1):t_h] | branch_reports[1:rt_h]);
+      target += poisson_lpmf(cases | branch_reports[1:rt_h]);
     }
   }
 }
   
 generated quantities {
   int imputed_infections[t];
-  int imputed_reports[t]; 
+  int imputed_infections_rt[estimate_r > 0 ? t : 0];
+  int imputed_reports[rt]; 
   int imputed_branch_reports[estimate_r > 0 ? rt : 0];
   real r[estimate_r > 0 ? rt : 0];
   
   // simulated infections - assume poisson (with negative binomial reporting)
   imputed_infections = poisson_rng(infections);
+  
+  //simulate infections from Rt
+  if (estimate_r) {
+    imputed_infections_rt = poisson_rng(branch_infections);
+  }
   
   // estimate the growth rate
   if (estimate_r) {

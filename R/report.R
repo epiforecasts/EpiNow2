@@ -261,7 +261,7 @@ report_plots <- function(summarised_estimates, reported,
   
 # Infections plot ---------------------------------------------------------
 
-infections <- plot_estimates(estimate = summarised_estimates[variable == "infections"],
+infections <- plot_estimates(estimate = summarised_estimates[variable == "infections_rt"],
                              reported = reported,
                              ylab = "Cases by \n date of infection")
   
