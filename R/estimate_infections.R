@@ -76,10 +76,9 @@
 #'                                     generation_time = generation_time,
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
-#'                                     samples = 1000, warmup = 250,
 #'                                     rt_prior = list(mean = 1, sd = 1),
 #'                                     cores = 4, chains = 4, 
-#'                                     estimate_rt = TRUE, horizon = 14,
+#'                                     estimate_rt = TRUE, 
 #'                                     verbose = TRUE, return_fit = TRUE)
 #'
 #' out   

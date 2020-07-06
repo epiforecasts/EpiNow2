@@ -5,7 +5,7 @@ Version: 0.3.0
 Authors@R: c(
     person(given = "Sam Abbott",
            role = c("aut", "cre"),
-           email = "contact@samabbott.co.uk",
+           email = "sam.abbott@lshtm.ac.uk",
            comment = c(ORCID = "0000-0001-8057-8037")),
     person("Joel", "Hellewell",
            email = "joel.hellewell@lshtm.ac.uk", 
@@ -16,7 +16,7 @@ Authors@R: c(
            role = c("aut")), 
     person("Katharine", "Sherratt",
            email = "katharine.sherratt@lshtm.ac.uk",
-           role = c("aut"),
+           role = c("aut")),
     person("Sophie", "Meakin", 
            email = "sophie.meaking@lshtm.ac.uk", 
            role = c("aut")), 

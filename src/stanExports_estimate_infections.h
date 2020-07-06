@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_estimate_infections");
-    reader.add_event(371, 369, "end", "model_estimate_infections");
+    reader.add_event(378, 376, "end", "model_estimate_infections");
     return reader;
 }
 template <typename T0__, typename T1__>
@@ -1233,112 +1233,123 @@ public:
                     current_statement_begin__ = 202;
                     stan::model::assign(noise, 
                                 stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
-                                0.001, 
+                                0.00001, 
                                 "assigning variable noise");
                 }
             }
             current_statement_begin__ = 207;
             stan::math::assign(infections, elt_multiply(shifted_cases, noise));
             current_statement_begin__ = 210;
+            for (int s = 1; s <= t; ++s) {
+                current_statement_begin__ = 211;
+                if (as_bool(logical_eq(get_base1(infections, s, "infections", 1), 0))) {
+                    current_statement_begin__ = 212;
+                    stan::model::assign(infections, 
+                                stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
+                                0.00001, 
+                                "assigning variable infections");
+                }
+            }
+            current_statement_begin__ = 217;
             stan::math::assign(onsets, convolve(infections, rev_incubation, 1, pstream__));
             {
-            current_statement_begin__ = 214;
+            current_statement_begin__ = 221;
             validate_non_negative_index("reports_hold", "t", t);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> reports_hold(t);
             stan::math::initialize(reports_hold, DUMMY_VAR__);
             stan::math::fill(reports_hold, DUMMY_VAR__);
-            current_statement_begin__ = 215;
+            current_statement_begin__ = 222;
             stan::math::assign(reports_hold, convolve(onsets, rev_delay, 1, pstream__));
-            current_statement_begin__ = 216;
+            current_statement_begin__ = 223;
             stan::math::assign(reports, stan::model::rvalue(reports_hold, stan::model::cons_list(stan::model::index_min_max((no_rt_time + 1), t), stan::model::nil_index_list()), "reports_hold"));
             }
-            current_statement_begin__ = 219;
+            current_statement_begin__ = 226;
             for (int s = 1; s <= rt; ++s) {
-                current_statement_begin__ = 221;
+                current_statement_begin__ = 228;
                 stan::model::assign(reports, 
                             stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
                             (stan::model::rvalue(reports, stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), "reports") * get_base1(day_of_week_eff, get_base1(day_of_week, s, "day_of_week", 1), "day_of_week_eff", 1)), 
                             "assigning variable reports");
             }
-            current_statement_begin__ = 227;
+            current_statement_begin__ = 234;
             if (as_bool(estimate_r)) {
-                current_statement_begin__ = 229;
+                current_statement_begin__ = 236;
                 for (int j = 1; j <= (max_gt - 1); ++j) {
-                    current_statement_begin__ = 230;
+                    current_statement_begin__ = 237;
                     stan::model::assign(rev_generation_time, 
                                 stan::model::cons_list(stan::model::index_uni(j), stan::model::nil_index_list()), 
                                 discretised_gamma_pmf((max_gt - j), get_base1(gt_mean, estimate_r, "gt_mean", 1), get_base1(gt_sd, estimate_r, "gt_sd", 1), max_gt, pstream__), 
                                 "assigning variable rev_generation_time");
                 }
-                current_statement_begin__ = 235;
+                current_statement_begin__ = 242;
                 stan::model::assign(rev_generation_time, 
                             stan::model::cons_list(stan::model::index_uni(max_gt), stan::model::nil_index_list()), 
                             0, 
                             "assigning variable rev_generation_time");
-                current_statement_begin__ = 237;
+                current_statement_begin__ = 244;
                 stan::math::assign(infectiousness, convolve(infections, rev_generation_time, 1, pstream__));
-                current_statement_begin__ = 240;
+                current_statement_begin__ = 247;
                 for (int m = 1; m <= rM; ++m) {
-                    current_statement_begin__ = 241;
+                    current_statement_begin__ = 248;
                     stan::model::assign(R_diagSPD, 
                                 stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()), 
                                 stan::math::sqrt(spd_SE(get_base1(R_alpha, estimate_r, "R_alpha", 1), get_base1(R_rho, estimate_r, "R_rho", 1), stan::math::sqrt(lambda(rL, m, pstream__)), pstream__)), 
                                 "assigning variable R_diagSPD");
                 }
-                current_statement_begin__ = 244;
+                current_statement_begin__ = 251;
                 stan::math::assign(R_SPD_eta, elt_multiply(R_diagSPD, R_eta));
-                current_statement_begin__ = 246;
+                current_statement_begin__ = 253;
                 stan::math::assign(R_noise, stan::math::exp(multiply(stan::model::rvalue(PHI_rt, stan::model::cons_list(stan::model::index_omni(), stan::model::cons_list(stan::model::index_omni(), stan::model::nil_index_list())), "PHI_rt"), R_SPD_eta)));
-                current_statement_begin__ = 248;
+                current_statement_begin__ = 255;
                 stan::model::assign(R, 
                             stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
                             get_base1(initial_R, estimate_r, "initial_R", 1), 
                             "assigning variable R");
-                current_statement_begin__ = 249;
+                current_statement_begin__ = 256;
                 for (int s = 2; s <= rt; ++s) {
-                    current_statement_begin__ = 250;
+                    current_statement_begin__ = 257;
                     stan::model::assign(R, 
                                 stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
                                 (get_base1(R, (s - 1), "R", 1) * get_base1(R_noise, (s - 1), "R_noise", 1)), 
                                 "assigning variable R");
                 }
-                current_statement_begin__ = 254;
+                current_statement_begin__ = 261;
                 stan::model::assign(branch_infections, 
                             stan::model::cons_list(stan::model::index_min_max(1, no_rt_time), stan::model::nil_index_list()), 
                             stan::model::rvalue(infections, stan::model::cons_list(stan::model::index_min_max(1, no_rt_time), stan::model::nil_index_list()), "infections"), 
                             "assigning variable branch_infections");
-                current_statement_begin__ = 256;
+                current_statement_begin__ = 263;
                 for (int s = 1; s <= rt; ++s) {
-                    current_statement_begin__ = 257;
+                    current_statement_begin__ = 264;
                     stan::model::assign(branch_infections, 
                                 stan::model::cons_list(stan::model::index_uni((s + no_rt_time)), stan::model::nil_index_list()), 
                                 (get_base1(R, s, "R", 1) * get_base1(infectiousness, (s + no_rt_time), "infectiousness", 1)), 
                                 "assigning variable branch_infections");
-                    current_statement_begin__ = 259;
+                    current_statement_begin__ = 266;
                     if (as_bool(logical_eq(get_base1(branch_infections, s, "branch_infections", 1), 0))) {
-                        current_statement_begin__ = 260;
+                        current_statement_begin__ = 267;
                         stan::model::assign(branch_infections, 
                                     stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
-                                    0.001, 
+                                    0.00001, 
                                     "assigning variable branch_infections");
                     }
                 }
-                current_statement_begin__ = 265;
+                current_statement_begin__ = 272;
                 stan::math::assign(branch_onsets, convolve(branch_infections, rev_incubation, 1, pstream__));
                 {
-                current_statement_begin__ = 269;
+                current_statement_begin__ = 276;
                 validate_non_negative_index("branch_reports_hold", "(logical_gt(estimate_r, 0) ? t : 0 )", (logical_gt(estimate_r, 0) ? t : 0 ));
                 Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> branch_reports_hold((logical_gt(estimate_r, 0) ? t : 0 ));
                 stan::math::initialize(branch_reports_hold, DUMMY_VAR__);
                 stan::math::fill(branch_reports_hold, DUMMY_VAR__);
-                current_statement_begin__ = 270;
+                current_statement_begin__ = 277;
                 stan::math::assign(branch_reports_hold, convolve(branch_onsets, rev_delay, 1, pstream__));
-                current_statement_begin__ = 271;
+                current_statement_begin__ = 278;
                 stan::math::assign(branch_reports, stan::model::rvalue(branch_reports_hold, stan::model::cons_list(stan::model::index_min_max((no_rt_time + 1), t), stan::model::nil_index_list()), "branch_reports_hold"));
                 }
-                current_statement_begin__ = 274;
+                current_statement_begin__ = 281;
                 for (int s = 1; s <= rt; ++s) {
-                    current_statement_begin__ = 276;
+                    current_statement_begin__ = 283;
                     stan::model::assign(branch_reports, 
                                 stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
                                 (stan::model::rvalue(branch_reports, stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), "branch_reports") * get_base1(day_of_week_eff, get_base1(day_of_week, s, "day_of_week", 1), "day_of_week_eff", 1)), 
@@ -1416,53 +1427,53 @@ public:
                 }
             }
             // model body
-            current_statement_begin__ = 285;
-            lp_accum__.add(lognormal_log<propto__>(rho, 1.609438, 1));
-            current_statement_begin__ = 286;
-            lp_accum__.add(std_normal_log<propto__>(alpha));
-            current_statement_begin__ = 287;
+            current_statement_begin__ = 292;
+            lp_accum__.add(normal_log<propto__>(rho, 0, 2));
+            current_statement_begin__ = 293;
+            lp_accum__.add(normal_log<propto__>(alpha, 0, 0.1));
+            current_statement_begin__ = 294;
             lp_accum__.add(std_normal_log<propto__>(eta));
-            current_statement_begin__ = 290;
+            current_statement_begin__ = 297;
             if (as_bool(model_type)) {
-                current_statement_begin__ = 291;
+                current_statement_begin__ = 298;
                 lp_accum__.add(exponential_log<propto__>(get_base1(rep_phi, model_type, "rep_phi", 1), 1));
             }
-            current_statement_begin__ = 295;
+            current_statement_begin__ = 302;
             if (as_bool(model_type)) {
-                current_statement_begin__ = 296;
+                current_statement_begin__ = 303;
                 lp_accum__.add(neg_binomial_2_log(cases, stan::model::rvalue(reports, stan::model::cons_list(stan::model::index_min_max(1, rt_h), stan::model::nil_index_list()), "reports"), get_base1(rep_phi, model_type, "rep_phi", 1)));
             } else {
-                current_statement_begin__ = 298;
+                current_statement_begin__ = 305;
                 lp_accum__.add(poisson_log(cases, stan::model::rvalue(reports, stan::model::cons_list(stan::model::index_min_max(1, rt_h), stan::model::nil_index_list()), "reports")));
             }
-            current_statement_begin__ = 302;
+            current_statement_begin__ = 309;
             lp_accum__.add((normal_log(inc_mean, inc_mean_mean, inc_mean_sd) * t));
-            current_statement_begin__ = 303;
-            lp_accum__.add((normal_log(inc_sd, inc_sd_mean, inc_sd_sd) * t));
-            current_statement_begin__ = 304;
-            lp_accum__.add((normal_log(rep_mean, rep_mean_mean, rep_mean_sd) * t));
-            current_statement_begin__ = 305;
-            lp_accum__.add((normal_log(rep_sd, rep_sd_mean, rep_sd_sd) * t));
             current_statement_begin__ = 310;
+            lp_accum__.add((normal_log(inc_sd, inc_sd_mean, inc_sd_sd) * t));
+            current_statement_begin__ = 311;
+            lp_accum__.add((normal_log(rep_mean, rep_mean_mean, rep_mean_sd) * t));
+            current_statement_begin__ = 312;
+            lp_accum__.add((normal_log(rep_sd, rep_sd_mean, rep_sd_sd) * t));
+            current_statement_begin__ = 317;
             if (as_bool(estimate_r)) {
-                current_statement_begin__ = 312;
+                current_statement_begin__ = 319;
                 lp_accum__.add(gamma_log<propto__>(get_base1(initial_R, estimate_r, "initial_R", 1), r_alpha, r_beta));
-                current_statement_begin__ = 315;
-                lp_accum__.add(lognormal_log<propto__>(R_rho, 1.609438, 1));
-                current_statement_begin__ = 316;
-                lp_accum__.add(std_normal_log<propto__>(R_alpha));
-                current_statement_begin__ = 317;
-                lp_accum__.add(std_normal_log<propto__>(R_eta));
-                current_statement_begin__ = 320;
-                lp_accum__.add((normal_log(gt_mean, gt_mean_mean, gt_mean_sd) * rt));
-                current_statement_begin__ = 321;
-                lp_accum__.add((normal_log(gt_sd, gt_sd_mean, gt_sd_sd) * rt));
+                current_statement_begin__ = 322;
+                lp_accum__.add(normal_log<propto__>(R_rho, 0, 2));
+                current_statement_begin__ = 323;
+                lp_accum__.add(normal_log<propto__>(R_alpha, 0, 0.1));
                 current_statement_begin__ = 324;
+                lp_accum__.add(std_normal_log<propto__>(R_eta));
+                current_statement_begin__ = 327;
+                lp_accum__.add((normal_log(gt_mean, gt_mean_mean, gt_mean_sd) * rt));
+                current_statement_begin__ = 328;
+                lp_accum__.add((normal_log(gt_sd, gt_sd_mean, gt_sd_sd) * rt));
+                current_statement_begin__ = 331;
                 if (as_bool(model_type)) {
-                    current_statement_begin__ = 325;
+                    current_statement_begin__ = 332;
                     lp_accum__.add(neg_binomial_2_log(cases, stan::model::rvalue(branch_reports, stan::model::cons_list(stan::model::index_min_max(1, rt_h), stan::model::nil_index_list()), "branch_reports"), get_base1(rep_phi, model_type, "rep_phi", 1)));
                 } else {
-                    current_statement_begin__ = 327;
+                    current_statement_begin__ = 334;
                     lp_accum__.add(poisson_log(cases, stan::model::rvalue(branch_reports, stan::model::cons_list(stan::model::index_min_max(1, rt_h), stan::model::nil_index_list()), "branch_reports")));
                 }
             }
@@ -1826,112 +1837,123 @@ public:
                     current_statement_begin__ = 202;
                     stan::model::assign(noise, 
                                 stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
-                                0.001, 
+                                0.00001, 
                                 "assigning variable noise");
                 }
             }
             current_statement_begin__ = 207;
             stan::math::assign(infections, elt_multiply(shifted_cases, noise));
             current_statement_begin__ = 210;
+            for (int s = 1; s <= t; ++s) {
+                current_statement_begin__ = 211;
+                if (as_bool(logical_eq(get_base1(infections, s, "infections", 1), 0))) {
+                    current_statement_begin__ = 212;
+                    stan::model::assign(infections, 
+                                stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
+                                0.00001, 
+                                "assigning variable infections");
+                }
+            }
+            current_statement_begin__ = 217;
             stan::math::assign(onsets, convolve(infections, rev_incubation, 1, pstream__));
             {
-            current_statement_begin__ = 214;
+            current_statement_begin__ = 221;
             validate_non_negative_index("reports_hold", "t", t);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> reports_hold(t);
             stan::math::initialize(reports_hold, DUMMY_VAR__);
             stan::math::fill(reports_hold, DUMMY_VAR__);
-            current_statement_begin__ = 215;
+            current_statement_begin__ = 222;
             stan::math::assign(reports_hold, convolve(onsets, rev_delay, 1, pstream__));
-            current_statement_begin__ = 216;
+            current_statement_begin__ = 223;
             stan::math::assign(reports, stan::model::rvalue(reports_hold, stan::model::cons_list(stan::model::index_min_max((no_rt_time + 1), t), stan::model::nil_index_list()), "reports_hold"));
             }
-            current_statement_begin__ = 219;
+            current_statement_begin__ = 226;
             for (int s = 1; s <= rt; ++s) {
-                current_statement_begin__ = 221;
+                current_statement_begin__ = 228;
                 stan::model::assign(reports, 
                             stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
                             (stan::model::rvalue(reports, stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), "reports") * get_base1(day_of_week_eff, get_base1(day_of_week, s, "day_of_week", 1), "day_of_week_eff", 1)), 
                             "assigning variable reports");
             }
-            current_statement_begin__ = 227;
+            current_statement_begin__ = 234;
             if (as_bool(estimate_r)) {
-                current_statement_begin__ = 229;
+                current_statement_begin__ = 236;
                 for (int j = 1; j <= (max_gt - 1); ++j) {
-                    current_statement_begin__ = 230;
+                    current_statement_begin__ = 237;
                     stan::model::assign(rev_generation_time, 
                                 stan::model::cons_list(stan::model::index_uni(j), stan::model::nil_index_list()), 
                                 discretised_gamma_pmf((max_gt - j), get_base1(gt_mean, estimate_r, "gt_mean", 1), get_base1(gt_sd, estimate_r, "gt_sd", 1), max_gt, pstream__), 
                                 "assigning variable rev_generation_time");
                 }
-                current_statement_begin__ = 235;
+                current_statement_begin__ = 242;
                 stan::model::assign(rev_generation_time, 
                             stan::model::cons_list(stan::model::index_uni(max_gt), stan::model::nil_index_list()), 
                             0, 
                             "assigning variable rev_generation_time");
-                current_statement_begin__ = 237;
+                current_statement_begin__ = 244;
                 stan::math::assign(infectiousness, convolve(infections, rev_generation_time, 1, pstream__));
-                current_statement_begin__ = 240;
+                current_statement_begin__ = 247;
                 for (int m = 1; m <= rM; ++m) {
-                    current_statement_begin__ = 241;
+                    current_statement_begin__ = 248;
                     stan::model::assign(R_diagSPD, 
                                 stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()), 
                                 stan::math::sqrt(spd_SE(get_base1(R_alpha, estimate_r, "R_alpha", 1), get_base1(R_rho, estimate_r, "R_rho", 1), stan::math::sqrt(lambda(rL, m, pstream__)), pstream__)), 
                                 "assigning variable R_diagSPD");
                 }
-                current_statement_begin__ = 244;
+                current_statement_begin__ = 251;
                 stan::math::assign(R_SPD_eta, elt_multiply(R_diagSPD, R_eta));
-                current_statement_begin__ = 246;
+                current_statement_begin__ = 253;
                 stan::math::assign(R_noise, stan::math::exp(multiply(stan::model::rvalue(PHI_rt, stan::model::cons_list(stan::model::index_omni(), stan::model::cons_list(stan::model::index_omni(), stan::model::nil_index_list())), "PHI_rt"), R_SPD_eta)));
-                current_statement_begin__ = 248;
+                current_statement_begin__ = 255;
                 stan::model::assign(R, 
                             stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
                             get_base1(initial_R, estimate_r, "initial_R", 1), 
                             "assigning variable R");
-                current_statement_begin__ = 249;
+                current_statement_begin__ = 256;
                 for (int s = 2; s <= rt; ++s) {
-                    current_statement_begin__ = 250;
+                    current_statement_begin__ = 257;
                     stan::model::assign(R, 
                                 stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
                                 (get_base1(R, (s - 1), "R", 1) * get_base1(R_noise, (s - 1), "R_noise", 1)), 
                                 "assigning variable R");
                 }
-                current_statement_begin__ = 254;
+                current_statement_begin__ = 261;
                 stan::model::assign(branch_infections, 
                             stan::model::cons_list(stan::model::index_min_max(1, no_rt_time), stan::model::nil_index_list()), 
                             stan::model::rvalue(infections, stan::model::cons_list(stan::model::index_min_max(1, no_rt_time), stan::model::nil_index_list()), "infections"), 
                             "assigning variable branch_infections");
-                current_statement_begin__ = 256;
+                current_statement_begin__ = 263;
                 for (int s = 1; s <= rt; ++s) {
-                    current_statement_begin__ = 257;
+                    current_statement_begin__ = 264;
                     stan::model::assign(branch_infections, 
                                 stan::model::cons_list(stan::model::index_uni((s + no_rt_time)), stan::model::nil_index_list()), 
                                 (get_base1(R, s, "R", 1) * get_base1(infectiousness, (s + no_rt_time), "infectiousness", 1)), 
                                 "assigning variable branch_infections");
-                    current_statement_begin__ = 259;
+                    current_statement_begin__ = 266;
                     if (as_bool(logical_eq(get_base1(branch_infections, s, "branch_infections", 1), 0))) {
-                        current_statement_begin__ = 260;
+                        current_statement_begin__ = 267;
                         stan::model::assign(branch_infections, 
                                     stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
-                                    0.001, 
+                                    0.00001, 
                                     "assigning variable branch_infections");
                     }
                 }
-                current_statement_begin__ = 265;
+                current_statement_begin__ = 272;
                 stan::math::assign(branch_onsets, convolve(branch_infections, rev_incubation, 1, pstream__));
                 {
-                current_statement_begin__ = 269;
+                current_statement_begin__ = 276;
                 validate_non_negative_index("branch_reports_hold", "(logical_gt(estimate_r, 0) ? t : 0 )", (logical_gt(estimate_r, 0) ? t : 0 ));
                 Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> branch_reports_hold((logical_gt(estimate_r, 0) ? t : 0 ));
                 stan::math::initialize(branch_reports_hold, DUMMY_VAR__);
                 stan::math::fill(branch_reports_hold, DUMMY_VAR__);
-                current_statement_begin__ = 270;
+                current_statement_begin__ = 277;
                 stan::math::assign(branch_reports_hold, convolve(branch_onsets, rev_delay, 1, pstream__));
-                current_statement_begin__ = 271;
+                current_statement_begin__ = 278;
                 stan::math::assign(branch_reports, stan::model::rvalue(branch_reports_hold, stan::model::cons_list(stan::model::index_min_max((no_rt_time + 1), t), stan::model::nil_index_list()), "branch_reports_hold"));
                 }
-                current_statement_begin__ = 274;
+                current_statement_begin__ = 281;
                 for (int s = 1; s <= rt; ++s) {
-                    current_statement_begin__ = 276;
+                    current_statement_begin__ = 283;
                     stan::model::assign(branch_reports, 
                                 stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
                                 (stan::model::rvalue(branch_reports, stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), "branch_reports") * get_base1(day_of_week_eff, get_base1(day_of_week, s, "day_of_week", 1), "day_of_week_eff", 1)), 
@@ -1982,47 +2004,47 @@ public:
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 333;
+            current_statement_begin__ = 340;
             validate_non_negative_index("imputed_infections", "t", t);
             std::vector<int> imputed_infections(t, int(0));
             stan::math::fill(imputed_infections, std::numeric_limits<int>::min());
-            current_statement_begin__ = 334;
+            current_statement_begin__ = 341;
             validate_non_negative_index("imputed_infections_rt", "(logical_gt(estimate_r, 0) ? t : 0 )", (logical_gt(estimate_r, 0) ? t : 0 ));
             std::vector<int> imputed_infections_rt((logical_gt(estimate_r, 0) ? t : 0 ), int(0));
             stan::math::fill(imputed_infections_rt, std::numeric_limits<int>::min());
-            current_statement_begin__ = 335;
+            current_statement_begin__ = 342;
             validate_non_negative_index("imputed_reports", "rt", rt);
             std::vector<int> imputed_reports(rt, int(0));
             stan::math::fill(imputed_reports, std::numeric_limits<int>::min());
-            current_statement_begin__ = 336;
+            current_statement_begin__ = 343;
             validate_non_negative_index("imputed_branch_reports", "(logical_gt(estimate_r, 0) ? rt : 0 )", (logical_gt(estimate_r, 0) ? rt : 0 ));
             std::vector<int> imputed_branch_reports((logical_gt(estimate_r, 0) ? rt : 0 ), int(0));
             stan::math::fill(imputed_branch_reports, std::numeric_limits<int>::min());
-            current_statement_begin__ = 337;
+            current_statement_begin__ = 344;
             validate_non_negative_index("r", "(logical_gt(estimate_r, 0) ? rt : 0 )", (logical_gt(estimate_r, 0) ? rt : 0 ));
             std::vector<double> r((logical_gt(estimate_r, 0) ? rt : 0 ), double(0));
             stan::math::initialize(r, DUMMY_VAR__);
             stan::math::fill(r, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 340;
+            current_statement_begin__ = 347;
             stan::math::assign(imputed_infections, poisson_rng(infections, base_rng__));
-            current_statement_begin__ = 343;
+            current_statement_begin__ = 350;
             if (as_bool(estimate_r)) {
-                current_statement_begin__ = 344;
+                current_statement_begin__ = 351;
                 stan::math::assign(imputed_infections_rt, poisson_rng(branch_infections, base_rng__));
             }
-            current_statement_begin__ = 348;
+            current_statement_begin__ = 355;
             if (as_bool(estimate_r)) {
                 {
-                current_statement_begin__ = 349;
+                current_statement_begin__ = 356;
                 local_scalar_t__ k(DUMMY_VAR__);
                 (void) k;  // dummy to suppress unused var warning
                 stan::math::initialize(k, DUMMY_VAR__);
                 stan::math::fill(k, DUMMY_VAR__);
                 stan::math::assign(k,pow((get_base1(gt_sd, estimate_r, "gt_sd", 1) / get_base1(gt_mean, estimate_r, "gt_mean", 1)), 2));
-                current_statement_begin__ = 350;
+                current_statement_begin__ = 357;
                 for (int s = 1; s <= rt; ++s) {
-                    current_statement_begin__ = 351;
+                    current_statement_begin__ = 358;
                     stan::model::assign(r, 
                                 stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
                                 ((pow(get_base1(R, s, "R", 1), k) - 1) / (k * get_base1(gt_mean, estimate_r, "gt_mean", 1))), 
@@ -2030,47 +2052,47 @@ public:
                 }
                 }
             }
-            current_statement_begin__ = 356;
+            current_statement_begin__ = 363;
             if (as_bool(model_type)) {
-                current_statement_begin__ = 357;
+                current_statement_begin__ = 364;
                 stan::math::assign(imputed_reports, neg_binomial_2_rng(reports, get_base1(rep_phi, model_type, "rep_phi", 1), base_rng__));
             } else {
-                current_statement_begin__ = 359;
+                current_statement_begin__ = 366;
                 stan::math::assign(imputed_reports, poisson_rng(reports, base_rng__));
             }
-            current_statement_begin__ = 362;
+            current_statement_begin__ = 369;
             if (as_bool(estimate_r)) {
-                current_statement_begin__ = 363;
+                current_statement_begin__ = 370;
                 if (as_bool(model_type)) {
-                    current_statement_begin__ = 364;
+                    current_statement_begin__ = 371;
                     stan::math::assign(imputed_branch_reports, neg_binomial_2_rng(branch_reports, get_base1(rep_phi, model_type, "rep_phi", 1), base_rng__));
                 } else {
-                    current_statement_begin__ = 366;
+                    current_statement_begin__ = 373;
                     stan::math::assign(imputed_branch_reports, poisson_rng(branch_reports, base_rng__));
                 }
             }
             // validate, write generated quantities
-            current_statement_begin__ = 333;
+            current_statement_begin__ = 340;
             size_t imputed_infections_k_0_max__ = t;
             for (size_t k_0__ = 0; k_0__ < imputed_infections_k_0_max__; ++k_0__) {
                 vars__.push_back(imputed_infections[k_0__]);
             }
-            current_statement_begin__ = 334;
+            current_statement_begin__ = 341;
             size_t imputed_infections_rt_k_0_max__ = (logical_gt(estimate_r, 0) ? t : 0 );
             for (size_t k_0__ = 0; k_0__ < imputed_infections_rt_k_0_max__; ++k_0__) {
                 vars__.push_back(imputed_infections_rt[k_0__]);
             }
-            current_statement_begin__ = 335;
+            current_statement_begin__ = 342;
             size_t imputed_reports_k_0_max__ = rt;
             for (size_t k_0__ = 0; k_0__ < imputed_reports_k_0_max__; ++k_0__) {
                 vars__.push_back(imputed_reports[k_0__]);
             }
-            current_statement_begin__ = 336;
+            current_statement_begin__ = 343;
             size_t imputed_branch_reports_k_0_max__ = (logical_gt(estimate_r, 0) ? rt : 0 );
             for (size_t k_0__ = 0; k_0__ < imputed_branch_reports_k_0_max__; ++k_0__) {
                 vars__.push_back(imputed_branch_reports[k_0__]);
             }
-            current_statement_begin__ = 337;
+            current_statement_begin__ = 344;
             size_t r_k_0_max__ = (logical_gt(estimate_r, 0) ? rt : 0 );
             for (size_t k_0__ = 0; k_0__ < r_k_0_max__; ++k_0__) {
                 vars__.push_back(r[k_0__]);
