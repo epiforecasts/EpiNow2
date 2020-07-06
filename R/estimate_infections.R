@@ -76,10 +76,10 @@
 #'                                     generation_time = generation_time,
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
-#'                                     samples = 4000, warmup = 200,
+#'                                     samples = 1000, warmup = 250,
 #'                                     rt_prior = list(mean = 1, sd = 1),
-#'                                     cores = 4, chains = 4, model = model,
-#'                                     estimate_rt = TRUE, horizon = 0, adapt_delta = 0.95,
+#'                                     cores = 4, chains = 4, 
+#'                                     estimate_rt = TRUE, horizon = 14,
 #'                                     verbose = TRUE, return_fit = TRUE)
 #'
 #' out   
@@ -94,7 +94,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 horizon = 14,
                                 model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 250,
-                                estimate_rt = TRUE, adapt_delta = 0.95,
+                                estimate_rt = TRUE, adapt_delta = 0.99,
                                 max_treedepth = 15, return_fit = FALSE,
                                 verbose = FALSE, debug = FALSE){
   
