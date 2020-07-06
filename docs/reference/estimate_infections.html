@@ -129,19 +129,22 @@ cases. It can optionally then estimate the time-varying reproduction number and 
   <span class='no'>incubation_period</span>,
   <span class='no'>reporting_delay</span>,
   <span class='no'>generation_time</span>,
-  <span class='no'>rt_prior</span>,
+  <span class='kw'>infections_gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.3</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
+  <span class='kw'>rt_gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.3</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
+  <span class='kw'>rt_prior</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>sd</span> <span class='kw'>=</span> <span class='fl'>1</span>),
   <span class='kw'>prior_smoothing_window</span> <span class='kw'>=</span> <span class='fl'>7</span>,
   <span class='kw'>horizon</span> <span class='kw'>=</span> <span class='fl'>14</span>,
   <span class='no'>model</span>,
   <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>,
   <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>2</span>,
   <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>,
-  <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>1000</span>,
+  <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>250</span>,
   <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='fl'>0.99</span>,
   <span class='kw'>max_treedepth</span> <span class='kw'>=</span> <span class='fl'>15</span>,
   <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
+  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>debug</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -177,6 +180,19 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 generation time (assuming a gamma distribution).</p></td>
     </tr>
     <tr>
+      <th>infections_gp</th>
+      <td><p>List controlling the Gaussian process approximation for infections. Must contain
+the <code>basis_prop</code> (number of basis functions based on scaling the time points) which defaults to 0.25 and must be
+between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
+Must also contain the <code>boundary_scale</code> (multiplied by half the range of the input time series). Increasing this
+increases the accuracy of the approximation at the cost of additional compute.
+See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.</p></td>
+    </tr>
+    <tr>
+      <th>rt_gp</th>
+      <td><p>List controlling Gaussian process approximation for Rt estimation. Defined as <code>infections_gp</code>.</p></td>
+    </tr>
+    <tr>
       <th>rt_prior</th>
       <td><p>A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.</p></td>
@@ -208,7 +224,7 @@ for the prior based on reported cases.</p></td>
     </tr>
     <tr>
       <th>warmup</th>
-      <td><p>Numeric, defaults to 500. Number of iteration of warmup to use.</p></td>
+      <td><p>Numeric, defaults to 250. Number of iteration of warmup to use.</p></td>
     </tr>
     <tr>
       <th>estimate_rt</th>
@@ -228,7 +244,11 @@ for the prior based on reported cases.</p></td>
     </tr>
     <tr>
       <th>verbose</th>
-      <td><p>Logical, defaults to FALSE. Should verbose progress messages be printed.</p></td>
+      <td><p>Logical, defaults to <code>FALSE</code>. Should verbose progress messages be printed.</p></td>
+    </tr>
+    <tr>
+      <th>debug</th>
+      <td><p>Logical, defaults to <code>FALSE</code>. Enables debug model in which additional diagnostics are available</p></td>
     </tr>
     </table>
 
@@ -236,7 +256,7 @@ for the prior based on reported cases.</p></td>
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 <span class='co'>## Get example case counts</span>
-<span class='no'>reported_cases</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='example_confirmed.html'>example_confirmed</a></span>[<span class='fl'>1</span>:<span class='fl'>40</span>]
+<span class='no'>reported_cases</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='example_confirmed.html'>example_confirmed</a></span>[<span class='fl'>1</span>:<span class='fl'>50</span>]
 
 <span class='co'>## Set up example generation time</span>
 <span class='no'>generation_time</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>mean</span>,
@@ -258,11 +278,10 @@ for the prior based on reported cases.</p></td>
                         <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>30</span>)
 
 <span class='co'>## Run model</span>
-<span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='fu'>estimate_infections</span>(<span class='no'>reported_cases</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
+<span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='fu'>estimate_infections</span>(<span class='no'>reported_cases</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
                                     <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
                                     <span class='kw'>incubation_period</span> <span class='kw'>=</span> <span class='no'>incubation_period</span>,
                                     <span class='kw'>reporting_delay</span> <span class='kw'>=</span> <span class='no'>reporting_delay</span>,
-                                    <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>500</span>,
                                     <span class='kw'>rt_prior</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>sd</span> <span class='kw'>=</span> <span class='fl'>1</span>),
                                     <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>,
                                     <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
@@ -281,7 +300,7 @@ for the prior based on reported cases.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Sam Abbott, Joel Hellewell, James Munday, Robin Thompson, Sebastian Funk.</p>
+  <p>Developed by Sam Abbott, Joel Hellewell, Robin Thompson, Katharine Sherratt, Sophie Meakin, James Munday, Nikos Bosse, Sebastian Funk.</p>
 </div>
 
 <div class="pkgdown">

@@ -7,11 +7,13 @@
 epinow(
   reported_cases,
   family = "negbin",
-  generation_time = generation_time,
-  incubation_period = incubation_period,
-  reporting_delay = reporting_delay,
-  rt_prior = rt_prior,
-  model = model,
+  generation_time,
+  incubation_period,
+  reporting_delay,
+  infections_gp = list(basis_prop = 0.25, boundary_scale = 2),
+  rt_gp = list(basis_prop = 0.25, boundary_scale = 2),
+  rt_prior = list(mean = 1, sd = 1),
+  model,
   cores = 2,
   chains = 2,
   samples = 2000,
@@ -24,7 +26,8 @@ epinow(
   return_estimates = TRUE,
   target_folder,
   target_date,
-  verbose = FALSE
+  verbose = FALSE,
+  debug = FALSE
 )
 }
 \arguments{
@@ -47,6 +50,15 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale).}
 
+\item{infections_gp}{List controlling the Gaussian process approximation for infections. Must contain
+the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.25 and must be
+between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
+Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
+increases the accuracy of the approximation at the cost of additional compute.
+See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.}
+
+\item{rt_gp}{List controlling Gaussian process approximation for Rt estimation. Defined as \code{infections_gp}.}
+
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 
@@ -58,7 +70,7 @@ Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
 
-\item{warmup}{Numeric, defaults to 500. Number of iteration of warmup to use.}
+\item{warmup}{Numeric, defaults to 250. Number of iteration of warmup to use.}
 
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
@@ -78,7 +90,9 @@ an unweighted ensemble ("mean") with no other types currently supported.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{verbose}{Logical, defaults to FALSE. Should verbose progress messages be printed.}
+\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
+
+\item{debug}{Logical, defaults to \code{FALSE}. Enables debug model in which additional diagnostics are available}
 }
 \value{
 A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
@@ -134,7 +148,7 @@ out <- epinow(reported_cases = cases, generation_time = generation_time,
                      y = y[max(1, length(y) - 21):length(y)],
                      model_params = list(models = "aefz", weights = "equal"),
                      forecast_params = list(PI.combination = "mean"), ...)},
-               samples = 1000, warmup = 500, cores = 2, chains = 2,
+               samples = 1000, warmup = 500, cores = 4, chains = 4,
                verbose = TRUE, return_fit = TRUE)
 
 out

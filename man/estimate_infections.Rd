@@ -10,19 +10,22 @@ estimate_infections(
   incubation_period,
   reporting_delay,
   generation_time,
-  rt_prior,
+  infections_gp = list(basis_prop = 0.3, boundary_scale = 2),
+  rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
+  rt_prior = list(mean = 1, sd = 1),
   prior_smoothing_window = 7,
   horizon = 14,
   model,
   cores = 1,
   chains = 2,
   samples = 1000,
-  warmup = 1000,
+  warmup = 250,
   estimate_rt = TRUE,
   adapt_delta = 0.99,
   max_treedepth = 15,
   return_fit = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  debug = FALSE
 )
 }
 \arguments{
@@ -45,6 +48,15 @@ on the log scale).}
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
+\item{infections_gp}{List controlling the Gaussian process approximation for infections. Must contain
+the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.25 and must be
+between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
+Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
+increases the accuracy of the approximation at the cost of additional compute.
+See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.}
+
+\item{rt_gp}{List controlling Gaussian process approximation for Rt estimation. Defined as \code{infections_gp}.}
+
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 
@@ -61,7 +73,7 @@ for the prior based on reported cases.}
 
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
 
-\item{warmup}{Numeric, defaults to 500. Number of iteration of warmup to use.}
+\item{warmup}{Numeric, defaults to 250. Number of iteration of warmup to use.}
 
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
@@ -71,7 +83,9 @@ for the prior based on reported cases.}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
-\item{verbose}{Logical, defaults to FALSE. Should verbose progress messages be printed.}
+\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
+
+\item{debug}{Logical, defaults to \code{FALSE}. Enables debug model in which additional diagnostics are available}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
@@ -80,7 +94,7 @@ cases. It can optionally then estimate the time-varying reproduction number and 
 \examples{
 \dontrun{
 ## Get example case counts
-reported_cases <- EpiNow2::example_confirmed[1:40]
+reported_cases <- EpiNow2::example_confirmed[1:50]
 
 ## Set up example generation time
 generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
@@ -102,14 +116,13 @@ reporting_delay <- list(mean = log(5),
                         max = 30)
                         
 ## Run model
-out <- EpiNow2::estimate_infections(reported_cases, family = "negbin",
+out <- estimate_infections(reported_cases, family = "negbin",
                                     generation_time = generation_time,
                                     incubation_period = incubation_period,
                                     reporting_delay = reporting_delay,
-                                    samples = 1000, warmup = 500,
                                     rt_prior = list(mean = 1, sd = 1),
-                                    cores = 4, chains = 4,
-                                    estimate_rt = TRUE,
+                                    cores = 4, chains = 4, 
+                                    estimate_rt = TRUE, 
                                     verbose = TRUE, return_fit = TRUE)
 
 out   
