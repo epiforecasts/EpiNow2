@@ -141,7 +141,7 @@ summarise_results <- function(regions,
 #'                         max = 30)
 #'                         
 #' ## Uses example case vector from EpiSoon
-#' cases <- EpiNow2::example_confirmed[1:50]
+#' cases <- EpiNow2::example_confirmed[1:30]
 #' 
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
@@ -152,18 +152,14 @@ summarise_results <- function(regions,
 #'                        generation_time = generation_time,
 #'                        incubation_period = incubation_period,
 #'                        reporting_delay = reporting_delay,
-#'                        samples = 1000, warmup = 500, cores = 2, chains = 2,
+#'                        samples = 1000, warmup = 200, cores = 4, chains = 4,
 #'                        verbose = TRUE)
 #'                        
-#'## Example asssumes that CovidGlobalNow (github.com/epiforecasts/covid-global) is  
-#'## in the directory above the root.
-#' regional_summary(results_dir = "../test",
-#'                  summary_dir = "../test-summary",
+#' regional_summary(regional_out,
 #'                  region_scale = "Country")
 #'
 #' }
 #' 
-
 regional_summary <- function(regional_output,
                              results_dir, 
                              summary_dir,
@@ -205,24 +201,33 @@ regional_summary <- function(regional_output,
   
 
   ## Get estimates
-  results <- EpiNow2::get_regional_results(results_dir, forecast = FALSE)
+  results <- EpiNow2::get_regional_results(regional_output,
+                                           results_dir, forecast = FALSE)
   
   ## Get latest date
   latest_date <- max(results[, .SD[date == max(date)], by = .(region)]$date)
   
-  if (!missing(summary_dir)) {
+  if (!is.null(summary_dir)) {
+    ## Make summary directory
+    if (!dir.exists(summary_dir)) {
+      dir.create(summary_dir)
+    }
+    
     saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
   }
-
-  ## Make summary directory
-  if (!dir.exists(summary_dir)) {
-    dir.create(summary_dir)
+  
+  if (!is.null(regional_output)) {
+    regional_summaries <- purr::map(regional_output, ~ .$summary)
+  }else{
+    regional_summaries <- NULL
   }
   
   ## Summarise results as a table
-  results <- EpiNow2::summarise_results(regions, results_dir,
-                                       target_date = target_date,
-                                       region_scale = region_scale)
+  summarised_results <- EpiNow2::summarise_results(regions, 
+                                                   summarises = regional_summaries,
+                                                   results_dir,
+                                                   target_date = target_date,
+                                                   region_scale = region_scale)
   
   message("Saving results summary table")
   
@@ -234,13 +239,13 @@ regional_summary <- function(regional_output,
     
   }
   
-  results$table <- force_factor(results$table)
+  summarised_results$table <- force_factor(summarised_results$table)
   
-  results$data <- force_factor(results$data)
+  summarised_results$data <- force_factor(summarised_results$data)
   
-  if (!missing(summary_dir)) {
-    saveRDS(results$table, file.path(summary_dir, "summary_table.rds"))
-    saveRDS(results$data, file.path(summary_dir, "summary_data.rds"))
+  if (!is.null(summary_dir)) {
+    saveRDS(summarised_results$table, file.path(summary_dir, "summary_table.rds"))
+    saveRDS(summarised_results$data, file.path(summary_dir, "summary_data.rds"))
   }
 
   ## Summarise results to csv
@@ -255,11 +260,11 @@ regional_summary <- function(regional_output,
   message("Plotting results summary")
   
   ## Summarise cases and Rts
-  summary_plot <- EpiNow2::plot_summary(results$data,
-                                       x_lab = region_scale, 
-                                       log_cases = log_cases)
+  summary_plot <- EpiNow2::plot_summary(summarised_results$data,
+                                        x_lab = region_scale, 
+                                        log_cases = log_cases)
   
-  if (!missing(summary_dir)) {
+  if (!is.null(summary_dir)) {
     suppressWarnings(
       suppressMessages(
         ggplot2::ggsave(file.path(summary_dir, "summary_plot.png"),
@@ -271,112 +276,64 @@ regional_summary <- function(regional_output,
   
   message("Plotting summary Rt and case plots")
   
-  
-  
-  
-  ## Plot highest incidence countries
-  high_cases_rt_plot <- suppressWarnings(
-    suppressMessages(
-      plot_grid(regions[names(regions) %in% results$regions_by_inc[1:6]], 
-                plot_object = "bigr_eff_plot.rds",
-                results_dir, target_date = target_date, ncol = 2))
+  high_plots <- report_plots(
+    summarised_estimates = results$estimates$summarised[region %in% results$regions_by_inc[1:6]], 
+    reported = reported_cases
   )
   
-  
-  ## Check the plots for forecast and adapt date and legend accordingly
-  data_date <- as.Date(max(
-    ggplot2::ggplot_build(high_cases_rt_plot[[1]])$layout$panel_scales_x[[1]]$range$range
-  ), origin = "1970-01-01"
-  )
-  
-  legend <- 'gtable' %in% class(try(cowplot::get_legend(high_cases_rt_plot[[1]]), silent = TRUE))
+  high_plots$summary <- NULL
+  high_plots <- purrr:::map(high_plots,
+                            ~ . + ggplot2::facet_wrap(~ region, scales = "fixed"))
   
   
-  ## Adapt legend
-  high_cases_rt_plot <- suppressWarnings( suppressMessages(
-    high_cases_rt_plot &
-      ggplot2::coord_cartesian(ylim = c(0, 3)) &
-      ggplot2::scale_x_date(date_breaks = "1 week",
-                            date_labels = "%b %d",
-                            limits = c(as.Date(NA_character_),
-                                       max(data_date, plot_date))) &
-      ggplot2::theme(legend.position = ifelse(legend, "bottom", "none"))
-  )
-  )
-  
-  if (!missing(summary_dir)) {
+  if (!is.null(summary_dir)) {
     suppressWarnings(
       suppressMessages(
         ggplot2::ggsave(file.path(summary_dir, "high_cases_rt_plot.png"),
-                        high_cases_rt_plot, dpi = 400, width = 12, height = 12)
+                        high_plots$reff, dpi = 400, width = 12, height = 12)
       ))
-  }
-
-  
-  
-  high_cases_plot <- suppressWarnings(
-    suppressMessages(
-      EpiNow2::plot_grid(regions[names(regions) %in% results$regions_by_inc[1:6]],
-                        plot_object = "plot_cases.rds",
-                        results_dir, target_date = target_date, ncol = 2) &
-        ggplot2::scale_x_date(date_breaks = "1 week",
-                              date_labels = "%b %d",
-                              limits = c(as.Date(NA_character_), 
-                                         max(data_date, plot_date))) &
-        ggplot2::theme(legend.position = ifelse(legend, "bottom", "none"))
-    ))
-  
-  if (!missing(summary_dir)) {
+    
     suppressWarnings(
       suppressMessages(
         ggplot2::ggsave(file.path(summary_dir, "high_cases_plot.png"), 
-                        high_cases_plot, dpi = 400, width = 12, height = 12)
+                        high_plots$infections, dpi = 400, width = 12, height = 12)
       ))
   }
 
-  
-  
+
   message("Plotting overall Rt and case plots")
   
   plots_per_row <- ifelse(length(regions) < 60, 3, 5)
   
-  ## Plot all countries
-  rt_plot <- suppressWarnings(
-    suppressMessages(
-      EpiNow2::plot_grid(regions, plot_object = "bigr_eff_plot.rds",
-                        results_dir, target_date = target_date, ncol = plots_per_row) &
-        ggplot2::coord_cartesian(ylim = c(0, 3)) &
-        ggplot2::scale_x_date(date_breaks = "1 week",
-                              date_labels = "%b %d",
-                              limits = c(as.Date(NA_character_), max(data_date, plot_date))) &
-        ggplot2::theme(legend.position = ifelse(legend, "bottom", "none"))
-    ))
+  plots <- report_plots(summarised_estimates = results$estimates$summarised, 
+                        reported = reported_cases)
   
-  if (!missing(summary_dir)) {
+  plots$summary <- NULL
+  plots <- purrr:::map(plots,
+                       ~ . + ggplot2::facet_wrap(~ region, scales = "fixed",
+                                                 ncol = plots_per_row))
+  
+  
+  if (!is.null(summary_dir)) {
     suppressWarnings(
       suppressMessages(
         ggplot2::ggsave(file.path(summary_dir, "rt_plot.png"), 
-                        rt_plot, dpi = 330, width = 24, height = 4 * round(length(regions) / plots_per_row, 0), limitsize = FALSE)
+                        plots$reff, dpi = 330, width = 24,
+                        height = 4 * round(length(regions) / plots_per_row, 0), 
+                        limitsize = FALSE)
         
       ))
-  }
-
-  
-  cases_plot <- 
-    plot_grid(regions, plot_object = "plot_cases.rds",
-              results_dir, target_date = target_date, ncol = plots_per_row) &
-    ggplot2::theme(legend.position = ifelse(legend, "bottom", "none"))
-  
-  
-  
-  if (!missing(summary_dir)) {
+    
     suppressWarnings(
       suppressMessages( 
         ggplot2::ggsave(file.path(summary_dir, "cases_plot.png"), 
-                        cases_plot, dpi = 330, width = 24, height =  4 * round(length(regions) / plots_per_row, 0), limitsize = FALSE)
+                        plots$infections, dpi = 330, width = 24, 
+                        height =  4 * round(length(regions) / plots_per_row, 0),
+                        limitsize = FALSE)
       ))
   }
 
+  
   
   
   if (return_summary) {
@@ -385,10 +342,8 @@ regional_summary <- function(regional_output,
     out$summary <- results
     out$summary_plot <- summary_plot
     out$summarised_measures <- sum_key_measures
-    out$high_cases_rt_plot <- high_cases_rt_plot
-    out$high_cases_plot <- high_cases_plot
-    out$rt_plot <- rt_plot
-    out$cases_plot <- cases_plot
+    out$high_plots <- high_plots
+    out$plots <- plots
     
     return(out)
   }else{
