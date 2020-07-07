@@ -4,7 +4,7 @@
 \alias{get_regional_results}
 \title{Get Combined Regional Results}
 \usage{
-get_regional_results(results_dir, date, forecast = FALSE)
+get_regional_results(regional_output, results_dir, date, forecast = FALSE)
 }
 \arguments{
 \item{results_dir}{A character string indicating the folder containing the \code{EpiNow2}
@@ -25,11 +25,11 @@ Get Combined Regional Results
 
 
 \dontrun{
-# see ?regional_summary for code to produce test results
-out <- get_regional_results("../test", forecast = TRUE)
+# see ?regional_epinow for code to generate regional results to use with this example.
 
-out
+out$summary <- NULL
+
+get_regional_results(out, forecast = TRUE)
+
 }
-## Code
-get_regional_results
 }

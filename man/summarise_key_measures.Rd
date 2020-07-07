@@ -4,9 +4,17 @@
 \alias{summarise_key_measures}
 \title{Summarise rt and cases}
 \usage{
-summarise_key_measures(results_dir, summary_dir, type = "country", date)
+summarise_key_measures(
+  regional_results,
+  results_dir,
+  summary_dir,
+  type = "country",
+  date
+)
 }
 \arguments{
+\item{regional_results}{A list of dataframes as produced by \code{get_regional_results}}
+
 \item{results_dir}{Character string indicating the directory from which to extract results.}
 
 \item{summary_dir}{Character string the directory into which to save results as a csv.}
@@ -24,8 +32,9 @@ Summarise rt and cases
 }
 \examples{
 \dontrun{
-# see ?regional_summary for code to produce test results
-summarise_key_measures(results_dir = "../test")
+
+
+summarise_key_measures(regional_results)
 
 
 }
