@@ -353,6 +353,7 @@ regional_summary <- function(regional_output,
 
 #' Summarise rt and cases
 #'
+#' @param regional_results A list of dataframes as produced by `get_regional_results`
 #' @param results_dir Character string indicating the directory from which to extract results.
 #' @param summary_dir Character string the directory into which to save results as a csv.
 #' @param type Character string, the region identifier to apply (defaults to region).
@@ -362,24 +363,42 @@ regional_summary <- function(regional_output,
 #' @importFrom data.table setnames fwrite
 #' @examples 
 #' \dontrun{
-#' # see ?regional_summary for code to produce test results
-#' summarise_key_measures(results_dir = "../test")
+#' 
+#' 
+#' summarise_key_measures(regional_results)
 #' 
 #' 
 #' }
-summarise_key_measures <- function(results_dir, summary_dir, 
+summarise_key_measures <- function(regional_results,
+                                   results_dir, summary_dir, 
                                    type = "country", date) {
   
-  if (missing(results_dir)) {
-    stop("Missing results directory")
+  if (missing(regional_results)) {
+    regional_results <- NULL
   }
   
-  if (missing(date)) {
-    date <- "latest"
+  if (is.null(regional_results)) {
+    if (missing(results_dir)) {
+      results_dir <- NULL
+    }
+    
+    if (is.null(results_dir)) {
+      stop("Missing results directory")
+    }
+    
+    if (missing(date)) {
+      date <- "latest"
+    }
+    
+    timeseries <- EpiNow2::get_regional_results(results_dir = results_dir,
+                                                date = date, forecast = FALSE)
+  }else{
+    timeseries <- regional_results 
   }
   
-  timeseries <- EpiNow2::get_regional_results(results_dir, date = date, forecast = FALSE)
+
   
+
   ## Clean and save Rt estimates
   rt <- timeseries$estimates$summarised[variable == "R", 
                         .(region, date, type, median = round(median, 1),
@@ -395,7 +414,7 @@ summarise_key_measures <- function(results_dir, summary_dir,
   }
   
   ## Clean and save case estimates
-  cases <- timeseries$estimates$summarised[variable == "infections", 
+  cases <- timeseries$estimates$summarised[variable == "infections_rt", 
                        .(region, date, type, median = round(median, 1), lower_90 = round(bottom, 0), 
                          upper_90 = round(top, 0), lower_50 = round(lower, 0), 
                          upper_50 = round(upper, 0))]
