@@ -8,7 +8,7 @@ summarise_key_measures(
   regional_results,
   results_dir,
   summary_dir,
-  type = "country",
+  type = "region",
   date
 )
 }
