@@ -71,7 +71,8 @@ get_raw_result <- function(file, region, date,
 #' }
 #' ## Code
 #' get_regional_results
-get_regional_results <- function(results_dir, date,
+get_regional_results <- function(
+                                 results_dir, date,
                                  forecast = FALSE) {
   
   ## Assign to latest likely date if not given
