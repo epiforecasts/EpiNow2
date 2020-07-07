@@ -51,13 +51,13 @@ incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
                           max = 30)
                    
 reporting_delay <- list(mean = log(10),
-                        mean_sd = 0.8,
+                        mean_sd = log(2),
                         sd = log(2),
-                        sd_sd = 0.1,
+                        sd_sd = log(1.1),
                         max = 30)
                         
 ## Uses example case vector
-cases <- EpiNow2::example_confirmed
+cases <- EpiNow2::example_confirmed[1:40]
 
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
@@ -68,7 +68,7 @@ out <- regional_epinow(reported_cases = cases,
                        generation_time = generation_time,
                        incubation_period = incubation_period,
                        reporting_delay = reporting_delay,
-                       samples = 1000, warmup = 500, cores = 2, chains = 2,
+                       samples = 1000, warmup = 200, cores = 4, chains = 4,
                        verbose = TRUE)
 }
 }

@@ -1,8 +1,9 @@
 #' Summarise Realtime Results
 #'
-#' @param regions A character string containing the list of regions to extract results for 
+#' @param regions An character string containing the list of regions to extract results for 
 #' (must all have results for the same target date).
-#' @param results_dir A character string indicating the location of the results directory to extract results 
+#' @params summaries A list of summary data frames as output by `epinow` 
+#' @param results_dir An optional character string indicating the location of the results directory to extract results 
 #' from.
 #' @param target_date A character string indicating the target date to extract results for. All regions must have results 
 #' for this date.
@@ -13,16 +14,16 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' # see ?regional_summary for code to generate results for this example
-#' regions <- list(realland = "realland", testland = "testland")
+#' # see ?regional_epinow for code to generate regional results to use with this example.
 #' 
-#' out <- summarise_results(regions = regions,
-#'                   results_dir = "../test")
+#' region_sum_tab <- summarise_results(regions = regions,
+#'                                     summarises = purrr::map(out, ~ .$summary))
 #'                   
-#' out
+#' region_sum_tab
 #' }
 #' 
-summarise_results <- function(regions = NULL,
+summarise_results <- function(regions,
+                              summarises,
                               results_dir,
                               target_date,
                               region_scale = "Region") {
@@ -31,14 +32,33 @@ summarise_results <- function(regions = NULL,
     target_date <- "latest"
   }
    
-  ## Utility functions
-  load_data <- purrr::partial(get_raw_result,
-                              date = target_date,
-                              result_dir = results_dir)
+  if (missing(summarises)) {
+    summarises <- NULL
+  }
   
+  if (missing(results_dir)) {
+    if (missing(summarises)){ 
+      stop("Either a results directory or a list of summary data frames must be supplied")
+      }
+  }else{
+    if (!is.null(summarises)) {
+      stop("Both a results directory and a list of summary data frames have been supplied.")
+    }
+  }
   
-  estimates <- purrr::map(regions, ~ load_data(file = "summary.rds", region = .))
-  
+  if (is.null(summarises)) {
+    ## Utility functions
+    load_data <- purrr::partial(get_raw_result,
+                                date = target_date,
+                                result_dir = results_dir)
+    
+    
+    estimates <- purrr::map(regions, ~ load_data(file = "summary.rds", region = .))
+    
+  }else{
+    estimates <- summaries
+  }
+
   names(estimates) <- names(regions)
   
   estimates <- data.table::rbindlist(estimates, idcol = "region")
@@ -129,15 +149,9 @@ summarise_results <- function(regions = NULL,
 #'   
 #' ## Run basic nowcasting pipeline
 #' out <- regional_epinow(reported_cases = cases,
-#'                        target_folder = "../test",
 #'                        generation_time = generation_time,
 #'                        incubation_period = incubation_period,
 #'                        reporting_delay = reporting_delay,
-#'                        forecast_model = function(y, ...){
-#'                          EpiSoon::forecastHybrid_model(
-#'                             y = y[max(1, length(y) - 21):length(y)],
-#'                             model_params = list(models = "aefz", weights = "equal"),
-#'                             forecast_params = list(PI.combination = "mean"), ...)},
 #'                        samples = 1000, warmup = 500, cores = 2, chains = 2,
 #'                        verbose = TRUE)
 #'                        
@@ -150,9 +164,10 @@ summarise_results <- function(regions = NULL,
 #' }
 #' 
 
-regional_summary <- function(results_dir, 
+regional_summary <- function(regional_output,
+                             results_dir, 
                              summary_dir,
-                             target_date = "latest",
+                             target_date,
                              region_scale = "Region",
                              csv_region_label = "region",
                              log_cases = FALSE,
@@ -161,22 +176,34 @@ regional_summary <- function(results_dir,
   if (missing(summary_dir) & !return_summary) {
     stop("Either allow results to be returned or supply a directory for results to be saved into")
   }
+  
+  if (missing(summary_dir)) {
+    summary_dir <- NULL
+  }
+  
+  if (missing(results_dir)) {
+    results_dir <- NULL
+  }
    
-  message("Extracting results from: ", results_dir)
-  
-  ## Make summary directory
-  if (!dir.exists(summary_dir)) {
-    dir.create(summary_dir)
+  if (!is.null(results_dir) & !missing(regional_output)) {
+    stop("Only one of results_dir and regional_output should be specified")
   }
   
-  regions <- EpiNow2::get_regions(results_dir)
-  
-  if (target_date %in% "latest") {
-    plot_date <- Sys.Date() 
+  if (missing(regional_output)) {
+    if (!is.null(results_dir)) {
+     message("Extracting results from: ", results_dir)
+      
+     regions <- EpiNow2::get_regions(results_dir)
+     
+       if (missing(target_date)) {
+         target_date <- "latest"
+       }
+    }
   }else{
-    plot_date <- as.Date(target_date)
+    regions <- names(regional_output)
   }
   
+
   ## Get estimates
   results <- EpiNow2::get_regional_results(results_dir, forecast = FALSE)
   
@@ -187,6 +214,11 @@ regional_summary <- function(results_dir,
     saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
   }
 
+  ## Make summary directory
+  if (!dir.exists(summary_dir)) {
+    dir.create(summary_dir)
+  }
+  
   ## Summarise results as a table
   results <- EpiNow2::summarise_results(regions, results_dir,
                                        target_date = target_date,

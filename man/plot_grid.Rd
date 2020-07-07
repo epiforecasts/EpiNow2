@@ -13,13 +13,13 @@ plot_grid(
 )
 }
 \arguments{
-\item{regions}{A character string containing the list of regions to extract results for
+\item{regions}{An character string containing the list of regions to extract results for
 (must all have results for the same target date).}
 
 \item{plot_object}{A character string indicating the plot object to use as the
 base for the grid.}
 
-\item{results_dir}{A character string indicating the location of the results directory to extract results
+\item{results_dir}{An optional character string indicating the location of the results directory to extract results
 from.}
 
 \item{target_date}{A character string indicating the target date to extract results for. All regions must have results
