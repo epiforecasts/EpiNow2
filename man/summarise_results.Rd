@@ -5,17 +5,18 @@
 \title{Summarise Realtime Results}
 \usage{
 summarise_results(
-  regions = NULL,
+  regions,
+  summarises,
   results_dir,
   target_date,
   region_scale = "Region"
 )
 }
 \arguments{
-\item{regions}{A character string containing the list of regions to extract results for
+\item{regions}{An character string containing the list of regions to extract results for
 (must all have results for the same target date).}
 
-\item{results_dir}{A character string indicating the location of the results directory to extract results
+\item{results_dir}{An optional character string indicating the location of the results directory to extract results
 from.}
 
 \item{target_date}{A character string indicating the target date to extract results for. All regions must have results
@@ -31,13 +32,12 @@ Summarise Realtime Results
 }
 \examples{
 \dontrun{
-# see ?regional_summary for code to generate results for this example
-regions <- list(realland = "realland", testland = "testland")
+# see ?regional_epinow for code to generate regional results to use with this example.
 
-out <- summarise_results(regions = regions,
-                  results_dir = "../test")
+region_sum_tab <- summarise_results(regions = regions,
+                                    summarises = purrr::map(out, ~ .$summary))
                   
-out
+region_sum_tab
 }
 
 }

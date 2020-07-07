@@ -15,7 +15,7 @@ regional_summary(
 )
 }
 \arguments{
-\item{results_dir}{A character string indicating the location of the results directory to extract results
+\item{results_dir}{An optional character string indicating the location of the results directory to extract results
 from.}
 
 \item{summary_dir}{A character string giving the directory
