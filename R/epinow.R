@@ -317,6 +317,7 @@ if (!is.null(target_folder)){
 #'   
 #' ## Run basic nowcasting pipeline
 #' out <- regional_epinow(reported_cases = cases,
+#'                        target_folder = "../test-2",
 #'                        generation_time = generation_time,
 #'                        incubation_period = incubation_period,
 #'                        reporting_delay = reporting_delay,

@@ -6,7 +6,7 @@
 \usage{
 summarise_results(
   regions,
-  summarises,
+  summaries,
   results_dir,
   target_date,
   region_scale = "Region"
@@ -15,6 +15,8 @@ summarise_results(
 \arguments{
 \item{regions}{An character string containing the list of regions to extract results for
 (must all have results for the same target date).}
+
+\item{summaries}{A list of summary data frames as output by \code{epinow}}
 
 \item{results_dir}{An optional character string indicating the location of the results directory to extract results
 from.}
@@ -35,7 +37,7 @@ Summarise Realtime Results
 # see ?regional_epinow for code to generate regional results to use with this example.
 
 region_sum_tab <- summarise_results(regions = regions,
-                                    summarises = purrr::map(out, ~ .$summary))
+                                    summaries = purrr::map(out, ~ .$summary))
                   
 region_sum_tab
 }

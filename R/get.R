@@ -75,7 +75,7 @@ get_raw_result <- function(file, region, date,
 get_regional_results <- function(regional_output,
                                  results_dir, date,
                                  forecast = FALSE) {
-  
+   
   if (missing(regional_output)) {
     regional_output <- NULL
   }
@@ -139,21 +139,22 @@ get_regional_results <- function(regional_output,
       
       
       ## Get incidence values and combine
-      summarised <- purrr::map(regional_output, ~ ~ .[[data]]$summarised)
+      summarised <- purrr::map(regional_output, ~ .[[data]]$summarised)
       
       summarised <- data.table::rbindlist(summarised, idcol = "region")
       
       out <- list()
       out$samples <- samples
       out$summarised <- summarised
+      
+      return(out)
     }
     
     out <- list()
     out$estimates <- get_estimates("estimates")
     
     if (forecast) {
-      
-      out$forecast <- get_estimates("forecast")
+      out$forecast <- get_estimates("forecasts")
       
       out$estimated_reported_cases <- get_estimates("estimated_reported_cases")
     }

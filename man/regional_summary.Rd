@@ -6,6 +6,7 @@
 \usage{
 regional_summary(
   regional_output,
+  reported_cases,
   results_dir,
   summary_dir,
   target_date,
@@ -16,6 +17,8 @@ regional_summary(
 )
 }
 \arguments{
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
+
 \item{results_dir}{An optional character string indicating the location of the results directory to extract results
 from.}
 
@@ -73,14 +76,15 @@ cases <- data.table::rbindlist(list(
   cases[, region := "realland"]))
   
 ## Run basic nowcasting pipeline
-out <- regional_epinow(reported_cases = cases,
-                       generation_time = generation_time,
-                       incubation_period = incubation_period,
-                       reporting_delay = reporting_delay,
-                       samples = 1000, warmup = 200, cores = 4, chains = 4,
-                       verbose = TRUE)
+regional_out <- regional_epinow(reported_cases = cases,
+                                generation_time = generation_time,
+                                incubation_period = incubation_period,
+                                reporting_delay = reporting_delay,
+                                samples = 1000, warmup = 200, cores = 4,
+                                chains = 4, verbose = TRUE)
                        
-regional_summary(regional_out,
+regional_summary(regional_output = regional_out,
+                 reported_cases = cases,
                  region_scale = "Country")
 
 }

@@ -2,14 +2,14 @@
 #'
 #' @param regions An character string containing the list of regions to extract results for 
 #' (must all have results for the same target date).
-#' @params summaries A list of summary data frames as output by `epinow` 
+#' @param summaries A list of summary data frames as output by `epinow` 
 #' @param results_dir An optional character string indicating the location of the results directory to extract results 
 #' from.
 #' @param target_date A character string indicating the target date to extract results for. All regions must have results 
 #' for this date.
 #' @param region_scale A character string indicating the name to give the regions being summarised.
 #' @importFrom purrr partial map_chr map_dbl map_chr
-#' @importFrom data.table setorderv melt
+#' @importFrom data.table setorderv melt merge.data.table dcast
 #' @return A list of summary data
 #' @export
 #' @examples
@@ -17,13 +17,13 @@
 #' # see ?regional_epinow for code to generate regional results to use with this example.
 #' 
 #' region_sum_tab <- summarise_results(regions = regions,
-#'                                     summarises = purrr::map(out, ~ .$summary))
+#'                                     summaries = purrr::map(out, ~ .$summary))
 #'                   
 #' region_sum_tab
 #' }
 #' 
 summarise_results <- function(regions,
-                              summarises,
+                              summaries,
                               results_dir,
                               target_date,
                               region_scale = "Region") {
@@ -32,21 +32,25 @@ summarise_results <- function(regions,
     target_date <- "latest"
   }
    
-  if (missing(summarises)) {
-    summarises <- NULL
+  if (missing(summaries)) {
+    summaries <- NULL
   }
   
   if (missing(results_dir)) {
-    if (missing(summarises)){ 
+    results_dir <- NULL
+  }
+  
+  if (is.null(results_dir)) {
+    if (is.null(summaries)){ 
       stop("Either a results directory or a list of summary data frames must be supplied")
       }
   }else{
-    if (!is.null(summarises)) {
+    if (!is.null(summaries)) {
       stop("Both a results directory and a list of summary data frames have been supplied.")
     }
   }
   
-  if (is.null(summarises)) {
+  if (is.null(summaries)) {
     ## Utility functions
     load_data <- purrr::partial(get_raw_result,
                                 date = target_date,
@@ -54,12 +58,11 @@ summarise_results <- function(regions,
     
     
     estimates <- purrr::map(regions, ~ load_data(file = "summary.rds", region = .))
-    
+    names(estimates) <- regions
   }else{
     estimates <- summaries
   }
 
-  names(estimates) <- names(regions)
   
   estimates <- data.table::rbindlist(estimates, idcol = "region")
   
@@ -74,14 +77,28 @@ summarise_results <- function(regions,
                                               metric :=  
                                                 factor(measure, levels = c("New confirmed cases by infection date",
                                                                           "Effective reproduction no."))][,
-                                              measure := metric]
+                                              measure := NULL]
   
+  
+  numeric_estimates <- data.table::merge.data.table(numeric_estimates, 
+                                                    estimates[measure %in% "Expected change in daily cases"][,
+                                                              .(region, `Expected change in daily cases` = estimate)],
+                                                    by = "region", all.x = TRUE)
   ## Rank countries by incidence countires
   high_inc_regions <- unique(
     data.table::setorderv(numeric_estimates, cols = "upper", order = -1)$region)
   
   numeric_estimates <- numeric_estimates[, region := factor(region, levels = high_inc_regions)]
   
+  ## Clean up joined estimate table and munge into a presentation format
+  estimates <- estimates[, numeric_estimate := NULL][, 
+    measure := factor(measure, levels = c("New confirmed cases by infection date",
+                                          "Expected change in daily cases",
+                                          "Effective reproduction no.",
+                                          "Rate of growth",
+                                          "Doubling/halving time (days)"))]
+  
+  estimates <- data.table::dcast(estimates, region ~ ..., value.var = "estimate")
   
   estimates <- estimates[, (region_scale) := region][, region := NULL]
   
@@ -94,8 +111,6 @@ summarise_results <- function(regions,
   
   return(out)
 }
-
-
 
 
 #' Generate Regional Summary Output
@@ -111,6 +126,7 @@ summarise_results <- function(regions,
 #' @inheritParams summarise_results
 #' @inheritParams plot_summary
 #' @inheritParams summarise_key_measures
+#' @inheritParams regional_epinow
 #' @importFrom purrr map_chr
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
 #' @importFrom cowplot get_legend
@@ -148,19 +164,21 @@ summarise_results <- function(regions,
 #'   cases[, region := "realland"]))
 #'   
 #' ## Run basic nowcasting pipeline
-#' out <- regional_epinow(reported_cases = cases,
-#'                        generation_time = generation_time,
-#'                        incubation_period = incubation_period,
-#'                        reporting_delay = reporting_delay,
-#'                        samples = 1000, warmup = 200, cores = 4, chains = 4,
-#'                        verbose = TRUE)
+#' regional_out <- regional_epinow(reported_cases = cases,
+#'                                 generation_time = generation_time,
+#'                                 incubation_period = incubation_period,
+#'                                 reporting_delay = reporting_delay,
+#'                                 samples = 1000, warmup = 200, cores = 4,
+#'                                 chains = 4, verbose = TRUE)
 #'                        
-#' regional_summary(regional_out,
+#' regional_summary(regional_output = regional_out,
+#'                  reported_cases = cases,
 #'                  region_scale = "Country")
 #'
 #' }
 #' 
 regional_summary <- function(regional_output,
+                             reported_cases,
                              results_dir, 
                              summary_dir,
                              target_date,
@@ -181,6 +199,9 @@ regional_summary <- function(regional_output,
     results_dir <- NULL
   }
    
+  if (missing(target_date)) {
+    target_date <- NULL
+  }
   if (!is.null(results_dir) & !missing(regional_output)) {
     stop("Only one of results_dir and regional_output should be specified")
   }
@@ -191,7 +212,7 @@ regional_summary <- function(regional_output,
       
      regions <- EpiNow2::get_regions(results_dir)
      
-       if (missing(target_date)) {
+       if (is.null(target_date)) {
          target_date <- "latest"
        }
     }
@@ -201,35 +222,32 @@ regional_summary <- function(regional_output,
   
 
   ## Get estimates
-  results <- EpiNow2::get_regional_results(regional_output,
-                                           results_dir, forecast = FALSE)
+  results <- get_regional_results(regional_output,
+                                  results_dir, forecast = FALSE)
   
   ## Get latest date
-  latest_date <- max(results[, .SD[date == max(date)], by = .(region)]$date)
+  latest_date <- max(results$estimates$summarised$date, na.rm = TRUE)
   
   if (!is.null(summary_dir)) {
     ## Make summary directory
     if (!dir.exists(summary_dir)) {
       dir.create(summary_dir)
     }
-    
     saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
   }
   
   if (!is.null(regional_output)) {
-    regional_summaries <- purr::map(regional_output, ~ .$summary)
+    regional_summaries <- purrr::map(regional_output, ~ .$summary)
   }else{
     regional_summaries <- NULL
   }
   
   ## Summarise results as a table
-  summarised_results <- EpiNow2::summarise_results(regions, 
-                                                   summarises = regional_summaries,
-                                                   results_dir,
-                                                   target_date = target_date,
-                                                   region_scale = region_scale)
-  
-  message("Saving results summary table")
+  summarised_results <- summarise_results(regions, 
+                                          summaries = regional_summaries,
+                                          results_dir = results_dir,
+                                          target_date = target_date,
+                                          region_scale = region_scale)
   
   force_factor <- function(df) {
     df[,`Expected change in daily cases` :=
@@ -249,16 +267,13 @@ regional_summary <- function(regional_output,
   }
 
   ## Summarise results to csv
-  message("Saving Rt and case csvs")
+  sum_key_measures <- summarise_key_measures(regional_results = results,
+                                             results_dir = results_dir, 
+                                             summary_dir = summary_dir, 
+                                             type = csv_region_label,
+                                             date = target_date) 
   
-  sum_key_measures <- EpiNow2::summarise_key_measures(results_dir = results_dir, 
-                                                      summary_dir = ifelse(missing(summary_dir), NULL, summary_dir), 
-                                                      type = csv_region_label,
-                                                      date = target_date) 
-  
-  
-  message("Plotting results summary")
-  
+
   ## Summarise cases and Rts
   summary_plot <- EpiNow2::plot_summary(summarised_results$data,
                                         x_lab = region_scale, 
@@ -274,10 +289,8 @@ regional_summary <- function(regional_output,
   }
   
   
-  message("Plotting summary Rt and case plots")
-  
   high_plots <- report_plots(
-    summarised_estimates = results$estimates$summarised[region %in% results$regions_by_inc[1:6]], 
+    summarised_estimates = results$estimates$summarised[region %in% summarised_results$regions_by_inc[1:6]], 
     reported = reported_cases
   )
   
@@ -299,9 +312,6 @@ regional_summary <- function(regional_output,
                         high_plots$infections, dpi = 400, width = 12, height = 12)
       ))
   }
-
-
-  message("Plotting overall Rt and case plots")
   
   plots_per_row <- ifelse(length(regions) < 60, 3, 5)
   
@@ -371,7 +381,7 @@ regional_summary <- function(regional_output,
 #' }
 summarise_key_measures <- function(regional_results,
                                    results_dir, summary_dir, 
-                                   type = "country", date) {
+                                   type = "region", date) {
   
   if (missing(regional_results)) {
     regional_results <- NULL
