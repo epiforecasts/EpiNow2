@@ -37,7 +37,7 @@
 #' increases the accuracy of the approximation at the cost of additional compute. 
 #' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
 #' @param rt_gp List controlling Gaussian process approximation for Rt estimation. Defined as `infections_gp`.
-#' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be printed.
+#' @param verbose Logical, defaults to `TRUE`. Should verbose progress messages be printed.
 #' @param debug Logical, defaults to `FALSE`. Enables debug model in which additional diagnostics are available
 #' @export
 #' @importFrom rstan sampling extract 
@@ -95,7 +95,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 samples = 1000, warmup = 250,
                                 estimate_rt = TRUE, adapt_delta = 0.99,
                                 max_treedepth = 15, return_fit = FALSE,
-                                verbose = FALSE, debug = FALSE){
+                                verbose = TRUE, debug = FALSE){
   
 
   # Set up data.table -------------------------------------------------------

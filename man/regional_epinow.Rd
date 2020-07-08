@@ -12,6 +12,7 @@ regional_epinow(
   cores = 1,
   summary = TRUE,
   summary_dir,
+  region_scale = "Region",
   return_estimates = TRUE,
   ...
 )
@@ -31,6 +32,8 @@ regional_epinow(
 
 \item{summary_dir}{A character string giving the directory
 in which to store summary of results.}
+
+\item{region_scale}{A character string indicating the name to give the regions being summarised.}
 
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
 

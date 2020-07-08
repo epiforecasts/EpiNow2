@@ -79,7 +79,7 @@ epinow <- function(reported_cases, family = "negbin",
                    ensemble_type = "mean",
                    return_estimates = TRUE,
                    target_folder, target_date,
-                   verbose = FALSE, debug = FALSE) {
+                   verbose = TRUE, debug = FALSE) {
  
  if (!return_estimates & missing(target_folder)) {
    stop("Either return estimates or save to a target folder")
@@ -313,7 +313,7 @@ if (!is.null(target_folder)){
 #'                         max = 30)
 #'                         
 #' ## Uses example case vector
-#' cases <- EpiNow2::example_confirmed[1:60]
+#' cases <- EpiNow2::example_confirmed[1:80]
 #' 
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
@@ -326,11 +326,11 @@ if (!is.null(target_folder)){
 #'                        generation_time = generation_time,
 #'                        infections_gp = list(basis_prop = 0.1, boundary_scale = 2),
 #'                        rt_gp = list(basis_prop = 0.1, boundary_scale = 2),
+#'                        adapt_delta = 0.9,
 #'                        incubation_period = incubation_period,
 #'                        reporting_delay = reporting_delay,
-#'                        samples = 1000, warmup = 200,
-#'                        cores = 4, chains = 4,
-#'                        verbose = TRUE)
+#'                        samples = 2000, warmup = 200,
+#'                        cores = 4, chains = 4)
 #'}
 regional_epinow <- function(reported_cases, 
                             target_folder, target_date,
