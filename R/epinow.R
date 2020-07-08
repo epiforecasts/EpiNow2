@@ -341,7 +341,7 @@ regional_epinow <- function(reported_cases,
                             ...) {
    
   ## Set input to data.table
-  cases <- data.table::as.data.table(cases)
+  reported_cases <- data.table::as.data.table(reported_cases)
   
   if (missing(target_date)) {
     target_date <- as.character(max(reported_cases$date))
