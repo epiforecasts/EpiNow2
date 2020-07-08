@@ -133,19 +133,22 @@ of report and then save summary measures and plots.</p>
   <span class='kw'>rt_gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.25</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
   <span class='kw'>rt_prior</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>sd</span> <span class='kw'>=</span> <span class='fl'>1</span>),
   <span class='no'>model</span>,
+  <span class='kw'>prior_smoothing_window</span> <span class='kw'>=</span> <span class='fl'>7</span>,
   <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>,
   <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>2</span>,
   <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>2000</span>,
   <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>500</span>,
   <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='fl'>0.99</span>,
+  <span class='kw'>max_treedepth</span> <span class='kw'>=</span> <span class='fl'>15</span>,
   <span class='no'>forecast_model</span>,
-  <span class='kw'>horizon</span> <span class='kw'>=</span> <span class='fl'>14</span>,
+  <span class='kw'>horizon</span> <span class='kw'>=</span> <span class='fl'>7</span>,
   <span class='kw'>ensemble_type</span> <span class='kw'>=</span> <span class='st'>"mean"</span>,
   <span class='kw'>return_estimates</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='no'>target_folder</span>,
   <span class='no'>target_date</span>,
-  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='kw'>debug</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
 )</pre>
 
@@ -204,6 +207,11 @@ Rt. By default this is assumed to be mean 1 with a standard deviation of 1.</p><
       <td><p>A compiled stan model. By default uses the internal package model.</p></td>
     </tr>
     <tr>
+      <th>prior_smoothing_window</th>
+      <td><p>Numeric defaults to 7. The number of days over which to take a rolling average
+for the prior based on reported cases.</p></td>
+    </tr>
+    <tr>
       <th>cores</th>
       <td><p>Numeric, defaults to 2. The number of cores to use when fitting the stan model.</p></td>
     </tr>
@@ -228,13 +236,21 @@ Rt. By default this is assumed to be mean 1 with a standard deviation of 1.</p><
       <td><p>Logical, defaults to FALSE. Should the fitted stan model be returned.</p></td>
     </tr>
     <tr>
+      <th>adapt_delta</th>
+      <td><p>Numeric, defaults to 0.99. See ?rstan::sampling.</p></td>
+    </tr>
+    <tr>
+      <th>max_treedepth</th>
+      <td><p>Numeric, defaults to 15. See ?rstan::sampling.</p></td>
+    </tr>
+    <tr>
       <th>forecast_model</th>
       <td><p>An uninitialised forecast model function to be passed to <code><a href='https://rdrr.io/pkg/EpiSoon/man/forecast_rt.html'>EpiSoon::forecast_rt</a></code>. Used
 for forecasting future Rt and case co An example of the required structure is: <code>function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}</code>.</p></td>
     </tr>
     <tr>
       <th>horizon</th>
-      <td><p>Numeric, defaults to 14. Number of days into the future to forecast.</p></td>
+      <td><p>Numeric, defaults to 7. Number of days into the future to forecast.</p></td>
     </tr>
     <tr>
       <th>ensemble_type</th>
@@ -255,7 +271,7 @@ an unweighted ensemble ("mean") with no other types currently supported.</p></td
     </tr>
     <tr>
       <th>verbose</th>
-      <td><p>Logical, defaults to <code>FALSE</code>. Should verbose progress messages be printed.</p></td>
+      <td><p>Logical, defaults to <code>TRUE</code>. Should verbose progress messages be printed.</p></td>
     </tr>
     <tr>
       <th>debug</th>

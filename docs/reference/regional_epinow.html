@@ -127,6 +127,9 @@
   <span class='no'>target_date</span>,
   <span class='kw'>case_limit</span> <span class='kw'>=</span> <span class='fl'>20</span>,
   <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>summary</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='no'>summary_dir</span>,
+  <span class='kw'>region_scale</span> <span class='kw'>=</span> <span class='st'>"Region"</span>,
   <span class='kw'>return_estimates</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='no'>...</span>
 )</pre>
@@ -155,6 +158,19 @@
       <td><p>Numeric, defaults to 2. The number of cores to use when fitting the stan model.</p></td>
     </tr>
     <tr>
+      <th>summary</th>
+      <td><p>Logical, should summary measures be calculated.</p></td>
+    </tr>
+    <tr>
+      <th>summary_dir</th>
+      <td><p>A character string giving the directory
+in which to store summary of results.</p></td>
+    </tr>
+    <tr>
+      <th>region_scale</th>
+      <td><p>A character string indicating the name to give the regions being summarised.</p></td>
+    </tr>
+    <tr>
       <th>return_estimates</th>
       <td><p>Logical, defaults to TRUE. Should estimates be returned.</p></td>
     </tr>
@@ -166,9 +182,7 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    
-
-
+    <p>A list of output stratified at the top level into regional output and across region output summary output</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'> <span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
@@ -186,25 +200,30 @@
                           <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>30</span>)
 
 <span class='no'>reporting_delay</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>10</span>),
-                        <span class='kw'>mean_sd</span> <span class='kw'>=</span> <span class='fl'>0.8</span>,
+                        <span class='kw'>mean_sd</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>2</span>),
                         <span class='kw'>sd</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>2</span>),
-                        <span class='kw'>sd_sd</span> <span class='kw'>=</span> <span class='fl'>0.1</span>,
+                        <span class='kw'>sd_sd</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1.1</span>),
                         <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>30</span>)
 
 <span class='co'>## Uses example case vector</span>
-<span class='no'>cases</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='example_confirmed.html'>example_confirmed</a></span>
+<span class='no'>cases</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='example_confirmed.html'>example_confirmed</a></span>[<span class='fl'>1</span>:<span class='fl'>40</span>]
 
 <span class='no'>cases</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>data.table</span><span class='kw ns'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/rbindlist.html'>rbindlist</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(
   <span class='kw pkg'>data.table</span><span class='kw ns'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/copy.html'>copy</a></span>(<span class='no'>cases</span>)[, <span class='no'>region</span> <span class='kw'>:=</span> <span class='st'>"testland"</span>],
   <span class='no'>cases</span>[, <span class='no'>region</span> <span class='kw'>:=</span> <span class='st'>"realland"</span>]))
 
 <span class='co'>## Run basic nowcasting pipeline</span>
+<span class='co'>## Here we reduce the accuracy of the GP approximation in order to reduce runtime</span>
 <span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='fu'>regional_epinow</span>(<span class='kw'>reported_cases</span> <span class='kw'>=</span> <span class='no'>cases</span>,
+                       <span class='kw'>target_folder</span> <span class='kw'>=</span> <span class='st'>"../test-2"</span>,
                        <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
+                       <span class='kw'>infections_gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
+                       <span class='kw'>rt_gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
+                       <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='fl'>0.9</span>,
                        <span class='kw'>incubation_period</span> <span class='kw'>=</span> <span class='no'>incubation_period</span>,
                        <span class='kw'>reporting_delay</span> <span class='kw'>=</span> <span class='no'>reporting_delay</span>,
-                       <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>2</span>,
-                       <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+                       <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>2000</span>, <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>200</span>,
+                       <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>)
 }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

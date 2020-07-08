@@ -121,7 +121,7 @@
     <p>Get Combined Regional Results</p>
     </div>
 
-    <pre class="usage"><span class='fu'>get_regional_results</span>(<span class='no'>results_dir</span>, <span class='no'>date</span>, <span class='kw'>forecast</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>get_regional_results</span>(<span class='no'>regional_output</span>, <span class='no'>results_dir</span>, <span class='no'>date</span>, <span class='kw'>forecast</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -150,45 +150,13 @@ data for. Defaults to "latest" which finds the latest results available.</p></td
     <pre class="examples"><div class='input'>
 
 <span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='co'># see ?regional_summary for code to produce test results</span>
-<span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='fu'>get_regional_results</span>(<span class='st'>"../test"</span>, <span class='kw'>forecast</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+<span class='co'># see ?regional_epinow for code to generate regional results to use with this example.</span>
 
-<span class='no'>out</span>
-}
-<span class='co'>## Code</span>
-<span class='no'>get_regional_results</span></div><div class='output co'>#&gt; function (results_dir, date, forecast = FALSE) 
-#&gt; {
-#&gt;     if (missing(date)) {
-#&gt;         date &lt;- "latest"
-#&gt;     }
-#&gt;     regions &lt;- list.files(results_dir, recursive = FALSE)
-#&gt;     names(regions) &lt;- regions
-#&gt;     load_data &lt;- purrr::safely(EpiNow2::get_raw_result)
-#&gt;     get_estimates &lt;- function(samples, summarised) {
-#&gt;         samples &lt;- purrr::map(regions, ~load_data(samples, ., 
-#&gt;             result_dir = results_dir, date = date)[[1]])
-#&gt;         samples &lt;- data.table::rbindlist(samples, idcol = "region")
-#&gt;         summarised &lt;- purrr::map(regions, ~load_data(summarised, 
-#&gt;             ., result_dir = results_dir, date = date)[[1]])
-#&gt;         summarised &lt;- data.table::rbindlist(summarised, idcol = "region")
-#&gt;         out &lt;- list()
-#&gt;         out$samples &lt;- samples
-#&gt;         out$summarised &lt;- summarised
-#&gt;         return(out)
-#&gt;     }
-#&gt;     out &lt;- list()
-#&gt;     out$estimates &lt;- get_estimates(samples = "estimate_samples.rds", 
-#&gt;         summarised = "summarised_estimates.rds")
-#&gt;     if (forecast) {
-#&gt;         out$forecast &lt;- get_estimates(samples = "forecast_samples.rds", 
-#&gt;             summarised = "summarised_forecast.rds")
-#&gt;         out$estimated_reported_cases &lt;- get_estimates(samples = "estimated_reported_cases_samples.rds", 
-#&gt;             summarised = "summarised_estimated_reported_cases.rds")
-#&gt;     }
-#&gt;     return(out)
-#&gt; }
-#&gt; &lt;bytecode: 0x55d3eb71aa60&gt;
-#&gt; &lt;environment: namespace:EpiNow2&gt;</div></pre>
+<span class='no'>out</span>$<span class='no'>summary</span> <span class='kw'>&lt;-</span> <span class='kw'>NULL</span>
+
+<span class='fu'>get_regional_results</span>(<span class='no'>out</span>, <span class='kw'>forecast</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+
+}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -75,7 +75,7 @@ epinow <- function(reported_cases, family = "negbin",
                    samples = 2000, warmup = 500,
                    estimate_rt = TRUE, return_fit = FALSE,
                    adapt_delta = 0.99,  max_treedepth = 15,
-                   forecast_model, horizon = 14,
+                   forecast_model, horizon = 7,
                    ensemble_type = "mean",
                    return_estimates = TRUE,
                    target_folder, target_date,
@@ -137,6 +137,8 @@ if (!is.null(target_folder)) {
                                     infections_gp = infections_gp,
                                     rt_gp = rt_gp,
                                     rt_prior = rt_prior,
+                                    adapt_delta = adapt_delta,
+                                    max_treedepth = max_treedepth,
                                     model = model,
                                     cores = cores, chains = chains,
                                     samples = samples,
@@ -313,7 +315,7 @@ if (!is.null(target_folder)){
 #'                         max = 30)
 #'                         
 #' ## Uses example case vector
-#' cases <- EpiNow2::example_confirmed[1:80]
+#' cases <- EpiNow2::example_confirmed[1:40]
 #' 
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],

@@ -20,7 +20,7 @@
 #' Rt. By default this is assumed to be mean 1 with a standard deviation of 1.
 #' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
 #' for the prior based on reported cases.
-#' @param horizon Numeric, defaults to 14. Number of days into the future to forecast.
+#' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
 #' @param model A compiled stan model. By default uses the internal package model.
 #' @param cores Numeric, defaults to 2. The number of cores to use when fitting the stan model.
 #' @param chains Numeric, defaults to 2. The number of MCMC chains to use.
@@ -90,7 +90,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
                                 rt_prior = list(mean = 1, sd = 1),
                                 prior_smoothing_window = 7,
-                                horizon = 14,
+                                horizon = 7,
                                 model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 250,
                                 estimate_rt = TRUE, adapt_delta = 0.99,
@@ -211,7 +211,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   init_fun <- function(){out <- list(
     eta = rnorm(data$M, mean = 0, sd = 1),
-    rho = truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.2),
+    rho = truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2),
     alpha =  truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1),
     inc_mean = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$mean, sd = incubation_period$mean_sd),
     inc_sd = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$sd, sd = incubation_period$sd_sd),
@@ -226,7 +226,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                           scale = (rt_prior$sd^2) / rt_prior$mean))
     out$R_eta <- rnorm(data$rM, mean = 0, sd = 1)
-    out$R_rho <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.2))
+    out$R_rho <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2))
     out$R_alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
     out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 1, mean = generation_time$mean,  
                                                sd = generation_time$mean_sd))

@@ -14,7 +14,7 @@ estimate_infections(
   rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
   rt_prior = list(mean = 1, sd = 1),
   prior_smoothing_window = 7,
-  horizon = 14,
+  horizon = 7,
   model,
   cores = 1,
   chains = 2,
@@ -63,7 +63,7 @@ Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 \item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
 for the prior based on reported cases.}
 
-\item{horizon}{Numeric, defaults to 14. Number of days into the future to forecast.}
+\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
 \item{model}{A compiled stan model. By default uses the internal package model.}
 
