@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master)
 [![DOI](https://zenodo.org/badge/247464257.svg)](https://zenodo.org/badge/latestdoi/247464257)
 
-*This package is under development with breaking changes likely.*
+*This package is under development.*
 
 This package estimates the time-varying reproduction number, rate of spread, and doubling time using a range of open-source tools and current best practices. It aims to help users avoid some of the limitations of naive implementations in a framework that is informed by community feedback and is under active development. It assumes that only limited data is available on cases by date of onset and instead uses cases by date of report. These are then imputed to case counts by date of infection using an uncertain reporting delay and incubation period via a Gaussian process based method. Right truncation of cases is dealt with internally by `{EpiNow2}`, as is propagating uncertainty from all inputs into the final parameter estimates (helping to mitigate spurious findings). Time-varying estimates of the reproduction number are estimated using a similar approach to that implemented in the [`{EpiEstim}`](https://github.com/annecori/EpiEstim) package by date of infection with a generation time estimate that includes uncertainty and variation over time controlled using a Gaussian process. Time-varying estimates of the rate of growth are derived from the time-varying reproduction estimates and the uncertain generation time. Optionally, the time-varying reproduction number can be forecast forwards in time using an integration with the [`{EpiSoon}`](https://epiforecasts.io/EpiSoon) package and converted to a case forecast using the renewal equation. Alternatively, the time-varying reproduction number and cases can be forecast using a Gaussian process. See the [methods](https://epiforecasts.io/covid/methods.html) section of our Covid-19 site for a detailed discussion of the approach. 
  
@@ -45,8 +45,7 @@ Windows users will need a working installation of Rtools in order to build the p
 
 `{EpiNow}` is designed to be used with a single function call or to be used in an ad-hoc fashion via individual function calls. In the following section we give an overview of the simple use case. For more on using each function see the [function documentation](https://epiforecasts.io/EpiNow2/reference/index.html). The core functions are: [`epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
 [`regional_epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
-[`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), and [`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html). A working implementation for COVID-19 can be found [here](https://github.com/epiforecasts/covid-global/blob/master/update_nowcasts.R). 
-
+[`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), and [`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html). [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) can be use on its own to infer the underlying infection case curve from reported cases with Rt optionally returned (on by default). Estimating the underyling infection case curve alone is substantially less computationally demanding than also estimating Rt.
 
 ### Reporting delays, incubation period and generation time
 
@@ -54,8 +53,8 @@ Distributions can either be fitted using package functionality or determined els
 
 ```{r}
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1))
-## Set max allowed delay to 60 days to truncate computation
-reporting_delay$max <- 60
+## Set max allowed delay to 30 days to truncate computation
+reporting_delay$max <- 30
 
 reporting_delay
 ```
@@ -83,7 +82,7 @@ This function represents the core functionality of the package and includes resu
 Load example case data from `{EpiNow2}`. 
 
 ```{r}
-reported_cases <- EpiNow2::example_confirmed[1:60]
+reported_cases <- EpiNow2::example_confirmed[1:50]
 
 head(reported_cases)
 ```
@@ -96,7 +95,8 @@ estimates <- EpiNow2::epinow(reported_cases = reported_cases,
                              incubation_period = incubation_period, 
                              reporting_delay = reporting_delay,
                              horizon = 7, samples = 1000, warmup = 200, 
-                             cores = 4, chains = 4, verbose = TRUE)
+                             cores = 4, chains = 4, verbose = TRUE, 
+                             adapt_delta = 0.95)
 
 names(estimates)
 ```
@@ -140,27 +140,36 @@ reported_cases <- data.table::rbindlist(list(
 head(reported_cases)
 ```
 
-Run the pipeline on each region in turn. The commented code (requires the `{future}` package) can be used to run regions in parallel.
+Run the pipeline on each region in turn. The commented code (requires the `{future}` package) can be used to run regions in parallel (when in most scenarios `cores` should be set to 1).
 
-```{r, message = FALSE, eval = FALSE}
+```{r, message = FALSE, warning = FALSE}
 ## future::plan("multisession")
 estimates <- EpiNow2::regional_epinow(reported_cases = reported_cases, 
                                       generation_time = generation_time,
                                       incubation_period = incubation_period, 
                                       reporting_delay = reporting_delay,
-                                      rt_prior = list(mean = 1, sd = 1), horizon = 7,
-                                      samples = 1000, warmup = 200, cores = 4, 
-                                      chains = 4, verbose = TRUE)
+                                      horizon = 7, samples = 1000, warmup = 200, cores = 4, 
+                                      chains = 4, adapt_delta = 0.95, verbose = TRUE)
+```
+
+Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments.
+
+Summary measures that are returned include a table formatted for reporting (along with raw results for further processing).
+
+```{r}
+estimates$summary$summarised_results$table
 ```
 
 
-If the results have been saved to a folder (using `target_folder`) then the `regional_summary` function can be used to produce summary output (*work in progress*).
+A range of plots are again returned (with the single summary plot shown below).
 
-An example of the summary output can be seen [here](https://github.com/epiforecasts/covid-uk/tree/master/nowcast/regional-summary).
+```{r, dpi = 330, fig.width = 12, fig.height = 12, message = FALSE, warning = FALSE}
+estimates$summary$summary_plot
+```
 
 ### Reporting templates
 
-Rmarkdown templates are provided in the package (`templates`) for semi-automated reporting of the estimates. These are currently undocumented but an example integration can be seen [here](https://github.com/epiforecasts/covid/blob/master/_posts/national/united-kingdom/united-kingdom.Rmd). If using these templates to report your results please highlight our [limitations](https://epiforecasts.io/covid/) as these are key to understanding our results.
+Rmarkdown templates are provided in the package (`templates`) for semi-automated reporting of estimates. These are currently undocumented but an example integration can be seen [here](https://github.com/epiforecasts/covid/blob/master/_posts/national/united-kingdom/united-kingdom.Rmd). If using these templates to report your results please highlight our [limitations](https://epiforecasts.io/covid/) as these are key to understanding our results.
 
 ## Contributing
 

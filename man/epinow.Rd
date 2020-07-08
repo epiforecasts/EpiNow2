@@ -14,19 +14,22 @@ epinow(
   rt_gp = list(basis_prop = 0.25, boundary_scale = 2),
   rt_prior = list(mean = 1, sd = 1),
   model,
+  prior_smoothing_window = 7,
   cores = 2,
   chains = 2,
   samples = 2000,
   warmup = 500,
   estimate_rt = TRUE,
   return_fit = FALSE,
+  adapt_delta = 0.99,
+  max_treedepth = 15,
   forecast_model,
-  horizon = 14,
+  horizon = 7,
   ensemble_type = "mean",
   return_estimates = TRUE,
   target_folder,
   target_date,
-  verbose = FALSE,
+  verbose = TRUE,
   debug = FALSE
 )
 }
@@ -64,6 +67,9 @@ Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 
 \item{model}{A compiled stan model. By default uses the internal package model.}
 
+\item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
+for the prior based on reported cases.}
+
 \item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
 
 \item{chains}{Numeric, defaults to 2. The number of MCMC chains to use.}
@@ -76,10 +82,14 @@ Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
+\item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
+
+\item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
+
 \item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
 for forecasting future Rt and case co An example of the required structure is: \code{function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}}.}
 
-\item{horizon}{Numeric, defaults to 14. Number of days into the future to forecast.}
+\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
 \item{ensemble_type}{Character string indicating the type of ensemble to use. By default this is
 an unweighted ensemble ("mean") with no other types currently supported.}
@@ -90,7 +100,7 @@ an unweighted ensemble ("mean") with no other types currently supported.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
+\item{verbose}{Logical, defaults to \code{TRUE}. Should verbose progress messages be printed.}
 
 \item{debug}{Logical, defaults to \code{FALSE}. Enables debug model in which additional diagnostics are available}
 }

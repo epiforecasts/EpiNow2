@@ -10,6 +10,9 @@ regional_epinow(
   target_date,
   case_limit = 20,
   cores = 1,
+  summary = TRUE,
+  summary_dir,
+  region_scale = "Region",
   return_estimates = TRUE,
   ...
 )
@@ -25,12 +28,19 @@ regional_epinow(
 
 \item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
 
+\item{summary}{Logical, should summary measures be calculated.}
+
+\item{summary_dir}{A character string giving the directory
+in which to store summary of results.}
+
+\item{region_scale}{A character string indicating the name to give the regions being summarised.}
+
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
 
 \item{...}{Pass additional arguments to \code{epinow}}
 }
 \value{
-
+A list of output stratified at the top level into regional output and across region output summary output
 }
 \description{
 Estimates Rt by region. See the documentation for \code{epinow} for further information.
@@ -51,24 +61,29 @@ incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
                           max = 30)
                    
 reporting_delay <- list(mean = log(10),
-                        mean_sd = 0.8,
+                        mean_sd = log(2),
                         sd = log(2),
-                        sd_sd = 0.1,
+                        sd_sd = log(1.1),
                         max = 30)
                         
 ## Uses example case vector
-cases <- EpiNow2::example_confirmed
+cases <- EpiNow2::example_confirmed[1:40]
 
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
   
 ## Run basic nowcasting pipeline
+## Here we reduce the accuracy of the GP approximation in order to reduce runtime
 out <- regional_epinow(reported_cases = cases,
+                       target_folder = "../test-2",
                        generation_time = generation_time,
+                       infections_gp = list(basis_prop = 0.1, boundary_scale = 2),
+                       rt_gp = list(basis_prop = 0.1, boundary_scale = 2),
+                       adapt_delta = 0.9,
                        incubation_period = incubation_period,
                        reporting_delay = reporting_delay,
-                       samples = 1000, warmup = 500, cores = 2, chains = 2,
-                       verbose = TRUE)
+                       samples = 2000, warmup = 200,
+                       cores = 4, chains = 4)
 }
 }
