@@ -67,7 +67,7 @@ reporting_delay <- list(mean = log(10),
                         max = 30)
                         
 ## Uses example case vector
-cases <- EpiNow2::example_confirmed[1:60]
+cases <- EpiNow2::example_confirmed[1:80]
 
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
@@ -80,10 +80,10 @@ out <- regional_epinow(reported_cases = cases,
                        generation_time = generation_time,
                        infections_gp = list(basis_prop = 0.1, boundary_scale = 2),
                        rt_gp = list(basis_prop = 0.1, boundary_scale = 2),
+                       adapt_delta = 0.9,
                        incubation_period = incubation_period,
                        reporting_delay = reporting_delay,
-                       samples = 1000, warmup = 200,
-                       cores = 4, chains = 4,
-                       verbose = TRUE)
+                       samples = 2000, warmup = 200,
+                       cores = 4, chains = 4)
 }
 }

@@ -29,7 +29,7 @@ epinow(
   return_estimates = TRUE,
   target_folder,
   target_date,
-  verbose = FALSE,
+  verbose = TRUE,
   debug = FALSE
 )
 }
@@ -100,7 +100,7 @@ an unweighted ensemble ("mean") with no other types currently supported.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
+\item{verbose}{Logical, defaults to \code{TRUE}. Should verbose progress messages be printed.}
 
 \item{debug}{Logical, defaults to \code{FALSE}. Enables debug model in which additional diagnostics are available}
 }
