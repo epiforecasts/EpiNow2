@@ -24,7 +24,7 @@ estimate_infections(
   adapt_delta = 0.99,
   max_treedepth = 15,
   return_fit = FALSE,
-  verbose = FALSE,
+  verbose = TRUE,
   debug = FALSE
 )
 }
@@ -83,7 +83,7 @@ for the prior based on reported cases.}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
-\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
+\item{verbose}{Logical, defaults to \code{TRUE}. Should verbose progress messages be printed.}
 
 \item{debug}{Logical, defaults to \code{FALSE}. Enables debug model in which additional diagnostics are available}
 }
