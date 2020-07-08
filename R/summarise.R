@@ -29,6 +29,10 @@ summarise_results <- function(regions,
                               region_scale = "Region") {
   
   if (missing(target_date)) {
+    target_date <- NULL
+  }
+  
+  if(is.null(target_date)){
     target_date <- "latest"
   }
    
@@ -102,7 +106,7 @@ summarise_results <- function(regions,
   
   estimates <- estimates[, (region_scale) := region][, region := NULL]
   
-  estimates <- estimates[, c((region_scale), 
+  estimates <- estimates[, c(region_scale, 
                              colnames(estimates)[-ncol(estimates)]), with = FALSE]
   
   out <- list(estimates, numeric_estimates, high_inc_regions)
@@ -167,11 +171,13 @@ summarise_results <- function(regions,
 #'                                 generation_time = generation_time,
 #'                                 incubation_period = incubation_period,
 #'                                 reporting_delay = reporting_delay,
-#'                                 samples = 1000, warmup = 200, cores = 4,
-#'                                 chains = 4, verbose = TRUE, summary = FALSE)
+#'                                 samples = 2000, warmup = 200, cores = 4,
+#'                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
+#'                                 summary = FALSE)
 #'                        
-#' regional_summary(regional_output = regional_out$regional,
+#' regional_summary(regional_output = regional_out,
 #'                  reported_cases = cases,
+#'                  summary_dir = "../summary",
 #'                  region_scale = "Country")
 #'
 #' }
@@ -220,7 +226,8 @@ regional_summary <- function(regional_output,
 
   ## Get estimates
   results <- get_regional_results(regional_output,
-                                  results_dir, forecast = FALSE)
+                                  results_dir = results_dir,
+                                  forecast = FALSE)
   
   ## Get latest date
   latest_date <- max(results$estimates$summarised$date, na.rm = TRUE)
@@ -259,8 +266,8 @@ regional_summary <- function(regional_output,
   summarised_results$data <- force_factor(summarised_results$data)
   
   if (!is.null(summary_dir)) {
-    saveRDS(summarised_results$table, file.path(summary_dir, "summary_table.rds"))
-    saveRDS(summarised_results$data, file.path(summary_dir, "summary_data.rds"))
+    data.table::fwrite(summarised_results$table, file.path(summary_dir, "summary_table.csv"))
+    data.table::fwrite(summarised_results$data,  file.path(summary_dir, "summary_data.csv"))
   }
 
   ## Summarise results to csv
@@ -269,7 +276,7 @@ regional_summary <- function(regional_output,
                                              summary_dir = summary_dir, 
                                              type = tolower(region_scale),
                                              date = target_date) 
-  
+   
 
   ## Adaptive add a logscale to the summary plot based on range of observed cases
   log_cases <- (max(summarised_results$data[metric %in% "New confirmed cases by infection date"]$upper, na.rm = TRUE) / 

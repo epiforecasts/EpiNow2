@@ -337,9 +337,10 @@ regional_epinow <- function(reported_cases,
                             case_limit = 20, cores = 1,
                             summary = TRUE,
                             summary_dir,
+                            region_scale = "Region",
                             return_estimates = TRUE,
                             ...) {
-   
+    
   ## Set input to data.table
   reported_cases <- data.table::as.data.table(reported_cases)
   
@@ -407,24 +408,25 @@ regional_epinow <- function(reported_cases,
                                               ...,
                                               future.scheduling = Inf)
   
+  regional_out <- purrr::map(regional_out, ~ .$result)
+  names(regional_out) <- regions
+  
   
   if (summary) {
     if (missing(summary_dir)) {
       summary_dir <- NULL
     }
-    safe_summary <- purrr::partial(regional_summary)
+    safe_summary <- purrr::safely(regional_summary)
     
     summary_out <- safe_summary(regional_output = regional_out,
                                 summary_dir = summary_dir,
-                                reported_cases = report_cases,
+                                reported_cases = reported_cases,
                                 region_scale = region_scale)[[1]]
   }
   
   if (return_estimates) {
     out <- list()
-    out$regional <- purrr::map(regional_out, ~ .$result)
-    
-    names(out$regional) <- regions
+    out$regional <- regional_out
     
     if (summary) {
       out$summary <- summary_out

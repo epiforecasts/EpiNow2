@@ -77,8 +77,9 @@ regional_out <- regional_epinow(reported_cases = cases,
                                 samples = 1000, warmup = 200, cores = 4,
                                 chains = 4, verbose = TRUE, summary = FALSE)
                        
-regional_summary(regional_output = regional_out$regional,
+regional_summary(regional_output = regional_out,
                  reported_cases = cases,
+                 summary_dir = "../summary",
                  region_scale = "Country")
 
 }
