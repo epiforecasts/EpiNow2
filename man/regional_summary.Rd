@@ -11,8 +11,6 @@ regional_summary(
   summary_dir,
   target_date,
   region_scale = "Region",
-  csv_region_label = "region",
-  log_cases = FALSE,
   return_summary = TRUE
 )
 }
@@ -29,10 +27,6 @@ in which to store summary of results.}
 (in the format "yyyy-mm-dd"). Defaults to latest available estimates.}
 
 \item{region_scale}{A character string indicating the name to give the regions being summarised.}
-
-\item{csv_region_label}{Character string indicating the label to assign to a region when saving to .csv.}
-
-\item{log_cases}{Logical, should cases be shown on a logged scale. Defaults to \code{FALSE}}
 
 \item{return_summary}{Logical, defaults to \code{TRUE}. Should summary measures be returned.}
 }
@@ -81,9 +75,9 @@ regional_out <- regional_epinow(reported_cases = cases,
                                 incubation_period = incubation_period,
                                 reporting_delay = reporting_delay,
                                 samples = 1000, warmup = 200, cores = 4,
-                                chains = 4, verbose = TRUE)
+                                chains = 4, verbose = TRUE, summary = FALSE)
                        
-regional_summary(regional_output = regional_out,
+regional_summary(regional_output = regional_out$regional,
                  reported_cases = cases,
                  region_scale = "Country")
 
