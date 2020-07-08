@@ -24,7 +24,7 @@ epinow(
   adapt_delta = 0.99,
   max_treedepth = 15,
   forecast_model,
-  horizon = 14,
+  horizon = 7,
   ensemble_type = "mean",
   return_estimates = TRUE,
   target_folder,
@@ -89,7 +89,7 @@ for the prior based on reported cases.}
 \item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
 for forecasting future Rt and case co An example of the required structure is: \code{function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}}.}
 
-\item{horizon}{Numeric, defaults to 14. Number of days into the future to forecast.}
+\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
 \item{ensemble_type}{Character string indicating the type of ensemble to use. By default this is
 an unweighted ensemble ("mean") with no other types currently supported.}

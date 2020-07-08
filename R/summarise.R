@@ -358,7 +358,8 @@ regional_summary <- function(regional_output,
   if (return_summary) {
     out <- list()
     out$latest_date <- latest_date
-    out$summary <- results
+    out$results <- results
+    out$summarised_results <- summarised_results
     out$summary_plot <- summary_plot
     out$summarised_measures <- sum_key_measures
     out$high_plots <- high_plots

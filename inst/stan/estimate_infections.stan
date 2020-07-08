@@ -289,7 +289,7 @@ transformed parameters {
 model {
   
   // priors for noise GP
-  rho ~  normal(0,2);
+  rho ~  normal(0, 2);
   alpha ~ normal(0, 0.1);
   eta ~ std_normal();
 

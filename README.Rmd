@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master)
 [![DOI](https://zenodo.org/badge/247464257.svg)](https://zenodo.org/badge/latestdoi/247464257)
 
-*This package is under development with breaking changes likely.*
+*This package is under development.*
 
 This package estimates the time-varying reproduction number, rate of spread, and doubling time using a range of open-source tools and current best practices. It aims to help users avoid some of the limitations of naive implementations in a framework that is informed by community feedback and is under active development. It assumes that only limited data is available on cases by date of onset and instead uses cases by date of report. These are then imputed to case counts by date of infection using an uncertain reporting delay and incubation period via a Gaussian process based method. Right truncation of cases is dealt with internally by `{EpiNow2}`, as is propagating uncertainty from all inputs into the final parameter estimates (helping to mitigate spurious findings). Time-varying estimates of the reproduction number are estimated using a similar approach to that implemented in the [`{EpiEstim}`](https://github.com/annecori/EpiEstim) package by date of infection with a generation time estimate that includes uncertainty and variation over time controlled using a Gaussian process. Time-varying estimates of the rate of growth are derived from the time-varying reproduction estimates and the uncertain generation time. Optionally, the time-varying reproduction number can be forecast forwards in time using an integration with the [`{EpiSoon}`](https://epiforecasts.io/EpiSoon) package and converted to a case forecast using the renewal equation. Alternatively, the time-varying reproduction number and cases can be forecast using a Gaussian process. See the [methods](https://epiforecasts.io/covid/methods.html) section of our Covid-19 site for a detailed discussion of the approach. 
  
@@ -82,7 +82,7 @@ This function represents the core functionality of the package and includes resu
 Load example case data from `{EpiNow2}`. 
 
 ```{r}
-reported_cases <- EpiNow2::example_confirmed[1:60]
+reported_cases <- EpiNow2::example_confirmed[1:50]
 
 head(reported_cases)
 ```
@@ -95,7 +95,8 @@ estimates <- EpiNow2::epinow(reported_cases = reported_cases,
                              incubation_period = incubation_period, 
                              reporting_delay = reporting_delay,
                              horizon = 7, samples = 1000, warmup = 200, 
-                             cores = 4, chains = 4, verbose = TRUE)
+                             cores = 4, chains = 4, verbose = TRUE, 
+                             adapt_delta = 0.95)
 
 names(estimates)
 ```
@@ -139,20 +140,32 @@ reported_cases <- data.table::rbindlist(list(
 head(reported_cases)
 ```
 
-Run the pipeline on each region in turn. The commented code (requires the `{future}` package) can be used to run regions in parallel.
+Run the pipeline on each region in turn. The commented code (requires the `{future}` package) can be used to run regions in parallel (when in most scenarios `cores` should be set to 1).
 
-```{r, message = FALSE, eval = FALSE}
+```{r, message = FALSE, warning = FALSE}
 ## future::plan("multisession")
 estimates <- EpiNow2::regional_epinow(reported_cases = reported_cases, 
                                       generation_time = generation_time,
                                       incubation_period = incubation_period, 
                                       reporting_delay = reporting_delay,
-                                      rt_prior = list(mean = 1, sd = 1), horizon = 7,
-                                      samples = 1000, warmup = 200, cores = 4, 
-                                      chains = 4, verbose = TRUE)
+                                      horizon = 7, samples = 1000, warmup = 200, cores = 4, 
+                                      chains = 4, adapt_delta = 0.95, verbose = TRUE)
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments.
+
+Summary measures that are returned include a table formatted for reporting (along with raw results for further processing).
+
+```{r}
+estimates$summary$summarised_results$table
+```
+
+
+A range of plots are again returned (with the single summary plot shown below).
+
+```{r, dpi = 330, fig.width = 12, fig.height = 12, message = FALSE, warning = FALSE}
+estimates$summary$summary_plot
+```
 
 ### Reporting templates
 
