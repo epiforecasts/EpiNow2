@@ -45,8 +45,7 @@ Windows users will need a working installation of Rtools in order to build the p
 
 `{EpiNow}` is designed to be used with a single function call or to be used in an ad-hoc fashion via individual function calls. In the following section we give an overview of the simple use case. For more on using each function see the [function documentation](https://epiforecasts.io/EpiNow2/reference/index.html). The core functions are: [`epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
 [`regional_epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
-[`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), and [`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html). A working implementation for COVID-19 can be found [here](https://github.com/epiforecasts/covid-global/blob/master/update_nowcasts.R). 
-
+[`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), and [`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html). [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) can be use on its own to infer the underlying infection case curve from reported cases with Rt optionally returned (on by default). Estimating the underyling infection case curve alone is substantially less computationally demanding than also estimating Rt.
 
 ### Reporting delays, incubation period and generation time
 
@@ -153,14 +152,11 @@ estimates <- EpiNow2::regional_epinow(reported_cases = reported_cases,
                                       chains = 4, verbose = TRUE)
 ```
 
-
-If the results have been saved to a folder (using `target_folder`) then the `regional_summary` function can be used to produce summary output (*work in progress*).
-
-An example of the summary output can be seen [here](https://github.com/epiforecasts/covid-uk/tree/master/nowcast/regional-summary).
+Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments.
 
 ### Reporting templates
 
-Rmarkdown templates are provided in the package (`templates`) for semi-automated reporting of the estimates. These are currently undocumented but an example integration can be seen [here](https://github.com/epiforecasts/covid/blob/master/_posts/national/united-kingdom/united-kingdom.Rmd). If using these templates to report your results please highlight our [limitations](https://epiforecasts.io/covid/) as these are key to understanding our results.
+Rmarkdown templates are provided in the package (`templates`) for semi-automated reporting of estimates. These are currently undocumented but an example integration can be seen [here](https://github.com/epiforecasts/covid/blob/master/_posts/national/united-kingdom/united-kingdom.Rmd). If using these templates to report your results please highlight our [limitations](https://epiforecasts.io/covid/) as these are key to understanding our results.
 
 ## Contributing
 
