@@ -10,6 +10,7 @@ regional_epinow(
   target_date,
   case_limit = 20,
   cores = 1,
+  summary = TRUE,
   return_estimates = TRUE,
   ...
 )
@@ -25,12 +26,14 @@ regional_epinow(
 
 \item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
 
+\item{summary}{Logical, should summary measures be calculated.}
+
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
 
 \item{...}{Pass additional arguments to \code{epinow}}
 }
 \value{
-
+A list of output stratified at the top level into regional output and across region output summary output
 }
 \description{
 Estimates Rt by region. See the documentation for \code{epinow} for further information.
@@ -69,7 +72,8 @@ out <- regional_epinow(reported_cases = cases,
                        generation_time = generation_time,
                        incubation_period = incubation_period,
                        reporting_delay = reporting_delay,
-                       samples = 1000, warmup = 200, cores = 4, chains = 4,
+                       samples = 1000, warmup = 200,
+                       cores = 4, chains = 4,
                        verbose = TRUE)
 }
 }

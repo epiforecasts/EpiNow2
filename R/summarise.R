@@ -17,7 +17,7 @@
 #' # see ?regional_epinow for code to generate regional results to use with this example.
 #' 
 #' region_sum_tab <- summarise_results(regions = regions,
-#'                                     summaries = purrr::map(out, ~ .$summary))
+#'                                     summaries = purrr::map(out$regional, ~ .$summary))
 #'                   
 #' region_sum_tab
 #' }
@@ -84,7 +84,7 @@ summarise_results <- function(regions,
                                                     estimates[measure %in% "Expected change in daily cases"][,
                                                               .(region, `Expected change in daily cases` = estimate)],
                                                     by = "region", all.x = TRUE)
-  ## Rank countries by incidence countires
+  ## Rank countries by incidence countries
   high_inc_regions <- unique(
     data.table::setorderv(numeric_estimates, cols = "upper", order = -1)$region)
   
@@ -119,7 +119,6 @@ summarise_results <- function(regions,
 #'  in which to store summary of results.
 #' @param target_date A character string giving the target date for which to extract results
 #' (in the format "yyyy-mm-dd"). Defaults to latest available estimates.
-#' @param csv_region_label Character string indicating the label to assign to a region when saving to .csv.
 #' @param return_summary Logical, defaults to `TRUE`. Should summary measures be returned.
 #' @return A list of summary measures and plots
 #' @export
@@ -169,9 +168,9 @@ summarise_results <- function(regions,
 #'                                 incubation_period = incubation_period,
 #'                                 reporting_delay = reporting_delay,
 #'                                 samples = 1000, warmup = 200, cores = 4,
-#'                                 chains = 4, verbose = TRUE)
+#'                                 chains = 4, verbose = TRUE, summary = FALSE)
 #'                        
-#' regional_summary(regional_output = regional_out,
+#' regional_summary(regional_output = regional_out$regional,
 #'                  reported_cases = cases,
 #'                  region_scale = "Country")
 #'
@@ -183,8 +182,6 @@ regional_summary <- function(regional_output,
                              summary_dir,
                              target_date,
                              region_scale = "Region",
-                             csv_region_label = "region",
-                             log_cases = FALSE,
                              return_summary = TRUE) {
   
   if (missing(summary_dir) & !return_summary) {
@@ -270,10 +267,15 @@ regional_summary <- function(regional_output,
   sum_key_measures <- summarise_key_measures(regional_results = results,
                                              results_dir = results_dir, 
                                              summary_dir = summary_dir, 
-                                             type = csv_region_label,
+                                             type = tolower(region_scale),
                                              date = target_date) 
   
 
+  ## Adaptive add a logscale to the summary plot based on range of observed cases
+  log_cases <- (max(summarised_results$data[metric %in% "New confirmed cases by infection date"]$upper, na.rm = TRUE) / 
+             min(summarised_results$data[metric %in% "New confirmed cases by infection date"]$lower, na.rm = TRUE)) > 1000
+
+  
   ## Summarise cases and Rts
   summary_plot <- EpiNow2::plot_summary(summarised_results$data,
                                         x_lab = region_scale, 

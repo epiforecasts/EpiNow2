@@ -280,9 +280,10 @@ if (!is.null(target_folder)){
 #' @description Estimates Rt by region. See the documentation for `epinow` for further information.
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date), and region (`region`).
 #' @param case_limit Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 20.
+#' @param summary Logical, should summary measures be calculated.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
-#' @return 
+#' @return A list of output stratified at the top level into regional output and across region output summary output
 #' @export
 #' @importFrom future.apply future_lapply
 #' @importFrom data.table as.data.table setDT copy setorder
@@ -321,12 +322,14 @@ if (!is.null(target_folder)){
 #'                        generation_time = generation_time,
 #'                        incubation_period = incubation_period,
 #'                        reporting_delay = reporting_delay,
-#'                        samples = 1000, warmup = 200, cores = 4, chains = 4,
+#'                        samples = 1000, warmup = 200,
+#'                        cores = 4, chains = 4,
 #'                        verbose = TRUE)
 #'}
 regional_epinow <- function(reported_cases, 
                             target_folder, target_date,
                             case_limit = 20, cores = 1,
+                            summary = TRUE,
                             return_estimates = TRUE,
                             ...) {
    
@@ -391,17 +394,35 @@ regional_epinow <- function(reported_cases,
   safe_run_region <- purrr::safely(run_region)
   
   ## Run regions (make parallel using future::plan)
-  out <- future.apply::future_lapply(regions, safe_run_region,
-                                     reported_cases = reported_cases,
-                                     cores = cores,
-                                     ...,
-                                     future.scheduling = Inf)
+  regional_out <- future.apply::future_lapply(regions, safe_run_region,
+                                              reported_cases = reported_cases,
+                                              cores = cores,
+                                              ...,
+                                              future.scheduling = Inf)
   
+  
+  if (summary) {
+    if (missing(summary_dir)) {
+      summary_dir <- NULL
+    }
+    safe_summary <- purrr::partial(regional_summary)
+    
+    summary_out <- safe_summary(regional_output = regional_out,
+                                summary_dir = summary_dir,
+                                reported_cases = report_cases,
+                                region_scale = region_scale)[[1]]
+  }
   
   if (return_estimates) {
-    out <- purrr::map(out, ~ .$result)
+    out <- list()
+    out$regional <- purrr::map(regional_out, ~ .$result)
     
-    names(out) <- regions
+    names(out$regional) <- regions
+    
+    if (summary) {
+      out$summary <- summary_out
+    }
+    
     return(out)
   }else{
     return(invisible(NULL))

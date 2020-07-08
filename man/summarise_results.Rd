@@ -37,7 +37,7 @@ Summarise Realtime Results
 # see ?regional_epinow for code to generate regional results to use with this example.
 
 region_sum_tab <- summarise_results(regions = regions,
-                                    summaries = purrr::map(out, ~ .$summary))
+                                    summaries = purrr::map(out$regional, ~ .$summary))
                   
 region_sum_tab
 }
