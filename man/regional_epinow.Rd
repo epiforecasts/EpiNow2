@@ -11,6 +11,7 @@ regional_epinow(
   case_limit = 20,
   cores = 1,
   summary = TRUE,
+  summary_dir,
   return_estimates = TRUE,
   ...
 )
@@ -27,6 +28,9 @@ regional_epinow(
 \item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
 
 \item{summary}{Logical, should summary measures be calculated.}
+
+\item{summary_dir}{A character string giving the directory
+in which to store summary of results.}
 
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
 
@@ -60,16 +64,19 @@ reporting_delay <- list(mean = log(10),
                         max = 30)
                         
 ## Uses example case vector
-cases <- EpiNow2::example_confirmed[1:40]
+cases <- EpiNow2::example_confirmed[1:60]
 
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
   
 ## Run basic nowcasting pipeline
+## Here we reduce the accuracy of the GP approximation in order to reduce runtime
 out <- regional_epinow(reported_cases = cases,
                        target_folder = "../test-2",
                        generation_time = generation_time,
+                       infections_gp = list(basis_prop = 0.1, boundary_scale = 2),
+                       rt_gp = list(basis_prop = 0.1, boundary_scale = 2),
                        incubation_period = incubation_period,
                        reporting_delay = reporting_delay,
                        samples = 1000, warmup = 200,

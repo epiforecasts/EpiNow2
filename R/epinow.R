@@ -70,9 +70,11 @@ epinow <- function(reported_cases, family = "negbin",
                    infections_gp = list(basis_prop = 0.25, boundary_scale = 2),
                    rt_gp = list(basis_prop = 0.25, boundary_scale = 2),
                    rt_prior = list(mean = 1, sd = 1), model,
+                   prior_smoothing_window = 7,
                    cores = 2, chains = 2,
                    samples = 2000, warmup = 500,
                    estimate_rt = TRUE, return_fit = FALSE,
+                   adapt_delta = 0.99,  max_treedepth = 15,
                    forecast_model, horizon = 14,
                    ensemble_type = "mean",
                    return_estimates = TRUE,
@@ -283,6 +285,7 @@ if (!is.null(target_folder)){
 #' @param summary Logical, should summary measures be calculated.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
+#' @inheritParams regional_summary
 #' @return A list of output stratified at the top level into regional output and across region output summary output
 #' @export
 #' @importFrom future.apply future_lapply
@@ -310,16 +313,19 @@ if (!is.null(target_folder)){
 #'                         max = 30)
 #'                         
 #' ## Uses example case vector
-#' cases <- EpiNow2::example_confirmed[1:40]
+#' cases <- EpiNow2::example_confirmed[1:60]
 #' 
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
 #'   
 #' ## Run basic nowcasting pipeline
+#' ## Here we reduce the accuracy of the GP approximation in order to reduce runtime
 #' out <- regional_epinow(reported_cases = cases,
 #'                        target_folder = "../test-2",
 #'                        generation_time = generation_time,
+#'                        infections_gp = list(basis_prop = 0.1, boundary_scale = 2),
+#'                        rt_gp = list(basis_prop = 0.1, boundary_scale = 2),
 #'                        incubation_period = incubation_period,
 #'                        reporting_delay = reporting_delay,
 #'                        samples = 1000, warmup = 200,
@@ -330,6 +336,7 @@ regional_epinow <- function(reported_cases,
                             target_folder, target_date,
                             case_limit = 20, cores = 1,
                             summary = TRUE,
+                            summary_dir,
                             return_estimates = TRUE,
                             ...) {
    
