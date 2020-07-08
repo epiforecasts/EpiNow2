@@ -70,14 +70,16 @@ epinow <- function(reported_cases, family = "negbin",
                    infections_gp = list(basis_prop = 0.25, boundary_scale = 2),
                    rt_gp = list(basis_prop = 0.25, boundary_scale = 2),
                    rt_prior = list(mean = 1, sd = 1), model,
+                   prior_smoothing_window = 7,
                    cores = 2, chains = 2,
                    samples = 2000, warmup = 500,
                    estimate_rt = TRUE, return_fit = FALSE,
-                   forecast_model, horizon = 14,
+                   adapt_delta = 0.99,  max_treedepth = 15,
+                   forecast_model, horizon = 7,
                    ensemble_type = "mean",
                    return_estimates = TRUE,
                    target_folder, target_date,
-                   verbose = FALSE, debug = FALSE) {
+                   verbose = TRUE, debug = FALSE) {
  
  if (!return_estimates & missing(target_folder)) {
    stop("Either return estimates or save to a target folder")
@@ -135,6 +137,8 @@ if (!is.null(target_folder)) {
                                     infections_gp = infections_gp,
                                     rt_gp = rt_gp,
                                     rt_prior = rt_prior,
+                                    adapt_delta = adapt_delta,
+                                    max_treedepth = max_treedepth,
                                     model = model,
                                     cores = cores, chains = chains,
                                     samples = samples,
@@ -280,9 +284,11 @@ if (!is.null(target_folder)){
 #' @description Estimates Rt by region. See the documentation for `epinow` for further information.
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date), and region (`region`).
 #' @param case_limit Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 20.
+#' @param summary Logical, should summary measures be calculated.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
-#' @return 
+#' @inheritParams regional_summary
+#' @return A list of output stratified at the top level into regional output and across region output summary output
 #' @export
 #' @importFrom future.apply future_lapply
 #' @importFrom data.table as.data.table setDT copy setorder
@@ -303,34 +309,42 @@ if (!is.null(target_folder)){
 #'                           max = 30)
 #'                    
 #' reporting_delay <- list(mean = log(10),
-#'                         mean_sd = 0.8,
+#'                         mean_sd = log(2),
 #'                         sd = log(2),
-#'                         sd_sd = 0.1,
+#'                         sd_sd = log(1.1),
 #'                         max = 30)
 #'                         
 #' ## Uses example case vector
-#' cases <- EpiNow2::example_confirmed
+#' cases <- EpiNow2::example_confirmed[1:40]
 #' 
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
 #'   
 #' ## Run basic nowcasting pipeline
+#' ## Here we reduce the accuracy of the GP approximation in order to reduce runtime
 #' out <- regional_epinow(reported_cases = cases,
+#'                        target_folder = "../test-2",
 #'                        generation_time = generation_time,
+#'                        infections_gp = list(basis_prop = 0.1, boundary_scale = 2),
+#'                        rt_gp = list(basis_prop = 0.1, boundary_scale = 2),
+#'                        adapt_delta = 0.9,
 #'                        incubation_period = incubation_period,
 #'                        reporting_delay = reporting_delay,
-#'                        samples = 1000, warmup = 500, cores = 2, chains = 2,
-#'                        verbose = TRUE)
+#'                        samples = 2000, warmup = 200,
+#'                        cores = 4, chains = 4)
 #'}
 regional_epinow <- function(reported_cases, 
                             target_folder, target_date,
                             case_limit = 20, cores = 1,
+                            summary = TRUE,
+                            summary_dir,
+                            region_scale = "Region",
                             return_estimates = TRUE,
                             ...) {
-   
+    
   ## Set input to data.table
-  cases <- data.table::as.data.table(cases)
+  reported_cases <- data.table::as.data.table(reported_cases)
   
   if (missing(target_date)) {
     target_date <- as.character(max(reported_cases$date))
@@ -362,6 +376,7 @@ regional_epinow <- function(reported_cases,
   ## Function to run the pipeline in a region
   run_region <- function(target_region, 
                          reported_cases,
+                         cores = cores,
                          ...) { 
     message("Reporting estimates for: ", target_region)
     data.table::setDTthreads(threads = cores)
@@ -377,6 +392,7 @@ regional_epinow <- function(reported_cases,
       target_folder = target_folder,
       target_date = target_date, 
       return_estimates = return_estimates,
+      cores = cores,
       ...)
     
     if (return_estimates) {
@@ -388,16 +404,36 @@ regional_epinow <- function(reported_cases,
   safe_run_region <- purrr::safely(run_region)
   
   ## Run regions (make parallel using future::plan)
-  out <- future.apply::future_lapply(regions, safe_run_region,
-                                     reported_cases = reported_cases,
-                                     ...,
-                                     future.scheduling = Inf)
+  regional_out <- future.apply::future_lapply(regions, safe_run_region,
+                                              reported_cases = reported_cases,
+                                              cores = cores,
+                                              ...,
+                                              future.scheduling = Inf)
   
+  regional_out <- purrr::map(regional_out, ~ .$result)
+  names(regional_out) <- regions
+  
+  
+  if (summary) {
+    if (missing(summary_dir)) {
+      summary_dir <- NULL
+    }
+    safe_summary <- purrr::safely(regional_summary)
+    
+    summary_out <- safe_summary(regional_output = regional_out,
+                                summary_dir = summary_dir,
+                                reported_cases = reported_cases,
+                                region_scale = region_scale)[[1]]
+  }
   
   if (return_estimates) {
-    out <- purrr::map(out, ~ .$result)
+    out <- list()
+    out$regional <- regional_out
     
-    names(out) <- regions
+    if (summary) {
+      out$summary <- summary_out
+    }
+    
     return(out)
   }else{
     return(invisible(NULL))

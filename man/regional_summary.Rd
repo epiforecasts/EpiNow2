@@ -5,17 +5,19 @@
 \title{Generate Regional Summary Output}
 \usage{
 regional_summary(
+  regional_output,
+  reported_cases,
   results_dir,
   summary_dir,
-  target_date = "latest",
+  target_date,
   region_scale = "Region",
-  csv_region_label = "region",
-  log_cases = FALSE,
   return_summary = TRUE
 )
 }
 \arguments{
-\item{results_dir}{A character string indicating the location of the results directory to extract results
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
+
+\item{results_dir}{An optional character string indicating the location of the results directory to extract results
 from.}
 
 \item{summary_dir}{A character string giving the directory
@@ -25,10 +27,6 @@ in which to store summary of results.}
 (in the format "yyyy-mm-dd"). Defaults to latest available estimates.}
 
 \item{region_scale}{A character string indicating the name to give the regions being summarised.}
-
-\item{csv_region_label}{Character string indicating the label to assign to a region when saving to .csv.}
-
-\item{log_cases}{Logical, should cases be shown on a logged scale. Defaults to \code{FALSE}}
 
 \item{return_summary}{Logical, defaults to \code{TRUE}. Should summary measures be returned.}
 }
@@ -65,30 +63,24 @@ reporting_delay <- list(mean = log(10),
                         max = 30)
                         
 ## Uses example case vector from EpiSoon
-cases <- EpiNow2::example_confirmed[1:50]
+cases <- EpiNow2::example_confirmed[1:30]
 
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
   
 ## Run basic nowcasting pipeline
-out <- regional_epinow(reported_cases = cases,
-                       target_folder = "../test",
-                       generation_time = generation_time,
-                       incubation_period = incubation_period,
-                       reporting_delay = reporting_delay,
-                       forecast_model = function(y, ...){
-                         EpiSoon::forecastHybrid_model(
-                            y = y[max(1, length(y) - 21):length(y)],
-                            model_params = list(models = "aefz", weights = "equal"),
-                            forecast_params = list(PI.combination = "mean"), ...)},
-                       samples = 1000, warmup = 500, cores = 2, chains = 2,
-                       verbose = TRUE)
+regional_out <- regional_epinow(reported_cases = cases,
+                                generation_time = generation_time,
+                                incubation_period = incubation_period,
+                                reporting_delay = reporting_delay,
+                                samples = 2000, warmup = 200, cores = 4,
+                                adapt_delta = 0.95, chains = 4, verbose = TRUE,
+                                summary = FALSE)
                        
-## Example asssumes that CovidGlobalNow (github.com/epiforecasts/covid-global) is  
-## in the directory above the root.
-regional_summary(results_dir = "../test",
-                 summary_dir = "../test-summary",
+regional_summary(regional_output = regional_out,
+                 reported_cases = cases,
+                 summary_dir = "../summary",
                  region_scale = "Country")
 
 }

@@ -122,7 +122,8 @@
     </div>
 
     <pre class="usage"><span class='fu'>summarise_results</span>(
-  <span class='kw'>regions</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='no'>regions</span>,
+  <span class='no'>summaries</span>,
   <span class='no'>results_dir</span>,
   <span class='no'>target_date</span>,
   <span class='kw'>region_scale</span> <span class='kw'>=</span> <span class='st'>"Region"</span>
@@ -133,12 +134,16 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>regions</th>
-      <td><p>A character string containing the list of regions to extract results for
+      <td><p>An character string containing the list of regions to extract results for
 (must all have results for the same target date).</p></td>
     </tr>
     <tr>
+      <th>summaries</th>
+      <td><p>A list of summary data frames as output by <code>epinow</code></p></td>
+    </tr>
+    <tr>
       <th>results_dir</th>
-      <td><p>A character string indicating the location of the results directory to extract results
+      <td><p>An optional character string indicating the location of the results directory to extract results
 from.</p></td>
     </tr>
     <tr>
@@ -158,13 +163,12 @@ for this date.</p></td>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='co'># see ?regional_summary for code to generate results for this example</span>
-<span class='no'>regions</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>realland</span> <span class='kw'>=</span> <span class='st'>"realland"</span>, <span class='kw'>testland</span> <span class='kw'>=</span> <span class='st'>"testland"</span>)
+<span class='co'># see ?regional_epinow for code to generate regional results to use with this example.</span>
 
-<span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='fu'>summarise_results</span>(<span class='kw'>regions</span> <span class='kw'>=</span> <span class='no'>regions</span>,
-                  <span class='kw'>results_dir</span> <span class='kw'>=</span> <span class='st'>"../test"</span>)
+<span class='no'>region_sum_tab</span> <span class='kw'>&lt;-</span> <span class='fu'>summarise_results</span>(<span class='kw'>regions</span> <span class='kw'>=</span> <span class='no'>regions</span>,
+                                    <span class='kw'>summaries</span> <span class='kw'>=</span> <span class='kw pkg'>purrr</span><span class='kw ns'>::</span><span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map</a></span>(<span class='no'>out</span>$<span class='no'>regional</span>, ~ <span class='no'>.</span>$<span class='no'>summary</span>))
 
-<span class='no'>out</span>
+<span class='no'>region_sum_tab</span>
 }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
