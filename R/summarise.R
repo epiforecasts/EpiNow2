@@ -434,7 +434,7 @@ summarise_key_measures <- function(regional_results,
   }
   
   ## Clean and save case estimates
-  cases <- timeseries$estimates$summarised[variable == "infections_rt", 
+  cases <- timeseries$estimates$summarised[variable == "infections", 
                        .(region, date, type, median = round(median, 1), lower_90 = round(bottom, 0), 
                          upper_90 = round(top, 0), lower_50 = round(lower, 0), 
                          upper_50 = round(upper, 0))]
