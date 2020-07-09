@@ -118,7 +118,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   # Estimate the mean delay -----------------------------------------------
   
-  mean_shift <- as.integer(exp(incubation_period$mean + incubation_period$sd^2/2)+exp(report_delay$mean + report_delay$sd^2/2))
+  mean_shift <- as.integer(exp(incubation_period$mean + incubation_period$sd^2/2) + 
+                           exp(reporting_delay$mean + reporting_delay$sd^2/2))
   
   # Add the mean delay and incubation period on as 0 case days ------------
   
