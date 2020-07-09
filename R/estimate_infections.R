@@ -25,13 +25,13 @@
 #' @param cores Numeric, defaults to 2. The number of cores to use when fitting the stan model.
 #' @param chains Numeric, defaults to 2. The number of MCMC chains to use.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
-#' @param warmup Numeric, defaults to 250. Number of iteration of warmup to use.
+#' @param warmup Numeric, defaults to 200. Number of iteration of warmup to use.
 #' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
 #' @param adapt_delta Numeric, defaults to 0.99. See ?rstan::sampling.
 #' @param max_treedepth Numeric, defaults to 15. See ?rstan::sampling.
 #' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
 #' @param gp List controlling the Gaussian process approximation. Must contain
-#' the `basis_prop` (number of basis functions based on scaling the time points) which defaults to 0.25 and must be 
+#' the `basis_prop` (number of basis functions based on scaling the time points) which defaults to 0.5 and must be 
 #' between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute. 
 #' Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
 #' increases the accuracy of the approximation at the cost of additional compute. 
@@ -75,9 +75,9 @@
 #'                                     generation_time = generation_time,
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
-#'                                     rt_prior = list(mean = 1, sd = 1),
-#'                                     cores = 4, chains = 4, adapt_delta = 0.99,
-#'                                     estimate_rt = TRUE, model = model,
+#'                                     samples = 1000, warmup = 200,
+#'                                     cores = 4, chains = 4,
+#'                                     estimate_rt = TRUE, 
 #'                                     verbose = TRUE, return_fit = TRUE)
 #'
 #' out   
@@ -85,12 +85,12 @@
 estimate_infections <- function(reported_cases, family = "negbin",
                                 incubation_period, reporting_delay,
                                 generation_time,
-                                gp = list(basis_prop = 0.3, boundary_scale = 2),
+                                gp = list(basis_prop = 0.5, boundary_scale = 2),
                                 rt_prior = list(mean = 1, sd = 1),
                                 prior_smoothing_window = 7,
                                 horizon = 7,
                                 model, cores = 1, chains = 2,
-                                samples = 1000, warmup = 250,
+                                samples = 1000, warmup = 200,
                                 estimate_rt = TRUE, adapt_delta = 0.99,
                                 max_treedepth = 15, return_fit = FALSE,
                                 verbose = TRUE, debug = FALSE){
@@ -118,7 +118,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   # Estimate the mean delay -----------------------------------------------
   
-  mean_shift <- as.integer(exp(incubation_period$mean) + exp(reporting_delay$mean))
+  mean_shift <- as.integer(exp(incubation_period$mean + incubation_period$sd^2/2)+exp(report_delay$mean + report_delay$sd^2/2))
   
   # Add the mean delay and incubation period on as 0 case days ------------
   
