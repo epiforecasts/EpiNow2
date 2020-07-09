@@ -91,7 +91,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 horizon = 7,
                                 model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 200,
-                                estimate_rt = TRUE, adapt_delta = 0.99,
+                                estimate_rt = TRUE, estimate_week_eff = TRUE,
+                                adapt_delta = 0.99,
                                 max_treedepth = 15, return_fit = FALSE,
                                 verbose = TRUE, debug = FALSE){
   
@@ -118,7 +119,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   # Estimate the mean delay -----------------------------------------------
   
-  mean_shift <- as.integer(exp(incubation_period$mean + incubation_period$sd^2/2)+exp(report_delay$mean + report_delay$sd^2/2))
+  mean_shift <- as.integer(exp(incubation_period$mean + incubation_period$sd^2/2) + 
+                             exp(reporting_delay$mean + reporting_delay$sd^2/2))
   
   # Add the mean delay and incubation period on as 0 case days ------------
   
@@ -163,11 +165,12 @@ estimate_infections <- function(reported_cases, family = "negbin",
   # Define stan model parameters --------------------------------------------
   
   data <- list(
-    day_of_week = reported_cases[(mean_shift + 1):.N]$day_of_week,
     cases = reported_cases[(mean_shift + 1):(.N - horizon)]$confirm,
     shifted_cases = shifted_reported_cases$confirm,
     t = length(reported_cases$date),
     rt = length(reported_cases$date) - mean_shift,
+    time =  scale(1:(length(reported_cases$date) - mean_shift), center=TRUE, scale=TRUE),
+    inf_time =  scale(1:(length(reported_cases$date)), center=TRUE, scale=TRUE),
     horizon = horizon,
     inc_mean_mean = incubation_period$mean,
     inc_mean_sd = incubation_period$mean_sd,
@@ -186,7 +189,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
     max_gt = generation_time$max,
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
-    estimate_r = ifelse(estimate_rt, 1, 0)
+    estimate_r = ifelse(estimate_rt, 1, 0),
+    est_week_eff = ifelse(estimate_week_eff, 1, 0)
   ) 
   
   # Parameters for Hilbert space GP -----------------------------------------
@@ -194,7 +198,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   # no of basis functions
   data$M <- ceiling(data$rt * gp$basis_prop)
   # Boundary value for c
-  data$L <- data$rt * gp$boundary_scale
+  data$L <- max(abs(data$time)) / 2 * gp$boundary_scale
   
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
@@ -203,12 +207,24 @@ estimate_infections <- function(reported_cases, family = "negbin",
     data$model_type <- 1
   }
   
+# Parameters for week effect ----------------------------------------------
+
+  ## Period of the week effect
+  data$period_week <- 7 / attr(data$time,"scaled:scale")
+  ## Basis functions for the week effect
+  data$Jw <- 4
+  
+  # Convert rescaled time into vector ---------------------------------------
+  
+  data$time <- as.vector(data$time)
+  data$inf_time <- as.vector(data$inf_time)
+  
   # Set up initial conditions fn --------------------------------------------
   
   init_fun <- function(){out <- list(
     eta = rnorm(data$M, mean = 0, sd = 1),
-    rho = truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2),
-    alpha =  truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1),
+    rho = truncnorm::rtruncnorm(1 + data$est_week_eff, a = 0, mean = 0, sd = 2),
+    alpha =  truncnorm::rtruncnorm(1 + data$est_week_eff, a = 0, mean = 0, sd = 0.1),
     inc_mean = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$mean, sd = incubation_period$mean_sd),
     inc_sd = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$sd, sd = incubation_period$sd_sd),
     rep_mean = truncnorm::rtruncnorm(1, a = 0, mean = reporting_delay$mean, sd = reporting_delay$mean_sd),
@@ -228,6 +244,10 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                               sd = generation_time$sd_sd))
   }
   
+  if (estimate_week_eff) {
+    out$week_eta <-  rnorm(2 * data$Jw + 1, mean = 0, sd = 1)
+  }
+  
   return(out)
   }
   
@@ -244,7 +264,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
     message(paste0("Running for ", samples," samples (across ", chains, 
                    " chains each with a warm up of ", warmup, " iterations each) and ",
                    data$t," time steps of which ", horizon, " are a forecast"))
-
   }
   
   fit <-
@@ -313,17 +332,12 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$prior_infections <- shifted_reported_cases[, .(parameter = "prior_infections", time = 1:.N, 
                                                        date, value = confirm, sample = 1)]
     
-    out$day_of_week <- extract_parameter("day_of_week_eff", 
+    out$day_of_week <- extract_parameter("week_eff", 
                                          samples,
-                                         1:7)
+                                         reported_cases$date[-(1:mean_shift)])
     
-    char_day_of_week <- data.table::data.table(wday = c("Monday", "Tuesday", "Wednesday",
-                                                        "Thursday", "Friday", "Saturday",
-                                                        "Sunday"),
-                                               time = 1:7)
-    out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][, 
-                                       strat := wday][,`:=`(time = NULL, date = NULL, wday = NULL)]
-    
+    out$day_of_week <- out$day_of_week[, strat := lubridate::wday(date, label = TRUE)]
+
     extract_static_parameter <- function(param) {
       data.table::data.table(
         parameter = param,
