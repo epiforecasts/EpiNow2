@@ -134,7 +134,7 @@ parameters{
   real<lower=0> alpha;                                // scale of of noise GP
   vector[M] eta;                                      // unconstrained noise
   vector<lower = 0>[estimate_r] initial_R;            // baseline reproduction number estimate
-  vector<lower = 0>[estimate_r > 0 ? no_rt_time : 0] initial_infections;
+  vector[estimate_r > 0 ? no_rt_time : 0] initial_infections;
                                                       // baseline reproduction number estimate
   real<lower = 1> gt_mean[estimate_r];                // mean of generation time
   real <lower = 0> gt_sd[estimate_r];                 // sd of generation time
