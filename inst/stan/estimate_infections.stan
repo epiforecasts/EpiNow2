@@ -61,6 +61,37 @@ functions {
 				
 		return lam;
 	}
+	
+	
+	real q_periodic(real alpha, real rho, int v) {
+		real q;
+		real I;
+		
+		// Periodic
+		if(v==0){
+			I =  modified_bessel_first_kind(v, 1/rho^2); 
+			q = (alpha^2) * I/exp(1/rho^2);
+			return q;
+		} else{
+			I =  modified_bessel_first_kind(v, 1/rho^2); 
+			q = (alpha^2) * 2*I/exp(1/rho^2);
+			return q;
+		}
+	}
+	
+	vector phi_cosine_periodic(real w0, int m, vector x) {
+		vector[rows(x)] fi;
+		fi = cos(m*w0*x);
+				
+		return fi;
+	}
+	
+	vector phi_sin_periodic(real w0, int m, vector x) {
+		vector[rows(x)] fi;
+		fi = sin(m*w0*x); 
+		
+		return fi;
+ }
 }
 
 
@@ -68,7 +99,6 @@ data {
   int t;                             // number of time steps
   int rt;                            // time over which to estimate rt
   int horizon;                       // forecast horizon
-  int day_of_week[rt];                // day of the week indicator (1 - 7)
   int<lower = 0> cases[rt - horizon];// observed cases
   vector<lower = 0>[t] shifted_cases;// median shifted smoothed cases
   real inc_mean_sd;                  // prior sd of mean incubation period
@@ -92,15 +122,20 @@ data {
   int estimate_r;                    // should the reproduction no be estimated (1 = yes)
   real L;				                     // boundary value for infections gp
 	int<lower=1> M;			               // basis functions for infections gp
+	int est_week_eff;
+	int<lower=1> Jw;
+	real period_week;	
+	vector[rt] time;
+	vector[t] inf_time;
 }
 
 transformed data{
   real r_alpha;                              // alpha parameter of the R gamma prior
   real r_beta;                               // beta parameter of the R gamma prior
-  vector[estimate_r > 0 ? rt - 1 : t] time;      // time vector
   int no_rt_time;                            // time without estimating Rt
   int rt_h;                                  // rt estimation time minus the forecasting horizon
   matrix[estimate_r > 0 ? rt - 1 : t, M] PHI;    // basis function 
+  matrix[rt, 2 * Jw + 1] PHI_week;
   
   //Update time varables
   rt_h = rt - horizon;
@@ -108,11 +143,6 @@ transformed data{
   // calculate alpha and beta for gamma distribution
   r_alpha = (r_mean / r_sd)^2;
   r_beta = r_mean / (r_sd^2);
-  
-  // make time vector
-   for (s in 1:(estimate_r > 0 ? rt - 1 : t)) {
-     time[s] = s;
-   }
    
    // time without estimating Rt is the differrence of t and rt
    no_rt_time = t - rt;
@@ -120,24 +150,31 @@ transformed data{
    // basis functions
    // see here for details: https://arxiv.org/pdf/2004.11408.pdf
    for (m in 1:M){ 
-     PHI[,m] = phi_SE(L, m, time); 
+     PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:(rt-1)] : inf_time)); 
     }
+    
+  for (m in 0:Jw){ 
+     PHI_week[,m+1] = phi_cosine_periodic(2 * pi() / period_week, m, time); 
+    }
+	for (m in 1:Jw){ 
+	   PHI_week[,Jw+1+m] = phi_sin_periodic(2 * pi() / period_week, m, time);
+	  }
 }
 parameters{
-  simplex[7] day_of_week_eff_raw;                     // day of week reporting effect + control parameters
   real <lower = 0> inc_mean;                          // mean of incubation period
   real <lower = 0> inc_sd;                            // sd of incubation period
   real <lower = 0> rep_mean;                          // mean of reporting delay
   real <lower = 0> rep_sd;                            // sd of incubation period
   real<lower = 0> rep_phi[model_type];                // overdispersion of the reporting process
-  real<lower = 0> rho;                                // length scale of noise GP
-  real<lower = 0> alpha;                              // scale of of noise GP
+  real<lower = 0> rho[1 + est_week_eff];              // length scale of noise GP
+  real<lower = 0> alpha[1 + est_week_eff];            // scale of of noise GP
   vector[M] eta;                                      // unconstrained noise
   vector<lower = 0>[estimate_r] initial_R;            // baseline reproduction number estimate
   vector[estimate_r > 0 ? no_rt_time : 0] initial_infections;
                                                       // baseline reproduction number estimate
   real<lower = 0> gt_mean[estimate_r];                // mean of generation time
   real <lower = 0> gt_sd[estimate_r];                 // sd of generation time
+  vector[est_week_eff > 0 ? 2 * Jw + 1 : 0] week_eta;
 }
 
 transformed parameters {
@@ -145,9 +182,8 @@ transformed parameters {
   vector<lower = 0>[estimate_r > 0 ? rt - 1 : t] noise;   // noise on the mean shifted observed cases
   vector<lower = 0>[t] infections;                        // infections over time
   vector<lower = 0>[rt] reports;                          // reports over time
-  vector[7] day_of_week_eff;                              // day of the week effect
   vector[estimate_r > 0 ? rt : 0] R;                      // reproduction number over time
-  
+  vector[est_week_eff > 0 ? rt : 0] week_eff;
  {
   // temporary transformed parameters
   vector[max_rep] rev_delay;                              // reversed report delay pdf
@@ -157,24 +193,25 @@ transformed parameters {
   vector[estimate_r > 0 ? rt : 0] infectiousness;         // infections over time
   vector[M] diagSPD;                                      // spectral density
 	vector[M] SPD_eta;                                      // spectral density * noise
-  
+  vector[2 * Jw + 1] diagSPD_week;
+	vector[2 * Jw + 1] SPD_eta_week;
+	
   // reverse the distributions to allow vectorised access
+  rev_incubation = rep_vector(1e-5, max_inc);
   for (j in 1:max_inc) {
-    rev_incubation[j] =
+    rev_incubation[j] +=
         discretised_lognormal_pmf(max_inc - j + 1, inc_mean, inc_sd, max_inc);
   }
   
+  rev_delay = rep_vector(1e-5, max_rep);
   for (j in 1:(max_rep)) {
-    rev_delay[j] =
+    rev_delay[j] +=
         discretised_lognormal_pmf(max_rep - j + 1, rep_mean, rep_sd, max_rep);
   }
-    
-  // define day of the week effect
-  day_of_week_eff = 7 * day_of_week_eff_raw;
 
   // GP in noise - spectral densities
 	for(m in 1:M){ 
-		diagSPD[m] =  sqrt(spd_SE(alpha, rho, sqrt(lambda(L, m)))); 
+		diagSPD[m] =  sqrt(spd_SE(alpha[1], rho[1], sqrt(lambda(L, m)))); 
 	}
 	SPD_eta = diagSPD .* eta;
 	
@@ -224,9 +261,21 @@ transformed parameters {
    reports = reports_hold[(no_rt_time + 1):t];
  }
  
-  for (s in 1:rt) {
-    // add reporting effects (adjust for simplex scale)
-    reports[s] *= day_of_week_eff[day_of_week[s]];
+ // Add optional weekly reporting effect
+ if (est_week_eff) {
+    	
+  for(m in 0:Jw){
+		diagSPD_week[m+1] = sqrt(q_periodic(alpha[2], rho[2], m)); 
+	}
+	for(m in 1:Jw){ 
+		diagSPD_week[Jw+1+m] = sqrt(q_periodic(alpha[2], rho[2], m)); 
+	}
+ 	SPD_eta_week = diagSPD_week .* week_eta;
+	
+	week_eff = rep_vector(1e-5, rt);
+	week_eff = week_eff + exp(PHI_week[,] * SPD_eta_week);
+	
+	reports = reports .* week_eff;
   }
  }
 }
@@ -249,9 +298,8 @@ model {
   target += normal_lpdf(rep_mean | rep_mean_mean, rep_mean_sd) * t;
   target += normal_lpdf(rep_sd | rep_sd_mean, rep_sd_sd) * t;
   
-  ////////////////////////////////////////////////////// 
-  // estimate reproduction no from a renewal equation
-  //////////////////////////////////////////////////////
+
+  // estimate rt
   if (estimate_r) {
     // prior on R
     initial_R[estimate_r] ~ gamma(r_alpha, r_beta);
@@ -260,6 +308,10 @@ model {
     // penalised_prior on generation interval
     target += normal_lpdf(gt_mean | gt_mean_mean, gt_mean_sd) * rt;
     target += normal_lpdf(gt_sd | gt_sd_mean, gt_sd_sd) * rt;
+  }
+  
+  if (est_week_eff) {
+    week_eta ~ std_normal();
   }
   
   // daily cases given reports
