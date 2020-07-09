@@ -78,7 +78,7 @@
 #'                                     reporting_delay = reporting_delay,
 #'                                     rt_prior = list(mean = 1, sd = 1),
 #'                                     cores = 4, chains = 4, 
-#'                                     estimate_rt = TRUE, 
+#'                                     estimate_rt = TRUE, model = model,
 #'                                     verbose = TRUE, return_fit = TRUE)
 #'
 #' out   
