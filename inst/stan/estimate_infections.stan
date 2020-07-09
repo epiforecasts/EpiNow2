@@ -195,11 +195,11 @@ transformed parameters {
 	
 	SPD_eta = diagSPD .* eta;
 	
-	noise = rep_vector(1e-5, t);
+	noise = rep_vector(1e-3, t);
   noise = noise + exp(PHI_inf[,] * SPD_eta);
 
   // generate infections from prior infections and non-parameteric noise
-  infections = rep_vector(1e-5, t);
+  infections = rep_vector(1e-3, t);
   infections = infections + shifted_cases .* noise;
        
   // onsets from infections
@@ -242,10 +242,10 @@ transformed parameters {
       }
       
      // Estimate infections using renewal equation
-     branch_infections = rep_vector(1e-5, t);
+     branch_infections = rep_vector(1e-4, t);
      branch_infections[1:no_rt_time] = infections[1:no_rt_time];
       
-     infectiousness = rep_vector(1e-5, rt);
+     infectiousness = rep_vector(1e-4, rt);
      for (s in 1:rt) {
         infectiousness[s] = infectiousness[s] + 
             dot_product(branch_infections[max(1, (s + no_rt_time - max_gt)):(s + no_rt_time -1)],
