@@ -77,7 +77,7 @@
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
 #'                                     rt_prior = list(mean = 1, sd = 1),
-#'                                     cores = 4, chains = 4, 
+#'                                     cores = 4, chains = 4, adapt_delta = 0.95,
 #'                                     estimate_rt = TRUE, model = model,
 #'                                     verbose = TRUE, return_fit = TRUE)
 #'
