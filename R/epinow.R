@@ -67,8 +67,7 @@
 epinow <- function(reported_cases, family = "negbin",
                    generation_time, incubation_period,
                    reporting_delay,
-                   infections_gp = list(basis_prop = 0.25, boundary_scale = 2),
-                   rt_gp = list(basis_prop = 0.25, boundary_scale = 2),
+                   gp = list(basis_prop = 0.25, boundary_scale = 2),
                    rt_prior = list(mean = 1, sd = 1), model,
                    prior_smoothing_window = 7,
                    cores = 2, chains = 2,
@@ -134,8 +133,7 @@ if (!is.null(target_folder)) {
                                     generation_time = generation_time,
                                     incubation_period = incubation_period,
                                     reporting_delay = reporting_delay,
-                                    infections_gp = infections_gp,
-                                    rt_gp = rt_gp,
+                                    gp =  gp,
                                     rt_prior = rt_prior,
                                     adapt_delta = adapt_delta,
                                     max_treedepth = max_treedepth,
@@ -206,8 +204,6 @@ if (missing(forecast_model)) {
     reported_cases_cases$samples[,type := "case"],
     reported_cases_ensemble$samples[,type := "ensemble"],
     estimates$samples[variable == "reported_cases"][,
-                      .(date, sample, cases = value, type = "gp_case")],
-    estimates$samples[variable == "reported_cases_rt"][,
                       .(date, sample, cases = value, type = "gp_rt")]
   ), use.names = TRUE)
   
@@ -215,10 +211,8 @@ if (missing(forecast_model)) {
     reported_cases_rt$summarised[,type := "rt"],
     reported_cases_cases$summarised[,type := "case"],
     reported_cases_ensemble$summarised[,type := "ensemble"],
-    estimates$summarised[variable == "reported_cases"][, type := "gp_case"][,
-                         variable := NULL][, strat := NULL],
-    estimates$summarised[variable == "reported_cases_rt"][, type := "gp_rt"][,
-                        variable := NULL][, strat := NULL]
+    estimates$summarised[variable == "reported_cases"][, type := "gp_rt"][,
+                         variable := NULL][, strat := NULL]
   ), use.names = TRUE)
 }
   
@@ -326,8 +320,7 @@ if (!is.null(target_folder)){
 #' out <- regional_epinow(reported_cases = cases,
 #'                        target_folder = "../test-2",
 #'                        generation_time = generation_time,
-#'                        infections_gp = list(basis_prop = 0.1, boundary_scale = 2),
-#'                        rt_gp = list(basis_prop = 0.1, boundary_scale = 2),
+#'                        gp = list(basis_prop = 0.1, boundary_scale = 2),
 #'                        adapt_delta = 0.9,
 #'                        incubation_period = incubation_period,
 #'                        reporting_delay = reporting_delay,
