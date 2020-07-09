@@ -10,15 +10,14 @@ epinow(
   generation_time,
   incubation_period,
   reporting_delay,
-  infections_gp = list(basis_prop = 0.25, boundary_scale = 2),
-  rt_gp = list(basis_prop = 0.25, boundary_scale = 2),
+  gp = list(basis_prop = 0.5, boundary_scale = 2),
   rt_prior = list(mean = 1, sd = 1),
   model,
   prior_smoothing_window = 7,
   cores = 2,
   chains = 2,
-  samples = 2000,
-  warmup = 500,
+  samples = 1000,
+  warmup = 200,
   estimate_rt = TRUE,
   return_fit = FALSE,
   adapt_delta = 0.99,
@@ -53,14 +52,12 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale).}
 
-\item{infections_gp}{List controlling the Gaussian process approximation for infections. Must contain
-the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.25 and must be
+\item{gp}{List controlling the Gaussian process approximation. Must contain
+the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.5 and must be
 between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
 Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
 See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.}
-
-\item{rt_gp}{List controlling Gaussian process approximation for Rt estimation. Defined as \code{infections_gp}.}
 
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
@@ -76,7 +73,7 @@ for the prior based on reported cases.}
 
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
 
-\item{warmup}{Numeric, defaults to 250. Number of iteration of warmup to use.}
+\item{warmup}{Numeric, defaults to 200. Number of iteration of warmup to use.}
 
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
