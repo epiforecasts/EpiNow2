@@ -129,15 +129,14 @@ of report and then save summary measures and plots.</p>
   <span class='no'>generation_time</span>,
   <span class='no'>incubation_period</span>,
   <span class='no'>reporting_delay</span>,
-  <span class='kw'>infections_gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.25</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
-  <span class='kw'>rt_gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.25</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
+  <span class='kw'>gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.5</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
   <span class='kw'>rt_prior</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>sd</span> <span class='kw'>=</span> <span class='fl'>1</span>),
   <span class='no'>model</span>,
   <span class='kw'>prior_smoothing_window</span> <span class='kw'>=</span> <span class='fl'>7</span>,
   <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>,
   <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>2</span>,
-  <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>2000</span>,
-  <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>500</span>,
+  <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>,
+  <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>200</span>,
   <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='fl'>0.99</span>,
@@ -185,17 +184,13 @@ reporting delay (assuming a lognormal distribution with all parameters excepting
 on the log scale).</p></td>
     </tr>
     <tr>
-      <th>infections_gp</th>
-      <td><p>List controlling the Gaussian process approximation for infections. Must contain
-the <code>basis_prop</code> (number of basis functions based on scaling the time points) which defaults to 0.25 and must be
+      <th>gp</th>
+      <td><p>List controlling the Gaussian process approximation. Must contain
+the <code>basis_prop</code> (number of basis functions based on scaling the time points) which defaults to 0.5 and must be
 between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
 Must also contain the <code>boundary_scale</code> (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
 See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.</p></td>
-    </tr>
-    <tr>
-      <th>rt_gp</th>
-      <td><p>List controlling Gaussian process approximation for Rt estimation. Defined as <code>infections_gp</code>.</p></td>
     </tr>
     <tr>
       <th>rt_prior</th>
@@ -225,7 +220,7 @@ for the prior based on reported cases.</p></td>
     </tr>
     <tr>
       <th>warmup</th>
-      <td><p>Numeric, defaults to 250. Number of iteration of warmup to use.</p></td>
+      <td><p>Numeric, defaults to 200. Number of iteration of warmup to use.</p></td>
     </tr>
     <tr>
       <th>estimate_rt</th>
@@ -346,7 +341,7 @@ an unweighted ensemble ("mean") with no other types currently supported.</p></td
 
       <footer>
       <div class="copyright">
-  <p>Developed by Sam Abbott, Joel Hellewell, Robin Thompson, Katharine Sherratt, Sophie Meakin, James Munday, Nikos Bosse, Sebastian Funk.</p>
+  <p>Developed by Sam Abbott, Joel Hellewell, Robin Thompson, Katelyn Gostic, Katharine Sherratt, Sophie Meakin, James Munday, Nikos Bosse, Sebastian Funk.</p>
 </div>
 
 <div class="pkgdown">

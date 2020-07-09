@@ -261,7 +261,7 @@ report_plots <- function(summarised_estimates, reported,
   
 # Infections plot ---------------------------------------------------------
 
-infections <- plot_estimates(estimate = summarised_estimates[variable == "infections_rt"],
+infections <- plot_estimates(estimate = summarised_estimates[variable == "infections"],
                              reported = reported,
                              ylab = "Cases by \n date of infection")
   
@@ -279,7 +279,7 @@ if (!is.null(target_folder)) {
 
 # Cases by report ---------------------------------------------------------
 
-reports <- plot_estimates(estimate = summarised_estimates[variable == "reported_cases_rt"],
+reports <- plot_estimates(estimate = summarised_estimates[variable == "reported_cases"],
                           reported = reported, ylab = "Cases by \n date of report")
 
 if (!is.null(target_folder)) {

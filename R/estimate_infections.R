@@ -25,18 +25,17 @@
 #' @param cores Numeric, defaults to 2. The number of cores to use when fitting the stan model.
 #' @param chains Numeric, defaults to 2. The number of MCMC chains to use.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
-#' @param warmup Numeric, defaults to 250. Number of iteration of warmup to use.
+#' @param warmup Numeric, defaults to 200. Number of iteration of warmup to use.
 #' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
 #' @param adapt_delta Numeric, defaults to 0.99. See ?rstan::sampling.
 #' @param max_treedepth Numeric, defaults to 15. See ?rstan::sampling.
 #' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
-#' @param infections_gp List controlling the Gaussian process approximation for infections. Must contain
-#' the `basis_prop` (number of basis functions based on scaling the time points) which defaults to 0.25 and must be 
+#' @param gp List controlling the Gaussian process approximation. Must contain
+#' the `basis_prop` (number of basis functions based on scaling the time points) which defaults to 0.5 and must be 
 #' between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute. 
 #' Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
 #' increases the accuracy of the approximation at the cost of additional compute. 
 #' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
-#' @param rt_gp List controlling Gaussian process approximation for Rt estimation. Defined as `infections_gp`.
 #' @param verbose Logical, defaults to `TRUE`. Should verbose progress messages be printed.
 #' @param debug Logical, defaults to `FALSE`. Enables debug model in which additional diagnostics are available
 #' @export
@@ -76,8 +75,8 @@
 #'                                     generation_time = generation_time,
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
-#'                                     rt_prior = list(mean = 1, sd = 1),
-#'                                     cores = 4, chains = 4, 
+#'                                     samples = 1000, warmup = 200,
+#'                                     cores = 4, chains = 4,
 #'                                     estimate_rt = TRUE, 
 #'                                     verbose = TRUE, return_fit = TRUE)
 #'
@@ -86,13 +85,12 @@
 estimate_infections <- function(reported_cases, family = "negbin",
                                 incubation_period, reporting_delay,
                                 generation_time,
-                                infections_gp = list(basis_prop = 0.3, boundary_scale = 2),
-                                rt_gp = list(basis_prop = 0.3, boundary_scale = 2),
+                                gp = list(basis_prop = 0.5, boundary_scale = 2),
                                 rt_prior = list(mean = 1, sd = 1),
                                 prior_smoothing_window = 7,
                                 horizon = 7,
                                 model, cores = 1, chains = 2,
-                                samples = 1000, warmup = 250,
+                                samples = 1000, warmup = 200,
                                 estimate_rt = TRUE, adapt_delta = 0.99,
                                 max_treedepth = 15, return_fit = FALSE,
                                 verbose = TRUE, debug = FALSE){
@@ -120,7 +118,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   # Estimate the mean delay -----------------------------------------------
   
-  mean_shift <- as.integer(exp(incubation_period$mean) + exp(reporting_delay$mean))
+  mean_shift <- as.integer(exp(incubation_period$mean + incubation_period$sd^2/2)+exp(report_delay$mean + report_delay$sd^2/2))
   
   # Add the mean delay and incubation period on as 0 case days ------------
   
@@ -194,11 +192,9 @@ estimate_infections <- function(reported_cases, family = "negbin",
   # Parameters for Hilbert space GP -----------------------------------------
   
   # no of basis functions
-  data$M <- ceiling(data$t * infections_gp$basis_prop)
-  data$rM <- ceiling(data$rt * rt_gp$basis_prop)
+  data$M <- ceiling(data$rt * gp$basis_prop)
   # Boundary value for c
-  data$L <- data$t * infections_gp$boundary_scale
-  data$rL <- data$rt * rt_gp$boundary_scale
+  data$L <- data$rt * gp$boundary_scale
   
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
@@ -223,11 +219,9 @@ estimate_infections <- function(reported_cases, family = "negbin",
   }
   
   if (estimate_rt) {
+    out$initial_infections <- rnorm(mean_shift, mean = 0, sd = 0.1)
     out$R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                           scale = (rt_prior$sd^2) / rt_prior$mean))
-    out$R_eta <- rnorm(data$rM, mean = 0, sd = 1)
-    out$R_rho <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2))
-    out$R_alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
     out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 1, mean = generation_time$mean,  
                                                sd = generation_time$mean_sd))
     out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
@@ -313,23 +307,11 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$growth_rate <- extract_parameter("r", 
                                          samples,
                                          reported_cases$date[-(1:mean_shift)])
-    
-    out$infections_rt <- extract_parameter("imputed_infections_rt", 
-                                           samples,
-                                           reported_cases$date)
-    
-    out$reported_cases_rt <- extract_parameter("imputed_branch_reports", 
-                                               samples, 
-                                               reported_cases$date[-(1:mean_shift)])
   }
   
     ## Add prior infections
     out$prior_infections <- shifted_reported_cases[, .(parameter = "prior_infections", time = 1:.N, 
                                                        date, value = confirm, sample = 1)]
-    
-    out$noise <- extract_parameter("noise", 
-                                   samples,
-                                   reported_cases$date)
     
     out$day_of_week <- extract_parameter("day_of_week_eff", 
                                          samples,
