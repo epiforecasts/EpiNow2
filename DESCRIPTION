@@ -14,6 +14,9 @@ Authors@R: c(
     person("Robin", "Thompson", 
            email = "robin.thompson@lshtm.ac.uk", 
            role = c("aut")), 
+    person("Katelyn", "Gostic",
+           email = "kgostic@uchicago.edu",
+           role = c("aut")),
     person("Katharine", "Sherratt",
            email = "katharine.sherratt@lshtm.ac.uk",
            role = c("aut")),
@@ -25,6 +28,8 @@ Authors@R: c(
            role = c("aut")),
     person("Nikos", "Bosse", 
            role = c("aut")),
+    person("Paul", "Mee",
+           email = "paul.mee@lshtm.ac.uk"),
     person("Sebastian", "Funk",
             email = "sebastian.funk@lshtm.ac.uk",
             role = c("aut")))
