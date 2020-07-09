@@ -224,7 +224,7 @@ transformed parameters {
     // calculate pdf of generation time from distribution
     for (j in 1:(max_gt)) {
        rev_generation_time[j] =
-           discretised_gamma_pmf(max_gt - j - 1, gt_mean[estimate_r], gt_sd[estimate_r], max_gt);
+           discretised_gamma_pmf(max_gt - j + 1, gt_mean[estimate_r], gt_sd[estimate_r], max_gt);
      }
      
      // Construct R over time
@@ -233,12 +233,14 @@ transformed parameters {
      	}
      	  
      R_SPD_eta = R_diagSPD .* R_eta;
-	   R_noise = rep_vector(1e-5, rt);
+	   R_noise = rep_vector(1e-5, rt - 1);
      R_noise = R_noise + exp(PHI_rt[,] * R_SPD_eta);
   
       R[1] = initial_R[estimate_r];
-      R[2:rt] = R[1:(rt-1)] .* R_noise[1:(rt-1)];
-
+      for (s in 2:rt) {
+        R[s] = R[s - 1] .* R_noise[s - 1];
+      }
+      
      // Estimate infections using renewal equation
      branch_infections = rep_vector(1e-5, t);
      branch_infections[1:no_rt_time] = infections[1:no_rt_time];
