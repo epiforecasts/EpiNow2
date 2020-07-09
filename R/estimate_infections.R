@@ -219,7 +219,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   }
   
   if (estimate_rt) {
-    out$initial_infections <- rexp(mean_shift, 0.5)
+    out$initial_infections <- rnorm(mean_shift, mean = 0, sd = 0.1)
     out$R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                           scale = (rt_prior$sd^2) / rt_prior$mean))
     out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 1, mean = generation_time$mean,  

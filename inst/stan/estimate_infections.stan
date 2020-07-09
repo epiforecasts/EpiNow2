@@ -97,10 +97,10 @@ data {
 transformed data{
   real r_alpha;                              // alpha parameter of the R gamma prior
   real r_beta;                               // beta parameter of the R gamma prior
-  vector[estimate_r > 0 ? rt : t] time;      // time vector
+  vector[estimate_r > 0 ? rt - 1 : t] time;      // time vector
   int no_rt_time;                            // time without estimating Rt
   int rt_h;                                  // rt estimation time minus the forecasting horizon
-  matrix[estimate_r > 0 ? rt : t, M] PHI;    // basis function 
+  matrix[estimate_r > 0 ? rt - 1 : t, M] PHI;    // basis function 
   
   //Update time varables
   rt_h = rt - horizon;
@@ -110,7 +110,7 @@ transformed data{
   r_beta = r_mean / (r_sd^2);
   
   // make time vector
-   for (s in 1:(estimate_r > 0 ? rt : t)) {
+   for (s in 1:(estimate_r > 0 ? rt - 1 : t)) {
      time[s] = s;
    }
    
@@ -122,8 +122,6 @@ transformed data{
    for (m in 1:M){ 
      PHI[,m] = phi_SE(L, m, time); 
     }
-    
-    
 }
 parameters{
   simplex[7] day_of_week_eff_raw;                     // day of week reporting effect + control parameters
@@ -180,7 +178,7 @@ transformed parameters {
 	}
 	SPD_eta = diagSPD .* eta;
 	
-	noise = rep_vector(1e-5, t);
+	noise = rep_vector(1e-5, estimate_r > 0 ? rt - 1 : t);
   noise = noise + exp(PHI[,] * SPD_eta);
 
   // initialise infections
@@ -200,7 +198,8 @@ transformed parameters {
       }
       
      // Estimate initial infections not using Rt
-     infections[1:no_rt_time] = initial_infections;
+     infections[1:no_rt_time] = infections[1:no_rt_time] + 
+                                  shifted_cases[1:no_rt_time] .* exp(initial_infections);
       
      //Estimate remaining infections using Rt
      infectiousness = rep_vector(1e-5, rt);
@@ -256,7 +255,7 @@ model {
   if (estimate_r) {
     // prior on R
     initial_R[estimate_r] ~ gamma(r_alpha, r_beta);
-    initial_infections ~ exponential(0.5);
+    initial_infections ~ normal(0, 0.1);
     
     // penalised_prior on generation interval
     target += normal_lpdf(gt_mean | gt_mean_mean, gt_mean_sd) * rt;

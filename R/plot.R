@@ -52,7 +52,7 @@
 #'   ylab = "Cases")
 #' 
 #' ## Plot reported cases estimated via Rt
-#' plot_estimates(estimate = out$summarised[variable == "reported_cases_rt"],
+#' plot_estimates(estimate = out$summarised[variable == "reported_cases"],
 #'                reported = cases, 
 #'                ylab = "Cases")
 #'                
