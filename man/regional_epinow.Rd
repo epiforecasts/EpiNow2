@@ -76,12 +76,10 @@ cases <- data.table::rbindlist(list(
 ## Run basic nowcasting pipeline
 ## Here we reduce the accuracy of the GP approximation in order to reduce runtime
 out <- regional_epinow(reported_cases = cases,
-                       target_folder = "../test-2",
                        generation_time = generation_time,
+                       delays = list(incubation_period, reporting_delay),
                        gp = list(basis_prop = 0.1, boundary_scale = 2),
                        adapt_delta = 0.9,
-                       incubation_period = incubation_period,
-                       reporting_delay = reporting_delay,
                        samples = 2000, warmup = 200,
                        cores = 4, chains = 4)
 }
