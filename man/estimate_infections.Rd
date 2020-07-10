@@ -10,7 +10,7 @@ estimate_infections(
   incubation_period,
   reporting_delay,
   generation_time,
-  gp = list(basis_prop = 0.5, boundary_scale = 2),
+  gp = list(basis_prop = 0.3, boundary_scale = 2),
   rt_prior = list(mean = 1, sd = 1),
   prior_smoothing_window = 7,
   horizon = 7,
@@ -20,6 +20,7 @@ estimate_infections(
   samples = 1000,
   warmup = 200,
   estimate_rt = TRUE,
+  estimate_week_eff = TRUE,
   adapt_delta = 0.99,
   max_treedepth = 15,
   return_fit = FALSE,
@@ -48,7 +49,7 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 generation time (assuming a gamma distribution).}
 
 \item{gp}{List controlling the Gaussian process approximation. Must contain
-the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.5 and must be
+the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
 between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
 Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
@@ -73,6 +74,8 @@ for the prior based on reported cases.}
 \item{warmup}{Numeric, defaults to 200. Number of iteration of warmup to use.}
 
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
+
+\item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 
 \item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
 
@@ -119,8 +122,8 @@ out <- estimate_infections(reported_cases, family = "negbin",
                                     reporting_delay = reporting_delay,
                                     samples = 1000, warmup = 200,
                                     cores = 4, chains = 4,
-                                    estimate_rt = TRUE, 
-                                    verbose = TRUE, return_fit = TRUE)
+                                    estimate_rt = TRUE, verbose = TRUE, 
+                                    return_fit = TRUE)
 
 out   
 }                                
