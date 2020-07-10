@@ -169,8 +169,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
     shifted_cases = shifted_reported_cases$confirm,
     t = length(reported_cases$date),
     rt = length(reported_cases$date) - mean_shift,
-    time =  scale(1:(length(reported_cases$date) - mean_shift), center=TRUE, scale=TRUE),
-    inf_time =  scale(1:(length(reported_cases$date)), center=TRUE, scale=TRUE),
+    time = 1:(length(reported_cases$date) - mean_shift),
+    inf_time = 1:(length(reported_cases$date)),
     horizon = horizon,
     inc_mean_mean = incubation_period$mean,
     inc_mean_sd = incubation_period$mean_sd,
@@ -198,7 +198,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   # no of basis functions
   data$M <- ceiling(data$rt * gp$basis_prop)
   # Boundary value for c
-  data$L <- max(abs(data$time)) / 2 * gp$boundary_scale
+  data$L <- max(data$time) * gp$boundary_scale
   
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
@@ -210,21 +210,17 @@ estimate_infections <- function(reported_cases, family = "negbin",
 # Parameters for week effect ----------------------------------------------
 
   ## Period of the week effect
-  data$period_week <- 7 / attr(data$time,"scaled:scale")
+  data$period_week <- 7 / sd(data$time)
   ## Basis functions for the week effect
   data$Jw <- 4
   
-  # Convert rescaled time into vector ---------------------------------------
-  
-  data$time <- as.vector(data$time)
-  data$inf_time <- as.vector(data$inf_time)
-  
+
   # Set up initial conditions fn --------------------------------------------
   
   init_fun <- function(){out <- list(
     eta = rnorm(data$M, mean = 0, sd = 1),
-    rho = truncnorm::rtruncnorm(1 + data$est_week_eff, a = 0, mean = 0, sd = 2),
-    alpha =  truncnorm::rtruncnorm(1 + data$est_week_eff, a = 0, mean = 0, sd = 0.1),
+    rho = array(truncnorm::rtruncnorm(1 + data$est_week_eff, a = 0, mean = 0, sd = 2)),
+    alpha =  array(truncnorm::rtruncnorm(1 + data$est_week_eff, a = 0, mean = 0, sd = 0.1)),
     inc_mean = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$mean, sd = incubation_period$mean_sd),
     inc_sd = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$sd, sd = incubation_period$sd_sd),
     rep_mean = truncnorm::rtruncnorm(1, a = 0, mean = reporting_delay$mean, sd = reporting_delay$mean_sd),
@@ -238,7 +234,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$initial_infections <- rnorm(mean_shift, mean = 0, sd = 0.1)
     out$R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                           scale = (rt_prior$sd^2) / rt_prior$mean))
-    out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 1, mean = generation_time$mean,  
+    out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
                                                sd = generation_time$mean_sd))
     out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
                                               sd = generation_time$sd_sd))
@@ -332,11 +328,14 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$prior_infections <- shifted_reported_cases[, .(parameter = "prior_infections", time = 1:.N, 
                                                        date, value = confirm, sample = 1)]
     
-    out$day_of_week <- extract_parameter("week_eff", 
-                                         samples,
-                                         reported_cases$date[-(1:mean_shift)])
-    
-    out$day_of_week <- out$day_of_week[, strat := lubridate::wday(date, label = TRUE)]
+    if (estimate_week_eff) {
+      out$day_of_week <- extract_parameter("week_eff", 
+                                           samples,
+                                           reported_cases$date[-(1:mean_shift)])
+      
+      out$day_of_week <- out$day_of_week[, strat := lubridate::wday(date, label = TRUE)]
+      
+    }
 
     extract_static_parameter <- function(param) {
       data.table::data.table(
@@ -361,7 +360,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
       out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
     }
   
-
 # Format output -----------------------------------------------------------
     
  format_out <- list()
@@ -369,6 +367,9 @@ estimate_infections <- function(reported_cases, family = "negbin",
  ## Bind all samples together
  format_out$samples <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
  
+ if (is.null(format_out$samples$strat)) {
+  format_out$samples <- format_out$samples[, strat := NA]
+ }
  ## Add type based on horizon
  format_out$samples <- format_out$samples[,
           type := data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon), 
