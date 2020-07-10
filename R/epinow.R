@@ -32,15 +32,13 @@
 #' reporting_delay$max <- 60
 #' 
 #' ## Example case data
-#' reported_cases <- EpiNow2::example_confirmed[1:40]
-#' 
-#' 
+#' reported_cases <- EpiNow2::example_confirmed[1:40] 
 #' 
 #' ## Report Rt along with forecasts
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
-#'               incubation_period = incubation_period, reporting_delay = reporting_delay,
+#'               delays = list(incubation_period, reporting_delay),
 #'               rt_prior = list(mean = 1, sd = 1),
-#'               samples = 1000, warmup = 500, cores = 2, chains = 2,
+#'               samples = 1000, warmup = 200, cores = 4, chains = 4,
 #'               verbose = TRUE, return_fit = TRUE)
 #' 
 #' out
@@ -52,7 +50,7 @@
 #' 
 #' ## Report Rt along with forecasts
 #' out <- epinow(reported_cases = cases, generation_time = generation_time,
-#'               incubation_period = incubation_period, reporting_delay = reporting_delay,
+#'               delays = list(incubation_period, reporting_delay),
 #'               rt_prior = list(mean = 1, sd = 1),
 #'               forecast_model = function(y, ...){
 #'                    EpiSoon::forecastHybrid_model(
@@ -65,14 +63,14 @@
 #' out
 #' }
 epinow <- function(reported_cases, family = "negbin",
-                   generation_time, incubation_period,
-                   reporting_delay,
-                   gp = list(basis_prop = 0.5, boundary_scale = 2),
+                   generation_time, delays,
+                   gp = list(basis_prop = 0.3, boundary_scale = 2),
                    rt_prior = list(mean = 1, sd = 1), model,
                    prior_smoothing_window = 7,
                    cores = 2, chains = 2,
                    samples = 1000, warmup = 200,
-                   estimate_rt = TRUE, return_fit = FALSE,
+                   estimate_rt = TRUE, estimate_week_eff = TRUE,
+                   return_fit = FALSE,
                    adapt_delta = 0.99,  max_treedepth = 15,
                    forecast_model, horizon = 7,
                    ensemble_type = "mean",
@@ -131,8 +129,7 @@ if (!is.null(target_folder)) {
    estimates <- estimate_infections(reported_cases = reported_cases,
                                     family = family,
                                     generation_time = generation_time,
-                                    incubation_period = incubation_period,
-                                    reporting_delay = reporting_delay,
+                                    delays = delays,
                                     gp =  gp,
                                     rt_prior = rt_prior,
                                     adapt_delta = adapt_delta,
@@ -142,6 +139,7 @@ if (!is.null(target_folder)) {
                                     samples = samples,
                                     warmup = warmup,
                                     estimate_rt = estimate_rt,
+                                    estimate_week_eff = estimate_week_eff,
                                     horizon = horizon,
                                     verbose = verbose, return_fit = return_fit,
                                     debug = debug) 
@@ -175,11 +173,11 @@ if (!missing(forecast_model) & !is.null(target_folder)) {
 # Report forcasts ---------------------------------------------------------
 
 if (missing(forecast_model)) {
-  estimated_reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
-                                                                              .(date, sample, cases = value)],
-                                           reporting_delay = reporting_delay,
-                                           incubation_period =  incubation_period,
-                                           type = "sample")
+  estimated_reported_cases <- list()
+  estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][,
+                                                        .(date, sample, cases = value, type = "gp_rt")]
+  estimated_reported_cases$summarised <- estimates$summarised[variable == "reported_cases"][, 
+                                                              type := "gp_rt"][, variable := NULL][, strat := NULL]
 }else{
   report_cases_with_forecast <- function(model) {
     reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
@@ -187,8 +185,7 @@ if (missing(forecast_model)) {
                                    case_forecast = forecast$samples[type == "case" & 
                                                                     forecast_type == model][,
                                                                     .(date, sample, cases = value)],
-                                   reporting_delay = reporting_delay,
-                                   incubation_period =  incubation_period,
+                                   delays = delays,
                                    type = "sample")
     return(reported_cases)
   }
@@ -318,12 +315,10 @@ if (!is.null(target_folder)){
 #' ## Run basic nowcasting pipeline
 #' ## Here we reduce the accuracy of the GP approximation in order to reduce runtime
 #' out <- regional_epinow(reported_cases = cases,
-#'                        target_folder = "../test-2",
 #'                        generation_time = generation_time,
+#'                        delays = list(incubation_period, reporting_delay),
 #'                        gp = list(basis_prop = 0.1, boundary_scale = 2),
 #'                        adapt_delta = 0.9,
-#'                        incubation_period = incubation_period,
-#'                        reporting_delay = reporting_delay,
 #'                        samples = 2000, warmup = 200,
 #'                        cores = 4, chains = 4)
 #'}

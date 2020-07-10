@@ -49,7 +49,7 @@ Windows users will need a working installation of Rtools in order to build the p
 
 ### Reporting delays, incubation period and generation time
 
-Distributions can either be fitted using package functionality or determined elsewhere and then defined with uncertainty for use in `{EpiNow2}`. When data is supplied a subsampled bootstrapped lognormal will be fit (to account for uncertainty in the observed data without being biased by changes in incidence).
+Distributions can either be fitted using package functionality or determined elsewhere and then defined with uncertainty for use in `{EpiNow2}`. When data is supplied a subsampled bootstrapped lognormal will be fit (to account for uncertainty in the observed data without being biased by changes in incidence). An arbitary number of delay distributions are supported with the most common use case likely to be a incubation period followed by a reporting delay.
 
 ```{r}
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1))
@@ -92,8 +92,7 @@ Estimate cases by date of infection, the time-varying reproduction number, the r
 ```{r, message = FALSE, warning = FALSE}
 estimates <- EpiNow2::epinow(reported_cases = reported_cases, 
                              generation_time = generation_time,
-                             incubation_period = incubation_period, 
-                             reporting_delay = reporting_delay,
+                             delays = list(incubation_period, reporting_delay),
                              horizon = 7, samples = 1000, warmup = 200, 
                              cores = 4, chains = 4, verbose = TRUE, 
                              adapt_delta = 0.95)
@@ -146,10 +145,10 @@ Run the pipeline on each region in turn. The commented code (requires the `{futu
 ## future::plan("multisession")
 estimates <- EpiNow2::regional_epinow(reported_cases = reported_cases, 
                                       generation_time = generation_time,
-                                      incubation_period = incubation_period, 
-                                      reporting_delay = reporting_delay,
-                                      horizon = 7, samples = 1000, warmup = 200, cores = 4, 
-                                      chains = 4, adapt_delta = 0.95, verbose = TRUE)
+                                      delays = list(incubation_period, reporting_delay),
+                                      horizon = 7, samples = 1000, warmup = 200,
+                                      cores = 4, chains = 4, adapt_delta = 0.95,
+                                      verbose = TRUE)
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments.

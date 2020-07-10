@@ -8,13 +8,10 @@
 #' @param generation_time A list containing the mean, standard deviation of the mean (mean_sd), 
 #' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 #' generation time (assuming a gamma distribution).
-#' @param incubation_period  A list containing the mean, standard deviation of the mean (mean_sd), 
+#' @param delays A list of delays (i.e incubation period/reporting delay) between infection and report.
+#' Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd), 
 #' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-#' incubation period (assuming a lognormal distribution with all parameters excepting the max allowed value 
-#' on the log scale).
-#' @param reporting_delay A list containing the mean, standard deviation of the mean (mean_sd), 
-#' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-#' reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value 
+#' that delay (assuming a lognormal distribution with all parameters excepting the max allowed value 
 #' on the log scale).
 #' @param rt_prior A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 #' Rt. By default this is assumed to be mean 1 with a standard deviation of 1.
@@ -27,11 +24,12 @@
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
 #' @param warmup Numeric, defaults to 200. Number of iteration of warmup to use.
 #' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
+#' @param estimate_week_eff Logical, defaults TRUE. Should weekly reporting effects be estimated.
 #' @param adapt_delta Numeric, defaults to 0.99. See ?rstan::sampling.
 #' @param max_treedepth Numeric, defaults to 15. See ?rstan::sampling.
 #' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
 #' @param gp List controlling the Gaussian process approximation. Must contain
-#' the `basis_prop` (number of basis functions based on scaling the time points) which defaults to 0.5 and must be 
+#' the `basis_prop` (number of basis functions based on scaling the time points) which defaults to 0.3 and must be 
 #' between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute. 
 #' Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
 #' increases the accuracy of the approximation at the cost of additional compute. 
@@ -46,6 +44,7 @@
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom stats lm
 #' @importFrom HDInterval hdi
+#' @importFrom purrr transpose
 #' @examples
 #' \dontrun{
 #' ## Get example case counts
@@ -57,7 +56,7 @@
 #'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
 #'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
 #'                         max = 30)
-#' ## Set                   
+#' ## Set delays between infection and case report                
 #' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
 #'                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
 #'                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
@@ -72,29 +71,30 @@
 #'                         
 #' ## Run model
 #' out <- estimate_infections(reported_cases, family = "negbin",
-#'                                     generation_time = generation_time,
-#'                                     incubation_period = incubation_period,
-#'                                     reporting_delay = reporting_delay,
-#'                                     samples = 1000, warmup = 200,
-#'                                     cores = 4, chains = 4,
-#'                                     estimate_rt = TRUE, 
-#'                                     verbose = TRUE, return_fit = TRUE)
+#'                            generation_time = generation_time,
+#'                            delays = list(incubation_period, reporting_delay),
+#'                            samples = 1000, warmup = 200,
+#'                            cores = 4, chains = 4, 
+#'                            estimate_rt = TRUE, verbose = TRUE, 
+#'                            return_fit = TRUE)
 #'
 #' out   
 #' }                                
 estimate_infections <- function(reported_cases, family = "negbin",
-                                incubation_period, reporting_delay,
-                                generation_time,
-                                gp = list(basis_prop = 0.5, boundary_scale = 2),
+                                generation_time, delays,
+                                gp = list(basis_prop = 0.3, boundary_scale = 2),
                                 rt_prior = list(mean = 1, sd = 1),
                                 prior_smoothing_window = 7,
-                                horizon = 7,
-                                model, cores = 1, chains = 2,
+                                horizon = 7, model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 200,
-                                estimate_rt = TRUE, adapt_delta = 0.99,
-                                max_treedepth = 15, return_fit = FALSE,
-                                verbose = TRUE, debug = FALSE){
+                                estimate_rt = TRUE, estimate_week_eff = TRUE,
+                                adapt_delta = 0.99, max_treedepth = 15, 
+                                return_fit = FALSE, verbose = TRUE, debug = FALSE){
   
+ 
+  # Organise delays ---------------------------------------------------------
+  no_delays <- length(delays)
+  delays <- purrr::transpose(delays)
 
   # Set up data.table -------------------------------------------------------
 
@@ -118,9 +118,12 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   # Estimate the mean delay -----------------------------------------------
   
-  mean_shift <- as.integer(exp(incubation_period$mean + incubation_period$sd^2/2) + 
-                           exp(reporting_delay$mean + reporting_delay$sd^2/2))
-  
+  mean_shift <- as.integer(
+    sum(
+      purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))
+    )
+  )
+
   # Add the mean delay and incubation period on as 0 case days ------------
   
   reported_cases <- data.table::rbindlist(list(
@@ -160,7 +163,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   reported_cases <- reported_cases[, day_of_week := lubridate::wday(date, week_start = 1)]
   
-  
   # Define stan model parameters --------------------------------------------
   
   data <- list(
@@ -169,17 +171,15 @@ estimate_infections <- function(reported_cases, family = "negbin",
     shifted_cases = shifted_reported_cases$confirm,
     t = length(reported_cases$date),
     rt = length(reported_cases$date) - mean_shift,
+    time = 1:(length(reported_cases$date) - mean_shift),
+    inf_time = 1:(length(reported_cases$date)),
     horizon = horizon,
-    inc_mean_mean = incubation_period$mean,
-    inc_mean_sd = incubation_period$mean_sd,
-    inc_sd_mean = incubation_period$sd,
-    inc_sd_sd = incubation_period$sd_sd,
-    max_inc = incubation_period$max,
-    rep_mean_mean = reporting_delay$mean,
-    rep_mean_sd = reporting_delay$mean_sd,
-    rep_sd_mean = reporting_delay$sd,
-    rep_sd_sd = reporting_delay$sd_sd,
-    max_rep = reporting_delay$max,
+    delays = no_delays,
+    delay_mean_mean = unlist(delays$mean),
+    delay_mean_sd = unlist(delays$mean_sd),
+    delay_sd_mean = unlist(delays$sd),
+    delay_sd_sd = unlist(delays$sd_sd),
+    max_delay = unlist(delays$max),
     gt_mean_mean = generation_time$mean,
     gt_mean_sd = generation_time$mean_sd,
     gt_sd_mean = generation_time$sd,
@@ -187,7 +187,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
     max_gt = generation_time$max,
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
-    estimate_r = ifelse(estimate_rt, 1, 0)
+    estimate_r = ifelse(estimate_rt, 1, 0),
+    est_week_eff = ifelse(estimate_week_eff, 1, 0)
   ) 
   
   # Parameters for Hilbert space GP -----------------------------------------
@@ -195,7 +196,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   # no of basis functions
   data$M <- ceiling(data$rt * gp$basis_prop)
   # Boundary value for c
-  data$L <- data$rt * gp$boundary_scale
+  data$L <- max(data$time) * gp$boundary_scale
   
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
@@ -204,16 +205,17 @@ estimate_infections <- function(reported_cases, family = "negbin",
     data$model_type <- 1
   }
   
+
   # Set up initial conditions fn --------------------------------------------
   
   init_fun <- function(){out <- list(
     eta = rnorm(data$M, mean = 0, sd = 1),
-    rho = truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2),
-    alpha =  truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1),
-    inc_mean = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$mean, sd = incubation_period$mean_sd),
-    inc_sd = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$sd, sd = incubation_period$sd_sd),
-    rep_mean = truncnorm::rtruncnorm(1, a = 0, mean = reporting_delay$mean, sd = reporting_delay$mean_sd),
-    rep_sd = truncnorm::rtruncnorm(1, a = 0, mean = reporting_delay$sd,  sd = reporting_delay$sd_sd))
+    rho = array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2)),
+    alpha =  array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1)),
+    delay_mean = array(purrr::map2_dbl(delays$mean, delays$mean_sd, 
+                              ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y))),
+    delay_sd = array(purrr::map2_dbl(delays$sd, delays$sd_sd, 
+                              ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y))))
   
   if (data$model_type == 1) {
     out$rep_phi <- array(rexp(1, 1))
@@ -223,7 +225,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$initial_infections <- rnorm(mean_shift, mean = 0, sd = 0.1)
     out$R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                           scale = (rt_prior$sd^2) / rt_prior$mean))
-    out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 1, mean = generation_time$mean,  
+    out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
                                                sd = generation_time$mean_sd))
     out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
                                               sd = generation_time$sd_sd))
@@ -245,21 +247,16 @@ estimate_infections <- function(reported_cases, family = "negbin",
     message(paste0("Running for ", samples," samples (across ", chains, 
                    " chains each with a warm up of ", warmup, " iterations each) and ",
                    data$t," time steps of which ", horizon, " are a forecast"))
-
   }
   
-  fit <-
-    rstan::sampling(model,
-                    data = data,
-                    chains = chains,
-                    init = init_fun,
-                    iter = ceiling(samples / chains) + warmup, 
-                    warmup = warmup,
-                    cores = cores,
-                    control = list(adapt_delta = adapt_delta,
-                                   max_treedepth = max_treedepth),
-                    refresh = ifelse(verbose, 50, 0),
-                    save_warmup = debug)
+  fit <- rstan::sampling(model, data = data, chains = chains,
+                         init = init_fun, 
+                         iter = ceiling(samples / chains) + warmup, 
+                         warmup = warmup, cores = cores,
+                         control = list(adapt_delta = adapt_delta,
+                                        max_treedepth = max_treedepth),
+                         refresh = ifelse(verbose, 50, 0),
+                         save_warmup = debug)
   
   # Extract parameters of interest from the fit -----------------------------
   
@@ -314,16 +311,27 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$prior_infections <- shifted_reported_cases[, .(parameter = "prior_infections", time = 1:.N, 
                                                        date, value = confirm, sample = 1)]
     
-    out$day_of_week <- extract_parameter("day_of_week_eff", 
-                                         samples,
-                                         1:7)
+    if (estimate_week_eff) {
+      out$day_of_week <- extract_parameter("day_of_week_eff", 
+                                           samples,
+                                           1:7)
+      
+      char_day_of_week <- data.table::data.table(wday = c("Monday", "Tuesday", "Wednesday",
+                                                          "Thursday", "Friday", "Saturday",
+                                                          "Sunday"),
+                                                 time = 1:7)
+      out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][, 
+                                         strat := as.character(wday)][,`:=`(time = NULL, date = NULL, wday = NULL)]
+    }
+ 
+    out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
+    out$delay_mean <- out$delay_mean[, strat := as.character(time)][,
+                                       time := NULL][, date := NULL]
     
-    char_day_of_week <- data.table::data.table(wday = c("Monday", "Tuesday", "Wednesday",
-                                                        "Thursday", "Friday", "Saturday",
-                                                        "Sunday"),
-                                               time = 1:7)
-    out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][, 
-                                       strat := wday][,`:=`(time = NULL, date = NULL, wday = NULL)]
+    out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$delays)
+    out$delay_sd <- out$delay_sd[, strat :=  as.character(time)][,
+                                   time := NULL][, date := NULL]
+    
     
     extract_static_parameter <- function(param) {
       data.table::data.table(
@@ -331,14 +339,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
         sample = 1:length(samples[[param]]),
         value = samples[[param]])
     }
-    
-    out$inc_mean <- extract_static_parameter("inc_mean")
-    
-    out$inc_sd <- extract_static_parameter("inc_sd")
-    
-    out$rep_mean <- extract_static_parameter("rep_mean")
-    
-    out$rep_sd <- extract_static_parameter("rep_sd")
     
     if (estimate_rt) {
       out$gt_mean <- extract_static_parameter("gt_mean")
@@ -348,7 +348,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
       out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
     }
   
-
 # Format output -----------------------------------------------------------
     
  format_out <- list()
@@ -356,6 +355,9 @@ estimate_infections <- function(reported_cases, family = "negbin",
  ## Bind all samples together
  format_out$samples <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
  
+ if (is.null(format_out$samples$strat)) {
+  format_out$samples <- format_out$samples[, strat := NA]
+ }
  ## Add type based on horizon
  format_out$samples <- format_out$samples[,
           type := data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon), 

@@ -10,8 +10,7 @@ simulate_cases(
   initial_date,
   generation_interval,
   rdist = rpois,
-  delay_def,
-  incubation_def,
+  delay_defs,
   reporting_effect,
   reporting_model,
   truncate_future = TRUE,
@@ -32,10 +31,7 @@ simulate_cases(
 arguments with the first specfying the number of samples and the second the mean. Defaults
 to \code{rpois} if not supplied}
 
-\item{delay_def}{A single row data.table that defines the delay distribution (model, parameters and maximum delay for each model).
-See \code{lognorm_dist_def} for an example of the structure.}
-
-\item{incubation_def}{A single row data.table that defines the incubation distribution (model, parameters and maximum delay for each model).
+\item{delay_defs}{A list of single row data.tables that each  defines a delay distribution (model, parameters and maximum delay for each model).
 See \code{lognorm_dist_def} for an example of the structure.}
 
 \item{reporting_effect}{A numeric vector of length 7 that allows the scaling of reported cases
@@ -102,9 +98,9 @@ incubation_def <- EpiNow2::lognorm_dist_def(mean = EpiNow2::covid_incubation_per
 
 ## Simulate cases with a decrease in reporting at weekends and an increase on Monday                                     
 simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.Date("2020-03-01"),
-                    generation_interval = generation_pdf, delay_def = delay_def, 
-                   incubation_def = incubation_def, 
-                   reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))
+                    generation_interval = generation_pdf,
+                    delay_defs = list(incubation_def, delay_def),
+                    reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))
                    
 print(simulated_cases)
 
@@ -112,8 +108,8 @@ print(simulated_cases)
 
 ## Simulate cases with a weekly reporting effect and stochastic noise in reporting (beyond the delay)                                  
 simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.Date("2020-03-01"),
-                    generation_interval = generation_pdf, delay_def = delay_def, 
-                   incubation_def = incubation_def, 
+                    generation_interval = generation_pdf, 
+                    delay_defs = list(incubation_def, delay_def)
                    reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
                    reporting_model = function(n) {
                       out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))

@@ -8,9 +8,8 @@ epinow(
   reported_cases,
   family = "negbin",
   generation_time,
-  incubation_period,
-  reporting_delay,
-  gp = list(basis_prop = 0.5, boundary_scale = 2),
+  delays,
+  gp = list(basis_prop = 0.3, boundary_scale = 2),
   rt_prior = list(mean = 1, sd = 1),
   model,
   prior_smoothing_window = 7,
@@ -19,6 +18,7 @@ epinow(
   samples = 1000,
   warmup = 200,
   estimate_rt = TRUE,
+  estimate_week_eff = TRUE,
   return_fit = FALSE,
   adapt_delta = 0.99,
   max_treedepth = 15,
@@ -42,18 +42,14 @@ binomial ("negbin") with poisson ("poisson") also supported.}
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
-\item{incubation_period}{A list containing the mean, standard deviation of the mean (mean_sd),
+\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
+Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-incubation period (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale).}
-
-\item{reporting_delay}{A list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value
+that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale).}
 
 \item{gp}{List controlling the Gaussian process approximation. Must contain
-the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.5 and must be
+the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
 between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
 Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
@@ -76,6 +72,8 @@ for the prior based on reported cases.}
 \item{warmup}{Numeric, defaults to 200. Number of iteration of warmup to use.}
 
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
+
+\item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
@@ -128,15 +126,13 @@ reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1))
 reporting_delay$max <- 60
 
 ## Example case data
-reported_cases <- EpiNow2::example_confirmed[1:40]
-
-
+reported_cases <- EpiNow2::example_confirmed[1:40] 
 
 ## Report Rt along with forecasts
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
-              incubation_period = incubation_period, reporting_delay = reporting_delay,
+              delays = list(incubation_period, reporting_delay),
               rt_prior = list(mean = 1, sd = 1),
-              samples = 1000, warmup = 500, cores = 2, chains = 2,
+              samples = 1000, warmup = 200, cores = 4, chains = 4,
               verbose = TRUE, return_fit = TRUE)
 
 out
@@ -148,7 +144,7 @@ library(forecastHybrid)
 
 ## Report Rt along with forecasts
 out <- epinow(reported_cases = cases, generation_time = generation_time,
-              incubation_period = incubation_period, reporting_delay = reporting_delay,
+              delays = list(incubation_period, reporting_delay),
               rt_prior = list(mean = 1, sd = 1),
               forecast_model = function(y, ...){
                    EpiSoon::forecastHybrid_model(

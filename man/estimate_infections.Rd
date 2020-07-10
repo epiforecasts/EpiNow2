@@ -7,10 +7,9 @@
 estimate_infections(
   reported_cases,
   family = "negbin",
-  incubation_period,
-  reporting_delay,
   generation_time,
-  gp = list(basis_prop = 0.5, boundary_scale = 2),
+  delays,
+  gp = list(basis_prop = 0.3, boundary_scale = 2),
   rt_prior = list(mean = 1, sd = 1),
   prior_smoothing_window = 7,
   horizon = 7,
@@ -20,6 +19,7 @@ estimate_infections(
   samples = 1000,
   warmup = 200,
   estimate_rt = TRUE,
+  estimate_week_eff = TRUE,
   adapt_delta = 0.99,
   max_treedepth = 15,
   return_fit = FALSE,
@@ -33,22 +33,18 @@ estimate_infections(
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}
 
-\item{incubation_period}{A list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-incubation period (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale).}
-
-\item{reporting_delay}{A list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale).}
-
 \item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
+\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
+Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
+on the log scale).}
+
 \item{gp}{List controlling the Gaussian process approximation. Must contain
-the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.5 and must be
+the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
 between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
 Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
@@ -73,6 +69,8 @@ for the prior based on reported cases.}
 \item{warmup}{Numeric, defaults to 200. Number of iteration of warmup to use.}
 
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
+
+\item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 
 \item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
 
@@ -99,7 +97,7 @@ generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
                         sd = EpiNow2::covid_generation_times[1, ]$sd,
                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
                         max = 30)
-## Set                   
+## Set delays between infection and case report                
 incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
@@ -114,13 +112,12 @@ reporting_delay <- list(mean = log(5),
                         
 ## Run model
 out <- estimate_infections(reported_cases, family = "negbin",
-                                    generation_time = generation_time,
-                                    incubation_period = incubation_period,
-                                    reporting_delay = reporting_delay,
-                                    samples = 1000, warmup = 200,
-                                    cores = 4, chains = 4,
-                                    estimate_rt = TRUE, 
-                                    verbose = TRUE, return_fit = TRUE)
+                           generation_time = generation_time,
+                           delays = list(incubation_period, reporting_delay),
+                           samples = 1000, warmup = 200,
+                           cores = 4, chains = 4, 
+                           estimate_rt = TRUE, verbose = TRUE, 
+                           return_fit = TRUE)
 
 out   
 }                                
