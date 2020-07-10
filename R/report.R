@@ -41,49 +41,40 @@
 #' ## Run model
 #' out <- EpiNow2::estimate_infections(cases, family = "negbin",
 #'                                     generation_time = generation_time,
-#'                                     incubation_period = incubation_period,
-#'                                     reporting_delay = reporting_delay,
-#'                                     samples = 1000, warmup = 500, cores = 2
+#'                                     delays = list(incubation_period, reporting_delay),
+#'                                     samples = 1000, warmup = 200, 
+#'                                     cores = 4, chains = 4,
 #'                                     estimate_rt =  FALSE, verbose = TRUE)
 #'                             
 #'                      
 #' reported_cases <- report_cases(case_estimates = out$samples[variable == "infections"][, 
 #'                                                             cases := value][, value := NULL],
-#'                                reporting_delay = reporting_delay,
-#'                                incubation_period =  incubation_period, 
+#'                                delays = list(incubation_period, reporting_delay),
 #'                                type = "sample")
 #'                                
 #' print(reported_cases)
 #' }
 report_cases <- function(case_estimates,
                          case_forecast = NULL, 
-                         reporting_delay,
-                         incubation_period,
+                         delays,
                          type = "sample",
                          reporting_effect) {
   
   samples <- length(unique(case_estimates$sample))
   
-  ##Sample report delay and incubation period
-  ## Define a single report delay distribution
-  delay_defs <- EpiNow2::lognorm_dist_def(mean = reporting_delay$mean,
-                                         mean_sd = reporting_delay$mean_sd,
-                                         sd = reporting_delay$sd,
-                                         sd_sd = reporting_delay$sd_sd,
-                                         max_value = reporting_delay$max,
-                                         samples = samples)
 
-  ## Define a single incubation period
-  incubation_defs <- EpiNow2::lognorm_dist_def(mean = incubation_period$mean,
-                                               mean_sd = incubation_period$mean_sd,
-                                               sd = incubation_period$sd,
-                                               sd_sd = incubation_period$sd_sd,
-                                               max_value = incubation_period$max,
-                                               samples = samples)
+  ## Define delay distributions
+  delay_defs <- purrr::map(delays, 
+                           ~ EpiNow2::lognorm_dist_def(mean = .$mean,
+                                                       mean_sd = .$mean_sd,
+                                                       sd = .$sd,
+                                                       sd_sd = .$sd_sd,
+                                                       max_value = .$max,
+                                                       samples = samples))
   ## Add a null reporting effect if missing
   if (missing(reporting_effect)) {
     reporting_effect <- data.table::data.table(
-      sample = list(1:nrow(delay_defs)),
+      sample = list(1:samples),
       effect = rep(1, 7),
       day = 1:7
     )
@@ -105,8 +96,7 @@ report_cases <- function(case_estimates,
   ## For each sample map to report date
   report <- future.apply::future_lapply(1:max(infections$sample), 
                      function(id) {EpiNow2::adjust_infection_to_report(infections[sample == id], 
-                                                          delay_def = delay_defs[id,],
-                                                          incubation_def = incubation_defs[id, ],
+                                                          delay_defs = purrr::map(delay_defs, ~ .[id, ]),
                                                           type = type,
                                                           reporting_effect = reporting_effect[sample == id, ]$effect)})
 
@@ -239,9 +229,8 @@ report_summary <- function(summarised_estimates,
 #' ## Run model
 #' out <- EpiNow2::estimate_infections(cases, family = "negbin",
 #'                                     generation_time = generation_time,
-#'                                     incubation_period = incubation_period,
-#'                                     reporting_delay = reporting_delay,
-#'                                     samples = 1000, warmup = 500, cores = 2,
+#'                                     delays = list(incubation_period, reporting_delay),
+#'                                     samples = 1000, warmup = 200, cores = 4, chains = 4,
 #'                                     horizon = 7, estimate_rt = TRUE, verbose = TRUE)
 #'                             
 #'                      

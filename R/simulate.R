@@ -59,9 +59,9 @@
 #'
 #' ## Simulate cases with a decrease in reporting at weekends and an increase on Monday                                     
 #' simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.Date("2020-03-01"),
-#'                     generation_interval = generation_pdf, delay_def = delay_def, 
-#'                    incubation_def = incubation_def, 
-#'                    reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))
+#'                     generation_interval = generation_pdf,
+#'                     delay_defs = list(incubation_def, delay_def),
+#'                     reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))
 #'                    
 #'print(simulated_cases)
 #'
@@ -69,8 +69,8 @@
 #'
 #' ## Simulate cases with a weekly reporting effect and stochastic noise in reporting (beyond the delay)                                  
 #' simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.Date("2020-03-01"),
-#'                     generation_interval = generation_pdf, delay_def = delay_def, 
-#'                    incubation_def = incubation_def, 
+#'                     generation_interval = generation_pdf, 
+#'                     delay_defs = list(incubation_def, delay_def)
 #'                    reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
 #'                    reporting_model = function(n) {
 #'                       out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))
@@ -80,7 +80,7 @@
 #'print(simulated_cases)
 #'}
 simulate_cases <- function(rts, initial_cases, initial_date, generation_interval,
-                           rdist = rpois, delay_def, incubation_def, reporting_effect, 
+                           rdist = rpois, delay_defs, reporting_effect, 
                            reporting_model, truncate_future = TRUE,
                            type = "sample") {
   
@@ -110,12 +110,10 @@ simulate_cases <- function(rts, initial_cases, initial_date, generation_interval
   
   ## Mapping with a weekly reporting effect
   report <- EpiNow2::adjust_infection_to_report(simulated_cases,
-                                               delay_def = delay_def,
-                                               incubation_def = incubation_def, 
+                                               delay_defs = delay_defs,
                                                reporting_effect = reporting_effect,
                                                reporting_model = reporting_model,
-                                               type = type, return_onset = TRUE,
-                                               truncate_future = truncate_future)
+                                               type = type, truncate_future = truncate_future)
   
   
   ## Bind in simulated cases with reported cases
