@@ -32,7 +32,7 @@
 #' reporting_delay$max <- 60
 #' 
 #' ## Example case data
-#' reported_cases <- EpiNow2::example_confirmed[1:40]
+#' reported_cases <- EpiNow2::example_confirmed[1:40] 
 #' 
 #' 
 #' 

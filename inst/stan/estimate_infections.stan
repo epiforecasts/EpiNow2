@@ -1,24 +1,12 @@
 functions {
-  // convolve a pdf and case vector using matrix multiplication
-  vector convolve(vector cases, vector pdf, int direction) {
+  // convolve a pdf and case vector 
+  vector convolve(vector cases, vector pdf) {
     int t = num_elements(cases);
-    matrix[t, t] delay_mat = rep_matrix(0, t, t);
     int max_pdf = num_elements(pdf);
-    row_vector[max_pdf] row_pdf = to_row_vector(pdf);
-    vector[t] convolved_cases;
-
+    vector[t] convolved_cases = rep_vector(1e-5, t);
     for (s in 1:t) {
-      if (direction) {
-        int max_length = min(s, max_pdf);
-        delay_mat[s, (s - max_length + 1):s] = row_pdf[(max_pdf - max_length + 1):max_pdf];
-      }else{
-        int max_length = min(t - s, max_pdf - 1);
-        delay_mat[s, s:(s + max_length)] = row_pdf[1:(max_length + 1)];
-      }
+        convolved_cases[s] += dot_product(cases[max(1, (s - max_pdf + 1)):s], tail(pdf, min(max_pdf, s)));
     }
-    
-   convolved_cases = delay_mat * to_vector(cases);
-
    return(convolved_cases);
   }
 
@@ -33,6 +21,9 @@ functions {
     // calculate alpha and beta for gamma distribution
     real alpha = ((mu)/ sigma)^2;
     real beta = (mu) / (sigma^2);
+    //account for numerical issues
+    alpha = alpha < 0 ? 1e-5 : alpha;
+    beta = beta < 0 ? 1e-5 : beta; 
     return((gamma_cdf(y, alpha, beta) - gamma_cdf(y - 1, alpha, beta)) / gamma_cdf(max_val, alpha, beta));
   }
   
@@ -40,7 +31,6 @@ functions {
 	real spd_SE(real alpha, real rho, real w) {
 		real S;
 		S = (alpha^2) * sqrt(2*pi()) * rho * exp(-0.5*(rho^2)*(w^2));
-				
 		return S;
 	}
 	
@@ -49,7 +39,6 @@ functions {
 	vector phi_SE(real L, int m, vector x) {
 		vector[rows(x)] fi;
 		fi = 1/sqrt(L) * sin(m*pi()/(2*L) * (x+L));
-				
 		return fi;
 	}
 	
@@ -58,7 +47,6 @@ functions {
 	real lambda(real L, int m) {
 		real lam;
 		lam = ((m*pi())/(2*L))^2;
-				
 		return lam;
 	}
 	
@@ -82,14 +70,12 @@ functions {
 	vector phi_cosine_periodic(real w0, int m, vector x) {
 		vector[rows(x)] fi;
 		fi = cos(m*w0*x);
-				
 		return fi;
 	}
 	
 	vector phi_sin_periodic(real w0, int m, vector x) {
 		vector[rows(x)] fi;
 		fi = sin(m*w0*x); 
-		
 		return fi;
  }
 }
@@ -241,10 +227,9 @@ transformed parameters {
      //Estimate remaining infections using Rt
      infectiousness = rep_vector(1e-5, rt);
      for (s in 1:rt) {
-        infectiousness[s] = infectiousness[s] + 
-            dot_product(infections[max(1, (s + no_rt_time - max_gt)):(s + no_rt_time -1)],
-                        tail(rev_generation_time, min(max_gt, s + no_rt_time - 1)));
-        infections[s + no_rt_time] = infections[s + no_rt_time] + R[s] * infectiousness[s];
+        infectiousness[s] += dot_product(infections[max(1, (s + no_rt_time - max_gt)):(s + no_rt_time -1)],
+                                         tail(rev_generation_time, min(max_gt, s + no_rt_time - 1)));
+        infections[s + no_rt_time] += R[s] * infectiousness[s];
       }
   }else{
     // generate infections from prior infections and non-parameteric noise
@@ -252,12 +237,12 @@ transformed parameters {
   }
   
   // onsets from infections
-  onsets = convolve(infections, rev_incubation, 1);
+  onsets = convolve(infections, rev_incubation);
 
   // reports from onsets
  {
    vector[t] reports_hold;
-   reports_hold = convolve(onsets, rev_delay, 1);
+   reports_hold = convolve(onsets, rev_delay);
    reports = reports_hold[(no_rt_time + 1):t];
  }
  
