@@ -257,8 +257,8 @@ transformed parameters {
 	}
  	SPD_eta_week = diagSPD_week .* week_eta;
 	
-	week_eff = rep_vector(1e-5, rt);
-	week_eff = week_eff + exp(PHI_week[,] * SPD_eta_week);
+	week_eff = rep_vector(1, rt);
+	week_eff = week_eff + PHI_week[,] * SPD_eta_week;
 	
 	reports = reports .* week_eff;
   }
