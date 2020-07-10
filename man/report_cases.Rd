@@ -7,8 +7,7 @@
 report_cases(
   case_estimates,
   case_forecast = NULL,
-  reporting_delay,
-  incubation_period,
+  delays,
   type = "sample",
   reporting_effect
 )
@@ -19,14 +18,10 @@ report_cases(
 \item{case_forecast}{A data.table of case forecasts with the following variables: date, sample, cases. If not supplied the
 default is not incoperate forecasts.}
 
-\item{reporting_delay}{A list containing the mean, standard deviation of the mean (mean_sd),
+\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
+Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale).}
-
-\item{incubation_period}{A list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-incubation period (assuming a lognormal distribution with all parameters excepting the max allowed value
+that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale).}
 
 \item{type}{Character string indicating the method to use to transfrom counts. Supports either "sample"
@@ -71,16 +66,15 @@ reporting_delay <- list(mean = log(5),
 ## Run model
 out <- EpiNow2::estimate_infections(cases, family = "negbin",
                                     generation_time = generation_time,
-                                    incubation_period = incubation_period,
-                                    reporting_delay = reporting_delay,
-                                    samples = 1000, warmup = 500, cores = 2
+                                    delays = list(incubation_period, reporting_delay),
+                                    samples = 1000, warmup = 200, 
+                                    cores = 4, chains = 4,
                                     estimate_rt =  FALSE, verbose = TRUE)
                             
                      
 reported_cases <- report_cases(case_estimates = out$samples[variable == "infections"][, 
                                                             cases := value][, value := NULL],
-                               reporting_delay = reporting_delay,
-                               incubation_period =  incubation_period, 
+                               delays = list(incubation_period, reporting_delay),
                                type = "sample")
                                
 print(reported_cases)

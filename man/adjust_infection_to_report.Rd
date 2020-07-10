@@ -6,34 +6,27 @@
 \usage{
 adjust_infection_to_report(
   infections,
-  delay_def,
-  incubation_def,
-  reporting_effect,
+  delay_defs,
   reporting_model,
+  reporting_effect,
   type = "sample",
-  return_onset = FALSE,
   truncate_future = TRUE
 )
 }
 \arguments{
 \item{infections}{\code{data.table} containing a \code{date} variable and a numeric \code{cases} variable.}
 
-\item{delay_def}{A single row data.table that defines the delay distribution (model, parameters and maximum delay for each model).
+\item{delay_defs}{A list of single row data.tables that each  defines a delay distribution (model, parameters and maximum delay for each model).
 See \code{lognorm_dist_def} for an example of the structure.}
-
-\item{incubation_def}{A single row data.table that defines the incubation distribution (model, parameters and maximum delay for each model).
-See \code{lognorm_dist_def} for an example of the structure.}
-
-\item{reporting_effect}{A numeric vector of length 7 that allows the scaling of reported cases
-by the day on which they report (1 = Monday, 7 = Sunday). By default no scaling occurs.}
 
 \item{reporting_model}{A function that takes a single numeric vector as an argument and returns a
 single numeric vector. Can be used to apply stochastic reporting effects. See the examples for details.}
 
+\item{reporting_effect}{A numeric vector of length 7 that allows the scaling of reported cases
+by the day on which they report (1 = Monday, 7 = Sunday). By default no scaling occurs.}
+
 \item{type}{Character string indicating the method to use to transfrom counts. Supports either "sample"
 which approximates sampling or "median" would shift by the median of the distribution.}
-
-\item{return_onset}{Logical, defaults to \code{FALSE}. Should cases by date of onset also be returned?}
 
 \item{truncate_future}{Logical, should cases be truncted if they occur after the first date reported in the data.
 Defaults to \code{TRUE}.}
@@ -70,26 +63,26 @@ incubation_def <- EpiNow2::lognorm_dist_def(mean = EpiNow2::covid_incubation_per
 
 
 ## Simple mapping
-report <- adjust_infection_to_report(cases, delay_def, incubation_def)   
+report <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def))   
 
 print(report)   
 
 ## Mapping with a weekly reporting effect
 report_weekly <- adjust_infection_to_report(
-                      cases, delay_def, incubation_def,
+                      cases, delay_defs = list(incubation_def, delay_def),
                       reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))          
                              
 print(report_weekly) 
 
 ## Map using a deterministic median shift for both delays
-report_median <- adjust_infection_to_report(cases, delay_def, 
+report_median <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def), 
                                            incubation_def, type = "median")      
                                            
                                                    
                                                            
 ## Map with a weekly reporting effect and stochastic reporting model
 report_stochastic <- adjust_infection_to_report(
-                      cases, delay_def, incubation_def,
+                      cases, delay_defs = list(incubation_def, delay_def),
                       reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
                       reporting_model = function(n) {
                       out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))
