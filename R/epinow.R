@@ -67,7 +67,7 @@
 epinow <- function(reported_cases, family = "negbin",
                    generation_time, incubation_period,
                    reporting_delay,
-                   gp = list(basis_prop = 0.5, boundary_scale = 2),
+                   gp = list(basis_prop = 0.3, boundary_scale = 2),
                    rt_prior = list(mean = 1, sd = 1), model,
                    prior_smoothing_window = 7,
                    cores = 2, chains = 2,

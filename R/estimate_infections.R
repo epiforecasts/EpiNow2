@@ -31,7 +31,7 @@
 #' @param max_treedepth Numeric, defaults to 15. See ?rstan::sampling.
 #' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
 #' @param gp List controlling the Gaussian process approximation. Must contain
-#' the `basis_prop` (number of basis functions based on scaling the time points) which defaults to 0.5 and must be 
+#' the `basis_prop` (number of basis functions based on scaling the time points) which defaults to 0.3 and must be 
 #' between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute. 
 #' Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
 #' increases the accuracy of the approximation at the cost of additional compute. 
@@ -76,8 +76,8 @@
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
 #'                                     samples = 1000, warmup = 200,
-#'                                     cores = 4, chains = 4,
-#'                                     estimate_rt = TRUE, 
+#'                                     cores = 5, chains = 5,
+#'                                     estimate_rt = TRUE, model = model,
 #'                                     verbose = TRUE, return_fit = TRUE)
 #'
 #' out   
@@ -85,7 +85,7 @@
 estimate_infections <- function(reported_cases, family = "negbin",
                                 incubation_period, reporting_delay,
                                 generation_time,
-                                gp = list(basis_prop = 0.5, boundary_scale = 2),
+                                gp = list(basis_prop = 0.3, boundary_scale = 2),
                                 rt_prior = list(mean = 1, sd = 1),
                                 prior_smoothing_window = 7,
                                 horizon = 7,
@@ -161,7 +161,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   reported_cases <- reported_cases[, day_of_week := lubridate::wday(date, week_start = 1)]
   
-  
   # Define stan model parameters --------------------------------------------
   
   data <- list(
@@ -214,7 +213,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
   ## Basis functions for the week effect
   data$Jw <- 4
   
-
   # Set up initial conditions fn --------------------------------------------
   
   init_fun <- function(){out <- list(
