@@ -148,8 +148,9 @@ estimates <- EpiNow2::regional_epinow(reported_cases = reported_cases,
                                       generation_time = generation_time,
                                       incubation_period = incubation_period, 
                                       reporting_delay = reporting_delay,
-                                      horizon = 7, samples = 1000, warmup = 200, cores = 4, 
-                                      chains = 4, adapt_delta = 0.95, verbose = TRUE)
+                                      horizon = 7, samples = 1000, warmup = 200,
+                                      cores = 4, chains = 4, adapt_delta = 0.95,
+                                      verbose = TRUE)
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments.

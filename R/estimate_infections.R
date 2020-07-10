@@ -27,6 +27,7 @@
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
 #' @param warmup Numeric, defaults to 200. Number of iteration of warmup to use.
 #' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
+#' @param estimate_week_eff Logical, defaults TRUE. Should weekly reporting effects be estimated.
 #' @param adapt_delta Numeric, defaults to 0.99. See ?rstan::sampling.
 #' @param max_treedepth Numeric, defaults to 15. See ?rstan::sampling.
 #' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
@@ -76,9 +77,9 @@
 #'                                     incubation_period = incubation_period,
 #'                                     reporting_delay = reporting_delay,
 #'                                     samples = 1000, warmup = 200,
-#'                                     cores = 5, chains = 5,
-#'                                     estimate_rt = TRUE, model = model,
-#'                                     verbose = TRUE, return_fit = TRUE)
+#'                                     cores = 4, chains = 4,
+#'                                     estimate_rt = TRUE, verbose = TRUE, 
+#'                                     return_fit = TRUE)
 #'
 #' out   
 #' }                                
@@ -164,6 +165,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   # Define stan model parameters --------------------------------------------
   
   data <- list(
+    day_of_week = reported_cases[(mean_shift + 1):.N]$day_of_week,
     cases = reported_cases[(mean_shift + 1):(.N - horizon)]$confirm,
     shifted_cases = shifted_reported_cases$confirm,
     t = length(reported_cases$date),
@@ -206,19 +208,13 @@ estimate_infections <- function(reported_cases, family = "negbin",
     data$model_type <- 1
   }
   
-# Parameters for week effect ----------------------------------------------
 
-  ## Period of the week effect
-  data$period_week <- 7
-  ## Basis functions for the week effect
-  data$Jw <- 2
-  
   # Set up initial conditions fn --------------------------------------------
   
   init_fun <- function(){out <- list(
     eta = rnorm(data$M, mean = 0, sd = 1),
-    rho = array(truncnorm::rtruncnorm(1 + data$est_week_eff, a = 0, mean = 0, sd = 2)),
-    alpha =  array(truncnorm::rtruncnorm(1 + data$est_week_eff, a = 0, mean = 0, sd = 0.1)),
+    rho = array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2)),
+    alpha =  array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1)),
     inc_mean = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$mean, sd = incubation_period$mean_sd),
     inc_sd = truncnorm::rtruncnorm(1, a = 0, mean = incubation_period$sd, sd = incubation_period$sd_sd),
     rep_mean = truncnorm::rtruncnorm(1, a = 0, mean = reporting_delay$mean, sd = reporting_delay$mean_sd),
@@ -236,10 +232,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                                sd = generation_time$mean_sd))
     out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
                                               sd = generation_time$sd_sd))
-  }
-  
-  if (estimate_week_eff) {
-    out$week_eta <-  rnorm(2 * data$Jw + 1, mean = 0, sd = 1)
   }
   
   return(out)
@@ -327,12 +319,16 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                                        date, value = confirm, sample = 1)]
     
     if (estimate_week_eff) {
-      out$day_of_week <- extract_parameter("week_eff", 
+      out$day_of_week <- extract_parameter("day_of_week_eff", 
                                            samples,
-                                           reported_cases$date[-(1:mean_shift)])
+                                           1:7)
       
-      out$day_of_week <- out$day_of_week[, strat := lubridate::wday(date, label = TRUE)]
-      
+      char_day_of_week <- data.table::data.table(wday = c("Monday", "Tuesday", "Wednesday",
+                                                          "Thursday", "Friday", "Saturday",
+                                                          "Sunday"),
+                                                 time = 1:7)
+      out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][, 
+                                         strat := wday][,`:=`(time = NULL, date = NULL, wday = NULL)]
     }
 
     extract_static_parameter <- function(param) {
