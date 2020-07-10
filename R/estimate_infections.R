@@ -209,9 +209,9 @@ estimate_infections <- function(reported_cases, family = "negbin",
 # Parameters for week effect ----------------------------------------------
 
   ## Period of the week effect
-  data$period_week <- 7 / sd(data$time)
+  data$period_week <- 7
   ## Basis functions for the week effect
-  data$Jw <- 4
+  data$Jw <- 2
   
   # Set up initial conditions fn --------------------------------------------
   
