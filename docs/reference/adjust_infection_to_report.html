@@ -125,12 +125,10 @@ onset.</p>
 
     <pre class="usage"><span class='fu'>adjust_infection_to_report</span>(
   <span class='no'>infections</span>,
-  <span class='no'>delay_def</span>,
-  <span class='no'>incubation_def</span>,
-  <span class='no'>reporting_effect</span>,
+  <span class='no'>delay_defs</span>,
   <span class='no'>reporting_model</span>,
+  <span class='no'>reporting_effect</span>,
   <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"sample"</span>,
-  <span class='kw'>return_onset</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>truncate_future</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
 )</pre>
 
@@ -142,19 +140,9 @@ onset.</p>
       <td><p><code>data.table</code> containing a <code>date</code> variable and a numeric <code>cases</code> variable.</p></td>
     </tr>
     <tr>
-      <th>delay_def</th>
-      <td><p>A single row data.table that defines the delay distribution (model, parameters and maximum delay for each model).
+      <th>delay_defs</th>
+      <td><p>A list of single row data.tables that each  defines a delay distribution (model, parameters and maximum delay for each model).
 See <code>lognorm_dist_def</code> for an example of the structure.</p></td>
-    </tr>
-    <tr>
-      <th>incubation_def</th>
-      <td><p>A single row data.table that defines the incubation distribution (model, parameters and maximum delay for each model).
-See <code>lognorm_dist_def</code> for an example of the structure.</p></td>
-    </tr>
-    <tr>
-      <th>reporting_effect</th>
-      <td><p>A numeric vector of length 7 that allows the scaling of reported cases
-by the day on which they report (1 = Monday, 7 = Sunday). By default no scaling occurs.</p></td>
     </tr>
     <tr>
       <th>reporting_model</th>
@@ -162,13 +150,14 @@ by the day on which they report (1 = Monday, 7 = Sunday). By default no scaling 
 single numeric vector. Can be used to apply stochastic reporting effects. See the examples for details.</p></td>
     </tr>
     <tr>
+      <th>reporting_effect</th>
+      <td><p>A numeric vector of length 7 that allows the scaling of reported cases
+by the day on which they report (1 = Monday, 7 = Sunday). By default no scaling occurs.</p></td>
+    </tr>
+    <tr>
       <th>type</th>
       <td><p>Character string indicating the method to use to transfrom counts. Supports either "sample"
 which approximates sampling or "median" would shift by the median of the distribution.</p></td>
-    </tr>
-    <tr>
-      <th>return_onset</th>
-      <td><p>Logical, defaults to <code>FALSE</code>. Should cases by date of onset also be returned?</p></td>
     </tr>
     <tr>
       <th>truncate_future</th>
@@ -206,64 +195,63 @@ a third variable <code>reference</code> which indicates what the date variable r
 
 
 <span class='co'>## Simple mapping</span>
-<span class='no'>report</span> <span class='kw'>&lt;-</span> <span class='fu'>adjust_infection_to_report</span>(<span class='no'>cases</span>, <span class='no'>delay_def</span>, <span class='no'>incubation_def</span>)
+<span class='no'>report</span> <span class='kw'>&lt;-</span> <span class='fu'>adjust_infection_to_report</span>(<span class='no'>cases</span>, <span class='kw'>delay_defs</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_def</span>, <span class='no'>delay_def</span>))
 
-<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>report</span>)</div><div class='output co'>#&gt;            date cases
-#&gt;   1: 2020-02-24     3
-#&gt;   2: 2020-02-25     6
-#&gt;   3: 2020-02-26    14
-#&gt;   4: 2020-02-27    21
-#&gt;   5: 2020-02-28    27
-#&gt;  ---                 
-#&gt; 124: 2020-06-26   233
-#&gt; 125: 2020-06-27   247
-#&gt; 126: 2020-06-28   254
-#&gt; 127: 2020-06-29   269
-#&gt; 128: 2020-06-30   261</div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>report</span>)</div><div class='output co'>#&gt;            date cases reference
+#&gt;   1: 2020-02-24     3    report
+#&gt;   2: 2020-02-25     6    report
+#&gt;   3: 2020-02-26    14    report
+#&gt;   4: 2020-02-27    21    report
+#&gt;   5: 2020-02-28    27    report
+#&gt;  ---                           
+#&gt; 124: 2020-06-26   233    report
+#&gt; 125: 2020-06-27   247    report
+#&gt; 126: 2020-06-28   254    report
+#&gt; 127: 2020-06-29   269    report
+#&gt; 128: 2020-06-30   261    report</div><div class='input'>
 <span class='co'>## Mapping with a weekly reporting effect</span>
 <span class='no'>report_weekly</span> <span class='kw'>&lt;-</span> <span class='fu'>adjust_infection_to_report</span>(
-                      <span class='no'>cases</span>, <span class='no'>delay_def</span>, <span class='no'>incubation_def</span>,
+                      <span class='no'>cases</span>, <span class='kw'>delay_defs</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_def</span>, <span class='no'>delay_def</span>),
                       <span class='kw'>reporting_effect</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1.1</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>1</span>, <span class='fl'>4</span>), <span class='fl'>0.95</span>, <span class='fl'>0.95</span>))
 
-<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>report_weekly</span>)</div><div class='output co'>#&gt;            date cases
-#&gt;   1: 2020-02-24     2
-#&gt;   2: 2020-02-25     6
-#&gt;   3: 2020-02-26    16
-#&gt;   4: 2020-02-27    26
-#&gt;   5: 2020-02-28    23
-#&gt;  ---                 
-#&gt; 124: 2020-06-26   230
-#&gt; 125: 2020-06-27   229
-#&gt; 126: 2020-06-28   232
-#&gt; 127: 2020-06-29   281
-#&gt; 128: 2020-06-30   258</div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>report_weekly</span>)</div><div class='output co'>#&gt;            date cases reference
+#&gt;   1: 2020-02-24     2    report
+#&gt;   2: 2020-02-25     6    report
+#&gt;   3: 2020-02-26    16    report
+#&gt;   4: 2020-02-27    26    report
+#&gt;   5: 2020-02-28    23    report
+#&gt;  ---                           
+#&gt; 124: 2020-06-26   230    report
+#&gt; 125: 2020-06-27   229    report
+#&gt; 126: 2020-06-28   232    report
+#&gt; 127: 2020-06-29   281    report
+#&gt; 128: 2020-06-30   258    report</div><div class='input'>
 <span class='co'>## Map using a deterministic median shift for both delays</span>
-<span class='no'>report_median</span> <span class='kw'>&lt;-</span> <span class='fu'>adjust_infection_to_report</span>(<span class='no'>cases</span>, <span class='no'>delay_def</span>,
-                                           <span class='no'>incubation_def</span>, <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"median"</span>)
-
+<span class='no'>report_median</span> <span class='kw'>&lt;-</span> <span class='fu'>adjust_infection_to_report</span>(<span class='no'>cases</span>, <span class='kw'>delay_defs</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_def</span>, <span class='no'>delay_def</span>),
+                                           <span class='no'>incubation_def</span>, <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"median"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in reporting_model(cases): could not find function "reporting_model"</span></div><div class='input'>
 
 
 <span class='co'>## Map with a weekly reporting effect and stochastic reporting model</span>
 <span class='no'>report_stochastic</span> <span class='kw'>&lt;-</span> <span class='fu'>adjust_infection_to_report</span>(
-                      <span class='no'>cases</span>, <span class='no'>delay_def</span>, <span class='no'>incubation_def</span>,
+                      <span class='no'>cases</span>, <span class='kw'>delay_defs</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_def</span>, <span class='no'>delay_def</span>),
                       <span class='kw'>reporting_effect</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1.1</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>1</span>, <span class='fl'>4</span>), <span class='fl'>0.95</span>, <span class='fl'>0.95</span>),
                       <span class='kw'>reporting_model</span> <span class='kw'>=</span> <span class='kw'>function</span>(<span class='no'>n</span>) {
                       <span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/warning.html'>suppressWarnings</a></span>(<span class='fu'><a href='https://rdrr.io/r/stats/NegBinomial.html'>rnbinom</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>n</span>), <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>as.integer</a></span>(<span class='no'>n</span>), <span class='fl'>0.5</span>))
                       <span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span>(<span class='no'>out</span>), <span class='fl'>0</span>, <span class='no'>out</span>)
                       })
 
-<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>report_stochastic</span>)</div><div class='output co'>#&gt;            date cases
-#&gt;   1: 2020-02-24     0
-#&gt;   2: 2020-02-25     5
-#&gt;   3: 2020-02-26    10
-#&gt;   4: 2020-02-27    16
-#&gt;   5: 2020-02-28    21
-#&gt;  ---                 
-#&gt; 124: 2020-06-26   262
-#&gt; 125: 2020-06-27   197
-#&gt; 126: 2020-06-28   215
-#&gt; 127: 2020-06-29   317
-#&gt; 128: 2020-06-30   267</div></pre>
+<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>report_stochastic</span>)</div><div class='output co'>#&gt;            date cases reference
+#&gt;   1: 2020-02-24     0    report
+#&gt;   2: 2020-02-25     5    report
+#&gt;   3: 2020-02-26    10    report
+#&gt;   4: 2020-02-27    16    report
+#&gt;   5: 2020-02-28    21    report
+#&gt;  ---                           
+#&gt; 124: 2020-06-26   262    report
+#&gt; 125: 2020-06-27   197    report
+#&gt; 126: 2020-06-28   215    report
+#&gt; 127: 2020-06-29   317    report
+#&gt; 128: 2020-06-30   267    report</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

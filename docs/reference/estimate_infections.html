@@ -126,10 +126,9 @@ cases. It can optionally then estimate the time-varying reproduction number and 
     <pre class="usage"><span class='fu'>estimate_infections</span>(
   <span class='no'>reported_cases</span>,
   <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
-  <span class='no'>incubation_period</span>,
-  <span class='no'>reporting_delay</span>,
   <span class='no'>generation_time</span>,
-  <span class='kw'>gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.5</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
+  <span class='no'>delays</span>,
+  <span class='kw'>gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.3</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>),
   <span class='kw'>rt_prior</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>sd</span> <span class='kw'>=</span> <span class='fl'>1</span>),
   <span class='kw'>prior_smoothing_window</span> <span class='kw'>=</span> <span class='fl'>7</span>,
   <span class='kw'>horizon</span> <span class='kw'>=</span> <span class='fl'>7</span>,
@@ -139,6 +138,9 @@ cases. It can optionally then estimate the time-varying reproduction number and 
   <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>,
   <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>200</span>,
   <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>estimate_week_eff</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>estimate_breakpoints</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>stationary</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='fl'>0.99</span>,
   <span class='kw'>max_treedepth</span> <span class='kw'>=</span> <span class='fl'>15</span>,
   <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
@@ -151,26 +153,13 @@ cases. It can optionally then estimate the time-varying reproduction number and 
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>reported_cases</th>
-      <td><p>A data frame of confirmed cases (confirm) by date (date).</p></td>
+      <td><p>A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
+in date format.</p></td>
     </tr>
     <tr>
       <th>family</th>
       <td><p>A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.</p></td>
-    </tr>
-    <tr>
-      <th>incubation_period</th>
-      <td><p>A list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-incubation period (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale).</p></td>
-    </tr>
-    <tr>
-      <th>reporting_delay</th>
-      <td><p>A list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-reporting delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale).</p></td>
     </tr>
     <tr>
       <th>generation_time</th>
@@ -179,13 +168,23 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 generation time (assuming a gamma distribution).</p></td>
     </tr>
     <tr>
+      <th>delays</th>
+      <td><p>A list of delays (i.e incubation period/reporting delay) between infection and report.
+Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
+on the log scale).</p></td>
+    </tr>
+    <tr>
       <th>gp</th>
       <td><p>List controlling the Gaussian process approximation. Must contain
-the <code>basis_prop</code> (number of basis functions based on scaling the time points) which defaults to 0.5 and must be
+the <code>basis_prop</code> (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
 between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
 Must also contain the <code>boundary_scale</code> (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
-See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.</p></td>
+See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
+Can optionally also contain the  <code>lengthscale_mean</code> and <code>lengthscale_sd</code>. If these are specified this will override
+the defaults of 0 and 2 (normal ditributed truncated at zero).</p></td>
     </tr>
     <tr>
       <th>rt_prior</th>
@@ -226,6 +225,22 @@ for the prior based on reported cases.</p></td>
       <td><p>Logical, defaults TRUE. Should Rt be estimated when imputing infections.</p></td>
     </tr>
     <tr>
+      <th>estimate_week_eff</th>
+      <td><p>Logical, defaults TRUE. Should weekly reporting effects be estimated.</p></td>
+    </tr>
+    <tr>
+      <th>estimate_breakpoints</th>
+      <td><p>Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then <code>reported_cases</code>
+must contain a <code>breakpoint</code> variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
+a global non-parametric effect and so represent a conservative estimate of breakpoint changes.</p></td>
+    </tr>
+    <tr>
+      <th>stationary</th>
+      <td><p>Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
+this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
+This setting is most appropriate when estimating historic Rt or when combined with breakpoints.</p></td>
+    </tr>
+    <tr>
       <th>adapt_delta</th>
       <td><p>Numeric, defaults to 0.99. See ?rstan::sampling.</p></td>
     </tr>
@@ -249,41 +264,7 @@ for the prior based on reported cases.</p></td>
 
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='co'>## Get example case counts</span>
-<span class='no'>reported_cases</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='example_confirmed.html'>example_confirmed</a></span>[<span class='fl'>1</span>:<span class='fl'>50</span>]
-
-<span class='co'>## Set up example generation time</span>
-<span class='no'>generation_time</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>mean</span>,
-                        <span class='kw'>mean_sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>mean_sd</span>,
-                        <span class='kw'>sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>sd</span>,
-                        <span class='kw'>sd_sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>sd_sd</span>,
-                        <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>30</span>)
-<span class='co'>## Set                   </span>
-<span class='no'>incubation_period</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_incubation_period.html'>covid_incubation_period</a></span>[<span class='fl'>1</span>, ]$<span class='no'>mean</span>,
-                          <span class='kw'>mean_sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_incubation_period.html'>covid_incubation_period</a></span>[<span class='fl'>1</span>, ]$<span class='no'>mean_sd</span>,
-                          <span class='kw'>sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_incubation_period.html'>covid_incubation_period</a></span>[<span class='fl'>1</span>, ]$<span class='no'>sd</span>,
-                          <span class='kw'>sd_sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_incubation_period.html'>covid_incubation_period</a></span>[<span class='fl'>1</span>, ]$<span class='no'>sd_sd</span>,
-                          <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>30</span>)
-
-<span class='no'>reporting_delay</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>5</span>),
-                        <span class='kw'>mean_sd</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>2</span>),
-                        <span class='kw'>sd</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>2</span>),
-                        <span class='kw'>sd_sd</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1.5</span>),
-                        <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>30</span>)
-
-<span class='co'>## Run model</span>
-<span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='fu'>estimate_infections</span>(<span class='no'>reported_cases</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
-                                    <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
-                                    <span class='kw'>incubation_period</span> <span class='kw'>=</span> <span class='no'>incubation_period</span>,
-                                    <span class='kw'>reporting_delay</span> <span class='kw'>=</span> <span class='no'>reporting_delay</span>,
-                                    <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>200</span>,
-                                    <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>,
-                                    <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-                                    <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-
-<span class='no'>out</span>
-}</div></pre>
+    <pre class="examples"></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

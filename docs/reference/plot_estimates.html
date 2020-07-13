@@ -182,9 +182,8 @@ as points (linked using a line).</p></td>
 <span class='co'>## Run model</span>
 <span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='fu'><a href='estimate_infections.html'>estimate_infections</a></span>(<span class='no'>cases</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
                                     <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
-                                    <span class='kw'>incubation_period</span> <span class='kw'>=</span> <span class='no'>incubation_period</span>,
-                                    <span class='kw'>reporting_delay</span> <span class='kw'>=</span> <span class='no'>reporting_delay</span>,
-                                    <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>2</span>,
+                                    <span class='kw'>delays</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_period</span>, <span class='no'>reporting_delay</span>),
+                                    <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>200</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>,
                                     <span class='kw'>horizon</span> <span class='kw'>=</span> <span class='fl'>7</span>, <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
 <span class='co'>## Plot infections</span>
 <span class='fu'>plot_estimates</span>(
