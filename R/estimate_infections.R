@@ -2,7 +2,8 @@
 #'
 #' @description This function uses a non-parametric approach to reconstruct cases by date of infection from reported 
 #' cases. It can optionally then estimate the time-varying reproduction number and the rate of growth.
-#' @param reported_cases A data frame of confirmed cases (confirm) by date (date).
+#' @param reported_cases A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be 
+#' in date format.
 #' @param family A character string indicating the reporting model to use. Defaults to negative 
 #' binomial ("negbin") with poisson ("poisson") also supported.
 #' @param generation_time A list containing the mean, standard deviation of the mean (mean_sd), 
@@ -25,6 +26,9 @@
 #' @param warmup Numeric, defaults to 200. Number of iteration of warmup to use.
 #' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
 #' @param estimate_week_eff Logical, defaults TRUE. Should weekly reporting effects be estimated.
+#' @param stationary Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt 
+#' this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
+#' This setting is most appropriate when estimating historic Rt or when combined with breakpoints.
 #' @param adapt_delta Numeric, defaults to 0.99. See ?rstan::sampling.
 #' @param max_treedepth Numeric, defaults to 15. See ?rstan::sampling.
 #' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
@@ -69,16 +73,43 @@
 #'                         sd_sd = log(1.5),
 #'                         max = 30)
 #'                         
-#' ## Run model
-#' out <- estimate_infections(reported_cases, family = "negbin",
+#' ## Run model with default settings
+#' def <- estimate_infections(reported_cases, family = "negbin",
+#'                            generation_time = generation_time,
+#'                            delays = list(incubation_period, reporting_delay),
+#'                            samples = 1000, warmup = 200,
+#'                            cores = 4, chains = 4, model = model,
+#'                            estimate_rt = TRUE, verbose = TRUE, 
+#'                            return_fit = TRUE)
+#'
+#' def   
+#' 
+#' 
+#' 
+#' ## Run model with stationary Rt assumption (likely to provide biased realtime estimates)
+#' stat <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
 #'                            samples = 1000, warmup = 200,
 #'                            cores = 4, chains = 4, 
-#'                            estimate_rt = TRUE, verbose = TRUE, 
-#'                            return_fit = TRUE)
+#'                            estimate_rt = TRUE, 
+#'                            stationary = TRUE,
+#'                            verbose = TRUE, return_fit = TRUE)
 #'
-#' out   
+#' stat
+#' 
+#'   
+#' ## Run model without Rt estimation (just backcalc)
+#' backcalc <- estimate_infections(reported_cases, family = "negbin",
+#'                                 generation_time = generation_time,
+#'                                 delays = list(incubation_period, reporting_delay),
+#'                                 samples = 1000, warmup = 200,
+#'                                 cores = 4, chains = 4, 
+#'                                 estimate_rt = FALSE, 
+#'                                 verbose = TRUE, return_fit = TRUE)
+#'
+#' backcalc
+#'  
 #' }                                
 estimate_infections <- function(reported_cases, family = "negbin",
                                 generation_time, delays,
@@ -88,7 +119,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 horizon = 7, model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 200,
                                 estimate_rt = TRUE, estimate_week_eff = TRUE,
-                                adapt_delta = 0.99, max_treedepth = 15, 
+                                stationary = FALSE, adapt_delta = 0.99, max_treedepth = 15, 
                                 return_fit = FALSE, verbose = TRUE, debug = FALSE){
   
  
@@ -188,7 +219,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
-    est_week_eff = ifelse(estimate_week_eff, 1, 0)
+    est_week_eff = ifelse(estimate_week_eff, 1, 0),
+    stationary = ifelse(stationary, 1, 0)
   ) 
   
   # Parameters for Hilbert space GP -----------------------------------------

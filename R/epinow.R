@@ -66,17 +66,12 @@ epinow <- function(reported_cases, family = "negbin",
                    generation_time, delays,
                    gp = list(basis_prop = 0.3, boundary_scale = 2),
                    rt_prior = list(mean = 1, sd = 1), model,
-                   prior_smoothing_window = 7,
-                   cores = 2, chains = 2,
-                   samples = 1000, warmup = 200,
-                   estimate_rt = TRUE, estimate_week_eff = TRUE,
-                   return_fit = FALSE,
-                   adapt_delta = 0.99,  max_treedepth = 15,
-                   forecast_model, horizon = 7,
-                   ensemble_type = "mean",
-                   return_estimates = TRUE,
-                   target_folder, target_date,
-                   verbose = TRUE, debug = FALSE) {
+                   prior_smoothing_window = 7, cores = 2, chains = 2,
+                   samples = 1000, warmup = 200, adapt_delta = 0.99,  max_treedepth = 15,
+                   estimate_rt = TRUE, estimate_week_eff = TRUE, stationary = FALSE, 
+                   return_fit = FALSE, forecast_model, horizon = 7,
+                   ensemble_type = "mean", return_estimates = TRUE,
+                   target_folder, target_date, verbose = TRUE, debug = FALSE) {
  
  if (!return_estimates & missing(target_folder)) {
    stop("Either return estimates or save to a target folder")
@@ -140,6 +135,7 @@ if (!is.null(target_folder)) {
                                     warmup = warmup,
                                     estimate_rt = estimate_rt,
                                     estimate_week_eff = estimate_week_eff,
+                                    stationary = stationary,
                                     horizon = horizon,
                                     verbose = verbose, return_fit = return_fit,
                                     debug = debug) 

@@ -26,7 +26,8 @@ functions {
     //account for numerical issues
     alpha = alpha < 0 ? 1e-5 : alpha;
     beta = beta < 0 ? 1e-5 : beta; 
-    return((gamma_cdf(y, alpha, beta) - gamma_cdf(y - 1, alpha, beta)) / gamma_cdf(max_val, alpha, beta));
+    return((gamma_cdf(y + 1, alpha, beta) - gamma_cdf(y, alpha, beta)) / 
+    (gamma_cdf(max_val, alpha, beta) - gamma_cdf(1, alpha, beta)));
   }
   
   // exponential quadratic kernal
@@ -81,6 +82,9 @@ data {
 	int est_week_eff;
 	vector[rt] time;
 	vector[t] inf_time;
+	int stationary;                    // is underlying Rt assumed to be stationary (+ GP)
+	int break_no;                      // no of breakpoints (0 = no breakpoints)
+	int breakpoints[rt];               // when do breakpoints occur 
 }
 
 transformed data{
@@ -88,7 +92,9 @@ transformed data{
   real r_beta;                               // beta parameter of the R gamma prior
   int no_rt_time;                            // time without estimating Rt
   int rt_h;                                  // rt estimation time minus the forecasting horizon
-  matrix[estimate_r > 0 ? rt - 1 : t, M] PHI;    // basis function 
+  int noise_terms = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;  
+                                             // no. of noise terms
+  matrix[noise_terms, M] PHI;    // basis function 
   
   //Update time varables
   rt_h = rt - horizon;
@@ -102,8 +108,9 @@ transformed data{
    
    // basis functions
    // see here for details: https://arxiv.org/pdf/2004.11408.pdf
+   
    for (m in 1:M){ 
-     PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:(rt-1)] : inf_time)); 
+     PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:(stationary > 0 ? rt : rt - 1)] : inf_time)); 
     }
 }
 parameters{
@@ -119,11 +126,12 @@ parameters{
                                                       // baseline reproduction number estimate
   real<lower = 0> gt_mean[estimate_r];                // mean of generation time
   real <lower = 0> gt_sd[estimate_r];                 // sd of generation time
+  real rt_break_eff[break_no];                        // Rt breakpoint effects
 }
 
 transformed parameters {
   // stored transformed parameters
-  vector<lower = 0>[estimate_r > 0 ? rt - 1 : t] noise;   // noise on the mean shifted observed cases
+  vector<lower = 0>[noise_terms] noise;   // noise on the mean shifted observed cases
   vector[t] infections;                        // infections over time
   vector[rt] reports;                          // reports over time
   vector[est_week_eff ? 7 : 0] day_of_week_eff;           // day of the week effect
@@ -134,6 +142,7 @@ transformed parameters {
   vector[estimate_r > 0 ? rt : 0] infectiousness;         // infections over time
   vector[M] diagSPD;                                      // spectral density
 	vector[M] SPD_eta;                                      // spectral density * noise
+	int rt_break_count;                                     // counter for Rt breakpoints
 	
   // GP in noise - spectral densities
 	for(m in 1:M){ 
@@ -141,7 +150,7 @@ transformed parameters {
 	}
 	SPD_eta = diagSPD .* eta;
 	
-	noise = rep_vector(1e-5, estimate_r > 0 ? rt - 1 : t);
+	noise = rep_vector(1e-5, noise_terms);
   noise = noise + exp(PHI[,] * SPD_eta);
 
   // initialise infections
@@ -155,12 +164,33 @@ transformed parameters {
            discretised_gamma_pmf(max_gt - j + 1, gt_mean[estimate_r], 
                                  gt_sd[estimate_r], max_gt);
      }
-  
-      R[1] = initial_R[estimate_r];
-      for (s in 2:rt) {
-        R[s] = R[s - 1] .* noise[s - 1];
-      }
+  //initialise breakpoints as 0
+  rt_break_count = 0;
+  if (stationary) {
+    for (s in 1:rt) {
+      R[s] = initial_R[estimate_r] * noise[s];
       
+      if (break_no > 0) {
+       rt_break_count += breakpoints[s];
+        if (rt_break_count > 0) {
+          R[s] = R[s] * rt_break_eff[rt_break_count];
+        }
+      }
+    }
+  }else{
+    R[1] = initial_R[estimate_r];
+    for (s in 2:rt) {
+      R[s] = R[s - 1] .* noise[s - 1];
+      
+      if (break_no > 0) {
+        rt_break_count += breakpoints[s];
+        if (rt_break_count > 0) {
+          R[s] = R[s] * rt_break_eff[rt_break_count];
+        }
+      }
+    }
+  }
+
      // Estimate initial infections not using Rt
      infections[1:no_rt_time] = infections[1:no_rt_time] + 
                                   shifted_cases[1:no_rt_time] .* exp(initial_infections);
@@ -222,8 +252,8 @@ model {
 
   // penalised priors for delaysincubation period, and report delay
   for (s in 1:delays) {
-    target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[1]) * t;
-    target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[1]) * t;
+    target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * t;
+    target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * t;
   }
   
   // estimate rt
@@ -235,6 +265,11 @@ model {
     // penalised_prior on generation interval
     target += normal_lpdf(gt_mean | gt_mean_mean, gt_mean_sd) * rt;
     target += normal_lpdf(gt_sd | gt_sd_mean, gt_sd_sd) * rt;
+    
+    //breakpoint effects on Rt
+    if (break_no > 0) {
+      rt_break_eff ~ lognormal(0, 0.1);
+    }
   }
 
   // daily cases given reports
