@@ -51,35 +51,6 @@ functions {
 		lam = ((m*pi())/(2*L))^2;
 		return lam;
 	}
-	
-	
-	real q_periodic(real alpha, real rho, int v) {
-		real q;
-		real I;
-		
-		// Periodic
-		if(v==0){
-			I =  modified_bessel_first_kind(v, 1/rho^2); 
-			q = (alpha^2) * I/exp(1/rho^2);
-			return q;
-		} else{
-			I =  modified_bessel_first_kind(v, 1/rho^2); 
-			q = (alpha^2) * 2*I/exp(1/rho^2);
-			return q;
-		}
-	}
-	
-	vector phi_cosine_periodic(real w0, int m, vector x) {
-		vector[rows(x)] fi;
-		fi = cos(m*w0*x);
-		return fi;
-	}
-	
-	vector phi_sin_periodic(real w0, int m, vector x) {
-		vector[rows(x)] fi;
-		fi = sin(m*w0*x); 
-		return fi;
- }
 }
 
 
