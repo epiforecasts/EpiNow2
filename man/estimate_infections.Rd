@@ -20,6 +20,8 @@ estimate_infections(
   warmup = 200,
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
+  estimate_breakpoints = FALSE,
+  stationary = FALSE,
   adapt_delta = 0.99,
   max_treedepth = 15,
   return_fit = FALSE,
@@ -28,7 +30,8 @@ estimate_infections(
 )
 }
 \arguments{
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date).}
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
+in date format.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}
@@ -48,7 +51,9 @@ the \code{basis_prop} (number of basis functions based on scaling the time point
 between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
 Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
-See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.}
+See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
+Can optionally also contain the  \code{lengthscale_mean} and \code{lengthscale_sd}. If these are specified this will override
+the defaults of 0 and 2 (normal ditributed truncated at zero).}
 
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
@@ -71,6 +76,14 @@ for the prior based on reported cases.}
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
 \item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
+
+\item{estimate_breakpoints}{Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then \code{reported_cases}
+must contain a \code{breakpoint} variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
+a global non-parametric effect and so represent a conservative estimate of breakpoint changes.}
+
+\item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
+this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
+This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
 
 \item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
 
@@ -97,7 +110,7 @@ generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
                         sd = EpiNow2::covid_generation_times[1, ]$sd,
                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
                         max = 30)
-## Set delays between infection and case report                
+## Set delays between infection and case report (any number of delays can be specifed here)             
 incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
@@ -110,15 +123,82 @@ reporting_delay <- list(mean = log(5),
                         sd_sd = log(1.5),
                         max = 30)
                         
-## Run model
-out <- estimate_infections(reported_cases, family = "negbin",
+## Run model with default settings
+def <- estimate_infections(reported_cases, family = "negbin",
                            generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           samples = 1000, warmup = 200,
-                           cores = 4, chains = 4, 
-                           estimate_rt = TRUE, verbose = TRUE, 
-                           return_fit = TRUE)
+                           samples = 1000, warmup = 200, cores = 4, chains = 4, 
+                           estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE)
 
-out   
+def   
+
+## Plot output
+report_plots(summarised_estimates = def$summarised,
+                      reported = reported_cases)
+                      
+
+## Run model with stationary Rt assumption (likely to provide biased realtime estimates)
+stat <- estimate_infections(reported_cases, family = "negbin",
+                           generation_time = generation_time,
+                           delays = list(incubation_period, reporting_delay),
+                           samples = 1000, warmup = 200, cores = 4, chains = 4, 
+                           estimate_rt = TRUE, stationary = TRUE,
+
+stat
+
+## Plot output
+report_plots(summarised_estimates = stat$summarised,
+             reported = reported_cases)
+
+## Add a dummy breakpoint
+reported_cases <- reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"),
+                                                                     1, 0)]
+## Run model with breakpoints                                                                      
+bkp <- estimate_infections(reported_cases, family = "negbin",
+                           generation_time = generation_time,
+                           delays = list(incubation_period, reporting_delay),
+                           samples = 1000, warmup = 200, cores = 4, chains = 4, 
+                           estimate_rt = TRUE, estimate_breakpoints = TRUE,
+                           verbose = TRUE, return_fit = TRUE)
+
+bkp   
+
+## Plot output
+report_plots(summarised_estimates = bkp$summarised,
+             reported = reported_cases)
+             
+## Run model with breakpoints but with constrained non-linear change over time 
+## This formulation may increase the apparent effect of the breakpoint but needs to be tested using
+## model fit criteria (i.e LFO).                                                                    
+cbkp <- estimate_infections(reported_cases, family = "negbin",
+                            generation_time = generation_time,
+                            gp = list(basis_prop = 0.3, boundary_scale = 2, 
+                                     lengthscale_mean = 20, lengthscale_sd = 1),
+                            delays = list(incubation_period, reporting_delay),
+                            samples = 1000, warmup = 200, cores = 4, chains = 4,
+                            estimate_rt = TRUE, estimate_breakpoints = TRUE,
+                            verbose = TRUE, return_fit = TRUE)
+
+cbkp   
+
+## Plot output
+report_plots(summarised_estimates = cbkp$summarised,
+             reported = reported_cases)
+             
+## Pull out breakpoint summary
+cbkp$summarised[variable == "breakpoints"]
+
+## Run model without Rt estimation (just backcalculation)
+backcalc <- estimate_infections(reported_cases, family = "negbin",
+                                generation_time = generation_time,
+                                delays = list(incubation_period, reporting_delay),
+                                samples = 1000, warmup = 200, cores = 4, chains = 4, 
+                                estimate_rt = FALSE, verbose = TRUE, return_fit = TRUE)
+
+backcalc
+ 
+## plot just infections as report_plots does not support the backcalculation only model
+plot_estimates(estimate = backcalc$summarised[variable == "infections"],
+               reported = reported_cases, ylab = "Cases")
 }                                
 }
