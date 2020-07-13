@@ -9,7 +9,8 @@ epinow(
   family = "negbin",
   generation_time,
   delays,
-  gp = list(basis_prop = 0.3, boundary_scale = 2),
+  gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_mean = 0, lengthscale_sd
+    = 2),
   rt_prior = list(mean = 1, sd = 1),
   model,
   prior_smoothing_window = 7,
@@ -17,11 +18,13 @@ epinow(
   chains = 2,
   samples = 1000,
   warmup = 200,
-  estimate_rt = TRUE,
-  estimate_week_eff = TRUE,
-  return_fit = FALSE,
   adapt_delta = 0.99,
   max_treedepth = 15,
+  estimate_rt = TRUE,
+  estimate_week_eff = TRUE,
+  estimate_breakpoints = FALSE,
+  stationary = FALSE,
+  return_fit = FALSE,
   forecast_model,
   horizon = 7,
   ensemble_type = "mean",
@@ -33,7 +36,8 @@ epinow(
 )
 }
 \arguments{
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date).}
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
+in date format.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}
@@ -53,7 +57,9 @@ the \code{basis_prop} (number of basis functions based on scaling the time point
 between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
 Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
-See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.}
+See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
+Can optionally also contain the  \code{lengthscale_mean} and \code{lengthscale_sd}. If these are specified this will override
+the defaults of 0 and 2 (normal ditributed truncated at zero).}
 
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
@@ -71,15 +77,23 @@ for the prior based on reported cases.}
 
 \item{warmup}{Numeric, defaults to 200. Number of iteration of warmup to use.}
 
+\item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
+
+\item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
+
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
 \item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 
+\item{estimate_breakpoints}{Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then \code{reported_cases}
+must contain a \code{breakpoint} variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
+a global non-parametric effect and so represent a conservative estimate of breakpoint changes.}
+
+\item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
+this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
+This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
+
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
-
-\item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
-
-\item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
 
 \item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
 for forecasting future Rt and case co An example of the required structure is: \code{function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}}.}
