@@ -41,6 +41,8 @@
 #' Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
 #' increases the accuracy of the approximation at the cost of additional compute. 
 #' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
+#' Can optionally also contain the  `lengthscale_mean` and `lengthscale_sd`. If these are specified this will override 
+#' the defaults of 0 and 2 (normal ditributed truncated at zero).
 #' @param verbose Logical, defaults to `TRUE`. Should verbose progress messages be printed.
 #' @param debug Logical, defaults to `FALSE`. Enables debug model in which additional diagnostics are available
 #' @export
@@ -95,8 +97,7 @@
 #'                            generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
 #'                            samples = 1000, warmup = 200, cores = 4, chains = 4, 
-#'                            estimate_rt = TRUE, stationary = TRUE, model = model,
-#'                            verbose = TRUE, return_fit = TRUE)
+#'                            estimate_rt = TRUE, stationary = TRUE,
 #'
 #' stat
 #' 
@@ -111,7 +112,7 @@
 #' bkp <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            samples = 1000, warmup = 200, cores = 4, chains = 4, model = model,
+#'                            samples = 1000, warmup = 200, cores = 4, chains = 4, 
 #'                            estimate_rt = TRUE, estimate_breakpoints = TRUE,
 #'                            verbose = TRUE, return_fit = TRUE)
 #'
@@ -121,10 +122,28 @@
 #' report_plots(summarised_estimates = bkp$summarised,
 #'              reported = reported_cases)
 #'              
-#' ## Pull out breakpoint summary
-#' bkp$summarised[variable == "breakpoints"]
+#' ## Run model with breakpoints but with constrained non-linear change over time 
+#' ## This formulation may increase the apparent effect of the breakpoint but needs to be tested using
+#' ## model fit criteria (i.e LFO).                                                                    
+#' cbkp <- estimate_infections(reported_cases, family = "negbin",
+#'                             generation_time = generation_time,
+#'                             gp = list(basis_prop = 0.3, boundary_scale = 2, 
+#'                                      lengthscale_mean = 20, lengthscale_sd = 1),
+#'                             delays = list(incubation_period, reporting_delay),
+#'                             samples = 1000, warmup = 200, cores = 4, chains = 4,
+#'                             estimate_rt = TRUE, estimate_breakpoints = TRUE,
+#'                             verbose = TRUE, return_fit = TRUE)
+#'
+#' cbkp   
 #' 
-#' ## Run model without Rt estimation (just backcalc)
+#' ## Plot output
+#' report_plots(summarised_estimates = cbkp$summarised,
+#'              reported = reported_cases)
+#'              
+#' ## Pull out breakpoint summary
+#' cbkp$summarised[variable == "breakpoints"]
+#' 
+#' ## Run model without Rt estimation (just backcalculation)
 #' backcalc <- estimate_infections(reported_cases, family = "negbin",
 #'                                 generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
@@ -279,6 +298,18 @@ estimate_infections <- function(reported_cases, family = "negbin",
   # Boundary value for c
   data$L <- max(data$time) * gp$boundary_scale
   
+  if (is.null(gp$lengthscale_mean)) {
+    data$lengthscale_mean <- 0
+  }else{
+    data$lengthscale_mean <- gp$lengthscale_mean
+  }
+  
+  if (is.null(gp$lengthscale_sd)) {
+    data$lengthscale_sd <- 2
+  }else{
+    data$lengthscale_sd <- gp$lengthscale_sd
+  }
+  
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
     data$model_type <- 0
@@ -290,7 +321,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   # Set up initial conditions fn --------------------------------------------
   
   init_fun <- function(){out <- list(
-    eta = rnorm(data$M, mean = 0, sd = 1),
+    eta = array(rnorm(data$M, mean = 0, sd = 1)),
     rho = array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2)),
     alpha =  array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1)),
     delay_mean = array(purrr::map2_dbl(delays$mean, delays$mean_sd, 
