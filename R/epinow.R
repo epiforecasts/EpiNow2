@@ -64,7 +64,8 @@
 #' }
 epinow <- function(reported_cases, family = "negbin",
                    generation_time, delays,
-                   gp = list(basis_prop = 0.3, boundary_scale = 2),
+                   gp = list(basis_prop = 0.3, boundary_scale = 2, 
+                             lengthscale_mean = 0, lengthscale_sd = 2),
                    rt_prior = list(mean = 1, sd = 1), model,
                    prior_smoothing_window = 7, cores = 2, chains = 2,
                    samples = 1000, warmup = 200, adapt_delta = 0.99,  max_treedepth = 15,
