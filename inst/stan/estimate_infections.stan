@@ -94,7 +94,7 @@ transformed data{
   int rt_h;                                  // rt estimation time minus the forecasting horizon
   int noise_terms = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;  
                                              // no. of noise terms
-  matrix[noise_terms, M] PHI;    // basis function 
+  matrix[noise_terms, M] PHI;                // basis function 
   
   //Update time varables
   rt_h = rt - horizon;
@@ -108,7 +108,6 @@ transformed data{
    
    // basis functions
    // see here for details: https://arxiv.org/pdf/2004.11408.pdf
-   
    for (m in 1:M){ 
      PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:(stationary > 0 ? rt : rt - 1)] : inf_time)); 
     }
@@ -131,13 +130,13 @@ parameters{
 
 transformed parameters {
   // stored transformed parameters
-  vector<lower = 0>[noise_terms] noise;   // noise on the mean shifted observed cases
-  vector[t] infections;                        // infections over time
-  vector[rt] reports;                          // reports over time
+  vector<lower = 0>[noise_terms] noise;                   // noise on the mean shifted observed cases
+  vector[t] infections;                                   // infections over time
+  vector[rt] reports;                                     // reports over time
   vector[est_week_eff ? 7 : 0] day_of_week_eff;           // day of the week effect
   vector[estimate_r > 0 ? rt : 0] R;                      // reproduction number over time
  {
-  // temporary transformed parameters                                 // onsets over time
+  // temporary transformed parameters                                 
   vector[estimate_r > 0 ? max_gt : 0] rev_generation_time;// reversed generation time pdf
   vector[estimate_r > 0 ? rt : 0] infectiousness;         // infections over time
   vector[M] diagSPD;                                      // spectral density
@@ -166,36 +165,38 @@ transformed parameters {
      }
   //initialise breakpoints as 0
   rt_break_count = 0;
+  // assume a global Rt * GP
   if (stationary) {
     for (s in 1:rt) {
       R[s] = initial_R[estimate_r] * noise[s];
-      
+      // apply breakpoints if present
       if (break_no > 0) {
        rt_break_count += breakpoints[s];
         if (rt_break_count > 0) {
-          R[s] = R[s] * rt_break_eff[rt_break_count];
+          R[s] = R[s] * prod(rt_break_eff[1:rt_break_count]);
         }
       }
     }
+  // assume GP on gradient of Rt (i.e Rt = R(t-1) * GP)
   }else{
     R[1] = initial_R[estimate_r];
     for (s in 2:rt) {
       R[s] = R[s - 1] .* noise[s - 1];
-      
+      // apply breakpoints if present
       if (break_no > 0) {
-        rt_break_count += breakpoints[s];
-        if (rt_break_count > 0) {
+        if (breakpoints[s] == 1) {
+          rt_break_count = sum(breakpoints[1:s]);
           R[s] = R[s] * rt_break_eff[rt_break_count];
         }
       }
     }
   }
 
-     // Estimate initial infections not using Rt
+     // estimate initial infections not using Rt
      infections[1:no_rt_time] = infections[1:no_rt_time] + 
                                   shifted_cases[1:no_rt_time] .* exp(initial_infections);
       
-     //Estimate remaining infections using Rt
+     // estimate remaining infections using Rt
      infectiousness = rep_vector(1e-5, rt);
      for (s in 1:rt) {
         infectiousness[s] += dot_product(infections[max(1, (s + no_rt_time - max_gt)):(s + no_rt_time -1)],
