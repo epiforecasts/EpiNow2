@@ -26,6 +26,9 @@
 #' @param warmup Numeric, defaults to 200. Number of iteration of warmup to use.
 #' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
 #' @param estimate_week_eff Logical, defaults TRUE. Should weekly reporting effects be estimated.
+#' @param estimate_breakpoints Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then `reported_cases`
+#' must contain a `breakpoint` variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
+#' a global non-parametric effect and so represent a conservative estimate of breakpoint changes.
 #' @param stationary Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt 
 #' this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 #' This setting is most appropriate when estimating historic Rt or when combined with breakpoints.
@@ -60,7 +63,7 @@
 #'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
 #'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
 #'                         max = 30)
-#' ## Set delays between infection and case report                
+#' ## Set delays between infection and case report (any number of delays can be specifed here)             
 #' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
 #'                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
 #'                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
@@ -77,39 +80,62 @@
 #' def <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            samples = 1000, warmup = 200,
-#'                            cores = 4, chains = 4, model = model,
-#'                            estimate_rt = TRUE, verbose = TRUE, 
-#'                            return_fit = TRUE)
+#'                            samples = 1000, warmup = 200, cores = 4, chains = 4, 
+#'                            estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE)
 #'
 #' def   
 #' 
-#' 
+#' ## Plot output
+#' report_plots(summarised_estimates = def$summarised,
+#'                       reported = reported_cases)
+#'                       
 #' 
 #' ## Run model with stationary Rt assumption (likely to provide biased realtime estimates)
 #' stat <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            samples = 1000, warmup = 200,
-#'                            cores = 4, chains = 4, 
-#'                            estimate_rt = TRUE, 
-#'                            stationary = TRUE,
+#'                            samples = 1000, warmup = 200, cores = 4, chains = 4, 
+#'                            estimate_rt = TRUE, stationary = TRUE, model = model,
 #'                            verbose = TRUE, return_fit = TRUE)
 #'
 #' stat
 #' 
-#'   
+#' ## Plot output
+#' report_plots(summarised_estimates = stat$summarised,
+#'              reported = reported_cases)
+#' 
+#' ## Add a dummy breakpoint
+#' reported_cases <- reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"),
+#'                                                                      1, 0)]
+#' ## Run model with breakpoints                                                                      
+#' bkp <- estimate_infections(reported_cases, family = "negbin",
+#'                            generation_time = generation_time,
+#'                            delays = list(incubation_period, reporting_delay),
+#'                            samples = 1000, warmup = 200, cores = 4, chains = 4, model = model,
+#'                            estimate_rt = TRUE, estimate_breakpoints = TRUE,
+#'                            verbose = TRUE, return_fit = TRUE)
+#'
+#' bkp   
+#' 
+#' ## Plot output
+#' report_plots(summarised_estimates = bkp$summarised,
+#'              reported = reported_cases)
+#'              
+#' ## Pull out breakpoint summary
+#' bkp$summarised[variable == "breakpoints"]
+#' 
 #' ## Run model without Rt estimation (just backcalc)
 #' backcalc <- estimate_infections(reported_cases, family = "negbin",
 #'                                 generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 samples = 1000, warmup = 200,
-#'                                 cores = 4, chains = 4, 
-#'                                 estimate_rt = FALSE, 
-#'                                 verbose = TRUE, return_fit = TRUE)
+#'                                 samples = 1000, warmup = 200, cores = 4, chains = 4, 
+#'                                 estimate_rt = FALSE, verbose = TRUE, return_fit = TRUE)
 #'
 #' backcalc
 #'  
+#' ## plot just infections as report_plots does not support the backcalculation only model
+#' plot_estimates(estimate = backcalc$summarised[variable == "infections"],
+#'                reported = reported_cases, ylab = "Cases")
 #' }                                
 estimate_infections <- function(reported_cases, family = "negbin",
                                 generation_time, delays,
@@ -119,11 +145,27 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 horizon = 7, model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 200,
                                 estimate_rt = TRUE, estimate_week_eff = TRUE,
-                                stationary = FALSE, adapt_delta = 0.99, max_treedepth = 15, 
+                                estimate_breakpoints = FALSE, stationary = FALSE,
+                                adapt_delta = 0.99, max_treedepth = 15, 
                                 return_fit = FALSE, verbose = TRUE, debug = FALSE){
   
+
+  # Check breakpoints -------------------------------------------------------
+  if (is.null(reported_cases$breakpoint)) {
+    reported_cases$breakpoint <- NA
+  }
+  
+  if (estimate_breakpoints) {
+   break_no <- sum(reported_cases$breakpoint, na.rm = TRUE)
+   if (break_no == 0) {
+     message("Breakpoint estimation was specified but no breakpoints were detected.")
+   }
+  }else{
+    break_no <- 0
+  }
  
   # Organise delays ---------------------------------------------------------
+  
   no_delays <- length(delays)
   delays <- purrr::transpose(delays)
 
@@ -140,12 +182,16 @@ estimate_infections <- function(reported_cases, family = "negbin",
     reported_cases , reported_cases_grid, 
     by = c("date"), all.y = TRUE)
   
-  reported_cases <- reported_cases[is.na(confirm), confirm := 0 ][,.(date = date, confirm)]
+
+  
+  reported_cases <- reported_cases[is.na(confirm), confirm := 0][,.(date = date, confirm, breakpoint)]
+  reported_cases <- reported_cases[is.na(breakpoint), breakpoint := 0]
   reported_cases <- data.table::setorder(reported_cases, date)
   
   ## Filter out 0 reported cases from the beginning of the data
   reported_cases <- reported_cases[order(date)][,
-                                 cum_cases := cumsum(confirm)][cum_cases > 0][, cum_cases := NULL]
+                                 cum_cases := cumsum(confirm)][cum_cases > 0][, 
+                                 cum_cases := NULL]
   
   # Estimate the mean delay -----------------------------------------------
   
@@ -160,7 +206,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
   reported_cases <- data.table::rbindlist(list(
     data.table::data.table(date = seq(min(reported_cases$date) - mean_shift - prior_smoothing_window, 
                                       min(reported_cases$date) - 1, by = "days"),
-                           confirm = 0),
+                           confirm = 0,
+                           breakpoint = 0),
     reported_cases
   ))  
   
@@ -220,7 +267,9 @@ estimate_infections <- function(reported_cases, family = "negbin",
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
     est_week_eff = ifelse(estimate_week_eff, 1, 0),
-    stationary = ifelse(stationary, 1, 0)
+    stationary = ifelse(stationary, 1, 0),
+    break_no = break_no,
+    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint
   ) 
   
   # Parameters for Hilbert space GP -----------------------------------------
@@ -261,6 +310,10 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                                sd = generation_time$mean_sd))
     out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
                                               sd = generation_time$sd_sd))
+    
+    if (break_no > 0) {
+      out$rt_break_eff <- array(rlnorm(break_no, 0, 0.1))
+    }
   }
   
   return(out)
@@ -337,11 +390,16 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$growth_rate <- extract_parameter("r", 
                                          samples,
                                          reported_cases$date[-(1:mean_shift)])
+    
+    if (break_no > 0) {
+      out$breakpoints <- extract_parameter("rt_break_eff", 
+                                           samples, 
+                                           1:break_no)
+      
+      out$breakpoints <- out$breakpoints[, strat := date][, c("time", "date") := NULL]
+    }
   }
   
-    ## Add prior infections
-    out$prior_infections <- shifted_reported_cases[, .(parameter = "prior_infections", time = 1:.N, 
-                                                       date, value = confirm, sample = 1)]
     
     if (estimate_week_eff) {
       out$day_of_week <- extract_parameter("day_of_week_eff", 
@@ -380,6 +438,10 @@ estimate_infections <- function(reported_cases, family = "negbin",
       out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
     }
   
+    ## Add prior infections
+    out$prior_infections <- shifted_reported_cases[, .(parameter = "prior_infections", time = 1:.N, 
+                                                       date, value = confirm, sample = 1)]
+    
 # Format output -----------------------------------------------------------
     
  format_out <- list()
