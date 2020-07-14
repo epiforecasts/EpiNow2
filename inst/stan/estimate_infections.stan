@@ -111,7 +111,8 @@ transformed data{
    // basis functions
    // see here for details: https://arxiv.org/pdf/2004.11408.pdf
    for (m in 1:M){ 
-     PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:(stationary > 0 ? rt : rt - 1)] : inf_time)); 
+     // PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:(stationary > 0 ? rt : rt - 1)] : inf_time)); 
+     PHI[, m] = phi_SE(L, m, (estimate_r > 0 ? time[1:rt] : inf_time));
     }
 }
 parameters{
