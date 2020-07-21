@@ -97,7 +97,7 @@
 #'                             generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
 #'                             samples = 1000, warmup = 200, cores = 4, chains = 4, 
-#'                             estimate_rt = TRUE, stationary = TRUE, model = model,
+#'                             estimate_rt = TRUE, stationary = TRUE,
 #'                             verbose = TRUE, return_fit = TRUE)
 #'
 #' stat

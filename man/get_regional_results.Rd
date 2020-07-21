@@ -7,6 +7,9 @@
 get_regional_results(regional_output, results_dir, date, forecast = FALSE)
 }
 \arguments{
+\item{regional_output}{A list of output as produced by \code{regional_epinow} and stored in the
+\code{regional} list.}
+
 \item{results_dir}{A character string indicating the folder containing the \code{EpiNow2}
 results to extract.}
 
@@ -25,11 +28,42 @@ Get Combined Regional Results
 
 
 \dontrun{
-# see ?regional_epinow for code to generate regional results to use with this example.
+# Construct example distributions
+generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
+                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
+                        sd = EpiNow2::covid_generation_times[1, ]$sd,
+                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
+                        max = 30)
+                          
+incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
+                          mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
+                          sd = EpiNow2::covid_incubation_period[1, ]$sd,
+                          sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
+                          max = 30)
+                   
+reporting_delay <- list(mean = log(10),
+                        mean_sd = 0.8,
+                        sd = log(2),
+                        sd_sd = 0.1,
+                        max = 30)
+                        
+# Uses example case vector from EpiSoon
+cases <- EpiNow2::example_confirmed[1:30]
 
-out$summary <- NULL
-
-get_regional_results(out, forecast = TRUE)
+cases <- data.table::rbindlist(list(
+  data.table::copy(cases)[, region := "testland"],
+  cases[, region := "realland"]))
+  
+# Run basic nowcasting pipeline
+regional_out <- regional_epinow(reported_cases = cases,
+                                generation_time = generation_time,
+                                incubation_period = incubation_period,
+                                reporting_delay = reporting_delay,
+                                samples = 2000, warmup = 200, cores = 4,
+                                adapt_delta = 0.95, chains = 4, verbose = TRUE,
+                                summary = FALSE)
+                                
+get_regional_results(regional_out$regional, forecast = TRUE)
 
 }
 }

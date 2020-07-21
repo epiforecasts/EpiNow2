@@ -54,14 +54,15 @@ Simulate Cases by Date of Infection, Onset and Report
 }
 \examples{
 \dontrun{
-## Requires
+# Requires
 install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
 library(EpiSoon)
-## Define an initial rt vector 
+
+# Define an initial rt vector 
 rts <- c(rep(2, 20), (2 - 1:15 * 0.1), rep(0.5, 10))
 rts
-## Use the mean default generation interval for covid
-## Generation time
+# Use the mean default generation interval for covid
+# Generation time
 generation_defs <- EpiNow2::gamma_dist_def(mean = generation_time$mean,
                                           mean_sd = generation_time$mean_sd,
                                           sd = generation_time$sd,
@@ -83,20 +84,20 @@ generate_pdf <- function(dist, max_value) {
  
  generation_pdf <- generate_pdf(generation_defs, max_value = generation_defs$max)
 
-## Sample a report delay as a lognormal
+# Sample a report delay as a lognormal
 delay_def <- EpiNow2::lognorm_dist_def(mean = 5, mean_sd = 1,
                                       sd = 3, sd_sd = 1, max_value = 30,
                                       samples = 1, to_log = TRUE)
                                       
 
-## Sample a incubation period (again using the default for covid)
+# Sample a incubation period (again using the default for covid)
 incubation_def <- EpiNow2::lognorm_dist_def(mean = EpiNow2::covid_incubation_period[1, ]$mean,
                                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
                                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
                                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
                                           max_value = 30, samples = 1)
 
-## Simulate cases with a decrease in reporting at weekends and an increase on Monday                                     
+# Simulate cases with a decrease in reporting at weekends and an increase on Monday                                     
 simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.Date("2020-03-01"),
                     generation_interval = generation_pdf,
                     delay_defs = list(incubation_def, delay_def),
@@ -106,15 +107,18 @@ print(simulated_cases)
 
 
 
-## Simulate cases with a weekly reporting effect and stochastic noise in reporting (beyond the delay)                                  
-simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.Date("2020-03-01"),
-                    generation_interval = generation_pdf, 
-                    delay_defs = list(incubation_def, delay_def)
-                   reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
-                   reporting_model = function(n) {
-                      out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))
-                      out <- ifelse(is.na(out), 0, out)
-                      })
+# Simulate cases with a weekly reporting effect and 
+# stochastic noise in reporting (beyond the delay)                                  
+simulated_cases <- simulate_cases(rts, initial_cases = 100 ,
+                                  initial_date = as.Date("2020-03-01"),
+                                  generation_interval = generation_pdf, 
+                                  delay_defs = list(incubation_def, delay_def)
+                                  reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
+                                  reporting_model = function(n) {
+                                      out <- suppressWarnings(rnbinom(length(n), 
+                                                             as.integer(n), 0.5))
+                                      out <- ifelse(is.na(out), 0, out)
+                                  })
                    
 print(simulated_cases)
 }
