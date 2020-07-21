@@ -116,13 +116,13 @@ transformed data{
 }
 parameters{
   simplex[est_week_eff ? 7 : 1] day_of_week_eff_raw;  // day of week reporting effect + control parameters
-  real <lower = 0> delay_mean[delays];                // mean of delays
-  real <lower = 0> delay_sd[delays];                  // sd of delays
+  real<lower = 0> delay_mean[delays];                 // mean of delays
+  real<lower = 0> delay_sd[delays];                   // sd of delays
   real<lower = 0> rep_phi[model_type];                // overdispersion of the reporting process
   real<lower = 0> rho[1];                             // length scale of noise GP
   real<lower = 0> alpha[1];                           // scale of of noise GP
   vector[M] eta;                                      // unconstrained noise
-  vector<lower = 0>[estimate_r] initial_R;            // baseline reproduction number estimate
+  vector[estimate_r] initial_R;                       // baseline reproduction number estimate
   vector[estimate_r > 0 ? no_rt_time : 0] initial_infections;
                                                       // baseline reproduction number estimate
   real<lower = 0> gt_mean[estimate_r];                // mean of generation time
@@ -132,7 +132,7 @@ parameters{
 
 transformed parameters {
   // stored transformed parameters
-  vector<lower = 0>[noise_terms] noise;                   // noise on the mean shifted observed cases
+  vector[noise_terms] noise;                              // noise on the mean shifted observed cases
   vector[t] infections;                                   // infections over time
   vector[rt] reports;                                     // reports over time
   vector[est_week_eff ? 7 : 0] day_of_week_eff;           // day of the week effect
