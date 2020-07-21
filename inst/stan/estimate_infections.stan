@@ -116,13 +116,13 @@ transformed data{
 }
 parameters{
   simplex[est_week_eff ? 7 : 1] day_of_week_eff_raw;  // day of week reporting effect + control parameters
-  real <lower = 0> delay_mean[delays];                // mean of delays
-  real <lower = 0> delay_sd[delays];                  // sd of delays
+  real<lower = 0> delay_mean[delays];                 // mean of delays
+  real<lower = 0> delay_sd[delays];                   // sd of delays
   real<lower = 0> rep_phi[model_type];                // overdispersion of the reporting process
   real<lower = 0> rho[1];                             // length scale of noise GP
   real<lower = 0> alpha[1];                           // scale of of noise GP
   vector[M] eta;                                      // unconstrained noise
-  vector<lower = 0>[estimate_r] initial_R;            // baseline reproduction number estimate
+  vector[estimate_r] initial_R;                       // baseline reproduction number estimate
   vector[estimate_r > 0 ? no_rt_time : 0] initial_infections;
                                                       // baseline reproduction number estimate
   real<lower = 0> gt_mean[estimate_r];                // mean of generation time
@@ -132,7 +132,7 @@ parameters{
 
 transformed parameters {
   // stored transformed parameters
-  vector<lower = 0>[noise_terms] noise;                   // noise on the mean shifted observed cases
+  vector[noise_terms] noise;                              // noise on the mean shifted observed cases
   vector[t] infections;                                   // infections over time
   vector[rt] reports;                                     // reports over time
   vector[est_week_eff ? 7 : 0] day_of_week_eff;           // day of the week effect
@@ -165,7 +165,7 @@ transformed parameters {
            discretised_gamma_pmf(max_gt - j + 1, gt_mean[estimate_r], 
                                  gt_sd[estimate_r], max_gt);
      }
-  //initialise breakpoints as 0
+  // initialise breakpoints as 0
   rt_break_count = 0;
   // assume a global Rt * GP
   if (stationary) {
@@ -289,7 +289,11 @@ generated quantities {
   real r[estimate_r > 0 ? rt : 0];
   
   // simulated infections - assume poisson (with negative binomial reporting)
-  imputed_infections = poisson_rng(infections);
+  // check here prevents exception for ill-conditioned parameter samples
+  for (s in 1:t) {
+    imputed_infections[s] = poisson_rng(infections[s] > 1e9 ? 1e9 : infections[s]);
+  }
+
 
   // estimate the growth rate
   if (estimate_r) {
@@ -301,9 +305,13 @@ generated quantities {
   
   //simulate reported cases
   if (model_type) {
-    imputed_reports = neg_binomial_2_rng(reports, rep_phi[model_type]);
+    for (s in 1:rt) {
+      imputed_reports[s] = neg_binomial_2_rng(reports[s] > 1e9 ? 1e9 : reports[s], rep_phi[model_type]);
+    }
    }else{
-    imputed_reports = poisson_rng(reports);
+    for (s in 1:rt) {
+      imputed_reports[s] = poisson_rng(reports[s] > 1e9 ? 1e9 : reports[s]);
+    }
   }
 }
 

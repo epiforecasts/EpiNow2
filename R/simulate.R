@@ -15,14 +15,15 @@
 #' @importFrom lubridate days
 #' @examples
 #' \dontrun{
-#' ## Requires
+#' # Requires
 #' install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
 #' library(EpiSoon)
-#' ## Define an initial rt vector 
+#' 
+#' # Define an initial rt vector 
 #' rts <- c(rep(2, 20), (2 - 1:15 * 0.1), rep(0.5, 10))
 #' rts
-#' ## Use the mean default generation interval for covid
-#' ## Generation time
+#' # Use the mean default generation interval for covid
+#' # Generation time
 #' generation_defs <- EpiNow2::gamma_dist_def(mean = generation_time$mean,
 #'                                           mean_sd = generation_time$mean_sd,
 #'                                           sd = generation_time$sd,
@@ -44,20 +45,20 @@
 #'  
 #'  generation_pdf <- generate_pdf(generation_defs, max_value = generation_defs$max)
 #' 
-#' ## Sample a report delay as a lognormal
+#' # Sample a report delay as a lognormal
 #' delay_def <- EpiNow2::lognorm_dist_def(mean = 5, mean_sd = 1,
 #'                                       sd = 3, sd_sd = 1, max_value = 30,
 #'                                       samples = 1, to_log = TRUE)
 #'                                       
 #' 
-#' ## Sample a incubation period (again using the default for covid)
+#' # Sample a incubation period (again using the default for covid)
 #' incubation_def <- EpiNow2::lognorm_dist_def(mean = EpiNow2::covid_incubation_period[1, ]$mean,
 #'                                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
 #'                                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
 #'                                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
 #'                                           max_value = 30, samples = 1)
 #'
-#' ## Simulate cases with a decrease in reporting at weekends and an increase on Monday                                     
+#' # Simulate cases with a decrease in reporting at weekends and an increase on Monday                                     
 #' simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.Date("2020-03-01"),
 #'                     generation_interval = generation_pdf,
 #'                     delay_defs = list(incubation_def, delay_def),
@@ -67,15 +68,18 @@
 #'
 #'
 #'
-#' ## Simulate cases with a weekly reporting effect and stochastic noise in reporting (beyond the delay)                                  
-#' simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.Date("2020-03-01"),
-#'                     generation_interval = generation_pdf, 
-#'                     delay_defs = list(incubation_def, delay_def)
-#'                    reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
-#'                    reporting_model = function(n) {
-#'                       out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))
-#'                       out <- ifelse(is.na(out), 0, out)
-#'                       })
+#' # Simulate cases with a weekly reporting effect and 
+#' # stochastic noise in reporting (beyond the delay)                                  
+#' simulated_cases <- simulate_cases(rts, initial_cases = 100 ,
+#'                                   initial_date = as.Date("2020-03-01"),
+#'                                   generation_interval = generation_pdf, 
+#'                                   delay_defs = list(incubation_def, delay_def)
+#'                                   reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
+#'                                   reporting_model = function(n) {
+#'                                       out <- suppressWarnings(rnbinom(length(n), 
+#'                                                              as.integer(n), 0.5))
+#'                                       out <- ifelse(is.na(out), 0, out)
+#'                                   })
 #'                    
 #'print(simulated_cases)
 #'}
@@ -89,18 +93,18 @@ simulate_cases <- function(rts, initial_cases, initial_date, generation_interval
          install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")')
   }
   
-  ## Simulating cases initialising a data.table
+  # Simulating cases initialising a data.table
   cases <- data.table::data.table(
     date = initial_date,
     cases = initial_cases)
   
-  ## Structuring rts as a data.table with dates
+  # Structuring rts as a data.table with dates
   rts <- data.table::data.table(
     date = seq(initial_date, initial_date + lubridate::days(length(rts) - 1), by = "days"),
     rt = rts
   )
   
-  ##  Return a dataframe of cases by date of infection
+  #  Return a dataframe of cases by date of infection
   simulated_cases <- data.table::setDT(
                      EpiSoon::predict_cases(cases = cases,
                                             rt = rts,
@@ -108,7 +112,7 @@ simulate_cases <- function(rts, initial_cases, initial_date, generation_interval
                                             rdist = rdist)
                      )
   
-  ## Mapping with a weekly reporting effect
+  # Mapping with a weekly reporting effect
   report <- EpiNow2::adjust_infection_to_report(simulated_cases,
                                                delay_defs = delay_defs,
                                                reporting_effect = reporting_effect,
@@ -116,16 +120,16 @@ simulate_cases <- function(rts, initial_cases, initial_date, generation_interval
                                                type = type, truncate_future = truncate_future)
   
   
-  ## Bind in simulated cases with reported cases
+  # Bind in simulated cases with reported cases
   report <- data.table::rbindlist(list(
     simulated_cases[, reference := "infection"],
     report
   ))
   
-  ## Get the median interval to truncate initial cases
+  # Get the median interval to truncate initial cases
   median_interval <- sum(!(cumsum(generation_interval) > 0.5)) + 1
   
-  ## Truncate initial data be length of the median generation interval
+  # Truncate initial data be length of the median generation interval
   report[date >= initial_date + lubridate::days(median_interval)]
   
   return(report)

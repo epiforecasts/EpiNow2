@@ -264,7 +264,108 @@ This setting is most appropriate when estimating historic Rt or when combined wi
 
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"></pre>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='co'>## Get example case counts</span>
+<span class='no'>reported_cases</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='example_confirmed.html'>example_confirmed</a></span>[<span class='fl'>1</span>:<span class='fl'>50</span>]
+
+<span class='co'>## Set up example generation time</span>
+<span class='no'>generation_time</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>mean</span>,
+                        <span class='kw'>mean_sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>mean_sd</span>,
+                        <span class='kw'>sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>sd</span>,
+                        <span class='kw'>sd_sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>sd_sd</span>,
+                        <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>30</span>)
+<span class='co'>## Set delays between infection and case report (any number of delays can be specifed here)             </span>
+<span class='no'>incubation_period</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_incubation_period.html'>covid_incubation_period</a></span>[<span class='fl'>1</span>, ]$<span class='no'>mean</span>,
+                          <span class='kw'>mean_sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_incubation_period.html'>covid_incubation_period</a></span>[<span class='fl'>1</span>, ]$<span class='no'>mean_sd</span>,
+                          <span class='kw'>sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_incubation_period.html'>covid_incubation_period</a></span>[<span class='fl'>1</span>, ]$<span class='no'>sd</span>,
+                          <span class='kw'>sd_sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_incubation_period.html'>covid_incubation_period</a></span>[<span class='fl'>1</span>, ]$<span class='no'>sd_sd</span>,
+                          <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>30</span>)
+
+<span class='no'>reporting_delay</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>5</span>),
+                        <span class='kw'>mean_sd</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>2</span>),
+                        <span class='kw'>sd</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>2</span>),
+                        <span class='kw'>sd_sd</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1.5</span>),
+                        <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>30</span>)
+
+<span class='co'>## Run model with default settings</span>
+<span class='no'>def</span> <span class='kw'>&lt;-</span> <span class='fu'>estimate_infections</span>(<span class='no'>reported_cases</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
+                           <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
+                           <span class='kw'>delays</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_period</span>, <span class='no'>reporting_delay</span>),
+                           <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>5000</span>, <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>200</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>,
+                           <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+
+<span class='no'>def</span>
+
+<span class='co'>## Plot output</span>
+<span class='fu'><a href='report_plots.html'>report_plots</a></span>(<span class='kw'>summarised_estimates</span> <span class='kw'>=</span> <span class='no'>def</span>$<span class='no'>summarised</span>,
+                      <span class='kw'>reported</span> <span class='kw'>=</span> <span class='no'>reported_cases</span>)
+
+
+<span class='co'>## Run model with stationary Rt assumption (likely to provide biased realtime estimates)</span>
+<span class='no'>stat</span> <span class='kw'>&lt;-</span> <span class='fu'>estimate_infections</span>(<span class='no'>reported_cases</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
+                            <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
+                            <span class='kw'>delays</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_period</span>, <span class='no'>reporting_delay</span>),
+                            <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>200</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>,
+                            <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>stationary</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+                            <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+
+<span class='no'>stat</span>
+
+<span class='co'>## Plot output</span>
+<span class='fu'><a href='report_plots.html'>report_plots</a></span>(<span class='kw'>summarised_estimates</span> <span class='kw'>=</span> <span class='no'>stat</span>$<span class='no'>summarised</span>,
+             <span class='kw'>reported</span> <span class='kw'>=</span> <span class='no'>reported_cases</span>)
+
+<span class='co'>## Add a dummy breakpoint</span>
+<span class='no'>reported_cases</span> <span class='kw'>&lt;-</span> <span class='no'>reported_cases</span>[, <span class='no'>breakpoint</span> <span class='kw'>:=</span> <span class='kw pkg'>data.table</span><span class='kw ns'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>fifelse</a></span>(<span class='no'>date</span> <span class='kw'>==</span> <span class='fu'><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></span>(<span class='st'>"2020-03-16"</span>),
+                                                                     <span class='fl'>1</span>, <span class='fl'>0</span>)]
+<span class='co'>## Run model with breakpoints                                                                      </span>
+<span class='no'>bkp</span> <span class='kw'>&lt;-</span> <span class='fu'>estimate_infections</span>(<span class='no'>reported_cases</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
+                           <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
+                           <span class='kw'>delays</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_period</span>, <span class='no'>reporting_delay</span>),
+                           <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>200</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>,
+                           <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>estimate_breakpoints</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+                           <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+
+<span class='no'>bkp</span>
+
+<span class='co'>## Plot output</span>
+<span class='fu'><a href='report_plots.html'>report_plots</a></span>(<span class='kw'>summarised_estimates</span> <span class='kw'>=</span> <span class='no'>bkp</span>$<span class='no'>summarised</span>,
+             <span class='kw'>reported</span> <span class='kw'>=</span> <span class='no'>reported_cases</span>)
+
+<span class='co'>## Run model with breakpoints but with constrained non-linear change over time </span>
+<span class='co'>## This formulation may increase the apparent effect of the breakpoint but needs to be tested using</span>
+<span class='co'>## model fit criteria (i.e LFO).                                                                    </span>
+<span class='no'>cbkp</span> <span class='kw'>&lt;-</span> <span class='fu'>estimate_infections</span>(<span class='no'>reported_cases</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
+                            <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
+                            <span class='kw'>gp</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>basis_prop</span> <span class='kw'>=</span> <span class='fl'>0.3</span>, <span class='kw'>boundary_scale</span> <span class='kw'>=</span> <span class='fl'>2</span>,
+                                     <span class='kw'>lengthscale_mean</span> <span class='kw'>=</span> <span class='fl'>20</span>, <span class='kw'>lengthscale_sd</span> <span class='kw'>=</span> <span class='fl'>1</span>),
+                            <span class='kw'>delays</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_period</span>, <span class='no'>reporting_delay</span>),
+                            <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>200</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>,
+                            <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>estimate_breakpoints</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+                            <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+
+<span class='no'>cbkp</span>
+
+<span class='co'>## Plot output</span>
+<span class='fu'><a href='report_plots.html'>report_plots</a></span>(<span class='kw'>summarised_estimates</span> <span class='kw'>=</span> <span class='no'>cbkp</span>$<span class='no'>summarised</span>,
+             <span class='kw'>reported</span> <span class='kw'>=</span> <span class='no'>reported_cases</span>)
+
+<span class='co'>## Pull out breakpoint summary</span>
+<span class='no'>cbkp</span>$<span class='no'>summarised</span>[<span class='no'>variable</span> <span class='kw'>==</span> <span class='st'>"breakpoints"</span>]
+
+<span class='co'>## Run model without Rt estimation (just backcalculation)</span>
+<span class='no'>backcalc</span> <span class='kw'>&lt;-</span> <span class='fu'>estimate_infections</span>(<span class='no'>reported_cases</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"negbin"</span>,
+                                <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
+                                <span class='kw'>delays</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_period</span>, <span class='no'>reporting_delay</span>),
+                                <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>warmup</span> <span class='kw'>=</span> <span class='fl'>200</span>, <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>,
+                                <span class='kw'>estimate_rt</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>return_fit</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+
+<span class='no'>backcalc</span>
+
+<span class='co'>## plot just infections as report_plots does not support the backcalculation only model</span>
+<span class='fu'><a href='plot_estimates.html'>plot_estimates</a></span>(<span class='kw'>estimate</span> <span class='kw'>=</span> <span class='no'>backcalc</span>$<span class='no'>summarised</span>[<span class='no'>variable</span> <span class='kw'>==</span> <span class='st'>"infections"</span>],
+               <span class='kw'>reported</span> <span class='kw'>=</span> <span class='no'>reported_cases</span>, <span class='kw'>ylab</span> <span class='kw'>=</span> <span class='st'>"Cases"</span>)
+}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -276,7 +377,7 @@ This setting is most appropriate when estimating historic Rt or when combined wi
 
       <footer>
       <div class="copyright">
-  <p>Developed by Sam Abbott, Joel Hellewell, Robin Thompson, Katelyn Gostic, Katharine Sherratt, Sophie Meakin, James Munday, Nikos Bosse, Sebastian Funk.</p>
+  <p>Developed by Sam Abbott, Joel Hellewell, Robin Thompson, Katelyn Gostic, Katharine Sherratt, Sophie Meakin, James Munday, Nikos Bosse, Paul Mee, Sebastian Funk.</p>
 </div>
 
 <div class="pkgdown">

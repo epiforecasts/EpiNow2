@@ -135,6 +135,11 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
+      <th>regional_output</th>
+      <td><p>A list of output as produced by <code>regional_epinow</code> and stored in the
+<code>regional</code> list.</p></td>
+    </tr>
+    <tr>
       <th>reported_cases</th>
       <td><p>A data frame of confirmed cases (confirm) by date (date), and region (<code>region</code>).</p></td>
     </tr>
@@ -170,11 +175,7 @@ in which to store summary of results.</p></td>
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
 <span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='co'>## Requires additional packages:</span>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>EpiSoon</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>forecastHybrid</span>)
-
-<span class='co'>## Construct example distributions</span>
+<span class='co'># Construct example distributions</span>
 <span class='no'>generation_time</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mean</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>mean</span>,
                         <span class='kw'>mean_sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>mean_sd</span>,
                         <span class='kw'>sd</span> <span class='kw'>=</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='covid_generation_times.html'>covid_generation_times</a></span>[<span class='fl'>1</span>, ]$<span class='no'>sd</span>,
@@ -193,14 +194,14 @@ in which to store summary of results.</p></td>
                         <span class='kw'>sd_sd</span> <span class='kw'>=</span> <span class='fl'>0.1</span>,
                         <span class='kw'>max</span> <span class='kw'>=</span> <span class='fl'>30</span>)
 
-<span class='co'>## Uses example case vector from EpiSoon</span>
+<span class='co'># Uses example case vector from EpiSoon</span>
 <span class='no'>cases</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>EpiNow2</span><span class='kw ns'>::</span><span class='no'><a href='example_confirmed.html'>example_confirmed</a></span>[<span class='fl'>1</span>:<span class='fl'>30</span>]
 
 <span class='no'>cases</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>data.table</span><span class='kw ns'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/rbindlist.html'>rbindlist</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(
   <span class='kw pkg'>data.table</span><span class='kw ns'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/copy.html'>copy</a></span>(<span class='no'>cases</span>)[, <span class='no'>region</span> <span class='kw'>:=</span> <span class='st'>"testland"</span>],
   <span class='no'>cases</span>[, <span class='no'>region</span> <span class='kw'>:=</span> <span class='st'>"realland"</span>]))
 
-<span class='co'>## Run basic nowcasting pipeline</span>
+<span class='co'># Run basic nowcasting pipeline</span>
 <span class='no'>regional_out</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='regional_epinow.html'>regional_epinow</a></span>(<span class='kw'>reported_cases</span> <span class='kw'>=</span> <span class='no'>cases</span>,
                                 <span class='kw'>generation_time</span> <span class='kw'>=</span> <span class='no'>generation_time</span>,
                                 <span class='kw'>incubation_period</span> <span class='kw'>=</span> <span class='no'>incubation_period</span>,
@@ -209,7 +210,7 @@ in which to store summary of results.</p></td>
                                 <span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='fl'>0.95</span>, <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
                                 <span class='kw'>summary</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
 
-<span class='fu'>regional_summary</span>(<span class='kw'>regional_output</span> <span class='kw'>=</span> <span class='no'>regional_out</span>,
+<span class='fu'>regional_summary</span>(<span class='kw'>regional_output</span> <span class='kw'>=</span> <span class='no'>regional_out</span>$<span class='no'>regional</span>,
                  <span class='kw'>reported_cases</span> <span class='kw'>=</span> <span class='no'>cases</span>,
                  <span class='kw'>summary_dir</span> <span class='kw'>=</span> <span class='st'>"../summary"</span>,
                  <span class='kw'>region_scale</span> <span class='kw'>=</span> <span class='st'>"Country"</span>)
@@ -226,7 +227,7 @@ in which to store summary of results.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Sam Abbott, Joel Hellewell, Robin Thompson, Katelyn Gostic, Katharine Sherratt, Sophie Meakin, James Munday, Nikos Bosse, Sebastian Funk.</p>
+  <p>Developed by Sam Abbott, Joel Hellewell, Robin Thompson, Katelyn Gostic, Katharine Sherratt, Sophie Meakin, James Munday, Nikos Bosse, Paul Mee, Sebastian Funk.</p>
 </div>
 
 <div class="pkgdown">

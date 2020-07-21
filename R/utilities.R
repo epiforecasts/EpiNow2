@@ -153,4 +153,6 @@ globalVariables(
     "target_date", "time", "time_varying_r", "top", "total", "type", "upper", 
     "value", "var", "vars", "viridis_palette", "window", ".", "%>%",
     "New confirmed cases by infection date", "Data", "R", "reference",
-    ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate", "point strat"))
+    ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate", 
+    "point", "strat", "estimate", "breakpoint", "variable", "value.V1"))
+

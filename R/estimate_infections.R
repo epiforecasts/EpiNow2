@@ -82,7 +82,7 @@
 #' def <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            samples = 1000, warmup = 200, cores = 4, chains = 4, 
+#'                            samples = 5000, warmup = 200, cores = 4, chains = 4,
 #'                            estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE)
 #'
 #' def   
@@ -94,10 +94,11 @@
 #' 
 #' ## Run model with stationary Rt assumption (likely to provide biased realtime estimates)
 #' stat <- estimate_infections(reported_cases, family = "negbin",
-#'                            generation_time = generation_time,
-#'                            delays = list(incubation_period, reporting_delay),
-#'                            samples = 1000, warmup = 200, cores = 4, chains = 4, 
-#'                            estimate_rt = TRUE, stationary = TRUE,
+#'                             generation_time = generation_time,
+#'                             delays = list(incubation_period, reporting_delay),
+#'                             samples = 1000, warmup = 200, cores = 4, chains = 4, 
+#'                             estimate_rt = TRUE, stationary = TRUE,
+#'                             verbose = TRUE, return_fit = TRUE)
 #'
 #' stat
 #' 
@@ -335,7 +336,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   if (estimate_rt) {
     out$initial_infections <- rnorm(mean_shift, mean = 0, sd = 0.1)
-    out$R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
+    out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                           scale = (rt_prior$sd^2) / rt_prior$mean))
     out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
                                                sd = generation_time$mean_sd))

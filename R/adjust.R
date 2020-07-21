@@ -52,10 +52,12 @@
 #' 
 #'## Map using a deterministic median shift for both delays
 #'report_median <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def), 
-#'                                            incubation_def, type = "median")      
+#'                                            type = "median")      
 #'                                            
 #'                                                    
-#'                                                            
+#'
+#' print(report_median)
+#'                                                          
 #' ## Map with a weekly reporting effect and stochastic reporting model
 #' report_stochastic <- adjust_infection_to_report(
 #'                       cases, delay_defs = list(incubation_def, delay_def),
