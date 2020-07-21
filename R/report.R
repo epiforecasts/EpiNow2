@@ -199,6 +199,7 @@ report_summary <- function(summarised_estimates,
 #' @importFrom cowplot theme_cowplot
 #' @importFrom patchwork plot_layout
 #' @inheritParams epinow
+#' @inheritParams plot_estimates
 #' @return A `ggplot2` object
 #' @export
 #' @examples 

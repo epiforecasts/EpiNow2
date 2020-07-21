@@ -228,9 +228,22 @@ a third variable <code>reference</code> which indicates what the date variable r
 #&gt; 128: 2020-06-30   258    report</div><div class='input'>
 <span class='co'>## Map using a deterministic median shift for both delays</span>
 <span class='no'>report_median</span> <span class='kw'>&lt;-</span> <span class='fu'>adjust_infection_to_report</span>(<span class='no'>cases</span>, <span class='kw'>delay_defs</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_def</span>, <span class='no'>delay_def</span>),
-                                           <span class='no'>incubation_def</span>, <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"median"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in reporting_model(cases): could not find function "reporting_model"</span></div><div class='input'>
+                                           <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"median"</span>)
 
 
+
+<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>report_median</span>)</div><div class='output co'>#&gt;            date confirm cases reference
+#&gt;   1: 2020-03-01      14    14    report
+#&gt;   2: 2020-03-02      62    62    report
+#&gt;   3: 2020-03-03      53    53    report
+#&gt;   4: 2020-03-04      97    97    report
+#&gt;   5: 2020-03-05      93    93    report
+#&gt;  ---                                   
+#&gt; 126: 2020-07-04     296   296    report
+#&gt; 127: 2020-07-05     255   255    report
+#&gt; 128: 2020-07-06     175   175    report
+#&gt; 129: 2020-07-07     174   174    report
+#&gt; 130: 2020-07-08     126   126    report</div><div class='input'>
 <span class='co'>## Map with a weekly reporting effect and stochastic reporting model</span>
 <span class='no'>report_stochastic</span> <span class='kw'>&lt;-</span> <span class='fu'>adjust_infection_to_report</span>(
                       <span class='no'>cases</span>, <span class='kw'>delay_defs</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='no'>incubation_def</span>, <span class='no'>delay_def</span>),
@@ -263,7 +276,7 @@ a third variable <code>reference</code> which indicates what the date variable r
 
       <footer>
       <div class="copyright">
-  <p>Developed by Sam Abbott, Joel Hellewell, Robin Thompson, Katelyn Gostic, Katharine Sherratt, Sophie Meakin, James Munday, Nikos Bosse, Sebastian Funk.</p>
+  <p>Developed by Sam Abbott, Joel Hellewell, Robin Thompson, Katelyn Gostic, Katharine Sherratt, Sophie Meakin, James Munday, Nikos Bosse, Paul Mee, Sebastian Funk.</p>
 </div>
 
 <div class="pkgdown">

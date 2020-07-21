@@ -11,6 +11,8 @@ report_plots(summarised_estimates, reported, target_folder)
 variable, median, bottom, and top. It should contain the following estimates: R, infections, reported_cases_rt,
 and r (rate of growth).}
 
+\item{reported}{A data.table of reported cases with the following variables: date, confirm.}
+
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 }
 \value{
