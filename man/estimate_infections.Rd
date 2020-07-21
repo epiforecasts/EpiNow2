@@ -127,7 +127,7 @@ reporting_delay <- list(mean = log(5),
 def <- estimate_infections(reported_cases, family = "negbin",
                            generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           samples = 1000, warmup = 200, cores = 4, chains = 4, 
+                           samples = 5000, warmup = 200, cores = 4, chains = 4,
                            estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE)
 
 def   
@@ -139,10 +139,11 @@ report_plots(summarised_estimates = def$summarised,
 
 ## Run model with stationary Rt assumption (likely to provide biased realtime estimates)
 stat <- estimate_infections(reported_cases, family = "negbin",
-                           generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay),
-                           samples = 1000, warmup = 200, cores = 4, chains = 4, 
-                           estimate_rt = TRUE, stationary = TRUE,
+                            generation_time = generation_time,
+                            delays = list(incubation_period, reporting_delay),
+                            samples = 1000, warmup = 200, cores = 4, chains = 4, 
+                            estimate_rt = TRUE, stationary = TRUE,
+                            verbose = TRUE, return_fit = TRUE)
 
 stat
 
