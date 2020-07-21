@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_estimate_infections");
-    reader.add_event(310, 308, "end", "model_estimate_infections");
+    reader.add_event(318, 316, "end", "model_estimate_infections");
     return reader;
 }
 template <typename T0__, typename T1__>
@@ -853,7 +853,7 @@ public:
             initial_R(j_1__) = vals_r__[pos__++];
         }
         try {
-            writer__.vector_lb_unconstrain(0, initial_R);
+            writer__.vector_unconstrain(initial_R);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable initial_R: ") + e.what()), current_statement_begin__, prog_reader__());
         }
@@ -1027,9 +1027,9 @@ public:
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> initial_R;
             (void) initial_R;  // dummy to suppress unused var warning
             if (jacobian__)
-                initial_R = in__.vector_lb_constrain(0, estimate_r, lp__);
+                initial_R = in__.vector_constrain(estimate_r, lp__);
             else
-                initial_R = in__.vector_lb_constrain(0, estimate_r);
+                initial_R = in__.vector_constrain(estimate_r);
             current_statement_begin__ = 126;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> initial_infections;
             (void) initial_infections;  // dummy to suppress unused var warning
@@ -1284,7 +1284,6 @@ public:
                     stan::lang::rethrow_located(std::runtime_error(std::string("Error initializing variable noise: ") + msg__.str()), current_statement_begin__, prog_reader__());
                 }
             }
-            check_greater_or_equal(function__, "noise", noise, 0);
             current_statement_begin__ = 136;
             size_t infections_j_1_max__ = t;
             for (size_t j_1__ = 0; j_1__ < infections_j_1_max__; ++j_1__) {
@@ -1543,7 +1542,7 @@ public:
         for (size_t j_1__ = 0; j_1__ < eta_j_1_max__; ++j_1__) {
             vars__.push_back(eta(j_1__));
         }
-        Eigen::Matrix<double, Eigen::Dynamic, 1> initial_R = in__.vector_lb_constrain(0, estimate_r);
+        Eigen::Matrix<double, Eigen::Dynamic, 1> initial_R = in__.vector_constrain(estimate_r);
         size_t initial_R_j_1_max__ = estimate_r;
         for (size_t j_1__ = 0; j_1__ < initial_R_j_1_max__; ++j_1__) {
             vars__.push_back(initial_R(j_1__));
@@ -1799,8 +1798,6 @@ public:
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
-            current_statement_begin__ = 135;
-            check_greater_or_equal(function__, "noise", noise, 0);
             // write transformed parameters
             if (include_tparams__) {
                 size_t noise_j_1_max__ = noise_terms;
@@ -1840,20 +1837,26 @@ public:
             stan::math::initialize(r, DUMMY_VAR__);
             stan::math::fill(r, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 292;
-            stan::math::assign(imputed_infections, poisson_rng(infections, base_rng__));
-            current_statement_begin__ = 295;
+            current_statement_begin__ = 293;
+            for (int s = 1; s <= t; ++s) {
+                current_statement_begin__ = 294;
+                stan::model::assign(imputed_infections, 
+                            stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
+                            poisson_rng((logical_gt(get_base1(infections, s, "infections", 1), 1e9) ? stan::math::promote_scalar<local_scalar_t__>(1e9) : stan::math::promote_scalar<local_scalar_t__>(get_base1(infections, s, "infections", 1)) ), base_rng__), 
+                            "assigning variable imputed_infections");
+            }
+            current_statement_begin__ = 299;
             if (as_bool(estimate_r)) {
                 {
-                current_statement_begin__ = 296;
+                current_statement_begin__ = 300;
                 local_scalar_t__ k(DUMMY_VAR__);
                 (void) k;  // dummy to suppress unused var warning
                 stan::math::initialize(k, DUMMY_VAR__);
                 stan::math::fill(k, DUMMY_VAR__);
                 stan::math::assign(k,pow((get_base1(gt_sd, estimate_r, "gt_sd", 1) / get_base1(gt_mean, estimate_r, "gt_mean", 1)), 2));
-                current_statement_begin__ = 297;
+                current_statement_begin__ = 301;
                 for (int s = 1; s <= rt; ++s) {
-                    current_statement_begin__ = 298;
+                    current_statement_begin__ = 302;
                     stan::model::assign(r, 
                                 stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
                                 ((pow(get_base1(R, s, "R", 1), k) - 1) / (k * get_base1(gt_mean, estimate_r, "gt_mean", 1))), 
@@ -1861,13 +1864,25 @@ public:
                 }
                 }
             }
-            current_statement_begin__ = 303;
+            current_statement_begin__ = 307;
             if (as_bool(model_type)) {
-                current_statement_begin__ = 304;
-                stan::math::assign(imputed_reports, neg_binomial_2_rng(reports, get_base1(rep_phi, model_type, "rep_phi", 1), base_rng__));
+                current_statement_begin__ = 308;
+                for (int s = 1; s <= rt; ++s) {
+                    current_statement_begin__ = 309;
+                    stan::model::assign(imputed_reports, 
+                                stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
+                                neg_binomial_2_rng((logical_gt(get_base1(reports, s, "reports", 1), 1e9) ? stan::math::promote_scalar<local_scalar_t__>(1e9) : stan::math::promote_scalar<local_scalar_t__>(get_base1(reports, s, "reports", 1)) ), get_base1(rep_phi, model_type, "rep_phi", 1), base_rng__), 
+                                "assigning variable imputed_reports");
+                }
             } else {
-                current_statement_begin__ = 306;
-                stan::math::assign(imputed_reports, poisson_rng(reports, base_rng__));
+                current_statement_begin__ = 312;
+                for (int s = 1; s <= rt; ++s) {
+                    current_statement_begin__ = 313;
+                    stan::model::assign(imputed_reports, 
+                                stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
+                                poisson_rng((logical_gt(get_base1(reports, s, "reports", 1), 1e9) ? stan::math::promote_scalar<local_scalar_t__>(1e9) : stan::math::promote_scalar<local_scalar_t__>(get_base1(reports, s, "reports", 1)) ), base_rng__), 
+                                "assigning variable imputed_reports");
+                }
             }
             // validate, write generated quantities
             current_statement_begin__ = 287;

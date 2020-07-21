@@ -130,17 +130,14 @@ summarise_results <- function(regions,
 #' @inheritParams plot_summary
 #' @inheritParams summarise_key_measures
 #' @inheritParams regional_epinow
+#' @inheritParams get_regional_results
 #' @importFrom purrr map_chr
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
 #' @importFrom cowplot get_legend
 #' @examples
 #' 
 #' \dontrun{
-#' ## Requires additional packages:
-#' library(EpiSoon)
-#' library(forecastHybrid)
-#' 
-#' ## Construct example distributions
+#' # Construct example distributions
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
 #'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
 #'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
@@ -159,14 +156,14 @@ summarise_results <- function(regions,
 #'                         sd_sd = 0.1,
 #'                         max = 30)
 #'                         
-#' ## Uses example case vector from EpiSoon
+#' # Uses example case vector from EpiSoon
 #' cases <- EpiNow2::example_confirmed[1:30]
 #' 
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
 #'   
-#' ## Run basic nowcasting pipeline
+#' # Run basic nowcasting pipeline
 #' regional_out <- regional_epinow(reported_cases = cases,
 #'                                 generation_time = generation_time,
 #'                                 incubation_period = incubation_period,
@@ -175,7 +172,7 @@ summarise_results <- function(regions,
 #'                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
 #'                                 summary = FALSE)
 #'                        
-#' regional_summary(regional_output = regional_out,
+#' regional_summary(regional_output = regional_out$regional,
 #'                  reported_cases = cases,
 #'                  summary_dir = "../summary",
 #'                  region_scale = "Country")
@@ -304,7 +301,7 @@ regional_summary <- function(regional_output,
   )
   
   high_plots$summary <- NULL
-  high_plots <- purrr:::map(high_plots,
+  high_plots <- purrr::map(high_plots,
                             ~ . + ggplot2::facet_wrap(~ region, scales = "fixed"))
   
   
@@ -328,7 +325,7 @@ regional_summary <- function(regional_output,
                         reported = reported_cases)
   
   plots$summary <- NULL
-  plots <- purrr:::map(plots,
+  plots <- purrr::map(plots,
                        ~ . + ggplot2::facet_wrap(~ region, scales = "fixed",
                                                  ncol = plots_per_row))
   

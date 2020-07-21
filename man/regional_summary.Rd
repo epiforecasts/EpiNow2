@@ -15,6 +15,9 @@ regional_summary(
 )
 }
 \arguments{
+\item{regional_output}{A list of output as produced by \code{regional_epinow} and stored in the
+\code{regional} list.}
+
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
 \item{results_dir}{An optional character string indicating the location of the results directory to extract results
@@ -39,11 +42,7 @@ Generate Regional Summary Output
 \examples{
 
 \dontrun{
-## Requires additional packages:
-library(EpiSoon)
-library(forecastHybrid)
-
-## Construct example distributions
+# Construct example distributions
 generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
                         sd = EpiNow2::covid_generation_times[1, ]$sd,
@@ -62,14 +61,14 @@ reporting_delay <- list(mean = log(10),
                         sd_sd = 0.1,
                         max = 30)
                         
-## Uses example case vector from EpiSoon
+# Uses example case vector from EpiSoon
 cases <- EpiNow2::example_confirmed[1:30]
 
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
   
-## Run basic nowcasting pipeline
+# Run basic nowcasting pipeline
 regional_out <- regional_epinow(reported_cases = cases,
                                 generation_time = generation_time,
                                 incubation_period = incubation_period,
@@ -78,7 +77,7 @@ regional_out <- regional_epinow(reported_cases = cases,
                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
                                 summary = FALSE)
                        
-regional_summary(regional_output = regional_out,
+regional_summary(regional_output = regional_out$regional,
                  reported_cases = cases,
                  summary_dir = "../summary",
                  region_scale = "Country")
