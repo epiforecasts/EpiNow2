@@ -165,7 +165,7 @@ transformed parameters {
            discretised_gamma_pmf(max_gt - j + 1, gt_mean[estimate_r], 
                                  gt_sd[estimate_r], max_gt);
      }
-  //initialise breakpoints as 0
+  // initialise breakpoints as 0
   rt_break_count = 0;
   // assume a global Rt * GP
   if (stationary) {
