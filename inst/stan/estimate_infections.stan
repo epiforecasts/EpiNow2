@@ -289,7 +289,11 @@ generated quantities {
   real r[estimate_r > 0 ? rt : 0];
   
   // simulated infections - assume poisson (with negative binomial reporting)
-  imputed_infections = poisson_rng(infections);
+  // check here prevents exception for ill-conditioned parameter samples
+  for (s in 1:t) {
+    imputed_infections[s] = poisson_rng(infections[s] > 1e9 ? 1e9 : infections[s]);
+  }
+
 
   // estimate the growth rate
   if (estimate_r) {
@@ -301,9 +305,13 @@ generated quantities {
   
   //simulate reported cases
   if (model_type) {
-    imputed_reports = neg_binomial_2_rng(reports, rep_phi[model_type]);
+    for (s in 1:rt) {
+      imputed_reports[s] = neg_binomial_2_rng(reports[s] > 1e9 ? 1e9 : reports[s], rep_phi[model_type]);
+    }
    }else{
-    imputed_reports = poisson_rng(reports);
+    for (s in 1:rt) {
+      imputed_reports[s] = poisson_rng(reports[s] > 1e9 ? 1e9 : reports[s]);
+    }
   }
 }
 
