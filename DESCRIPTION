@@ -1,6 +1,6 @@
 Package: EpiNow2
 Type: Package
-Title: Estimate Real-time Case Counts and Time-Varying Epidemiological Parameters 
+Title: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters 
 Version: 1.0.0
 Authors@R: c(
     person(given = "Sam Abbott",
