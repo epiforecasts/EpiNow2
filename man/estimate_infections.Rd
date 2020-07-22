@@ -146,7 +146,7 @@ report_plots(summarised_estimates = def$summarised,
                       reported = reported_cases)
                       
 
-## Run model with stationary Rt assumption (likely to provide biased realtime estimates)
+## Run model with stationary Rt assumption (likely to provide biased real-time estimates)
 stat <- estimate_infections(reported_cases, family = "negbin",
                             generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
