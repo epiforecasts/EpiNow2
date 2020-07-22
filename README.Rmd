@@ -11,7 +11,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# EpiNow2: Estimate realtime case counts and time-varying epidemiological parameters 
+# EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters 
 
 [![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions)
 [![Codecov test coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master)

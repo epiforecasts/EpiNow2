@@ -1,4 +1,4 @@
-#' Summarise Realtime Results
+#' Summarise Real-time Results
 #'
 #' @param regions An character string containing the list of regions to extract results for 
 #' (must all have results for the same target date).
