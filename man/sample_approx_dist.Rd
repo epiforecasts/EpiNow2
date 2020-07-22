@@ -70,7 +70,7 @@ print(onsets)
   
 ## Check that sum is equal to reported cases
 total_onsets <- median(
-   purrr::map_dbl(1:1000, 
+   purrr::map_dbl(1:100, 
                   ~ sum(sample_approx_dist(cases = cases,
                   dist_fn = delay_fn)$cases))) 
                    

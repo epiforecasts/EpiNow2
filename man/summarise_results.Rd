@@ -2,7 +2,7 @@
 % Please edit documentation in R/summarise.R
 \name{summarise_results}
 \alias{summarise_results}
-\title{Summarise Realtime Results}
+\title{Summarise Real-time Results}
 \usage{
 summarise_results(
   regions,
@@ -30,7 +30,7 @@ for this date.}
 A list of summary data
 }
 \description{
-Summarise Realtime Results
+Summarise Real-time Results
 }
 \examples{
 \dontrun{
