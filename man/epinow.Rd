@@ -24,6 +24,7 @@ epinow(
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
   stationary = FALSE,
+  fixed = FALSE,
   return_fit = FALSE,
   forecast_model,
   horizon = 7,
@@ -92,6 +93,11 @@ a global non-parametric effect and so represent a conservative estimate of break
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
+
+\item{fixed}{Logical, defaults to FALSE. If TRUE then a Gaussian process is not used and Rt is assumed to be constant over time
+(apart from any manually included breakpoints). If \code{estimate_rt} is FALSE then this reduces the backcalculation to a simple mean shift.
+This option can be used to produce a null model estimate, to produce a single Rt estimate for a short timeseries or as part of a wider
+analysis on the impact of interventions.}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 

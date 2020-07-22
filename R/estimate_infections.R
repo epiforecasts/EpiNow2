@@ -104,7 +104,7 @@
 #'                             generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
 #'                             samples = 1000, warmup = 200, cores = 4, chains = 4, 
-#'                             estimate_rt = TRUE, stationary = TRUE, model = model,
+#'                             estimate_rt = TRUE, stationary = TRUE,
 #'                             verbose = TRUE, return_fit = TRUE)
 #'
 #' stat
@@ -165,21 +165,21 @@
 #' # Run model with breakpoints but otherwise static Rt
 #' # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
 #' # model fit criteria (i.e LFO).                                                                    
-#' sbkp <- estimate_infections(reported_cases, family = "negbin",
+#' fbkp <- estimate_infections(reported_cases, family = "negbin",
 #'                             generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
 #'                             samples = 1000, warmup = 200, cores = 4, chains = 4,
-#'                             estimate_breakpoints = TRUE, fixed = TRUE,
+#'                             estimate_breakpoints = TRUE, fixed = TRUE, 
 #'                             verbose = TRUE, return_fit = TRUE)
 #'
-#' sbkp   
+#' fbkp   
 #' 
 #' # Plot output
-#' report_plots(summarised_estimates = sbkp$summarised,
+#' report_plots(summarised_estimates = fbkp$summarised,
 #'              reported = reported_cases)
 #'              
 #' # Pull out breakpoint summary
-#' cbkp$summarised[variable == "breakpoints"]
+#' fbkp$summarised[variable == "breakpoints"]
 #' 
 #' # Run model without Rt estimation (just backcalculation)
 #' backcalc <- estimate_infections(reported_cases, family = "negbin",
