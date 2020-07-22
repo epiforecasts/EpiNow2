@@ -26,6 +26,8 @@ functions {
     //account for numerical issues
     alpha = alpha < 0 ? 1e-5 : alpha;
     beta = beta < 0 ? 1e-5 : beta; 
+    alpha = is_inf(alpha) ? 1e8 : alpha;
+    beta = is_inf(beta) ? 1e8 : beta; 
     return((gamma_cdf(y + 1, alpha, beta) - gamma_cdf(y, alpha, beta)) / 
     (gamma_cdf(max_val, alpha, beta) - gamma_cdf(1, alpha, beta)));
   }
@@ -291,7 +293,7 @@ generated quantities {
   // simulated infections - assume poisson (with negative binomial reporting)
   // check here prevents exception for ill-conditioned parameter samples
   for (s in 1:t) {
-    imputed_infections[s] = poisson_rng(infections[s] > 1e9 ? 1e9 : infections[s]);
+    imputed_infections[s] = poisson_rng(infections[s] > 1e8 ? 1e8 : infections[s]);
   }
 
 
@@ -306,11 +308,11 @@ generated quantities {
   //simulate reported cases
   if (model_type) {
     for (s in 1:rt) {
-      imputed_reports[s] = neg_binomial_2_rng(reports[s] > 1e9 ? 1e9 : reports[s], rep_phi[model_type]);
+      imputed_reports[s] = neg_binomial_2_rng(reports[s] > 1e7 ? 1e7 : reports[s], rep_phi[model_type]);
     }
    }else{
     for (s in 1:rt) {
-      imputed_reports[s] = poisson_rng(reports[s] > 1e9 ? 1e9 : reports[s]);
+      imputed_reports[s] = poisson_rng(reports[s] > 1e8 ? 1e8 : reports[s]);
     }
   }
 }
