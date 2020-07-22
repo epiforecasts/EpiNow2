@@ -2,7 +2,7 @@
 #'
 #' @description This function removes nowcasts in the format produced by `EpiNow2` from a target
 #' directory for the date supplied.
-#' @param date Date object. Defaults to todays date
+#' @param date Date object. Defaults to today's date
 #' @param nowcast_dir Character string giving the filepath to the nowcast results directory.
 #'
 #' @return NULL

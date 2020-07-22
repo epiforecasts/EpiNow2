@@ -28,7 +28,7 @@ simulate_cases(
 \item{generation_interval}{Numeric vector describing the generation interval probability density}
 
 \item{rdist}{A function to be used to sample the number of cases. Must take two
-arguments with the first specfying the number of samples and the second the mean. Defaults
+arguments with the first specifying the number of samples and the second the mean. Defaults
 to \code{rpois} if not supplied}
 
 \item{delay_defs}{A list of single row data.tables that each  defines a delay distribution (model, parameters and maximum delay for each model).
@@ -40,10 +40,10 @@ by the day on which they report (1 = Monday, 7 = Sunday). By default no scaling 
 \item{reporting_model}{A function that takes a single numeric vector as an argument and returns a
 single numeric vector. Can be used to apply stochastic reporting effects. See the examples for details.}
 
-\item{truncate_future}{Logical, should cases be truncted if they occur after the first date reported in the data.
+\item{truncate_future}{Logical, should cases be truncated if they occur after the first date reported in the data.
 Defaults to \code{TRUE}.}
 
-\item{type}{Character string indicating the method to use to transfrom counts. Supports either "sample"
+\item{type}{Character string indicating the method to use to transform counts. Supports either "sample"
 which approximates sampling or "median" would shift by the median of the distribution.}
 }
 \value{

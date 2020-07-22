@@ -25,10 +25,10 @@ single numeric vector. Can be used to apply stochastic reporting effects. See th
 \item{reporting_effect}{A numeric vector of length 7 that allows the scaling of reported cases
 by the day on which they report (1 = Monday, 7 = Sunday). By default no scaling occurs.}
 
-\item{type}{Character string indicating the method to use to transfrom counts. Supports either "sample"
+\item{type}{Character string indicating the method to use to transform counts. Supports either "sample"
 which approximates sampling or "median" would shift by the median of the distribution.}
 
-\item{truncate_future}{Logical, should cases be truncted if they occur after the first date reported in the data.
+\item{truncate_future}{Logical, should cases be truncated if they occur after the first date reported in the data.
 Defaults to \code{TRUE}.}
 }
 \value{

@@ -6,7 +6,7 @@
 #' @param initial_date Date, (i.e `as.Date("2020-02-01")`). Starting date of the simulation.
 #' @param generation_interval Numeric vector describing the generation interval probability density
 #' @param rdist A function to be used to sample the number of cases. Must take two
-#' arguments with the first specfying the number of samples and the second the mean. Defaults
+#' arguments with the first specifying the number of samples and the second the mean. Defaults
 #' to `rpois` if not supplied
 #' @inheritParams adjust_infection_to_report
 #' @return A dataframe containing three variables: `date`, `cases` and `reference`.

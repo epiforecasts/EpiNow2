@@ -7,7 +7,7 @@
 clean_nowcasts(date = NULL, nowcast_dir = NULL)
 }
 \arguments{
-\item{date}{Date object. Defaults to todays date}
+\item{date}{Date object. Defaults to today's date}
 
 \item{nowcast_dir}{Character string giving the filepath to the nowcast results directory.}
 }

@@ -46,7 +46,7 @@
 #' increases the accuracy of the approximation at the cost of additional compute. 
 #' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
 #' Can optionally also contain the  `lengthscale_mean` and `lengthscale_sd`. If these are specified this will override 
-#' the defaults of 0 and 2 (normal ditributed truncated at zero).
+#' the defaults of 0 and 2 (normal distributed truncated at zero).
 #' @param verbose Logical, defaults to `TRUE`. Should verbose progress messages be printed.
 #' @param debug Logical, defaults to `FALSE`. Enables debug model in which additional diagnostics are available
 #' @export

@@ -60,7 +60,7 @@ Must also contain the \code{boundary_scale} (multiplied by half the range of the
 increases the accuracy of the approximation at the cost of additional compute.
 See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
 Can optionally also contain the  \code{lengthscale_mean} and \code{lengthscale_sd}. If these are specified this will override
-the defaults of 0 and 2 (normal ditributed truncated at zero).}
+the defaults of 0 and 2 (normal distributed truncated at zero).}
 
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}

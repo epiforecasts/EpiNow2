@@ -23,7 +23,7 @@ of this range are resampled.}
 \item{to_log}{Logical, should parameters be logged before use.}
 }
 \value{
-A data.table definining the distribution as used by \code{dist_skel}
+A data.table defining the distribution as used by \code{dist_skel}
 }
 \description{
 Generates a distribution definition when only parameter estimates

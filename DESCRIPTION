@@ -59,6 +59,7 @@ Imports:
     cowplot,
     patchwork
 Suggests:
+    spelling,
     EpiSoon,
     dplyr,
     tidyr,
@@ -86,3 +87,4 @@ LinkingTo:
     rstan (>= 2.18.1),
     StanHeaders (>= 2.18.0)
 SystemRequirements: GNU make
+Language: en-US
