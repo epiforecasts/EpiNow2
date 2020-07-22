@@ -1,7 +1,7 @@
 Package: EpiNow2
 Type: Package
 Title: Estimate Realtime Case Counts and Time-varying Epidemiological Parameters 
-Version: 0.3.0
+Version: 1.0.0
 Authors@R: c(
     person(given = "Sam Abbott",
            role = c("aut", "cre"),
@@ -34,9 +34,11 @@ Authors@R: c(
     person("Sebastian", "Funk",
             email = "sebastian.funk@lshtm.ac.uk",
             role = c("aut")))
-Description: To identify changes in the reproduction number, rate of spread, 
-             and doubling time during the course of outbreaks whilst accounting 
-             for potential biases due to delays in case reporting.
+Description: Estimates the time-varying reproduction number, rate of spread,
+             and doubling time using a range of open-source tools, a novel methodology,
+             and current best practices. It aims to help users avoid some of the limitations 
+             of naive implementations in a framework that is informed by community feedback 
+             and is under active development.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
