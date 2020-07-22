@@ -11,8 +11,10 @@
 ^docs$
 ^configure$
 ^configure\.win$
-^src/.*\.so$
-^src/.*\.dll$
-^src/.*\.o$
+src/.*\.o$
+src/.*\.cc$
+src/.*\.hpp$
 ^README\.Rmd$
-^README\.html$
+^README\.html
+^src/rcppExports\.cpp
+^src/stanExports_*
