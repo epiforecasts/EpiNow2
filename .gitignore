@@ -6,8 +6,5 @@
 src/*.so
 src/*.dll
 src/*.o
-src/*.cc
-src/*.cpp
-src/*.h
 inst/doc
 docs
