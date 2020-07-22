@@ -22,6 +22,7 @@ estimate_infections(
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
   stationary = FALSE,
+  fixed = FALSE,
   adapt_delta = 0.99,
   max_treedepth = 15,
   return_fit = FALSE,
@@ -85,6 +86,11 @@ a global non-parametric effect and so represent a conservative estimate of break
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
 
+\item{fixed}{Logical, defaults to FALSE. If TRUE then a Gaussian process is not used and Rt is assumed to be constant over time
+(apart from any manually included breakpoints). If \code{estimate_rt} is FALSE then this reduces the backcalculation to a simple mean shift.
+This option can be used to produce a null model estimate, to produce a single Rt estimate for a short timeseries or as part of a wider
+analysis on the impact of interventions.}
+
 \item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
 
 \item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
@@ -101,16 +107,19 @@ cases. It can optionally then estimate the time-varying reproduction number and 
 }
 \examples{
 \dontrun{
-## Get example case counts
+# Get example case counts
 reported_cases <- EpiNow2::example_confirmed[1:50]
 
-## Set up example generation time
+# Add a dummy breakpoint (used only when optionally estimating breakpoints)
+reported_cases <- reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"),
+                                                                     1, 0)]
+# Set up example generation time
 generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
                         sd = EpiNow2::covid_generation_times[1, ]$sd,
                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
                         max = 30)
-## Set delays between infection and case report (any number of delays can be specifed here)             
+# Set delays between infection and case report (any number of delays can be specifed here)             
 incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
@@ -123,7 +132,7 @@ reporting_delay <- list(mean = log(5),
                         sd_sd = log(1.5),
                         max = 30)
                         
-## Run model with default settings
+# Run model with default settings
 def <- estimate_infections(reported_cases, family = "negbin",
                            generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
@@ -132,7 +141,7 @@ def <- estimate_infections(reported_cases, family = "negbin",
 
 def   
 
-## Plot output
+# Plot output
 report_plots(summarised_estimates = def$summarised,
                       reported = reported_cases)
                       
@@ -147,30 +156,41 @@ stat <- estimate_infections(reported_cases, family = "negbin",
 
 stat
 
-## Plot output
+# Plot output
 report_plots(summarised_estimates = stat$summarised,
              reported = reported_cases)
+       
+# Run model with fixed Rt assumption 
+fixed <- estimate_infections(reported_cases, family = "negbin",
+                            generation_time = generation_time,
+                            delays = list(incubation_period, reporting_delay),
+                            samples = 1000, warmup = 200, cores = 4, chains = 4, 
+                            estimate_rt = TRUE, fixed = TRUE, 
+                            verbose = TRUE, return_fit = TRUE)
 
-## Add a dummy breakpoint
-reported_cases <- reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"),
-                                                                     1, 0)]
-## Run model with breakpoints                                                                      
+fixed
+
+# Plot output
+report_plots(summarised_estimates = fixed$summarised,
+             reported = reported_cases)
+
+# Run model with breakpoints                                                                      
 bkp <- estimate_infections(reported_cases, family = "negbin",
                            generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
                            samples = 1000, warmup = 200, cores = 4, chains = 4, 
-                           estimate_rt = TRUE, estimate_breakpoints = TRUE,
+                           estimate_rt = TRUE, estimate_breakpoints = TRUE, 
                            verbose = TRUE, return_fit = TRUE)
 
 bkp   
 
-## Plot output
+# Plot output
 report_plots(summarised_estimates = bkp$summarised,
              reported = reported_cases)
              
-## Run model with breakpoints but with constrained non-linear change over time 
-## This formulation may increase the apparent effect of the breakpoint but needs to be tested using
-## model fit criteria (i.e LFO).                                                                    
+# Run model with breakpoints but with constrained non-linear change over time 
+# This formulation may increase the apparent effect of the breakpoint but needs to be tested using
+# model fit criteria (i.e LFO).                                                                    
 cbkp <- estimate_infections(reported_cases, family = "negbin",
                             generation_time = generation_time,
                             gp = list(basis_prop = 0.3, boundary_scale = 2, 
@@ -182,14 +202,33 @@ cbkp <- estimate_infections(reported_cases, family = "negbin",
 
 cbkp   
 
-## Plot output
+# Plot output
 report_plots(summarised_estimates = cbkp$summarised,
              reported = reported_cases)
              
-## Pull out breakpoint summary
+# Pull out breakpoint summary
 cbkp$summarised[variable == "breakpoints"]
 
-## Run model without Rt estimation (just backcalculation)
+# Run model with breakpoints but otherwise static Rt
+# This formulation may increase the apparent effect of the breakpoint but needs to be tested using
+# model fit criteria (i.e LFO).                                                                    
+fbkp <- estimate_infections(reported_cases, family = "negbin",
+                            generation_time = generation_time,
+                            delays = list(incubation_period, reporting_delay),
+                            samples = 1000, warmup = 200, cores = 4, chains = 4,
+                            estimate_breakpoints = TRUE, fixed = TRUE, 
+                            verbose = TRUE, return_fit = TRUE)
+
+fbkp   
+
+# Plot output
+report_plots(summarised_estimates = fbkp$summarised,
+             reported = reported_cases)
+             
+# Pull out breakpoint summary
+fbkp$summarised[variable == "breakpoints"]
+
+# Run model without Rt estimation (just backcalculation)
 backcalc <- estimate_infections(reported_cases, family = "negbin",
                                 generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
@@ -198,7 +237,7 @@ backcalc <- estimate_infections(reported_cases, family = "negbin",
 
 backcalc
  
-## plot just infections as report_plots does not support the backcalculation only model
+# plot just infections as report_plots does not support the backcalculation only model
 plot_estimates(estimate = backcalc$summarised[variable == "infections"],
                reported = reported_cases, ylab = "Cases")
 }                                
