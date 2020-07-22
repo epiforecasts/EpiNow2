@@ -7,7 +7,7 @@
 plot_summary(summary_results, x_lab = "Region", log_cases = FALSE)
 }
 \arguments{
-\item{summary_results}{A datatable as returned by \code{summarise_results} (the \code{data} object).}
+\item{summary_results}{A data.able as returned by \code{summarise_results} (the \code{data} object).}
 
 \item{x_lab}{A character string giving the label for the x axis, defaults to region.}
 

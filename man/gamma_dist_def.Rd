@@ -40,7 +40,7 @@ of this range are resampled.}
 \item{samples}{Numeric, number of sample distributions to generate.}
 }
 \value{
-A data.table definining the distribution as used by \code{dist_skel}
+A data.table defining the distribution as used by \code{dist_skel}
 }
 \description{
 Generates a distribution definition when only parameter estimates

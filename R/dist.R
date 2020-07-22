@@ -226,7 +226,7 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
 #' @param scale_sd  Numeric, standard deviation of the scale parameter.
 #' @param samples Numeric, number of sample distributions to generate.
 #' @importFrom truncnorm rtruncnorm
-#' @return A data.table definining the distribution as used by `dist_skel`
+#' @return A data.table defining the distribution as used by `dist_skel`
 #' @export
 #' @inheritParams dist_skel
 #' @inheritParams lognorm_dist_def
@@ -288,7 +288,7 @@ gamma_dist_def <- function(shape, shape_sd,
 #' @param samples Numeric, number of sample distributions to generate.
 #' @param to_log Logical, should parameters be logged before use.
 #'
-#' @return A data.table definining the distribution as used by `dist_skel`
+#' @return A data.table defining the distribution as used by `dist_skel`
 #' @importFrom truncnorm rtruncnorm
 #' @export
 #' @inheritParams dist_skel
@@ -335,7 +335,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 
 
   
-#' Fit a Subsampled Boostrap to Integer Values and Summarise Distribution Parameters
+#' Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters
 #'
 #' @param values Numeric vector of integer values.
 #' @param dist Character string, which distribution to fit. Defaults to lognormal (`"lognormal"`) but
@@ -344,7 +344,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' @param samples Numeric, number of samples to take overall from the bootstrapped posteriors.
 #' @param bootstraps Numeric, defaults to 1. The number of bootstrap samples (with replacement)
 #'  of the delay distribution to take.
-#' @param bootstrap_samples Numeric, defaults to 100. The number of samples to take in each boostrap.
+#' @param bootstrap_samples Numeric, defaults to 100. The number of samples to take in each bootstrap.
 #' When the sample size of the supplied delay distribution is less than 100 this is used instead.
 #' @return A list summarising the bootstrapped distribution
 #' @importFrom purrr transpose
@@ -442,10 +442,10 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
 #' defined as `dist`). Should return the probability density or a sample from the defined distribution. See
 #' the examples for more.
 #' @param earliest_allowed_mapped A character string representing a date ("2020-01-01"). Indicates 
-#' the earlies allowed mapped value.
-#' @param type Character string indicating the method to use to transfrom counts. Supports either "sample"
+#' the earliest allowed mapped value.
+#' @param type Character string indicating the method to use to transform counts. Supports either "sample"
 #' which approximates sampling or "median" would shift by the median of the distribution.
-#' @param truncate_future Logical, should cases be truncted if they occur after the first date reported in the data. 
+#' @param truncate_future Logical, should cases be truncated if they occur after the first date reported in the data. 
 #' Defaults to `TRUE`.
 #' @return A `data.table` of cases by date of onset
 #' @export

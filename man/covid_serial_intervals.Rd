@@ -5,7 +5,7 @@
 \alias{covid_serial_intervals}
 \title{Covid Generation Serial Intervals}
 \format{
-A vector giviing the probability for each day
+A vector giving the probability for each day
 }
 \usage{
 covid_serial_intervals

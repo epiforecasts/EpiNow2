@@ -121,7 +121,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 
 #' Plot a Summary of the Latest Results
 #'
-#' @param summary_results A datatable as returned by `summarise_results` (the `data` object).
+#' @param summary_results A data.able as returned by `summarise_results` (the `data` object).
 #' @param x_lab A character string giving the label for the x axis, defaults to region.
 #' @param log_cases Logical, should cases be shown on a logged scale. Defaults to `FALSE`
 #' @return A `ggplot2` object

@@ -2,7 +2,7 @@
 % Please edit documentation in R/dist.R
 \name{bootstrapped_dist_fit}
 \alias{bootstrapped_dist_fit}
-\title{Fit a Subsampled Boostrap to Integer Values and Summarise Distribution Parameters}
+\title{Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters}
 \usage{
 bootstrapped_dist_fit(
   values,
@@ -24,7 +24,7 @@ gamma (\code{"gamma"}) is also supported.}
 \item{bootstraps}{Numeric, defaults to 1. The number of bootstrap samples (with replacement)
 of the delay distribution to take.}
 
-\item{bootstrap_samples}{Numeric, defaults to 100. The number of samples to take in each boostrap.
+\item{bootstrap_samples}{Numeric, defaults to 100. The number of samples to take in each bootstrap.
 When the sample size of the supplied delay distribution is less than 100 this is used instead.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should progress messages be printed}
@@ -33,7 +33,7 @@ When the sample size of the supplied delay distribution is less than 100 this is
 A list summarising the bootstrapped distribution
 }
 \description{
-Fit a Subsampled Boostrap to Integer Values and Summarise Distribution Parameters
+Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters
 }
 \examples{
 

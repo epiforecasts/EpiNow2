@@ -25,15 +25,15 @@ the examples for more.}
 \item{max_value}{Numeric, maximum value to allow. Defaults to 120 days}
 
 \item{earliest_allowed_mapped}{A character string representing a date ("2020-01-01"). Indicates
-the earlies allowed mapped value.}
+the earliest allowed mapped value.}
 
 \item{direction}{Character string, defato "backwards". Direction in which to map cases. Supports
 either "backwards" or "forwards".}
 
-\item{type}{Character string indicating the method to use to transfrom counts. Supports either "sample"
+\item{type}{Character string indicating the method to use to transform counts. Supports either "sample"
 which approximates sampling or "median" would shift by the median of the distribution.}
 
-\item{truncate_future}{Logical, should cases be truncted if they occur after the first date reported in the data.
+\item{truncate_future}{Logical, should cases be truncated if they occur after the first date reported in the data.
 Defaults to \code{TRUE}.}
 }
 \value{

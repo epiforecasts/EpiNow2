@@ -1,7 +1,7 @@
 #' Report case counts by date of report                        
 #' @param case_estimates A data.table of case estimates with the following variables: date, sample, cases
 #' @param case_forecast A data.table of case forecasts with the following variables: date, sample, cases. If not supplied the
-#' default is not incoperate forecasts.
+#' default is not to incorporate forecasts.
 #' @param reporting_effect A `data.table` giving the weekly reporting effect with the following variables:
 #' `sample` (must be the same as in `nowcast`), `effect` (numeric scaling factor for each weekday), `day`
 #' (numeric 1 - 7 (1 = Monday and 7 = Sunday)). If not supplied then no weekly reporting effect is assumed.

@@ -5,7 +5,7 @@
 \alias{covid_incubation_period}
 \title{Covid Incubation Period}
 \format{
-A vector giviing the probability for each day
+A vector giving the probability for each day
 }
 \usage{
 covid_incubation_period
