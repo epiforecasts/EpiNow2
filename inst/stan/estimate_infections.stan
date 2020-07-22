@@ -89,6 +89,7 @@ data {
 	int stationary;                    // is underlying Rt assumed to be stationary (+ GP)
 	int break_no;                      // no of breakpoints (0 = no breakpoints)
 	int breakpoints[rt];               // when do breakpoints occur 
+	int fixed;                        // Indicates if Rt/backcalculation is fixed                   
 }
 
 transformed data{
@@ -121,12 +122,12 @@ parameters{
   real<lower = 0> delay_mean[delays];                 // mean of delays
   real<lower = 0> delay_sd[delays];                   // sd of delays
   real<lower = 0> rep_phi[model_type];                // overdispersion of the reporting process
-  real<lower = 0> rho[1];                             // length scale of noise GP
-  real<lower = 0> alpha[1];                           // scale of of noise GP
-  vector[M] eta;                                      // unconstrained noise
+  real<lower = 0> rho[fixed ? 0 : 1];                 // length scale of noise GP
+  real<lower = 0> alpha[fixed ? 0 : 1];               // scale of of noise GP
+  vector[fixed ? 0 : M] eta;                          // unconstrained noise
   vector[estimate_r] initial_R;                       // baseline reproduction number estimate
   vector[estimate_r > 0 ? no_rt_time : 0] initial_infections;
-                                                      // baseline reproduction number estimate
+                                                      // seed infections adjustment when estimating Rt
   real<lower = 0> gt_mean[estimate_r];                // mean of generation time
   real <lower = 0> gt_sd[estimate_r];                 // sd of generation time
   real rt_break_eff[break_no];                        // Rt breakpoint effects
@@ -134,7 +135,7 @@ parameters{
 
 transformed parameters {
   // stored transformed parameters
-  vector[noise_terms] noise;                              // noise on the mean shifted observed cases
+  vector[fixed ? 0 : noise_terms] noise;                  // noise on the mean shifted observed cases
   vector[t] infections;                                   // infections over time
   vector[rt] reports;                                     // reports over time
   vector[est_week_eff ? 7 : 0] day_of_week_eff;           // day of the week effect
@@ -143,19 +144,21 @@ transformed parameters {
   // temporary transformed parameters                                 
   vector[estimate_r > 0 ? max_gt : 0] rev_generation_time;// reversed generation time pdf
   vector[estimate_r > 0 ? rt : 0] infectiousness;         // infections over time
-  vector[M] diagSPD;                                      // spectral density
-	vector[M] SPD_eta;                                      // spectral density * noise
+  vector[fixed > 0 ? 0 : M] diagSPD;                      // spectral density
+	vector[fixed > 0 ? 0 : M] SPD_eta;                      // spectral density * noise
 	int rt_break_count;                                     // counter for Rt breakpoints
 	
   // GP in noise - spectral densities
-	for(m in 1:M){ 
+  if (!fixed) {
+    for(m in 1:M){ 
 		diagSPD[m] =  sqrt(spd_SE(alpha[1], rho[1], sqrt(lambda(L, m)))); 
-	}
-	SPD_eta = diagSPD .* eta;
+		}
+  	SPD_eta = diagSPD .* eta;
 	
-	noise = rep_vector(1e-5, noise_terms);
-  noise = noise + exp(PHI[,] * SPD_eta);
-
+  	noise = rep_vector(1e-5, noise_terms);
+    noise = noise + exp(PHI[,] * SPD_eta);
+  }
+  
   // initialise infections
   infections = rep_vector(1e-5, t);
 
@@ -171,8 +174,11 @@ transformed parameters {
   rt_break_count = 0;
   // assume a global Rt * GP
   if (stationary) {
+    R = rep_vector(initial_R[estimate_r], rt);
     for (s in 1:rt) {
-      R[s] = initial_R[estimate_r] * noise[s];
+      if (!fixed) {
+        R[s] *= noise[s];
+      }
       // apply breakpoints if present
       if (break_no > 0) {
        rt_break_count += breakpoints[s];
@@ -209,7 +215,12 @@ transformed parameters {
       }
   }else{
     // generate infections from prior infections and non-parameteric noise
-    infections = infections + shifted_cases .* noise;
+    if(!fixed) {
+      infections = infections + shifted_cases .* noise;
+    }else{
+      infections = infections + shifted_cases;
+    }
+
   }
 
   // reports from onsets
@@ -246,9 +257,11 @@ transformed parameters {
 
 model {
   // priors for noise GP
+  if (!fixed) {
   rho ~  normal(lengthscale_mean, lengthscale_sd);
   alpha ~ normal(0, 0.1);
   eta ~ std_normal();
+  }
 
   // reporting overdispersion
   if (model_type) {
