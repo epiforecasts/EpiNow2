@@ -127,7 +127,7 @@ get_regional_results <- function(regional_output,
     
     # Get estimates -----------------------------------------------------------
     
-    get_estimates <- function(samples, summarised) {
+    get_estimates_file <- function(samples, summarised) {
       samples <- purrr::map(regions, ~ load_data(samples, .,
                                                  result_dir = results_dir,
                                                  date = date)[[1]])
@@ -151,20 +151,20 @@ get_regional_results <- function(regional_output,
     
     
     out <- list()
-    out$estimates <- get_estimates(samples = "estimate_samples.rds",
-                                   summarised = "summarised_estimates.rds")
+    out$estimates <- get_estimates_file(samples = "estimate_samples.rds",
+                                        summarised = "summarised_estimates.rds")
     
     if (forecast) {
       
-      out$forecast <- get_estimates(samples = "forecast_samples.rds",
-                                    summarised = "summarised_forecast.rds")
+      out$forecast <- get_estimates_file(samples = "forecast_samples.rds",
+                                         summarised = "summarised_forecast.rds")
       
-      out$estimated_reported_cases <- get_estimates(samples = "estimated_reported_cases_samples.rds",
-                                                    summarised = "summarised_estimated_reported_cases.rds")
+      out$estimated_reported_cases <- get_estimates_file(samples = "estimated_reported_cases_samples.rds",
+                                                         summarised = "summarised_estimated_reported_cases.rds")
     }
   }else{
     
-    get_estimates <- function(data) {
+    get_estimates_data <- function(data) {
       samples <- purrr::map(regional_output, ~ .[[data]]$samples)
       
       samples <- data.table::rbindlist(samples, idcol = "region")
@@ -183,12 +183,12 @@ get_regional_results <- function(regional_output,
     }
     
     out <- list()
-    out$estimates <- get_estimates("estimates")
+    out$estimates <- get_estimates_data("estimates")
     
     if (forecast) {
-      out$forecast <- get_estimates("forecasts")
+      out$forecast <- get_estimates_data("forecasts")
       
-      out$estimated_reported_cases <- get_estimates("estimated_reported_cases")
+      out$estimated_reported_cases <- get_estimates_data("estimated_reported_cases")
     }
   }
 

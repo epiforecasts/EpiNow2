@@ -19,4 +19,4 @@ WORKDIR /home/rstudio/EpiNow2
 RUN Rscript -e "devtools::install_dev_deps()"
 
 ## Install the local version of EpiNow2
-Run R CMD INSTALL --no-multiarch --with-keep.source
+Run R CMD INSTALL --no-multiarch --with-keep.source EpiNow2
