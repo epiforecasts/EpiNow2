@@ -18,7 +18,7 @@ WORKDIR /home/rstudio/EpiNow2
 ## Install missing packages
 RUN Rscript -e "devtools::install_dev_deps()"
 
-## WORKDIR ..
+WORKDIR ..
 
 ## Install the local version of EpiNow2
 Run R CMD INSTALL --no-multiarch --with-keep.source EpiNow2
