@@ -70,7 +70,7 @@ epinow <- function(reported_cases, family = "negbin",
                    prior_smoothing_window = 7, cores = 2, chains = 2,
                    samples = 1000, warmup = 200, adapt_delta = 0.99,  max_treedepth = 15,
                    estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE,
-                   stationary = FALSE, return_fit = FALSE, forecast_model, horizon = 7,
+                   stationary = FALSE, fixed = FALSE, return_fit = FALSE, forecast_model, horizon = 7,
                    ensemble_type = "mean", return_estimates = TRUE,
                    target_folder, target_date, verbose = TRUE, debug = FALSE) {
  
@@ -137,7 +137,7 @@ if (!is.null(target_folder)) {
                                     estimate_rt = estimate_rt,
                                     estimate_week_eff = estimate_week_eff,
                                     estimate_breakpoints = estimate_breakpoints,
-                                    stationary = stationary,
+                                    stationary = stationary, fixed = fixed,
                                     horizon = horizon,
                                     verbose = verbose, return_fit = return_fit,
                                     debug = debug) 
