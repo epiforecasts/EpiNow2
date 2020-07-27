@@ -380,12 +380,9 @@ regional_epinow <- function(reported_cases,
       return_estimates = return_estimates,
       cores = cores,
       ...)
-    
-    if (return_estimates) {
-      return(out)
-    }else{
-      return(invisible(NULL))
-    }}
+
+     return(out)
+    }
   
   safe_run_region <- purrr::safely(run_region)
   
