@@ -377,7 +377,7 @@ regional_epinow <- function(reported_cases,
       reported_cases = regional_cases,
       target_folder = target_folder,
       target_date = target_date, 
-      return_estimates = return_estimates,
+      return_estimates = TRUE,
       cores = cores,
       ...)
 
