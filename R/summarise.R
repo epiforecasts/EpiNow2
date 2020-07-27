@@ -308,13 +308,13 @@ regional_summary <- function(regional_output,
   if (!is.null(summary_dir)) {
     suppressWarnings(
       suppressMessages(
-        ggplot2::ggsave(file.path(summary_dir, "high_cases_rt_plot.png"),
+        ggplot2::ggsave(file.path(summary_dir, "high_infections_rt_plot.png"),
                         high_plots$reff, dpi = 400, width = 12, height = 12)
       ))
     
     suppressWarnings(
       suppressMessages(
-        ggplot2::ggsave(file.path(summary_dir, "high_cases_plot.png"), 
+        ggplot2::ggsave(file.path(summary_dir, "high_infections_plot.png"), 
                         high_plots$infections, dpi = 400, width = 12, height = 12)
       ))
   }
@@ -326,7 +326,7 @@ regional_summary <- function(regional_output,
   
   plots$summary <- NULL
   plots <- purrr::map(plots,
-                       ~ . + ggplot2::facet_wrap(~ region, scales = "fixed",
+                       ~ . + ggplot2::facet_wrap(~ region, scales = "free_",
                                                  ncol = plots_per_row))
   
   
@@ -342,7 +342,15 @@ regional_summary <- function(regional_output,
     
     suppressWarnings(
       suppressMessages( 
-        ggplot2::ggsave(file.path(summary_dir, "cases_plot.png"), 
+        ggplot2::ggsave(file.path(summary_dir, "infections_plot.png"), 
+                        plots$infections, dpi = 330, width = 24, 
+                        height =  4 * round(length(regions) / plots_per_row, 0),
+                        limitsize = FALSE)
+      ))
+    
+        suppressWarnings(
+      suppressMessages( 
+        ggplot2::ggsave(file.path(summary_dir, "reported_cases_plot.png"), 
                         plots$infections, dpi = 330, width = 24, 
                         height =  4 * round(length(regions) / plots_per_row, 0),
                         limitsize = FALSE)
