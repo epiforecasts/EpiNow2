@@ -326,7 +326,7 @@ regional_summary <- function(regional_output,
   
   plots$summary <- NULL
   plots <- purrr::map(plots,
-                       ~ . + ggplot2::facet_wrap(~ region, scales = "free_",
+                       ~ . + ggplot2::facet_wrap(~ region, scales = "free_y",
                                                  ncol = plots_per_row))
   
   
