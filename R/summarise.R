@@ -297,7 +297,7 @@ regional_summary <- function(regional_output,
   
   high_plots <- report_plots(
     summarised_estimates = results$estimates$summarised[region %in% summarised_results$regions_by_inc[1:6]], 
-    reported = reported_cases
+    reported = reported_cases[region %in% summarised_results$regions_by_inc[1:6]]
   )
   
   high_plots$summary <- NULL
