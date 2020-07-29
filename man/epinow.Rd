@@ -23,6 +23,7 @@ epinow(
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
+  burn_in = 0,
   stationary = FALSE,
   fixed = FALSE,
   return_fit = FALSE,
@@ -89,6 +90,11 @@ for the prior based on reported cases.}
 \item{estimate_breakpoints}{Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then \code{reported_cases}
 must contain a \code{breakpoint} variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
 a global non-parametric effect and so represent a conservative estimate of breakpoint changes.}
+
+\item{burn_in}{Numeric, defaults to 0. The number of initial estimates to discard. This argument may be used to reduce
+spurious findings when running \code{estimate_infections} on a partial timeseries (as the earliest estimates will not be informed by
+all cases that occurred only those supplied to \code{estimate_infections}). The combined delays used will inform the appropriate length
+of this burn in but 7 days is likely a sensible starting point.}
 
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.

@@ -10,7 +10,8 @@
 #'
 #' @return A `ggplot2` object
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon
+#' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon scale_y_continuous
+#' @importFrom scales comma
 #' @importFrom stringr str_to_sentence
 #' @importFrom cowplot theme_cowplot
 #' @examples
@@ -74,7 +75,8 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   if (!missing(reported)) {
     if (obs_as_col) {
       plot <- plot +
-        ggplot2::geom_col(data = reported,
+        ggplot2::geom_col(data = reported[date >= min(estimate$date, na.rm = TRUE) &
+                                            date <= max(estimate$date, na.rm = TRUE)],
                           ggplot2::aes(y = confirm), fill = "grey", col = "white",
                           show.legend = FALSE)
     }else{
@@ -104,6 +106,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
     ggplot2::labs(y = ylab, x = "Date", col = "Type", fill = "Type") +
     ggplot2::expand_limits(y = 0) + 
     ggplot2::scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+    ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
   
   ## Add in a horiontal line if required

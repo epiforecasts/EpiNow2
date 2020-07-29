@@ -29,6 +29,10 @@
 #' @param estimate_breakpoints Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then `reported_cases`
 #' must contain a `breakpoint` variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
 #' a global non-parametric effect and so represent a conservative estimate of breakpoint changes.
+#' @param burn_in Numeric, defaults to 0. The number of initial estimates to discard. This argument may be used to reduce 
+#' spurious findings when running `estimate_infections` on a partial timeseries (as the earliest estimates will not be informed by 
+#' all cases that occurred only those supplied to `estimate_infections`). The combined delays used will inform the appropriate length
+#' of this burn in but 7 days is likely a sensible starting point.
 #' @param stationary Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt 
 #' this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 #' This setting is most appropriate when estimating historic Rt or when combined with breakpoints.
@@ -53,7 +57,7 @@
 #' @importFrom rstan sampling extract 
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose map_dbl
-#' @importFrom lubridate wday
+#' @importFrom lubridate wday days
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom stats lm
 #' @importFrom HDInterval hdi
@@ -97,7 +101,22 @@
 #' # Plot output
 #' report_plots(summarised_estimates = def$summarised,
 #'                       reported = reported_cases)
-#'                       
+#'
+#'# Run the model with default setting on a later snapshot of data (use burn_in here to remove the first week of
+#'# estimates that may be impacted by this most).
+#' snapshot_cases <- EpiNow2::example_confirmed[80:130]
+#' snapshot <- estimate_infections(snapshot_cases, family = "negbin",
+#'                                 generation_time = generation_time,
+#'                                 delays = list(incubation_period, reporting_delay),
+#'                                 samples = 1000, warmup = 400, cores = 4, chains = 4,
+#'                                 estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE,
+#'                                 burn_in = 7)
+#'
+#' snapshot   
+#' 
+#' # Plot output
+#' report_plots(summarised_estimates = snapshot$summarised,
+#'                       reported = snapshot_cases)     
 #' 
 #' ## Run model with stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, family = "negbin",
@@ -202,7 +221,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 horizon = 7, model, cores = 1, chains = 2,
                                 samples = 1000, warmup = 200,
                                 estimate_rt = TRUE, estimate_week_eff = TRUE,
-                                estimate_breakpoints = FALSE, 
+                                estimate_breakpoints = FALSE, burn_in = 0,
                                 stationary = FALSE, fixed = FALSE,
                                 adapt_delta = 0.99, max_treedepth = 15, 
                                 return_fit = FALSE, verbose = TRUE, debug = FALSE){
@@ -255,6 +274,10 @@ estimate_infections <- function(reported_cases, family = "negbin",
   reported_cases <- reported_cases[order(date)][,
                                  cum_cases := cumsum(confirm)][cum_cases > 0][, 
                                  cum_cases := NULL]
+  
+  # Record earliest date with data ------------------------------------------
+  
+  start_date <- min(reported_cases$date, na.rm = TRUE)
   
   # Estimate the mean delay -----------------------------------------------
   
@@ -537,6 +560,11 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                       data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon - mean_shift),
                                       "estimate based on partial data",                    
                                       "estimate"))]
+ 
+ ## Remove burn in period if specified
+ if (burn_in > 0) {
+   format_out$samples <- format_out$samples[is.na(date) | date >= (start_date + lubridate::days(burn_in))]
+ }
  
  ## Summarise samples
  format_out$summarised <- data.table::copy(format_out$samples)[, .(

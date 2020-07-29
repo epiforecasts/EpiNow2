@@ -291,7 +291,9 @@ regional_summary <- function(regional_output,
     suppressWarnings(
       suppressMessages(
         ggplot2::ggsave(file.path(summary_dir, "summary_plot.png"),
-                        dpi = 330, height = 12, width = ifelse(length(regions) > 60, 24, 12))
+                        dpi = 330, height = 12, width = ifelse(length(regions) > 60, 
+                                                               ifelse(length(regions) > 120, 36, 24),
+                                                               12))
       )
     )
   }
@@ -304,7 +306,7 @@ regional_summary <- function(regional_output,
   
   high_plots$summary <- NULL
   high_plots <- purrr::map(high_plots,
-                            ~ . + ggplot2::facet_wrap(~ region, scales = "fixed"))
+                            ~ . + ggplot2::facet_wrap(~ region, scales = "fixed"), ncol = 2)
   
   
   if (!is.null(summary_dir)) {
