@@ -34,7 +34,7 @@ A \code{stan} fit of an interval censored distribution
 Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
 }
 \examples{
-\dontrun{
+\donttest{
 ## Integer adjusted exponential model
 dist_fit(rexp(1:100, 2), samples = 1000, dist = "exp", 
          cores = 2, verbose = TRUE)

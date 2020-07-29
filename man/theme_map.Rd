@@ -42,9 +42,3 @@ A \code{ggplot2} object
 \description{
 Custom Map Theme
 }
-\examples{
-
-
-## Code 
-theme_map
-}

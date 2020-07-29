@@ -106,7 +106,7 @@ This function uses a non-parametric approach to reconstruct cases by date of inf
 cases. It can optionally then estimate the time-varying reproduction number and the rate of growth.
 }
 \examples{
-\dontrun{
+\donttest{
 # Get example case counts
 reported_cases <- EpiNow2::example_confirmed[1:50]
 

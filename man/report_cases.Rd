@@ -39,7 +39,7 @@ being summarised across samples.
 Report case counts by date of report
 }
 \examples{
-\dontrun{
+\donttest{
 ## Define example cases
 cases <- EpiNow2::example_confirmed[1:40]
 
