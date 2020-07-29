@@ -46,7 +46,7 @@ A list of output stratified at the top level into regional output and across reg
 Estimates Rt by region. See the documentation for \code{epinow} for further information.
 }
 \examples{
- \dontrun{
+ \donttest{
 ## Construct example distributions
 generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,

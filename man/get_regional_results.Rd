@@ -27,7 +27,7 @@ Get Combined Regional Results
 \examples{
 
 
-\dontrun{
+\donttest{
 # Construct example distributions
 generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,

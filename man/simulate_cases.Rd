@@ -53,9 +53,9 @@ A dataframe containing three variables: \code{date}, \code{cases} and \code{refe
 Simulate Cases by Date of Infection, Onset and Report
 }
 \examples{
-\dontrun{
-# Requires
-install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
+\donttest{
+if(requireNamespace("EpiSoon")){
+
 library(EpiSoon)
 
 # Define an initial rt vector 
@@ -121,5 +121,6 @@ simulated_cases <- simulate_cases(rts, initial_cases = 100 ,
                                   })
                    
 print(simulated_cases)
+}
 }
 }

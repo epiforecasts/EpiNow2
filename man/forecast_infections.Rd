@@ -47,9 +47,10 @@ This function provides optional tools for forecasting cases and Rt estimates usi
 available \href{https://epiforecasts.io/EpiSoon/}{here}.
 }
 \examples{
-\dontrun{
-## This function requires the following packages to be installed.
-## install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
+\donttest{
+
+if(requireNamespace("EpiSoon")){
+   if(requireNamespace("forecastHybrid")){
 library(EpiSoon)
 library(forecastHybrid)
 
@@ -99,5 +100,7 @@ forecast <- forecast_infections(
      samples = 1000)
                                 
 forecast
+  }
+ }
 }                              
 }

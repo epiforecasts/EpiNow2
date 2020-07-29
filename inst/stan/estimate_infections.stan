@@ -1,59 +1,8 @@
 functions {
-  // convolve a pdf and case vector 
-  vector convolve(vector cases, vector pdf) {
-    int t = num_elements(cases);
-    int max_pdf = num_elements(pdf);
-    vector[t] convolved_cases = rep_vector(1e-5, t);
-    for (s in 1:t) {
-        convolved_cases[s] += dot_product(cases[max(1, (s - max_pdf + 1)):s], tail(pdf, min(max_pdf, s)));
-    }
-   return(convolved_cases);
-  }
-
-  // discretised truncated lognormal pmf
-  real discretised_lognormal_pmf(int y, real mu, real sigma, int max_val) {
-    real adj_y = y + 1e-5;
-    return((normal_cdf((log(adj_y + 1) - mu) / sigma, 0.0, 1.0) - normal_cdf((log(adj_y) - mu) / sigma, 0.0, 1.0)) / 
-            normal_cdf((log(max_val) - mu) / sigma, 0.0, 1.0));
-  }
-  
-  // discretised truncated gamma pmf
-  real discretised_gamma_pmf(int y, real mu, real sigma, int max_val) {
-    // calculate alpha and beta for gamma distribution
-    real c_sigma = sigma + 1e-5;
-    real alpha = ((mu)/ c_sigma)^2;
-    real beta = (mu) / (c_sigma^2);
-    //account for numerical issues
-    alpha = alpha < 0 ? 1e-5 : alpha;
-    beta = beta < 0 ? 1e-5 : beta; 
-    alpha = is_inf(alpha) ? 1e8 : alpha;
-    beta = is_inf(beta) ? 1e8 : beta; 
-    return((gamma_cdf(y + 1, alpha, beta) - gamma_cdf(y, alpha, beta)) / 
-    (gamma_cdf(max_val, alpha, beta) - gamma_cdf(1, alpha, beta)));
-  }
-  
-  // exponential quadratic kernal
-	real spd_SE(real alpha, real rho, real w) {
-		real S;
-		S = (alpha^2) * sqrt(2*pi()) * rho * exp(-0.5*(rho^2)*(w^2));
-		return S;
-	}
-	
-	// basis function for approximate hilbert space gp
-	// see here for details: https://arxiv.org/pdf/2004.11408.pdf
-	vector phi_SE(real L, int m, vector x) {
-		vector[rows(x)] fi;
-		fi = 1/sqrt(L) * sin(m*pi()/(2*L) * (x+L));
-		return fi;
-	}
-	
-	// eigenvalues for approximate hilbert space gp
-	// see here for details: https://arxiv.org/pdf/2004.11408.pdf
-	real lambda(real L, int m) {
-		real lam;
-		lam = ((m*pi())/(2*L))^2;
-		return lam;
-	}
+#include functions/convolve.stan
+#include functions/discretised_lognormal_pmf.stan
+#include functions/discretised_gamma_pmf.stan
+#include functions/approximate_gp_functions.stan
 }
 
 

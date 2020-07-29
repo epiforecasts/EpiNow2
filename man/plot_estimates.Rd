@@ -26,7 +26,7 @@ A \code{ggplot2} object
 Plot Estimates
 }
 \examples{
-\dontrun{
+\donttest{
 ## Define example cases
 cases <- EpiNow2::example_confirmed[1:40]
 
@@ -73,6 +73,4 @@ plot_estimates(estimate = out$summarised[variable == "R"],
                hline = 1)
 
 }
-
-
 }

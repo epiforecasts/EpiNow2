@@ -44,7 +44,3 @@ This general purpose function can be used to generate a country map for a single
 the data supplied must contain a \code{region_code} variable for linking to mapping data. This function requires
 the installation of the \code{rnaturalearth} package.
 }
-\examples{
-
-country_map
-}
