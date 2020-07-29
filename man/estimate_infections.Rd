@@ -151,7 +151,8 @@ def
 report_plots(summarised_estimates = def$summarised,
                       reported = reported_cases)
 
-# Run the model with default setting on a later snapshot of data (use burn_in here to remove the first week of
+# Run the model with default setting on a later snapshot of 
+# data (use burn_in here to remove the first week of
 # estimates that may be impacted by this most).
 snapshot_cases <- EpiNow2::example_confirmed[80:130]
 snapshot <- estimate_infections(snapshot_cases, family = "negbin",

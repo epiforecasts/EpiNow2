@@ -112,7 +112,7 @@ print(simulated_cases)
 simulated_cases <- simulate_cases(rts, initial_cases = 100 ,
                                   initial_date = as.Date("2020-03-01"),
                                   generation_interval = generation_pdf, 
-                                  delay_defs = list(incubation_def, delay_def)
+                                  delay_defs = list(incubation_def, delay_def),
                                   reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
                                   reporting_model = function(n) {
                                       out <- suppressWarnings(rnbinom(length(n), 
