@@ -38,7 +38,7 @@
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
 #'               delays = list(incubation_period, reporting_delay),
 #'               rt_prior = list(mean = 1, sd = 1),
-#'               samples = 1000, warmup = 200, cores = 4, chains = 4,
+#'               samples = 1000, warmup = 200, cores = 2, chains = 4,
 #'               verbose = TRUE, return_fit = TRUE)
 #' 
 #' out
@@ -56,7 +56,7 @@
 #'                      y = y[max(1, length(y) - 21):length(y)],
 #'                      model_params = list(models = "aefz", weights = "equal"),
 #'                      forecast_params = list(PI.combination = "mean"), ...)},
-#'                  samples = 1000, warmup = 500, cores = 4, chains = 4,
+#'                  samples = 1000, warmup = 500, cores = 2, chains = 4,
 #'                  verbose = TRUE, return_fit = TRUE)
 #' 
 #' out
@@ -64,6 +64,7 @@
 #' }
 #' 
 #' }
+#' 
 epinow <- function(reported_cases, family = "negbin",
                    generation_time, delays,
                    gp = list(basis_prop = 0.3, boundary_scale = 2, 
@@ -320,7 +321,7 @@ if (!is.null(target_folder)){
 #'                        gp = list(basis_prop = 0.1, boundary_scale = 2),
 #'                        adapt_delta = 0.9,
 #'                        samples = 2000, warmup = 200,
-#'                        cores = 4, chains = 4)
+#'                        cores = 2, chains = 4)
 #'}
 regional_epinow <- function(reported_cases, 
                             target_folder, target_date,
