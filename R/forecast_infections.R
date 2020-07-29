@@ -22,9 +22,10 @@
 #' @importFrom HDInterval hdi
 #' @importFrom truncnorm rtruncnorm
 #' @examples
-#' \dontrun{
-#' ## This function requires the following packages to be installed.
-#' ## install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
+#' \donttest{
+#' 
+#' if(requireNamespace("EpiSoon")){
+#'    if(requireNamespace("forecastHybrid")){
 #' library(EpiSoon)
 #' library(forecastHybrid)
 #' 
@@ -74,6 +75,8 @@
 #'      samples = 1000)
 #'                                 
 #' forecast
+#'   }
+#'  }
 #' }                              
 forecast_infections <- function(infections, rts, 
                                 gt_mean, gt_sd, gt_max = 30,

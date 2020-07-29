@@ -141,7 +141,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @importFrom rstan sampling extract
 #' @useDynLib EpiNow2, .registration=TRUE
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' ## Integer adjusted exponential model
 #' dist_fit(rexp(1:100, 2), samples = 1000, dist = "exp", 
 #'          cores = 2, verbose = TRUE)
@@ -357,7 +357,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' @examples
 
 #'
-#' \dontrun{
+#' \donttest{
 #' # lognormal
 #' delays <- rlnorm(500, log(5), 1)
 #'

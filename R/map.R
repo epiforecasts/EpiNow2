@@ -13,10 +13,12 @@
 #' @importFrom ggplot2 ggplot aes geom_sf theme_minimal theme labs waiver coord_sf .data
 #'
 #' @examples
-#'\dontrun{
-#'df <- data.table::data.table(variable = "Increasing", country = "France") 
+#'\donttest{
+#'if(requireNamespace("rnaturalearth")){
+#'  df <- data.table::data.table(variable = "Increasing", country = "France") 
 #'
-#'global_map(df, variable = "variable")
+#'  global_map(df, variable = "variable")
+#' }
 #'}
 global_map <- function(data = NULL, variable = NULL,
                        variable_label = NULL,
@@ -108,10 +110,6 @@ global_map <- function(data = NULL, variable = NULL,
 #' @export
 #'
 #' @importFrom ggplot2 ggplot aes geom_sf theme_minimal theme labs waiver .data
-#'
-#' @examples
-#'
-#'country_map
 country_map <- function(data = NULL, country = NULL,
                         variable = NULL,
                         variable_label = NULL,
@@ -190,12 +188,6 @@ country_map <- function(data = NULL, country = NULL,
 #' @return A `ggplot2` object 
 #' @importFrom ggplot2 waiver theme guides scale_fill_manual
 #' @export
-#'
-#' @examples
-#' 
-#' 
-#' ## Code 
-#' theme_map
 theme_map <- function(map = NULL, continuous = FALSE,
                       variable_label = NULL,
                       trans = "identity",
