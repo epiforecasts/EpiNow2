@@ -14,7 +14,7 @@
 #' @importFrom stringr str_to_sentence
 #' @importFrom cowplot theme_cowplot
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' ## Define example cases
 #' cases <- EpiNow2::example_confirmed[1:40]
 #' 
@@ -61,8 +61,6 @@
 #'                hline = 1)
 #' 
 #' }
-#' 
-#' 
 plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
                            obs_as_col = TRUE) {
   

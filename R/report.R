@@ -14,7 +14,7 @@
 #' @importFrom future.apply future_lapply
 #' @importFrom HDInterval hdi
 #' @examples 
-#' \dontrun{
+#' \donttest{
 #' ## Define example cases
 #' cases <- EpiNow2::example_confirmed[1:40]
 #' 
@@ -203,7 +203,7 @@ report_summary <- function(summarised_estimates,
 #' @return A `ggplot2` object
 #' @export
 #' @examples 
-#' \dontrun{
+#' \donttest{
 #' ## Define example cases
 #' cases <- EpiNow2::example_confirmed[1:40]
 #' 

@@ -13,7 +13,7 @@
 #' @importFrom lubridate days
 #' 
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' ## Construct example distributions
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
 #'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
@@ -44,23 +44,25 @@
 #' out
 #' 
 #' ## For optional forecasting
-#' # install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
-#' library(EpiSoon)
-#' library(forecastHybrid)
-#' 
-#' ## Report Rt along with forecasts
-#' out <- epinow(reported_cases = cases, generation_time = generation_time,
-#'               delays = list(incubation_period, reporting_delay),
-#'               rt_prior = list(mean = 1, sd = 1),
-#'               forecast_model = function(y, ...){
+#' if(requireNamespace("EpiSoon")){
+#'    if(requireNamespace("forecastHybrid")){
+#'    
+#'    ## Report Rt along with forecasts
+#'    out <- epinow(reported_cases = cases, generation_time = generation_time,
+#'                  delays = list(incubation_period, reporting_delay),
+#'                  rt_prior = list(mean = 1, sd = 1),
+#'                  forecast_model = function(y, ...){
 #'                    EpiSoon::forecastHybrid_model(
 #'                      y = y[max(1, length(y) - 21):length(y)],
 #'                      model_params = list(models = "aefz", weights = "equal"),
 #'                      forecast_params = list(PI.combination = "mean"), ...)},
-#'                samples = 1000, warmup = 500, cores = 4, chains = 4,
-#'                verbose = TRUE, return_fit = TRUE)
+#'                  samples = 1000, warmup = 500, cores = 4, chains = 4,
+#'                  verbose = TRUE, return_fit = TRUE)
 #' 
 #' out
+#'    }
+#' }
+#' 
 #' }
 epinow <- function(reported_cases, family = "negbin",
                    generation_time, delays,
@@ -283,7 +285,7 @@ if (!is.null(target_folder)){
 #' @importFrom data.table as.data.table setDT copy setorder
 #' @importFrom purrr safely map
 #' @examples
-#'  \dontrun{
+#'  \donttest{
 #' ## Construct example distributions
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
 #'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,

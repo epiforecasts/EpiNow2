@@ -14,9 +14,9 @@
 #' @importFrom data.table data.table setDT rbindlist
 #' @importFrom lubridate days
 #' @examples
-#' \dontrun{
-#' # Requires
-#' install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
+#' \donttest{
+#' if(requireNamespace("EpiSoon")){
+#' 
 #' library(EpiSoon)
 #' 
 #' # Define an initial rt vector 
@@ -82,6 +82,7 @@
 #'                                   })
 #'                    
 #'print(simulated_cases)
+#'}
 #'}
 simulate_cases <- function(rts, initial_cases, initial_date, generation_interval,
                            rdist = rpois, delay_defs, reporting_effect, 

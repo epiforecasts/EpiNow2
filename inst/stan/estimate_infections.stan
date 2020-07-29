@@ -299,17 +299,9 @@ model {
 }
   
 generated quantities {
-  int imputed_infections[t];
   int imputed_reports[rt]; 
   real r[estimate_r > 0 ? rt : 0];
   
-  // simulated infections - assume poisson (with negative binomial reporting)
-  // check here prevents exception for ill-conditioned parameter samples
-  for (s in 1:t) {
-    imputed_infections[s] = poisson_rng(infections[s] > 1e8 ? 1e8 : infections[s]);
-  }
-
-
   // estimate the growth rate
   if (estimate_r) {
       real k = pow(gt_sd[estimate_r] / gt_mean[estimate_r], 2);

@@ -59,7 +59,7 @@
 #' @importFrom HDInterval hdi
 #' @importFrom purrr transpose
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Get example case counts
 #' reported_cases <- EpiNow2::example_confirmed[1:50]
 #' 
@@ -452,7 +452,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   }
   
   ## Report infections, and R
-  out$infections <- extract_parameter("imputed_infections", 
+  out$infections <- extract_parameter("infections", 
                                       samples,
                                       reported_cases$date)
   
