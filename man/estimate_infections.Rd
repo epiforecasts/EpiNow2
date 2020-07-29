@@ -21,6 +21,7 @@ estimate_infections(
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
+  burn_in = 0,
   stationary = FALSE,
   fixed = FALSE,
   adapt_delta = 0.99,
@@ -81,6 +82,11 @@ for the prior based on reported cases.}
 \item{estimate_breakpoints}{Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then \code{reported_cases}
 must contain a \code{breakpoint} variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
 a global non-parametric effect and so represent a conservative estimate of breakpoint changes.}
+
+\item{burn_in}{Numeric, defaults to 0. The number of initial estimates to discard. This argument may be used to reduce
+spurious findings when running \code{estimate_infections} on a partial timeseries (as the earliest estimates will not be informed by
+all cases that occurred only those supplied to \code{estimate_infections}). The combined delays used will inform the appropriate length
+of this burn in but 7 days is likely a sensible starting point.}
 
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
@@ -144,7 +150,22 @@ def
 # Plot output
 report_plots(summarised_estimates = def$summarised,
                       reported = reported_cases)
-                      
+
+# Run the model with default setting on a later snapshot of data (use burn_in here to remove the first week of
+# estimates that may be impacted by this most).
+snapshot_cases <- EpiNow2::example_confirmed[80:130]
+snapshot <- estimate_infections(snapshot_cases, family = "negbin",
+                                generation_time = generation_time,
+                                delays = list(incubation_period, reporting_delay),
+                                samples = 1000, warmup = 400, cores = 4, chains = 4,
+                                estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE,
+                                burn_in = 7)
+
+snapshot   
+
+# Plot output
+report_plots(summarised_estimates = snapshot$summarised,
+                      reported = snapshot_cases)     
 
 ## Run model with stationary Rt assumption (likely to provide biased real-time estimates)
 stat <- estimate_infections(reported_cases, family = "negbin",
