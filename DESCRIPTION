@@ -35,10 +35,10 @@ Authors@R: c(
             email = "sebastian.funk@lshtm.ac.uk",
             role = c("aut")))
 Description: Estimates the time-varying reproduction number, rate of spread,
-             and doubling time using a range of open-source tools, a novel methodology,
-             and current best practices. It aims to help users avoid some of the limitations 
-             of naive implementations in a framework that is informed by community feedback 
-             and is under active development.
+             and doubling time using a range of open-source tools (Abbott et al. <doi.org/10.12688/wellcomeopenres.16006.1>),
+             and current best practices (Gostic et al. <doi.org/10.1101/2020.06.18.20134858>). 
+             It aims to help users avoid some of the limitations of naive implementations in a framework
+             that is informed by community feedback and is under active development.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

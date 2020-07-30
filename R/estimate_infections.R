@@ -93,7 +93,7 @@
 #' def <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+#'                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                            chains = 4, estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE)
 #'
 #' def   
@@ -109,7 +109,7 @@
 #' snapshot <- estimate_infections(snapshot_cases, family = "negbin",
 #'                                 generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 samples = 1000, warmup = 400, cores = cores = ifelse(interactive(), 4, 1), 
+#'                                 samples = 1000, warmup = 400, cores = ifelse(interactive(), 4, 1), 
 #'                                 chains = 4, estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE,
 #'                                 burn_in = 7)
 #'
@@ -123,7 +123,7 @@
 #' stat <- estimate_infections(reported_cases, family = "negbin",
 #'                             generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
-#'                             samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+#'                             samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                             chains = 4, estimate_rt = TRUE, stationary = TRUE,
 #'                             verbose = TRUE, return_fit = TRUE)
 #'
@@ -137,7 +137,7 @@
 #' fixed <- estimate_infections(reported_cases, family = "negbin",
 #'                             generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
-#'                             samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+#'                             samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                             chains = 4, estimate_rt = TRUE, fixed = TRUE, 
 #'                             verbose = TRUE, return_fit = TRUE)
 #'
@@ -151,7 +151,7 @@
 #' bkp <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1), 
+#'                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1), 
 #'                            chains = 4, estimate_rt = TRUE, estimate_breakpoints = TRUE, 
 #'                            verbose = TRUE, return_fit = TRUE)
 #'
@@ -169,7 +169,7 @@
 #'                             gp = list(basis_prop = 0.3, boundary_scale = 2, 
 #'                                      lengthscale_mean = 20, lengthscale_sd = 1),
 #'                             delays = list(incubation_period, reporting_delay),
-#'                             samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+#'                             samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                             chains = 4, estimate_rt = TRUE, estimate_breakpoints = TRUE,
 #'                             verbose = TRUE, return_fit = TRUE)
 #'
@@ -188,7 +188,7 @@
 #' fbkp <- estimate_infections(reported_cases, family = "negbin",
 #'                             generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
-#'                             samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+#'                             samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                             chains = 4, estimate_breakpoints = TRUE, fixed = TRUE, 
 #'                             verbose = TRUE, return_fit = TRUE)
 #'
@@ -205,7 +205,7 @@
 #' backcalc <- estimate_infections(reported_cases, family = "negbin",
 #'                                 generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+#'                                 samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                 chains = 4, estimate_rt = FALSE, verbose = TRUE, return_fit = TRUE)
 #'
 #' backcalc

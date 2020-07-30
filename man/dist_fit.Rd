@@ -37,16 +37,16 @@ Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
 \donttest{
 ## Integer adjusted exponential model
 dist_fit(rexp(1:100, 2), samples = 1000, dist = "exp", 
-         cores = cores = ifelse(interactive(), 4, 1), verbose = TRUE)
+         cores = ifelse(interactive(), 4, 1), verbose = TRUE)
 
 
 ## Integer adjusted gamma model
 dist_fit(rgamma(1:100, 5, 5), samples = 1000, dist = "gamma", 
-         cores = cores = ifelse(interactive(), 4, 1), verbose = TRUE)
+         cores = ifelse(interactive(), 4, 1), verbose = TRUE)
 
 ## Integer adjusted lognormal model
 dist_fit(rlnorm(1:100, log(5), 0.2), samples = 1000, dist = "lognormal",
-         cores = cores = ifelse(interactive(), 4, 1), verbose = TRUE)
+         cores = ifelse(interactive(), 4, 1), verbose = TRUE)
 
 }
 }

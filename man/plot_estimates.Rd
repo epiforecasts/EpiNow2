@@ -54,7 +54,7 @@ reporting_delay <- list(mean = log(5),
 out <- EpiNow2::estimate_infections(cases, family = "negbin",
                                     generation_time = generation_time,
                                     delays = list(incubation_period, reporting_delay),
-                                    samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+                                    samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                                     chains = 4, horizon = 7, estimate_rt = TRUE, verbose = TRUE)
 ## Plot infections
 plot_estimates(

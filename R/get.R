@@ -96,7 +96,7 @@ get_raw_result <- function(file, region, date,
 #'                                 generation_time = generation_time,
 #'                                 incubation_period = incubation_period,
 #'                                 reporting_delay = reporting_delay,
-#'                                 samples = 2000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+#'                                 samples = 2000, warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
 #'                                 summary = FALSE)
 #'                                 
