@@ -43,7 +43,7 @@
 #'                                     generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
 #'                                     samples = 1000, warmup = 200, 
-#'                                     cores = cores = ifelse(interactive(), 4, 1), chains = 4,
+#'                                     cores = ifelse(interactive(), 4, 1), chains = 4,
 #'                                     estimate_rt =  FALSE, verbose = TRUE)
 #'                             
 #'                      

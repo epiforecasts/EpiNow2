@@ -142,7 +142,7 @@ reporting_delay <- list(mean = log(5),
 def <- estimate_infections(reported_cases, family = "negbin",
                            generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+                           samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                            chains = 4, estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE)
 
 def   
@@ -158,7 +158,7 @@ snapshot_cases <- EpiNow2::example_confirmed[80:130]
 snapshot <- estimate_infections(snapshot_cases, family = "negbin",
                                 generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                samples = 1000, warmup = 400, cores = cores = ifelse(interactive(), 4, 1), 
+                                samples = 1000, warmup = 400, cores = ifelse(interactive(), 4, 1), 
                                 chains = 4, estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE,
                                 burn_in = 7)
 
@@ -172,7 +172,7 @@ report_plots(summarised_estimates = snapshot$summarised,
 stat <- estimate_infections(reported_cases, family = "negbin",
                             generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                             chains = 4, estimate_rt = TRUE, stationary = TRUE,
                             verbose = TRUE, return_fit = TRUE)
 
@@ -186,7 +186,7 @@ report_plots(summarised_estimates = stat$summarised,
 fixed <- estimate_infections(reported_cases, family = "negbin",
                             generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                             chains = 4, estimate_rt = TRUE, fixed = TRUE, 
                             verbose = TRUE, return_fit = TRUE)
 
@@ -200,7 +200,7 @@ report_plots(summarised_estimates = fixed$summarised,
 bkp <- estimate_infections(reported_cases, family = "negbin",
                            generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1), 
+                           samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1), 
                            chains = 4, estimate_rt = TRUE, estimate_breakpoints = TRUE, 
                            verbose = TRUE, return_fit = TRUE)
 
@@ -218,7 +218,7 @@ cbkp <- estimate_infections(reported_cases, family = "negbin",
                             gp = list(basis_prop = 0.3, boundary_scale = 2, 
                                      lengthscale_mean = 20, lengthscale_sd = 1),
                             delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                             chains = 4, estimate_rt = TRUE, estimate_breakpoints = TRUE,
                             verbose = TRUE, return_fit = TRUE)
 
@@ -237,7 +237,7 @@ cbkp$summarised[variable == "breakpoints"]
 fbkp <- estimate_infections(reported_cases, family = "negbin",
                             generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                             chains = 4, estimate_breakpoints = TRUE, fixed = TRUE, 
                             verbose = TRUE, return_fit = TRUE)
 
@@ -254,7 +254,7 @@ fbkp$summarised[variable == "breakpoints"]
 backcalc <- estimate_infections(reported_cases, family = "negbin",
                                 generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                samples = 1000, warmup = 200, cores = cores = ifelse(interactive(), 4, 1),
+                                samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                                 chains = 4, estimate_rt = FALSE, verbose = TRUE, return_fit = TRUE)
 
 backcalc
