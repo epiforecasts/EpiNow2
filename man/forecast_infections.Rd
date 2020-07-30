@@ -51,8 +51,6 @@ available \href{https://epiforecasts.io/EpiSoon/}{here}.
 
 if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
-library(EpiSoon)
-library(forecastHybrid)
 
 ## Example case data
 reported_cases <- EpiNow2::example_confirmed[1:40]

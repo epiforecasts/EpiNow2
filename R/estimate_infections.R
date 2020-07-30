@@ -76,7 +76,8 @@
 #'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
 #'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
 #'                         max = 30)
-#' # Set delays between infection and case report (any number of delays can be specifed here)             
+#' # Set delays between infection and case report 
+#' # (any number of delays can be specifed here)             
 #' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
 #'                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
 #'                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
