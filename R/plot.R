@@ -127,7 +127,8 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 #' @param log_cases Logical, should cases be shown on a logged scale. Defaults to `FALSE`
 #' @return A `ggplot2` object
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap theme guides labs expand_limits guide_legend element_blank scale_color_manual .data coord_cartesian
+#' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap theme guides labs expand_limits guide_legend element_blank scale_color_manual .data coord_cartesian scale_y_continuous
+#' @importFrom scales comma
 #' @importFrom cowplot theme_cowplot panel_border
 #' @importFrom patchwork plot_layout
 plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE) {
@@ -162,7 +163,10 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE) {
   
   if (log_cases) {
     cases_plot <- cases_plot +
-      ggplot2::scale_y_log10()
+      ggplot2::scale_y_log10(labels = scales::comma)
+  }else{
+    cases_plot <- cases_plot +
+      ggplot2::scale_y_continuous(labels = scales::comma)
   }
   
   ## rt plot
