@@ -32,7 +32,7 @@ Authors@R: c(
            email = "paul.mee@lshtm.ac.uk",
            role = c("aut")),
     person(given = "EpiForecasts",
-             role = c("aut"))
+             role = c("aut")),
     person("Sebastian", "Funk",
             email = "sebastian.funk@lshtm.ac.uk",
             role = c("aut")))
