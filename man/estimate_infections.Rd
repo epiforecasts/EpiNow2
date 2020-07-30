@@ -144,9 +144,8 @@ def <- estimate_infections(reported_cases, family = "negbin",
                            generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-                           chains = 4, estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE)
+                           chains = 4, estimate_rt = TRUE, verbose = FALSE, return_fit = TRUE)
 
-def   
 
 # Plot output
 report_plots(summarised_estimates = def$summarised,
@@ -160,10 +159,9 @@ snapshot <- estimate_infections(snapshot_cases, family = "negbin",
                                 generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
                                 samples = 1000, warmup = 400, cores = ifelse(interactive(), 4, 1), 
-                                chains = 4, estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE,
+                                chains = 4, estimate_rt = TRUE, verbose = FALSE, return_fit = TRUE,
                                 burn_in = 7)
 
-snapshot   
 
 # Plot output
 report_plots(summarised_estimates = snapshot$summarised,
@@ -175,9 +173,8 @@ stat <- estimate_infections(reported_cases, family = "negbin",
                             delays = list(incubation_period, reporting_delay),
                             samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                             chains = 4, estimate_rt = TRUE, stationary = TRUE,
-                            verbose = TRUE, return_fit = TRUE)
+                            verbose = FALSE, return_fit = TRUE)
 
-stat
 
 # Plot output
 report_plots(summarised_estimates = stat$summarised,
@@ -189,9 +186,8 @@ fixed <- estimate_infections(reported_cases, family = "negbin",
                             delays = list(incubation_period, reporting_delay),
                             samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                             chains = 4, estimate_rt = TRUE, fixed = TRUE, 
-                            verbose = TRUE, return_fit = TRUE)
+                            verbose = FALSE, return_fit = TRUE)
 
-fixed
 
 # Plot output
 report_plots(summarised_estimates = fixed$summarised,
@@ -203,9 +199,8 @@ bkp <- estimate_infections(reported_cases, family = "negbin",
                            delays = list(incubation_period, reporting_delay),
                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1), 
                            chains = 4, estimate_rt = TRUE, estimate_breakpoints = TRUE, 
-                           verbose = TRUE, return_fit = TRUE)
+                           verbose = FALSE, return_fit = TRUE)
 
-bkp   
 
 # Plot output
 report_plots(summarised_estimates = bkp$summarised,
@@ -221,9 +216,8 @@ cbkp <- estimate_infections(reported_cases, family = "negbin",
                             delays = list(incubation_period, reporting_delay),
                             samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                             chains = 4, estimate_rt = TRUE, estimate_breakpoints = TRUE,
-                            verbose = TRUE, return_fit = TRUE)
+                            verbose = FALSE, return_fit = TRUE)
 
-cbkp   
 
 # Plot output
 report_plots(summarised_estimates = cbkp$summarised,
@@ -240,9 +234,8 @@ fbkp <- estimate_infections(reported_cases, family = "negbin",
                             delays = list(incubation_period, reporting_delay),
                             samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                             chains = 4, estimate_breakpoints = TRUE, fixed = TRUE, 
-                            verbose = TRUE, return_fit = TRUE)
+                            verbose = FALSE, return_fit = TRUE)
 
-fbkp   
 
 # Plot output
 report_plots(summarised_estimates = fbkp$summarised,
@@ -256,9 +249,8 @@ backcalc <- estimate_infections(reported_cases, family = "negbin",
                                 generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
                                 samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-                                chains = 4, estimate_rt = FALSE, verbose = TRUE, return_fit = TRUE)
+                                chains = 4, estimate_rt = FALSE, verbose = FALSE, return_fit = TRUE)
 
-backcalc
  
 # plot just infections as report_plots does not support the backcalculation only model
 plot_estimates(estimate = backcalc$summarised[variable == "infections"],
