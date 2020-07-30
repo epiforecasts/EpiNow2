@@ -131,7 +131,7 @@ summarise_results <- function(regions,
 #' @inheritParams summarise_key_measures
 #' @inheritParams regional_epinow
 #' @inheritParams get_regional_results
-#' @importFrom purrr map_chr
+#' @importFrom purrr map_chr compact
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
 #' @importFrom cowplot get_legend
 #' @examples
@@ -220,6 +220,7 @@ regional_summary <- function(regional_output,
     }
   }else{
     regions <- names(regional_output)
+    regional_output <- purrr::compact(regional_output)
   }
   
 
