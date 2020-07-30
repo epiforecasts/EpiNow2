@@ -56,8 +56,6 @@ Simulate Cases by Date of Infection, Onset and Report
 \donttest{
 if(requireNamespace("EpiSoon")){
 
-library(EpiSoon)
-
 # Define an initial rt vector 
 rts <- c(rep(2, 20), (2 - 1:15 * 0.1), rep(0.5, 10))
 rts
@@ -97,11 +95,13 @@ incubation_def <- EpiNow2::lognorm_dist_def(mean = EpiNow2::covid_incubation_per
                                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
                                           max_value = 30, samples = 1)
 
-# Simulate cases with a decrease in reporting at weekends and an increase on Monday                                     
-simulated_cases <- simulate_cases(rts, initial_cases = 100 , initial_date = as.Date("2020-03-01"),
-                    generation_interval = generation_pdf,
-                    delay_defs = list(incubation_def, delay_def),
-                    reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))
+# Simulate cases with a decrease in reporting at weekends 
+# and an increase on Monday                                     
+simulated_cases <- simulate_cases(rts, initial_cases = 100 , 
+                                  initial_date = as.Date("2020-03-01"),
+                                  generation_interval = generation_pdf,
+                                  delay_defs = list(incubation_def, delay_def),
+                                  reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))
                    
 print(simulated_cases)
 

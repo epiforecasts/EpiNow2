@@ -166,8 +166,6 @@ out
 ## For optional forecasting
 if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
-   library(EpiSoon)
-   library(forecastHybrid)
    
    ## Report Rt along with forecasts
    out <- epinow(reported_cases = cases, generation_time = generation_time,
