@@ -141,19 +141,19 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @importFrom rstan sampling extract
 #' @useDynLib EpiNow2, .registration=TRUE
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' ## Integer adjusted exponential model
 #' dist_fit(rexp(1:100, 2), samples = 1000, dist = "exp", 
-#'          cores = 2, verbose = TRUE)
+#'          cores = ifelse(interactive(), 4, 1), verbose = TRUE)
 #' 
 #' 
 #' ## Integer adjusted gamma model
 #' dist_fit(rgamma(1:100, 5, 5), samples = 1000, dist = "gamma", 
-#'          cores = 2, verbose = TRUE)
+#'          cores = ifelse(interactive(), 4, 1), verbose = TRUE)
 #' 
 #' ## Integer adjusted lognormal model
 #' dist_fit(rlnorm(1:100, log(5), 0.2), samples = 1000, dist = "lognormal",
-#'          cores = 2, verbose = TRUE)
+#'          cores = ifelse(interactive(), 4, 1), verbose = TRUE)
 #' 
 #' }
 dist_fit <- function(values = NULL, samples = NULL, cores = 1, 
@@ -357,7 +357,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' @examples
 
 #'
-#' \dontrun{
+#' \donttest{
 #' # lognormal
 #' delays <- rlnorm(500, log(5), 1)
 #'

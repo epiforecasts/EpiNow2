@@ -47,11 +47,10 @@ This function provides optional tools for forecasting cases and Rt estimates usi
 available \href{https://epiforecasts.io/EpiSoon/}{here}.
 }
 \examples{
-\dontrun{
-## This function requires the following packages to be installed.
-## install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
-library(EpiSoon)
-library(forecastHybrid)
+\donttest{
+
+if(requireNamespace("EpiSoon")){
+   if(requireNamespace("forecastHybrid")){
 
 ## Example case data
 reported_cases <- EpiNow2::example_confirmed[1:40]
@@ -80,7 +79,7 @@ out <- estimate_infections(reported_cases, family = "negbin",
                            delays = list(incubation_period, reporting_delay),
                            rt_prior = list(mean = 1, sd = 1),
                            samples = 1000, warmup = 500,
-                           cores = 4, chains = 4,
+                           cores = ifelse(interactive(), 4, 1), chains = 4,
                            estimate_rt = TRUE,
                            verbose = TRUE, return_fit = TRUE)
 
@@ -99,5 +98,7 @@ forecast <- forecast_infections(
      samples = 1000)
                                 
 forecast
+  }
+ }
 }                              
 }

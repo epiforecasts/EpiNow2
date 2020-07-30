@@ -7,7 +7,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' See ?regional_summary for code to produce test results
+#' #See ?regional_summary for code to produce test results
 #' get_regions("../test")
 #' }
 get_regions <- function(results_dir) {
@@ -64,7 +64,7 @@ get_raw_result <- function(file, region, date,
 #' @examples
 #'
 #'
-#' \dontrun{
+#' \donttest{
 #' # Construct example distributions
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
 #'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
@@ -96,7 +96,7 @@ get_raw_result <- function(file, region, date,
 #'                                 generation_time = generation_time,
 #'                                 incubation_period = incubation_period,
 #'                                 reporting_delay = reporting_delay,
-#'                                 samples = 2000, warmup = 200, cores = 4,
+#'                                 samples = 2000, warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
 #'                                 summary = FALSE)
 #'                                 

@@ -8,7 +8,7 @@ regional_epinow(
   reported_cases,
   target_folder,
   target_date,
-  case_limit = 20,
+  non_zero_points = 2,
   cores = 1,
   summary = TRUE,
   summary_dir,
@@ -24,7 +24,8 @@ regional_epinow(
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{case_limit}{Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 20.}
+\item{non_zero_points}{Numeric, the minimum number of time points with non-zero cases in a region required for
+that region to be evaluated. Defaults to 2.}
 
 \item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
 
@@ -46,7 +47,7 @@ A list of output stratified at the top level into regional output and across reg
 Estimates Rt by region. See the documentation for \code{epinow} for further information.
 }
 \examples{
- \dontrun{
+ \donttest{
 ## Construct example distributions
 generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
@@ -78,9 +79,8 @@ cases <- data.table::rbindlist(list(
 out <- regional_epinow(reported_cases = cases,
                        generation_time = generation_time,
                        delays = list(incubation_period, reporting_delay),
-                       gp = list(basis_prop = 0.1, boundary_scale = 2),
                        adapt_delta = 0.9,
                        samples = 2000, warmup = 200,
-                       cores = 4, chains = 4)
+                       cores = ifelse(interactive(), 4, 1), chains = 4)
 }
 }

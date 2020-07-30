@@ -22,11 +22,10 @@
 #' @importFrom HDInterval hdi
 #' @importFrom truncnorm rtruncnorm
 #' @examples
-#' \dontrun{
-#' ## This function requires the following packages to be installed.
-#' ## install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
-#' library(EpiSoon)
-#' library(forecastHybrid)
+#' \donttest{
+#' 
+#' if(requireNamespace("EpiSoon")){
+#'    if(requireNamespace("forecastHybrid")){
 #' 
 #' ## Example case data
 #' reported_cases <- EpiNow2::example_confirmed[1:40]
@@ -55,7 +54,7 @@
 #'                            delays = list(incubation_period, reporting_delay),
 #'                            rt_prior = list(mean = 1, sd = 1),
 #'                            samples = 1000, warmup = 500,
-#'                            cores = 4, chains = 4,
+#'                            cores = ifelse(interactive(), 4, 1), chains = 4,
 #'                            estimate_rt = TRUE,
 #'                            verbose = TRUE, return_fit = TRUE)
 #'
@@ -74,6 +73,8 @@
 #'      samples = 1000)
 #'                                 
 #' forecast
+#'   }
+#'  }
 #' }                              
 forecast_infections <- function(infections, rts, 
                                 gt_mean, gt_sd, gt_max = 30,

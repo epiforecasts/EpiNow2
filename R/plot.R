@@ -10,11 +10,12 @@
 #'
 #' @return A `ggplot2` object
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon
+#' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon scale_y_continuous
+#' @importFrom scales comma
 #' @importFrom stringr str_to_sentence
 #' @importFrom cowplot theme_cowplot
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' ## Define example cases
 #' cases <- EpiNow2::example_confirmed[1:40]
 #' 
@@ -42,8 +43,9 @@
 #' out <- EpiNow2::estimate_infections(cases, family = "negbin",
 #'                                     generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
-#'                                     samples = 1000, warmup = 200, cores = 4, chains = 4,
-#'                                     horizon = 7, estimate_rt = TRUE, verbose = TRUE)
+#'                                     samples = 1000, warmup = 200, 
+#'                                     cores = ifelse(interactive(), 4, 1),
+#'                                     chains = 4, horizon = 7, estimate_rt = TRUE, verbose = TRUE)
 #' ## Plot infections
 #' plot_estimates(
 #'   estimate = out$summarised[variable == "infections"],
@@ -61,8 +63,6 @@
 #'                hline = 1)
 #' 
 #' }
-#' 
-#' 
 plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
                            obs_as_col = TRUE) {
   
@@ -76,7 +76,8 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   if (!missing(reported)) {
     if (obs_as_col) {
       plot <- plot +
-        ggplot2::geom_col(data = reported,
+        ggplot2::geom_col(data = reported[date >= min(estimate$date, na.rm = TRUE) &
+                                            date <= max(estimate$date, na.rm = TRUE)],
                           ggplot2::aes(y = confirm), fill = "grey", col = "white",
                           show.legend = FALSE)
     }else{
@@ -106,6 +107,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
     ggplot2::labs(y = ylab, x = "Date", col = "Type", fill = "Type") +
     ggplot2::expand_limits(y = 0) + 
     ggplot2::scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+    ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
   
   ## Add in a horiontal line if required
@@ -126,7 +128,8 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 #' @param log_cases Logical, should cases be shown on a logged scale. Defaults to `FALSE`
 #' @return A `ggplot2` object
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap theme guides labs expand_limits guide_legend element_blank scale_color_manual .data coord_cartesian
+#' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap theme guides labs expand_limits guide_legend element_blank scale_color_manual .data coord_cartesian scale_y_continuous
+#' @importFrom scales comma
 #' @importFrom cowplot theme_cowplot panel_border
 #' @importFrom patchwork plot_layout
 plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE) {
@@ -161,7 +164,10 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE) {
   
   if (log_cases) {
     cases_plot <- cases_plot +
-      ggplot2::scale_y_log10()
+      ggplot2::scale_y_log10(labels = scales::comma)
+  }else{
+    cases_plot <- cases_plot +
+      ggplot2::scale_y_continuous(labels = scales::comma)
   }
   
   ## rt plot
