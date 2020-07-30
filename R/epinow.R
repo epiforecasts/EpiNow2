@@ -13,7 +13,7 @@
 #' @importFrom lubridate days
 #' 
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' ## Construct example distributions
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
 #'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
@@ -38,40 +38,43 @@
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
 #'               delays = list(incubation_period, reporting_delay),
 #'               rt_prior = list(mean = 1, sd = 1),
-#'               samples = 1000, warmup = 200, cores = 4, chains = 4,
+#'               samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1), chains = 4,
 #'               verbose = TRUE, return_fit = TRUE)
 #' 
 #' out
 #' 
 #' ## For optional forecasting
-#' # install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
-#' library(EpiSoon)
-#' library(forecastHybrid)
-#' 
-#' ## Report Rt along with forecasts
-#' out <- epinow(reported_cases = cases, generation_time = generation_time,
-#'               delays = list(incubation_period, reporting_delay),
-#'               rt_prior = list(mean = 1, sd = 1),
-#'               forecast_model = function(y, ...){
+#' if(requireNamespace("EpiSoon")){
+#'    if(requireNamespace("forecastHybrid")){
+#'    
+#'    ## Report Rt along with forecasts
+#'    out <- epinow(reported_cases = cases, generation_time = generation_time,
+#'                  delays = list(incubation_period, reporting_delay),
+#'                  rt_prior = list(mean = 1, sd = 1),
+#'                  forecast_model = function(y, ...){
 #'                    EpiSoon::forecastHybrid_model(
 #'                      y = y[max(1, length(y) - 21):length(y)],
 #'                      model_params = list(models = "aefz", weights = "equal"),
 #'                      forecast_params = list(PI.combination = "mean"), ...)},
-#'                samples = 1000, warmup = 500, cores = 4, chains = 4,
-#'                verbose = TRUE, return_fit = TRUE)
+#'                  samples = 1000, warmup = 500, cores = ifelse(interactive(), 4, 1), chains = 4,
+#'                  verbose = TRUE, return_fit = TRUE)
 #' 
 #' out
+#'    }
 #' }
+#' 
+#' }
+#' 
 epinow <- function(reported_cases, family = "negbin",
                    generation_time, delays,
                    gp = list(basis_prop = 0.3, boundary_scale = 2, 
                              lengthscale_mean = 0, lengthscale_sd = 2),
                    rt_prior = list(mean = 1, sd = 1), model,
-                   prior_smoothing_window = 7, cores = 2, chains = 2,
+                   prior_smoothing_window = 7, cores = 1, chains = 4,
                    samples = 1000, warmup = 200, adapt_delta = 0.99,  max_treedepth = 15,
                    estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE,
-                   stationary = FALSE, fixed = FALSE, return_fit = FALSE, forecast_model, horizon = 7,
-                   ensemble_type = "mean", return_estimates = TRUE,
+                   burn_in = 0, stationary = FALSE, fixed = FALSE, return_fit = FALSE, 
+                   forecast_model, horizon = 7, ensemble_type = "mean", return_estimates = TRUE,
                    target_folder, target_date, verbose = TRUE, debug = FALSE) {
  
  if (!return_estimates & missing(target_folder)) {
@@ -137,7 +140,7 @@ if (!is.null(target_folder)) {
                                     estimate_rt = estimate_rt,
                                     estimate_week_eff = estimate_week_eff,
                                     estimate_breakpoints = estimate_breakpoints,
-                                    stationary = stationary, fixed = fixed,
+                                    burn_in = burn_in, stationary = stationary, fixed = fixed,
                                     horizon = horizon,
                                     verbose = verbose, return_fit = return_fit,
                                     debug = debug) 
@@ -272,7 +275,8 @@ if (!is.null(target_folder)){
 #'
 #' @description Estimates Rt by region. See the documentation for `epinow` for further information.
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date), and region (`region`).
-#' @param case_limit Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 20.
+#' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
+#' that region to be evaluated. Defaults to 2.
 #' @param summary Logical, should summary measures be calculated.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
@@ -283,7 +287,7 @@ if (!is.null(target_folder)){
 #' @importFrom data.table as.data.table setDT copy setorder
 #' @importFrom purrr safely map
 #' @examples
-#'  \dontrun{
+#'  \donttest{
 #' ## Construct example distributions
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
 #'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
@@ -315,14 +319,13 @@ if (!is.null(target_folder)){
 #' out <- regional_epinow(reported_cases = cases,
 #'                        generation_time = generation_time,
 #'                        delays = list(incubation_period, reporting_delay),
-#'                        gp = list(basis_prop = 0.1, boundary_scale = 2),
 #'                        adapt_delta = 0.9,
 #'                        samples = 2000, warmup = 200,
-#'                        cores = 4, chains = 4)
+#'                        cores = ifelse(interactive(), 4, 1), chains = 4)
 #'}
 regional_epinow <- function(reported_cases, 
                             target_folder, target_date,
-                            case_limit = 20, cores = 1,
+                            non_zero_points = 2, cores = 1,
                             summary = TRUE,
                             summary_dir,
                             region_scale = "Region",
@@ -343,10 +346,9 @@ regional_epinow <- function(reported_cases,
   message("Reporting estimates using data up to: ", target_date)
   
   
-  ## Check for regions more than required cases
-  eval_regions <- data.table::copy(reported_cases)[,.(confirm = sum(confirm, na.rm = TRUE)), 
-                                                   by = c("region", "date")][
-                                                     confirm >= case_limit]$region
+  ## Check for regions more than required time points with cases
+  eval_regions <- data.table::copy(reported_cases)[,.(confirm = confirm > 0), by = c("region", "date")][, 
+            .(confirm = sum(confirm, na.rm = TRUE)), by = "region"][confirm >= non_zero_points]$region
   
   eval_regions <- unique(eval_regions)
   

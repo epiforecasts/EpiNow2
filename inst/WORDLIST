@@ -1,3 +1,4 @@
+al
 arxiv
 backcalculation
 Categorise
@@ -8,11 +9,13 @@ Codecov
 Covid
 csv
 defato
+doi
 DOI
 epiforecasts
 epinow
 EpiNow
 EpiSoon
+et
 filepath
 ganyani
 github
@@ -28,7 +31,6 @@ Nowcasts
 poisson
 prebuilt
 rds
-realtime
 Rebased
 Rmarkdown
 rstan
@@ -44,4 +46,5 @@ summarising
 timeseries
 uninitialised
 warmup
+wellcomeopenres
 yyyy

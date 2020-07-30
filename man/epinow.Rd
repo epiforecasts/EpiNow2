@@ -14,8 +14,8 @@ epinow(
   rt_prior = list(mean = 1, sd = 1),
   model,
   prior_smoothing_window = 7,
-  cores = 2,
-  chains = 2,
+  cores = 1,
+  chains = 4,
   samples = 1000,
   warmup = 200,
   adapt_delta = 0.99,
@@ -23,6 +23,7 @@ epinow(
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
+  burn_in = 0,
   stationary = FALSE,
   fixed = FALSE,
   return_fit = FALSE,
@@ -90,6 +91,11 @@ for the prior based on reported cases.}
 must contain a \code{breakpoint} variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
 a global non-parametric effect and so represent a conservative estimate of breakpoint changes.}
 
+\item{burn_in}{Numeric, defaults to 0. The number of initial estimates to discard. This argument may be used to reduce
+spurious findings when running \code{estimate_infections} on a partial timeseries (as the earliest estimates will not be informed by
+all cases that occurred only those supplied to \code{estimate_infections}). The combined delays used will inform the appropriate length
+of this burn in but 7 days is likely a sensible starting point.}
+
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
@@ -127,7 +133,7 @@ Estimate Rt and cases by date of infection, forecast into the future, transform 
 of report and then save summary measures and plots.
 }
 \examples{
-\dontrun{
+\donttest{
 ## Construct example distributions
 generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
@@ -152,28 +158,31 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
               delays = list(incubation_period, reporting_delay),
               rt_prior = list(mean = 1, sd = 1),
-              samples = 1000, warmup = 200, cores = 4, chains = 4,
+              samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1), chains = 4,
               verbose = TRUE, return_fit = TRUE)
 
 out
 
 ## For optional forecasting
-# install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")
-library(EpiSoon)
-library(forecastHybrid)
-
-## Report Rt along with forecasts
-out <- epinow(reported_cases = cases, generation_time = generation_time,
-              delays = list(incubation_period, reporting_delay),
-              rt_prior = list(mean = 1, sd = 1),
-              forecast_model = function(y, ...){
+if(requireNamespace("EpiSoon")){
+   if(requireNamespace("forecastHybrid")){
+   
+   ## Report Rt along with forecasts
+   out <- epinow(reported_cases = cases, generation_time = generation_time,
+                 delays = list(incubation_period, reporting_delay),
+                 rt_prior = list(mean = 1, sd = 1),
+                 forecast_model = function(y, ...){
                    EpiSoon::forecastHybrid_model(
                      y = y[max(1, length(y) - 21):length(y)],
                      model_params = list(models = "aefz", weights = "equal"),
                      forecast_params = list(PI.combination = "mean"), ...)},
-               samples = 1000, warmup = 500, cores = 4, chains = 4,
-               verbose = TRUE, return_fit = TRUE)
+                 samples = 1000, warmup = 500, cores = ifelse(interactive(), 4, 1), chains = 4,
+                 verbose = TRUE, return_fit = TRUE)
 
 out
+   }
 }
+
+}
+
 }

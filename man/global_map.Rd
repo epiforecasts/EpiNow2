@@ -42,9 +42,11 @@ the data supplied must contain a \code{country} variable for linking to mapping 
 installation of the \code{rnaturalearth} package.
 }
 \examples{
-\dontrun{
-df <- data.table::data.table(variable = "Increasing", country = "France") 
+\donttest{
+if(requireNamespace("rnaturalearth")){
+ df <- data.table::data.table(variable = "Increasing", country = "France") 
 
-global_map(df, variable = "variable")
+ global_map(df, variable = "variable")
+}
 }
 }

@@ -40,8 +40,7 @@ A list of summary measures and plots
 Generate Regional Summary Output
 }
 \examples{
-
-\dontrun{
+\donttest{
 # Construct example distributions
 generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
@@ -76,10 +75,12 @@ regional_out <- regional_epinow(reported_cases = cases,
                                 samples = 2000, warmup = 200, cores = 4,
                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
                                 summary = FALSE)
-                       
+
+results_dir <- tempdir()             
+
 regional_summary(regional_output = regional_out$regional,
                  reported_cases = cases,
-                 summary_dir = "../summary",
+                 summary_dir = results_dir,
                  region_scale = "Country")
 
 }

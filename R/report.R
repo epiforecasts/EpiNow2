@@ -14,7 +14,7 @@
 #' @importFrom future.apply future_lapply
 #' @importFrom HDInterval hdi
 #' @examples 
-#' \dontrun{
+#' \donttest{
 #' ## Define example cases
 #' cases <- EpiNow2::example_confirmed[1:40]
 #' 
@@ -43,7 +43,7 @@
 #'                                     generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
 #'                                     samples = 1000, warmup = 200, 
-#'                                     cores = 4, chains = 4,
+#'                                     cores = ifelse(interactive(), 4, 1), chains = 4,
 #'                                     estimate_rt =  FALSE, verbose = TRUE)
 #'                             
 #'                      
@@ -203,7 +203,7 @@ report_summary <- function(summarised_estimates,
 #' @return A `ggplot2` object
 #' @export
 #' @examples 
-#' \dontrun{
+#' \donttest{
 #' ## Define example cases
 #' cases <- EpiNow2::example_confirmed[1:40]
 #' 

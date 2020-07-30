@@ -22,7 +22,7 @@ A \code{ggplot2} object
 Report plots
 }
 \examples{
-\dontrun{
+\donttest{
 ## Define example cases
 cases <- EpiNow2::example_confirmed[1:40]
 

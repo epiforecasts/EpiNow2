@@ -37,7 +37,7 @@ Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Paramete
 }
 \examples{
 
-\dontrun{
+\donttest{
 # lognormal
 delays <- rlnorm(500, log(5), 1)
 

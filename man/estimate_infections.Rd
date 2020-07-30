@@ -15,12 +15,13 @@ estimate_infections(
   horizon = 7,
   model,
   cores = 1,
-  chains = 2,
+  chains = 4,
   samples = 1000,
   warmup = 200,
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
+  burn_in = 0,
   stationary = FALSE,
   fixed = FALSE,
   adapt_delta = 0.99,
@@ -82,6 +83,11 @@ for the prior based on reported cases.}
 must contain a \code{breakpoint} variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
 a global non-parametric effect and so represent a conservative estimate of breakpoint changes.}
 
+\item{burn_in}{Numeric, defaults to 0. The number of initial estimates to discard. This argument may be used to reduce
+spurious findings when running \code{estimate_infections} on a partial timeseries (as the earliest estimates will not be informed by
+all cases that occurred only those supplied to \code{estimate_infections}). The combined delays used will inform the appropriate length
+of this burn in but 7 days is likely a sensible starting point.}
+
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
@@ -106,7 +112,7 @@ This function uses a non-parametric approach to reconstruct cases by date of inf
 cases. It can optionally then estimate the time-varying reproduction number and the rate of growth.
 }
 \examples{
-\dontrun{
+\donttest{
 # Get example case counts
 reported_cases <- EpiNow2::example_confirmed[1:50]
 
@@ -119,7 +125,8 @@ generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
                         sd = EpiNow2::covid_generation_times[1, ]$sd,
                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
                         max = 30)
-# Set delays between infection and case report (any number of delays can be specifed here)             
+# Set delays between infection and case report 
+# (any number of delays can be specifed here)             
 incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
@@ -136,22 +143,38 @@ reporting_delay <- list(mean = log(5),
 def <- estimate_infections(reported_cases, family = "negbin",
                            generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           samples = 1000, warmup = 200, cores = 4, chains = 4,
-                           estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE)
+                           samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
+                           chains = 4, estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE)
 
 def   
 
 # Plot output
 report_plots(summarised_estimates = def$summarised,
                       reported = reported_cases)
-                      
+
+# Run the model with default setting on a later snapshot of 
+# data (use burn_in here to remove the first week of
+# estimates that may be impacted by this most).
+snapshot_cases <- EpiNow2::example_confirmed[80:130]
+snapshot <- estimate_infections(snapshot_cases, family = "negbin",
+                                generation_time = generation_time,
+                                delays = list(incubation_period, reporting_delay),
+                                samples = 1000, warmup = 400, cores = ifelse(interactive(), 4, 1), 
+                                chains = 4, estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE,
+                                burn_in = 7)
+
+snapshot   
+
+# Plot output
+report_plots(summarised_estimates = snapshot$summarised,
+                      reported = snapshot_cases)     
 
 ## Run model with stationary Rt assumption (likely to provide biased real-time estimates)
 stat <- estimate_infections(reported_cases, family = "negbin",
                             generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = 4, chains = 4, 
-                            estimate_rt = TRUE, stationary = TRUE,
+                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
+                            chains = 4, estimate_rt = TRUE, stationary = TRUE,
                             verbose = TRUE, return_fit = TRUE)
 
 stat
@@ -164,8 +187,8 @@ report_plots(summarised_estimates = stat$summarised,
 fixed <- estimate_infections(reported_cases, family = "negbin",
                             generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = 4, chains = 4, 
-                            estimate_rt = TRUE, fixed = TRUE, 
+                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
+                            chains = 4, estimate_rt = TRUE, fixed = TRUE, 
                             verbose = TRUE, return_fit = TRUE)
 
 fixed
@@ -178,8 +201,8 @@ report_plots(summarised_estimates = fixed$summarised,
 bkp <- estimate_infections(reported_cases, family = "negbin",
                            generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           samples = 1000, warmup = 200, cores = 4, chains = 4, 
-                           estimate_rt = TRUE, estimate_breakpoints = TRUE, 
+                           samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1), 
+                           chains = 4, estimate_rt = TRUE, estimate_breakpoints = TRUE, 
                            verbose = TRUE, return_fit = TRUE)
 
 bkp   
@@ -196,8 +219,8 @@ cbkp <- estimate_infections(reported_cases, family = "negbin",
                             gp = list(basis_prop = 0.3, boundary_scale = 2, 
                                      lengthscale_mean = 20, lengthscale_sd = 1),
                             delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = 4, chains = 4,
-                            estimate_rt = TRUE, estimate_breakpoints = TRUE,
+                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
+                            chains = 4, estimate_rt = TRUE, estimate_breakpoints = TRUE,
                             verbose = TRUE, return_fit = TRUE)
 
 cbkp   
@@ -215,8 +238,8 @@ cbkp$summarised[variable == "breakpoints"]
 fbkp <- estimate_infections(reported_cases, family = "negbin",
                             generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = 4, chains = 4,
-                            estimate_breakpoints = TRUE, fixed = TRUE, 
+                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
+                            chains = 4, estimate_breakpoints = TRUE, fixed = TRUE, 
                             verbose = TRUE, return_fit = TRUE)
 
 fbkp   
@@ -232,8 +255,8 @@ fbkp$summarised[variable == "breakpoints"]
 backcalc <- estimate_infections(reported_cases, family = "negbin",
                                 generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                samples = 1000, warmup = 200, cores = 4, chains = 4, 
-                                estimate_rt = FALSE, verbose = TRUE, return_fit = TRUE)
+                                samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
+                                chains = 4, estimate_rt = FALSE, verbose = TRUE, return_fit = TRUE)
 
 backcalc
  

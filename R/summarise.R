@@ -135,8 +135,7 @@ summarise_results <- function(regions,
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
 #' @importFrom cowplot get_legend
 #' @examples
-#' 
-#' \dontrun{
+#' \donttest{
 #' # Construct example distributions
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
 #'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
@@ -171,10 +170,12 @@ summarise_results <- function(regions,
 #'                                 samples = 2000, warmup = 200, cores = 4,
 #'                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
 #'                                 summary = FALSE)
-#'                        
+#'
+#' results_dir <- tempdir()             
+#' 
 #' regional_summary(regional_output = regional_out$regional,
 #'                  reported_cases = cases,
-#'                  summary_dir = "../summary",
+#'                  summary_dir = results_dir,
 #'                  region_scale = "Country")
 #'
 #' }
@@ -290,7 +291,9 @@ regional_summary <- function(regional_output,
     suppressWarnings(
       suppressMessages(
         ggplot2::ggsave(file.path(summary_dir, "summary_plot.png"),
-                        dpi = 330, height = 12, width = ifelse(length(regions) > 60, 24, 12))
+                        dpi = 330, height = 12, width = ifelse(length(regions) > 60, 
+                                                               ifelse(length(regions) > 120, 36, 24),
+                                                               12))
       )
     )
   }
@@ -303,7 +306,7 @@ regional_summary <- function(regional_output,
   
   high_plots$summary <- NULL
   high_plots <- purrr::map(high_plots,
-                            ~ . + ggplot2::facet_wrap(~ region, scales = "fixed"))
+                            ~ . + ggplot2::facet_wrap(~ region, scales = "fixed", ncol = 2))
   
   
   if (!is.null(summary_dir)) {
