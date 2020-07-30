@@ -167,7 +167,7 @@ out
 if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
    library(EpiSoon)
-   libraru(forecastHybrid)
+   library(forecastHybrid)
    
    ## Report Rt along with forecasts
    out <- epinow(reported_cases = cases, generation_time = generation_time,
