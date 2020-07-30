@@ -8,7 +8,7 @@ regional_epinow(
   reported_cases,
   target_folder,
   target_date,
-  case_limit = 20,
+  non_zero_points = 2,
   cores = 1,
   summary = TRUE,
   summary_dir,
@@ -24,7 +24,8 @@ regional_epinow(
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{case_limit}{Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 20.}
+\item{non_zero_points}{Numeric, the minimum number of time points with non-zero cases in a region required for
+that region to be evaluated. Defaults to 2.}
 
 \item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
 
@@ -81,6 +82,6 @@ out <- regional_epinow(reported_cases = cases,
                        gp = list(basis_prop = 0.1, boundary_scale = 2),
                        adapt_delta = 0.9,
                        samples = 2000, warmup = 200,
-                       cores = 2, chains = 4)
+                       cores = 4, chains = 4)
 }
 }
