@@ -275,7 +275,8 @@ if (!is.null(target_folder)){
 #'
 #' @description Estimates Rt by region. See the documentation for `epinow` for further information.
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date), and region (`region`).
-#' @param case_limit Numeric, the minimum number of cases in a region required for that region to be evaluated. Defaults to 20.
+#' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
+#' that region to be evaluated. Defaults to 2.
 #' @param summary Logical, should summary measures be calculated.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
@@ -318,14 +319,13 @@ if (!is.null(target_folder)){
 #' out <- regional_epinow(reported_cases = cases,
 #'                        generation_time = generation_time,
 #'                        delays = list(incubation_period, reporting_delay),
-#'                        gp = list(basis_prop = 0.1, boundary_scale = 2),
 #'                        adapt_delta = 0.9,
 #'                        samples = 2000, warmup = 200,
-#'                        cores = 2, chains = 4)
+#'                        cores = 4, chains = 4)
 #'}
 regional_epinow <- function(reported_cases, 
                             target_folder, target_date,
-                            case_limit = 20, cores = 1,
+                            non_zero_points = 2, cores = 1,
                             summary = TRUE,
                             summary_dir,
                             region_scale = "Region",
@@ -346,10 +346,9 @@ regional_epinow <- function(reported_cases,
   message("Reporting estimates using data up to: ", target_date)
   
   
-  ## Check for regions more than required cases
-  eval_regions <- data.table::copy(reported_cases)[,.(confirm = sum(confirm, na.rm = TRUE)), 
-                                                   by = c("region", "date")][
-                                                     confirm >= case_limit]$region
+  ## Check for regions more than required time points with cases
+  eval_regions <- data.table::copy(reported_cases)[,.(confirm = confirm > 0), by = c("region", "date")][, 
+            .(confirm = sum(confirm, na.rm = TRUE)), by = "region"][confirm >= non_zero_points]$region
   
   eval_regions <- unique(eval_regions)
   
