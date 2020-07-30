@@ -15,3 +15,4 @@
 * Checked packages are not installed in either the code, examples or vignettes.
 * Wrapped examples that required suggested packages with requireNamespace
 * Checked that no code automatically writes to the filesytem. Example of using the internal saving now saves to the temporary directory.
+
