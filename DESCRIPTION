@@ -64,6 +64,7 @@ Imports:
 Suggests:
     spelling,
     EpiSoon,
+    forecastHybrid,
     dplyr,
     tidyr,
     knitr,
