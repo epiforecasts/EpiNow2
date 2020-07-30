@@ -306,7 +306,7 @@ regional_summary <- function(regional_output,
   
   high_plots$summary <- NULL
   high_plots <- purrr::map(high_plots,
-                            ~ . + ggplot2::facet_wrap(~ region, scales = "fixed"), ncol = 2)
+                            ~ . + ggplot2::facet_wrap(~ region, scales = "fixed", ncol = 2))
   
   
   if (!is.null(summary_dir)) {
