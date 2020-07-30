@@ -79,9 +79,8 @@ cases <- data.table::rbindlist(list(
 out <- regional_epinow(reported_cases = cases,
                        generation_time = generation_time,
                        delays = list(incubation_period, reporting_delay),
-                       gp = list(basis_prop = 0.1, boundary_scale = 2),
                        adapt_delta = 0.9,
                        samples = 2000, warmup = 200,
-                       cores = 4, chains = 4)
+                       cores = cores = ifelse(interactive(), 4, 1), chains = 4)
 }
 }

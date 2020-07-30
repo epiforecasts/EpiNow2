@@ -38,7 +38,7 @@
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
 #'               delays = list(incubation_period, reporting_delay),
 #'               rt_prior = list(mean = 1, sd = 1),
-#'               samples = 1000, warmup = 200, cores = 2, chains = 4,
+#'               samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1), chains = 4,
 #'               verbose = TRUE, return_fit = TRUE)
 #' 
 #' out
@@ -46,6 +46,8 @@
 #' ## For optional forecasting
 #' if(requireNamespace("EpiSoon")){
 #'    if(requireNamespace("forecastHybrid")){
+#'    library(EpiSoon)
+#'    libraru(forecastHybrid)
 #'    
 #'    ## Report Rt along with forecasts
 #'    out <- epinow(reported_cases = cases, generation_time = generation_time,
@@ -56,7 +58,7 @@
 #'                      y = y[max(1, length(y) - 21):length(y)],
 #'                      model_params = list(models = "aefz", weights = "equal"),
 #'                      forecast_params = list(PI.combination = "mean"), ...)},
-#'                  samples = 1000, warmup = 500, cores = 2, chains = 4,
+#'                  samples = 1000, warmup = 500, cores = ifelse(interactive(), 4, 1), chains = 4,
 #'                  verbose = TRUE, return_fit = TRUE)
 #' 
 #' out
@@ -70,7 +72,7 @@ epinow <- function(reported_cases, family = "negbin",
                    gp = list(basis_prop = 0.3, boundary_scale = 2, 
                              lengthscale_mean = 0, lengthscale_sd = 2),
                    rt_prior = list(mean = 1, sd = 1), model,
-                   prior_smoothing_window = 7, cores = 2, chains = 2,
+                   prior_smoothing_window = 7, cores = 1, chains = 4,
                    samples = 1000, warmup = 200, adapt_delta = 0.99,  max_treedepth = 15,
                    estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE,
                    burn_in = 0, stationary = FALSE, fixed = FALSE, return_fit = FALSE, 
@@ -321,7 +323,7 @@ if (!is.null(target_folder)){
 #'                        delays = list(incubation_period, reporting_delay),
 #'                        adapt_delta = 0.9,
 #'                        samples = 2000, warmup = 200,
-#'                        cores = 4, chains = 4)
+#'                        cores = cores = ifelse(interactive(), 4, 1), chains = 4)
 #'}
 regional_epinow <- function(reported_cases, 
                             target_folder, target_date,

@@ -81,7 +81,7 @@ out <- estimate_infections(reported_cases, family = "negbin",
                            delays = list(incubation_period, reporting_delay),
                            rt_prior = list(mean = 1, sd = 1),
                            samples = 1000, warmup = 500,
-                           cores = 4, chains = 4,
+                           cores = cores = ifelse(interactive(), 4, 1), chains = 4,
                            estimate_rt = TRUE,
                            verbose = TRUE, return_fit = TRUE)
 
