@@ -313,7 +313,7 @@ regional_summary <- function(regional_output,
   if (!is.null(summary_dir)) {
     suppressWarnings(
       suppressMessages(
-        ggplot2::ggsave(file.path(summary_dir, "high_infections_rt_plot.png"),
+        ggplot2::ggsave(file.path(summary_dir, "high_rt_plot.png"),
                         high_plots$reff, dpi = 300, width = 12, height = 12)
       ))
     
@@ -325,7 +325,7 @@ regional_summary <- function(regional_output,
     
      suppressWarnings(
       suppressMessages(
-        ggplot2::ggsave(file.path(summary_dir, "high_reports_plot.png"), 
+        ggplot2::ggsave(file.path(summary_dir, "high_reported_cases_plot.png"), 
                         high_plots$reports, dpi = 300, width = 12, height = 12)
       ))
   }
