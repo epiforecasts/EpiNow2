@@ -8,3 +8,4 @@ src/*.dll
 src/*.o
 inst/doc
 docs
+CRAN-RELEASE
