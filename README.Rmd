@@ -46,7 +46,7 @@ Windows users will need a working installation of Rtools in order to build the p
 
 ## Quick start
 
-`{EpiNow}` is designed to be used with a single function call or to be used in an ad-hoc fashion via individual function calls. In the following section we give an overview of the simple use case. For more on using each function see the [function documentation](https://epiforecasts.io/EpiNow2/reference/index.html). The core functions are: [`epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
+`{EpiNow2}` is designed to be used with a single function call or to be used in an ad-hoc fashion via individual function calls. In the following section we give an overview of the simple use case. For more on using each function see the [function documentation](https://epiforecasts.io/EpiNow2/reference/index.html). The core functions are: [`epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
 [`regional_epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
 [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), and [`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html). [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) can be use on its own to infer the underlying infection case curve from reported cases with Rt optionally returned (on by default). Estimating the underlying infection case curve alone is substantially less computationally demanding than also estimating Rt.
 
@@ -171,7 +171,7 @@ estimates$summary$summary_plot
 
 ### Reporting templates
 
-Rmarkdown templates are provided in the package (`templates`) for semi-automated reporting of estimates. These are currently undocumented but an example integration can be seen [here](https://github.com/epiforecasts/covid/blob/master/_posts/national/united-kingdom/united-kingdom.Rmd). If using these templates to report your results please highlight our [limitations](https://epiforecasts.io/covid/) as these are key to understanding our results.
+Rmarkdown templates are provided in the package (`templates`) for semi-automated reporting of estimates. These are currently undocumented but an example integration can be seen [here](https://github.com/epiforecasts/covid/blob/master/_posts/national/united-kingdom/united-kingdom.Rmd). If using these templates to report your results please highlight our [limitations](https://doi.org/10.12688/wellcomeopenres.16006.1) as these are key to understanding the results from `{EpiNow2}` .
 
 ## Contributing
 
