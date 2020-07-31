@@ -292,7 +292,7 @@ regional_summary <- function(regional_output,
     suppressWarnings(
       suppressMessages(
         ggplot2::ggsave(file.path(summary_dir, "summary_plot.png"),
-                        dpi = 330, height = 12, width = ifelse(length(regions) > 60, 
+                        dpi = 300, height = 12, width = ifelse(length(regions) > 60, 
                                                                ifelse(length(regions) > 120, 36, 24),
                                                                12))
       )
@@ -314,23 +314,24 @@ regional_summary <- function(regional_output,
     suppressWarnings(
       suppressMessages(
         ggplot2::ggsave(file.path(summary_dir, "high_infections_rt_plot.png"),
-                        high_plots$reff, dpi = 400, width = 12, height = 12)
+                        high_plots$reff, dpi = 300, width = 12, height = 12)
       ))
     
     suppressWarnings(
       suppressMessages(
         ggplot2::ggsave(file.path(summary_dir, "high_infections_plot.png"), 
-                        high_plots$infections, dpi = 400, width = 12, height = 12)
+                        high_plots$infections, dpi = 300, width = 12, height = 12)
       ))
     
      suppressWarnings(
       suppressMessages(
         ggplot2::ggsave(file.path(summary_dir, "high_reports_plot.png"), 
-                        high_plots$reports, dpi = 400, width = 12, height = 12)
+                        high_plots$reports, dpi = 300, width = 12, height = 12)
       ))
   }
   
-  plots_per_row <- ifelse(length(regions) < 60, 3, 5)
+  plots_per_row <- ifelse(length(regions) > 60, 
+                          ifelse(length(regions) > 120, 8, 5), 3)
   
   plots <- report_plots(summarised_estimates = results$estimates$summarised, 
                         reported = reported_cases)
@@ -345,8 +346,8 @@ regional_summary <- function(regional_output,
     suppressWarnings(
       suppressMessages(
         ggplot2::ggsave(file.path(summary_dir, "rt_plot.png"), 
-                        plots$reff, dpi = 330, width = 24,
-                        height = 4 * round(length(regions) / plots_per_row, 0), 
+                        plots$reff, dpi = 300, width = 24,
+                        height = 3 * round(length(regions) / plots_per_row, 0), 
                         limitsize = FALSE)
         
       ))
@@ -354,16 +355,16 @@ regional_summary <- function(regional_output,
     suppressWarnings(
       suppressMessages( 
         ggplot2::ggsave(file.path(summary_dir, "infections_plot.png"), 
-                        plots$infections, dpi = 330, width = 24, 
-                        height =  4 * round(length(regions) / plots_per_row, 0),
+                        plots$infections, dpi = 300, width = 24, 
+                        height =  3 * round(length(regions) / plots_per_row, 0),
                         limitsize = FALSE)
       ))
     
      suppressWarnings(
       suppressMessages( 
         ggplot2::ggsave(file.path(summary_dir, "reported_cases_plot.png"), 
-                        plots$reports, dpi = 330, width = 24, 
-                        height =  4 * round(length(regions) / plots_per_row, 0),
+                        plots$reports, dpi = 300, width = 24, 
+                        height =  3 * round(length(regions) / plots_per_row, 0),
                         limitsize = FALSE)
       ))
   }
