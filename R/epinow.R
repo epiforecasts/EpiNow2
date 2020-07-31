@@ -285,7 +285,7 @@ if (!is.null(target_folder)){
 #' @export
 #' @importFrom future.apply future_lapply
 #' @importFrom data.table as.data.table setDT copy setorder
-#' @importFrom purrr safely map
+#' @importFrom purrr safely map compact
 #' @examples
 #'  \donttest{
 #' ## Construct example distributions
@@ -395,6 +395,15 @@ regional_epinow <- function(reported_cases,
                                               ...,
                                               future.scheduling = Inf)
   
+  regional_errors <- purrr::map(regional_out, ~ .$error)
+  names(regional_errors) <- regions
+  regional_errors <- purrr::compact(regional_errors)
+  
+  if (length(regional_errors != 0)) {
+     message("Runtime errors caught: ")
+     print(regional_errors)
+    }
+  
   regional_out <- purrr::map(regional_out, ~ .$result)
   names(regional_out) <- regions
   
@@ -408,7 +417,14 @@ regional_epinow <- function(reported_cases,
     summary_out <- safe_summary(regional_output = regional_out,
                                 summary_dir = summary_dir,
                                 reported_cases = reported_cases,
-                                region_scale = region_scale)[[1]]
+                                region_scale = region_scale)
+    
+    if (!is.null(summary_out)) {
+      message("Errors caught whilst generating summary statistics: ")
+      print(summary_out)
+      }
+    
+    summary_out <- summary_out[[1]]
   }
   
   if (return_estimates) {
