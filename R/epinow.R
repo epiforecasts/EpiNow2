@@ -419,9 +419,9 @@ regional_epinow <- function(reported_cases,
                                 reported_cases = reported_cases,
                                 region_scale = region_scale)
     
-    if (!is.null(summary_out)) {
+    if (!is.null(summary_out[[2]])) {
       message("Errors caught whilst generating summary statistics: ")
-      print(summary_out)
+      print(summary_out[[2]])
       }
     
     summary_out <- summary_out[[1]]
