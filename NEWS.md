@@ -1,3 +1,10 @@
+# EpiNow2 1.1.0
+
+
+* Implemented reporting templates
+* Bug fix of estimate reporting
+* Added additional reporting of runtime errors
+
 # EpiNow2 1.0.0
 
 

@@ -4,7 +4,7 @@ knitr::opts_chunk$set(echo = FALSE, eval = TRUE,
                       fig.width = 12, fig.height = 12,
                       message = FALSE,
                       warning = FALSE,
-                      dpi = 400)
+                      dpi = 300)
 ```
 
 
@@ -28,31 +28,24 @@ if (!exists("report_growth")) {
 `r paste(c(rep("#", title_depth), paste0(" Summary (estimates as of the ", latest_date, ")")), collapse = "")`
 
 
-`r paste0("*Table ",  summary_tables + index, ": Latest estimates (as of the ", latest_date,  ") of the number of confirmed ", case_def, "s by date of infection, the expected change in daily confirmed ", case_def, "s, the effective reproduction number, the doubling time (when negative this corresponds to the halving time), and the adjusted R-squared of the exponential fit. The mean and 90% credible interval is shown for each numeric estimate.*")`
+`r paste0("*Table ",  summary_tables + index, ": Latest estimates (as of the ", latest_date,  ") of the number of confirmed ", case_def, "s by date of infection, the expected change in daily confirmed ", case_def, "s, the effective reproduction number, the growth rate, and the doubling time (when negative this corresponds to the halving time). The median and 90% credible interval is shown for each numeric estimate.*")`
 <br>
 ```{r}
-readRDS(here::here(file.path(region_path, region, "latest/region_summary.rds"))) %>% 
+readRDS(here::here(file.path(region_path, region, "latest/summary.rds"))) %>% 
 knitr::kable(col.names = c("", "Estimate"), booktabs = TRUE) %>% 
     kableExtra::kable_styling(latex_options = c("striped", "hold_position"),
                 full_width = TRUE)
 ```
 
 
-`r paste(c(rep("#", title_depth), " Confirmed ", case_def, "s, their estimated date of infection, and time-varying reproduction number estimates"), collapse = "")`
+`r paste(c(rep("#", title_depth), " Confirmed ", case_def, "s, their estimated date of report, date of infection, and time-varying reproduction number estimates"), collapse = "")`
 
-```{r, fig.height = 6, fig.width = 8, out.width = "90%"}
-knitr::include_graphics(here::here(file.path(region_path, region, "latest/rt_cases_plot.png")))
+```{r, fig.height = 9, fig.width = 8, out.width = "90%"}
+knitr::include_graphics(here::here(file.path(region_path, region, "latest/summary_plot.png")))
 ```
 
 <br>
-`r paste0("*Figure ",  summary_figures + 1 + (index - 1) * 2, ": A.) Confirmed ",  case_def, "s by date of report (bars) and their estimated date of infection. B.) Time-varying estimate of the effective reproduction number. Light ribbon = 90% credible interval; dark ribbon = the 50% credible interval. Estimates from existing data are shown up to the ", latest_date, ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""),  ". Confidence in the estimated values is indicated by translucency with increased translucency corresponding to reduced confidence. The vertical dashed line indicates the date of report generation.*")`
+`r paste0("*Figure ",  summary_figures + 1 + (index - 1) * 2, ": A.) Confirmed ",  case_def, "s by date of report (bars) and their estimated date of report. B.) Confirmed ",  case_def, "s by date of report (bars) and their estimated date of infection. C.) Time-varying estimate of the effective reproduction number. Light ribbon = 90% credible interval; dark ribbon = the 50% credible interval. Estimates from existing data are shown up to the ", latest_date, ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""),  ". Estimates based on partial data have been adjusted for right truncation of infections. The vertical dashed line indicates the date of report generation.*")`
 
-`r ifelse(report_growth, paste(c(rep("#", title_depth), " Time-varying rate of growth and doubling time"), collapse = ""), "")`
 
-```{r, fig.height = 6, fig.width = 8, out.width = "90%", eval = report_growth}
-knitr::include_graphics(here::here(file.path(region_path, region, "latest/rate_spread_plot.png")))
-```
-
-<br>
-`r ifelse(report_growth, paste0("*Figure ",  summary_figures + 2 + (index - 1) * 2, ": A.) Time-varying estimate of the rate of growth, B.) Time-varying estimate of the doubling time in days (when negative this corresponds to the halving time), C.) The adjusted R-squared estimates indicating the goodness of fit of the exponential regression model (with values closer to 1 indicating a better fit).  Estimates from existing data are shown up to the ", latest_date,  ". Light ribbon = 90% credible interval; dark ribbon = the 50% credible interval. Confidence in the estimated values is indicated by translucency with increased translucency corresponding to reduced confidence.*"), "")`
 
