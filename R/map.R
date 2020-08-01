@@ -65,6 +65,10 @@ global_map <- function(data = NULL, variable = NULL,
   ## Country level
   world <- rnaturalearth::ne_countries(scale='medium',
                                        returnclass = 'sf')
+  # 8 countries including France, Norway, Kosovo are missing values for iso_a3. Only
+  # adm0_a3 seems present for these and it is correct ie FRA, NOR, KOS
+  world$best_iso3 <- with(world, ifelse(is.na(iso_a3), adm0_a3, iso_a3))
+  
   ## Coastlines
   continents <- rnaturalearth::ne_coastline(scale = "medium",
                                             returnclass = "sf")
@@ -73,8 +77,8 @@ global_map <- function(data = NULL, variable = NULL,
   # Link data and shape file ------------------------------------------------
   
   world_with_data <- suppressWarnings(
-    merge(world, data[, `:=`(iso_a3 = country_code, country = NULL)],
-          by = c("iso_a3"), all.x = TRUE)
+    merge(world, data[, `:=`(best_iso3 = country_code, country = NULL)],
+          by = c("best_iso3"), all.x = TRUE)
   )
   
   # Make map ----------------------------------------------------------------
