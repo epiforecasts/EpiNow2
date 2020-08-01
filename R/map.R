@@ -140,6 +140,8 @@ global_map <- function(data = NULL, variable = NULL,
 #'
 #' @importFrom ggplot2 ggplot aes geom_sf theme_minimal theme labs waiver .data
 #' @examples 
+#' \donttest{
+#' if(requireNamespace("rnaturalearth") & requireNamespace("scales")){
 #' # Example 1
 #' # If you know the provnum_ne codes you can use them directly
 #' eg_data <- data.table::data.table(variable = c("Increasing", 
@@ -175,6 +177,8 @@ global_map <- function(data = NULL, variable = NULL,
 #' 
 #' country_map(data = us_data, country = "United States of America", variable = "variable", region_col_ne = "name")
 #' 
+#' }
+#'}
 country_map <- function(data = NULL, country = NULL,
                         variable = NULL,
                         variable_label = NULL,
