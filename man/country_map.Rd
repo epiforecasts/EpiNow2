@@ -51,6 +51,8 @@ the data supplied must contain a \code{region_code} variable for linking to mapp
 the installation of the \code{rnaturalearth} package.
 }
 \examples{
+\donttest{
+if(requireNamespace("rnaturalearth") & requireNamespace("scales")){
 # Example 1
 # If you know the provnum_ne codes you can use them directly
 eg_data <- data.table::data.table(variable = c("Increasing", 
@@ -86,4 +88,6 @@ us_data$variable <- factor(us_data$variable, levels = c("Decreasing", "Likely de
 
 country_map(data = us_data, country = "United States of America", variable = "variable", region_col_ne = "name")
 
+}
+}
 }
