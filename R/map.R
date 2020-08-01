@@ -28,7 +28,7 @@
 #'                                               "United Kingdom", 
 #'                                               "Spain",
 #'                                               "Australia") )
-#' # Make variable a factor so the ordering is sensible
+#' # Make variable a factor so the ordering is sensible in the legend
 #' eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
 #'                                                         "Unsure", "Likely increasing",
 #'                                                         "Increasing"))
@@ -131,17 +131,57 @@ global_map <- function(data = NULL, variable = NULL,
 #' the installation of the `rnaturalearth` package.
 #' @param data Dataframe containing variables to be mapped. Must contain a \code{region_code} variable.
 #' @param country Character string indicating the name of the country to be mapped.
+#' @param region_col_ne Character string indicating the name of a column in the data returned by
+#' \code{rnaturalearth::ne_states()} that \code{data$region_code} corresponds to. Possibilities include
+#' \code{provnum_ne}, \code{name}, \code{fips} and others and will depend on which country you are mapping.
 #' @inheritParams global_map
 #' @return A \code{ggplot2} object containing a country map.
 #' @export
 #'
 #' @importFrom ggplot2 ggplot aes geom_sf theme_minimal theme labs waiver .data
+#' @examples 
+#' # Example 1
+#' # If you know the provnum_ne codes you can use them directly
+#' eg_data <- data.table::data.table(variable = c("Increasing", 
+#'                                                "Decreasing", 
+#'                                                "Unsure", 
+#'                                                "Likely decreasing",
+#'                                                "Likely increasing"),
+#'                                   region_code = c(5, 7, 6, 8, 9))
+#' # Make variable a factor so the ordering is sensible
+#' eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
+#'                                                         "Unsure", "Likely increasing",
+#'                                                         "Increasing"))
+#' 
+#' country_map(data = eg_data, country = "Australia", variable = "variable")
+#' 
+#' 
+#' # Example 2
+#' # Sometimes it will be more convenient to join your data by name than provnum_ne code:
+#' us_data <- data.table::data.table(variable = c("Increasing", 
+#'                                                "Decreasing", 
+#'                                                "Unsure", 
+#'                                                "Likely decreasing",
+#'                                                "Likely increasing"),
+#'                                   region_code = c("California",
+#'                                                   "Texas",
+#'                                                   "Florida",
+#'                                                   "Arizona",
+#'                                                   "New York"))
+#' # Make variable a factor so the ordering is sensible in the legend
+#' us_data$variable <- factor(us_data$variable, levels = c("Decreasing", "Likely decreasing",
+#'                                                         "Unsure", "Likely increasing",
+#'                                                         "Increasing"))
+#' 
+#' country_map(data = us_data, country = "United States of America", variable = "variable", region_col_ne = "name")
+#' 
 country_map <- function(data = NULL, country = NULL,
                         variable = NULL,
                         variable_label = NULL,
                         trans = "identity",
                         fill_labels = NULL,
                         scale_fill = NULL,
+                        region_col_ne = "provnum_ne",
                         ...) {
   
   
@@ -159,14 +199,14 @@ country_map <- function(data = NULL, country = NULL,
                                          returnclass = 'sf')
   
   regions <- rnaturalearth::ne_states(country, returnclass = "sf")
-  
-  
-  ## Update linking code
-  data <- data.table::as.data.table(date)[, provnum_ne := region_code]
+  if(!region_col_ne %in% names(regions)){
+    stop(paste("Could not find region code column", region_col_ne, "in the natural earth regions data"))
+  }
+  names(regions)[names(regions) == region_col_ne] <- "region_code"
   
   regions_with_data <-  
     merge(regions, data,
-          by = c("provnum_ne"), all.x = TRUE)
+          by = c("region_code"), all.x = TRUE)
   
   
   
