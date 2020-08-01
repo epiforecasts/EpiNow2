@@ -32,7 +32,8 @@ transform ("identity"). Other options include log scaling ("log") and log base 1
 \item{fill_labels}{A function to use to allocate legend labels. An example (used below) is \code{scales::percent},
 which can be used for percentage data.}
 
-\item{scale_fill}{Function to use for scaling the fill. Defaults to a custom \code{ggplot2::scale_fill_manual}}
+\item{scale_fill}{Function to use for scaling the fill. Defaults to a custom \code{ggplot2::scale_fill_manual}, which
+expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Unsure".}
 
 \item{...}{Additional arguments passed to the \code{scale_fill} function}
 }

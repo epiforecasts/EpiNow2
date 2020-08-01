@@ -14,10 +14,32 @@
 #'
 #' @examples
 #'\donttest{
-#'if(requireNamespace("rnaturalearth")){
-#'  df <- data.table::data.table(variable = "Increasing", country = "France") 
-#'
-#'  global_map(df, variable = "variable")
+#'if(requireNamespace("rnaturalearth") & requireNamespace("scales")){
+#' # Example 1 - categorical data
+#' # If values are "Increasing", "Likely increasing" etc (see ?EpiNow2::theme_map), 
+#' # then the default fill scale works
+#' eg_data <- data.table::data.table(variable = c("Increasing", 
+#'                                                "Decreasing", 
+#'                                                "Unsure", 
+#'                                                "Likely decreasing",
+#'                                                "Likely increasing"),
+#'                                   country = c("France", 
+#'                                               "Germany", 
+#'                                               "United Kingdom", 
+#'                                               "Spain",
+#'                                               "Australia") )
+#' # Make variable a factor so the ordering is sensible
+#' eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
+#'                                                         "Unsure", "Likely increasing",
+#'                                                         "Increasing"))
+#' global_map(eg_data, variable = "variable", variable_label = "Direction\nof change")
+#' 
+#' 
+#' # Example 2 - numeric data
+#' # numeric data requires scale_fill and a global viridis_palette specified
+#' eg_data$second_variable <- runif(nrow(eg_data))
+#' viridis_palette <- "A"
+#' global_map(eg_data, variable = "second_variable", scale_fill = scale_fill_viridis_c)
 #' }
 #'}
 global_map <- function(data = NULL, variable = NULL,
@@ -186,7 +208,8 @@ country_map <- function(data = NULL, country = NULL,
 #' ("log10"). For a complete list of options see \code{ggplot2::continous_scale}.
 #' @param fill_labels A function to use to allocate legend labels. An example (used below) is \code{scales::percent},
 #' which can be used for percentage data.
-#' @param scale_fill Function to use for scaling the fill. Defaults to a custom `ggplot2::scale_fill_manual`
+#' @param scale_fill Function to use for scaling the fill. Defaults to a custom `ggplot2::scale_fill_manual`, which
+#' expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Unsure".
 #' @param breaks Breaks to use in legend. Defaults to `ggplot2::waiver`.
 #' @param ... Additional arguments passed to the `scale_fill` function
 #' @return A `ggplot2` object 
