@@ -14,10 +14,32 @@
 #'
 #' @examples
 #'\donttest{
-#'if(requireNamespace("rnaturalearth")){
-#'  df <- data.table::data.table(variable = "Increasing", country = "France") 
-#'
-#'  global_map(df, variable = "variable")
+#'if(requireNamespace("rnaturalearth") & requireNamespace("scales")){
+#' # Example 1 - categorical data
+#' # If values are "Increasing", "Likely increasing" etc (see ?EpiNow2::theme_map), 
+#' # then the default fill scale works
+#' eg_data <- data.table::data.table(variable = c("Increasing", 
+#'                                                "Decreasing", 
+#'                                                "Unsure", 
+#'                                                "Likely decreasing",
+#'                                                "Likely increasing"),
+#'                                   country = c("France", 
+#'                                               "Germany", 
+#'                                               "United Kingdom", 
+#'                                               "Spain",
+#'                                               "Australia") )
+#' # Make variable a factor so the ordering is sensible in the legend
+#' eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
+#'                                                         "Unsure", "Likely increasing",
+#'                                                         "Increasing"))
+#' global_map(eg_data, variable = "variable", variable_label = "Direction\nof change")
+#' 
+#' 
+#' # Example 2 - numeric data
+#' # numeric data requires scale_fill and a global viridis_palette specified
+#' eg_data$second_variable <- runif(nrow(eg_data))
+#' viridis_palette <- "A"
+#' global_map(eg_data, variable = "second_variable", scale_fill = scale_fill_viridis_c)
 #' }
 #'}
 global_map <- function(data = NULL, variable = NULL,
@@ -65,6 +87,10 @@ global_map <- function(data = NULL, variable = NULL,
   ## Country level
   world <- rnaturalearth::ne_countries(scale='medium',
                                        returnclass = 'sf')
+  # 8 countries including France, Norway, Kosovo are missing values for iso_a3. Only
+  # adm0_a3 seems present for these and it is correct ie FRA, NOR, KOS
+  world$best_iso3 <- with(world, ifelse(is.na(iso_a3), adm0_a3, iso_a3))
+  
   ## Coastlines
   continents <- rnaturalearth::ne_coastline(scale = "medium",
                                             returnclass = "sf")
@@ -73,8 +99,8 @@ global_map <- function(data = NULL, variable = NULL,
   # Link data and shape file ------------------------------------------------
   
   world_with_data <- suppressWarnings(
-    merge(world, data[, `:=`(iso_a3 = country_code, country = NULL)],
-          by = c("iso_a3"), all.x = TRUE)
+    merge(world, data[, `:=`(best_iso3 = country_code, country = NULL)],
+          by = c("best_iso3"), all.x = TRUE)
   )
   
   # Make map ----------------------------------------------------------------
@@ -105,17 +131,61 @@ global_map <- function(data = NULL, variable = NULL,
 #' the installation of the `rnaturalearth` package.
 #' @param data Dataframe containing variables to be mapped. Must contain a \code{region_code} variable.
 #' @param country Character string indicating the name of the country to be mapped.
+#' @param region_col_ne Character string indicating the name of a column in the data returned by
+#' \code{rnaturalearth::ne_states()} that \code{data$region_code} corresponds to. Possibilities include
+#' \code{provnum_ne}, \code{name}, \code{fips} and others and will depend on which country you are mapping.
 #' @inheritParams global_map
 #' @return A \code{ggplot2} object containing a country map.
 #' @export
 #'
 #' @importFrom ggplot2 ggplot aes geom_sf theme_minimal theme labs waiver .data
+#' @examples 
+#' \donttest{
+#' if(requireNamespace("rnaturalearth") & requireNamespace("scales")){
+#' # Example 1
+#' # If you know the provnum_ne codes you can use them directly
+#' eg_data <- data.table::data.table(variable = c("Increasing", 
+#'                                                "Decreasing", 
+#'                                                "Unsure", 
+#'                                                "Likely decreasing",
+#'                                                "Likely increasing"),
+#'                                   region_code = c(5, 7, 6, 8, 9))
+#' # Make variable a factor so the ordering is sensible
+#' eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
+#'                                                         "Unsure", "Likely increasing",
+#'                                                         "Increasing"))
+#' 
+#' country_map(data = eg_data, country = "Australia", variable = "variable")
+#' 
+#' 
+#' # Example 2
+#' # Sometimes it will be more convenient to join your data by name than provnum_ne code:
+#' us_data <- data.table::data.table(variable = c("Increasing", 
+#'                                                "Decreasing", 
+#'                                                "Unsure", 
+#'                                                "Likely decreasing",
+#'                                                "Likely increasing"),
+#'                                   region_code = c("California",
+#'                                                   "Texas",
+#'                                                   "Florida",
+#'                                                   "Arizona",
+#'                                                   "New York"))
+#' # Make variable a factor so the ordering is sensible in the legend
+#' us_data$variable <- factor(us_data$variable, levels = c("Decreasing", "Likely decreasing",
+#'                                                         "Unsure", "Likely increasing",
+#'                                                         "Increasing"))
+#' 
+#' country_map(data = us_data, country = "United States of America", variable = "variable", region_col_ne = "name")
+#' 
+#' }
+#'}
 country_map <- function(data = NULL, country = NULL,
                         variable = NULL,
                         variable_label = NULL,
                         trans = "identity",
                         fill_labels = NULL,
                         scale_fill = NULL,
+                        region_col_ne = "provnum_ne",
                         ...) {
   
   
@@ -133,14 +203,14 @@ country_map <- function(data = NULL, country = NULL,
                                          returnclass = 'sf')
   
   regions <- rnaturalearth::ne_states(country, returnclass = "sf")
-  
-  
-  ## Update linking code
-  data <- data.table::as.data.table(date)[, provnum_ne := region_code]
+  if(!region_col_ne %in% names(regions)){
+    stop(paste("Could not find region code column", region_col_ne, "in the natural earth regions data"))
+  }
+  names(regions)[names(regions) == region_col_ne] <- "region_code"
   
   regions_with_data <-  
     merge(regions, data,
-          by = c("provnum_ne"), all.x = TRUE)
+          by = c("region_code"), all.x = TRUE)
   
   
   
@@ -182,7 +252,8 @@ country_map <- function(data = NULL, country = NULL,
 #' ("log10"). For a complete list of options see \code{ggplot2::continous_scale}.
 #' @param fill_labels A function to use to allocate legend labels. An example (used below) is \code{scales::percent},
 #' which can be used for percentage data.
-#' @param scale_fill Function to use for scaling the fill. Defaults to a custom `ggplot2::scale_fill_manual`
+#' @param scale_fill Function to use for scaling the fill. Defaults to a custom `ggplot2::scale_fill_manual`, which
+#' expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Unsure".
 #' @param breaks Breaks to use in legend. Defaults to `ggplot2::waiver`.
 #' @param ... Additional arguments passed to the `scale_fill` function
 #' @return A `ggplot2` object 
