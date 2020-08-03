@@ -81,7 +81,7 @@ out <- estimate_infections(reported_cases, family = "negbin",
                            samples = 1000, warmup = 500,
                            cores = ifelse(interactive(), 4, 1), chains = 4,
                            estimate_rt = TRUE,
-                           verbose = TRUE, return_fit = TRUE)
+                           verbose = FALSE, return_fit = TRUE)
 
 ## Forecast Rt and infections from estimates
 forecast <- forecast_infections(
@@ -97,7 +97,7 @@ forecast <- forecast_infections(
      horizon = 14, 
      samples = 1000)
                                 
-forecast
+forecast$summarised
   }
  }
 }                              
