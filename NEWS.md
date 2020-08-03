@@ -4,6 +4,9 @@
 * Implemented reporting templates
 * Bug fix of estimate reporting
 * Added additional reporting of runtime errors
+* Examples for `global_map` and `country_map` expanded by @ellisp
+* Improved ISO code mathcing in `global_map` from @ellisp
+* Improvements so that data frames and tibbles are supported as inputs.
 
 # EpiNow2 1.0.0
 
