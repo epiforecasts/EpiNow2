@@ -12,8 +12,8 @@
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon scale_y_continuous
 #' @importFrom scales comma
-#' @importFrom stringr str_to_sentence
 #' @importFrom cowplot theme_cowplot
+#' @importFrom data.table setDT
 #' @examples
 #' \donttest{
 #' ## Define example cases
@@ -66,8 +66,19 @@
 plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
                            obs_as_col = TRUE) {
   
+  ## Convert input to data.table
+  estimate <- data.table::setDT(estimate)
+  if (!missing(reported)) {
+    reported <- data.table::setDT(reported)
+  }
+
   ## Map type to presentation form
-  estimate <- estimate[, type := stringr::str_to_sentence(type)]
+  to_sentence <- function(x) {
+    substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+    x
+  }
+  
+  estimate <- estimate[, type := to_sentence(type)]
   
   ## Initialise plot
   plot <- ggplot2::ggplot(estimate, ggplot2::aes(x = date, col = type, fill = type))
@@ -132,8 +143,11 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 #' @importFrom scales comma
 #' @importFrom cowplot theme_cowplot panel_border
 #' @importFrom patchwork plot_layout
+#' @importFrom data.table setDT
 plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE) {
   
+  ## Set input to data.table
+  summary_results <- data.table::setDT(summary_results)
   
   ## generic plotting function
   inner_plot <- function(df) {

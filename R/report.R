@@ -131,10 +131,14 @@ report_cases <- function(case_estimates,
 #' @param rt_samples A data.table containing Rt samples with the following variables: sample and value.
 #' @return A data.table containing formatted and numeric summary measures
 #' @export
-#' @importFrom data.table data.table
+#' @importFrom data.table data.table setDT
 #' @importFrom purrr map
 report_summary <- function(summarised_estimates,
                            rt_samples) { 
+  
+  ## Set input to data.table
+  summarised_estimates <- data.table::setDT(summarised_estimates)
+  rt_samples <- data.table::setDT(rt_samples)
   
   ## Extract values of interest
   summarised_estimates <- summarised_estimates[, .(variable, point = median,
@@ -198,6 +202,7 @@ report_summary <- function(summarised_estimates,
 #' @importFrom ggplot2 ggsave theme labs scale_x_date 
 #' @importFrom cowplot theme_cowplot
 #' @importFrom patchwork plot_layout
+#' @importFrom data.table setDT
 #' @inheritParams epinow
 #' @inheritParams plot_estimates
 #' @return A `ggplot2` object
@@ -244,6 +249,9 @@ report_summary <- function(summarised_estimates,
 report_plots <- function(summarised_estimates, reported,
                          target_folder) {
   
+  ## set input to data.table
+  summarised_estimates <- data.table::setDT(summarised_estimates)
+  reported <- data.table::setDT(reported)
   
   if (missing(target_folder)) {
     target_folder <- NULL

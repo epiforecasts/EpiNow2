@@ -247,7 +247,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
 
   # Set up data.table -------------------------------------------------------
 
-  suppressMessages(data.table::setDTthreads(threads = cores))
+  suppressMessages(data.table::setDTthreads(threads = 1))
   
   reported_cases <- data.table::setDT(reported_cases)
   
