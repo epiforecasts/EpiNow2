@@ -12,7 +12,6 @@
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon scale_y_continuous
 #' @importFrom scales comma
-#' @importFrom stringr str_to_sentence
 #' @importFrom cowplot theme_cowplot
 #' @importFrom data.table setDT
 #' @examples
@@ -72,7 +71,12 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   reported <- data.table::setDT(reported)
   
   ## Map type to presentation form
-  estimate <- estimate[, type := stringr::str_to_sentence(type)]
+  to_sentence <- function(x) {
+    substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+    x
+  }
+  
+  estimate <- estimate[, type := to_sentence(type)]
   
   ## Initialise plot
   plot <- ggplot2::ggplot(estimate, ggplot2::aes(x = date, col = type, fill = type))
