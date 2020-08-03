@@ -9,7 +9,7 @@
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams forecast_infections
-#' @importFrom data.table as.data.table
+#' @importFrom data.table setDT
 #' @importFrom lubridate days
 #' 
 #' @examples
@@ -83,7 +83,8 @@ epinow <- function(reported_cases, family = "negbin",
   
  # Convert input to DT -----------------------------------------------------
   suppressMessages(data.table::setDTthreads(threads = 1))
- 
+  reported_cases <- data.table::setDT(reported_cases)
+  
  # Set up folders ----------------------------------------------------------
 
   if (missing(target_date)) {
@@ -333,7 +334,7 @@ regional_epinow <- function(reported_cases,
                             ...) {
     
   ## Set input to data.table
-  reported_cases <- data.table::as.data.table(reported_cases)
+  reported_cases <- data.table::setDT(reported_cases)
   
   if (missing(target_date)) {
     target_date <- as.character(max(reported_cases$date))
