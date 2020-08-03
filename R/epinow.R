@@ -82,7 +82,7 @@ epinow <- function(reported_cases, family = "negbin",
  }
   
  # Convert input to DT -----------------------------------------------------
-  suppressMessages(data.table::setDTthreads(threads = cores))
+  suppressMessages(data.table::setDTthreads(threads = 1))
  
  # Set up folders ----------------------------------------------------------
 
@@ -367,7 +367,7 @@ regional_epinow <- function(reported_cases,
                          cores = cores,
                          ...) { 
     message("Reporting estimates for: ", target_region)
-    data.table::setDTthreads(threads = cores)
+    data.table::setDTthreads(threads = 1)
     
     if (!is.null(target_folder)) {
       target_folder <- file.path(target_folder, target_region)
