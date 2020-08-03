@@ -68,8 +68,10 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   
   ## Convert input to data.table
   estimate <- data.table::setDT(estimate)
-  reported <- data.table::setDT(reported)
-  
+  if (!missing(reported)) {
+    reported <- data.table::setDT(reported)
+  }
+
   ## Map type to presentation form
   to_sentence <- function(x) {
     substr(x, 1, 1) <- toupper(substr(x, 1, 1))
