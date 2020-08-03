@@ -57,7 +57,6 @@ Imports:
     stats,
     HDInterval,
     truncnorm,
-    stringr,
     lubridate,
     future.apply,
     ggplot2,
