@@ -106,7 +106,7 @@ epinow <- function(reported_cases, family = "negbin",
   }
 # Make sure the horizon is as specified from the target date --------------
 
- if (horizon != 0 & !missing(forecast_model)) {
+ if (horizon != 0) {
    horizon <- horizon + as.numeric(as.Date(target_date) - max(reported_cases$date))
  } 
 
