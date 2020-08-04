@@ -32,13 +32,16 @@ data {
 	int<lower=1> M;			               // basis functions for infections gp
 	real lengthscale_mean;             // mean for gp lengthscale prior
 	real lengthscale_sd;               // sd for gp lengthscale prior
-	int est_week_eff;
+	int est_week_eff;                  // should the weekly reporting effect be estimated (1 = yes)
 	vector[rt] time;
 	vector[t] inf_time;
 	int stationary;                    // is underlying Rt assumed to be stationary (+ GP)
 	int break_no;                      // no of breakpoints (0 = no breakpoints)
 	int breakpoints[rt];               // when do breakpoints occur 
-	int fixed;                        // Indicates if Rt/backcalculation is fixed                   
+	int fixed;                         // Indicates if Rt/backcalculation is fixed    
+	int estimate_imports;              // should imports be estimated ( 1= yes)
+	real import_rate_mean;             // mean of the import rate
+	real import_rate_sd;               // sd of the import rate
 }
 
 transformed data{
@@ -80,6 +83,8 @@ parameters{
   real<lower = 0> gt_mean[estimate_r];                // mean of generation time
   real <lower = 0> gt_sd[estimate_r];                 // sd of generation time
   real rt_break_eff[break_no];                        // Rt breakpoint effects
+  real <lower = 0> import_rate[estimate_imports];     // global daily import rate
+  vector[estimate_imports > 0 ? t : 0] imports;       // daily imports
 }
 
 transformed parameters {
@@ -155,6 +160,11 @@ transformed parameters {
      infections[1:no_rt_time] = infections[1:no_rt_time] + 
                                   shifted_cases[1:no_rt_time] .* exp(initial_infections);
       
+     // add in imported cases
+     if (estimate_imports) {
+       infections = infections + imports;
+     }
+
      // estimate remaining infections using Rt
      infectiousness = rep_vector(1e-5, rt);
      for (s in 1:rt) {
@@ -225,6 +235,12 @@ model {
   
   // estimate rt
   if (estimate_r) {
+    
+    if (estimate_imports) {
+      import_rate ~ normal(import_rate_mean, import_rate_sd);
+      imports ~ exponential(import_rate);
+    }
+    
     // prior on R
     initial_R[estimate_r] ~ gamma(r_alpha, r_beta);
     initial_infections ~ normal(0, 0.1);
