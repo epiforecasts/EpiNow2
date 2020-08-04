@@ -40,8 +40,8 @@ data {
 	int breakpoints[rt];               // when do breakpoints occur 
 	int fixed;                         // Indicates if Rt/backcalculation is fixed    
 	int estimate_imports;              // should imports be estimated ( 1= yes)
-	real import_rate_mean;             // mean of the import rate
-	real import_rate_sd;               // sd of the import rate
+	real imports_mean;                 // mean of imported cases
+	real imports_sd;                   // sd of imported cases
 }
 
 transformed data{
@@ -52,13 +52,18 @@ transformed data{
   int noise_terms = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;  
                                              // no. of noise terms
   matrix[noise_terms, M] PHI;                // basis function 
-  
+  real import_alpha;
+  real import_beta;
   //Update time varables
   rt_h = rt - horizon;
   
-  // calculate alpha and beta for gamma distribution
+  // calculate alpha and beta for gamma R distribution
   r_alpha = (r_mean / r_sd)^2;
   r_beta = r_mean / (r_sd^2);
+  
+  //calculate gamma and beta for gamma import distribution
+  import_alpha = (imports_mean / imports_sd) ^ 2;
+  import_beta = imports_mean / (imports_sd^2);
    
    // time without estimating Rt is the differrence of t and rt
    no_rt_time = t - rt;
@@ -81,10 +86,9 @@ parameters{
   vector[estimate_r > 0 ? no_rt_time : 0] initial_infections;
                                                       // seed infections adjustment when estimating Rt
   real<lower = 0> gt_mean[estimate_r];                // mean of generation time
-  real <lower = 0> gt_sd[estimate_r];                 // sd of generation time
+  real<lower = 0> gt_sd[estimate_r];                  // sd of generation time
   real rt_break_eff[break_no];                        // Rt breakpoint effects
-  real <lower = 0> import_rate[estimate_imports];     // global daily import rate
-  vector[estimate_imports > 0 ? t : 0] imports;       // daily imports
+  real imports[estimate_imports];                     // daily imports
 }
 
 transformed parameters {
@@ -114,7 +118,12 @@ transformed parameters {
   }
   
   // initialise infections
-  infections = rep_vector(1e-5, t);
+  if (estimate_imports) {
+    infections = rep_vector(imports[estimate_imports], t);
+  }else{
+    infections = rep_vector(1e-5, t);
+  }
+
 
   // Estimate Rt and use this estimate to generate infections
   if (estimate_r) {
@@ -160,11 +169,6 @@ transformed parameters {
      infections[1:no_rt_time] = infections[1:no_rt_time] + 
                                   shifted_cases[1:no_rt_time] .* exp(initial_infections);
       
-     // add in imported cases
-     if (estimate_imports) {
-       infections = infections + imports;
-     }
-
      // estimate remaining infections using Rt
      infectiousness = rep_vector(1e-5, rt);
      for (s in 1:rt) {
@@ -237,8 +241,7 @@ model {
   if (estimate_r) {
     
     if (estimate_imports) {
-      import_rate ~ normal(import_rate_mean, import_rate_sd);
-      imports ~ exponential(import_rate);
+      imports ~ gamma(import_alpha, import_beta);
     }
     
     // prior on R

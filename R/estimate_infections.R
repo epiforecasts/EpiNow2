@@ -93,14 +93,16 @@
 #' # Run model with default settings
 #' def <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
-#'                            delays = list(incubation_period, reporting_delay),
+#'                            delays = list(incubation_period, reporting_delay), model = model,
 #'                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-#'                            chains = 4, estimate_rt = TRUE, verbose = FALSE, return_fit = TRUE)
+#'                            chains = 4, estimate_rt = TRUE, verbose = TRUE, return_fit = TRUE)
 #'
 #' 
 #' # Plot output
-#' report_plots(summarised_estimates = def$summarised,
+#' plots <- report_plots(summarised_estimates = def$summarised,
 #'                       reported = reported_cases)
+#'
+#' plots$summary
 #'
 #'# Run the model with default setting on a later snapshot of 
 #'# data (use burn_in here to remove the first week of
@@ -215,12 +217,13 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 horizon = 7, model, cores = 1, chains = 4,
                                 samples = 1000, warmup = 200,
                                 estimate_rt = TRUE, estimate_week_eff = TRUE,
+                                estimate_imports = TRUE, imports = list(mean = 1, sd = 1),
                                 estimate_breakpoints = FALSE, burn_in = 0,
                                 stationary = FALSE, fixed = FALSE,
                                 adapt_delta = 0.99, max_treedepth = 15, 
-                                return_fit = FALSE, verbose = TRUE, debug = FALSE){
+                                return_fit = FALSE, verbose = TRUE, debug = FALSE
+                                ){
   
-
   # Check fix setting -------------------------------------------------------
   if (fixed) {
     stationary <- TRUE
@@ -350,7 +353,10 @@ estimate_infections <- function(reported_cases, family = "negbin",
     stationary = ifelse(stationary, 1, 0),
     fixed = ifelse(fixed, 1, 0),
     break_no = break_no,
-    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint
+    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
+    estimate_imports = ifelse(estimate_imports, 1, 0),
+    imports_mean = imports$mean,
+    imports_sd = imports$sd
   ) 
   
   # Parameters for Hilbert space GP -----------------------------------------
@@ -406,6 +412,10 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
                                               sd = generation_time$sd_sd))
     
+    if (estimate_imports) {
+      out$imports <-array(rgamma(n = 1, shape = (imports$mean / imports$sd)^2, 
+                                 scale = (imports$sd^2) / imports$mean))
+    }
     if (break_no > 0) {
       out$rt_break_eff <- array(rlnorm(break_no, 0, 0.1))
     }
@@ -468,6 +478,13 @@ estimate_infections <- function(reported_cases, family = "negbin",
     return(param_df)
   }
   
+  extract_static_parameter <- function(param) {
+    data.table::data.table(
+      parameter = param,
+      sample = 1:length(samples[[param]]),
+      value = samples[[param]])
+  }
+  
   ## Report infections, and R
   out$infections <- extract_parameter("infections", 
                                       samples,
@@ -493,6 +510,12 @@ estimate_infections <- function(reported_cases, family = "negbin",
       
       out$breakpoints <- out$breakpoints[, strat := date][, c("time", "date") := NULL]
     }
+    
+    
+    if (estimate_imports) {
+      out$imports <- extract_parameter("imports", samples, 1)
+      out$imports <- out$imports[, time := NULL][, date := NULL]
+    }
   }
   
     
@@ -517,13 +540,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
     out$delay_sd <- out$delay_sd[, strat :=  as.character(time)][,
                                    time := NULL][, date := NULL]
     
-    
-    extract_static_parameter <- function(param) {
-      data.table::data.table(
-        parameter = param,
-        sample = 1:length(samples[[param]]),
-        value = samples[[param]])
-    }
     
     if (estimate_rt) {
       out$gt_mean <- extract_static_parameter("gt_mean")
