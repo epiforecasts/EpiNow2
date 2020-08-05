@@ -99,7 +99,7 @@ knitr::include_graphics(here::here(file.path(summary_path, "reported_cases_plot.
 `r paste0("*Table ",  tab_start, ": Latest estimates (as of the ", latest_date, ") of the number of confirmed ", case_def, "s by date of infection, the effective reproduction number, the rate of growth, and the doubling time (when negative this corresponds to the halving time) in each region. The median and 90% credible interval is shown.*")`
 <br>
 ```{r, layout="l-body-outset", out.width = "90%"}
-readRDS(here::here(file.path(summary_path, "summary_table.rds"))) %>% 
+data.table::fread(here::here(summary_path, "summary_table.csv")) %>% 
  knitr::kable(booktabs = TRUE, longtable = TRUE) %>% 
  kableExtra::landscape()
 ```
