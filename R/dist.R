@@ -317,10 +317,10 @@ lognorm_dist_def <- function(mean, mean_sd,
                              to_log = FALSE) {
   
   if (to_log) {
-    mean <- log(mean)
-    mean_sd <- log(mean_sd)
-    sd <- log(sd)
-    sd_sd <- log(sd_sd)
+    mean_location <- log(mean^2 / sqrt(mean_sd^2 + mean^2))
+    mean_shape <- sqrt(log(1 + (mean_sd^2 / mean^2)))
+    mean <- mean_location
+    mean_sd <- mean_shape
   }
   dist <- data.table::data.table(
     model = rep("lognorm", samples),
