@@ -32,6 +32,7 @@ if (!exists("report_growth")) {
 <br>
 ```{r}
 readRDS(here::here(file.path(region_path, region, "latest/summary.rds"))) %>% 
+.[, 1:2] %>% 
 knitr::kable(col.names = c("", "Estimate"), booktabs = TRUE) %>% 
     kableExtra::kable_styling(latex_options = c("striped", "hold_position"),
                 full_width = TRUE)
