@@ -134,6 +134,7 @@ summarise_results <- function(regions,
 #' @importFrom purrr map_chr compact
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
 #' @importFrom cowplot get_legend
+#' @importFrom data.table setDT
 #' @examples
 #' \donttest{
 #' # Construct example distributions
@@ -188,6 +189,8 @@ regional_summary <- function(regional_output,
                              region_scale = "Region",
                              return_summary = TRUE) {
   
+  reported_cases <- data.table::setDT(reported_cases)
+  
   if (missing(summary_dir) & !return_summary) {
     stop("Either allow results to be returned or supply a directory for results to be saved into")
   }
@@ -230,7 +233,7 @@ regional_summary <- function(regional_output,
                                   forecast = FALSE)
   
   ## Get latest date
-  latest_date <- max(results$estimates$summarised$date, na.rm = TRUE)
+  latest_date <- reported_cases[confirm > 0][date == max(date)]$date
   
   if (!is.null(summary_dir)) {
     ## Make summary directory
