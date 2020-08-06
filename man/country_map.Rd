@@ -86,7 +86,8 @@ us_data$variable <- factor(us_data$variable, levels = c("Decreasing", "Likely de
                                                         "Unsure", "Likely increasing",
                                                         "Increasing"))
 
-country_map(data = us_data, country = "United States of America", variable = "variable", region_col_ne = "name")
+country_map(data = us_data, country = "United States of America",
+            variable = "variable", region_col_ne = "name")
 
 }
 }
