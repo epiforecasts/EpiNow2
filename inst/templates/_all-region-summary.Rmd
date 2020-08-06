@@ -1,0 +1,31 @@
+
+
+### Reproduction numbers over time in all regions
+
+```{r, fig.height = 12, fig.width = 8, layout="l-body-outset", out.width = "95%"}
+knitr::include_graphics(here::here(summary_path, "rt_plot.png"))
+```
+
+<br>
+`r paste0("*Figure ",  fig_start + 4, ": Time-varying estimate of the effective reproduction number (light ribbon = 90% credible interval; dark ribbon = the 50% credible interval) in all regions. Estimates from existing data are shown up to the ", latest_date,  ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""), ". Estimates based on partial data have been adjusted for right truncation of infections. The horizontal dotted line indicates the target value of 1 for the effective reproduction no. required for control. The vertical dashed line indicates the date of report generation.*")`
+
+`r paste0("### Confirmed ",  case_def, "s and their estimated date of infection in all regions")`
+
+
+```{r, fig.height = 12, fig.width = 8, layout="l-body-outset", out.width = "90%"}
+knitr::include_graphics(here::here(summary_path, "infections_plot.png"))
+```
+
+`r paste0("*Figure ",  fig_start + 5, ": Confirmed ", case_def,  "s by date of report (bars) and their estimated date of infection (light ribbon = 90% credible interval; dark ribbon = the 50% credible interval) in all regions. Estimates from existing data are shown up to the ", latest_date, ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""),". Estimates based on partial data have been adjusted for right truncation of infections. The vertical dashed line indicates the date of report generation.*")`
+
+`r paste0("### Confirmed ",  case_def, "s and their estimated date of report in all regions")`
+
+
+```{r, fig.height = 12, fig.width = 8, layout="l-body-outset", out.width = "90%"}
+knitr::include_graphics(here::here(summary_path, "reported_cases_plot.png"))
+```
+
+`r paste0("*Figure ",  fig_start + 6, ": Confirmed ", case_def,  "s by date of report (bars) and their estimated date of report (light ribbon = 90% credible interval; dark ribbon = the 50% credible interval) in all regions. Estimates from existing data are shown up to the ", latest_date, ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""),". Estimates based on partial data have been adjusted for right truncation of infections. The vertical dashed line indicates the date of report generation.*")`
+
+
+
