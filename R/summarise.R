@@ -123,6 +123,8 @@ summarise_results <- function(regions,
 #'  in which to store summary of results.
 #' @param target_date A character string giving the target date for which to extract results
 #' (in the format "yyyy-mm-dd"). Defaults to latest available estimates.
+#' @param all_region Logical, defaults to `TRUE`. Should summary plots for all regions be returned 
+#' rather than just regions of interest.
 #' @param return_summary Logical, defaults to `TRUE`. Should summary measures be returned.
 #' @return A list of summary measures and plots
 #' @export
@@ -166,8 +168,7 @@ summarise_results <- function(regions,
 #' # Run basic nowcasting pipeline
 #' regional_out <- regional_epinow(reported_cases = cases,
 #'                                 generation_time = generation_time,
-#'                                 incubation_period = incubation_period,
-#'                                 reporting_delay = reporting_delay,
+#'                                 delays = list(incubation_period, reporting_delay),
 #'                                 samples = 2000, warmup = 200, cores = 4,
 #'                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
 #'                                 summary = FALSE)
@@ -177,7 +178,7 @@ summarise_results <- function(regions,
 #' regional_summary(regional_output = regional_out$regional,
 #'                  reported_cases = cases,
 #'                  summary_dir = results_dir,
-#'                  region_scale = "Country")
+#'                  region_scale = "Country", all_regions = FALSE)
 #'
 #' }
 #' 
@@ -187,6 +188,7 @@ regional_summary <- function(regional_output,
                              summary_dir,
                              target_date,
                              region_scale = "Region",
+                             all_regions = TRUE,
                              return_summary = TRUE) {
   
   reported_cases <- data.table::setDT(reported_cases)
@@ -333,48 +335,47 @@ regional_summary <- function(regional_output,
       ))
   }
   
-  plots_per_row <- ifelse(length(regions) > 60, 
-                          ifelse(length(regions) > 120, 8, 5), 3)
-  
-  plots <- report_plots(summarised_estimates = results$estimates$summarised, 
-                        reported = reported_cases)
-  
-  plots$summary <- NULL
-  plots <- purrr::map(plots,
-                       ~ . + ggplot2::facet_wrap(~ region, scales = "free_y",
-                                                 ncol = plots_per_row))
-  
-  
-  if (!is.null(summary_dir)) {
-    suppressWarnings(
-      suppressMessages(
-        ggplot2::ggsave(file.path(summary_dir, "rt_plot.png"), 
-                        plots$reff, dpi = 300, width = 24,
-                        height = 3 * round(length(regions) / plots_per_row, 0), 
-                        limitsize = FALSE)
-        
-      ))
+  if (all_regions) {
+    plots_per_row <- ifelse(length(regions) > 60, 
+                            ifelse(length(regions) > 120, 8, 5), 3)
     
-    suppressWarnings(
-      suppressMessages( 
-        ggplot2::ggsave(file.path(summary_dir, "infections_plot.png"), 
-                        plots$infections, dpi = 300, width = 24, 
-                        height =  3 * round(length(regions) / plots_per_row, 0),
-                        limitsize = FALSE)
-      ))
+    plots <- report_plots(summarised_estimates = results$estimates$summarised, 
+                          reported = reported_cases)
     
-     suppressWarnings(
-      suppressMessages( 
-        ggplot2::ggsave(file.path(summary_dir, "reported_cases_plot.png"), 
-                        plots$reports, dpi = 300, width = 24, 
-                        height =  3 * round(length(regions) / plots_per_row, 0),
-                        limitsize = FALSE)
-      ))
+    plots$summary <- NULL
+    plots <- purrr::map(plots,
+                        ~ . + ggplot2::facet_wrap(~ region, scales = "free_y",
+                                                  ncol = plots_per_row))
+    
+    
+    if (!is.null(summary_dir)) {
+      suppressWarnings(
+        suppressMessages(
+          ggplot2::ggsave(file.path(summary_dir, "rt_plot.png"), 
+                          plots$reff, dpi = 300, width = 24,
+                          height = 3 * round(length(regions) / plots_per_row, 0), 
+                          limitsize = FALSE)
+          
+        ))
+      
+      suppressWarnings(
+        suppressMessages( 
+          ggplot2::ggsave(file.path(summary_dir, "infections_plot.png"), 
+                          plots$infections, dpi = 300, width = 24, 
+                          height =  3 * round(length(regions) / plots_per_row, 0),
+                          limitsize = FALSE)
+        ))
+      
+      suppressWarnings(
+        suppressMessages( 
+          ggplot2::ggsave(file.path(summary_dir, "reported_cases_plot.png"), 
+                          plots$reports, dpi = 300, width = 24, 
+                          height =  3 * round(length(regions) / plots_per_row, 0),
+                          limitsize = FALSE)
+        ))
+    }
   }
-
-  
-  
-  
+ 
   if (return_summary) {
     out <- list()
     out$latest_date <- latest_date
@@ -383,8 +384,11 @@ regional_summary <- function(regional_output,
     out$summary_plot <- summary_plot
     out$summarised_measures <- sum_key_measures
     out$high_plots <- high_plots
-    out$plots <- plots
     
+    if (all_regions) {
+      out$plots <- plots
+    }
+
     return(out)
   }else{
     return(invisible(NULL))
