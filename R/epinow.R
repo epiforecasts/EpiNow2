@@ -279,6 +279,8 @@ if (!is.null(target_folder)){
 #' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
 #' that region to be evaluated. Defaults to 2.
 #' @param summary Logical, should summary measures be calculated.
+#' @param all_regions_summary Logical, defaults to `TRUE`. Should summary plots for all regions be returned 
+#' rather than just regions of interest.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
 #' @inheritParams regional_summary
@@ -330,6 +332,7 @@ regional_epinow <- function(reported_cases,
                             summary = TRUE,
                             summary_dir,
                             region_scale = "Region",
+                            all_regions_summary = TRUE,
                             return_estimates = TRUE,
                             ...) {
     
@@ -418,7 +421,8 @@ regional_epinow <- function(reported_cases,
     summary_out <- safe_summary(regional_output = regional_out,
                                 summary_dir = summary_dir,
                                 reported_cases = reported_cases,
-                                region_scale = region_scale)
+                                region_scale = region_scale,
+                                all_regions = all_regions_summary)
     
     if (!is.null(summary_out[[2]])) {
       message("Errors caught whilst generating summary statistics: ")
