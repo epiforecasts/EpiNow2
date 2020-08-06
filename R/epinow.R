@@ -400,7 +400,7 @@ regional_epinow <- function(reported_cases,
   names(regional_errors) <- regions
   regional_errors <- purrr::compact(regional_errors)
   
-  if (length(regional_errors != 0)) {
+  if (length(regional_errors) != 0) {
      message("Runtime errors caught: ")
      print(regional_errors)
     }
