@@ -402,7 +402,7 @@ regional_summary <- function(regional_output,
 #' @param summary_dir Character string the directory into which to save results as a csv.
 #' @param type Character string, the region identifier to apply (defaults to region).
 #' @inheritParams get_regional_results
-#' @return A list of summarised Rt and cases by date of infection
+#' @return A list of summarised Rt, cases by date of infection and cases by date of report
 #' @export
 #' @importFrom data.table setnames fwrite
 #' @examples 
@@ -458,23 +458,39 @@ summarise_key_measures <- function(regional_results,
   }
   
   ## Clean and save case estimates
-  cases <- timeseries$estimates$summarised[variable == "infections", 
-                       .(region, date, type, median = round(median, 1), lower_90 = round(bottom, 0), 
-                         upper_90 = round(top, 0), lower_50 = round(lower, 0), 
-                         upper_50 = round(upper, 0))]
+  infections <- timeseries$estimates$summarised[variable == "infections", 
+                       .(region, date, type, median = round(median, 1), lower_90 = round(bottom, 1), 
+                         upper_90 = round(top, 1), lower_50 = round(lower, 1), 
+                         upper_50 = round(upper, 1))]
   
-  data.table::setnames(cases, "region", type)
+  data.table::setnames(infections, "region", type)
   
   
   if (!missing(summary_dir)) {
     if (!is.null(summary_dir)) {
-      data.table::fwrite(cases, paste0(summary_dir, "/cases.csv"))
+      data.table::fwrite(infections, paste0(summary_dir, "/cases_by_infection.csv"))
+    }
+  }
+  
+  ## Clean and save case estimates
+  reports <- timeseries$estimates$summarised[variable == "reported_cases", 
+                                                .(region, date, type, median = round(median, 1), lower_90 = round(bottom, 1), 
+                                                  upper_90 = round(top, 1), lower_50 = round(lower, 1), 
+                                                  upper_50 = round(upper, 1))]
+  
+  data.table::setnames(reports, "region", type)
+  
+  
+  if (!missing(summary_dir)) {
+    if (!is.null(summary_dir)) {
+      data.table::fwrite(reports, paste0(summary_dir, "/cases_by_report.csv"))
     }
   }
   
   out <- list()
   out$rt <- rt
-  out$cases <- cases
+  out$cases_by_infection <- infections
+  out$cases_by_report <- reports
   
   return(out)
 }
