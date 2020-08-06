@@ -7,6 +7,9 @@
 * Examples for `global_map` and `country_map` expanded by @ellisp
 * Improved ISO code matching in `global_map` from @ellisp
 * Improvements so that data frames and tibbles are supported as inputs.
+* Updated reporting templates
+* Updated reporting of estimates to clearly summarise cases by infection and report date. 
+* Made all region summary plots optional.
 
 # EpiNow2 1.0.0
 
