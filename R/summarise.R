@@ -235,7 +235,7 @@ regional_summary <- function(regional_output,
                                   forecast = FALSE)
   
   ## Get latest date
-  latest_date <- reported_cases[confirm > 0][date == max(date)]$date
+  latest_date <- unique(reported_cases[confirm > 0][date == max(date)]$date)
   
   if (!is.null(summary_dir)) {
     ## Make summary directory
