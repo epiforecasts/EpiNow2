@@ -445,9 +445,9 @@ summarise_key_measures <- function(regional_results,
 
   ## Clean and save Rt estimates
   rt <- timeseries$estimates$summarised[variable == "R", 
-                        .(region, date, type, median = round(median, 1),
-                          lower_90 = round(bottom, 1), upper_90 = round(top, 1),
-                          lower_50 = round(lower, 1), upper_50 = round(upper, 1))]
+                        .(region, date, type, median = round(median, 2),
+                          lower_90 = round(bottom, 2), upper_90 = round(top, 2),
+                          lower_50 = round(lower, 2), upper_50 = round(upper, 2))]
   
   data.table::setnames(rt, "region", type)
   
@@ -459,9 +459,9 @@ summarise_key_measures <- function(regional_results,
   
   ## Clean and save case estimates
   infections <- timeseries$estimates$summarised[variable == "infections", 
-                       .(region, date, type, median = round(median, 1), lower_90 = round(bottom, 1), 
-                         upper_90 = round(top, 1), lower_50 = round(lower, 1), 
-                         upper_50 = round(upper, 1))]
+                       .(region, date, type, median = round(median, 0), lower_90 = round(bottom, 0), 
+                         upper_90 = round(top, 0), lower_50 = round(lower, 0), 
+                         upper_50 = round(upper, 0))]
   
   data.table::setnames(infections, "region", type)
   
@@ -474,9 +474,9 @@ summarise_key_measures <- function(regional_results,
   
   ## Clean and save case estimates
   reports <- timeseries$estimates$summarised[variable == "reported_cases", 
-                                                .(region, date, type, median = round(median, 1), lower_90 = round(bottom, 1), 
-                                                  upper_90 = round(top, 1), lower_50 = round(lower, 1), 
-                                                  upper_50 = round(upper, 1))]
+                                                .(region, date, type, median = round(median, 0), lower_90 = round(bottom, 0), 
+                                                  upper_90 = round(top, 0), lower_50 = round(lower, 0), 
+                                                  upper_50 = round(upper, 0))]
   
   data.table::setnames(reports, "region", type)
   
