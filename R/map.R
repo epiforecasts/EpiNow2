@@ -175,7 +175,8 @@ global_map <- function(data = NULL, variable = NULL,
 #'                                                         "Unsure", "Likely increasing",
 #'                                                         "Increasing"))
 #' 
-#' country_map(data = us_data, country = "United States of America", variable = "variable", region_col_ne = "name")
+#' country_map(data = us_data, country = "United States of America",
+#'             variable = "variable", region_col_ne = "name")
 #' 
 #' }
 #'}
