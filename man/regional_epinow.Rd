@@ -13,6 +13,7 @@ regional_epinow(
   summary = TRUE,
   summary_dir,
   region_scale = "Region",
+  all_regions_summary = TRUE,
   return_estimates = TRUE,
   ...
 )
@@ -35,6 +36,9 @@ that region to be evaluated. Defaults to 2.}
 in which to store summary of results.}
 
 \item{region_scale}{A character string indicating the name to give the regions being summarised.}
+
+\item{all_regions_summary}{Logical, defaults to \code{TRUE}. Should summary plots for all regions be returned
+rather than just regions of interest.}
 
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
 
