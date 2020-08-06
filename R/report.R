@@ -153,7 +153,8 @@ report_summary <- function(summarised_estimates,
   prob_control <- signif(prob_control, 2)
   
   ##Extract current cases
-  current_cases <- summarised_estimates[variable == "infections"][, variable := NULL]
+  current_cases <- summarised_estimates[variable == "infections"][, variable := NULL][,
+                                        purrr::map(.SD, ~ round(., 0))]
   
 
   ## Get individual estimates
@@ -161,7 +162,7 @@ report_summary <- function(summarised_estimates,
                                   purrr::map(.SD, ~ round(., 2))]
   
   doubling_time <- function(r) {
-    round(log(2) * 1 / r, 2)
+    round(log(2) * 1 / r, 1)
   }
 
   doubling_time_latest <- summarised_estimates[variable == "growth_rate"][,

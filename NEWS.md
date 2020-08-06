@@ -10,6 +10,7 @@
 * Updated reporting templates
 * Updated reporting of estimates to clearly summarise cases by infection and report date. 
 * Made all region summary plots optional.
+* Made reporting of decimal places more standardised across metrics. 
 
 # EpiNow2 1.0.0
 
