@@ -25,7 +25,7 @@ summarise_key_measures(
 data for. Defaults to "latest" which finds the latest results available.}
 }
 \value{
-A list of summarised Rt and cases by date of infection
+A list of summarised Rt, cases by date of infection and cases by date of report
 }
 \description{
 Summarise rt and cases

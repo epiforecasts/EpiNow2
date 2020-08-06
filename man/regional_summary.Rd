@@ -11,6 +11,7 @@ regional_summary(
   summary_dir,
   target_date,
   region_scale = "Region",
+  all_regions = TRUE,
   return_summary = TRUE
 )
 }
@@ -30,6 +31,9 @@ in which to store summary of results.}
 (in the format "yyyy-mm-dd"). Defaults to latest available estimates.}
 
 \item{region_scale}{A character string indicating the name to give the regions being summarised.}
+
+\item{all_regions}{Logical, defaults to \code{TRUE}. Should summary plots for all regions be returned
+rather than just regions of interest.}
 
 \item{return_summary}{Logical, defaults to \code{TRUE}. Should summary measures be returned.}
 }
@@ -70,8 +74,7 @@ cases <- data.table::rbindlist(list(
 # Run basic nowcasting pipeline
 regional_out <- regional_epinow(reported_cases = cases,
                                 generation_time = generation_time,
-                                incubation_period = incubation_period,
-                                reporting_delay = reporting_delay,
+                                delays = list(incubation_period, reporting_delay),
                                 samples = 2000, warmup = 200, cores = 4,
                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
                                 summary = FALSE)
@@ -81,7 +84,7 @@ results_dir <- tempdir()
 regional_summary(regional_output = regional_out$regional,
                  reported_cases = cases,
                  summary_dir = results_dir,
-                 region_scale = "Country")
+                 region_scale = "Country", all_regions = FALSE)
 
 }
 
