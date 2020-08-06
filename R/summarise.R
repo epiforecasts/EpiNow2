@@ -123,7 +123,7 @@ summarise_results <- function(regions,
 #'  in which to store summary of results.
 #' @param target_date A character string giving the target date for which to extract results
 #' (in the format "yyyy-mm-dd"). Defaults to latest available estimates.
-#' @param all_region Logical, defaults to `TRUE`. Should summary plots for all regions be returned 
+#' @param all_regions Logical, defaults to `TRUE`. Should summary plots for all regions be returned 
 #' rather than just regions of interest.
 #' @param return_summary Logical, defaults to `TRUE`. Should summary measures be returned.
 #' @return A list of summary measures and plots
