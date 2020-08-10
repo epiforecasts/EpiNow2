@@ -73,7 +73,7 @@ Suggests:
     kableExtra,
     knitr,
     magrittr,
-    rmarkdown
+    rmarkdown,
     rnaturalearth,
     spelling,
     tidyr,
