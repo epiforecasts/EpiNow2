@@ -226,6 +226,11 @@ estimate_infections <- function(reported_cases, family = "negbin",
     stationary <- TRUE
   }
 
+  # Check verbose settings and set logger to match---------------------------
+  if (verbose) {
+    futile.logger::flog.threshold(futile.logger::DEBUG)
+  }
+
   # Check breakpoints -------------------------------------------------------
   if (is.null(reported_cases$breakpoint)) {
     reported_cases$breakpoint <- NA

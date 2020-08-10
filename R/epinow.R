@@ -76,9 +76,6 @@ epinow <- function(reported_cases, family = "negbin",
                    burn_in = 0, stationary = FALSE, fixed = FALSE, return_fit = FALSE,
                    forecast_model, horizon = 7, ensemble_type = "mean", return_estimates = TRUE,
                    target_folder, target_date, verbose = TRUE, debug = FALSE) {
- if (verbose) {
-   futile.logger::flog.threshold(futile.logger::DEBUG)
- }
 
  if (!return_estimates & missing(target_folder)) {
    futile.logger::flog.fatal("Either return estimates or save to a target folder")
