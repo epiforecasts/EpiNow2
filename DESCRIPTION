@@ -1,6 +1,6 @@
 Package: EpiNow2
 Type: Package
-Title: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters 
+Title: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters
 Version: 1.1.0
 Authors@R: c(
     person(given = "Sam Abbott",
@@ -41,7 +41,7 @@ Authors@R: c(
             role = c("aut")))
 Description: Estimates the time-varying reproduction number, rate of spread,
              and doubling time using a range of open-source tools (Abbott et al. <doi:10.12688/wellcomeopenres.16006.1>),
-             and current best practices (Gostic et al. <doi:10.1101/2020.06.18.20134858>). 
+             and current best practices (Gostic et al. <doi:10.1101/2020.06.18.20134858>).
              It aims to help users avoid some of the limitations of naive implementations in a framework
              that is informed by community feedback and is under active development.
 License: MIT + file LICENSE
@@ -50,6 +50,7 @@ LazyData: true
 Imports:
     cowplot,
     data.table,
+    futile.logger (>= 1.4),
     future.apply,
     ggplot2,
     HDInterval,
