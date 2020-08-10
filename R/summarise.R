@@ -215,7 +215,7 @@ regional_summary <- function(regional_output,
   if (missing(regional_output)) {
     regional_output <- NULL
     if (!is.null(results_dir)) {
-     message("Extracting results from: ", results_dir)
+     futile.logger::flog.info("Extracting results from: %s", results_dir)
       
      regions <- EpiNow2::get_regions(results_dir)
      

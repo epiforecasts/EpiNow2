@@ -23,7 +23,7 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = NULL) {
               function(dir) {
                 remove_dir <- file.path(dir, date)
                 if (dir.exists(remove_dir)) {
-                  message("Removing files from: ", remove_dir)
+                  futile.logger::flog.info("Removing files from: %s", remove_dir)
                   lapply(list.files(file.path(remove_dir)),
                          function(file){
                            file.remove(

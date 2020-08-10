@@ -46,7 +46,7 @@
 #' ## For optional forecasting
 #' if(requireNamespace("EpiSoon")){
 #'    if(requireNamespace("forecastHybrid")){
-#'    
+#'
 #'    ## Report Rt along with forecasts
 #'    out <- epinow(reported_cases = cases, generation_time = generation_time,
 #'                  delays = list(incubation_period, reporting_delay),
@@ -62,9 +62,9 @@
 #' out
 #'    }
 #' }
-#' 
+#'
 #' }
-#' 
+#'
 epinow <- function(reported_cases, family = "negbin",
                    generation_time, delays,
                    gp = list(basis_prop = 0.3, boundary_scale = 2, 
@@ -73,18 +73,22 @@ epinow <- function(reported_cases, family = "negbin",
                    prior_smoothing_window = 7, cores = 1, chains = 4,
                    samples = 1000, warmup = 200, adapt_delta = 0.99,  max_treedepth = 15,
                    estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE,
-                   burn_in = 0, stationary = FALSE, fixed = FALSE, return_fit = FALSE, 
+                   burn_in = 0, stationary = FALSE, fixed = FALSE, return_fit = FALSE,
                    forecast_model, horizon = 7, ensemble_type = "mean", return_estimates = TRUE,
                    target_folder, target_date, verbose = TRUE, debug = FALSE) {
- 
+ if (verbose) {
+   futile.logger::flog.threshold(futile.logger::DEBUG)
+ }
+
  if (!return_estimates & missing(target_folder)) {
+   futile.logger::flog.fatal("Either return estimates or save to a target folder")
    stop("Either return estimates or save to a target folder")
  }
   
  # Convert input to DT -----------------------------------------------------
   suppressMessages(data.table::setDTthreads(threads = 1))
   reported_cases <- data.table::setDT(reported_cases)
-  
+
  # Set up folders ----------------------------------------------------------
 
   if (missing(target_date)) {
@@ -279,7 +283,7 @@ if (!is.null(target_folder)){
 #' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
 #' that region to be evaluated. Defaults to 2.
 #' @param summary Logical, should summary measures be calculated.
-#' @param all_regions_summary Logical, defaults to `TRUE`. Should summary plots for all regions be returned 
+#' @param all_regions_summary Logical, defaults to `TRUE`. Should summary plots for all regions be returned
 #' rather than just regions of interest.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
@@ -347,11 +351,11 @@ regional_epinow <- function(reported_cases,
     target_folder <- NULL
   }
   
-  message("Reporting estimates using data up to: ", target_date)
+  futile.logger::flog.info("Reporting estimates using data up to: %s", target_date)
   
   
   ## Check for regions more than required time points with cases
-  eval_regions <- data.table::copy(reported_cases)[,.(confirm = confirm > 0), by = c("region", "date")][, 
+  eval_regions <- data.table::copy(reported_cases)[,.(confirm = confirm > 0), by = c("region", "date")][,
             .(confirm = sum(confirm, na.rm = TRUE)), by = "region"][confirm >= non_zero_points]$region
   
   eval_regions <- unique(eval_regions)
@@ -359,7 +363,7 @@ regional_epinow <- function(reported_cases,
   ## Exclude zero regions
   reported_cases <- reported_cases[!is.na(region)][region %in% eval_regions]
   
-  message("Running the pipeline for: ",
+  futile.logger::flog.info("Running the pipeline for: %s",
           paste(eval_regions, collapse = ", "))
   
   ## regional pipelines
@@ -370,7 +374,7 @@ regional_epinow <- function(reported_cases,
                          reported_cases,
                          cores = cores,
                          ...) { 
-    message("Reporting estimates for: ", target_region)
+    futile.logger::flog.info("Reporting estimates for: %s", target_region)
     data.table::setDTthreads(threads = 1)
     
     if (!is.null(target_folder)) {
@@ -402,12 +406,12 @@ regional_epinow <- function(reported_cases,
   regional_errors <- purrr::map(regional_out, ~ .$error)
   names(regional_errors) <- regions
   regional_errors <- purrr::compact(regional_errors)
-  
+
   if (length(regional_errors) != 0) {
      message("Runtime errors caught: ")
      print(regional_errors)
     }
-  
+
   regional_out <- purrr::map(regional_out, ~ .$result)
   names(regional_out) <- regions
   
@@ -423,12 +427,12 @@ regional_epinow <- function(reported_cases,
                                 reported_cases = reported_cases,
                                 region_scale = region_scale,
                                 all_regions = all_regions_summary)
-    
+
     if (!is.null(summary_out[[2]])) {
       message("Errors caught whilst generating summary statistics: ")
       print(summary_out[[2]])
       }
-    
+
     summary_out <- summary_out[[1]]
   }
   
