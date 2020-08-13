@@ -30,12 +30,3 @@ A list of summarised Rt, cases by date of infection and cases by date of report
 \description{
 Summarise rt and cases
 }
-\examples{
-\dontrun{
-
-
-summarise_key_measures(regional_results)
-
-
-}
-}

@@ -12,16 +12,6 @@
 #' @importFrom data.table setorderv melt merge.data.table dcast
 #' @return A list of summary data
 #' @export
-#' @examples
-#' \dontrun{
-#' # see ?regional_epinow for code to generate regional results to use with this example.
-#' 
-#' region_sum_tab <- summarise_results(regions = regions,
-#'                                     summaries = purrr::map(out$regional, ~ .$summary))
-#'                   
-#' region_sum_tab
-#' }
-#' 
 summarise_results <- function(regions,
                               summaries,
                               results_dir,
@@ -406,14 +396,6 @@ regional_summary <- function(regional_output,
 #' @return A list of summarised Rt, cases by date of infection and cases by date of report
 #' @export
 #' @importFrom data.table setnames fwrite
-#' @examples 
-#' \dontrun{
-#' 
-#' 
-#' summarise_key_measures(regional_results)
-#' 
-#' 
-#' }
 summarise_key_measures <- function(regional_results,
                                    results_dir, summary_dir, 
                                    type = "region", date) {

@@ -5,11 +5,6 @@
 #'
 #' @return A named character vector containing the results to plot.
 #' @export
-#' @examples
-#' \dontrun{
-#' #See ?regional_summary for code to produce test results
-#' get_regions("../test")
-#' }
 get_regions <- function(results_dir) {
   
   # Regions to include - based on folder names
@@ -34,13 +29,6 @@ get_regions <- function(results_dir) {
 #' @param result_dir Character string giving the location of the target directory 
 #' @export
 #' @return An R object read in from the targeted .rds file
-#' @examples
-#' \dontrun{
-#' # see ?regional_summary for code to produce test results
-#' get_raw_result("summarised_estimates.rds", 
-#'                region = "realland", date = "latest",
-#'                result_dir = "../test")
-#' }
 get_raw_result <- function(file, region, date, 
                            result_dir) {
   file_path <- file.path(result_dir, region, date, file)
