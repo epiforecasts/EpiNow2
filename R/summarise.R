@@ -63,6 +63,7 @@ summarise_results <- function(regions,
   numeric_estimates  <- data.table::copy(estimates)[measure %in% c("New confirmed cases by infection date",
                                                     "Effective reproduction no.")][,
                                            .(
+                                             point = numeric_estimates[[1]]$point,
                                              lower = numeric_estimate[[1]]$lower,
                                              upper =numeric_estimate[[1]]$upper,
                                              mid_lower = numeric_estimate[[1]]$mid_lower,
@@ -80,7 +81,7 @@ summarise_results <- function(regions,
                                                     by = "region", all.x = TRUE)
   ## Rank countries by incidence countries
   high_inc_regions <- unique(
-    data.table::setorderv(numeric_estimates, cols = "upper", order = -1)$region)
+    data.table::setorderv(numeric_estimates, cols = "point", order = -1)$region)
   
   numeric_estimates <- numeric_estimates[, region := factor(region, levels = high_inc_regions)]
   
