@@ -11,7 +11,7 @@
 #' @inheritParams forecast_infections
 #' @importFrom data.table setDT
 #' @importFrom lubridate days
-#' 
+#' @importFrom futile.logger flog.fatal
 #' @examples
 #' \donttest{
 #' ## Construct example distributions
@@ -290,6 +290,7 @@ if (!is.null(target_folder)){
 #' @importFrom future.apply future_lapply
 #' @importFrom data.table as.data.table setDT copy setorder
 #' @importFrom purrr safely map compact
+#' @importFrom futile.logger flog.info
 #' @examples
 #'  \donttest{
 #' ## Construct example distributions
