@@ -62,6 +62,7 @@
 #' @importFrom stats lm
 #' @importFrom HDInterval hdi
 #' @importFrom purrr transpose
+#' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @examples
 #' \donttest{
 #' # Get example case counts
