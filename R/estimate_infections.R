@@ -62,6 +62,7 @@
 #' @importFrom stats lm
 #' @importFrom HDInterval hdi
 #' @importFrom purrr transpose
+#' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @examples
 #' \donttest{
 #' # Get example case counts
@@ -226,6 +227,11 @@ estimate_infections <- function(reported_cases, family = "negbin",
     stationary <- TRUE
   }
 
+  # Check verbose settings and set logger to match---------------------------
+  if (verbose) {
+    futile.logger::flog.threshold(futile.logger::DEBUG)
+  }
+
   # Check breakpoints -------------------------------------------------------
   if (is.null(reported_cases$breakpoint)) {
     reported_cases$breakpoint <- NA
@@ -234,7 +240,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   if (estimate_breakpoints) {
    break_no <- sum(reported_cases$breakpoint, na.rm = TRUE)
    if (break_no == 0) {
-     message("Breakpoint estimation was specified but no breakpoints were detected.")
+     futile.logger::flog.warn("Breakpoint estimation was specified but no breakpoints were detected.")
    }
   }else{
     break_no <- 0
@@ -423,11 +429,9 @@ estimate_infections <- function(reported_cases, family = "negbin",
     model <- stanmodels$estimate_infections
   }
   
-  if (verbose) {
-    message(paste0("Running for ", samples," samples (across ", chains, 
+  futile.logger::flog.debug(paste0("Running for ", samples," samples (across ", chains,
                    " chains each with a warm up of ", warmup, " iterations each) and ",
                    data$t," time steps of which ", horizon, " are a forecast"))
-  }
   
   fit <- rstan::sampling(model, data = data, chains = chains,
                          init = init_fun, 
