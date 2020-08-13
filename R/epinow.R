@@ -360,7 +360,7 @@ regional_epinow <- function(reported_cases,
   ## Exclude zero regions
   reported_cases <- reported_cases[!is.na(region)][region %in% eval_regions]
   
-  futile.logger::flog.info("Running the pipeline for: %s",
+  futile.logger::flog.info("Producing estimates for: %s",
           paste(eval_regions, collapse = ", "))
   
   ## regional pipelines
@@ -371,7 +371,7 @@ regional_epinow <- function(reported_cases,
                          reported_cases,
                          cores = cores,
                          ...) { 
-    futile.logger::flog.info("Reporting estimates for: %s", target_region)
+    futile.logger::flog.info("Initialising estimates for: %s", target_region)
     data.table::setDTthreads(threads = 1)
 
     if (!is.null(target_folder)) {
@@ -387,7 +387,7 @@ regional_epinow <- function(reported_cases,
       return_estimates = TRUE,
       cores = cores,
       ...)
-     futile.logger::flog.info("Completed reporting estimates for: %s", target_region)
+     futile.logger::flog.info("Completed estimates for: %s", target_region)
 
      return(out)
     }
@@ -406,8 +406,8 @@ regional_epinow <- function(reported_cases,
   regional_errors <- purrr::compact(regional_errors)
 
   if (length(regional_errors) != 0) {
-     message("Runtime errors caught: ")
-     print(regional_errors)
+     futile.logger::flog.info("Runtime errors caught: ")
+     futile.logger::flog.info(regional_errors)
     }
 
   regional_out <- purrr::map(regional_out, ~ .$result)
@@ -427,8 +427,8 @@ regional_epinow <- function(reported_cases,
                                 all_regions = all_regions_summary)
 
     if (!is.null(summary_out[[2]])) {
-      message("Errors caught whilst generating summary statistics: ")
-      print(summary_out[[2]])
+      futile.logger::flog.info("Errors caught whilst generating summary statistics: ")
+      futile.logger::flog.info(summary_out[[2]])
       }
 
     summary_out <- summary_out[[1]]
