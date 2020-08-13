@@ -13,6 +13,7 @@
 * Made reporting of decimal places more standardised across metrics. 
 * README updated by @kathsherratt
 * Logging added by @joeHickson
+* Updated plotting to be limited to a scaling of reported data (prevents upper CIs from skewing the plot).
 
 # EpiNow2 1.0.0
 
