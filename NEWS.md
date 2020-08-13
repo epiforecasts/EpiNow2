@@ -12,9 +12,9 @@
 * Made all region summary plots optional.
 * Made reporting of decimal places more standardised across metrics. 
 * README updated by @kathsherratt
+* Logging added by @joeHickson
 
 # EpiNow2 1.0.0
-
 
 * Rebased package from [EpiNow](https://epiforecasts.io/EpiNow/)
 * Implemented backcalculation, estimation, forecasting, and bootstrapped distribution fitting.

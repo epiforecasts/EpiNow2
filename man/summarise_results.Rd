@@ -32,14 +32,3 @@ A list of summary data
 \description{
 Summarise Real-time Results
 }
-\examples{
-\dontrun{
-# see ?regional_epinow for code to generate regional results to use with this example.
-
-region_sum_tab <- summarise_results(regions = regions,
-                                    summaries = purrr::map(out$regional, ~ .$summary))
-                  
-region_sum_tab
-}
-
-}
