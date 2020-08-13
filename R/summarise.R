@@ -137,6 +137,7 @@ summarise_results <- function(regions,
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
 #' @importFrom cowplot get_legend
 #' @importFrom data.table setDT
+#' @importFrom futile.logger flog.info
 #' @examples
 #' \donttest{
 #' # Construct example distributions
