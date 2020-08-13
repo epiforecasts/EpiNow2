@@ -166,7 +166,7 @@ out
 ## For optional forecasting
 if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
-   
+
    ## Report Rt along with forecasts
    out <- epinow(reported_cases = cases, generation_time = generation_time,
                  delays = list(incubation_period, reporting_delay),

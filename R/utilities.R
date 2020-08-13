@@ -4,7 +4,8 @@
 #' directory for the date supplied.
 #' @param date Date object. Defaults to today's date
 #' @param nowcast_dir Character string giving the filepath to the nowcast results directory.
-#'
+#' @importFrom purrr walk
+#' @importFrom futile.logger flog.info
 #' @return NULL
 #' @export
 clean_nowcasts <- function(date = NULL, nowcast_dir = NULL) {
