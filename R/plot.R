@@ -148,6 +148,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 #' @param summary_results A data.able as returned by `summarise_results` (the `data` object).
 #' @param x_lab A character string giving the label for the x axis, defaults to region.
 #' @param log_cases Logical, should cases be shown on a logged scale. Defaults to `FALSE`
+#' @param max_cases Numeric, no default. The maximum number of cases to plot. 
 #' @return A `ggplot2` object
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap theme guides labs expand_limits guide_legend element_blank scale_color_manual .data coord_cartesian scale_y_continuous
@@ -155,7 +156,8 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 #' @importFrom cowplot theme_cowplot panel_border
 #' @importFrom patchwork plot_layout
 #' @importFrom data.table setDT
-plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE) {
+plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE,
+                         max_cases) {
   
   ## Set input to data.table
   summary_results <- data.table::setDT(summary_results)
@@ -186,6 +188,11 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE) {
     ggplot2::theme(axis.title.x = ggplot2::element_blank(),
                    axis.text.x = ggplot2::element_blank()) +
     ggplot2::theme(legend.position = "none")
+  
+  if (!missing(max_cases)) {
+    cases_plot <- cases_plot + 
+      ggplot2::coord_cartesian(ylim = c(0, max_cases))
+  }
   
   if (log_cases) {
     cases_plot <- cases_plot +

@@ -243,7 +243,7 @@ report_summary <- function(summarised_estimates,
 #'                      
 #' ## Plot infections
 #' plots <- report_plots(summarised_estimates = out$summarised,
-#'                       reported = cases, max_plot = 2)
+#'                       reported = cases)
 #'                       
 #' plots
 #' }
