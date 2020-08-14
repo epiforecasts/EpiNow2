@@ -15,6 +15,7 @@ regional_epinow(
   region_scale = "Region",
   all_regions_summary = TRUE,
   return_estimates = TRUE,
+  max_plot = 10,
   ...
 )
 }

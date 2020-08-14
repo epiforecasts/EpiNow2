@@ -26,6 +26,7 @@ epinow(
   burn_in = 0,
   stationary = FALSE,
   fixed = FALSE,
+  fixed_future_rt = FALSE,
   return_fit = FALSE,
   forecast_model,
   horizon = 7,
@@ -104,6 +105,9 @@ This setting is most appropriate when estimating historic Rt or when combined wi
 (apart from any manually included breakpoints). If \code{estimate_rt} is FALSE then this reduces the backcalculation to a simple mean shift.
 This option can be used to produce a null model estimate, to produce a single Rt estimate for a short timeseries or as part of a wider
 analysis on the impact of interventions.}
+
+\item{fixed_future_rt}{Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
+future time points without data.}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 

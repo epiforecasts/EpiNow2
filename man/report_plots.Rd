@@ -4,7 +4,7 @@
 \alias{report_plots}
 \title{Report plots}
 \usage{
-report_plots(summarised_estimates, reported, target_folder)
+report_plots(summarised_estimates, reported, target_folder, max_plot = 10)
 }
 \arguments{
 \item{summarised_estimates}{A data.table of summarised estimates containing the following variables:
@@ -14,6 +14,9 @@ and r (rate of growth).}
 \item{reported}{A data.table of reported cases with the following variables: date, confirm.}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
+
+\item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
+on the maximum number of reported cases.}
 }
 \value{
 A \code{ggplot2} object
