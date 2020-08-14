@@ -49,7 +49,7 @@ transformed data{
   int rt_h;                                  // rt estimation time minus the forecasting horizon
   int noise_terms = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;
                                              // no. of noise terms
-  matrix[noise_terms, M] PHI;                // basis function 
+  matrix[future_fixed > 0 ? (noise_terms - horizon) : noise_terms, M] PHI;  // basis function 
   
   //Update number of noise terms based on furure Rt assumption
   noise_terms = future_fixed > 0 ? (noise_terms - horizon) : noise_terms;
