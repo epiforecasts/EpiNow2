@@ -280,11 +280,13 @@ regional_summary <- function(regional_output,
   log_cases <- (max(summarised_results$data[metric %in% "New confirmed cases by infection date"]$upper, na.rm = TRUE) / 
              min(summarised_results$data[metric %in% "New confirmed cases by infection date"]$lower, na.rm = TRUE)) > 1000
 
+  max_reported_cases <- round(max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0)
   
   ## Summarise cases and Rts
   summary_plot <- EpiNow2::plot_summary(summarised_results$data,
                                         x_lab = region_scale, 
-                                        log_cases = log_cases)
+                                        log_cases = log_cases,
+                                        max_cases = max_reported_cases)
   
   if (!is.null(summary_dir)) {
     suppressWarnings(
