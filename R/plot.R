@@ -119,7 +119,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
     ggplot2::geom_vline(xintercept = estimate[type == "Estimate based on partial data"][date == max(date)]$date,
                         linetype = 2) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin = bottom, ymax = top), 
-                         alpha = 0.25, size = 0.2) +
+                         alpha = 0.25, size = 0.05) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper, col = NULL), 
                          alpha = 0.5) +
     cowplot::theme_cowplot() +
