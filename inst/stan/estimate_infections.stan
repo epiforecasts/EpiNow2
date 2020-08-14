@@ -38,7 +38,8 @@ data {
 	int stationary;                    // is underlying Rt assumed to be stationary (+ GP)
 	int break_no;                      // no of breakpoints (0 = no breakpoints)
 	int breakpoints[rt];               // when do breakpoints occur 
-	int fixed;                        // Indicates if Rt/backcalculation is fixed                   
+	int fixed;                        // Indicates if Rt/backcalculation is fixed 
+	int future_fixed;                 // is underlying future Rt assumed to be fixed
 }
 
 transformed data{
@@ -46,9 +47,12 @@ transformed data{
   real r_beta;                               // beta parameter of the R gamma prior
   int no_rt_time;                            // time without estimating Rt
   int rt_h;                                  // rt estimation time minus the forecasting horizon
-  int noise_terms = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;  
+  int noise_terms = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;
                                              // no. of noise terms
-  matrix[noise_terms, M] PHI;                // basis function 
+  matrix[future_fixed > 0 ? (noise_terms - horizon) : noise_terms, M] PHI;  // basis function 
+  
+  //Update number of noise terms based on furure Rt assumption
+  noise_terms = future_fixed > 0 ? (noise_terms - horizon) : noise_terms;
   
   //Update time varables
   rt_h = rt - horizon;
@@ -63,7 +67,7 @@ transformed data{
    // basis functions
    // see here for details: https://arxiv.org/pdf/2004.11408.pdf
    for (m in 1:M){ 
-     PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:(stationary > 0 ? rt : rt - 1)] : inf_time)); 
+     PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:noise_terms] : inf_time)); 
     }
 }
 parameters{
@@ -126,7 +130,12 @@ transformed parameters {
     R = rep_vector(initial_R[estimate_r], rt);
     for (s in 1:rt) {
       if (!fixed) {
-        R[s] *= noise[s];
+         if (!future_fixed || (s <= noise_terms)) {
+           R[s] *= noise[s];
+         }else{
+           R[s] = R[s - 1];
+         }
+       
       }
       // apply breakpoints if present
       if (break_no > 0) {
@@ -140,7 +149,12 @@ transformed parameters {
   }else{
     R[1] = initial_R[estimate_r];
     for (s in 2:rt) {
-      R[s] = R[s - 1] .* noise[s - 1];
+      if (!future_fixed || (s <= (noise_terms + 1))) {
+        R[s] = R[s - 1] .* noise[s - 1];
+      }else{
+        R[s] = R[s - 1];
+      }
+
       // apply breakpoints if present
       if (break_no > 0) {
         if (breakpoints[s] == 1) {
