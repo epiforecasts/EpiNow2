@@ -124,6 +124,7 @@ summarise_results <- function(regions,
 #' @inheritParams summarise_key_measures
 #' @inheritParams regional_epinow
 #' @inheritParams get_regional_results
+#' @inheritParams report_plots
 #' @importFrom purrr map_chr compact
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
 #' @importFrom cowplot get_legend
