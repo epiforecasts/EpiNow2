@@ -15,6 +15,7 @@
 * Logging added by @joeHickson
 * Updated plotting to be limited to a scaling of reported data (prevents upper CIs from skewing the plot).
 * Added uncertainty plot bounds to control y axis on plots for clarity purposes.
+* `regional_summary` now saves input reported cases data `reported_cases.csv`.
 
 # EpiNow2 1.0.0
 
