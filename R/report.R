@@ -248,7 +248,7 @@ report_summary <- function(summarised_estimates,
 #' plots
 #' }
 report_plots <- function(summarised_estimates, reported,
-                         target_folder) {
+                         target_folder, max_plot = 10) {
   
   ## set input to data.table
   summarised_estimates <- data.table::setDT(summarised_estimates)
@@ -262,7 +262,8 @@ report_plots <- function(summarised_estimates, reported,
 
 infections <- plot_estimates(estimate = summarised_estimates[variable == "infections"],
                              reported = reported,
-                             ylab = "Cases by \n date of infection")
+                             ylab = "Cases by \n date of infection",
+                             max_plot = max_plot)
   
 
 if (!is.null(target_folder)) {
@@ -279,7 +280,8 @@ if (!is.null(target_folder)) {
 # Cases by report ---------------------------------------------------------
 
 reports <- plot_estimates(estimate = summarised_estimates[variable == "reported_cases"],
-                          reported = reported, ylab = "Cases by \n date of report")
+                          reported = reported, ylab = "Cases by \n date of report",
+                          max_plot = max_plot)
 
 if (!is.null(target_folder)) {
   suppressWarnings(

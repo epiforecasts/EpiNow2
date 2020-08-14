@@ -11,4 +11,4 @@
 * GNU make is a SystemRequirement
 * Suggests or Enhances not in mainstream repositories: EpiSoon (available using Additional_repositories from https://epiforecasts.io/drat/)
 * Dropped usage of \dontrun
-* All data included in the package are needed for downstream users that require documentation. The example_confirmed file provides a documented example dataset of what input is supported. Unsure of what further action to take to resolve this issue without additional guidance. 
+* All data included in the package are needed for downstream users and require documentation, which seems impossible to achieve if the files are in inst/extdata. Similarly, the example_confirmed file provides a documented example dataset of what input is supported. We’re very happy to change things but are unsure of what further action to take to resolve this issue without additional guidance.

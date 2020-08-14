@@ -63,7 +63,7 @@ summarise_results <- function(regions,
   numeric_estimates  <- data.table::copy(estimates)[measure %in% c("New confirmed cases by infection date",
                                                     "Effective reproduction no.")][,
                                            .(
-                                             point = numeric_estimates[[1]]$point,
+                                             point = numeric_estimate[[1]]$point,
                                              lower = numeric_estimate[[1]]$lower,
                                              upper =numeric_estimate[[1]]$upper,
                                              mid_lower = numeric_estimate[[1]]$mid_lower,
@@ -181,8 +181,9 @@ regional_summary <- function(regional_output,
                              target_date,
                              region_scale = "Region",
                              all_regions = TRUE,
-                             return_summary = TRUE) {
-  
+                             return_summary = TRUE, 
+                             max_plot = 10) {
+   
   reported_cases <- data.table::setDT(reported_cases)
   
   if (missing(summary_dir) & !return_summary) {
@@ -279,11 +280,13 @@ regional_summary <- function(regional_output,
   log_cases <- (max(summarised_results$data[metric %in% "New confirmed cases by infection date"]$upper, na.rm = TRUE) / 
              min(summarised_results$data[metric %in% "New confirmed cases by infection date"]$lower, na.rm = TRUE)) > 1000
 
+  max_reported_cases <- round(max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0)
   
   ## Summarise cases and Rts
   summary_plot <- EpiNow2::plot_summary(summarised_results$data,
                                         x_lab = region_scale, 
-                                        log_cases = log_cases)
+                                        log_cases = log_cases,
+                                        max_cases = max_reported_cases)
   
   if (!is.null(summary_dir)) {
     suppressWarnings(
@@ -296,10 +299,17 @@ regional_summary <- function(regional_output,
     )
   }
   
+  ## Extract regions with highest number of reported cases in the last week
+  regions_with_most_reports <- data.table::copy(reported_cases)[, 
+          .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(7))],by = "region"]
+  regions_with_most_reports <- regions_with_most_reports[, .(confirm = sum(confirm, na.rm = TRUE)), by = "region"]
+  regions_with_most_reports <-  data.table::setorderv(regions_with_most_reports, cols = "confirm", order = -1)
+  regions_with_most_reports <- regions_with_most_reports[1:6][!is.na(region)]$region
   
   high_plots <- report_plots(
-    summarised_estimates = results$estimates$summarised[region %in% summarised_results$regions_by_inc[1:6]], 
-    reported = reported_cases[region %in% summarised_results$regions_by_inc[1:6]]
+    summarised_estimates = results$estimates$summarised[region %in% regions_with_most_reports], 
+    reported = reported_cases[region %in% regions_with_most_reports],
+    max_plot = max_plot
   )
   
   high_plots$summary <- NULL
@@ -332,7 +342,8 @@ regional_summary <- function(regional_output,
                             ifelse(length(regions) > 120, 8, 5), 3)
     
     plots <- report_plots(summarised_estimates = results$estimates$summarised, 
-                          reported = reported_cases)
+                          reported = reported_cases,
+                          max_plot = max_plot)
     
     plots$summary <- NULL
     plots <- purrr::map(plots,
