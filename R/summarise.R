@@ -296,10 +296,16 @@ regional_summary <- function(regional_output,
     )
   }
   
+  ## Extract regions with highest number of reported cases in the last week
+  regions_with_most_reports <- data.table::copy(reported_cases)[, 
+          .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(7))],by = "region"]
+  regions_with_most_reports <- regions_with_most_reports[, .(confirm = sum(confirm, na.rm = TRUE)), by = "region"]
+  regions_with_most_reports <-  data.table::setorderv(regions_with_most_reports, cols = "confirm", order = -1)
+  regions_with_most_reports <- regions_with_most_reports$region[1:6]
   
   high_plots <- report_plots(
-    summarised_estimates = results$estimates$summarised[region %in% summarised_results$regions_by_inc[1:6]], 
-    reported = reported_cases[region %in% summarised_results$regions_by_inc[1:6]]
+    summarised_estimates = results$estimates$summarised[region %in% regions_with_most_reports], 
+    reported = reported_cases[region %in% regions_with_most_reports]
   )
   
   high_plots$summary <- NULL
