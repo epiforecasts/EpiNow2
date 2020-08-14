@@ -12,7 +12,8 @@ regional_summary(
   target_date,
   region_scale = "Region",
   all_regions = TRUE,
-  return_summary = TRUE
+  return_summary = TRUE,
+  max_plot = 10
 )
 }
 \arguments{

@@ -4,7 +4,7 @@
 \alias{plot_summary}
 \title{Plot a Summary of the Latest Results}
 \usage{
-plot_summary(summary_results, x_lab = "Region", log_cases = FALSE)
+plot_summary(summary_results, x_lab = "Region", log_cases = FALSE, max_cases)
 }
 \arguments{
 \item{summary_results}{A data.able as returned by \code{summarise_results} (the \code{data} object).}
@@ -12,6 +12,8 @@ plot_summary(summary_results, x_lab = "Region", log_cases = FALSE)
 \item{x_lab}{A character string giving the label for the x axis, defaults to region.}
 
 \item{log_cases}{Logical, should cases be shown on a logged scale. Defaults to \code{FALSE}}
+
+\item{max_cases}{Numeric, no default. The maximum number of cases to plot.}
 }
 \value{
 A \code{ggplot2} object

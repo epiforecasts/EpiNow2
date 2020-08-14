@@ -24,6 +24,7 @@ estimate_infections(
   burn_in = 0,
   stationary = FALSE,
   fixed = FALSE,
+  fixed_future_rt = FALSE,
   adapt_delta = 0.99,
   max_treedepth = 15,
   return_fit = FALSE,
@@ -97,6 +98,9 @@ This setting is most appropriate when estimating historic Rt or when combined wi
 This option can be used to produce a null model estimate, to produce a single Rt estimate for a short timeseries or as part of a wider
 analysis on the impact of interventions.}
 
+\item{fixed_future_rt}{Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
+future time points without data.}
+
 \item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
 
 \item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
@@ -149,6 +153,19 @@ def <- estimate_infections(reported_cases, family = "negbin",
 
 # Plot output
 report_plots(summarised_estimates = def$summarised,
+                      reported = reported_cases)
+
+# Run model with default settings
+fixed_rt <- estimate_infections(reported_cases, family = "negbin",
+                                generation_time = generation_time,
+                                delays = list(incubation_period, reporting_delay),
+                                samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
+                                chains = 4, estimate_rt = TRUE, fixed_future_rt = TRUE,
+                                verbose = FALSE, return_fit = TRUE)
+
+
+# Plot output
+report_plots(summarised_estimates = fixed_rt$summarised,
                       reported = reported_cases)
 
 # Run the model with default setting on a later snapshot of 

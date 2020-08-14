@@ -4,7 +4,14 @@
 \alias{plot_estimates}
 \title{Plot Estimates}
 \usage{
-plot_estimates(estimate, reported, ylab = "Cases", hline, obs_as_col = TRUE)
+plot_estimates(
+  estimate,
+  reported,
+  ylab = "Cases",
+  hline,
+  obs_as_col = TRUE,
+  max_plot = 10
+)
 }
 \arguments{
 \item{estimate}{A data.table of estimates containing the following variables: date, type
@@ -18,6 +25,9 @@ plot_estimates(estimate, reported, ylab = "Cases", hline, obs_as_col = TRUE)
 
 \item{obs_as_col}{Logical, defaults to \code{TRUE}. Should observed data, if supplied, be plotted using columns or
 as points (linked using a line).}
+
+\item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
+on the maximum number of reported cases.}
 }
 \value{
 A \code{ggplot2} object
@@ -60,12 +70,12 @@ out <- EpiNow2::estimate_infections(cases, family = "negbin",
 ## Plot infections
 plot_estimates(
   estimate = out$summarised[variable == "infections"],
-  reported = cases, 
+  reported = cases,
   ylab = "Cases")
 
 ## Plot reported cases estimated via Rt
 plot_estimates(estimate = out$summarised[variable == "reported_cases"],
-               reported = cases, 
+               reported = cases,
                ylab = "Cases")
                
 ## Plot Rt estimates
