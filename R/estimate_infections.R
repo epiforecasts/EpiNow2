@@ -110,8 +110,8 @@
 #'                                 generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
 #'                                 samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-#'                                 chains = 4, estimate_rt = TRUE, fixed_future_rt = TRUE, model = model,
-#'                                 verbose = TRUE, return_fit = TRUE)
+#'                                 chains = 4, estimate_rt = TRUE, fixed_future_rt = TRUE,,
+#'                                 verbose = FALSE, return_fit = TRUE)
 #'
 #' 
 #' # Plot output
