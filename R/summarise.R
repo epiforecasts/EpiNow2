@@ -236,6 +236,7 @@ regional_summary <- function(regional_output,
       dir.create(summary_dir)
     }
     saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
+    data.table::fwrite(reported_cases, file.path(summary_dir, "reported_cases.csv"))
   }
   
   if (!is.null(regional_output)) {
