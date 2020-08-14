@@ -16,7 +16,7 @@ knitr::include_graphics(here::here(summary_path, "rt_plot.png"))
 knitr::include_graphics(here::here(summary_path, "infections_plot.png"))
 ```
 
-`r paste0("*Figure ",  fig_start + 5, ": Confirmed ", case_def,  "s by date of report (bars) and their estimated date of infection (light ribbon = 90% credible interval; dark ribbon = the 50% credible interval) in all regions. Estimates from existing data are shown up to the ", latest_date, ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""),". Estimates based on partial data have been adjusted for right truncation of infections. The vertical dashed line indicates the date of report generation.*")`
+`r paste0("*Figure ",  fig_start + 5, ": Confirmed ", case_def,  "s by date of report (bars) and their estimated date of infection (light ribbon = 90% credible interval; dark ribbon = the 50% credible interval) in all regions. Estimates from existing data are shown up to the ", latest_date, ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""),". Estimates based on partial data have been adjusted for right truncation of infections. The vertical dashed line indicates the date of report generation. Uncertainty has been curtailed to a maximum of ten times the maximum number of reported cases for plotting purposes.*")`
 
 `r paste0("### Confirmed ",  case_def, "s and their estimated date of report in all regions")`
 
@@ -25,7 +25,7 @@ knitr::include_graphics(here::here(summary_path, "infections_plot.png"))
 knitr::include_graphics(here::here(summary_path, "reported_cases_plot.png"))
 ```
 
-`r paste0("*Figure ",  fig_start + 6, ": Confirmed ", case_def,  "s by date of report (bars) and their estimated date of report (light ribbon = 90% credible interval; dark ribbon = the 50% credible interval) in all regions. Estimates from existing data are shown up to the ", latest_date, ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""),". Estimates based on partial data have been adjusted for right truncation of infections. The vertical dashed line indicates the date of report generation.*")`
+`r paste0("*Figure ",  fig_start + 6, ": Confirmed ", case_def,  "s by date of report (bars) and their estimated date of report (light ribbon = 90% credible interval; dark ribbon = the 50% credible interval) in all regions. Estimates from existing data are shown up to the ", latest_date, ifelse(report_forecast, " from when forecasts are shown. These should be considered indicative only", ""),". Estimates based on partial data have been adjusted for right truncation of infections. The vertical dashed line indicates the date of report generation. Uncertainty has been curtailed to a maximum of ten times the maximum number of reported cases for plotting purposes.*")`
 
 
 
