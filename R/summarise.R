@@ -63,7 +63,7 @@ summarise_results <- function(regions,
   numeric_estimates  <- data.table::copy(estimates)[measure %in% c("New confirmed cases by infection date",
                                                     "Effective reproduction no.")][,
                                            .(
-                                             point = numeric_estimates[[1]]$point,
+                                             point = numeric_estimate[[1]]$point,
                                              lower = numeric_estimate[[1]]$lower,
                                              upper =numeric_estimate[[1]]$upper,
                                              mid_lower = numeric_estimate[[1]]$mid_lower,
@@ -182,7 +182,7 @@ regional_summary <- function(regional_output,
                              region_scale = "Region",
                              all_regions = TRUE,
                              return_summary = TRUE) {
-  
+   
   reported_cases <- data.table::setDT(reported_cases)
   
   if (missing(summary_dir) & !return_summary) {
