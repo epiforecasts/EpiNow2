@@ -40,6 +40,8 @@
 #' (apart from any manually included breakpoints). If `estimate_rt` is FALSE then this reduces the backcalculation to a simple mean shift.
 #' This option can be used to produce a null model estimate, to produce a single Rt estimate for a short timeseries or as part of a wider 
 #' analysis on the impact of interventions.
+#' @param fixed_future_rt Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
+#' future time points without data. 
 #' @param adapt_delta Numeric, defaults to 0.99. See ?rstan::sampling.
 #' @param max_treedepth Numeric, defaults to 15. See ?rstan::sampling.
 #' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
@@ -101,6 +103,19 @@
 #' 
 #' # Plot output
 #' report_plots(summarised_estimates = def$summarised,
+#'                       reported = reported_cases)
+#'
+#' # Run model with default settings
+#' fixed_rt <- estimate_infections(reported_cases, family = "negbin",
+#'                                 generation_time = generation_time,
+#'                                 delays = list(incubation_period, reporting_delay),
+#'                                 samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
+#'                                 chains = 4, estimate_rt = TRUE, fixed_future_rt = TRUE,,
+#'                                 verbose = FALSE, return_fit = TRUE)
+#'
+#' 
+#' # Plot output
+#' report_plots(summarised_estimates = fixed_rt$summarised,
 #'                       reported = reported_cases)
 #'
 #'# Run the model with default setting on a later snapshot of 
@@ -217,7 +232,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 samples = 1000, warmup = 200,
                                 estimate_rt = TRUE, estimate_week_eff = TRUE,
                                 estimate_breakpoints = FALSE, burn_in = 0,
-                                stationary = FALSE, fixed = FALSE,
+                                stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
                                 adapt_delta = 0.99, max_treedepth = 15, 
                                 return_fit = FALSE, verbose = TRUE, debug = FALSE){
   
@@ -356,7 +371,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
     stationary = ifelse(stationary, 1, 0),
     fixed = ifelse(fixed, 1, 0),
     break_no = break_no,
-    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint
+    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
+    future_fixed = ifelse(fixed_future_rt, 1, 0)
   ) 
   
   # Parameters for Hilbert space GP -----------------------------------------
