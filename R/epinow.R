@@ -336,6 +336,7 @@ regional_epinow <- function(reported_cases,
                             region_scale = "Region",
                             all_regions_summary = TRUE,
                             return_estimates = TRUE,
+                            max_plot = 10,
                             ...) {
     
   ## Set input to data.table
@@ -425,7 +426,8 @@ regional_epinow <- function(reported_cases,
                                 summary_dir = summary_dir,
                                 reported_cases = reported_cases,
                                 region_scale = region_scale,
-                                all_regions = all_regions_summary)
+                                all_regions = all_regions_summary,
+                                max_plot = max_plot)
 
     if (!is.null(summary_out[[2]])) {
       futile.logger::flog.info("Errors caught whilst generating summary statistics: ")

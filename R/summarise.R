@@ -181,7 +181,8 @@ regional_summary <- function(regional_output,
                              target_date,
                              region_scale = "Region",
                              all_regions = TRUE,
-                             return_summary = TRUE) {
+                             return_summary = TRUE, 
+                             max_plot = 10) {
    
   reported_cases <- data.table::setDT(reported_cases)
   
@@ -301,11 +302,12 @@ regional_summary <- function(regional_output,
           .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(7))],by = "region"]
   regions_with_most_reports <- regions_with_most_reports[, .(confirm = sum(confirm, na.rm = TRUE)), by = "region"]
   regions_with_most_reports <-  data.table::setorderv(regions_with_most_reports, cols = "confirm", order = -1)
-  regions_with_most_reports <- regions_with_most_reports$region[1:6]
+  regions_with_most_reports <- regions_with_most_reports[1:6][!is.na(region)]$region
   
   high_plots <- report_plots(
     summarised_estimates = results$estimates$summarised[region %in% regions_with_most_reports], 
-    reported = reported_cases[region %in% regions_with_most_reports]
+    reported = reported_cases[region %in% regions_with_most_reports],
+    max_plot = max_plot
   )
   
   high_plots$summary <- NULL
@@ -338,7 +340,8 @@ regional_summary <- function(regional_output,
                             ifelse(length(regions) > 120, 8, 5), 3)
     
     plots <- report_plots(summarised_estimates = results$estimates$summarised, 
-                          reported = reported_cases)
+                          reported = reported_cases,
+                          max_plot = max_plot)
     
     plots$summary <- NULL
     plots <- purrr::map(plots,
