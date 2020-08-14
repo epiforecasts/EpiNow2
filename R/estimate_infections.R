@@ -110,8 +110,8 @@
 #'                                 generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
 #'                                 samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-#'                                 chains = 4, estimate_rt = TRUE, fixed_future_rt = TRUE,
-#'                                 verbose = FALSE, return_fit = TRUE)
+#'                                 chains = 4, estimate_rt = TRUE, fixed_future_rt = TRUE, model = model,
+#'                                 verbose = TRUE, return_fit = TRUE)
 #'
 #' 
 #' # Plot output
@@ -371,7 +371,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
     stationary = ifelse(stationary, 1, 0),
     fixed = ifelse(fixed, 1, 0),
     break_no = break_no,
-    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint
+    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
+    future_fixed = ifelse(fixed_future_rt, 1, 0)
   ) 
   
   # Parameters for Hilbert space GP -----------------------------------------
