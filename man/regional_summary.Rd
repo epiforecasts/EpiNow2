@@ -37,6 +37,9 @@ in which to store summary of results.}
 rather than just regions of interest.}
 
 \item{return_summary}{Logical, defaults to \code{TRUE}. Should summary measures be returned.}
+
+\item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
+on the maximum number of reported cases.}
 }
 \value{
 A list of summary measures and plots

@@ -43,6 +43,9 @@ rather than just regions of interest.}
 
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
 
+\item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
+on the maximum number of reported cases.}
+
 \item{...}{Pass additional arguments to \code{epinow}}
 }
 \value{
