@@ -90,6 +90,6 @@ regional_summary(regional_output = regional_out$regional,
                  summary_dir = results_dir,
                  region_scale = "Country", all_regions = FALSE)
 
-}
+} 
 
 }

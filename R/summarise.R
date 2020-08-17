@@ -173,7 +173,7 @@ summarise_results <- function(regions,
 #'                  summary_dir = results_dir,
 #'                  region_scale = "Country", all_regions = FALSE)
 #'
-#' }
+#' } 
 #' 
 regional_summary <- function(regional_output,
                              reported_cases,
@@ -285,10 +285,10 @@ regional_summary <- function(regional_output,
   max_reported_cases <- round(max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0)
   
   ## Summarise cases and Rts
-  summary_plot <- EpiNow2::plot_summary(summarised_results$data,
-                                        x_lab = region_scale, 
-                                        log_cases = log_cases,
-                                        max_cases = max_reported_cases)
+  summary_plot <- plot_summary(summarised_results$data,
+                               x_lab = region_scale, 
+                               log_cases = log_cases,
+                               max_cases = max_reported_cases)
   
   if (!is.null(summary_dir)) {
     suppressWarnings(
