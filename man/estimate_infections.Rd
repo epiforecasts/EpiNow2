@@ -161,7 +161,7 @@ fixed_rt <- estimate_infections(reported_cases, family = "negbin",
                                 delays = list(incubation_period, reporting_delay),
                                 samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                                 chains = 4, estimate_rt = TRUE, fixed_future_rt = TRUE,
-                                verbose = FALSE, return_fit = TRUE)
+                                return_fit = TRUE)
 
 
 # Plot output
