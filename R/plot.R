@@ -179,7 +179,7 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE,
         "Decreasing" = "#1170aa",
         "Unsure" = "#7b848f"), drop = FALSE) 
   }
-  
+   
   ## cases plot
   cases_plot <-  
     inner_plot(summary_results[metric %in% "New confirmed cases by infection date"]) +
@@ -189,17 +189,16 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE,
                    axis.text.x = ggplot2::element_blank()) +
     ggplot2::theme(legend.position = "none")
   
-  if (!missing(max_cases)) {
-    cases_plot <- cases_plot + 
-      ggplot2::coord_cartesian(ylim = c(0, max_cases))
-  }
-  
   if (log_cases) {
     cases_plot <- cases_plot +
-      ggplot2::scale_y_log10(labels = scales::comma)
+      ggplot2::scale_y_log10(labels = scales::comma,
+                             limits = c(NA, ifelse(!missing(max_cases), max_cases, NA)),
+                             oob = scales::squish)
   }else{
     cases_plot <- cases_plot +
-      ggplot2::scale_y_continuous(labels = scales::comma)
+      ggplot2::scale_y_continuous(labels = scales::comma,
+                                  limits = c(NA, ifelse(!missing(max_cases), max_cases, NA)),
+                                  oob = scales::squish)
   }
   
   ## rt plot
