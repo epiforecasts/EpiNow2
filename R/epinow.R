@@ -376,6 +376,7 @@ regional_epinow <- function(reported_cases,
                          cores = cores,
                          ...) { 
     futile.logger::flog.info("Initialising estimates for: %s", target_region)
+    
     data.table::setDTthreads(threads = 1)
 
     if (!is.null(target_folder)) {
@@ -391,6 +392,7 @@ regional_epinow <- function(reported_cases,
       return_estimates = TRUE,
       cores = cores,
       ...)
+    
      futile.logger::flog.info("Completed estimates for: %s", target_region)
 
      return(out)
