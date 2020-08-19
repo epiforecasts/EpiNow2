@@ -316,17 +316,31 @@ lognorm_dist_def <- function(mean, mean_sd,
                              max_value, samples,
                              to_log = FALSE) {
   
+  transform_mean <- function(mu, sig){
+    mean_location <- log(mu^2 / sqrt(sig^2 + mu^2))
+    mean_location
+    }
+  
+  transform_sd <- function(mu, sig){
+    mean_shape <- sqrt(log(1 + (sig^2 / mu^2)))
+    mean_shape
+    }
+  
+  sampled_means <- truncnorm::rtruncnorm(samples, a = 0, mean = mean, sd = mean_sd)
+  sampled_sds <- truncnorm::rtruncnorm(samples, a = 0, mean = sd, sd = sd_sd)
+  means <- sampled_means 
+  sds <- sampled_sds
+  
   if (to_log) {
-    mean <- log(mean)
-    mean_sd <- log(mean_sd)
-    sd <- log(sd)
-    sd_sd <- log(sd_sd)
-  }
+    means <- mapply(transform_mean, sampled_means, sampled_sds)
+    sds <- mapply(transform_sd, sampled_means, sampled_sds)
+    }
+  
   dist <- data.table::data.table(
     model = rep("lognorm", samples),
     params = purrr::transpose(
-      list(mean = truncnorm::rtruncnorm(samples, a = 0, mean = mean, sd = mean_sd),
-           sd = truncnorm::rtruncnorm(samples, a = 0, mean = sd, sd = sd_sd))),
+      list(mean = means,
+           sd = sds)),
     max_value = rep(max_value, samples)
   )
   
