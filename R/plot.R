@@ -12,9 +12,9 @@
 #' @return A `ggplot2` object
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon scale_y_continuous
-#' @importFrom scales comma
+#' @importFrom scales comma 
 #' @importFrom cowplot theme_cowplot
-#' @importFrom data.table setDT
+#' @importFrom data.table setDT fifelse
 #' @importFrom purrr map
 #' @examples
 #' \donttest{
@@ -52,7 +52,7 @@
 #' plot_estimates(
 #'   estimate = out$summarised[variable == "infections"],
 #'   reported = cases,
-#'   ylab = "Cases")
+#'   ylab = "Cases", max_plot = 2) + ggplot2::facet_wrap(~type, scales = "free_y")
 #' 
 #' ## Plot reported cases estimated via Rt
 #' plot_estimates(estimate = out$summarised[variable == "reported_cases"],
@@ -83,12 +83,25 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   estimate <- estimate[, type := to_sentence(type)]
   
   ## Scale plot values based on reported cases
-  if (!missing(reported)) {
-    max_cases_to_plot <- round(max(reported$confirm, na.rm = TRUE) * max_plot, 0)
+  if (!missing(reported) & !is.na(max_plot)) {
+    sd_cols <- c("upper", "lower", "bottom", "top")
+    cols <- setdiff(colnames(reported), c("date", "confirm", "breakpoints"))
     
-    estimate <- estimate[, lapply(.SD, function(var){ifelse(var > max_cases_to_plot, max_cases_to_plot, var)}),
-                         by = c("type", "date"), 
-                          .SDcols=c("upper", "lower", "bottom", "top")] 
+    if (length(cols > 1)) {
+      max_cases_to_plot <- data.table::copy(reported)[,
+          .(max = round(max(confirm, na.rm = TRUE) * max_plot, 0)), by = cols]
+      
+      estimate <- estimate[max_cases_to_plot, on = cols]
+    }else{
+      max_cases_to_plot <- round(max(reported$confirm, na.rm = TRUE) * max_plot, 0)
+      
+      estimate <- estimate[, max := max_cases_to_plot]
+    }
+    
+
+    estimate <- estimate[, lapply(.SD, function(var){data.table::fifelse(var > max, 
+                                                            max, var)}),
+                         by = setdiff(colnames(estimate), sd_cols), .SDcols = sd_cols] 
   }
   
   ## Initialise plot

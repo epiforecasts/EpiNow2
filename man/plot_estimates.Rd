@@ -71,7 +71,7 @@ out <- EpiNow2::estimate_infections(cases, family = "negbin",
 plot_estimates(
   estimate = out$summarised[variable == "infections"],
   reported = cases,
-  ylab = "Cases")
+  ylab = "Cases", max_plot = 2) + ggplot2::facet_wrap(~type, scales = "free_y")
 
 ## Plot reported cases estimated via Rt
 plot_estimates(estimate = out$summarised[variable == "reported_cases"],
