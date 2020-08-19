@@ -88,7 +88,7 @@ out <- regional_epinow(reported_cases = cases,
                        generation_time = generation_time,
                        delays = list(incubation_period, reporting_delay),
                        adapt_delta = 0.9,
-                       samples = 2000, warmup = 200,
+                       samples = 2000, warmup = 200, verbose = TRUE,
                        cores = ifelse(interactive(), 4, 1), chains = 4)
 }
 }
