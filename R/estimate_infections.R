@@ -102,8 +102,10 @@
 #'
 #' 
 #' # Plot output
-#' report_plots(summarised_estimates = def$summarised,
+#' plots <- report_plots(summarised_estimates = def$summarised,
 #'                       reported = reported_cases)
+#'                      
+#' plots$summary
 #'
 #' # Run model with default settings
 #' fixed_rt <- estimate_infections(reported_cases, family = "negbin",
@@ -115,8 +117,10 @@
 #'
 #' 
 #' # Plot output
-#' report_plots(summarised_estimates = fixed_rt$summarised,
+#' plots <- report_plots(summarised_estimates = fixed_rt$summarised,
 #'                       reported = reported_cases)
+#'                       
+#' plots$summary
 #'
 #'# Run the model with default setting on a later snapshot of 
 #'# data (use burn_in here to remove the first week of
