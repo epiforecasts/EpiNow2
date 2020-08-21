@@ -131,8 +131,10 @@
 #'
 #' 
 #' # Plot output
-#' report_plots(summarised_estimates = snapshot$summarised,
-#'                       reported = snapshot_cases)     
+#' plots <- report_plots(summarised_estimates = snapshot$summarised,
+#'                       reported = snapshot_cases)
+#'
+#' plots$summary    
 #' 
 #' ## Run model with stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, family = "negbin",
@@ -144,8 +146,10 @@
 #'
 #' 
 #' # Plot output
-#' report_plots(summarised_estimates = stat$summarised,
-#'              reported = reported_cases)
+#' plots <- report_plots(summarised_estimates = stat$summarised,
+#'                       reported = reported_cases)
+#'
+#' plots$summary
 #'        
 #' # Run model with fixed Rt assumption 
 #' fixed <- estimate_infections(reported_cases, family = "negbin",
@@ -157,8 +161,10 @@
 #'
 #' 
 #' # Plot output
-#' report_plots(summarised_estimates = fixed$summarised,
-#'              reported = reported_cases)
+#' plots <- report_plots(summarised_estimates = fixed$summarised,
+#'                       reported = reported_cases)
+#'                       
+#' plots$summary
 #' 
 #' # Run model with breakpoints                                                                      
 #' bkp <- estimate_infections(reported_cases, family = "negbin",
@@ -170,8 +176,10 @@
 #'
 #' 
 #' # Plot output
-#' report_plots(summarised_estimates = bkp$summarised,
-#'              reported = reported_cases)
+#' plots <- report_plots(summarised_estimates = bkp$summarised,
+#'                       reported = reported_cases)
+#'
+#' plots$summary
 #'              
 #' # Run model with breakpoints but with constrained non-linear change over time 
 #' # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
@@ -187,9 +195,11 @@
 #'
 #' 
 #' # Plot output
-#' report_plots(summarised_estimates = cbkp$summarised,
+#' plots <- report_plots(summarised_estimates = cbkp$summarised,
 #'              reported = reported_cases)
 #'              
+#' plots$summary
+#' 
 #' # Pull out breakpoint summary
 #' cbkp$summarised[variable == "breakpoints"]
 #' 
@@ -205,9 +215,11 @@
 #'
 #' 
 #' # Plot output
-#' report_plots(summarised_estimates = fbkp$summarised,
+#' plots <- report_plots(summarised_estimates = fbkp$summarised,
 #'              reported = reported_cases)
 #'              
+#' plots$summary
+#' 
 #' # Pull out breakpoint summary
 #' fbkp$summarised[variable == "breakpoints"]
 #' 
