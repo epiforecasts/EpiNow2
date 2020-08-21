@@ -85,7 +85,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   ## Scale plot values based on reported cases
   if (!missing(reported) & !is.na(max_plot)) {
     sd_cols <- c("upper", "lower", "bottom", "top")
-    cols <- setdiff(colnames(reported), c("date", "confirm", "breakpoints"))
+    cols <- setdiff(colnames(reported), c("date", "confirm", "breakpoint"))
     
     if (length(cols > 1)) {
       max_cases_to_plot <- data.table::copy(reported)[,
