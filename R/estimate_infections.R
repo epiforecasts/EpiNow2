@@ -97,6 +97,7 @@
 #' def <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
+#'                            model = model,
 #'                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                            chains = 4, estimate_rt = TRUE, verbose = FALSE, return_fit = TRUE)
 #'
@@ -107,7 +108,7 @@
 #'                      
 #' plots$summary
 #'
-#' # Run model with default settings
+#' # Run model with Rt fixed into the future
 #' fixed_rt <- estimate_infections(reported_cases, family = "negbin",
 #'                                 generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
@@ -122,7 +123,7 @@
 #'                       
 #' plots$summary
 #'
-#'# Run the model with default setting on a later snapshot of 
+#'# Run the model with default settings on a later snapshot of 
 #'# data (use burn_in here to remove the first week of
 #'# estimates that may be impacted by this most).
 #' snapshot_cases <- EpiNow2::example_confirmed[80:130]
@@ -168,8 +169,25 @@
 #' plots <- report_plots(summarised_estimates = fixed$summarised,
 #'                       reported = reported_cases)
 #'                       
+#'                       
 #' plots$summary
 #' 
+#' 
+#' # Run model with no delays 
+#' no_delay <- estimate_infections(reported_cases, family = "negbin",
+#'                             generation_time = generation_time,
+#'                             samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
+#'                             chains = 4, estimate_rt = TRUE, fixed = TRUE, model = model,
+#'                             verbose = TRUE, return_fit = TRUE)
+#'
+#' 
+#' # Plot output
+#' plots <- report_plots(summarised_estimates = no_delay$summarised,
+#'                       reported = reported_cases)
+#'                       
+#'                       
+#' plots$summary         
+#'               
 #' # Run model with breakpoints                                                                      
 #' bkp <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
@@ -325,45 +343,52 @@ estimate_infections <- function(reported_cases, family = "negbin",
       )
     )
   }else{
-    mean_shift <- 0
+    mean_shift <- 1
   }
 
 
   # Add the mean delay and incubation period on as 0 case days ------------
   
-  reported_cases <- data.table::rbindlist(list(
-    data.table::data.table(date = seq(min(reported_cases$date) - mean_shift - prior_smoothing_window, 
-                                      min(reported_cases$date) - 1, by = "days"),
-                           confirm = 0,
-                           breakpoint = 0),
-    reported_cases
-  ))  
-  
+  if (no_delays > 0) {
+    reported_cases <- data.table::rbindlist(list(
+      data.table::data.table(date = seq(min(reported_cases$date) - mean_shift - prior_smoothing_window, 
+                                        min(reported_cases$date) - 1, by = "days"),
+                             confirm = 0,
+                             breakpoint = 0),
+      reported_cases
+    ))  
+    
+  }
+
   # Calculate smoothed prior cases ------------------------------------------
   
-  shifted_reported_cases <- data.table::copy(reported_cases)[,
-                    confirm := data.table::shift(confirm, n = mean_shift,
-                                                 type = "lead", 
-                                                 fill = NA)][,
-                    confirm := data.table::frollmean(confirm, n = prior_smoothing_window, 
-                                                     align = "right", fill = 0)][,
-                                                     confirm := data.table::fifelse(confirm == 0, 1e-3, confirm)]
-  
-  ## Forecast trend on reported cases using the last week of data
-  final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
-                                            t := 1:.N]
-  lm_model <- stats::lm(log(confirm) ~ t, data = final_week)
-  
-  ## Estimate unreported future infections using a log linear model
-  shifted_reported_cases <- shifted_reported_cases[, t := 1:.N][, 
-                                                     t := t - (.N - horizon - mean_shift - 6)][,
-                                                     confirm := data.table::fifelse(t >= 7, 
-                                                                                    exp(lm_model$coefficients[1] +
-                                                                                          lm_model$coefficients[2] * t),
-                                                                                    confirm)][, t := NULL]
-  ##Drop median generation interval initial values
-  shifted_reported_cases <- shifted_reported_cases[-(1:prior_smoothing_window)]
-  reported_cases <- reported_cases[-(1:prior_smoothing_window)]
+  if (no_delays > 0) {
+    shifted_reported_cases <- data.table::copy(reported_cases)[,
+                   confirm := data.table::shift(confirm, n = mean_shift,
+                                                type = "lead", fill = NA)][,
+                   confirm := data.table::frollmean(confirm, n = prior_smoothing_window, 
+                                                   align = "right", fill = 0)][,
+                   confirm := data.table::fifelse(confirm == 0, 1e-3, confirm)]
+    
+    ## Forecast trend on reported cases using the last week of data
+    final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
+                                         t := 1:.N]
+    lm_model <- stats::lm(log(confirm) ~ t, data = final_week)
+    
+    ## Estimate unreported future infections using a log linear model
+    shifted_reported_cases <- shifted_reported_cases[,
+                    t := 1:.N][, 
+                    t := t - (.N - horizon - mean_shift - 6)][,
+                    confirm := data.table::fifelse(t >= 7,
+                                                   exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t),
+                                                   confirm)][,
+                    t := NULL]
+    
+    ##Drop median generation interval initial values
+    shifted_reported_cases <- shifted_reported_cases[-(1:prior_smoothing_window)]
+    reported_cases <- reported_cases[-(1:prior_smoothing_window)]
+  }
+
   
   # Add week day info -------------------------------------------------------
   
@@ -374,7 +399,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
   data <- list(
     day_of_week = reported_cases[(mean_shift + 1):.N]$day_of_week,
     cases = reported_cases[(mean_shift + 1):(.N - horizon)]$confirm,
-    shifted_cases = shifted_reported_cases$confirm,
+    shifted_cases = unlist(ifelse(no_delays > 0, list(shifted_reported_cases$confirm),
+                           list(reported_cases$confirm))),
     t = length(reported_cases$date),
     rt = length(reported_cases$date) - mean_shift,
     time = 1:(length(reported_cases$date) - mean_shift),
@@ -400,14 +426,12 @@ estimate_infections <- function(reported_cases, family = "negbin",
 # Delays ------------------------------------------------------------------
   
   data$delays <- no_delays
-  
-  if (data$delays > 0) {
-    data$delay_mean_mean <- unlist(delays$mean)
-    data$delay_mean_sd <- unlist(delays$mean_sd)
-    data$delay_sd_mean <- unlist(delays$sd)
-    data$delay_sd_sd <- unlist(delays$sd_sd)
-    data$max_delay <- unlist(delays$max)
-  }  
+  data$delay_mean_mean <- ifelse(data$delays > 0, unlist(delays$mean), 1)
+  data$delay_mean_sd <- ifelse(data$delays > 0, unlist(delays$mean_sd), 1)
+  data$delay_sd_mean <- ifelse(data$delays > 0, unlist(delays$sd), 1)
+  data$delay_sd_sd <- ifelse(data$delays > 0, unlist(delays$sd_sd), 1)
+  data$max_delay <- ifelse(data$delays > 0, unlist(delays$max), 1)
+
   
   # Parameters for Hilbert space GP -----------------------------------------
   

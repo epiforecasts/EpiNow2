@@ -187,7 +187,8 @@ transformed parameters {
   }
 
   // reports from onsets
- {
+  if (delays) {
+     {
    vector[t] reports_hold;
    for (s in 1:delays) {
     // reverse the distributions to allow vectorised access
@@ -202,8 +203,11 @@ transformed parameters {
        reports_hold = convolve(reports_hold, rev_delay);
      }
    }
-   reports = reports_hold[(no_rt_time + 1):t];
- }
+    reports = reports_hold[(no_rt_time + 1):t];
+    }
+  }else{
+    reports = infections[(no_rt_time + 1):t];
+  }
 
  // Add optional weekly reporting effect
  if (est_week_eff) {
@@ -232,11 +236,13 @@ model {
   }
 
   // penalised priors for delaysincubation period, and report delay
-  for (s in 1:delays) {
-    target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * t;
-    target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * t;
+  if (delays) {
+    for (s in 1:delays) {
+      target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * t;
+      target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * t;
+    }
   }
-  
+
   // estimate rt
   if (estimate_r) {
     // prior on R
