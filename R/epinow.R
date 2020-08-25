@@ -284,6 +284,8 @@ epinow <- function(reported_cases, family = "negbin",
 #' @param summary Logical, should summary measures be calculated.
 #' @param all_regions_summary Logical, defaults to `TRUE`. Should summary plots for all regions be returned
 #' rather than just regions of interest.
+#' @param return_timings Logical, defaults to FALSE. Should timing values be returned for each location.
+#' @param max_execution_time Integer, defaults to Inf. If set will kill off processing after x seconds.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
 #' @inheritParams regional_summary
@@ -339,6 +341,8 @@ regional_epinow <- function(reported_cases,
                             all_regions_summary = TRUE,
                             return_estimates = TRUE,
                             max_plot = 10,
+                            return_timings = FALSE,
+                            max_execution_time = Inf,
                             ...) {
 
   ## Set input to data.table
@@ -385,14 +389,35 @@ regional_epinow <- function(reported_cases,
 
     regional_cases <- reported_cases[region %in% target_region][, region := NULL]
 
-    out <- EpiNow2::epinow(
-      reported_cases = regional_cases,
-      target_folder = target_folder,
-      target_date = target_date,
-      return_estimates = TRUE,
-      cores = cores,
-      ...)
-
+    timing <- system.time(
+      tryCatch(
+        out <- withTimeout(
+          EpiNow2::epinow(
+            reported_cases = regional_cases,
+            target_folder = target_folder,
+            target_date = target_date,
+            return_estimates = TRUE,
+            cores = cores,
+            ...),
+          timeout = max_execution_time
+        ),
+        TimeoutException = function(ex) {
+          if (return_timings) {
+            out <- list("timings" = Inf)
+          } else {
+            out <- NULL
+          }
+        }
+      )
+    )
+    if (return_timings) {
+      if (is.null(out)) {
+        out <- list()
+      }
+      if (!exists("timings", out)) {
+        out$timings = timing['elapsed']
+      }
+    }
     futile.logger::flog.info("Completed estimates for: %s", target_region)
 
     return(out)
@@ -404,6 +429,8 @@ regional_epinow <- function(reported_cases,
   regional_out <- future.apply::future_lapply(regions, safe_run_region,
                                               reported_cases = reported_cases,
                                               cores = cores,
+                                              return_timings = return_timings,
+                                              max_execution_time = max_execution_time,
                                               ...,
                                               future.scheduling = Inf)
 
