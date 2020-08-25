@@ -1,3 +1,7 @@
+# EpiNow2 1.2.0
+
+* Added an optional no delay model where Rt is estimated directly from the data. This option is not supported when using backcalculation only.
+
 # EpiNow2 1.1.0
 
 
