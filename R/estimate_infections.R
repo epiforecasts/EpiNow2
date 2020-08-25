@@ -278,10 +278,16 @@ estimate_infections <- function(reported_cases, family = "negbin",
   }
  
   # Organise delays ---------------------------------------------------------
+  if (missing(delays)) {
+    delays <- list()
+  }
   
   no_delays <- length(delays)
-  delays <- purrr::transpose(delays)
-
+  
+  if (no_delays > 0) {
+    delays <- purrr::transpose(delays)
+  }
+  
   # Set up data.table -------------------------------------------------------
 
   suppressMessages(data.table::setDTthreads(threads = 1))
@@ -311,12 +317,17 @@ estimate_infections <- function(reported_cases, family = "negbin",
   start_date <- min(reported_cases$date, na.rm = TRUE)
   
   # Estimate the mean delay -----------------------------------------------
-  
-  mean_shift <- as.integer(
-    sum(
-      purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))
+ 
+  if (no_delays > 0) {
+    mean_shift <- as.integer(
+      sum(
+        purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))
+      )
     )
-  )
+  }else{
+    mean_shift <- 0
+  }
+
 
   # Add the mean delay and incubation period on as 0 case days ------------
   
@@ -369,12 +380,6 @@ estimate_infections <- function(reported_cases, family = "negbin",
     time = 1:(length(reported_cases$date) - mean_shift),
     inf_time = 1:(length(reported_cases$date)),
     horizon = horizon,
-    delays = no_delays,
-    delay_mean_mean = unlist(delays$mean),
-    delay_mean_sd = unlist(delays$mean_sd),
-    delay_sd_mean = unlist(delays$sd),
-    delay_sd_sd = unlist(delays$sd_sd),
-    max_delay = unlist(delays$max),
     gt_mean_mean = generation_time$mean,
     gt_mean_sd = generation_time$mean_sd,
     gt_sd_mean = generation_time$sd,
@@ -390,6 +395,19 @@ estimate_infections <- function(reported_cases, family = "negbin",
     breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
     future_fixed = ifelse(fixed_future_rt, 1, 0)
   ) 
+  
+
+# Delays ------------------------------------------------------------------
+  
+  data$delays <- no_delays
+  
+  if (data$delays > 0) {
+    data$delay_mean_mean <- unlist(delays$mean)
+    data$delay_mean_sd <- unlist(delays$mean_sd)
+    data$delay_sd_mean <- unlist(delays$sd)
+    data$delay_sd_sd <- unlist(delays$sd_sd)
+    data$max_delay <- unlist(delays$max)
+  }  
   
   # Parameters for Hilbert space GP -----------------------------------------
   
@@ -420,12 +438,18 @@ estimate_infections <- function(reported_cases, family = "negbin",
 
   # Set up initial conditions fn --------------------------------------------
   
-  init_fun <- function(){out <- list(
-    delay_mean = array(purrr::map2_dbl(delays$mean, delays$mean_sd, 
-                              ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y))),
-    delay_sd = array(purrr::map2_dbl(delays$sd, delays$sd_sd, 
-                              ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y))))
+  init_fun <- function(){
+    
+    out <- list()
+    
+    if (data$delays > 0) {
+      out$delay_mean <- array(purrr::map2_dbl(delays$mean, delays$mean_sd, 
+                                         ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
+      out$delay_sd <- array(purrr::map2_dbl(delays$sd, delays$sd_sd, 
+                                       ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
   
+    }
+
   if (!fixed) {
     out$eta <- array(rnorm(data$M, mean = 0, sd = 1))
     out$rho <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2))
@@ -545,15 +569,17 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                          strat := as.character(wday)][,`:=`(time = NULL, date = NULL, wday = NULL)]
     }
  
+  if (data$delays > 0) {
     out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
     out$delay_mean <- out$delay_mean[, strat := as.character(time)][,
-                                       time := NULL][, date := NULL]
+                                                                    time := NULL][, date := NULL]
     
     out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$delays)
     out$delay_sd <- out$delay_sd[, strat :=  as.character(time)][,
-                                   time := NULL][, date := NULL]
+                                                                 time := NULL][, date := NULL]
     
-    
+  }
+
     extract_static_parameter <- function(param) {
       data.table::data.table(
         parameter = param,
