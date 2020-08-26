@@ -392,7 +392,7 @@ regional_epinow <- function(reported_cases,
 
     timing <- system.time(
       tryCatch(
-        out <- withTimeout(
+        out <- R.utils::withTimeout(
           EpiNow2::epinow(
             reported_cases = regional_cases,
             target_folder = target_folder,
