@@ -1,9 +1,4 @@
-# EpiNow2 1.2.0
-
-* Added an optional no delay model where Rt is estimated directly from the data. This option is not supported when using backcalculation only.
-
 # EpiNow2 1.1.0
-
 
 * Implemented reporting templates
 * Bug fix of estimate reporting
@@ -20,6 +15,7 @@
 * Updated plotting to be limited to a scaling of reported data (prevents upper CIs from skewing the plot).
 * Added uncertainty plot bounds to control y axis on plots for clarity purposes.
 * `regional_summary` now saves input reported cases data `reported_cases.csv`.
+* Added an optional no delay model where Rt is estimated directly from the data. This option is not supported when using backcalculation only.
 
 # EpiNow2 1.0.0
 
