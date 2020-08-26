@@ -83,6 +83,13 @@ epinow <- function(reported_cases, family = "negbin",
    stop("Either return estimates or save to a target folder")
  }
   
+
+# Check arguments ---------------------------------------------------------
+
+  if (missing(delays)) {
+    delays <- list()
+  }  
+  
  # Convert input to DT -----------------------------------------------------
   suppressMessages(data.table::setDTthreads(threads = 1))
   reported_cases <- data.table::setDT(reported_cases)
