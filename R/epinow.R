@@ -341,9 +341,9 @@ regional_epinow <- function(reported_cases,
                             region_scale = "Region",
                             all_regions_summary = TRUE,
                             return_estimates = TRUE,
-                            max_plot = 10, #todo: revert to Inf
+                            max_plot = 10,
                             return_timings = FALSE,
-                            max_execution_time = 60,
+                            max_execution_time = 60, #todo: revert to Inf
                             ...) {
 
   ## Set input to data.table
@@ -379,6 +379,8 @@ regional_epinow <- function(reported_cases,
   run_region <- function(target_region,
                          reported_cases,
                          cores = cores,
+                         return_timings = return_timings,
+                         max_execution_time = max_execution_time,
                          ...) {
     futile.logger::flog.info("Initialising estimates for: %s", target_region)
 
