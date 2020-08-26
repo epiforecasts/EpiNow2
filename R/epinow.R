@@ -390,8 +390,10 @@ regional_epinow <- function(reported_cases,
       target_folder <- file.path(target_folder, target_region)
     }
 
+    futile.logger::flog.trace("filtering data for target region %s", target_region)
     regional_cases <- reported_cases[region %in% target_region][, region := NULL]
 
+    futile.logger::flog.trace("calling epinow2::epinow to process data")
     timing <- system.time(
       tryCatch(
         out <- R.utils::withTimeout(
@@ -414,22 +416,23 @@ regional_epinow <- function(reported_cases,
         }
       )
     )
+    futile.logger::flog.trace("epinow returned for region %s", target_region)
     if (return_timings) {
       if (is.null(out)) {
+        futile.logger::flog.trace("region has not returned an out file (completed but not set to output) so create one")
         out <- list()
       }
-      if (!exists("timings", out)) {
-        out$timings = timing['elapsed']
-      }
+      out$timings = timing['elapsed']
     }
     futile.logger::flog.info("Completed estimates for: %s", target_region)
-
+    saveRDS(out, "subregion_out.rds")
     return(out)
   }
 
   safe_run_region <- purrr::safely(run_region)
 
   ## Run regions (make parallel using future::plan)
+  futile.logger::flog.trace("calling future apply to process each region through the run_region function")
   regional_out <- future.apply::future_lapply(regions, safe_run_region,
                                               reported_cases = reported_cases,
                                               cores = cores,
@@ -438,6 +441,8 @@ regional_epinow <- function(reported_cases,
                                               ...,
                                               future.scheduling = Inf)
 
+  saveRDS(regional_out, "subregion_out.rds")
+  futile.logger::flog.trace("processing errors")
   regional_errors <- purrr::map(regional_out, ~.$error)
   names(regional_errors) <- regions
   regional_errors <- purrr::compact(regional_errors)
