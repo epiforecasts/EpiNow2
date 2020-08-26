@@ -408,7 +408,7 @@ regional_epinow <- function(reported_cases,
         ),
         TimeoutException = function(ex) {
           futile.logger::flog.warn("region %s timed out", target_region)
-          return(ifelse (return_timings, list("timings" = Inf), NULL))
+          return(list())
         }
       )
     )
