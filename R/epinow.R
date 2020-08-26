@@ -295,6 +295,7 @@ epinow <- function(reported_cases, family = "negbin",
 #' @importFrom data.table as.data.table setDT copy setorder
 #' @importFrom purrr safely map compact
 #' @importFrom futile.logger flog.info
+#' @importFrom R.utils withTimeout
 #' @examples
 #'  \donttest{
 #' ## Construct example distributions
