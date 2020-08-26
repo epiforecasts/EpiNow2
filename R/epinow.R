@@ -408,14 +408,11 @@ regional_epinow <- function(reported_cases,
         ),
         TimeoutException = function(ex) {
           futile.logger::flog.warn("region %s timed out", target_region)
-          if (return_timings) {
-            out <- list("timings" = Inf)
-          } else {
-            out <- NULL
-          }
+          out <- ifelse (return_timings, list("timings" = Inf), NULL)
         }
       )
     )
+    saveRDS(out, "subregion_out_a.rds")
     futile.logger::flog.trace("epinow returned for region %s", target_region)
     if (return_timings) {
       if (is.null(out)) {
@@ -441,7 +438,7 @@ regional_epinow <- function(reported_cases,
                                               ...,
                                               future.scheduling = Inf)
 
-  saveRDS(regional_out, "subregion_out.rds")
+  saveRDS(regional_out, "region_out.rds")
   futile.logger::flog.trace("processing errors")
   regional_errors <- purrr::map(regional_out, ~.$error)
   names(regional_errors) <- regions
