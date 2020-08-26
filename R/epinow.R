@@ -342,8 +342,8 @@ regional_epinow <- function(reported_cases,
                             all_regions_summary = TRUE,
                             return_estimates = TRUE,
                             max_plot = 10,
-                            return_timings = FALSE,
-                            max_execution_time = 60, #todo: revert to Inf
+                            return_timings = TRUE,
+                            max_execution_time = 60, #todo: revert to Inf and timings to false
                             ...) {
 
   ## Set input to data.table
@@ -395,8 +395,8 @@ regional_epinow <- function(reported_cases,
 
     futile.logger::flog.trace("calling epinow2::epinow to process data")
     timing <- system.time(
-      tryCatch(
-        out <- R.utils::withTimeout(
+      out <- tryCatch(
+        R.utils::withTimeout(
           EpiNow2::epinow(
             reported_cases = regional_cases,
             target_folder = target_folder,
@@ -408,7 +408,7 @@ regional_epinow <- function(reported_cases,
         ),
         TimeoutException = function(ex) {
           futile.logger::flog.warn("region %s timed out", target_region)
-          out <- ifelse (return_timings, list("timings" = Inf), list("estimates" = NULL))
+          return(ifelse (return_timings, list("timings" = Inf), NULL))
         }
       )
     )
