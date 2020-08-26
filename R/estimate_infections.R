@@ -97,7 +97,6 @@
 #' def <- estimate_infections(reported_cases, family = "negbin",
 #'                            generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            model = model,
 #'                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                            chains = 4, estimate_rt = TRUE, verbose = FALSE, return_fit = TRUE)
 #'
@@ -176,9 +175,10 @@
 #' # Run model with no delays 
 #' no_delay <- estimate_infections(reported_cases, family = "negbin",
 #'                             generation_time = generation_time,
-#'                             samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-#'                             chains = 4, estimate_rt = TRUE, fixed = TRUE, model = model,
-#'                             verbose = TRUE, return_fit = TRUE)
+#'                             samples = 1000, warmup = 200, 
+#'                             cores = ifelse(interactive(), 4, 1),
+#'                             chains = 4, estimate_rt = TRUE,
+#'                             verbose = FALSE, return_fit = TRUE)
 #'
 #' 
 #' # Plot output
@@ -426,13 +426,22 @@ estimate_infections <- function(reported_cases, family = "negbin",
 # Delays ------------------------------------------------------------------
   
   data$delays <- no_delays
-  data$delay_mean_mean <- ifelse(data$delays > 0, unlist(delays$mean), 1)
-  data$delay_mean_sd <- ifelse(data$delays > 0, unlist(delays$mean_sd), 1)
-  data$delay_sd_mean <- ifelse(data$delays > 0, unlist(delays$sd), 1)
-  data$delay_sd_sd <- ifelse(data$delays > 0, unlist(delays$sd_sd), 1)
-  data$max_delay <- ifelse(data$delays > 0, unlist(delays$max), 1)
-
   
+  allocate_delays <- function(delay_var, no_delays = data$delays) {
+    if (no_delays > 0) {
+      out <- unlist(delay_var)
+    }else{
+      out <- 1
+    }
+    return(array(out))
+  }
+  
+  data$delay_mean_mean <- allocate_delays(delays$mean)
+  data$delay_mean_sd <- allocate_delays(delays$mean_sd)
+  data$delay_sd_mean <- allocate_delays(delays$sd)
+  data$delay_sd_sd <- allocate_delays(delays$sd_sd)
+  data$max_delay <- allocate_delays(delays$max)
+
   # Parameters for Hilbert space GP -----------------------------------------
   
   # no of basis functions
@@ -484,7 +493,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
   }
   
   if (estimate_rt) {
-    out$initial_infections <- rnorm(mean_shift, mean = 0, sd = 0.1)
+    out$initial_infections <- array(rnorm(mean_shift, mean = 0, sd = 0.1))
     out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                           scale = (rt_prior$sd^2) / rt_prior$mean))
     out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
@@ -620,8 +629,12 @@ estimate_infections <- function(reported_cases, family = "negbin",
     }
   
     ## Add prior infections
-    out$prior_infections <- shifted_reported_cases[, .(parameter = "prior_infections", time = 1:.N, 
-                                                       date, value = confirm, sample = 1)]
+    if (no_delays > 0) {
+      out$prior_infections <- shifted_reported_cases[, 
+                .(parameter = "prior_infections", time = 1:.N, 
+                  date, value = confirm, sample = 1)]
+      
+    }
     
 # Format output -----------------------------------------------------------
     

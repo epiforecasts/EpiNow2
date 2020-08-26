@@ -14,11 +14,11 @@ data {
   int<lower = 0> cases[rt - horizon];// observed cases
   vector<lower = 0>[t] shifted_cases;// median shifted smoothed cases
   int delays;                        // no. of delay distributions
-  real delay_mean_sd[delays];        // prior sd of mean incubation period
-  real delay_mean_mean[delays];      // prior mean of mean incubation period
-  real delay_sd_mean[delays];        // prior sd of sd of incubation period
-  real delay_sd_sd[delays];          // prior sd of sd of incubation period
-  int max_delay[delays];             // maximum incubation period
+  real delay_mean_sd[delays == 0 ? 1 : delays];  // prior sd of mean incubation period
+  real delay_mean_mean[delays == 0 ? 1 : delays];// prior mean of mean incubation period
+  real delay_sd_mean[delays == 0 ? 1 : delays];  // prior sd of sd of incubation period
+  real delay_sd_sd[delays == 0 ? 1 : delays];    // prior sd of sd of incubation period
+  int max_delay[delays == 0 ? 1 : delays];       // maximum incubation period
   real <lower = 0> r_mean;           // prior mean of reproduction number
   real <lower = 0> r_sd;             // prior standard deviation of reproduction number
   real gt_mean_sd;                   // prior sd of mean generation time
