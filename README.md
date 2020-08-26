@@ -17,12 +17,11 @@ development.
 
 It estimates the time-varying reproduction number on cases by date of
 infection (using a similar approach to that implemented in the
-[`{EpiEstim}`](https://github.com/annecori/EpiEstim)). Imputed
-infections are then mapped to observed data (for example cases by date
-of report) via a series of uncertain delay distributions (in the
-examples in the package documentation these are an incubation period and
-a reporting delay) and a reporting model that can include weekly
-periodicity.
+[`{EpiEstim}`](https://github.com/mrc-ide/EpiEstim)). Imputed infections
+are then mapped to observed data (for example cases by date of report)
+via a series of uncertain delay distributions (in the examples in the
+package documentation these are an incubation period and a reporting
+delay) and a reporting model that can include weekly periodicity.
 
 Uncertainty is propagated from all inputs into the final parameter
 estimates, helping to mitigate spurious findings. This is handled
@@ -35,7 +34,7 @@ time-varying reproduction number. Other options include:
   - A stationary Gaussian process (faster to estimate but currently
     gives reduced performance for real time estimates).
   - User specified breakpoints.
-  - As a constant.
+  - A Fixed reproduction number is supported.
   - As piecewise constant by combining a fixed reproduction number with
     breakpoints.
   - As a random walk (by combining a fixed reproduction number with
@@ -48,8 +47,8 @@ provides examples of the different options available.
 Forecasting is also supported for the time-varying reproduction number,
 infections and reported cases. The time-varying reproduction number can
 be forecast forwards in time using an integration with the
-[`{EpiSoon}`](https://epiforecasts.io/EpiSoon) package, and converted to
-a case forecast using the renewal equation. Alternatively, the
+[`{EpiSoon}`](https://epiforecasts.io/EpiSoon/) package, and converted
+to a case forecast using the renewal equation. Alternatively, the
 time-varying reproduction number and cases can be forecast using a
 Gaussian process.
 
@@ -128,16 +127,16 @@ reporting_delay$max <- 30
 
 reporting_delay
 #> $mean
-#> [1] 1.970138
+#> [1] 1.680835
 #> 
 #> $mean_sd
-#> [1] 0.1681175
+#> [1] 0.1177547
 #> 
 #> $sd
-#> [1] 1.025332
+#> [1] 1.036805
 #> 
 #> $sd_sd
-#> [1] 0.1058058
+#> [1] 0.113312
 #> 
 #> $max
 #> [1] 30
@@ -200,6 +199,7 @@ estimates <- EpiNow2::epinow(reported_cases = reported_cases,
                              horizon = 7, samples = 1000, warmup = 200, 
                              cores = 4, chains = 4, verbose = TRUE, 
                              adapt_delta = 0.95)
+#> DEBUG [2020-08-26 15:22:46] Running for 1000 samples (across 4 chains each with a warm up of 200 iterations each) and 71 time steps of which 7 are a forecast
 
 names(estimates)
 #> [1] "estimates"                "estimated_reported_cases"
@@ -213,17 +213,17 @@ parameters in an easily explored format.
 estimates$estimates
 #> $samples
 #>                 variable        parameter time       date sample       value
-#>      1:       infections       infections    1 2020-02-05      1    1.867327
-#>      2:       infections       infections    2 2020-02-06      1   10.415739
-#>      3:       infections       infections    3 2020-02-07      1   16.015825
-#>      4:       infections       infections    4 2020-02-08      1   34.386094
-#>      5:       infections       infections    5 2020-02-09      1   48.276454
+#>      1:       infections       infections    1 2020-02-08      1    2.206644
+#>      2:       infections       infections    2 2020-02-09      1    9.431478
+#>      3:       infections       infections    3 2020-02-10      1   21.395270
+#>      4:       infections       infections    4 2020-02-11      1   30.846361
+#>      5:       infections       infections    5 2020-02-12      1   46.237732
 #>     ---                                                                     
-#> 258070: prior_infections prior_infections   70 2020-04-14      1 2455.552770
-#> 258071: prior_infections prior_infections   71 2020-04-15      1 2394.825740
-#> 258072: prior_infections prior_infections   72 2020-04-16      1 2335.600519
-#> 258073: prior_infections prior_infections   73 2020-04-17      1 2277.839967
-#> 258074: prior_infections prior_infections   74 2020-04-18      1 2221.507862
+#> 255067: prior_infections prior_infections   67 2020-04-14      1 2647.130393
+#> 255068: prior_infections prior_infections   68 2020-04-15      1 2581.665553
+#> 255069: prior_infections prior_infections   69 2020-04-16      1 2517.819692
+#> 255070: prior_infections prior_infections   70 2020-04-17      1 2455.552770
+#> 255071: prior_infections prior_infections   71 2020-04-18      1 2394.825740
 #>         strat     type
 #>      1:  <NA> estimate
 #>      2:  <NA> estimate
@@ -231,37 +231,37 @@ estimates$estimates
 #>      4:  <NA> estimate
 #>      5:  <NA> estimate
 #>     ---               
-#> 258070:  <NA> forecast
-#> 258071:  <NA> forecast
-#> 258072:  <NA> forecast
-#> 258073:  <NA> forecast
-#> 258074:  <NA> forecast
+#> 255067:  <NA> forecast
+#> 255068:  <NA> forecast
+#> 255069:  <NA> forecast
+#> 255070:  <NA> forecast
+#> 255071:  <NA> forecast
 #> 
 #> $summarised
-#>            date       variable strat     type      bottom         top
-#>   1: 2020-02-22              R  <NA> estimate   0.5684197    1.326612
-#>   2: 2020-02-23              R  <NA> estimate   0.6689788    1.327115
-#>   3: 2020-02-24              R  <NA> estimate   0.7843623    1.335338
-#>   4: 2020-02-25              R  <NA> estimate   0.9199542    1.374425
-#>   5: 2020-02-26              R  <NA> estimate   1.0311702    1.403387
-#>  ---                                                                 
-#> 328: 2020-04-14 reported_cases  <NA> forecast 271.0000000 6530.000000
-#> 329: 2020-04-15 reported_cases  <NA> forecast 250.0000000 5754.000000
-#> 330: 2020-04-16 reported_cases  <NA> forecast 194.0000000 7529.000000
-#> 331: 2020-04-17 reported_cases  <NA> forecast 175.0000000 9305.000000
-#> 332: 2020-04-18 reported_cases  <NA> forecast 185.0000000 7511.000000
-#>            lower       upper       median         mean           sd
-#>   1:   0.7517412    1.047230    0.9197803    0.9378134 2.289810e-01
-#>   2:   0.8574849    1.111401    0.9812533    0.9931448 2.000579e-01
-#>   3:   0.9151091    1.137584    1.0556009    1.0586086 1.707855e-01
-#>   4:   1.0358071    1.223475    1.1305832    1.1335666 1.420613e-01
-#>   5:   1.1415192    1.296867    1.2133702    1.2167753 1.165027e-01
-#>  ---                                                               
-#> 328: 812.0000000 2861.000000 2619.0000000 3408.0960000 3.077887e+03
-#> 329: 590.0000000 2305.000000 2080.5000000 3085.2360000 4.127134e+03
-#> 330: 787.0000000 2813.000000 2438.0000000 3891.4520000 5.831976e+03
-#> 331: 711.0000000 3160.000000 2891.5000000 5133.8350000 9.891106e+03
-#> 332: 539.0000000 2367.000000 2188.0000000 5545.4320000 2.827589e+04
+#>            date       variable strat     type     bottom         top
+#>   1: 2020-02-22              R  <NA> estimate   0.906830    1.568452
+#>   2: 2020-02-23              R  <NA> estimate   1.017340    1.560870
+#>   3: 2020-02-24              R  <NA> estimate   1.101175    1.552501
+#>   4: 2020-02-25              R  <NA> estimate   1.196505    1.554018
+#>   5: 2020-02-26              R  <NA> estimate   1.316793    1.607314
+#>  ---                                                                
+#> 322: 2020-04-14 reported_cases  <NA> forecast 695.000000 6529.000000
+#> 323: 2020-04-15 reported_cases  <NA> forecast 419.000000 5621.000000
+#> 324: 2020-04-16 reported_cases  <NA> forecast 364.000000 6466.000000
+#> 325: 2020-04-17 reported_cases  <NA> forecast 397.000000 8587.000000
+#> 326: 2020-04-18 reported_cases  <NA> forecast 289.000000 7005.000000
+#>            lower       upper      median        mean           sd
+#>   1:    1.044737    1.309596    1.223438    1.222365 2.022448e-01
+#>   2:    1.139059    1.368749    1.266639    1.270122 1.696516e-01
+#>   3:    1.230104    1.417863    1.323299    1.325053 1.385959e-01
+#>   4:    1.312648    1.467412    1.381972    1.385947 1.109667e-01
+#>   5:    1.402101    1.527912    1.448480    1.451127 9.032870e-02
+#>  ---                                                             
+#> 322: 1254.000000 3183.000000 2772.000000 3386.243000 2.378292e+03
+#> 323:  903.000000 2562.000000 2342.000000 3033.583000 2.574506e+03
+#> 324:  924.000000 2942.000000 2685.500000 3657.875000 4.357484e+03
+#> 325: 1191.000000 3496.000000 3096.000000 5197.417000 1.469759e+04
+#> 326:  854.000000 2691.000000 2355.000000 5417.498000 3.578082e+04
 ```
 
 Reported cases are returned separately in order to ease reporting of
@@ -271,78 +271,78 @@ forecasts and model evaluation.
 estimates$estimated_reported_cases
 #> $samples
 #>              date sample cases  type
-#>     1: 2020-02-22      1   203 gp_rt
-#>     2: 2020-02-23      1   341 gp_rt
-#>     3: 2020-02-24      1    53 gp_rt
-#>     4: 2020-02-25      1   110 gp_rt
-#>     5: 2020-02-26      1    47 gp_rt
+#>     1: 2020-02-22      1    93 gp_rt
+#>     2: 2020-02-23      1   170 gp_rt
+#>     3: 2020-02-24      1   119 gp_rt
+#>     4: 2020-02-25      1   200 gp_rt
+#>     5: 2020-02-26      1    78 gp_rt
 #>    ---                              
-#> 56996: 2020-04-14   1000  3775 gp_rt
-#> 56997: 2020-04-15   1000  4102 gp_rt
-#> 56998: 2020-04-16   1000  5934 gp_rt
-#> 56999: 2020-04-17   1000 11467 gp_rt
-#> 57000: 2020-04-18   1000 11121 gp_rt
+#> 56996: 2020-04-14   1000  1464 gp_rt
+#> 56997: 2020-04-15   1000  1581 gp_rt
+#> 56998: 2020-04-16   1000  1439 gp_rt
+#> 56999: 2020-04-17   1000  1499 gp_rt
+#> 57000: 2020-04-18   1000  2037 gp_rt
 #> 
 #> $summarised
-#>           date  type bottom   top lower upper median     mean         sd
-#>  1: 2020-02-22 gp_rt     35   330    57   175  159.0  178.002   103.4936
-#>  2: 2020-02-23 gp_rt     30   430    69   227  211.0  240.528   150.2495
-#>  3: 2020-02-24 gp_rt     38   493   121   292  242.0  276.120   161.1148
-#>  4: 2020-02-25 gp_rt     44   508    91   264  237.5  274.978   163.7934
-#>  5: 2020-02-26 gp_rt     48   478   105   264  230.5  266.161   162.8148
-#>  6: 2020-02-27 gp_rt     70   634   153   366  298.0  342.531   202.6564
-#>  7: 2020-02-28 gp_rt     82   879   184   471  388.5  458.013   275.4754
-#>  8: 2020-02-29 gp_rt     55   706   149   410  350.5  394.607   248.7836
-#>  9: 2020-03-01 gp_rt     64   877   143   464  418.5  486.548   287.7215
-#> 10: 2020-03-02 gp_rt     94   965   230   537  441.0  508.601   321.3313
-#> 11: 2020-03-03 gp_rt    109   979   195   513  440.5  513.409   319.7521
-#> 12: 2020-03-04 gp_rt     50   922   175   482  414.5  494.278   335.9354
-#> 13: 2020-03-05 gp_rt     90  1209   280   706  593.0  671.070   406.4826
-#> 14: 2020-03-06 gp_rt    130  1690   403   978  782.5  899.535   555.0464
-#> 15: 2020-03-07 gp_rt    118  1627   297   850  748.0  869.909   597.1382
-#> 16: 2020-03-08 gp_rt    172  2150   420  1107  946.5 1136.650   725.3866
-#> 17: 2020-03-09 gp_rt    216  2444   436  1301 1163.0 1334.771   819.6695
-#> 18: 2020-03-10 gp_rt    170  2552   660  1511 1230.0 1408.187   856.6881
-#> 19: 2020-03-11 gp_rt    260  2525   600  1456 1223.5 1398.798   868.1106
-#> 20: 2020-03-12 gp_rt    190  3658   648  1949 1772.5 2030.691  1291.7425
-#> 21: 2020-03-13 gp_rt    381  5188  1055  2824 2562.5 2852.796  1756.5564
-#> 22: 2020-03-14 gp_rt    452  4969   957  2664 2279.0 2674.353  1687.2145
-#> 23: 2020-03-15 gp_rt    500  6199  1171  3417 2980.5 3398.346  2109.9632
-#> 24: 2020-03-16 gp_rt    689  7241  1586  4025 3417.5 3877.684  2368.5666
-#> 25: 2020-03-17 gp_rt    477  6890  1622  3995 3330.0 3815.714  2380.7079
-#> 26: 2020-03-18 gp_rt    516  6524  1775  3859 3147.5 3516.918  2162.5979
-#> 27: 2020-03-19 gp_rt    668  8604  1734  4661 4011.0 4590.306  2838.5552
-#> 28: 2020-03-20 gp_rt   1007 10713  2114  5702 5161.5 6012.918  3686.1710
-#> 29: 2020-03-21 gp_rt    804  9585  1875  5014 4453.5 5174.663  3230.3387
-#> 30: 2020-03-22 gp_rt   1060 11609  3181  7203 5339.5 6226.785  3804.4701
-#> 31: 2020-03-23 gp_rt    928 11046  2548  6536 5295.0 6015.854  3787.9038
-#> 32: 2020-03-24 gp_rt    714  9577  2208  5678 5035.5 5623.255  3131.5741
-#> 33: 2020-03-25 gp_rt    804  9030  2327  5436 4453.5 4933.506  2894.2815
-#> 34: 2020-03-26 gp_rt    897 10785  2496  6139 5192.0 5960.224  3556.3619
-#> 35: 2020-03-27 gp_rt   1155 13188  3181  7527 6185.0 7120.340  4378.3017
-#> 36: 2020-03-28 gp_rt    578  9950  2453  6294 5241.0 5726.994  3362.1852
-#> 37: 2020-03-29 gp_rt    906 11538  2671  6388 5453.0 6247.617  3685.9409
-#> 38: 2020-03-30 gp_rt    710 11576  2224  6272 5442.5 6238.940  3851.1992
-#> 39: 2020-03-31 gp_rt    704  9942  2182  5711 4675.5 5458.867  3409.6736
-#> 40: 2020-04-01 gp_rt    807  7992  1659  4347 3725.0 4271.485  2573.2166
-#> 41: 2020-04-02 gp_rt    641  9259  2058  5431 4457.5 5100.306  3164.3220
-#> 42: 2020-04-03 gp_rt    881 10902  2355  6344 5364.0 6018.117  3626.1481
-#> 43: 2020-04-04 gp_rt    963  8466  2021  4932 4198.5 4744.331  2913.0317
-#> 44: 2020-04-05 gp_rt    853  9021  2193  5106 4314.0 4995.766  3008.5090
-#> 45: 2020-04-06 gp_rt    617  9093  1857  5242 4296.0 4924.858  3119.8174
-#> 46: 2020-04-07 gp_rt    511  7265  1847  4312 3525.5 4102.753  2592.8138
-#> 47: 2020-04-08 gp_rt    498  6118  1257  3397 2892.5 3340.726  2164.0422
-#> 48: 2020-04-09 gp_rt    524  7257  1761  4320 3478.5 3989.107  2569.6792
-#> 49: 2020-04-10 gp_rt    515  8716  1879  4772 3995.0 4709.114  3203.5281
-#> 50: 2020-04-11 gp_rt    514  7192  1118  3446 3130.5 3684.906  2454.1989
-#> 51: 2020-04-12 gp_rt    406  7921   999  3589 3221.0 3994.946  2896.3762
-#> 52: 2020-04-13 gp_rt    326  7236   980  3419 3099.0 3783.081  2755.6814
-#> 53: 2020-04-14 gp_rt    271  6530   812  2861 2619.0 3408.096  3077.8866
-#> 54: 2020-04-15 gp_rt    250  5754   590  2305 2080.5 3085.236  4127.1344
-#> 55: 2020-04-16 gp_rt    194  7529   787  2813 2438.0 3891.452  5831.9764
-#> 56: 2020-04-17 gp_rt    175  9305   711  3160 2891.5 5133.835  9891.1058
-#> 57: 2020-04-18 gp_rt    185  7511   539  2367 2188.0 5545.432 28275.8934
-#>           date  type bottom   top lower upper median     mean         sd
+#>           date  type bottom   top lower upper median     mean          sd
+#>  1: 2020-02-22 gp_rt     31   175    48   108   96.5  104.307    50.51481
+#>  2: 2020-02-23 gp_rt     43   243    83   163  139.5  148.957    69.30538
+#>  3: 2020-02-24 gp_rt     46   269    96   187  159.0  168.320    74.53631
+#>  4: 2020-02-25 gp_rt     56   303    91   186  161.0  175.871    84.52076
+#>  5: 2020-02-26 gp_rt     60   297    85   175  156.5  169.978    76.10236
+#>  6: 2020-02-27 gp_rt     58   397   123   247  215.0  237.670   119.01744
+#>  7: 2020-02-28 gp_rt     74   524   161   332  287.5  320.237   158.99453
+#>  8: 2020-02-29 gp_rt     91   504   155   313  272.0  298.097   139.30512
+#>  9: 2020-03-01 gp_rt    112   652   186   399  350.0  381.556   183.33621
+#> 10: 2020-03-02 gp_rt    102   697   235   473  398.0  426.200   210.03135
+#> 11: 2020-03-03 gp_rt    119   745   244   476  393.0  431.998   219.71267
+#> 12: 2020-03-04 gp_rt     98   708   214   447  389.0  428.876   212.76694
+#> 13: 2020-03-05 gp_rt    190  1019   302   633  567.0  615.846   294.66908
+#> 14: 2020-03-06 gp_rt    259  1528   403   885  784.5  879.237   444.90818
+#> 15: 2020-03-07 gp_rt    261  1474   404   846  765.0  846.184   425.04547
+#> 16: 2020-03-08 gp_rt    311  1963   633  1268 1070.5 1167.124   609.49882
+#> 17: 2020-03-09 gp_rt    352  2301   753  1511 1252.5 1354.985   656.34476
+#> 18: 2020-03-10 gp_rt    406  2451   796  1609 1322.5 1427.365   694.09473
+#> 19: 2020-03-11 gp_rt    300  2380   726  1502 1323.0 1463.005   759.85016
+#> 20: 2020-03-12 gp_rt    565  3445  1198  2362 1911.0 2086.378  1040.60247
+#> 21: 2020-03-13 gp_rt    924  5119  1399  2979 2636.0 2919.580  1477.38699
+#> 22: 2020-03-14 gp_rt    806  4664  1450  2936 2463.0 2705.797  1303.82767
+#> 23: 2020-03-15 gp_rt    831  5917  2178  4188 3215.5 3537.972  1715.04663
+#> 24: 2020-03-16 gp_rt    897  6518  2137  4256 3554.0 3883.479  1899.95173
+#> 25: 2020-03-17 gp_rt   1176  6454  1931  3889 3351.5 3703.498  1747.03212
+#> 26: 2020-03-18 gp_rt   1209  6201  1929  3789 3153.0 3491.560  1735.67271
+#> 27: 2020-03-19 gp_rt   1262  7499  2709  5265 4191.0 4512.308  2115.62561
+#> 28: 2020-03-20 gp_rt   1370  9582  3310  6452 5533.0 5950.403  2785.43400
+#> 29: 2020-03-21 gp_rt   1392  8500  2949  5727 4694.5 5008.814  2342.54236
+#> 30: 2020-03-22 gp_rt   1689 10023  3075  6316 5376.5 5891.644  2845.84631
+#> 31: 2020-03-23 gp_rt   1820 10445  3198  6456 5507.0 6033.768  2923.72504
+#> 32: 2020-03-24 gp_rt   1773  8987  3287  6124 5014.5 5363.948  2520.06870
+#> 33: 2020-03-25 gp_rt   1332  7680  2535  4977 4247.0 4606.321  2182.78039
+#> 34: 2020-03-26 gp_rt   1830  9924  3106  6214 5407.0 5803.149  2741.00916
+#> 35: 2020-03-27 gp_rt   2308 11236  3566  7045 6161.0 6619.664  3299.92875
+#> 36: 2020-03-28 gp_rt   1623  9285  3015  5923 5047.0 5427.988  2553.89665
+#> 37: 2020-03-29 gp_rt   1677 10351  3857  7317 5761.5 6183.392  3004.75043
+#> 38: 2020-03-30 gp_rt   1426  9718  3435  6368 5267.0 5739.116  2743.96398
+#> 39: 2020-03-31 gp_rt   1328  8490  2644  5417 4719.5 5104.631  2417.34093
+#> 40: 2020-04-01 gp_rt   1069  6956  2727  5083 4007.0 4277.459  1925.56661
+#> 41: 2020-04-02 gp_rt   1260  8153  2611  5088 4376.0 4823.408  2350.00527
+#> 42: 2020-04-03 gp_rt   1493 10095  2620  5668 5183.0 5747.842  3014.38984
+#> 43: 2020-04-04 gp_rt   1205  7391  2393  4770 4106.5 4460.568  2107.54760
+#> 44: 2020-04-05 gp_rt   1366  8411  2658  5458 4610.0 4964.977  2407.32976
+#> 45: 2020-04-06 gp_rt   1229  7727  2552  4974 4203.0 4636.208  2238.66048
+#> 46: 2020-04-07 gp_rt   1153  6839  2220  4397 3573.5 3992.999  2067.80000
+#> 47: 2020-04-08 gp_rt   1208  5882  1661  3414 3025.0 3343.165  1639.06683
+#> 48: 2020-04-09 gp_rt    789  6664  2286  4486 3515.5 3924.625  2061.85895
+#> 49: 2020-04-10 gp_rt   1279  7899  2743  5200 4164.5 4597.328  2373.24618
+#> 50: 2020-04-11 gp_rt    761  5915  2123  4139 3261.5 3613.558  1814.91540
+#> 51: 2020-04-12 gp_rt    896  7087  2086  4609 3600.5 4110.504  2342.33555
+#> 52: 2020-04-13 gp_rt    825  7385  1686  3904 3265.5 3911.608  2376.82439
+#> 53: 2020-04-14 gp_rt    695  6529  1254  3183 2772.0 3386.243  2378.29173
+#> 54: 2020-04-15 gp_rt    419  5621   903  2562 2342.0 3033.583  2574.50603
+#> 55: 2020-04-16 gp_rt    364  6466   924  2942 2685.5 3657.875  4357.48423
+#> 56: 2020-04-17 gp_rt    397  8587  1191  3496 3096.0 5197.417 14697.58863
+#> 57: 2020-04-18 gp_rt    289  7005   854  2691 2355.0 5417.498 35780.82391
+#>           date  type bottom   top lower upper median     mean          sd
 ```
 
 A summary table is returned for rapidly understanding the results and
@@ -351,14 +351,14 @@ for reporting purposes.
 ``` r
 estimates$summary
 #>                                  measure              estimate
-#> 1: New confirmed cases by infection date      1448 (8 -- 8726)
+#> 1: New confirmed cases by infection date     2180 (85 -- 7609)
 #> 2:        Expected change in daily cases                Unsure
-#> 3:            Effective reproduction no.      0.7 (0.1 -- 1.5)
-#> 4:                        Rate of growth -0.08 (-0.28 -- 0.15)
-#> 5:          Doubling/halving time (days)    -8.8 (4.6 -- -2.5)
+#> 3:            Effective reproduction no.    0.8 (0.31 -- 1.49)
+#> 4:                        Rate of growth -0.06 (-0.22 -- 0.12)
+#> 5:          Doubling/halving time (days)   -12.1 (5.6 -- -3.2)
 #>     numeric_estimate
 #> 1: <data.table[1x5]>
-#> 2:              0.73
+#> 2:              0.69
 #> 3: <data.table[1x5]>
 #> 4: <data.table[1x5]>
 #> 5: <data.table[1x3]>
@@ -407,6 +407,14 @@ estimates <- EpiNow2::regional_epinow(reported_cases = reported_cases,
                                       horizon = 7, samples = 1000, warmup = 200,
                                       cores = 4, chains = 4, adapt_delta = 0.95,
                                       verbose = TRUE)
+#> INFO [2020-08-26 15:25:06] Reporting estimates using data up to: 2020-04-11
+#> INFO [2020-08-26 15:25:06] Producing estimates for: testland, realland
+#> INFO [2020-08-26 15:25:06] Initialising estimates for: testland
+#> DEBUG [2020-08-26 15:25:06] Running for 1000 samples (across 4 chains each with a warm up of 200 iterations each) and 71 time steps of which 7 are a forecast
+#> INFO [2020-08-26 15:27:15] Completed estimates for: testland
+#> INFO [2020-08-26 15:27:15] Initialising estimates for: realland
+#> DEBUG [2020-08-26 15:27:15] Running for 1000 samples (across 4 chains each with a warm up of 200 iterations each) and 71 time steps of which 7 are a forecast
+#> INFO [2020-08-26 15:29:58] Completed estimates for: realland
 ```
 
 Results from each region are stored in a `regional` list with across
@@ -420,14 +428,14 @@ reporting (along with raw results for further processing).
 ``` r
 estimates$summary$summarised_results$table
 #>      Region New confirmed cases by infection date
-#> 1: realland                      1475 (1 -- 8980)
-#> 2: testland                      1690 (2 -- 8781)
+#> 1: realland                    2236 (125 -- 7642)
+#> 2: testland                     2066 (37 -- 7156)
 #>    Expected change in daily cases Effective reproduction no.
-#> 1:                         Unsure           0.7 (0.1 -- 1.5)
-#> 2:                         Unsure           0.8 (0.1 -- 1.5)
+#> 1:                         Unsure         0.81 (0.23 -- 1.4)
+#> 2:                         Unsure        0.78 (0.18 -- 1.39)
 #>           Rate of growth Doubling/halving time (days)
-#> 1: -0.08 (-0.29 -- 0.15)           -8.5 (4.5 -- -2.4)
-#> 2: -0.07 (-0.32 -- 0.13)           -9.8 (5.4 -- -2.1)
+#> 1:  -0.05 (-0.2 -- 0.14)            -13.2 (5 -- -3.4)
+#> 2: -0.06 (-0.25 -- 0.12)          -11.2 (5.8 -- -2.8)
 ```
 
 A range of plots are again returned (with the single summary plot shown
