@@ -157,7 +157,7 @@ plots <- report_plots(summarised_estimates = def$summarised,
                      
 plots$summary
 
-# Run model with default settings
+# Run model with Rt fixed into the future
 fixed_rt <- estimate_infections(reported_cases, family = "negbin",
                                 generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
@@ -172,7 +172,7 @@ plots <- report_plots(summarised_estimates = fixed_rt$summarised,
                       
 plots$summary
 
-# Run the model with default setting on a later snapshot of 
+# Run the model with default settings on a later snapshot of 
 # data (use burn_in here to remove the first week of
 # estimates that may be impacted by this most).
 snapshot_cases <- EpiNow2::example_confirmed[80:130]
@@ -218,8 +218,26 @@ fixed <- estimate_infections(reported_cases, family = "negbin",
 plots <- report_plots(summarised_estimates = fixed$summarised,
                       reported = reported_cases)
                       
+                      
 plots$summary
 
+
+# Run model with no delays 
+no_delay <- estimate_infections(reported_cases, family = "negbin",
+                            generation_time = generation_time,
+                            samples = 1000, warmup = 200, 
+                            cores = ifelse(interactive(), 4, 1),
+                            chains = 4, estimate_rt = TRUE,
+                            verbose = FALSE, return_fit = TRUE)
+
+
+# Plot output
+plots <- report_plots(summarised_estimates = no_delay$summarised,
+                      reported = reported_cases)
+                      
+                      
+plots$summary         
+              
 # Run model with breakpoints                                                                      
 bkp <- estimate_infections(reported_cases, family = "negbin",
                            generation_time = generation_time,
