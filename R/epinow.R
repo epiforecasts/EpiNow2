@@ -343,7 +343,7 @@ regional_epinow <- function(reported_cases,
                             return_estimates = TRUE,
                             max_plot = 10,
                             return_timings = TRUE,
-                            max_execution_time = 1800, #todo: revert to Inf and timings to false
+                            max_execution_time = 600, #todo: revert to Inf and timings to false
                             ...) {
 
   ## Set input to data.table
@@ -448,15 +448,15 @@ regional_epinow <- function(reported_cases,
 
   regional_out <- purrr::map(regional_out, ~.$result)
   names(regional_out) <- regions
-
+  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), function(row) is.finite(row$timings))
   # only attempt the summary if there are at least some results
-  if (summary && length(purrr::keep(regional_out, function(row) is.null(row$error) && is.finite(row$result$timings))) > 0) {
+  if (summary && length(sucessful_regional_out) > 0) {
     if (missing(summary_dir)) {
       summary_dir <- NULL
     }
     safe_summary <- purrr::safely(regional_summary)
 
-    summary_out <- safe_summary(regional_output = regional_out,
+    summary_out <- safe_summary(regional_output = sucessful_regional_out,
                                 summary_dir = summary_dir,
                                 reported_cases = reported_cases,
                                 region_scale = region_scale,
