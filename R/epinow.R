@@ -397,13 +397,13 @@ regional_epinow <- function(reported_cases,
     timing <- system.time(
       out <- tryCatch(
         R.utils::withTimeout(
-          EpiNow2::epinow(
+          withCallingHandlers(EpiNow2::epinow(
             reported_cases = regional_cases,
             target_folder = target_folder,
             target_date = target_date,
             return_estimates = TRUE,
             cores = cores,
-            ...),
+            ...), warning = function(w) futile.logger::flog.warn("$s: $s",region, w)),
           timeout = max_execution_time
         ),
         TimeoutException = function(ex) {
