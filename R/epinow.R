@@ -403,7 +403,7 @@ regional_epinow <- function(reported_cases,
             target_date = target_date,
             return_estimates = TRUE,
             cores = cores,
-            ...), warning = function(w) futile.logger::flog.warn("$s: $s",region, w)),
+            ...), warning = function(w) futile.logger::flog.warn("$s: $s", region, w)),
           timeout = max_execution_time
         ),
         TimeoutException = function(ex) {
@@ -435,13 +435,13 @@ regional_epinow <- function(reported_cases,
   futile.logger::flog.trace("processing errors")
   # names on regional_out
   names(regional_out) <- regions # ["foo" => a, "bar" => b$error, "baz" => c, "parrot" => d$error]
-  problems <- purrr::keep(regional_out, function(row) !is.null(row$error) || row$result$timings == Inf)
+  problems <- purrr::keep(regional_out, function(row) !is.null(row$error) || is.infinite(row$result$timings))
 
   for (location in names(problems)) {
     # output timeout / error
     if (is.null(problems[[location]]$error)) {
       futile.logger::flog.warn("Location %s killed due to timeout", location)
-    }else{
+    }else {
       futile.logger::flog.info("Runtime error in %s : %s - %s", location, problems[[location]]$error$message, problems[[location]]$error$call)
     }
   }
@@ -450,7 +450,7 @@ regional_epinow <- function(reported_cases,
   names(regional_out) <- regions
 
   # only attempt the summary if there are at least some results
-  if (summary && length(purrr::discard(regional_out, function(row) row$results$timings == Inf)) > 0) {
+  if (summary && length(purrr::keep(regional_out, function(row) is.null(row$error) && is.finite(row$result$timings))) > 0) {
     if (missing(summary_dir)) {
       summary_dir <- NULL
     }
