@@ -294,7 +294,7 @@ epinow <- function(reported_cases, family = "negbin",
 #' @importFrom future.apply future_lapply
 #' @importFrom data.table as.data.table setDT copy setorder
 #' @importFrom purrr safely map compact
-#' @importFrom futile.logger flog.info
+#' @importFrom futile.logger flog.info flog.warn flog.trace
 #' @importFrom R.utils withTimeout
 #' @examples
 #'  \donttest{
@@ -440,7 +440,7 @@ regional_epinow <- function(reported_cases,
   for (location in names(problems)) {
     # output timeout / error
     if (is.null(problems[[location]]$error)) {
-      futile.logger::flog.warning("Location $s killed due to timeout", location)
+      futile.logger::flog.warn("Location $s killed due to timeout", location)
     }else{
       futile.logger::flog.info("Runtime error in $s : $s - $s", location, problems[[location]]$error$message, problems[[location]]$error$call)
     }
