@@ -343,7 +343,7 @@ regional_epinow <- function(reported_cases,
                             return_estimates = TRUE,
                             max_plot = 10,
                             return_timings = TRUE,
-                            max_execution_time = 900, #todo: revert to Inf and timings to false
+                            max_execution_time = 1200, #todo: revert to Inf and timings to false
                             ...) {
 
   ## Set input to data.table
@@ -449,8 +449,8 @@ regional_epinow <- function(reported_cases,
   regional_out <- purrr::map(regional_out, ~.$result)
   names(regional_out) <- regions
 
-
-  if (summary) {
+  # only attempt the summary if there are at least some results
+  if (summary && length(purrr::discard(regional_out, function(row) row$results$timings == Inf)) > 0) {
     if (missing(summary_dir)) {
       summary_dir <- NULL
     }
