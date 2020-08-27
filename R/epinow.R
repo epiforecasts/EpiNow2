@@ -412,13 +412,11 @@ regional_epinow <- function(reported_cases,
         }
       )
     )
-    saveRDS(out, "subregion_out_a.rds")
     futile.logger::flog.trace("epinow returned for region %s", target_region)
     if (!exists("timings", out)) { # only exists if it failed and is Inf
       out$timings = timing['elapsed']
     }
     futile.logger::flog.info("Completed estimates for: %s", target_region)
-    saveRDS(out, "subregion_out.rds")
     return(out)
   }
 
@@ -434,7 +432,6 @@ regional_epinow <- function(reported_cases,
                                               ...,
                                               future.scheduling = Inf)
 
-  saveRDS(regional_out, "region_out.rds")
   futile.logger::flog.trace("processing errors")
   # names on regional_out
   names(regional_out) <- regions # ["foo" => a, "bar" => b$error, "baz" => c, "parrot" => d$error]
