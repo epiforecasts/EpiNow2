@@ -447,7 +447,6 @@ regional_epinow <- function(reported_cases,
   }
 
   regional_out <- purrr::map(regional_out, ~.$result)
-  names(regional_out) <- regions
   sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), function(row) is.finite(row$timings))
   # only attempt the summary if there are at least some results
   if (summary && length(sucessful_regional_out) > 0) {
