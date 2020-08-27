@@ -343,7 +343,7 @@ regional_epinow <- function(reported_cases,
                             return_estimates = TRUE,
                             max_plot = 10,
                             return_timings = TRUE,
-                            max_execution_time = 1200, #todo: revert to Inf and timings to false
+                            max_execution_time = 1800, #todo: revert to Inf and timings to false
                             ...) {
 
   ## Set input to data.table
