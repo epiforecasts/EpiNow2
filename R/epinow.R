@@ -408,17 +408,13 @@ regional_epinow <- function(reported_cases,
         ),
         TimeoutException = function(ex) {
           futile.logger::flog.warn("region %s timed out", target_region)
-          return(list())
+          return(list("timings" = Inf))
         }
       )
     )
     saveRDS(out, "subregion_out_a.rds")
     futile.logger::flog.trace("epinow returned for region %s", target_region)
-    if (return_timings) {
-      if (is.null(out)) {
-        futile.logger::flog.trace("region has not returned an out file (completed but not set to output) so create one")
-        out <- list()
-      }
+    if (!exists("timings", out)) { # only exists if it failed and is Inf
       out$timings = timing['elapsed']
     }
     futile.logger::flog.info("Completed estimates for: %s", target_region)
@@ -440,13 +436,17 @@ regional_epinow <- function(reported_cases,
 
   saveRDS(regional_out, "region_out.rds")
   futile.logger::flog.trace("processing errors")
-  regional_errors <- purrr::map(regional_out, ~.$error)
-  names(regional_errors) <- regions
-  regional_errors <- purrr::compact(regional_errors)
+  # names on regional_out
+  names(regional_out) <- regions # ["foo" => a, "bar" => b$error, "baz" => c, "parrot" => d$error]
+  problems <- purrr::keep(regional_out, function(row) !is.null(row$error) || row$result$timings == Inf)
 
-  if (length(regional_errors) != 0) {
-    futile.logger::flog.info("Runtime errors caught: ")
-    futile.logger::flog.info(regional_errors)
+  for (location in names(problems)) {
+    # output timeout / error
+    if (is.null(problems[[location]]$error)) {
+      futile.logger::flog.warning("Location $s killed due to timeout", location)
+    }else{
+      futile.logger::flog.info("Runtime error in $s : $s - $s", location, problems[[location]]$error$message, problems[[location]]$error$call)
+    }
   }
 
   regional_out <- purrr::map(regional_out, ~.$result)
