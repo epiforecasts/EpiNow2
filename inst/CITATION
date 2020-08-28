@@ -1,0 +1,25 @@
+citHeader("To cite EpiNow2 in publications use:")
+
+citEntry(entry = "Article",
+  title        = "EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters",
+  author       = personList(as.person("Sam Abbott"), as.person("Joel Hellewell"), as.person("Joe Hickson"),
+                            as.person("James Munday"), as.person("Katelyn Gostic"), as.person("Peter Ellis"), 
+                            as.person("Katharine Sherratt"), as.person("Hamish Gibbs"), as.person("Robin Thompson"),
+                            as.person("Sophie Meakin"), as.person("Nikos Bosse"), as.person("Paul Mee"),
+                            as.person("Sebastian Funk")),
+  journal      = "-",
+  year         = "2020",
+  volume       = "-",
+  number       = "-",
+  pages        = "-",
+  doi          = "10.5281/zenodo.3957489",
+
+  textVersion  =
+  paste("Sam Abbott, Joel Hellewell, Joe Hickson, James Munday, Katelyn Gostic, Peter Ellis, Katharine Sherratt, 
+         Hamish Gibbs, Robin Thompson, Sophie Meakin, Nikos Bosse, Paul Mee, and Sebastian Funk (2020.",
+        "EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters, ",
+        "DOI: 10.5281/zenodo.3957489")
+)
+
+
+ 
