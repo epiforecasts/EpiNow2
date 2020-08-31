@@ -388,6 +388,7 @@ regional_summary <- function(regional_output,
     out$summarised_results <- summarised_results
     out$summary_plot <- summary_plot
     out$summarised_measures <- sum_key_measures
+    out$reported_cases <- reported_cases
     out$high_plots <- high_plots
     
     if (all_regions) {
