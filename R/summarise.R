@@ -222,7 +222,7 @@ regional_summary <- function(regional_output,
     regional_output <- purrr::compact(regional_output)
   }
   
-
+  futile.logger::flog.trace("Getting regional results")
   ## Get estimates
   results <- get_regional_results(regional_output,
                                   results_dir = results_dir,
@@ -245,7 +245,8 @@ regional_summary <- function(regional_output,
   }else{
     regional_summaries <- NULL
   }
-  
+
+  futile.logger::flog.trace("Summarising results")
   ## Summarise results as a table
   summarised_results <- summarise_results(regions, 
                                           summaries = regional_summaries,
