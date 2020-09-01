@@ -437,9 +437,7 @@ regional_epinow <- function(reported_cases,
   futile.logger::flog.trace("processing errors")
   problems <- purrr::keep(regional_out, ~ !is.null(.$error) || is.infinite(.$result$timings))
 
-  if (length(problems) != 0) {
-    futile.logger::flog.trace("Runtime errors caught: ")
-  }
+  futile.logger::flog.trace("%s runtime errors caught", length(problems))
   for (location in names(problems)) {
     # output timeout / error
     if (is.null(problems[[location]]$error)) {
@@ -457,6 +455,8 @@ regional_epinow <- function(reported_cases,
       summary_dir <- NULL
     }
     safe_summary <- purrr::safely(regional_summary)
+
+    futile.logger::flog.trace("Calling regional_summary")
 
     summary_out <- safe_summary(regional_output = sucessful_regional_out,
                                 summary_dir = summary_dir,
