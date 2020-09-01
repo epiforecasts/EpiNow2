@@ -409,7 +409,7 @@ regional_epinow <- function(reported_cases,
             target_date = target_date,
             return_estimates = TRUE,
             cores = cores,
-            ...), warning = function(w) futile.logger::flog.warn("$s: $s", region, w)),
+            ...), warning = function(w) futile.logger::flog.warn("$s: $s - $s", region, w$message, toString(w$call))),
           timeout = max_execution_time
         ),
         TimeoutException = function(ex) {
@@ -473,7 +473,7 @@ regional_epinow <- function(reported_cases,
 
     if (!is.null(summary_out[[2]])) {
       futile.logger::flog.info("Errors caught whilst generating summary statistics: ")
-      futile.logger::flog.info(summary_out[[2]])
+      futile.logger::flog.info(toString(summary_out[[2]]))
     }
 
     summary_out <- summary_out[[1]]
