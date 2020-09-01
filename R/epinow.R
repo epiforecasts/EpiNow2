@@ -399,7 +399,7 @@ regional_epinow <- function(reported_cases,
     futile.logger::flog.trace("filtering data for target region %s", target_region)
     regional_cases <- reported_cases[region %in% target_region][, region := NULL]
 
-    futile.logger::flog.trace("calling epinow2::epinow to process data")
+    futile.logger::flog.trace("calling epinow2::epinow to process data for %s", target_region)
     timing <- system.time(
       out <- tryCatch(
         R.utils::withTimeout(
@@ -409,7 +409,8 @@ regional_epinow <- function(reported_cases,
             target_date = target_date,
             return_estimates = TRUE,
             cores = cores,
-            ...), warning = function(w) futile.logger::flog.warn("$s: $s - $s", region, w$message, toString(w$call))),
+            ...), warning = function(w) futile.logger::flog.warn("$s: $s - $s", target_region, w$message, toString(w$call))
+          ),
           timeout = max_execution_time
         ),
         TimeoutException = function(ex) {
