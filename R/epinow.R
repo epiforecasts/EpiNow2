@@ -409,7 +409,7 @@ regional_epinow <- function(reported_cases,
             target_date = target_date,
             return_estimates = TRUE,
             cores = cores,
-            ...), warning = function(w) futile.logger::flog.warn("$s: $s - $s", target_region, w$message, toString(w$call))
+            ...), warning = function(w) futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call))
           ),
           timeout = max_execution_time
         ),
