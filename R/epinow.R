@@ -299,7 +299,7 @@ epinow <- function(reported_cases, family = "negbin",
 #' @export
 #' @importFrom future.apply future_lapply
 #' @importFrom data.table as.data.table setDT copy setorder
-#' @importFrom purrr safely map compact
+#' @importFrom purrr safely map compact keep
 #' @importFrom futile.logger flog.info flog.warn flog.trace
 #' @importFrom R.utils withTimeout
 #' @importFrom rlang cnd_muffle
@@ -387,7 +387,7 @@ regional_epinow <- function(reported_cases,
   run_region <- function(target_region,
                          reported_cases,
                          cores = cores,
-                         return_timings = return_timings,
+                         return_timing = return_timing,
                          max_execution_time = max_execution_time,
                          ...) {
     futile.logger::flog.info("Initialising estimates for: %s", target_region)
@@ -421,13 +421,13 @@ regional_epinow <- function(reported_cases,
         ),
         TimeoutException = function(ex) {
           futile.logger::flog.warn("region %s timed out", target_region)
-          return(list("timings" = Inf))
+          return(list("timing" = Inf))
         }
       )
     )
     futile.logger::flog.trace("epinow returned for region %s", target_region)
-    if (!exists("timings", out)) { # only exists if it failed and is Inf
-      out$timings = timing['elapsed']
+    if (!exists("timing", out)) { # only exists if it failed and is Inf
+      out$timing = timing['elapsed']
     }
     futile.logger::flog.info("Completed estimates for: %s", target_region)
     return(out)
@@ -440,7 +440,7 @@ regional_epinow <- function(reported_cases,
   regional_out <- future.apply::future_lapply(regions, safe_run_region,
                                               reported_cases = reported_cases,
                                               cores = cores,
-                                              return_timings = return_timings,
+                                              return_timing = return_timing,
                                               max_execution_time = max_execution_time,
                                               ...,
                                               future.scheduling = Inf)
@@ -448,7 +448,7 @@ regional_epinow <- function(reported_cases,
   # names on regional_out
   names(regional_out) <- regions # ["foo" => a, "bar" => b$error, "baz" => c, "parrot" => d$error]
   futile.logger::flog.trace("processing errors")
-  problems <- purrr::keep(regional_out, ~!is.null(.$error) || is.infinite(.$result$timings))
+  problems <- purrr::keep(regional_out, ~!is.null(.$error) || is.infinite(.$result$timing))
 
   futile.logger::flog.trace("%s runtime errors caught", length(problems))
   for (location in names(problems)) {
@@ -461,7 +461,7 @@ regional_epinow <- function(reported_cases,
   }
 
   regional_out <- purrr::map(regional_out, ~.$result)
-  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), function(row) is.finite(row$timings))
+  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), function(row) is.finite(row$timing))
   # only attempt the summary if there are at least some results
   if (summary && length(sucessful_regional_out) > 0) {
     if (missing(summary_dir)) {
