@@ -449,16 +449,12 @@ regional_epinow <- function(reported_cases,
   # names on regional_out
   names(regional_out) <- regions # ["foo" => a, "bar" => b$error, "baz" => c, "parrot" => d$error]
   futile.logger::flog.trace("processing errors")
-  problems <- purrr::keep(regional_out, ~!is.null(.$error) || is.infinite(.$result$timing))
+  problems <- purrr::keep(regional_out, ~!is.null(.$error) )
 
   futile.logger::flog.trace("%s runtime errors caught", length(problems))
   for (location in names(problems)) {
     # output timeout / error
-    if (is.null(problems[[location]]$error)) {
-      futile.logger::flog.warn("Location %s killed due to timeout", location)
-    }else {
       futile.logger::flog.info("Runtime error in %s : %s - %s", location, problems[[location]]$error$message, toString(problems[[location]]$error$call))
-    }
   }
 
   regional_out <- purrr::map(regional_out, ~.$result)
