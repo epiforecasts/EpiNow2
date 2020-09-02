@@ -16,7 +16,7 @@ regional_epinow(
   all_regions_summary = TRUE,
   return_estimates = TRUE,
   max_plot = 10,
-  return_timings = FALSE,
+  return_timing = FALSE,
   max_execution_time = Inf,
   ...
 )
@@ -48,7 +48,7 @@ rather than just regions of interest.}
 \item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
 on the maximum number of reported cases.}
 
-\item{return_timings}{Logical, defaults to FALSE. Should timing values be returned for each region.}
+\item{return_timing}{Logical, defaults to FALSE. Should timing values be returned for each region.}
 
 \item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each region after x seconds.}
 
@@ -96,6 +96,6 @@ out <- regional_epinow(reported_cases = cases,
                        adapt_delta = 0.9,
                        samples = 2000, warmup = 200, verbose = TRUE,
                        cores = ifelse(interactive(), 4, 1), chains = 4,
-                       max_execution_time = Inf, return_timings=False)
+                       max_execution_time = Inf, return_timing=False)
 }
 }
