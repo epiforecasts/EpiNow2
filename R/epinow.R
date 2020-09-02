@@ -351,7 +351,7 @@ regional_epinow <- function(reported_cases,
                             return_estimates = TRUE,
                             max_plot = 10,
                             return_timing = FALSE,
-                            max_execution_time = Inf,
+                            max_execution_time = 1800,
                             ...) {
 
   ## Set input to data.table
@@ -448,7 +448,6 @@ regional_epinow <- function(reported_cases,
 
   # names on regional_out
   names(regional_out) <- regions # ["foo" => a, "bar" => b$error, "baz" => c, "parrot" => d$error]
-  futile.logger::flog.trace("processing errors")
   problems <- purrr::keep(regional_out, ~!is.null(.$error) )
 
   futile.logger::flog.trace("%s runtime errors caught", length(problems))
