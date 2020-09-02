@@ -414,7 +414,7 @@ regional_epinow <- function(reported_cases,
             ...),
                               warning = function(w) {
                                 futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call))
-                                cnd_muffle(w)
+                                rlang::cnd_muffle(w)
                               }
           ),
           timeout = max_execution_time
