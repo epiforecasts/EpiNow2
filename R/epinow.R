@@ -290,7 +290,7 @@ epinow <- function(reported_cases, family = "negbin",
 #' @param summary Logical, should summary measures be calculated.
 #' @param all_regions_summary Logical, defaults to `TRUE`. Should summary plots for all regions be returned
 #' rather than just regions of interest.
-#' @param return_timings Logical, defaults to FALSE. Should timing values be returned for each region.
+#' @param return_timing Logical, defaults to FALSE. Should timing values be returned for each region.
 #' @param max_execution_time Numeric, defaults to Inf. If set will kill off processing of each region after x seconds.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
@@ -339,7 +339,7 @@ epinow <- function(reported_cases, family = "negbin",
 #'                        adapt_delta = 0.9,
 #'                        samples = 2000, warmup = 200, verbose = TRUE,
 #'                        cores = ifelse(interactive(), 4, 1), chains = 4,
-#'                        max_execution_time = Inf, return_timings=False)
+#'                        max_execution_time = Inf, return_timing=False)
 #'}
 regional_epinow <- function(reported_cases,
                             target_folder, target_date,
@@ -350,7 +350,7 @@ regional_epinow <- function(reported_cases,
                             all_regions_summary = TRUE,
                             return_estimates = TRUE,
                             max_plot = 10,
-                            return_timings = FALSE,
+                            return_timing = FALSE,
                             max_execution_time = 1800, #TODO revert to Inf
                             ...) {
 
