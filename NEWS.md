@@ -1,3 +1,7 @@
+# EpiNow2 1.2.0
+* Added timeout and timing option to `regional_epinow`
+* Improved logging of warnings in `regional_epinow`
+
 # EpiNow2 1.1.0
 
 * Implemented reporting templates
