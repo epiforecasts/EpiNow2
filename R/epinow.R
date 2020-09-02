@@ -421,15 +421,16 @@ regional_epinow <- function(reported_cases,
         ),
         TimeoutException = function(ex) {
           futile.logger::flog.warn("region %s timed out", target_region)
-          return(list("timing" = Inf))
+          return(ifelse(return_timing, list("timing" = Inf), list()))
         }
       )
     )
-    futile.logger::flog.trace("epinow returned for region %s", target_region)
-    if (!exists("timing", out)) { # only exists if it failed and is Inf
+    if (return_timing && !exists("timing", out)) { # only exists if it failed and is Inf
       out$timing = timing['elapsed']
     }
-    futile.logger::flog.info("Completed estimates for: %s", target_region)
+    if(exists("summary", out)){ # if it failed a warning would have been output above
+      futile.logger::flog.info("Completed estimates for: %s", target_region)
+    }
     return(out)
   }
 
