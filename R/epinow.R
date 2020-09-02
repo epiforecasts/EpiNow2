@@ -302,6 +302,7 @@ epinow <- function(reported_cases, family = "negbin",
 #' @importFrom purrr safely map compact
 #' @importFrom futile.logger flog.info flog.warn flog.trace
 #' @importFrom R.utils withTimeout
+#' @importFrom rlang cnd_muffle
 #' @examples
 #'  \donttest{
 #' ## Construct example distributions
@@ -409,7 +410,11 @@ regional_epinow <- function(reported_cases,
             target_date = target_date,
             return_estimates = TRUE,
             cores = cores,
-            ...), warning = function(w) futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call))
+            ...),
+                              warning = function(w) {
+                                futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call))
+                                cnd_muffle(w)
+                              }
           ),
           timeout = max_execution_time
         ),
