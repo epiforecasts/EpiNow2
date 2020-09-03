@@ -67,218 +67,217 @@
 #'
 epinow <- function(reported_cases, family = "negbin",
                    generation_time, delays,
-                   gp = list(basis_prop = 0.3, boundary_scale = 2, 
+                   gp = list(basis_prop = 0.3, boundary_scale = 2,
                              lengthscale_mean = 0, lengthscale_sd = 2),
                    rt_prior = list(mean = 1, sd = 1), model,
                    prior_smoothing_window = 7, cores = 1, chains = 4,
-                   samples = 1000, warmup = 200, adapt_delta = 0.99,  max_treedepth = 15,
+                   samples = 1000, warmup = 200, adapt_delta = 0.99, max_treedepth = 15,
                    estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE,
                    burn_in = 0, stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
-                   return_fit = FALSE, forecast_model, horizon = 7, ensemble_type = "mean", 
+                   return_fit = FALSE, forecast_model, horizon = 7, ensemble_type = "mean",
                    return_estimates = TRUE, target_folder, target_date, verbose = TRUE,
                    debug = FALSE) {
 
- if (!return_estimates & missing(target_folder)) {
-   futile.logger::flog.fatal("Either return estimates or save to a target folder")
-   stop("Either return estimates or save to a target folder")
- }
-  
+  if (!return_estimates & missing(target_folder)) {
+    futile.logger::flog.fatal("Either return estimates or save to a target folder")
+    stop("Either return estimates or save to a target folder")
+  }
 
-# Check arguments ---------------------------------------------------------
+ # Check arguments ---------------------------------------------------------
 
   if (missing(delays)) {
     delays <- list()
-  }  
+  }
   
  # Convert input to DT -----------------------------------------------------
   suppressMessages(data.table::setDTthreads(threads = 1))
   reported_cases <- data.table::setDT(reported_cases)
 
- # Set up folders ----------------------------------------------------------
+  # Set up folders ----------------------------------------------------------
 
   if (missing(target_date)) {
     target_date <- max(reported_cases$date)
   }
-  
+
   if (missing(target_folder)) {
     target_folder <- NULL
   }
-  
-  
+
+
   if (!is.null(target_folder)) {
     latest_folder <- file.path(target_folder, "latest")
     target_folder <- file.path(target_folder, target_date)
-    
+
     if (!dir.exists(target_folder)) {
       dir.create(target_folder, recursive = TRUE)
     }
   }
-# Make sure the horizon is as specified from the target date --------------
+  # Make sure the horizon is as specified from the target date --------------
 
- if (horizon != 0) {
-   horizon <- horizon + as.numeric(as.Date(target_date) - max(reported_cases$date))
- } 
+  if (horizon != 0) {
+    horizon <- horizon + as.numeric(as.Date(target_date) - max(reported_cases$date))
+  }
 
 
-# Save input data ---------------------------------------------------------
+  # Save input data ---------------------------------------------------------
 
-if (!is.null(target_folder)) {
-  latest_date <- reported_cases[confirm > 0][date == max(date)]$date
-  
-  saveRDS(latest_date, paste0(target_folder, "/latest_date.rds"))
-  saveRDS(reported_cases, paste0(target_folder, "/reported_cases.rds"))
-}  
+  if (!is.null(target_folder)) {
+    latest_date <- reported_cases[confirm > 0][date == max(date)]$date
 
-# Estimate infections and Reproduction no ---------------------------------
+    saveRDS(latest_date, paste0(target_folder, "/latest_date.rds"))
+    saveRDS(reported_cases, paste0(target_folder, "/reported_cases.rds"))
+  }
+
+  # Estimate infections and Reproduction no ---------------------------------
 
   if (missing(model)) {
     model <- NULL
   }
-  
-   estimates <- estimate_infections(reported_cases = reported_cases,
-                                    family = family,
-                                    generation_time = generation_time,
-                                    delays = delays,
-                                    gp =  gp,
-                                    rt_prior = rt_prior,
-                                    adapt_delta = adapt_delta,
-                                    max_treedepth = max_treedepth,
-                                    model = model,
-                                    cores = cores, chains = chains,
-                                    samples = samples,
-                                    warmup = warmup,
-                                    estimate_rt = estimate_rt,
-                                    estimate_week_eff = estimate_week_eff,
-                                    estimate_breakpoints = estimate_breakpoints,
-                                    burn_in = burn_in, stationary = stationary, fixed = fixed,
-                                    fixed_future_rt = fixed_future_rt,
-                                    horizon = horizon,
-                                    verbose = verbose, return_fit = return_fit,
-                                    debug = debug) 
- 
-# Report estimates --------------------------------------------------------
+
+  estimates <- estimate_infections(reported_cases = reported_cases,
+                                   family = family,
+                                   generation_time = generation_time,
+                                   delays = delays,
+                                   gp = gp,
+                                   rt_prior = rt_prior,
+                                   adapt_delta = adapt_delta,
+                                   max_treedepth = max_treedepth,
+                                   model = model,
+                                   cores = cores, chains = chains,
+                                   samples = samples,
+                                   warmup = warmup,
+                                   estimate_rt = estimate_rt,
+                                   estimate_week_eff = estimate_week_eff,
+                                   estimate_breakpoints = estimate_breakpoints,
+                                   burn_in = burn_in, stationary = stationary, fixed = fixed,
+                                   fixed_future_rt = fixed_future_rt,
+                                   horizon = horizon,
+                                   verbose = verbose, return_fit = return_fit,
+                                   debug = debug)
+
+  # Report estimates --------------------------------------------------------
   if (!is.null(target_folder)) {
-    saveRDS(estimates$samples,  paste0(target_folder, "/estimate_samples.rds"))
-    saveRDS(estimates$summarised,  paste0(target_folder, "/summarised_estimates.rds"))
-    
-    if (return_fit){
+    saveRDS(estimates$samples, paste0(target_folder, "/estimate_samples.rds"))
+    saveRDS(estimates$summarised, paste0(target_folder, "/summarised_estimates.rds"))
+
+    if (return_fit) {
       saveRDS(estimates$fit, paste0(target_folder, "/model_fit.rds"))
     }
- }
-# Forecast infections and reproduction number -----------------------------
-if (!missing(forecast_model)) {
-  forecast <- forecast_infections(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
-                                  rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
-                                  gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
-                                  gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
-                                  gt_max = generation_time$max,
-                                  forecast_model = forecast_model,
-                                  ensemble_type = ensemble_type,
-                                  horizon = horizon,
-                                  samples = samples)
-}
-# Report cases ------------------------------------------------------------
-if (!missing(forecast_model) & !is.null(target_folder)) {
-  saveRDS(forecast$samples,  paste0(target_folder, "/forecast_samples.rds"))
-  saveRDS(forecast$summarised,  paste0(target_folder, "/summarised_forecast.rds"))
-}
-# Report forcasts ---------------------------------------------------------
-
-if (missing(forecast_model)) {
-  estimated_reported_cases <- list()
-  estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][,
-                                                        .(date, sample, cases = value, type = "gp_rt")]
-  estimated_reported_cases$summarised <- estimates$summarised[variable == "reported_cases"][, 
-                                                              type := "gp_rt"][, variable := NULL][, strat := NULL]
-}else{
-  report_cases_with_forecast <- function(model) {
-    reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
-                                                                      .(date, sample, cases = value)],
-                                   case_forecast = forecast$samples[type == "case" & 
-                                                                    forecast_type == model][,
-                                                                    .(date, sample, cases = value)],
-                                   delays = delays,
-                                   type = "sample")
-    return(reported_cases)
   }
-  
-  reported_cases_rt <- report_cases_with_forecast(model = "rt")
-  reported_cases_cases <- report_cases_with_forecast(model = "case")
-  reported_cases_ensemble <- report_cases_with_forecast(model = "ensemble")
-  
-  estimated_reported_cases <- list()
-  
-  estimated_reported_cases$samples <- data.table::rbindlist(list(
-    reported_cases_rt$samples[,type := "rt"],
-    reported_cases_cases$samples[,type := "case"],
-    reported_cases_ensemble$samples[,type := "ensemble"],
-    estimates$samples[variable == "reported_cases"][,
-                      .(date, sample, cases = value, type = "gp_rt")]
-  ), use.names = TRUE)
-  
-  estimated_reported_cases$summarised <- data.table::rbindlist(list(
-    reported_cases_rt$summarised[,type := "rt"],
-    reported_cases_cases$summarised[,type := "case"],
-    reported_cases_ensemble$summarised[,type := "ensemble"],
-    estimates$summarised[variable == "reported_cases"][, type := "gp_rt"][,
-                         variable := NULL][, strat := NULL]
-  ), use.names = TRUE)
-}
-  
-if (!is.null(target_folder)){
-  saveRDS(estimated_reported_cases$samples, paste0(target_folder, "/estimated_reported_cases_samples.rds"))
-  saveRDS(estimated_reported_cases$summarised, paste0(target_folder, "/summarised_estimated_reported_cases.rds"))
-} 
-   
-# # Report estimates --------------------------------------------------------
+  # Forecast infections and reproduction number -----------------------------
+  if (!missing(forecast_model)) {
+    forecast <- forecast_infections(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
+                                    rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
+                                    gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
+                                    gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
+                                    gt_max = generation_time$max,
+                                    forecast_model = forecast_model,
+                                    ensemble_type = ensemble_type,
+                                    horizon = horizon,
+                                    samples = samples)
+  }
+  # Report cases ------------------------------------------------------------
+  if (!missing(forecast_model) & !is.null(target_folder)) {
+    saveRDS(forecast$samples, paste0(target_folder, "/forecast_samples.rds"))
+    saveRDS(forecast$summarised, paste0(target_folder, "/summarised_forecast.rds"))
+  }
+  # Report forcasts ---------------------------------------------------------
 
-   summary <- report_summary(
-     summarised_estimates = estimates$summarised[!is.na(date)][type != "forecast"][date == max(date)],
-     rt_samples = estimates$samples[variable == "R"][type != "forecast"][date == max(date), .(sample, value)])
+  if (missing(forecast_model)) {
+    estimated_reported_cases <- list()
+    estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][,
+      .(date, sample, cases = value, type = "gp_rt")]
+    estimated_reported_cases$summarised <- estimates$summarised[variable == "reported_cases"][,
+      type := "gp_rt"][, variable := NULL][, strat := NULL]
+  }else {
+    report_cases_with_forecast <- function(model) {
+      reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
+        .(date, sample, cases = value)],
+                                     case_forecast = forecast$samples[type == "case" &
+                                                                        forecast_type == model][,
+                                       .(date, sample, cases = value)],
+                                     delays = delays,
+                                     type = "sample")
+      return(reported_cases)
+    }
 
-   
-   if(!is.null(target_folder)) {
-     saveRDS(summary, paste0(target_folder, "/summary.rds"))
-   }
-   
-#  # Plot --------------------------------------------------------------------
+    reported_cases_rt <- report_cases_with_forecast(model = "rt")
+    reported_cases_cases <- report_cases_with_forecast(model = "case")
+    reported_cases_ensemble <- report_cases_with_forecast(model = "ensemble")
 
-   plots <- report_plots(summarised_estimates = estimates$summarised,
-                         reported = reported_cases, target_folder = target_folder)
+    estimated_reported_cases <- list()
 
- # Copy all results to latest folder ---------------------------------------
-  if (!is.null(target_folder)) {  
+    estimated_reported_cases$samples <- data.table::rbindlist(list(
+      reported_cases_rt$samples[, type := "rt"],
+      reported_cases_cases$samples[, type := "case"],
+      reported_cases_ensemble$samples[, type := "ensemble"],
+      estimates$samples[variable == "reported_cases"][,
+        .(date, sample, cases = value, type = "gp_rt")]
+    ), use.names = TRUE)
+
+    estimated_reported_cases$summarised <- data.table::rbindlist(list(
+      reported_cases_rt$summarised[, type := "rt"],
+      reported_cases_cases$summarised[, type := "case"],
+      reported_cases_ensemble$summarised[, type := "ensemble"],
+      estimates$summarised[variable == "reported_cases"][, type := "gp_rt"][,
+        variable := NULL][, strat := NULL]
+    ), use.names = TRUE)
+  }
+
+  if (!is.null(target_folder)) {
+    saveRDS(estimated_reported_cases$samples, paste0(target_folder, "/estimated_reported_cases_samples.rds"))
+    saveRDS(estimated_reported_cases$summarised, paste0(target_folder, "/summarised_estimated_reported_cases.rds"))
+  }
+
+  # # Report estimates --------------------------------------------------------
+
+  summary <- report_summary(
+    summarised_estimates = estimates$summarised[!is.na(date)][type != "forecast"][date == max(date)],
+    rt_samples = estimates$samples[variable == "R"][type != "forecast"][date == max(date), .(sample, value)])
+
+
+  if (!is.null(target_folder)) {
+    saveRDS(summary, paste0(target_folder, "/summary.rds"))
+  }
+
+  #  # Plot --------------------------------------------------------------------
+
+  plots <- report_plots(summarised_estimates = estimates$summarised,
+                        reported = reported_cases, target_folder = target_folder)
+
+  # Copy all results to latest folder ---------------------------------------
+  if (!is.null(target_folder)) {
     ## Save all results to a latest folder as well
     suppressWarnings(
       if (dir.exists(latest_folder)) {
         unlink(latest_folder)
       })
-    
+
     suppressWarnings(
       dir.create(latest_folder)
     )
-    
+
     suppressWarnings(
       file.copy(file.path(target_folder, "."),
                 latest_folder, recursive = TRUE)
     )
   }
-   
-   if (return_estimates) {
-     out <- list()
-     out$estimates <- estimates
-     
-     if (!missing(forecast_model)) {
-       out$forecast <- forecast
-     }
-     
-     out$estimated_reported_cases <- estimated_reported_cases
-     out$summary <- summary
-     out$plots <- plots
-     return(out)
-   }else{
-     return(invisible(NULL))
-   }
+
+  if (return_estimates) {
+    out <- list()
+    out$estimates <- estimates
+
+    if (!missing(forecast_model)) {
+      out$forecast <- forecast
+    }
+
+    out$estimated_reported_cases <- estimated_reported_cases
+    out$summary <- summary
+    out$plots <- plots
+    return(out)
+  }else {
+    return(invisible(NULL))
+  }
 }
 
 
@@ -291,6 +290,8 @@ if (!is.null(target_folder)){
 #' @param summary Logical, should summary measures be calculated.
 #' @param all_regions_summary Logical, defaults to `TRUE`. Should summary plots for all regions be returned
 #' rather than just regions of interest.
+#' @param return_timings Logical, defaults to FALSE. If not returning estimates can be used to request timing data is returned.
+#' @param max_execution_time Numeric, defaults to Inf. If set will kill off processing of each region after x seconds.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
 #' @inheritParams regional_summary
@@ -298,8 +299,10 @@ if (!is.null(target_folder)){
 #' @export
 #' @importFrom future.apply future_lapply
 #' @importFrom data.table as.data.table setDT copy setorder
-#' @importFrom purrr safely map compact
-#' @importFrom futile.logger flog.info
+#' @importFrom purrr safely map compact keep
+#' @importFrom futile.logger flog.info flog.warn flog.trace
+#' @importFrom R.utils withTimeout
+#' @importFrom rlang cnd_muffle
 #' @examples
 #'  \donttest{
 #' ## Construct example distributions
@@ -335,9 +338,10 @@ if (!is.null(target_folder)){
 #'                        delays = list(incubation_period, reporting_delay),
 #'                        adapt_delta = 0.9,
 #'                        samples = 2000, warmup = 200, verbose = TRUE,
-#'                        cores = ifelse(interactive(), 4, 1), chains = 4)
+#'                        cores = ifelse(interactive(), 4, 1), chains = 4,
+#'                        max_execution_time = Inf, return_timings=False)
 #'}
-regional_epinow <- function(reported_cases, 
+regional_epinow <- function(reported_cases,
                             target_folder, target_date,
                             non_zero_points = 2, cores = 1,
                             summary = TRUE,
@@ -346,94 +350,122 @@ regional_epinow <- function(reported_cases,
                             all_regions_summary = TRUE,
                             return_estimates = TRUE,
                             max_plot = 10,
+                            return_timings = FALSE,
+                            max_execution_time = Inf,
                             ...) {
-    
+
   ## Set input to data.table
   reported_cases <- data.table::setDT(reported_cases)
-  
+
   if (missing(target_date)) {
     target_date <- as.character(max(reported_cases$date))
   }
-  
+
   if (missing(target_folder)) {
     target_folder <- NULL
   }
-  
+
   futile.logger::flog.info("Reporting estimates using data up to: %s", target_date)
-  
-  
+
+
   ## Check for regions more than required time points with cases
-  eval_regions <- data.table::copy(reported_cases)[,.(confirm = confirm > 0), by = c("region", "date")][,
-            .(confirm = sum(confirm, na.rm = TRUE)), by = "region"][confirm >= non_zero_points]$region
-  
+  eval_regions <- data.table::copy(reported_cases)[, .(confirm = confirm > 0), by = c("region", "date")][,
+    .(confirm = sum(confirm, na.rm = TRUE)), by = "region"][confirm >= non_zero_points]$region
+
   eval_regions <- unique(eval_regions)
-  
+
   ## Exclude zero regions
   reported_cases <- reported_cases[!is.na(region)][region %in% eval_regions]
-  
+
   futile.logger::flog.info("Producing estimates for: %s",
-          paste(eval_regions, collapse = ", "))
-  
+                           paste(eval_regions, collapse = ", "))
+
   ## regional pipelines
   regions <- unique(reported_cases$region)
-  
+
   ## Function to run the pipeline in a region
-  run_region <- function(target_region, 
+  run_region <- function(target_region,
                          reported_cases,
                          cores = cores,
-                         ...) { 
+                         max_execution_time = max_execution_time,
+                         ...) {
     futile.logger::flog.info("Initialising estimates for: %s", target_region)
-    
+
     data.table::setDTthreads(threads = 1)
 
     if (!is.null(target_folder)) {
       target_folder <- file.path(target_folder, target_region)
     }
-    
-    regional_cases <- reported_cases[region %in% target_region][, region := NULL]
-    
-    out <- EpiNow2::epinow(
-      reported_cases = regional_cases,
-      target_folder = target_folder,
-      target_date = target_date, 
-      return_estimates = TRUE,
-      cores = cores,
-      ...)
-    
-     futile.logger::flog.info("Completed estimates for: %s", target_region)
 
-     return(out)
+    futile.logger::flog.trace("filtering data for target region %s", target_region)
+    regional_cases <- reported_cases[region %in% target_region][, region := NULL]
+
+    futile.logger::flog.trace("calling epinow2::epinow to process data for %s", target_region)
+    timing <- system.time(
+      out <- tryCatch(
+        R.utils::withTimeout(
+          withCallingHandlers(EpiNow2::epinow(
+            reported_cases = regional_cases,
+            target_folder = target_folder,
+            target_date = target_date,
+            return_estimates = TRUE,
+            cores = cores,
+            ...),
+                              warning = function(w) {
+                                futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call))
+                                rlang::cnd_muffle(w)
+                              }
+          ),
+          timeout = max_execution_time
+        ),
+        TimeoutException = function(ex) {
+          futile.logger::flog.warn("region %s timed out", target_region)
+          return(list("timing" = Inf))
+        }
+      )
+    )
+    if (!exists("timing", out)) { # only exists if it failed and is Inf
+      out$timing = timing['elapsed']
     }
-  
+    if (exists("summary", out)) { # if it failed a warning would have been output above
+      futile.logger::flog.info("Completed estimates for: %s", target_region)
+    }
+    return(out)
+  }
+
   safe_run_region <- purrr::safely(run_region)
-  
+
   ## Run regions (make parallel using future::plan)
+  futile.logger::flog.trace("calling future apply to process each region through the run_region function")
   regional_out <- future.apply::future_lapply(regions, safe_run_region,
                                               reported_cases = reported_cases,
                                               cores = cores,
+                                              max_execution_time = max_execution_time,
                                               ...,
                                               future.scheduling = Inf)
-  
-  regional_errors <- purrr::map(regional_out, ~ .$error)
-  names(regional_errors) <- regions
-  regional_errors <- purrr::compact(regional_errors)
 
-  if (length(regional_errors) != 0) {
-     futile.logger::flog.info("Runtime errors caught: ")
-     futile.logger::flog.info(regional_errors)
-    }
+  # names on regional_out
+  names(regional_out) <- regions # ["foo" => a, "bar" => b$error, "baz" => c, "parrot" => d$error]
+  problems <- purrr::keep(regional_out, ~!is.null(.$error))
 
-  regional_out <- purrr::map(regional_out, ~ .$result)
-  names(regional_out) <- regions
-  
-  
-  if (summary) {
+  futile.logger::flog.trace("%s runtime errors caught", length(problems))
+  for (location in names(problems)) {
+    # output timeout / error
+      futile.logger::flog.info("Runtime error in %s : %s - %s", location, problems[[location]]$error$message, toString(problems[[location]]$error$call))
+  }
+
+  regional_out <- purrr::map(regional_out, ~.$result)
+  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~is.finite(.$timing))
+  # only attempt the summary if there are at least some results
+  if (summary && length(sucessful_regional_out) > 0) {
     if (missing(summary_dir)) {
       summary_dir <- NULL
     }
     safe_summary <- purrr::safely(regional_summary)
-    
-    summary_out <- safe_summary(regional_output = regional_out,
+
+    futile.logger::flog.info("Producing summary")
+
+    summary_out <- safe_summary(regional_output = sucessful_regional_out,
                                 summary_dir = summary_dir,
                                 reported_cases = reported_cases,
                                 region_scale = region_scale,
@@ -442,22 +474,25 @@ regional_epinow <- function(reported_cases,
 
     if (!is.null(summary_out[[2]])) {
       futile.logger::flog.info("Errors caught whilst generating summary statistics: ")
-      futile.logger::flog.info(summary_out[[2]])
-      }
+      futile.logger::flog.info(toString(summary_out[[2]]))
+    }
 
     summary_out <- summary_out[[1]]
   }
-  
+
   if (return_estimates) {
     out <- list()
     out$regional <- regional_out
-    
+
     if (summary) {
       out$summary <- summary_out
     }
-    
+
     return(out)
-  }else{
+  }else if (return_timings) {
+    out <- purrr::map(regional_out, ~.$timing)
+    return(out)
+  }else {
     return(invisible(NULL))
   }
 }
