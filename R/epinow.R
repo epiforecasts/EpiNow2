@@ -290,7 +290,7 @@ epinow <- function(reported_cases, family = "negbin",
 #' @param summary Logical, should summary measures be calculated.
 #' @param all_regions_summary Logical, defaults to `TRUE`. Should summary plots for all regions be returned
 #' rather than just regions of interest.
-#' @param return_timing Logical, defaults to FALSE. Should timing values be returned for each region.
+#' @param return_timings Logical, defaults to FALSE. If not returning estimates can be used to request timing data is returned.
 #' @param max_execution_time Numeric, defaults to Inf. If set will kill off processing of each region after x seconds.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
@@ -339,7 +339,7 @@ epinow <- function(reported_cases, family = "negbin",
 #'                        adapt_delta = 0.9,
 #'                        samples = 2000, warmup = 200, verbose = TRUE,
 #'                        cores = ifelse(interactive(), 4, 1), chains = 4,
-#'                        max_execution_time = Inf, return_timing=False)
+#'                        max_execution_time = Inf, return_timings=False)
 #'}
 regional_epinow <- function(reported_cases,
                             target_folder, target_date,
@@ -350,7 +350,7 @@ regional_epinow <- function(reported_cases,
                             all_regions_summary = TRUE,
                             return_estimates = TRUE,
                             max_plot = 10,
-                            return_timing = FALSE,
+                            return_timings = FALSE,
                             max_execution_time = 1800,
                             ...) {
 
@@ -387,7 +387,6 @@ regional_epinow <- function(reported_cases,
   run_region <- function(target_region,
                          reported_cases,
                          cores = cores,
-                         return_timing = return_timing,
                          max_execution_time = max_execution_time,
                          ...) {
     futile.logger::flog.info("Initialising estimates for: %s", target_region)
@@ -421,14 +420,14 @@ regional_epinow <- function(reported_cases,
         ),
         TimeoutException = function(ex) {
           futile.logger::flog.warn("region %s timed out", target_region)
-          return(ifelse(return_timing, list("timing" = Inf), list()))
+          return(list("timing" = Inf))
         }
       )
     )
-    if (return_timing && !exists("timing", out)) { # only exists if it failed and is Inf
+    if (!exists("timing", out)) { # only exists if it failed and is Inf
       out$timing = timing['elapsed']
     }
-    if(exists("summary", out)){ # if it failed a warning would have been output above
+    if (exists("summary", out)) { # if it failed a warning would have been output above
       futile.logger::flog.info("Completed estimates for: %s", target_region)
     }
     return(out)
@@ -441,14 +440,13 @@ regional_epinow <- function(reported_cases,
   regional_out <- future.apply::future_lapply(regions, safe_run_region,
                                               reported_cases = reported_cases,
                                               cores = cores,
-                                              return_timing = return_timing,
                                               max_execution_time = max_execution_time,
                                               ...,
                                               future.scheduling = Inf)
 
   # names on regional_out
   names(regional_out) <- regions # ["foo" => a, "bar" => b$error, "baz" => c, "parrot" => d$error]
-  problems <- purrr::keep(regional_out, ~!is.null(.$error) )
+  problems <- purrr::keep(regional_out, ~!is.null(.$error))
 
   futile.logger::flog.trace("%s runtime errors caught", length(problems))
   for (location in names(problems)) {
@@ -457,7 +455,7 @@ regional_epinow <- function(reported_cases,
   }
 
   regional_out <- purrr::map(regional_out, ~.$result)
-  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), function(row) is.finite(row$timing))
+  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~is.finite(.$timing))
   # only attempt the summary if there are at least some results
   if (summary && length(sucessful_regional_out) > 0) {
     if (missing(summary_dir)) {
@@ -490,6 +488,9 @@ regional_epinow <- function(reported_cases,
       out$summary <- summary_out
     }
 
+    return(out)
+  }else if (return_timings) {
+    out <- purrr::map(regional_out, ~.$timing)
     return(out)
   }else {
     return(invisible(NULL))
