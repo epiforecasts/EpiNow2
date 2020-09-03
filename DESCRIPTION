@@ -1,7 +1,7 @@
 Package: EpiNow2
 Type: Package
 Title: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: c(
     person(given = "Sam Abbott",
            role = c("aut", "cre"),
@@ -61,7 +61,9 @@ Imports:
     methods,
     patchwork,
     purrr,
+    R.utils (>= 2.0.0),
     Rcpp (>= 0.12.0),
+    rlang (>= 0.4.7),
     rstan (>= 2.18.1),
     rstantools (>= 2.0.0),
     scales,
