@@ -351,7 +351,7 @@ regional_epinow <- function(reported_cases,
                             return_estimates = TRUE,
                             max_plot = 10,
                             return_timings = FALSE,
-                            max_execution_time = 1800,
+                            max_execution_time = Inf,
                             ...) {
 
   ## Set input to data.table
@@ -463,7 +463,7 @@ regional_epinow <- function(reported_cases,
     }
     safe_summary <- purrr::safely(regional_summary)
 
-    futile.logger::flog.trace("Calling regional_summary")
+    futile.logger::flog.info("Producing summary")
 
     summary_out <- safe_summary(regional_output = sucessful_regional_out,
                                 summary_dir = summary_dir,
