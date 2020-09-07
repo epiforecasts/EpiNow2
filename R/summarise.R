@@ -50,7 +50,7 @@ summarise_results <- function(regions,
       get_raw_result(file = file, 
                      region = region,
                      date = target_date,
-                     result_dir = = results_dir)
+                     result_dir = results_dir)
       }
     
     load_data <- purrr::safely(get_result)
