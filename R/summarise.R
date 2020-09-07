@@ -8,7 +8,7 @@
 #' @param target_date A character string indicating the target date to extract results for. All regions must have results 
 #' for this date.
 #' @param region_scale A character string indicating the name to give the regions being summarised.
-#' @importFrom purrr partial map_chr map_dbl map_chr
+#' @importFrom purrr safely map_chr map_dbl map_chr
 #' @importFrom data.table setorderv melt merge.data.table dcast
 #' @return A list of summary data
 #' @export
@@ -46,12 +46,16 @@ summarise_results <- function(regions,
   
   if (is.null(summaries)) {
     ## Utility functions
-    load_data <- purrr::partial(get_raw_result,
-                                date = target_date,
-                                result_dir = results_dir)
+    get_result <- function(file, region) {
+      get_raw_result(file = file, 
+                     region = region,
+                     date = target_date,
+                     result_dir = = results_dir)
+      }
     
-    
-    estimates <- purrr::map(regions, ~ load_data(file = "summary.rds", region = .))
+    load_data <- purrr::safely(get_result)
+
+    estimates <- purrr::map(regions, ~ load_data(file = "summary.rds", region = .)[[1]])
     names(estimates) <- regions
   }else{
     estimates <- summaries
