@@ -71,7 +71,9 @@ summarise_results <- function(regions,
                                              lower = numeric_estimate[[1]]$lower,
                                              upper =numeric_estimate[[1]]$upper,
                                              mid_lower = numeric_estimate[[1]]$mid_lower,
-                                             mid_upper = numeric_estimate[[1]]$mid_upper
+                                             mid_upper = numeric_estimate[[1]]$mid_upper,
+                                             central_lower = numeric_estimate[[1]]$central_lower,
+                                             central_upper = numeric_estimate[[1]]$central_upper,
                                            ), by = .(region, measure)][,
                                               metric :=  
                                                 factor(measure, levels = c("New confirmed cases by infection date",

@@ -181,8 +181,9 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE,
   inner_plot <- function(df) {
     ggplot2::ggplot(df, ggplot2::aes(x = region, 
                                      col = `Expected change in daily cases`)) +
-      ggplot2::geom_linerange(aes(ymin = lower, ymax = upper), size = 4, alpha = 0.7) +
-      ggplot2::geom_linerange(aes(ymin = mid_lower, ymax = mid_upper), size = 4, alpha = 1) +
+      ggplot2::geom_linerange(aes(ymin = lower, ymax = upper), size = 4, alpha = 0.4) +
+      ggplot2::geom_linerange(aes(ymin = mid_lower, ymax = mid_upper), size = 4, alpha = 0.4) +
+      ggplot2::geom_linerange(aes(ymin = central_lower, ymax = central_upper), size = 4, alpha = 1) +
       ggplot2::geom_hline(yintercept = 1, linetype = 2) +
       ggplot2::facet_wrap(~ metric, ncol = 1, scales = "free_y") +
       cowplot::theme_cowplot() +
