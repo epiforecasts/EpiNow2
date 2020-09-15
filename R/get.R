@@ -44,14 +44,13 @@ get_raw_result <- function(file, region, date,
 #' results to extract.
 #' @param date A Character string (in the format "yyyy-mm-dd") indicating the date to extract
 #' data for. Defaults to "latest" which finds the latest results available.
+#' @param samples Logical, defaults to `TRUE`. Should samples be returned. 
 #' @param forecast Logical, defaults to `FALSE`. Should forecast results be returned.
 #' @return A list of estimates, forecasts and estimated cases by date of report.
 #' @export
 #' @importFrom purrr map safely
 #' @importFrom data.table rbindlist
 #' @examples
-#'
-#'
 #' \donttest{
 #' # Construct example distributions
 #' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
@@ -87,15 +86,18 @@ get_raw_result <- function(file, region, date,
 #'                                 samples = 2000, warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
 #'                                 summary = FALSE)
-#'                                 
-#' get_regional_results(regional_out$regional, forecast = TRUE)
+#'
+#' summary_only <- get_regional_results(regional_out$regional, forecast = FALSE, samples = FALSE)
+#' names(summary_only)
 #' 
+#' all <- get_regional_results(regional_out$regional, forecast = TRUE)
+#' names(all)
 #' }
 
 get_regional_results <- function(regional_output,
                                  results_dir, date,
+                                 samples = TRUE,
                                  forecast = FALSE) {
-   
   if (missing(regional_output)) {
     regional_output <- NULL
   }
@@ -105,45 +107,36 @@ get_regional_results <- function(regional_output,
     if (missing(date)) {
       date <- "latest"
     }
-    
     ## Find all regions
     regions <- list.files(results_dir, recursive = FALSE)
     names(regions) <- regions
     
     load_data <- purrr::safely(EpiNow2::get_raw_result)
-    
-    
+  
     # Get estimates -----------------------------------------------------------
-    
     get_estimates_file <- function(samples, summarised) {
-      samples <- purrr::map(regions, ~ load_data(samples, .,
-                                                 result_dir = results_dir,
-                                                 date = date)[[1]])
+      out <- list()
       
-      samples <- data.table::rbindlist(samples, idcol = "region")
-      
-      
+      if (samples) {
+        samples <- purrr::map(regions, ~ load_data(samples, .,
+                                                   result_dir = results_dir,
+                                                   date = date)[[1]])
+        samples <- data.table::rbindlist(samples, idcol = "region")
+        out$samples <- samples
+      }
       ## Get incidence values and combine
       summarised <- purrr::map(regions, ~ load_data(summarised, .,
                                                     result_dir = results_dir,
                                                     date = date)[[1]])
-      
       summarised <- data.table::rbindlist(summarised, idcol = "region")
-      
-      out <- list()
-      out$samples <- samples
       out$summarised <- summarised
-      
       return(out)
     }
-    
-    
     out <- list()
     out$estimates <- get_estimates_file(samples = "estimate_samples.rds",
                                         summarised = "summarised_estimates.rds")
     
     if (forecast) {
-      
       out$forecast <- get_estimates_file(samples = "forecast_samples.rds",
                                          summarised = "summarised_forecast.rds")
       
@@ -151,22 +144,17 @@ get_regional_results <- function(regional_output,
                                                          summarised = "summarised_estimated_reported_cases.rds")
     }
   }else{
-    
     get_estimates_data <- function(data) {
-      samples <- purrr::map(regional_output, ~ .[[data]]$samples)
-      
-      samples <- data.table::rbindlist(samples, idcol = "region")
-      
-      
+      out <- list()
+      if (samples) {
+        samples <- purrr::map(regional_output, ~ .[[data]]$samples)
+        samples <- data.table::rbindlist(samples, idcol = "region")
+        out$samples <- samples
+      }
       ## Get incidence values and combine
       summarised <- purrr::map(regional_output, ~ .[[data]]$summarised)
-      
       summarised <- data.table::rbindlist(summarised, idcol = "region")
-      
-      out <- list()
-      out$samples <- samples
       out$summarised <- summarised
-      
       return(out)
     }
     
@@ -175,10 +163,8 @@ get_regional_results <- function(regional_output,
     
     if (forecast) {
       out$forecast <- get_estimates_data("forecasts")
-      
       out$estimated_reported_cases <- get_estimates_data("estimated_reported_cases")
     }
   }
-
   return(out)
 }

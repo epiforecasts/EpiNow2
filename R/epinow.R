@@ -424,6 +424,16 @@ regional_epinow <- function(reported_cases,
         }
       )
     )
+    
+    if (exists("estimates", out) & !return_estimates) {
+      out$estimates$samples <- NULL
+    }
+    if (exists("forecast", out) & !return_estimates) {
+      out$forecast$samples <- NULL
+    }
+    if (exists("estimated_reported_cases", out) & !return_estimates) {
+      out$estimated_reported_cases$samples <- NULL
+    }
     if (!exists("timing", out)) { # only exists if it failed and is Inf
       out$timing = timing['elapsed']
     }
@@ -445,17 +455,19 @@ regional_epinow <- function(reported_cases,
                                               future.scheduling = Inf)
 
   # names on regional_out
-  names(regional_out) <- regions # ["foo" => a, "bar" => b$error, "baz" => c, "parrot" => d$error]
+  names(regional_out) <- regions
   problems <- purrr::keep(regional_out, ~!is.null(.$error))
 
   futile.logger::flog.trace("%s runtime errors caught", length(problems))
   for (location in names(problems)) {
     # output timeout / error
-      futile.logger::flog.info("Runtime error in %s : %s - %s", location, problems[[location]]$error$message, toString(problems[[location]]$error$call))
+      futile.logger::flog.info("Runtime error in %s : %s - %s", location,
+                               problems[[location]]$error$message, 
+                               toString(problems[[location]]$error$call))
   }
 
   regional_out <- purrr::map(regional_out, ~.$result)
-  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~is.finite(.$timing))
+  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~ is.finite(.$timing))
   # only attempt the summary if there are at least some results
   if (summary && length(sucessful_regional_out) > 0) {
     if (missing(summary_dir)) {
