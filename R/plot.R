@@ -132,11 +132,11 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
     ggplot2::geom_vline(xintercept = estimate[type == "Estimate based on partial data"][date == max(date)]$date,
                         linetype = 2) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin = bottom, ymax = top), 
-                         alpha = 0.25, size = 0.05) +
+                         alpha = 0.2, size = 0.05) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper, col = NULL), 
-                         alpha = 0.25) +
+                         alpha = 0.3) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin = central_lower, ymax = central_upper, col = NULL), 
-                         alpha = 0.25) +
+                         alpha = 0.3) +
     cowplot::theme_cowplot() +
     ggplot2::theme(legend.position = "bottom") +
     ggplot2::scale_color_brewer(palette = "Dark2") +
@@ -183,7 +183,7 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE,
                                      col = `Expected change in daily cases`)) +
       ggplot2::geom_linerange(aes(ymin = lower, ymax = upper), size = 4, alpha = 0.4) +
       ggplot2::geom_linerange(aes(ymin = mid_lower, ymax = mid_upper), size = 4, alpha = 0.4) +
-      ggplot2::geom_linerange(aes(ymin = central_lower, ymax = central_upper), size = 4, alpha = 1) +
+      ggplot2::geom_linerange(aes(ymin = central_lower, ymax = central_upper), size = 4, alpha = 0.4) +
       ggplot2::geom_hline(yintercept = 1, linetype = 2) +
       ggplot2::facet_wrap(~ metric, ncol = 1, scales = "free_y") +
       cowplot::theme_cowplot() +

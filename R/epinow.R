@@ -338,8 +338,7 @@ epinow <- function(reported_cases, family = "negbin",
 #'                        delays = list(incubation_period, reporting_delay),
 #'                        adapt_delta = 0.9,
 #'                        samples = 2000, warmup = 200, verbose = TRUE,
-#'                        cores = ifelse(interactive(), 4, 1), chains = 4,
-#'                        max_execution_time = Inf, return_timings=False)
+#'                        cores = ifelse(interactive(), 4, 1), chains = 4)
 #'}
 regional_epinow <- function(reported_cases,
                             target_folder, target_date,

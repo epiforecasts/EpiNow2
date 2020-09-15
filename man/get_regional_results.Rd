@@ -4,7 +4,13 @@
 \alias{get_regional_results}
 \title{Get Combined Regional Results}
 \usage{
-get_regional_results(regional_output, results_dir, date, forecast = FALSE)
+get_regional_results(
+  regional_output,
+  results_dir,
+  date,
+  samples = TRUE,
+  forecast = FALSE
+)
 }
 \arguments{
 \item{regional_output}{A list of output as produced by \code{regional_epinow} and stored in the
@@ -16,6 +22,8 @@ results to extract.}
 \item{date}{A Character string (in the format "yyyy-mm-dd") indicating the date to extract
 data for. Defaults to "latest" which finds the latest results available.}
 
+\item{samples}{Logical, defaults to \code{TRUE}. Should samples be returned.}
+
 \item{forecast}{Logical, defaults to \code{FALSE}. Should forecast results be returned.}
 }
 \value{
@@ -25,8 +33,6 @@ A list of estimates, forecasts and estimated cases by date of report.
 Get Combined Regional Results
 }
 \examples{
-
-
 \donttest{
 # Construct example distributions
 generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
@@ -62,8 +68,11 @@ regional_out <- regional_epinow(reported_cases = cases,
                                 samples = 2000, warmup = 200, cores = ifelse(interactive(), 4, 1),
                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
                                 summary = FALSE)
-                                
-get_regional_results(regional_out$regional, forecast = TRUE)
 
+summary_only <- get_regional_results(regional_out$regional, forecast = FALSE, samples = FALSE)
+names(summary_only)
+
+all <- get_regional_results(regional_out$regional, forecast = TRUE)
+names(all)
 }
 }

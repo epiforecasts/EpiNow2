@@ -114,8 +114,8 @@ Estimate cases by date of infection, the time-varying reproduction number, the r
 estimates <- EpiNow2::epinow(reported_cases = reported_cases, 
                              generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay),
-                             horizon = 7, samples = 1000, warmup = 200, 
-                             cores = 4, chains = 4, verbose = TRUE, 
+                             horizon = 7, samples = 2000, warmup = 500, 
+                             cores = 4, chains = 4,
                              adapt_delta = 0.95)
 
 names(estimates)
@@ -163,13 +163,11 @@ head(reported_cases)
 Run the pipeline on each region in turn. The commented code (requires the `{future}` package) can be used to run regions in parallel (when in most scenarios `cores` should be set to 1).
 
 ```{r, message = FALSE, warning = FALSE}
-## future::plan("multisession")
 estimates <- EpiNow2::regional_epinow(reported_cases = reported_cases, 
                                       generation_time = generation_time,
                                       delays = list(incubation_period, reporting_delay),
-                                      horizon = 7, samples = 1000, warmup = 200,
-                                      cores = 4, chains = 4, adapt_delta = 0.95,
-                                      verbose = TRUE)
+                                      horizon = 7, samples = 2000, warmup = 500,
+                                      cores = 4, chains = 4, adapt_delta = 0.95)
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments.

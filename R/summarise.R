@@ -69,11 +69,11 @@ summarise_results <- function(regions,
                                            .(
                                              point = numeric_estimate[[1]]$point,
                                              lower = numeric_estimate[[1]]$lower,
-                                             upper =numeric_estimate[[1]]$upper,
+                                             upper = numeric_estimate[[1]]$upper,
                                              mid_lower = numeric_estimate[[1]]$mid_lower,
                                              mid_upper = numeric_estimate[[1]]$mid_upper,
                                              central_lower = numeric_estimate[[1]]$central_lower,
-                                             central_upper = numeric_estimate[[1]]$central_upper,
+                                             central_upper = numeric_estimate[[1]]$central_upper
                                            ), by = .(region, measure)][,
                                               metric :=  
                                                 factor(measure, levels = c("New confirmed cases by infection date",
@@ -168,8 +168,8 @@ summarise_results <- function(regions,
 #' regional_out <- regional_epinow(reported_cases = cases,
 #'                                 generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 samples = 2000, warmup = 200, cores = 4,
-#'                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
+#'                                 samples = 2000, warmup = 500, cores = 4,
+#'                                 adapt_delta = 0.95, chains = 4, 
 #'                                 summary = FALSE)
 #'
 #' results_dir <- tempdir()             
@@ -190,7 +190,7 @@ regional_summary <- function(regional_output,
                              all_regions = TRUE,
                              return_summary = TRUE, 
                              max_plot = 10) {
-   
+    
   reported_cases <- data.table::setDT(reported_cases)
   
   if (missing(summary_dir) & !return_summary) {
@@ -436,6 +436,10 @@ summarise_key_measures <- function(regional_results,
       stop("Missing results directory")
     }
     
+    if (missing(summary_dir)) {
+      summary_dir <- NULL
+    }
+    
     if (missing(date)) {
       date <- "latest"
     }
@@ -449,7 +453,7 @@ summarise_key_measures <- function(regional_results,
   
 
   summarise_variable <- function(df, dof = 0) {
-    df[, .(region, date, type, median = round(median, dof),
+    df <- df[, .(region, date, type, median = round(median, dof),
            mean = round(mean, dof), sd = round(sd, dof),
            lower_20 = round(central_lower, dof), upper_20 = round(central_upper, dof),
            lower_50 = round(lower, dof), upper_50 = round(upper, dof),
@@ -461,11 +465,9 @@ summarise_key_measures <- function(regional_results,
   }
 
   save_variable <- function(df, name) {
-    if (!missing(summary_dir)) {
       if (!is.null(summary_dir)) {
         data.table::fwrite(df, paste0(summary_dir, "/", name, ".csv"))
       }
-    }
   }
   
   out <- list()
