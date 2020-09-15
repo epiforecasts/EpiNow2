@@ -145,7 +145,9 @@ report_summary <- function(summarised_estimates,
   ## Extract values of interest
   summarised_estimates <- summarised_estimates[, .(variable, point = median,
                                                    lower = bottom, upper = top,
-                                                   mid_lower = lower, mid_upper = upper)]
+                                                   mid_lower = lower, mid_upper = upper,
+                                                   central_lower = central_lower,
+                                                   central_upper = central_upper)]
   ## Extract latest R estimate
   R_latest <- summarised_estimates[variable == "R"][, variable := NULL][,
                                    purrr::map(.SD, ~ round(., 2))]
