@@ -3,8 +3,8 @@
 * Added timeout and timing option to `regional_epinow`
 * Improved logging of warnings in `regional_epinow`
 * Added inner 20% high density region.
-* Added mean and sd to all reporting summaries
-* Added a summary of the growth rate and doubling time
+* Added mean and sd to all reporting summaries.
+* Added a summary of the growth rate and doubling time.
 
 # EpiNow2 1.1.0
 
