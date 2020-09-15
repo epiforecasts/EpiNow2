@@ -113,6 +113,8 @@ report_cases <- function(case_estimates,
     top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[2]])),
     lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.5)), ~ .[[1]])),
     upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.5)), ~ .[[2]])),
+    central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[1]])), 
+    central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[2]])),
     median = as.numeric(median(cases, na.rm = TRUE)),
     mean = as.numeric(mean(cases, na.rm = TRUE)),
     sd = as.numeric(sd(cases, na.rm = TRUE))), by = .(date)]

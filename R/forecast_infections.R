@@ -213,6 +213,8 @@ if (missing(forecast_model)) {
     top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
     lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[1]])),
     upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
+    central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[1]])), 
+    central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[2]])),
     median = as.numeric(median(value, na.rm = TRUE)),
     mean = as.numeric(mean(value, na.rm = TRUE)),
     sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, type, forecast_type)]
