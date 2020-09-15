@@ -518,10 +518,12 @@ estimate_infections <- function(reported_cases, family = "negbin",
     model <- stanmodels$estimate_infections
   }
   
-  futile.logger::flog.debug(paste0("Running for ", samples," samples (across ", chains,
-                   " chains each with a warm up of ", warmup, " iterations each) and ",
-                   data$t," time steps of which ", horizon, " are a forecast"))
-  
+  if (verbose) {
+    futile.logger::flog.debug(paste0("Running for ", samples," samples (across ", chains,
+                                     " chains each with a warm up of ", warmup, " iterations each) and ",
+                                     data$t," time steps of which ", horizon, " are a forecast"))
+  }
+
   fit <- rstan::sampling(model, data = data, chains = chains,
                          init = init_fun, 
                          iter = ceiling(samples / chains) + warmup, 
