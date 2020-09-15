@@ -232,6 +232,7 @@ regional_summary <- function(regional_output,
   ## Get estimates
   results <- get_regional_results(regional_output,
                                   results_dir = results_dir,
+                                  samples = FALSE,
                                   forecast = FALSE)
   
   ## Get latest date
@@ -440,7 +441,8 @@ summarise_key_measures <- function(regional_results,
     }
     
     timeseries <- EpiNow2::get_regional_results(results_dir = results_dir,
-                                                date = date, forecast = FALSE)
+                                                date = date, forecast = FALSE, 
+                                                samples = FALSE)
   }else{
     timeseries <- regional_results 
   }
