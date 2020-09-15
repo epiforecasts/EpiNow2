@@ -84,7 +84,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   
   ## Scale plot values based on reported cases
   if (!missing(reported) & !is.na(max_plot)) {
-    sd_cols <- c("upper", "lower", "bottom", "top")
+    sd_cols <- c("upper", "lower", "bottom", "top", "central_upper", "central_lower")
     cols <- setdiff(colnames(reported), c("date", "confirm", "breakpoint"))
     
     if (length(cols > 1)) {
@@ -134,7 +134,9 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
     ggplot2::geom_ribbon(ggplot2::aes(ymin = bottom, ymax = top), 
                          alpha = 0.25, size = 0.05) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper, col = NULL), 
-                         alpha = 0.5) +
+                         alpha = 0.25) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin = central_lower, ymax = central_upper, col = NULL), 
+                         alpha = 0.25) +
     cowplot::theme_cowplot() +
     ggplot2::theme(legend.position = "bottom") +
     ggplot2::scale_color_brewer(palette = "Dark2") +
@@ -158,7 +160,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 
 #' Plot a Summary of the Latest Results
 #'
-#' @param summary_results A data.able as returned by `summarise_results` (the `data` object).
+#' @param summary_results A data.table as returned by `summarise_results` (the `data` object).
 #' @param x_lab A character string giving the label for the x axis, defaults to region.
 #' @param log_cases Logical, should cases be shown on a logged scale. Defaults to `FALSE`
 #' @param max_cases Numeric, no default. The maximum number of cases to plot. 
