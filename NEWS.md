@@ -5,7 +5,9 @@
 * Added inner 20% high density region.
 * Added mean and sd to all reporting summaries.
 * Added a summary of the growth rate and doubling time.
-
+* Added a `samples` argument to `get_regional_results` to make loading in samples optional. This also allows samples to be dropped when
+  using `regional_epinow` which reduces RAM usage.
+  
 # EpiNow2 1.1.0
 
 * Implemented reporting templates
