@@ -69,9 +69,11 @@ summarise_results <- function(regions,
                                            .(
                                              point = numeric_estimate[[1]]$point,
                                              lower = numeric_estimate[[1]]$lower,
-                                             upper =numeric_estimate[[1]]$upper,
+                                             upper = numeric_estimate[[1]]$upper,
                                              mid_lower = numeric_estimate[[1]]$mid_lower,
-                                             mid_upper = numeric_estimate[[1]]$mid_upper
+                                             mid_upper = numeric_estimate[[1]]$mid_upper,
+                                             central_lower = numeric_estimate[[1]]$central_lower,
+                                             central_upper = numeric_estimate[[1]]$central_upper
                                            ), by = .(region, measure)][,
                                               metric :=  
                                                 factor(measure, levels = c("New confirmed cases by infection date",
@@ -166,8 +168,8 @@ summarise_results <- function(regions,
 #' regional_out <- regional_epinow(reported_cases = cases,
 #'                                 generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 samples = 2000, warmup = 200, cores = 4,
-#'                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
+#'                                 samples = 2000, warmup = 500, cores = 4,
+#'                                 adapt_delta = 0.95, chains = 4, 
 #'                                 summary = FALSE)
 #'
 #' results_dir <- tempdir()             
@@ -188,7 +190,7 @@ regional_summary <- function(regional_output,
                              all_regions = TRUE,
                              return_summary = TRUE, 
                              max_plot = 10) {
-   
+    
   reported_cases <- data.table::setDT(reported_cases)
   
   if (missing(summary_dir) & !return_summary) {
@@ -230,6 +232,7 @@ regional_summary <- function(regional_output,
   ## Get estimates
   results <- get_regional_results(regional_output,
                                   results_dir = results_dir,
+                                  samples = FALSE,
                                   forecast = FALSE)
   
   ## Get latest date
@@ -433,67 +436,57 @@ summarise_key_measures <- function(regional_results,
       stop("Missing results directory")
     }
     
+    if (missing(summary_dir)) {
+      summary_dir <- NULL
+    }
+    
     if (missing(date)) {
       date <- "latest"
     }
     
     timeseries <- EpiNow2::get_regional_results(results_dir = results_dir,
-                                                date = date, forecast = FALSE)
+                                                date = date, forecast = FALSE, 
+                                                samples = FALSE)
   }else{
     timeseries <- regional_results 
   }
   
 
-  
+  summarise_variable <- function(df, dof = 0) {
+    df <- df[, .(region, date, type, median = round(median, dof),
+           mean = round(mean, dof), sd = round(sd, dof),
+           lower_20 = round(central_lower, dof), upper_20 = round(central_upper, dof),
+           lower_50 = round(lower, dof), upper_50 = round(upper, dof),
+           lower_90 = round(bottom, dof), upper_90 = round(top, dof))]
+    
+    data.table::setnames(df, "region", type)
+    
+    return(df)
+  }
 
-  ## Clean and save Rt estimates
-  rt <- timeseries$estimates$summarised[variable == "R", 
-                        .(region, date, type, median = round(median, 2),
-                          lower_90 = round(bottom, 2), upper_90 = round(top, 2),
-                          lower_50 = round(lower, 2), upper_50 = round(upper, 2))]
-  
-  data.table::setnames(rt, "region", type)
-  
-  if (!missing(summary_dir)) {
-     if (!is.null(summary_dir)) {
-       data.table::fwrite(rt, paste0(summary_dir, "/rt.csv"))
-     }
-  }
-  
-  ## Clean and save case estimates
-  infections <- timeseries$estimates$summarised[variable == "infections", 
-                       .(region, date, type, median = round(median, 0), lower_90 = round(bottom, 0), 
-                         upper_90 = round(top, 0), lower_50 = round(lower, 0), 
-                         upper_50 = round(upper, 0))]
-  
-  data.table::setnames(infections, "region", type)
-  
-  
-  if (!missing(summary_dir)) {
-    if (!is.null(summary_dir)) {
-      data.table::fwrite(infections, paste0(summary_dir, "/cases_by_infection.csv"))
-    }
-  }
-  
-  ## Clean and save case estimates
-  reports <- timeseries$estimates$summarised[variable == "reported_cases", 
-                                                .(region, date, type, median = round(median, 0), lower_90 = round(bottom, 0), 
-                                                  upper_90 = round(top, 0), lower_50 = round(lower, 0), 
-                                                  upper_50 = round(upper, 0))]
-  
-  data.table::setnames(reports, "region", type)
-  
-  
-  if (!missing(summary_dir)) {
-    if (!is.null(summary_dir)) {
-      data.table::fwrite(reports, paste0(summary_dir, "/cases_by_report.csv"))
-    }
+  save_variable <- function(df, name) {
+      if (!is.null(summary_dir)) {
+        data.table::fwrite(df, paste0(summary_dir, "/", name, ".csv"))
+      }
   }
   
   out <- list()
-  out$rt <- rt
-  out$cases_by_infection <- infections
-  out$cases_by_report <- reports
   
+  ## Clean and save Rt estimates
+  out$rt <- summarise_variable(timeseries$estimates$summarised[variable == "R"], 2)
+  save_variable(out$rt, "rt")
+  
+  ## Clean and save growth rate estimates
+  out$growth_rate <- summarise_variable(timeseries$estimates$summarised[variable == "growth_rate"], 2)
+  save_variable(out$growth_rate, "growth_rate")
+  
+  ## Clean and save case estimates
+  out$cases_by_infection <- summarise_variable(timeseries$estimates$summarised[variable == "infections"], 0)
+  save_variable(out$cases_by_infection, "cases_by_infection")
+  
+  ## Clean and save case estimates
+  out$cases_by_report <- summarise_variable(timeseries$estimates$summarised[variable == "reported_cases"], 0)
+  save_variable(out$cases_by_report, "cases_by_report")
+
   return(out)
 }
