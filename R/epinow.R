@@ -337,7 +337,7 @@ epinow <- function(reported_cases, family = "negbin",
 #'                        generation_time = generation_time,
 #'                        delays = list(incubation_period, reporting_delay),
 #'                        adapt_delta = 0.9,
-#'                        samples = 2000, warmup = 200, verbose = TRUE,
+#'                        samples = 2000, warmup = 500, verbose = TRUE,
 #'                        cores = ifelse(interactive(), 4, 1), chains = 4)
 #'}
 regional_epinow <- function(reported_cases,
@@ -432,6 +432,9 @@ regional_epinow <- function(reported_cases,
     }
     if (exists("estimated_reported_cases", out) & !return_estimates) {
       out$estimated_reported_cases$samples <- NULL
+    }
+    if (exists("plots", out) & !return_estimates) {
+      out$estimated_reported_cases$plots <- NULL
     }
     if (!exists("timing", out)) { # only exists if it failed and is Inf
       out$timing = timing['elapsed']
