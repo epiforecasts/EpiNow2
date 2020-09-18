@@ -16,6 +16,8 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions)
 [![Codecov test coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master)
 [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211)
+[![metacran downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
+
 
 This package estimates the time-varying reproduction number, rate of spread, and doubling time using a range of open-source tools ([Abbott et al.](https://doi.org/10.12688/wellcomeopenres.16006.1)), and current best practices ([Gostic et al.](https://doi.org/10.1101/2020.06.18.20134858)). It aims to help users avoid some of the limitations of naive implementations in a framework that is informed by community feedback and is under active development. 
 
