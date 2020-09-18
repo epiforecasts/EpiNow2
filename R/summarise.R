@@ -477,7 +477,7 @@ summarise_key_measures <- function(regional_results,
   save_variable(out$rt, "rt")
   
   ## Clean and save growth rate estimates
-  out$growth_rate <- summarise_variable(timeseries$estimates$summarised[variable == "growth_rate"], 2)
+  out$growth_rate <- summarise_variable(timeseries$estimates$summarised[variable == "growth_rate"], 3)
   save_variable(out$growth_rate, "growth_rate")
   
   ## Clean and save case estimates
