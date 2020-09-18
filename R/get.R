@@ -121,14 +121,14 @@ get_regional_results <- function(regional_output,
         samples <- purrr::map(regions, ~ load_data(samples_path, .,
                                                    result_dir = results_dir,
                                                    date = date)[[1]])
-        samples <- data.table::rbindlist(samples, idcol = "region")
+        samples <- data.table::rbindlist(samples, idcol = "region",  fill = TRUE)
         out$samples <- samples
       }
       ## Get incidence values and combine
       summarised <- purrr::map(regions, ~ load_data(summarised_path, .,
                                                     result_dir = results_dir,
                                                     date = date)[[1]])
-      summarised <- data.table::rbindlist(summarised, idcol = "region")
+      summarised <- data.table::rbindlist(summarised, idcol = "region", fill = TRUE)
       out$summarised <- summarised
       return(out)
     }
@@ -148,12 +148,12 @@ get_regional_results <- function(regional_output,
       out <- list()
       if (samples) {
         samples <- purrr::map(regional_output, ~ .[[data]]$samples)
-        samples <- data.table::rbindlist(samples, idcol = "region")
+        samples <- data.table::rbindlist(samples, idcol = "region", fill = TRUE)
         out$samples <- samples
       }
       ## Get incidence values and combine
       summarised <- purrr::map(regional_output, ~ .[[data]]$summarised)
-      summarised <- data.table::rbindlist(summarised, idcol = "region")
+      summarised <- data.table::rbindlist(summarised, idcol = "region", fill = TRUE)
       out$summarised <- summarised
       return(out)
     }
