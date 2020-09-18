@@ -114,18 +114,18 @@ get_regional_results <- function(regional_output,
     load_data <- purrr::safely(EpiNow2::get_raw_result)
   
     # Get estimates -----------------------------------------------------------
-    get_estimates_file <- function(samples, summarised) {
+    get_estimates_file <- function(samples_path, summarised_path) {
       out <- list()
       
       if (samples) {
-        samples <- purrr::map(regions, ~ load_data(samples, .,
+        samples <- purrr::map(regions, ~ load_data(samples_path, .,
                                                    result_dir = results_dir,
                                                    date = date)[[1]])
         samples <- data.table::rbindlist(samples, idcol = "region")
         out$samples <- samples
       }
       ## Get incidence values and combine
-      summarised <- purrr::map(regions, ~ load_data(summarised, .,
+      summarised <- purrr::map(regions, ~ load_data(summarised_path, .,
                                                     result_dir = results_dir,
                                                     date = date)[[1]])
       summarised <- data.table::rbindlist(summarised, idcol = "region")
@@ -133,15 +133,15 @@ get_regional_results <- function(regional_output,
       return(out)
     }
     out <- list()
-    out$estimates <- get_estimates_file(samples = "estimate_samples.rds",
-                                        summarised = "summarised_estimates.rds")
+    out$estimates <- get_estimates_file(samples_path = "estimate_samples.rds",
+                                        summarised_path = "summarised_estimates.rds")
     
     if (forecast) {
-      out$forecast <- get_estimates_file(samples = "forecast_samples.rds",
-                                         summarised = "summarised_forecast.rds")
+      out$forecast <- get_estimates_file(samples_path = "forecast_samples.rds",
+                                         summarised_path = "summarised_forecast.rds")
       
-      out$estimated_reported_cases <- get_estimates_file(samples = "estimated_reported_cases_samples.rds",
-                                                         summarised = "summarised_estimated_reported_cases.rds")
+      out$estimated_reported_cases <- get_estimates_file(samples_path = "estimated_reported_cases_samples.rds",
+                                                         summarised_path = "summarised_estimated_reported_cases.rds")
     }
   }else{
     get_estimates_data <- function(data) {
