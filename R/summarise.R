@@ -254,6 +254,14 @@ regional_summary <- function(regional_output,
   }
 
   futile.logger::flog.trace("Summarising results")
+  
+  ## Summarise results to csv
+  sum_key_measures <- summarise_key_measures(regional_results = results,
+                                             results_dir = results_dir, 
+                                             summary_dir = summary_dir, 
+                                             type = tolower(region_scale),
+                                             date = target_date) 
+  
   ## Summarise results as a table
   summarised_results <- summarise_results(regions, 
                                           summaries = regional_summaries,
@@ -277,13 +285,6 @@ regional_summary <- function(regional_output,
     data.table::fwrite(summarised_results$table, file.path(summary_dir, "summary_table.csv"))
     data.table::fwrite(summarised_results$data,  file.path(summary_dir, "summary_data.csv"))
   }
-
-  ## Summarise results to csv
-  sum_key_measures <- summarise_key_measures(regional_results = results,
-                                             results_dir = results_dir, 
-                                             summary_dir = summary_dir, 
-                                             type = tolower(region_scale),
-                                             date = target_date) 
    
 
   ## Adaptive add a logscale to the summary plot based on range of observed cases
