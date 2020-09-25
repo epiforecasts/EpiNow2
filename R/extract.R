@@ -46,11 +46,13 @@ extract_static_parameter <- function(param, samples) {
 #' @param data A list of the data supplied to the `rstan::sampling` call.
 #' @param reported_dates A vector of dates to report estimates for.
 #' @param reported_inf_dates A vector of dates to report infection estimates for.
+#' @importFrom rstan extract
+#' @importFrom data.table data.table
 #' @return A list of dataframes each containing the posterior of a parameter
 extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_inf_dates) {
   
   ## Extract sample from stan object
-  samples <- rstan::extract(fit)
+  samples <- rstan::extract(stan_fit)
   
   ## Construct reporting list
   out <- list()
@@ -94,7 +96,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
                                                         "Sunday"),
                                                time = 1:7)
     out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][, 
-                                                                      strat := as.character(wday)][,`:=`(time = NULL, date = NULL, wday = NULL)]
+                                       strat := as.character(wday)][,`:=`(time = NULL, date = NULL, wday = NULL)]
   }
   
   if (data$delays > 0) {
