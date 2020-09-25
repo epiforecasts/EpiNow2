@@ -9,7 +9,6 @@ fit_model(
   future = FALSE,
   max_execution_time = Inf,
   verbose = FALSE,
-  test = FALSE,
   stuck_chains = 0
 )
 }
