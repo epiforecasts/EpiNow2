@@ -461,7 +461,7 @@ fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = 
   
   stop_timeout <- function() {
     if (is.null(fit)) {
-      futile.logger::flog.error("timed out")
+      futile.logger::flog.error("fitting timed out - try increasing max_execution_time")
       stop("model fitting timed out - try increasing max_execution_time")
     }
   }
@@ -478,7 +478,7 @@ fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = 
     fits <- future.apply::future_lapply(1:chains, fit_chain, 
                                        stan_args = args, 
                                        max_time = max_execution_time)
-    if (stuck_chains > 0) {fits[[1:stuck_chains]] <- NULL}
+    if (stuck_chains > 0) {fits[1:stuck_chains] <- NULL}
     fit <- purrr::compact(fits)
     if (length(fit) == 0) {
       fit <- NULL
