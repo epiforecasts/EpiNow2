@@ -445,7 +445,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
 #' @importFrom rstan sflist2stanfit sampling
 #' @return A stan model object
 fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = FALSE, 
-                      test = FALSE, stuck_chains = 0) {
+                      stuck_chains = 0) {
   if (verbose) {
     futile.logger::flog.debug(paste0("Running for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
                                      " chains each with a warm up of ", args$warmup, " iterations each) and ",
