@@ -14,6 +14,21 @@ run_region(
   ...
 )
 }
+\arguments{
+\item{target_region}{Character string indicating the region being evaluated}
+
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
+
+\item{target_folder}{Character string specifying where to save results (will create if not present).}
+
+\item{target_date}{Date, defaults to maximum found in the data if not specified.}
+
+\item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
+
+\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
+
+\item{...}{Pass additional arguments to \code{epinow}}
+}
 \value{
 A list of processed output as produced by \code{process_region}
 }

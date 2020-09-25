@@ -295,7 +295,6 @@ epinow <- function(reported_cases, family = "negbin",
 #' @param all_regions_summary Logical, defaults to `TRUE`. Should summary plots for all regions be returned
 #' rather than just regions of interest.
 #' @param return_timings Logical, defaults to FALSE. If not returning estimates can be used to request timing data is returned.
-#' @param max_execution_time Numeric, defaults to Inf. If set will kill off processing of each region after x seconds.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
 #' @inheritParams regional_summary
@@ -456,8 +455,8 @@ clean_regions <- function(reported_cases, non_zero_points) {
 
 
 #' Run epinow with Regional Processing Code
-#'
-#' @inheritParams regional_epino
+#' @param target_region Character string indicating the region being evaluated
+#' @inheritParams regional_epinow
 #' @importFrom data.table setDTthreads
 #' @importFrom futile.logger flog.trace flog.warn
 #' @return A list of processed output as produced by `process_region`
@@ -509,6 +508,7 @@ run_region <- function(target_region,
 #' @param out List of output returned by `epinow`
 #' @param timing Output from `Sys.time` 
 #' @inheritParams regional_epinow
+#' @inheritParams run_region
 #' @importFrom futile.logger flog.info
 #' @return A list of processed output
 process_region <- function(out, return_estimates, target_region, timing) {

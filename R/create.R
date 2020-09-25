@@ -135,7 +135,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
 
 
 #' Create Initial Conditions Generating Function
-#' @param data A list of data as produced by `create_stan_data`
+#' @param data A list of data as produced by `create_stan_data.`
 #' @inheritParams create_stan_data
 #'
 #' @return An initial condition generating function

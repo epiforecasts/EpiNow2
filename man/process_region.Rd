@@ -11,6 +11,8 @@ process_region(out, return_estimates, target_region, timing)
 
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
 
+\item{target_region}{Character string indicating the region being evaluated}
+
 \item{timing}{Output from \code{Sys.time}}
 }
 \value{
