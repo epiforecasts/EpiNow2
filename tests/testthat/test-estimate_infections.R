@@ -19,20 +19,20 @@ incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
                           max = 30)
 
-reporting_delay <- list(mean = log(5),
-                        mean_sd = log(2),
-                        sd = log(2),
-                        sd_sd = log(1.5),
+reporting_delay <- list(mean = log(3),
+                        mean_sd = log(1.1),
+                        sd = log(1.3),
+                        sd_sd = log(1.1),
                         max = 30)
 
 
 test_that("estimate_infections successfully returns estimates using default settings", {
   skip_on_cran()
-  out <- estimate_infections(reported_cases, family = "negbin",
+  out <- suppressWarnings(estimate_infections(reported_cases, family = "negbin",
                              generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay),
-                             samples = 500, warmup = 100, verbose = FALSE,
-                             chains = 2)
+                             samples = 200, warmup = 100, verbose = FALSE,
+                             chains = 2))
   
   
   expect_true(names(out), c("samples", "summarised"))
