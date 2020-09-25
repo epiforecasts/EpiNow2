@@ -463,7 +463,7 @@ fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = 
   }
   
   if(!future) {
-    fit <- fit_chain(args, max_execution_time)
+    fit <- fit_chain(1, stan_args = args, max_time = max_execution_time)
     stop_timeout()
   }else{
     chains <- args$chains
