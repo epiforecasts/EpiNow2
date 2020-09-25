@@ -177,6 +177,7 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE,
   ## Set input to data.table
   summary_results <- data.table::setDT(summary_results)
   
+
   ## generic plotting function
   inner_plot <- function(df) {
     ggplot2::ggplot(df, ggplot2::aes(x = region, 
@@ -196,6 +197,11 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE,
         "Unsure" = "#7b848f"), drop = FALSE) 
   }
    
+  
+  ## Check max_cases
+  max_cases <- min(c(max_cases, 
+                     max(summary_results[metric %in% "New confirmed cases by infection date"]$upper, na.rm = TRUE) + 1),
+                   na.rm = TRUE)
   ## cases plot
   cases_plot <-  
     inner_plot(summary_results[metric %in% "New confirmed cases by infection date"]) +
