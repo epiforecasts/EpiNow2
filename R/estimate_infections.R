@@ -535,100 +535,9 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   # Extract parameters of interest from the fit -----------------------------
   
-  ## Extract sample from stan object
-  samples <- rstan::extract(fit)
-  
-  ## Construct reporting list
-  out <- list()
-  
-  ## Generic data.frame reporting function
-  extract_parameter <- function(param, samples, dates) {
-    param_df <- data.table::as.data.table(
-      t(
-        data.table::as.data.table(
-          samples[[param]]
-        )
-      ))
-    
-    param_df <- param_df[, time := 1:.N]
-    param_df <- 
-      data.table::melt(param_df, id.vars = "time",
-                       variable.name = "var")
-    
-    param_df <- param_df[, var := NULL][, sample := 1:.N, by = .(time)]
-    param_df <- param_df[, date := dates, by = .(sample)]
-    param_df <- param_df[, .(parameter = param, time, date, 
-                             sample, value)]
-    
-    return(param_df)
-  }
-  
-  ## Report infections, and R
-  out$infections <- extract_parameter("infections", 
-                                      samples,
-                                      reported_cases$date)
-  
-  out$reported_cases <- extract_parameter("imputed_reports", 
-                                          samples, 
-                                          reported_cases$date[-(1:mean_shift)])
-  
-  if (estimate_rt) {
-    out$R <- extract_parameter("R", 
-                               samples,
-                               reported_cases$date[-(1:mean_shift)])
-    
-    out$growth_rate <- extract_parameter("r", 
-                                         samples,
-                                         reported_cases$date[-(1:mean_shift)])
-    
-    if (break_no > 0) {
-      out$breakpoints <- extract_parameter("rt_break_eff", 
-                                           samples, 
-                                           1:break_no)
-      
-      out$breakpoints <- out$breakpoints[, strat := date][, c("time", "date") := NULL]
-    }
-  }
-  
-    
-    if (estimate_week_eff) {
-      out$day_of_week <- extract_parameter("day_of_week_eff", 
-                                           samples,
-                                           1:7)
-      
-      char_day_of_week <- data.table::data.table(wday = c("Monday", "Tuesday", "Wednesday",
-                                                          "Thursday", "Friday", "Saturday",
-                                                          "Sunday"),
-                                                 time = 1:7)
-      out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][, 
-                                         strat := as.character(wday)][,`:=`(time = NULL, date = NULL, wday = NULL)]
-    }
- 
-  if (data$delays > 0) {
-    out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
-    out$delay_mean <- out$delay_mean[, strat := as.character(time)][,
-                                                                    time := NULL][, date := NULL]
-    
-    out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$delays)
-    out$delay_sd <- out$delay_sd[, strat :=  as.character(time)][,
-                                                                 time := NULL][, date := NULL]
-    
-  }
-
-    extract_static_parameter <- function(param) {
-      data.table::data.table(
-        parameter = param,
-        sample = 1:length(samples[[param]]),
-        value = samples[[param]])
-    }
-    
-    if (estimate_rt) {
-      out$gt_mean <- extract_static_parameter("gt_mean")
-      out$gt_mean <- out$gt_mean[, value := value.V1][, value.V1 := NULL]
-      
-      out$gt_sd <- extract_static_parameter("gt_sd")
-      out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
-    }
+  out <- extract_parameter_samples(fit, data, 
+                                   reported_inf_dates = reported_cases$date,
+                                   reported_dates = reported_cases$date[-(1:mean_shift)])
   
     ## Add prior infections
     if (no_delays > 0) {
@@ -640,45 +549,73 @@ estimate_infections <- function(reported_cases, family = "negbin",
     
 # Format output -----------------------------------------------------------
     
- format_out <- list()
+  format_out <- format_fit(posterior_samples = out, 
+                           horizon = horizon,
+                           shift = mean_shift,
+                           burn_in = burn_in)
   
- ## Bind all samples together
- format_out$samples <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
- 
- if (is.null(format_out$samples$strat)) {
-  format_out$samples <- format_out$samples[, strat := NA]
- }
- ## Add type based on horizon
- format_out$samples <- format_out$samples[,
-          type := data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon), 
-                                      "forecast", 
-                                      data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon - mean_shift),
-                                      "estimate based on partial data",                    
-                                      "estimate"))]
- 
- ## Remove burn in period if specified
- if (burn_in > 0) {
-   format_out$samples <- format_out$samples[is.na(date) | date >= (start_date + lubridate::days(burn_in))]
- }
- 
- ## Summarise samples
- format_out$summarised <- data.table::copy(format_out$samples)[, .(
-   bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
-   top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
-   lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[1]])),
-   upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
-   central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[1]])), 
-   central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[2]])),
-   median = as.numeric(median(value, na.rm = TRUE)),
-   mean = as.numeric(mean(value, na.rm = TRUE)),
-   sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable, strat, type)]
- 
- ## Order summarised samples
- data.table::setorder(format_out$summarised, variable, date)  
- 
- if (return_fit) {
-  format_out$fit <- fit
- }
- 
+  ## Join stan fit if required
+  if (return_fit) {
+    format_out$fit <- fit
+  }
+  
   return(format_out)
 }
+
+
+
+
+
+
+#' Format Posterior Samples
+#'
+#' @param posterior_samples A list of posterior samples as returned by `extract_parameter_samples`
+#' @param horizon Numeric, forecast horizon
+#' @param shift Numeric, the shift to apply to estimates
+#' @param burn_in Numeric, number of days to discard estimates for
+#' @importFrom data.table fifelse rbindlist copy setorder
+#' @importFrom lubridate days
+#' @importFrom purrr map_dbl
+#' @importFrom HDInterval hdi
+#' @return A list of samples and summarised posterior parameter estimates
+format_fit <- function(posterior_samples, horizon, shift, burn_in){
+ 
+  format_out <- list()
+  
+  ## Bind all samples together
+  format_out$samples <- data.table::rbindlist(posterior_samples, fill = TRUE, idcol = "variable")
+  
+  if (is.null(format_out$samples$strat)) {
+    format_out$samples <- format_out$samples[, strat := NA]
+  }
+  ## Add type based on horizon
+  format_out$samples <- format_out$samples[,
+                                           type := data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon), 
+                                                                       "forecast", 
+                                                                       data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon - shift),
+                                                                                           "estimate based on partial data",                    
+                                                                                           "estimate"))]
+  
+  ## Remove burn in period if specified
+  if (burn_in > 0) {
+    format_out$samples <- format_out$samples[is.na(date) | date >= (start_date + lubridate::days(burn_in))]
+  }
+  
+  ## Summarise samples
+  format_out$summarised <- data.table::copy(format_out$samples)[, .(
+    bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
+    top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
+    lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[1]])),
+    upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
+    central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[1]])), 
+    central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[2]])),
+    median = as.numeric(median(value, na.rm = TRUE)),
+    mean = as.numeric(mean(value, na.rm = TRUE)),
+    sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable, strat, type)]
+  
+  ## Order summarised samples
+  data.table::setorder(format_out$summarised, variable, date)  
+  
+  return(format_out)
+}
+
