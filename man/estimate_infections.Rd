@@ -9,7 +9,8 @@ estimate_infections(
   family = "negbin",
   generation_time,
   delays,
-  gp = list(basis_prop = 0.3, boundary_scale = 2),
+  gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_mean = 0, lengthscale_sd
+    = 2),
   rt_prior = list(mean = 1, sd = 1),
   prior_smoothing_window = 7,
   horizon = 7,
