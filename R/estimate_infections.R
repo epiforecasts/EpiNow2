@@ -24,6 +24,8 @@
 #' @param chains Numeric, defaults to 2. The number of MCMC chains to use.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
 #' @param warmup Numeric, defaults to 200. Number of iteration of warmup to use.
+#' @param stan_args List, defaults to `NULL`. User supplied arguments to be passed to `rstan::sampling`. Overwrites all 
+#' defaults.
 #' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
 #' @param estimate_week_eff Logical, defaults TRUE. Should weekly reporting effects be estimated.
 #' @param estimate_breakpoints Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then `reported_cases`
@@ -55,12 +57,15 @@
 #' the defaults of 0 and 2 (normal distributed truncated at zero).
 #' @param verbose Logical, defaults to `TRUE`. Should verbose progress messages be printed.
 #' @param debug Logical, defaults to `FALSE`. Enables debug model in which additional diagnostics are available
+#' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
+#' fail gracefully (i.e when combined with `max_execution_time`). Should be combined with a call to `future::plan`
+#' @param max_execution_time Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout. 
+#' When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation 
+#' will fail with an informative error.
 #' @export
-#' @importFrom rstan sampling 
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose 
 #' @importFrom lubridate wday days
-#' @importFrom truncnorm rtruncnorm
 #' @importFrom purrr transpose
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @examples
@@ -105,6 +110,17 @@
 #'                      
 #' plots$summary
 #'
+#' # Run the model with default settings using the future backend (combine with a call to future::plan to make this parallel).
+#' def_future <- estimate_infections(reported_cases, family = "negbin",
+#'                                   generation_time = generation_time,
+#'                                  delays = list(incubation_period, reporting_delay),
+#'                                  samples = 500, warmup = 200, chains = 2, future = TRUE)
+#' 
+#' plots <- report_plots(summarised_estimates = def_future$summarised,
+#'                       reported = reported_cases)
+#'                      
+#' plots$summary                          
+#'                            
 #' # Run model with Rt fixed into the future
 #' fixed_rt <- estimate_infections(reported_cases, family = "negbin",
 #'                                 generation_time = generation_time,
@@ -262,11 +278,12 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 rt_prior = list(mean = 1, sd = 1),
                                 prior_smoothing_window = 7,
                                 horizon = 7, model, cores = 1, chains = 4,
-                                samples = 1000, warmup = 200,
+                                samples = 1000, warmup = 200, stan_args = NULL,
                                 estimate_rt = TRUE, estimate_week_eff = TRUE,
                                 estimate_breakpoints = FALSE, burn_in = 0,
                                 stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
                                 adapt_delta = 0.99, max_treedepth = 15, 
+                                future = FALSE, max_execution_time = Inf,
                                 return_fit = FALSE, verbose = TRUE, debug = FALSE){
   
 
@@ -316,28 +333,21 @@ estimate_infections <- function(reported_cases, family = "negbin",
   
   # Estimate the mean delay -----------------------------------------------
   if (no_delays > 0) {
-    mean_shift <- as.integer(
-      sum(
-        purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))
-      )
-    )
+    mean_shift <- as.integer(sum(purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))))
   }else{
     mean_shift <- 1
   }
-
-
   # Add the mean delay and incubation period on as 0 case days ------------
- # Create mean shifted reported cases as prio ------------------------------
+  # Create mean shifted reported cases as prio ------------------------------
   if (no_delays > 0) {
     reported_cases <- data.table::rbindlist(list(
       data.table::data.table(date = seq(min(reported_cases$date) - mean_shift - prior_smoothing_window, 
                                         min(reported_cases$date) - 1, by = "days"),
-                             confirm = 0,
-                             breakpoint = 0),
-      reported_cases
-    ))  
+                             confirm = 0,  breakpoint = 0),
+      reported_cases))  
     
-    shifted_reported_cases <- create_shifted_cases(reported_cases)
+    shifted_reported_cases <- create_shifted_cases(reported_cases, mean_shift, 
+                                                   prior_smoothing_window, horizon)
     reported_cases <- reported_cases[-(1:prior_smoothing_window)]
   }
   
@@ -353,36 +363,40 @@ estimate_infections <- function(reported_cases, family = "negbin",
                            estimate_week_eff = estimate_week_eff, stationary = stationary,
                            fixed = fixed, break_no = break_no, 
                            fixed_future_rt = fixed_future_rt,  gp = gp,
-                           family = family)
+                           family = family, delays = delays)
 
-# Set up default settings -------------------------------------------------
+  # Set up default settings -------------------------------------------------
   if (missing(model)) {
     model <- NULL
   }
   
+  if (is.null(model)) {
+    model <- stanmodels$estimate_infections
+  }
+  
  default_args <- list(
-   model = ifelse(is.null(model), stanmodels$estimate_infections, model),
+   object = model,
    data = data,
-   init = create_initial_conditions(data, delays, rt_prior, generation_time),
+   init = create_initial_conditions(data, delays, rt_prior, generation_time, mean_shift),
    iter = ceiling(samples / chains) + warmup,
    warmup = warmup, 
    cores = cores, 
-   list(adapt_delta = adapt_delta,
-        max_treedepth = max_treedepth),
+   chains = chains,
+   control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth),
    refresh = ifelse(verbose, 50, 0),
-   save_warmup = debug
- )  
-  
+   save_warmup = debug)  
 
-  # Fit model ---------------------------------------------------------------
-  if (verbose) {
-    futile.logger::flog.debug(paste0("Running for ", samples," samples (across ", chains,
-                                     " chains each with a warm up of ", warmup, " iterations each) and ",
-                                     data$t," time steps of which ", horizon, " are a forecast"))
-  }
+ # Join with user supplied settings ----------------------------------------
+ if (!is.null(stan_args)) {
+   default_args <- default_args[[setdiff(names(default_args), names(stan_args))]]
+   args <- c(default_args, stan_args)
+ }else{
+   args <- default_args
+ }
  
-  fit <- do.call(rstan::sampling, default_args)
-
+  # Fit model ---------------------------------------------------------------
+  fit <- fit_model(args, future = future, max_execution_time = max_execution_time,
+                   verbose = verbose)
   
   # Extract parameters of interest from the fit -----------------------------
   out <- extract_parameter_samples(fit, data, 
@@ -401,7 +415,8 @@ estimate_infections <- function(reported_cases, family = "negbin",
   format_out <- format_fit(posterior_samples = out, 
                            horizon = horizon,
                            shift = mean_shift,
-                           burn_in = burn_in)
+                           burn_in = burn_in,
+                           start_date = start_date)
   
   ## Join stan fit if required
   if (return_fit) {
@@ -411,6 +426,69 @@ estimate_infections <- function(reported_cases, family = "negbin",
   return(format_out)
 }
 
+
+#' Fit a Stan Model
+#'
+#' @param args List of stan arguments
+#' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
+#' @param max_execution_time Numeric, defauls to Inf. What is the maximum execution time per chain. Results will
+#' still be returned as long as at least 2 chains complete successfully within the timelimit. 
+#' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
+#' @importFrom futile.logger flog.debug flog.info flog.error
+#' @importFrom R.utils withTimeout
+#' @importFrom future.apply future_lapply
+#' @importFrom purrr compact
+#' @importFrom rstan sflist2stanfit sampling
+#' @return A stan model object
+fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = FALSE) {
+  if (verbose) {
+    futile.logger::flog.debug(paste0("Running for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
+                                     " chains each with a warm up of ", args$warmup, " iterations each) and ",
+                                     args$data$t," time steps of which ", args$data$horizon, " are a forecast"))
+  }
+  
+  fit_chain <- function(chain, stan_args, max_time) {
+    fit <- R.utils::withTimeout(do.call(rstan::sampling, stan_args), 
+                                timeout = max_time,
+                                onTimeout = "silent")
+    return(fit)
+  }
+  
+  stop_timeout <- function() {
+    if (is.null(fit)) {
+      futile.logger::flog.error("timed out")
+      stop("model fitting timed out - try increasing max_execution_time")
+    }
+  }
+  
+  if(!future) {
+    fit <- fit_chain(args, max_execution_time)
+    stop_timeout()
+  }else{
+    chains <- args$chains
+    args$chains <- 1
+    args$cores <- 1
+     
+    fits <- future.apply::future_lapply(1:chains, fit_chain, 
+                                       stan_args = args, 
+                                       max_time = max_execution_time)
+    fit <- purrr::compact(fits)
+    if (length(fit) == 0) {
+      fit <- NULL
+      stop_timeout()
+    }else{
+      failed_chains <- chains - length(fit)
+      if (failed_chains > 0) {
+        futile.logger::flog.info(paste0(failed_chains, " chains failed or were timed out."))
+        if ((chains - failed_chains) < 2) {
+          stop("model fitting failed as too few chains were returned to assess convergence (2 or more required)")
+        }
+      }
+      fit <- rstan::sflist2stanfit(fit)
+    }
+  }
+  return(fit)
+}
 
 #' Format Posterior Samples
 #'

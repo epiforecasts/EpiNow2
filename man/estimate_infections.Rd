@@ -19,6 +19,7 @@ estimate_infections(
   chains = 4,
   samples = 1000,
   warmup = 200,
+  stan_args = NULL,
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
@@ -28,6 +29,8 @@ estimate_infections(
   fixed_future_rt = FALSE,
   adapt_delta = 0.99,
   max_treedepth = 15,
+  future = FALSE,
+  max_execution_time = Inf,
   return_fit = FALSE,
   verbose = TRUE,
   debug = FALSE
@@ -77,6 +80,9 @@ for the prior based on reported cases.}
 
 \item{warmup}{Numeric, defaults to 200. Number of iteration of warmup to use.}
 
+\item{stan_args}{List, defaults to \code{NULL}. User supplied arguments to be passed to \code{rstan::sampling}. Overwrites all
+defaults.}
+
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
 \item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
@@ -105,6 +111,13 @@ future time points without data.}
 \item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
 
 \item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
+
+\item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
+fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
+
+\item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout.
+When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation
+will fail with an informative error.}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
@@ -158,6 +171,17 @@ plots <- report_plots(summarised_estimates = def$summarised,
                      
 plots$summary
 
+# Run the model with default settings using the future backend (combine with a call to future::plan to make this parallel).
+def_future <- estimate_infections(reported_cases, family = "negbin",
+                                  generation_time = generation_time,
+                                 delays = list(incubation_period, reporting_delay),
+                                 samples = 1000, warmup = 200, future = TRUE)
+
+plots <- report_plots(summarised_estimates = def_future$summarised,
+                      reported = reported_cases)
+                     
+plots$summary                          
+                           
 # Run model with Rt fixed into the future
 fixed_rt <- estimate_infections(reported_cases, family = "negbin",
                                 generation_time = generation_time,
