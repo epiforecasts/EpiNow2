@@ -4,13 +4,13 @@ generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
                         sd = EpiNow2::covid_generation_times[1, ]$sd,
                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-                        max = 30)
+                        max = 10)
 
 reporting_delay <- list(mean = log(3),
                         mean_sd = log(1.1),
                         sd = log(2),
                         sd_sd = log(1.1),
-                        max = 30)
+                        max = 10)
 
 ## Uses example case vector
 cases <- EpiNow2::example_confirmed[1:20]
@@ -33,7 +33,7 @@ test_that("regional_epinow produces expected output when run with default settin
                                            lengthscale_mean = 20, lengthscale_sd = 2),
                                  samples = 200, warmup = 100, cores = 1, chains = 2,
                                  verbose = FALSE))
-  expect_equal(names(out$regional), c("realland", "testland"))
+  expect_equal(names(out$regional), c("testland", "realland"))
   expect_equal(names(out$summary), c("latest_date", "results", "summarised_results", "summary_plot",
                                       "summarised_measures", "reported_cases", "high_plots", "plots"))
   expect_equal(names(out$regional$realland), c("estimates", "estimated_reported_cases", "summary", "plots", "timing"))
@@ -52,11 +52,11 @@ test_that("regional_epinow fails as expected when given a very short timeout", {
                            generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
                            adapt_delta = 0.9, samples = 2000, warmup = 500,
-                           cores = 1, max_execution_time = 10))
+                           cores = 1, max_execution_time = 1))
   expect_error(regional_epinow(reported_cases = cases,
                                generation_time = generation_time,
                                delays = list(incubation_period, reporting_delay),
                                adapt_delta = 0.9, samples = 2000, warmup = 500, future = TRUE,
-                               cores = 1, max_execution_time = 10))
+                               cores = 1, max_execution_time = 1))
 
 })

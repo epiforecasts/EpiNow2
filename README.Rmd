@@ -162,7 +162,7 @@ reported_cases <- data.table::rbindlist(list(
 head(reported_cases)
 ```
 
-Run the pipeline on each region in turn. The commented code (requires the `{future}` package) can be used to run regions in parallel (when in most scenarios `cores` should be set to 1).
+Run the pipeline on each region in turn.
 
 ```{r, message = FALSE, warning = FALSE}
 estimates <- EpiNow2::regional_epinow(reported_cases = reported_cases, 
@@ -172,7 +172,7 @@ estimates <- EpiNow2::regional_epinow(reported_cases = reported_cases,
                                       cores = 4, chains = 4, adapt_delta = 0.95)
 ```
 
-Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments.
+Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = TRUE) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the `{future}` package for details on nested futures.
 
 Summary measures that are returned include a table formatted for reporting (along with raw results for further processing).
 

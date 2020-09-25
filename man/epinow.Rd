@@ -37,7 +37,7 @@ epinow(
   return_estimates = TRUE,
   target_folder,
   target_date,
-  verbose = TRUE,
+  verbose = FALSE,
   debug = FALSE
 )
 }
