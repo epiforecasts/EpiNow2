@@ -76,7 +76,7 @@ epinow <- function(reported_cases, family = "negbin",
                    estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE,
                    burn_in = 0, stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
                    return_fit = FALSE, forecast_model, horizon = 7, ensemble_type = "mean",
-                   return_estimates = TRUE, target_folder, target_date, verbose = TRUE,
+                   return_estimates = TRUE, target_folder, target_date, verbose = FALSE,
                    debug = FALSE) {
 
   if (!return_estimates & missing(target_folder)) {

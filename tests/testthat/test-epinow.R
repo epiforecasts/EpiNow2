@@ -43,10 +43,10 @@ test_that("epinow produces expected output when run with default settings", {
 
 test_that("epinow fails as expected when given a short timeout", {
   skip_on_cran()
-  expect_error(epinow(reported_cases = reported_cases, generation_time = generation_time,
+  expect_error(suppressWarnings(epinow(reported_cases = reported_cases, generation_time = generation_time,
                 delays = list(incubation_period, reporting_delay),
                 gp = list(basis_prop = 0.1, boundary_scale = 2,
                           lengthscale_mean = 20, lengthscale_sd = 2),
                 samples = 500, warmup = 200, cores = 1, chains = 2,
-                verbose = FALSE, max_execution_time = 10))
+                verbose = FALSE, max_execution_time = 10)))
 })
