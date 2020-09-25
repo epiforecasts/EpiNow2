@@ -75,7 +75,7 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 create_stan_data <- function(reported_cases,  shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
                              rt_prior, estimate_rt, estimate_week_eff, stationary,
-                             fixed, break_no, fixed_future_rt, gp, family) {
+                             fixed, break_no, fixed_future_rt, gp, family, delays) {
   
   data <- list(
     day_of_week = reported_cases[(mean_shift + 1):.N]$day_of_week,
@@ -141,7 +141,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
 #' @return An initial condition generating function
 #' @importFrom purrr map2_dbl
 #' @importFrom truncnorm rtruncnorm
-create_initial_conditions <- function(data, delays, rt_prior, generation_time) {
+create_initial_conditions <- function(data, delays, rt_prior, generation_time, mean_shift) {
   
   init_fun <- function(){
     
@@ -181,5 +181,5 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time) {
     return(out)
   }
   
-  return(init_fn)
+  return(init_fun)
 }

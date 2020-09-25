@@ -19,7 +19,8 @@ create_stan_data(
   break_no,
   fixed_future_rt,
   gp,
-  family
+  family,
+  delays
 )
 }
 \arguments{
@@ -70,6 +71,12 @@ the defaults of 0 and 2 (normal distributed truncated at zero).}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}
+
+\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
+Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
+on the log scale).}
 }
 \value{
 A list of stan data
