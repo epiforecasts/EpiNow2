@@ -17,7 +17,6 @@ regional_epinow(
   return_estimates = TRUE,
   max_plot = 10,
   return_timings = FALSE,
-  max_execution_time = Inf,
   ...
 )
 }
@@ -50,9 +49,9 @@ on the maximum number of reported cases.}
 
 \item{return_timings}{Logical, defaults to FALSE. If not returning estimates can be used to request timing data is returned.}
 
-\item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each region after x seconds.}
-
 \item{...}{Pass additional arguments to \code{epinow}}
+
+\item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each region after x seconds.}
 }
 \value{
 A list of output stratified at the top level into regional output and across region output summary output

@@ -385,20 +385,10 @@ regional_epinow <- function(reported_cases,
                                               ...,
                                               future.scheduling = Inf)
 
-  # names on regional_out
-  names(regional_out) <- regions
-  problems <- purrr::keep(regional_out, ~!is.null(.$error))
-
-  futile.logger::flog.trace("%s runtime errors caught", length(problems))
-  for (location in names(problems)) {
-    # output timeout / error
-      futile.logger::flog.info("Runtime error in %s : %s - %s", location,
-                               problems[[location]]$error$message, 
-                               toString(problems[[location]]$error$call))
-  }
-
-  regional_out <- purrr::map(regional_out, ~.$result)
-  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~ is.finite(.$timing))
+  out <- process_regions(regional_out, regions)
+  regional_out <- out$all
+  sucessful_regional_out <- out$successful
+  
   # only attempt the summary if there are at least some results
   if (summary && length(sucessful_regional_out) > 0) {
     if (missing(summary_dir)) {
@@ -467,18 +457,10 @@ clean_regions <- function(reported_cases, non_zero_points) {
 
 #' Run epinow with Regional Processing Code
 #'
-#' @param target_region 
-#' @param reported_cases 
-#' @param target_folder 
-#' @param target_date 
-#' @param return_estimates 
-#' @param cores 
-#' @param ... 
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @inheritParams regional_epino
+#' @importFrom data.table setDTthreads
+#' @importFrom futile.logger flog.trace flog.warn
+#' @return A list of processed output as produced by `process_region`
 run_region <- function(target_region,
                        reported_cases,
                        target_folder,
@@ -551,4 +533,31 @@ process_region <- function(out, return_estimates, target_region, timing) {
   }
   
   return(out)
+}
+
+
+#' Process all Region Estimates
+#'
+#' @param regional_out A list of output from multiple runs of `regional_epinow`
+#' @param regions A character vector identifying the regions that have been run
+#' @importFrom purrr keep map compact
+#' @importFrom futile.logger flog.trace flog.info
+#' @return A list of all regional estimates and successful regional estimates
+process_regions <- function(regional_out, regions) {
+  
+  # names on regional_out
+  names(regional_out) <- regions
+  problems <- purrr::keep(regional_out, ~!is.null(.$error))
+  
+  futile.logger::flog.trace("%s runtime errors caught", length(problems))
+  for (location in names(problems)) {
+    # output timeout / error
+    futile.logger::flog.info("Runtime error in %s : %s - %s", location,
+                             problems[[location]]$error$message, 
+                             toString(problems[[location]]$error$call))
+  }
+  
+  regional_out <- purrr::map(regional_out, ~.$result)
+  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~ is.finite(.$timing))
+  return(list(all = regional_out, successful = sucessful_regional_out))
 }
