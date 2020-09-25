@@ -24,6 +24,8 @@
 #' @param chains Numeric, defaults to 2. The number of MCMC chains to use.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
 #' @param warmup Numeric, defaults to 200. Number of iteration of warmup to use.
+#' @param stan_args List, defaults to `NULL`. User supplied arguments to be passed to `rstan::sampling`. Overwrites all 
+#' defaults.
 #' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
 #' @param estimate_week_eff Logical, defaults TRUE. Should weekly reporting effects be estimated.
 #' @param estimate_breakpoints Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then `reported_cases`
@@ -55,14 +57,16 @@
 #' the defaults of 0 and 2 (normal distributed truncated at zero).
 #' @param verbose Logical, defaults to `TRUE`. Should verbose progress messages be printed.
 #' @param debug Logical, defaults to `FALSE`. Enables debug model in which additional diagnostics are available
+#' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
+#' fail gracefully (i.e when combined with `max_execution_time`). Should be combined with a call to `future::plan`
+#' @param max_execution_time Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout. 
+#' When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation 
+#' will fail with an informative error.
 #' @export
-#' @importFrom rstan sampling extract 
+#' @inheritParams fit_model
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
-#' @importFrom purrr transpose map_dbl
+#' @importFrom purrr transpose 
 #' @importFrom lubridate wday days
-#' @importFrom truncnorm rtruncnorm
-#' @importFrom stats lm
-#' @importFrom HDInterval hdi
 #' @importFrom purrr transpose
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @examples
@@ -107,6 +111,19 @@
 #'                      
 #' plots$summary
 #'
+#' # Run the model with default settings using the future backend 
+#' ## (combine with a call to future::plan to make this parallel).
+#' def_future <- estimate_infections(reported_cases, family = "negbin",
+#'                                   generation_time = generation_time, 
+#'                                  delays = list(incubation_period, reporting_delay),
+#'                                  samples = 500, warmup = 200, chains = 2, 
+#'                                  verbose = FALSE, future = TRUE)
+#' 
+#' plots <- report_plots(summarised_estimates = def_future$summarised,
+#'                       reported = reported_cases)
+#'                      
+#' plots$summary                          
+#'                            
 #' # Run model with Rt fixed into the future
 #' fixed_rt <- estimate_infections(reported_cases, family = "negbin",
 #'                                 generation_time = generation_time,
@@ -259,16 +276,18 @@
 #' }                                
 estimate_infections <- function(reported_cases, family = "negbin",
                                 generation_time, delays,
-                                gp = list(basis_prop = 0.3, boundary_scale = 2),
+                                gp = list(basis_prop = 0.3, boundary_scale = 2,
+                                          lengthscale_mean = 0, lengthscale_sd = 2),
                                 rt_prior = list(mean = 1, sd = 1),
                                 prior_smoothing_window = 7,
                                 horizon = 7, model, cores = 1, chains = 4,
-                                samples = 1000, warmup = 200,
+                                samples = 1000, warmup = 200, stan_args = NULL,
                                 estimate_rt = TRUE, estimate_week_eff = TRUE,
                                 estimate_breakpoints = FALSE, burn_in = 0,
                                 stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
                                 adapt_delta = 0.99, max_treedepth = 15, 
-                                return_fit = FALSE, verbose = TRUE, debug = FALSE){
+                                future = FALSE, max_execution_time = Inf,
+                                return_fit = FALSE, verbose = TRUE, debug = FALSE, stuck_chains = 0){
   
 
   # Check fix setting -------------------------------------------------------
@@ -307,209 +326,49 @@ estimate_infections <- function(reported_cases, family = "negbin",
   }
   
   # Set up data.table -------------------------------------------------------
-
   suppressMessages(data.table::setDTthreads(threads = 1))
   
-  reported_cases <- data.table::setDT(reported_cases)
-  
   # Make sure there are no missing dates and order cases --------------------
-  reported_cases_grid <- data.table::copy(reported_cases)[, .(date = seq(min(date), max(date) + horizon, by = "days"))]
-  
-  reported_cases <- data.table::merge.data.table(
-    reported_cases , reported_cases_grid, 
-    by = c("date"), all.y = TRUE)
-  
+  reported_cases <- create_clean_reported_cases(reported_cases, horizon)
 
-  
-  reported_cases <- reported_cases[is.na(confirm), confirm := 0][,.(date = date, confirm, breakpoint)]
-  reported_cases <- reported_cases[is.na(breakpoint), breakpoint := 0]
-  reported_cases <- data.table::setorder(reported_cases, date)
-  
-  ## Filter out 0 reported cases from the beginning of the data
-  reported_cases <- reported_cases[order(date)][,
-                                 cum_cases := cumsum(confirm)][cum_cases > 0][, 
-                                 cum_cases := NULL]
-  
   # Record earliest date with data ------------------------------------------
-  
   start_date <- min(reported_cases$date, na.rm = TRUE)
   
   # Estimate the mean delay -----------------------------------------------
- 
   if (no_delays > 0) {
-    mean_shift <- as.integer(
-      sum(
-        purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))
-      )
-    )
+    mean_shift <- as.integer(sum(purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))))
   }else{
     mean_shift <- 1
   }
-
-
   # Add the mean delay and incubation period on as 0 case days ------------
-  
+  # Create mean shifted reported cases as prio ------------------------------
   if (no_delays > 0) {
     reported_cases <- data.table::rbindlist(list(
       data.table::data.table(date = seq(min(reported_cases$date) - mean_shift - prior_smoothing_window, 
                                         min(reported_cases$date) - 1, by = "days"),
-                             confirm = 0,
-                             breakpoint = 0),
-      reported_cases
-    ))  
+                             confirm = 0,  breakpoint = 0),
+      reported_cases))  
     
-  }
-
-  # Calculate smoothed prior cases ------------------------------------------
-  
-  if (no_delays > 0) {
-    shifted_reported_cases <- data.table::copy(reported_cases)[,
-                   confirm := data.table::shift(confirm, n = mean_shift,
-                                                type = "lead", fill = NA)][,
-                   confirm := data.table::frollmean(confirm, n = prior_smoothing_window, 
-                                                   align = "right", fill = 0)][,
-                   confirm := data.table::fifelse(confirm == 0, 1e-3, confirm)]
-    
-    ## Forecast trend on reported cases using the last week of data
-    final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
-                                         t := 1:.N]
-    lm_model <- stats::lm(log(confirm) ~ t, data = final_week)
-    
-    ## Estimate unreported future infections using a log linear model
-    shifted_reported_cases <- shifted_reported_cases[,
-                    t := 1:.N][, 
-                    t := t - (.N - horizon - mean_shift - 6)][,
-                    confirm := data.table::fifelse(t >= 7,
-                                                   exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t),
-                                                   confirm)][,
-                    t := NULL]
-    
-    ##Drop median generation interval initial values
-    shifted_reported_cases <- shifted_reported_cases[-(1:prior_smoothing_window)]
+    shifted_reported_cases <- create_shifted_cases(reported_cases, mean_shift, 
+                                                   prior_smoothing_window, horizon)
     reported_cases <- reported_cases[-(1:prior_smoothing_window)]
   }
-
   
   # Add week day info -------------------------------------------------------
-  
   reported_cases <- reported_cases[, day_of_week := lubridate::wday(date, week_start = 1)]
   
   # Define stan model parameters --------------------------------------------
-  
-  data <- list(
-    day_of_week = reported_cases[(mean_shift + 1):.N]$day_of_week,
-    cases = reported_cases[(mean_shift + 1):(.N - horizon)]$confirm,
-    shifted_cases = unlist(ifelse(no_delays > 0, list(shifted_reported_cases$confirm),
-                           list(reported_cases$confirm))),
-    t = length(reported_cases$date),
-    rt = length(reported_cases$date) - mean_shift,
-    time = 1:(length(reported_cases$date) - mean_shift),
-    inf_time = 1:(length(reported_cases$date)),
-    horizon = horizon,
-    gt_mean_mean = generation_time$mean,
-    gt_mean_sd = generation_time$mean_sd,
-    gt_sd_mean = generation_time$sd,
-    gt_sd_sd = generation_time$sd_sd,
-    max_gt = generation_time$max,
-    r_mean = rt_prior$mean,
-    r_sd = rt_prior$sd,
-    estimate_r = ifelse(estimate_rt, 1, 0),
-    est_week_eff = ifelse(estimate_week_eff, 1, 0),
-    stationary = ifelse(stationary, 1, 0),
-    fixed = ifelse(fixed, 1, 0),
-    break_no = break_no,
-    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
-    future_fixed = ifelse(fixed_future_rt, 1, 0)
-  ) 
-  
+  data <- create_stan_data(reported_cases = reported_cases, 
+                           shifted_reported_cases = shifted_reported_cases,
+                           horizon = horizon, no_delays = no_delays,
+                           mean_shift = mean_shift, generation_time = generation_time,
+                           rt_prior = rt_prior, estimate_rt = estimate_rt,
+                           estimate_week_eff = estimate_week_eff, stationary = stationary,
+                           fixed = fixed, break_no = break_no, 
+                           fixed_future_rt = fixed_future_rt,  gp = gp,
+                           family = family, delays = delays)
 
-# Delays ------------------------------------------------------------------
-  
-  data$delays <- no_delays
-  
-  allocate_delays <- function(delay_var, no_delays = data$delays) {
-    if (no_delays > 0) {
-      out <- unlist(delay_var)
-    }else{
-      out <- 1
-    }
-    return(array(out))
-  }
-  
-  data$delay_mean_mean <- allocate_delays(delays$mean)
-  data$delay_mean_sd <- allocate_delays(delays$mean_sd)
-  data$delay_sd_mean <- allocate_delays(delays$sd)
-  data$delay_sd_sd <- allocate_delays(delays$sd_sd)
-  data$max_delay <- allocate_delays(delays$max)
-
-  # Parameters for Hilbert space GP -----------------------------------------
-  
-  # no of basis functions
-  data$M <- ceiling(data$rt * gp$basis_prop)
-  # Boundary value for c
-  data$L <- max(data$time) * gp$boundary_scale
-  
-  if (is.null(gp$lengthscale_mean)) {
-    data$lengthscale_mean <- 0
-  }else{
-    data$lengthscale_mean <- gp$lengthscale_mean
-  }
-  
-  if (is.null(gp$lengthscale_sd)) {
-    data$lengthscale_sd <- 2
-  }else{
-    data$lengthscale_sd <- gp$lengthscale_sd
-  }
-  
-  ## Set model to poisson or negative binomial
-  if (family %in% "poisson") {
-    data$model_type <- 0
-  }else if (family %in% "negbin"){
-    data$model_type <- 1
-  }
-  
-
-  # Set up initial conditions fn --------------------------------------------
-  
-  init_fun <- function(){
-    
-    out <- list()
-    
-    if (data$delays > 0) {
-      out$delay_mean <- array(purrr::map2_dbl(delays$mean, delays$mean_sd, 
-                                         ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
-      out$delay_sd <- array(purrr::map2_dbl(delays$sd, delays$sd_sd, 
-                                       ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
-  
-    }
-
-  if (!fixed) {
-    out$eta <- array(rnorm(data$M, mean = 0, sd = 1))
-    out$rho <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2))
-    out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
-  }
-  if (data$model_type == 1) {
-    out$rep_phi <- array(rexp(1, 1))
-  }
-  
-  if (estimate_rt) {
-    out$initial_infections <- array(rnorm(mean_shift, mean = 0, sd = 0.1))
-    out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
-                          scale = (rt_prior$sd^2) / rt_prior$mean))
-    out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
-                                               sd = generation_time$mean_sd))
-    out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
-                                              sd = generation_time$sd_sd))
-    
-    if (break_no > 0) {
-      out$rt_break_eff <- array(rlnorm(break_no, 0, 0.1))
-    }
-  }
-  
-  return(out)
-  }
-  
-  # Load and run the stan model ---------------------------------------------
+  # Set up default settings -------------------------------------------------
   if (missing(model)) {
     model <- NULL
   }
@@ -518,117 +377,34 @@ estimate_infections <- function(reported_cases, family = "negbin",
     model <- stanmodels$estimate_infections
   }
   
-  if (verbose) {
-    futile.logger::flog.debug(paste0("Running for ", samples," samples (across ", chains,
-                                     " chains each with a warm up of ", warmup, " iterations each) and ",
-                                     data$t," time steps of which ", horizon, " are a forecast"))
-  }
+ default_args <- list(
+   object = model,
+   data = data,
+   init = create_initial_conditions(data, delays, rt_prior, generation_time, mean_shift),
+   iter = ceiling(samples / chains) + warmup,
+   warmup = warmup, 
+   cores = cores, 
+   chains = chains,
+   control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth),
+   refresh = ifelse(verbose, 50, 0),
+   save_warmup = debug)  
 
-  fit <- rstan::sampling(model, data = data, chains = chains,
-                         init = init_fun, 
-                         iter = ceiling(samples / chains) + warmup, 
-                         warmup = warmup, cores = cores,
-                         control = list(adapt_delta = adapt_delta,
-                                        max_treedepth = max_treedepth),
-                         refresh = ifelse(verbose, 50, 0),
-                         save_warmup = debug)
+ # Join with user supplied settings ----------------------------------------
+ if (!is.null(stan_args)) {
+   default_args <- default_args[[setdiff(names(default_args), names(stan_args))]]
+   args <- c(default_args, stan_args)
+ }else{
+   args <- default_args
+ }
+ 
+  # Fit model ---------------------------------------------------------------
+  fit <- fit_model(args, future = future, max_execution_time = max_execution_time,
+                   verbose = verbose, stuck_chains = stuck_chains)
   
   # Extract parameters of interest from the fit -----------------------------
-  
-  ## Extract sample from stan object
-  samples <- rstan::extract(fit)
-  
-  ## Construct reporting list
-  out <- list()
-  
-  ## Generic data.frame reporting function
-  extract_parameter <- function(param, samples, dates) {
-    param_df <- data.table::as.data.table(
-      t(
-        data.table::as.data.table(
-          samples[[param]]
-        )
-      ))
-    
-    param_df <- param_df[, time := 1:.N]
-    param_df <- 
-      data.table::melt(param_df, id.vars = "time",
-                       variable.name = "var")
-    
-    param_df <- param_df[, var := NULL][, sample := 1:.N, by = .(time)]
-    param_df <- param_df[, date := dates, by = .(sample)]
-    param_df <- param_df[, .(parameter = param, time, date, 
-                             sample, value)]
-    
-    return(param_df)
-  }
-  
-  ## Report infections, and R
-  out$infections <- extract_parameter("infections", 
-                                      samples,
-                                      reported_cases$date)
-  
-  out$reported_cases <- extract_parameter("imputed_reports", 
-                                          samples, 
-                                          reported_cases$date[-(1:mean_shift)])
-  
-  if (estimate_rt) {
-    out$R <- extract_parameter("R", 
-                               samples,
-                               reported_cases$date[-(1:mean_shift)])
-    
-    out$growth_rate <- extract_parameter("r", 
-                                         samples,
-                                         reported_cases$date[-(1:mean_shift)])
-    
-    if (break_no > 0) {
-      out$breakpoints <- extract_parameter("rt_break_eff", 
-                                           samples, 
-                                           1:break_no)
-      
-      out$breakpoints <- out$breakpoints[, strat := date][, c("time", "date") := NULL]
-    }
-  }
-  
-    
-    if (estimate_week_eff) {
-      out$day_of_week <- extract_parameter("day_of_week_eff", 
-                                           samples,
-                                           1:7)
-      
-      char_day_of_week <- data.table::data.table(wday = c("Monday", "Tuesday", "Wednesday",
-                                                          "Thursday", "Friday", "Saturday",
-                                                          "Sunday"),
-                                                 time = 1:7)
-      out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][, 
-                                         strat := as.character(wday)][,`:=`(time = NULL, date = NULL, wday = NULL)]
-    }
- 
-  if (data$delays > 0) {
-    out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
-    out$delay_mean <- out$delay_mean[, strat := as.character(time)][,
-                                                                    time := NULL][, date := NULL]
-    
-    out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$delays)
-    out$delay_sd <- out$delay_sd[, strat :=  as.character(time)][,
-                                                                 time := NULL][, date := NULL]
-    
-  }
-
-    extract_static_parameter <- function(param) {
-      data.table::data.table(
-        parameter = param,
-        sample = 1:length(samples[[param]]),
-        value = samples[[param]])
-    }
-    
-    if (estimate_rt) {
-      out$gt_mean <- extract_static_parameter("gt_mean")
-      out$gt_mean <- out$gt_mean[, value := value.V1][, value.V1 := NULL]
-      
-      out$gt_sd <- extract_static_parameter("gt_sd")
-      out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
-    }
+  out <- extract_parameter_samples(fit, data, 
+                                   reported_inf_dates = reported_cases$date,
+                                   reported_dates = reported_cases$date[-(1:mean_shift)])
   
     ## Add prior infections
     if (no_delays > 0) {
@@ -639,46 +415,138 @@ estimate_infections <- function(reported_cases, family = "negbin",
     }
     
 # Format output -----------------------------------------------------------
-    
- format_out <- list()
+  format_out <- format_fit(posterior_samples = out, 
+                           horizon = horizon,
+                           shift = mean_shift,
+                           burn_in = burn_in,
+                           start_date = start_date)
   
- ## Bind all samples together
- format_out$samples <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
- 
- if (is.null(format_out$samples$strat)) {
-  format_out$samples <- format_out$samples[, strat := NA]
- }
- ## Add type based on horizon
- format_out$samples <- format_out$samples[,
-          type := data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon), 
-                                      "forecast", 
-                                      data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon - mean_shift),
-                                      "estimate based on partial data",                    
-                                      "estimate"))]
- 
- ## Remove burn in period if specified
- if (burn_in > 0) {
-   format_out$samples <- format_out$samples[is.na(date) | date >= (start_date + lubridate::days(burn_in))]
- }
- 
- ## Summarise samples
- format_out$summarised <- data.table::copy(format_out$samples)[, .(
-   bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
-   top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
-   lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[1]])),
-   upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
-   central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[1]])), 
-   central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[2]])),
-   median = as.numeric(median(value, na.rm = TRUE)),
-   mean = as.numeric(mean(value, na.rm = TRUE)),
-   sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable, strat, type)]
- 
- ## Order summarised samples
- data.table::setorder(format_out$summarised, variable, date)  
- 
- if (return_fit) {
-  format_out$fit <- fit
- }
- 
+  ## Join stan fit if required
+  if (return_fit) {
+    format_out$fit <- fit
+  }
+  
   return(format_out)
 }
+
+
+#' Fit a Stan Model
+#'
+#' @param args List of stan arguments
+#' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
+#' @param max_execution_time Numeric, defauls to Inf. What is the maximum execution time per chain. Results will
+#' still be returned as long as at least 2 chains complete successfully within the timelimit. 
+#' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
+#' @param stuck_chains Numeric, defaults to 0. Used to test failing chain scenarios
+#' @importFrom futile.logger flog.debug flog.info flog.error
+#' @importFrom R.utils withTimeout
+#' @importFrom future.apply future_lapply
+#' @importFrom purrr compact
+#' @importFrom rstan sflist2stanfit sampling
+#' @return A stan model object
+fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = FALSE, 
+                      stuck_chains = 0) {
+  if (verbose) {
+    futile.logger::flog.debug(paste0("Running for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
+                                     " chains each with a warm up of ", args$warmup, " iterations each) and ",
+                                     args$data$t," time steps of which ", args$data$horizon, " are a forecast"))
+  }
+  
+  fit_chain <- function(chain, stan_args, max_time) {
+    fit <- R.utils::withTimeout(do.call(rstan::sampling, stan_args), 
+                                timeout = max_time,
+                                onTimeout = "silent")
+    return(fit)
+  }
+  
+  stop_timeout <- function() {
+    if (is.null(fit)) {
+      futile.logger::flog.error("fitting timed out - try increasing max_execution_time")
+      stop("model fitting timed out - try increasing max_execution_time")
+    }
+  }
+  
+  if(!future) {
+    fit <- fit_chain(1, stan_args = args, max_time = max_execution_time)
+    if (stuck_chains > 0) {fit <- NULL}
+    stop_timeout()
+  }else{
+    chains <- args$chains
+    args$chains <- 1
+    args$cores <- 1
+     
+    fits <- future.apply::future_lapply(1:chains, fit_chain, 
+                                       stan_args = args, 
+                                       max_time = max_execution_time)
+    if (stuck_chains > 0) {fits[1:stuck_chains] <- NULL}
+    fit <- purrr::compact(fits)
+    if (length(fit) == 0) {
+      fit <- NULL
+      stop_timeout()
+    }else{
+      failed_chains <- chains - length(fit)
+      if (failed_chains > 0) {
+        futile.logger::flog.info(paste0(failed_chains, " chains failed or were timed out."))
+        if ((chains - failed_chains) < 2) {
+          stop("model fitting failed as too few chains were returned to assess convergence (2 or more required)")
+        }
+      }
+      fit <- rstan::sflist2stanfit(fit)
+    }
+  }
+  return(fit)
+}
+
+#' Format Posterior Samples
+#'
+#' @param posterior_samples A list of posterior samples as returned by `extract_parameter_samples`
+#' @param horizon Numeric, forecast horizon
+#' @param shift Numeric, the shift to apply to estimates
+#' @param burn_in Numeric, number of days to discard estimates for
+#' @param start_date Date, earliest date with data
+#' @importFrom data.table fifelse rbindlist copy setorder
+#' @importFrom lubridate days
+#' @importFrom purrr map_dbl
+#' @importFrom HDInterval hdi
+#' @return A list of samples and summarised posterior parameter estimates
+format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date){
+ 
+  format_out <- list()
+  
+  ## Bind all samples together
+  format_out$samples <- data.table::rbindlist(posterior_samples, fill = TRUE, idcol = "variable")
+  
+  if (is.null(format_out$samples$strat)) {
+    format_out$samples <- format_out$samples[, strat := NA]
+  }
+  ## Add type based on horizon
+  format_out$samples <- format_out$samples[,
+                                           type := data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon), 
+                                                                       "forecast", 
+                                                                       data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon - shift),
+                                                                                           "estimate based on partial data",                    
+                                                                                           "estimate"))]
+  
+  ## Remove burn in period if specified
+  if (burn_in > 0) {
+    format_out$samples <- format_out$samples[is.na(date) | date >= (start_date + lubridate::days(burn_in))]
+  }
+  
+  ## Summarise samples
+  format_out$summarised <- data.table::copy(format_out$samples)[, .(
+    bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
+    top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
+    lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[1]])),
+    upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
+    central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[1]])), 
+    central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[2]])),
+    median = as.numeric(median(value, na.rm = TRUE)),
+    mean = as.numeric(mean(value, na.rm = TRUE)),
+    sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable, strat, type)]
+  
+  ## Order summarised samples
+  data.table::setorder(format_out$summarised, variable, date)  
+  
+  return(format_out)
+}
+

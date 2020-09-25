@@ -28,8 +28,8 @@
 #'                           max = 30)
 #'                    
 #' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1))
-#' ## Set max allowed delay to 60 days to truncate computation
-#' reporting_delay$max <- 60
+#' ## Set max allowed delay to 30 days to truncate computation
+#' reporting_delay$max <- 30
 #' 
 #' ## Example case data
 #' reported_cases <- EpiNow2::example_confirmed[1:40] 
@@ -72,10 +72,11 @@ epinow <- function(reported_cases, family = "negbin",
                    rt_prior = list(mean = 1, sd = 1), model,
                    prior_smoothing_window = 7, cores = 1, chains = 4,
                    samples = 1000, warmup = 200, adapt_delta = 0.99, max_treedepth = 15,
+                   stan_args = NULL, future = FALSE, max_execution_time = Inf,
                    estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE,
                    burn_in = 0, stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
                    return_fit = FALSE, forecast_model, horizon = 7, ensemble_type = "mean",
-                   return_estimates = TRUE, target_folder, target_date, verbose = TRUE,
+                   return_estimates = TRUE, target_folder, target_date, verbose = FALSE,
                    debug = FALSE) {
 
   if (!return_estimates & missing(target_folder)) {
@@ -146,6 +147,9 @@ epinow <- function(reported_cases, family = "negbin",
                                    cores = cores, chains = chains,
                                    samples = samples,
                                    warmup = warmup,
+                                   stan_args = stan_args,
+                                   future = future,
+                                   max_execution_time = max_execution_time,
                                    estimate_rt = estimate_rt,
                                    estimate_week_eff = estimate_week_eff,
                                    estimate_breakpoints = estimate_breakpoints,
@@ -291,7 +295,6 @@ epinow <- function(reported_cases, family = "negbin",
 #' @param all_regions_summary Logical, defaults to `TRUE`. Should summary plots for all regions be returned
 #' rather than just regions of interest.
 #' @param return_timings Logical, defaults to FALSE. If not returning estimates can be used to request timing data is returned.
-#' @param max_execution_time Numeric, defaults to Inf. If set will kill off processing of each region after x seconds.
 #' @param ... Pass additional arguments to `epinow`
 #' @inheritParams epinow
 #' @inheritParams regional_summary
@@ -349,12 +352,9 @@ regional_epinow <- function(reported_cases,
                             all_regions_summary = TRUE,
                             return_estimates = TRUE,
                             max_plot = 10,
-                            return_timings = FALSE,
-                            max_execution_time = Inf,
-                            ...) {
+                            return_timings = FALSE, ...) {
 
   ## Set input to data.table
-  reported_cases <- data.table::setDT(reported_cases)
 
   if (missing(target_date)) {
     target_date <- as.character(max(reported_cases$date))
@@ -365,86 +365,12 @@ regional_epinow <- function(reported_cases,
   }
 
   futile.logger::flog.info("Reporting estimates using data up to: %s", target_date)
-
-
-  ## Check for regions more than required time points with cases
-  eval_regions <- data.table::copy(reported_cases)[, .(confirm = confirm > 0), by = c("region", "date")][,
-    .(confirm = sum(confirm, na.rm = TRUE)), by = "region"][confirm >= non_zero_points]$region
-
-  eval_regions <- unique(eval_regions)
-
-  ## Exclude zero regions
-  reported_cases <- reported_cases[!is.na(region)][region %in% eval_regions]
-
-  futile.logger::flog.info("Producing estimates for: %s",
-                           paste(eval_regions, collapse = ", "))
-
-  ## regional pipelines
+  
+  ## Clean regions
+  reported_cases <- clean_regions(reported_cases, non_zero_points)
   regions <- unique(reported_cases$region)
 
   ## Function to run the pipeline in a region
-  run_region <- function(target_region,
-                         reported_cases,
-                         cores = cores,
-                         max_execution_time = max_execution_time,
-                         ...) {
-    futile.logger::flog.info("Initialising estimates for: %s", target_region)
-
-    data.table::setDTthreads(threads = 1)
-
-    if (!is.null(target_folder)) {
-      target_folder <- file.path(target_folder, target_region)
-    }
-
-    futile.logger::flog.trace("filtering data for target region %s", target_region)
-    regional_cases <- reported_cases[region %in% target_region][, region := NULL]
-
-    futile.logger::flog.trace("calling epinow2::epinow to process data for %s", target_region)
-    timing <- system.time(
-      out <- tryCatch(
-        R.utils::withTimeout(
-          withCallingHandlers(EpiNow2::epinow(
-            reported_cases = regional_cases,
-            target_folder = target_folder,
-            target_date = target_date,
-            return_estimates = TRUE,
-            cores = cores,
-            ...),
-                              warning = function(w) {
-                                futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call))
-                                rlang::cnd_muffle(w)
-                              }
-          ),
-          timeout = max_execution_time
-        ),
-        TimeoutException = function(ex) {
-          futile.logger::flog.warn("region %s timed out", target_region)
-          return(list("timing" = Inf))
-        }
-      )
-    )
-    
-    if (exists("estimates", out) & !return_estimates) {
-      out$estimates$samples <- NULL
-    }
-    if (exists("forecast", out) & !return_estimates) {
-      out$forecast$samples <- NULL
-    }
-    if (exists("estimated_reported_cases", out) & !return_estimates) {
-      out$estimated_reported_cases$samples <- NULL
-    }
-    if (exists("plots", out) & !return_estimates) {
-      out$estimated_reported_cases$plots <- NULL
-    }
-    if (!exists("timing", out)) { # only exists if it failed and is Inf
-      out$timing = timing['elapsed']
-    }
-    if (exists("summary", out)) { # if it failed a warning would have been output above
-      futile.logger::flog.info("Completed estimates for: %s", target_region)
-    }
-    return(out)
-  }
-
   safe_run_region <- purrr::safely(run_region)
 
   ## Run regions (make parallel using future::plan)
@@ -452,24 +378,16 @@ regional_epinow <- function(reported_cases,
   regional_out <- future.apply::future_lapply(regions, safe_run_region,
                                               reported_cases = reported_cases,
                                               cores = cores,
-                                              max_execution_time = max_execution_time,
+                                              target_folder = target_folder, 
+                                              target_date = target_date,
+                                              return_estimates = return_estimates,
                                               ...,
                                               future.scheduling = Inf)
 
-  # names on regional_out
-  names(regional_out) <- regions
-  problems <- purrr::keep(regional_out, ~!is.null(.$error))
-
-  futile.logger::flog.trace("%s runtime errors caught", length(problems))
-  for (location in names(problems)) {
-    # output timeout / error
-      futile.logger::flog.info("Runtime error in %s : %s - %s", location,
-                               problems[[location]]$error$message, 
-                               toString(problems[[location]]$error$call))
-  }
-
-  regional_out <- purrr::map(regional_out, ~.$result)
-  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~ is.finite(.$timing))
+  out <- process_regions(regional_out, regions)
+  regional_out <- out$all
+  sucessful_regional_out <- out$successful
+  
   # only attempt the summary if there are at least some results
   if (summary && length(sucessful_regional_out) > 0) {
     if (missing(summary_dir)) {
@@ -509,4 +427,137 @@ regional_epinow <- function(reported_cases,
   }else {
     return(invisible(NULL))
   }
+}
+
+#' Clean Regions
+#'
+#' @inheritParams regional_epinow
+#' @importFrom data.table copy setDT
+#' @importFrom futile.logger flog.info
+#' @return A dataframe of cleaned regional data
+clean_regions <- function(reported_cases, non_zero_points) {
+  reported_cases <- data.table::setDT(reported_cases)
+  ## Check for regions more than required time points with cases
+  eval_regions <- data.table::copy(reported_cases)[, .(confirm = confirm > 0), by = c("region", "date")][,
+                                                     .(confirm = sum(confirm, na.rm = TRUE)), by = "region"][confirm >= non_zero_points]$region
+  
+  eval_regions <- unique(eval_regions)
+  
+  futile.logger::flog.info("Producing estimates for: %s",
+                           paste(eval_regions, collapse = ", "))
+  
+  ## Exclude zero regions
+  reported_cases <- reported_cases[!is.na(region)][region %in% eval_regions]
+  
+  return(reported_cases)
+}
+
+
+
+#' Run epinow with Regional Processing Code
+#' @param target_region Character string indicating the region being evaluated
+#' @inheritParams regional_epinow
+#' @importFrom data.table setDTthreads
+#' @importFrom futile.logger flog.trace flog.warn
+#' @return A list of processed output as produced by `process_region`
+run_region <- function(target_region,
+                       reported_cases,
+                       target_folder,
+                       target_date,
+                       return_estimates,
+                       cores = cores,
+                       ...) {
+  futile.logger::flog.info("Initialising estimates for: %s", target_region)
+  
+  data.table::setDTthreads(threads = 1)
+  
+  if (!is.null(target_folder)) {
+    target_folder <- file.path(target_folder, target_region)
+  }
+  
+  futile.logger::flog.trace("filtering data for target region %s", target_region)
+  regional_cases <- reported_cases[region %in% target_region][, region := NULL]
+  
+  futile.logger::flog.trace("calling epinow2::epinow to process data for %s", target_region)
+  timing <- system.time(
+    out <- tryCatch(
+      withCallingHandlers(EpiNow2::epinow(
+        reported_cases = regional_cases,
+        target_folder = target_folder,
+        target_date = target_date,
+        return_estimates = TRUE,
+        cores = cores,
+        ...),
+        warning = function(w) {
+          futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call))
+          rlang::cnd_muffle(w)
+        }
+      ),
+      TimeoutException = function(ex) {
+        futile.logger::flog.warn("region %s timed out", target_region)
+        return(list("timing" = Inf))
+      }
+    )
+  )
+  out <- process_region(out, return_estimates, target_region, timing)
+  return(out)
+}
+
+#' Process regional estimate
+#'
+#' @param out List of output returned by `epinow`
+#' @param timing Output from `Sys.time` 
+#' @inheritParams regional_epinow
+#' @inheritParams run_region
+#' @importFrom futile.logger flog.info
+#' @return A list of processed output
+process_region <- function(out, return_estimates, target_region, timing) {
+  
+  if (exists("estimates", out) & !return_estimates) {
+    out$estimates$samples <- NULL
+  }
+  if (exists("forecast", out) & !return_estimates) {
+    out$forecast$samples <- NULL
+  }
+  if (exists("estimated_reported_cases", out) & !return_estimates) {
+    out$estimated_reported_cases$samples <- NULL
+  }
+  if (exists("plots", out) & !return_estimates) {
+    out$estimated_reported_cases$plots <- NULL
+  }
+  if (!exists("timing", out)) { # only exists if it failed and is Inf
+    out$timing = timing['elapsed']
+  }
+  if (exists("summary", out)) { # if it failed a warning would have been output above
+    futile.logger::flog.info("Completed estimates for: %s", target_region)
+  }
+  
+  return(out)
+}
+
+
+#' Process all Region Estimates
+#'
+#' @param regional_out A list of output from multiple runs of `regional_epinow`
+#' @param regions A character vector identifying the regions that have been run
+#' @importFrom purrr keep map compact
+#' @importFrom futile.logger flog.trace flog.info
+#' @return A list of all regional estimates and successful regional estimates
+process_regions <- function(regional_out, regions) {
+  
+  # names on regional_out
+  names(regional_out) <- regions
+  problems <- purrr::keep(regional_out, ~!is.null(.$error))
+  
+  futile.logger::flog.trace("%s runtime errors caught", length(problems))
+  for (location in names(problems)) {
+    # output timeout / error
+    futile.logger::flog.info("Runtime error in %s : %s - %s", location,
+                             problems[[location]]$error$message, 
+                             toString(problems[[location]]$error$call))
+  }
+  
+  regional_out <- purrr::map(regional_out, ~.$result)
+  sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~ is.finite(.$timing))
+  return(list(all = regional_out, successful = sucessful_regional_out))
 }

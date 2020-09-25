@@ -20,6 +20,9 @@ epinow(
   warmup = 200,
   adapt_delta = 0.99,
   max_treedepth = 15,
+  stan_args = NULL,
+  future = FALSE,
+  max_execution_time = Inf,
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
@@ -34,7 +37,7 @@ epinow(
   return_estimates = TRUE,
   target_folder,
   target_date,
-  verbose = TRUE,
+  verbose = FALSE,
   debug = FALSE
 )
 }
@@ -83,6 +86,16 @@ for the prior based on reported cases.}
 \item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
 
 \item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
+
+\item{stan_args}{List, defaults to \code{NULL}. User supplied arguments to be passed to \code{rstan::sampling}. Overwrites all
+defaults.}
+
+\item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
+fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
+
+\item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout.
+When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation
+will fail with an informative error.}
 
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
@@ -152,8 +165,8 @@ incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
                           max = 30)
                    
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1))
-## Set max allowed delay to 60 days to truncate computation
-reporting_delay$max <- 60
+## Set max allowed delay to 30 days to truncate computation
+reporting_delay$max <- 30
 
 ## Example case data
 reported_cases <- EpiNow2::example_confirmed[1:40] 

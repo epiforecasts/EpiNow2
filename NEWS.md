@@ -7,7 +7,10 @@
 * Added a summary of the growth rate and doubling time.
 * Added a `samples` argument to `get_regional_results` to make loading in samples optional. This also allows samples to be dropped when
   using `regional_epinow` which reduces RAM usage.
-  
+* Cleaned up implementation of `estimate_infections` to move processing code into internal functions
+* Adds basic testing of functions.
+* Fixed y axis max for `plot_summary`.
+
 # EpiNow2 1.1.0
 
 * Implemented reporting templates

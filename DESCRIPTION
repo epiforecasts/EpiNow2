@@ -82,6 +82,7 @@ Suggests:
     rnaturalearth,
     spelling,
     tidyr,
+    testthat
 Additional_repositories: 
   https://epiforecasts.io/drat/
 Roxygen: list(markdown = TRUE)

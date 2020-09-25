@@ -137,6 +137,22 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 }  
 
 
+#' Allocate Delays into Required Stan Format
+#'
+#' @param delay_var List of numeric delays
+#' @param no_delays Numeric, number of delays
+#'
+#' @return A numeric array
+allocate_delays <- function(delay_var, no_delays) {
+  if (no_delays > 0) {
+    out <- unlist(delay_var)
+  }else{
+    out <- 1
+  }
+  return(array(out))
+}
+
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 
 globalVariables(
@@ -155,5 +171,5 @@ globalVariables(
     "value", "var", "vars", "viridis_palette", "window", ".", "%>%",
     "New confirmed cases by infection date", "Data", "R", "reference",
     ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate", 
-    "point", "strat", "estimate", "breakpoint", "variable", "value.V1"))
+    "point", "strat", "estimate", "breakpoint", "variable", "value.V1", "central_lower", "central_upper"))
 
