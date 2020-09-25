@@ -7,6 +7,8 @@
 create_initial_conditions(data, delays, rt_prior, generation_time, mean_shift)
 }
 \arguments{
+\item{data}{A list of data as produced by \code{create_stan_data.}}
+
 \item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
 Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
