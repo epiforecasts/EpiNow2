@@ -25,9 +25,6 @@ cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
 
-
-
-
 ## Errors are handled correctly
 test_that("estimate_infections fails as expected when given a very short timeout", {
   skip_on_cran()

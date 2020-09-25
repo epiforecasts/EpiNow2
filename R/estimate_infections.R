@@ -110,7 +110,8 @@
 #'                      
 #' plots$summary
 #'
-#' # Run the model with default settings using the future backend (combine with a call to future::plan to make this parallel).
+#' # Run the model with default settings using the future backend 
+#' ## (combine with a call to future::plan to make this parallel).
 #' def_future <- estimate_infections(reported_cases, family = "negbin",
 #'                                   generation_time = generation_time, 
 #'                                  delays = list(incubation_period, reporting_delay),
