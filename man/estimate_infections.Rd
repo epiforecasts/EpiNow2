@@ -33,7 +33,8 @@ estimate_infections(
   max_execution_time = Inf,
   return_fit = FALSE,
   verbose = TRUE,
-  debug = FALSE
+  debug = FALSE,
+  stuck_chains = 0
 )
 }
 \arguments{
@@ -124,6 +125,8 @@ will fail with an informative error.}
 \item{verbose}{Logical, defaults to \code{TRUE}. Should verbose progress messages be printed.}
 
 \item{debug}{Logical, defaults to \code{FALSE}. Enables debug model in which additional diagnostics are available}
+
+\item{stuck_chains}{Numeric, defaults to 0. Used to test failing chain scenarios}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported

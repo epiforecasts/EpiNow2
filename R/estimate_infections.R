@@ -63,6 +63,7 @@
 #' When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation 
 #' will fail with an informative error.
 #' @export
+#' @inheritParams fit_model
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose 
 #' @importFrom lubridate wday days
@@ -286,7 +287,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
                                 stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
                                 adapt_delta = 0.99, max_treedepth = 15, 
                                 future = FALSE, max_execution_time = Inf,
-                                return_fit = FALSE, verbose = TRUE, debug = FALSE){
+                                return_fit = FALSE, verbose = TRUE, debug = FALSE, stuck_chains = 0){
   
 
   # Check fix setting -------------------------------------------------------
@@ -398,7 +399,7 @@ estimate_infections <- function(reported_cases, family = "negbin",
  
   # Fit model ---------------------------------------------------------------
   fit <- fit_model(args, future = future, max_execution_time = max_execution_time,
-                   verbose = verbose)
+                   verbose = verbose, stuck_chains = stuck_chains)
   
   # Extract parameters of interest from the fit -----------------------------
   out <- extract_parameter_samples(fit, data, 
@@ -436,13 +437,15 @@ estimate_infections <- function(reported_cases, family = "negbin",
 #' @param max_execution_time Numeric, defauls to Inf. What is the maximum execution time per chain. Results will
 #' still be returned as long as at least 2 chains complete successfully within the timelimit. 
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
+#' @param stuck_chains Numeric, defaults to 0. Used to test failing chain scenarios
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom R.utils withTimeout
 #' @importFrom future.apply future_lapply
 #' @importFrom purrr compact
 #' @importFrom rstan sflist2stanfit sampling
 #' @return A stan model object
-fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = FALSE) {
+fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = FALSE, 
+                      test = FALSE, stuck_chains = 0) {
   if (verbose) {
     futile.logger::flog.debug(paste0("Running for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
                                      " chains each with a warm up of ", args$warmup, " iterations each) and ",
@@ -465,6 +468,7 @@ fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = 
   
   if(!future) {
     fit <- fit_chain(1, stan_args = args, max_time = max_execution_time)
+    if (stuck_chains > 0) {fit <- NULL}
     stop_timeout()
   }else{
     chains <- args$chains
@@ -474,6 +478,7 @@ fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = 
     fits <- future.apply::future_lapply(1:chains, fit_chain, 
                                        stan_args = args, 
                                        max_time = max_execution_time)
+    if (stuck_chains > 0) {fits[[1:stuck_chains]] <- NULL}
     fit <- purrr::compact(fits)
     if (length(fit) == 0) {
       fit <- NULL

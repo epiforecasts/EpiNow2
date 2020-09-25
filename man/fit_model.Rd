@@ -4,7 +4,14 @@
 \alias{fit_model}
 \title{Fit a Stan Model}
 \usage{
-fit_model(args, future = FALSE, max_execution_time = Inf, verbose = FALSE)
+fit_model(
+  args,
+  future = FALSE,
+  max_execution_time = Inf,
+  verbose = FALSE,
+  test = FALSE,
+  stuck_chains = 0
+)
 }
 \arguments{
 \item{args}{List of stan arguments}
@@ -15,6 +22,8 @@ fit_model(args, future = FALSE, max_execution_time = Inf, verbose = FALSE)
 still be returned as long as at least 2 chains complete successfully within the timelimit.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress information be returned.}
+
+\item{stuck_chains}{Numeric, defaults to 0. Used to test failing chain scenarios}
 }
 \value{
 A stan model object
