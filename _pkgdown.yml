@@ -20,8 +20,6 @@ navbar:
     - icon: fa-github
       href: https://github.com/epiforecasts/EpiNow2
 
-
-
 reference:
   - title: Perform End-to-End Analyses
     desc: Functions that faciliate end-to-end analysis including imputing cases by infection, estimating Rt and reporting results.
@@ -73,6 +71,15 @@ reference:
   - title: Utilities
     desc: Utility functions
     contents: 
+      - contains("create")
+      - allocate_delays
+      - fit_model
+      - contains("extract")
+      - format_fit
+      - clean_regions
+      - run_region
+      - process_region
+      - process_regions
       - get_regions
       - get_raw_result
       - get_regional_results
