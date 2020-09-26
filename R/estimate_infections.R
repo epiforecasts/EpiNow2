@@ -477,7 +477,8 @@ fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = 
      
     fits <- future.apply::future_lapply(1:chains, fit_chain, 
                                        stan_args = args, 
-                                       max_time = max_execution_time)
+                                       max_time = max_execution_time,
+                                       future.seed = TRUE)
     if (stuck_chains > 0) {fits[1:stuck_chains] <- NULL}
     fit <- purrr::compact(fits)
     if (length(fit) == 0) {
