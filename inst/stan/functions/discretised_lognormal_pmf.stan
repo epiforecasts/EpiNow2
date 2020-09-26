@@ -4,8 +4,8 @@
     real adj_y = y + small;
     return((normal_cdf((log(adj_y + 1) - mu) / sigma, 0.0, 1.0) -
             normal_cdf((log(adj_y) - mu) / sigma, 0.0, 1.0)) /
-           (normal_cdf((log(max_val + 1 + small) - mu) / sigma, 0.0, 1.0) -
-            normal_cdf((log(1 + small) - mu) / sigma, 0.0, 1.0)));
+           (normal_cdf((log(max_val + small) - mu) / sigma, 0.0, 1.0) -
+            normal_cdf((log(small) - mu) / sigma, 0.0, 1.0)));
   }
   
   
