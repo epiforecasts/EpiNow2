@@ -195,7 +195,7 @@ transformed parameters {
     vector[max_delay[s]] rev_delay = rep_vector(1e-5, max_delay[s]);
     for (j in 1:(max_delay[s])) {
       rev_delay[j] +=
-        discretised_lognormal_pmf(max_delay[s] - j + 1, delay_mean[s], delay_sd[s], max_delay[s]);
+        discretised_lognormal_pmf(max_delay[s] - j, delay_mean[s], delay_sd[s], max_delay[s]);
     }
      if (s == 1) {
        reports_hold = convolve(infections, rev_delay);
