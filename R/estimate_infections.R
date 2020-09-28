@@ -71,24 +71,11 @@
 #' reported_cases <- reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"),
 #'                                                                      1, 0)]
 #' # Set up example generation time
-#' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
-#'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
-#'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
-#'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-#'                         max = 30)
+#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # Set delays between infection and case report 
-#' # (any number of delays can be specifed here)             
-#' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
-#'                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
-#'                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
-#'                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
-#'                           max = 30)
-#'                    
-#' reporting_delay <- list(mean = log(5),
-#'                         mean_sd = log(2),
-#'                         sd = log(2),
-#'                         sd_sd = log(1.5),
-#'                         max = 30)
+#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' reporting_delay <- list(mean = log(5), mean_sd = log(2),
+#'                         sd = log(2), sd_sd = log(1.5), max = 30)
 #'                         
 #' # Run model with default settings
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,

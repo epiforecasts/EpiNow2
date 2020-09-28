@@ -53,23 +53,10 @@ get_raw_result <- function(file, region, date,
 #' @examples
 #' \donttest{
 #' # Construct example distributions
-#' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
-#'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
-#'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
-#'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-#'                         max = 30)
-#'                           
-#' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
-#'                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
-#'                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
-#'                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
-#'                           max = 30)
-#'                    
-#' reporting_delay <- list(mean = log(10),
-#'                         mean_sd = 0.8,
-#'                         sd = log(2),
-#'                         sd_sd = 0.1,
-#'                         max = 30)
+#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+#' 
 #'                         
 #' # Uses example case vector from EpiSoon
 #' cases <- EpiNow2::example_confirmed[1:30]
@@ -81,10 +68,8 @@ get_raw_result <- function(file, region, date,
 #' # Run basic nowcasting pipeline
 #' regional_out <- regional_epinow(reported_cases = cases,
 #'                                 generation_time = generation_time,
-#'                                 incubation_period = incubation_period,
-#'                                 reporting_delay = reporting_delay,
-#'                                 samples = 2000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-#'                                 adapt_delta = 0.95, chains = 4, verbose = TRUE,
+#'                                 delays = list(incubation_period, reporting_delay),
+#'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)),
 #'                                 summary = FALSE)
 #'
 #' summary_only <- get_regional_results(regional_out$regional, forecast = FALSE, samples = FALSE)
@@ -192,5 +177,40 @@ get_dist <- function(data, disease, source, max_value = 30) {
   data <- data[disease == target_disease][source == target_source]
   
   dist <- as.list(data[, .(mean, mean_sd, sd, sd_sd, max = max_value)])
+  return(dist)
+}
+
+#'  Get a Literature Distribution for the Generation Time
+#'
+#' @description Extracts a literature distribution from `generation_times`
+#' @inheritParams get_dist
+#' @inherit get_dist
+#' @export
+#'
+#' @examples
+#' get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+get_generation_time <- function(disease, source, max_value = 30) {
+  dist <- get_dist(EpiNow2::generation_times,
+                   disease = disease, source = source, 
+                   max_value = max_value)
+  
+  return(dist)
+}
+
+
+#'  Get a Literature Distribution for the Incubation Period
+#'
+#' @description Extracts a literature distribution from `incubation_periods`
+#' @inheritParams get_dist
+#' @inherit get_dist
+#' @export
+#'
+#' @examples
+#' get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+get_incubation_period <- function(disease, source, max_value = 30) {
+  dist <- get_dist(EpiNow2::incubation_periods,
+                   disease = disease, source = source, 
+                   max_value = max_value)
+  
   return(dist)
 }

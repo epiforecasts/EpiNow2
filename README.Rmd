@@ -82,17 +82,8 @@ reporting_delay
 Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow/tree/master/data-raw) for the code that generates these estimates).
 
 ```{r}
-generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
-                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
-                         sd = EpiNow2::covid_generation_times[1, ]$sd,
-                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-                         max = 30)
-
-incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
-                          mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
-                          sd = EpiNow2::covid_incubation_period[1, ]$sd,
-                          sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
-                          max = 30)
+generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 ```
 
 ### [epinow](https://epiforecasts.io/EpiNow2/reference/epinow.html) 

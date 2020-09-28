@@ -55,33 +55,15 @@ if(requireNamespace("EpiSoon")){
 ## Example case data
 reported_cases <- EpiNow2::example_confirmed[1:40]
  
-generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
-                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
-                        sd = EpiNow2::covid_generation_times[1, ]$sd,
-                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-                        max = 30)
-                          
-incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
-                          mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
-                          sd = EpiNow2::covid_incubation_period[1, ]$sd,
-                          sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
-                          max = 30)
-                   
-reporting_delay <- list(mean = log(5),
-                        mean_sd = log(2),
-                        sd = log(2),
-                        sd_sd = log(1.5),
-                        max = 30)
+generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 15)
+
                         
 ## Estimate Rt and infections from data
-out <- estimate_infections(reported_cases, family = "negbin",
-                           generation_time = generation_time,
+out <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           rt_prior = list(mean = 1, sd = 1),
-                           samples = 1000, warmup = 500,
-                           cores = ifelse(interactive(), 4, 1), chains = 4,
-                           estimate_rt = TRUE,
-                           verbose = FALSE, return_fit = TRUE)
+                           stan_args = list(cores = ifelse(interactive(), 4, 1), chains = 4))
 
 ## Forecast Rt and infections from estimates
 forecast <- forecast_infections(
