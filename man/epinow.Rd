@@ -15,6 +15,7 @@ epinow(
   gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_mean = 0, lengthscale_sd
     = 2),
   rt_prior = list(mean = 1, sd = 1),
+  horizon = 7,
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
@@ -27,7 +28,6 @@ epinow(
   prior_smoothing_window = 7,
   return_fit = FALSE,
   forecast_model,
-  horizon = 7,
   ensemble_type = "mean",
   return_estimates = TRUE,
   target_folder,
@@ -72,6 +72,8 @@ the defaults of 0 and 2 (normal distributed truncated at zero).}
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 
+\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
+
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
 \item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
@@ -112,8 +114,6 @@ for the prior based on reported cases.}
 \item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
 for forecasting future Rt and case co An example of the required structure is: \code{function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}}.}
 
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
-
 \item{ensemble_type}{Character string indicating the type of ensemble to use. By default this is
 an unweighted ensemble ("mean") with no other types currently supported.}
 
@@ -147,9 +147,7 @@ incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
                           max = 30)
                    
-reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1))
-## Set max allowed delay to 30 days to truncate computation
-reporting_delay$max <- 30
+reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 
 ## Example case data
 reported_cases <- EpiNow2::example_confirmed[1:40] 
@@ -157,9 +155,7 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 ## Report Rt along with forecasts
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
               delays = list(incubation_period, reporting_delay),
-              rt_prior = list(mean = 1, sd = 1),
-              samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1), chains = 4,
-              verbose = TRUE, return_fit = TRUE)
+              stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 
 out
 
@@ -168,16 +164,15 @@ if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
 
    ## Report Rt along with forecasts
-   out <- epinow(reported_cases = cases, generation_time = generation_time,
+   out <- epinow(reported_cases = cases, samples = 1000, 
+                 generation_time = generation_time,
                  delays = list(incubation_period, reporting_delay),
-                 rt_prior = list(mean = 1, sd = 1),
                  forecast_model = function(y, ...){
                    EpiSoon::forecastHybrid_model(
                      y = y[max(1, length(y) - 21):length(y)],
                      model_params = list(models = "aefz", weights = "equal"),
                      forecast_params = list(PI.combination = "mean"), ...)},
-                 samples = 1000, warmup = 500, cores = ifelse(interactive(), 4, 1), chains = 4,
-                 verbose = TRUE, return_fit = TRUE)
+                  stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 
 out
    }

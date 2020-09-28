@@ -83,6 +83,9 @@ reference:
       - get_regions
       - get_raw_result
       - get_regional_results
+      - get_dist
+      - get_generation_time
+      - get_incubation_period
       - clean_nowcasts
       - make_conf
       - map_prob_change
