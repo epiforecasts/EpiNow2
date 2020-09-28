@@ -274,18 +274,15 @@
 #' plot_estimates(estimate = backcalc$summarised[variable == "infections"],
 #'                reported = reported_cases, ylab = "Cases")
 #' }                                
-estimate_infections <- function(reported_cases, family = "negbin",
+estimate_infections <- function(reported_cases,  model, stan_args = NULL, family = "negbin",
                                 generation_time, delays,
                                 gp = list(basis_prop = 0.3, boundary_scale = 2,
                                           lengthscale_mean = 0, lengthscale_sd = 2),
                                 rt_prior = list(mean = 1, sd = 1),
-                                prior_smoothing_window = 7,
-                                horizon = 7, model, cores = 1, chains = 4,
-                                samples = 1000, warmup = 200, stan_args = NULL,
+                                prior_smoothing_window = 7, horizon = 7,
                                 estimate_rt = TRUE, estimate_week_eff = TRUE,
                                 estimate_breakpoints = FALSE, burn_in = 0,
                                 stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
-                                adapt_delta = 0.99, max_treedepth = 15, 
                                 future = FALSE, max_execution_time = Inf,
                                 return_fit = FALSE, verbose = TRUE, debug = FALSE, stuck_chains = 0){
   
@@ -369,33 +366,9 @@ estimate_infections <- function(reported_cases, family = "negbin",
                            family = family, delays = delays)
 
   # Set up default settings -------------------------------------------------
-  if (missing(model)) {
-    model <- NULL
-  }
-  
-  if (is.null(model)) {
-    model <- stanmodels$estimate_infections
-  }
-  
- default_args <- list(
-   object = model,
-   data = data,
-   init = create_initial_conditions(data, delays, rt_prior, generation_time, mean_shift),
-   iter = ceiling(samples / chains) + warmup,
-   warmup = warmup, 
-   cores = cores, 
-   chains = chains,
-   control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth),
-   refresh = ifelse(verbose, 50, 0),
-   save_warmup = debug)  
 
- # Join with user supplied settings ----------------------------------------
- if (!is.null(stan_args)) {
-   default_args <- default_args[[setdiff(names(default_args), names(stan_args))]]
-   args <- c(default_args, stan_args)
- }else{
-   args <- default_args
- }
+
+
  
   # Fit model ---------------------------------------------------------------
   fit <- fit_model(args, future = future, max_execution_time = max_execution_time,
