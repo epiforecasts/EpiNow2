@@ -360,6 +360,8 @@ lognorm_dist_def <- function(mean, mean_sd,
 #'  of the delay distribution to take.
 #' @param bootstrap_samples Numeric, defaults to 100. The number of samples to take in each bootstrap.
 #' When the sample size of the supplied delay distribution is less than 100 this is used instead.
+#' @param max_value Numeric, defaults to  the maximum value in the observed data. Maximum delay to
+#'  allow (added to output but does impact fitting).
 #' @return A list summarising the bootstrapped distribution
 #' @importFrom purrr transpose
 #' @importFrom future.apply future_lapply
@@ -384,7 +386,8 @@ lognorm_dist_def <- function(mean, mean_sd,
 #'}
 bootstrapped_dist_fit <- function(values,  dist = "lognormal", 
                                   samples = 2000, bootstraps = 10, 
-                                  bootstrap_samples = 250, verbose = FALSE) {
+                                  bootstrap_samples = 250, max_value, 
+                                  verbose = FALSE) {
   
   if (!dist %in% c("gamma", "lognormal")) {
     stop("Only lognormal and gamma distributions are supported")
@@ -439,8 +442,11 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
   out$mean_sd <- sd(dist_samples$mean_samples)
   out$sd <- mean(dist_samples$sd_sample)
   out$sd_sd <- sd(dist_samples$sd_samples)
-  out$max <- max(values)
-  
+  if (!missing(max_value)) {
+    out$max <- max_value
+  }else{
+    out$max <- max(values)
+  }
   return(out)
 }
 

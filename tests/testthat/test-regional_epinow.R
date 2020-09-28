@@ -31,7 +31,7 @@ test_that("regional_epinow produces expected output when run with default settin
                                  delays = list(reporting_delay),
                                  gp = list(basis_prop = 0.1, boundary_scale = 2,
                                            lengthscale_mean = 20, lengthscale_sd = 2),
-                                 samples = 200, warmup = 100, cores = 1, chains = 2,
+                                 samples = 200, stan_args = list(warmup = 100, cores = 1, chains = 2),
                                  verbose = FALSE))
   expect_equal(names(out$regional), c("testland", "realland"))
   expect_equal(names(out$summary), c("latest_date", "results", "summarised_results", "summary_plot",
@@ -48,15 +48,13 @@ test_that("regional_epinow produces expected output when run with default settin
 
 test_that("regional_epinow fails as expected when given a very short timeout", {
   skip_on_cran()
-  expect_error(regional_epinow(reported_cases = cases,
-                           generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay),
-                           adapt_delta = 0.9, samples = 2000, warmup = 500,
-                           cores = 1, max_execution_time = 1))
-  expect_error(regional_epinow(reported_cases = cases,
-                               generation_time = generation_time,
+  expect_error(regional_epinow(reported_cases = cases, generation_time = generation_time,
+                              delays = list(incubation_period, reporting_delay),
+                              stan_args = list(warmup = 100, cores = 1, chains = 2),
+                           max_execution_time = 1))
+  expect_error(regional_epinow(reported_cases = cases, generation_time = generation_time,
                                delays = list(incubation_period, reporting_delay),
-                               adapt_delta = 0.9, samples = 2000, warmup = 500, future = TRUE,
-                               cores = 1, max_execution_time = 1))
+                               stan_args = list(warmup = 100, cores = 1, chains = 2),
+                               max_execution_time = 1))
 
 })
