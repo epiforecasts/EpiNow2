@@ -120,29 +120,15 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args, family = "n
     model <- NULL
   }
 
-  estimates <- estimate_infections(reported_cases = reported_cases,
-                                   family = family,
-                                   generation_time = generation_time,
-                                   delays = delays,
-                                   gp = gp,
-                                   rt_prior = rt_prior,
-                                   adapt_delta = adapt_delta,
-                                   max_treedepth = max_treedepth,
-                                   model = model,
-                                   cores = cores, chains = chains,
-                                   samples = samples,
-                                   warmup = warmup,
-                                   stan_args = stan_args,
-                                   future = future,
-                                   max_execution_time = max_execution_time,
-                                   estimate_rt = estimate_rt,
-                                   estimate_week_eff = estimate_week_eff,
-                                   estimate_breakpoints = estimate_breakpoints,
+  estimates <- estimate_infections(reported_cases = reported_cases, model = model, samples = samples,
+                                   family = family, generation_time = generation_time,
+                                   delays = delays, gp = gp, rt_prior = rt_prior,
+                                   stan_args = stan_args, future = future,
+                                   max_execution_time = max_execution_time, estimate_rt = estimate_rt, 
+                                   estimate_week_eff = estimate_week_eff, estimate_breakpoints = estimate_breakpoints,
                                    burn_in = burn_in, stationary = stationary, fixed = fixed,
-                                   fixed_future_rt = fixed_future_rt,
-                                   horizon = horizon,
-                                   verbose = verbose, return_fit = return_fit,
-                                   debug = debug)
+                                   fixed_future_rt = fixed_future_rt, horizon = horizon,
+                                   verbose = verbose, return_fit = return_fit)
 
   # Report estimates --------------------------------------------------------
   if (!is.null(target_folder)) {

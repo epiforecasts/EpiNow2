@@ -68,14 +68,18 @@ Windows users will need a working installation of Rtools in order to build the p
 
 `{EpiNow2}` is designed to be used with a single function call or to be used in an ad-hoc fashion via individual function calls. In the following section we give an overview of the simple use case. For more on using each function see the [function documentation](https://epiforecasts.io/EpiNow2/reference/index.html). The core functions are: [`epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
 [`regional_epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
-[`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), and [`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html). [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) can be use on its own to infer the underlying infection case curve from reported cases with Rt optionally returned (on by default). Estimating the underlying infection case curve alone is substantially less computationally demanding than also estimating Rt.
+[`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), and [`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html). [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) can be use on its own to infer the underlying infection case curve from reported cases with Rt optionally returned (on by default). Estimating the underlying infection case curve alone is substantially less computationally demanding than also estimating Rt. The first step to using the package is to load it as follows.
+
+```{r, message = FALSE}
+library(EpiNow2)
+```
 
 ### Reporting delays, incubation period and generation time
 
 Distributions can either be fitted using package functionality or determined elsewhere and then defined with uncertainty for use in `{EpiNow2}`. When data is supplied a subsampled bootstrapped lognormal will be fit (to account for uncertainty in the observed data without being biased by changes in incidence). An arbitrary number of delay distributions are supported with the most common use case likely to be a incubation period followed by a reporting delay.
 
 ```{r}
-reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 reporting_delay
 ```
 
@@ -93,17 +97,17 @@ This function represents the core functionality of the package and includes resu
 Load example case data from `{EpiNow2}`. 
 
 ```{r}
-reported_cases <- EpiNow2::example_confirmed[1:40]
+reported_cases <- example_confirmed[1:40]
 head(reported_cases)
 ```
 
 Estimate cases by date of infection, the time-varying reproduction number, the rate of growth and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). *Note that for real use cases more samples and a longer warm up may be needed*.
 
 ```{r, message = FALSE, warning = FALSE}
-estimates <- EpiNow2::epinow(reported_cases = reported_cases, 
-                             generation_time = generation_time,
-                             delays = list(incubation_period, reporting_delay),
-                             stan_args = list(cores = 4))
+estimates <- epinow(reported_cases = reported_cases, 
+                    generation_time = generation_time,
+                    delays = list(incubation_period, reporting_delay),
+                    stan_args = list(cores = 4))
 names(estimates)
 ```
 
@@ -151,10 +155,10 @@ head(reported_cases)
 Run the pipeline on each region in turn.
 
 ```{r, message = FALSE, warning = FALSE}
-estimates <- EpiNow2::regional_epinow(reported_cases = reported_cases, 
-                                      generation_time = generation_time,
-                                      delays = list(incubation_period, reporting_delay),
-                                      stan_args = list(cores = 4))
+estimates <- regional_epinow(reported_cases = reported_cases, 
+                             generation_time = generation_time,
+                             delays = list(incubation_period, reporting_delay),
+                             stan_args = list(cores = 4))
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = TRUE) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the `{future}` package for details on nested futures.
