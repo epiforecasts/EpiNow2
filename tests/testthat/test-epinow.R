@@ -12,8 +12,7 @@ incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
                           max = 15)
 
-reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(3), 1))
-reporting_delay$max <- 15
+reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(3), 1), max_value = 15)
 
 reported_cases <- EpiNow2::example_confirmed[1:40]
 
@@ -27,8 +26,7 @@ test_that("epinow produces expected output when run with default settings", {
                 delays = list(incubation_period, reporting_delay),
                 gp = list(basis_prop = 0.1, boundary_scale = 2,
                           lengthscale_mean = 20, lengthscale_sd = 2),
-                samples = 200, warmup = 100, cores = 1, chains = 2,
-                verbose = FALSE))
+                samples = 200, stan_args = list(warmup = 100, cores = 1, chains = 2)))
   
   expect_equal(names(out), c("estimates", "estimated_reported_cases", "summary", "plots"))
   df_non_zero(out$estimates$samples)
@@ -47,6 +45,6 @@ test_that("epinow fails as expected when given a short timeout", {
                 delays = list(incubation_period, reporting_delay),
                 gp = list(basis_prop = 0.1, boundary_scale = 2,
                           lengthscale_mean = 20, lengthscale_sd = 2),
-                samples = 500, warmup = 200, cores = 1, chains = 2,
-                verbose = FALSE, max_execution_time = 10)))
+                samples = 500, stan_args = list(warmup = 100, cores = 1, chains = 2),
+                max_execution_time = 10)))
 })

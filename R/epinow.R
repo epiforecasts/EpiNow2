@@ -27,9 +27,7 @@
 #'                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
 #'                           max = 30)
 #'                    
-#' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1))
-#' ## Set max allowed delay to 30 days to truncate computation
-#' reporting_delay$max <- 30
+#' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 #' 
 #' ## Example case data
 #' reported_cases <- EpiNow2::example_confirmed[1:40] 
@@ -37,9 +35,7 @@
 #' ## Report Rt along with forecasts
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
 #'               delays = list(incubation_period, reporting_delay),
-#'               rt_prior = list(mean = 1, sd = 1),
-#'               samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1), chains = 4,
-#'               verbose = TRUE, return_fit = TRUE)
+#'               stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 #' 
 #' out
 #' 
@@ -48,16 +44,15 @@
 #'    if(requireNamespace("forecastHybrid")){
 #'
 #'    ## Report Rt along with forecasts
-#'    out <- epinow(reported_cases = cases, generation_time = generation_time,
+#'    out <- epinow(reported_cases = cases, samples = 1000, 
+#'                  generation_time = generation_time,
 #'                  delays = list(incubation_period, reporting_delay),
-#'                  rt_prior = list(mean = 1, sd = 1),
 #'                  forecast_model = function(y, ...){
 #'                    EpiSoon::forecastHybrid_model(
 #'                      y = y[max(1, length(y) - 21):length(y)],
 #'                      model_params = list(models = "aefz", weights = "equal"),
 #'                      forecast_params = list(PI.combination = "mean"), ...)},
-#'                  samples = 1000, warmup = 500, cores = ifelse(interactive(), 4, 1), chains = 4,
-#'                  verbose = TRUE, return_fit = TRUE)
+#'                   stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 #' 
 #' out
 #'    }
@@ -69,11 +64,11 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args, family = "n
                    generation_time, delays,
                    gp = list(basis_prop = 0.3, boundary_scale = 2,
                              lengthscale_mean = 0, lengthscale_sd = 2),
-                   rt_prior = list(mean = 1, sd = 1),
+                   rt_prior = list(mean = 1, sd = 1), horizon = 7,
                    estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE,
                    burn_in = 0, stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
                    future = FALSE, max_execution_time = Inf, prior_smoothing_window = 7,
-                   return_fit = FALSE, forecast_model, horizon = 7, ensemble_type = "mean",
+                   return_fit = FALSE, forecast_model, ensemble_type = "mean",
                    return_estimates = TRUE, target_folder, target_date, verbose = FALSE) {
 
   if (!return_estimates & missing(target_folder)) {
@@ -336,22 +331,14 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args, family = "n
 #'   
 #' ## Run basic nowcasting pipeline
 #' ## Here we reduce the accuracy of the GP approximation in order to reduce runtime
-#' out <- regional_epinow(reported_cases = cases,
-#'                        generation_time = generation_time,
+#' out <- regional_epinow(reported_cases = cases,  generation_time = generation_time,
 #'                        delays = list(incubation_period, reporting_delay),
-#'                        adapt_delta = 0.9,
-#'                        samples = 2000, warmup = 500, verbose = TRUE,
-#'                        cores = ifelse(interactive(), 4, 1), chains = 4)
+#'                        stan_args = list(warmup = 200, cores = cores = ifelse(interactive(), 4, 1)))
 #'}
-regional_epinow <- function(reported_cases,
-                            target_folder, target_date,
-                            non_zero_points = 2, cores = 1,
-                            summary = TRUE,
-                            summary_dir,
-                            region_scale = "Region",
-                            all_regions_summary = TRUE,
-                            return_estimates = TRUE,
-                            max_plot = 10,
+regional_epinow <- function(reported_cases, target_folder, target_date,
+                            non_zero_points = 2, summary = TRUE, summary_dir,
+                            region_scale = "Region", all_regions_summary = TRUE,
+                            return_estimates = TRUE, max_plot = 10,
                             return_timings = FALSE, ...) {
 
   ## Set input to data.table
@@ -377,7 +364,6 @@ regional_epinow <- function(reported_cases,
   futile.logger::flog.trace("calling future apply to process each region through the run_region function")
   regional_out <- future.apply::future_lapply(regions, safe_run_region,
                                               reported_cases = reported_cases,
-                                              cores = cores,
                                               target_folder = target_folder, 
                                               target_date = target_date,
                                               return_estimates = return_estimates,
@@ -465,7 +451,6 @@ run_region <- function(target_region,
                        target_folder,
                        target_date,
                        return_estimates,
-                       cores = cores,
                        ...) {
   futile.logger::flog.info("Initialising estimates for: %s", target_region)
   
@@ -486,7 +471,6 @@ run_region <- function(target_region,
         target_folder = target_folder,
         target_date = target_date,
         return_estimates = TRUE,
-        cores = cores,
         ...),
         warning = function(w) {
           futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call))
