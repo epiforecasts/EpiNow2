@@ -208,7 +208,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' several order of magnitudes faster than the exact method.
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be returned.
 #'
-#' @return
+#' @return A list of stan arguments
 #' @export
 #'
 #' @examples
