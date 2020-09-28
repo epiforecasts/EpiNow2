@@ -10,6 +10,7 @@
 * Cleaned up implementation of `estimate_infections` to move processing code into internal functions
 * Adds basic testing of functions.
 * Fixed y axis max for `plot_summary`.
+* Fix to normalisation of delay and generation time distributions from @sbfnk.
 
 # EpiNow2 1.1.0
 
