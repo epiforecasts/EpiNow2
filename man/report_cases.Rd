@@ -52,7 +52,8 @@ reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_va
 ## Run model
 out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
                                     delays = list(incubation_period, reporting_delay),
-                                    stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                                    stan_args = list(warmup = 200, 
+                                                     cores = ifelse(interactive(), 4, 1)),
                                     estimate_rt = FALSE)
                             
                      

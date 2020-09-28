@@ -27,7 +27,8 @@
 #' ## Run model
 #' out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
-#'                                     stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+#'                                     stan_args = list(warmup = 200, 
+#'                                                      cores = ifelse(interactive(), 4, 1)),
 #'                                     estimate_rt = FALSE)
 #'                             
 #'                      
