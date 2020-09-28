@@ -6,6 +6,8 @@
 \usage{
 estimate_infections(
   reported_cases,
+  model,
+  stan_args = NULL,
   family = "negbin",
   generation_time,
   delays,
@@ -14,12 +16,6 @@ estimate_infections(
   rt_prior = list(mean = 1, sd = 1),
   prior_smoothing_window = 7,
   horizon = 7,
-  model,
-  cores = 1,
-  chains = 4,
-  samples = 1000,
-  warmup = 200,
-  stan_args = NULL,
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
@@ -27,8 +23,6 @@ estimate_infections(
   stationary = FALSE,
   fixed = FALSE,
   fixed_future_rt = FALSE,
-  adapt_delta = 0.99,
-  max_treedepth = 15,
   future = FALSE,
   max_execution_time = Inf,
   return_fit = FALSE,
@@ -40,6 +34,11 @@ estimate_infections(
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
+
+\item{model}{A compiled stan model. By default uses the internal package model.}
+
+\item{stan_args}{List, defaults to \code{NULL}. User supplied arguments to be passed to \code{rstan::sampling}. Overwrites all
+defaults.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}
@@ -71,19 +70,6 @@ for the prior based on reported cases.}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
-\item{model}{A compiled stan model. By default uses the internal package model.}
-
-\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
-
-\item{chains}{Numeric, defaults to 2. The number of MCMC chains to use.}
-
-\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
-
-\item{warmup}{Numeric, defaults to 200. Number of iteration of warmup to use.}
-
-\item{stan_args}{List, defaults to \code{NULL}. User supplied arguments to be passed to \code{rstan::sampling}. Overwrites all
-defaults.}
-
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
 \item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
@@ -109,10 +95,6 @@ analysis on the impact of interventions.}
 \item{fixed_future_rt}{Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
 future time points without data.}
 
-\item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
-
-\item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
-
 \item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
 fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
 
@@ -127,6 +109,18 @@ will fail with an informative error.}
 \item{debug}{Logical, defaults to \code{FALSE}. Enables debug model in which additional diagnostics are available}
 
 \item{stuck_chains}{Numeric, defaults to 0. Used to test failing chain scenarios}
+
+\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
+
+\item{chains}{Numeric, defaults to 2. The number of MCMC chains to use.}
+
+\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
+
+\item{warmup}{Numeric, defaults to 200. Number of iteration of warmup to use.}
+
+\item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
+
+\item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported

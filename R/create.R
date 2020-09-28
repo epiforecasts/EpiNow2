@@ -3,6 +3,7 @@
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT
 #' @return A cleaned data frame of reported cases
+#' @export
 create_clean_reported_cases <- function(reported_cases, horizon) {
   
   reported_cases <- data.table::setDT(reported_cases)
@@ -13,12 +14,9 @@ create_clean_reported_cases <- function(reported_cases, horizon) {
     reported_cases , reported_cases_grid, 
     by = c("date"), all.y = TRUE)
   
-  
-  
   reported_cases <- reported_cases[is.na(confirm), confirm := 0][,.(date = date, confirm, breakpoint)]
   reported_cases <- reported_cases[is.na(breakpoint), breakpoint := 0]
   reported_cases <- data.table::setorder(reported_cases, date)
-  
   ## Filter out 0 reported cases from the beginning of the data
   reported_cases <- reported_cases[order(date)][,
                                cum_cases := cumsum(confirm)][cum_cases > 0][, cum_cases := NULL]
@@ -33,6 +31,7 @@ create_clean_reported_cases <- function(reported_cases, horizon) {
 #' @importFrom data.table copy shift frollmean fifelse .N
 #' @importFrom stats lm
 #' @return A dataframe for shifted reported cases
+#' @export
 create_shifted_cases <- function(reported_cases, mean_shift, 
                                  prior_smoothing_window, horizon) {
   
@@ -72,6 +71,7 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 #' @param break_no Numeric, number of breakpoints
 #' @inheritParams estimate_infections
 #' @return A list of stan data
+#' @export 
 create_stan_data <- function(reported_cases,  shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
                              rt_prior, estimate_rt, estimate_week_eff, stationary,
@@ -141,6 +141,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
 #' @return An initial condition generating function
 #' @importFrom purrr map2_dbl
 #' @importFrom truncnorm rtruncnorm
+#' @export
 create_initial_conditions <- function(data, delays, rt_prior, generation_time, mean_shift) {
   
   init_fun <- function(){
@@ -182,4 +183,85 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
   }
   
   return(init_fun)
+}
+
+
+
+#' Create a List of Stan Arguments
+#'
+#' @param model A stan model object, defaults to packaged model if not supplied.
+#' @param data A list of stan data as created by `create_stan_data`
+#' @param init Initial conditions passed to `rstan`. Defaults to "random" but can also be a function (
+#' as supplied by `create_intitial_conditions`).
+#' @param samples Numeric, defaults to 1000. The overall number of posterior samples to return (Note: not the 
+#' number of samples per chain as is the default in stan).
+#' @param stan_args A list of stan arguments to be passed to `rstan::sampling` or `rstan::vb` (when using the "exact"
+#' or "approximate" method).
+#' @param method A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
+#' this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
+#' from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results 
+#' several order of magnitudes faster than the exact method.
+#' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be returned.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' 
+#' # default settings
+#' create_stan_args()
+#' 
+#' # approximate settings
+#' create_stan_args(method = "approximate") 
+#' # increasing warmup
+#' create_stan_args(stan_args = list(warmup = 1000))
+create_stan_args <- function(model, data = NULL, init = "random", 
+                             samples = 1000, stan_args = NULL, method = "exact", 
+                             verbose = FALSE) {
+  # Use built in model if not supplied by the user
+  if (missing(model)) {
+    model <- NULL
+  }
+  
+  if (is.null(model)) {
+    model <- stanmodels$estimate_infections
+  }
+  
+  # Set up shared default arguments
+  default_args <- list(
+    object = model,
+    data = data,
+    init = init,
+    refresh = ifelse(verbose, 50, 0)
+  )
+  
+  # Set up independent default arguments
+  if (method == "exact") {
+    default_args$cores <- 1
+    default_args$warmup <- 500
+    default_args$chains <- 4
+    default_args$control <- list(adapt_delta = 0.99, max_treedepth = 15)
+    default_args$save_warmup <- FALSE
+  }else if (method == "approximate") {
+    default_args$iter <- 10000
+    default_args$output_samples <- samples
+  }
+
+  
+  
+  # Join with user supplied settings
+  if (!is.null(stan_args)) {
+    default_args <- default_args[setdiff(names(default_args), names(stan_args))]
+    args <- c(default_args, stan_args)
+  }else{
+    args <- default_args
+  }
+  
+  
+  # Set up dependent arguments
+  if (method == "exact") {
+    args$iter <-  ceiling(samples / args$chains) + args$warmup
+  }
+  
+  return(args)
 }
