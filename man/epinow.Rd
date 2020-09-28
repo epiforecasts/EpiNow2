@@ -6,23 +6,15 @@
 \usage{
 epinow(
   reported_cases,
+  model,
+  samples = 1000,
+  stan_args,
   family = "negbin",
   generation_time,
   delays,
   gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_mean = 0, lengthscale_sd
     = 2),
   rt_prior = list(mean = 1, sd = 1),
-  model,
-  prior_smoothing_window = 7,
-  cores = 1,
-  chains = 4,
-  samples = 1000,
-  warmup = 200,
-  adapt_delta = 0.99,
-  max_treedepth = 15,
-  stan_args = NULL,
-  future = FALSE,
-  max_execution_time = Inf,
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
@@ -30,6 +22,9 @@ epinow(
   stationary = FALSE,
   fixed = FALSE,
   fixed_future_rt = FALSE,
+  future = FALSE,
+  max_execution_time = Inf,
+  prior_smoothing_window = 7,
   return_fit = FALSE,
   forecast_model,
   horizon = 7,
@@ -37,13 +32,20 @@ epinow(
   return_estimates = TRUE,
   target_folder,
   target_date,
-  verbose = FALSE,
-  debug = FALSE
+  verbose = FALSE
 )
 }
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
+
+\item{model}{A compiled stan model. By default uses the internal package model.}
+
+\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
+
+\item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "exact"
+or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
+using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}
@@ -70,33 +72,6 @@ the defaults of 0 and 2 (normal distributed truncated at zero).}
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 
-\item{model}{A compiled stan model. By default uses the internal package model.}
-
-\item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
-for the prior based on reported cases.}
-
-\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
-
-\item{chains}{Numeric, defaults to 2. The number of MCMC chains to use.}
-
-\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
-
-\item{warmup}{Numeric, defaults to 200. Number of iteration of warmup to use.}
-
-\item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
-
-\item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
-
-\item{stan_args}{List, defaults to \code{NULL}. User supplied arguments to be passed to \code{rstan::sampling}. Overwrites all
-defaults.}
-
-\item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
-fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
-
-\item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout.
-When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation
-will fail with an informative error.}
-
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
 \item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
@@ -122,6 +97,16 @@ analysis on the impact of interventions.}
 \item{fixed_future_rt}{Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
 future time points without data.}
 
+\item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
+fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
+
+\item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout.
+When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation
+will fail with an informative error.}
+
+\item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
+for the prior based on reported cases.}
+
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
 \item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
@@ -138,9 +123,7 @@ an unweighted ensemble ("mean") with no other types currently supported.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{verbose}{Logical, defaults to \code{TRUE}. Should verbose progress messages be printed.}
-
-\item{debug}{Logical, defaults to \code{FALSE}. Enables debug model in which additional diagnostics are available}
+\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
 }
 \value{
 A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.

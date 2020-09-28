@@ -24,8 +24,8 @@ test_that("estimate_infections successfully returns estimates using default sett
   out <- suppressWarnings(estimate_infections(reported_cases, family = "negbin",
                              generation_time = generation_time,
                              delays = list(reporting_delay),
-                             samples = 200, warmup = 100, verbose = FALSE,
-                             chains = 2))
+                             samples = 200, stan_args=list(chains = 2, warmup = 100),
+                             verbose = FALSE))
   
   
   expect_equal(names(out), c("samples", "summarised"))
@@ -38,13 +38,13 @@ test_that("estimate_infections fails as expected when given a very short timeout
   expect_error(estimate_infections(reported_cases, family = "negbin",
                                    generation_time = generation_time,
                                    delays = list(reporting_delay),
-                                   samples = 500, warmup = 200, verbose = FALSE,
-                                   chains = 2, future = TRUE, max_execution_time = 10))
+                                   samples = 500, stan_args=list(chains = 2, warmup = 100), 
+                                   verbose = FALSE, future = TRUE, max_execution_time = 10))
   expect_error(estimate_infections(reported_cases, family = "negbin",
                                    generation_time = generation_time,
                                    delays = list(reporting_delay),
-                                   samples = 500, warmup = 200, verbose = FALSE,
-                                   chains = 2, future = FALSE, max_execution_time = 10))
+                                   samples = 500, stan_args = list(chains = 2, warmup = 100),
+                                   verbose = FALSE, future = FALSE, max_execution_time = 10))
 })
 
 
@@ -54,20 +54,24 @@ test_that("estimate_infections works as expected with failing chains", {
   out <- suppressWarnings(estimate_infections(reported_cases, family = "negbin",
                                               generation_time = generation_time,
                                               delays = list(reporting_delay),
-                                              samples = 100, warmup = 50, verbose = FALSE,
-                                              chains = 4, stuck_chains = 2, future = TRUE))
+                                              samples = 100, stan_args = list(chains = 4, warmup = 100,
+                                                                              stuck_chains = 2),
+                                              verbose = FALSE, future = TRUE))
   expect_equal(names(out), c("samples", "summarised"))
   expect_true(nrow(out$samples) > 0)
   expect_true(nrow(out$summarised) > 0)
   expect_error(suppressWarnings(estimate_infections(reported_cases, family = "negbin",
                                                     generation_time = generation_time,
                                                     delays = list(reporting_delay),
-                                                    samples = 100, warmup = 50, verbose = FALSE,
-                                                    chains = 4, stuck_chains = 1)))
+                                                    samples = 100,  verbose = FALSE,
+                                                    stan_args = list(chains = 4, warmup = 50,
+                                                                     stuck_chains = 1)
+                                                    )))
   expect_error(suppressWarnings(estimate_infections(reported_cases, family = "negbin",
                                                     generation_time = generation_time,
                                                     delays = list(reporting_delay),
-                                                    samples = 100, warmup = 50, verbose = FALSE,
-                                                    chains = 4, stuck_chains = 3, future = TRUE)))
+                                                    stan_args = list(chains = 4, warmup = 50,
+                                                                     stuck_chains = 3),
+                                                    samples = 100, verbose = FALSE, future = TRUE)))
 })
 

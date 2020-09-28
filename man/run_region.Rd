@@ -25,8 +25,6 @@ run_region(
 
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
 
-\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
-
 \item{...}{Pass additional arguments to \code{epinow}}
 }
 \value{

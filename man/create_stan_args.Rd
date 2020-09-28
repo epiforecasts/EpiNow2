@@ -26,7 +26,8 @@ as supplied by \code{create_intitial_conditions}).}
 number of samples per chain as is the default in stan).}
 
 \item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "exact"
-or "approximate" method).}
+or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
+using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
 
 \item{method}{A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
 this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
@@ -39,7 +40,9 @@ several order of magnitudes faster than the exact method.}
 
 }
 \description{
-Create a List of Stan Arguments
+Generates a list of arguments as required by \code{rstan::sampling} (when \verb{method = "exact}) or
+\code{rstan::vb} (when \verb{method = "approximate}). See \code{create_stan_args()} for the defaults and the relevant \code{rstan}
+functions for additonal options.
 }
 \examples{
 

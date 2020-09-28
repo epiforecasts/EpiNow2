@@ -65,19 +65,16 @@
 #'
 #' }
 #'
-epinow <- function(reported_cases, family = "negbin",
+epinow <- function(reported_cases, model, samples = 1000, stan_args, family = "negbin",
                    generation_time, delays,
                    gp = list(basis_prop = 0.3, boundary_scale = 2,
                              lengthscale_mean = 0, lengthscale_sd = 2),
-                   rt_prior = list(mean = 1, sd = 1), model,
-                   prior_smoothing_window = 7, cores = 1, chains = 4,
-                   samples = 1000, warmup = 200, adapt_delta = 0.99, max_treedepth = 15,
-                   stan_args = NULL, future = FALSE, max_execution_time = Inf,
+                   rt_prior = list(mean = 1, sd = 1),
                    estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE,
                    burn_in = 0, stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
+                   future = FALSE, max_execution_time = Inf, prior_smoothing_window = 7,
                    return_fit = FALSE, forecast_model, horizon = 7, ensemble_type = "mean",
-                   return_estimates = TRUE, target_folder, target_date, verbose = FALSE,
-                   debug = FALSE) {
+                   return_estimates = TRUE, target_folder, target_date, verbose = FALSE) {
 
   if (!return_estimates & missing(target_folder)) {
     futile.logger::flog.fatal("Either return estimates or save to a target folder")
@@ -90,6 +87,9 @@ epinow <- function(reported_cases, family = "negbin",
     delays <- list()
   }
   
+  if (missing(stan_args)) {
+    stan_args <- NULL
+  }
  # Convert input to DT -----------------------------------------------------
   suppressMessages(data.table::setDTthreads(threads = 1))
   reported_cases <- data.table::setDT(reported_cases)

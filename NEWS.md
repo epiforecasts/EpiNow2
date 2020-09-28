@@ -11,6 +11,8 @@
 * Adds basic testing of functions.
 * Fixed y axis max for `plot_summary`.
 * Fix to normalisation of delay and generation time distributions from @sbfnk.
+* Moved all inherited from stan arguments into `create_stan_args` with the option to override using `stan_args`.
+* Updated all example and documentation to reflect the new interface.
 
 # EpiNow2 1.1.0
 
