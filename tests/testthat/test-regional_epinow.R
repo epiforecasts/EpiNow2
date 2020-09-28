@@ -1,16 +1,8 @@
 context("regional_epinow")
 
-generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
-                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
-                        sd = EpiNow2::covid_generation_times[1, ]$sd,
-                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-                        max = 10)
-
-reporting_delay <- list(mean = log(3),
-                        mean_sd = log(1.1),
-                        sd = log(2),
-                        sd_sd = log(1.1),
-                        max = 10)
+generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 10)
+reporting_delay <- list(mean = log(3), mean_sd = log(1.1),
+                        sd = log(2), sd_sd = log(1.1), max = 10)
 
 ## Uses example case vector
 cases <- EpiNow2::example_confirmed[1:20]

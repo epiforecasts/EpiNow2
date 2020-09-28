@@ -138,24 +138,10 @@ summarise_results <- function(regions,
 #' @importFrom futile.logger flog.info
 #' @examples
 #' \donttest{
-#' # Construct example distributions
-#' generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
-#'                         mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
-#'                         sd = EpiNow2::covid_generation_times[1, ]$sd,
-#'                         sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-#'                         max = 30)
-#'                           
-#' incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
-#'                           mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
-#'                           sd = EpiNow2::covid_incubation_period[1, ]$sd,
-#'                           sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
-#'                           max = 30)
-#'                    
-#' reporting_delay <- list(mean = log(10),
-#'                         mean_sd = 0.8,
-#'                         sd = log(2),
-#'                         sd_sd = 0.1,
-#'                         max = 30)
+#' ## Set up example delays
+#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 #'                         
 #' # Uses example case vector from EpiSoon
 #' cases <- EpiNow2::example_confirmed[1:30]
@@ -168,12 +154,10 @@ summarise_results <- function(regions,
 #' regional_out <- regional_epinow(reported_cases = cases,
 #'                                 generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 samples = 2000, warmup = 500, cores = 4,
-#'                                 adapt_delta = 0.95, chains = 4, 
+#'                                 stan_args = list(cores = 4),
 #'                                 summary = FALSE)
 #'
 #' results_dir <- tempdir()             
-#' 
 #' regional_summary(regional_output = regional_out$regional,
 #'                  reported_cases = cases,
 #'                  summary_dir = results_dir,

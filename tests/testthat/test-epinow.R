@@ -1,17 +1,7 @@
 context("epinow")
 
-generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
-                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
-                        sd = EpiNow2::covid_generation_times[1, ]$sd,
-                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-                        max = 15)
-
-incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
-                          mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
-                          sd = EpiNow2::covid_incubation_period[1, ]$sd,
-                          sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
-                          max = 15)
-
+generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 15)
+incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 15)
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(3), 1), max_value = 15)
 
 reported_cases <- EpiNow2::example_confirmed[1:40]
