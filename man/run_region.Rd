@@ -10,7 +10,6 @@ run_region(
   target_folder,
   target_date,
   return_estimates,
-  cores = cores,
   ...
 )
 }

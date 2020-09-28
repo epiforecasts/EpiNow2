@@ -168,3 +168,29 @@ get_regional_results <- function(regional_output,
   }
   return(out)
 }
+
+
+
+#' Get a Literature Distribution
+#'
+#' @param data A `data.table` in the format of `generation_times`.
+#' @param disease A character string indicating the disease of interest.
+#' @param source A character string indicating the source of interest.
+#' @param max_value Numeric, the maximum value to allow. Defaults to 30 days.
+#'
+#' @return A list defining a distribution
+#' @export
+#'
+#' @examples
+#' 
+#' get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani") 
+#' 
+get_dist <- function(data, disease, source, max_value = 30) {
+  
+  target_disease <- disease
+  target_source <- source
+  data <- data[disease == target_disease][source == target_source]
+  
+  dist <- as.list(data[, .(mean, mean_sd, sd, sd_sd, max = max_value)])
+  return(dist)
+}
