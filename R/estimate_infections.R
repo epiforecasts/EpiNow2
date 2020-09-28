@@ -79,8 +79,9 @@
 #'                         
 #' # Run model with default settings
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                            delays = list(incubation_period, reporting_delay), verbose = TRUE,
-#'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
+#'                            delays = list(incubation_period, reporting_delay), 
+#'                            stan_args = list(warmup = 200, 
+#'                                             cores = ifelse(interactive(), 4, 1)))
 #'
 #' # Plot output
 #' plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
@@ -88,7 +89,7 @@
 #' 
 #' # Run the model using the approximate method (variational inference)
 #' approx <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                               delays = list(incubation_period, reporting_delay), verbose = TRUE,
+#'                               delays = list(incubation_period, reporting_delay),
 #'                               method = "approximate")
 #'
 #' # Plot output
@@ -99,7 +100,8 @@
 #' ## (combine with a call to future::plan to make this parallel).
 #' def_future <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                   delays = list(incubation_period, reporting_delay),
-#'                                   stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
+#'                                   stan_args = list(warmup = 200, 
+#'                                                    cores = ifelse(interactive(), 4, 1)))
 #' 
 #' plots <- report_plots(summarised_estimates = def_future$summarised, reported = reported_cases)
 #' plots$summary                          
@@ -107,7 +109,8 @@
 #' # Run model with Rt fixed into the future
 #' fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+#'                                 stan_args = list(warmup = 200, 
+#'                                                  cores = ifelse(interactive(), 4, 1)),
 #'                                 fixed_future_rt = TRUE)
 #'
 #' 
@@ -121,7 +124,8 @@
 #' snapshot_cases <- EpiNow2::example_confirmed[80:130]
 #' snapshot <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+#'                                 stan_args = list(warmup = 200, 
+#'                                                  cores = ifelse(interactive(), 4, 1)),
 #'                                 burn_in = 7)
 #'
 #' 
@@ -382,6 +386,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   }
   
   fit_chain <- function(chain, stan_args, max_time) {
+    stan_args$chain_id <- chain
     fit <- R.utils::withTimeout(do.call(rstan::sampling, stan_args), 
                                 timeout = max_time,
                                 onTimeout = "silent")
@@ -391,7 +396,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   if(!future) {
     fit <- fit_chain(1, stan_args = args, max_time = max_execution_time)
     if (stuck_chains > 0) {fit <- NULL}
-    stop_timeout()
+    stop_timeout(fit)
   }else{
     chains <- args$chains
     args$chains <- 1
@@ -405,7 +410,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
     fit <- purrr::compact(fits)
     if (length(fit) == 0) {
       fit <- NULL
-      stop_timeout()
+      stop_timeout(fit)
     }else{
       failed_chains <- chains - length(fit)
       if (failed_chains > 0) {

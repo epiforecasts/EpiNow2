@@ -10,11 +10,11 @@ test_that("create_stan_args returns the expected defaults when the exact method 
 test_that("create_stan_args returns the expected defaults when the approximate method is used", {
   
   expect_equal(names(create_stan_args(method = "approximate")), c("object", "data", "init", 
-                                                                  "refresh", "iter", "output_samples"))
+                                                                  "refresh", "trials", "iter", 
+                                                                  "output_samples"))
 })
 
 
 test_that("create_stan_args can modify arugments", {
-  
   expect_equal(create_stan_args(stan_args = list(warmup = 1000))$warmup, 1000)
 })

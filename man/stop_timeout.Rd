@@ -4,7 +4,7 @@
 \alias{stop_timeout}
 \title{Timeout Error}
 \usage{
-stop_timeout()
+stop_timeout(fit)
 }
 \value{
 Nothing

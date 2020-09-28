@@ -135,8 +135,9 @@ reporting_delay <- list(mean = log(5), mean_sd = log(2),
                         
 # Run model with default settings
 def <- estimate_infections(reported_cases, generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay), verbose = TRUE,
-                           stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
+                           delays = list(incubation_period, reporting_delay), 
+                           stan_args = list(warmup = 200, 
+                                            cores = ifelse(interactive(), 4, 1)))
 
 # Plot output
 plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
@@ -144,7 +145,7 @@ plots$summary
 
 # Run the model using the approximate method (variational inference)
 approx <- estimate_infections(reported_cases, generation_time = generation_time,
-                              delays = list(incubation_period, reporting_delay), verbose = TRUE,
+                              delays = list(incubation_period, reporting_delay),
                               method = "approximate")
 
 # Plot output
@@ -155,7 +156,8 @@ plots$summary
 ## (combine with a call to future::plan to make this parallel).
 def_future <- estimate_infections(reported_cases, generation_time = generation_time,
                                   delays = list(incubation_period, reporting_delay),
-                                  stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
+                                  stan_args = list(warmup = 200, 
+                                                   cores = ifelse(interactive(), 4, 1)))
 
 plots <- report_plots(summarised_estimates = def_future$summarised, reported = reported_cases)
 plots$summary                          
@@ -163,7 +165,8 @@ plots$summary
 # Run model with Rt fixed into the future
 fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                                stan_args = list(warmup = 200, 
+                                                 cores = ifelse(interactive(), 4, 1)),
                                 fixed_future_rt = TRUE)
 
 
@@ -177,7 +180,8 @@ plots$summary
 snapshot_cases <- EpiNow2::example_confirmed[80:130]
 snapshot <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                                stan_args = list(warmup = 200, 
+                                                 cores = ifelse(interactive(), 4, 1)),
                                 burn_in = 7)
 
 

@@ -101,7 +101,7 @@ reported_cases <- example_confirmed[1:40]
 head(reported_cases)
 ```
 
-Estimate cases by date of infection, the time-varying reproduction number, the rate of growth and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). *Note that for real use cases more samples and a longer warm up may be needed*.
+Estimate cases by date of infection, the time-varying reproduction number, the rate of growth and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). *Note that for real use cases more samples and a longer warm up may be needed*. If compute is limited approximate estimates can be derived using `method = approximate` which makes use of variational inference and is likely to be several orders of magnitude faster than the default method (though this approach is experimental).
 
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(reported_cases = reported_cases, 
@@ -148,7 +148,6 @@ Define cases in multiple regions delineated by the region variable.
 reported_cases <- data.table::rbindlist(list(
    data.table::copy(reported_cases)[, region := "testland"],
    reported_cases[, region := "realland"]))
-
 head(reported_cases)
 ```
 

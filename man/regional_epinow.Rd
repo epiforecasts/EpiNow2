@@ -74,6 +74,6 @@ cases <- data.table::rbindlist(list(
 ## Here we reduce the accuracy of the GP approximation in order to reduce runtime
 out <- regional_epinow(reported_cases = cases,  generation_time = generation_time,
                        delays = list(incubation_period, reporting_delay),
-                       stan_args = list(warmup = 200, cores = cores = ifelse(interactive(), 4, 1)))
+                       stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 }
 }
