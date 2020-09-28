@@ -73,7 +73,8 @@ reference:
     contents: 
       - contains("create")
       - allocate_delays
-      - fit_model
+      - fit_model_with_nuts
+      - fit_model_with_vb
       - contains("extract")
       - format_fit
       - clean_regions

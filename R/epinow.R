@@ -50,7 +50,8 @@
 #'
 #' }
 #'
-epinow <- function(reported_cases, model, samples = 1000, stan_args, family = "negbin",
+epinow <- function(reported_cases, model, samples = 1000, stan_args, 
+                   method = "exact", family = "negbin",
                    generation_time, delays,
                    gp = list(basis_prop = 0.3, boundary_scale = 2,
                              lengthscale_mean = 0, lengthscale_sd = 2),

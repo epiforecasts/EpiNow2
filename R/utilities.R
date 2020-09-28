@@ -153,6 +153,18 @@ allocate_delays <- function(delay_var, no_delays) {
 }
 
 
+#' Timeout Error
+#'
+#' @return Nothing
+#' @importFrom futile.logger flog.error
+stop_timeout <- function() {
+  if (is.null(fit)) {
+    futile.logger::flog.error("fitting timed out - try increasing max_execution_time")
+    stop("model fitting timed out - try increasing max_execution_time")
+  }
+  return(invisible(NULL))
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 
 globalVariables(

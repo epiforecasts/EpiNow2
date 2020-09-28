@@ -124,8 +124,8 @@ cases. It can optionally then estimate the time-varying reproduction number and 
 reported_cases <- EpiNow2::example_confirmed[1:50]
 
 # Add a dummy breakpoint (used only when optionally estimating breakpoints)
-reported_cases <- reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"),
-                                                                     1, 0)]
+reported_cases <- 
+    reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"), 1, 0)]
 # Set up example generation time
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 # Set delays between infection and case report 
@@ -135,11 +135,20 @@ reporting_delay <- list(mean = log(5), mean_sd = log(2),
                         
 # Run model with default settings
 def <- estimate_infections(reported_cases, generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay),
+                           delays = list(incubation_period, reporting_delay), verbose = TRUE,
                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 
 # Plot output
 plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
+plots$summary
+
+# Run the model using the approximate method (variational inference)
+approx <- estimate_infections(reported_cases, generation_time = generation_time,
+                              delays = list(incubation_period, reporting_delay), verbose = TRUE,
+                              method = "approximate")
+
+# Plot output
+plots <- report_plots(summarised_estimates = approx$summarised, reported = reported_cases)
 plots$summary
 
 # Run the model with default settings using the future backend 
