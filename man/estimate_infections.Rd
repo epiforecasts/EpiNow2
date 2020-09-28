@@ -7,28 +7,28 @@
 estimate_infections(
   reported_cases,
   model,
-  stan_args = NULL,
+  samples = 1000,
+  stan_args,
+  method = "exact",
   family = "negbin",
   generation_time,
   delays,
+  horizon = 7,
   gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_mean = 0, lengthscale_sd
     = 2),
   rt_prior = list(mean = 1, sd = 1),
-  prior_smoothing_window = 7,
-  horizon = 7,
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
-  burn_in = 0,
   stationary = FALSE,
   fixed = FALSE,
   fixed_future_rt = FALSE,
+  burn_in = 0,
+  prior_smoothing_window = 7,
   future = FALSE,
   max_execution_time = Inf,
   return_fit = FALSE,
-  verbose = TRUE,
-  debug = FALSE,
-  stuck_chains = 0
+  verbose = FALSE
 )
 }
 \arguments{
@@ -37,8 +37,16 @@ in date format.}
 
 \item{model}{A compiled stan model. By default uses the internal package model.}
 
-\item{stan_args}{List, defaults to \code{NULL}. User supplied arguments to be passed to \code{rstan::sampling}. Overwrites all
-defaults.}
+\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
+
+\item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "exact"
+or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
+using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
+
+\item{method}{A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
+this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
+from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results
+several order of magnitudes faster than the exact method.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}
@@ -53,6 +61,8 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale).}
 
+\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
+
 \item{gp}{List controlling the Gaussian process approximation. Must contain
 the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
 between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
@@ -65,11 +75,6 @@ the defaults of 0 and 2 (normal distributed truncated at zero).}
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 
-\item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
-for the prior based on reported cases.}
-
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
-
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
 \item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
@@ -77,11 +82,6 @@ for the prior based on reported cases.}
 \item{estimate_breakpoints}{Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then \code{reported_cases}
 must contain a \code{breakpoint} variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
 a global non-parametric effect and so represent a conservative estimate of breakpoint changes.}
-
-\item{burn_in}{Numeric, defaults to 0. The number of initial estimates to discard. This argument may be used to reduce
-spurious findings when running \code{estimate_infections} on a partial timeseries (as the earliest estimates will not be informed by
-all cases that occurred only those supplied to \code{estimate_infections}). The combined delays used will inform the appropriate length
-of this burn in but 7 days is likely a sensible starting point.}
 
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
@@ -95,6 +95,14 @@ analysis on the impact of interventions.}
 \item{fixed_future_rt}{Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
 future time points without data.}
 
+\item{burn_in}{Numeric, defaults to 0. The number of initial estimates to discard. This argument may be used to reduce
+spurious findings when running \code{estimate_infections} on a partial timeseries (as the earliest estimates will not be informed by
+all cases that occurred only those supplied to \code{estimate_infections}). The combined delays used will inform the appropriate length
+of this burn in but 7 days is likely a sensible starting point.}
+
+\item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
+for the prior based on reported cases.}
+
 \item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
 fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
 
@@ -104,23 +112,7 @@ will fail with an informative error.}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
-\item{verbose}{Logical, defaults to \code{TRUE}. Should verbose progress messages be printed.}
-
-\item{debug}{Logical, defaults to \code{FALSE}. Enables debug model in which additional diagnostics are available}
-
-\item{stuck_chains}{Numeric, defaults to 0. Used to test failing chain scenarios}
-
-\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
-
-\item{chains}{Numeric, defaults to 2. The number of MCMC chains to use.}
-
-\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
-
-\item{warmup}{Numeric, defaults to 200. Number of iteration of warmup to use.}
-
-\item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
-
-\item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
+\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
@@ -155,178 +147,129 @@ reporting_delay <- list(mean = log(5),
                         max = 30)
                         
 # Run model with default settings
-def <- estimate_infections(reported_cases, family = "negbin",
-                           generation_time = generation_time,
+def <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-                           chains = 4, estimate_rt = TRUE, verbose = FALSE, return_fit = TRUE)
+                           stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 
 
 # Plot output
-plots <- report_plots(summarised_estimates = def$summarised,
-                      reported = reported_cases)
-                     
+plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
 plots$summary
 
 # Run the model with default settings using the future backend 
 ## (combine with a call to future::plan to make this parallel).
-def_future <- estimate_infections(reported_cases, family = "negbin",
-                                  generation_time = generation_time, 
-                                 delays = list(incubation_period, reporting_delay),
-                                 samples = 500, warmup = 200, chains = 2, 
-                                 verbose = FALSE, future = TRUE)
+def_future <- estimate_infections(reported_cases, generation_time = generation_time,
+                                  delays = list(incubation_period, reporting_delay),
+                                  stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 
-plots <- report_plots(summarised_estimates = def_future$summarised,
-                      reported = reported_cases)
-                     
+plots <- report_plots(summarised_estimates = def_future$summarised, reported = reported_cases)
 plots$summary                          
                            
 # Run model with Rt fixed into the future
-fixed_rt <- estimate_infections(reported_cases, family = "negbin",
-                                generation_time = generation_time,
+fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-                                chains = 4, estimate_rt = TRUE, fixed_future_rt = TRUE,
-                                return_fit = TRUE)
+                                stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                                fixed_future_rt = TRUE)
 
 
 # Plot output
-plots <- report_plots(summarised_estimates = fixed_rt$summarised,
-                      reported = reported_cases)
-                      
+plots <- report_plots(summarised_estimates = fixed_rt$summarised, reported = reported_cases)
 plots$summary
 
 # Run the model with default settings on a later snapshot of 
 # data (use burn_in here to remove the first week of
 # estimates that may be impacted by this most).
 snapshot_cases <- EpiNow2::example_confirmed[80:130]
-snapshot <- estimate_infections(snapshot_cases, family = "negbin",
-                                generation_time = generation_time,
+snapshot <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                samples = 1000, warmup = 400, cores = ifelse(interactive(), 4, 1), 
-                                chains = 4, estimate_rt = TRUE, verbose = FALSE, return_fit = TRUE,
+                                stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
                                 burn_in = 7)
 
 
 # Plot output
-plots <- report_plots(summarised_estimates = snapshot$summarised,
-                      reported = snapshot_cases)
-
+plots <- report_plots(summarised_estimates = snapshot$summarised, reported = snapshot_cases)
 plots$summary    
 
 ## Run model with stationary Rt assumption (likely to provide biased real-time estimates)
-stat <- estimate_infections(reported_cases, family = "negbin",
-                            generation_time = generation_time,
+stat <- estimate_infections(reported_cases, generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-                            chains = 4, estimate_rt = TRUE, stationary = TRUE,
-                            verbose = FALSE, return_fit = TRUE)
+                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                            stationary = TRUE)
 
 
 # Plot output
-plots <- report_plots(summarised_estimates = stat$summarised,
-                      reported = reported_cases)
-
+plots <- report_plots(summarised_estimates = stat$summarised, reported = reported_cases)
 plots$summary
        
 # Run model with fixed Rt assumption 
-fixed <- estimate_infections(reported_cases, family = "negbin",
-                            generation_time = generation_time,
-                            delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-                            chains = 4, estimate_rt = TRUE, fixed = TRUE, 
-                            verbose = FALSE, return_fit = TRUE)
+fixed <- estimate_infections(reported_cases, generation_time = generation_time,
+                             delays = list(incubation_period, reporting_delay),
+                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                             fixed = TRUE)
 
 
 # Plot output
-plots <- report_plots(summarised_estimates = fixed$summarised,
-                      reported = reported_cases)
-                      
-                      
+plots <- report_plots(summarised_estimates = fixed$summarised, reported = reported_cases)
 plots$summary
 
 
 # Run model with no delays 
-no_delay <- estimate_infections(reported_cases, family = "negbin",
-                            generation_time = generation_time,
-                            samples = 1000, warmup = 200, 
-                            cores = ifelse(interactive(), 4, 1),
-                            chains = 4, estimate_rt = TRUE,
-                            verbose = FALSE, return_fit = TRUE)
+no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
+                                stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 
 
 # Plot output
-plots <- report_plots(summarised_estimates = no_delay$summarised,
-                      reported = reported_cases)
-                      
-                      
+plots <- report_plots(summarised_estimates = no_delay$summarised, reported = reported_cases)
 plots$summary         
               
 # Run model with breakpoints                                                                      
-bkp <- estimate_infections(reported_cases, family = "negbin",
-                           generation_time = generation_time,
+bkp <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1), 
-                           chains = 4, estimate_rt = TRUE, estimate_breakpoints = TRUE, 
-                           verbose = FALSE, return_fit = TRUE)
+                           stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                           estimate_breakpoints = TRUE)
 
 
 # Plot output
-plots <- report_plots(summarised_estimates = bkp$summarised,
-                      reported = reported_cases)
-
+plots <- report_plots(summarised_estimates = bkp$summarised, reported = reported_cases)
 plots$summary
              
 # Run model with breakpoints but with constrained non-linear change over time 
 # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
-# model fit criteria (i.e LFO).                                                                    
-cbkp <- estimate_infections(reported_cases, family = "negbin",
-                            generation_time = generation_time,
-                            gp = list(basis_prop = 0.3, boundary_scale = 2, 
+# model fit criteria (i.e LFO). 
+cbkp <- estimate_infections(reported_cases, generation_time = generation_time,
+                           delays = list(incubation_period, reporting_delay),
+                           gp = list(basis_prop = 0.3, boundary_scale = 2, 
                                      lengthscale_mean = 20, lengthscale_sd = 1),
-                            delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-                            chains = 4, estimate_rt = TRUE, estimate_breakpoints = TRUE,
-                            verbose = FALSE, return_fit = TRUE)
+                           stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                           estimate_breakpoints = TRUE)                                                                   
 
 
 # Plot output
-plots <- report_plots(summarised_estimates = cbkp$summarised,
-             reported = reported_cases)
-             
+plots <- report_plots(summarised_estimates = cbkp$summarised, reported = reported_cases)
 plots$summary
-
 # Pull out breakpoint summary
 cbkp$summarised[variable == "breakpoints"]
 
 # Run model with breakpoints but otherwise static Rt
 # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
-# model fit criteria (i.e LFO).                                                                    
-fbkp <- estimate_infections(reported_cases, family = "negbin",
-                            generation_time = generation_time,
+# model fit criteria (i.e LFO).           
+fbkp <- estimate_infections(reported_cases, generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-                            chains = 4, estimate_breakpoints = TRUE, fixed = TRUE, 
-                            verbose = FALSE, return_fit = TRUE)
-
+                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                            estimate_breakpoints = TRUE, fixed = TRUE)                                                         
 
 # Plot output
-plots <- report_plots(summarised_estimates = fbkp$summarised,
-             reported = reported_cases)
-             
+plots <- report_plots(summarised_estimates = fbkp$summarised, reported = reported_cases)
 plots$summary
-
 # Pull out breakpoint summary
 fbkp$summarised[variable == "breakpoints"]
 
 # Run model without Rt estimation (just backcalculation)
-backcalc <- estimate_infections(reported_cases, family = "negbin",
-                                generation_time = generation_time,
-                                delays = list(incubation_period, reporting_delay),
-                                samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1),
-                                chains = 4, estimate_rt = FALSE, verbose = FALSE, return_fit = TRUE)
+backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
+                               delays = list(incubation_period, reporting_delay),
+                               stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                               estimate_rt = FALSE)
 
- 
 # plot just infections as report_plots does not support the backcalculation only model
 plot_estimates(estimate = backcalc$summarised[variable == "infections"],
                reported = reported_cases, ylab = "Cases")

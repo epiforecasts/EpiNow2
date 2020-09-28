@@ -30,8 +30,6 @@ regional_epinow(
 \item{non_zero_points}{Numeric, the minimum number of time points with non-zero cases in a region required for
 that region to be evaluated. Defaults to 2.}
 
-\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
-
 \item{summary}{Logical, should summary measures be calculated.}
 
 \item{summary_dir}{A character string giving the directory
