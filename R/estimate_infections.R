@@ -56,7 +56,7 @@
 #' will fail with an informative error.
 #' @export
 #' @inheritParams create_stan_args
-#' @inheritParams fit_model
+#' @inheritParams fit_model_with_nuts
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose 
 #' @importFrom lubridate wday days
@@ -68,8 +68,8 @@
 #' reported_cases <- EpiNow2::example_confirmed[1:50]
 #' 
 #' # Add a dummy breakpoint (used only when optionally estimating breakpoints)
-#' reported_cases <- reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"),
-#'                                                                      1, 0)]
+#' reported_cases <- 
+#'     reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"), 1, 0)]
 #' # Set up example generation time
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # Set delays between infection and case report 
@@ -79,11 +79,20 @@
 #'                         
 #' # Run model with default settings
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                            delays = list(incubation_period, reporting_delay),
+#'                            delays = list(incubation_period, reporting_delay), verbose = TRUE,
 #'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 #'
 #' # Plot output
 #' plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
+#' plots$summary
+#' 
+#' # Run the model using the approximate method (variational inference)
+#' approx <- estimate_infections(reported_cases, generation_time = generation_time,
+#'                               delays = list(incubation_period, reporting_delay), verbose = TRUE,
+#'                               method = "approximate")
+#'
+#' # Plot output
+#' plots <- report_plots(summarised_estimates = approx$summarised, reported = reported_cases)
 #' plots$summary
 #'
 #' # Run the model with default settings using the future backend 
@@ -307,11 +316,14 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
                                 init = create_initial_conditions(data, delays, rt_prior, 
                                                                   generation_time, mean_shift),
                                 method = method, verbose = verbose)
-
- 
+  
   # Fit model ---------------------------------------------------------------
-  fit <- fit_model(stan_args, future = future, max_execution_time = max_execution_time,
-                   verbose = verbose)
+  if (method == "exact") {
+    fit <- fit_model_with_nuts(stan_args, future = future, max_execution_time = max_execution_time,
+                               verbose = verbose)
+  }else if (method == "approximate"){
+    fit <- fit_model_with_vb(stan_args, verbose = verbose)
+  }
   
   # Extract parameters of interest from the fit -----------------------------
   out <- extract_parameter_samples(fit, data, 
@@ -337,12 +349,11 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
   if (return_fit) {
     format_out$fit <- fit
   }
-  
   return(format_out)
 }
 
 
-#' Fit a Stan Model
+#' Fit a Stan Model using the NUTs sampler
 #'
 #' @param args List of stan arguments
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
@@ -355,7 +366,7 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
 #' @importFrom purrr compact
 #' @importFrom rstan sflist2stanfit sampling
 #' @return A stan model object
-fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = FALSE) {
+fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, verbose = FALSE) {
   if (verbose) {
     futile.logger::flog.debug(paste0("Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
                                      " chains each with a warm up of ", args$warmup, " iterations each) and ",
@@ -375,13 +386,6 @@ fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = 
                                 timeout = max_time,
                                 onTimeout = "silent")
     return(fit)
-  }
-  
-  stop_timeout <- function() {
-    if (is.null(fit)) {
-      futile.logger::flog.error("fitting timed out - try increasing max_execution_time")
-      stop("model fitting timed out - try increasing max_execution_time")
-    }
   }
   
   if(!future) {
@@ -415,6 +419,55 @@ fit_model <- function(args, future = FALSE, max_execution_time = Inf, verbose = 
   }
   return(fit)
 }
+
+#' Fit a Stan Model using Varitional Inference
+#'
+#' @inheritParams fit_model_with_nuts
+#' @importFrom futile.logger flog.debug flog.info flog.error
+#' @importFrom purrr safely
+#' @importFrom rstan vb
+#' @return A stan model object
+fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
+  if (verbose) {
+    futile.logger::flog.debug(paste0("Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
+                                     args$output_samples, " approximate posterior samples for ", args$data$t," time steps of which ",
+                                     args$data$horizon, " are a forecast"))
+  }
+  
+  if (exists("trials", args)) {
+    trials <- args$trials
+    args$trials <- NULL
+  }else{
+    trials <- 1
+  }
+  
+  fit_vb <- function(stan_args) {
+    fit <-  do.call(rstan::vb, stan_args)
+    return(fit)
+  }
+  safe_vb <- purrr::safely(fit_vb)
+  
+  fit <- NULL
+  current_trials <- 0
+  
+  while (current_trials <= trials & is.null(fit)) {
+    fit <- safe_vb(args)
+    
+    error <- fit[[2]]
+    fit <- fit[[1]]
+    current_trials <- current_trials + 1
+  }
+  
+  if (is.null(fit)) {
+    if (is.null(fit)) {
+      futile.logger::flog.error("fitting failed - try increasing stan_args$trials or inspecting the model input")
+      stop("Variational Inference failed due to: ", error)
+    }
+  }
+  
+  return(fit)
+}
+
 
 #' Format Posterior Samples
 #'

@@ -14,6 +14,7 @@
 * Moved all inherited from stan arguments into `create_stan_args` with the option to override using `stan_args`. This leads to breaking changes - see the examples for details of the new interface.
 * Updated all example and documentation to reflect the new interface.
 * Added `get_dist`, `get_generation_time`, `get_incubation_period` based on ideas from @pearsonca. (This leads to breaking changes with the removal of `covid_generation_times` and `covid_incubation_periods`).
+* Added support for either NUTs sampling (`method = "exact"`) or Variational inference (`method = "approximate"`).
 
 # EpiNow2 1.1.0
 
