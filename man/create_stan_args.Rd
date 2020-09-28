@@ -37,7 +37,7 @@ several order of magnitudes faster than the exact method.}
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be returned.}
 }
 \value{
-
+A list of stan arguments
 }
 \description{
 Generates a list of arguments as required by \code{rstan::sampling} (when \verb{method = "exact}) or

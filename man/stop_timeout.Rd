@@ -6,6 +6,9 @@
 \usage{
 stop_timeout(fit)
 }
+\arguments{
+\item{fit}{A stan fit object}
+}
 \value{
 Nothing
 }

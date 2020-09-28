@@ -154,7 +154,7 @@ allocate_delays <- function(delay_var, no_delays) {
 
 
 #' Timeout Error
-#'
+#' @param fit A stan fit object
 #' @return Nothing
 #' @importFrom futile.logger flog.error
 stop_timeout <- function(fit) {
