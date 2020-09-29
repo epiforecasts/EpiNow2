@@ -1,11 +1,11 @@
 context("regional_epinow")
 
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 10)
-reporting_delay <- list(mean = log(3), mean_sd = log(1.1),
-                        sd = log(2), sd_sd = log(1.1), max = 10)
+reporting_delay <- list(mean = log(3), mean_sd = 0.1,
+                        sd = log(2), sd_sd = 0.1, max = 10)
 
 ## Uses example case vector
-cases <- EpiNow2::example_confirmed[1:20]
+cases <- EpiNow2::example_confirmed[1:30]
 
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
@@ -23,8 +23,7 @@ test_that("regional_epinow produces expected output when run with default settin
                                  delays = list(reporting_delay),
                                  gp = list(basis_prop = 0.1, boundary_scale = 2,
                                            lengthscale_mean = 20, lengthscale_sd = 2),
-                                 samples = 200, stan_args = list(warmup = 100, cores = 1, chains = 2),
-                                 verbose = FALSE))
+                                 samples = 100, stan_args = list(warmup = 100, cores = 1, chains = 2)))
   expect_equal(names(out$regional), c("testland", "realland"))
   expect_equal(names(out$summary), c("latest_date", "results", "summarised_results", "summary_plot",
                                       "summarised_measures", "reported_cases", "high_plots", "plots"))
