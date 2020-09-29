@@ -9,7 +9,6 @@ regional_epinow(
   target_folder,
   target_date,
   non_zero_points = 2,
-  cores = 1,
   summary = TRUE,
   summary_dir,
   region_scale = "Region",
@@ -29,8 +28,6 @@ regional_epinow(
 
 \item{non_zero_points}{Numeric, the minimum number of time points with non-zero cases in a region required for
 that region to be evaluated. Defaults to 2.}
-
-\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
 
 \item{summary}{Logical, should summary measures be calculated.}
 
@@ -60,23 +57,11 @@ Estimates Rt by region. See the documentation for \code{epinow} for further info
 \examples{
  \donttest{
 ## Construct example distributions
-generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
-                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
-                        sd = EpiNow2::covid_generation_times[1, ]$sd,
-                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-                        max = 30)
-                          
-incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
-                          mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
-                          sd = EpiNow2::covid_incubation_period[1, ]$sd,
-                          sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
-                          max = 30)
+generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
                    
-reporting_delay <- list(mean = log(10),
-                        mean_sd = log(2),
-                        sd = log(2),
-                        sd_sd = log(1.1),
-                        max = 30)
+reporting_delay <- list(mean = log(10), mean_sd = log(2),
+                        sd = log(2), sd_sd = log(1.1), max = 30)
                         
 ## Uses example case vector
 cases <- EpiNow2::example_confirmed[1:40]
@@ -87,11 +72,8 @@ cases <- data.table::rbindlist(list(
   
 ## Run basic nowcasting pipeline
 ## Here we reduce the accuracy of the GP approximation in order to reduce runtime
-out <- regional_epinow(reported_cases = cases,
-                       generation_time = generation_time,
+out <- regional_epinow(reported_cases = cases,  generation_time = generation_time,
                        delays = list(incubation_period, reporting_delay),
-                       adapt_delta = 0.9,
-                       samples = 2000, warmup = 500, verbose = TRUE,
-                       cores = ifelse(interactive(), 4, 1), chains = 4)
+                       stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 }
 }

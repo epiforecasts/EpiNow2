@@ -6,23 +6,17 @@
 \usage{
 epinow(
   reported_cases,
+  model,
+  samples = 1000,
+  stan_args,
+  method = "exact",
   family = "negbin",
   generation_time,
   delays,
   gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_mean = 0, lengthscale_sd
     = 2),
   rt_prior = list(mean = 1, sd = 1),
-  model,
-  prior_smoothing_window = 7,
-  cores = 1,
-  chains = 4,
-  samples = 1000,
-  warmup = 200,
-  adapt_delta = 0.99,
-  max_treedepth = 15,
-  stan_args = NULL,
-  future = FALSE,
-  max_execution_time = Inf,
+  horizon = 7,
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
@@ -30,20 +24,34 @@ epinow(
   stationary = FALSE,
   fixed = FALSE,
   fixed_future_rt = FALSE,
+  future = FALSE,
+  max_execution_time = Inf,
+  prior_smoothing_window = 7,
   return_fit = FALSE,
   forecast_model,
-  horizon = 7,
   ensemble_type = "mean",
   return_estimates = TRUE,
   target_folder,
   target_date,
-  verbose = FALSE,
-  debug = FALSE
+  verbose = FALSE
 )
 }
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
+
+\item{model}{A compiled stan model. By default uses the internal package model.}
+
+\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
+
+\item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "exact"
+or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
+using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
+
+\item{method}{A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
+this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
+from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results
+several order of magnitudes faster than the exact method.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}
@@ -70,32 +78,7 @@ the defaults of 0 and 2 (normal distributed truncated at zero).}
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 
-\item{model}{A compiled stan model. By default uses the internal package model.}
-
-\item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
-for the prior based on reported cases.}
-
-\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
-
-\item{chains}{Numeric, defaults to 2. The number of MCMC chains to use.}
-
-\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
-
-\item{warmup}{Numeric, defaults to 200. Number of iteration of warmup to use.}
-
-\item{adapt_delta}{Numeric, defaults to 0.99. See ?rstan::sampling.}
-
-\item{max_treedepth}{Numeric, defaults to 15. See ?rstan::sampling.}
-
-\item{stan_args}{List, defaults to \code{NULL}. User supplied arguments to be passed to \code{rstan::sampling}. Overwrites all
-defaults.}
-
-\item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
-fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
-
-\item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout.
-When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation
-will fail with an informative error.}
+\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
 \item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
 
@@ -122,12 +105,20 @@ analysis on the impact of interventions.}
 \item{fixed_future_rt}{Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
 future time points without data.}
 
+\item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
+fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
+
+\item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout.
+When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation
+will fail with an informative error.}
+
+\item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
+for the prior based on reported cases.}
+
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
 \item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
 for forecasting future Rt and case co An example of the required structure is: \code{function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}}.}
-
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
 \item{ensemble_type}{Character string indicating the type of ensemble to use. By default this is
 an unweighted ensemble ("mean") with no other types currently supported.}
@@ -138,9 +129,7 @@ an unweighted ensemble ("mean") with no other types currently supported.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{verbose}{Logical, defaults to \code{TRUE}. Should verbose progress messages be printed.}
-
-\item{debug}{Logical, defaults to \code{FALSE}. Enables debug model in which additional diagnostics are available}
+\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
 }
 \value{
 A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
@@ -152,21 +141,9 @@ of report and then save summary measures and plots.
 \examples{
 \donttest{
 ## Construct example distributions
-generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
-                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
-                        sd = EpiNow2::covid_generation_times[1, ]$sd,
-                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-                        max = 30)
-                          
-incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
-                          mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
-                          sd = EpiNow2::covid_incubation_period[1, ]$sd,
-                          sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
-                          max = 30)
-                   
-reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1))
-## Set max allowed delay to 30 days to truncate computation
-reporting_delay$max <- 30
+generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 
 ## Example case data
 reported_cases <- EpiNow2::example_confirmed[1:40] 
@@ -174,9 +151,7 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 ## Report Rt along with forecasts
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
               delays = list(incubation_period, reporting_delay),
-              rt_prior = list(mean = 1, sd = 1),
-              samples = 1000, warmup = 200, cores = ifelse(interactive(), 4, 1), chains = 4,
-              verbose = TRUE, return_fit = TRUE)
+              stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 
 out
 
@@ -185,16 +160,15 @@ if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
 
    ## Report Rt along with forecasts
-   out <- epinow(reported_cases = cases, generation_time = generation_time,
+   out <- epinow(reported_cases = cases, samples = 1000, 
+                 generation_time = generation_time,
                  delays = list(incubation_period, reporting_delay),
-                 rt_prior = list(mean = 1, sd = 1),
                  forecast_model = function(y, ...){
                    EpiSoon::forecastHybrid_model(
                      y = y[max(1, length(y) - 21):length(y)],
                      model_params = list(models = "aefz", weights = "equal"),
                      forecast_params = list(PI.combination = "mean"), ...)},
-                 samples = 1000, warmup = 500, cores = ifelse(interactive(), 4, 1), chains = 4,
-                 verbose = TRUE, return_fit = TRUE)
+                  stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 
 out
    }

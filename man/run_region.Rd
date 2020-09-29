@@ -10,7 +10,6 @@ run_region(
   target_folder,
   target_date,
   return_estimates,
-  cores = cores,
   ...
 )
 }
@@ -24,8 +23,6 @@ run_region(
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
-
-\item{cores}{Numeric, defaults to 2. The number of cores to use when fitting the stan model.}
 
 \item{...}{Pass additional arguments to \code{epinow}}
 }
