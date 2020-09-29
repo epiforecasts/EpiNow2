@@ -1,21 +1,10 @@
 context("epinow")
 
-generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
-                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
-                        sd = EpiNow2::covid_generation_times[1, ]$sd,
-                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-                        max = 15)
+generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 15)
+incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 15)
+reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(3), 1), max_value = 15)
 
-incubation_period <- list(mean = EpiNow2::covid_incubation_period[1, ]$mean,
-                          mean_sd = EpiNow2::covid_incubation_period[1, ]$mean_sd,
-                          sd = EpiNow2::covid_incubation_period[1, ]$sd,
-                          sd_sd = EpiNow2::covid_incubation_period[1, ]$sd_sd,
-                          max = 15)
-
-reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(3), 1))
-reporting_delay$max <- 15
-
-reported_cases <- EpiNow2::example_confirmed[1:40]
+reported_cases <- EpiNow2::example_confirmed[1:30]
 
 df_non_zero <- function(df) {
   expect_true(nrow(df) > 0)
@@ -25,10 +14,7 @@ test_that("epinow produces expected output when run with default settings", {
   skip_on_cran()
   out <- suppressWarnings(epinow(reported_cases = reported_cases, generation_time = generation_time,
                 delays = list(incubation_period, reporting_delay),
-                gp = list(basis_prop = 0.1, boundary_scale = 2,
-                          lengthscale_mean = 20, lengthscale_sd = 2),
-                samples = 200, warmup = 100, cores = 1, chains = 2,
-                verbose = FALSE))
+                samples = 100, stan_args = list(warmup = 100, cores = 1, chains = 2)))
   
   expect_equal(names(out), c("estimates", "estimated_reported_cases", "summary", "plots"))
   df_non_zero(out$estimates$samples)
@@ -45,8 +31,23 @@ test_that("epinow fails as expected when given a short timeout", {
   skip_on_cran()
   expect_error(suppressWarnings(epinow(reported_cases = reported_cases, generation_time = generation_time,
                 delays = list(incubation_period, reporting_delay),
-                gp = list(basis_prop = 0.1, boundary_scale = 2,
-                          lengthscale_mean = 20, lengthscale_sd = 2),
-                samples = 500, warmup = 200, cores = 1, chains = 2,
-                verbose = FALSE, max_execution_time = 10)))
+                samples = 100, stan_args = list(warmup = 100, cores = 1, chains = 2),
+                max_execution_time = 10)))
+})
+
+
+test_that("epinow fails if given NUTs arguments when using variational inference", {
+  skip_on_cran()
+  expect_error(suppressWarnings(epinow(reported_cases = reported_cases, generation_time = generation_time,
+                                       delays = list(incubation_period, reporting_delay),
+                                       method = "approximate",
+                                       samples = 100, stan_args = list(warmup = 100, cores = 1, chains = 2))))
+})
+
+
+test_that("epinow fails if given variational inference arguments when using NUTs", {
+  skip_on_cran()
+  expect_error(suppressWarnings(epinow(reported_cases = reported_cases, generation_time = generation_time,
+                                       delays = list(incubation_period, reporting_delay),
+                                       method = "exact", stan_args = list(tol_rel_obj = 1))))
 })

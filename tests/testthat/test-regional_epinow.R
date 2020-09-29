@@ -1,19 +1,11 @@
 context("regional_epinow")
 
-generation_time <- list(mean = EpiNow2::covid_generation_times[1, ]$mean,
-                        mean_sd = EpiNow2::covid_generation_times[1, ]$mean_sd,
-                        sd = EpiNow2::covid_generation_times[1, ]$sd,
-                        sd_sd = EpiNow2::covid_generation_times[1, ]$sd_sd,
-                        max = 10)
-
-reporting_delay <- list(mean = log(3),
-                        mean_sd = log(1.1),
-                        sd = log(2),
-                        sd_sd = log(1.1),
-                        max = 10)
+generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 10)
+reporting_delay <- list(mean = log(3), mean_sd = 0.1,
+                        sd = log(2), sd_sd = 0.1, max = 10)
 
 ## Uses example case vector
-cases <- EpiNow2::example_confirmed[1:20]
+cases <- EpiNow2::example_confirmed[1:30]
 
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
@@ -31,8 +23,7 @@ test_that("regional_epinow produces expected output when run with default settin
                                  delays = list(reporting_delay),
                                  gp = list(basis_prop = 0.1, boundary_scale = 2,
                                            lengthscale_mean = 20, lengthscale_sd = 2),
-                                 samples = 200, warmup = 100, cores = 1, chains = 2,
-                                 verbose = FALSE))
+                                 samples = 100, stan_args = list(warmup = 100, cores = 1, chains = 2)))
   expect_equal(names(out$regional), c("testland", "realland"))
   expect_equal(names(out$summary), c("latest_date", "results", "summarised_results", "summary_plot",
                                       "summarised_measures", "reported_cases", "high_plots", "plots"))
@@ -48,15 +39,13 @@ test_that("regional_epinow produces expected output when run with default settin
 
 test_that("regional_epinow fails as expected when given a very short timeout", {
   skip_on_cran()
-  expect_error(regional_epinow(reported_cases = cases,
-                           generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay),
-                           adapt_delta = 0.9, samples = 2000, warmup = 500,
-                           cores = 1, max_execution_time = 1))
-  expect_error(regional_epinow(reported_cases = cases,
-                               generation_time = generation_time,
+  expect_error(regional_epinow(reported_cases = cases, generation_time = generation_time,
+                              delays = list(incubation_period, reporting_delay),
+                              stan_args = list(warmup = 100, cores = 1, chains = 2),
+                              max_execution_time = 1))
+  expect_error(regional_epinow(reported_cases = cases, generation_time = generation_time,
                                delays = list(incubation_period, reporting_delay),
-                               adapt_delta = 0.9, samples = 2000, warmup = 500, future = TRUE,
-                               cores = 1, max_execution_time = 1))
+                               stan_args = list(warmup = 100, cores = 1, chains = 2),
+                               max_execution_time = 1, future = TRUE))
 
 })
