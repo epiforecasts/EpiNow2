@@ -42,10 +42,10 @@ test_that("regional_epinow fails as expected when given a very short timeout", {
   expect_error(regional_epinow(reported_cases = cases, generation_time = generation_time,
                               delays = list(incubation_period, reporting_delay),
                               stan_args = list(warmup = 100, cores = 1, chains = 2),
-                           max_execution_time = 1))
+                              max_execution_time = 1))
   expect_error(regional_epinow(reported_cases = cases, generation_time = generation_time,
                                delays = list(incubation_period, reporting_delay),
                                stan_args = list(warmup = 100, cores = 1, chains = 2),
-                               max_execution_time = 1))
+                               max_execution_time = 1, future = TRUE))
 
 })
