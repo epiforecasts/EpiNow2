@@ -314,19 +314,18 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
   if (missing(model)) {
     model <- NULL
   }
-  
-  stan_args <- create_stan_args(model, data = data, samples = samples, 
-                                stan_args = stan_args,
-                                init = create_initial_conditions(data, delays, rt_prior, 
-                                                                  generation_time, mean_shift),
-                                method = method, verbose = verbose)
+  args <- create_stan_args(model, data = data, samples = samples, 
+                           stan_args = stan_args,
+                           init = create_initial_conditions(data, delays, rt_prior, 
+                                                            generation_time, mean_shift),
+                           method = method, verbose = verbose)
   
   # Fit model ---------------------------------------------------------------
   if (method == "exact") {
-    fit <- fit_model_with_nuts(stan_args, future = future, max_execution_time = max_execution_time,
+    fit <- fit_model_with_nuts(args, future = future, max_execution_time = max_execution_time,
                                verbose = verbose)
   }else if (method == "approximate"){
-    fit <- fit_model_with_vb(stan_args, verbose = verbose)
+    fit <- fit_model_with_vb(args, verbose = verbose)
   }
   
   # Extract parameters of interest from the fit -----------------------------
