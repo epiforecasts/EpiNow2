@@ -121,15 +121,14 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
     model <- NULL
   }
 
-  estimates <- estimate_infections(reported_cases = reported_cases, model = model, samples = samples,
-                                   family = family, generation_time = generation_time,
-                                   delays = delays, gp = gp, rt_prior = rt_prior,
-                                   stan_args = stan_args, future = future,
-                                   max_execution_time = max_execution_time, estimate_rt = estimate_rt, 
-                                   estimate_week_eff = estimate_week_eff, estimate_breakpoints = estimate_breakpoints,
-                                   burn_in = burn_in, stationary = stationary, fixed = fixed,
-                                   fixed_future_rt = fixed_future_rt, horizon = horizon,
-                                   verbose = verbose, return_fit = return_fit)
+  estimates <- estimate_infections(reported_cases = reported_cases, model = model, samples = samples, stan_args = stan_args,
+                                   method = method, family = family,
+                                   generation_time = generation_time, delays = delays, horizon = horizon,
+                                   gp = gp, rt_prior = rt_prior,
+                                   estimate_rt = estimate_rt, estimate_week_eff = estimate_week_eff, estimate_breakpoints = estimate_breakpoints,
+                                   stationary = stationary, fixed = fixed, fixed_future_rt = fixed_future_rt,
+                                   burn_in = burn_in, prior_smoothing_window = prior_smoothing_window, future = future,
+                                   max_execution_time = max_execution_time, return_fit = return_fit, verbose = verbose)
 
   # Report estimates --------------------------------------------------------
   if (!is.null(target_folder)) {
