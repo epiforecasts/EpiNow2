@@ -72,7 +72,6 @@ Windows users will need a working installation of Rtools in order to build the p
 
 ```{r, message = FALSE}
 library(EpiNow2)
-setup
 ```
 
 ### Reporting delays, incubation period and generation time
