@@ -392,9 +392,17 @@ clean_regions <- function(reported_cases, non_zero_points) {
                                                      .(confirm = sum(confirm, na.rm = TRUE)), by = "region"][confirm >= non_zero_points]$region
   
   eval_regions <- unique(eval_regions)
-  
-  futile.logger::flog.info("Producing estimates for: %s",
-                           paste(eval_regions, collapse = ", "))
+  orig_regions <- length(unique(reported_cases$region))
+  if (length(eval_regions) > 30){
+    futile.logger::flog.info("Producing estimates for %s regions out of %s",
+                             length(eval_regions), length(orig_regions))
+  }else{
+    futile.logger::flog.info("Producing estimates for: %s",
+                             paste(eval_regions, collapse = ", "))
+    futile.logger::flog.info("Regions excluded: %s",
+                             paste(orig_regions, collapse = ", "))
+  }
+
   
   ## Exclude zero regions
   reported_cases <- reported_cases[!is.na(region)][region %in% eval_regions]
