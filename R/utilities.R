@@ -185,7 +185,7 @@ stop_timeout <- function(fit) {
 #' setup_logging("ERROR")
 setup_logging <- function(threshold = "INFO", file = NULL,
                           mirror_to_console = TRUE) {
-  message("Logging thresold set at: ", thresold)
+  message("Logging threshold set at: ", threshold)
   futile.logger::flog.threshold(threshold)
   
   if (!is.null(file)) {
