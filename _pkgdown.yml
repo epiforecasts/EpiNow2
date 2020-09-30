@@ -90,3 +90,4 @@ reference:
       - clean_nowcasts
       - make_conf
       - map_prob_change
+      - setup_logging

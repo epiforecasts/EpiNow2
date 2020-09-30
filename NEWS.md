@@ -15,6 +15,7 @@
 * Updated all example and documentation to reflect the new interface.
 * Added `get_dist`, `get_generation_time`, `get_incubation_period` based on ideas from @pearsonca. (This leads to breaking changes with the removal of `covid_generation_times` and `covid_incubation_periods`).
 * Added support for either NUTs sampling (`method = "exact"`) or Variational inference (`method = "approximate"`).
+* Added `setup_logging` to enable users to specify the level and location of logging (wrapping functionality from `futile.logger`). 
 
 # EpiNow2 1.1.0
 
