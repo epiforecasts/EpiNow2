@@ -346,6 +346,7 @@ regional_epinow <- function(reported_cases, target_folder, target_date,
                                               target_folder = target_folder, 
                                               target_date = target_date,
                                               return_estimates = return_estimates,
+                                              return_summarised_estimates = summary,
                                               ...,
                                               future.scheduling = Inf)
 
@@ -435,6 +436,8 @@ clean_regions <- function(reported_cases, non_zero_points) {
 
 #' Run epinow with Regional Processing Code
 #' @param target_region Character string indicating the region being evaluated
+#' @param return_partial_estimates Logical, default to `FALSE`. Should estimates required for
+#' `regional_summary` be returned.
 #' @inheritParams regional_epinow
 #' @importFrom data.table setDTthreads
 #' @importFrom futile.logger flog.trace flog.warn
@@ -444,6 +447,7 @@ run_region <- function(target_region,
                        target_folder,
                        target_date,
                        return_estimates,
+                       return_partial_estimates,
                        ...) {
   futile.logger::flog.info("Initialising estimates for: %s", target_region)
   
@@ -463,7 +467,7 @@ run_region <- function(target_region,
         reported_cases = regional_cases,
         target_folder = target_folder,
         target_date = target_date,
-        return_estimates = TRUE,
+        return_estimates = return_partial_estimates,
         ...),
         warning = function(w) {
           futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call))
