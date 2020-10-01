@@ -31,6 +31,8 @@ epinow(
   forecast_model,
   ensemble_type = "mean",
   return_estimates = TRUE,
+  keep_samples = TRUE,
+  make_plots = TRUE,
   target_folder,
   target_date,
   verbose = FALSE
