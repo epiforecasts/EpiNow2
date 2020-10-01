@@ -165,6 +165,43 @@ stop_timeout <- function(fit) {
   return(invisible(NULL))
 }
 
+
+
+#' Setup Logging
+#'
+#' @param threshold Character string indicating the logging level see (?futile.logger 
+#' for details of the available options). Defaults to "INFO".
+#' @param file Character string indicating the path to save logs to. By default logs will be
+#' written to the console.
+#' @param mirror_to_console Logical, defaults to `TRUE`. If saving logs to a file should they 
+#' also be duplicated in the console.
+#' @importFrom futile.logger flog.threshold flog.appender appender.tee appender.file
+#' @return Nothing
+#' @export
+#'
+#' @examples
+#' 
+#' # Set up error only logs (info logs are enabled by default.)
+#' setup_logging("ERROR")
+setup_logging <- function(threshold = "INFO", file = NULL,
+                          mirror_to_console = TRUE) {
+  message("Logging threshold set at: ", threshold)
+  futile.logger::flog.threshold(threshold)
+  
+  if (!is.null(file)) {
+    message("Writing logs to: ", file)
+    if (mirror_to_console) {
+      futile.logger::flog.appender(futile.logger::appender.tee(file))
+    }else{
+      futile.logger::flog.appender(futile.logger::appender.file(file))  
+    }
+  }else{
+    message("Writing logs to the console")
+    futile.logger::flog.appender(futile.logger::appender.console())
+  }
+  
+  return(invisible(NULL))
+}
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 
 globalVariables(
