@@ -346,7 +346,7 @@ regional_epinow <- function(reported_cases, target_folder, target_date,
                                               target_folder = target_folder, 
                                               target_date = target_date,
                                               return_estimates = return_estimates,
-                                              return_partial_estimates = summary,
+                                              return_partial_estimates = summary | return_estimates,
                                               ...,
                                               future.scheduling = Inf)
 
