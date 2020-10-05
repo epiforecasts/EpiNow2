@@ -135,7 +135,7 @@ report_summary <- function(summarised_estimates,
                                                    central_upper = central_upper)]
   ## Extract latest R estimate
   R_latest <- summarised_estimates[variable == "R"][, variable := NULL][,
-                                   purrr::map(.SD, ~ round(., 2))]
+                                   purrr::map(.SD, ~ round(., 1))]
    
   ## Estimate probability of control
   prob_control <- rt_samples[, .(prob_control = sum(value <= 1) / .N)]$prob_control
