@@ -181,7 +181,8 @@ stop_timeout <- function(fit) {
 #' also be duplicated in the console.
 #' @param name Character string defaulting to EpiNow2. This indicates the name of the logger to setup.
 #' The default logger for EpiNow2 is called EpiNow2. Nested options include: Epinow2.epinow which controls 
-#' all logging for epinow and nested functions.
+#' all logging for `epinow` and nested functions, EpiNow2.epinow.estimate_infections (logging in
+#'  `estimate_infections`), and EpiNow2.epinow.estimate_infections.fit (logging in fitting functions).
 #' @importFrom futile.logger flog.threshold flog.appender appender.tee appender.file
 #' @return Nothing
 #' @export
