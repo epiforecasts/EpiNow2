@@ -186,9 +186,9 @@ discretised_gamma_pmf(const int& y,
         stan::math::fill(beta, DUMMY_VAR__);
         stan::math::assign(beta,(mu / pow(c_sigma, 2)));
         current_statement_begin__ = 32;
-        stan::math::assign(alpha, (logical_lt(alpha, 0) ? stan::math::promote_scalar<local_scalar_t__>(1e-5) : stan::math::promote_scalar<local_scalar_t__>(alpha) ));
+        stan::math::assign(alpha, (logical_lte(alpha, 0) ? stan::math::promote_scalar<local_scalar_t__>(1e-5) : stan::math::promote_scalar<local_scalar_t__>(alpha) ));
         current_statement_begin__ = 33;
-        stan::math::assign(beta, (logical_lt(beta, 0) ? stan::math::promote_scalar<local_scalar_t__>(1e-5) : stan::math::promote_scalar<local_scalar_t__>(beta) ));
+        stan::math::assign(beta, (logical_lte(beta, 0) ? stan::math::promote_scalar<local_scalar_t__>(1e-5) : stan::math::promote_scalar<local_scalar_t__>(beta) ));
         current_statement_begin__ = 34;
         stan::math::assign(alpha, (is_inf(alpha) ? stan::math::promote_scalar<local_scalar_t__>(1e8) : stan::math::promote_scalar<local_scalar_t__>(alpha) ));
         current_statement_begin__ = 35;
