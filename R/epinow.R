@@ -347,7 +347,7 @@ regional_epinow <- function(reported_cases, target_folder, target_date,
 
   ## Function to run the pipeline in a region
   safe_run_region <- purrr::safely(run_region)
-
+  
   ## Run regions (make parallel using future::plan)
   futile.logger::flog.trace("calling future apply to process each region through the run_region function")
   regional_out <- future.apply::future_lapply(regions, safe_run_region,
@@ -458,7 +458,8 @@ run_region <- function(target_region,
                        return_estimates,
                        return_partial_estimates,
                        ...) {
-  futile.logger::flog.info("Initialising estimates for: %s", target_region)
+  futile.logger::flog.info("Initialising estimates for: %s", target_region, 
+                           name = "EpiNow2.epinow")
   
   data.table::setDTthreads(threads = 1)
   
@@ -466,10 +467,12 @@ run_region <- function(target_region,
     target_folder <- file.path(target_folder, target_region)
   }
   
-  futile.logger::flog.trace("filtering data for target region %s", target_region)
+  futile.logger::flog.trace("filtering data for target region %s", target_region,
+                            name = "EpiNow2.epinow")
   regional_cases <- reported_cases[region %in% target_region][, region := NULL]
   
-  futile.logger::flog.trace("calling epinow2::epinow to process data for %s", target_region)
+  futile.logger::flog.trace("calling epinow2::epinow to process data for %s", target_region,
+                            name = "EpiNow2.epinow")
   timing <- system.time(
     out <- tryCatch(
       withCallingHandlers(EpiNow2::epinow(
@@ -479,12 +482,14 @@ run_region <- function(target_region,
         return_estimates = return_partial_estimates,
         ...),
         warning = function(w) {
-          futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call))
+          futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call),
+                                   name = "EpiNow2.epinow")
           rlang::cnd_muffle(w)
         }
       ),
       TimeoutException = function(ex) {
-        futile.logger::flog.warn("region %s timed out", target_region)
+        futile.logger::flog.warn("region %s timed out", target_region,
+                                 name = "EpiNow2.epinow")
         return(list("timing" = Inf))
       }
     )
@@ -519,7 +524,8 @@ process_region <- function(out, return_estimates, target_region, timing) {
     out$timing = timing['elapsed']
   }
   if (exists("summary", out)) { # if it failed a warning would have been output above
-    futile.logger::flog.info("Completed estimates for: %s", target_region)
+    futile.logger::flog.info("Completed estimates for: %s", target_region, 
+                             name = "EpiNow2.epinow")
   }
   
   return(out)
@@ -539,12 +545,13 @@ process_regions <- function(regional_out, regions) {
   names(regional_out) <- regions
   problems <- purrr::keep(regional_out, ~!is.null(.$error))
   
-  futile.logger::flog.trace("%s runtime errors caught", length(problems))
+  futile.logger::flog.info("Regions with runtime errors: %s", length(problems))
   for (location in names(problems)) {
     # output timeout / error
     futile.logger::flog.info("Runtime error in %s : %s - %s", location,
                              problems[[location]]$error$message, 
-                             toString(problems[[location]]$error$call))
+                             toString(problems[[location]]$error$call),
+                             name = "EpiNow2.epinow")
   }
   
   regional_out <- purrr::map(regional_out, ~.$result)
