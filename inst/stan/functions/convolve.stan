@@ -8,6 +8,3 @@ vector convolve(vector cases, vector pdf) {
     }
    return(convolved_cases);
   }
-  
-  
-  
