@@ -430,7 +430,7 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
                                              future.scheduling = Inf,
                                              future.globals = c("values", "bootstraps", "samples",
                                                                 "bootstrap_samples", "get_single_dist"),
-                                             future.packages = "data.table")
+                                             future.packages = "data.table", future.seed = TRUE)
     
 
     dist_samples <- purrr::transpose(dist_samples)
