@@ -5,6 +5,9 @@
 #' @param target_date Date, defaults to maximum found in the data if not specified.
 #' @param target_folder Character string specifying where to save results (will create if not present).
 #' @param return_estimates Logical, defaults to TRUE. Should estimates be returned.
+#' @param keep_samples Logical, defaults to TRUE. Should samples be kept (either returned or saved or both 
+#' depending on other settings).
+#' @param make_plots Logical, defaults to TRUE. Should plots be made and returned (or saved).
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @inheritParams estimate_infections
@@ -254,9 +257,15 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
   if (return_estimates) {
     out <- list()
     out$estimates <- estimates
-
+    if (!keep_samples) {
+      out$estimates$samples <- NULL
+    } 
+    
     if (!missing(forecast_model)) {
       out$forecast <- forecast
+      if (!keep_samples) {
+        out$forecast$samples <- NULL
+      } 
     }
 
     out$estimated_reported_cases <- estimated_reported_cases
