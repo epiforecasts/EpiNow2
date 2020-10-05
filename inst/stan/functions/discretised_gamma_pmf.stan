@@ -12,6 +12,3 @@
     return((gamma_cdf(y + 1, alpha, beta) - gamma_cdf(y, alpha, beta)) / 
     (gamma_cdf(max_val + 1, alpha, beta) - gamma_cdf(1, alpha, beta)));
   }
-  
-  
-  
