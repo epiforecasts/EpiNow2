@@ -147,88 +147,18 @@ incubation period followed by a reporting delay.
 
 ``` r
 reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(4), 1), max_value = 30)
-#> Warning: UNRELIABLE VALUE: Future ('future_lapply-1') unexpectedly generated
-#> random numbers without specifying argument '[future.]seed'. There is a risk that
-#> those random numbers are not statistically sound and the overall results might
-#> be invalid. To fix this, specify argument '[future.]seed', e.g. 'seed=TRUE'.
-#> This ensures that proper, parallel-safe random numbers are produced via the
-#> L'Ecuyer-CMRG method. To disable this check, use [future].seed=NULL, or set
-#> option 'future.rng.onMisuse' to "ignore".
-#> Warning: UNRELIABLE VALUE: Future ('future_lapply-2') unexpectedly generated
-#> random numbers without specifying argument '[future.]seed'. There is a risk that
-#> those random numbers are not statistically sound and the overall results might
-#> be invalid. To fix this, specify argument '[future.]seed', e.g. 'seed=TRUE'.
-#> This ensures that proper, parallel-safe random numbers are produced via the
-#> L'Ecuyer-CMRG method. To disable this check, use [future].seed=NULL, or set
-#> option 'future.rng.onMisuse' to "ignore".
-#> Warning: UNRELIABLE VALUE: Future ('future_lapply-3') unexpectedly generated
-#> random numbers without specifying argument '[future.]seed'. There is a risk that
-#> those random numbers are not statistically sound and the overall results might
-#> be invalid. To fix this, specify argument '[future.]seed', e.g. 'seed=TRUE'.
-#> This ensures that proper, parallel-safe random numbers are produced via the
-#> L'Ecuyer-CMRG method. To disable this check, use [future].seed=NULL, or set
-#> option 'future.rng.onMisuse' to "ignore".
-#> Warning: UNRELIABLE VALUE: Future ('future_lapply-4') unexpectedly generated
-#> random numbers without specifying argument '[future.]seed'. There is a risk that
-#> those random numbers are not statistically sound and the overall results might
-#> be invalid. To fix this, specify argument '[future.]seed', e.g. 'seed=TRUE'.
-#> This ensures that proper, parallel-safe random numbers are produced via the
-#> L'Ecuyer-CMRG method. To disable this check, use [future].seed=NULL, or set
-#> option 'future.rng.onMisuse' to "ignore".
-#> Warning: UNRELIABLE VALUE: Future ('future_lapply-5') unexpectedly generated
-#> random numbers without specifying argument '[future.]seed'. There is a risk that
-#> those random numbers are not statistically sound and the overall results might
-#> be invalid. To fix this, specify argument '[future.]seed', e.g. 'seed=TRUE'.
-#> This ensures that proper, parallel-safe random numbers are produced via the
-#> L'Ecuyer-CMRG method. To disable this check, use [future].seed=NULL, or set
-#> option 'future.rng.onMisuse' to "ignore".
-#> Warning: UNRELIABLE VALUE: Future ('future_lapply-6') unexpectedly generated
-#> random numbers without specifying argument '[future.]seed'. There is a risk that
-#> those random numbers are not statistically sound and the overall results might
-#> be invalid. To fix this, specify argument '[future.]seed', e.g. 'seed=TRUE'.
-#> This ensures that proper, parallel-safe random numbers are produced via the
-#> L'Ecuyer-CMRG method. To disable this check, use [future].seed=NULL, or set
-#> option 'future.rng.onMisuse' to "ignore".
-#> Warning: UNRELIABLE VALUE: Future ('future_lapply-7') unexpectedly generated
-#> random numbers without specifying argument '[future.]seed'. There is a risk that
-#> those random numbers are not statistically sound and the overall results might
-#> be invalid. To fix this, specify argument '[future.]seed', e.g. 'seed=TRUE'.
-#> This ensures that proper, parallel-safe random numbers are produced via the
-#> L'Ecuyer-CMRG method. To disable this check, use [future].seed=NULL, or set
-#> option 'future.rng.onMisuse' to "ignore".
-#> Warning: UNRELIABLE VALUE: Future ('future_lapply-8') unexpectedly generated
-#> random numbers without specifying argument '[future.]seed'. There is a risk that
-#> those random numbers are not statistically sound and the overall results might
-#> be invalid. To fix this, specify argument '[future.]seed', e.g. 'seed=TRUE'.
-#> This ensures that proper, parallel-safe random numbers are produced via the
-#> L'Ecuyer-CMRG method. To disable this check, use [future].seed=NULL, or set
-#> option 'future.rng.onMisuse' to "ignore".
-#> Warning: UNRELIABLE VALUE: Future ('future_lapply-9') unexpectedly generated
-#> random numbers without specifying argument '[future.]seed'. There is a risk that
-#> those random numbers are not statistically sound and the overall results might
-#> be invalid. To fix this, specify argument '[future.]seed', e.g. 'seed=TRUE'.
-#> This ensures that proper, parallel-safe random numbers are produced via the
-#> L'Ecuyer-CMRG method. To disable this check, use [future].seed=NULL, or set
-#> option 'future.rng.onMisuse' to "ignore".
-#> Warning: UNRELIABLE VALUE: Future ('future_lapply-10') unexpectedly generated
-#> random numbers without specifying argument '[future.]seed'. There is a risk that
-#> those random numbers are not statistically sound and the overall results might
-#> be invalid. To fix this, specify argument '[future.]seed', e.g. 'seed=TRUE'.
-#> This ensures that proper, parallel-safe random numbers are produced via the
-#> L'Ecuyer-CMRG method. To disable this check, use [future].seed=NULL, or set
-#> option 'future.rng.onMisuse' to "ignore".
 reporting_delay
 #> $mean
-#> [1] 1.207047
+#> [1] 1.121562
 #> 
 #> $mean_sd
-#> [1] 0.1490608
+#> [1] 0.1641465
 #> 
 #> $sd
-#> [1] 1.092844
+#> [1] 1.212076
 #> 
 #> $sd_sd
-#> [1] 0.1133359
+#> [1] 0.1357686
 #> 
 #> $max
 #> [1] 30
@@ -293,27 +223,27 @@ parameters in an easily explored format.
 ``` r
 head(estimates$estimates$samples)
 #>      variable  parameter time       date sample     value strat     type
-#> 1: infections infections    1 2020-02-11      1  2.102824  <NA> estimate
-#> 2: infections infections    2 2020-02-12      1 10.833834  <NA> estimate
-#> 3: infections infections    3 2020-02-13      1 15.412873  <NA> estimate
-#> 4: infections infections    4 2020-02-14      1 27.575111  <NA> estimate
-#> 5: infections infections    5 2020-02-15      1 49.794883  <NA> estimate
-#> 6: infections infections    6 2020-02-16      1 58.579067  <NA> estimate
+#> 1: infections infections    1 2020-02-11      1  1.713216  <NA> estimate
+#> 2: infections infections    2 2020-02-12      1 10.361868  <NA> estimate
+#> 3: infections infections    3 2020-02-13      1 18.112208  <NA> estimate
+#> 4: infections infections    4 2020-02-14      1 28.833484  <NA> estimate
+#> 5: infections infections    5 2020-02-15      1 43.713818  <NA> estimate
+#> 6: infections infections    6 2020-02-16      1 51.122634  <NA> estimate
 head(estimates$estimates$summarised)
 #>          date variable strat     type   bottom      top    lower    upper
-#> 1: 2020-02-22        R  <NA> estimate 1.483201 2.086330 1.674702 1.910886
-#> 2: 2020-02-23        R  <NA> estimate 1.529891 2.007782 1.687103 1.870045
-#> 3: 2020-02-24        R  <NA> estimate 1.622208 1.991562 1.741372 1.890153
-#> 4: 2020-02-25        R  <NA> estimate 1.663970 1.958616 1.728444 1.849149
-#> 5: 2020-02-26        R  <NA> estimate 1.686296 1.940857 1.774474 1.882358
-#> 6: 2020-02-27        R  <NA> estimate 1.704416 1.951436 1.768909 1.873016
+#> 1: 2020-02-22        R  <NA> estimate 1.460840 2.071162 1.614854 1.864393
+#> 2: 2020-02-23        R  <NA> estimate 1.523846 2.005474 1.615059 1.818843
+#> 3: 2020-02-24        R  <NA> estimate 1.566266 1.944036 1.663716 1.823922
+#> 4: 2020-02-25        R  <NA> estimate 1.641185 1.941345 1.739435 1.866124
+#> 5: 2020-02-26        R  <NA> estimate 1.657554 1.926520 1.759162 1.865628
+#> 6: 2020-02-27        R  <NA> estimate 1.674716 1.936040 1.752127 1.853318
 #>    central_lower central_upper   median     mean         sd
-#> 1:      1.779339      1.859663 1.790496 1.782737 0.18483995
-#> 2:      1.800382      1.864121 1.795852 1.791083 0.14549205
-#> 3:      1.769671      1.820709 1.799376 1.800271 0.11296815
-#> 4:      1.791555      1.831742 1.809690 1.809384 0.09037439
-#> 5:      1.813028      1.852204 1.817353 1.817405 0.08027247
-#> 6:      1.812926      1.850551 1.824700 1.823275 0.08108804
+#> 1:      1.741297      1.835204 1.742897 1.746969 0.19668356
+#> 2:      1.670770      1.746335 1.753774 1.758797 0.15415863
+#> 3:      1.730337      1.786061 1.767448 1.771843 0.11923808
+#> 4:      1.744617      1.786020 1.780971 1.785113 0.09431922
+#> 5:      1.767667      1.802731 1.795138 1.797524 0.08173062
+#> 6:      1.768931      1.805214 1.803765 1.807954 0.08062760
 ```
 
 Reported cases are returned separately in order to ease reporting of
@@ -322,27 +252,27 @@ forecasts and model evaluation.
 ``` r
 head(estimates$estimated_reported_cases$samples)
 #>          date sample cases  type
-#> 1: 2020-02-22      1    27 gp_rt
-#> 2: 2020-02-23      1   110 gp_rt
-#> 3: 2020-02-24      1    19 gp_rt
-#> 4: 2020-02-25      1   113 gp_rt
-#> 5: 2020-02-26      1    78 gp_rt
-#> 6: 2020-02-27      1   120 gp_rt
+#> 1: 2020-02-22      1    43 gp_rt
+#> 2: 2020-02-23      1    57 gp_rt
+#> 3: 2020-02-24      1   142 gp_rt
+#> 4: 2020-02-25      1   200 gp_rt
+#> 5: 2020-02-26      1    97 gp_rt
+#> 6: 2020-02-27      1   119 gp_rt
 head(estimates$estimated_reported_cases$summarised)
 #>          date  type bottom top lower upper central_lower central_upper median
-#> 1: 2020-02-22 gp_rt     14  67    22    43            29            36     39
-#> 2: 2020-02-23 gp_rt     25 110    40    75            52            64     67
-#> 3: 2020-02-24 gp_rt     30 141    57    98            63            76     84
-#> 4: 2020-02-25 gp_rt     38 164    71   123            79            97     97
-#> 5: 2020-02-26 gp_rt     31 171    63   118            77            95    101
-#> 6: 2020-02-27 gp_rt     57 247    97   168           118           142    142
+#> 1: 2020-02-22 gp_rt     17  76    25    47            35            42     42
+#> 2: 2020-02-23 gp_rt     26 116    46    80            62            74     70
+#> 3: 2020-02-24 gp_rt     29 139    60   103            78            93     87
+#> 4: 2020-02-25 gp_rt     38 167    65   114            88           106    102
+#> 5: 2020-02-26 gp_rt     33 175    66   122            66            88    109
+#> 6: 2020-02-27 gp_rt     62 259    94   170           121           148    147
 #>       mean       sd
-#> 1:  41.536 17.45151
-#> 2:  70.264 28.23820
-#> 3:  89.427 36.45331
-#> 4: 101.552 40.28372
-#> 5: 107.767 44.24478
-#> 6: 152.241 61.15496
+#> 1:  45.414 19.91560
+#> 2:  73.724 28.75581
+#> 3:  91.419 37.51670
+#> 4: 106.639 41.72730
+#> 5: 113.897 46.27522
+#> 6: 156.919 64.67302
 ```
 
 A summary table is returned for rapidly understanding the results and
@@ -350,12 +280,12 @@ for reporting purposes.
 
 ``` r
 estimates$summary
-#>                                  measure            estimate  numeric_estimate
-#> 1: New confirmed cases by infection date  3815 (249 -- 9867) <data.table[1x7]>
-#> 2:        Expected change in daily cases              Unsure               0.7
-#> 3:            Effective reproduction no.    0.9 (0.3 -- 1.3) <data.table[1x7]>
-#> 4:                        Rate of growth -0.04 (-0.2 -- 0.1) <data.table[1x7]>
-#> 5:          Doubling/halving time (days) -16.8 (7.1 -- -3.4) <data.table[1x3]>
+#>                                  measure             estimate  numeric_estimate
+#> 1: New confirmed cases by infection date  3773 (164 -- 10052) <data.table[1x7]>
+#> 2:        Expected change in daily cases               Unsure              0.71
+#> 3:            Effective reproduction no.     0.8 (0.4 -- 1.4) <data.table[1x7]>
+#> 4:                        Rate of growth -0.05 (-0.19 -- 0.1) <data.table[1x7]>
+#> 5:          Doubling/halving time (days)  -14.9 (6.8 -- -3.6) <data.table[1x3]>
 ```
 
 A range of plots are returned (with the single summary plot shown
@@ -395,13 +325,13 @@ estimates <- regional_epinow(reported_cases = reported_cases,
                              generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay),
                              stan_args = list(cores = 4))
-#> INFO [2020-10-05 14:40:58] Reporting estimates using data up to: 2020-04-01
-#> INFO [2020-10-05 14:40:58] Producing estimates for: testland, realland
-#> INFO [2020-10-05 14:40:58] Regions excluded: none
-#> INFO [2020-10-05 14:51:28] Completed regional estimates
-#> INFO [2020-10-05 14:51:28] Regions with estimates: 2
-#> INFO [2020-10-05 14:51:28] Regions with runtime errors: 0
-#> INFO [2020-10-05 14:51:28] Producing summary
+#> INFO [2020-10-05 16:24:40] Reporting estimates using data up to: 2020-04-01
+#> INFO [2020-10-05 16:24:40] Producing estimates for: testland, realland
+#> INFO [2020-10-05 16:24:40] Regions excluded: none
+#> INFO [2020-10-05 16:33:29] Completed regional estimates
+#> INFO [2020-10-05 16:33:29] Regions with estimates: 2
+#> INFO [2020-10-05 16:33:29] Regions with runtime errors: 0
+#> INFO [2020-10-05 16:33:29] Producing summary
 ```
 
 Results from each region are stored in a `regional` list with across
@@ -421,14 +351,14 @@ reporting (along with raw results for further processing).
 ``` r
 estimates$summary$summarised_results$table
 #>      Region New confirmed cases by infection date
-#> 1: realland                   3839 (177 -- 10141)
-#> 2: testland                   3880 (281 -- 10712)
+#> 1: realland                   3816 (327 -- 10309)
+#> 2: testland                    3854 (175 -- 9971)
 #>    Expected change in daily cases Effective reproduction no.
-#> 1:                         Unsure           0.8 (0.3 -- 1.3)
-#> 2:                         Unsure           0.9 (0.4 -- 1.4)
-#>          Rate of growth Doubling/halving time (days)
-#> 1:  -0.04 (-0.2 -- 0.1)            -15.4 (7 -- -3.4)
-#> 2: -0.04 (-0.2 -- 0.11)          -17.1 (6.5 -- -3.4)
+#> 1:                         Unsure           0.8 (0.4 -- 1.4)
+#> 2:                         Unsure           0.8 (0.4 -- 1.3)
+#>           Rate of growth Doubling/halving time (days)
+#> 1:  -0.04 (-0.19 -- 0.1)          -15.6 (6.6 -- -3.7)
+#> 2: -0.04 (-0.19 -- 0.09)          -15.6 (7.9 -- -3.6)
 ```
 
 A range of plots are again returned (with the single summary plot shown
