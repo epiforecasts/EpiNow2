@@ -127,6 +127,11 @@ an unweighted ensemble ("mean") with no other types currently supported.}
 
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
 
+\item{keep_samples}{Logical, defaults to TRUE. Should samples be kept (either returned or saved or both
+depending on other settings).}
+
+\item{make_plots}{Logical, defaults to TRUE. Should plots be made and returned (or saved).}
+
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
