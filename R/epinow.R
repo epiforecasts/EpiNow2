@@ -67,7 +67,8 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
                    target_folder, target_date, verbose = FALSE) {
 
   if (!return_estimates & missing(target_folder)) {
-    futile.logger::flog.fatal("Either return estimates or save to a target folder")
+    futile.logger::flog.fatal("Either return estimates or save to a target folder",
+                              name = "EpiNow2.epinow")
     stop("Either return estimates or save to a target folder")
   }
 
@@ -544,7 +545,8 @@ process_regions <- function(regional_out, regions) {
   # names on regional_out
   names(regional_out) <- regions
   problems <- purrr::keep(regional_out, ~!is.null(.$error))
-  
+  futile.logger::flog.info("Completed regional estimates")
+  futile.logger::flog.info("Regions with estimates: %s", (length(regions) - length(problems)))
   futile.logger::flog.info("Regions with runtime errors: %s", length(problems))
   for (location in names(problems)) {
     # output timeout / error
