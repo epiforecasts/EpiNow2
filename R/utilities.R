@@ -177,7 +177,7 @@ stop_timeout <- function(fit) {
 #' for details of the available options). Defaults to "INFO".
 #' @param file Character string indicating the path to save logs to. By default logs will be
 #' written to the console.
-#' @param mirror_to_console Logical, defaults to `TRUE`. If saving logs to a file should they 
+#' @param mirror_to_console Logical, defaults to `FALSE`. If saving logs to a file should they 
 #' also be duplicated in the console.
 #' @param name Character string defaulting to EpiNow2. This indicates the name of the logger to setup.
 #' The default logger for EpiNow2 is called EpiNow2. Nested options include: Epinow2.epinow which controls 
@@ -194,7 +194,7 @@ stop_timeout <- function(fit) {
 #' setup_logging("Info", name = "EpiNow2")
 #' setup_logging("ERROR", name = "EpiNow2.epinow")
 setup_logging <- function(threshold = "INFO", file = NULL,
-                          mirror_to_console = TRUE, name = "EpiNow2") {
+                          mirror_to_console = FALSE, name = "EpiNow2") {
   if (is.null(name)) {
     name <- "ROOT"
   }
