@@ -31,6 +31,8 @@ epinow(
   forecast_model,
   ensemble_type = "mean",
   return_estimates = TRUE,
+  keep_samples = TRUE,
+  make_plots = TRUE,
   target_folder,
   target_date,
   verbose = FALSE
@@ -124,6 +126,11 @@ for forecasting future Rt and case co An example of the required structure is: \
 an unweighted ensemble ("mean") with no other types currently supported.}
 
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
+
+\item{keep_samples}{Logical, defaults to TRUE. Should samples be kept (either returned or saved or both
+depending on other settings).}
+
+\item{make_plots}{Logical, defaults to TRUE. Should plots be made and returned (or saved).}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
