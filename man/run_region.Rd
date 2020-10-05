@@ -10,6 +10,7 @@ run_region(
   target_folder,
   target_date,
   return_estimates,
+  return_partial_estimates,
   ...
 )
 }
@@ -23,6 +24,9 @@ run_region(
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
 \item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
+
+\item{return_partial_estimates}{Logical, default to \code{FALSE}. Should estimates required for
+\code{regional_summary} be returned.}
 
 \item{...}{Pass additional arguments to \code{epinow}}
 }

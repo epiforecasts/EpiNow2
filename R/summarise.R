@@ -262,7 +262,6 @@ regional_summary <- function(regional_output,
   }
   
   summarised_results$table <- force_factor(summarised_results$table)
-  
   summarised_results$data <- force_factor(summarised_results$data)
   
   if (!is.null(summary_dir)) {

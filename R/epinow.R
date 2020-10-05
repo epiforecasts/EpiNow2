@@ -5,6 +5,9 @@
 #' @param target_date Date, defaults to maximum found in the data if not specified.
 #' @param target_folder Character string specifying where to save results (will create if not present).
 #' @param return_estimates Logical, defaults to TRUE. Should estimates be returned.
+#' @param keep_samples Logical, defaults to TRUE. Should samples be kept (either returned or saved or both 
+#' depending on other settings).
+#' @param make_plots Logical, defaults to TRUE. Should plots be made and returned (or saved).
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @inheritParams estimate_infections
@@ -60,7 +63,8 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
                    burn_in = 0, stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
                    future = FALSE, max_execution_time = Inf, prior_smoothing_window = 7,
                    return_fit = FALSE, forecast_model, ensemble_type = "mean",
-                   return_estimates = TRUE, target_folder, target_date, verbose = FALSE) {
+                   return_estimates = TRUE, keep_samples = TRUE, make_plots = TRUE, 
+                   target_folder, target_date, verbose = FALSE) {
 
   if (!return_estimates & missing(target_folder)) {
     futile.logger::flog.fatal("Either return estimates or save to a target folder")
@@ -132,7 +136,9 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
 
   # Report estimates --------------------------------------------------------
   if (!is.null(target_folder)) {
-    saveRDS(estimates$samples, paste0(target_folder, "/estimate_samples.rds"))
+    if (keep_samples) {
+      saveRDS(estimates$samples, paste0(target_folder, "/estimate_samples.rds"))
+    }
     saveRDS(estimates$summarised, paste0(target_folder, "/summarised_estimates.rds"))
 
     if (return_fit) {
@@ -153,15 +159,19 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
   }
   # Report cases ------------------------------------------------------------
   if (!missing(forecast_model) & !is.null(target_folder)) {
-    saveRDS(forecast$samples, paste0(target_folder, "/forecast_samples.rds"))
+    if (keep_samples){
+      saveRDS(forecast$samples, paste0(target_folder, "/forecast_samples.rds"))
+    }
     saveRDS(forecast$summarised, paste0(target_folder, "/summarised_forecast.rds"))
   }
   # Report forcasts ---------------------------------------------------------
 
   if (missing(forecast_model)) {
     estimated_reported_cases <- list()
-    estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][,
-      .(date, sample, cases = value, type = "gp_rt")]
+    if (keep_samples) {
+      estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][,
+                                          .(date, sample, cases = value, type = "gp_rt")]
+    }
     estimated_reported_cases$summarised <- estimates$summarised[variable == "reported_cases"][,
       type := "gp_rt"][, variable := NULL][, strat := NULL]
   }else {
@@ -176,19 +186,22 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
       return(reported_cases)
     }
 
-    reported_cases_rt <- report_cases_with_forecast(model = "rt")
-    reported_cases_cases <- report_cases_with_forecast(model = "case")
-    reported_cases_ensemble <- report_cases_with_forecast(model = "ensemble")
-
     estimated_reported_cases <- list()
-
-    estimated_reported_cases$samples <- data.table::rbindlist(list(
-      reported_cases_rt$samples[, type := "rt"],
-      reported_cases_cases$samples[, type := "case"],
-      reported_cases_ensemble$samples[, type := "ensemble"],
-      estimates$samples[variable == "reported_cases"][,
-        .(date, sample, cases = value, type = "gp_rt")]
-    ), use.names = TRUE)
+    
+    if (keep_samples) {
+      reported_cases_rt <- report_cases_with_forecast(model = "rt")
+      reported_cases_cases <- report_cases_with_forecast(model = "case")
+      reported_cases_ensemble <- report_cases_with_forecast(model = "ensemble")
+      
+      estimated_reported_cases$samples <- data.table::rbindlist(list(
+        reported_cases_rt$samples[, type := "rt"],
+        reported_cases_cases$samples[, type := "case"],
+        reported_cases_ensemble$samples[, type := "ensemble"],
+        estimates$samples[variable == "reported_cases"][,
+                                                        .(date, sample, cases = value, type = "gp_rt")]
+      ), use.names = TRUE)
+      
+    }
 
     estimated_reported_cases$summarised <- data.table::rbindlist(list(
       reported_cases_rt$summarised[, type := "rt"],
@@ -200,7 +213,9 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
   }
 
   if (!is.null(target_folder)) {
-    saveRDS(estimated_reported_cases$samples, paste0(target_folder, "/estimated_reported_cases_samples.rds"))
+    if (keep_samples) {
+      saveRDS(estimated_reported_cases$samples, paste0(target_folder, "/estimated_reported_cases_samples.rds"))
+    }
     saveRDS(estimated_reported_cases$summarised, paste0(target_folder, "/summarised_estimated_reported_cases.rds"))
   }
 
@@ -216,9 +231,10 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
   }
 
   #  # Plot --------------------------------------------------------------------
-
-  plots <- report_plots(summarised_estimates = estimates$summarised,
-                        reported = reported_cases, target_folder = target_folder)
+  if (make_plots) {
+    plots <- report_plots(summarised_estimates = estimates$summarised,
+                          reported = reported_cases, target_folder = target_folder)
+  }
 
   # Copy all results to latest folder ---------------------------------------
   if (!is.null(target_folder)) {
@@ -241,14 +257,22 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
   if (return_estimates) {
     out <- list()
     out$estimates <- estimates
-
+    if (!keep_samples) {
+      out$estimates$samples <- NULL
+    } 
+    
     if (!missing(forecast_model)) {
       out$forecast <- forecast
+      if (!keep_samples) {
+        out$forecast$samples <- NULL
+      } 
     }
 
     out$estimated_reported_cases <- estimated_reported_cases
     out$summary <- summary
-    out$plots <- plots
+    if (make_plots) {
+      out$plots <- plots
+    }
     return(out)
   }else {
     return(invisible(NULL))
@@ -331,6 +355,7 @@ regional_epinow <- function(reported_cases, target_folder, target_date,
                                               target_folder = target_folder, 
                                               target_date = target_date,
                                               return_estimates = return_estimates,
+                                              return_partial_estimates = summary | return_estimates,
                                               ...,
                                               future.scheduling = Inf)
 
@@ -420,6 +445,8 @@ clean_regions <- function(reported_cases, non_zero_points) {
 
 #' Run epinow with Regional Processing Code
 #' @param target_region Character string indicating the region being evaluated
+#' @param return_partial_estimates Logical, default to `FALSE`. Should estimates required for
+#' `regional_summary` be returned.
 #' @inheritParams regional_epinow
 #' @importFrom data.table setDTthreads
 #' @importFrom futile.logger flog.trace flog.warn
@@ -429,6 +456,7 @@ run_region <- function(target_region,
                        target_folder,
                        target_date,
                        return_estimates,
+                       return_partial_estimates,
                        ...) {
   futile.logger::flog.info("Initialising estimates for: %s", target_region)
   
@@ -448,7 +476,7 @@ run_region <- function(target_region,
         reported_cases = regional_cases,
         target_folder = target_folder,
         target_date = target_date,
-        return_estimates = TRUE,
+        return_estimates = return_partial_estimates,
         ...),
         warning = function(w) {
           futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call))
