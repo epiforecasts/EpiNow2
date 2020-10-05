@@ -159,7 +159,8 @@ allocate_delays <- function(delay_var, no_delays) {
 #' @importFrom futile.logger flog.error
 stop_timeout <- function(fit) {
   if (is.null(fit)) {
-    futile.logger::flog.error("fitting timed out - try increasing max_execution_time")
+    futile.logger::flog.error("fitting timed out - try increasing max_execution_time",
+                              name = "Epinow2.epinow.estimate_infections.fit")
     stop("model fitting timed out - try increasing max_execution_time")
   }
   return(invisible(NULL))
