@@ -13,15 +13,18 @@ setup_future(
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
-\item{strategies}{A vector length 2 of strategies to pass to \code{future::plan}. Nesting
-of parallisation is from the top level down. See \code{?future::plan} for options.}
+\item{strategies}{A vector length 1 to 2 of strategies to pass to \code{future::plan}. Nesting
+of parallisation is from the top level down. The default is to set up nesting parallisation
+with both using \code{future::multiprocess}. For single level parallisation use a single strategy
+or \code{future::plan} directly. See \code{?future::plan} for options.}
 
 \item{min_cores_per_worker}{Numeric, the minimum number of cores per worker.
 Defaults to 4.}
 }
 \value{
 Numeric number of cores to use per worker. If greater than 1 pass to as
-\code{stan_args = list(cores = "output from setup future")}
+\code{stan_args = list(cores = "output from setup future")}. If only a single strategy is
+used then nothing is returned.
 }
 \description{
 A utility function that aims to streamline the set up
