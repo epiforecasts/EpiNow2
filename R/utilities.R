@@ -216,6 +216,49 @@ setup_logging <- function(threshold = "INFO", file = NULL,
   }
   return(invisible(NULL))
 }
+
+#' Set up Future Backend
+#' @description A utility function that aims to streamline the set up 
+#' of the required future backend with sensible defaults for most users of `regional_epinow`.
+#' More advanced users are recommended to setup their own `future` backend based on their
+#' available resources. 
+#' @param strategies A vector length 2 of strategies to pass to `future::plan`. Nesting 
+#' of parallisation is from the top level down. See `?future::plan` for options.
+#' @param min_cores_per_worker Numeric, the minimum number of cores per worker. 
+#' Defaults to 4.
+#' @inheritParams regional_epinow
+#' @importFrom futile.logger flog.error flog.info flog.debug
+#' @importFrom future availableCores plan tweak 
+#' @export
+#' @return Numeric number of cores to use per worker. If greater than 1 pass to as 
+#' `stan_args = list(cores = "output from setup future")`
+setup_future <- function(reported_cases, strategies = c("multiprocess", "multiprocess"),
+                         min_cores_per_worker = 4) {
+  
+  if (length(strategies) != 2) {
+    futile.logger::flog.error("Exactly 2 strategies should be used")
+    stop("Exactly 2 strategies should be used")
+  }
+  
+  jobs <- unique(reported_cases$region)
+  workers <- min(ceiling(future::availableCores() / min_cores_per_worker), jobs)
+  cores_per_worker <- max(1, round(future::availableCores() / workers, 0))
+  
+  futile.logger::flog.info("Using %s workers with %s cores per worker",
+                           workers, cores_per_worker)
+  
+  
+  future::plan(list(future::tweak(strategies[1], workers = workers, 
+                                  gc = TRUE, earlySignal = TRUE), 
+                    future::tweak(strategies[2], workers = cores_per_worker)))
+  futile.logger::flog.debug("Checking the cores available - %s cores and %s jobs. Using %s workers",
+                            future::availableCores(),
+                            jobs,
+                            min(future::availableCores(), jobs))
+  
+  return(cores_per_worker)
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 
 globalVariables(
