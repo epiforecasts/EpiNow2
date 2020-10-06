@@ -283,7 +283,8 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
 
 #' Real-time Rt Estimation, Forecasting and Reporting by Region
 #'
-#' @description Estimates Rt by region. See the documentation for `epinow` for further information.
+#' @description Estimates Rt by region. See the documentation for `epinow` for further information. To enable 
+#' progress messaging when running in batch set `R_PROGRESSR_ENABLE=TRUE` as an enviornment variable.
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date), and region (`region`).
 #' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
 #' that region to be evaluated. Defaults to 2.
