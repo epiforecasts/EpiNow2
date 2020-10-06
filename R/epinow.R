@@ -463,6 +463,8 @@ clean_regions <- function(reported_cases, non_zero_points) {
 #' `regional_summary` be returned.
 #' @param progress_fn Function as returned by `progressr::progressor`. Allows the use of a 
 #' progress bar. 
+#' @param complete_logger Character string indicating the logger to output
+#' the completion of estimation to.
 #' @inheritParams regional_epinow
 #' @importFrom data.table setDTthreads
 #' @importFrom futile.logger flog.trace flog.warn
@@ -525,8 +527,6 @@ run_region <- function(target_region,
 #'
 #' @param out List of output returned by `epinow`
 #' @param timing Output from `Sys.time` 
-#' @param complete_logger Character string indicating the logger to output
-#' the completion of estimation to.
 #' @inheritParams regional_epinow
 #' @inheritParams run_region
 #' @importFrom futile.logger flog.info
