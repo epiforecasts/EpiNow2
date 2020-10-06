@@ -20,6 +20,3 @@
 		lam = ((m*pi())/(2*L))^2;
 		return lam;
 	}
-	
-	
-	
