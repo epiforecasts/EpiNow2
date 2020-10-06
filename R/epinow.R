@@ -357,6 +357,9 @@ regional_epinow <- function(reported_cases, target_folder, target_date,
                                               target_date = target_date,
                                               return_estimates = return_estimates,
                                               return_partial_estimates = summary | return_estimates,
+                                              complete_logger = ifelse(length(regions) > 10, 
+                                                                       "EpiNow2.epinow",
+                                                                       "EpiNow2"),
                                               ...,
                                               future.scheduling = Inf)
 
@@ -458,6 +461,7 @@ run_region <- function(target_region,
                        target_date,
                        return_estimates,
                        return_partial_estimates,
+                       complete_logger,
                        ...) {
   futile.logger::flog.info("Initialising estimates for: %s", target_region, 
                            name = "EpiNow2.epinow")
@@ -495,7 +499,8 @@ run_region <- function(target_region,
       }
     )
   )
-  out <- process_region(out, return_estimates, target_region, timing)
+  out <- process_region(out, return_estimates, 
+                        target_region, timing, complete_logger)
   return(out)
 }
 
@@ -503,11 +508,14 @@ run_region <- function(target_region,
 #'
 #' @param out List of output returned by `epinow`
 #' @param timing Output from `Sys.time` 
+#' @param complete_logger Character string indicating the logger to output
+#' the completion of estimation to.
 #' @inheritParams regional_epinow
 #' @inheritParams run_region
 #' @importFrom futile.logger flog.info
 #' @return A list of processed output
-process_region <- function(out, return_estimates, target_region, timing) {
+process_region <- function(out, return_estimates, target_region,
+                           timing, complete_logger = "EpiNow2.epinow") {
   
   if (exists("estimates", out) & !return_estimates) {
     out$estimates$samples <- NULL
@@ -526,7 +534,7 @@ process_region <- function(out, return_estimates, target_region, timing) {
   }
   if (exists("summary", out)) { # if it failed a warning would have been output above
     futile.logger::flog.info("Completed estimates for: %s", target_region, 
-                             name = "EpiNow2.epinow")
+                             name = complete_logger)
   }
   
   return(out)
