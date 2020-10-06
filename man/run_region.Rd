@@ -11,6 +11,7 @@ run_region(
   target_date,
   return_estimates,
   return_partial_estimates,
+  complete_logger,
   ...
 )
 }
