@@ -248,19 +248,22 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
     stop("Exactly 2 strategies should be used")
   }
   
-  jobs <- length(unique(reported_cases$region))
-  workers <- min(ceiling(future::availableCores() / min_cores_per_worker), jobs)
-  cores_per_worker <- max(1, round(future::availableCores() / workers, 0))
-  
-  futile.logger::flog.info("Using %s workers with %s cores per worker",
-                           workers, cores_per_worker)
-  
   if (length(strategies) == 1) {
-    future::plan(strategies[1], workers = workers, 
+    workers <- future::availableCores()
+    futile.logger::flog.info("Using %s workers with 1 core per worker",
+                             workers)
+    future::plan(strategies, workers = workers,
                  gc = TRUE, earlySignal = TRUE)
     cores_per_worker <- 1
     return(invisible(NULL))
   }else{
+    jobs <- length(unique(reported_cases$region))
+    workers <- min(ceiling(future::availableCores() / min_cores_per_worker), jobs)
+    cores_per_worker <- max(1, round(future::availableCores() / workers, 0))
+    
+    futile.logger::flog.info("Using %s workers with %s cores per worker",
+                             workers, cores_per_worker)
+    
     future::plan(list(future::tweak(strategies[1], workers = workers, 
                                     gc = TRUE, earlySignal = TRUE), 
                       future::tweak(strategies[2], workers = cores_per_worker)))
