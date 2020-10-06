@@ -302,6 +302,7 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
 #' @importFrom futile.logger flog.info flog.warn flog.trace
 #' @importFrom R.utils withTimeout
 #' @importFrom rlang cnd_muffle
+#' @importFrom progressr with_progress progressor
 #' @examples
 #'  \donttest{
 #' ## Construct example distributions
@@ -351,17 +352,23 @@ regional_epinow <- function(reported_cases, target_folder, target_date,
   
   ## Run regions (make parallel using future::plan)
   futile.logger::flog.trace("calling future apply to process each region through the run_region function")
-  regional_out <- future.apply::future_lapply(regions, safe_run_region,
-                                              reported_cases = reported_cases,
-                                              target_folder = target_folder, 
-                                              target_date = target_date,
-                                              return_estimates = return_estimates,
-                                              return_partial_estimates = summary | return_estimates,
-                                              complete_logger = ifelse(length(regions) > 10, 
-                                                                       "EpiNow2.epinow",
-                                                                       "EpiNow2"),
-                                              ...,
-                                              future.scheduling = Inf)
+  progressr::with_progress({
+    p <- progressr::progressor(along = regions)
+    regional_out <- future.apply::future_lapply(regions, safe_run_region,
+                                                reported_cases = reported_cases,
+                                                target_folder = target_folder, 
+                                                target_date = target_date,
+                                                return_estimates = return_estimates,
+                                                return_partial_estimates = summary | return_estimates,
+                                                complete_logger = ifelse(length(regions) > 10, 
+                                                                         "EpiNow2.epinow",
+                                                                         "EpiNow2"),
+                                                progress_fn = p,
+                                                ...,
+                                                future.scheduling = Inf)
+  })
+  
+
 
   out <- process_regions(regional_out, regions)
   regional_out <- out$all
@@ -451,6 +458,8 @@ clean_regions <- function(reported_cases, non_zero_points) {
 #' @param target_region Character string indicating the region being evaluated
 #' @param return_partial_estimates Logical, default to `FALSE`. Should estimates required for
 #' `regional_summary` be returned.
+#' @param progress_fn Function as returned by `progressr::progressor`. Allows the use of a 
+#' progress bar. 
 #' @inheritParams regional_epinow
 #' @importFrom data.table setDTthreads
 #' @importFrom futile.logger flog.trace flog.warn
@@ -462,11 +471,15 @@ run_region <- function(target_region,
                        return_estimates,
                        return_partial_estimates,
                        complete_logger,
+                       progress_fn,
                        ...) {
   futile.logger::flog.info("Initialising estimates for: %s", target_region, 
                            name = "EpiNow2.epinow")
-  
   data.table::setDTthreads(threads = 1)
+  
+  if (!missing(progress_fn)) {
+    progess_fn()
+  }
   
   if (!is.null(target_folder)) {
     target_folder <- file.path(target_folder, target_region)
