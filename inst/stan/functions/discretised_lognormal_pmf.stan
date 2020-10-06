@@ -7,6 +7,3 @@
            (normal_cdf((log(max_val + small) - mu) / sigma, 0.0, 1.0) -
             normal_cdf((log(small) - mu) / sigma, 0.0, 1.0)));
   }
-  
-  
-  
