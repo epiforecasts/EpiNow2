@@ -222,8 +222,10 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' of the required future backend with sensible defaults for most users of `regional_epinow`.
 #' More advanced users are recommended to setup their own `future` backend based on their
 #' available resources. 
-#' @param strategies A vector length 2 of strategies to pass to `future::plan`. Nesting 
-#' of parallisation is from the top level down. See `?future::plan` for options.
+#' @param strategies A vector length 1 to 2 of strategies to pass to `future::plan`. Nesting 
+#' of parallisation is from the top level down. The default is to set up nesting parallisation
+#' with both using `future::multiprocess`. For single level parallisation use a single strategy
+#' or `future::plan` directly. See `?future::plan` for options.
 #' @param min_cores_per_worker Numeric, the minimum number of cores per worker. 
 #' Defaults to 4.
 #' @inheritParams regional_epinow
@@ -231,32 +233,39 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' @importFrom future availableCores plan tweak 
 #' @export
 #' @return Numeric number of cores to use per worker. If greater than 1 pass to as 
-#' `stan_args = list(cores = "output from setup future")`
+#' `stan_args = list(cores = "output from setup future")`. If only a single strategy is 
+#' used then nothing is returned.
 setup_future <- function(reported_cases, strategies = c("multiprocess", "multiprocess"),
                          min_cores_per_worker = 4) {
   
-  if (length(strategies) != 2) {
-    futile.logger::flog.error("Exactly 2 strategies should be used")
+  if (length(strategies) > 2 | length(strategies) == 0) {
+    futile.logger::flog.error("1 or 2 strategies should be used")
+    stop("1 or 2 strategies should be used")
+  }
+  
+  if (is.null(reported_cases$region)) {
+    futile.logger::flog.error("Reported cases must contain a region")
     stop("Exactly 2 strategies should be used")
   }
   
-  jobs <- unique(reported_cases$region)
+  jobs <- length(unique(reported_cases$region))
   workers <- min(ceiling(future::availableCores() / min_cores_per_worker), jobs)
   cores_per_worker <- max(1, round(future::availableCores() / workers, 0))
   
   futile.logger::flog.info("Using %s workers with %s cores per worker",
                            workers, cores_per_worker)
   
-  
-  future::plan(list(future::tweak(strategies[1], workers = workers, 
-                                  gc = TRUE, earlySignal = TRUE), 
-                    future::tweak(strategies[2], workers = cores_per_worker)))
-  futile.logger::flog.debug("Checking the cores available - %s cores and %s jobs. Using %s workers",
-                            future::availableCores(),
-                            jobs,
-                            min(future::availableCores(), jobs))
-  
-  return(cores_per_worker)
+  if (length(strategies) == 1) {
+    future::plan(strategies[1], workers = workers, 
+                 gc = TRUE, earlySignal = TRUE)
+    cores_per_worker <- 1
+    return(invisible(NULL))
+  }else{
+    future::plan(list(future::tweak(strategies[1], workers = workers, 
+                                    gc = TRUE, earlySignal = TRUE), 
+                      future::tweak(strategies[2], workers = cores_per_worker)))
+    return(cores_per_worker)
+  }
 }
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
