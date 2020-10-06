@@ -352,8 +352,10 @@ regional_epinow <- function(reported_cases, target_folder, target_date,
   
   ## Run regions (make parallel using future::plan)
   futile.logger::flog.trace("calling future apply to process each region through the run_region function")
+  futile.logger::flog.info("Showing progress using progressr. Modify this behaviour using progressr::handlers.")
+  
   progressr::with_progress({
-    p <- progressr::progressor(along = regions)
+    progress_fn <- progressr::progressor(along = regions)
     regional_out <- future.apply::future_lapply(regions, safe_run_region,
                                                 reported_cases = reported_cases,
                                                 target_folder = target_folder, 
@@ -363,9 +365,10 @@ regional_epinow <- function(reported_cases, target_folder, target_date,
                                                 complete_logger = ifelse(length(regions) > 10, 
                                                                          "EpiNow2.epinow",
                                                                          "EpiNow2"),
-                                                progress_fn = p,
+                                                progress_fn = progress_fn,
                                                 ...,
-                                                future.scheduling = Inf)
+                                                future.scheduling = Inf,
+                                                future.seed = TRUE)
   })
   
 
@@ -477,10 +480,6 @@ run_region <- function(target_region,
                            name = "EpiNow2.epinow")
   data.table::setDTthreads(threads = 1)
   
-  if (!missing(progress_fn)) {
-    progess_fn()
-  }
-  
   if (!is.null(target_folder)) {
     target_folder <- file.path(target_folder, target_region)
   }
@@ -514,6 +513,11 @@ run_region <- function(target_region,
   )
   out <- process_region(out, return_estimates, 
                         target_region, timing, complete_logger)
+  
+  if (!missing(progress_fn)) {
+    progress_fn(sprintf("Region: %s", target_region))
+  }
+  
   return(out)
 }
 
