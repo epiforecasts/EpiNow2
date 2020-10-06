@@ -9,8 +9,9 @@ test_that("setup_future runs without error", {
 })
 
 test_that("setup_future runs when only using a single level of parallisation", {
-  no_cores <- suppressWarnings(setup_future(reported_cases, strategies = "multiprocess"))
+  expect_null(suppressWarnings(setup_future(reported_cases, strategies = "multiprocess")))
 })
+
 test_that("setup_future runs with an error when strategies are incorrectly defined", {
   
   expect_error(suppressWarnings(setup_future(reported_cases,
@@ -23,7 +24,6 @@ test_that("setup_future runs with an error when strategies are incorrectly defin
 
 test_that("setup_future runs with an error when reported_cases does not contain a region 
           variable", {
-  
   reported_cases <- data.frame(x = 1:10)
   expect_error(suppressWarnings(setup_future(reported_cases)))
 })
