@@ -4,7 +4,13 @@
 \alias{process_region}
 \title{Process regional estimate}
 \usage{
-process_region(out, return_estimates, target_region, timing)
+process_region(
+  out,
+  return_estimates,
+  target_region,
+  timing,
+  complete_logger = "EpiNow2.epinow"
+)
 }
 \arguments{
 \item{out}{List of output returned by \code{epinow}}
@@ -14,6 +20,9 @@ process_region(out, return_estimates, target_region, timing)
 \item{target_region}{Character string indicating the region being evaluated}
 
 \item{timing}{Output from \code{Sys.time}}
+
+\item{complete_logger}{Character string indicating the logger to output
+the completion of estimation to.}
 }
 \value{
 A list of processed output
