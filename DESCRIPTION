@@ -57,6 +57,7 @@ Imports:
     cowplot,
     data.table,
     futile.logger (>= 1.4),
+    future,
     future.apply,
     ggplot2,
     HDInterval,
