@@ -52,7 +52,8 @@ on the maximum number of reported cases.}
 A list of output stratified at the top level into regional output and across region output summary output
 }
 \description{
-Estimates Rt by region. See the documentation for \code{epinow} for further information.
+Estimates Rt by region. See the documentation for \code{epinow} for further information. To enable
+progress messaging when running in batch set \code{R_PROGRESSR_ENABLE=TRUE} as an enviornment variable.
 }
 \examples{
  \donttest{
