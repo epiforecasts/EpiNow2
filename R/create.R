@@ -20,7 +20,6 @@ create_clean_reported_cases <- function(reported_cases, horizon) {
   ## Filter out 0 reported cases from the beginning of the data
   reported_cases <- reported_cases[order(date)][,
                                cum_cases := cumsum(confirm)][cum_cases > 0][, cum_cases := NULL]
-  
   return(reported_cases)
 }
 
@@ -36,28 +35,27 @@ create_shifted_cases <- function(reported_cases, mean_shift,
                                  prior_smoothing_window, horizon) {
   
   shifted_reported_cases <- data.table::copy(reported_cases)[,
-                                                             confirm := data.table::shift(confirm, n = mean_shift,
-                                                                                          type = "lead", fill = NA)][,
-                                                                                                                     confirm := data.table::frollmean(confirm, n = prior_smoothing_window, 
-                                                                                                                                                      align = "right", fill = 0)][,
-                                                                                                                                                                                  confirm := data.table::fifelse(confirm == 0, 1e-3, confirm)]
+              confirm := data.table::shift(confirm, n = mean_shift,
+                                           type = "lead", fill = NA)][,
+              confirm := data.table::frollmean(confirm, n = prior_smoothing_window, 
+                                               align = "right", fill = 0)][,
+              confirm := data.table::fifelse(confirm == 0, 1e-3, confirm)]
   
   ## Forecast trend on reported cases using the last week of data
   final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
-                                                                                                                                   t := 1:.N]
+                                                                        t := 1:.N]
   lm_model <- stats::lm(log(confirm) ~ t, data = final_week)
   
   ## Estimate unreported future infections using a log linear model
   shifted_reported_cases <- shifted_reported_cases[,
                                                    t := 1:.N][, 
-                                                              t := t - (.N - horizon - mean_shift - 6)][,
-                                                                                                        confirm := data.table::fifelse(t >= 7,
-                                                                                                                                       exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t),
-                                                                                                                                       confirm)][, t := NULL]
+                                                   t := t - (.N - horizon - mean_shift - 6)][,
+                                                   confirm := data.table::fifelse(t >= 7,
+                                                                                  exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t),
+                                                                                  confirm)][, t := NULL]
   
   ##Drop median generation interval initial values
   shifted_reported_cases <- shifted_reported_cases[-(1:prior_smoothing_window)]
-  
   return(shifted_reported_cases)
 }
 
@@ -103,9 +101,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     future_fixed = ifelse(fixed_future_rt, 1, 0)
   ) 
   
-  
   # Delays ------------------------------------------------------------------
-  
   data$delays <- no_delays
   data$delay_mean_mean <- allocate_delays(delays$mean, no_delays)
   data$delay_mean_sd <- allocate_delays(delays$mean_sd, no_delays)
@@ -114,7 +110,6 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   data$max_delay <- allocate_delays(delays$max, no_delays)
   
   # Parameters for Hilbert space GP -----------------------------------------
-  
   # no of basis functions
   data$M <- ceiling(data$rt * gp$basis_prop)
   # Boundary value for c
