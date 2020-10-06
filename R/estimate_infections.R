@@ -239,7 +239,8 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
 
   # Check verbose settings and set logger to match---------------------------
   if (verbose) {
-    futile.logger::flog.threshold(futile.logger::DEBUG)
+    futile.logger::flog.threshold(futile.logger::DEBUG,
+                                  name = "EpiNow2.epinow.estimate_infections")
   }
 
   # Check breakpoints -------------------------------------------------------
@@ -250,7 +251,8 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
   if (estimate_breakpoints) {
    break_no <- sum(reported_cases$breakpoint, na.rm = TRUE)
    if (break_no == 0) {
-     futile.logger::flog.warn("Breakpoint estimation was specified but no breakpoints were detected.")
+     futile.logger::flog.warn("Breakpoint estimation was specified but no breakpoints were detected.",
+                              name = "EpiNow2.epinow.estimate_infections")
    }
   }else{
     break_no <- 0
@@ -373,7 +375,8 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   if (verbose) {
     futile.logger::flog.debug(paste0("Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
                                      " chains each with a warm up of ", args$warmup, " iterations each) and ",
-                                     args$data$t," time steps of which ", args$data$horizon, " are a forecast"))
+                                     args$data$t," time steps of which ", args$data$horizon, " are a forecast"),
+                              name = "EpiNow2.epinow.estimate_infections.fit")
   }
   
   
@@ -413,7 +416,8 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
     }else{
       failed_chains <- chains - length(fit)
       if (failed_chains > 0) {
-        futile.logger::flog.info(paste0(failed_chains, " chains failed or were timed out."))
+        futile.logger::flog.info(paste0(failed_chains, " chains failed or were timed out."),
+                                 name = "EpiNow2.epinow.estimate_infections.fit")
         if ((chains - failed_chains) < 2) {
           stop("model fitting failed as too few chains were returned to assess convergence (2 or more required)")
         }
@@ -435,7 +439,8 @@ fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
   if (verbose) {
     futile.logger::flog.debug(paste0("Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
                                      args$output_samples, " approximate posterior samples for ", args$data$t," time steps of which ",
-                                     args$data$horizon, " are a forecast"))
+                                     args$data$horizon, " are a forecast"),
+                              name = "EpiNow2.epinow.estimate_infections.fit")
   }
   
   if (exists("trials", args)) {
@@ -464,7 +469,8 @@ fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
   
   if (is.null(fit)) {
     if (is.null(fit)) {
-      futile.logger::flog.error("fitting failed - try increasing stan_args$trials or inspecting the model input")
+      futile.logger::flog.error("fitting failed - try increasing stan_args$trials or inspecting the model input",
+                                name = "EpiNow2.epinow.estimate_infections.fit")
       stop("Variational Inference failed due to: ", error)
     }
   }

@@ -74,6 +74,15 @@ Windows users will need a working installation of Rtools in order to build the p
 library(EpiNow2)
 ```
 
+The next (optional) step is to define where logs should be stored (here summary logs are written to the console and detailed logs are stored in `info.logs`).
+
+```{r}
+# Sets up a default info logger - this is the level of logging enabled by default
+setup_logging("INFO")
+# Sets up a logger for epinow linked logging messages which writes to info.log
+# See ?setup_logging and the documentation of ?futile.logger for further details.
+setup_logging("INFO", file = "info.log", name = "EpiNow2.epinow")
+```
 ### Reporting delays, incubation period and generation time
 
 Distributions can either be fitted using package functionality or determined elsewhere and then defined with uncertainty for use in `{EpiNow2}`. When data is supplied a subsampled bootstrapped lognormal will be fit (to account for uncertainty in the observed data without being biased by changes in incidence). An arbitrary number of delay distributions are supported with the most common use case likely to be a incubation period followed by a reporting delay.

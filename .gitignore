@@ -10,3 +10,4 @@ src/*.o
 inst/doc
 docs
 CRAN-RELEASE
+*.log

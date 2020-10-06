@@ -159,7 +159,8 @@ allocate_delays <- function(delay_var, no_delays) {
 #' @importFrom futile.logger flog.error
 stop_timeout <- function(fit) {
   if (is.null(fit)) {
-    futile.logger::flog.error("fitting timed out - try increasing max_execution_time")
+    futile.logger::flog.error("fitting timed out - try increasing max_execution_time",
+                              name = "Epinow2.epinow.estimate_infections.fit")
     stop("model fitting timed out - try increasing max_execution_time")
   }
   return(invisible(NULL))
@@ -169,37 +170,50 @@ stop_timeout <- function(fit) {
 
 #' Setup Logging
 #'
+#' @description Sets up `futile.logger` logging, which is integrated into `EpiNow2`. See the 
+#' documentation for `futile.logger` for full details. By default `EpiNow2` prints all logs at 
+#' the "INFO" level and returns them to the console.
 #' @param threshold Character string indicating the logging level see (?futile.logger 
 #' for details of the available options). Defaults to "INFO".
 #' @param file Character string indicating the path to save logs to. By default logs will be
 #' written to the console.
-#' @param mirror_to_console Logical, defaults to `TRUE`. If saving logs to a file should they 
+#' @param mirror_to_console Logical, defaults to `FALSE`. If saving logs to a file should they 
 #' also be duplicated in the console.
+#' @param name Character string defaulting to EpiNow2. This indicates the name of the logger to setup.
+#' The default logger for EpiNow2 is called EpiNow2. Nested options include: Epinow2.epinow which controls 
+#' all logging for `epinow` and nested functions, EpiNow2.epinow.estimate_infections (logging in
+#'  `estimate_infections`), and EpiNow2.epinow.estimate_infections.fit (logging in fitting functions).
 #' @importFrom futile.logger flog.threshold flog.appender appender.tee appender.file
 #' @return Nothing
 #' @export
 #'
 #' @examples
 #' 
-#' # Set up error only logs (info logs are enabled by default.)
-#' setup_logging("ERROR")
+#' # Set up info only logs with errors only 
+#' # for logging related to epinow (or nested) calls
+#' # (info logs are enabled by default.)
+#' setup_logging("Info", name = "EpiNow2")
+#' setup_logging("ERROR", name = "EpiNow2.epinow")
 setup_logging <- function(threshold = "INFO", file = NULL,
-                          mirror_to_console = TRUE) {
+                          mirror_to_console = FALSE, name = "EpiNow2") {
+  if (is.null(name)) {
+    name <- "ROOT"
+  }
+  message("Setting up logging for the ", name, " logger")
   message("Logging threshold set at: ", threshold)
-  futile.logger::flog.threshold(threshold)
+  futile.logger::flog.threshold(threshold, name = name)
   
   if (!is.null(file)) {
     message("Writing logs to: ", file)
     if (mirror_to_console) {
-      futile.logger::flog.appender(futile.logger::appender.tee(file))
+      futile.logger::flog.appender(futile.logger::appender.tee(file), name = name)
     }else{
-      futile.logger::flog.appender(futile.logger::appender.file(file))  
+      futile.logger::flog.appender(futile.logger::appender.file(file), name = name)  
     }
   }else{
     message("Writing logs to the console")
-    futile.logger::flog.appender(futile.logger::appender.console())
+    futile.logger::flog.appender(futile.logger::appender.console(), name = name)
   }
-  
   return(invisible(NULL))
 }
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
