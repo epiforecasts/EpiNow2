@@ -63,6 +63,7 @@ Imports:
     lubridate,
     methods,
     patchwork,
+    progressr,
     purrr,
     R.utils (>= 2.0.0),
     Rcpp (>= 0.12.0),

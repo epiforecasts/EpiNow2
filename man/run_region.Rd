@@ -11,6 +11,8 @@ run_region(
   target_date,
   return_estimates,
   return_partial_estimates,
+  complete_logger,
+  progress_fn,
   ...
 )
 }
@@ -27,6 +29,12 @@ run_region(
 
 \item{return_partial_estimates}{Logical, default to \code{FALSE}. Should estimates required for
 \code{regional_summary} be returned.}
+
+\item{complete_logger}{Character string indicating the logger to output
+the completion of estimation to.}
+
+\item{progress_fn}{Function as returned by \code{progressr::progressor}. Allows the use of a
+progress bar.}
 
 \item{...}{Pass additional arguments to \code{epinow}}
 }
