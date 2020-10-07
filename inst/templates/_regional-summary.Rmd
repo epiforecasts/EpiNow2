@@ -100,7 +100,8 @@ if (!interactive) {
    kableExtra::landscape()
 }else{
   data.table::fread(here::here(summary_path, "summary_table.csv")) %>% 
-    DT::datatable(extensions = c("Buttons"), 
+    DT::datatable(rownames = FALSE,
+                  extensions = c("Buttons"), 
                   options = list(dom = "Bfrtip", buttons = c("csv")))
 } 
 ```
