@@ -277,7 +277,7 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
 #' @param supported_args A character vector of supported output arguments.
 #' @param logger A character vector indicating the logger to target messages at.
 #'
-#' @return A logical vector of output arguments
+#' @return A logical vector of named output arguments
 #'
 #' @examples
 #' # select nothing
