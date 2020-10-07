@@ -281,20 +281,20 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
 #'
 #' @examples
 #' # select nothing
-#' match_output_arguments()
+#' match_output_arguments(supported_args = c("fit", "plots", "samples"))
 #' 
 #' # select just plots
-#' match_output_arguments("plots")
+#' match_output_arguments("plots", supported_args = c("fit", "plots", "samples"))
 #' 
 #' # select plots and samples
-#' match_output_arguments(c("plots", "samples"))
+#' match_output_arguments(c("plots", "samples"),
+#'                        supported_args = c("fit", "plots", "samples"))
 #' 
 #' # lazily select arguments
-#' match_output_arguments("p")
+#' match_output_arguments("p",
+#'                        supported_args = c("fit", "plots", "samples"))
 match_output_arguments <- function(input_args = c(),
-                                   supported_args =  c("fit", "estimates",
-                                                       "partial", "samples", 
-                                                       "plots"),
+                                   supported_args =  c(),
                                    logger = "EpiNow2") {
   #make supported args a logical vector
   output_args <- rep(FALSE, length(supported_args))
