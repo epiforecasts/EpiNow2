@@ -19,11 +19,11 @@ with both using \code{future::multiprocess}. For single level parallisation use 
 or \code{future::plan} directly. See \code{?future::plan} for options.}
 
 \item{min_cores_per_worker}{Numeric, the minimum number of cores per worker.
-Defaults to 4.}
+Defaults to 4 which assumes 4 MCMC chains are in use per region.}
 }
 \value{
-Numeric number of cores to use per worker. If greater than 1 pass to as
-\code{stan_args = list(cores = "output from setup future")}. If only a single strategy is
+Numeric number of cores to use per worker. If greater than 1 pass to
+\code{stan_args = list(cores = "output from setup future")} or use \code{future = TRUE}. If only a single strategy is
 used then nothing is returned.
 }
 \description{

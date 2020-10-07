@@ -227,13 +227,13 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' with both using `future::multiprocess`. For single level parallisation use a single strategy
 #' or `future::plan` directly. See `?future::plan` for options.
 #' @param min_cores_per_worker Numeric, the minimum number of cores per worker. 
-#' Defaults to 4.
+#' Defaults to 4 which assumes 4 MCMC chains are in use per region.
 #' @inheritParams regional_epinow
 #' @importFrom futile.logger flog.error flog.info flog.debug
 #' @importFrom future availableCores plan tweak 
 #' @export
-#' @return Numeric number of cores to use per worker. If greater than 1 pass to as 
-#' `stan_args = list(cores = "output from setup future")`. If only a single strategy is 
+#' @return Numeric number of cores to use per worker. If greater than 1 pass to
+#' `stan_args = list(cores = "output from setup future")` or use `future = TRUE`. If only a single strategy is 
 #' used then nothing is returned.
 setup_future <- function(reported_cases, strategies = c("multiprocess", "multiprocess"),
                          min_cores_per_worker = 4) {
