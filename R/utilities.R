@@ -271,6 +271,30 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
   }
 }
 
+match_output_arguments <- function(args,
+                                   supported_args =  c("fit", "estimates",
+                                                       "partial", "samples", 
+                                                       "plots"),
+                                   logger = "EpiNow2") {
+  
+  # get arguments supplied
+  found_args <- lapply(output_args, function(arg){
+    supported_args[grepl(arg, supported_args)]
+  })
+  found_args <- unlist(found_args)
+  found_args <- unique(found_args)
+  
+  if (length(found_args) > 0) {
+    futile.logger::flog.info("Producing output for: %s", paste(found_args, collapse = ", "),
+                             name = logger)
+  }else{
+    futile.logger::flog.error("No output set to be returned - some output must be requested",
+                              name = logger)
+    stop("No output set to be returned - some output must be requested")
+  }
+  return(output_args)
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 
 globalVariables(
