@@ -284,6 +284,7 @@ match_output_arguments <- function(args,
   found_args <- unlist(found_args)
   found_args <- unique(found_args)
   
+  # tell the user about what has been passed in and fail if no output requested
   if (length(found_args) > 0) {
     futile.logger::flog.info("Producing output for: %s", paste(found_args, collapse = ", "),
                              name = logger)
@@ -292,6 +293,11 @@ match_output_arguments <- function(args,
                               name = logger)
     stop("No output set to be returned - some output must be requested")
   }
+  
+  # assign true false to supported arguments based on found arguments
+  output_args <- rep(FALSE, length(supported_args))
+  names(output_args) <- supported_args
+  output_args[names(output_args) %in% found_args] <- TRUE
   return(output_args)
 }
 
