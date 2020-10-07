@@ -18,7 +18,7 @@ match_output_arguments(
 \item{logger}{A character vector indicating the logger to target messages at.}
 }
 \value{
-A logical vector of output arguments
+A logical vector of named output arguments
 }
 \description{
 Match Input Output Arguments with Supported Options
