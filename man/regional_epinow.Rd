@@ -52,7 +52,9 @@ on the maximum number of reported cases.}
 A list of output stratified at the top level into regional output and across region output summary output
 }
 \description{
-Estimates Rt by region. See the documentation for \code{epinow} for further information.
+Estimates Rt by region. See the documentation for \code{epinow} for further information. The progress of producing
+estimates across multiple regions is tracked using the \code{progressr} package. Modify this behaviour using progressr::handlers
+and enable it in batch by setting \code{R_PROGRESSR_ENABLE=TRUE} as an environment variable.
 }
 \examples{
  \donttest{
