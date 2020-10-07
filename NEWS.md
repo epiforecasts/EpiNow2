@@ -19,6 +19,7 @@
 * Updated `discretised_gamma_pmf` (discretised truncated Gamma PMF) to constrain gamma shape and (inverse) scale parameters to be positive and finite (`alpha > 0` and `beta > 0`).
 * Fixed `readLines` incomplete final line warnings.
 * Implemented progress bar support using `progressr`.
+* Adds a csv download button the interactive table in the regional summary table.
 
 # EpiNow2 1.1.0
 
