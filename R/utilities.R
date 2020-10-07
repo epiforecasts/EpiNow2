@@ -271,32 +271,52 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
   }
 }
 
-match_output_arguments <- function(args,
+#' Match Input Output Arguments with Supported Options
+#'
+#' @param input_args A character vector of input arguments (can be partial).
+#' @param supported_args A character vector of supported output arguments.
+#' @param logger A character vector indicating the logger to target messages at.
+#'
+#' @return A logical vector of output arguments
+#'
+#' @examples
+#' # select nothing
+#' match_output_arguments()
+#' 
+#' # select just plots
+#' match_output_arguments("plots")
+#' 
+#' # select plots and samples
+#' match_output_arguments(c("plots", "samples"))
+#' 
+#' # lazily select arguments
+#' match_output_arguments("p")
+match_output_arguments <- function(input_args = c(),
                                    supported_args =  c("fit", "estimates",
                                                        "partial", "samples", 
                                                        "plots"),
                                    logger = "EpiNow2") {
+  #make supported args a logical vector
+  output_args <- rep(FALSE, length(supported_args))
+  names(output_args) <- supported_args
   
-  # get arguments supplied
-  found_args <- lapply(output_args, function(arg){
+  # get arguments supplied and linked to supported args
+  found_args <- lapply(input_args, function(arg){
     supported_args[grepl(arg, supported_args)]
   })
   found_args <- unlist(found_args)
   found_args <- unique(found_args)
   
-  # tell the user about what has been passed in and fail if no output requested
+  # tell the user about what has been passed in
   if (length(found_args) > 0) {
     futile.logger::flog.info("Producing output for: %s", paste(found_args, collapse = ", "),
                              name = logger)
   }else{
-    futile.logger::flog.error("No output set to be returned - some output must be requested",
+    futile.logger::flog.info("No optional output specified",
                               name = logger)
-    stop("No output set to be returned - some output must be requested")
   }
   
   # assign true false to supported arguments based on found arguments
-  output_args <- rep(FALSE, length(supported_args))
-  names(output_args) <- supported_args
   output_args[names(output_args) %in% found_args] <- TRUE
   return(output_args)
 }
