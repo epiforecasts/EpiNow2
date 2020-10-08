@@ -31,7 +31,7 @@ and a parallel enabled progress bar via the `progressr` package. Minor bugs have
 * Added a `samples` argument to `get_regional_results` to make loading in samples optional. This also allows samples to be dropped when using `regional_epinow` which reduces RAM usage.
 * Cleaned up wrapper functions to move individual jobs into functions.
 * Adds basic testing of high level functions and some low level unit testing.
-
+* Adds a csv download button the interactive table in the regional summary table.
 
 # EpiNow2 1.1.0
 
