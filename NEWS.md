@@ -1,25 +1,37 @@
 # EpiNow2 1.2.0
 
+This release introduces multiple breaking interface changes. Please see the README for examples of the new interface. It also adds a range of quality of life improvements including updating the `stan` interface to support fitting each chain independently and offering variational inference as an alternative, experimental, fitting option. Notably it also adds support for nesting logging 
+and a parallel enabled progress bar via the `progressr` package. Minor bugs have been fixed in the core model implementation focussing on stability with major updates planned for the next release.
+
+## New features
+
+* Added support for either NUTs sampling (`method = "exact"`) or Variational inference (`method = "approximate"`).
+* Added `get_dist`, `get_generation_time`, `get_incubation_period` based on ideas from @pearsonca. (This leads to breaking changes with the removal of `covid_generation_times` and `covid_incubation_periods`).
+* Added `setup_logging` to enable users to specify the level and location of logging (wrapping functionality from `futile.logger`). 
+* Added `setup_future` to making using nested futures easier (required when using `future = TRUE`).
+* Implemented progress bar support using `progressr`.
 * Added timeout and timing option to `regional_epinow`
 * Improved logging of warnings in `regional_epinow`
 * Added inner 20% high density region.
 * Added mean and sd to all reporting summaries.
 * Added a summary of the growth rate and doubling time.
-* Added a `samples` argument to `get_regional_results` to make loading in samples optional. This also allows samples to be dropped when
-  using `regional_epinow` which reduces RAM usage.
-* Cleaned up implementation of `estimate_infections` to move processing code into internal functions
-* Adds basic testing of functions.
+
+## Bug fixes
+
 * Fixed y axis max for `plot_summary`.
 * Fix to normalisation of delay and generation time distributions from @sbfnk.
-* Moved all inherited from stan arguments into `create_stan_args` with the option to override using `stan_args`. This leads to breaking changes - see the examples for details of the new interface.
-* Updated all example and documentation to reflect the new interface.
-* Added `get_dist`, `get_generation_time`, `get_incubation_period` based on ideas from @pearsonca. (This leads to breaking changes with the removal of `covid_generation_times` and `covid_incubation_periods`).
-* Added support for either NUTs sampling (`method = "exact"`) or Variational inference (`method = "approximate"`).
-* Added `setup_logging` to enable users to specify the level and location of logging (wrapping functionality from `futile.logger`). 
 * Updated `discretised_gamma_pmf` (discretised truncated Gamma PMF) to constrain gamma shape and (inverse) scale parameters to be positive and finite (`alpha > 0` and `beta > 0`).
 * Fixed `readLines` incomplete final line warnings.
-* Implemented progress bar support using `progressr`.
-* Adds a utility function to setup a default `future` backend.
+
+## Other changes
+
+* Updates the interface for specifying how output is returned.
+* Moved all inherited from stan arguments into `create_stan_args` with the option to override using `stan_args`. This leads to breaking changes - see the examples for details of the new interface.
+* Updated all example and documentation to reflect the new interface.
+* Added a `samples` argument to `get_regional_results` to make loading in samples optional. This also allows samples to be dropped when using `regional_epinow` which reduces RAM usage.
+* Cleaned up wrapper functions to move individual jobs into functions.
+* Adds basic testing of high level functions and some low level unit testing.
+
 
 # EpiNow2 1.1.0
 
