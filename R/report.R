@@ -116,12 +116,13 @@ report_cases <- function(case_estimates,
 #'  variable, median, bottom, and top. It should contain the following estimates: R, infections, and r 
 #'  (rate of growth).
 #' @param rt_samples A data.table containing Rt samples with the following variables: sample and value.
+#' @inheritParams setup_target_folder
 #' @return A data.table containing formatted and numeric summary measures
 #' @export
 #' @importFrom data.table data.table setDT
 #' @importFrom purrr map
 report_summary <- function(summarised_estimates,
-                           rt_samples) { 
+                           rt_samples, target_folder = NULL) { 
   
   ## Set input to data.table
   summarised_estimates <- data.table::setDT(summarised_estimates)
@@ -178,6 +179,11 @@ report_summary <- function(summarised_estimates,
                          r_latest,
                          doubling_time_latest)
   )
+ 
+ 
+ if (!is.null(target_folder)) {
+   saveRDS(summary, paste0(target_folder, "/summary.rds"))
+ }
 
   return(summary) 
 }
