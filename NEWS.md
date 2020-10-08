@@ -19,7 +19,7 @@ and a parallel enabled progress bar via the `progressr` package. Minor bugs have
 ## Bug fixes
 
 * Fixed y axis max for `plot_summary`.
-* Fix to normalisation of delay and generation time distributions from @sbfnk.
+* Fix to normalisation of delay and generation time distributions from @sbfnk. This will impact nowcast infections but not reproduction number estimate.
 * Updated `discretised_gamma_pmf` (discretised truncated Gamma PMF) to constrain gamma shape and (inverse) scale parameters to be positive and finite (`alpha > 0` and `beta > 0`).
 * Fixed `readLines` incomplete final line warnings.
 
