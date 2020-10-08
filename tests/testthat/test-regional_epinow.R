@@ -6,16 +6,13 @@ reporting_delay <- list(mean = log(3), mean_sd = 0.1,
 
 ## Uses example case vector
 cases <- EpiNow2::example_confirmed[1:30]
-
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
 
-
 df_non_zero <- function(df) {
   expect_true(nrow(df) > 0)
 }
-
 
 test_that("regional_epinow produces expected output when run with default settings", {
   skip_on_cran()
