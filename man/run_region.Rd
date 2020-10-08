@@ -28,7 +28,7 @@ run_region(
 \code{target_folder} must be specified in order to enable output saving to disk.}
 
 \item{output}{A character vector of optional output to return. Supported options are the individual regional estimates
-("regional"),  samples ("samples"),
+("regions"),  samples ("samples"),
 plots ("plots"), and the stan fit of the underlying model ("fit"). The default is to return samples and plots alongside summarised estimates
 and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
 being reported.}
@@ -40,9 +40,6 @@ the completion of estimation to.}
 progress bar.}
 
 \item{...}{Pass additional arguments to \code{epinow}. See the documentation for \code{epinow} for details.}
-
-\item{return_partial_estimates}{Logical, default to \code{FALSE}. Should estimates required for
-\code{regional_summary} be returned.}
 }
 \value{
 A list of processed output as produced by \code{process_region}

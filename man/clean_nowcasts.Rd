@@ -4,12 +4,13 @@
 \alias{clean_nowcasts}
 \title{Clean Nowcasts for a Supplied Date}
 \usage{
-clean_nowcasts(date = NULL, nowcast_dir = NULL)
+clean_nowcasts(date = NULL, nowcast_dir = ".")
 }
 \arguments{
 \item{date}{Date object. Defaults to today's date}
 
-\item{nowcast_dir}{Character string giving the filepath to the nowcast results directory.}
+\item{nowcast_dir}{Character string giving the filepath to the nowcast results directory. Defaults
+to the current directory.}
 }
 \description{
 This function removes nowcasts in the format produced by \code{EpiNow2} from a target

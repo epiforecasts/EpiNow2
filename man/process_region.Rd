@@ -4,7 +4,13 @@
 \alias{process_region}
 \title{Process regional estimate}
 \usage{
-process_region(out, target_region, timing, complete_logger = "EpiNow2.epinow")
+process_region(
+  out,
+  target_region,
+  timing,
+  return_output,
+  complete_logger = "EpiNow2.epinow"
+)
 }
 \arguments{
 \item{out}{List of output returned by \code{epinow}}
@@ -12,6 +18,9 @@ process_region(out, target_region, timing, complete_logger = "EpiNow2.epinow")
 \item{target_region}{Character string indicating the region being evaluated}
 
 \item{timing}{Output from \code{Sys.time}}
+
+\item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
+\code{target_folder} must be specified in order to enable output saving to disk.}
 
 \item{complete_logger}{Character string indicating the logger to output
 the completion of estimation to.}

@@ -7,7 +7,7 @@
 #' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
 #' that region to be evaluated. Defaults to 2.
 #' @param output A character vector of optional output to return. Supported options are the individual regional estimates
-#' ("regional"),  samples ("samples"), 
+#' ("regions"),  samples ("samples"), 
 #' plots ("plots"), and the stan fit of the underlying model ("fit"). The default is to return samples and plots alongside summarised estimates
 #' and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
 #' being reported.
@@ -26,39 +26,44 @@
 #' @importFrom progressr with_progress progressor
 #' @examples
 #'  \donttest{
-#' ## Construct example distributions
+#' # construct example distributions
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#'                    
 #' reporting_delay <- list(mean = log(10), mean_sd = log(2),
 #'                         sd = log(2), sd_sd = log(1.1), max = 30)
 #'                         
-#' ## Uses example case vector
+#' # uses example case vector
 #' cases <- EpiNow2::example_confirmed[1:40]
-#' 
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
-#'   
-#' ## Run basic nowcasting pipeline
-#' ## Here we reduce the accuracy of the GP approximation in order to reduce runtime
-#' out <- regional_epinow(reported_cases = cases,  generation_time = generation_time,
+#' 
+#' # setup logging
+#' setup_logging(file = paste0(tempdir(), "/info.log"), 
+#'               name = "EpiNow2.epinow")
+#'                 
+#' # run epinow across multiple regions and generate summaries
+#' # samples and warmup have been reduced for this example
+#' out <- regional_epinow(reported_cases = cases, 
+#'                        samples = 100,
+#'                        generation_time = generation_time,
 #'                        delays = list(incubation_period, reporting_delay),
-#'                        stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
+#'                        stan_args = list(warmup = 100, 
+#'                                         cores = ifelse(interactive(), 4, 1)))
 #'}
 regional_epinow <- function(reported_cases, 
                             target_folder = NULL, 
                             target_date,
                             non_zero_points = 2, 
                             return_output = TRUE,
-                            output = c("regional", "summary", "samples", 
+                            output = c("regions", "summary", "samples", 
                                        "plots", "timings"),
                             summary_args = list(), ...) {
   
   # supported output
   output <- match_output_arguments(output, 
                                    supported_args = c("plots", "samples", "fit",
-                                                      "regional", "summary",
+                                                      "regions", "summary",
                                                       "timings"),
                                    logger = "EpiNow2")
   if (missing(target_date)) {
@@ -83,9 +88,8 @@ regional_epinow <- function(reported_cases,
                                                 reported_cases = reported_cases,
                                                 target_folder = target_folder, 
                                                 target_date = target_date,
-                                                output = names(output[output]),
-                                                return_output = return_output,
-                                                return_partial_estimates = output["summary"] | return_output,
+                                                output = output,
+                                                return_output = output["summary"] | return_output,
                                                 complete_logger = ifelse(length(regions) > 10, 
                                                                          "EpiNow2.epinow",
                                                                          "EpiNow2"),
@@ -101,7 +105,7 @@ regional_epinow <- function(reported_cases,
   
   if (return_output) {
     out <- list()
-    if (output["regional"]) {
+    if (output["regions"]) {
       out$regional <- regional_out
     }
   }
@@ -144,10 +148,9 @@ regional_epinow <- function(reported_cases,
 #' @return A dataframe of cleaned regional data
 clean_regions <- function(reported_cases, non_zero_points) {
   reported_cases <- data.table::setDT(reported_cases)
-  ## Check for regions more than required time points with cases
+  # check for regions more than required time points with cases
   eval_regions <- data.table::copy(reported_cases)[, .(confirm = confirm > 0), by = c("region", "date")][,
-                                                                                                         .(confirm = sum(confirm, na.rm = TRUE)), by = "region"][confirm >= non_zero_points]$region
-  
+                                                     .(confirm = sum(confirm, na.rm = TRUE)), by = "region"][confirm >= non_zero_points]$region
   eval_regions <- unique(eval_regions)
   orig_regions <- setdiff(unique(reported_cases$region), eval_regions)
   if (length(eval_regions) > 30){
@@ -165,20 +168,13 @@ clean_regions <- function(reported_cases, non_zero_points) {
     futile.logger::flog.info("Regions excluded: %s",
                              message)
   }
-  
-  
-  ## Exclude zero regions
+  # exclude zero regions
   reported_cases <- reported_cases[!is.na(region)][region %in% eval_regions]
-  
   return(reported_cases)
 }
 
-
-
 #' Run epinow with Regional Processing Code
 #' @param target_region Character string indicating the region being evaluated
-#' @param return_partial_estimates Logical, default to `FALSE`. Should estimates required for
-#' `regional_summary` be returned.
 #' @param progress_fn Function as returned by `progressr::progressor`. Allows the use of a 
 #' progress bar. 
 #' @param complete_logger Character string indicating the logger to output
@@ -203,7 +199,6 @@ run_region <- function(target_region,
   if (!is.null(target_folder)) {
     target_folder <- file.path(target_folder, target_region)
   }
-  
   futile.logger::flog.trace("filtering data for target region %s", target_region,
                             name = "EpiNow2.epinow")
   regional_cases <- reported_cases[region %in% target_region][, region := NULL]
@@ -217,7 +212,7 @@ run_region <- function(target_region,
         target_folder = target_folder,
         target_date = target_date,
         return_output = ifelse(output["summary"], TRUE, return_output),
-        output = output,
+        output = names(output[output]),
         ...),
         warning = function(w) {
           futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call),
@@ -232,13 +227,12 @@ run_region <- function(target_region,
       }
     )
   )
-  out <- process_region(out, return_output, 
-                        target_region, timing, complete_logger)
+  out <- process_region(out, target_region, timing,
+                        return_output, complete_logger)
   
   if (!missing(progress_fn)) {
     progress_fn(sprintf("Region: %s", target_region))
   }
-  
   return(out)
 }
 
@@ -250,7 +244,9 @@ run_region <- function(target_region,
 #' @inheritParams run_region
 #' @importFrom futile.logger flog.info
 #' @return A list of processed output
-process_region <- function(out, target_region, timing, complete_logger = "EpiNow2.epinow") {
+process_region <- function(out, target_region, timing, 
+                           return_output,
+                           complete_logger = "EpiNow2.epinow") {
   
   if (exists("estimates", out) & !return_output) {
     out$estimates$samples <- NULL
@@ -284,7 +280,6 @@ process_region <- function(out, target_region, timing, complete_logger = "EpiNow
 #' @importFrom futile.logger flog.trace flog.info
 #' @return A list of all regional estimates and successful regional estimates
 process_regions <- function(regional_out, regions) {
-  
   # names on regional_out
   names(regional_out) <- regions
   problems <- purrr::keep(regional_out, ~!is.null(.$error))
