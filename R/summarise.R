@@ -122,7 +122,6 @@ summarise_results <- function(regions,
 #' (in the format "yyyy-mm-dd"). Defaults to latest available estimates.
 #' @param all_regions Logical, defaults to `TRUE`. Should summary plots for all regions be returned 
 #' rather than just regions of interest.
-#' @param return_summary Logical, defaults to `TRUE`. Should summary measures be returned.
 #' @return A list of summary measures and plots
 #' @export
 #' @inheritParams summarise_results
@@ -131,6 +130,7 @@ summarise_results <- function(regions,
 #' @inheritParams regional_epinow
 #' @inheritParams get_regional_results
 #' @inheritParams report_plots
+#' @inheritParams epinow
 #' @importFrom purrr map_chr compact
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
 #' @importFrom cowplot get_legend
@@ -165,44 +165,30 @@ summarise_results <- function(regions,
 #'
 #' } 
 #' 
-regional_summary <- function(regional_output,
+regional_summary <- function(regional_output = NULL,
                              reported_cases,
-                             results_dir, 
-                             summary_dir,
-                             target_date,
+                             results_dir = NULL, 
+                             summary_dir = NULL,
+                             target_date = NULL,
                              region_scale = "Region",
                              all_regions = TRUE,
-                             return_summary = TRUE, 
+                             return_output = TRUE, 
                              max_plot = 10) {
     
   reported_cases <- data.table::setDT(reported_cases)
   
-  if (missing(summary_dir) & !return_summary) {
+  if (is.null(summary_dir) & !return_output) {
     stop("Either allow results to be returned or supply a directory for results to be saved into")
   }
-  
-  if (missing(summary_dir)) {
-    summary_dir <- NULL
-  }
-  
-  if (missing(results_dir)) {
-    results_dir <- NULL
-  }
-   
-  if (missing(target_date)) {
-    target_date <- NULL
-  }
-  if (!is.null(results_dir) & !missing(regional_output)) {
+
+  if (!is.null(results_dir) & !is.null(regional_output)) {
     stop("Only one of results_dir and regional_output should be specified")
   }
   
-  if (missing(regional_output)) {
-    regional_output <- NULL
+  if (is.null(regional_output)) {
     if (!is.null(results_dir)) {
      futile.logger::flog.info("Extracting results from: %s", results_dir)
-      
      regions <- EpiNow2::get_regions(results_dir)
-     
        if (is.null(target_date)) {
          target_date <- "latest"
        }
@@ -213,19 +199,19 @@ regional_summary <- function(regional_output,
   }
   
   futile.logger::flog.trace("Getting regional results")
-  ## Get estimates
+  # get estimates
   results <- get_regional_results(regional_output,
                                   results_dir = results_dir,
                                   samples = FALSE,
                                   forecast = FALSE)
   
-  ## Get latest date
+  # get latest date
   latest_date <- unique(reported_cases[confirm > 0][date == max(date)]$date)
   
   if (!is.null(summary_dir)) {
-    ## Make summary directory
+    # make summary directory
     if (!dir.exists(summary_dir)) {
-      dir.create(summary_dir)
+      dir.create(summary_dir, recursive = TRUE)
     }
     saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
     data.table::fwrite(reported_cases, file.path(summary_dir, "reported_cases.csv"))
@@ -236,17 +222,16 @@ regional_summary <- function(regional_output,
   }else{
     regional_summaries <- NULL
   }
-
   futile.logger::flog.trace("Summarising results")
   
-  ## Summarise results to csv
+  # summarise results to csv
   sum_key_measures <- summarise_key_measures(regional_results = results,
                                              results_dir = results_dir, 
                                              summary_dir = summary_dir, 
                                              type = tolower(region_scale),
                                              date = target_date) 
   
-  ## Summarise results as a table
+  # summarise results as a table
   summarised_results <- summarise_results(regions, 
                                           summaries = regional_summaries,
                                           results_dir = results_dir,
@@ -260,7 +245,6 @@ regional_summary <- function(regional_output,
                            "Likely decreasing", "Decreasing"))] 
     
   }
-  
   summarised_results$table <- force_factor(summarised_results$table)
   summarised_results$data <- force_factor(summarised_results$data)
   
@@ -268,15 +252,14 @@ regional_summary <- function(regional_output,
     data.table::fwrite(summarised_results$table, file.path(summary_dir, "summary_table.csv"))
     data.table::fwrite(summarised_results$data,  file.path(summary_dir, "summary_data.csv"))
   }
-   
-
-  ## Adaptive add a logscale to the summary plot based on range of observed cases
+  
+  # adaptive add a logscale to the summary plot based on range of observed cases
   log_cases <- (max(summarised_results$data[metric %in% "New confirmed cases by infection date"]$upper, na.rm = TRUE) / 
              min(summarised_results$data[metric %in% "New confirmed cases by infection date"]$lower, na.rm = TRUE)) > 1000
 
   max_reported_cases <- round(max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0)
   
-  ## Summarise cases and Rts
+  # summarise cases and Rts
   summary_plot <- plot_summary(summarised_results$data,
                                x_lab = region_scale, 
                                log_cases = log_cases,
@@ -292,8 +275,7 @@ regional_summary <- function(regional_output,
       )
     )
   }
-  
-  ## Extract regions with highest number of reported cases in the last week
+  # extract regions with highest number of reported cases in the last week
   regions_with_most_reports <- data.table::copy(reported_cases)[, 
           .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(7))],by = "region"]
   regions_with_most_reports <- regions_with_most_reports[, .(confirm = sum(confirm, na.rm = TRUE)), by = "region"]
@@ -309,7 +291,6 @@ regional_summary <- function(regional_output,
   high_plots$summary <- NULL
   high_plots <- purrr::map(high_plots,
                             ~ . + ggplot2::facet_wrap(~ region, scales = "free_y", ncol = 2))
-  
   
   if (!is.null(summary_dir)) {
     suppressWarnings(
@@ -330,7 +311,6 @@ regional_summary <- function(regional_output,
                         high_plots$reports, dpi = 300, width = 12, height = 12)
       ))
   }
-  
   if (all_regions) {
     plots_per_row <- ifelse(length(regions) > 60, 
                             ifelse(length(regions) > 120, 8, 5), 3)
@@ -343,7 +323,6 @@ regional_summary <- function(regional_output,
     plots <- purrr::map(plots,
                         ~ . + ggplot2::facet_wrap(~ region, scales = "free_y",
                                                   ncol = plots_per_row))
-    
     
     if (!is.null(summary_dir)) {
       suppressWarnings(
@@ -372,8 +351,7 @@ regional_summary <- function(regional_output,
         ))
     }
   }
- 
-  if (return_summary) {
+  if (return_output) {
     out <- list()
     out$latest_date <- latest_date
     out$results <- results
@@ -386,7 +364,6 @@ regional_summary <- function(regional_output,
     if (all_regions) {
       out$plots <- plots
     }
-
     return(out)
   }else{
     return(invisible(NULL))
