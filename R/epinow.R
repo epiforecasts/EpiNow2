@@ -1,13 +1,12 @@
 #' Real-time Rt Estimation, Forecasting and Reporting
 #'
-#' @description Estimate Rt and cases by date of infection, forecast into the future, transform to date 
-#' of report and then save summary measures and plots.
-#' @param target_date Date, defaults to maximum found in the data if not specified.
-#' @param target_folder Character string specifying where to save results (will create if not present).
-#' @param return_estimates Logical, defaults to TRUE. Should estimates be returned.
-#' @param keep_samples Logical, defaults to TRUE. Should samples be kept (either returned or saved or both 
-#' depending on other settings).
-#' @param make_plots Logical, defaults to TRUE. Should plots be made and returned (or saved).
+#' @description This function wraps the functionality of `estimate_infectiosn` and `forecast_infections` in order
+#' to estimate Rt and cases by date of infection, forecast into these infections into the future. It also contains 
+#' additional functionality to convert forecasts to date of report and produce summary output useful for reporting 
+#' results and interpreting them.
+#' @param return_output Logical, defaults to TRUE. Should output be returned. This must either be true or a
+#' `target_folder` must be specified in order to enable output saving to disk.
+#' @param ... Additional arguments passed to `estimate_infections`. See that functions documentation for options.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @inheritParams estimate_infections
@@ -53,9 +52,9 @@
 #'
 #' }
 #'
-epinow <- function(reported_cases, model, samples = 1000, stan_args, 
+epinow <- function(reported_cases, model = NULL, samples = 1000, stan_args = NULL, 
                    method = "exact", family = "negbin",
-                   generation_time, delays,
+                   generation_time, delays = list(),
                    gp = list(basis_prop = 0.3, boundary_scale = 2,
                              lengthscale_mean = 0, lengthscale_sd = 2),
                    rt_prior = list(mean = 1, sd = 1), horizon = 7,
@@ -63,77 +62,43 @@ epinow <- function(reported_cases, model, samples = 1000, stan_args,
                    burn_in = 0, stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
                    future = FALSE, max_execution_time = Inf, prior_smoothing_window = 7,
                    return_fit = FALSE, forecast_model, ensemble_type = "mean",
-                   return_estimates = TRUE, keep_samples = TRUE, make_plots = TRUE, 
-                   target_folder, target_date, verbose = FALSE) {
+                   return_ouput = TRUE, keep_samples = TRUE, make_plots = TRUE, 
+                   target_folder = NULL, target_date, verbose = FALSE) {
 
-  if (!return_estimates & missing(target_folder)) {
-    futile.logger::flog.fatal("Either return estimates or save to a target folder",
+  if (!return_output & is.null(target_folder)) {
+    futile.logger::flog.fatal("Either return output or save to a target folder",
                               name = "EpiNow2.epinow")
-    stop("Either return estimates or save to a target folder")
+    stop("Either return output or save to a target folder")
   }
 
- # Check arguments ---------------------------------------------------------
-
-  if (missing(delays)) {
-    delays <- list()
-  }
-  
-  if (missing(stan_args)) {
-    stan_args <- NULL
-  }
  # Convert input to DT -----------------------------------------------------
   suppressMessages(data.table::setDTthreads(threads = 1))
   reported_cases <- data.table::setDT(reported_cases)
-
-  # Set up folders ----------------------------------------------------------
-
+  
+ # target data -------------------------------------------------------------
   if (missing(target_date)) {
     target_date <- max(reported_cases$date)
   }
+  
+  # Set up folders ----------------------------------------------------------
+  target_folder <- setup_target_folder(target_folder, target_date)
 
-  if (missing(target_folder)) {
-    target_folder <- NULL
-  }
-
-
-  if (!is.null(target_folder)) {
-    latest_folder <- file.path(target_folder, "latest")
-    target_folder <- file.path(target_folder, target_date)
-
-    if (!dir.exists(target_folder)) {
-      dir.create(target_folder, recursive = TRUE)
-    }
-  }
   # Make sure the horizon is as specified from the target date --------------
-
   if (horizon != 0) {
     horizon <- horizon + as.numeric(as.Date(target_date) - max(reported_cases$date))
   }
-
-
+  
   # Save input data ---------------------------------------------------------
-
-  if (!is.null(target_folder)) {
-    latest_date <- reported_cases[confirm > 0][date == max(date)]$date
-
-    saveRDS(latest_date, paste0(target_folder, "/latest_date.rds"))
-    saveRDS(reported_cases, paste0(target_folder, "/reported_cases.rds"))
-  }
-
+  save_input(reported_cases, target_folder)
+  
   # Estimate infections and Reproduction no ---------------------------------
-
-  if (missing(model)) {
-    model <- NULL
-  }
-
-  estimates <- estimate_infections(reported_cases = reported_cases, model = model, samples = samples, stan_args = stan_args,
-                                   method = method, family = family,
-                                   generation_time = generation_time, delays = delays, horizon = horizon,
-                                   gp = gp, rt_prior = rt_prior,
-                                   estimate_rt = estimate_rt, estimate_week_eff = estimate_week_eff, estimate_breakpoints = estimate_breakpoints,
-                                   stationary = stationary, fixed = fixed, fixed_future_rt = fixed_future_rt,
-                                   burn_in = burn_in, prior_smoothing_window = prior_smoothing_window, future = future,
-                                   max_execution_time = max_execution_time, return_fit = return_fit, verbose = verbose)
+  estimates <- estimate_infections(reported_cases = reported_cases, 
+                                   samples = samples,
+                                   horizon = horizon,
+                                   estimate_rt = TRUE,
+                                   output = output,
+                                   verbose = verbose,
+                                   ...)
 
   # Report estimates --------------------------------------------------------
   if (!is.null(target_folder)) {
