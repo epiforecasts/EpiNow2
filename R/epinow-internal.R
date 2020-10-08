@@ -22,7 +22,7 @@ setup_target_folder <- function(target_folder = NULL, target_date) {
 #'
 #' @param reported_cases 
 #' @inheritParams setup_target_folder
-#' @inheritParams epinow
+#' @inheritParams estimate_infections
 #' @return NULL
 save_input <- function(reported_cases, target_folder) {
   if (!is.null(target_folder)) {
@@ -30,6 +30,26 @@ save_input <- function(reported_cases, target_folder) {
     
     saveRDS(latest_date, paste0(target_folder, "/latest_date.rds"))
     saveRDS(reported_cases, paste0(target_folder, "/reported_cases.rds"))
+  }
+  return(invisible(NULL))
+}
+
+
+
+save_estimate_infections <- function(estimates, target_folder, output) {
+  
+  output <- match_output_arguments(output, c("samples", "fit"),
+                                   logger = "EpiNow2.epinow")
+  
+  if (!is.null(target_folder)) {
+    if (output["samples"]) {
+      saveRDS(estimates$samples, paste0(target_folder, "/estimate_samples.rds"))
+    }
+    saveRDS(estimates$summarised, paste0(target_folder, "/summarised_estimates.rds"))
+    
+    if (output["fit"]) {
+      saveRDS(estimates$fit, paste0(target_folder, "/model_fit.rds"))
+    }
   }
   return(invisible(NULL))
 }
