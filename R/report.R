@@ -115,45 +115,42 @@ report_cases <- function(case_estimates,
 #' @importFrom purrr map
 report_summary <- function(summarised_estimates,
                            rt_samples, target_folder = NULL) { 
-  
-  ## Set input to data.table
+  # set input to data.table
   summarised_estimates <- data.table::setDT(summarised_estimates)
   rt_samples <- data.table::setDT(rt_samples)
   
-  ## Extract values of interest
+  # extract values of interest
   summarised_estimates <- summarised_estimates[, .(variable, point = median,
                                                    lower = bottom, upper = top,
                                                    mid_lower = lower, mid_upper = upper,
                                                    central_lower = central_lower,
                                                    central_upper = central_upper)]
-  ## Extract latest R estimate
+  # extract latest R estimate
   R_latest <- summarised_estimates[variable == "R"][, variable := NULL][,
                                    purrr::map(.SD, ~ round(., 1))]
    
-  ## Estimate probability of control
+  # estimate probability of control
   prob_control <- rt_samples[, .(prob_control = sum(value <= 1) / .N)]$prob_control
   prob_control <- signif(prob_control, 2)
   
-  ##Extract current cases
+  # extract current cases
   current_cases <- summarised_estimates[variable == "infections"][, variable := NULL][,
                                         purrr::map(.SD, ~ round(., 0))]
   
 
-  ## Get individual estimates
+  # get individual estimates
   r_latest <- summarised_estimates[variable == "growth_rate"][, variable := NULL][,
                                   purrr::map(.SD, ~ round(., 2))]
   
   doubling_time <- function(r) {
     round(log(2) * 1 / r, 1)
   }
-
   doubling_time_latest <- summarised_estimates[variable == "growth_rate"][,
                                 .(point = doubling_time(point),
                                   lower = doubling_time(upper),
                                   upper = doubling_time(lower))]
   
-
-  ## Regional summary
+ # regional summary
  summary <- data.table::data.table(
     measure = c("New confirmed cases by infection date",
                 "Expected change in daily cases",
@@ -172,11 +169,9 @@ report_summary <- function(summarised_estimates,
                          doubling_time_latest)
   )
  
- 
  if (!is.null(target_folder)) {
    saveRDS(summary, paste0(target_folder, "/summary.rds"))
  }
-
   return(summary) 
 }
 

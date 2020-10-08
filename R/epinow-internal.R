@@ -9,7 +9,6 @@
 setup_dt <- function(reported_cases) {
   suppressMessages(data.table::setDTthreads(threads = 1))
   reported_cases <- data.table::setDT(reported_cases)
-  
   return(reported_cases)
 }
 
@@ -43,7 +42,7 @@ setup_target_folder <- function(target_folder = NULL, target_date) {
 save_input <- function(reported_cases, target_folder) {
   if (!is.null(target_folder)) {
     latest_date <- reported_cases[confirm > 0][date == max(date)]$date
-    
+  
     saveRDS(latest_date, paste0(target_folder, "/latest_date.rds"))
     saveRDS(reported_cases, paste0(target_folder, "/reported_cases.rds"))
   }
@@ -201,16 +200,14 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
 construct_output <- function(estimates, forecast = NULL, 
                              estimated_reported_cases,
                              plots = NULL,
-                             summary,
+                             summary = NULL,
                              samples = TRUE) {
   out <- list()
   out$estimates <- estimates
-  
   if (!samples) {
     out$estimates$samples <- NULL
   }
-  
-  if (is.null(forecast)) {
+  if (!is.null(forecast)) {
     out$forecast <- forecast
     if (!samples) {
       out$forecast$samples <- NULL
@@ -219,7 +216,7 @@ construct_output <- function(estimates, forecast = NULL,
   out$estimated_reported_cases <- estimated_reported_cases
   out$summary <- summary
   
-  if (is.null(plots)) {
+  if (!is.null(plots)) {
     out$plots <- plots
   }
   return(out)
