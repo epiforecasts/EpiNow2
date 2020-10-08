@@ -160,7 +160,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                             estimated_reported_cases,
                             plots = plots,
                             summary,
-                            samples = TRUE)
+                            samples = output["samples"])
     return(out)
   }else{
     return(invisible(NULL))
