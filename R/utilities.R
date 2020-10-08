@@ -3,23 +3,17 @@
 #' @description This function removes nowcasts in the format produced by `EpiNow2` from a target
 #' directory for the date supplied.
 #' @param date Date object. Defaults to today's date
-#' @param nowcast_dir Character string giving the filepath to the nowcast results directory.
+#' @param nowcast_dir Character string giving the filepath to the nowcast results directory. Defaults 
+#' to the current directory.
 #' @importFrom purrr walk
 #' @importFrom futile.logger flog.info
 #' @return NULL
 #' @export
-clean_nowcasts <- function(date = NULL, nowcast_dir = NULL) {
-  
+clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
   if (is.null(date)) {
     date <- Sys.Date()
   }
-  
-  if (is.null(nowcast_dir)) {
-    nowcast_dir <- "."
-  }
-  
   dirs <- list.dirs(nowcast_dir, recursive = FALSE)
-  
   purrr::walk(dirs,
               function(dir) {
                 remove_dir <- file.path(dir, date)
@@ -110,9 +104,7 @@ map_prob_change <- function(var) {
 #' growth_to_R(0.2, 4, 1)
 growth_to_R <- function(r, gamma_mean, gamma_sd) {
   k <- (gamma_sd / gamma_mean)^2
-  
   R <- (1 + k * r * gamma_mean)^(1/k)
-  
   return(R)
 }
   
@@ -130,9 +122,7 @@ growth_to_R <- function(r, gamma_mean, gamma_sd) {
 #' R_to_growth(2.18, 4, 1)  
 R_to_growth <- function(R, gamma_mean, gamma_sd) {
   k <- (gamma_sd / gamma_mean)^2
-  
   r <- (R^k - 1) / (k * gamma_mean)
-
   return(r)
 }  
 
@@ -320,7 +310,7 @@ match_output_arguments <- function(input_args = c(),
   # tell the user about what has been passed in
   if (!is.null(logger)) {
     if (length(found_args) > 0) {
-      flog_fn("Producing output for: %s", paste(found_args, collapse = ", "),
+      flog_fn("Producing following outputs: %s", paste(found_args, collapse = ", "),
               name = logger)
     }else{
       flog_fn("No optional output specified",

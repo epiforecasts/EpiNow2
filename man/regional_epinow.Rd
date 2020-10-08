@@ -10,7 +10,7 @@ regional_epinow(
   target_date,
   non_zero_points = 2,
   return_output = TRUE,
-  output = c("regional", "summary", "samples", "plots", "timings"),
+  output = c("regions", "summary", "samples", "plots", "timings"),
   summary_args = list(),
   ...
 )
@@ -28,7 +28,7 @@ that region to be evaluated. Defaults to 2.}
 \code{target_folder} must be specified in order to enable output saving to disk.}
 
 \item{output}{A character vector of optional output to return. Supported options are the individual regional estimates
-("regional"),  samples ("samples"),
+("regions"),  samples ("samples"),
 plots ("plots"), and the stan fit of the underlying model ("fit"). The default is to return samples and plots alongside summarised estimates
 and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
 being reported.}
@@ -47,24 +47,29 @@ and enable it in batch by setting \code{R_PROGRESSR_ENABLE=TRUE} as an environme
 }
 \examples{
  \donttest{
-## Construct example distributions
+# construct example distributions
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-                   
 reporting_delay <- list(mean = log(10), mean_sd = log(2),
                         sd = log(2), sd_sd = log(1.1), max = 30)
                         
-## Uses example case vector
+# uses example case vector
 cases <- EpiNow2::example_confirmed[1:40]
-
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
-  
-## Run basic nowcasting pipeline
-## Here we reduce the accuracy of the GP approximation in order to reduce runtime
-out <- regional_epinow(reported_cases = cases,  generation_time = generation_time,
+
+# setup logging
+setup_logging(file = paste0(tempdir(), "/info.log"), 
+              name = "EpiNow2.epinow")
+                
+# run epinow across multiple regions and generate summaries
+# samples and warmup have been reduced for this example
+out <- regional_epinow(reported_cases = cases, 
+                       samples = 100,
+                       generation_time = generation_time,
                        delays = list(incubation_period, reporting_delay),
-                       stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
+                       stan_args = list(warmup = 100, 
+                                        cores = ifelse(interactive(), 4, 1)))
 }
 }
