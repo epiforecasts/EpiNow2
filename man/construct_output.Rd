@@ -9,7 +9,7 @@ construct_output(
   forecast = NULL,
   estimated_reported_cases,
   plots = NULL,
-  summary,
+  summary = NULL,
   samples = TRUE
 )
 }
