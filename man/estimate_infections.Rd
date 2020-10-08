@@ -6,13 +6,13 @@
 \usage{
 estimate_infections(
   reported_cases,
-  model,
+  model = NULL,
   samples = 1000,
-  stan_args,
+  stan_args = NULL,
   method = "exact",
   family = "negbin",
   generation_time,
-  delays,
+  delays = list(),
   horizon = 7,
   gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_mean = 0, lengthscale_sd
     = 2),
@@ -21,7 +21,6 @@ estimate_infections(
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
   stationary = FALSE,
-  fixed = FALSE,
   fixed_future_rt = FALSE,
   burn_in = 0,
   prior_smoothing_window = 7,
@@ -63,10 +62,10 @@ on the log scale).}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
-\item{gp}{List controlling the Gaussian process approximation. Must contain
-the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
-between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
-Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
+\item{gp}{List controlling the Gaussian process approximation if set to \code{list()} then \code{Rt} is assumed to be constant unless
+other settings introduce variation. If set must contain the \code{basis_prop} (number of basis functions based on scaling the time points)
+which defaults to 0.3 and must be between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of
+additional compute. Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
 See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
 Can optionally also contain the  \code{lengthscale_mean} and \code{lengthscale_sd}. If these are specified this will override
@@ -86,11 +85,6 @@ a global non-parametric effect and so represent a conservative estimate of break
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
-
-\item{fixed}{Logical, defaults to FALSE. If TRUE then a Gaussian process is not used and Rt is assumed to be constant over time
-(apart from any manually included breakpoints). If \code{estimate_rt} is FALSE then this reduces the backcalculation to a simple mean shift.
-This option can be used to produce a null model estimate, to produce a single Rt estimate for a short timeseries or as part of a wider
-analysis on the impact of interventions.}
 
 \item{fixed_future_rt}{Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
 future time points without data.}
@@ -204,7 +198,7 @@ plots$summary
 fixed <- estimate_infections(reported_cases, generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay),
                              stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-                             fixed = TRUE)
+                             gp = list())
 
 
 # Plot output
@@ -255,7 +249,7 @@ cbkp$summarised[variable == "breakpoints"]
 fbkp <- estimate_infections(reported_cases, generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-                            estimate_breakpoints = TRUE, fixed = TRUE)                                                         
+                            gp = list(), estimate_breakpoints = TRUE)                                                         
 
 # Plot output
 plots <- report_plots(summarised_estimates = fbkp$summarised, reported = reported_cases)

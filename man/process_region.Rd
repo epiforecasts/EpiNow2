@@ -4,13 +4,7 @@
 \alias{process_region}
 \title{Process regional estimate}
 \usage{
-process_region(
-  out,
-  return_estimates,
-  target_region,
-  timing,
-  complete_logger = "EpiNow2.epinow"
-)
+process_region(out, target_region, timing, complete_logger = "EpiNow2.epinow")
 }
 \arguments{
 \item{out}{List of output returned by \code{epinow}}
