@@ -110,14 +110,14 @@ future time points without data.}
 \item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
 fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
 
-\item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout.
+\item{max_execution_time}{Numeric, defaults to Inf (seconds). If set will kill off processing of each chain if not finished within the specified timeout.
 When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation
 will fail with an informative error.}
 
 \item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
 for the prior based on reported cases.}
 
-\item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
+\item{return_fit}{Logical, defaults to FALSE. Should the fitted Stan model be returned.}
 
 \item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
 for forecasting future Rt and case co An example of the required structure is: \code{function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}}.}
