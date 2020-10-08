@@ -91,3 +91,4 @@ reference:
       - make_conf
       - map_prob_change
       - setup_logging
+      - setup_future
