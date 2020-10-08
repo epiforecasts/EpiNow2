@@ -15,23 +15,21 @@
 #' @importFrom HDInterval hdi
 #' @examples 
 #' \donttest{
-#' ## Define example cases
+#' # define example cases
 #' cases <- EpiNow2::example_confirmed[1:40]
 #' 
-#'  
-#' ## Set up example delays
+#' # set up example delays
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 #'                         
-#' ## Run model
+#' # run model
 #' out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
 #'                                     stan_args = list(warmup = 200, 
 #'                                                      cores = ifelse(interactive(), 4, 1)),
 #'                                     estimate_rt = FALSE)
 #'                             
-#'                      
 #' reported_cases <- report_cases(case_estimates = out$samples[variable == "infections"][, 
 #'                                                             cases := value][, value := NULL],
 #'                                delays = list(incubation_period, reporting_delay),
