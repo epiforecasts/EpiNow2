@@ -149,16 +149,16 @@ incubation period followed by a reporting delay.
 reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(4), 1), max_value = 30)
 reporting_delay
 #> $mean
-#> [1] 1.121562
+#> [1] 1.051676
 #> 
 #> $mean_sd
-#> [1] 0.1641465
+#> [1] 0.1385334
 #> 
 #> $sd
-#> [1] 1.212076
+#> [1] 1.144019
 #> 
 #> $sd_sd
-#> [1] 0.1357686
+#> [1] 0.1355078
 #> 
 #> $max
 #> [1] 30
@@ -223,27 +223,27 @@ parameters in an easily explored format.
 ``` r
 head(estimates$estimates$samples)
 #>      variable  parameter time       date sample     value strat     type
-#> 1: infections infections    1 2020-02-11      1  1.713216  <NA> estimate
-#> 2: infections infections    2 2020-02-12      1 10.361868  <NA> estimate
-#> 3: infections infections    3 2020-02-13      1 18.112208  <NA> estimate
-#> 4: infections infections    4 2020-02-14      1 28.833484  <NA> estimate
-#> 5: infections infections    5 2020-02-15      1 43.713818  <NA> estimate
-#> 6: infections infections    6 2020-02-16      1 51.122634  <NA> estimate
+#> 1: infections infections    1 2020-02-11      1  2.404684  <NA> estimate
+#> 2: infections infections    2 2020-02-12      1 11.760160  <NA> estimate
+#> 3: infections infections    3 2020-02-13      1 18.062200  <NA> estimate
+#> 4: infections infections    4 2020-02-14      1 36.776001  <NA> estimate
+#> 5: infections infections    5 2020-02-15      1 49.572796  <NA> estimate
+#> 6: infections infections    6 2020-02-16      1 62.669453  <NA> estimate
 head(estimates$estimates$summarised)
 #>          date variable strat     type   bottom      top    lower    upper
-#> 1: 2020-02-22        R  <NA> estimate 1.460840 2.071162 1.614854 1.864393
-#> 2: 2020-02-23        R  <NA> estimate 1.523846 2.005474 1.615059 1.818843
-#> 3: 2020-02-24        R  <NA> estimate 1.566266 1.944036 1.663716 1.823922
-#> 4: 2020-02-25        R  <NA> estimate 1.641185 1.941345 1.739435 1.866124
-#> 5: 2020-02-26        R  <NA> estimate 1.657554 1.926520 1.759162 1.865628
-#> 6: 2020-02-27        R  <NA> estimate 1.674716 1.936040 1.752127 1.853318
+#> 1: 2020-02-22        R  <NA> estimate 1.405653 1.999391 1.619573 1.854528
+#> 2: 2020-02-23        R  <NA> estimate 1.501094 1.964124 1.664764 1.852524
+#> 3: 2020-02-24        R  <NA> estimate 1.559672 1.927299 1.674612 1.823221
+#> 4: 2020-02-25        R  <NA> estimate 1.624670 1.924018 1.697528 1.820913
+#> 5: 2020-02-26        R  <NA> estimate 1.668267 1.936492 1.713078 1.815860
+#> 6: 2020-02-27        R  <NA> estimate 1.665870 1.924741 1.734566 1.834289
 #>    central_lower central_upper   median     mean         sd
-#> 1:      1.741297      1.835204 1.742897 1.746969 0.19668356
-#> 2:      1.670770      1.746335 1.753774 1.758797 0.15415863
-#> 3:      1.730337      1.786061 1.767448 1.771843 0.11923808
-#> 4:      1.744617      1.786020 1.780971 1.785113 0.09431922
-#> 5:      1.767667      1.802731 1.795138 1.797524 0.08173062
-#> 6:      1.768931      1.805214 1.803765 1.807954 0.08062760
+#> 1:      1.671678      1.756162 1.721431 1.723191 0.18632621
+#> 2:      1.699136      1.765735 1.734718 1.736584 0.14703242
+#> 3:      1.728822      1.784745 1.750989 1.751319 0.11484118
+#> 4:      1.746174      1.789522 1.763613 1.766400 0.09232501
+#> 5:      1.765475      1.798916 1.777491 1.780717 0.08147511
+#> 6:      1.774643      1.812898 1.790591 1.793110 0.08086126
 ```
 
 Reported cases are returned separately in order to ease reporting of
@@ -252,27 +252,27 @@ forecasts and model evaluation.
 ``` r
 head(estimates$estimated_reported_cases$samples)
 #>          date sample cases  type
-#> 1: 2020-02-22      1    43 gp_rt
-#> 2: 2020-02-23      1    57 gp_rt
-#> 3: 2020-02-24      1   142 gp_rt
-#> 4: 2020-02-25      1   200 gp_rt
-#> 5: 2020-02-26      1    97 gp_rt
-#> 6: 2020-02-27      1   119 gp_rt
+#> 1: 2020-02-22      1    46 gp_rt
+#> 2: 2020-02-23      1    64 gp_rt
+#> 3: 2020-02-24      1    70 gp_rt
+#> 4: 2020-02-25      1   101 gp_rt
+#> 5: 2020-02-26      1   122 gp_rt
+#> 6: 2020-02-27      1   113 gp_rt
 head(estimates$estimated_reported_cases$summarised)
 #>          date  type bottom top lower upper central_lower central_upper median
-#> 1: 2020-02-22 gp_rt     17  76    25    47            35            42     42
-#> 2: 2020-02-23 gp_rt     26 116    46    80            62            74     70
-#> 3: 2020-02-24 gp_rt     29 139    60   103            78            93     87
-#> 4: 2020-02-25 gp_rt     38 167    65   114            88           106    102
-#> 5: 2020-02-26 gp_rt     33 175    66   122            66            88    109
-#> 6: 2020-02-27 gp_rt     62 259    94   170           121           148    147
+#> 1: 2020-02-22 gp_rt     15  75    23    47            28            36     43
+#> 2: 2020-02-23 gp_rt     26 124    41    79            62            74     72
+#> 3: 2020-02-24 gp_rt     32 147    61   105            68            83     89
+#> 4: 2020-02-25 gp_rt     33 162    62   115            83           101    101
+#> 5: 2020-02-26 gp_rt     36 181    74   128            95           113    109
+#> 6: 2020-02-27 gp_rt     55 242    97   173           119           145    146
 #>       mean       sd
-#> 1:  45.414 19.91560
-#> 2:  73.724 28.75581
-#> 3:  91.419 37.51670
-#> 4: 106.639 41.72730
-#> 5: 113.897 46.27522
-#> 6: 156.919 64.67302
+#> 1:  45.861 19.86666
+#> 2:  76.318 31.87813
+#> 3:  95.026 39.35533
+#> 4: 107.219 45.46927
+#> 5: 115.468 46.16000
+#> 6: 156.653 65.82374
 ```
 
 A summary table is returned for rapidly understanding the results and
@@ -280,12 +280,18 @@ for reporting purposes.
 
 ``` r
 estimates$summary
-#>                                  measure             estimate  numeric_estimate
-#> 1: New confirmed cases by infection date  3773 (164 -- 10052) <data.table[1x7]>
-#> 2:        Expected change in daily cases               Unsure              0.71
-#> 3:            Effective reproduction no.     0.8 (0.4 -- 1.4) <data.table[1x7]>
-#> 4:                        Rate of growth -0.05 (-0.19 -- 0.1) <data.table[1x7]>
-#> 5:          Doubling/halving time (days)  -14.9 (6.8 -- -3.6) <data.table[1x3]>
+#>                                  measure              estimate
+#> 1: New confirmed cases by infection date   4195 (239 -- 10512)
+#> 2:        Expected change in daily cases                Unsure
+#> 3:            Effective reproduction no.      0.9 (0.3 -- 1.3)
+#> 4:                        Rate of growth -0.04 (-0.19 -- 0.11)
+#> 5:          Doubling/halving time (days)   -18.6 (6.6 -- -3.7)
+#>     numeric_estimate
+#> 1: <data.table[1x7]>
+#> 2:              0.68
+#> 3: <data.table[1x7]>
+#> 4: <data.table[1x7]>
+#> 5: <data.table[1x3]>
 ```
 
 A range of plots are returned (with the single summary plot shown
@@ -325,13 +331,17 @@ estimates <- regional_epinow(reported_cases = reported_cases,
                              generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay),
                              stan_args = list(cores = 4))
-#> INFO [2020-10-05 16:24:40] Reporting estimates using data up to: 2020-04-01
-#> INFO [2020-10-05 16:24:40] Producing estimates for: testland, realland
-#> INFO [2020-10-05 16:24:40] Regions excluded: none
-#> INFO [2020-10-05 16:33:29] Completed regional estimates
-#> INFO [2020-10-05 16:33:29] Regions with estimates: 2
-#> INFO [2020-10-05 16:33:29] Regions with runtime errors: 0
-#> INFO [2020-10-05 16:33:29] Producing summary
+#> INFO [2020-10-08 21:53:56] Producing following outputs: regions, summary, samples, plots, timings
+#> INFO [2020-10-08 21:53:56] Reporting estimates using data up to: 2020-04-01
+#> INFO [2020-10-08 21:53:56] Producing estimates for: testland, realland
+#> INFO [2020-10-08 21:53:56] Regions excluded: none
+#> INFO [2020-10-08 21:53:56] Showing progress using progressr. Modify this behaviour using progressr::handlers.
+#> INFO [2020-10-08 21:57:54] Completed estimates for: testland
+#> INFO [2020-10-08 22:01:27] Completed estimates for: realland
+#> INFO [2020-10-08 22:01:27] Completed regional estimates
+#> INFO [2020-10-08 22:01:27] Regions with estimates: 2
+#> INFO [2020-10-08 22:01:27] Regions with runtime errors: 0
+#> INFO [2020-10-08 22:01:27] Producing summary
 ```
 
 Results from each region are stored in a `regional` list with across
@@ -351,14 +361,14 @@ reporting (along with raw results for further processing).
 ``` r
 estimates$summary$summarised_results$table
 #>      Region New confirmed cases by infection date
-#> 1: realland                   3816 (327 -- 10309)
-#> 2: testland                    3854 (175 -- 9971)
+#> 1: realland                    3831 (144 -- 9750)
+#> 2: testland                   3760 (425 -- 10046)
 #>    Expected change in daily cases Effective reproduction no.
 #> 1:                         Unsure           0.8 (0.4 -- 1.4)
-#> 2:                         Unsure           0.8 (0.4 -- 1.3)
+#> 2:                         Unsure           0.8 (0.4 -- 1.4)
 #>           Rate of growth Doubling/halving time (days)
-#> 1:  -0.04 (-0.19 -- 0.1)          -15.6 (6.6 -- -3.7)
-#> 2: -0.04 (-0.19 -- 0.09)          -15.6 (7.9 -- -3.6)
+#> 1: -0.04 (-0.19 -- 0.11)          -16.1 (6.6 -- -3.7)
+#> 2: -0.04 (-0.18 -- 0.11)          -15.6 (6.2 -- -3.8)
 ```
 
 A range of plots are again returned (with the single summary plot shown

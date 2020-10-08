@@ -174,9 +174,8 @@ Results from each region are stored in a `regional` list with across region summ
 Summary measures that are returned include a table formatted for reporting (along with raw results for further processing).
 
 ```{r}
-estimates$summary$summarised_results$table
+knitr::kable(estimates$summary$summarised_results$table)
 ```
-
 
 A range of plots are again returned (with the single summary plot shown below).
 
@@ -187,7 +186,6 @@ estimates$summary$summary_plot
 ### Reporting templates
 
 Rmarkdown templates are provided in the package (`templates`) for semi-automated reporting of estimates. These are currently undocumented but an example integration can be seen [here](https://github.com/epiforecasts/covid/blob/master/_posts/national/united-kingdom/united-kingdom.Rmd). If using these templates to report your results please highlight our [limitations](https://doi.org/10.12688/wellcomeopenres.16006.1) as these are key to understanding the results from `{EpiNow2}` .
-
 
 ## Interactive figures
 
