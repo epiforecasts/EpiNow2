@@ -100,6 +100,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                   estimate_rt = TRUE,
                                   output = c("samples", names(output[output])),
                                   verbose = verbose,
+                                  return_fit = output["fit"],
                                   ...)
  
  # Report estimates -------------------------------------------------------

@@ -9,8 +9,8 @@ run_region(
   reported_cases,
   target_folder,
   target_date,
-  return_estimates,
-  return_partial_estimates,
+  return_output,
+  output,
   complete_logger,
   progress_fn,
   ...
@@ -24,8 +24,8 @@ run_region(
 \item{target_date}{A character string giving the target date for which to extract results
 (in the format "yyyy-mm-dd"). Defaults to latest available estimates.}
 
-\item{return_partial_estimates}{Logical, default to \code{FALSE}. Should estimates required for
-\code{regional_summary} be returned.}
+\item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
+\code{target_folder} must be specified in order to enable output saving to disk.}
 
 \item{complete_logger}{Character string indicating the logger to output
 the completion of estimation to.}
@@ -34,6 +34,9 @@ the completion of estimation to.}
 progress bar.}
 
 \item{...}{Pass additional arguments to \code{epinow}}
+
+\item{return_partial_estimates}{Logical, default to \code{FALSE}. Should estimates required for
+\code{regional_summary} be returned.}
 }
 \value{
 A list of processed output as produced by \code{process_region}

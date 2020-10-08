@@ -33,17 +33,13 @@
 #' @param stationary Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt 
 #' this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 #' This setting is most appropriate when estimating historic Rt or when combined with breakpoints.
-#' @param fixed Logical, defaults to FALSE. If TRUE then a Gaussian process is not used and Rt is assumed to be constant over time
-#' (apart from any manually included breakpoints). If `estimate_rt` is FALSE then this reduces the backcalculation to a simple mean shift.
-#' This option can be used to produce a null model estimate, to produce a single Rt estimate for a short timeseries or as part of a wider 
-#' analysis on the impact of interventions.
 #' @param fixed_future_rt Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
 #' future time points without data. 
 #' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
-#' @param gp List controlling the Gaussian process approximation. Must contain
-#' the `basis_prop` (number of basis functions based on scaling the time points) which defaults to 0.3 and must be 
-#' between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute. 
-#' Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
+#' @param gp List controlling the Gaussian process approximation if set to `list()` then `Rt` is assumed to be constant unless
+#' other settings introduce variation. If set must contain the `basis_prop` (number of basis functions based on scaling the time points)
+#'  which defaults to 0.3 and must be between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of 
+#'  additional compute. Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
 #' increases the accuracy of the approximation at the cost of additional compute. 
 #' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
 #' Can optionally also contain the  `lengthscale_mean` and `lengthscale_sd`. If these are specified this will override 
@@ -148,7 +144,7 @@
 #' fixed <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                              delays = list(incubation_period, reporting_delay),
 #'                              stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                              fixed = TRUE)
+#'                              gp = list())
 #'
 #' 
 #' # Plot output
@@ -199,7 +195,7 @@
 #' fbkp <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
 #'                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                             estimate_breakpoints = TRUE, fixed = TRUE)                                                         
+#'                             gp = list(), estimate_breakpoints = TRUE)                                                         
 #'
 #' # Plot output
 #' plots <- report_plots(summarised_estimates = fbkp$summarised, reported = reported_cases)
@@ -217,24 +213,26 @@
 #' plot_estimates(estimate = backcalc$summarised[variable == "infections"],
 #'                reported = reported_cases, ylab = "Cases")
 #' }                                
-estimate_infections <- function(reported_cases, model, samples = 1000, stan_args, 
-                                method = "exact", family = "negbin", 
-                                generation_time, delays, horizon = 7,
+estimate_infections <- function(reported_cases, model = NULL, samples = 1000,
+                                stan_args = NULL, method = "exact", family = "negbin", 
+                                generation_time, delays = list(), horizon = 7,
                                 gp = list(basis_prop = 0.3, boundary_scale = 2,
                                           lengthscale_mean = 0, lengthscale_sd = 2),
                                 rt_prior = list(mean = 1, sd = 1),
                                 estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE, 
-                                stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
+                                stationary = FALSE, fixed_future_rt = FALSE,
                                 burn_in = 0, prior_smoothing_window = 7, future = FALSE, 
                                 max_execution_time = Inf, return_fit = FALSE, verbose = FALSE){
   
-
-  if (missing(stan_args)) {
-    stan_args <- NULL
-  }
-  # Check fix setting -------------------------------------------------------
-  if (fixed) {
+  # If no GP default to stationary setup with no assumed non-parametric change
+  # add in placeholder parameters
+  if (length(gp) == 0) {
+    fixed <- TRUE
     stationary <- TRUE
+    gp = list(basis_prop = 1, boundary_scale = 1,
+              lengthscale_mean = 1, lengthscale_sd = 1)
+  }else{
+    fixed <- FALSE
   }
 
   # Check verbose settings and set logger to match---------------------------
@@ -259,10 +257,6 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
   }
  
   # Organise delays ---------------------------------------------------------
-  if (missing(delays)) {
-    delays <- list()
-  }
-  
   no_delays <- length(delays)
   
   if (no_delays > 0) {
@@ -309,7 +303,7 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
                            rt_prior = rt_prior, estimate_rt = estimate_rt,
                            estimate_week_eff = estimate_week_eff, stationary = stationary,
                            fixed = fixed, break_no = break_no, 
-                           fixed_future_rt = fixed_future_rt,  gp = gp,
+                           fixed_future_rt = fixed_future_rt, gp = gp,
                            family = family, delays = delays)
 
   # Set up default settings -------------------------------------------------
