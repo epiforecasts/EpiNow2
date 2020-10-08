@@ -52,9 +52,9 @@
 #'
 #' }
 #'
-epinow <- function(reported_cases, model = NULL,
-                   samples = 1000, horizon = 7, 
-                   output, return_ouput = TRUE, 
+epinow <- function(reported_cases, samples = 1000, horizon = 7, 
+                   generation_time, delays = list(),
+                   output = c("samples", "plots"), return_ouput = TRUE, 
                    target_folder = NULL, target_date, 
                    verbose = FALSE, forecast_args = NULL,
                    ...) {
@@ -64,10 +64,14 @@ epinow <- function(reported_cases, model = NULL,
                               name = "EpiNow2.epinow")
     stop("Either return output or save to a target folder")
   }
+  
 
+ # Setup input -------------------------------------------------------------
+ output <- match_output_arguments(output, supported_args = c("plots", "samples", "fits"),
+                                  logger = "EpiNow2.epinow")
+  
  # Convert input to DT -----------------------------------------------------
-  suppressMessages(data.table::setDTthreads(threads = 1))
-  reported_cases <- data.table::setDT(reported_cases)
+ reported_cases <- setup_dt(reported_cases)
   
  # target data -------------------------------------------------------------
   if (missing(target_date)) {
@@ -87,82 +91,95 @@ epinow <- function(reported_cases, model = NULL,
   
   # Estimate infections and Reproduction no ---------------------------------
   estimates <- estimate_infections(reported_cases = reported_cases, 
+                                   generation_time = generation_time,
+                                   delays = delays,
                                    samples = samples,
                                    horizon = horizon,
                                    estimate_rt = TRUE,
-                                   output = output,
+                                   output = c("samples", names(output[output])),
                                    verbose = verbose,
                                    ...)
 
   # Report estimates -------------------------------------------------------
-  save_estimate_infections(estimates, target_folder, output)
+  save_estimate_infections(estimates, target_folder, samples = output["samples"],
+                           fit = output["fit"])
 
   # Forecast infections and reproduction number -----------------------------
-  if (!is.null(forecast_model)) {
-    forecast <- forecast_infections(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
-                                    rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
-                                    gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
-                                    gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
-                                    gt_max = generation_time$max,
-                                    forecast_model = forecast_model,
-                                    ensemble_type = ensemble_type,
-                                    horizon = horizon,
-                                    samples = samples)
-  }
-  # Report cases ------------------------------------------------------------
-  if (!missing(forecast_model) & !is.null(target_folder)) {
-    if (keep_samples){
-      saveRDS(forecast$samples, paste0(target_folder, "/forecast_samples.rds"))
-    }
-    saveRDS(forecast$summarised, paste0(target_folder, "/summarised_forecast.rds"))
-  }
-  # Report forcasts ---------------------------------------------------------
-
-  if (missing(forecast_model)) {
-    estimated_reported_cases <- list()
-    if (keep_samples) {
-      estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][,
-                                          .(date, sample, cases = value, type = "gp_rt")]
-    }
-    estimated_reported_cases$summarised <- estimates$summarised[variable == "reported_cases"][,
-      type := "gp_rt"][, variable := NULL][, strat := NULL]
-  }else {
-    report_cases_with_forecast <- function(model) {
-      reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
-        .(date, sample, cases = value)],
-                                     case_forecast = forecast$samples[type == "case" &
-                                                                        forecast_type == model][,
-                                       .(date, sample, cases = value)],
-                                     delays = delays,
-                                     type = "sample")
-      return(reported_cases)
-    }
-
-    estimated_reported_cases <- list()
+  if (!is.null(forecast_args)) {
+    forecast <- do.call(forecast_infections, 
+                        c(list(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
+                               rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
+                               gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
+                               gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
+                               gt_max = generation_time$max,
+                               forecast_model = forecast_model,
+                               ensemble_type = ensemble_type,
+                               horizon = horizon,
+                               samples = samples),
+                          forecast_args))
     
-    if (keep_samples) {
-      reported_cases_rt <- report_cases_with_forecast(model = "rt")
-      reported_cases_cases <- report_cases_with_forecast(model = "case")
-      reported_cases_ensemble <- report_cases_with_forecast(model = "ensemble")
-      
-      estimated_reported_cases$samples <- data.table::rbindlist(list(
-        reported_cases_rt$samples[, type := "rt"],
-        reported_cases_cases$samples[, type := "case"],
-        reported_cases_ensemble$samples[, type := "ensemble"],
-        estimates$samples[variable == "reported_cases"][,
-                                                        .(date, sample, cases = value, type = "gp_rt")]
-      ), use.names = TRUE)
-      
-    }
-
-    estimated_reported_cases$summarised <- data.table::rbindlist(list(
-      reported_cases_rt$summarised[, type := "rt"],
-      reported_cases_cases$summarised[, type := "case"],
-      reported_cases_ensemble$summarised[, type := "ensemble"],
-      estimates$summarised[variable == "reported_cases"][, type := "gp_rt"][,
-        variable := NULL][, strat := NULL]
-    ), use.names = TRUE)
+    save_forecast_infections(forecast, target_folder, samples = output["samples"])
+  }else{
+    forecast <- NULL
   }
+
+  # Report forecasts ---------------------------------------------------------
+
+  estimates_by_report <- function(estimates, forecast, delays, target_folder, samples = TRUE) {
+    
+    if (is.null(forecast)) {
+      estimated_reported_cases <- list()
+      if (samples) {
+        estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][,
+                                             .(date, sample, cases = value, type = "gp_rt")]
+      }
+      estimated_reported_cases$summarised <- estimates$summarised[variable == "reported_cases"][,
+                                             type := "gp_rt"][, variable := NULL][, strat := NULL]
+    }else{
+      report_cases_with_forecast <- function(model) {
+        reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
+                                                                          .(date, sample, cases = value)],
+                                       case_forecast = forecast$samples[type == "case" &
+                                                                        forecast_type == model][,
+                                                                        .(date, sample, cases = value)],
+                                       delays = delays,
+                                       type = "sample")
+        return(reported_cases)
+      }
+      
+      estimated_reported_cases <- list()
+      
+      if (samples) {
+        reported_cases_rt <- report_cases_with_forecast(model = "rt")
+        reported_cases_cases <- report_cases_with_forecast(model = "case")
+        reported_cases_ensemble <- report_cases_with_forecast(model = "ensemble")
+        
+        estimated_reported_cases$samples <- data.table::rbindlist(list(
+          reported_cases_rt$samples[, type := "rt"],
+          reported_cases_cases$samples[, type := "case"],
+          reported_cases_ensemble$samples[, type := "ensemble"],
+          estimates$samples[variable == "reported_cases"][,
+                                                          .(date, sample, cases = value, type = "gp_rt")]
+        ), use.names = TRUE)
+        
+      }
+      
+      estimated_reported_cases$summarised <- data.table::rbindlist(list(
+        reported_cases_rt$summarised[, type := "rt"],
+        reported_cases_cases$summarised[, type := "case"],
+        reported_cases_ensemble$summarised[, type := "ensemble"],
+        estimates$summarised[variable == "reported_cases"][, type := "gp_rt"][,
+                                                                              variable := NULL][, strat := NULL]
+      ), use.names = TRUE)
+    }
+    }
+    
+    return(estimated_reported_cases)
+  }
+  if (missing(forecast_model)) {
+   
+  }else {
+   
 
   if (!is.null(target_folder)) {
     if (keep_samples) {
