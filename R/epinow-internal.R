@@ -129,7 +129,7 @@ estimates_by_report_date <- function(estimates, forecast, delays, target_folder,
 
 
 
-copy_results_to_latest(target_folder = NULL, latest_folder = NULL) {
+copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
   if (!is.null(target_folder)) {
     ## Save all results to a latest folder as well
     suppressWarnings(
@@ -153,6 +153,7 @@ copy_results_to_latest(target_folder = NULL, latest_folder = NULL) {
 construct_output <- function(estimates, forecast = NULL, 
                              estimated_reported_cases,
                              plots = NULL,
+                             summary,
                              samples = TRUE) {
   out <- list()
   out$estimates <- estimates
@@ -161,7 +162,7 @@ construct_output <- function(estimates, forecast = NULL,
     out$estimates$samples <- NULL
   }
   
-  if (is.null(forecase)) {
+  if (is.null(forecast)) {
     out$forecast <- forecast
     if (!samples) {
       out$forecast$samples <- NULL

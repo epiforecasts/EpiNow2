@@ -4,18 +4,15 @@
 \alias{match_output_arguments}
 \title{Match Input Output Arguments with Supported Options}
 \usage{
-match_output_arguments(
-  input_args = c(),
-  supported_args = c(),
-  logger = "EpiNow2"
-)
+match_output_arguments(input_args = c(), supported_args = c(), logger = NULL)
 }
 \arguments{
 \item{input_args}{A character vector of input arguments (can be partial).}
 
 \item{supported_args}{A character vector of supported output arguments.}
 
-\item{logger}{A character vector indicating the logger to target messages at.}
+\item{logger}{A character vector indicating the logger to target messages at. Defaults
+to no logging.}
 }
 \value{
 A logical vector of named output arguments

@@ -6,57 +6,26 @@
 \usage{
 epinow(
   reported_cases,
-  model,
   samples = 1000,
-  stan_args,
-  method = "exact",
-  family = "negbin",
-  generation_time,
-  delays,
-  gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_mean = 0, lengthscale_sd
-    = 2),
-  rt_prior = list(mean = 1, sd = 1),
   horizon = 7,
-  estimate_rt = TRUE,
-  estimate_week_eff = TRUE,
-  estimate_breakpoints = FALSE,
-  burn_in = 0,
-  stationary = FALSE,
-  fixed = FALSE,
-  fixed_future_rt = FALSE,
-  future = FALSE,
-  max_execution_time = Inf,
-  prior_smoothing_window = 7,
-  return_fit = FALSE,
-  forecast_model,
-  ensemble_type = "mean",
-  return_estimates = TRUE,
-  keep_samples = TRUE,
-  make_plots = TRUE,
-  target_folder,
+  generation_time,
+  delays = list(),
+  output = c("samples", "plots"),
+  return_ouput = TRUE,
+  target_folder = NULL,
   target_date,
-  verbose = FALSE
+  verbose = FALSE,
+  forecast_args = NULL,
+  ...
 )
 }
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
 
-\item{model}{A compiled stan model. By default uses the internal package model.}
-
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
 
-\item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "exact"
-or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
-using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
-
-\item{method}{A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
-this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
-from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results
-several order of magnitudes faster than the exact method.}
-
-\item{family}{A character string indicating the reporting model to use. Defaults to negative
-binomial ("negbin") with poisson ("poisson") also supported.}
+\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
 \item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
@@ -68,82 +37,21 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale).}
 
-\item{gp}{List controlling the Gaussian process approximation. Must contain
-the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
-between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
-Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
-increases the accuracy of the approximation at the cost of additional compute.
-See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
-Can optionally also contain the  \code{lengthscale_mean} and \code{lengthscale_sd}. If these are specified this will override
-the defaults of 0 and 2 (normal distributed truncated at zero).}
-
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
-Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
-
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
-
-\item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
-
-\item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
-
-\item{estimate_breakpoints}{Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then \code{reported_cases}
-must contain a \code{breakpoint} variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
-a global non-parametric effect and so represent a conservative estimate of breakpoint changes.}
-
-\item{burn_in}{Numeric, defaults to 0. The number of initial estimates to discard. This argument may be used to reduce
-spurious findings when running \code{estimate_infections} on a partial timeseries (as the earliest estimates will not be informed by
-all cases that occurred only those supplied to \code{estimate_infections}). The combined delays used will inform the appropriate length
-of this burn in but 7 days is likely a sensible starting point.}
-
-\item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
-this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
-This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
-
-\item{fixed}{Logical, defaults to FALSE. If TRUE then a Gaussian process is not used and Rt is assumed to be constant over time
-(apart from any manually included breakpoints). If \code{estimate_rt} is FALSE then this reduces the backcalculation to a simple mean shift.
-This option can be used to produce a null model estimate, to produce a single Rt estimate for a short timeseries or as part of a wider
-analysis on the impact of interventions.}
-
-\item{fixed_future_rt}{Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
-future time points without data.}
-
-\item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
-fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
-
-\item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout.
-When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation
-will fail with an informative error.}
-
-\item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
-for the prior based on reported cases.}
-
-\item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
-
-\item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
-for forecasting future Rt and case co An example of the required structure is: \code{function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}}.}
-
-\item{ensemble_type}{Character string indicating the type of ensemble to use. By default this is
-an unweighted ensemble ("mean") with no other types currently supported.}
-
-\item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
-
-\item{keep_samples}{Logical, defaults to TRUE. Should samples be kept (either returned or saved or both
-depending on other settings).}
-
-\item{make_plots}{Logical, defaults to TRUE. Should plots be made and returned (or saved).}
-
-\item{target_folder}{Character string specifying where to save results (will create if not present).}
-
-\item{target_date}{Date, defaults to maximum found in the data if not specified.}
-
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
+
+\item{...}{Additional arguments passed to \code{estimate_infections}. See that functions documentation for options.}
+
+\item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
+\code{target_folder} must be specified in order to enable output saving to disk.}
 }
 \value{
 A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 }
 \description{
-Estimate Rt and cases by date of infection, forecast into the future, transform to date
-of report and then save summary measures and plots.
+This function wraps the functionality of \code{estimate_infectiosn} and \code{forecast_infections} in order
+to estimate Rt and cases by date of infection, forecast into these infections into the future. It also contains
+additional functionality to convert forecasts to date of report and produce summary output useful for reporting
+results and interpreting them.
 }
 \examples{
 \donttest{

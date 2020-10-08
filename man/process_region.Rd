@@ -15,8 +15,6 @@ process_region(
 \arguments{
 \item{out}{List of output returned by \code{epinow}}
 
-\item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
-
 \item{target_region}{Character string indicating the region being evaluated}
 
 \item{timing}{Output from \code{Sys.time}}

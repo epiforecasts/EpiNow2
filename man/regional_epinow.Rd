@@ -6,45 +6,26 @@
 \usage{
 regional_epinow(
   reported_cases,
-  target_folder,
+  target_folder = NULL,
   target_date,
   non_zero_points = 2,
-  summary = TRUE,
-  summary_dir,
-  region_scale = "Region",
-  all_regions_summary = TRUE,
-  return_estimates = TRUE,
-  max_plot = 10,
-  return_timings = FALSE,
+  return_output = TRUE,
+  output = c("regional", "summary", "samples", "plots", "timings"),
+  summary_args = list(),
   ...
 )
 }
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
-\item{target_folder}{Character string specifying where to save results (will create if not present).}
-
-\item{target_date}{Date, defaults to maximum found in the data if not specified.}
+\item{target_date}{A character string giving the target date for which to extract results
+(in the format "yyyy-mm-dd"). Defaults to latest available estimates.}
 
 \item{non_zero_points}{Numeric, the minimum number of time points with non-zero cases in a region required for
 that region to be evaluated. Defaults to 2.}
 
-\item{summary}{Logical, should summary measures be calculated.}
-
-\item{summary_dir}{A character string giving the directory
-in which to store summary of results.}
-
-\item{region_scale}{A character string indicating the name to give the regions being summarised.}
-
-\item{all_regions_summary}{Logical, defaults to \code{TRUE}. Should summary plots for all regions be returned
-rather than just regions of interest.}
-
-\item{return_estimates}{Logical, defaults to TRUE. Should estimates be returned.}
-
-\item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
-on the maximum number of reported cases.}
-
-\item{return_timings}{Logical, defaults to FALSE. If not returning estimates can be used to request timing data is returned.}
+\item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
+\code{target_folder} must be specified in order to enable output saving to disk.}
 
 \item{...}{Pass additional arguments to \code{epinow}}
 }
