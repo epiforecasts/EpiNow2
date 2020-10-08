@@ -49,9 +49,8 @@ incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lau
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
                         
 # run model
-out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
+out <- EpiNow2::estimate_infections(cases, samples = 200, generation_time = generation_time,
                                     delays = list(incubation_period, reporting_delay),
-                                    samples = 200,
                                     stan_args = list(warmup = 200, 
                                                      cores = ifelse(interactive(), 4, 1)),
                                     estimate_rt = FALSE)

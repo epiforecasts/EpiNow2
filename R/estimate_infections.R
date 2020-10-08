@@ -278,7 +278,7 @@ estimate_infections <- function(reported_cases, model = NULL, samples = 1000,
     mean_shift <- as.integer(sum(purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))))
   }else{
     mean_shift <- 1
-  }
+  } 
   # Add the mean delay and incubation period on as 0 case days ------------
   # Create mean shifted reported cases as prio ------------------------------
   if (no_delays > 0) {

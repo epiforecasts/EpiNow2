@@ -320,11 +320,11 @@ match_output_arguments <- function(input_args = c(),
   # tell the user about what has been passed in
   if (!is.null(logger)) {
     if (length(found_args) > 0) {
-      futile.logger::flog.info("Producing output for: %s", paste(found_args, collapse = ", "),
-                               name = logger)
+      flog_fn("Producing output for: %s", paste(found_args, collapse = ", "),
+              name = logger)
     }else{
-      futile.logger::flog.info("No optional output specified",
-                               name = logger)
+      flog_fn("No optional output specified",
+              name = logger)
     }
   }
 

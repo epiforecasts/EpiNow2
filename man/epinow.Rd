@@ -72,7 +72,7 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 ## Report Rt along with forecasts
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
               delays = list(incubation_period, reporting_delay),
-              stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
+              stan_args = list(cores = ifelse(interactive(), 4, 1)))
 
 out
 
@@ -80,8 +80,8 @@ out
 if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
 
-   ## Report Rt along with forecasts
-   out <- epinow(reported_cases = reported_cases, samples = 200, 
+   # report Rt along with forecasts
+   out <- epinow(reported_cases = reported_cases, samples = 200, verbose = TRUE,
                  generation_time = generation_time, 
                  delays = list(incubation_period, reporting_delay),
                  forecast_args = list(
@@ -91,7 +91,7 @@ if(requireNamespace("EpiSoon")){
                           model_params = list(models = "aefz", weights = "equal"),
                           forecast_params = list(PI.combination = "mean"), ...)}
                           ),
-                 stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)), verbose = TRUE)
+                 stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
                  
                  
                  out

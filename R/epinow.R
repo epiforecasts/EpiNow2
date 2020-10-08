@@ -31,7 +31,7 @@
 #' ## Report Rt along with forecasts
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
 #'               delays = list(incubation_period, reporting_delay),
-#'               stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
+#'               stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' 
 #' out
 #' 
@@ -39,8 +39,8 @@
 #' if(requireNamespace("EpiSoon")){
 #'    if(requireNamespace("forecastHybrid")){
 #'
-#'    ## Report Rt along with forecasts
-#'    out <- epinow(reported_cases = reported_cases, samples = 200, 
+#'    # report Rt along with forecasts
+#'    out <- epinow(reported_cases = reported_cases, samples = 200, verbose = TRUE,
 #'                  generation_time = generation_time, 
 #'                  delays = list(incubation_period, reporting_delay),
 #'                  forecast_args = list(
@@ -50,7 +50,7 @@
 #'                           model_params = list(models = "aefz", weights = "equal"),
 #'                           forecast_params = list(PI.combination = "mean"), ...)}
 #'                           ),
-#'                  stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)), verbose = TRUE)
+#'                  stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 #'                  
 #'                  
 #'                  out
@@ -83,7 +83,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                   logger = "EpiNow2.epinow",
                                   level = "debug")
   
- # Convert input to DT -----------------------------------------------------
+ # convert input to DT -----------------------------------------------------
  reported_cases <- setup_dt(reported_cases)
   
  # target data -------------------------------------------------------------
@@ -91,20 +91,19 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
    target_date <- max(reported_cases$date)
  }
  
- # Set up folders ----------------------------------------------------------
+ # set up folders ----------------------------------------------------------
  target_folders <- setup_target_folder(target_folder, target_date)
  target_folder <- target_folders$date
  latest_folder <- target_folders$latest
  
- # Save input data ---------------------------------------------------------
+ # save input data ---------------------------------------------------------
  save_input(reported_cases, target_folder)
  
- # Make sure the horizon is as specified from the target date --------------
+ # make sure the horizon is as specified from the target date --------------
  if (horizon != 0) {
    horizon <- horizon + as.numeric(as.Date(target_date) - max(reported_cases$date))
  }
- 
- # Estimate infections and Reproduction no ---------------------------------
+ # estimate infections and Reproduction no ---------------------------------
  estimates <- estimate_infections(reported_cases = reported_cases, 
                                   generation_time = generation_time,
                                   delays = delays,
@@ -115,12 +114,11 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                   verbose = verbose,
                                   ...)
  
- # Report estimates -------------------------------------------------------
  save_estimate_infections(estimates, target_folder, 
                           samples = output["samples"],
                           return_fit = output["fit"])
  
- # Forecast infections and reproduction number -----------------------------
+ # forecast infections and reproduction number -----------------------------
  if (!is.null(forecast_args)) {
    forecast <- do.call(forecast_infections, 
                        c(list(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
@@ -136,22 +134,20 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
  }else{
    forecast <- NULL
  }
- 
- # Report forecasts ---------------------------------------------------------
+ # report forecasts ---------------------------------------------------------
  estimated_reported_cases <- estimates_by_report_date(estimates,
                                                       forecast, 
                                                       delays = delays,
                                                       target_folder = target_folder,
                                                       samples = output["samples"])
  
- 
- # Report estimates --------------------------------------------------------
+ # report estimates --------------------------------------------------------
  summary <- report_summary(
    summarised_estimates = estimates$summarised[!is.na(date)][type != "forecast"][date == max(date)],
    rt_samples = estimates$samples[variable == "R"][type != "forecast"][date == max(date), .(sample, value)],
    target_folder = target_folder)
-
-  # Plot --------------------------------------------------------------------
+ 
+ # plot --------------------------------------------------------------------
   if (output["plots"]) {
     plots <- report_plots(summarised_estimates = estimates$summarised,
                           reported = reported_cases, 
@@ -159,8 +155,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   }else{
     plots <- NULL
   }
-
-  # Copy all results to latest folder ---------------------------------------
+  # copy all results to latest folder ---------------------------------------
   copy_results_to_latest(target_folder, latest_folder)
 
   if (return_output) {

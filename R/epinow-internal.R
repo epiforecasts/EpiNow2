@@ -114,17 +114,16 @@ estimates_by_report_date <- function(estimates, forecast, delays,
   }else{
     report_cases_with_forecast <- function(model) {
       reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
-                                               .(date, sample, cases = value)],
+                                               .(date, sample, cases = as.integer(value))],
                                      case_forecast = forecast$samples[type == "case" &
                                                                       forecast_type == model][,
-                                                                      .(date, sample, cases = value)],
+                                                                      .(date, sample, cases = as.integer(value))],
                                      delays = delays,
                                      type = "sample")
       return(reported_cases)
     }
-    
+  
     estimated_reported_cases <- list()
-    
     if (samples) {
       reported_cases_rt <- report_cases_with_forecast(model = "rt")
       reported_cases_cases <- report_cases_with_forecast(model = "case")
@@ -137,7 +136,6 @@ estimates_by_report_date <- function(estimates, forecast, delays,
         estimates$samples[variable == "reported_cases"][,
                           .(date, sample, cases = value, type = "gp_rt")]
       ), use.names = TRUE)
-
     }
     
     estimated_reported_cases$summarised <- data.table::rbindlist(list(
