@@ -27,7 +27,15 @@ that region to be evaluated. Defaults to 2.}
 \item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
 \code{target_folder} must be specified in order to enable output saving to disk.}
 
-\item{...}{Pass additional arguments to \code{epinow}}
+\item{output}{A character vector of optional output to return. Supported options are the individual regional estimates
+("regional"),  samples ("samples"),
+plots ("plots"), and the stan fit of the underlying model ("fit"). The default is to return samples and plots alongside summarised estimates
+and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
+being reported.}
+
+\item{summary_args}{A list of arguments passed to \code{regional_summary}. See the \code{regional_summary} documentation for details.}
+
+\item{...}{Pass additional arguments to \code{epinow}. See the documentation for \code{epinow} for details.}
 }
 \value{
 A list of output stratified at the top level into regional output and across region output summary output

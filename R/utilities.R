@@ -277,9 +277,11 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
 #' @param supported_args A character vector of supported output arguments.
 #' @param logger A character vector indicating the logger to target messages at. Defaults 
 #' to no logging.
+#' @param level Character string defaulting to "info". Logging level see documentation 
+#' of futile.logger for details. Supported options are "info" and "debug"
 #'
 #' @return A logical vector of named output arguments
-#'
+#' @importFrom  futile.logger flog.info flog.debug
 #' @examples
 #' # select nothing
 #' match_output_arguments(supported_args = c("fit", "plots", "samples"))
@@ -296,7 +298,14 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
 #'                        supported_args = c("fit", "plots", "samples"))
 match_output_arguments <- function(input_args = c(),
                                    supported_args =  c(),
-                                   logger = NULL) {
+                                   logger = NULL,
+                                   level = "info") {
+  
+  if (level %in% "info") {
+    flog_fn <- futile.logger::flog.info
+  }else if (level %in% "debug") {
+    flog_fn <- futile.logger::flog.debug
+  }
   #make supported args a logical vector
   output_args <- rep(FALSE, length(supported_args))
   names(output_args) <- supported_args

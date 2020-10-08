@@ -44,7 +44,8 @@
 #' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
 #' Can optionally also contain the  `lengthscale_mean` and `lengthscale_sd`. If these are specified this will override 
 #' the defaults of 0 and 2 (normal distributed truncated at zero).
-#' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be printed.
+#' @param verbose Logical, defaults to `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
+#' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
 #' fail gracefully (i.e when combined with `max_execution_time`). Should be combined with a call to `future::plan`
 #' @param max_execution_time Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout. 

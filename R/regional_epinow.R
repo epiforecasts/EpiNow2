@@ -6,9 +6,13 @@
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date), and region (`region`).
 #' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
 #' that region to be evaluated. Defaults to 2.
-#' @param output
-#' @param summary_args
-#' @param ... Pass additional arguments to `epinow`
+#' @param output A character vector of optional output to return. Supported options are the individual regional estimates
+#' ("regional"),  samples ("samples"), 
+#' plots ("plots"), and the stan fit of the underlying model ("fit"). The default is to return samples and plots alongside summarised estimates
+#' and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
+#' being reported.
+#' @param summary_args A list of arguments passed to `regional_summary`. See the `regional_summary` documentation for details.
+#' @param ... Pass additional arguments to `epinow`. See the documentation for `epinow` for details.
 #' @inheritParams epinow
 #' @inheritParams regional_summary
 #' @return A list of output stratified at the top level into regional output and across region output summary output

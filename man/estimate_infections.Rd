@@ -106,7 +106,8 @@ will fail with an informative error.}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
-\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
+\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
+\code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported

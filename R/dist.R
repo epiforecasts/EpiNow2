@@ -528,7 +528,7 @@ sample_approx_dist <- function(cases = NULL,
                                truncate_future = TRUE) {
   
   if (type %in% "sample") {
-    
+  
     if (direction %in% "backwards") {
       direction_fn <- rev
     }else if (direction %in% "forwards") {
@@ -558,7 +558,7 @@ sample_approx_dist <- function(cases = NULL,
                    max(cases$date)  + lubridate::days(length(draw) - 1),
                    by = "days")
     }
-    
+     
     ## Summarises movements and sample for placement of non-integer cases
     case_sum <- direction_fn(rowSums(mapped_cases))
     floor_case_sum <- floor(case_sum)

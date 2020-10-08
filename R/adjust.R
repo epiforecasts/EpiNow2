@@ -96,7 +96,6 @@ adjust_infection_to_report <- function(infections, delay_defs,
     
     return(out)
   }
-
   
   report <- sample_single_dist(infections, delay_defs[[1]])
   

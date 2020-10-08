@@ -1,9 +1,13 @@
 #' Real-time Rt Estimation, Forecasting and Reporting
 #'
-#' @description This function wraps the functionality of `estimate_infectiosn` and `forecast_infections` in order
+#' @description This function wraps the functionality of `estimate_infections` and `forecast_infections` in order
 #' to estimate Rt and cases by date of infection, forecast into these infections into the future. It also contains 
 #' additional functionality to convert forecasts to date of report and produce summary output useful for reporting 
 #' results and interpreting them.
+#' @param output A character vector of optional output to return. Supported options are samples ("samples"), 
+#' plots ("plots"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
+#' and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
+#' being reported.
 #' @param return_output Logical, defaults to TRUE. Should output be returned. This must either be true or a
 #' `target_folder` must be specified in order to enable output saving to disk.
 #' @param ... Additional arguments passed to `estimate_infections`. See that functions documentation for options.
@@ -36,17 +40,20 @@
 #'    if(requireNamespace("forecastHybrid")){
 #'
 #'    ## Report Rt along with forecasts
-#'    out <- epinow(reported_cases = cases, samples = 1000, 
-#'                  generation_time = generation_time,
+#'    out <- epinow(reported_cases = reported_cases, samples = 200, 
+#'                  generation_time = generation_time, 
 #'                  delays = list(incubation_period, reporting_delay),
-#'                  forecast_model = function(y, ...){
-#'                    EpiSoon::forecastHybrid_model(
-#'                      y = y[max(1, length(y) - 21):length(y)],
-#'                      model_params = list(models = "aefz", weights = "equal"),
-#'                      forecast_params = list(PI.combination = "mean"), ...)},
-#'                   stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
-#' 
-#' out
+#'                  forecast_args = list(
+#'                      forecast_model = function(y, ...){
+#'                      EpiSoon::forecastHybrid_model(
+#'                           y = y[max(1, length(y) - 21):length(y)],
+#'                           model_params = list(models = "aefz", weights = "equal"),
+#'                           forecast_params = list(PI.combination = "mean"), ...)}
+#'                           ),
+#'                  stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)), verbose = TRUE)
+#'                  
+#'                  
+#'                  out
 #'    }
 #' }
 #'
@@ -54,9 +61,9 @@
 #'
 epinow <- function(reported_cases, samples = 1000, horizon = 7, 
                    generation_time, delays = list(),
-                   output = c("samples", "plots"), return_ouput = TRUE, 
+                   return_output = TRUE, output = c("samples", "plots"), 
                    target_folder = NULL, target_date, 
-                   verbose = FALSE, forecast_args = NULL,
+                   forecast_args = NULL, verbose = FALSE,
                    ...) {
 
   if (!return_output & is.null(target_folder)) {
@@ -65,10 +72,16 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
     stop("Either return output or save to a target folder")
   }
   
-
+  # Check verbose settings and set logger to match---------------------------
+  if (verbose) {
+    futile.logger::flog.threshold(futile.logger::DEBUG,
+                                  name = "EpiNow2.epinow")
+  }
+  
  # Setup input -------------------------------------------------------------
  output <- match_output_arguments(output, supported_args = c("plots", "samples", "fit"),
-                                  logger = "EpiNow2.epinow")
+                                  logger = "EpiNow2.epinow",
+                                  level = "debug")
   
  # Convert input to DT -----------------------------------------------------
  reported_cases <- setup_dt(reported_cases)
@@ -98,9 +111,8 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                   samples = samples,
                                   horizon = horizon,
                                   estimate_rt = TRUE,
-                                  output = c("samples", names(output[output])),
-                                  verbose = verbose,
                                   return_fit = output["fit"],
+                                  verbose = verbose,
                                   ...)
  
  # Report estimates -------------------------------------------------------
@@ -116,8 +128,6 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                               gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
                               gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
                               gt_max = generation_time$max,
-                              forecast_model = forecast_model,
-                              ensemble_type = ensemble_type,
                               horizon = horizon,
                               samples = samples),
                          forecast_args))
