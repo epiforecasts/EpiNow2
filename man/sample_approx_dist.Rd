@@ -45,13 +45,12 @@ Approximate Sampling a Distribution using Counts
 \examples{
 
 cases <- EpiNow2::example_confirmed
-
 cases <- cases[, cases := as.integer(confirm)] 
 
-## Reported case distribution
+# reported case distribution
 print(cases)
 
-## Total cases
+# total cases
 sum(cases$cases)
 
 delay_fn <- function(n, dist, cum) {
@@ -65,10 +64,10 @@ delay_fn <- function(n, dist, cum) {
 onsets <- sample_approx_dist(cases = cases,
                              dist_fn = delay_fn)
    
-## Estimated onset distribution
+# estimated onset distribution
 print(onsets)
   
-## Check that sum is equal to reported cases
+# check that sum is equal to reported cases
 total_onsets <- median(
    purrr::map_dbl(1:100, 
                   ~ sum(sample_approx_dist(cases = cases,
@@ -77,16 +76,15 @@ total_onsets <- median(
 total_onsets
  
                    
-## Map from onset cases to reported                  
+# map from onset cases to reported                  
 reports <- sample_approx_dist(cases = cases,
                               dist_fn = delay_fn,
                               direction = "forwards")
                               
                               
-## Map from onset cases to reported using a mean shift               
+# map from onset cases to reported using a mean shift               
 reports <- sample_approx_dist(cases = cases,
                               dist_fn = delay_fn,
                               direction = "forwards",
                               type = "median")
-
 }

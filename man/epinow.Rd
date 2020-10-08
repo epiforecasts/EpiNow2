@@ -81,10 +81,9 @@ if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
 
    ## Report Rt along with forecasts
-   out <- epinow(reported_cases = reported_cases, samples = 1000, 
-                 generation_time = generation_time,
+   out <- epinow(reported_cases = reported_cases, samples = 200, 
+                 generation_time = generation_time, 
                  delays = list(incubation_period, reporting_delay),
-                 method = "approximate",
                  forecast_args = list(
                      forecast_model = function(y, ...){
                      EpiSoon::forecastHybrid_model(

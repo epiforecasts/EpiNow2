@@ -84,7 +84,7 @@ adjust_infection_to_report <- function(infections, delay_defs,
                          max_value = delay_def$max_value[[1]], 
                          ...)
     }
-    
+     
     
     ## Infection to onset
     out <- EpiNow2::sample_approx_dist(cases = input, 

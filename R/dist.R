@@ -475,13 +475,12 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
 #' @examples
 #' 
 #' cases <- EpiNow2::example_confirmed
-#' 
 #' cases <- cases[, cases := as.integer(confirm)] 
 #' 
-#' ## Reported case distribution
+#' # reported case distribution
 #' print(cases)
 #' 
-#' ## Total cases
+#' # total cases
 #' sum(cases$cases)
 #' 
 #' delay_fn <- function(n, dist, cum) {
@@ -495,10 +494,10 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
 #' onsets <- sample_approx_dist(cases = cases,
 #'                              dist_fn = delay_fn)
 #'    
-#' ## Estimated onset distribution
+#' # estimated onset distribution
 #' print(onsets)
 #'   
-#' ## Check that sum is equal to reported cases
+#' # check that sum is equal to reported cases
 #' total_onsets <- median(
 #'    purrr::map_dbl(1:100, 
 #'                   ~ sum(sample_approx_dist(cases = cases,
@@ -507,18 +506,17 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
 #' total_onsets
 #'  
 #'                    
-#' ## Map from onset cases to reported                  
+#' # map from onset cases to reported                  
 #' reports <- sample_approx_dist(cases = cases,
 #'                               dist_fn = delay_fn,
 #'                               direction = "forwards")
 #'                               
 #'                               
-#' ## Map from onset cases to reported using a mean shift               
+#' # map from onset cases to reported using a mean shift               
 #' reports <- sample_approx_dist(cases = cases,
 #'                               dist_fn = delay_fn,
 #'                               direction = "forwards",
 #'                               type = "median")
-#' 
 sample_approx_dist <- function(cases = NULL, 
                                dist_fn = NULL,
                                max_value = 120, 
@@ -534,13 +532,13 @@ sample_approx_dist <- function(cases = NULL,
     }else if (direction %in% "forwards") {
       direction_fn <- function(x){x}
     }
-    ## Reverse cases so starts with current first
+    # reverse cases so starts with current first
     reversed_cases <- direction_fn(cases$cases)
     reversed_cases[is.na(reversed_cases)] <- 0 
     ## Draw from the density fn of the dist
     draw <- dist_fn(0:max_value, dist = TRUE, cum = FALSE)
     
-    ## Approximate cases
+    # approximate cases
     mapped_cases <- suppressMessages(purrr::map_dfc(1:length(reversed_cases), 
                                    ~ c(rep(0, . - 1), 
                                        stats::rbinom(length(draw),
@@ -557,7 +555,7 @@ sample_approx_dist <- function(cases = NULL,
       dates <- seq(min(cases$date),
                    max(cases$date)  + lubridate::days(length(draw) - 1),
                    by = "days")
-    }
+    } 
      
     ## Summarises movements and sample for placement of non-integer cases
     case_sum <- direction_fn(rowSums(mapped_cases))
