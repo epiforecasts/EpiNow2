@@ -137,7 +137,7 @@ head(estimates$estimated_reported_cases$summarised)
 A summary table is returned for rapidly understanding the results and for reporting purposes.
 
 ```{r}
-estimates$summary
+knitr::kable(estimates$summary[-ncol(estimates$summary)])
 ```
 
 A range of plots are returned (with the single summary plot shown below).

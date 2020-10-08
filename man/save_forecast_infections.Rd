@@ -9,6 +9,8 @@ save_forecast_infections(forecast, target_folder = NULL, samples = TRUE)
 \arguments{
 \item{forecast}{A list of data frames as output by \code{forecast_infections}}
 
+\item{target_folder}{Character string specifying where to save results (will create if not present).}
+
 \item{samples}{Logical, defaults to TRUE. Should samples be saved}
 }
 \description{

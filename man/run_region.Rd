@@ -21,8 +21,9 @@ run_region(
 
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
-\item{target_date}{A character string giving the target date for which to extract results
-(in the format "yyyy-mm-dd"). Defaults to latest available estimates.}
+\item{target_folder}{Character string specifying where to save results (will create if not present).}
+
+\item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
 \item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
 \code{target_folder} must be specified in order to enable output saving to disk.}

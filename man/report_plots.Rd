@@ -13,6 +13,8 @@ and r (rate of growth).}
 
 \item{reported}{A data.table of reported cases with the following variables: date, confirm.}
 
+\item{target_folder}{Character string specifying where to save results (will create if not present).}
+
 \item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
 on the maximum number of reported cases.}
 }
@@ -24,21 +26,21 @@ Report plots
 }
 \examples{
 \donttest{
-## Define example cases
+# define example cases
 cases <- EpiNow2::example_confirmed[1:40]
 
  
-## Set up example delays
+# set up example delays
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
                         
-## Run model
+# run model
 out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
                                     delays = list(incubation_period, reporting_delay),
                                     stan_args = list(cores = 4))
                             
-## Plot infections
+# plot infections
 plots <- report_plots(summarised_estimates = out$summarised,
                       reported = cases)
 plots

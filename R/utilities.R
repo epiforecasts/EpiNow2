@@ -271,6 +271,7 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
 #' of futile.logger for details. Supported options are "info" and "debug"
 #'
 #' @return A logical vector of named output arguments
+#' @export
 #' @importFrom  futile.logger flog.info flog.debug
 #' @examples
 #' # select nothing

@@ -34,9 +34,8 @@ setup_target_folder <- function(target_folder = NULL, target_date) {
 
 #' Save Observed Data
 #'
-#' @param reported_cases 
 #' @inheritParams setup_target_folder
-#' @inheritParams estimate_infections
+#' @inheritParams epinow
 #' @return NULL
 #' @export
 save_input <- function(reported_cases, target_folder) {
@@ -55,6 +54,7 @@ save_input <- function(reported_cases, target_folder) {
 #'
 #' @param estimates List of data frames as output by `estimate_infections`
 #' @param samples Logical, defaults to TRUE. Should samples be saved
+#' @inheritParams setup_target_folder
 #' @inheritParams  estimate_infections
 #' @return NULL
 #' @export
@@ -162,10 +162,9 @@ estimates_by_report_date <- function(estimates, forecast, delays,
 #' @param latest_folder Character string containing the path to the latest target folder. 
 #' As produced by `setup_target_folder`.
 #' @inheritParams setup_target_folder
-#' @return
+#' @return NULL
 #' @export
 copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
-  
   if (!is.null(target_folder)) {
     ## Save all results to a latest folder as well
     suppressWarnings(

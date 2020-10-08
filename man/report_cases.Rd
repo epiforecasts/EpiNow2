@@ -56,8 +56,8 @@ out <- EpiNow2::estimate_infections(cases, samples = 200, generation_time = gene
                                     estimate_rt = FALSE)
                             
 reported_cases <- report_cases(case_estimates = 
-                                out$samples[variable == "infections"][, cases := as.integer(value)][, 
-                                                                        value := NULL],
+                                out$samples[variable == "infections"][, 
+                                cases := as.integer(value)][, alue := NULL],
                                delays = list(incubation_period, reporting_delay),
                                type = "sample")
 print(reported_cases)

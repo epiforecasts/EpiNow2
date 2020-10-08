@@ -18,3 +18,4 @@
 ^README\.html$
 ^cran-comments\.md$
 ^CRAN-RELEASE$
+^info\.log$
