@@ -26,15 +26,16 @@
 #' # run model
 #' out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
+#'                                     samples = 200,
 #'                                     stan_args = list(warmup = 200, 
 #'                                                      cores = ifelse(interactive(), 4, 1)),
 #'                                     estimate_rt = FALSE)
 #'                             
-#' reported_cases <- report_cases(case_estimates = out$samples[variable == "infections"][, 
-#'                                                             cases := value][, value := NULL],
+#' reported_cases <- report_cases(case_estimates = 
+#'                                 out$samples[variable == "infections"][, cases := as.integer(value)][, 
+#'                                                                         value := NULL],
 #'                                delays = list(incubation_period, reporting_delay),
 #'                                type = "sample")
-#'                                
 #' print(reported_cases)
 #' }
 report_cases <- function(case_estimates,
@@ -77,7 +78,8 @@ report_cases <- function(case_estimates,
                      function(id) {EpiNow2::adjust_infection_to_report(infections[sample == id], 
                                                           delay_defs = purrr::map(delay_defs, ~ .[id, ]),
                                                           type = type,
-                                                          reporting_effect = reporting_effect[sample == id, ]$effect)})
+                                                          reporting_effect = reporting_effect[sample == id, ]$effect)},
+                     future.seed = TRUE)
 
   report <- data.table::rbindlist(report, idcol = "sample")
   out <- list()
@@ -90,8 +92,8 @@ report_cases <- function(case_estimates,
     top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[2]])),
     lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.5)), ~ .[[1]])),
     upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.5)), ~ .[[2]])),
-    central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[1]])), 
-    central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[2]])),
+    central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.2)), ~ .[[1]])), 
+    central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.2)), ~ .[[2]])),
     median = as.numeric(median(cases, na.rm = TRUE)),
     mean = as.numeric(mean(cases, na.rm = TRUE)),
     sd = as.numeric(sd(cases, na.rm = TRUE))), by = .(date)]
