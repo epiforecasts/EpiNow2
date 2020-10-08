@@ -75,6 +75,7 @@ Imports:
     stats,
     truncnorm,
 Suggests:
+    cmdstanr (>= 0.1.3),
     countrycode,
     dplyr,
     EpiSoon,
@@ -90,6 +91,7 @@ Suggests:
     testthat
 Additional_repositories: 
   https://epiforecasts.io/drat/
+  https://mc-stan.org/r-packages/
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Biarch: true
