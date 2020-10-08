@@ -137,7 +137,7 @@ estimates_by_report_date <- function(estimates, forecast, delays,
         estimates$samples[variable == "reported_cases"][,
                           .(date, sample, cases = value, type = "gp_rt")]
       ), use.names = TRUE)
-      
+
     }
     
     estimated_reported_cases$summarised <- data.table::rbindlist(list(

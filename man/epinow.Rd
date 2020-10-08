@@ -10,12 +10,12 @@ epinow(
   horizon = 7,
   generation_time,
   delays = list(),
+  return_output = TRUE,
   output = c("samples", "plots"),
-  return_ouput = TRUE,
   target_folder = NULL,
   target_date,
-  verbose = FALSE,
   forecast_args = NULL,
+  verbose = FALSE,
   ...
 )
 }
@@ -37,18 +37,24 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale).}
 
-\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be printed.}
-
-\item{...}{Additional arguments passed to \code{estimate_infections}. See that functions documentation for options.}
-
 \item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
 \code{target_folder} must be specified in order to enable output saving to disk.}
+
+\item{output}{A character vector of optional output to return. Supported options are samples ("samples"),
+plots ("plots"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
+and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
+being reported.}
+
+\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
+\code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
+
+\item{...}{Additional arguments passed to \code{estimate_infections}. See that functions documentation for options.}
 }
 \value{
 A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 }
 \description{
-This function wraps the functionality of \code{estimate_infectiosn} and \code{forecast_infections} in order
+This function wraps the functionality of \code{estimate_infections} and \code{forecast_infections} in order
 to estimate Rt and cases by date of infection, forecast into these infections into the future. It also contains
 additional functionality to convert forecasts to date of report and produce summary output useful for reporting
 results and interpreting them.
@@ -75,17 +81,21 @@ if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
 
    ## Report Rt along with forecasts
-   out <- epinow(reported_cases = cases, samples = 1000, 
+   out <- epinow(reported_cases = reported_cases, samples = 1000, 
                  generation_time = generation_time,
                  delays = list(incubation_period, reporting_delay),
-                 forecast_model = function(y, ...){
-                   EpiSoon::forecastHybrid_model(
-                     y = y[max(1, length(y) - 21):length(y)],
-                     model_params = list(models = "aefz", weights = "equal"),
-                     forecast_params = list(PI.combination = "mean"), ...)},
-                  stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
-
-out
+                 method = "approximate",
+                 forecast_args = list(
+                     forecast_model = function(y, ...){
+                     EpiSoon::forecastHybrid_model(
+                          y = y[max(1, length(y) - 21):length(y)],
+                          model_params = list(models = "aefz", weights = "equal"),
+                          forecast_params = list(PI.combination = "mean"), ...)}
+                          ),
+                 stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)), verbose = TRUE)
+                 
+                 
+                 out
    }
 }
 

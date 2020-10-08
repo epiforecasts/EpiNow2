@@ -44,11 +44,9 @@ report_cases <- function(case_estimates,
                          delays,
                          type = "sample",
                          reporting_effect) {
-  
   samples <- length(unique(case_estimates$sample))
   
-
-  ## Define delay distributions
+  # define delay distributions
   delay_defs <- purrr::map(delays, 
                            ~ EpiNow2::lognorm_dist_def(mean = .$mean,
                                                        mean_sd = .$mean_sd,
@@ -56,21 +54,19 @@ report_cases <- function(case_estimates,
                                                        sd_sd = .$sd_sd,
                                                        max_value = .$max,
                                                        samples = samples))
-  ## Add a null reporting effect if missing
+  # add a null reporting effect if missing
   if (missing(reporting_effect)) {
     reporting_effect <- data.table::data.table(
       sample = list(1:samples),
       effect = rep(1, 7),
       day = 1:7
     )
-    
     reporting_effect <- reporting_effect[, .(sample = unlist(sample)), by = .(effect, day)]
-  }
-  
-  ## Filter and sum nowcast to use only upscaled cases by date of infection
+  } 
+  # filter and sum nowcast to use only upscaled cases by date of infection
   infections <- data.table::copy(case_estimates)
   
-  ## Add in case forecast if present
+  # add in case forecast if present
   if (!is.null(case_forecast)) {
     infections <- data.table::rbindlist(list(
       infections,
@@ -86,13 +82,11 @@ report_cases <- function(case_estimates,
                                                           reporting_effect = reporting_effect[sample == id, ]$effect)})
 
   report <- data.table::rbindlist(report, idcol = "sample")
-    
   out <- list()
-  
-  ## Bind all samples together
+  # bind all samples together
   out$samples <- report
   
-  ## Summarise samples
+  # summarise samples
   out$summarised <- report[, .(
     bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[1]])),
     top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[2]])),
@@ -104,9 +98,8 @@ report_cases <- function(case_estimates,
     mean = as.numeric(mean(cases, na.rm = TRUE)),
     sd = as.numeric(sd(cases, na.rm = TRUE))), by = .(date)]
   
-  ## Order summarised samples
+  # order summarised samples
   data.table::setorder(out$summarised, date) 
-  
   return(out)
 }
 
