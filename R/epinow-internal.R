@@ -1,3 +1,10 @@
+
+
+setup_dt <- function(reported_cases) {
+  suppressMessages(data.table::setDTthreads(threads = 1))
+  reported_cases <- data.table::setDT(reported_cases)
+}
+
 #' Setup Target Folder for Saving
 #'
 #' @param target_date Date, defaults to maximum found in the data if not specified.
@@ -36,20 +43,28 @@ save_input <- function(reported_cases, target_folder) {
 
 
 
-save_estimate_infections <- function(estimates, target_folder, output) {
-  
-  output <- match_output_arguments(output, c("samples", "fit"),
-                                   logger = "EpiNow2.epinow")
-  
+save_estimate_infections <- function(estimates, target_folder = NULL, 
+                                     samples = TRUE, fit = TRUE) {
   if (!is.null(target_folder)) {
-    if (output["samples"]) {
+    if (samples) {
       saveRDS(estimates$samples, paste0(target_folder, "/estimate_samples.rds"))
     }
     saveRDS(estimates$summarised, paste0(target_folder, "/summarised_estimates.rds"))
     
-    if (output["fit"]) {
+    if (fit) {
       saveRDS(estimates$fit, paste0(target_folder, "/model_fit.rds"))
     }
+  }
+  return(invisible(NULL))
+}
+
+
+save_forecast_infections <- function(forecast, target_folder = NULL, samples = TRUE) {
+  if (!is.null(target_folder)) {
+    if (samples) {
+      saveRDS(forecast$samples, paste0(target_folder, "/forecast_samples.rds"))
+    }
+    saveRDS(forecast$summarised, paste0(target_folder, "/summarised_forecast.rds"))
   }
   return(invisible(NULL))
 }

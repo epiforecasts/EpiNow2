@@ -275,7 +275,8 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
 #'
 #' @param input_args A character vector of input arguments (can be partial).
 #' @param supported_args A character vector of supported output arguments.
-#' @param logger A character vector indicating the logger to target messages at.
+#' @param logger A character vector indicating the logger to target messages at. Defaults 
+#' to no logging.
 #'
 #' @return A logical vector of named output arguments
 #'
@@ -295,7 +296,7 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
 #'                        supported_args = c("fit", "plots", "samples"))
 match_output_arguments <- function(input_args = c(),
                                    supported_args =  c(),
-                                   logger = "EpiNow2") {
+                                   logger = NULL) {
   #make supported args a logical vector
   output_args <- rep(FALSE, length(supported_args))
   names(output_args) <- supported_args
@@ -308,14 +309,16 @@ match_output_arguments <- function(input_args = c(),
   found_args <- unique(found_args)
   
   # tell the user about what has been passed in
-  if (length(found_args) > 0) {
-    futile.logger::flog.info("Producing output for: %s", paste(found_args, collapse = ", "),
-                             name = logger)
-  }else{
-    futile.logger::flog.info("No optional output specified",
-                              name = logger)
+  if (!is.null(logger)) {
+    if (length(found_args) > 0) {
+      futile.logger::flog.info("Producing output for: %s", paste(found_args, collapse = ", "),
+                               name = logger)
+    }else{
+      futile.logger::flog.info("No optional output specified",
+                               name = logger)
+    }
   }
-  
+
   # assign true false to supported arguments based on found arguments
   output_args[names(output_args) %in% found_args] <- TRUE
   return(output_args)
