@@ -5,14 +5,14 @@
 \title{Generate Regional Summary Output}
 \usage{
 regional_summary(
-  regional_output,
+  regional_output = NULL,
   reported_cases,
-  results_dir,
-  summary_dir,
-  target_date,
+  results_dir = NULL,
+  summary_dir = NULL,
+  target_date = NULL,
   region_scale = "Region",
   all_regions = TRUE,
-  return_summary = TRUE,
+  return_output = TRUE,
   max_plot = 10
 )
 }
@@ -36,7 +36,8 @@ in which to store summary of results.}
 \item{all_regions}{Logical, defaults to \code{TRUE}. Should summary plots for all regions be returned
 rather than just regions of interest.}
 
-\item{return_summary}{Logical, defaults to \code{TRUE}. Should summary measures be returned.}
+\item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
+\code{target_folder} must be specified in order to enable output saving to disk.}
 
 \item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
 on the maximum number of reported cases.}

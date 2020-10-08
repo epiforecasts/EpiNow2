@@ -55,7 +55,7 @@ regional_epinow <- function(reported_cases,
                                        "plots", "timings"),
                             summary_args = list(), ...) {
   
-  #supported output
+  # supported output
   output <- match_output_arguments(output, 
                                    supported_args = c("plots", "samples", "fit",
                                                       "regional", "summary",
@@ -66,14 +66,14 @@ regional_epinow <- function(reported_cases,
   }
   futile.logger::flog.info("Reporting estimates using data up to: %s", target_date)
   
-  ## Clean regions
+  # clean regions
   reported_cases <- clean_regions(reported_cases, non_zero_points)
   regions <- unique(reported_cases$region)
   
-  ## Function to run the pipeline in a region
+  # function to run the pipeline in a region
   safe_run_region <- purrr::safely(run_region)
   
-  ## Run regions (make parallel using future::plan)
+  # run regions (make parallel using future::plan)
   futile.logger::flog.trace("calling future apply to process each region through the run_region function")
   futile.logger::flog.info("Showing progress using progressr. Modify this behaviour using progressr::handlers.")
   
@@ -112,7 +112,8 @@ regional_epinow <- function(reported_cases,
     futile.logger::flog.info("Producing summary")
     summary_out <- do.call(safe_summary,
                            c(list(regional_output = sucessful_regional_out,
-                                  reported_cases = reported_cases),
+                                  reported_cases = reported_cases,
+                                  return_output = return_output),
                              summary_args))
     
     if (!is.null(summary_out[[2]])) {
