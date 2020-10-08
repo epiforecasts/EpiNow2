@@ -1,8 +1,16 @@
 
 
+#' Convert to Data Table
+#'
+#' @inheritParams estimate_infections
+#'
+#' @return A data table
+#' @export
 setup_dt <- function(reported_cases) {
   suppressMessages(data.table::setDTthreads(threads = 1))
   reported_cases <- data.table::setDT(reported_cases)
+  
+  return(reported_cases)
 }
 
 #' Setup Target Folder for Saving
@@ -11,6 +19,7 @@ setup_dt <- function(reported_cases) {
 #' @param target_folder Character string specifying where to save results (will create if not present).
 #'
 #' @return A list containing the path to the dated folder and the latest folder
+#' @export
 setup_target_folder <- function(target_folder = NULL, target_date) {
   if (!is.null(target_folder)) {
     latest_folder <- file.path(target_folder, "latest")
@@ -24,13 +33,13 @@ setup_target_folder <- function(target_folder = NULL, target_date) {
   }
 }
 
-
 #' Save Observed Data
 #'
 #' @param reported_cases 
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
 #' @return NULL
+#' @export
 save_input <- function(reported_cases, target_folder) {
   if (!is.null(target_folder)) {
     latest_date <- reported_cases[confirm > 0][date == max(date)]$date
@@ -43,15 +52,21 @@ save_input <- function(reported_cases, target_folder) {
 
 
 
+#' Save Estimated Infections
+#'
+#' @param estimates List of data frames as output by `estimate_infections`
+#' @param samples Logical, defaults to TRUE. Should samples be saved
+#' @inheritParams  estimate_infections
+#' @return NULL
+#' @export
 save_estimate_infections <- function(estimates, target_folder = NULL, 
-                                     samples = TRUE, fit = TRUE) {
+                                     samples = TRUE, return_fit = TRUE) {
   if (!is.null(target_folder)) {
     if (samples) {
       saveRDS(estimates$samples, paste0(target_folder, "/estimate_samples.rds"))
     }
     saveRDS(estimates$summarised, paste0(target_folder, "/summarised_estimates.rds"))
-    
-    if (fit) {
+    if (return_fit) {
       saveRDS(estimates$fit, paste0(target_folder, "/model_fit.rds"))
     }
   }
@@ -59,6 +74,12 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
 }
 
 
+#' Save Forecast Infections
+#'
+#' @param forecast A list of data frames as output by `forecast_infections`
+#' @inheritParams save_estimate_infections
+#' @return NULL
+#' @export
 save_forecast_infections <- function(forecast, target_folder = NULL, samples = TRUE) {
   if (!is.null(target_folder)) {
     if (samples) {
@@ -70,7 +91,17 @@ save_forecast_infections <- function(forecast, target_folder = NULL, samples = T
 }
 
 
-estimates_by_report_date <- function(estimates, forecast, delays, target_folder, samples = TRUE) {
+#' Estimate Cases by Report Date
+#'
+#' @inheritParams setup_target_folder
+#' @inheritParams save_estimate_infections
+#' @inheritParams save_forecast_infections
+#' @inheritParams estimate_infections
+#' @return A list of samples and summarised estimates of estimated cases by date of report
+#' @export
+#' @importFrom data.table := rbindlist 
+estimates_by_report_date <- function(estimates, forecast, delays, 
+                                     target_folder = NULL, samples = TRUE) {
   
   if (is.null(forecast)) {
     estimated_reported_cases <- list()
@@ -104,7 +135,7 @@ estimates_by_report_date <- function(estimates, forecast, delays, target_folder,
         reported_cases_cases$samples[, type := "case"],
         reported_cases_ensemble$samples[, type := "ensemble"],
         estimates$samples[variable == "reported_cases"][,
-                                                        .(date, sample, cases = value, type = "gp_rt")]
+                          .(date, sample, cases = value, type = "gp_rt")]
       ), use.names = TRUE)
       
     }
@@ -114,7 +145,7 @@ estimates_by_report_date <- function(estimates, forecast, delays, target_folder,
       reported_cases_cases$summarised[, type := "case"],
       reported_cases_ensemble$summarised[, type := "ensemble"],
       estimates$summarised[variable == "reported_cases"][, type := "gp_rt"][,
-                                                                            variable := NULL][, strat := NULL]
+                           variable := NULL][, strat := NULL]
     ), use.names = TRUE)
   }
   
@@ -129,7 +160,15 @@ estimates_by_report_date <- function(estimates, forecast, delays, target_folder,
 
 
 
+#' Copy Results From Dated Folder to Latest
+#'
+#' @param latest_folder Character string containing the path to the latest target folder. 
+#' As produced by `setup_target_folder`.
+#' @inheritParams setup_target_folder
+#' @return
+#' @export
 copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
+  
   if (!is.null(target_folder)) {
     ## Save all results to a latest folder as well
     suppressWarnings(
@@ -150,6 +189,17 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
 }
 
 
+#' Construct Output
+#'
+#' @param estimated_reported_cases A list of dataframes as produced by 
+#' `estimates_by_report_date`.
+#' @param plots A list of plots as produced by `report_plots`
+#' @param summary A list of summary output as produced by `report_summary`
+#' @inheritParams save_estimate_infections
+#' @inheritParams save_forecast_infections
+#'
+#' @return A list of output as returned by `epinow`
+#' @export
 construct_output <- function(estimates, forecast = NULL, 
                              estimated_reported_cases,
                              plots = NULL,
