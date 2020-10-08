@@ -52,18 +52,12 @@
 #'
 #' }
 #'
-epinow <- function(reported_cases, model = NULL, samples = 1000, stan_args = NULL, 
-                   method = "exact", family = "negbin",
-                   generation_time, delays = list(),
-                   gp = list(basis_prop = 0.3, boundary_scale = 2,
-                             lengthscale_mean = 0, lengthscale_sd = 2),
-                   rt_prior = list(mean = 1, sd = 1), horizon = 7,
-                   estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE,
-                   burn_in = 0, stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
-                   future = FALSE, max_execution_time = Inf, prior_smoothing_window = 7,
-                   return_fit = FALSE, forecast_model, ensemble_type = "mean",
-                   return_ouput = TRUE, keep_samples = TRUE, make_plots = TRUE, 
-                   target_folder = NULL, target_date, verbose = FALSE) {
+epinow <- function(reported_cases, model = NULL,
+                   samples = 1000, horizon = 7, 
+                   output, return_ouput = TRUE, 
+                   target_folder = NULL, target_date, 
+                   verbose = FALSE, forecast_args = NULL,
+                   ...) {
 
   if (!return_output & is.null(target_folder)) {
     futile.logger::flog.fatal("Either return output or save to a target folder",
@@ -100,19 +94,11 @@ epinow <- function(reported_cases, model = NULL, samples = 1000, stan_args = NUL
                                    verbose = verbose,
                                    ...)
 
-  # Report estimates --------------------------------------------------------
-  if (!is.null(target_folder)) {
-    if (keep_samples) {
-      saveRDS(estimates$samples, paste0(target_folder, "/estimate_samples.rds"))
-    }
-    saveRDS(estimates$summarised, paste0(target_folder, "/summarised_estimates.rds"))
+  # Report estimates -------------------------------------------------------
+  save_estimate_infections(estimates, target_folder, output)
 
-    if (return_fit) {
-      saveRDS(estimates$fit, paste0(target_folder, "/model_fit.rds"))
-    }
-  }
   # Forecast infections and reproduction number -----------------------------
-  if (!missing(forecast_model)) {
+  if (!is.null(forecast_model)) {
     forecast <- forecast_infections(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
                                     rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
                                     gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
