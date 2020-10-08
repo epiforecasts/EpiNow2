@@ -236,7 +236,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
   
   # Set up independent default arguments
   if (method == "exact") {
-    default_args$cores <- 1
+    default_args$cores <- 4
     default_args$warmup <- 500
     default_args$chains <- 4
     default_args$control <- list(adapt_delta = 0.99, max_treedepth = 15)
