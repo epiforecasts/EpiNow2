@@ -14,6 +14,8 @@ save_estimate_infections(
 \arguments{
 \item{estimates}{List of data frames as output by \code{estimate_infections}}
 
+\item{target_folder}{Character string specifying where to save results (will create if not present).}
+
 \item{samples}{Logical, defaults to TRUE. Should samples be saved}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}

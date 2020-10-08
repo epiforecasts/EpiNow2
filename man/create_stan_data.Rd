@@ -50,6 +50,9 @@ Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
 
+\item{fixed}{Logical, should the gaussian process be used for non-parametric
+change over time.}
+
 \item{break_no}{Numeric, number of breakpoints}
 
 \item{fixed_future_rt}{Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all

@@ -13,6 +13,7 @@
 #' @param ... Additional arguments passed to `estimate_infections`. See that functions documentation for options.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
+#' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
 #' @inheritParams forecast_infections
 #' @importFrom data.table setDT

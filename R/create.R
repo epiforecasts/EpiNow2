@@ -66,6 +66,8 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 #' @param no_delays Numeric, number of delays
 #' @param mean_shift Numeric, mean delay shift
 #' @param break_no Numeric, number of breakpoints
+#' @param fixed Logical, should the gaussian process be used for non-parametric 
+#' change over time.
 #' @inheritParams estimate_infections
 #' @return A list of stan data
 #' @export 

@@ -18,8 +18,9 @@ regional_epinow(
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
-\item{target_date}{A character string giving the target date for which to extract results
-(in the format "yyyy-mm-dd"). Defaults to latest available estimates.}
+\item{target_folder}{Character string specifying where to save results (will create if not present).}
+
+\item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
 \item{non_zero_points}{Numeric, the minimum number of time points with non-zero cases in a region required for
 that region to be evaluated. Defaults to 2.}

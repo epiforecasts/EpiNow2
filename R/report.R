@@ -31,8 +31,8 @@
 #'                                     estimate_rt = FALSE)
 #'                             
 #' reported_cases <- report_cases(case_estimates = 
-#'                                 out$samples[variable == "infections"][, cases := as.integer(value)][, 
-#'                                                                         value := NULL],
+#'                                 out$samples[variable == "infections"][, 
+#'                                 cases := as.integer(value)][, alue := NULL],
 #'                                delays = list(incubation_period, reporting_delay),
 #'                                type = "sample")
 #' print(reported_cases)
@@ -186,27 +186,28 @@ report_summary <- function(summarised_estimates,
 #' @importFrom cowplot theme_cowplot
 #' @importFrom patchwork plot_layout
 #' @importFrom data.table setDT
+#' @inheritParams setup_target_folder
 #' @inheritParams epinow
 #' @inheritParams plot_estimates
 #' @return A `ggplot2` object
 #' @export
 #' @examples 
 #' \donttest{
-#' ## Define example cases
+#' # define example cases
 #' cases <- EpiNow2::example_confirmed[1:40]
 #' 
 #'  
-#' ## Set up example delays
+#' # set up example delays
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 #'                         
-#' ## Run model
+#' # run model
 #' out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
 #'                                     stan_args = list(cores = 4))
 #'                             
-#' ## Plot infections
+#' # plot infections
 #' plots <- report_plots(summarised_estimates = out$summarised,
 #'                       reported = cases)
 #' plots
@@ -214,7 +215,7 @@ report_summary <- function(summarised_estimates,
 report_plots <- function(summarised_estimates, reported,
                          target_folder, max_plot = 10) {
   
-  ## set input to data.table
+  # set input to data.table
   summarised_estimates <- data.table::setDT(summarised_estimates)
   reported <- data.table::setDT(reported)
   
@@ -222,14 +223,12 @@ report_plots <- function(summarised_estimates, reported,
     target_folder <- NULL
   }
   
-# Infections plot ---------------------------------------------------------
-
+# infections plot ---------------------------------------------------------
 infections <- plot_estimates(estimate = summarised_estimates[variable == "infections"],
                              reported = reported,
                              ylab = "Cases by \n date of infection",
                              max_plot = max_plot)
   
-
 if (!is.null(target_folder)) {
   suppressWarnings(
     suppressMessages(
@@ -240,9 +239,7 @@ if (!is.null(target_folder)) {
                       dpi = 320)
     ))
 }
-
-# Cases by report ---------------------------------------------------------
-
+# cases by report ---------------------------------------------------------
 reports <- plot_estimates(estimate = summarised_estimates[variable == "reported_cases"],
                           reported = reported, ylab = "Cases by \n date of report",
                           max_plot = max_plot)
@@ -259,11 +256,9 @@ if (!is.null(target_folder)) {
 }
 
 
-# R plot ------------------------------------------------------------------
-
+# Rt plot ------------------------------------------------------------------
 reff <- plot_estimates(estimate = summarised_estimates[variable == "R"],
                        ylab = "Effective \n reproduction no.", hline = 1)
-
 
 if (!is.null(target_folder)) {
   suppressWarnings(
@@ -275,12 +270,9 @@ if (!is.null(target_folder)) {
                       dpi = 320)
     ))
 }
-
 # r plot ------------------------------------------------------------------
-
 growth_rate <- plot_estimates(estimate = summarised_estimates[variable == "growth_rate"],
                               ylab = "Growth rate", hline = 0)
-
 
 if (!is.null(target_folder)) {
   suppressWarnings(
@@ -292,11 +284,7 @@ if (!is.null(target_folder)) {
                       dpi = 320)
     ))
 }
-
-
-# Summary plot ------------------------------------------------------------
-
-  
+# summary plot ------------------------------------------------------------
   summary <- suppressWarnings(
     suppressMessages(
         reports +
@@ -335,8 +323,7 @@ if (!is.null(target_folder)) {
       ))
   }
   
-  
-  ## Organise output
+  # organise output
   plots <- list(
     infections = infections,
     reports = reports,
@@ -344,6 +331,5 @@ if (!is.null(target_folder)) {
     growth_rate = growth_rate,
     summary = summary
   )
-  
   return(plots)
 }

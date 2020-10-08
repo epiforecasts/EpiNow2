@@ -12,9 +12,6 @@ copy_results_to_latest(target_folder = NULL, latest_folder = NULL)
 \item{latest_folder}{Character string containing the path to the latest target folder.
 As produced by \code{setup_target_folder}.}
 }
-\value{
-
-}
 \description{
 Copy Results From Dated Folder to Latest
 }
