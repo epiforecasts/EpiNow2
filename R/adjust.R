@@ -16,11 +16,10 @@
 #' @importFrom data.table setorder data.table setDTthreads
 #' @importFrom lubridate wday
 #' @examples
-#' 
-#' ## Define example cases
+#' # define example cases
 #' cases <- EpiNow2::example_confirmed[, `:=`(cases = as.integer(confirm))]
 #' 
-#' ## Define a single report delay distribution
+#' # define a single report delay distribution
 #' delay_def <- EpiNow2::lognorm_dist_def(mean = 5, 
 #'                                       mean_sd = 1,
 #'                                       sd = 3,
@@ -29,36 +28,29 @@
 #'                                       samples = 1,
 #'                                       to_log = TRUE)
 #'                                        
-#' ## Define a single incubation period
+#' # define a single incubation period
 #' incubation_def <- EpiNow2::lognorm_dist_def(mean = EpiNow2::incubation_periods[1, ]$mean,
 #'                                            mean_sd = EpiNow2::incubation_periods[1, ]$mean_sd,
 #'                                            sd = EpiNow2::incubation_periods[1, ]$sd,
 #'                                            sd_sd = EpiNow2::incubation_periods[1, ]$sd_sd,
 #'                                            max_value = 30, samples = 1)
 #'                                            
-#' 
-#' 
-#' ## Simple mapping
+#' # simple mapping
 #' report <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def))   
-#' 
 #' print(report)   
 #' 
-#' ## Mapping with a weekly reporting effect
+#' # mapping with a weekly reporting effect
 #' report_weekly <- adjust_infection_to_report(
 #'                       cases, delay_defs = list(incubation_def, delay_def),
 #'                       reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))          
-#'                              
 #' print(report_weekly) 
 #' 
-#'## Map using a deterministic median shift for both delays
-#'report_median <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def), 
-#'                                            type = "median")      
-#'                                            
-#'                                                    
-#'
+#' # map using a deterministic median shift for both delays
+#' report_median <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def), 
+#'                                             type = "median")      
 #' print(report_median)
 #'                                                          
-#' ## Map with a weekly reporting effect and stochastic reporting model
+#' # map with a weekly reporting effect and stochastic reporting model
 #' report_stochastic <- adjust_infection_to_report(
 #'                       cases, delay_defs = list(incubation_def, delay_def),
 #'                       reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
@@ -66,7 +58,6 @@
 #'                       out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))
 #'                       out <- ifelse(is.na(out), 0, out)
 #'                       })          
-#'                              
 #' print(report_stochastic)         
 adjust_infection_to_report <- function(infections, delay_defs,
                                        reporting_model, reporting_effect,
