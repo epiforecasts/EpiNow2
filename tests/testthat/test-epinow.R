@@ -2,7 +2,7 @@ context("epinow")
 
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 15)
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 15)
-reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(3), 1), max_value = 15)
+reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(3), 1), max_value = 15)
 
 reported_cases <- EpiNow2::example_confirmed[1:30]
 
@@ -31,9 +31,10 @@ test_that("epinow runs without error when saving to disk", {
   expect_null(suppressWarnings(epinow(reported_cases = reported_cases,
                                       generation_time = generation_time,
                                       delays = list(incubation_period, reporting_delay),
-                                      samples = 100, method = "approximate"),
-                                      target_dir = tempdir(),
-                                      return = FALSE))
+                                      samples = 100, 
+                                      stan_args = list(warmup = 100, cores = 1, chains = 2),
+                                      target_folder = tempdir(),
+                                      return_output = FALSE)))
 
 })
 
@@ -42,7 +43,8 @@ test_that("epinow can produce partial output as specified", {
   out <- suppressWarnings(epinow(reported_cases = reported_cases,
                                  generation_time = generation_time,
                                  delays = list(incubation_period, reporting_delay),
-                                 samples = 100, method = "appoximate",
+                                 samples = 100,
+                                 stan_args = list(warmup = 100, cores = 1, chains = 2),
                                  output = c()))
   
   expect_equal(names(out), c("estimates", "estimated_reported_cases", "summary"))
