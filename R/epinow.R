@@ -74,176 +74,93 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
  reported_cases <- setup_dt(reported_cases)
   
  # target data -------------------------------------------------------------
-  if (missing(target_date)) {
-    target_date <- max(reported_cases$date)
-  }
-  
-  # Set up folders ----------------------------------------------------------
-  target_folder <- setup_target_folder(target_folder, target_date)
-
-  # Make sure the horizon is as specified from the target date --------------
-  if (horizon != 0) {
-    horizon <- horizon + as.numeric(as.Date(target_date) - max(reported_cases$date))
-  }
-  
-  # Save input data ---------------------------------------------------------
-  save_input(reported_cases, target_folder)
-  
-  # Estimate infections and Reproduction no ---------------------------------
-  estimates <- estimate_infections(reported_cases = reported_cases, 
-                                   generation_time = generation_time,
-                                   delays = delays,
-                                   samples = samples,
-                                   horizon = horizon,
-                                   estimate_rt = TRUE,
-                                   output = c("samples", names(output[output])),
-                                   verbose = verbose,
-                                   ...)
-
-  # Report estimates -------------------------------------------------------
-  save_estimate_infections(estimates, target_folder, samples = output["samples"],
-                           fit = output["fit"])
-
-  # Forecast infections and reproduction number -----------------------------
-  if (!is.null(forecast_args)) {
-    forecast <- do.call(forecast_infections, 
-                        c(list(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
-                               rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
-                               gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
-                               gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
-                               gt_max = generation_time$max,
-                               forecast_model = forecast_model,
-                               ensemble_type = ensemble_type,
-                               horizon = horizon,
-                               samples = samples),
-                          forecast_args))
-    
-    save_forecast_infections(forecast, target_folder, samples = output["samples"])
-  }else{
-    forecast <- NULL
-  }
-
-  # Report forecasts ---------------------------------------------------------
-
-  estimates_by_report <- function(estimates, forecast, delays, target_folder, samples = TRUE) {
-    
-    if (is.null(forecast)) {
-      estimated_reported_cases <- list()
-      if (samples) {
-        estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][,
-                                             .(date, sample, cases = value, type = "gp_rt")]
-      }
-      estimated_reported_cases$summarised <- estimates$summarised[variable == "reported_cases"][,
-                                             type := "gp_rt"][, variable := NULL][, strat := NULL]
-    }else{
-      report_cases_with_forecast <- function(model) {
-        reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
-                                                                          .(date, sample, cases = value)],
-                                       case_forecast = forecast$samples[type == "case" &
-                                                                        forecast_type == model][,
-                                                                        .(date, sample, cases = value)],
-                                       delays = delays,
-                                       type = "sample")
-        return(reported_cases)
-      }
-      
-      estimated_reported_cases <- list()
-      
-      if (samples) {
-        reported_cases_rt <- report_cases_with_forecast(model = "rt")
-        reported_cases_cases <- report_cases_with_forecast(model = "case")
-        reported_cases_ensemble <- report_cases_with_forecast(model = "ensemble")
-        
-        estimated_reported_cases$samples <- data.table::rbindlist(list(
-          reported_cases_rt$samples[, type := "rt"],
-          reported_cases_cases$samples[, type := "case"],
-          reported_cases_ensemble$samples[, type := "ensemble"],
-          estimates$samples[variable == "reported_cases"][,
-                                                          .(date, sample, cases = value, type = "gp_rt")]
-        ), use.names = TRUE)
-        
-      }
-      
-      estimated_reported_cases$summarised <- data.table::rbindlist(list(
-        reported_cases_rt$summarised[, type := "rt"],
-        reported_cases_cases$summarised[, type := "case"],
-        reported_cases_ensemble$summarised[, type := "ensemble"],
-        estimates$summarised[variable == "reported_cases"][, type := "gp_rt"][,
-                                                                              variable := NULL][, strat := NULL]
-      ), use.names = TRUE)
-    }
-    }
-    
-    return(estimated_reported_cases)
-  }
-  if (missing(forecast_model)) {
+ if (missing(target_date)) {
+   target_date <- max(reported_cases$date)
+ }
+ 
+ # Set up folders ----------------------------------------------------------
+ target_folders <- setup_target_folder(target_folder, target_date)
+ target_folder <- target_folders$date
+ latest_folder <- target_folders$latest
+ 
+ # Save input data ---------------------------------------------------------
+ save_input(reported_cases, target_folder)
+ 
+ # Make sure the horizon is as specified from the target date --------------
+ if (horizon != 0) {
+   horizon <- horizon + as.numeric(as.Date(target_date) - max(reported_cases$date))
+ }
+ 
+ # Estimate infections and Reproduction no ---------------------------------
+ estimates <- estimate_infections(reported_cases = reported_cases, 
+                                  generation_time = generation_time,
+                                  delays = delays,
+                                  samples = samples,
+                                  horizon = horizon,
+                                  estimate_rt = TRUE,
+                                  output = c("samples", names(output[output])),
+                                  verbose = verbose,
+                                  ...)
+ 
+ # Report estimates -------------------------------------------------------
+ save_estimate_infections(estimates, target_folder, 
+                          samples = output["samples"],
+                          fit = output["fit"])
+ 
+ # Forecast infections and reproduction number -----------------------------
+ if (!is.null(forecast_args)) {
+   forecast <- do.call(forecast_infections, 
+                       c(list(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
+                              rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
+                              gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
+                              gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
+                              gt_max = generation_time$max,
+                              forecast_model = forecast_model,
+                              ensemble_type = ensemble_type,
+                              horizon = horizon,
+                              samples = samples),
+                         forecast_args))
    
-  }else {
-   
+   save_forecast_infections(forecast, target_folder, samples = output["samples"])
+ }else{
+   forecast <- NULL
+ }
+ 
+ # Report forecasts ---------------------------------------------------------
+ estimated_reported_cases <- estimates_by_report_date(estimates,
+                                                      forecast, 
+                                                      delays = delays,
+                                                      target_folder = target_folder,
+                                                      samples = output["samples"])
+ 
+ 
+ # Report estimates --------------------------------------------------------
+ summary <- report_summary(
+   summarised_estimates = estimates$summarised[!is.na(date)][type != "forecast"][date == max(date)],
+   rt_samples = estimates$samples[variable == "R"][type != "forecast"][date == max(date), .(sample, value)],
+   target_folder = target_folder)
 
-  if (!is.null(target_folder)) {
-    if (keep_samples) {
-      saveRDS(estimated_reported_cases$samples, paste0(target_folder, "/estimated_reported_cases_samples.rds"))
-    }
-    saveRDS(estimated_reported_cases$summarised, paste0(target_folder, "/summarised_estimated_reported_cases.rds"))
-  }
-
-  # # Report estimates --------------------------------------------------------
-
-  summary <- report_summary(
-    summarised_estimates = estimates$summarised[!is.na(date)][type != "forecast"][date == max(date)],
-    rt_samples = estimates$samples[variable == "R"][type != "forecast"][date == max(date), .(sample, value)])
-
-
-  if (!is.null(target_folder)) {
-    saveRDS(summary, paste0(target_folder, "/summary.rds"))
-  }
-
-  #  # Plot --------------------------------------------------------------------
-  if (make_plots) {
+  # Plot --------------------------------------------------------------------
+  if (output["plots"]) {
     plots <- report_plots(summarised_estimates = estimates$summarised,
-                          reported = reported_cases, target_folder = target_folder)
+                          reported = reported_cases, 
+                          target_folder = target_folder)
+  }else{
+    plots <- NULL
   }
 
   # Copy all results to latest folder ---------------------------------------
-  if (!is.null(target_folder)) {
-    ## Save all results to a latest folder as well
-    suppressWarnings(
-      if (dir.exists(latest_folder)) {
-        unlink(latest_folder)
-      })
+  copy_results_to_latest(target_folder, latest_folder)
 
-    suppressWarnings(
-      dir.create(latest_folder)
-    )
-
-    suppressWarnings(
-      file.copy(file.path(target_folder, "."),
-                latest_folder, recursive = TRUE)
-    )
-  }
-
-  if (return_estimates) {
-    out <- list()
-    out$estimates <- estimates
-    if (!keep_samples) {
-      out$estimates$samples <- NULL
-    } 
-    
-    if (!missing(forecast_model)) {
-      out$forecast <- forecast
-      if (!keep_samples) {
-        out$forecast$samples <- NULL
-      } 
-    }
-
-    out$estimated_reported_cases <- estimated_reported_cases
-    out$summary <- summary
-    if (make_plots) {
-      out$plots <- plots
-    }
+  if (return_output) {
+    out <- construct_output(estimates, 
+                            forecast,
+                            estimated_reported_cases,
+                            plots,
+                            summary,
+                            samples = TRUE)
     return(out)
-  }else {
+  }else{
     return(invisible(NULL))
   }
 }

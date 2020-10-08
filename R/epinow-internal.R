@@ -10,18 +10,18 @@ setup_dt <- function(reported_cases) {
 #' @param target_date Date, defaults to maximum found in the data if not specified.
 #' @param target_folder Character string specifying where to save results (will create if not present).
 #'
-#' @return A modified target date
+#' @return A list containing the path to the dated folder and the latest folder
 setup_target_folder <- function(target_folder = NULL, target_date) {
-  
   if (!is.null(target_folder)) {
     latest_folder <- file.path(target_folder, "latest")
     target_folder <- file.path(target_folder, target_date)
-    
     if (!dir.exists(target_folder)) {
       dir.create(target_folder, recursive = TRUE)
     }
+    return(list(date = target_folder, latest = latest_folder))
+  }else{
+    return(invisible(NULL))
   }
-  return(target_folder)
 }
 
 
@@ -67,4 +67,111 @@ save_forecast_infections <- function(forecast, target_folder = NULL, samples = T
     saveRDS(forecast$summarised, paste0(target_folder, "/summarised_forecast.rds"))
   }
   return(invisible(NULL))
+}
+
+
+estimates_by_report_date <- function(estimates, forecast, delays, target_folder, samples = TRUE) {
+  
+  if (is.null(forecast)) {
+    estimated_reported_cases <- list()
+    if (samples) {
+      estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][,
+                                               .(date, sample, cases = value, type = "gp_rt")]
+    }
+    estimated_reported_cases$summarised <- estimates$summarised[variable == "reported_cases"][,
+                                               type := "gp_rt"][, variable := NULL][, strat := NULL]
+  }else{
+    report_cases_with_forecast <- function(model) {
+      reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
+                                               .(date, sample, cases = value)],
+                                     case_forecast = forecast$samples[type == "case" &
+                                                                      forecast_type == model][,
+                                                                      .(date, sample, cases = value)],
+                                     delays = delays,
+                                     type = "sample")
+      return(reported_cases)
+    }
+    
+    estimated_reported_cases <- list()
+    
+    if (samples) {
+      reported_cases_rt <- report_cases_with_forecast(model = "rt")
+      reported_cases_cases <- report_cases_with_forecast(model = "case")
+      reported_cases_ensemble <- report_cases_with_forecast(model = "ensemble")
+      
+      estimated_reported_cases$samples <- data.table::rbindlist(list(
+        reported_cases_rt$samples[, type := "rt"],
+        reported_cases_cases$samples[, type := "case"],
+        reported_cases_ensemble$samples[, type := "ensemble"],
+        estimates$samples[variable == "reported_cases"][,
+                                                        .(date, sample, cases = value, type = "gp_rt")]
+      ), use.names = TRUE)
+      
+    }
+    
+    estimated_reported_cases$summarised <- data.table::rbindlist(list(
+      reported_cases_rt$summarised[, type := "rt"],
+      reported_cases_cases$summarised[, type := "case"],
+      reported_cases_ensemble$summarised[, type := "ensemble"],
+      estimates$summarised[variable == "reported_cases"][, type := "gp_rt"][,
+                                                                            variable := NULL][, strat := NULL]
+    ), use.names = TRUE)
+  }
+  
+  if (!is.null(target_folder)) {
+    if (samples) {
+      saveRDS(estimated_reported_cases$samples, paste0(target_folder, "/estimated_reported_cases_samples.rds"))
+    }
+    saveRDS(estimated_reported_cases$summarised, paste0(target_folder, "/summarised_estimated_reported_cases.rds"))
+  }
+  return(estimated_reported_cases)
+}
+
+
+
+copy_results_to_latest(target_folder = NULL, latest_folder = NULL) {
+  if (!is.null(target_folder)) {
+    ## Save all results to a latest folder as well
+    suppressWarnings(
+      if (dir.exists(latest_folder)) {
+        unlink(latest_folder)
+      })
+    
+    suppressWarnings(
+      dir.create(latest_folder)
+    )
+    
+    suppressWarnings(
+      file.copy(file.path(target_folder, "."),
+                latest_folder, recursive = TRUE)
+    )
+  }
+  return(invisible(NULL))
+}
+
+
+construct_output <- function(estimates, forecast = NULL, 
+                             estimated_reported_cases,
+                             plots = NULL,
+                             samples = TRUE) {
+  out <- list()
+  out$estimates <- estimates
+  
+  if (!samples) {
+    out$estimates$samples <- NULL
+  }
+  
+  if (is.null(forecase)) {
+    out$forecast <- forecast
+    if (!samples) {
+      out$forecast$samples <- NULL
+    } 
+  }
+  out$estimated_reported_cases <- estimated_reported_cases
+  out$summary <- summary
+  
+  if (is.null(plots)) {
+    out$plots <- plots
+  }
+  return(out)
 }
