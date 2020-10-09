@@ -32,6 +32,21 @@ setup_target_folder <- function(target_folder = NULL, target_date) {
   }
 }
 
+#' Updates Forecast Horizon Based on Input Data and Target
+#'
+#' @description This function makes sure that a forecast is returned for the user specified
+#' time period beyond the target date.
+#' @inheritParams setup_target_folder
+#' @inheritParams estimate_infections
+#' @return Numeric forecast horizon adjusted for the users intention
+#' @export
+update_horizon <- function(horizon, target_date, reported_cases) {
+  if (horizon != 0) {
+    horizon <- horizon + as.numeric(as.Date(target_date) - max(reported_cases$date))
+  }
+  return(horizon)
+}
+
 #' Save Observed Data
 #'
 #' @inheritParams setup_target_folder
