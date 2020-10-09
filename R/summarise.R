@@ -443,3 +443,69 @@ summarise_key_measures <- function(regional_results,
 
   return(out)
 }
+
+
+#' Calculate Credible Interval
+#'
+#' @description Adds symmetric a credible interval based on quantiles.
+#' @param samples A data.table containing at least a value variable
+#' @param summarise_by A character vector of variables to group by.
+#' @param CrI Numeric between 0 and 1. The credible interval for which to return values. 
+#' Defaults to 0.9.
+#' @return A data.table containing the upper and lower bounds for the specified credible interval 
+#' @export
+#' @importFrom data.table copy
+#' @importFrom stats quantile
+#' @examples
+#' samples <- data.frame(value = 1:10, type = "car")
+#' # add 90% credible interval
+#' calc_CrI(samples)
+#' # add 90% credible interval grouped by type
+#' calc_CrI(samples, summarise_by = "type")
+calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
+  samples <- data.table::setDT(samples)
+  CrI_half <- CrI / 2
+  lower_CrI <- 0.5 - CrI_half
+  upper_CrI <- 0.5 + CrI_half
+  CrI_scale <- round(100 * CrI, 1)
+  with_CrI <- 
+    data.table::copy(samples)[,.(value = quantile(value, c(lower_CrI, upper_CrI), na.rm = TRUE),
+                                 CrI = c(paste0("lower_", CrI_scale), paste0("upper_", CrI_scale))),
+                              by = summarise_by]
+  return(with_CrI)
+}
+
+
+#' Calculate Credible Intervals
+#' 
+#' @description Adds symmetric credible intervals based on quantiles.
+#' @param CrIs Numeric vector of credible intervals to calculate.
+#' @inheritParams add_CrI
+#' @return A data.table containing the `summarise_by` variables and the specified lower and upper 
+#' credible intervals
+#' @importFrom purrr map
+#' @importFrom data.table rbindlist dcast
+#' @export
+#' @examples
+#' samples <- data.frame(value = 1:10, type = "car")
+#' # add credible intervals
+#' calc_CrIs(samples)
+#' # add 90% credible interval grouped by type
+#' calc_CrIs(samples, summarise_by = "type")
+calc_CrIs <- function(samples, summarise_by, CrIs = c(0.2, 0.5, 0.9)) {
+  
+  CrIs <- CrIs[order(CrIs)]
+  with_CrIs <- purrr::map(CrIs, ~ calc_CrI(samples = samples,
+                                          summarise_by = summarise_by,
+                                          CrI = .))
+  
+  with_CrIs <- data.table::rbindlist(with_CrIs)
+  order_CrIs <- unique(with_CrIs$CrI)
+  order_CrIs <- order_CrIs[order(order_CrIs)]
+  order_CrIs <- c(rev(grep("lower_", order_CrIs, value = TRUE)),
+                  grep("upper_", order_CrIs, value = TRUE))
+                      
+  with_CrIs <- data.table::dcast(with_CrIs, ... ~ factor(CrI, levels = order_CrIs),
+                                 value.var = 'value')
+  return(with_CrIs)
+}
