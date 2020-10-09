@@ -1,8 +1,8 @@
 context("regional_epinow")
 
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 10)
+generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 5)
 reporting_delay <- list(mean = log(3), mean_sd = 0.1,
-                        sd = log(2), sd_sd = 0.1, max = 10)
+                        sd = log(2), sd_sd = 0.1, max = 5)
 
 ## Uses example case vector
 cases <- EpiNow2::example_confirmed[1:30]
@@ -18,8 +18,6 @@ test_that("regional_epinow produces expected output when run with default settin
   skip_on_cran()
   out <- suppressWarnings(regional_epinow(reported_cases = cases, generation_time = generation_time,
                                  delays = list(reporting_delay),
-                                 gp = list(basis_prop = 0.1, boundary_scale = 2,
-                                           lengthscale_mean = 20, lengthscale_sd = 2),
                                  samples = 100, stan_args = list(warmup = 100, cores = 1, chains = 2)))
   expect_equal(names(out$regional), c("testland", "realland"))
   expect_equal(names(out$summary), c("latest_date", "results", "summarised_results", "summary_plot",
