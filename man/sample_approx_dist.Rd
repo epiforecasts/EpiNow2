@@ -43,11 +43,8 @@ A \code{data.table} of cases by date of onset
 Approximate Sampling a Distribution using Counts
 }
 \examples{
-
 cases <- EpiNow2::example_confirmed
 cases <- cases[, cases := as.integer(confirm)] 
-
-# reported case distribution
 print(cases)
 
 # total cases
@@ -72,7 +69,6 @@ total_onsets <- median(
    purrr::map_dbl(1:100, 
                   ~ sum(sample_approx_dist(cases = cases,
                   dist_fn = delay_fn)$cases))) 
-                   
 total_onsets
  
                    

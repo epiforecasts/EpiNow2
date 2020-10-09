@@ -23,25 +23,22 @@
 #' @importFrom truncnorm rtruncnorm
 #' @examples
 #' \donttest{
-#' 
 #' if(requireNamespace("EpiSoon")){
 #'    if(requireNamespace("forecastHybrid")){
-#' 
-#' ## Example case data
+#' # example case data
 #' reported_cases <- EpiNow2::example_confirmed[1:40]
 #'  
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 15)
 #' 
-#'                         
-#' ## Estimate Rt and infections from data
+#' # estimate Rt and infections from data
 #' out <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
 #'                            gp = list(),
 #'                            stan_args = list(cores = ifelse(interactive(), 4, 1), chains = 4))
 #'
-#' ## Forecast Rt and infections from estimates
+#' # forecast Rt and infections from estimates
 #' forecast <- forecast_infections(
 #'     infections = out$summarised[variable == "infections"],
 #'     rts = out$summarised[variable == "R"],
@@ -71,27 +68,22 @@ forecast_infections <- function(infections, rts,
          install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")')
   }
   
-# Set to data.table if not ------------------------------------------------
+# set to data.table if not ------------------------------------------------
 data.table::setDTthreads(1)
-  
 infections <- data.table::setDT(infections)
 rts <- data.table::setDT(rts)
 
-
-# Warnings ----------------------------------------------------------------
-
+# warnings ----------------------------------------------------------------
 if (missing(forecast_model)) {
   stop("A forecasting model has not been supplied so no forecast can be produced. See the documentation for examples.")
 }
 
-# Set up a mean and sd forecast -------------------------------------------
-  
+# set up a mean and sd forecast -------------------------------------------
   sample_forecast <- function(df, samples) {
-    
-    ## Safe forecast wrapper
+    # safe forecast wrapper
     safe_forecast <- purrr::safely(EpiSoon::forecast_rt)
     
-    ## Forecast Rts using the mean estimate
+    # forecast Rts using the mean estimate
     rt_forecasts <-
       data.table::setDT(
         safe_forecast(rts = df[, .(date, rt = mean)],
@@ -103,31 +95,27 @@ if (missing(forecast_model)) {
     rt_sd <- df[date == max(date, na.rm = TRUE)]$sd
     rt_sd <- ifelse(rt_sd <= 0, 1e-3, rt_sd)
     
-    ## Sample from assumed lognormal distribution
+    # sample from assumed lognormal distribution
     rt_forecasts <- rt_forecasts[, rt := purrr::map_dbl(rt, ~ truncnorm::rtruncnorm(1, a = 0,
                                                                                    mean = ., 
                                                                                    sd = rt_sd))][,
                                  .(sample, date, horizon, rt)]
-    
     return(rt_forecasts)
   }
 
   
-# Forecast Rt -------------------------------------------------------------
-
+# forecast Rt -------------------------------------------------------------
   rt_forecast <- sample_forecast(rts, samples = samples)
   
-# Define generation time pmf ----------------------------------------------
-  
-  
-  ## Define generation pmf
+# define generation time pmf ----------------------------------------------
+  # define generation pmf
   generate_pmf <- function(mean, sd, max_value) {
     params <- list(
       alpha = (mean/sd)^2,
       beta = mean/sd^2
     )
     
-    ## Define with 0 day padding
+    # define with 0 day padding
     sample_fn <- function(n, ...) {
       c(0, EpiNow2::dist_skel(n = n,
                              model = "gamma",
@@ -143,13 +131,12 @@ if (missing(forecast_model)) {
   
   generation_pmf <- generate_pmf(gt_mean, gt_sd, max_value = gt_max)
   
-# Forecast cases ----------------------------------------------------------
-
-  ## Forecast cases from cases
+# forecast cases ----------------------------------------------------------
+  # forecast cases from cases
   case_forecast <- sample_forecast(infections, samples = samples)[,
                          `:=`(cases = rt, forecast_type = "case")][, rt := NULL]
   
-  ## Forecast cases from rts and mean infections
+  # forecast cases from rts and mean infections
   case_rt_forecast <-
     data.table::setDT(
       EpiSoon::forecast_cases(
@@ -160,35 +147,29 @@ if (missing(forecast_model)) {
       )
     )
   
-  ## Sample case forecast based on last observed infection standard deviation
+  # sample case forecast based on last observed infection standard deviation
   case_rt_forecast <- case_rt_forecast[, cases := purrr::map_dbl(cases,
                  ~ as.integer(truncnorm::rtruncnorm(1, a = 0, mean = ., sd = infections$sd[nrow(infections)])))][,
                                          forecast_type := "rt"]
   
-  
   case_forecast <- data.table::rbindlist(list(
     case_forecast, case_rt_forecast), use.names = TRUE)
   
-# Ensemble forecast -------------------------------------------------------
-
+# ensemble forecast -------------------------------------------------------
   if (ensemble_type %in% "mean") {
-    
     ensemble_forecast <- data.table::copy(case_forecast)[, .(cases = mean(cases, na.rm = TRUE),
                                                              forecast_type = "ensemble"),
                                                          by = .(sample, date, horizon)]
-    
     case_forecast <- data.table::rbindlist(list(case_forecast, ensemble_forecast))
   }
   
-# Combine forecasts -------------------------------------------------------
-
+# combine forecasts -------------------------------------------------------
   forecast <- data.table::rbindlist(list(
     rt_forecast[, value := rt][, rt := NULL][, type := "rt"],
     case_forecast[, value := cases][, cases := NULL][, type := "case"]
   ), fill = TRUE)
   
-# Summarise forecasts -----------------------------------------------------
-
+# summarise forecasts -----------------------------------------------------
   summarised_forecast <- data.table::copy(forecast)[, .(
     bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
     top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
@@ -200,12 +181,10 @@ if (missing(forecast_model)) {
     mean = as.numeric(mean(value, na.rm = TRUE)),
     sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, type, forecast_type)]
   
-  ## Order summarised samples
+  # order summarised samples
   data.table::setorder(summarised_forecast, type, forecast_type, date)  
 
-  
-  ## Combine output
+  # combine output
   out <- list(samples = forecast, summarised = summarised_forecast)
-  
   return(out)
   }

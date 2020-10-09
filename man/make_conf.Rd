@@ -21,8 +21,6 @@ A character vector formatted for reporting
 Format Credible Intervals
 }
 \examples{
-
 value <- list(point = 1, lower = 0, upper = 3)
-
 make_conf(value, round_type = round, digits = 0)
 }

@@ -7,10 +7,10 @@
 #' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
 #' that region to be evaluated. Defaults to 2.
 #' @param output A character vector of optional output to return. Supported options are the individual regional estimates
-#' ("regions"),  samples ("samples"), 
-#' plots ("plots"), and the stan fit of the underlying model ("fit"). The default is to return samples and plots alongside summarised estimates
-#' and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
-#' being reported.
+#' ("regions"),  samples ("samples"), plots ("plots"), timing ("timing"), the stan fit of the underlying model ("fit"), and an 
+#' overall summary across regions ("summary"). 
+#' The default is to return samples and plots alongside summarised estimates and summary statistics. This argument uses partial 
+#' matching so for example passing "sam" will lead to samples being reported.
 #' @param summary_args A list of arguments passed to `regional_summary`. See the `regional_summary` documentation for details.
 #' @param ... Pass additional arguments to `epinow`. See the documentation for `epinow` for details.
 #' @inheritParams epinow
@@ -57,14 +57,14 @@ regional_epinow <- function(reported_cases,
                             non_zero_points = 2, 
                             return_output = TRUE,
                             output = c("regions", "summary", "samples", 
-                                       "plots", "timings"),
+                                       "plots", "timing"),
                             summary_args = list(), ...) {
   
   # supported output
   output <- match_output_arguments(output, 
                                    supported_args = c("plots", "samples", "fit",
                                                       "regions", "summary",
-                                                      "timings"),
+                                                      "timing"),
                                    logger = "EpiNow2")
   if (missing(target_date)) {
     target_date <- as.character(max(reported_cases$date))
@@ -228,7 +228,9 @@ run_region <- function(target_region,
     )
   )
   out <- process_region(out, target_region, timing,
-                        return_output, complete_logger)
+                        return_output,
+                        return_timing = output["timing"],
+                        complete_logger)
   
   if (!missing(progress_fn)) {
     progress_fn(sprintf("Region: %s", target_region))
@@ -240,12 +242,13 @@ run_region <- function(target_region,
 #'
 #' @param out List of output returned by `epinow`
 #' @param timing Output from `Sys.time` 
+#' @param return_timing Logical, shoulding runtime be returned
 #' @inheritParams regional_epinow
 #' @inheritParams run_region
 #' @importFrom futile.logger flog.info
 #' @return A list of processed output
 process_region <- function(out, target_region, timing, 
-                           return_output,
+                           return_output = TRUE, return_timing = TRUE,
                            complete_logger = "EpiNow2.epinow") {
   
   if (exists("estimates", out) & !return_output) {
@@ -261,8 +264,8 @@ process_region <- function(out, target_region, timing,
     out$estimated_reported_cases$plots <- NULL
   }
   
-  if (!exists("timing", out)) { # only exists if it failed and is Inf
-    out$timing = timing['elapsed']
+  if (!exists("timing", out) & return_timing) { # only exists if it failed and is Inf
+    out$timing <- timing['elapsed']
   }
   if (exists("summary", out)) { # if it failed a warning would have been output above
     futile.logger::flog.info("Completed estimates for: %s", target_region, 

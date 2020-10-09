@@ -61,39 +61,37 @@
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @examples
 #' \donttest{
-#' # Get example case counts
+#' # get example case counts
 #' reported_cases <- EpiNow2::example_confirmed[1:50]
 #' 
-#' # Add a dummy breakpoint (used only when optionally estimating breakpoints)
+#' # add a dummy breakpoint (used only when optionally estimating breakpoints)
 #' reported_cases <- 
 #'     reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"), 1, 0)]
-#' # Set up example generation time
+#' # set up example generation time
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-#' # Set delays between infection and case report 
+#' # set delays between infection and case report 
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- list(mean = log(5), mean_sd = log(2),
 #'                         sd = log(2), sd_sd = log(1.5), max = 30)
 #'                         
-#' # Run model with default settings
+#' # run model with default settings
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay), 
 #'                            stan_args = list(warmup = 200, 
 #'                                             cores = ifelse(interactive(), 4, 1)))
 #'
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
 #' plots$summary
 #' 
-#' # Run the model using the approximate method (variational inference)
+#' # run the model using the approximate method (variational inference)
 #' approx <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                               delays = list(incubation_period, reporting_delay),
 #'                               method = "approximate")
 #'
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = approx$summarised, reported = reported_cases)
 #' plots$summary
 #'
-#' # Run the model with default settings using the future backend 
+#' # run the model with default settings using the future backend 
 #' ## (combine with a call to future::plan to make this parallel).
 #' def_future <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                   delays = list(incubation_period, reporting_delay),
@@ -103,21 +101,19 @@
 #' plots <- report_plots(summarised_estimates = def_future$summarised, reported = reported_cases)
 #' plots$summary                          
 #'                            
-#' # Run model with Rt fixed into the future
+#' # run model with Rt fixed into the future
 #' fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
 #'                                 stan_args = list(warmup = 200, 
 #'                                                  cores = ifelse(interactive(), 4, 1)),
 #'                                 fixed_future_rt = TRUE)
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = fixed_rt$summarised, reported = reported_cases)
 #' plots$summary
 #'
-#'# Run the model with default settings on a later snapshot of 
-#'# data (use burn_in here to remove the first week of
-#'# estimates that may be impacted by this most).
+#' # run the model with default settings on a later snapshot of 
+#' # data (use burn_in here to remove the first week of estimates that may
+#' # be impacted by this most).
 #' snapshot_cases <- EpiNow2::example_confirmed[80:130]
 #' snapshot <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
@@ -125,56 +121,45 @@
 #'                                                  cores = ifelse(interactive(), 4, 1)),
 #'                                 burn_in = 7)
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = snapshot$summarised, reported = snapshot_cases)
 #' plots$summary    
 #' 
-#' ## Run model with stationary Rt assumption (likely to provide biased real-time estimates)
+#' # run model with stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
 #'                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
 #'                             stationary = TRUE)
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = stat$summarised, reported = reported_cases)
 #' plots$summary
 #'        
-#' # Run model with fixed Rt assumption 
+#' # run model with fixed Rt assumption 
 #' fixed <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                              delays = list(incubation_period, reporting_delay),
 #'                              stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
 #'                              gp = list())
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = fixed$summarised, reported = reported_cases)
 #' plots$summary
 #' 
-#' 
-#' # Run model with no delays 
+#' # run model with no delays 
 #' no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = no_delay$summarised, reported = reported_cases)
 #' plots$summary         
 #'               
-#' # Run model with breakpoints                                                                      
+#' # run model with breakpoints                                                                      
 #' bkp <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
 #'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
 #'                            estimate_breakpoints = TRUE)
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = bkp$summarised, reported = reported_cases)
 #' plots$summary
 #'              
-#' # Run model with breakpoints but with constrained non-linear change over time 
-#' # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
+#' # run model with breakpoints but with constrained non-linear change over time 
+#' # rhis formulation may increase the apparent effect of the breakpoint but needs to be tested using
 #' # model fit criteria (i.e LFO). 
 #' cbkp <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
@@ -183,14 +168,12 @@
 #'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
 #'                            estimate_breakpoints = TRUE)                                                                   
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = cbkp$summarised, reported = reported_cases)
 #' plots$summary
-#' # Pull out breakpoint summary
+#' # breakpoint effect
 #' cbkp$summarised[variable == "breakpoints"]
 #' 
-#' # Run model with breakpoints but otherwise static Rt
+#' # run model with breakpoints but otherwise static Rt
 #' # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
 #' # model fit criteria (i.e LFO).           
 #' fbkp <- estimate_infections(reported_cases, generation_time = generation_time,
@@ -198,13 +181,12 @@
 #'                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
 #'                             gp = list(), estimate_breakpoints = TRUE)                                                         
 #'
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = fbkp$summarised, reported = reported_cases)
 #' plots$summary
-#' # Pull out breakpoint summary
+#' # breakpoint effect
 #' fbkp$summarised[variable == "breakpoints"]
 #' 
-#' # Run model without Rt estimation (just backcalculation)
+#' # run model without Rt estimation (just backcalculation)
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                delays = list(incubation_period, reporting_delay),
 #'                                stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
@@ -490,13 +472,13 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date){
  
   format_out <- list()
   
-  ## Bind all samples together
+  # bind all samples together
   format_out$samples <- data.table::rbindlist(posterior_samples, fill = TRUE, idcol = "variable")
   
   if (is.null(format_out$samples$strat)) {
     format_out$samples <- format_out$samples[, strat := NA]
   }
-  ## Add type based on horizon
+  # add type based on horizon
   format_out$samples <- format_out$samples[,
                                            type := data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon), 
                                                                        "forecast", 
@@ -504,12 +486,12 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date){
                                                                                            "estimate based on partial data",                    
                                                                                            "estimate"))]
   
-  ## Remove burn in period if specified
+  # remove burn in period if specified
   if (burn_in > 0) {
     format_out$samples <- format_out$samples[is.na(date) | date >= (start_date + lubridate::days(burn_in))]
   }
   
-  ## Summarise samples
+  # summarise samples
   format_out$summarised <- data.table::copy(format_out$samples)[, .(
     bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
     top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
@@ -521,9 +503,8 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date){
     mean = as.numeric(mean(value, na.rm = TRUE)),
     sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable, strat, type)]
   
-  ## Order summarised samples
+  # order summarised samples
   data.table::setorder(format_out$summarised, variable, date)  
-  
   return(format_out)
 }
 

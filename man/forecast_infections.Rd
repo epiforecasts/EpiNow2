@@ -48,25 +48,22 @@ available \href{https://epiforecasts.io/EpiSoon/}{here}.
 }
 \examples{
 \donttest{
-
 if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
-
-## Example case data
+# example case data
 reported_cases <- EpiNow2::example_confirmed[1:40]
  
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 15)
 
-                        
-## Estimate Rt and infections from data
+# estimate Rt and infections from data
 out <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
                            gp = list(),
                            stan_args = list(cores = ifelse(interactive(), 4, 1), chains = 4))
 
-## Forecast Rt and infections from estimates
+# forecast Rt and infections from estimates
 forecast <- forecast_infections(
     infections = out$summarised[variable == "infections"],
     rts = out$summarised[variable == "R"],

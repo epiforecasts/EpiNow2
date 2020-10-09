@@ -21,47 +21,45 @@
 #' @examples
 #' 
 #' ## Exponential model
-#' 
-#' ## Sample
+#' # sample
 #' dist_skel(10, model = "exp", params = list(rate = 1))
 #' 
-#' ## Cumulative prob density
+#' # cumulative prob density
 #' dist_skel(1:10, model = "exp", dist = TRUE, params = list(rate = 1))
 #' 
-#' ## Probability density
+#' # probability density
 #' dist_skel(1:10, model = "exp", dist = TRUE, 
 #'           cum = FALSE, params = list(rate = 1))
 #' 
 #' ## Gamma model
-#' 
+#' # sample
 #' dist_skel(10, model = "gamma", params = list(alpha = 1, beta = 2))
 #' 
-#' ## Cumulative prob density
+#' # cumulative prob density
 #' dist_skel(0:10, model = "gamma", dist = TRUE,
 #'           params = list(alpha = 1, beta = 2))
 #' 
-#' ## Probability density
+#' # probability density
 #' dist_skel(0:10, model = "gamma", dist = TRUE, 
 #'           cum = FALSE, params = list(alpha = 2, beta = 2))
 #' 
 #' ## Log normal model
-#' 
+#' # sample
 #' dist_skel(10, model = "lognorm", params = list(mean = log(5), sd = log(2)))
 #' 
-#' ## Cumulative prob density
+#' # cumulative prob density
 #' dist_skel(0:10, model = "lognorm", dist = TRUE,
 #'           params = list(mean = log(5), sd = log(2)))
 #' 
-#' ## Probability density
+#' # probability density
 #' dist_skel(0:10, model = "lognorm", dist = TRUE, cum = FALSE,
 #'           params = list(mean = log(5), sd = log(2)))
 #'         
-
 dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
                       params, max_value = 120) {
   
   if (model %in% "exp") {
-    ## Define support functions for exponential dist
+    # define support functions for exponential dist
     rdist <- function(n) {rexp(n, params$rate)}
     pdist <- function(n) {pexp(n, params$rate) / pexp(max_value, params$rate)}
     ddist <- function(n) {(pexp(n + 1, params$rate) -
@@ -85,7 +83,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
         plnorm(max_value, params$mean, params$sd)}
   }
   
-  ## Define internal sampling function
+  # define internal sampling function
   inner_skel <- function(n, dist = FALSE, cum = TRUE, max_value = NULL){
     if(!dist) {
       rdist(n)
@@ -101,10 +99,9 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
     }
   }
   
-  ## Define truncation wrapper
+  # define truncation wrapper
   truncated_skel <- function(n, dist, cum, max_value) {
     n <- inner_skel(n, dist, cum, max_value)
-    
     if (!dist) {
       while(any(!is.na(n) & n >= max_value)) {
         n <- ifelse(n >= max_value, inner_skel(n), n)
@@ -112,16 +109,13 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
       
       n <- as.integer(n)
     }
-    
     return(n)
   }
   
-  ## Call function
+  # call function
   sample <- truncated_skel(n, dist = dist, cum = cum, max_value = max_value)
-  
   return(sample)
 }
-
 
 
 #' Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
@@ -142,19 +136,18 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @useDynLib EpiNow2, .registration=TRUE
 #' @examples
 #' \donttest{
-#' ## Integer adjusted exponential model
+#' # integer adjusted exponential model
 #' dist_fit(rexp(1:100, 2), samples = 1000, dist = "exp", 
 #'          cores = ifelse(interactive(), 4, 1), verbose = TRUE)
 #' 
 #' 
-#' ## Integer adjusted gamma model
+#' # integer adjusted gamma model
 #' dist_fit(rgamma(1:100, 5, 5), samples = 1000, dist = "gamma", 
 #'          cores = ifelse(interactive(), 4, 1), verbose = TRUE)
 #' 
-#' ## Integer adjusted lognormal model
+#' # integer adjusted lognormal model
 #' dist_fit(rlnorm(1:100, log(5), 0.2), samples = 1000, dist = "lognormal",
 #'          cores = ifelse(interactive(), 4, 1), verbose = TRUE)
-#' 
 #' }
 dist_fit <- function(values = NULL, samples = NULL, cores = 1, 
                      chains = 2, dist = "exp", verbose = FALSE) {
@@ -167,7 +160,7 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
     samples <- 1000
   }
   
-  ## Model parameters
+  # model parameters
   lows <- values - 1
   lows <- ifelse(lows <=0, 1e-6, lows)
   ups <- values + 1
@@ -195,14 +188,14 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
               prior_sd = log(sd(values)))
   }
   
-  ## Set adapt delta based on the sample size
+  # set adapt delta based on the sample size
   if (length(values) <= 30) {
     adapt_delta <- 0.999
   } else {
     adapt_delta <- 0.9
   }
   
-  ## Fit model
+  # fit model
   fit <- rstan::sampling(
     model,
     data = data,
@@ -210,8 +203,6 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
     chains = chains,
     cores = cores,
     refresh = ifelse(verbose, 50, 0))
-  
-  
   return(fit)
 }
 
@@ -231,23 +222,18 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
 #' @inheritParams dist_skel
 #' @inheritParams lognorm_dist_def
 #' @examples
-#' 
-#' ## Using estimated shape and scale
+#' # using estimated shape and scale
 #' def <- gamma_dist_def(shape = 5.807, shape_sd = 0.2,
 #'                scale = 0.9, scale_sd = 0.05,
 #'                max_value = 20, samples = 10)
-#'                
 #'print(def)
-#'
 #'def$params[[1]]
 #'
-#'## Using mean and sd
+#'# using mean and sd
 #'def <- gamma_dist_def(mean = 3, mean_sd = 0.5,
 #'                sd = 3, sd_sd = 0.1,
 #'                max_value = 20, samples = 10)
-#'                
 #'print(def)
-#'
 #'def$params[[1]]
 gamma_dist_def <- function(shape, shape_sd,
                            scale, scale_sd, 
@@ -273,7 +259,6 @@ gamma_dist_def <- function(shape, shape_sd,
            beta = beta)),
     max_value = rep(max_value, samples)
   )
-  
   return(dist)
 }
 
@@ -293,23 +278,17 @@ gamma_dist_def <- function(shape, shape_sd,
 #' @export
 #' @inheritParams dist_skel
 #' @examples
-#' 
-#' 
 #' def <- lognorm_dist_def(mean = 1.621, mean_sd = 0.0640,
 #'                         sd = 0.418, sd_sd = 0.0691,
 #'                         max_value = 20, samples = 10)
-#'                
 #'print(def)
-#'
 #'def$params[[1]]
 #'
 #'def <- lognorm_dist_def(mean = 5, mean_sd = 1,
 #'                         sd = 3, sd_sd = 1,
 #'                         max_value = 20, samples = 10,
 #'                         to_log = TRUE)
-#'                
 #'print(def)
-#'
 #'def$params[[1]]
 lognorm_dist_def <- function(mean, mean_sd,
                              sd, sd_sd, 
@@ -343,7 +322,6 @@ lognorm_dist_def <- function(mean, mean_sd,
            sd = sds)),
     max_value = rep(max_value, samples)
   )
-  
   return(dist)
 }
 
@@ -367,22 +345,14 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' @importFrom future.apply future_lapply
 #' @importFrom rstan extract
 #' @importFrom data.table data.table rbindlist setDTthreads
-#'
 #' @export
-#'
 #' @examples
-
-#'
 #' \donttest{
 #' # lognormal
 #' delays <- rlnorm(500, log(5), 1)
-#'
 #' out <- bootstrapped_dist_fit(delays, samples = 1000, bootstraps = 10, 
 #'                              dist = "lognormal")
-#'
-#' ## Inspect
 #' out
-#' 
 #'}
 bootstrapped_dist_fit <- function(values,  dist = "lognormal", 
                                   samples = 2000, bootstraps = 10, 
@@ -473,11 +443,8 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
 #' @importFrom data.table data.table setorder
 #' @importFrom lubridate days
 #' @examples
-#' 
 #' cases <- EpiNow2::example_confirmed
 #' cases <- cases[, cases := as.integer(confirm)] 
-#' 
-#' # reported case distribution
 #' print(cases)
 #' 
 #' # total cases
@@ -502,7 +469,6 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
 #'    purrr::map_dbl(1:100, 
 #'                   ~ sum(sample_approx_dist(cases = cases,
 #'                   dist_fn = delay_fn)$cases))) 
-#'                    
 #' total_onsets
 #'  
 #'                    
@@ -535,7 +501,7 @@ sample_approx_dist <- function(cases = NULL,
     # reverse cases so starts with current first
     reversed_cases <- direction_fn(cases$cases)
     reversed_cases[is.na(reversed_cases)] <- 0 
-    ## Draw from the density fn of the dist
+    # draw from the density fn of the dist
     draw <- dist_fn(0:max_value, dist = TRUE, cum = FALSE)
     
     # approximate cases
@@ -547,7 +513,7 @@ sample_approx_dist <- function(cases = NULL,
                                        rep(0, length(reversed_cases) - .))))
     
     
-    ## Set dates order based on direction mapping
+    # set dates order based on direction mapping
     if (direction %in% "backwards") {
       dates <- seq(min(cases$date) - lubridate::days(length(draw) - 1),
                    max(cases$date), by = "days")
@@ -557,23 +523,22 @@ sample_approx_dist <- function(cases = NULL,
                    by = "days")
     } 
      
-    ## Summarises movements and sample for placement of non-integer cases
+    # summarises movements and sample for placement of non-integer cases
     case_sum <- direction_fn(rowSums(mapped_cases))
     floor_case_sum <- floor(case_sum)
     sample_cases <- floor_case_sum + 
       data.table::fifelse((runif(1:length(case_sum)) < (case_sum - floor_case_sum)),
                           1, 0)
     
-    ## Summarise imputed onsets and build output data.table
+    # summarise imputed onsets and build output data.table
     mapped_cases <- data.table::data.table(
       date = dates,
       cases = sample_cases
     )
     
-    ## Filter out all zero cases until first recorded case
+    # filter out all zero cases until first recorded case
     mapped_cases <- data.table::setorder(mapped_cases, date)
     mapped_cases <- mapped_cases[,cum_cases := cumsum(cases)][cum_cases != 0][,cum_cases := NULL]
-    
   }else if (type %in% "median") {
     shift <- as.integer(median(as.integer(dist_fn(1000, dist = FALSE)), na.rm = TRUE))
     
@@ -584,17 +549,14 @@ sample_approx_dist <- function(cases = NULL,
     }
   }
 
-  
   if (!is.null(earliest_allowed_mapped)) {
     mapped_cases <- mapped_cases[date >= as.Date(earliest_allowed_mapped)]
   }
   
-  ## Filter out future cases
+  # filter out future cases
   if (direction %in% "forwards" & truncate_future) {
     max_date <- max(cases$date)
     mapped_cases <- mapped_cases[date <= max_date]
   }
-  
-  
   return(mapped_cases)
 }

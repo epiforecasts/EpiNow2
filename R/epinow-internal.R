@@ -1,5 +1,3 @@
-
-
 #' Convert to Data Table
 #'
 #' @inheritParams estimate_infections

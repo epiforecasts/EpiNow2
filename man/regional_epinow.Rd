@@ -10,7 +10,7 @@ regional_epinow(
   target_date,
   non_zero_points = 2,
   return_output = TRUE,
-  output = c("regions", "summary", "samples", "plots", "timings"),
+  output = c("regions", "summary", "samples", "plots", "timing"),
   summary_args = list(),
   ...
 )
@@ -29,10 +29,10 @@ that region to be evaluated. Defaults to 2.}
 \code{target_folder} must be specified in order to enable output saving to disk.}
 
 \item{output}{A character vector of optional output to return. Supported options are the individual regional estimates
-("regions"),  samples ("samples"),
-plots ("plots"), and the stan fit of the underlying model ("fit"). The default is to return samples and plots alongside summarised estimates
-and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
-being reported.}
+("regions"),  samples ("samples"), plots ("plots"), timing ("timing"), the stan fit of the underlying model ("fit"), and an
+overall summary across regions ("summary").
+The default is to return samples and plots alongside summarised estimates and summary statistics. This argument uses partial
+matching so for example passing "sam" will lead to samples being reported.}
 
 \item{summary_args}{A list of arguments passed to \code{regional_summary}. See the \code{regional_summary} documentation for details.}
 
