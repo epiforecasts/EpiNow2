@@ -466,7 +466,7 @@ calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
 #' # add credible intervals
 #' calc_CrIs(samples)
 #' # add 90% credible interval grouped by type
-#' calc_CrIs(samples, summarise_by = "type")
+#' calc_CrIs(samples, summarise_by = "type") 
 calc_CrIs <- function(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9)) {
   CrIs <- CrIs[order(CrIs)]
   with_CrIs <- purrr::map(CrIs, ~ calc_CrI(samples = samples,
@@ -475,13 +475,28 @@ calc_CrIs <- function(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9)) {
   
   with_CrIs <- data.table::rbindlist(with_CrIs)
   order_CrIs <- unique(with_CrIs$CrI)
-  order_CrIs <- order_CrIs[order(order_CrIs)]
-  order_CrIs <- c(rev(grep("lower_", order_CrIs, value = TRUE)),
-                  grep("upper_", order_CrIs, value = TRUE))
-                      
+  order_CrIs <- lapply(c("lower_", "upper_"), paste0, round(CrIs * 100, 1))
+  order_CrIs <- unlist(order_CrIs)
   with_CrIs <- data.table::dcast(with_CrIs, ... ~ factor(CrI, levels = order_CrIs),
                                  value.var = 'value')
   return(with_CrIs)
+}
+
+#' Extract Credible Intervals Present
+#'
+#' @param summarised A data frame as processed by `calc_CrIs`
+#' @return A numeric vector of credible intervals detected in the data frame.
+#' @export
+#' @examples
+#' samples <- data.frame(value = 1:10, type = "car")
+#' summarised <- calc_CrIs(samples, summarise_by = "type",
+#'                         CrIs = c(seq(0.05, 0.95, 0.05))) 
+#' extract_CrIs(summarised)
+extract_CrIs <- function(summarised) {
+  CrIs <- grep("lower_", colnames(summarised), value = TRUE)
+  CrIs <- gsub("lower_", "", CrIs)
+  CrIs <- as.numeric(CrIs)
+  return(CrIs)
 }
 
 #' Calculate Summary Statistics
