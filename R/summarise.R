@@ -372,75 +372,50 @@ regional_summary <- function(regional_output = NULL,
 #' @return A list of summarised Rt, cases by date of infection and cases by date of report
 #' @export
 #' @importFrom data.table setnames fwrite
-summarise_key_measures <- function(regional_results,
-                                   results_dir, summary_dir, 
-                                   type = "region", date) {
-  
-  if (missing(regional_results)) {
-    regional_results <- NULL
-  }
+summarise_key_measures <- function(regional_results = NULL,
+                                   results_dir = NULL, summary_dir = NULL, 
+                                   type = "region", date = "latest") {
   
   if (is.null(regional_results)) {
-    if (missing(results_dir)) {
-      results_dir <- NULL
-    }
-    
     if (is.null(results_dir)) {
       stop("Missing results directory")
     }
-    
-    if (missing(summary_dir)) {
-      summary_dir <- NULL
-    }
-    
-    if (missing(date)) {
-      date <- "latest"
-    }
-    
     timeseries <- EpiNow2::get_regional_results(results_dir = results_dir,
                                                 date = date, forecast = FALSE, 
                                                 samples = FALSE)
   }else{
     timeseries <- regional_results 
   }
-  
-
   summarise_variable <- function(df, dof = 0) {
-    df <- df[, .(region, date, type, median = round(median, dof),
-           mean = round(mean, dof), sd = round(sd, dof),
-           lower_20 = round(central_lower, dof), upper_20 = round(central_upper, dof),
-           lower_50 = round(lower, dof), upper_50 = round(upper, dof),
-           lower_90 = round(bottom, dof), upper_90 = round(top, dof))]
-    
+    cols <- setdiff(names(df), c("region", "date", "type"))
+    df[,(cols) := round(.SD, dof), .SDcols = cols]
+    data.table::setorderv(df, cols = cols)
     data.table::setnames(df, "region", type)
-    
     return(df)
   }
-
+  
   save_variable <- function(df, name) {
       if (!is.null(summary_dir)) {
         data.table::fwrite(df, paste0(summary_dir, "/", name, ".csv"))
       }
   }
-  
+
   out <- list()
-  
-  ## Clean and save Rt estimates
+  # clean and save Rt estimates
   out$rt <- summarise_variable(timeseries$estimates$summarised[variable == "R"], 2)
   save_variable(out$rt, "rt")
   
-  ## Clean and save growth rate estimates
+  # clean and save growth rate estimates
   out$growth_rate <- summarise_variable(timeseries$estimates$summarised[variable == "growth_rate"], 3)
   save_variable(out$growth_rate, "growth_rate")
   
-  ## Clean and save case estimates
+  # clean and save case estimates
   out$cases_by_infection <- summarise_variable(timeseries$estimates$summarised[variable == "infections"], 0)
   save_variable(out$cases_by_infection, "cases_by_infection")
   
-  ## Clean and save case estimates
+  # clean and save case estimates
   out$cases_by_report <- summarise_variable(timeseries$estimates$summarised[variable == "reported_cases"], 0)
   save_variable(out$cases_by_report, "cases_by_report")
-
   return(out)
 }
 
@@ -556,7 +531,6 @@ calc_summary_measures <- function(samples,
   if (is.null(summarise_by)) {
     summarise_by <- setdiff(names(samples), "value")
   }
-  
   if (is.null(order_by)) {
     order_by = summarise_by
   }
