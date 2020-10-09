@@ -17,6 +17,7 @@ estimate_infections(
   gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_mean = 0, lengthscale_sd
     = 2),
   rt_prior = list(mean = 1, sd = 1),
+  CrIs = c(0.2, 0.5, 0.9),
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
   estimate_breakpoints = FALSE,
