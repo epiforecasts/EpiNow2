@@ -111,6 +111,9 @@ report_summary <- function(summarised_estimates,
   summarised_estimates <- data.table::setDT(summarised_estimates)
   rt_samples <- data.table::setDT(rt_samples)
   
+  CrIs <- extract_CrIs(summarised_estimates)
+  max_CrI <- (CrIs)
+  
   # extract values of interest
   summarised_estimates <- summarised_estimates[, .(variable, point = median,
                                                    lower = bottom, upper = top,
@@ -129,7 +132,6 @@ report_summary <- function(summarised_estimates,
   current_cases <- summarised_estimates[variable == "infections"][, variable := NULL][,
                                         purrr::map(.SD, ~ round(., 0))]
   
-
   # get individual estimates
   r_latest <- summarised_estimates[variable == "growth_rate"][, variable := NULL][,
                                   purrr::map(.SD, ~ round(., 2))]

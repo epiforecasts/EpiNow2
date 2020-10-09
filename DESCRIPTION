@@ -60,7 +60,6 @@ Imports:
     future,
     future.apply,
     ggplot2,
-    HDInterval,
     lubridate,
     methods,
     patchwork,
