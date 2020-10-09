@@ -188,16 +188,16 @@ report_summary <- function(summarised_estimates,
 #' # define example cases
 #' cases <- EpiNow2::example_confirmed[1:40]
 #' 
-#'  
 #' # set up example delays
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 #'                         
 #' # run model
-#' out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
+#' out <- EpiNow2::estimate_infections(cases, samples = 100, 
+#'                                     generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
-#'                                     stan_args = list(cores = 4))
+#'                                     stan_args = list(warmup = 100, cores = 4))
 #'                             
 #' # plot infections
 #' plots <- report_plots(summarised_estimates = out$summarised,
@@ -205,21 +205,16 @@ report_summary <- function(summarised_estimates,
 #' plots
 #' }
 report_plots <- function(summarised_estimates, reported,
-                         target_folder, max_plot = 10) {
-  
+                         target_folder = NULL, max_plot = 10) {
   # set input to data.table
   summarised_estimates <- data.table::setDT(summarised_estimates)
   reported <- data.table::setDT(reported)
   
-  if (missing(target_folder)) {
-    target_folder <- NULL
-  }
-  
-# infections plot ---------------------------------------------------------
-infections <- plot_estimates(estimate = summarised_estimates[variable == "infections"],
-                             reported = reported,
-                             ylab = "Cases by \n date of infection",
-                             max_plot = max_plot)
+ # infections plot 
+ infections <- plot_estimates(estimate = summarised_estimates[variable == "infections"],
+                              reported = reported,
+                              ylab = "Cases by \n date of infection",
+                              max_plot = max_plot)
   
 if (!is.null(target_folder)) {
   suppressWarnings(
