@@ -5,11 +5,11 @@
 \title{Summarise rt and cases}
 \usage{
 summarise_key_measures(
-  regional_results,
-  results_dir,
-  summary_dir,
+  regional_results = NULL,
+  results_dir = NULL,
+  summary_dir = NULL,
   type = "region",
-  date
+  date = "latest"
 )
 }
 \arguments{

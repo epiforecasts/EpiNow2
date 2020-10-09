@@ -9,7 +9,8 @@ report_cases(
   case_forecast = NULL,
   delays,
   type = "sample",
-  reporting_effect
+  reporting_effect,
+  CrIs = c(0.2, 0.5, 0.9)
 )
 }
 \arguments{
