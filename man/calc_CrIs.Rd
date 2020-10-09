@@ -4,9 +4,13 @@
 \alias{calc_CrIs}
 \title{Calculate Credible Intervals}
 \usage{
-calc_CrIs(samples, summarise_by, CrIs = c(0.2, 0.5, 0.9))
+calc_CrIs(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9))
 }
 \arguments{
+\item{samples}{A data.table containing at least a value variable}
+
+\item{summarise_by}{A character vector of variables to group by.}
+
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 }
 \value{
