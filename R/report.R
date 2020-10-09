@@ -10,9 +10,8 @@
 #' being summarised across samples.
 #' @inheritParams estimate_infections
 #' @inheritParams adjust_infection_to_report
-#' @importFrom data.table data.table rbindlist setorder
+#' @importFrom data.table data.table rbindlist 
 #' @importFrom future.apply future_lapply
-#' @importFrom HDInterval hdi
 #' @examples 
 #' \donttest{
 #' # define example cases
@@ -24,15 +23,16 @@
 #' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 #'                         
 #' # run model
-#' out <- EpiNow2::estimate_infections(cases, samples = 200, generation_time = generation_time,
+#' out <- EpiNow2::estimate_infections(cases, samples = 100, 
+#'                                     generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
-#'                                     stan_args = list(warmup = 200, 
+#'                                     stan_args = list(warmup = 100, 
 #'                                                      cores = ifelse(interactive(), 4, 1)),
 #'                                     estimate_rt = FALSE)
 #'                             
 #' reported_cases <- report_cases(case_estimates = 
 #'                                 out$samples[variable == "infections"][, 
-#'                                 cases := as.integer(value)][, alue := NULL],
+#'                                 cases := as.integer(value)][, value := NULL],
 #'                                delays = list(incubation_period, reporting_delay),
 #'                                type = "sample")
 #' print(reported_cases)
@@ -41,7 +41,8 @@ report_cases <- function(case_estimates,
                          case_forecast = NULL, 
                          delays,
                          type = "sample",
-                         reporting_effect) {
+                         reporting_effect,
+                         CrIs = c(0.2, 0.5, 0.9)) {
   samples <- length(unique(case_estimates$sample))
   
   # define delay distributions
@@ -81,24 +82,15 @@ report_cases <- function(case_estimates,
                      future.seed = TRUE)
 
   report <- data.table::rbindlist(report, idcol = "sample")
+  
   out <- list()
   # bind all samples together
   out$samples <- report
-  
   # summarise samples
-  out$summarised <- report[, .(
-    bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[1]])),
-    top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[2]])),
-    lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.5)), ~ .[[1]])),
-    upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.5)), ~ .[[2]])),
-    central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.2)), ~ .[[1]])), 
-    central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.2)), ~ .[[2]])),
-    median = as.numeric(median(cases, na.rm = TRUE)),
-    mean = as.numeric(mean(cases, na.rm = TRUE)),
-    sd = as.numeric(sd(cases, na.rm = TRUE))), by = .(date)]
-  
-  # order summarised samples
-  data.table::setorder(out$summarised, date) 
+  out$summarised <- calc_summary_measures(report[, value := cases][, cases := NULL],
+                                          summarise_by = c("date"),
+                                          order_by = c("date"),
+                                          CrIs = CrIs)
   return(out)
 }
 
