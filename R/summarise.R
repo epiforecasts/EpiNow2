@@ -454,7 +454,7 @@ summarise_key_measures <- function(regional_results,
 #' Defaults to 0.9.
 #' @return A data.table containing the upper and lower bounds for the specified credible interval 
 #' @export
-#' @importFrom data.table copy
+#' @importFrom data.table copy setDT
 #' @importFrom stats quantile
 #' @examples
 #' samples <- data.frame(value = 1:10, type = "car")
@@ -480,7 +480,7 @@ calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
 #' 
 #' @description Adds symmetric credible intervals based on quantiles.
 #' @param CrIs Numeric vector of credible intervals to calculate.
-#' @inheritParams add_CrI
+#' @inheritParams calc_CrI
 #' @return A data.table containing the `summarise_by` variables and the specified lower and upper 
 #' credible intervals
 #' @importFrom purrr map
@@ -492,8 +492,7 @@ calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
 #' calc_CrIs(samples)
 #' # add 90% credible interval grouped by type
 #' calc_CrIs(samples, summarise_by = "type")
-calc_CrIs <- function(samples, summarise_by, CrIs = c(0.2, 0.5, 0.9)) {
-  
+calc_CrIs <- function(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9)) {
   CrIs <- CrIs[order(CrIs)]
   with_CrIs <- purrr::map(CrIs, ~ calc_CrI(samples = samples,
                                           summarise_by = summarise_by,
@@ -508,4 +507,67 @@ calc_CrIs <- function(samples, summarise_by, CrIs = c(0.2, 0.5, 0.9)) {
   with_CrIs <- data.table::dcast(with_CrIs, ... ~ factor(CrI, levels = order_CrIs),
                                  value.var = 'value')
   return(with_CrIs)
+}
+
+#' Calculate Summary Statistics
+#'
+#' @description Calculate summary statistics from a data frame by group. Currently supports the 
+#' mean, median and standard deviation.
+#' @return A data.table containing the upper and lower bounds for the specified credible interval 
+#' @export
+#' @inheritParams calc_CrI
+#' @importFrom data.table copy setDT
+#' @examples
+#' samples <- data.frame(value = 1:10, type = "car")
+#' # default
+#' calc_summary_stats(samples)
+#' #  by type
+#' calc_summary_stats(samples, summarise_by = "type")
+calc_summary_stats <- function(samples, summarise_by = c()) {
+  samples <- data.table::setDT(samples)
+  sum_stats <- 
+    data.table::copy(samples)[,.(median =  median(value, na.rm = TRUE),
+                                 mean = mean(value, na.rm = TRUE),
+                                 sd = sd(value, na.rm = TRUE)),
+                              by = summarise_by]
+  return(sum_stats)
+}
+
+#' Calculate All Summary Measures
+#'
+#' @description Calculate summary statistics and credible intervals from a data frame by group. 
+#' @param order_by A character vector of parameters to order by, defaults to all `summarise_by`
+#' variables.
+#' @return A data.table containing summary statistics by group. 
+#' @export
+#' @inheritParams calc_CrIs
+#' @importFrom data.table setorderv
+#' @examples
+#' samples <- data.frame(value = 1:10, type = "car")
+#' # default
+#' calc_summary_measures(samples)
+#' #  by type
+#' calc_summary_measures(samples, summarise_by = "type")
+calc_summary_measures <- function(samples, 
+                                  summarise_by = NULL, 
+                                  order_by = NULL,
+                                  CrIs = c(0.2, 0.5, 0.9)) {
+  
+  if (is.null(summarise_by)) {
+    summarise_by <- setdiff(names(samples), "value")
+  }
+  
+  if (is.null(order_by)) {
+    order_by = summarise_by
+  }
+  
+  CrIs <- calc_CrIs(samples = samples, 
+                    summarise_by = summarise_by, 
+                    CrIs = CrIs)
+  sum_stats <- calc_summary_stats(samples = samples, 
+                                  summarise_by = summarise_by)
+  
+  summarised <- sum_stats[CrIs, on = summarise_by]
+  data.table::setorderv(summarised, cols = order_by)
+  return(summarised)
 }
