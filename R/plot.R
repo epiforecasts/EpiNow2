@@ -65,8 +65,8 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   
   # scale plot values based on reported cases
   if (!missing(reported) & !is.na(max_plot)) {
-    sd_cols <- c(grep("lower_", colnames(reported), value = TRUE),
-                 grep("upper_", colnames(reported), value = TRUE))
+    sd_cols <- c(grep("lower_", colnames(estimate), value = TRUE),
+                 grep("upper_", colnames(estimate), value = TRUE))
     cols <- setdiff(colnames(reported), c("date", "confirm", "breakpoint"))
     
     if (length(cols > 1)) {
@@ -75,11 +75,8 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
       estimate <- estimate[max_cases_to_plot, on = cols]
     }else{
       max_cases_to_plot <- round(max(reported$confirm, na.rm = TRUE) * max_plot, 0)
-      
       estimate <- estimate[, max := max_cases_to_plot]
     }
-    
-
     estimate <- estimate[, lapply(.SD, function(var){data.table::fifelse(var > max, 
                                                             max, var)}),
                          by = setdiff(colnames(estimate), sd_cols), .SDcols = sd_cols] 
