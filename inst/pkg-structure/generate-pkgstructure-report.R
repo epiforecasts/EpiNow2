@@ -1,4 +1,3 @@
-
 library(pkgnet)
 
 ## Declare paths explicitly as currently required by pkgnet
