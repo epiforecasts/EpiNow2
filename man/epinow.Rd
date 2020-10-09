@@ -42,12 +42,15 @@ on the log scale).}
 
 \item{output}{A character vector of optional output to return. Supported options are samples ("samples"),
 plots ("plots"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
-and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
+and summary statistics. This argument uses partial matching so for example passing "sam" will lead to samples
 being reported.}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
+
+\item{forecast_args}{A list of arguments to pass to \code{forecast_infections}. Unless at a minumum a \code{forecast_model} is passed
+tin his list then \code{forecast_infections} will be bypassed.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}

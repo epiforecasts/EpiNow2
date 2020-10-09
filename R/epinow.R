@@ -6,10 +6,12 @@
 #' results and interpreting them.
 #' @param output A character vector of optional output to return. Supported options are samples ("samples"), 
 #' plots ("plots"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
-#' and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
+#' and summary statistics. This argument uses partial matching so for example passing "sam" will lead to samples
 #' being reported.
 #' @param return_output Logical, defaults to TRUE. Should output be returned. This must either be true or a
 #' `target_folder` must be specified in order to enable output saving to disk.
+#' @param forecast_args A list of arguments to pass to `forecast_infections`. Unless at a minumum a `forecast_model` is passed 
+#' tin his list then `forecast_infections` will be bypassed. 
 #' @param ... Additional arguments passed to `estimate_infections`. See that functions documentation for options.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
@@ -97,9 +99,8 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
  save_input(reported_cases, target_folder)
  
  # make sure the horizon is as specified from the target date --------------
- if (horizon != 0) {
-   horizon <- horizon + as.numeric(as.Date(target_date) - max(reported_cases$date))
- }
+ horizon <- update_horizon(horizon, target_date, reported_cases)
+
  # estimate infections and Reproduction no ---------------------------------
  estimates <- estimate_infections(reported_cases = reported_cases, 
                                   generation_time = generation_time,
