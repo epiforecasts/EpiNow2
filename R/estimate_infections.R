@@ -201,7 +201,7 @@ estimate_infections <- function(reported_cases, model = NULL, samples = 1000,
                                 generation_time, delays = list(), horizon = 7,
                                 gp = list(basis_prop = 0.3, boundary_scale = 2,
                                           lengthscale_mean = 0, lengthscale_sd = 2),
-                                rt_prior = list(mean = 1, sd = 1),
+                                rt_prior = list(mean = 1, sd = 1), CrIs = c(0.2, 0.5, 0.9),
                                 estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE, 
                                 stationary = FALSE, fixed_future_rt = FALSE,
                                 burn_in = 0, prior_smoothing_window = 7, future = FALSE, 
@@ -325,7 +325,8 @@ estimate_infections <- function(reported_cases, model = NULL, samples = 1000,
                            horizon = horizon,
                            shift = mean_shift,
                            burn_in = burn_in,
-                           start_date = start_date)
+                           start_date = start_date,
+                           CrIs = CrIs)
   
   ## Join stan fit if required
   if (return_fit) {
@@ -463,15 +464,14 @@ fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
 #' @param shift Numeric, the shift to apply to estimates
 #' @param burn_in Numeric, number of days to discard estimates for
 #' @param start_date Date, earliest date with data
-#' @importFrom data.table fifelse rbindlist copy setorder
+#' @inheritParams calc_summary_measures
+#' @importFrom data.table fifelse rbindlist 
 #' @importFrom lubridate days
-#' @importFrom purrr map_dbl
-#' @importFrom HDInterval hdi
 #' @return A list of samples and summarised posterior parameter estimates
-format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date){
+format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
+                       CrIs){
  
   format_out <- list()
-  
   # bind all samples together
   format_out$samples <- data.table::rbindlist(posterior_samples, fill = TRUE, idcol = "variable")
   
@@ -492,19 +492,10 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date){
   }
   
   # summarise samples
-  format_out$summarised <- data.table::copy(format_out$samples)[, .(
-    bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
-    top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
-    lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[1]])),
-    upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
-    central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[1]])), 
-    central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[2]])),
-    median = as.numeric(median(value, na.rm = TRUE)),
-    mean = as.numeric(mean(value, na.rm = TRUE)),
-    sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable, strat, type)]
-  
-  # order summarised samples
-  data.table::setorder(format_out$summarised, variable, date)  
+  format_out$summarised <- calc_summary_measures(format_out$samples,
+                                                 summarise_by = c("date", "variable", "strat", "type"),
+                                                 order_by = c("variable", "date"),
+                                                 CrIs = CrIs)
   return(format_out)
 }
 

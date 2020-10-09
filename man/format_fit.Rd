@@ -4,7 +4,7 @@
 \alias{format_fit}
 \title{Format Posterior Samples}
 \usage{
-format_fit(posterior_samples, horizon, shift, burn_in, start_date)
+format_fit(posterior_samples, horizon, shift, burn_in, start_date, CrIs)
 }
 \arguments{
 \item{posterior_samples}{A list of posterior samples as returned by \code{extract_parameter_samples}}
@@ -16,6 +16,8 @@ format_fit(posterior_samples, horizon, shift, burn_in, start_date)
 \item{burn_in}{Numeric, number of days to discard estimates for}
 
 \item{start_date}{Date, earliest date with data}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 }
 \value{
 A list of samples and summarised posterior parameter estimates
