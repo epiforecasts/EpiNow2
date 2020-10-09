@@ -10,6 +10,7 @@ epinow(
   horizon = 7,
   generation_time,
   delays = list(),
+  CrIs = c(0.2, 0.5, 0.9),
   return_output = TRUE,
   output = c("samples", "plots"),
   target_folder = NULL,
@@ -36,6 +37,8 @@ Each list entry must also be a list containing the mean, standard deviation of t
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale).}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
 \code{target_folder} must be specified in order to enable output saving to disk.}

@@ -59,6 +59,7 @@
 #'
 epinow <- function(reported_cases, samples = 1000, horizon = 7, 
                    generation_time, delays = list(),
+                   CrIs = c(0.2, 0.5, 0.9),
                    return_output = TRUE, output = c("samples", "plots"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, verbose = FALSE,
@@ -68,6 +69,12 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
     futile.logger::flog.fatal("Either return output or save to a target folder",
                               name = "EpiNow2.epinow")
     stop("Either return output or save to a target folder")
+  }
+  
+  if (is.null(CrIs) | length(CrIs) == 0 | !is.numeric(CrIs)) {
+    futile.logger::flog.fatal("At least one credible interval must be specified",
+                              name = "EpiNow2.epinow")
+    stop("At least one credible interval must be specified")
   }
   
   # check verbose settings and set logger to match---------------------------
@@ -107,6 +114,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                   samples = samples,
                                   horizon = horizon,
                                   estimate_rt = TRUE,
+                                  CrIs = CrIs,
                                   return_fit = output["fit"],
                                   verbose = verbose,
                                   ...)
@@ -124,7 +132,8 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                               gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
                               gt_max = generation_time$max,
                               horizon = horizon,
-                              samples = samples),
+                              samples = samples,
+                              CrIs = CrIs),
                          forecast_args))
    
    save_forecast_infections(forecast, target_folder, samples = output["samples"])
@@ -136,7 +145,8 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                                       forecast, 
                                                       delays = delays,
                                                       target_folder = target_folder,
-                                                      samples = output["samples"])
+                                                      samples = output["samples"],
+                                                      CrIs = CrIs)
  
  # report estimates --------------------------------------------------------
  summary <- report_summary(
