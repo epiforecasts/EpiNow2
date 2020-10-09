@@ -31,13 +31,13 @@
 #' # example case data
 #' reported_cases <- EpiNow2::example_confirmed[1:40] 
 #' 
-#' ## Report Rt along with forecasts
+#' # estimate Rt and nowcast/forecast cases by date of infection
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
 #'               delays = list(incubation_period, reporting_delay), 
 #'               stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' out
 #' 
-#' # optional forecasting
+#' # optional forecasting using EpiSoon plug-in
 #' if(requireNamespace("EpiSoon")){
 #'    if(requireNamespace("forecastHybrid")){
 #'    # report Rt along with forecasts
@@ -55,7 +55,6 @@
 #'     out
 #'    }
 #' }
-#'
 #' }
 #'
 epinow <- function(reported_cases, samples = 1000, horizon = 7, 
@@ -71,13 +70,13 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
     stop("Either return output or save to a target folder")
   }
   
-  # Check verbose settings and set logger to match---------------------------
+  # check verbose settings and set logger to match---------------------------
   if (verbose) {
     futile.logger::flog.threshold(futile.logger::DEBUG,
                                   name = "EpiNow2.epinow")
   }
   
- # Setup input -------------------------------------------------------------
+ # setup input -------------------------------------------------------------
  output <- match_output_arguments(output, supported_args = c("plots", "samples", "fit"),
                                   logger = "EpiNow2.epinow",
                                   level = "debug")

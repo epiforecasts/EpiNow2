@@ -35,10 +35,9 @@ documentation for \code{futile.logger} for full details. By default \code{EpiNow
 the "INFO" level and returns them to the console.
 }
 \examples{
-
-# Set up info only logs with errors only 
+# set up info only logs with errors only 
 # for logging related to epinow (or nested) calls
-# (info logs are enabled by default.)
+# (info logs are enabled by default at all levels.)
 setup_logging("Info", name = "EpiNow2")
 setup_logging("ERROR", name = "EpiNow2.epinow")
 }

@@ -18,54 +18,52 @@
 #' @importFrom purrr map
 #' @examples
 #' \donttest{
-#' ## Define example cases
+#' # define example cases
 #' cases <- EpiNow2::example_confirmed[1:40]
 #' 
-#' ## Set up example delays
+#' # set up example delays
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 #' 
 #'                         
-#' ## Run model
+#' # run model
 #' out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
 #'                                     stan_args = list(cores = ifelse(interactive(), 4, 1)))
-#' ## Plot infections
+#' # plot infections
 #' plot_estimates(
 #'   estimate = out$summarised[variable == "infections"],
 #'   reported = cases,
 #'   ylab = "Cases", max_plot = 2) + ggplot2::facet_wrap(~type, scales = "free_y")
 #' 
-#' ## Plot reported cases estimated via Rt
+#' # plot reported cases estimated via Rt
 #' plot_estimates(estimate = out$summarised[variable == "reported_cases"],
 #'                reported = cases,
 #'                ylab = "Cases")
 #'                
-#'## Plot Rt estimates
+#'# plot Rt estimates
 #'plot_estimates(estimate = out$summarised[variable == "R"],
 #'                ylab = "Effective Reproduction No.",
 #'                hline = 1)
-#' 
 #' }
 plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
                            obs_as_col = TRUE, max_plot = 10) {
   
-  ## Convert input to data.table
+  # convert input to data.table
   estimate <- data.table::setDT(estimate)
   if (!missing(reported)) {
     reported <- data.table::setDT(reported)
   }
 
-  ## Map type to presentation form
+  # map type to presentation form
   to_sentence <- function(x) {
     substr(x, 1, 1) <- toupper(substr(x, 1, 1))
     x
   }
-  
   estimate <- estimate[, type := to_sentence(type)]
   
-  ## Scale plot values based on reported cases
+  # scale plot values based on reported cases
   if (!missing(reported) & !is.na(max_plot)) {
     sd_cols <- c("upper", "lower", "bottom", "top", "central_upper", "central_lower")
     cols <- setdiff(colnames(reported), c("date", "confirm", "breakpoint"))
@@ -87,10 +85,10 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
                          by = setdiff(colnames(estimate), sd_cols), .SDcols = sd_cols] 
   }
   
-  ## Initialise plot
+  # initialise plot
   plot <- ggplot2::ggplot(estimate, ggplot2::aes(x = date, col = type, fill = type))
   
-  ## Add in reported data if present (either as column or as a line)
+  # add in reported data if present (either as column or as a line)
   if (!missing(reported)) {
     if (obs_as_col) {
       plot <- plot +
@@ -110,7 +108,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
     }
   }
   
-  ## Plot estimates
+  # plot estimates
   plot <- plot +
     ggplot2::geom_vline(xintercept = estimate[type == "Estimate based on partial data"][date == max(date)]$date,
                         linetype = 2) +
@@ -130,13 +128,11 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
   
-  ## Add in a horiontal line if required
+  # add in a horiontal line if required
   if (!missing(hline)) {
     plot <- plot + 
       ggplot2::geom_hline(yintercept = hline, linetype = 2)
   }
-  
-  
   return(plot)
 }
 
@@ -154,14 +150,15 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 #' @importFrom cowplot theme_cowplot panel_border
 #' @importFrom patchwork plot_layout
 #' @importFrom data.table setDT
-plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE,
+plot_summary <- function(summary_results,
+                         x_lab = "Region",
+                         log_cases = FALSE,
                          max_cases) {
   
-  ## Set input to data.table
+  # set input to data.table
   summary_results <- data.table::setDT(summary_results)
   
-
-  ## generic plotting function
+  # generic plotting function
   inner_plot <- function(df) {
     ggplot2::ggplot(df, ggplot2::aes(x = region, 
                                      col = `Expected change in daily cases`)) +
@@ -180,12 +177,11 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE,
         "Unsure" = "#7b848f"), drop = FALSE) 
   }
    
-  
-  ## Check max_cases
+  # check max_cases
   max_cases <- min(c(max_cases, 
                      max(summary_results[metric %in% "New confirmed cases by infection date"]$upper, na.rm = TRUE) + 1),
                    na.rm = TRUE)
-  ## cases plot
+  # cases plot
   cases_plot <-  
     inner_plot(summary_results[metric %in% "New confirmed cases by infection date"]) +
     ggplot2::labs(x = x_lab, y = "") +
@@ -206,7 +202,7 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE,
                                   oob = scales::squish)
   }
   
-  ## rt plot
+  # rt plot
   rt_data <- summary_results[metric %in% "Effective reproduction no."] 
   rt_plot <- 
     inner_plot(rt_data) +
@@ -218,8 +214,7 @@ plot_summary <- function(summary_results, x_lab = "Region", log_cases = FALSE,
     ggplot2::coord_cartesian(ylim = c(0, min(max(rt_data$upper), 4)))
   
   
-  ##join plots together
+  # join plots together
   plot <- cases_plot + rt_plot + patchwork::plot_layout(ncol = 1)
-  
   return(plot)
 }

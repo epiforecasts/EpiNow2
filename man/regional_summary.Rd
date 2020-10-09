@@ -50,31 +50,27 @@ Generate Regional Summary Output
 }
 \examples{
 \donttest{
-## Set up example delays
+# example delays
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
                         
-# Uses example case vector from EpiSoon
+# example case vector from EpiSoon
 cases <- EpiNow2::example_confirmed[1:30]
-
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
   
-# Run basic nowcasting pipeline
+# run basic nowcasting pipeline
 regional_out <- regional_epinow(reported_cases = cases,
                                 generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                stan_args = list(cores = 4),
-                                summary = FALSE)
+                                samples = 100, stan_args = list(warmup = 100),
+                                output = "region")
 
-results_dir <- tempdir()             
 regional_summary(regional_output = regional_out$regional,
                  reported_cases = cases,
-                 summary_dir = results_dir,
+                 summary_dir = tempdir() ,
                  region_scale = "Country", all_regions = FALSE)
-
 } 
-
 }

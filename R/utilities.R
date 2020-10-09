@@ -39,14 +39,10 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 #'  `point`, `lower`, and `upper.`
 #' @param round_type Function, type of rounding to apply. Defaults to `round`.
 #' @param digits Numeric, defaults to 0. Amount of rounding to apply
-#'
 #' @return A character vector formatted for reporting
 #' @export
-#'
 #' @examples
-#' 
 #' value <- list(point = 1, lower = 0, upper = 3)
-#' 
 #' make_conf(value, round_type = round, digits = 0)
 make_conf <- function(value, round_type = NULL, digits = 0) {
   
@@ -68,9 +64,7 @@ make_conf <- function(value, round_type = NULL, digits = 0) {
 #' @return A character variable.
 #' @export
 #' @examples
-#' 
 #' var <- seq(0.01, 1, 0.01)
-#' 
 #' var
 #'  
 #' map_prob_change(var)
@@ -81,10 +75,8 @@ map_prob_change <- function(var) {
                        ifelse(var < 0.8, "Unsure",
                               ifelse(var < 0.95, "Likely decreasing",
                                      "Decreasing"))))
-  
   var <- factor(var, levels = c("Increasing", "Likely increasing", "Unsure", 
                                 "Likely decreasing", "Decreasing"))
-  
   return(var)
 }
 
@@ -95,12 +87,9 @@ map_prob_change <- function(var) {
 #' @param r Numeric, rate of growth estimates
 #' @param gamma_mean Numeric, mean of the gamma distribution
 #' @param gamma_sd Numeric, standard deviation of the gamma distribution
-#'
 #' @return Numeric vector of reproduction number estimates
 #' @export
-#'
 #' @examples
-#' 
 #' growth_to_R(0.2, 4, 1)
 growth_to_R <- function(r, gamma_mean, gamma_sd) {
   k <- (gamma_sd / gamma_mean)^2
@@ -116,9 +105,7 @@ growth_to_R <- function(r, gamma_mean, gamma_sd) {
 #' @inheritParams growth_to_R
 #' @return Numeric vector of reproduction number estimates
 #' @export
-#'
 #' @examples
-#' 
 #' R_to_growth(2.18, 4, 1)  
 R_to_growth <- function(R, gamma_mean, gamma_sd) {
   k <- (gamma_sd / gamma_mean)^2
@@ -131,7 +118,6 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 #'
 #' @param delay_var List of numeric delays
 #' @param no_delays Numeric, number of delays
-#'
 #' @return A numeric array
 allocate_delays <- function(delay_var, no_delays) {
   if (no_delays > 0) {
@@ -176,12 +162,10 @@ stop_timeout <- function(fit) {
 #' @importFrom futile.logger flog.threshold flog.appender appender.tee appender.file
 #' @return Nothing
 #' @export
-#'
 #' @examples
-#' 
-#' # Set up info only logs with errors only 
+#' # set up info only logs with errors only 
 #' # for logging related to epinow (or nested) calls
-#' # (info logs are enabled by default.)
+#' # (info logs are enabled by default at all levels.)
 #' setup_logging("Info", name = "EpiNow2")
 #' setup_logging("ERROR", name = "EpiNow2.epinow")
 setup_logging <- function(threshold = "INFO", file = NULL,
@@ -297,7 +281,7 @@ match_output_arguments <- function(input_args = c(),
   }else if (level %in% "debug") {
     flog_fn <- futile.logger::flog.debug
   }
-  #make supported args a logical vector
+  # make supported args a logical vector
   output_args <- rep(FALSE, length(supported_args))
   names(output_args) <- supported_args
   
@@ -311,21 +295,19 @@ match_output_arguments <- function(input_args = c(),
   # tell the user about what has been passed in
   if (!is.null(logger)) {
     if (length(found_args) > 0) {
-      flog_fn("Producing following outputs: %s", paste(found_args, collapse = ", "),
+      flog_fn("Producing following optional outputs: %s", paste(found_args, collapse = ", "),
               name = logger)
     }else{
       flog_fn("No optional output specified",
               name = logger)
     }
   }
-
   # assign true false to supported arguments based on found arguments
   output_args[names(output_args) %in% found_args] <- TRUE
   return(output_args)
 }
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
-
 globalVariables(
   c("bottom", "cases", "confidence", "confirm", "country_code", "crps", 
     "cum_cases", "Date", "date_confirm", "date_confirmation", "date_onset", 

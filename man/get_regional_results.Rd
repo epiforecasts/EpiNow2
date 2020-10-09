@@ -34,25 +34,25 @@ Get Combined Regional Results
 }
 \examples{
 \donttest{
-# Construct example distributions
+# construct example distributions
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 
-                        
-# Uses example case vector from EpiSoon
+# example case vector from EpiSoon
 cases <- EpiNow2::example_confirmed[1:30]
-
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
   
-# Run basic nowcasting pipeline
+# run multiregion estimates
 regional_out <- regional_epinow(reported_cases = cases,
+                                samples = 100,
                                 generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                stan_args = list(cores = ifelse(interactive(), 4, 1)),
-                                summary = FALSE)
+                                stan_args = list(warmup = 100,
+                                                 cores = ifelse(interactive(), 4, 1)),
+                                output = c("regions"))
 
 summary_only <- get_regional_results(regional_out$regional, forecast = FALSE, samples = FALSE)
 names(summary_only)

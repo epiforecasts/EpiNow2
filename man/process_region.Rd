@@ -8,7 +8,8 @@ process_region(
   out,
   target_region,
   timing,
-  return_output,
+  return_output = TRUE,
+  return_timing = TRUE,
   complete_logger = "EpiNow2.epinow"
 )
 }
@@ -21,6 +22,8 @@ process_region(
 
 \item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
 \code{target_folder} must be specified in order to enable output saving to disk.}
+
+\item{return_timing}{Logical, shoulding runtime be returned}
 
 \item{complete_logger}{Character string indicating the logger to output
 the completion of estimation to.}

@@ -219,7 +219,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 create_stan_args <- function(model, data = NULL, init = "random", 
                              samples = 1000, stan_args = NULL, method = "exact", 
                              verbose = FALSE) {
-  # Use built in model if not supplied by the user
+  # use built in model if not supplied by the user
   if (missing(model)) {
     model <- NULL
   }
@@ -228,7 +228,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
     model <- stanmodels$estimate_infections
   }
   
-  # Set up shared default arguments
+  # set up shared default arguments
   default_args <- list(
     object = model,
     data = data,
@@ -236,7 +236,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
     refresh = ifelse(verbose, 50, 0)
   )
   
-  # Set up independent default arguments
+  # set up independent default arguments
   if (method == "exact") {
     default_args$cores <- 4
     default_args$warmup <- 500
@@ -249,9 +249,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$output_samples <- samples
   }
 
-  
-  
-  # Join with user supplied settings
+  # join with user supplied settings
   if (!is.null(stan_args)) {
     default_args <- default_args[setdiff(names(default_args), names(stan_args))]
     args <- c(default_args, stan_args)
@@ -260,10 +258,9 @@ create_stan_args <- function(model, data = NULL, init = "random",
   }
   
   
-  # Set up dependent arguments
+  # set up dependent arguments
   if (method == "exact") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup
   }
-  
   return(args)
 }

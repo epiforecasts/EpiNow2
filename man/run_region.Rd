@@ -29,10 +29,10 @@ run_region(
 \code{target_folder} must be specified in order to enable output saving to disk.}
 
 \item{output}{A character vector of optional output to return. Supported options are the individual regional estimates
-("regions"),  samples ("samples"),
-plots ("plots"), and the stan fit of the underlying model ("fit"). The default is to return samples and plots alongside summarised estimates
-and summary statistics. This arugment uses partial matching so for example passing "sam" will lead to samples
-being reported.}
+("regions"),  samples ("samples"), plots ("plots"), timing ("timing"), the stan fit of the underlying model ("fit"), and an
+overall summary across regions ("summary").
+The default is to return samples and plots alongside summarised estimates and summary statistics. This argument uses partial
+matching so for example passing "sam" will lead to samples being reported.}
 
 \item{complete_logger}{Character string indicating the logger to output
 the completion of estimation to.}
