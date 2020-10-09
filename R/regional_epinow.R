@@ -131,7 +131,7 @@ regional_epinow <- function(reported_cases,
   }
   
   if (return_output) {
-    if (output["timings"]) {
+    if (output["timing"]) {
       out$timings <- purrr::map(regional_out, ~.$timing)
     }
     return(out)
