@@ -65,13 +65,13 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   
   # scale plot values based on reported cases
   if (!missing(reported) & !is.na(max_plot)) {
-    sd_cols <- c("upper", "lower", "bottom", "top", "central_upper", "central_lower")
+    sd_cols <- c(grep("lower_", colnames(reported), value = TRUE),
+                 grep("upper_", colnames(reported), value = TRUE))
     cols <- setdiff(colnames(reported), c("date", "confirm", "breakpoint"))
     
     if (length(cols > 1)) {
       max_cases_to_plot <- data.table::copy(reported)[,
           .(max = round(max(confirm, na.rm = TRUE) * max_plot, 0)), by = cols]
-      
       estimate <- estimate[max_cases_to_plot, on = cols]
     }else{
       max_cases_to_plot <- round(max(reported$confirm, na.rm = TRUE) * max_plot, 0)
@@ -110,14 +110,32 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   
   # plot estimates
   plot <- plot +
-    ggplot2::geom_vline(xintercept = estimate[type == "Estimate based on partial data"][date == max(date)]$date,
-                        linetype = 2) +
-    ggplot2::geom_ribbon(ggplot2::aes(ymin = bottom, ymax = top), 
-                         alpha = 0.2, size = 0.05) +
-    ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper, col = NULL), 
-                         alpha = 0.3) +
-    ggplot2::geom_ribbon(ggplot2::aes(ymin = central_lower, ymax = central_upper, col = NULL), 
-                         alpha = 0.3) +
+    ggplot2::geom_vline(
+      xintercept = estimate[type == "Estimate based on partial data"][date == max(date)]$date,
+      linetype = 2)
+  
+  # plot CrIs
+  CrIs <- extract_CrIs(estimate)
+  index <- 1
+  alpha_per_CrI <- 0.6 / (length(CrIs) - 1)
+  for (CrI in CrIs) {
+    bottom <- paste0("lower_", CrI)
+    top <-  paste0("upper_", CrI)
+    if (index == 1) {
+      plot <- plot +
+        ggplot2::geom_ribbon(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]), 
+                             alpha = 0.2, size = 0.05)
+    }else{
+      plot <- plot +
+        ggplot2::geom_ribbon(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]],
+                                          col = NULL), 
+                             alpha = alpha_per_CrI)
+    }
+    index <- index + 1
+  }
+  
+# add plot theming
+plot <- plot +
     cowplot::theme_cowplot() +
     ggplot2::theme(legend.position = "bottom") +
     ggplot2::scale_color_brewer(palette = "Dark2") +
@@ -128,7 +146,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
   
-  # add in a horiontal line if required
+  # add in a horizontal line if required
   if (!missing(hline)) {
     plot <- plot + 
       ggplot2::geom_hline(yintercept = hline, linetype = 2)
@@ -160,16 +178,28 @@ plot_summary <- function(summary_results,
   
   # generic plotting function
   inner_plot <- function(df) {
-    ggplot2::ggplot(df, ggplot2::aes(x = region, 
-                                     col = `Expected change in daily cases`)) +
-      ggplot2::geom_linerange(aes(ymin = lower, ymax = upper), size = 4, alpha = 0.4) +
-      ggplot2::geom_linerange(aes(ymin = mid_lower, ymax = mid_upper), size = 4, alpha = 0.4) +
-      ggplot2::geom_linerange(aes(ymin = central_lower, ymax = central_upper), size = 4, alpha = 0.4) +
+    plot <- ggplot2::ggplot(df, ggplot2::aes(x = region, 
+                                     col = `Expected change in daily cases`))
+    # plot CrIs
+    CrIs <- extract_CrIs(df)
+    index <- 1
+    alpha_per_CrI <- 0.8 / (length(CrIs) - 1)
+    for (CrI in CrIs) {
+      bottom <- paste0("lower_", CrI)
+      top <-  paste0("upper_", CrI)
+      plot <- plot +
+        ggplot2::geom_linerange(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]), 
+                                alpha = ifelse(index == 1, 0.4, alpha_per_CrI),
+                                size = 4)
+      index <- index + 1
+    }
+    
+    plot <- plot + 
       ggplot2::geom_hline(yintercept = 1, linetype = 2) +
       ggplot2::facet_wrap(~ metric, ncol = 1, scales = "free_y") +
       cowplot::theme_cowplot() +
       cowplot::panel_border() +
-      ggplot2::scale_color_manual(   values = c(
+      ggplot2::scale_color_manual(values = c(
         "Increasing" = "#e75f00",
         "Likely increasing" = "#fd9e49",
         "Likely decreasing" = "#5fa2ce",
@@ -212,7 +242,6 @@ plot_summary <- function(summary_results,
     ggplot2::labs(x = x_lab, y = "") +
     ggplot2::expand_limits(y = c(0, min(max(rt_data$upper), 4))) +
     ggplot2::coord_cartesian(ylim = c(0, min(max(rt_data$upper), 4)))
-  
   
   # join plots together
   plot <- cases_plot + rt_plot + patchwork::plot_layout(ncol = 1)
