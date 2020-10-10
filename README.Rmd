@@ -29,7 +29,7 @@ The default model uses a non-stationary Gaussian process to estimate the time-va
 
 * A stationary Gaussian process (faster to estimate but currently gives reduced performance for real time estimates).
 * User specified breakpoints.
-* A Fixed reproduction number is supported.
+* A fixed reproduction number is supported.
 * As piecewise constant by combining a fixed reproduction number with breakpoints.
 * As a random walk (by combining a fixed reproduction number with regularly spaced breakpoints (i.e weekly)).
 
@@ -66,10 +66,12 @@ Windows users will need a working installation of Rtools in order to build the p
 
 ## Quick start
 
-`{EpiNow2}` is designed to be used with a single function call or to be used in an ad-hoc fashion via individual function calls. In the following section we give an overview of the simple use case. For more on using each function see the [function documentation](https://epiforecasts.io/EpiNow2/reference/index.html). The core functions are: [`epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
-[`regional_epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
-[`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), and [`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html). [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) can be use on its own to infer the underlying infection case curve from reported cases with Rt optionally returned (on by default). Estimating the underlying infection case curve alone is substantially less computationally demanding than also estimating Rt. The first step to using the package is to load it as follows.
+`{EpiNow2}` is designed to be used with a single function call or to be
+used in an ad-hoc fashion via individual function calls. The core functions of `{EpiNow2}` are the two single-call functions [`epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html), [`regional_epinow`](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html), plus functions
+[`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), and [`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html). In the following section we give an overview of the simple use case for `epinow` and `regional_epinow`. [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) can be use on its own to infer the underlying infection case curve from reported cases with Rt optionally returned (on by default). Estimating the underlying infection case curve alone is substantially less computationally demanding than also estimating Rt. For more details on using each function see the [function documentation](https://epiforecasts.io/EpiNow2/reference/index.html).
 
+The first step to using the package is to load it as follows.
+ 
 ```{r, message = FALSE}
 library(EpiNow2)
 ```
@@ -147,9 +149,10 @@ estimates$plots$summary
 ```
 
 
-### [Regional epinow](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html)
+### [regional_epinow](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html)
 
-This function runs the the `epinow` function across multiple regions in an efficient manner.
+The `regional_epinow` function runs the `epinow` function across multiple regions in
+an efficient manner.
 
 Define cases in multiple regions delineated by the region variable.
 
@@ -160,7 +163,7 @@ reported_cases <- data.table::rbindlist(list(
 head(reported_cases)
 ```
 
-Run the pipeline on each region in turn.
+Calling `regional_epinow` runs the `epinow` on each region in turn (or in parallel depending on the settings used).
 
 ```{r, message = FALSE, warning = FALSE}
 estimates <- regional_epinow(reported_cases = reported_cases, 
