@@ -25,8 +25,8 @@ run_region(
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
-\code{target_folder} must be specified in order to enable output saving to disk.}
+\item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
+if no directory for saving is specified.}
 
 \item{output}{A character vector of optional output to return. Supported options are the individual regional estimates
 ("regions"),  samples ("samples"), plots ("plots"), timing ("timing"), the stan fit of the underlying model ("fit"), and an
