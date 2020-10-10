@@ -8,8 +8,8 @@
 #' plots ("plots"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
 #' and summary statistics. This argument uses partial matching so for example passing "sam" will lead to samples
 #' being reported.
-#' @param return_output Logical, defaults to TRUE. Should output be returned. This must either be true or a
-#' `target_folder` must be specified in order to enable output saving to disk.
+#' @param return_output Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE 
+#' if no directory for saving is specified. 
 #' @param forecast_args A list of arguments to pass to `forecast_infections`. Unless at a minumum a `forecast_model` is passed 
 #' tin his list then `forecast_infections` will be bypassed. 
 #' @param ... Additional arguments passed to `estimate_infections`. See that functions documentation for options.
@@ -59,15 +59,13 @@
 #'
 epinow <- function(reported_cases, samples = 1000, horizon = 7, 
                    generation_time, delays = list(),
-                   return_output = TRUE, output = c("samples", "plots"), 
+                   return_output = FALSE, output = c("samples", "plots"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, verbose = FALSE,
                    ...) {
 
-  if (!return_output & is.null(target_folder)) {
-    futile.logger::flog.fatal("Either return output or save to a target folder",
-                              name = "EpiNow2.epinow")
-    stop("Either return output or save to a target folder")
+  if (is.null(target_folder)) {
+    return_output <- TRUE
   }
   
   # check verbose settings and set logger to match---------------------------
