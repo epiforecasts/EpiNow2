@@ -151,8 +151,6 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
     }else{
       plots <- NULL
     }
-    # copy all results to latest folder ---------------------------------------
-    copy_results_to_latest(target_folder, latest_folder)
     
     if (return_output) {
       out <- construct_output(estimates, 
@@ -164,15 +162,22 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
     }
   })
   
-  if (return_output) {
-    if (output["timing"]) {
+  # log timing if specified
+  if (output["timing"]) {
+    if (return_output) {
       out$timing <- timing['elapsed']
     }
-    return(out)
-  }else{
-    if (output["timing"]) {
+    if (!is.null(target_folder)) {
       saveRDS(timing['elapsed'], paste0(target_folder, "/runtime.rds"))
     }
+  }
+  # copy all results to latest folder ---------------------------------------
+  copy_results_to_latest(target_folder, latest_folder)
+  
+  # return output
+  if (return_output) {
+    return(out)
+  }else{
     return(invisible(NULL))
   }
 }
