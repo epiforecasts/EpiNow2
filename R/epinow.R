@@ -170,6 +170,9 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
     }
     return(out)
   }else{
+    if (output["timing"]) {
+      saveRDS(timing['elapsed'], paste0(target_folder, "/runtime.rds"))
+    }
     return(invisible(NULL))
   }
 }
