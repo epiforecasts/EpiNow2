@@ -36,7 +36,7 @@ time-varying reproduction number. Other options include:
   - A stationary Gaussian process (faster to estimate but currently
     gives reduced performance for real time estimates).
   - User specified breakpoints.
-  - A Fixed reproduction number is supported.
+  - A fixed reproduction number.
   - As piecewise constant by combining a fixed reproduction number with
     breakpoints.
   - As a random walk (by combining a fixed reproduction number with
@@ -96,21 +96,23 @@ documentation
 ## Quick start
 
 `{EpiNow2}` is designed to be used with a single function call or to be
-used in an ad-hoc fashion via individual function calls. In the
-following section we give an overview of the simple use case. For more
-on using each function see the [function
-documentation](https://epiforecasts.io/EpiNow2/reference/index.html).
-The core functions are:
+used in an ad-hoc fashion via individual function calls.
+The core functions of `{EpiNow2}` are the two single-call functions 
 [`epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
-[`regional_epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
+[`regional_epinow`](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html), plus functions
 [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html),
 and
-[`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html).
+[`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html). In the
+following section we give an overview of the simple use case for `epinow` and `regional_epinow`.
 [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html)
 can be use on its own to infer the underlying infection case curve from
 reported cases with Rt optionally returned (on by default). Estimating
 the underlying infection case curve alone is substantially less
-computationally demanding than also estimating Rt. The first step to
+computationally demanding than also estimating Rt. For more details
+on using each function see the [function
+documentation](https://epiforecasts.io/EpiNow2/reference/index.html).
+
+The first step to
 using the package is to load it as follows.
 
 ``` r
@@ -298,9 +300,9 @@ estimates$plots$summary
 
 ![](man/figures/unnamed-chunk-14-1.png)<!-- -->
 
-### [Regional epinow](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html)
+### [regional-epinow](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html)
 
-This function runs the the `epinow` function across multiple regions in
+The `regional_epinow` function runs the `epinow` function across multiple regions in
 an efficient manner.
 
 Define cases in multiple regions delineated by the region variable.
@@ -319,7 +321,7 @@ head(reported_cases)
 #> 6: 2020-02-27      78 testland
 ```
 
-Run the pipeline on each region in turn.
+Calling `regional_epinow` runs the pipeline on each region in turn.
 
 ``` r
 estimates <- regional_epinow(reported_cases = reported_cases, 
