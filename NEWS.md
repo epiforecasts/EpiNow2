@@ -15,6 +15,7 @@ and a parallel enabled progress bar via the `progressr` package. Minor bugs have
 * Added inner 20% high density region.
 * Added mean and sd to all reporting summaries.
 * Added a summary of the growth rate and doubling time.
+* Added a new function `regional_runtimes` that summarises the run time across regions. Available within `regional_epinow` if `output = c(..., "timing")` is specified.
 
 ## Bug fixes
 
