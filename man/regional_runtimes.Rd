@@ -5,7 +5,7 @@
 \title{Summarise Regional Runtimes}
 \usage{
 regional_runtimes(
-  regional_output,
+  regional_output = NULL,
   target_folder = NULL,
   target_date = NULL,
   return_output = FALSE

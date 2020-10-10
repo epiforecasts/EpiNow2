@@ -14,33 +14,29 @@ df_non_zero <- function(df) {
   expect_true(nrow(df) > 0)
 }
 
-test_that("regional_epinow produces expected output when run with default settings", {
+target_folder <- tempdir()
+out <- suppressWarnings(regional_epinow(reported_cases = cases,
+                                        generation_time = generation_time,
+                                        delays = list(reporting_delay),
+                                        target_folder = target_folder, 
+                                        return_output = TRUE,
+                                        samples = 100,
+                                        method = "approximate"))
+
+test_that("regional_runtimes produces expected output when with input", {
   skip_on_cran()
-  out <- suppressWarnings(regional_epinow(reported_cases = cases, generation_time = generation_time,
-                                 delays = list(reporting_delay),
-                                 samples = 100, stan_args = list(warmup = 100, cores = 1, chains = 2)))
-  expect_equal(names(out$regional), c("testland", "realland"))
-  expect_equal(names(out$summary), c("latest_date", "results", "summarised_results", "summary_plot",
-                                      "summarised_measures", "reported_cases", "high_plots", "plots"))
-  expect_equal(names(out$regional$realland), c("estimates", "estimated_reported_cases", "summary", "plots", "timing"))
-  expect_type(out$regional$realland$timing, "double")
-  df_non_zero(out$regional$realland$estimates$samples)
-  df_non_zero(out$regional$realland$estimates$summarised)
-  df_non_zero(out$regional$realland$estimated_reported_cases$samples)
-  df_non_zero(out$regional$realland$estimated_reported_cases$summarised)
-  df_non_zero(out$regional$realland$summary)
-  expect_equal(names(out$regional$realland$plots), c("infections", "reports", "reff", "growth_rate","summary"))
+  runtimes <- regional_runtimes(out$regional)
+  expect_equal(names(runtimes), c("region", "time"))
+  df_non_zero(runtimes)
+  expect_type(runtimes$time, "double")
 })
 
-test_that("regional_epinow fails as expected when given a very short timeout", {
+test_that("regional_runtimes produces expected output when pointed at a folder", {
   skip_on_cran()
-  expect_error(regional_epinow(reported_cases = cases, generation_time = generation_time,
-                              delays = list(incubation_period, reporting_delay),
-                              stan_args = list(warmup = 100, cores = 1, chains = 2),
-                              max_execution_time = 1))
-  expect_error(regional_epinow(reported_cases = cases, generation_time = generation_time,
-                               delays = list(incubation_period, reporting_delay),
-                               stan_args = list(warmup = 100, cores = 1, chains = 2),
-                               max_execution_time = 1, future = TRUE))
-
+  runtimes <- regional_runtimes(target_folder = target_folder,
+                                return_output = TRUE)
+  expect_equal(names(runtimes), c("region", "time"))
+  df_non_zero(runtimes)
+  expect_type(runtimes$time, "double")
 })
+
