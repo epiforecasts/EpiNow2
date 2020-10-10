@@ -17,7 +17,8 @@ test_that("epinow produces expected output when run with default settings", {
                 delays = list(incubation_period, reporting_delay),
                 samples = 100, stan_args = list(warmup = 100, cores = 1, chains = 2)))
   
-  expect_equal(names(out), c("estimates", "estimated_reported_cases", "summary", "plots"))
+  expect_equal(names(out), c("estimates", "estimated_reported_cases", 
+                             "summary", "plots", "timing"))
   df_non_zero(out$estimates$samples)
   df_non_zero(out$estimates$summarised)
   df_non_zero(out$estimated_reported_cases$samples)

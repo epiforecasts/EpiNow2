@@ -164,7 +164,7 @@ regional_summary <- function(regional_output = NULL,
                              target_date = NULL,
                              region_scale = "Region",
                              all_regions = TRUE,
-                             return_output = TRUE, 
+                             return_output = FALSE, 
                              max_plot = 10) {
     
   reported_cases <- data.table::setDT(reported_cases)
