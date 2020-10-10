@@ -446,3 +446,75 @@ summarise_key_measures <- function(regional_results,
 
   return(out)
 }
+
+#' Summarise Regional Runtimes
+#'
+#' @inheritParams regional_summary
+#' @inheritParams epinow
+#' @return A data.table of region run times
+#' @export
+#' @importFrom data.table data.table fwrite
+#' @importFrom purrr map_dbl
+#' @examples
+#' \donttest{
+#' # example delays
+#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+#'                         
+#' # example case vector from EpiSoon
+#' cases <- EpiNow2::example_confirmed[1:30]
+#' cases <- data.table::rbindlist(list(
+#'   data.table::copy(cases)[, region := "testland"],
+#'   cases[, region := "realland"]))
+#'   
+#' # run basic nowcasting pipeline
+#' regional_out <- regional_epinow(reported_cases = cases,
+#'                                 generation_time = generation_time,
+#'                                 delays = list(incubation_period, reporting_delay),
+#'                                 samples = 100, stan_args = list(warmup = 100),
+#'                                 output = c("region", "timing"))
+#'
+#' regional_runtimes(regional_output = regional_out$regional)
+#' } 
+regional_runtimes <- function(regional_output,
+                              target_folder = NULL,
+                              target_date = NULL,
+                              return_output = FALSE) {
+  if (is.null(target_folder) & is.null(regional_output)) {
+    stop("Either an output should be passed in or a target folder specified")
+  }
+  if (is.null(target_folder)) {
+    futile.logger::flog.info("No target directory specified so returning timings")
+    return_output <- TRUE
+  }else{
+    futile.logger::flog.info("Saving timings information to : %s", target_folder)
+  }
+  
+  if (!is.null(regional_output)){
+    timings <- data.table::data.table(
+      region = names(regional_output),
+      time = purrr::map(regional_output, ~.$timing)
+    )
+  }else{
+    if (is.null(target_date)) {
+      target_date <- "latest"
+    }
+    timings <- data.table::data.table(
+      region = get_regions(target_folder),
+      time = purrr::map_dbl(regions, ~ readRDS(paste0(target_folder, 
+                                                      "/", .,"/", target_date,
+                                                      "/runtime.rds")))
+    )
+  } 
+  
+  if (!is.null(target_folder)) {
+    data.table::fwrite(timings, paste0(target_folder, "/runtimes.csv"))
+  }
+  
+  if (return_output) {
+    return(timings)
+  }else{
+    return(invisible(NULL))
+  }
+}

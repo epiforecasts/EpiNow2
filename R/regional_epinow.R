@@ -59,7 +59,6 @@ regional_epinow <- function(reported_cases,
                                        "plots", "timing"),
                             return_output = FALSE,
                             summary_args = list(), ...) {
-  
   # supported output
   output <- match_output_arguments(output, 
                                    supported_args = c("plots", "samples", "fit",
@@ -137,10 +136,18 @@ regional_epinow <- function(reported_cases,
     }
   }
   
-  if (return_output) {
-    if (output["timing"]) {
-      out$timings <- purrr::map(regional_out, ~.$timing)
+  if (output["timing"]) {
+    safe_runtimes <- purrr::safely(regional_runtimes)
+    timings <- safe_runtimes(regional_out,
+                             target_folder = target_folder,
+                             target_date = target_date,
+                             return_output = return_output)[[1]]
+    if (return_output) {
+      out$timings <- timings
     }
+  }
+  
+  if (return_output) {
     return(out)
   }else{
     return(invisible(NULL))
