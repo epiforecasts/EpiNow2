@@ -271,6 +271,30 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
   }
 }
 
+# Safe Directory Create
+
+safe_dir_create <- function(dir_name){
+  dir_of_interest <- file.path(dir_name)
+  if(dir.exists(dir_of_interest)){
+    invisible()
+  } else {
+    dir.create(dir_of_interest)
+  }
+}
+
+# Safe Copy Stan Model
+
+copy_models <- function(dir_path){
+  # First copy functions
+  app_file_loc <- system.file(file.path("stan", "functions"), package = "EpiNow2")
+  R.utils::copyDirectory(app_file_loc, file.path(dir_path, "functions"))
+  # Copy Models
+  stan_file_loc <- system.file(file.path("stan", "estimate_infections.stan"), 
+                               package = "EpiNow2")
+  R.utils::copyFile(stan_file_loc, file.path(dir_path,
+                                             "estimate_infections.stan"))
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 
 globalVariables(

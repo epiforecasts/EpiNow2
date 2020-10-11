@@ -234,7 +234,14 @@ create_stan_args <- function(model, data = NULL, init = "random",
   }
   
   if (is.null(model) & backend_use == "cmdstan") {
-    model <- stanmodels$estimate_infections
+    # To be CRAN compliant, only add 
+    app_loc <- rappdirs::user_cache_dir("EpiNow2")
+    safe_dir_create(app_loc)
+    copy_models(app_loc)
+    
+    model <- cmdstanr::cmdstan_model(file.path(app_loc, "estimate_infections.stan"),
+                                     include_paths = file.path(app_loc))
+    
   }
   
   # Set up shared default arguments
@@ -246,11 +253,19 @@ create_stan_args <- function(model, data = NULL, init = "random",
   )
   
   # Set up independent default arguments
-  if (method == "exact") {
+  if (method == "exact" & backend == "rstan") {
     default_args$cores <- 1
     default_args$warmup <- 500
     default_args$chains <- 4
     default_args$control <- list(adapt_delta = 0.99, max_treedepth = 15)
+    default_args$save_warmup <- FALSE
+  }else if (method == "exact" & backend != "rstan"){
+    default_args$cores <- 1
+    default_args$iter_warmup <- 500
+    default_args$iter_sampling <- ceiling(samples / args$chains) + args$warmup
+    default_args$parallel_chains <- 4
+    default_args$adapt_delta <- 0.99
+    default_arg$max_treedepth <- 15
     default_args$save_warmup <- FALSE
   }else if (method == "approximate") {
     default_args$trials <- 10
@@ -258,7 +273,6 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$output_samples <- samples
   }
 
-  
   
   # Join with user supplied settings
   if (!is.null(stan_args)) {
