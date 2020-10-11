@@ -202,7 +202,8 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results 
 #' several order of magnitudes faster than the exact method.
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be returned.
-#'
+#' @param backend A character string defaults to "rstan". The backend to use for
+#'     computation.
 #' @return A list of stan arguments
 #' @export
 #'
@@ -217,13 +218,22 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' create_stan_args(stan_args = list(warmup = 1000))
 create_stan_args <- function(model, data = NULL, init = "random", 
                              samples = 1000, stan_args = NULL, method = "exact", 
-                             verbose = FALSE) {
+                             verbose = FALSE, backend = "rstan") {
+  # Select the backend to use
+  backend_use <- match.arg(backend, 
+                           choices = c("rstan", "cmdstan"), 
+                           several.ok = FALSE)
+  
   # Use built in model if not supplied by the user
   if (missing(model)) {
     model <- NULL
   }
   
-  if (is.null(model)) {
+  if (is.null(model) & backend_use == "rstan") {
+    model <- stanmodels$estimate_infections
+  }
+  
+  if (is.null(model) & backend_use == "cmdstan") {
     model <- stanmodels$estimate_infections
   }
   
