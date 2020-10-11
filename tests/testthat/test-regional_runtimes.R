@@ -14,7 +14,7 @@ df_non_zero <- function(df) {
   expect_true(nrow(df) > 0)
 }
 
-target_folder <- tempdir()
+target_folder <- file.path(getwd(), "test")
 out <- suppressWarnings(regional_epinow(reported_cases = cases,
                                         generation_time = generation_time,
                                         delays = list(reporting_delay),
