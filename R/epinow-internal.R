@@ -1,35 +1,3 @@
-#' Convert to Data Table
-#'
-#' @inheritParams estimate_infections
-#'
-#' @return A data table
-#' @export
-setup_dt <- function(reported_cases) {
-  suppressMessages(data.table::setDTthreads(threads = 1))
-  reported_cases <- data.table::setDT(reported_cases)
-  return(reported_cases)
-}
-
-#' Setup Target Folder for Saving
-#'
-#' @param target_date Date, defaults to maximum found in the data if not specified.
-#' @param target_folder Character string specifying where to save results (will create if not present).
-#'
-#' @return A list containing the path to the dated folder and the latest folder
-#' @export
-setup_target_folder <- function(target_folder = NULL, target_date) {
-  if (!is.null(target_folder)) {
-    latest_folder <- file.path(target_folder, "latest")
-    target_folder <- file.path(target_folder, target_date)
-    if (!dir.exists(target_folder)) {
-      dir.create(target_folder, recursive = TRUE)
-    }
-    return(list(date = target_folder, latest = latest_folder))
-  }else{
-    return(invisible(NULL))
-  }
-}
-
 #' Updates Forecast Horizon Based on Input Data and Target
 #'
 #' @description This function makes sure that a forecast is returned for the user specified
