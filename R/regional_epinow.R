@@ -67,7 +67,7 @@ regional_epinow <- function(reported_cases,
   }
   
   # setup logging -----------------------------------------------------------
-  setup_default_logging(logs = logs)
+  setup_default_logging(logs = logs, target_date = target_date)
   
   futile.logger::flog.info("Reporting estimates using data up to: %s", target_date)
   if (is.null(target_folder)) {
@@ -228,6 +228,7 @@ run_region <- function(target_region,
         return_output = ifelse(output["summary"], TRUE, return_output),
         output = names(output[output]),
         logs = NULL,
+        id = target_region,
         ...),
         warning = function(w) {
           futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call),

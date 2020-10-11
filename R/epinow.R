@@ -12,6 +12,8 @@
 #' if no directory for saving is specified. 
 #' @param forecast_args A list of arguments to pass to `forecast_infections`. Unless at a minumum a `forecast_model` is passed 
 #' tin his list then `forecast_infections` will be bypassed. 
+#' @param id A character string used to assign logging information on error. Used by `regional_epinow`
+#' to assign `epinow` errors to regions.
 #' @param ... Additional arguments passed to `estimate_infections`. See that functions documentation for options.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
@@ -63,7 +65,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                    return_output = FALSE, output = c("samples", "plots"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, logs = tempdir(),
-                   verbose = FALSE,
+                   id = "epinow", verbose = FALSE,
                    ...) {
 
   if (is.null(target_folder)) {
@@ -86,89 +88,104 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                                               "timing"),
                                    logger = "EpiNow2.epinow",
                                    level = "debug")
-  
+  # start processing with system timing and error catching
   timing <- system.time({
-    # check verbose settings and set logger to match---------------------------
-    if (verbose) {
-      futile.logger::flog.threshold(futile.logger::DEBUG,
-                                    name = "EpiNow2.epinow")
-    }
-    
-    # convert input to DT -----------------------------------------------------
-    reported_cases <- setup_dt(reported_cases)
-    
-    # set up folders ----------------------------------------------------------
-    target_folders <- setup_target_folder(target_folder, target_date)
-    target_folder <- target_folders$date
-    latest_folder <- target_folders$latest
-    
-    # save input data ---------------------------------------------------------
-    save_input(reported_cases, target_folder)
-    
-    # make sure the horizon is as specified from the target date --------------
-    horizon <- update_horizon(horizon, target_date, reported_cases)
-    
-    # estimate infections and Reproduction no ---------------------------------
-    estimates <- estimate_infections(reported_cases = reported_cases, 
-                                     generation_time = generation_time,
-                                     delays = delays,
-                                     samples = samples,
+    out <- tryCatch(
+      withCallingHandlers({
+        # check verbose settings and set logger to match---------------------------
+        if (verbose) {
+          futile.logger::flog.threshold(futile.logger::DEBUG,
+                                        name = "EpiNow2.epinow")
+        }
+        
+        # convert input to DT -----------------------------------------------------
+        reported_cases <- setup_dt(reported_cases)
+        
+        # set up folders ----------------------------------------------------------
+        target_folders <- setup_target_folder(target_folder, target_date)
+        target_folder <- target_folders$date
+        latest_folder <- target_folders$latest
+        
+        # save input data ---------------------------------------------------------
+        save_input(reported_cases, target_folder)
+        
+        # make sure the horizon is as specified from the target date --------------
+        horizon <- update_horizon(horizon, target_date, reported_cases)
+        
+        # estimate infections and Reproduction no ---------------------------------
+        estimates <- estimate_infections(reported_cases = reported_cases, 
+                                         generation_time = generation_time,
+                                         delays = delays,
+                                         samples = samples,
+                                         horizon = horizon,
+                                         estimate_rt = TRUE,
+                                         return_fit = output["fit"],
+                                         verbose = verbose,
+                                         ...)
+        
+        save_estimate_infections(estimates, target_folder, 
+                                 samples = output["samples"],
+                                 return_fit = output["fit"])
+        
+        # forecast infections and reproduction number -----------------------------
+        if (!is.null(forecast_args)) {
+          forecast <- do.call(forecast_infections, 
+                              c(list(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
+                                     rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
+                                     gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
+                                     gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
+                                     gt_max = generation_time$max,
                                      horizon = horizon,
-                                     estimate_rt = TRUE,
-                                     return_fit = output["fit"],
-                                     verbose = verbose,
-                                     ...)
-    
-    save_estimate_infections(estimates, target_folder, 
-                             samples = output["samples"],
-                             return_fit = output["fit"])
-    
-    # forecast infections and reproduction number -----------------------------
-    if (!is.null(forecast_args)) {
-      forecast <- do.call(forecast_infections, 
-                          c(list(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
-                                 rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
-                                 gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
-                                 gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
-                                 gt_max = generation_time$max,
-                                 horizon = horizon,
-                                 samples = samples),
-                            forecast_args))
-      
-      save_forecast_infections(forecast, target_folder, samples = output["samples"])
-    }else{
-      forecast <- NULL
-    }
-    # report forecasts ---------------------------------------------------------
-    estimated_reported_cases <- estimates_by_report_date(estimates,
-                                                         forecast, 
-                                                         delays = delays,
-                                                         target_folder = target_folder,
-                                                         samples = output["samples"])
-    
-    # report estimates --------------------------------------------------------
-    summary <- report_summary(
-      summarised_estimates = estimates$summarised[!is.na(date)][type != "forecast"][date == max(date)],
-      rt_samples = estimates$samples[variable == "R"][type != "forecast"][date == max(date), .(sample, value)],
-      target_folder = target_folder)
-    
-    # plot --------------------------------------------------------------------
-    if (output["plots"]) {
-      plots <- report_plots(summarised_estimates = estimates$summarised,
-                            reported = reported_cases, 
-                            target_folder = target_folder)
-    }else{
-      plots <- NULL
-    }
-    
-    if (return_output) {
-      out <- construct_output(estimates, 
-                              forecast,
-                              estimated_reported_cases,
-                              plots = plots,
-                              summary,
-                              samples = output["samples"])
-    }
+                                     samples = samples),
+                                forecast_args))
+          
+          save_forecast_infections(forecast, target_folder, samples = output["samples"])
+        }else{
+          forecast <- NULL
+        }
+        # report forecasts ---------------------------------------------------------
+        estimated_reported_cases <- estimates_by_report_date(estimates,
+                                                             forecast, 
+                                                             delays = delays,
+                                                             target_folder = target_folder,
+                                                             samples = output["samples"])
+        
+        # report estimates --------------------------------------------------------
+        summary <- report_summary(
+          summarised_estimates = estimates$summarised[!is.na(date)][type != "forecast"][date == max(date)],
+          rt_samples = estimates$samples[variable == "R"][type != "forecast"][date == max(date), .(sample, value)],
+          target_folder = target_folder)
+        
+        # plot --------------------------------------------------------------------
+        if (output["plots"]) {
+          plots <- report_plots(summarised_estimates = estimates$summarised,
+                                reported = reported_cases, 
+                                target_folder = target_folder)
+        }else{
+          plots <- NULL
+        }
+        
+        if (return_output) {
+          out <- construct_output(estimates, 
+                                  forecast,
+                                  estimated_reported_cases,
+                                  plots = plots,
+                                  summary,
+                                  samples = output["samples"])
+          return(out)
+        }else{
+          return(invisible(NULL))
+        }},
+        warning = function(w) {
+          futile.logger::flog.warn("%s: %s - %s", id, w$message, toString(w$call),
+                                   name = "EpiNow2.epinow")
+          rlang::cnd_muffle(w)
+        }),
+      TimeoutException = function(ex) {
+        futile.logger::flog.warn("region %s timed out", id,
+                                 name = "EpiNow2.epinow")
+        return(list("timing" = Inf))
+      })
   })
   
   # log timing if specified
