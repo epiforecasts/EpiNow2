@@ -58,7 +58,8 @@ regional_epinow <- function(reported_cases,
                             output = c("regions", "summary", "samples", 
                                        "plots", "timing"),
                             return_output = FALSE,
-                            summary_args = list(), ...) {
+                            summary_args = list(), 
+                            logs = tempdir(), ...) {
   # supported output
   output <- match_output_arguments(output, 
                                    supported_args = c("plots", "samples", "fit",
@@ -68,8 +69,11 @@ regional_epinow <- function(reported_cases,
   if (missing(target_date)) {
     target_date <- as.character(max(reported_cases$date))
   }
-  futile.logger::flog.info("Reporting estimates using data up to: %s", target_date)
   
+  # setup logging -----------------------------------------------------------
+  setup_default_logging(logs = logs)
+  
+  futile.logger::flog.info("Reporting estimates using data up to: %s", target_date)
   if (is.null(target_folder)) {
     futile.logger::flog.info("No target directory specified so returning output")
     return_output <- TRUE

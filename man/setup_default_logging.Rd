@@ -13,7 +13,8 @@ setup_default_logging(
 }
 \arguments{
 \item{logs}{Character path indicating the target folder in which to store log
-information. Defaults to the temporary directory.}
+information. Defaults to the temporary directory if not specified. Default logging can be disabled
+if \code{logs} is set to NULL.}
 
 \item{mirror_epinow}{Logical, defaults to FALSE. Should internal logging be
 returned from \code{epinow} to the console.}

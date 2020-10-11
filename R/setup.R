@@ -27,19 +27,19 @@ setup_logging <- function(threshold = "INFO", file = NULL,
   if (is.null(name)) {
     name <- "ROOT"
   }
-  futile.logger::flog.info("Logging threshold set at %s for the %s logger", 
-                           threshold, name)
+  message(sprintf("Logging threshold set at %s for the %s logger", 
+                           threshold, name))
   futile.logger::flog.threshold(threshold, name = name)
   
   if (!is.null(file)) {
-    futile.logger::flog.info("Writing %s logs to: %s", name, file)
+    message(sprintf("Writing %s logs to: %s", name, file))
     if (mirror_to_console) {
       futile.logger::flog.appender(futile.logger::appender.tee(file), name = name)
     }else{
       futile.logger::flog.appender(futile.logger::appender.file(file), name = name)  
     }
   }else{
-    futile.logger::flog.info("Writing %s logs to the console", name)
+    message(sprintf("Writing %s logs to the console", name))
     futile.logger::flog.appender(futile.logger::appender.console(), name = name)
   }
   return(invisible(NULL))
@@ -48,7 +48,10 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' Setup Default Logging
 #'
 #' @param logs Character path indicating the target folder in which to store log 
-#' information. Defaults to the temporary directory.
+#' information. Defaults to the temporary directory if not specified. Default logging 
+#' can be disabled if `logs` is set to NULL. If specifying a custom logging setup then 
+#' the code for `setup_default_logging` and the `setup_logging` function are a sensible 
+#' place to start.
 #' @param mirror_epinow Logical, defaults to FALSE. Should internal logging be 
 #' returned from `epinow` to the console.
 #' @param mirror_epinow_fit Logical, defaults to FALSE. Should internal logging
@@ -64,30 +67,32 @@ setup_default_logging <- function(logs = tempdir(),
                                   mirror_epinow_fit = FALSE,
                                   target_date = NULL) {
   
-  if (is.null(target_date)) {
-    target_date <- "latest"
-  }
-  # make log paths
-  log_path <- list()
-  log_path$regional_epinow <- file.path(logs, "regional-epinow")
-  log_path$epinow <- file.path(logs, "epinow")
-  log_path$epinow_fit <- file.path(logs, "epinow-fit")
-  
-  purrr::walk(log_path, function(path){
-    if (!dir.exists(path)) {
-      dir.create(path, recursive = TRUE)
+  if (!is.null(logs)) {
+    if (is.null(target_date)) {
+      target_date <- "latest"
     }
-  })
-  
-  # set up logs
-  setup_logging("INFO", file = paste0(log_path$regional_epinow, "/", target_date, ".log"),
-                mirror_to_console = TRUE)
-  setup_logging("INFO", file = paste0(log_path$epinow, "/", target_date, ".log"),
-                mirror_to_console = mirror_epinow,
-                name = "EpiNow2.epinow")
-  setup_logging("INFO", file = paste0(log_path$epinow_fit, "/" , target_date, ".log"),
-                mirror_to_console = mirror_epinow_fit,
-                name = "EpiNow2.epinow.fit")
+    # make log paths
+    log_path <- list()
+    log_path$regional_epinow <- file.path(logs, "regional-epinow")
+    log_path$epinow <- file.path(logs, "epinow")
+    log_path$epinow_fit <- file.path(logs, "epinow-estimate-infections")
+    
+    purrr::walk(log_path, function(path){
+      if (!dir.exists(path)) {
+        dir.create(path, recursive = TRUE)
+      }
+    })
+    
+    # set up logs
+    setup_logging("INFO", file = paste0(log_path$regional_epinow, "/", target_date, ".log"),
+                  mirror_to_console = TRUE)
+    setup_logging("INFO", file = paste0(log_path$epinow, "/", target_date, ".log"),
+                  mirror_to_console = mirror_epinow,
+                  name = "EpiNow2.epinow")
+    setup_logging("INFO", file = paste0(log_path$epinow_fit, "/" , target_date, ".log"),
+                  mirror_to_console = mirror_epinow_fit,
+                  name = "EpiNow2.epinow.estimate_infections")
+  }
   return(invisible(NULL))
 }
 
