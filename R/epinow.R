@@ -18,6 +18,7 @@
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
 #' @inheritParams forecast_infections
+#' @inheritParams setup_default_logging
 #' @importFrom data.table setDT
 #' @importFrom lubridate days
 #' @importFrom futile.logger flog.fatal
@@ -33,7 +34,7 @@
 #' 
 #' # estimate Rt and nowcast/forecast cases by date of infection
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
-#'               delays = list(incubation_period, reporting_delay), 
+#'               delays = list(incubation_period, reporting_delay),
 #'               stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' out
 #' 
@@ -41,7 +42,7 @@
 #' if(requireNamespace("EpiSoon")){
 #'    if(requireNamespace("forecastHybrid")){
 #'    # report Rt along with forecasts
-#'    out <- epinow(reported_cases = reported_cases, samples = 200, verbose = TRUE,
+#'    out <- epinow(reported_cases = reported_cases, samples = 200,
 #'                  generation_time = generation_time, 
 #'                  delays = list(incubation_period, reporting_delay),
 #'                  forecast_args = list(
@@ -61,12 +62,25 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                    generation_time, delays = list(),
                    return_output = FALSE, output = c("samples", "plots"), 
                    target_folder = NULL, target_date, 
-                   forecast_args = NULL, verbose = FALSE,
+                   forecast_args = NULL, logs = tempdir(),
+                   verbose = FALSE,
                    ...) {
 
   if (is.null(target_folder)) {
     return_output <- TRUE
   }
+  
+  # target data -------------------------------------------------------------
+  if (missing(target_date)) {
+    target_date <- max(reported_cases$date)
+  }
+
+  # setup logging -----------------------------------------------------------
+  setup_default_logging(logs = logs, 
+                        target_date = target_date,
+                        mirror_epinow = TRUE,
+                        mirror_epinow_fit = verbose)
+  
   # setup input -------------------------------------------------------------
   output <- match_output_arguments(output, supported_args = c("plots", "samples", "fit",
                                                               "timing"),
@@ -82,11 +96,6 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
     
     # convert input to DT -----------------------------------------------------
     reported_cases <- setup_dt(reported_cases)
-    
-    # target data -------------------------------------------------------------
-    if (missing(target_date)) {
-      target_date <- max(reported_cases$date)
-    }
     
     # set up folders ----------------------------------------------------------
     target_folders <- setup_target_folder(target_folder, target_date)

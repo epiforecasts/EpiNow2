@@ -15,6 +15,7 @@ epinow(
   target_folder = NULL,
   target_date,
   forecast_args = NULL,
+  logs = tempdir(),
   verbose = FALSE,
   ...
 )
@@ -52,6 +53,12 @@ being reported.}
 \item{forecast_args}{A list of arguments to pass to \code{forecast_infections}. Unless at a minumum a \code{forecast_model} is passed
 tin his list then \code{forecast_infections} will be bypassed.}
 
+\item{logs}{Character path indicating the target folder in which to store log
+information. Defaults to the temporary directory if not specified. Default logging
+can be disabled if \code{logs} is set to NULL. If specifying a custom logging setup then
+the code for \code{setup_default_logging} and the \code{setup_logging} function are a sensible
+place to start.}
+
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
 
@@ -78,7 +85,7 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 
 # estimate Rt and nowcast/forecast cases by date of infection
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
-              delays = list(incubation_period, reporting_delay), 
+              delays = list(incubation_period, reporting_delay),
               stan_args = list(cores = ifelse(interactive(), 4, 1)))
 out
 
@@ -86,7 +93,7 @@ out
 if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
    # report Rt along with forecasts
-   out <- epinow(reported_cases = reported_cases, samples = 200, verbose = TRUE,
+   out <- epinow(reported_cases = reported_cases, samples = 200,
                  generation_time = generation_time, 
                  delays = list(incubation_period, reporting_delay),
                  forecast_args = list(

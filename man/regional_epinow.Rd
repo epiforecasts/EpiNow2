@@ -12,6 +12,7 @@ regional_epinow(
   output = c("regions", "summary", "samples", "plots", "timing"),
   return_output = FALSE,
   summary_args = list(),
+  logs = tempdir(),
   ...
 )
 }
@@ -36,6 +37,12 @@ if no directory for saving is specified.}
 
 \item{summary_args}{A list of arguments passed to \code{regional_summary}. See the \code{regional_summary} documentation for details.}
 
+\item{logs}{Character path indicating the target folder in which to store log
+information. Defaults to the temporary directory if not specified. Default logging
+can be disabled if \code{logs} is set to NULL. If specifying a custom logging setup then
+the code for \code{setup_default_logging} and the \code{setup_logging} function are a sensible
+place to start.}
+
 \item{...}{Pass additional arguments to \code{epinow}. See the documentation for \code{epinow} for details.}
 }
 \value{
@@ -59,10 +66,6 @@ cases <- EpiNow2::example_confirmed[1:40]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
-
-# setup logging
-setup_logging(file = paste0(tempdir(), "/info.log"), 
-              name = "EpiNow2.epinow")
                 
 # run epinow across multiple regions and generate summaries
 # samples and warmup have been reduced for this example
