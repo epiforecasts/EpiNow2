@@ -7,7 +7,8 @@ and a parallel enabled progress bar via the `progressr` package. Minor bugs have
 
 * Added support for either NUTs sampling (`method = "exact"`) or Variational inference (`method = "approximate"`).
 * Added `get_dist`, `get_generation_time`, `get_incubation_period` based on ideas from @pearsonca. (This leads to breaking changes with the removal of `covid_generation_times` and `covid_incubation_periods`).
-* Added `setup_logging` to enable users to specify the level and location of logging (wrapping functionality from `futile.logger`). 
+* Added `setup_logging` to enable users to specify the level and location of logging (wrapping functionality from `futile.logger`). Also added `setup_default_logging` to give users sensible defaults and embedded this
+function in `regional_epinow` and `epinow`.
 * Added `setup_future` to making using nested futures easier (required when using `future = TRUE`).
 * Implemented progress bar support using `progressr`.
 * Added timeout and timing option to `regional_epinow`
