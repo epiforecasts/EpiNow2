@@ -12,6 +12,7 @@ regional_epinow(
   output = c("regions", "summary", "samples", "plots", "timing"),
   return_output = FALSE,
   summary_args = list(),
+  logs = tempdir(),
   ...
 )
 }
@@ -35,6 +36,10 @@ matching so for example passing "sam" will lead to samples being reported.}
 if no directory for saving is specified.}
 
 \item{summary_args}{A list of arguments passed to \code{regional_summary}. See the \code{regional_summary} documentation for details.}
+
+\item{logs}{Character path indicating the target folder in which to store log
+information. Defaults to the temporary directory if not specified. Default logging can be disabled
+if \code{logs} is set to NULL.}
 
 \item{...}{Pass additional arguments to \code{epinow}. See the documentation for \code{epinow} for details.}
 }

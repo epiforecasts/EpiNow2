@@ -15,6 +15,7 @@ epinow(
   target_folder = NULL,
   target_date,
   forecast_args = NULL,
+  logs = tempdir(),
   verbose = FALSE,
   ...
 )
@@ -51,6 +52,10 @@ being reported.}
 
 \item{forecast_args}{A list of arguments to pass to \code{forecast_infections}. Unless at a minumum a \code{forecast_model} is passed
 tin his list then \code{forecast_infections} will be bypassed.}
+
+\item{logs}{Character path indicating the target folder in which to store log
+information. Defaults to the temporary directory if not specified. Default logging can be disabled
+if \code{logs} is set to NULL.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
