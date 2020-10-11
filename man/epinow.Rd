@@ -16,6 +16,7 @@ epinow(
   target_date,
   forecast_args = NULL,
   logs = tempdir(),
+  id = "epinow",
   verbose = FALSE,
   ...
 )
@@ -58,6 +59,9 @@ information. Defaults to the temporary directory if not specified. Default loggi
 can be disabled if \code{logs} is set to NULL. If specifying a custom logging setup then
 the code for \code{setup_default_logging} and the \code{setup_logging} function are a sensible
 place to start.}
+
+\item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
+to assign \code{epinow} errors to regions.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
