@@ -13,7 +13,7 @@
 #' The default logger for EpiNow2 is called EpiNow2. Nested options include: Epinow2.epinow which controls 
 #' all logging for `epinow` and nested functions, EpiNow2.epinow.estimate_infections (logging in
 #'  `estimate_infections`), and EpiNow2.epinow.estimate_infections.fit (logging in fitting functions).
-#' @importFrom futile.logger flog.threshold flog.appender appender.tee appender.file
+#' @importFrom futile.logger flog.threshold flog.appender appender.tee appender.file flog.info
 #' @return Nothing
 #' @export
 #' @examples
@@ -27,21 +27,67 @@ setup_logging <- function(threshold = "INFO", file = NULL,
   if (is.null(name)) {
     name <- "ROOT"
   }
-  message("Setting up logging for the ", name, " logger")
-  message("Logging threshold set at: ", threshold)
+  futile.logger::flog.info("Logging threshold set at %s for the %s logger", 
+                           threshold, name)
   futile.logger::flog.threshold(threshold, name = name)
   
   if (!is.null(file)) {
-    message("Writing logs to: ", file)
+    futile.logger::flog.info("Writing %s logs to: %s", name, file)
     if (mirror_to_console) {
       futile.logger::flog.appender(futile.logger::appender.tee(file), name = name)
     }else{
       futile.logger::flog.appender(futile.logger::appender.file(file), name = name)  
     }
   }else{
-    message("Writing logs to the console")
+    futile.logger::flog.info("Writing %s logs to the console", name)
     futile.logger::flog.appender(futile.logger::appender.console(), name = name)
   }
+  return(invisible(NULL))
+}
+
+#' Setup Default Logging
+#'
+#' @param logs Character path indicating the target folder in which to store log 
+#' information. Defaults to the temporary directory.
+#' @param mirror_epinow Logical, defaults to FALSE. Should internal logging be 
+#' returned from `epinow` to the console.
+#' @param mirror_epinow_fit Logical, defaults to FALSE. Should internal logging
+#' be returned from internal fitting functions to the console.
+#' @inheritParams setup_target_folder
+#' @return NULL
+#' @export
+#' @importFrom purrr walk
+#' @examples
+#' setup_default_logging()
+setup_default_logging <- function(logs = tempdir(),
+                                  mirror_epinow = FALSE,
+                                  mirror_epinow_fit = FALSE,
+                                  target_date = NULL) {
+  
+  if (is.null(target_date)) {
+    target_date <- "latest"
+  }
+  # make log paths
+  log_path <- list()
+  log_path$regional_epinow <- file.path(logs, "regional-epinow")
+  log_path$epinow <- file.path(logs, "epinow")
+  log_path$epinow_fit <- file.path(logs, "epinow-fit")
+  
+  purrr::walk(log_path, function(path){
+    if (!dir.exists(path)) {
+      dir.create(path, recursive = TRUE)
+    }
+  })
+  
+  # set up logs
+  setup_logging("INFO", file = paste0(log_path$regional_epinow, "/", target_date, ".log"),
+                mirror_to_console = TRUE)
+  setup_logging("INFO", file = paste0(log_path$epinow, "/", target_date, ".log"),
+                mirror_to_console = mirror_epinow,
+                name = "EpiNow2.epinow")
+  setup_logging("INFO", file = paste0(log_path$epinow_fit, "/" , target_date, ".log"),
+                mirror_to_console = mirror_epinow_fit,
+                name = "EpiNow2.epinow.fit")
   return(invisible(NULL))
 }
 
