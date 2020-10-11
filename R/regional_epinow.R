@@ -37,10 +37,6 @@
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
-#' 
-#' # setup logging
-#' setup_logging(file = paste0(tempdir(), "/info.log"), 
-#'               name = "EpiNow2.epinow")
 #'                 
 #' # run epinow across multiple regions and generate summaries
 #' # samples and warmup have been reduced for this example
@@ -231,6 +227,7 @@ run_region <- function(target_region,
         target_date = target_date,
         return_output = ifelse(output["summary"], TRUE, return_output),
         output = names(output[output]),
+        logs = NULL,
         ...),
         warning = function(w) {
           futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call),
