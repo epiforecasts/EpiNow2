@@ -64,8 +64,10 @@ which defaults to 0.3 and must be between 0 and 1 (increasing this increases the
 additional compute. Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
 See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
-Can optionally also contain the  \code{lengthscale_mean} and \code{lengthscale_sd}. If these are specified this will override
-the defaults of 0 and 2 (normal distributed truncated at zero).}
+Must also contain the  \code{lengthscale_alpha} and \code{lengthscale_beta}. These tune the prior of the lengthscale. Principled
+values can be obtained using \code{tune_inv_gamma} which optimises based on the desired truncation (which should be based on the scale
+of the observed data). The default is tuned to have 98\% of the density of the distribution between 2 and 21 days. Finally the list must
+cotain \code{alpha_sd} the standard deviation for the alpha parameter of the guassian process. This defaults to 0.1.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}
