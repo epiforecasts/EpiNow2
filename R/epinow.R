@@ -88,6 +88,12 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                                               "timing"),
                                    logger = "EpiNow2.epinow",
                                    level = "debug")
+  
+  # set up folders ----------------------------------------------------------
+  target_folders <- setup_target_folder(target_folder, target_date)
+  target_folder <- target_folders$date
+  latest_folder <- target_folders$latest
+  
   # start processing with system timing and error catching
   timing <- system.time({
     out <- tryCatch(
@@ -100,11 +106,6 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
         
         # convert input to DT -----------------------------------------------------
         reported_cases <- setup_dt(reported_cases)
-        
-        # set up folders ----------------------------------------------------------
-        target_folders <- setup_target_folder(target_folder, target_date)
-        target_folder <- target_folders$date
-        latest_folder <- target_folders$latest
         
         # save input data ---------------------------------------------------------
         save_input(reported_cases, target_folder)
