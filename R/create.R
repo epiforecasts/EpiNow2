@@ -115,8 +115,8 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   data$M <- ceiling(data$rt * gp$basis_prop)
   # Boundary value for c
   data$L <- max(data$time) * gp$boundary_scale
-  data$lengthscale_mean <- gp$lengthscale_mean
-  data$lengthscale_sd <- gp$lengthscale_sd
+  data$lengthscale_alpha <- gp$lengthscale_alpha
+  data$lengthscale_beta <- gp$lengthscale_beta
   
   
   ## Set model to poisson or negative binomial
