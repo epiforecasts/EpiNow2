@@ -31,7 +31,8 @@ data {
   real L;				                     // boundary value for infections gp
 	int<lower=1> M;			               // basis functions for infections gp
 	real lengthscale_alpha;            // alpha for gp lengthscale prior
-	real lengthscale_beta;               // beta for gp lengthscale prior
+	real lengthscale_beta;             // beta for gp lengthscale prior
+	real alpha_sd;                     // standard deviation of the alpha gp kernal parameter
 	int est_week_eff;
 	vector[rt] time;
 	vector[t] inf_time;
@@ -230,7 +231,7 @@ model {
   // priors for noise GP
   if (!fixed) {
   rho ~ inv_gamma(lengthscale_alpha, lengthscale_beta);
-  alpha ~ std_normal();
+  alpha ~ normal(0, alpha_sd);
   eta ~ std_normal();
   }
 

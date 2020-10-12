@@ -117,7 +117,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   data$L <- max(data$time) * gp$boundary_scale
   data$lengthscale_alpha <- gp$lengthscale_alpha
   data$lengthscale_beta <- gp$lengthscale_beta
-  
+  data$alpha_sd <- gp$alpha_sd
   
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
