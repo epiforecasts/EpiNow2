@@ -44,7 +44,8 @@
 #' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
 #' Must also contain the  `lengthscale_alpha` and `lengthscale_beta`. These tune the prior of the lengthscale. Principled 
 #' values can be obtained using `tune_inv_gamma` which optimises based on the desired truncation (which should be based on the scale
-#' of the observed data). The default is tuned to have 98% of the density of the distribution between 2 and 20 days.
+#' of the observed data). The default is tuned to have 98% of the density of the distribution between 2 and 21 days. Finally the list must 
+#' cotain `alpha_sd` the standard deviation for the alpha parameter of the guassian process. This defaults to 0.1.
 #' @param verbose Logical, defaults to `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
@@ -202,7 +203,8 @@ estimate_infections <- function(reported_cases, model = NULL, samples = 1000,
                                 stan_args = NULL, method = "exact", family = "negbin", 
                                 generation_time, delays = list(), horizon = 7,
                                 gp = list(basis_prop = 0.3, boundary_scale = 2,
-                                          lengthscale_alpha = 4.6, lengthscale_beta = 22.1),
+                                          lengthscale_alpha = 4.5, lengthscale_beta = 21.5,
+                                          alpha_sd = 0.1),
                                 rt_prior = list(mean = 1, sd = 1),
                                 estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE, 
                                 stationary = FALSE, fixed_future_rt = FALSE,
@@ -215,7 +217,8 @@ estimate_infections <- function(reported_cases, model = NULL, samples = 1000,
     fixed <- TRUE
     stationary <- TRUE
     gp = list(basis_prop = 1, boundary_scale = 1,
-              lengthscale_mean = 1, lengthscale_sd = 1)
+              lengthscale_mean = 1, lengthscale_sd = 1,
+              alpha_sd = 0.1)
   }else{
     fixed <- FALSE
   }

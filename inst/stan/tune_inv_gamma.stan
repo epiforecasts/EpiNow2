@@ -39,5 +39,3 @@ generated quantities {
   real alpha = exp(y[1]);
   real beta = exp(y[2]);
 }
-
-
