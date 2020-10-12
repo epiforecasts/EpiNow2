@@ -154,7 +154,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 1))
-      out$rho <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2))
+      out$rho <- array(truncnorm::rtruncnorm(1, a = 1, mean = 10, sd = 4))
       out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
     }
     if (data$model_type == 1) {

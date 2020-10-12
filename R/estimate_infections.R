@@ -81,7 +81,7 @@
 #'                            delays = list(incubation_period, reporting_delay), 
 #'                            stan_args = list(warmup = 200, 
 #'                                             cores = ifelse(interactive(), 4, 1)),
-#'                            model = model, verbose = TRUE, return_fit = TRUE)
+#'                            verbose = TRUE, return_fit = TRUE)
 #'
 #' plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
 #' plots$summary
