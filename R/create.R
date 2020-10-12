@@ -27,7 +27,7 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_thresold =
   # is greater than a threshold
   reported_cases <- reported_cases[, `:=`(average_7 = data.table::frollsum(confirm, n = 8) / 7,
                                           average_3 = data.table::frollsum(confirm, n = 4) / 3)]
-  reported_cases <- reported_cases[confirm == 0 & average_7 > meaningful_zero_thresold,
+  reported_cases <- reported_cases[confirm == 0 & average_7 > zero_thresold,
                                    confirm := average_3][,c("average_7", "average_3") := NULL]
   return(reported_cases)
 }
