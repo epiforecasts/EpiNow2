@@ -44,7 +44,7 @@
 #' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
 #' Must also contain the  `lengthscale_alpha` and `lengthscale_beta`. These tune the prior of the lengthscale. Principled 
 #' values can be obtained using `tune_inv_gamma` which optimises based on the desired truncation (which should be based on the scale
-#' of the observed data).
+#' of the observed data). The default is tuned to have 98% of the density of the distribution between 2 and 20 days.
 #' @param verbose Logical, defaults to `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
