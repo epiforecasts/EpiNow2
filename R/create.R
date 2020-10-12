@@ -23,12 +23,12 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_thresold =
   reported_cases <- reported_cases[order(date)][,
                                cum_cases := cumsum(confirm)][cum_cases > 0][, cum_cases := NULL]
   
-  # Check case counts surrounding zero cases and set to 3 day average if average is over 7 days
+  # Check case counts surrounding zero cases and set to 7 day average if average is over 7 days
   # is greater than a threshold
-  reported_cases <- reported_cases[, `:=`(average_7 = data.table::frollsum(confirm, n = 8) / 7,
-                                          average_3 = data.table::frollsum(confirm, n = 4) / 3)]
+  reported_cases <- reported_cases[, `:=`(average_7 = data.table::frollsum(confirm, n = 8) / 7)]
   reported_cases <- reported_cases[confirm == 0 & average_7 > zero_thresold,
-                                   confirm := average_3][,c("average_7", "average_3") := NULL]
+                                   confirm := as.integer(average_7)][,
+                                   c("average_7") := NULL]
   return(reported_cases)
 }
 
