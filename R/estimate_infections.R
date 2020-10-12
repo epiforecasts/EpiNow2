@@ -45,7 +45,7 @@
 #' Must also contain the  `lengthscale_alpha` and `lengthscale_beta`. These tune the prior of the lengthscale. Principled 
 #' values can be obtained using `tune_inv_gamma` which optimises based on the desired truncation (which should be based on the scale
 #' of the observed data). The default is tuned to have 98% of the density of the distribution between 2 and 21 days. Finally the list must 
-#' cotain `alpha_sd` the standard deviation for the alpha parameter of the guassian process. This defaults to 0.1.
+#' contain `alpha_sd` the standard deviation for the alpha parameter of the guassian process. This defaults to 0.1.
 #' @param verbose Logical, defaults to `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
