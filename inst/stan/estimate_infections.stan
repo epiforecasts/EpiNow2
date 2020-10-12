@@ -30,8 +30,8 @@ data {
   int estimate_r;                    // should the reproduction no be estimated (1 = yes)
   real L;				                     // boundary value for infections gp
 	int<lower=1> M;			               // basis functions for infections gp
-	real lengthscale_mean;             // mean for gp lengthscale prior
-	real lengthscale_sd;               // sd for gp lengthscale prior
+	real lengthscale_alpha;            // alpha for gp lengthscale prior
+	real lengthscale_beta;               // beta for gp lengthscale prior
 	int est_week_eff;
 	vector[rt] time;
 	vector[t] inf_time;
@@ -229,8 +229,8 @@ transformed parameters {
 model {
   // priors for noise GP
   if (!fixed) {
-  rho ~  normal(lengthscale_mean, lengthscale_sd);
-  alpha ~ normal(0, 0.1);
+  rho ~ inv_gamma(lengthscale_alpha, lengthscale_beta);
+  alpha ~ std_normal();
   eta ~ std_normal();
   }
 
