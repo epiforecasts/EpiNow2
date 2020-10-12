@@ -162,7 +162,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     }
     
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rnorm(mean_shift, mean = 0, sd = 0.1))
+      out$initial_infections <- array(rlnorm(mean_shift, mean = 0, sd = 0.1))
       out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                                     scale = (rt_prior$sd^2) / rt_prior$mean))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
@@ -171,7 +171,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
                                                 sd = generation_time$sd_sd))
       
       if (data$break_no > 0) {
-        out$rt_break_eff <- array(rlnorm(data$break_no, 0, 0.1))
+        out$rt_break_eff <- array(rnorm(data$break_no, 0, 0.1))
       }
     }
     
