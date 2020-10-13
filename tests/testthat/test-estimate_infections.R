@@ -11,10 +11,11 @@ reporting_delay <- list(mean = log(3), mean_sd = 0.1, sd = log(2), sd_sd = 0.1, 
 
 test_that("estimate_infections successfully returns estimates using default settings", {
   skip_on_cran()
-  out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
-                             delays = list(reporting_delay), samples = 100, 
-                             stan_args=  list(chains = 2, warmup = 100)))
-  
+  out <- suppressWarnings(estimate_infections(reported_cases, 
+                                              generation_time = generation_time,
+                                              delays = list(reporting_delay), samples = 100, 
+                                              stan_args=  list(chains = 2, warmup = 100,
+                                                               control = list(adapt_delta = 0.8))))
   
   expect_equal(names(out), c("samples", "summarised"))
   expect_true(nrow(out$samples) > 0)
@@ -26,11 +27,13 @@ test_that("estimate_infections fails as expected when given a very short timeout
   skip_on_cran()
   expect_error(estimate_infections(reported_cases, generation_time = generation_time,
                                    delays = list(reporting_delay),
-                                   samples = 100, stan_args=list(chains = 2, warmup = 100), 
+                                   samples = 100, stan_args=list(chains = 2, warmup = 100,
+                                                                 control = list(adapt_delta = 0.8)), 
                                    future = TRUE, max_execution_time = 10))
   expect_error(estimate_infections(reported_cases, generation_time = generation_time,
                                    delays = list(reporting_delay),
-                                   samples = 100, stan_args = list(chains = 2, warmup = 100),
+                                   samples = 100, stan_args = list(chains = 2, warmup = 100,
+                                                                   control = list(adapt_delta = 0.8)),
                                    future = FALSE, max_execution_time = 10))
 })
 
@@ -40,8 +43,10 @@ test_that("estimate_infections works as expected with failing chains", {
   skip_on_cran()
   out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
                                               delays = list(reporting_delay),
-                                              samples = 100, stan_args = list(chains = 4, warmup = 50,
-                                                                              stuck_chains = 2),
+                                              samples = 100, 
+                                              stan_args = list(chains = 4, warmup = 50,
+                                                               stuck_chains = 2,
+                                                               control = list(adapt_delta = 0.8)),
                                               future = TRUE))
   expect_equal(names(out), c("samples", "summarised"))
   expect_true(nrow(out$samples) > 0)
