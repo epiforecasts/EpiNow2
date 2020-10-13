@@ -73,7 +73,7 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 #' @export 
 create_stan_data <- function(reported_cases,  shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
-                             rt_prior, estimate_rt, estimate_week_eff, stationary,
+                             rt_prior, estimate_rt, week_effect, stationary,
                              fixed, break_no, fixed_future_rt, gp, family, delays) {
   
   data <- list(
@@ -94,7 +94,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
-    est_week_eff = ifelse(estimate_week_eff, 1, 0),
+    est_week_eff = ifelse(week_effect, 1, 0),
     stationary = ifelse(stationary, 1, 0),
     fixed = ifelse(fixed, 1, 0),
     break_no = break_no,
