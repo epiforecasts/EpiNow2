@@ -5,7 +5,8 @@
 #' additional functionality to convert forecasts to date of report and produce summary output useful for reporting 
 #' results and interpreting them.
 #' @param output A character vector of optional output to return. Supported options are samples ("samples"), 
-#' plots ("plots"), the run time ("timing"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
+#' plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if `target_folder` is not null
+#'  - set using "latest"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
 #' and summary statistics. This argument uses partial matching so for example passing "sam" will lead to samples
 #' being reported.
 #' @param return_output Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE 
@@ -62,7 +63,7 @@
 #'
 epinow <- function(reported_cases, samples = 1000, horizon = 7, 
                    generation_time, delays = list(),
-                   return_output = FALSE, output = c("samples", "plots"), 
+                   return_output = FALSE, output = c("samples", "plots", "latest"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, logs = tempdir(),
                    id = "epinow", verbose = FALSE,
@@ -85,7 +86,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   
   # setup input -------------------------------------------------------------
   output <- match_output_arguments(output, supported_args = c("plots", "samples", "fit",
-                                                              "timing"),
+                                                              "timing", "latest"),
                                    logger = "EpiNow2.epinow",
                                    level = "debug")
   
@@ -198,9 +199,12 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
       saveRDS(timing['elapsed'], paste0(target_folder, "/runtime.rds"))
     }
   }
-  # copy all results to latest folder ---------------------------------------
-  copy_results_to_latest(target_folder, latest_folder)
   
+  # copy all results to latest folder
+  if (output["latest"]) {
+    copy_results_to_latest(target_folder, latest_folder)
+  }
+
   # return output
   if (return_output) {
     return(out)

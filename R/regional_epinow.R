@@ -7,10 +7,10 @@
 #' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
 #' that region to be evaluated. Defaults to 2.
 #' @param output A character vector of optional output to return. Supported options are the individual regional estimates
-#' ("regions"),  samples ("samples"), plots ("plots"), timing ("timing"), the stan fit of the underlying model ("fit"), and an 
-#' overall summary across regions ("summary"). 
-#' The default is to return samples and plots alongside summarised estimates and summary statistics. This argument uses partial 
-#' matching so for example passing "sam" will lead to samples being reported.
+#' ("regions"),  samples ("samples"), plots ("plots"), timing ("timing"),  copying the individual region dated folder into 
+#' a latest folder (if `target_folder` is not null - set using "latest"), the stan fit of the underlying model ("fit"), and an 
+#' overall summary across regions ("summary"). The default is to return samples and plots alongside summarised estimates and 
+#' summary statistics. If `target_folder` is not NULL then the default is also to copy all results into a latest folder.
 #' @param summary_args A list of arguments passed to `regional_summary`. See the `regional_summary` documentation for details.
 #' @param ... Pass additional arguments to `epinow`. See the documentation for `epinow` for details.
 #' @inheritParams epinow
@@ -52,7 +52,7 @@ regional_epinow <- function(reported_cases,
                             target_date,
                             non_zero_points = 2, 
                             output = c("regions", "summary", "samples", 
-                                       "plots", "timing"),
+                                       "plots", "timing", "latest"),
                             return_output = FALSE,
                             summary_args = list(), 
                             logs = tempdir(), ...) {
@@ -60,7 +60,7 @@ regional_epinow <- function(reported_cases,
   output <- match_output_arguments(output, 
                                    supported_args = c("plots", "samples", "fit",
                                                       "regions", "summary",
-                                                      "timing"),
+                                                      "timing", "latest"),
                                    logger = "EpiNow2")
   if (missing(target_date)) {
     target_date <- as.character(max(reported_cases$date))
