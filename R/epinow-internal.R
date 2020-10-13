@@ -151,7 +151,7 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
     suppressWarnings(
       if (dir.exists(latest_folder)) {
         unlink(latest_folder)
-      })
+      }) 
     
     suppressWarnings(
       dir.create(latest_folder)

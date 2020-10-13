@@ -6,7 +6,6 @@ reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(3), 1), max_value = 15)
 
 reported_cases <- EpiNow2::example_confirmed[1:30]
 
-
 futile.logger::flog.threshold("ERROR")
 
 df_non_zero <- function(df) {
@@ -39,7 +38,8 @@ test_that("epinow runs without error when saving to disk", {
                                       generation_time = generation_time,
                                       delays = list(incubation_period, reporting_delay),
                                       samples = 100, 
-                                      stan_args = list(warmup = 100, cores = 1, chains = 2),
+                                      stan_args = list(warmup = 100, cores = 1, chains = 2,
+                                                       control = list(adapt_delta = 0.8)),
                                       target_folder = tempdir(),
                                       logs = NULL,
                                       )))
@@ -52,7 +52,8 @@ test_that("epinow can produce partial output as specified", {
                                  generation_time = generation_time,
                                  delays = list(incubation_period, reporting_delay),
                                  samples = 100,
-                                 stan_args = list(warmup = 100, cores = 1, chains = 2),
+                                 stan_args = list(warmup = 100, cores = 1, chains = 2,
+                                                  control = list(adapt_delta = 0.8)),
                                  output = c(),
                                  logs = NULL))
   
@@ -71,7 +72,8 @@ test_that("epinow fails as expected when given a short timeout", {
   expect_error(suppressWarnings(epinow(reported_cases = reported_cases,
                 generation_time = generation_time,
                 delays = list(incubation_period, reporting_delay),
-                samples = 100, stan_args = list(warmup = 100, cores = 1, chains = 2),
+                samples = 100, stan_args = list(warmup = 100, cores = 1, chains = 2,
+                                                control = list(adapt_delta = 0.8)),
                 max_execution_time = 10,
                 logs = NULL)))
 })
