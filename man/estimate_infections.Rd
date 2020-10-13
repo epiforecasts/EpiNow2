@@ -14,8 +14,8 @@ estimate_infections(
   generation_time,
   delays = list(),
   horizon = 7,
-  gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_mean = 0, lengthscale_sd
-    = 2),
+  gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_alpha = 4.5,
+    lengthscale_beta = 21.5, alpha_sd = 0.1),
   rt_prior = list(mean = 1, sd = 1),
   estimate_rt = TRUE,
   estimate_week_eff = TRUE,
@@ -68,8 +68,10 @@ which defaults to 0.3 and must be between 0 and 1 (increasing this increases the
 additional compute. Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
 See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
-Can optionally also contain the  \code{lengthscale_mean} and \code{lengthscale_sd}. If these are specified this will override
-the defaults of 0 and 2 (normal distributed truncated at zero).}
+Must also contain the  \code{lengthscale_alpha} and \code{lengthscale_beta}. These tune the prior of the lengthscale. Principled
+values can be obtained using \code{tune_inv_gamma} which optimises based on the desired truncation (which should be based on the scale
+of the observed data). The default is tuned to have 98\% of the density of the distribution between 2 and 21 days. Finally the list must
+contain \code{alpha_sd} the standard deviation for the alpha parameter of the guassian process. This defaults to 0.1.}
 
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
@@ -132,7 +134,8 @@ reporting_delay <- list(mean = log(5), mean_sd = log(2),
 def <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay), 
                            stan_args = list(warmup = 200, 
-                                            cores = ifelse(interactive(), 4, 1)))
+                                            cores = ifelse(interactive(), 4, 1)),
+                           verbose = TRUE, return_fit = TRUE)
 
 plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
 plots$summary
