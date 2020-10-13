@@ -29,6 +29,7 @@ function in `regional_epinow` and `epinow`.
 
 * Updates the interface for specifying how output is returned.
 * Moved all inherited from stan arguments into `create_stan_args` with the option to override using `stan_args`. This leads to breaking changes - see the examples for details of the new interface.
+* Update the `estimate_infections` interface and expanded the range of options for the `future_rt` argument. Users can now choose to set Rt from any time point referenced to the forecast date.
 * Updated all example and documentation to reflect the new interface.
 * Added a `samples` argument to `get_regional_results` to make loading in samples optional. This also allows samples to be dropped when using `regional_epinow` which reduces RAM usage.
 * Cleaned up wrapper functions to move individual jobs into functions.
