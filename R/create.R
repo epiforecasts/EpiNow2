@@ -115,9 +115,9 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   data$M <- ceiling(data$rt * gp$basis_prop)
   # Boundary value for c
   data$L <- max(data$time) * gp$boundary_scale
-  data$lengthscale_mean <- gp$lengthscale_mean
-  data$lengthscale_sd <- gp$lengthscale_sd
-  
+  data$lengthscale_alpha <- gp$lengthscale_alpha
+  data$lengthscale_beta <- gp$lengthscale_beta
+  data$alpha_sd <- gp$alpha_sd
   
   ## Set model to poisson or negative binomial
   if (family %in% "poisson") {
@@ -154,7 +154,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 1))
-      out$rho <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2))
+      out$rho <- array(truncnorm::rtruncnorm(1, a = 1, mean = 10, sd = 4))
       out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
     }
     if (data$model_type == 1) {
@@ -162,7 +162,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     }
     
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rnorm(mean_shift, mean = 0, sd = 0.1))
+      out$initial_infections <- array(rlnorm(mean_shift, mean = 0, sd = 0.1))
       out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                                     scale = (rt_prior$sd^2) / rt_prior$mean))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
@@ -171,7 +171,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
                                                 sd = generation_time$sd_sd))
       
       if (data$break_no > 0) {
-        out$rt_break_eff <- array(rlnorm(data$break_no, 0, 0.1))
+        out$rt_break_eff <- array(rnorm(data$break_no, 0, 0.1))
       }
     }
     

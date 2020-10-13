@@ -30,8 +30,9 @@ data {
   int estimate_r;                    // should the reproduction no be estimated (1 = yes)
   real L;				                     // boundary value for infections gp
 	int<lower=1> M;			               // basis functions for infections gp
-	real lengthscale_mean;             // mean for gp lengthscale prior
-	real lengthscale_sd;               // sd for gp lengthscale prior
+	real lengthscale_alpha;            // alpha for gp lengthscale prior
+	real lengthscale_beta;             // beta for gp lengthscale prior
+	real alpha_sd;                     // standard deviation of the alpha gp kernal parameter
 	int est_week_eff;
 	vector[rt] time;
 	vector[t] inf_time;
@@ -108,8 +109,8 @@ transformed parameters {
 		}
   	SPD_eta = diagSPD .* eta;
 	
-  	noise = rep_vector(1e-5, noise_terms);
-    noise = noise + exp(PHI[,] * SPD_eta);
+  	noise = rep_vector(1e-6, noise_terms);
+    noise = noise + PHI[,] * SPD_eta;
   }
   
   // initialise infections
@@ -127,11 +128,12 @@ transformed parameters {
   rt_break_count = 0;
   // assume a global Rt * GP
   if (stationary) {
-    R = rep_vector(initial_R[estimate_r], rt);
+    real log_R = log(initial_R[estimate_r]);
+    R = rep_vector(log_R, rt);
     for (s in 1:rt) {
       if (!fixed) {
          if (!future_fixed || (s <= noise_terms)) {
-           R[s] *= noise[s];
+           R[s] += noise[s];
          }else{
            R[s] = R[s - 1];
          }
@@ -141,16 +143,16 @@ transformed parameters {
       if (break_no > 0) {
        rt_break_count += breakpoints[s];
         if (rt_break_count > 0) {
-          R[s] = R[s] * prod(rt_break_eff[1:rt_break_count]);
+          R[s] += sum(rt_break_eff[1:rt_break_count]);
         }
       }
     }
   // assume GP on gradient of Rt (i.e Rt = R(t-1) * GP)
   }else{
-    R[1] = initial_R[estimate_r];
+    R[1] = log(initial_R[estimate_r]);
     for (s in 2:rt) {
       if (!future_fixed || (s <= (noise_terms + 1))) {
-        R[s] = R[s - 1] .* noise[s - 1];
+        R[s] = R[s - 1] + noise[s - 1];
       }else{
         R[s] = R[s - 1];
       }
@@ -159,15 +161,18 @@ transformed parameters {
       if (break_no > 0) {
         if (breakpoints[s] == 1) {
           rt_break_count = sum(breakpoints[1:s]);
-          R[s] = R[s] * rt_break_eff[rt_break_count];
+          R[s] +=  rt_break_eff[rt_break_count];
         }
       }
     }
   }
+  
+  //map log R to R
+  R = exp(R);
 
      // estimate initial infections not using Rt
      infections[1:no_rt_time] = infections[1:no_rt_time] + 
-                                  shifted_cases[1:no_rt_time] .* exp(initial_infections);
+                                  shifted_cases[1:no_rt_time] .* initial_infections;
       
      // estimate remaining infections using Rt
      infectiousness = rep_vector(1e-5, rt);
@@ -179,7 +184,7 @@ transformed parameters {
   }else{
     // generate infections from prior infections and non-parameteric noise
     if(!fixed) {
-      infections = infections + shifted_cases .* noise;
+      infections = infections + shifted_cases .* exp(noise);
     }else{
       infections = infections + shifted_cases;
     }
@@ -225,8 +230,8 @@ transformed parameters {
 model {
   // priors for noise GP
   if (!fixed) {
-  rho ~  normal(lengthscale_mean, lengthscale_sd);
-  alpha ~ normal(0, 0.1);
+  rho ~ inv_gamma(lengthscale_alpha, lengthscale_beta);
+  alpha ~ normal(0, alpha_sd);
   eta ~ std_normal();
   }
 
@@ -247,7 +252,7 @@ model {
   if (estimate_r) {
     // prior on R
     initial_R[estimate_r] ~ gamma(r_alpha, r_beta);
-    initial_infections ~ normal(0, 0.1);
+    initial_infections ~ lognormal(0, 0.1);
     
     // penalised_prior on generation interval
     target += normal_lpdf(gt_mean | gt_mean_mean, gt_mean_sd) * rt;
@@ -255,7 +260,7 @@ model {
     
     //breakpoint effects on Rt
     if (break_no > 0) {
-      rt_break_eff ~ lognormal(0, 0.1);
+      rt_break_eff ~ normal(0, 0.1);
     }
   }
 
