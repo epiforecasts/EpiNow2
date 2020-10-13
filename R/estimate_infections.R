@@ -33,8 +33,6 @@
 #' @param stationary Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt 
 #' this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 #' This setting is most appropriate when estimating historic Rt or when combined with breakpoints.
-#' @param fixed_future_rt Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
-#' future time points without data. 
 #' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
 #' @param gp List controlling the Gaussian process approximation if set to `list()` then `Rt` is assumed to be constant unless
 #' other settings introduce variation. If set must contain the `basis_prop` (number of basis functions based on scaling the time points)
@@ -53,6 +51,7 @@
 #' will fail with an informative error.
 #' @export
 #' @inheritParams create_stan_args
+#' @inheritParams create_future_rt
 #' @inheritParams fit_model_with_nuts
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose 
@@ -211,9 +210,8 @@ estimate_infections <- function(reported_cases, model = NULL, samples = 1000,
                                 return_fit = FALSE,
                                 verbose = FALSE){
   
-  
   if (length(rt_prior) == 0) {
-    estimate_rt <- FALS 
+    estimate_rt <- FALSE
     rt_prior <- list(mean = 1, sd = 1)
   }
   
@@ -302,7 +300,7 @@ estimate_infections <- function(reported_cases, model = NULL, samples = 1000,
                            stationary = stationary,
                            fixed = fixed,
                            break_no = break_no, 
-                           fixed_future_rt = fixed_future_rt, 
+                           future_rt = future_rt, 
                            gp = gp,
                            family = family,
                            delays = delays)
