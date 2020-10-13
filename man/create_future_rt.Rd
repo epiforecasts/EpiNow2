@@ -20,14 +20,3 @@ A list containing a logical called fixed and an integer called from
 \description{
 Construct the Required Future Rt assumption
 }
-\examples{
-# default GP projection
-create_future_rt()
-# project based on the estimate from 10 days ago (assuming this is
-# mean delay)
-create_future_rt("est", 10)
-# project using the estimate from 3 days ago
-create_future_rt(-3)
-# project using the estimate from 3 days into the future
-create_future_rt(3)
-}

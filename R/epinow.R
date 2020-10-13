@@ -24,7 +24,8 @@
 #' @inheritParams setup_default_logging
 #' @importFrom data.table setDT
 #' @importFrom lubridate days
-#' @importFrom futile.logger flog.fatal
+#' @importFrom futile.logger flog.fatal flog.warn flog.error
+#' @importFrom rlang cnd_muffle
 #' @examples
 #' \donttest{
 #' # construct example distributions
