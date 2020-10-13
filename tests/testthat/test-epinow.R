@@ -17,8 +17,8 @@ test_that("epinow produces expected output when run with default settings", {
   out <- suppressWarnings(epinow(reported_cases = reported_cases,
                                  generation_time = generation_time,
                 delays = list(incubation_period, reporting_delay),
-                samples = 100, 
-                stan_args = list(warmup = 100, cores = 1, chains = 2,
+                samples = 25, 
+                stan_args = list(warmup = 25, cores = 1, chains = 2,
                                  control = list(adapt_delta = 0.8)),
                 logs = NULL))
   
@@ -37,8 +37,8 @@ test_that("epinow runs without error when saving to disk", {
   expect_null(suppressWarnings(epinow(reported_cases = reported_cases,
                                       generation_time = generation_time,
                                       delays = list(incubation_period, reporting_delay),
-                                      samples = 100, 
-                                      stan_args = list(warmup = 100, cores = 1, chains = 2,
+                                      samples = 25, 
+                                      stan_args = list(warmup = 25, cores = 1, chains = 2,
                                                        control = list(adapt_delta = 0.8)),
                                       target_folder = tempdir(),
                                       logs = NULL,
@@ -51,8 +51,8 @@ test_that("epinow can produce partial output as specified", {
   out <- suppressWarnings(epinow(reported_cases = reported_cases,
                                  generation_time = generation_time,
                                  delays = list(incubation_period, reporting_delay),
-                                 samples = 100,
-                                 stan_args = list(warmup = 100, cores = 1, chains = 2,
+                                 samples = 25,
+                                 stan_args = list(warmup = 25, cores = 1, chains = 2,
                                                   control = list(adapt_delta = 0.8)),
                                  output = c(),
                                  logs = NULL))
