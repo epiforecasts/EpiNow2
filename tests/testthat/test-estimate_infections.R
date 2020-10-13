@@ -13,7 +13,7 @@ test_that("estimate_infections successfully returns estimates using default sett
   skip_on_cran()
   out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
                              delays = list(reporting_delay), samples = 100, 
-                             stan_args=list(chains = 2, warmup = 100)))
+                             stan_args=  list(chains = 2, warmup = 100)))
   
   
   expect_equal(names(out), c("samples", "summarised"))

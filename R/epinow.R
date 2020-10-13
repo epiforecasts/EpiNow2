@@ -85,8 +85,10 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                         mirror_epinow_fit = verbose)
   
   # setup input -------------------------------------------------------------
-  output <- match_output_arguments(output, supported_args = c("plots", "samples", "fit",
-                                                              "timing", "latest"),
+  output <- match_output_arguments(output, 
+                                   supported_args = c("plots", "samples", 
+                                                      "fit", "timing", 
+                                                      "latest"),
                                    logger = "EpiNow2.epinow",
                                    level = "debug")
   
@@ -96,7 +98,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   latest_folder <- target_folders$latest
   
   # start processing with system timing and error catching
-  timing <- system.time({
+  timing <- system.time(
     out <- tryCatch(
       withCallingHandlers({
         # check verbose settings and set logger to match---------------------------
@@ -186,8 +188,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
         futile.logger::flog.warn("region %s timed out", id,
                                  name = "EpiNow2.epinow")
         return(list("timing" = Inf))
-      })
-  })
+      }))
   
   # log timing if specified
   if (output["timing"]) {
