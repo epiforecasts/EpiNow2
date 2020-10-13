@@ -59,6 +59,41 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 }
 
 
+#' Construct the Required Future Rt assumption
+#'
+#' @param future_rt A character string or integer. This argument indicates how to set future Rt values. Supported 
+#' options are to project using the Rt model ("project"), to use the latest estimate based on partial data ("latest"),
+#' to use the latest estimate based on data that is over 50% complete ("estimate"). If an integer is supplied then the Rt estimate
+#' from this many days into the future (or past if negative) past will be used forwards in time. 
+#' @param delay Numeric mean delay
+#' @return A list containing a logical called fixed and an integer called from
+#' @examples
+#' # default GP projection
+#' create_future_rt()
+#' # project based on the estimate from 10 days ago (assuming this is
+#' # mean delay)
+#' create_future_rt("est", 10)
+#' # project using the estimate from 3 days ago
+#' create_future_rt(-3)
+#' # project using the estimate from 3 days into the future
+#' create_future_rt(3)
+create_future_rt <- function(future_rt = "project", delay = 0) {
+  out <- list(fixed = TRUE, from = 0)
+  if (is.character(future_rt)) {
+    future_rt <- match.arg(future_rt,
+                           c("project", 
+                             "latest",
+                             "estimate"))
+    if (!(future_rt %in% "project")) {
+      out$fixed <- FALSE
+      out$from <- ifelse(future_rt %in% "latest", 0, -delay)
+    }
+  }else if (is.numeric(future_rt)){
+    out$fixed <- FALSE
+    out$from <- as.integer(future_rt)
+  }
+  return(out)
+}
 
 #' Create Stan Data Required for estimate_infections
 #'
@@ -69,12 +104,17 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 #' @param fixed Logical, should the gaussian process be used for non-parametric 
 #' change over time.
 #' @inheritParams estimate_infections
+#' @inheritParams create_future_rt
 #' @return A list of stan data
 #' @export 
 create_stan_data <- function(reported_cases,  shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
                              rt_prior, estimate_rt, week_effect, stationary,
-                             fixed, break_no, fixed_future_rt, gp, family, delays) {
+                             fixed, break_no, future_rt, gp, family, delays) {
+  
+  # create future_rt
+  future_rt <- create_future_rt(future_rt = future_rt, 
+                                delay = mean_shift)
   
   data <- list(
     day_of_week = reported_cases[(mean_shift + 1):.N]$day_of_week,
@@ -99,7 +139,8 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     fixed = ifelse(fixed, 1, 0),
     break_no = break_no,
     breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
-    future_fixed = ifelse(fixed_future_rt, 1, 0)
+    future_fixed = ifelse(future_rt$fixed, 1, 0),
+    fixed_from = future_rt$from
   ) 
   
   # Delays ------------------------------------------------------------------
