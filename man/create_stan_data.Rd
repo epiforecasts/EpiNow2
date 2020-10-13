@@ -43,6 +43,8 @@ generation time (assuming a gamma distribution).}
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1. To infer infections only using
 non-parametric backcalculation set this to \code{list()}.}
 
+\item{estimate_rt}{Logical, should Rt be estimated.}
+
 \item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt

@@ -113,6 +113,7 @@ create_future_rt <- function(future_rt = "project", delay = 0) {
 #' @param break_no Numeric, number of breakpoints
 #' @param fixed Logical, should the gaussian process be used for non-parametric 
 #' change over time.
+#' @param estimate_rt Logical, should Rt be estimated.
 #' @inheritParams estimate_infections
 #' @inheritParams create_future_rt
 #' @return A list of stan data
@@ -211,7 +212,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     }
     
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rlnorm(mean_shift, mean = 0, sd = 0.1))
+      out$initial_infections <- array(rlnorm(mean_shift, meanlog = 0, sdlog = 0.1))
       out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                                     scale = (rt_prior$sd^2) / rt_prior$mean))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
@@ -223,10 +224,8 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
         out$rt_break_eff <- array(rnorm(data$break_no, 0, 0.1))
       }
     }
-    
     return(out)
   }
-  
   return(init_fun)
 }
 
