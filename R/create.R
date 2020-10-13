@@ -77,16 +77,6 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 #' from this many days into the future (or past if negative) past will be used forwards in time. 
 #' @param delay Numeric mean delay
 #' @return A list containing a logical called fixed and an integer called from
-#' @examples
-#' # default GP projection
-#' create_future_rt()
-#' # project based on the estimate from 10 days ago (assuming this is
-#' # mean delay)
-#' create_future_rt("est", 10)
-#' # project using the estimate from 3 days ago
-#' create_future_rt(-3)
-#' # project using the estimate from 3 days into the future
-#' create_future_rt(3)
 create_future_rt <- function(future_rt = "project", delay = 0) {
   out <- list(fixed = TRUE, from = 0)
   if (is.character(future_rt)) {
