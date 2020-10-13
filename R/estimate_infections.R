@@ -22,7 +22,7 @@
 #' @param model A compiled stan model. By default uses the internal package model.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
 #' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
-#' @param estimate_week_eff Logical, defaults TRUE. Should weekly reporting effects be estimated.
+#' @param week_effect Logical, defaults TRUE. Should weekly reporting effects be estimated.
 #' @param estimate_breakpoints Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then `reported_cases`
 #' must contain a `breakpoint` variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
 #' a global non-parametric effect and so represent a conservative estimate of breakpoint changes.
@@ -65,8 +65,8 @@
 #' reported_cases <- EpiNow2::example_confirmed[1:50]
 #' 
 #' # add a dummy breakpoint (used only when optionally estimating breakpoints)
-#' reported_cases <- 
-#'     reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"), 1, 0)]
+#' reported_cases_bp <- data.table::copy(reported_cases)[,
+#'               breakpoint := data.table::fifelse(date == as.Date("2020-03-16"), 1, 0)]
 #' # set up example generation time
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # set delays between infection and case report 
@@ -150,10 +150,9 @@
 #' plots$summary         
 #'               
 #' # run model with breakpoints                                                                      
-#' bkp <- estimate_infections(reported_cases, generation_time = generation_time,
+#' bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                            estimate_breakpoints = TRUE)
+#'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 #'
 #' plots <- report_plots(summarised_estimates = bkp$summarised, reported = reported_cases)
 #' plots$summary
@@ -161,12 +160,11 @@
 #' # run model with breakpoints but with constrained non-linear change over time 
 #' # rhis formulation may increase the apparent effect of the breakpoint but needs to be tested using
 #' # model fit criteria (i.e LFO). 
-#' cbkp <- estimate_infections(reported_cases, generation_time = generation_time,
+#' cbkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
 #'                            gp = list(basis_prop = 0.3, boundary_scale = 2, 
 #'                                      lengthscale_mean = 20, lengthscale_sd = 1),
-#'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                            estimate_breakpoints = TRUE)                                                                   
+#'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))                                                                   
 #'
 #' plots <- report_plots(summarised_estimates = cbkp$summarised, reported = reported_cases)
 #' plots$summary
@@ -176,10 +174,10 @@
 #' # run model with breakpoints but otherwise static Rt
 #' # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
 #' # model fit criteria (i.e LFO).           
-#' fbkp <- estimate_infections(reported_cases, generation_time = generation_time,
+#' fbkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
 #'                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                             gp = list(), estimate_breakpoints = TRUE)                                                         
+#'                             gp = list())                                                         
 #'
 #' plots <- report_plots(summarised_estimates = fbkp$summarised, reported = reported_cases)
 #' plots$summary
@@ -190,7 +188,7 @@
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                delays = list(incubation_period, reporting_delay),
 #'                                stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                                estimate_rt = FALSE)
+#'                                rt_prior = list())
 #'
 #' # plot just infections as report_plots does not support the backcalculation only model
 #' plot_estimates(estimate = backcalc$summarised[variable == "infections"],
@@ -202,10 +200,22 @@ estimate_infections <- function(reported_cases, model = NULL, samples = 1000,
                                 gp = list(basis_prop = 0.3, boundary_scale = 2,
                                           lengthscale_mean = 0, lengthscale_sd = 2),
                                 rt_prior = list(mean = 1, sd = 1),
-                                estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE, 
-                                stationary = FALSE, fixed_future_rt = FALSE,
-                                burn_in = 0, prior_smoothing_window = 7, future = FALSE, 
-                                max_execution_time = Inf, return_fit = FALSE, verbose = FALSE){
+                                week_effect = TRUE, 
+                                use_breakpoints = TRUE, 
+                                stationary = FALSE, 
+                                future_rt = "projected",
+                                burn_in = 0, 
+                                prior_smoothing_window = 7, 
+                                future = FALSE, 
+                                max_execution_time = Inf, 
+                                return_fit = FALSE,
+                                verbose = FALSE){
+  
+  
+  if (length(rt_prior) == 0) {
+    estimate_rt <- FALS 
+    rt_prior <- list(mean = 1, sd = 1)
+  }
   
   # If no GP default to stationary setup with no assumed non-parametric change
   # add in placeholder parameters
@@ -227,6 +237,7 @@ estimate_infections <- function(reported_cases, model = NULL, samples = 1000,
   # Check breakpoints -------------------------------------------------------
   if (is.null(reported_cases$breakpoint)) {
     reported_cases$breakpoint <- NA
+    use_breakpoints <- FALSE
   }
   
   if (estimate_breakpoints) {
@@ -281,13 +292,20 @@ estimate_infections <- function(reported_cases, model = NULL, samples = 1000,
   # Define stan model parameters --------------------------------------------
   data <- create_stan_data(reported_cases = reported_cases, 
                            shifted_reported_cases = shifted_reported_cases,
-                           horizon = horizon, no_delays = no_delays,
-                           mean_shift = mean_shift, generation_time = generation_time,
-                           rt_prior = rt_prior, estimate_rt = estimate_rt,
-                           estimate_week_eff = estimate_week_eff, stationary = stationary,
-                           fixed = fixed, break_no = break_no, 
-                           fixed_future_rt = fixed_future_rt, gp = gp,
-                           family = family, delays = delays)
+                           horizon = horizon,
+                           no_delays = no_delays,
+                           mean_shift = mean_shift,
+                           generation_time = generation_time,
+                           rt_prior = rt_prior, 
+                           estimate_rt = estimate_rt,
+                           week_effect = week_effect, 
+                           stationary = stationary,
+                           fixed = fixed,
+                           break_no = break_no, 
+                           fixed_future_rt = fixed_future_rt, 
+                           gp = gp,
+                           family = family,
+                           delays = delays)
 
   # Set up default settings -------------------------------------------------
   if (missing(model)) {
