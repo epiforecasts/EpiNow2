@@ -69,6 +69,31 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 }
 
 
+#' Construct the Required Future Rt assumption
+#'
+#' @param future_rt A character string or integer. This argument indicates how to set future Rt values. Supported 
+#' options are to project using the Rt model ("project"), to use the latest estimate based on partial data ("latest"),
+#' to use the latest estimate based on data that is over 50% complete ("estimate"). If an integer is supplied then the Rt estimate
+#' from this many days into the future (or past if negative) past will be used forwards in time. 
+#' @param delay Numeric mean delay
+#' @return A list containing a logical called fixed and an integer called from
+create_future_rt <- function(future_rt = "project", delay = 0) {
+  out <- list(fixed = TRUE, from = 0)
+  if (is.character(future_rt)) {
+    future_rt <- match.arg(future_rt,
+                           c("project", 
+                             "latest",
+                             "estimate"))
+    if (!(future_rt %in% "project")) {
+      out$fixed <- FALSE
+      out$from <- ifelse(future_rt %in% "latest", 0, -delay)
+    }
+  }else if (is.numeric(future_rt)){
+    out$fixed <- FALSE
+    out$from <- as.integer(future_rt)
+  }
+  return(out)
+}
 
 #' Create Stan Data Required for estimate_infections
 #'
@@ -78,13 +103,19 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 #' @param break_no Numeric, number of breakpoints
 #' @param fixed Logical, should the gaussian process be used for non-parametric 
 #' change over time.
+#' @param estimate_rt Logical, should Rt be estimated.
 #' @inheritParams estimate_infections
+#' @inheritParams create_future_rt
 #' @return A list of stan data
 #' @export 
 create_stan_data <- function(reported_cases,  shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
-                             rt_prior, estimate_rt, estimate_week_eff, stationary,
-                             fixed, break_no, fixed_future_rt, gp, family, delays) {
+                             rt_prior, estimate_rt, week_effect, stationary,
+                             fixed, break_no, future_rt, gp, family, delays) {
+  
+  # create future_rt
+  future_rt <- create_future_rt(future_rt = future_rt, 
+                                delay = mean_shift)
   
   data <- list(
     day_of_week = reported_cases[(mean_shift + 1):.N]$day_of_week,
@@ -104,12 +135,13 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
-    est_week_eff = ifelse(estimate_week_eff, 1, 0),
+    est_week_eff = ifelse(week_effect, 1, 0),
     stationary = ifelse(stationary, 1, 0),
     fixed = ifelse(fixed, 1, 0),
     break_no = break_no,
     breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
-    future_fixed = ifelse(fixed_future_rt, 1, 0)
+    future_fixed = ifelse(future_rt$fixed, 1, 0),
+    fixed_from = future_rt$from
   ) 
   
   # Delays ------------------------------------------------------------------
@@ -130,11 +162,9 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   data$alpha_sd <- gp$alpha_sd
   
   ## Set model to poisson or negative binomial
-  if (family %in% "poisson") {
-    data$model_type <- 0
-  }else if (family %in% "negbin"){
-    data$model_type <- 1
-  }
+  family <- match.arg(family, c("poisson", "negbin"))
+  data$model_type <- ifelse(family %in% "poisson", 0, 1)
+
   return(data)
 }
 
@@ -172,7 +202,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     }
     
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rlnorm(mean_shift, mean = 0, sd = 0.1))
+      out$initial_infections <- array(rlnorm(mean_shift, meanlog = 0, sdlog = 0.1))
       out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                                     scale = (rt_prior$sd^2) / rt_prior$mean))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
@@ -184,10 +214,8 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
         out$rt_break_eff <- array(rnorm(data$break_no, 0, 0.1))
       }
     }
-    
     return(out)
   }
-  
   return(init_fun)
 }
 

@@ -5,7 +5,8 @@
 #' additional functionality to convert forecasts to date of report and produce summary output useful for reporting 
 #' results and interpreting them.
 #' @param output A character vector of optional output to return. Supported options are samples ("samples"), 
-#' plots ("plots"), the run time ("timing"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
+#' plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if `target_folder` is not null
+#'  - set using "latest"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
 #' and summary statistics. This argument uses partial matching so for example passing "sam" will lead to samples
 #' being reported.
 #' @param return_output Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE 
@@ -23,7 +24,8 @@
 #' @inheritParams setup_default_logging
 #' @importFrom data.table setDT
 #' @importFrom lubridate days
-#' @importFrom futile.logger flog.fatal
+#' @importFrom futile.logger flog.fatal flog.warn flog.error
+#' @importFrom rlang cnd_muffle
 #' @examples
 #' \donttest{
 #' # construct example distributions
@@ -62,7 +64,7 @@
 #'
 epinow <- function(reported_cases, samples = 1000, horizon = 7, 
                    generation_time, delays = list(),
-                   return_output = FALSE, output = c("samples", "plots"), 
+                   return_output = FALSE, output = c("samples", "plots", "latest"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, logs = tempdir(),
                    id = "epinow", verbose = FALSE,
@@ -84,8 +86,10 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                         mirror_epinow_fit = verbose)
   
   # setup input -------------------------------------------------------------
-  output <- match_output_arguments(output, supported_args = c("plots", "samples", "fit",
-                                                              "timing"),
+  output <- match_output_arguments(output, 
+                                   supported_args = c("plots", "samples", 
+                                                      "fit", "timing", 
+                                                      "latest"),
                                    logger = "EpiNow2.epinow",
                                    level = "debug")
   
@@ -94,89 +98,92 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   target_folder <- target_folders$date
   latest_folder <- target_folders$latest
   
+  # specify internal functions
+  epinow_internal <- function() {
+    # check verbose settings and set logger to match---------------------------
+    if (verbose) {
+      futile.logger::flog.threshold(futile.logger::DEBUG,
+                                    name = "EpiNow2.epinow")
+    }
+    
+    # convert input to DT -----------------------------------------------------
+    reported_cases <- setup_dt(reported_cases)
+    
+    # save input data ---------------------------------------------------------
+    save_input(reported_cases, target_folder)
+    
+    # make sure the horizon is as specified from the target date --------------
+    horizon <- update_horizon(horizon, target_date, reported_cases)
+    
+    # estimate infections and Reproduction no ---------------------------------
+    estimates <- estimate_infections(reported_cases = reported_cases, 
+                                     generation_time = generation_time,
+                                     delays = delays,
+                                     samples = samples,
+                                     horizon = horizon,
+                                     return_fit = output["fit"],
+                                     verbose = verbose,
+                                     ...)
+    
+    save_estimate_infections(estimates, target_folder, 
+                             samples = output["samples"],
+                             return_fit = output["fit"])
+    
+    # forecast infections and reproduction number -----------------------------
+    if (!is.null(forecast_args)) {
+      forecast <- do.call(forecast_infections, 
+                          c(list(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
+                                 rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
+                                 gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
+                                 gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
+                                 gt_max = generation_time$max,
+                                 horizon = horizon,
+                                 samples = samples),
+                            forecast_args))
+      
+      save_forecast_infections(forecast, target_folder, samples = output["samples"])
+    }else{
+      forecast <- NULL
+    }
+    # report forecasts ---------------------------------------------------------
+    estimated_reported_cases <- estimates_by_report_date(estimates,
+                                                         forecast, 
+                                                         delays = delays,
+                                                         target_folder = target_folder,
+                                                         samples = output["samples"])
+    
+    # report estimates --------------------------------------------------------
+    summary <- report_summary(
+      summarised_estimates = estimates$summarised[!is.na(date)][type != "forecast"][date == max(date)],
+      rt_samples = estimates$samples[variable == "R"][type != "forecast"][date == max(date), .(sample, value)],
+      target_folder = target_folder)
+    
+    # plot --------------------------------------------------------------------
+    if (output["plots"]) {
+      plots <- report_plots(summarised_estimates = estimates$summarised,
+                            reported = reported_cases, 
+                            target_folder = target_folder)
+    }else{
+      plots <- NULL
+    }
+    
+    if (return_output) {
+      out <- construct_output(estimates, 
+                              forecast,
+                              estimated_reported_cases,
+                              plots = plots,
+                              summary,
+                              samples = output["samples"])
+      return(out)
+    }else{
+      return(invisible(NULL))
+    }
+  }
+  
   # start processing with system timing and error catching
   timing <- system.time({
     out <- tryCatch(
-      withCallingHandlers({
-        # check verbose settings and set logger to match---------------------------
-        if (verbose) {
-          futile.logger::flog.threshold(futile.logger::DEBUG,
-                                        name = "EpiNow2.epinow")
-        }
-        
-        # convert input to DT -----------------------------------------------------
-        reported_cases <- setup_dt(reported_cases)
-        
-        # save input data ---------------------------------------------------------
-        save_input(reported_cases, target_folder)
-        
-        # make sure the horizon is as specified from the target date --------------
-        horizon <- update_horizon(horizon, target_date, reported_cases)
-        
-        # estimate infections and Reproduction no ---------------------------------
-        estimates <- estimate_infections(reported_cases = reported_cases, 
-                                         generation_time = generation_time,
-                                         delays = delays,
-                                         samples = samples,
-                                         horizon = horizon,
-                                         estimate_rt = TRUE,
-                                         return_fit = output["fit"],
-                                         verbose = verbose,
-                                         ...)
-        
-        save_estimate_infections(estimates, target_folder, 
-                                 samples = output["samples"],
-                                 return_fit = output["fit"])
-        
-        # forecast infections and reproduction number -----------------------------
-        if (!is.null(forecast_args)) {
-          forecast <- do.call(forecast_infections, 
-                              c(list(infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
-                                     rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
-                                     gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
-                                     gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
-                                     gt_max = generation_time$max,
-                                     horizon = horizon,
-                                     samples = samples),
-                                forecast_args))
-          
-          save_forecast_infections(forecast, target_folder, samples = output["samples"])
-        }else{
-          forecast <- NULL
-        }
-        # report forecasts ---------------------------------------------------------
-        estimated_reported_cases <- estimates_by_report_date(estimates,
-                                                             forecast, 
-                                                             delays = delays,
-                                                             target_folder = target_folder,
-                                                             samples = output["samples"])
-        
-        # report estimates --------------------------------------------------------
-        summary <- report_summary(
-          summarised_estimates = estimates$summarised[!is.na(date)][type != "forecast"][date == max(date)],
-          rt_samples = estimates$samples[variable == "R"][type != "forecast"][date == max(date), .(sample, value)],
-          target_folder = target_folder)
-        
-        # plot --------------------------------------------------------------------
-        if (output["plots"]) {
-          plots <- report_plots(summarised_estimates = estimates$summarised,
-                                reported = reported_cases, 
-                                target_folder = target_folder)
-        }else{
-          plots <- NULL
-        }
-        
-        if (return_output) {
-          out <- construct_output(estimates, 
-                                  forecast,
-                                  estimated_reported_cases,
-                                  plots = plots,
-                                  summary,
-                                  samples = output["samples"])
-          return(out)
-        }else{
-          return(invisible(NULL))
-        }},
+      withCallingHandlers(epinow_internal(),
         warning = function(w) {
           futile.logger::flog.warn("%s: %s - %s", id, w$message, toString(w$call),
                                    name = "EpiNow2.epinow")
@@ -198,9 +205,12 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
       saveRDS(timing['elapsed'], paste0(target_folder, "/runtime.rds"))
     }
   }
-  # copy all results to latest folder ---------------------------------------
-  copy_results_to_latest(target_folder, latest_folder)
   
+  # copy all results to latest folder
+  if (output["latest"]) {
+    copy_results_to_latest(target_folder, latest_folder)
+  }
+
   # return output
   if (return_output) {
     return(out)
