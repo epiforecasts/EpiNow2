@@ -161,11 +161,9 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   
   
   ## Set model to poisson or negative binomial
-  if (family %in% "poisson") {
-    data$model_type <- 0
-  }else if (family %in% "negbin"){
-    data$model_type <- 1
-  }
+  family <- match.args(family, c("poisson", "negbin"))
+  data$model_type <- ifelse(family %in% "poisson", 0, 1)
+
   return(data)
 }
 
