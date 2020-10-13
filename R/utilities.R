@@ -193,7 +193,8 @@ match_output_arguments <- function(input_args = c(),
   # tell the user about what has been passed in
   if (!is.null(logger)) {
     if (length(found_args) > 0) {
-      flog_fn("Producing following optional outputs: %s", paste(found_args, collapse = ", "),
+      flog_fn("Producing following optional outputs: %s",
+              paste(found_args, collapse = ", "),
               name = logger)
     }else{
       flog_fn("No optional output specified",
@@ -223,5 +224,5 @@ globalVariables(
     "New confirmed cases by infection date", "Data", "R", "reference",
     ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate", 
     "point", "strat", "estimate", "breakpoint", "variable", "value.V1", "central_lower", "central_upper",
-    "mean_sd", "sd_sd"))
+    "mean_sd", "sd_sd", "average_7"))
 

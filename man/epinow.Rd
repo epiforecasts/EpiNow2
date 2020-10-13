@@ -11,7 +11,7 @@ epinow(
   generation_time,
   delays = list(),
   return_output = FALSE,
-  output = c("samples", "plots"),
+  output = c("samples", "plots", "latest"),
   target_folder = NULL,
   target_date,
   forecast_args = NULL,
@@ -37,15 +37,18 @@ generation time (assuming a gamma distribution).}
 Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale).}
+on the log scale). To use no delays set this to \code{list()}.}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
 if no directory for saving is specified.}
 
 \item{output}{A character vector of optional output to return. Supported options are samples ("samples"),
-plots ("plots"), the run time ("timing"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
+plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if \code{target_folder} is not null
+\itemize{
+\item set using "latest"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
 and summary statistics. This argument uses partial matching so for example passing "sam" will lead to samples
-being reported.}
+being reported.
+}}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 

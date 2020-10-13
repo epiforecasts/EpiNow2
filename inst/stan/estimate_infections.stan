@@ -41,6 +41,7 @@ data {
 	int breakpoints[rt];               // when do breakpoints occur 
 	int fixed;                        // Indicates if Rt/backcalculation is fixed 
 	int future_fixed;                 // is underlying future Rt assumed to be fixed
+	int fixed_from;                   // Reference date for when Rt estimation should be fixed
 }
 
 transformed data{
@@ -53,7 +54,7 @@ transformed data{
   matrix[future_fixed > 0 ? (noise_terms - horizon) : noise_terms, M] PHI;  // basis function 
   
   //Update number of noise terms based on furure Rt assumption
-  noise_terms = future_fixed > 0 ? (noise_terms - horizon) : noise_terms;
+  noise_terms = future_fixed > 0 ? (noise_terms - horizon + fixed_from) : noise_terms;
   
   //Update time varables
   rt_h = rt - horizon;

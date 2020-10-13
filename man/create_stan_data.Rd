@@ -13,11 +13,11 @@ create_stan_data(
   generation_time,
   rt_prior,
   estimate_rt,
-  estimate_week_eff,
+  week_effect,
   stationary,
   fixed,
   break_no,
-  fixed_future_rt,
+  future_rt,
   gp,
   family,
   delays
@@ -40,11 +40,12 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 generation time (assuming a gamma distribution).}
 
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
-Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
+Rt. By default this is assumed to be mean 1 with a standard deviation of 1. To infer infections only using
+non-parametric backcalculation set this to \code{list()}.}
 
-\item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
+\item{estimate_rt}{Logical, should Rt be estimated.}
 
-\item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
+\item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
@@ -55,8 +56,10 @@ change over time.}
 
 \item{break_no}{Numeric, number of breakpoints}
 
-\item{fixed_future_rt}{Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
-future time points without data.}
+\item{future_rt}{A character string or integer. This argument indicates how to set future Rt values. Supported
+options are to project using the Rt model ("project"), to use the latest estimate based on partial data ("latest"),
+to use the latest estimate based on data that is over 50\% complete ("estimate"). If an integer is supplied then the Rt estimate
+from this many days into the future (or past if negative) past will be used forwards in time.}
 
 \item{gp}{List controlling the Gaussian process approximation if set to \code{list()} then \code{Rt} is assumed to be constant unless
 other settings introduce variation. If set must contain the \code{basis_prop} (number of basis functions based on scaling the time points)
@@ -76,7 +79,7 @@ binomial ("negbin") with poisson ("poisson") also supported.}
 Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale).}
+on the log scale). To use no delays set this to \code{list()}.}
 }
 \value{
 A list of stan data
