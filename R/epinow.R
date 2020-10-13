@@ -120,7 +120,6 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                          delays = delays,
                                          samples = samples,
                                          horizon = horizon,
-                                         estimate_rt = TRUE,
                                          return_fit = output["fit"],
                                          verbose = verbose,
                                          ...)

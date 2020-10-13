@@ -171,7 +171,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   data$alpha_sd <- gp$alpha_sd
   
   ## Set model to poisson or negative binomial
-  family <- match.args(family, c("poisson", "negbin"))
+  family <- match.arg(family, c("poisson", "negbin"))
   data$model_type <- ifelse(family %in% "poisson", 0, 1)
 
   return(data)
