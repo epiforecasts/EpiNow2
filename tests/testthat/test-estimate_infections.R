@@ -64,14 +64,14 @@ test_that("estimate_infections works as expected with failing chains", {
 })
 
 
-test_that("estimate_infections produces output as expected when using approximate approach", {
-  skip_on_cran()
-  out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
-                                              delays = list(reporting_delay),
-                                              samples = 1000, method = "approximate",
-                                              stan_args = list(trials = 20)))
-  expect_equal(names(out), c("samples", "summarised"))
-  expect_true(nrow(out$samples) > 0)
-  expect_true(nrow(out$summarised) > 0)
-})
+# test_that("estimate_infections produces output as expected when using approximate approach", {
+#   skip_on_cran()
+#   out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
+#                                               delays = list(reporting_delay),
+#                                               samples = 1000, method = "approximate",
+#                                               stan_args = list(trials = 20)))
+#   expect_equal(names(out), c("samples", "summarised"))
+#   expect_true(nrow(out$samples) > 0)
+#   expect_true(nrow(out$summarised) > 0)
+# })
 
