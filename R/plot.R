@@ -173,13 +173,15 @@ plot_summary <- function(summary_results,
   # set input to data.table
   summary_results <- data.table::setDT(summary_results)
   
+  # extract CrIs
+  CrIs <- extract_CrIs(summary_results)
+  max_CrI <- max(CrIs)
+  
   # generic plotting function
   inner_plot <- function(df) {
     plot <- ggplot2::ggplot(df, ggplot2::aes(x = region, 
                                      col = `Expected change in daily cases`))
     # plot CrIs
-    CrIs <- extract_CrIs(df)
-    max_CrI <- max(CrIs)
     index <- 1
     alpha_per_CrI <- 0.8 / (length(CrIs) - 1)
     for (CrI in CrIs) {
@@ -235,14 +237,16 @@ plot_summary <- function(summary_results,
   
   # rt plot
   rt_data <- summary_results[metric %in% "Effective reproduction no."] 
+  uppers <- grepl("upper_", colnames(rt_data))
+  max_rt <- max(data.table::copy(rt_data)[, ..uppers], na.rm = TRUE)
   rt_plot <- 
     inner_plot(rt_data) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90)) +
     ggplot2::theme(legend.position = "bottom") +
     ggplot2::guides(col = ggplot2::guide_legend(nrow = 2)) +
     ggplot2::labs(x = x_lab, y = "") +
-    ggplot2::expand_limits(y = c(0, min(max(rt_data$upper), 4))) +
-    ggplot2::coord_cartesian(ylim = c(0, min(max(rt_data$upper), 4)))
+    ggplot2::expand_limits(y = c(0, min(max_rt, 4))) +
+    ggplot2::coord_cartesian(ylim = c(0, min(max_rt, 4)))
   
   # join plots together
   plot <- cases_plot + rt_plot + patchwork::plot_layout(ncol = 1)
