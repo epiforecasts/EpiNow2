@@ -25,7 +25,6 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
                              file.path(remove_dir, file)
                            )
                          })
-                  
                 }
                 
               })
@@ -44,14 +43,13 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 #' @examples
 #' value <- list(point = 1, lower = 0, upper = 3)
 #' make_conf(value, round_type = round, digits = 0)
-make_conf <- function(value, round_type = NULL, digits = 0) {
-  
-  if (is.null(round_type)) {
-    round_type <- round
-  }
-  paste0(round_type(value$point, digits), " (", 
-         round_type(value$lower, digits), " -- ", 
-         round_type(value$upper, digits), ")")
+make_conf <- function(value, CrI, reverse = FALSE) {
+  CrI <- list(lower = value[[paste0("lower_", CrI)]],
+              upper = value[[paste0("upper_", CrI)]])
+  conf <- paste0(value$median, " (", 
+                 ifelse(!reverse, CrI$lower, CrI$upper), " -- ", 
+                 ifelse(!reverse, CrI$upper, CrI$lower), ")")
+  return(conf)
 }
 
 
