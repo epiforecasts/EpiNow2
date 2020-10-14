@@ -24,6 +24,8 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale). To use no delays set this to \code{list()}.}
 
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
+
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
 \item{samples}{Logical, defaults to TRUE. Should samples be saved}

@@ -54,6 +54,8 @@ binomial ("negbin") with poisson ("poisson") also supported.}
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
+
 \item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
 Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the

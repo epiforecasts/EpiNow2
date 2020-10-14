@@ -56,6 +56,7 @@
 #' @inheritParams create_stan_args
 #' @inheritParams create_future_rt
 #' @inheritParams fit_model_with_nuts
+#' @inheritParams calc_CrIs
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose 
 #' @importFrom lubridate wday days
