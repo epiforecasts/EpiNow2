@@ -129,7 +129,7 @@ report_summary <- function(summarised_estimates,
   
   # extract current cases
   current_cases <- summarised_estimates[variable == "infections"][, variable := NULL][,
-                                        purrr::map(.SD, ~ round(., 0))]
+                                        purrr::map(.SD, ~ as.integer(.))]
   
   # get individual estimates
   r_latest <- summarised_estimates[variable == "growth_rate"][, variable := NULL][,
