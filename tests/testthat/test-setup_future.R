@@ -1,9 +1,9 @@
 context("setup_future")
 
 reported_cases <- data.frame(region = c("test", "boo"))
+futile.logger::flog.threshold("ERROR")
 
 test_that("setup_future runs without error", {
-  
   no_cores <- suppressWarnings(setup_future(reported_cases))
   expect_type(no_cores, "double")
 })

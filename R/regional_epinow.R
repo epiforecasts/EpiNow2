@@ -7,10 +7,10 @@
 #' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
 #' that region to be evaluated. Defaults to 2.
 #' @param output A character vector of optional output to return. Supported options are the individual regional estimates
-#' ("regions"),  samples ("samples"), plots ("plots"), timing ("timing"), the stan fit of the underlying model ("fit"), and an 
-#' overall summary across regions ("summary"). 
-#' The default is to return samples and plots alongside summarised estimates and summary statistics. This argument uses partial 
-#' matching so for example passing "sam" will lead to samples being reported.
+#' ("regions"),  samples ("samples"), plots ("plots"), timing ("timing"),  copying the individual region dated folder into 
+#' a latest folder (if `target_folder` is not null - set using "latest"), the stan fit of the underlying model ("fit"), and an 
+#' overall summary across regions ("summary"). The default is to return samples and plots alongside summarised estimates and 
+#' summary statistics. If `target_folder` is not NULL then the default is also to copy all results into a latest folder.
 #' @param summary_args A list of arguments passed to `regional_summary`. See the `regional_summary` documentation for details.
 #' @param ... Pass additional arguments to `epinow`. See the documentation for `epinow` for details.
 #' @inheritParams epinow
@@ -37,10 +37,6 @@
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
-#' 
-#' # setup logging
-#' setup_logging(file = paste0(tempdir(), "/info.log"), 
-#'               name = "EpiNow2.epinow")
 #'                 
 #' # run epinow across multiple regions and generate summaries
 #' # samples and warmup have been reduced for this example
@@ -55,21 +51,31 @@ regional_epinow <- function(reported_cases,
                             target_folder = NULL, 
                             target_date,
                             non_zero_points = 2, 
-                            return_output = TRUE,
                             output = c("regions", "summary", "samples", 
-                                       "plots", "timing"),
-                            summary_args = list(), ...) {
-  
+                                       "plots", "timing", "latest"),
+                            return_output = FALSE,
+                            summary_args = list(), 
+                            logs = tempdir(), ...) {
   # supported output
   output <- match_output_arguments(output, 
                                    supported_args = c("plots", "samples", "fit",
                                                       "regions", "summary",
-                                                      "timing"),
+                                                      "timing", "latest"),
                                    logger = "EpiNow2")
   if (missing(target_date)) {
     target_date <- as.character(max(reported_cases$date))
   }
+  
+  # setup logging -----------------------------------------------------------
+  setup_default_logging(logs = logs, target_date = target_date)
+  
   futile.logger::flog.info("Reporting estimates using data up to: %s", target_date)
+  if (is.null(target_folder)) {
+    futile.logger::flog.info("No target directory specified so returning output")
+    return_output <- TRUE
+  }else{
+    futile.logger::flog.info("Saving estimates to : %s", target_folder)
+  }
   
   # clean regions
   reported_cases <- clean_regions(reported_cases, non_zero_points)
@@ -130,10 +136,18 @@ regional_epinow <- function(reported_cases,
     }
   }
   
-  if (return_output) {
-    if (output["timing"]) {
-      out$timings <- purrr::map(regional_out, ~.$timing)
+  if (output["timing"]) {
+    safe_runtimes <- purrr::safely(regional_runtimes)
+    timings <- safe_runtimes(regional_out,
+                             target_folder = target_folder,
+                             target_date = target_date,
+                             return_output = return_output)[[1]]
+    if (return_output) {
+      out$timings <- timings
     }
+  }
+  
+  if (return_output) {
     return(out)
   }else{
     return(invisible(NULL))
@@ -213,6 +227,8 @@ run_region <- function(target_region,
         target_date = target_date,
         return_output = ifelse(output["summary"], TRUE, return_output),
         output = names(output[output]),
+        logs = NULL,
+        id = target_region,
         ...),
         warning = function(w) {
           futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call),
