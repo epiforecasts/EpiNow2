@@ -18,8 +18,8 @@ df_non_zero <- function(df) {
 out <- suppressWarnings(regional_epinow(reported_cases = cases,
                                         generation_time = generation_time,
                                         delays = list(reporting_delay),
-                                        samples = 100,
-                                        stan_args = list(warmup = 100, 
+                                        samples = 25,
+                                        stan_args = list(warmup = 25, chains = 2,
                                                          control = list(adapt_delta = 0.8)),
                                         logs = NULL))
 
