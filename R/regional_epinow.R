@@ -63,7 +63,7 @@ regional_epinow <- function(reported_cases,
                                                       "timing", "latest"),
                                    logger = "EpiNow2")
   # make timing compulsory 
-  output$timing <- TRUE
+  output["timing"] <- TRUE
   if (missing(target_date)) {
     target_date <- as.character(max(reported_cases$date))
   }
@@ -77,7 +77,7 @@ regional_epinow <- function(reported_cases,
     return_output <- TRUE
   }else{
     futile.logger::flog.info("Saving estimates to : %s", target_folder)
-  }
+  } 
   
   # clean regions
   reported_cases <- clean_regions(reported_cases, non_zero_points)
