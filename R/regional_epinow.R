@@ -235,7 +235,7 @@ run_region <- function(target_region,
                                    name = "EpiNow2.epinow")
           rlang::cnd_muffle(w)
         }
-      ),
+      ), 
       TimeoutException = function(ex) {
         futile.logger::flog.warn("region %s timed out", target_region,
                                  name = "EpiNow2.epinow")
@@ -311,7 +311,7 @@ process_regions <- function(regional_out, regions) {
                              problems[[location]]$error$message, 
                              toString(problems[[location]]$error$call),
                              name = "EpiNow2.epinow")
-  }
+  } 
   
   regional_out <- purrr::map(regional_out, ~.$result)
   sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~ is.finite(.$timing))

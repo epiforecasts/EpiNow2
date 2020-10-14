@@ -66,7 +66,6 @@ setup_default_logging <- function(logs = tempdir(),
                                   mirror_epinow = FALSE,
                                   mirror_epinow_fit = FALSE,
                                   target_date = NULL) {
-  
   if (!is.null(logs)) {
     if (is.null(target_date)) {
       target_date <- "latest"
