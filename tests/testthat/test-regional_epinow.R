@@ -5,7 +5,7 @@ reporting_delay <- list(mean = log(3), mean_sd = 0.1,
                         sd = log(2), sd_sd = 0.1, max = 5)
 
 
-futile.logger::flog.threshold("ERROR")
+futile.logger::flog.threshold("FATAL")
 
 ## Uses example case vector
 cases <- EpiNow2::example_confirmed[1:30]
