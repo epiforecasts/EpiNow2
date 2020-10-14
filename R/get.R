@@ -8,7 +8,8 @@
 get_regions <- function(results_dir) {
 
   # regions to include - based on folder names
-  regions <- list.files(results_dir, recursive = FALSE)
+  regions <- list.dirs(results_dir, recursive = FALSE,
+                       full.names = FALSE)
   
   # put into alphabetical order
   regions <- regions[order(regions)]

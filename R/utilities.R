@@ -143,108 +143,6 @@ stop_timeout <- function(fit) {
 }
 
 
-
-#' Setup Logging
-#'
-#' @description Sets up `futile.logger` logging, which is integrated into `EpiNow2`. See the 
-#' documentation for `futile.logger` for full details. By default `EpiNow2` prints all logs at 
-#' the "INFO" level and returns them to the console.
-#' @param threshold Character string indicating the logging level see (?futile.logger 
-#' for details of the available options). Defaults to "INFO".
-#' @param file Character string indicating the path to save logs to. By default logs will be
-#' written to the console.
-#' @param mirror_to_console Logical, defaults to `FALSE`. If saving logs to a file should they 
-#' also be duplicated in the console.
-#' @param name Character string defaulting to EpiNow2. This indicates the name of the logger to setup.
-#' The default logger for EpiNow2 is called EpiNow2. Nested options include: Epinow2.epinow which controls 
-#' all logging for `epinow` and nested functions, EpiNow2.epinow.estimate_infections (logging in
-#'  `estimate_infections`), and EpiNow2.epinow.estimate_infections.fit (logging in fitting functions).
-#' @importFrom futile.logger flog.threshold flog.appender appender.tee appender.file
-#' @return Nothing
-#' @export
-#' @examples
-#' # set up info only logs with errors only 
-#' # for logging related to epinow (or nested) calls
-#' # (info logs are enabled by default at all levels.)
-#' setup_logging("Info", name = "EpiNow2")
-#' setup_logging("ERROR", name = "EpiNow2.epinow")
-setup_logging <- function(threshold = "INFO", file = NULL,
-                          mirror_to_console = FALSE, name = "EpiNow2") {
-  if (is.null(name)) {
-    name <- "ROOT"
-  }
-  message("Setting up logging for the ", name, " logger")
-  message("Logging threshold set at: ", threshold)
-  futile.logger::flog.threshold(threshold, name = name)
-  
-  if (!is.null(file)) {
-    message("Writing logs to: ", file)
-    if (mirror_to_console) {
-      futile.logger::flog.appender(futile.logger::appender.tee(file), name = name)
-    }else{
-      futile.logger::flog.appender(futile.logger::appender.file(file), name = name)  
-    }
-  }else{
-    message("Writing logs to the console")
-    futile.logger::flog.appender(futile.logger::appender.console(), name = name)
-  }
-  return(invisible(NULL))
-}
-
-#' Set up Future Backend
-#' @description A utility function that aims to streamline the set up 
-#' of the required future backend with sensible defaults for most users of `regional_epinow`.
-#' More advanced users are recommended to setup their own `future` backend based on their
-#' available resources. 
-#' @param strategies A vector length 1 to 2 of strategies to pass to `future::plan`. Nesting 
-#' of parallisation is from the top level down. The default is to set up nesting parallisation
-#' with both using `future::multiprocess`. For single level parallisation use a single strategy
-#' or `future::plan` directly. See `?future::plan` for options.
-#' @param min_cores_per_worker Numeric, the minimum number of cores per worker. 
-#' Defaults to 4 which assumes 4 MCMC chains are in use per region.
-#' @inheritParams regional_epinow
-#' @importFrom futile.logger flog.error flog.info flog.debug
-#' @importFrom future availableCores plan tweak 
-#' @export
-#' @return Numeric number of cores to use per worker. If greater than 1 pass to
-#' `stan_args = list(cores = "output from setup future")` or use `future = TRUE`. If only a single strategy is 
-#' used then nothing is returned.
-setup_future <- function(reported_cases, strategies = c("multiprocess", "multiprocess"),
-                         min_cores_per_worker = 4) {
-  
-  if (length(strategies) > 2 | length(strategies) == 0) {
-    futile.logger::flog.error("1 or 2 strategies should be used")
-    stop("1 or 2 strategies should be used")
-  }
-  
-  if (is.null(reported_cases$region)) {
-    futile.logger::flog.error("Reported cases must contain a region")
-    stop("Exactly 2 strategies should be used")
-  }
-  
-  if (length(strategies) == 1) {
-    workers <- future::availableCores()
-    futile.logger::flog.info("Using %s workers with 1 core per worker",
-                             workers)
-    future::plan(strategies, workers = workers,
-                 gc = TRUE, earlySignal = TRUE)
-    cores_per_worker <- 1
-    return(invisible(NULL))
-  }else{
-    jobs <- length(unique(reported_cases$region))
-    workers <- min(ceiling(future::availableCores() / min_cores_per_worker), jobs)
-    cores_per_worker <- max(1, round(future::availableCores() / workers, 0))
-    
-    futile.logger::flog.info("Using %s workers with %s cores per worker",
-                             workers, cores_per_worker)
-    
-    future::plan(list(future::tweak(strategies[1], workers = workers, 
-                                    gc = TRUE, earlySignal = TRUE), 
-                      future::tweak(strategies[2], workers = cores_per_worker)))
-    return(cores_per_worker)
-  }
-}
-
 #' Match Input Output Arguments with Supported Options
 #'
 #' @param input_args A character vector of input arguments (can be partial).
@@ -295,7 +193,8 @@ match_output_arguments <- function(input_args = c(),
   # tell the user about what has been passed in
   if (!is.null(logger)) {
     if (length(found_args) > 0) {
-      flog_fn("Producing following optional outputs: %s", paste(found_args, collapse = ", "),
+      flog_fn("Producing following optional outputs: %s",
+              paste(found_args, collapse = ", "),
               name = logger)
     }else{
       flog_fn("No optional output specified",
@@ -325,5 +224,5 @@ globalVariables(
     "New confirmed cases by infection date", "Data", "R", "reference",
     ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate", 
     "point", "strat", "estimate", "breakpoint", "variable", "value.V1", "central_lower", "central_upper",
-    "mean_sd", "sd_sd"))
+    "mean_sd", "sd_sd", "average_7"))
 

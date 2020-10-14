@@ -11,11 +11,13 @@ epinow(
   generation_time,
   delays = list(),
   CrIs = c(0.2, 0.5, 0.9),
-  return_output = TRUE,
-  output = c("samples", "plots"),
+  return_output = FALSE,
+  output = c("samples", "plots", "latest"),
   target_folder = NULL,
   target_date,
   forecast_args = NULL,
+  logs = tempdir(),
+  id = "epinow",
   verbose = FALSE,
   ...
 )
@@ -36,17 +38,20 @@ generation time (assuming a gamma distribution).}
 Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale).}
+on the log scale). To use no delays set this to \code{list()}.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{return_output}{Logical, defaults to TRUE. Should output be returned. This must either be true or a
-\code{target_folder} must be specified in order to enable output saving to disk.}
+\item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
+if no directory for saving is specified.}
 
 \item{output}{A character vector of optional output to return. Supported options are samples ("samples"),
-plots ("plots"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
+plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if \code{target_folder} is not null
+\itemize{
+\item set using "latest"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
 and summary statistics. This argument uses partial matching so for example passing "sam" will lead to samples
-being reported.}
+being reported.
+}}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
@@ -54,6 +59,15 @@ being reported.}
 
 \item{forecast_args}{A list of arguments to pass to \code{forecast_infections}. Unless at a minumum a \code{forecast_model} is passed
 tin his list then \code{forecast_infections} will be bypassed.}
+
+\item{logs}{Character path indicating the target folder in which to store log
+information. Defaults to the temporary directory if not specified. Default logging
+can be disabled if \code{logs} is set to NULL. If specifying a custom logging setup then
+the code for \code{setup_default_logging} and the \code{setup_logging} function are a sensible
+place to start.}
+
+\item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
+to assign \code{epinow} errors to regions.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
@@ -81,7 +95,7 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 
 # estimate Rt and nowcast/forecast cases by date of infection
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
-              delays = list(incubation_period, reporting_delay), 
+              delays = list(incubation_period, reporting_delay),
               stan_args = list(cores = ifelse(interactive(), 4, 1)))
 out
 
@@ -89,7 +103,7 @@ out
 if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
    # report Rt along with forecasts
-   out <- epinow(reported_cases = reported_cases, samples = 200, verbose = TRUE,
+   out <- epinow(reported_cases = reported_cases, samples = 200,
                  generation_time = generation_time, 
                  delays = list(incubation_period, reporting_delay),
                  forecast_args = list(

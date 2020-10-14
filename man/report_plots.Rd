@@ -40,10 +40,10 @@ incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lau
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
                         
 # run model
-out <- EpiNow2::estimate_infections(cases, samples = 1000, 
+out <- EpiNow2::estimate_infections(cases, samples = 100, 
                                     generation_time = generation_time,
                                     delays = list(incubation_period, reporting_delay),
-                                    stan_args = list(warmup = 200, cores = 4))
+                                    stan_args = list(warmup = 100, cores = 4))
                             
 # plot infections
 plots <- report_plots(summarised_estimates = out$summarised,
