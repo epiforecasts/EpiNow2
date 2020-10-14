@@ -281,6 +281,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$chains <- 4
     default_args$control <- list(adapt_delta = 0.99, max_treedepth = 15)
     default_args$save_warmup <- FALSE
+    default_args$seed <- as.integer(runif(1, 1, 1e8))
   }else if (method == "approximate") {
     default_args$trials <- 10
     default_args$iter <- 10000
