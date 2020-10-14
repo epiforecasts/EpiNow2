@@ -249,7 +249,9 @@ regional_summary <- function(regional_output = NULL,
     )
   }
   # extract regions with highest number of reported cases in the last week
-  most_reports <- get_regions_with_most_reports(reported_cases)
+  most_reports <- get_regions_with_most_reports(reported_cases, 
+                                                time_window = 7, 
+                                                no_regions = 6)
   
   high_plots <- report_plots(
     summarised_estimates = results$estimates$summarised[region %in% most_reports], 
@@ -262,24 +264,20 @@ regional_summary <- function(regional_output = NULL,
     purrr::map(high_plots, ~ . + ggplot2::facet_wrap(~ region, scales = "free_y", ncol = 2))
   
   if (!is.null(summary_dir)) {
-    suppressWarnings(
-      suppressMessages(
-        ggplot2::ggsave(file.path(summary_dir, "high_rt_plot.png"),
-                        high_plots$reff, dpi = 300, width = 12, height = 12)
-      ))
+    save_ggplot <- function(plot, name, height = 12, width = 12, ...) {
+      suppressWarnings(
+        suppressMessages(
+          ggplot2::ggsave(file.path(summary_dir, plot),
+                          high_plots$reff, dpi = 300, width = width, 
+                          height = height, ...)
+        ))
+    }
     
-    suppressWarnings(
-      suppressMessages(
-        ggplot2::ggsave(file.path(summary_dir, "high_infections_plot.png"), 
-                        high_plots$infections, dpi = 300, width = 12, height = 12)
-      ))
-    
-     suppressWarnings(
-      suppressMessages(
-        ggplot2::ggsave(file.path(summary_dir, "high_reported_cases_plot.png"), 
-                        high_plots$reports, dpi = 300, width = 12, height = 12)
-      ))
+    save_ggplot(high_plots$reff, "high_rt_plot.png")
+    save_ggplot(high_plots$infections, "high_infections_plot.png")
+    save_ggplot(high_plots$reports, "high_reported_cases_plot.png")
   }
+  
   if (all_regions) {
     plots_per_row <- ifelse(length(regions) > 60, 
                             ifelse(length(regions) > 120, 8, 5), 3)
@@ -289,35 +287,19 @@ regional_summary <- function(regional_output = NULL,
                           max_plot = max_plot)
     
     plots$summary <- NULL
-    plots <- purrr::map(plots,
-                        ~ . + ggplot2::facet_wrap(~ region, scales = "free_y",
-                                                  ncol = plots_per_row))
+    plots <- purrr::map(plots,~ . + ggplot2::facet_wrap(~ region, scales = "free_y",
+                                                        ncol = plots_per_row))
     
     if (!is.null(summary_dir)) {
-      suppressWarnings(
-        suppressMessages(
-          ggplot2::ggsave(file.path(summary_dir, "rt_plot.png"), 
-                          plots$reff, dpi = 300, width = 24,
-                          height = 3 * round(length(regions) / plots_per_row, 0), 
-                          limitsize = FALSE)
-          
-        ))
-      
-      suppressWarnings(
-        suppressMessages( 
-          ggplot2::ggsave(file.path(summary_dir, "infections_plot.png"), 
-                          plots$infections, dpi = 300, width = 24, 
-                          height =  3 * round(length(regions) / plots_per_row, 0),
-                          limitsize = FALSE)
-        ))
-      
-      suppressWarnings(
-        suppressMessages( 
-          ggplot2::ggsave(file.path(summary_dir, "reported_cases_plot.png"), 
-                          plots$reports, dpi = 300, width = 24, 
-                          height =  3 * round(length(regions) / plots_per_row, 0),
-                          limitsize = FALSE)
-        ))
+      save_big_ggplot <- function(plot, name){
+        save_ggplot(plot, name, 
+                    height =  3 * round(length(regions) / plots_per_row, 0),
+                    width = 24, 
+                    limitsize = FALSE)
+      }
+      save_big_ggplot(plots$reff, "rt_plot.png")
+      save_big_ggplot(plots$infections, "infections_plot.png")
+      save_big_ggplot(plots$reports, "reported_cases_plot.png")
     }
   }
   if (return_output) {
