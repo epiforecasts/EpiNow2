@@ -8,6 +8,7 @@ estimates_by_report_date(
   estimates,
   forecast,
   delays,
+  CrIs = c(0.2, 0.5, 0.9),
   target_folder = NULL,
   samples = TRUE
 )

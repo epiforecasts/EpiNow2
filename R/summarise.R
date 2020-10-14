@@ -13,27 +13,15 @@
 #' @return A list of summary data
 #' @export
 summarise_results <- function(regions,
-                              summaries,
-                              results_dir,
-                              target_date,
+                              summaries = NULL,
+                              results_dir = NULL,
+                              target_date = NULL,
                               region_scale = "Region") {
-  
-  if (missing(target_date)) {
-    target_date <- NULL
-  }
   
   if(is.null(target_date)){
     target_date <- "latest"
   }
    
-  if (missing(summaries)) {
-    summaries <- NULL
-  }
-  
-  if (missing(results_dir)) {
-    results_dir <- NULL
-  }
-  
   if (is.null(results_dir)) {
     if (is.null(summaries)){ 
       stop("Either a results directory or a list of summary data frames must be supplied")
@@ -64,21 +52,12 @@ summarise_results <- function(regions,
   
   estimates <- data.table::rbindlist(estimates, idcol = "region")
   
-  numeric_estimates  <- data.table::copy(estimates)[measure %in% c("New confirmed cases by infection date",
-                                                    "Effective reproduction no.")][,
-                                           .(
-                                             point = numeric_estimate[[1]]$point,
-                                             lower = numeric_estimate[[1]]$lower,
-                                             upper = numeric_estimate[[1]]$upper,
-                                             mid_lower = numeric_estimate[[1]]$mid_lower,
-                                             mid_upper = numeric_estimate[[1]]$mid_upper,
-                                             central_lower = numeric_estimate[[1]]$central_lower,
-                                             central_upper = numeric_estimate[[1]]$central_upper
-                                           ), by = .(region, measure)][,
-                                              metric :=  
-                                                factor(measure, levels = c("New confirmed cases by infection date",
-                                                                          "Effective reproduction no."))][,
-                                              measure := NULL]
+  numeric_estimates  <- 
+    data.table::copy(estimates)[measure %in% c("New confirmed cases by infection date",
+                                               "Effective reproduction no.")][,
+              data.table::rbindlist(.SD), by = .(region, measure)][,
+              metric :=  factor(measure, levels = c("New confirmed cases by infection date",
+                                                    "Effective reproduction no."))][, measure := NULL]
   
   
   numeric_estimates <- data.table::merge.data.table(numeric_estimates, 
@@ -87,7 +66,7 @@ summarise_results <- function(regions,
                                                     by = "region", all.x = TRUE)
   # rank countries by incidence countries
   high_inc_regions <- unique(
-    data.table::setorderv(numeric_estimates, cols = "point", order = -1)$region)
+    data.table::setorderv(numeric_estimates, cols = "median", order = -1)$region)
   
   numeric_estimates <- numeric_estimates[, region := factor(region, levels = high_inc_regions)]
   
@@ -101,8 +80,7 @@ summarise_results <- function(regions,
   
   estimates <- data.table::dcast(estimates, region ~ ..., value.var = "estimate")
   estimates <- estimates[, (region_scale) := region][, region := NULL]
-  estimates <- estimates[, c(region_scale, 
-                             colnames(estimates)[-ncol(estimates)]), with = FALSE]
+  estimates <- estimates[, c(region_scale,  colnames(estimates)[-ncol(estimates)]), with = FALSE]
   
   out <- list(estimates, numeric_estimates, high_inc_regions)
   names(out) <- c("table", "data", "regions_by_inc")
@@ -271,21 +249,17 @@ regional_summary <- function(regional_output = NULL,
     )
   }
   # extract regions with highest number of reported cases in the last week
-  regions_with_most_reports <- data.table::copy(reported_cases)[, 
-          .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(7))],by = "region"]
-  regions_with_most_reports <- regions_with_most_reports[, .(confirm = sum(confirm, na.rm = TRUE)), by = "region"]
-  regions_with_most_reports <-  data.table::setorderv(regions_with_most_reports, cols = "confirm", order = -1)
-  regions_with_most_reports <- regions_with_most_reports[1:6][!is.na(region)]$region
+  most_reports <- get_regions_with_most_reports(reported_cases)
   
   high_plots <- report_plots(
-    summarised_estimates = results$estimates$summarised[region %in% regions_with_most_reports], 
-    reported = reported_cases[region %in% regions_with_most_reports],
+    summarised_estimates = results$estimates$summarised[region %in% most_reports], 
+    reported = reported_cases[region %in% most_reports],
     max_plot = max_plot
   )
   
   high_plots$summary <- NULL
-  high_plots <- purrr::map(high_plots,
-                            ~ . + ggplot2::facet_wrap(~ region, scales = "free_y", ncol = 2))
+  high_plots <- 
+    purrr::map(high_plots, ~ . + ggplot2::facet_wrap(~ region, scales = "free_y", ncol = 2))
   
   if (!is.null(summary_dir)) {
     suppressWarnings(
