@@ -403,7 +403,12 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
     fit <- R.utils::withTimeout(do.call(rstan::sampling, stan_args), 
                                 timeout = max_time,
                                 onTimeout = "silent")
-    return(fit)
+    
+    if (length(names(fit)) == 0) {
+      return(NULL)
+    }else{
+      return(fit)
+    }
   }
   
   if(!future) {
@@ -463,6 +468,12 @@ fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
   
   fit_vb <- function(stan_args) {
     fit <-  do.call(rstan::vb, stan_args)
+    
+    if (length(names(fit)) == 0) {
+      return(NULL)
+    }else{
+      return(fit)
+    }
     return(fit)
   }
   safe_vb <- purrr::safely(fit_vb)
