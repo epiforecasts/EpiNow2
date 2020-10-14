@@ -549,9 +549,8 @@ calc_CrIs <- function(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9)) {
                                           CrI = .))
   
   with_CrIs <- data.table::rbindlist(with_CrIs)
-  order_CrIs <- unique(with_CrIs$CrI)
-  order_CrIs <- lapply(c("lower_", "upper_"), paste0, round(CrIs * 100, 1))
-  order_CrIs <- unlist(order_CrIs)
+  scale_CrIs <- round(CrIs * 100, 1)
+  order_CrIs <- c(paste0("lower_", rev(scale_CrIs)), paste0("upper_", scale_CrIs))
   with_CrIs <- data.table::dcast(with_CrIs, ... ~ factor(CrI, levels = order_CrIs),
                                  value.var = 'value')
   return(with_CrIs)
