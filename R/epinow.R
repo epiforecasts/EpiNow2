@@ -39,7 +39,8 @@
 #' # estimate Rt and nowcast/forecast cases by date of infection
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
 #'               delays = list(incubation_period, reporting_delay),
-#'               stan_args = list(cores = ifelse(interactive(), 4, 1)))
+#'               stan_args = list(cores = ifelse(interactive(), 4, 1),
+#'               control = list(adapt_delta = 0.95)))
 #' out
 #' 
 #' # optional forecasting using EpiSoon plug-in
@@ -64,6 +65,7 @@
 #'
 epinow <- function(reported_cases, samples = 1000, horizon = 7, 
                    generation_time, delays = list(),
+                   CrIs = c(0.2, 0.5, 0.9),
                    return_output = FALSE, output = c("samples", "plots", "latest"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, logs = tempdir(),
@@ -74,6 +76,17 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
     return_output <- TRUE
   }
   
+  if (is.null(CrIs) | length(CrIs) == 0 | !is.numeric(CrIs)) {
+    futile.logger::flog.fatal("At least one credible interval must be specified",
+                              name = "EpiNow2.epinow")
+    stop("At least one credible interval must be specified")
+  }
+  
+  # check verbose settings and set logger to match---------------------------
+  if (verbose) {
+    futile.logger::flog.threshold(futile.logger::DEBUG,
+                                  name = "EpiNow2.epinow")
+  }
   # target data -------------------------------------------------------------
   if (missing(target_date)) {
     target_date <- max(reported_cases$date)
@@ -118,6 +131,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
     # estimate infections and Reproduction no ---------------------------------
     estimates <- estimate_infections(reported_cases = reported_cases, 
                                      generation_time = generation_time,
+                                     CrIs = CrIs,
                                      delays = delays,
                                      samples = samples,
                                      horizon = horizon,
@@ -138,7 +152,8 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                  gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
                                  gt_max = generation_time$max,
                                  horizon = horizon,
-                                 samples = samples),
+                                 samples = samples,
+                                 CrIs = CrIs),
                             forecast_args))
       
       save_forecast_infections(forecast, target_folder, samples = output["samples"])
@@ -150,7 +165,8 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                                          forecast, 
                                                          delays = delays,
                                                          target_folder = target_folder,
-                                                         samples = output["samples"])
+                                                         samples = output["samples"],
+                                                         CrIs = CrIs)
     
     # report estimates --------------------------------------------------------
     summary <- report_summary(

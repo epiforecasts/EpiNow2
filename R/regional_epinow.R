@@ -7,7 +7,7 @@
 #' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
 #' that region to be evaluated. Defaults to 2.
 #' @param output A character vector of optional output to return. Supported options are the individual regional estimates
-#' ("regions"),  samples ("samples"), plots ("plots"), timing ("timing"),  copying the individual region dated folder into 
+#' ("regions"),  samples ("samples"), plots ("plots"), copying the individual region dated folder into 
 #' a latest folder (if `target_folder` is not null - set using "latest"), the stan fit of the underlying model ("fit"), and an 
 #' overall summary across regions ("summary"). The default is to return samples and plots alongside summarised estimates and 
 #' summary statistics. If `target_folder` is not NULL then the default is also to copy all results into a latest folder.
@@ -52,7 +52,7 @@ regional_epinow <- function(reported_cases,
                             target_date,
                             non_zero_points = 2, 
                             output = c("regions", "summary", "samples", 
-                                       "plots", "timing", "latest"),
+                                       "plots", "latest"),
                             return_output = FALSE,
                             summary_args = list(), 
                             logs = tempdir(), ...) {
@@ -62,6 +62,8 @@ regional_epinow <- function(reported_cases,
                                                       "regions", "summary",
                                                       "timing", "latest"),
                                    logger = "EpiNow2")
+  # make timing compulsory 
+  output["timing"] <- TRUE
   if (missing(target_date)) {
     target_date <- as.character(max(reported_cases$date))
   }
@@ -75,14 +77,14 @@ regional_epinow <- function(reported_cases,
     return_output <- TRUE
   }else{
     futile.logger::flog.info("Saving estimates to : %s", target_folder)
-  }
+  } 
   
   # clean regions
   reported_cases <- clean_regions(reported_cases, non_zero_points)
   regions <- unique(reported_cases$region)
   
   # function to run the pipeline in a region
-  safe_run_region <- purrr::safely(run_region)
+  safe_run_region <- purrr::safely(run_region) 
   
   # run regions (make parallel using future::plan)
   futile.logger::flog.trace("calling future apply to process each region through the run_region function")
@@ -235,7 +237,7 @@ run_region <- function(target_region,
                                    name = "EpiNow2.epinow")
           rlang::cnd_muffle(w)
         }
-      ),
+      ), 
       TimeoutException = function(ex) {
         futile.logger::flog.warn("region %s timed out", target_region,
                                  name = "EpiNow2.epinow")
@@ -311,7 +313,7 @@ process_regions <- function(regional_out, regions) {
                              problems[[location]]$error$message, 
                              toString(problems[[location]]$error$call),
                              name = "EpiNow2.epinow")
-  }
+  } 
   
   regional_out <- purrr::map(regional_out, ~.$result)
   sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~ is.finite(.$timing))

@@ -4,7 +4,12 @@
 \alias{report_plots}
 \title{Report plots}
 \usage{
-report_plots(summarised_estimates, reported, target_folder, max_plot = 10)
+report_plots(
+  summarised_estimates,
+  reported,
+  target_folder = NULL,
+  max_plot = 10
+)
 }
 \arguments{
 \item{summarised_estimates}{A data.table of summarised estimates containing the following variables:
@@ -29,16 +34,16 @@ Report plots
 # define example cases
 cases <- EpiNow2::example_confirmed[1:40]
 
- 
 # set up example delays
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
                         
 # run model
-out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
+out <- EpiNow2::estimate_infections(cases, samples = 100, 
+                                    generation_time = generation_time,
                                     delays = list(incubation_period, reporting_delay),
-                                    stan_args = list(cores = 4))
+                                    stan_args = list(warmup = 100, cores = 4))
                             
 # plot infections
 plots <- report_plots(summarised_estimates = out$summarised,

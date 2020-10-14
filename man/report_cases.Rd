@@ -9,7 +9,8 @@ report_cases(
   case_forecast = NULL,
   delays,
   type = "sample",
-  reporting_effect
+  reporting_effect,
+  CrIs = c(0.2, 0.5, 0.9)
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ which approximates sampling or "median" would shift by the median of the distrib
 \item{reporting_effect}{A \code{data.table} giving the weekly reporting effect with the following variables:
 \code{sample} (must be the same as in \code{nowcast}), \code{effect} (numeric scaling factor for each weekday), \code{day}
 (numeric 1 - 7 (1 = Monday and 7 = Sunday)). If not supplied then no weekly reporting effect is assumed.}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 }
 \value{
 A list of \code{data.table}s. The first entry contains the following variables \code{sample}, \code{date} and \code{cases} with the second
@@ -49,15 +52,16 @@ incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lau
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
                         
 # run model
-out <- EpiNow2::estimate_infections(cases, samples = 200, generation_time = generation_time,
+out <- EpiNow2::estimate_infections(cases, samples = 100, 
+                                    generation_time = generation_time,
                                     delays = list(incubation_period, reporting_delay),
-                                    stan_args = list(warmup = 200, 
+                                    stan_args = list(warmup = 100, 
                                                      cores = ifelse(interactive(), 4, 1)),
                                     estimate_rt = FALSE)
                             
 reported_cases <- report_cases(case_estimates = 
                                 out$samples[variable == "infections"][, 
-                                cases := as.integer(value)][, alue := NULL],
+                                cases := as.integer(value)][, value := NULL],
                                delays = list(incubation_period, reporting_delay),
                                type = "sample")
 print(reported_cases)

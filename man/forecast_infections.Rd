@@ -12,6 +12,7 @@ forecast_infections(
   gt_max = 30,
   ensemble_type = "mean",
   forecast_model,
+  CrIs = c(0.2, 0.5, 0.9),
   horizon = 14,
   samples = 1000
 )
@@ -32,6 +33,8 @@ an unweighted ensemble ("mean") with no other types currently supported.}
 
 \item{forecast_model}{An uninitialised forecast model function to be passed to \code{EpiSoon::forecast_rt}. Used
 for forecasting future Rt and case co An example of the required structure is: \code{function(ss, y){bsts::AddSemilocalLinearTrend(ss, y = y)}}.}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{horizon}{Numeric, defaults to 14. The horizon over which to forecast Rts and cases.}
 
@@ -60,8 +63,9 @@ reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_va
 # estimate Rt and infections from data
 out <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           gp = list(),
-                           stan_args = list(cores = ifelse(interactive(), 4, 1), chains = 4))
+                           gp = list(), samples = 100,
+                           stan_args = list(cores = ifelse(interactive(), 4, 1), 
+                                            warmup = 100, chains = 4))
 
 # forecast Rt and infections from estimates
 forecast <- forecast_infections(

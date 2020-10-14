@@ -10,9 +10,8 @@
 #' being summarised across samples.
 #' @inheritParams estimate_infections
 #' @inheritParams adjust_infection_to_report
-#' @importFrom data.table data.table rbindlist setorder
+#' @importFrom data.table data.table rbindlist 
 #' @importFrom future.apply future_lapply
-#' @importFrom HDInterval hdi
 #' @examples 
 #' \donttest{
 #' # define example cases
@@ -24,15 +23,16 @@
 #' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 #'                         
 #' # run model
-#' out <- EpiNow2::estimate_infections(cases, samples = 200, generation_time = generation_time,
+#' out <- EpiNow2::estimate_infections(cases, samples = 100, 
+#'                                     generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
-#'                                     stan_args = list(warmup = 200, 
+#'                                     stan_args = list(warmup = 100, 
 #'                                                      cores = ifelse(interactive(), 4, 1)),
 #'                                     estimate_rt = FALSE)
 #'                             
 #' reported_cases <- report_cases(case_estimates = 
 #'                                 out$samples[variable == "infections"][, 
-#'                                 cases := as.integer(value)][, alue := NULL],
+#'                                 cases := as.integer(value)][, value := NULL],
 #'                                delays = list(incubation_period, reporting_delay),
 #'                                type = "sample")
 #' print(reported_cases)
@@ -41,7 +41,8 @@ report_cases <- function(case_estimates,
                          case_forecast = NULL, 
                          delays,
                          type = "sample",
-                         reporting_effect) {
+                         reporting_effect,
+                         CrIs = c(0.2, 0.5, 0.9)) {
   samples <- length(unique(case_estimates$sample))
   
   # define delay distributions
@@ -81,24 +82,15 @@ report_cases <- function(case_estimates,
                      future.seed = TRUE)
 
   report <- data.table::rbindlist(report, idcol = "sample")
+  
   out <- list()
   # bind all samples together
   out$samples <- report
-  
   # summarise samples
-  out$summarised <- report[, .(
-    bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[1]])),
-    top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.9)), ~ .[[2]])),
-    lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.5)), ~ .[[1]])),
-    upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.5)), ~ .[[2]])),
-    central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.2)), ~ .[[1]])), 
-    central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(cases, credMass = 0.2)), ~ .[[2]])),
-    median = as.numeric(median(cases, na.rm = TRUE)),
-    mean = as.numeric(mean(cases, na.rm = TRUE)),
-    sd = as.numeric(sd(cases, na.rm = TRUE))), by = .(date)]
-  
-  # order summarised samples
-  data.table::setorder(out$summarised, date) 
+  out$summarised <- calc_summary_measures(report[, value := cases][, cases := NULL],
+                                          summarise_by = c("date"),
+                                          order_by = c("date"),
+                                          CrIs = CrIs)
   return(out)
 }
 
@@ -119,12 +111,14 @@ report_summary <- function(summarised_estimates,
   summarised_estimates <- data.table::setDT(summarised_estimates)
   rt_samples <- data.table::setDT(rt_samples)
   
+  CrIs <- extract_CrIs(summarised_estimates)
+  max_CrI <- max(CrIs)
+   
   # extract values of interest
-  summarised_estimates <- summarised_estimates[, .(variable, point = median,
-                                                   lower = bottom, upper = top,
-                                                   mid_lower = lower, mid_upper = upper,
-                                                   central_lower = central_lower,
-                                                   central_upper = central_upper)]
+  summarised_estimates <- summarised_estimates[, setdiff(colnames(summarised_estimates), 
+                                                         c("strat", "type", "date")),
+                                               with = FALSE]
+  
   # extract latest R estimate
   R_latest <- summarised_estimates[variable == "R"][, variable := NULL][,
                                    purrr::map(.SD, ~ round(., 1))]
@@ -135,9 +129,8 @@ report_summary <- function(summarised_estimates,
   
   # extract current cases
   current_cases <- summarised_estimates[variable == "infections"][, variable := NULL][,
-                                        purrr::map(.SD, ~ round(., 0))]
+                                        purrr::map(.SD, ~ as.integer(.))]
   
-
   # get individual estimates
   r_latest <- summarised_estimates[variable == "growth_rate"][, variable := NULL][,
                                   purrr::map(.SD, ~ round(., 2))]
@@ -146,9 +139,8 @@ report_summary <- function(summarised_estimates,
     round(log(2) * 1 / r, 1)
   }
   doubling_time_latest <- summarised_estimates[variable == "growth_rate"][,
-                                .(point = doubling_time(point),
-                                  lower = doubling_time(upper),
-                                  upper = doubling_time(lower))]
+                                               variable := NULL][,
+                                    purrr::map(.SD, doubling_time)]
   
  # regional summary
  summary <- data.table::data.table(
@@ -157,11 +149,11 @@ report_summary <- function(summarised_estimates,
                 "Effective reproduction no.",
                 "Rate of growth",
                 "Doubling/halving time (days)"),
-    estimate = c(make_conf(current_cases),
+    estimate = c(make_conf(current_cases, max_CrI),
                  as.character(EpiNow2::map_prob_change(prob_control)),
-                 make_conf(R_latest, digits = 2),
-                 make_conf(r_latest, digits = 2),
-                 make_conf(doubling_time_latest, digits = 1)),
+                 make_conf(R_latest, max_CrI),
+                 make_conf(r_latest, max_CrI),
+                 make_conf(doubling_time_latest, max_CrI, reverse = TRUE)),
     numeric_estimate = list(current_cases,
                          prob_control,
                          R_latest,
@@ -196,16 +188,16 @@ report_summary <- function(summarised_estimates,
 #' # define example cases
 #' cases <- EpiNow2::example_confirmed[1:40]
 #' 
-#'  
 #' # set up example delays
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 #'                         
 #' # run model
-#' out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
+#' out <- EpiNow2::estimate_infections(cases, samples = 100, 
+#'                                     generation_time = generation_time,
 #'                                     delays = list(incubation_period, reporting_delay),
-#'                                     stan_args = list(cores = 4))
+#'                                     stan_args = list(warmup = 100, cores = 4))
 #'                             
 #' # plot infections
 #' plots <- report_plots(summarised_estimates = out$summarised,
@@ -213,21 +205,16 @@ report_summary <- function(summarised_estimates,
 #' plots
 #' }
 report_plots <- function(summarised_estimates, reported,
-                         target_folder, max_plot = 10) {
-  
+                         target_folder = NULL, max_plot = 10) {
   # set input to data.table
   summarised_estimates <- data.table::setDT(summarised_estimates)
   reported <- data.table::setDT(reported)
   
-  if (missing(target_folder)) {
-    target_folder <- NULL
-  }
-  
-# infections plot ---------------------------------------------------------
-infections <- plot_estimates(estimate = summarised_estimates[variable == "infections"],
-                             reported = reported,
-                             ylab = "Cases by \n date of infection",
-                             max_plot = max_plot)
+ # infections plot 
+ infections <- plot_estimates(estimate = summarised_estimates[variable == "infections"],
+                              reported = reported,
+                              ylab = "Cases by \n date of infection",
+                              max_plot = max_plot)
   
 if (!is.null(target_folder)) {
   suppressWarnings(

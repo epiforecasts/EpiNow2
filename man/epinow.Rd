@@ -10,6 +10,7 @@ epinow(
   horizon = 7,
   generation_time,
   delays = list(),
+  CrIs = c(0.2, 0.5, 0.9),
   return_output = FALSE,
   output = c("samples", "plots", "latest"),
   target_folder = NULL,
@@ -38,6 +39,8 @@ Each list entry must also be a list containing the mean, standard deviation of t
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale). To use no delays set this to \code{list()}.}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
 if no directory for saving is specified.}
@@ -93,7 +96,8 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 # estimate Rt and nowcast/forecast cases by date of infection
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
               delays = list(incubation_period, reporting_delay),
-              stan_args = list(cores = ifelse(interactive(), 4, 1)))
+              stan_args = list(cores = ifelse(interactive(), 4, 1),
+              control = list(adapt_delta = 0.95)))
 out
 
 # optional forecasting using EpiSoon plug-in
