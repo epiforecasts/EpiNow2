@@ -42,8 +42,8 @@
 #'                reported = cases,
 #'                ylab = "Cases")
 #'                
-#'# plot Rt estimates
-#'plot_estimates(estimate = out$summarised[variable == "R"],
+#' # plot Rt estimates
+#' plot_estimates(estimate = out$summarised[variable == "R"],
 #'                ylab = "Effective Reproduction No.",
 #'                hline = 1)
 #' }
@@ -179,6 +179,7 @@ plot_summary <- function(summary_results,
                                      col = `Expected change in daily cases`))
     # plot CrIs
     CrIs <- extract_CrIs(df)
+    max_CrI <- max(CrIs)
     index <- 1
     alpha_per_CrI <- 0.8 / (length(CrIs) - 1)
     for (CrI in CrIs) {
@@ -205,8 +206,11 @@ plot_summary <- function(summary_results,
   }
    
   # check max_cases
+  upper_CrI <- paste0("upper_", max_CrI)
+  max_upper <- max(summary_results[metric %in% "New confirmed cases by infection date"][, ..upper_CrI], 
+                   na.rm = TRUE)
   max_cases <- min(c(max_cases, 
-                     max(summary_results[metric %in% "New confirmed cases by infection date"]$upper, na.rm = TRUE) + 1),
+                     max_upper + 1),
                    na.rm = TRUE)
   # cases plot
   cases_plot <-  

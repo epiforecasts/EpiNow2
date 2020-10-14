@@ -124,13 +124,15 @@ summarise_results <- function(regions,
 #'   cases[, region := "realland"]))
 #'   
 #' # run basic nowcasting pipeline
-#' regional_out <- regional_epinow(reported_cases = cases,
-#'                                 generation_time = generation_time,
-#'                                 delays = list(incubation_period, reporting_delay),
-#'                                 samples = 100, stan_args = list(warmup = 100),
-#'                                 output = "region")
+#' out <- regional_epinow(reported_cases = cases,
+#'                        generation_time = generation_time,
+#'                        delays = list(incubation_period, reporting_delay),
+#'                        samples = 50, output = "region",
+#'                        stan_args = list(warmup = 50,
+#'                                         control = list(adapt_delta = 0.95)),
+#'                                         logs = NULL)
 #'
-#' regional_summary(regional_output = regional_out$regional,
+#' regional_summary(regional_output = out$regional,
 #'                  reported_cases = cases,
 #'                  summary_dir = tempdir() ,
 #'                  region_scale = "Country", all_regions = FALSE)
@@ -239,14 +241,18 @@ regional_summary <- function(regional_output = NULL,
                                max_cases = max_reported_cases)
   
   if (!is.null(summary_dir)) {
-    suppressWarnings(
-      suppressMessages(
-        ggplot2::ggsave(file.path(summary_dir, "summary_plot.png"),
-                        dpi = 300, height = 12, width = ifelse(length(regions) > 60, 
-                                                               ifelse(length(regions) > 120, 36, 24),
-                                                               12))
-      )
-    )
+    save_ggplot <- function(plot, name, height = 12, width = 12, ...) {
+      suppressWarnings(
+        suppressMessages(
+          ggplot2::ggsave(file.path(summary_dir, plot),
+                          high_plots$reff, dpi = 300, width = width, 
+                          height = height, ...)
+        ))
+    }
+    save_ggplot(summary_plot, "summary_plot.png",
+                width = ifelse(length(regions) > 60, 
+                               ifelse(length(regions) > 120, 36, 24),
+                               12))
   }
   # extract regions with highest number of reported cases in the last week
   most_reports <- get_regions_with_most_reports(reported_cases, 
@@ -264,15 +270,6 @@ regional_summary <- function(regional_output = NULL,
     purrr::map(high_plots, ~ . + ggplot2::facet_wrap(~ region, scales = "free_y", ncol = 2))
   
   if (!is.null(summary_dir)) {
-    save_ggplot <- function(plot, name, height = 12, width = 12, ...) {
-      suppressWarnings(
-        suppressMessages(
-          ggplot2::ggsave(file.path(summary_dir, plot),
-                          high_plots$reff, dpi = 300, width = width, 
-                          height = height, ...)
-        ))
-    }
-    
     save_ggplot(high_plots$reff, "high_rt_plot.png")
     save_ggplot(high_plots$infections, "high_infections_plot.png")
     save_ggplot(high_plots$reports, "high_reported_cases_plot.png")
@@ -346,7 +343,7 @@ summarise_key_measures <- function(regional_results = NULL,
     timeseries <- regional_results 
   }
   summarise_variable <- function(df, dof = 0) {
-    cols <- setdiff(names(df), c("region", "date", "type"))
+    cols <- setdiff(names(df), c("region", "date", "type", "strat"))
     df[,(cols) := round(.SD, dof), .SDcols = cols]
     data.table::setorderv(df, cols = cols)
     data.table::setnames(df, "region", type)
@@ -358,22 +355,25 @@ summarise_key_measures <- function(regional_results = NULL,
         data.table::fwrite(df, paste0(summary_dir, "/", name, ".csv"))
       }
   }
-
   out <- list()
+  sum_est <- timeseries$estimates$summarised
   # clean and save Rt estimates
-  out$rt <- summarise_variable(timeseries$estimates$summarised[variable == "R"], 2)
+  out$rt <- summarise_variable(sum_est[variable == "R"][, variable := NULL], 2)
   save_variable(out$rt, "rt")
   
   # clean and save growth rate estimates
-  out$growth_rate <- summarise_variable(timeseries$estimates$summarised[variable == "growth_rate"], 3)
+  out$growth_rate <- summarise_variable(sum_est[variable == "growth_rate"][, 
+                                                variable := NULL], 3)
   save_variable(out$growth_rate, "growth_rate")
   
   # clean and save case estimates
-  out$cases_by_infection <- summarise_variable(timeseries$estimates$summarised[variable == "infections"], 0)
+  out$cases_by_infection <- summarise_variable(sum_est[variable == "infections"][, 
+                                                       variable := NULL], 0)
   save_variable(out$cases_by_infection, "cases_by_infection")
   
   # clean and save case estimates
-  out$cases_by_report <- summarise_variable(timeseries$estimates$summarised[variable == "reported_cases"], 0)
+  out$cases_by_report <- summarise_variable(sum_est[variable == "reported_cases"][,
+                                                    variable := NULL], 0)
   save_variable(out$cases_by_report, "cases_by_report")
   return(out)
 }
