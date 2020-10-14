@@ -36,14 +36,15 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 #' 
 #' @param value List of value to map into a string. Requires,
 #'  `point`, `lower`, and `upper.`
-#' @param round_type Function, type of rounding to apply. Defaults to `round`.
-#' @param digits Numeric, defaults to 0. Amount of rounding to apply
+#' @param CrI Numeric, credible interval to report. Defaults to 90
+#' @param reverse Logical, defaults to FALSE. Should the reported 
+#' credible interval be switched.
 #' @return A character vector formatted for reporting
 #' @export
 #' @examples
-#' value <- list(point = 1, lower = 0, upper = 3)
-#' make_conf(value, round_type = round, digits = 0)
-make_conf <- function(value, CrI, reverse = FALSE) {
+#' value <- list(median = 2, lower_90 = 1, upper_90 = 3)
+#' make_conf(value)
+make_conf <- function(value, CrI = 90, reverse = FALSE) {
   CrI <- list(lower = value[[paste0("lower_", CrI)]],
               upper = value[[paste0("upper_", CrI)]])
   conf <- paste0(value$median, " (", 
@@ -67,7 +68,6 @@ make_conf <- function(value, CrI, reverse = FALSE) {
 #'  
 #' map_prob_change(var)
 map_prob_change <- function(var) {
-  
   var <- ifelse(var < 0.05, "Increasing",
                 ifelse(var < 0.2, "Likely increasing",
                        ifelse(var < 0.8, "Unsure",
