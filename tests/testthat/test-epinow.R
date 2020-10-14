@@ -6,7 +6,7 @@ reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(3), 1), max_value = 15)
 
 reported_cases <- EpiNow2::example_confirmed[1:30]
 
-futile.logger::flog.threshold("ERROR")
+futile.logger::flog.threshold("FATAL")
 
 df_non_zero <- function(df) {
   expect_true(nrow(df) > 0)

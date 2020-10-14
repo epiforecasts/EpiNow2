@@ -2,6 +2,7 @@ context("estimate_infections")
 
 reported_cases <- EpiNow2::example_confirmed[1:30]
 
+futile.logger::flog.threshold("FATAL")
 # Add a dummy breakpoint (used only when optionally estimating breakpoints)
 reported_cases <- reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"),
                                                                      1, 0)]

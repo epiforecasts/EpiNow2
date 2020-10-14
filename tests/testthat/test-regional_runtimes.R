@@ -4,7 +4,7 @@ generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani
 reporting_delay <- list(mean = log(3), mean_sd = 0.1,
                         sd = log(2), sd_sd = 0.1, max = 5)
 
-futile.logger::flog.threshold("ERROR")
+futile.logger::flog.threshold("FATAL")
 # uses example case vector
 cases <- EpiNow2::example_confirmed[1:30]
 cases <- data.table::rbindlist(list(
