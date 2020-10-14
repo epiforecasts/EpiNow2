@@ -112,14 +112,13 @@ report_summary <- function(summarised_estimates,
   rt_samples <- data.table::setDT(rt_samples)
   
   CrIs <- extract_CrIs(summarised_estimates)
-  max_CrI <- (CrIs)
-  
+  max_CrI <- max(CrIs)
+   
   # extract values of interest
-  summarised_estimates <- summarised_estimates[, .(variable, point = median,
-                                                   lower = bottom, upper = top,
-                                                   mid_lower = lower, mid_upper = upper,
-                                                   central_lower = central_lower,
-                                                   central_upper = central_upper)]
+  summarised_estimates <- summarised_estimates[, setdiff(colnames(summarised_estimates), 
+                                                         c("strat", "type", "date")),
+                                               with = FALSE]
+  
   # extract latest R estimate
   R_latest <- summarised_estimates[variable == "R"][, variable := NULL][,
                                    purrr::map(.SD, ~ round(., 1))]
@@ -140,9 +139,8 @@ report_summary <- function(summarised_estimates,
     round(log(2) * 1 / r, 1)
   }
   doubling_time_latest <- summarised_estimates[variable == "growth_rate"][,
-                                .(point = doubling_time(point),
-                                  lower = doubling_time(upper),
-                                  upper = doubling_time(lower))]
+                                               variable := NULL][,
+                                    purrr::map(.SD, doubling_time)]
   
  # regional summary
  summary <- data.table::data.table(
@@ -151,11 +149,11 @@ report_summary <- function(summarised_estimates,
                 "Effective reproduction no.",
                 "Rate of growth",
                 "Doubling/halving time (days)"),
-    estimate = c(make_conf(current_cases),
+    estimate = c(make_conf(current_cases, max_CrI),
                  as.character(EpiNow2::map_prob_change(prob_control)),
-                 make_conf(R_latest, digits = 2),
-                 make_conf(r_latest, digits = 2),
-                 make_conf(doubling_time_latest, digits = 1)),
+                 make_conf(R_latest, max_CrI),
+                 make_conf(r_latest, max_CrI),
+                 make_conf(doubling_time_latest, max_CrI, reverse = TRUE)),
     numeric_estimate = list(current_cases,
                          prob_control,
                          R_latest,
