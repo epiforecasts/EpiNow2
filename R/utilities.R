@@ -25,7 +25,6 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
                              file.path(remove_dir, file)
                            )
                          })
-                  
                 }
                 
               })
@@ -37,21 +36,21 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 #' 
 #' @param value List of value to map into a string. Requires,
 #'  `point`, `lower`, and `upper.`
-#' @param round_type Function, type of rounding to apply. Defaults to `round`.
-#' @param digits Numeric, defaults to 0. Amount of rounding to apply
+#' @param CrI Numeric, credible interval to report. Defaults to 90
+#' @param reverse Logical, defaults to FALSE. Should the reported 
+#' credible interval be switched.
 #' @return A character vector formatted for reporting
 #' @export
 #' @examples
-#' value <- list(point = 1, lower = 0, upper = 3)
-#' make_conf(value, round_type = round, digits = 0)
-make_conf <- function(value, round_type = NULL, digits = 0) {
-  
-  if (is.null(round_type)) {
-    round_type <- round
-  }
-  paste0(round_type(value$point, digits), " (", 
-         round_type(value$lower, digits), " -- ", 
-         round_type(value$upper, digits), ")")
+#' value <- list(median = 2, lower_90 = 1, upper_90 = 3)
+#' make_conf(value)
+make_conf <- function(value, CrI = 90, reverse = FALSE) {
+  CrI <- list(lower = value[[paste0("lower_", CrI)]],
+              upper = value[[paste0("upper_", CrI)]])
+  conf <- paste0(value$median, " (", 
+                 ifelse(!reverse, CrI$lower, CrI$upper), " -- ", 
+                 ifelse(!reverse, CrI$upper, CrI$lower), ")")
+  return(conf)
 }
 
 
@@ -69,7 +68,6 @@ make_conf <- function(value, round_type = NULL, digits = 0) {
 #'  
 #' map_prob_change(var)
 map_prob_change <- function(var) {
-  
   var <- ifelse(var < 0.05, "Increasing",
                 ifelse(var < 0.2, "Likely increasing",
                        ifelse(var < 0.8, "Unsure",
@@ -224,5 +222,5 @@ globalVariables(
     "New confirmed cases by infection date", "Data", "R", "reference",
     ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate", 
     "point", "strat", "estimate", "breakpoint", "variable", "value.V1", "central_lower", "central_upper",
-    "mean_sd", "sd_sd", "average_7"))
+    "mean_sd", "sd_sd", "average_7",  "..lowers", "..upper_CrI", "..uppers"))
 

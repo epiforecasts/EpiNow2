@@ -200,3 +200,28 @@ get_incubation_period <- function(disease, source, max_value = 30) {
   
   return(dist)
 }
+
+
+
+#' Get Regions with Most Reported Cases
+#'
+#' @param time_window Numeric, number of days to include from latest date in data.
+#' Defaults to 7 days.
+#' @param no_regions Numeric, number of regions to return. Defaults to 6.
+#' @inheritParams regional_epinow
+#' @return A character vector of regions with the highest reported cases
+#' @importFrom data.table copy setorderv 
+#' @importFrom lubridate days
+#' @export
+get_regions_with_most_reports <- function(reported_cases, 
+                                          time_window = 7,
+                                          no_regions = 6) {
+  most_reports <- data.table::copy(reported_cases)
+  most_reports <- 
+    most_reports[, .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(time_window))],
+                 by = "region"]
+  most_reports <-  most_reports[, .(confirm = sum(confirm, na.rm = TRUE)), by = "region"]
+  most_reports <-  data.table::setorderv(most_reports, cols = "confirm", order = -1)
+  most_reports <-  most_reports[1:no_regions][!is.na(region)]$region
+  return(most_reports)
+}

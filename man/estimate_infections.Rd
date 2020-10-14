@@ -12,6 +12,7 @@ estimate_infections(
   method = "exact",
   family = "negbin",
   generation_time,
+  CrIs = c(0.2, 0.5, 0.9),
   delays = list(),
   horizon = 7,
   gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_alpha = 4.5,
@@ -52,6 +53,8 @@ binomial ("negbin") with poisson ("poisson") also supported.}
 \item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
 Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
@@ -131,12 +134,12 @@ incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lau
 reporting_delay <- list(mean = log(5), mean_sd = log(2),
                         sd = log(2), sd_sd = log(1.5), max = 30)
                         
-# run model with default settings
+# run model with default settings (adjusted to speed up example runtimes - not suggested 
+# for real world use)
 def <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay), 
-                           stan_args = list(warmup = 200, 
-                                            cores = ifelse(interactive(), 4, 1)),
-                           verbose = TRUE, return_fit = TRUE)
+                           stan_args = list(warmup = 200, control = list(adapt_delta = 0.95),
+                                            cores = ifelse(interactive(), 4, 1)))
 
 plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
 plots$summary

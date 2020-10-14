@@ -8,6 +8,7 @@ estimates_by_report_date(
   estimates,
   forecast,
   delays,
+  CrIs = c(0.2, 0.5, 0.9),
   target_folder = NULL,
   samples = TRUE
 )
@@ -22,6 +23,8 @@ Each list entry must also be a list containing the mean, standard deviation of t
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale). To use no delays set this to \code{list()}.}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 

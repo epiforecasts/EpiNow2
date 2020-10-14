@@ -6,9 +6,9 @@
 \usage{
 summarise_results(
   regions,
-  summaries,
-  results_dir,
-  target_date,
+  summaries = NULL,
+  results_dir = NULL,
+  target_date = NULL,
   region_scale = "Region"
 )
 }

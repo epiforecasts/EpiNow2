@@ -17,9 +17,9 @@
 #' @return A list of `data.tables`. The first entry ("samples") contains raw forecast samples and the second entry ("summarised") contains
 #' summarised forecasts.
 #' @export
+#' @inheritParams calc_summary_measures
 #' @importFrom data.table setDT := setorder setDTthreads
 #' @importFrom purrr safely map_dbl
-#' @importFrom HDInterval hdi
 #' @importFrom truncnorm rtruncnorm
 #' @examples
 #' \donttest{
@@ -35,8 +35,9 @@
 #' # estimate Rt and infections from data
 #' out <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            gp = list(),
-#'                            stan_args = list(cores = ifelse(interactive(), 4, 1), chains = 4))
+#'                            gp = list(), samples = 100,
+#'                            stan_args = list(cores = ifelse(interactive(), 4, 1), 
+#'                                             warmup = 100, chains = 4))
 #'
 #' # forecast Rt and infections from estimates
 #' forecast <- forecast_infections(
@@ -59,6 +60,7 @@
 forecast_infections <- function(infections, rts, 
                                 gt_mean, gt_sd, gt_max = 30,
                                 ensemble_type = "mean", forecast_model, 
+                                CrIs = c(0.2, 0.5, 0.9),
                                 horizon = 14, samples = 1000){ 
   
 
@@ -170,19 +172,10 @@ if (missing(forecast_model)) {
   ), fill = TRUE)
   
 # summarise forecasts -----------------------------------------------------
-  summarised_forecast <- data.table::copy(forecast)[, .(
-    bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
-    top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
-    lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[1]])),
-    upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
-    central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[1]])), 
-    central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[2]])),
-    median = as.numeric(median(value, na.rm = TRUE)),
-    mean = as.numeric(mean(value, na.rm = TRUE)),
-    sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, type, forecast_type)]
-  
-  # order summarised samples
-  data.table::setorder(summarised_forecast, type, forecast_type, date)  
+  summarised_forecast <- calc_summary_measures(forecast,
+                                               summarise_by = c("date", "type", "forecast_type"),
+                                               order_by = c("type", "forecast_type", "date"),
+                                               CrIs = CrIs)
 
   # combine output
   out <- list(samples = forecast, summarised = summarised_forecast)

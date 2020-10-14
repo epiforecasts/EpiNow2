@@ -80,7 +80,7 @@ save_forecast_infections <- function(forecast, target_folder = NULL, samples = T
 #' @return A list of samples and summarised estimates of estimated cases by date of report
 #' @export
 #' @importFrom data.table := rbindlist 
-estimates_by_report_date <- function(estimates, forecast, delays, 
+estimates_by_report_date <- function(estimates, forecast, delays, CrIs = c(0.2, 0.5, 0.9),
                                      target_folder = NULL, samples = TRUE) {
   
   if (is.null(forecast)) {
@@ -99,6 +99,7 @@ estimates_by_report_date <- function(estimates, forecast, delays,
                                                                       forecast_type == model][,
                                                                       .(date, sample, cases = as.integer(value))],
                                      delays = delays,
+                                     CrIs = CrIs,
                                      type = "sample")
       return(reported_cases)
     }
