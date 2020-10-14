@@ -71,8 +71,6 @@ out <- regional_epinow(reported_cases = cases,
                                         logs = NULL)
 
 regional_summary(regional_output = out$regional,
-                 reported_cases = cases,
-                 region_scale = "Country", 
-                 all_regions = FALSE)
+                 reported_cases = cases)
 } 
 }

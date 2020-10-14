@@ -131,9 +131,7 @@ summarise_results <- function(regions,
 #'                                         logs = NULL)
 #'
 #' regional_summary(regional_output = out$regional,
-#'                  reported_cases = cases,
-#'                  region_scale = "Country", 
-#'                  all_regions = FALSE)
+#'                  reported_cases = cases)
 #' } 
 regional_summary <- function(regional_output = NULL,
                              reported_cases,
@@ -225,10 +223,13 @@ regional_summary <- function(regional_output = NULL,
     data.table::fwrite(summarised_results$table, file.path(summary_dir, "summary_table.csv"))
     data.table::fwrite(summarised_results$data,  file.path(summary_dir, "summary_data.csv"))
   }
-  
+
   # adaptive add a logscale to the summary plot based on range of observed cases
-  log_cases <- (max(summarised_results$data[metric %in% "New confirmed cases by infection date"]$upper, na.rm = TRUE) / 
-             min(summarised_results$data[metric %in% "New confirmed cases by infection date"]$lower, na.rm = TRUE)) > 1000
+  current_inf <- summarised_results$data[metric %in% "New confirmed cases by infection date"]
+  uppers <- grepl("upper_", colnames(current_inf))
+  lowers <- grepl("lower_", colnames(current_inf))
+  log_cases <- (max(current_inf[,..uppers], na.rm = TRUE) / 
+                  min(current_inf[, ..lowers], na.rm = TRUE)) > 1000
 
   max_reported_cases <- round(max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0)
   
