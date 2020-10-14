@@ -39,7 +39,8 @@
 #' # estimate Rt and nowcast/forecast cases by date of infection
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
 #'               delays = list(incubation_period, reporting_delay),
-#'               stan_args = list(cores = ifelse(interactive(), 4, 1)))
+#'               stan_args = list(cores = ifelse(interactive(), 4, 1),
+#'               control = list(adapt_delta = 0.95)))
 #' out
 #' 
 #' # optional forecasting using EpiSoon plug-in
