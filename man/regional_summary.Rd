@@ -62,15 +62,17 @@ cases <- data.table::rbindlist(list(
   cases[, region := "realland"]))
   
 # run basic nowcasting pipeline
-regional_out <- regional_epinow(reported_cases = cases,
-                                generation_time = generation_time,
-                                delays = list(incubation_period, reporting_delay),
-                                samples = 100, stan_args = list(warmup = 100),
-                                output = "region")
+out <- regional_epinow(reported_cases = cases,
+                       generation_time = generation_time,
+                       delays = list(incubation_period, reporting_delay),
+                       samples = 50, output = "region",
+                       stan_args = list(warmup = 50,
+                                        control = list(adapt_delta = 0.95)),
+                                        logs = NULL)
 
-regional_summary(regional_output = regional_out$regional,
+regional_summary(regional_output = out$regional,
                  reported_cases = cases,
-                 summary_dir = tempdir() ,
-                 region_scale = "Country", all_regions = FALSE)
+                 region_scale = "Country", 
+                 all_regions = FALSE)
 } 
 }
