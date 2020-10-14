@@ -9,7 +9,7 @@ regional_epinow(
   target_folder = NULL,
   target_date,
   non_zero_points = 2,
-  output = c("regions", "summary", "samples", "plots", "timing", "latest"),
+  output = c("regions", "summary", "samples", "plots", "latest"),
   return_output = FALSE,
   summary_args = list(),
   logs = tempdir(),
@@ -27,7 +27,7 @@ regional_epinow(
 that region to be evaluated. Defaults to 2.}
 
 \item{output}{A character vector of optional output to return. Supported options are the individual regional estimates
-("regions"),  samples ("samples"), plots ("plots"), timing ("timing"),  copying the individual region dated folder into
+("regions"),  samples ("samples"), plots ("plots"), copying the individual region dated folder into
 a latest folder (if \code{target_folder} is not null - set using "latest"), the stan fit of the underlying model ("fit"), and an
 overall summary across regions ("summary"). The default is to return samples and plots alongside summarised estimates and
 summary statistics. If \code{target_folder} is not NULL then the default is also to copy all results into a latest folder.}

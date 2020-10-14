@@ -17,7 +17,6 @@ summarise_results <- function(regions,
                               results_dir = NULL,
                               target_date = NULL,
                               region_scale = "Region") {
-  
   if(is.null(target_date)){
     target_date <- "latest"
   }
@@ -49,13 +48,12 @@ summarise_results <- function(regions,
     estimates <- summaries
   }
 
-  
   estimates <- data.table::rbindlist(estimates, idcol = "region")
-  
   numeric_estimates  <- 
     data.table::copy(estimates)[measure %in% c("New confirmed cases by infection date",
                                                "Effective reproduction no.")][,
-              data.table::rbindlist(.SD), by = .(region, measure)][,
+              .(data.table::data.table(region, measure, estimate), 
+                data.table::rbindlist(numeric_estimate))][,
               metric :=  factor(measure, levels = c("New confirmed cases by infection date",
                                                     "Effective reproduction no."))][, measure := NULL]
   
@@ -134,8 +132,8 @@ summarise_results <- function(regions,
 #'
 #' regional_summary(regional_output = out$regional,
 #'                  reported_cases = cases,
-#'                  summary_dir = tempdir() ,
-#'                  region_scale = "Country", all_regions = FALSE)
+#'                  region_scale = "Country", 
+#'                  all_regions = FALSE)
 #' } 
 regional_summary <- function(regional_output = NULL,
                              reported_cases,
@@ -327,7 +325,7 @@ regional_summary <- function(regional_output = NULL,
 #' @inheritParams get_regional_results
 #' @return A list of summarised Rt, cases by date of infection and cases by date of report
 #' @export
-#' @importFrom data.table setnames fwrite
+#' @importFrom data.table setnames fwrite setorderv
 summarise_key_measures <- function(regional_results = NULL,
                                    results_dir = NULL, summary_dir = NULL, 
                                    type = "region", date = "latest") {
