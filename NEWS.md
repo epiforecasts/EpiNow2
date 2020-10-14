@@ -13,10 +13,10 @@ function in `regional_epinow` and `epinow`.
 * Implemented progress bar support using `progressr`.
 * Added timeout and timing option to `regional_epinow`
 * Improved logging of warnings in `regional_epinow`
-* Added inner 20% high density region.
+* Enabled the user to specify the credible intervals desired with 20%, 50% and 90% calculated by default. Also switched from high density regions to quintiles.
 * Added mean and sd to all reporting summaries.
 * Added a summary of the growth rate and doubling time.
-* Added a new function `regional_runtimes` that summarises the run time across regions. Available within `regional_epinow` if `output = c(..., "timing")` is specified.
+* Added a new function `regional_runtimes` that summarises the run time across regions.
 
 ## Bug fixes
 
