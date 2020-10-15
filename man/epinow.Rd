@@ -57,7 +57,7 @@ being reported.
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{forecast_args}{A list of arguments to pass to \code{forecast_infections}. Unless at a minumum a \code{forecast_model} is passed
+\item{forecast_args}{A list of arguments to pass to \code{forecast_infections}. Unless at a minimum a \code{forecast_model} is passed
 tin his list then \code{forecast_infections} will be bypassed.}
 
 \item{logs}{Character path indicating the target folder in which to store log

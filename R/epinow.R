@@ -11,7 +11,7 @@
 #' being reported.
 #' @param return_output Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE 
 #' if no directory for saving is specified. 
-#' @param forecast_args A list of arguments to pass to `forecast_infections`. Unless at a minumum a `forecast_model` is passed 
+#' @param forecast_args A list of arguments to pass to `forecast_infections`. Unless at a minimum a `forecast_model` is passed 
 #' tin his list then `forecast_infections` will be bypassed. 
 #' @param id A character string used to assign logging information on error. Used by `regional_epinow`
 #' to assign `epinow` errors to regions.

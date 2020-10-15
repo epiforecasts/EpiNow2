@@ -226,7 +226,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #'
 #' @description Generates a list of arguments as required by `rstan::sampling` (when `method = "exact`) or 
 #' `rstan::vb` (when `method = "approximate`). See `create_stan_args()` for the defaults and the relevant `rstan`
-#' functions for additonal options.
+#' functions for additional options.
 #' @param model A stan model object, defaults to packaged model if not supplied.
 #' @param data A list of stan data as created by `create_stan_data`
 #' @param init Initial conditions passed to `rstan`. Defaults to "random" but can also be a function (

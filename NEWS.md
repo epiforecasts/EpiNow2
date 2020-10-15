@@ -1,4 +1,4 @@
-# EpiNow2 2.0.0
+# EpiNow2 1.2.1
 
 This release introduces multiple breaking interface changes. Please see the README for examples of the new interface. It also adds a range of quality of life improvements including updating the `stan` interface to support fitting each chain independently and offering variational inference as an alternative, experimental, fitting option. Notably it also adds support for nesting logging 
 and a parallel enabled progress bar via the `progressr` package. Minor bugs have been fixed in the core model implementation focussing on stability with major updates planned for the next release.

@@ -26,7 +26,7 @@
 #' @param use_breakpoints Logical, defaults to TRUE but only active if a `breakpoint` variable is present in the input data. 
 #'  Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with
 #' a global non-parametric effect and so represent a conservative estimate of breakpoint changes. To specify a random walk define
-#' breakpoints every n days (so every 7 days for a weekly random walk) and disbale the gaussian process using `gp = list()`.
+#' breakpoints every n days (so every 7 days for a weekly random walk) and disable the gaussian process using `gp = list()`.
 #' @param burn_in Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument may be used to reduce 
 #' spurious findings when running `estimate_infections` on a partial timeseries (as the earliest estimates will not be informed by 
 #' all cases that occurred only those supplied to `estimate_infections`). The combined delays used will inform the appropriate length
@@ -44,7 +44,7 @@
 #' Must also contain the  `lengthscale_alpha` and `lengthscale_beta`. These tune the prior of the lengthscale. Principled 
 #' values can be obtained using `tune_inv_gamma` which optimises based on the desired truncation (which should be based on the scale
 #' of the observed data). The default is tuned to have 98% of the density of the distribution between 2 and 21 days. Finally the list must 
-#' contain `alpha_sd` the standard deviation for the alpha parameter of the guassian process. This defaults to 0.1.
+#' contain `alpha_sd` the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.
 #' @param verbose Logical, defaults to `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
@@ -376,7 +376,7 @@ estimate_infections <- function(reported_cases,
 #'
 #' @param args List of stan arguments
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
-#' @param max_execution_time Numeric, defauls to Inf. What is the maximum execution time per chain. Results will
+#' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain. Results will
 #' still be returned as long as at least 2 chains complete successfully within the timelimit. 
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
 #' @importFrom futile.logger flog.debug flog.info flog.error
