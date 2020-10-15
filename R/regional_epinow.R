@@ -260,7 +260,7 @@ run_region <- function(target_region,
 #'
 #' @param out List of output returned by `epinow`
 #' @param timing Output from `Sys.time` 
-#' @param return_timing Logical, shoulding runtime be returned
+#' @param return_timing Logical, should runtime be returned
 #' @inheritParams regional_epinow
 #' @inheritParams run_region
 #' @importFrom futile.logger flog.info

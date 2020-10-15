@@ -3,7 +3,7 @@ Type: Package
 Title: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters
 Version: 1.2.1
 Authors@R: c(
-    person(given = "Sam Abbott",
+    person(given = "Sam", "Abbott",
            role = c("aut", "cre"),
            email = "sam.abbott@lshtm.ac.uk",
            comment = c(ORCID = "0000-0001-8057-8037")),

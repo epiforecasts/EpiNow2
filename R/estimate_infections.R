@@ -447,7 +447,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   return(fit)
 }
 
-#' Fit a Stan Model using Varitional Inference
+#' Fit a Stan Model using Variational Inference
 #'
 #' @inheritParams fit_model_with_nuts
 #' @importFrom futile.logger flog.debug flog.info flog.error

@@ -1,7 +1,6 @@
 # EpiNow2 1.2.1
 
-This release introduces multiple breaking interface changes. Please see the README for examples of the new interface. It also adds a range of quality of life improvements including updating the `stan` interface to support fitting each chain independently and offering variational inference as an alternative, experimental, fitting option. Notably it also adds support for nesting logging 
-and a parallel enabled progress bar via the `progressr` package. Minor bugs have been fixed in the core model implementation focussing on stability with major updates planned for the next release.
+This release introduces multiple breaking interface changes. Please see the README for examples of the new interface. It adds a range of quality of life improvements including updating the `stan` interface to support fitting each chain independently and offering variational inference as an alternative, experimental, fitting option. Notably it also adds support for nesting logging and a parallel enabled progress bar via the `progressr` package. Minor bugs have been fixed in the core model implementation focussing on stability and several already implemented features have been extended. Major model developments are planned for the next release of `EpiNow2`.
 
 ## New features
 
@@ -13,10 +12,11 @@ function in `regional_epinow` and `epinow`.
 * Implemented progress bar support using `progressr`.
 * Added timeout and timing option to `regional_epinow`
 * Improved logging of warnings in `regional_epinow`
-* Enabled the user to specify the credible intervals desired with 20%, 50% and 90% calculated by default. Also switched from high density regions to quintiles.
+* Enabled the user to specify the credible intervals desired with 20%, 50% and 90% calculated by default. Also switched from high density regions to quantiles. Custom credible intervals are now supported in all reporting and plotting functions.
 * Added mean and sd to all reporting summaries.
 * Added a summary of the growth rate and doubling time.
 * Added a new function `regional_runtimes` that summarises the run time across regions.
+* Updated the `estimate_infections` interface and expanded the range of options for the `future_rt` argument. Users can now choose to set Rt from any time point referenced to the forecast date.
 
 ## Bug fixes
 
@@ -29,11 +29,10 @@ function in `regional_epinow` and `epinow`.
 
 * Updates the interface for specifying how output is returned.
 * Moved all inherited from stan arguments into `create_stan_args` with the option to override using `stan_args`. This leads to breaking changes - see the examples for details of the new interface.
-* Update the `estimate_infections` interface and expanded the range of options for the `future_rt` argument. Users can now choose to set Rt from any time point referenced to the forecast date.
 * Updated all example and documentation to reflect the new interface.
 * Added a `samples` argument to `get_regional_results` to make loading in samples optional. This also allows samples to be dropped when using `regional_epinow` which reduces RAM usage.
 * Cleaned up wrapper functions to move individual jobs into functions.
-* Adds basic testing of high level functions and some low level unit testing.
+* Adds testing of high level functions and some low level unit testing.
 * Adds a csv download button the interactive table in the regional summary table.
 
 # EpiNow2 1.1.0

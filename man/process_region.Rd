@@ -23,7 +23,7 @@ process_region(
 \item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
 if no directory for saving is specified.}
 
-\item{return_timing}{Logical, shoulding runtime be returned}
+\item{return_timing}{Logical, should runtime be returned}
 
 \item{complete_logger}{Character string indicating the logger to output
 the completion of estimation to.}
