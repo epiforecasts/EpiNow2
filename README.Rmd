@@ -29,7 +29,7 @@ The default model uses a non-stationary Gaussian process to estimate the time-va
 
 * A stationary Gaussian process (faster to estimate but currently gives reduced performance for real time estimates).
 * User specified breakpoints.
-* A fixed reproduction number is supported.
+* A fixed reproduction number.
 * As piecewise constant by combining a fixed reproduction number with breakpoints.
 * As a random walk (by combining a fixed reproduction number with regularly spaced breakpoints (i.e weekly)).
 
@@ -82,7 +82,6 @@ Distributions can either be fitted using package functionality or determined els
 
 ```{r}
 reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(4), 1), max_value = 30)
-reporting_delay
 ```
 
 Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow/tree/master/data-raw) for the code that generates these estimates).
@@ -108,7 +107,8 @@ Estimate cases by date of infection, the time-varying reproduction number, the r
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(reported_cases = reported_cases, 
                     generation_time = generation_time,
-                    delays = list(incubation_period, reporting_delay))
+                    delays = list(incubation_period, reporting_delay),
+                    logs = NULL)
 names(estimates)
 ```
 
