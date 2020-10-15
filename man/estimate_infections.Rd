@@ -133,12 +133,13 @@ generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- list(mean = log(5), mean_sd = log(2),
                         sd = log(2), sd_sd = log(1.5), max = 30)
-                        
-# run model with default settings (adjusted to speed up example runtimes - not suggested 
-# for real world use)
+      
+# Note: all examples below have been tuned to reduce the runtimes of examples
+# these settings are not suggesed for real world use.                   
+# run model with default setting
 def <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay), 
-                           stan_args = list(warmup = 200, control = list(adapt_delta = 0.95),
+                           stan_args = list(warmup = 200, control = list(adapt_delta = 0.8),
                                             cores = ifelse(interactive(), 4, 1)))
 
 plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
@@ -157,6 +158,7 @@ plots$summary
 def_future <- estimate_infections(reported_cases, generation_time = generation_time,
                                   delays = list(incubation_period, reporting_delay),
                                   stan_args = list(warmup = 200, 
+                                                   control = list(adapt_delta = 0.9),
                                                    cores = ifelse(interactive(), 4, 1)))
 
 plots <- report_plots(summarised_estimates = def_future$summarised, reported = reported_cases)
@@ -166,6 +168,7 @@ plots$summary
 fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
                                 stan_args = list(warmup = 200, 
+                                                 control = list(adapt_delta = 0.9),
                                                  cores = ifelse(interactive(), 4, 1)),
                                 future_rt = "latest")
 
@@ -179,6 +182,7 @@ snapshot_cases <- EpiNow2::example_confirmed[80:130]
 snapshot <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
                                 stan_args = list(warmup = 200, 
+                                                 control = list(adapt_delta = 0.9),
                                                  cores = ifelse(interactive(), 4, 1)),
                                 burn_in = 7)
 
@@ -188,7 +192,8 @@ plots$summary
 # run model with stationary Rt assumption (likely to provide biased real-time estimates)
 stat <- estimate_infections(reported_cases, generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
+                                             control = list(adapt_delta = 0.9)),
                             stationary = TRUE)
 
 plots <- report_plots(summarised_estimates = stat$summarised, reported = reported_cases)
@@ -197,7 +202,8 @@ plots$summary
 # run model with fixed Rt assumption 
 fixed <- estimate_infections(reported_cases, generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay),
-                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
+                                              control = list(adapt_delta = 0.9)),
                              gp = list())
 
 plots <- report_plots(summarised_estimates = fixed$summarised, reported = reported_cases)
@@ -205,7 +211,9 @@ plots$summary
 
 # run model with no delays 
 no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
-                                stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
+                                stan_args = list(warmup = 200,
+                                                 cores = ifelse(interactive(), 4, 1),
+                                                 control = list(adapt_delta = 0.9)))
 
 plots <- report_plots(summarised_estimates = no_delay$summarised, reported = reported_cases)
 plots$summary         
@@ -213,7 +221,9 @@ plots$summary
 # run model with breakpoints                                                                      
 bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
+                           stan_args = list(warmup = 200, 
+                                            cores = ifelse(interactive(), 4, 1),
+                                            control = list(adapt_delta = 0.9)))
 
 plots <- report_plots(summarised_estimates = bkp$summarised, reported = reported_cases)
 plots$summary
@@ -225,7 +235,9 @@ cbkp <- estimate_infections(reported_cases_bp, generation_time = generation_time
                            delays = list(incubation_period, reporting_delay),
                            gp = list(basis_prop = 0.3, boundary_scale = 2, 
                                      lengthscale_mean = 20, lengthscale_sd = 1),
-                           stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))                                                                   
+                           stan_args = list(warmup = 200, 
+                           cores = ifelse(interactive(), 4, 1),
+                           control = list(adapt_delta = 0.9)))                                                                   
 
 plots <- report_plots(summarised_estimates = cbkp$summarised, reported = reported_cases)
 plots$summary
@@ -237,7 +249,9 @@ cbkp$summarised[variable == "breakpoints"]
 # model fit criteria (i.e LFO).           
 fbkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                            stan_args = list(warmup = 200, 
+                                             cores = ifelse(interactive(), 4, 1),
+                                             control = list(adapt_delta = 0.9)),
                             gp = list())                                                         
 
 plots <- report_plots(summarised_estimates = fbkp$summarised, reported = reported_cases)
@@ -248,7 +262,9 @@ fbkp$summarised[variable == "breakpoints"]
 # run model without Rt estimation (just backcalculation)
 backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
                                delays = list(incubation_period, reporting_delay),
-                               stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                               stan_args = list(warmup = 200, 
+                                                cores = ifelse(interactive(), 4, 1),
+                                                control = list(adapt_delta = 0.9)),
                                rt_prior = list())
 
 # plot just infections as report_plots does not support the backcalculation only model
