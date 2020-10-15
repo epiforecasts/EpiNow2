@@ -1,13 +1,15 @@
 #' Create Clean Reported Cases
 #'
+#' @param zero_threshold Numeric defaults to 50. Indicates if detected zero cases are meaningful by 
+#' using a threshold of 50 cases on average over the last 7 days. If the average is above this thresold
+#' then the zero is replaced with the 
 #' @inheritParams estimate_infections
-#' @importFrom data.table copy merge.data.table setorder setDT
+#' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases
 #' @export
-create_clean_reported_cases <- function(reported_cases, horizon) {
+create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold = 50) {
   
   reported_cases <- data.table::setDT(reported_cases)
-  
   reported_cases_grid <- data.table::copy(reported_cases)[, .(date = seq(min(date), max(date) + horizon, by = "days"))]
   
   reported_cases <- data.table::merge.data.table(
@@ -20,6 +22,13 @@ create_clean_reported_cases <- function(reported_cases, horizon) {
   ## Filter out 0 reported cases from the beginning of the data
   reported_cases <- reported_cases[order(date)][,
                                cum_cases := cumsum(confirm)][cum_cases > 0][, cum_cases := NULL]
+  
+  # Check case counts surrounding zero cases and set to 7 day average if average is over 7 days
+  # is greater than a threshold
+  reported_cases <- reported_cases[, `:=`(average_7 = data.table::frollsum(confirm, n = 8) / 7)]
+  reported_cases <- reported_cases[confirm == 0 & average_7 > zero_threshold,
+                                   confirm := as.integer(average_7)][,
+                                   c("average_7") := NULL]
   return(reported_cases)
 }
 
@@ -60,6 +69,31 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 }
 
 
+#' Construct the Required Future Rt assumption
+#'
+#' @param future_rt A character string or integer. This argument indicates how to set future Rt values. Supported 
+#' options are to project using the Rt model ("project"), to use the latest estimate based on partial data ("latest"),
+#' to use the latest estimate based on data that is over 50% complete ("estimate"). If an integer is supplied then the Rt estimate
+#' from this many days into the future (or past if negative) past will be used forwards in time. 
+#' @param delay Numeric mean delay
+#' @return A list containing a logical called fixed and an integer called from
+create_future_rt <- function(future_rt = "project", delay = 0) {
+  out <- list(fixed = TRUE, from = 0)
+  if (is.character(future_rt)) {
+    future_rt <- match.arg(future_rt,
+                           c("project", 
+                             "latest",
+                             "estimate"))
+    if (!(future_rt %in% "project")) {
+      out$fixed <- FALSE
+      out$from <- ifelse(future_rt %in% "latest", 0, -delay)
+    }
+  }else if (is.numeric(future_rt)){
+    out$fixed <- FALSE
+    out$from <- as.integer(future_rt)
+  }
+  return(out)
+}
 
 #' Create Stan Data Required for estimate_infections
 #'
@@ -67,13 +101,21 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 #' @param no_delays Numeric, number of delays
 #' @param mean_shift Numeric, mean delay shift
 #' @param break_no Numeric, number of breakpoints
+#' @param fixed Logical, should the gaussian process be used for non-parametric 
+#' change over time.
+#' @param estimate_rt Logical, should Rt be estimated.
 #' @inheritParams estimate_infections
+#' @inheritParams create_future_rt
 #' @return A list of stan data
 #' @export 
 create_stan_data <- function(reported_cases,  shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
-                             rt_prior, estimate_rt, estimate_week_eff, stationary,
-                             fixed, break_no, fixed_future_rt, gp, family, delays) {
+                             rt_prior, estimate_rt, week_effect, stationary,
+                             fixed, break_no, future_rt, gp, family, delays) {
+  
+  # create future_rt
+  future_rt <- create_future_rt(future_rt = future_rt, 
+                                delay = mean_shift)
   
   data <- list(
     day_of_week = reported_cases[(mean_shift + 1):.N]$day_of_week,
@@ -93,12 +135,13 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
-    est_week_eff = ifelse(estimate_week_eff, 1, 0),
+    est_week_eff = ifelse(week_effect, 1, 0),
     stationary = ifelse(stationary, 1, 0),
     fixed = ifelse(fixed, 1, 0),
     break_no = break_no,
     breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
-    future_fixed = ifelse(fixed_future_rt, 1, 0)
+    future_fixed = ifelse(future_rt$fixed, 1, 0),
+    fixed_from = future_rt$from
   ) 
   
   # Delays ------------------------------------------------------------------
@@ -114,16 +157,14 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   data$M <- ceiling(data$rt * gp$basis_prop)
   # Boundary value for c
   data$L <- max(data$time) * gp$boundary_scale
-  data$lengthscale_mean <- gp$lengthscale_mean
-  data$lengthscale_sd <- gp$lengthscale_sd
-  
+  data$lengthscale_alpha <- gp$lengthscale_alpha
+  data$lengthscale_beta <- gp$lengthscale_beta
+  data$alpha_sd <- gp$alpha_sd
   
   ## Set model to poisson or negative binomial
-  if (family %in% "poisson") {
-    data$model_type <- 0
-  }else if (family %in% "negbin"){
-    data$model_type <- 1
-  }
+  family <- match.arg(family, c("poisson", "negbin"))
+  data$model_type <- ifelse(family %in% "poisson", 0, 1)
+
   return(data)
 }
 
@@ -153,7 +194,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 1))
-      out$rho <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 2))
+      out$rho <- array(truncnorm::rtruncnorm(1, a = 1, mean = 10, sd = 4))
       out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
     }
     if (data$model_type == 1) {
@@ -161,7 +202,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     }
     
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rnorm(mean_shift, mean = 0, sd = 0.1))
+      out$initial_infections <- array(rlnorm(mean_shift, meanlog = 0, sdlog = 0.1))
       out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
                                     scale = (rt_prior$sd^2) / rt_prior$mean))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
@@ -170,13 +211,11 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
                                                 sd = generation_time$sd_sd))
       
       if (data$break_no > 0) {
-        out$rt_break_eff <- array(rlnorm(data$break_no, 0, 0.1))
+        out$rt_break_eff <- array(rnorm(data$break_no, 0, 0.1))
       }
     }
-    
     return(out)
   }
-  
   return(init_fun)
 }
 
@@ -187,7 +226,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #'
 #' @description Generates a list of arguments as required by `rstan::sampling` (when `method = "exact`) or 
 #' `rstan::vb` (when `method = "approximate`). See `create_stan_args()` for the defaults and the relevant `rstan`
-#' functions for additonal options.
+#' functions for additional options.
 #' @param model A stan model object, defaults to packaged model if not supplied.
 #' @param data A list of stan data as created by `create_stan_data`
 #' @param init Initial conditions passed to `rstan`. Defaults to "random" but can also be a function (
@@ -224,7 +263,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
                            choices = c("rstan", "cmdstan"), 
                            several.ok = FALSE)
   
-  # Use built in model if not supplied by the user
+  # use built in model if not supplied by the user
   if (missing(model)) {
     model <- NULL
   }
@@ -252,17 +291,18 @@ create_stan_args <- function(model, data = NULL, init = "random",
     refresh = ifelse(verbose, 50, 0)
   )
   
-  # Set up independent default arguments
-  if (method == "exact" && backend == "rstan") {
-    default_args$cores <- 1
+  # set up independent default arguments
+  if (method == "exact"&& backend == "rstan") {
+    default_args$cores <- 4
     default_args$warmup <- 500
     default_args$chains <- 4
     default_args$control <- list(adapt_delta = 0.99, max_treedepth = 15)
     default_args$save_warmup <- FALSE
+    default_args$seed <- as.integer(runif(1, 1, 1e8))
   }else if (method == "exact" && backend != "rstan"){
-    default_args$cores <- 1
+    default_args$cores <- 4
     default_args$iter_warmup <- 500
-    default_args$iter_sampling <- ceiling(samples / args$chains) + args$warmup
+    default_args$iter_sampling <- ceiling(samples / 4)
     default_args$parallel_chains <- 4
     default_args$adapt_delta <- 0.99
     default_arg$max_treedepth <- 15
@@ -272,9 +312,8 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$iter <- 10000
     default_args$output_samples <- samples
   }
-
   
-  # Join with user supplied settings
+  # join with user supplied settings
   if (!is.null(stan_args)) {
     default_args <- default_args[setdiff(names(default_args), names(stan_args))]
     args <- c(default_args, stan_args)
@@ -283,10 +322,9 @@ create_stan_args <- function(model, data = NULL, init = "random",
   }
   
   
-  # Set up dependent arguments
+  # set up dependent arguments
   if (method == "exact") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup
   }
-  
   return(args)
 }

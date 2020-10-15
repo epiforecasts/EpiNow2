@@ -40,16 +40,11 @@ A list summarising the bootstrapped distribution
 Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters
 }
 \examples{
-
 \donttest{
 # lognormal
 delays <- rlnorm(500, log(5), 1)
-
 out <- bootstrapped_dist_fit(delays, samples = 1000, bootstraps = 10, 
                              dist = "lognormal")
-
-## Inspect
 out
-
 }
 }

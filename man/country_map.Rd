@@ -54,14 +54,14 @@ the installation of the \code{rnaturalearth} package.
 \donttest{
 if(requireNamespace("rnaturalearth") & requireNamespace("scales")){
 # Example 1
-# If you know the provnum_ne codes you can use them directly
+# if you know the provnum_ne codes you can use them directly
 eg_data <- data.table::data.table(variable = c("Increasing", 
                                                "Decreasing", 
                                                "Unsure", 
                                                "Likely decreasing",
                                                "Likely increasing"),
                                   region_code = c(5, 7, 6, 8, 9))
-# Make variable a factor so the ordering is sensible
+# make variable a factor so the ordering is sensible
 eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
                                                         "Unsure", "Likely increasing",
                                                         "Increasing"))
@@ -70,7 +70,7 @@ country_map(data = eg_data, country = "Australia", variable = "variable")
 
 
 # Example 2
-# Sometimes it will be more convenient to join your data by name than provnum_ne code:
+# sometimes it will be more convenient to join your data by name than provnum_ne code:
 us_data <- data.table::data.table(variable = c("Increasing", 
                                                "Decreasing", 
                                                "Unsure", 
@@ -81,14 +81,13 @@ us_data <- data.table::data.table(variable = c("Increasing",
                                                   "Florida",
                                                   "Arizona",
                                                   "New York"))
-# Make variable a factor so the ordering is sensible in the legend
+# make variable a factor so the ordering is sensible in the legend
 us_data$variable <- factor(us_data$variable, levels = c("Decreasing", "Likely decreasing",
                                                         "Unsure", "Likely increasing",
                                                         "Increasing"))
 
 country_map(data = us_data, country = "United States of America",
             variable = "variable", region_col_ne = "name")
-
 }
 }
 }

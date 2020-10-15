@@ -4,15 +4,16 @@
 \alias{make_conf}
 \title{Format Credible Intervals}
 \usage{
-make_conf(value, round_type = NULL, digits = 0)
+make_conf(value, CrI = 90, reverse = FALSE)
 }
 \arguments{
 \item{value}{List of value to map into a string. Requires,
 \code{point}, \code{lower}, and \code{upper.}}
 
-\item{round_type}{Function, type of rounding to apply. Defaults to \code{round}.}
+\item{CrI}{Numeric, credible interval to report. Defaults to 90}
 
-\item{digits}{Numeric, defaults to 0. Amount of rounding to apply}
+\item{reverse}{Logical, defaults to FALSE. Should the reported
+credible interval be switched.}
 }
 \value{
 A character vector formatted for reporting
@@ -21,8 +22,6 @@ A character vector formatted for reporting
 Format Credible Intervals
 }
 \examples{
-
-value <- list(point = 1, lower = 0, upper = 3)
-
-make_conf(value, round_type = round, digits = 0)
+value <- list(median = 2, lower_90 = 1, upper_90 = 3)
+make_conf(value)
 }

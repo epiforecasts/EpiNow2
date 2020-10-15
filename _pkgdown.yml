@@ -1,11 +1,25 @@
 url: epiforecasts.io/EpiNow2/
 template:
+  opengraph:
+    image:
+      src: man/figures/unnamed-chunk-13-1.png
+      alt: "Example estimates produced by EpiNow2 of reproduction number, cases by date of infection and cases by date of report"
+    twitter:
+      creator: "@seabbs"
+      site: "@cmmid_lshtm"
+      card: summary_large_image
   params:
     bootswatch: lumen
 
 development:
   mode: release
 
+authors:
+  Sam Abbott:
+    href: "https://www.samabbott.co.uk/"
+  Sebastian Funk: 
+    href: "https://www.lshtm.ac.uk/aboutus/people/funk.sebastian"
+    
 navbar:
   type: inverse
   left:
@@ -19,76 +33,97 @@ navbar:
   right:
     - icon: fa-github
       href: https://github.com/epiforecasts/EpiNow2
-
+      
 reference:
-  - title: Perform End-to-End Analyses
+  - title: Estimation + Reporting
     desc: Functions that faciliate end-to-end analysis including imputing cases by infection, estimating Rt and reporting results.
     contents:
       - contains("epinow")
-  - title: Define, Fit and Parameterise Distributions
-    desc: Functions to define, fit and parameterise distributions
-    contents:
-      - contains("dist")
   - title: Estimate Parameters
     desc: Function to estimate time-varying parameters of interest.
     contents:
-      - contains("estimate")
-      - contains("forecast")
+      - estimate_infections
+      - forecast_infections
       - growth_to_R
       - R_to_growth
-  - title: Adjust Case Counts
-    desc: Adjust case counts from date of infection to report
+  - title: Internal epinow Functions
+    desc: Functions used internally by epinow
     contents:
-      - adjust_infection_to_report
-  - title: Summarise results
-    desc: Summarise results
+      - update_horizon
+      - contains("save_")
+      - estimates_by_report_date
+      - copy_results_to_latest
+      - construct_output
+  - title: Internal estimate_infections Functions
+    desc: Functions used internally by estimate_infections
+    contents:
+      - contains("create_")
+      - allocate_delays
+  - title: Model Fitting
+    desc: Functions for model fitting
+    contents:
+      - contains("fit_")
+  - title: Summarise Across Regions
+    desc: Functions used for summarising across regions (designed for use with regional_epinow)
     contents:
       - regional_summary
-      - contains("summarise")
+      - regional_runtimes
   - title: Report results
     desc: Functions to report results
     contents:
       - contains("report")
-  - title: Plot results
+  - title: Summarise results
+    desc: Functions from summarising results
+    contents:
+      - contains("summarise")
+      - contains("calc_")
+      - contains("process_")
+      - format_fit
+      - make_conf
+      - map_prob_change
+  - title: Define, Fit and Parameterise Distributions
+    desc: Functions to define, fit and parameterise distributions
+    contents:
+      - contains("dist")
+      - tune_inv_gamma
+  - title: Plot Results
     desc: Plot generated results
     contents: 
       - contains("plot")
   - title: Simulate
-    desc: Functions to help with simulating data to evaluate the approach
+    desc: Functions to help with simulating data or mapping to reported cases
     contents:
       - simulate_cases
+      - adjust_infection_to_report
   - title: Data
-    desc: Package datasets that may be used to parameterise other functions
+    desc: Package datasets that may be used to parameterise other functions or in examples
     contents:
-      - covid_incubation_period
-      - covid_serial_intervals
-      - covid_generation_times
+      - generation_times
+      - incubation_periods
       - example_confirmed
+  - title: Get/Extract Data
+    desc: Functions for extracting data from objects or getting data from sources
+    contents:
+      - contains("get_")
+      - contains("extract_")
+  - title: Clean Data
+    desc: Functions for cleaning data
+    contents:
+      - contains("clean")
   - title: Map results
     desc: Optional mapping functions (requires additional dependencies)
     contents:
-      - contains("map")
+      - global_map
+      - country_map
+      - theme_map
+  - title: Setup Utilities
+    desc: Function used for setting up functionality
+    contents:
+      - contains("setup_")
   - title: Utilities
     desc: Utility functions
-    contents: 
-      - contains("create")
-      - allocate_delays
-      - fit_model_with_nuts
-      - fit_model_with_vb
-      - contains("extract")
-      - format_fit
-      - clean_regions
+    contents:
+      - match_output_arguments
+      - stop_timeout
       - run_region
-      - process_region
-      - process_regions
-      - get_regions
-      - get_raw_result
-      - get_regional_results
-      - get_dist
-      - get_generation_time
-      - get_incubation_period
-      - clean_nowcasts
-      - make_conf
-      - map_prob_change
-      - setup_logging
-      - setup_future
+

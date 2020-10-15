@@ -35,38 +35,37 @@ output from \code{get_dist}.
 \examples{
 
 ## Exponential model
-
-## Sample
+# sample
 dist_skel(10, model = "exp", params = list(rate = 1))
 
-## Cumulative prob density
+# cumulative prob density
 dist_skel(1:10, model = "exp", dist = TRUE, params = list(rate = 1))
 
-## Probability density
+# probability density
 dist_skel(1:10, model = "exp", dist = TRUE, 
           cum = FALSE, params = list(rate = 1))
 
 ## Gamma model
-
+# sample
 dist_skel(10, model = "gamma", params = list(alpha = 1, beta = 2))
 
-## Cumulative prob density
+# cumulative prob density
 dist_skel(0:10, model = "gamma", dist = TRUE,
           params = list(alpha = 1, beta = 2))
 
-## Probability density
+# probability density
 dist_skel(0:10, model = "gamma", dist = TRUE, 
           cum = FALSE, params = list(alpha = 2, beta = 2))
 
 ## Log normal model
-
+# sample
 dist_skel(10, model = "lognorm", params = list(mean = log(5), sd = log(2)))
 
-## Cumulative prob density
+# cumulative prob density
 dist_skel(0:10, model = "lognorm", dist = TRUE,
           params = list(mean = log(5), sd = log(2)))
 
-## Probability density
+# probability density
 dist_skel(0:10, model = "lognorm", dist = TRUE, cum = FALSE,
           params = list(mean = log(5), sd = log(2)))
         

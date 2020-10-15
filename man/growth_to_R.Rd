@@ -21,6 +21,5 @@ See \href{https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf
 for justification.
 }
 \examples{
-
 growth_to_R(0.2, 4, 1)
 }
