@@ -305,7 +305,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$iter_sampling <- ceiling(samples / 4)
     default_args$parallel_chains <- 4
     default_args$adapt_delta <- 0.99
-    default_arg$max_treedepth <- 15
+    default_args$max_treedepth <- 15
     default_args$save_warmup <- FALSE
   }else if (method == "approximate") {
     default_args$trials <- 10

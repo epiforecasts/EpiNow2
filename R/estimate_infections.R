@@ -492,7 +492,11 @@ fit_model_with_nuts_cmd <- function(args, future = FALSE, max_execution_time = I
   
   fit_chain <- function(chain, stan_args, max_time) {
     stan_args$chain_id <- chain
-    fit <- R.utils::withTimeout(do.call(args$model$sample, stan_args), 
+    
+    model_fit <- args$model
+    data_fit <- stan_args[names(args)!="model"]
+    
+    fit <- R.utils::withTimeout(do.call(model_fit$sample, list(data_fit)), 
                                 timeout = max_time,
                                 onTimeout = "silent")
     return(fit)
