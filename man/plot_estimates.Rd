@@ -37,34 +37,33 @@ Plot Estimates
 }
 \examples{
 \donttest{
-## Define example cases
+# define example cases
 cases <- EpiNow2::example_confirmed[1:40]
 
-## Set up example delays
+# set up example delays
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 
                         
-## Run model
+# run model
 out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
                                     delays = list(incubation_period, reporting_delay),
                                     stan_args = list(cores = ifelse(interactive(), 4, 1)))
-## Plot infections
+# plot infections
 plot_estimates(
   estimate = out$summarised[variable == "infections"],
   reported = cases,
   ylab = "Cases", max_plot = 2) + ggplot2::facet_wrap(~type, scales = "free_y")
 
-## Plot reported cases estimated via Rt
+# plot reported cases estimated via Rt
 plot_estimates(estimate = out$summarised[variable == "reported_cases"],
                reported = cases,
                ylab = "Cases")
                
-## Plot Rt estimates
+# plot Rt estimates
 plot_estimates(estimate = out$summarised[variable == "R"],
                ylab = "Effective Reproduction No.",
                hline = 1)
-
 }
 }

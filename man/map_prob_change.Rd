@@ -17,9 +17,7 @@ Categorises a numeric variable into "Increasing" (< 0.05),
 "Likely increasing" (<0.2), "Unsure" (< 0.8), "Likely decreasing" (< 0.95), "Decreasing" (<= 1)
 }
 \examples{
-
 var <- seq(0.01, 1, 0.01)
-
 var
  
 map_prob_change(var)

@@ -13,42 +13,40 @@
 #' Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd), 
 #' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 #' that delay (assuming a lognormal distribution with all parameters excepting the max allowed value 
-#' on the log scale).
+#' on the log scale). To use no delays set this to `list()`.
 #' @param rt_prior A list contain the mean and standard deviation (sd) of the gamma distributed prior for
-#' Rt. By default this is assumed to be mean 1 with a standard deviation of 1.
+#' Rt. By default this is assumed to be mean 1 with a standard deviation of 1. To infer infections only using 
+#' non-parametric backcalculation set this to `list()`.
 #' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
 #' for the prior based on reported cases.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
 #' @param model A compiled stan model. By default uses the internal package model.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
-#' @param estimate_rt Logical, defaults TRUE. Should Rt be estimated when imputing infections.
-#' @param estimate_week_eff Logical, defaults TRUE. Should weekly reporting effects be estimated.
-#' @param estimate_breakpoints Logical, defaults to FALSE. Should breakpoints in Rt be estimated. If true then `reported_cases`
-#' must contain a `breakpoint` variable that is 1 on the dates with breakpoints and otherwise 0. Breakpoints are fit jointly with
-#' a global non-parametric effect and so represent a conservative estimate of breakpoint changes.
-#' @param burn_in Numeric, defaults to 0. The number of initial estimates to discard. This argument may be used to reduce 
+#' @param week_effect Logical, defaults TRUE. Should weekly reporting effects be estimated.
+#' @param use_breakpoints Logical, defaults to TRUE but only active if a `breakpoint` variable is present in the input data. 
+#'  Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with
+#' a global non-parametric effect and so represent a conservative estimate of breakpoint changes. To specify a random walk define
+#' breakpoints every n days (so every 7 days for a weekly random walk) and disable the gaussian process using `gp = list()`.
+#' @param burn_in Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument may be used to reduce 
 #' spurious findings when running `estimate_infections` on a partial timeseries (as the earliest estimates will not be informed by 
 #' all cases that occurred only those supplied to `estimate_infections`). The combined delays used will inform the appropriate length
 #' of this burn in but 7 days is likely a sensible starting point.
 #' @param stationary Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt 
 #' this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 #' This setting is most appropriate when estimating historic Rt or when combined with breakpoints.
-#' @param fixed Logical, defaults to FALSE. If TRUE then a Gaussian process is not used and Rt is assumed to be constant over time
-#' (apart from any manually included breakpoints). If `estimate_rt` is FALSE then this reduces the backcalculation to a simple mean shift.
-#' This option can be used to produce a null model estimate, to produce a single Rt estimate for a short timeseries or as part of a wider 
-#' analysis on the impact of interventions.
-#' @param fixed_future_rt Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
-#' future time points without data. 
 #' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
-#' @param gp List controlling the Gaussian process approximation. Must contain
-#' the `basis_prop` (number of basis functions based on scaling the time points) which defaults to 0.3 and must be 
-#' between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute. 
-#' Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
+#' @param gp List controlling the Gaussian process approximation if set to `list()` then `Rt` is assumed to be constant unless
+#' other settings introduce variation. If set must contain the `basis_prop` (number of basis functions based on scaling the time points)
+#'  which defaults to 0.3 and must be between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of 
+#'  additional compute. Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
 #' increases the accuracy of the approximation at the cost of additional compute. 
 #' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
-#' Can optionally also contain the  `lengthscale_mean` and `lengthscale_sd`. If these are specified this will override 
-#' the defaults of 0 and 2 (normal distributed truncated at zero).
-#' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be printed.
+#' Must also contain the  `lengthscale_alpha` and `lengthscale_beta`. These tune the prior of the lengthscale. Principled 
+#' values can be obtained using `tune_inv_gamma` which optimises based on the desired truncation (which should be based on the scale
+#' of the observed data). The default is tuned to have 98% of the density of the distribution between 2 and 21 days. Finally the list must 
+#' contain `alpha_sd` the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.
+#' @param verbose Logical, defaults to `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
+#' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
 #' fail gracefully (i.e when combined with `max_execution_time`). Should be combined with a call to `future::plan`
 #' @param max_execution_time Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout. 
@@ -56,7 +54,9 @@
 #' will fail with an informative error.
 #' @export
 #' @inheritParams create_stan_args
+#' @inheritParams create_future_rt
 #' @inheritParams fit_model_with_nuts
+#' @inheritParams calc_CrIs
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose 
 #' @importFrom lubridate wday days
@@ -64,39 +64,38 @@
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @examples
 #' \donttest{
-#' # Get example case counts
+#' # get example case counts
 #' reported_cases <- EpiNow2::example_confirmed[1:50]
 #' 
-#' # Add a dummy breakpoint (used only when optionally estimating breakpoints)
-#' reported_cases <- 
-#'     reported_cases[, breakpoint := data.table::fifelse(date == as.Date("2020-03-16"), 1, 0)]
-#' # Set up example generation time
+#' # add a dummy breakpoint (used only when optionally estimating breakpoints)
+#' reported_cases_bp <- data.table::copy(reported_cases)[,
+#'               breakpoint := data.table::fifelse(date == as.Date("2020-03-16"), 1, 0)]
+#' # set up example generation time
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-#' # Set delays between infection and case report 
+#' # set delays between infection and case report 
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- list(mean = log(5), mean_sd = log(2),
 #'                         sd = log(2), sd_sd = log(1.5), max = 30)
 #'                         
-#' # Run model with default settings
+#' # run model with default settings (adjusted to speed up example runtimes - not suggested 
+#' # for real world use)
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay), 
-#'                            stan_args = list(warmup = 200, 
+#'                            stan_args = list(warmup = 200, control = list(adapt_delta = 0.95),
 #'                                             cores = ifelse(interactive(), 4, 1)))
 #'
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
 #' plots$summary
 #' 
-#' # Run the model using the approximate method (variational inference)
+#' # run the model using the approximate method (variational inference)
 #' approx <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                               delays = list(incubation_period, reporting_delay),
 #'                               method = "approximate")
 #'
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = approx$summarised, reported = reported_cases)
 #' plots$summary
 #'
-#' # Run the model with default settings using the future backend 
+#' # run the model with default settings using the future backend 
 #' ## (combine with a call to future::plan to make this parallel).
 #' def_future <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                   delays = list(incubation_period, reporting_delay),
@@ -106,21 +105,19 @@
 #' plots <- report_plots(summarised_estimates = def_future$summarised, reported = reported_cases)
 #' plots$summary                          
 #'                            
-#' # Run model with Rt fixed into the future
+#' # run model with Rt fixed into the future using the latest estimate
 #' fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
 #'                                 stan_args = list(warmup = 200, 
 #'                                                  cores = ifelse(interactive(), 4, 1)),
-#'                                 fixed_future_rt = TRUE)
+#'                                 future_rt = "latest")
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = fixed_rt$summarised, reported = reported_cases)
 #' plots$summary
 #'
-#'# Run the model with default settings on a later snapshot of 
-#'# data (use burn_in here to remove the first week of
-#'# estimates that may be impacted by this most).
+#' # run the model with default settings on a later snapshot of 
+#' # data (use burn_in here to remove the first week of estimates that may
+#' # be impacted by this most).
 #' snapshot_cases <- EpiNow2::example_confirmed[80:130]
 #' snapshot <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
@@ -128,113 +125,121 @@
 #'                                                  cores = ifelse(interactive(), 4, 1)),
 #'                                 burn_in = 7)
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = snapshot$summarised, reported = snapshot_cases)
 #' plots$summary    
 #' 
-#' ## Run model with stationary Rt assumption (likely to provide biased real-time estimates)
+#' # run model with stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
 #'                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
 #'                             stationary = TRUE)
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = stat$summarised, reported = reported_cases)
 #' plots$summary
 #'        
-#' # Run model with fixed Rt assumption 
+#' # run model with fixed Rt assumption 
 #' fixed <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                              delays = list(incubation_period, reporting_delay),
 #'                              stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                              fixed = TRUE)
+#'                              gp = list())
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = fixed$summarised, reported = reported_cases)
 #' plots$summary
 #' 
-#' 
-#' # Run model with no delays 
+#' # run model with no delays 
 #' no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = no_delay$summarised, reported = reported_cases)
 #' plots$summary         
 #'               
-#' # Run model with breakpoints                                                                      
-#' bkp <- estimate_infections(reported_cases, generation_time = generation_time,
+#' # run model with breakpoints                                                                      
+#' bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                            estimate_breakpoints = TRUE)
+#'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = bkp$summarised, reported = reported_cases)
 #' plots$summary
 #'              
-#' # Run model with breakpoints but with constrained non-linear change over time 
-#' # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
+#' # run model with breakpoints but with constrained non-linear change over time 
+#' # rhis formulation may increase the apparent effect of the breakpoint but needs to be tested using
 #' # model fit criteria (i.e LFO). 
-#' cbkp <- estimate_infections(reported_cases, generation_time = generation_time,
+#' cbkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
 #'                            gp = list(basis_prop = 0.3, boundary_scale = 2, 
 #'                                      lengthscale_mean = 20, lengthscale_sd = 1),
-#'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                            estimate_breakpoints = TRUE)                                                                   
+#'                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))                                                                   
 #'
-#' 
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = cbkp$summarised, reported = reported_cases)
 #' plots$summary
-#' # Pull out breakpoint summary
+#' # breakpoint effect
 #' cbkp$summarised[variable == "breakpoints"]
 #' 
-#' # Run model with breakpoints but otherwise static Rt
+#' # run model with breakpoints but otherwise static Rt
 #' # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
 #' # model fit criteria (i.e LFO).           
-#' fbkp <- estimate_infections(reported_cases, generation_time = generation_time,
+#' fbkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
 #'                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                             estimate_breakpoints = TRUE, fixed = TRUE)                                                         
+#'                             gp = list())                                                         
 #'
-#' # Plot output
 #' plots <- report_plots(summarised_estimates = fbkp$summarised, reported = reported_cases)
 #' plots$summary
-#' # Pull out breakpoint summary
+#' # breakpoint effect
 #' fbkp$summarised[variable == "breakpoints"]
 #' 
-#' # Run model without Rt estimation (just backcalculation)
+#' # run model without Rt estimation (just backcalculation)
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                delays = list(incubation_period, reporting_delay),
 #'                                stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                                estimate_rt = FALSE)
+#'                                rt_prior = list())
 #'
 #' # plot just infections as report_plots does not support the backcalculation only model
 #' plot_estimates(estimate = backcalc$summarised[variable == "infections"],
 #'                reported = reported_cases, ylab = "Cases")
 #' }                                
-estimate_infections <- function(reported_cases, model, samples = 1000, stan_args, 
-                                method = "exact", family = "negbin", 
-                                generation_time, delays, horizon = 7,
-                                gp = list(basis_prop = 0.3, boundary_scale = 2,
-                                          lengthscale_mean = 0, lengthscale_sd = 2),
+estimate_infections <- function(reported_cases, 
+                                model = NULL, 
+                                samples = 1000,
+                                stan_args = NULL,
+                                method = "exact", 
+                                family = "negbin", 
+                                generation_time, 
+                                CrIs = c(0.2, 0.5, 0.9),
+                                delays = list(),
+                                horizon = 7,
+                                gp = list(basis_prop = 0.3, boundary_scale = 2, 
+                                          lengthscale_alpha = 4.5, lengthscale_beta = 21.5,
+                                          alpha_sd = 0.1),
                                 rt_prior = list(mean = 1, sd = 1),
-                                estimate_rt = TRUE, estimate_week_eff = TRUE, estimate_breakpoints = FALSE, 
-                                stationary = FALSE, fixed = FALSE, fixed_future_rt = FALSE,
-                                burn_in = 0, prior_smoothing_window = 7, future = FALSE, 
-                                max_execution_time = Inf, return_fit = FALSE, verbose = FALSE){
+                                week_effect = TRUE, 
+                                use_breakpoints = TRUE, 
+                                stationary = FALSE, 
+                                future_rt = "project",
+                                burn_in = 0, 
+                                prior_smoothing_window = 7, 
+                                future = FALSE, 
+                                max_execution_time = Inf, 
+                                return_fit = FALSE,
+                                verbose = FALSE){
   
-
-  if (missing(stan_args)) {
-    stan_args <- NULL
+  if (length(rt_prior) == 0) {
+    estimate_rt <- FALSE
+    rt_prior <- list(mean = 1, sd = 1)
+  }else{
+    estimate_rt <- TRUE
   }
-  # Check fix setting -------------------------------------------------------
-  if (fixed) {
+  
+  # If no GP default to stationary setup with no assumed non-parametric change
+  # add in placeholder parameters
+  if (length(gp) == 0) {
+    fixed <- TRUE
     stationary <- TRUE
+    gp = list(basis_prop = 1, boundary_scale = 1,
+              lengthscale_mean = 1, lengthscale_sd = 1,
+              alpha_sd = 0.1)
+  }else{
+    fixed <- FALSE
   }
 
   # Check verbose settings and set logger to match---------------------------
@@ -246,9 +251,10 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
   # Check breakpoints -------------------------------------------------------
   if (is.null(reported_cases$breakpoint)) {
     reported_cases$breakpoint <- NA
+    use_breakpoints <- FALSE
   }
   
-  if (estimate_breakpoints) {
+  if (use_breakpoints) {
    break_no <- sum(reported_cases$breakpoint, na.rm = TRUE)
    if (break_no == 0) {
      futile.logger::flog.warn("Breakpoint estimation was specified but no breakpoints were detected.",
@@ -259,10 +265,6 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
   }
  
   # Organise delays ---------------------------------------------------------
-  if (missing(delays)) {
-    delays <- list()
-  }
-  
   no_delays <- length(delays)
   
   if (no_delays > 0) {
@@ -283,9 +285,9 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
     mean_shift <- as.integer(sum(purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))))
   }else{
     mean_shift <- 1
-  }
+  } 
   # Add the mean delay and incubation period on as 0 case days ------------
-  # Create mean shifted reported cases as prio ------------------------------
+  # Create mean shifted reported cases as prior ------------------------------
   if (no_delays > 0) {
     reported_cases <- data.table::rbindlist(list(
       data.table::data.table(date = seq(min(reported_cases$date) - mean_shift - prior_smoothing_window, 
@@ -304,13 +306,20 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
   # Define stan model parameters --------------------------------------------
   data <- create_stan_data(reported_cases = reported_cases, 
                            shifted_reported_cases = shifted_reported_cases,
-                           horizon = horizon, no_delays = no_delays,
-                           mean_shift = mean_shift, generation_time = generation_time,
-                           rt_prior = rt_prior, estimate_rt = estimate_rt,
-                           estimate_week_eff = estimate_week_eff, stationary = stationary,
-                           fixed = fixed, break_no = break_no, 
-                           fixed_future_rt = fixed_future_rt,  gp = gp,
-                           family = family, delays = delays)
+                           horizon = horizon,
+                           no_delays = no_delays,
+                           mean_shift = mean_shift,
+                           generation_time = generation_time,
+                           rt_prior = rt_prior, 
+                           estimate_rt = estimate_rt,
+                           week_effect = week_effect, 
+                           stationary = stationary,
+                           fixed = fixed,
+                           break_no = break_no, 
+                           future_rt = future_rt, 
+                           gp = gp,
+                           family = family,
+                           delays = delays)
 
   # Set up default settings -------------------------------------------------
   if (missing(model)) {
@@ -320,14 +329,18 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
                            stan_args = stan_args,
                            init = create_initial_conditions(data, delays, rt_prior, 
                                                             generation_time, mean_shift),
-                           method = method, verbose = verbose)
+                           method = method, 
+                           verbose = verbose)
   
   # Fit model ---------------------------------------------------------------
   if (method == "exact") {
-    fit <- fit_model_with_nuts(args, future = future, max_execution_time = max_execution_time,
+    fit <- fit_model_with_nuts(args,
+                               future = future,
+                               max_execution_time = max_execution_time,
                                verbose = verbose)
   }else if (method == "approximate"){
-    fit <- fit_model_with_vb(args, verbose = verbose)
+    fit <- fit_model_with_vb(args,
+                             verbose = verbose)
   }
   
   # Extract parameters of interest from the fit -----------------------------
@@ -348,7 +361,8 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
                            horizon = horizon,
                            shift = mean_shift,
                            burn_in = burn_in,
-                           start_date = start_date)
+                           start_date = start_date,
+                           CrIs = CrIs)
   
   ## Join stan fit if required
   if (return_fit) {
@@ -362,7 +376,7 @@ estimate_infections <- function(reported_cases, model, samples = 1000, stan_args
 #'
 #' @param args List of stan arguments
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
-#' @param max_execution_time Numeric, defauls to Inf. What is the maximum execution time per chain. Results will
+#' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain. Results will
 #' still be returned as long as at least 2 chains complete successfully within the timelimit. 
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
 #' @importFrom futile.logger flog.debug flog.info flog.error
@@ -392,7 +406,12 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
     fit <- R.utils::withTimeout(do.call(rstan::sampling, stan_args), 
                                 timeout = max_time,
                                 onTimeout = "silent")
-    return(fit)
+    
+    if (length(names(fit)) == 0) {
+      return(NULL)
+    }else{
+      return(fit)
+    }
   }
   
   if(!future) {
@@ -428,7 +447,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   return(fit)
 }
 
-#' Fit a Stan Model using Varitional Inference
+#' Fit a Stan Model using Variational Inference
 #'
 #' @inheritParams fit_model_with_nuts
 #' @importFrom futile.logger flog.debug flog.info flog.error
@@ -452,6 +471,12 @@ fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
   
   fit_vb <- function(stan_args) {
     fit <-  do.call(rstan::vb, stan_args)
+    
+    if (length(names(fit)) == 0) {
+      return(NULL)
+    }else{
+      return(fit)
+    }
     return(fit)
   }
   safe_vb <- purrr::safely(fit_vb)
@@ -486,22 +511,21 @@ fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
 #' @param shift Numeric, the shift to apply to estimates
 #' @param burn_in Numeric, number of days to discard estimates for
 #' @param start_date Date, earliest date with data
-#' @importFrom data.table fifelse rbindlist copy setorder
+#' @inheritParams calc_summary_measures
+#' @importFrom data.table fifelse rbindlist 
 #' @importFrom lubridate days
-#' @importFrom purrr map_dbl
-#' @importFrom HDInterval hdi
 #' @return A list of samples and summarised posterior parameter estimates
-format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date){
+format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
+                       CrIs){
  
   format_out <- list()
-  
-  ## Bind all samples together
+  # bind all samples together
   format_out$samples <- data.table::rbindlist(posterior_samples, fill = TRUE, idcol = "variable")
   
   if (is.null(format_out$samples$strat)) {
     format_out$samples <- format_out$samples[, strat := NA]
   }
-  ## Add type based on horizon
+  # add type based on horizon
   format_out$samples <- format_out$samples[,
                                            type := data.table::fifelse(date > (max(date, na.rm = TRUE) - horizon), 
                                                                        "forecast", 
@@ -509,26 +533,16 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date){
                                                                                            "estimate based on partial data",                    
                                                                                            "estimate"))]
   
-  ## Remove burn in period if specified
+  # remove burn in period if specified
   if (burn_in > 0) {
     format_out$samples <- format_out$samples[is.na(date) | date >= (start_date + lubridate::days(burn_in))]
   }
   
-  ## Summarise samples
-  format_out$summarised <- data.table::copy(format_out$samples)[, .(
-    bottom  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[1]])),
-    top = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.9)), ~ .[[2]])),
-    lower  = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[1]])),
-    upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.5)), ~ .[[2]])),
-    central_lower = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[1]])), 
-    central_upper = as.numeric(purrr::map_dbl(list(HDInterval::hdi(value, credMass = 0.2)), ~ .[[2]])),
-    median = as.numeric(median(value, na.rm = TRUE)),
-    mean = as.numeric(mean(value, na.rm = TRUE)),
-    sd = as.numeric(sd(value, na.rm = TRUE))), by = .(date, variable, strat, type)]
-  
-  ## Order summarised samples
-  data.table::setorder(format_out$summarised, variable, date)  
-  
+  # summarise samples
+  format_out$summarised <- calc_summary_measures(format_out$samples,
+                                                 summarise_by = c("date", "variable", "strat", "type"),
+                                                 order_by = c("variable", "date"),
+                                                 CrIs = CrIs)
   return(format_out)
 }
 
