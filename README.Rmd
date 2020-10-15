@@ -107,8 +107,7 @@ Estimate cases by date of infection, the time-varying reproduction number, the r
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(reported_cases = reported_cases, 
                     generation_time = generation_time,
-                    delays = list(incubation_period, reporting_delay),
-                    logs = NULL)
+                    delays = list(incubation_period, reporting_delay))
 names(estimates)
 ```
 
