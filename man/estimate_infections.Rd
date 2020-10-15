@@ -73,7 +73,7 @@ See here: https://arxiv.org/abs/2004.11408 for more information on setting these
 Must also contain the  \code{lengthscale_alpha} and \code{lengthscale_beta}. These tune the prior of the lengthscale. Principled
 values can be obtained using \code{tune_inv_gamma} which optimises based on the desired truncation (which should be based on the scale
 of the observed data). The default is tuned to have 98\% of the density of the distribution between 2 and 21 days. Finally the list must
-contain \code{alpha_sd} the standard deviation for the alpha parameter of the guassian process. This defaults to 0.1.}
+contain \code{alpha_sd} the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.}
 
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1. To infer infections only using
@@ -84,7 +84,7 @@ non-parametric backcalculation set this to \code{list()}.}
 \item{use_breakpoints}{Logical, defaults to TRUE but only active if a \code{breakpoint} variable is present in the input data.
 Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with
 a global non-parametric effect and so represent a conservative estimate of breakpoint changes. To specify a random walk define
-breakpoints every n days (so every 7 days for a weekly random walk) and disbale the gaussian process using \code{gp = list()}.}
+breakpoints every n days (so every 7 days for a weekly random walk) and disable the gaussian process using \code{gp = list()}.}
 
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.

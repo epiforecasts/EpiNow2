@@ -1,7 +1,7 @@
 Package: EpiNow2
 Type: Package
 Title: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters
-Version: 1.2.0
+Version: 1.2.1
 Authors@R: c(
     person(given = "Sam Abbott",
            role = c("aut", "cre"),
@@ -102,4 +102,4 @@ LinkingTo:
     rstan (>= 2.21.1),
     StanHeaders (>= 2.21.0-5)
 SystemRequirements: GNU make
-Language: en-US
+Language: en-GB
