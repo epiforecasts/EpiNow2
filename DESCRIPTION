@@ -1,9 +1,9 @@
 Package: EpiNow2
 Type: Package
 Title: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters
-Version: 1.2.0
+Version: 1.2.1
 Authors@R: c(
-    person(given = "Sam Abbott",
+    person(given = "Sam", "Abbott",
            role = c("aut", "cre"),
            email = "sam.abbott@lshtm.ac.uk",
            comment = c(ORCID = "0000-0001-8057-8037")),
@@ -39,7 +39,8 @@ Authors@R: c(
            role = c("ctb")),
     person("Hamada S.", "Badr",
            email = "badr@jhu.edu",
-           role = c("ctb")),
+           role = c("ctb"),
+           comment = c(ORCID = "0000-0002-9808-2344")),
     person(given = "EpiForecasts",
              role = c("aut")),
     person("Sebastian", "Funk",
@@ -60,7 +61,6 @@ Imports:
     future,
     future.apply,
     ggplot2,
-    HDInterval,
     lubridate,
     methods,
     patchwork,
@@ -70,7 +70,6 @@ Imports:
     Rcpp (>= 0.12.0),
     rlang (>= 0.4.7),
     rstan (>= 2.18.1),
-    rstantools (>= 2.0.0),
     scales,
     stats,
     truncnorm,
@@ -85,6 +84,7 @@ Suggests:
     magrittr,
     rmarkdown,
     rnaturalearth,
+    rstantools,
     spelling,
     tidyr,
     testthat
@@ -102,4 +102,4 @@ LinkingTo:
     rstan (>= 2.21.1),
     StanHeaders (>= 2.21.0-5)
 SystemRequirements: GNU make
-Language: en-US
+Language: en-GB

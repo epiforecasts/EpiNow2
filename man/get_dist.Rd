@@ -22,7 +22,5 @@ A list defining a distribution
 Get a Literature Distribution
 }
 \examples{
-
 get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani") 
-
 }
