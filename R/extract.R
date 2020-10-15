@@ -1,6 +1,6 @@
 #' Extract Samples for a Parameter from a Stan model
 #'
-#' @param param Character string indicating the paramter to extract
+#' @param param Character string indicating the parameter to extract
 #' @param samples Extracted stan model (using `rstan::extract`)
 #' @param dates A vector identifying the dimensionality of the parameter to extract. Generally this will be 
 #' a date

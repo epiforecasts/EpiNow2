@@ -1,13 +1,13 @@
 #' Create Clean Reported Cases
 #'
-#' @param zero_thresold Numeric defaults to 50. Indicates if detected zero cases are meaningful by 
-#' using a thresold of 50 cases on average over the last 7 days. If the average is above this thresold
+#' @param zero_threshold Numeric defaults to 50. Indicates if detected zero cases are meaningful by 
+#' using a threshold of 50 cases on average over the last 7 days. If the average is above this thresold
 #' then the zero is replaced with the 
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases
 #' @export
-create_clean_reported_cases <- function(reported_cases, horizon, zero_thresold = 50) {
+create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold = 50) {
   
   reported_cases <- data.table::setDT(reported_cases)
   reported_cases_grid <- data.table::copy(reported_cases)[, .(date = seq(min(date), max(date) + horizon, by = "days"))]
@@ -26,7 +26,7 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_thresold =
   # Check case counts surrounding zero cases and set to 7 day average if average is over 7 days
   # is greater than a threshold
   reported_cases <- reported_cases[, `:=`(average_7 = data.table::frollsum(confirm, n = 8) / 7)]
-  reported_cases <- reported_cases[confirm == 0 & average_7 > zero_thresold,
+  reported_cases <- reported_cases[confirm == 0 & average_7 > zero_threshold,
                                    confirm := as.integer(average_7)][,
                                    c("average_7") := NULL]
   return(reported_cases)
