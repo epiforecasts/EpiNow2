@@ -36,7 +36,7 @@ time-varying reproduction number. Other options include:
   - A stationary Gaussian process (faster to estimate but currently
     gives reduced performance for real time estimates).
   - User specified breakpoints.
-  - A fixed reproduction number is supported.
+  - A fixed reproduction number.
   - As piecewise constant by combining a fixed reproduction number with
     breakpoints.
   - As a random walk (by combining a fixed reproduction number with
@@ -135,21 +135,6 @@ incubation period followed by a reporting delay.
 
 ``` r
 reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(4), 1), max_value = 30)
-reporting_delay
-#> $mean
-#> [1] 1.251371
-#> 
-#> $mean_sd
-#> [1] 0.1185135
-#> 
-#> $sd
-#> [1] 1.014331
-#> 
-#> $sd_sd
-#> [1] 0.1037697
-#> 
-#> $max
-#> [1] 30
 ```
 
 Here we define the incubation period and generation time based on
@@ -198,13 +183,14 @@ the default method (though this approach is experimental).
 ``` r
 estimates <- epinow(reported_cases = reported_cases, 
                     generation_time = generation_time,
-                    delays = list(incubation_period, reporting_delay))
-#> WARN [2020-10-15 10:40:43] epinow: There were 3 divergent transitions after warmup. See
+                    delays = list(incubation_period, reporting_delay),
+                    logs = NULL)
+#> WARN [2020-10-15 18:25:32] epinow: There were 2 divergent transitions after warmup. See
 #> http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them. - 
-#> WARN [2020-10-15 10:40:43] epinow: Examine the pairs() plot to diagnose sampling problems
+#> WARN [2020-10-15 18:25:32] epinow: Examine the pairs() plot to diagnose sampling problems
 #>  - 
-#> WARN [2020-10-15 10:40:43] epinow: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> WARN [2020-10-15 18:25:32] epinow: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 #> Running the chains for more iterations may help. See
 #> http://mc-stan.org/misc/warnings.html#bulk-ess -
 names(estimates)
@@ -218,27 +204,27 @@ parameters in an easily explored format.
 ``` r
 head(estimates$estimates$samples)
 #>      variable  parameter time       date sample     value strat     type
-#> 1: infections infections    1 2020-02-11      1  1.908085  <NA> estimate
-#> 2: infections infections    2 2020-02-12      1 13.782552  <NA> estimate
-#> 3: infections infections    3 2020-02-13      1 18.445236  <NA> estimate
-#> 4: infections infections    4 2020-02-14      1 38.429895  <NA> estimate
-#> 5: infections infections    5 2020-02-15      1 57.777451  <NA> estimate
-#> 6: infections infections    6 2020-02-16      1 57.766847  <NA> estimate
+#> 1: infections infections    1 2020-02-12      1  1.920879  <NA> estimate
+#> 2: infections infections    2 2020-02-13      1 10.088548  <NA> estimate
+#> 3: infections infections    3 2020-02-14      1 17.178889  <NA> estimate
+#> 4: infections infections    4 2020-02-15      1 27.634226  <NA> estimate
+#> 5: infections infections    5 2020-02-16      1 44.621471  <NA> estimate
+#> 6: infections infections    6 2020-02-17      1 44.704228  <NA> estimate
 head(estimates$estimates$summarised)
 #>          date variable strat     type   median     mean         sd lower_90
-#> 1: 2020-02-22        R  <NA> estimate 1.819596 1.818002 0.20807045 1.469926
-#> 2: 2020-02-23        R  <NA> estimate 1.828401 1.823357 0.16152609 1.556325
-#> 3: 2020-02-24        R  <NA> estimate 1.831592 1.828929 0.12358350 1.628580
-#> 4: 2020-02-25        R  <NA> estimate 1.833499 1.833810 0.09670256 1.678820
-#> 5: 2020-02-26        R  <NA> estimate 1.834191 1.837076 0.08317796 1.701095
-#> 6: 2020-02-27        R  <NA> estimate 1.837871 1.837834 0.08172036 1.702117
+#> 1: 2020-02-22        R  <NA> estimate 2.030470 2.041023 0.21881114 1.702665
+#> 2: 2020-02-23        R  <NA> estimate 2.013471 2.017060 0.16547736 1.749692
+#> 3: 2020-02-24        R  <NA> estimate 1.991144 1.993677 0.12344306 1.796140
+#> 4: 2020-02-25        R  <NA> estimate 1.969293 1.970475 0.09440217 1.820491
+#> 5: 2020-02-26        R  <NA> estimate 1.945436 1.947055 0.07988297 1.817648
+#> 6: 2020-02-27        R  <NA> estimate 1.924229 1.923030 0.07781099 1.793330
 #>    lower_50 lower_20 upper_20 upper_50 upper_90
-#> 1: 1.682912 1.771823 1.868168 1.947194 2.151804
-#> 2: 1.714617 1.788518 1.864912 1.923085 2.092039
-#> 3: 1.750022 1.799856 1.859175 1.907990 2.031455
-#> 4: 1.769320 1.808499 1.856926 1.895937 1.996280
-#> 5: 1.783717 1.816331 1.855630 1.888686 1.976484
-#> 6: 1.788127 1.818421 1.854726 1.885785 1.972246
+#> 1: 1.896576 1.981515 2.081383 2.177189 2.387305
+#> 2: 1.904355 1.972517 2.056468 2.125750 2.284865
+#> 3: 1.910323 1.963649 2.022345 2.077005 2.204855
+#> 4: 1.906575 1.945704 1.993524 2.030962 2.128385
+#> 5: 1.891581 1.924831 1.965225 2.002314 2.080576
+#> 6: 1.873226 1.903116 1.942468 1.972435 2.052961
 ```
 
 Reported cases are returned separately in order to ease reporting of
@@ -247,27 +233,27 @@ forecasts and model evaluation.
 ``` r
 head(estimates$estimated_reported_cases$samples)
 #>          date sample cases  type
-#> 1: 2020-02-22      1    37 gp_rt
-#> 2: 2020-02-23      1   207 gp_rt
-#> 3: 2020-02-24      1    88 gp_rt
-#> 4: 2020-02-25      1    98 gp_rt
-#> 5: 2020-02-26      1   155 gp_rt
-#> 6: 2020-02-27      1    89 gp_rt
+#> 1: 2020-02-22      1    24 gp_rt
+#> 2: 2020-02-23      1    53 gp_rt
+#> 3: 2020-02-24      1    85 gp_rt
+#> 4: 2020-02-25      1   125 gp_rt
+#> 5: 2020-02-26      1   101 gp_rt
+#> 6: 2020-02-27      1    75 gp_rt
 head(estimates$estimated_reported_cases$summarised)
 #>          date  type median    mean       sd lower_90 lower_50 lower_20 upper_20
-#> 1: 2020-02-22 gp_rt     38  40.048 16.24764    17.00       28       34     43.0
-#> 2: 2020-02-23 gp_rt     64  67.095 27.29159    30.00       47       57     71.4
-#> 3: 2020-02-24 gp_rt     80  84.463 32.39525    37.95       62       74     89.0
-#> 4: 2020-02-25 gp_rt     93  98.626 40.51379    43.95       71       83    102.0
-#> 5: 2020-02-26 gp_rt    101 105.618 40.80126    49.00       76       92    111.0
-#> 6: 2020-02-27 gp_rt    136 145.193 57.44045    69.00      106      124    150.0
+#> 1: 2020-02-22 gp_rt     28  30.027 12.16743    13.00       21       25     32.0
+#> 2: 2020-02-23 gp_rt     49  51.730 20.07706    24.00       37       45     54.0
+#> 3: 2020-02-24 gp_rt     63  67.506 26.52160    31.00       49       57     70.0
+#> 4: 2020-02-25 gp_rt     80  83.832 33.72490    38.00       61       72     87.4
+#> 5: 2020-02-26 gp_rt     88  92.290 34.62347    44.95       67       79     97.0
+#> 6: 2020-02-27 gp_rt    124 131.439 52.05080    62.00       95      114    137.0
 #>    upper_50 upper_90
-#> 1:    50.00    70.05
-#> 2:    82.25   116.10
-#> 3:   104.00   143.00
-#> 4:   118.00   171.05
-#> 5:   129.00   180.00
-#> 6:   175.00   252.05
+#> 1:    37.00    52.05
+#> 2:    63.00    87.05
+#> 3:    82.00   119.00
+#> 4:   102.00   143.05
+#> 5:   113.00   155.00
+#> 6:   160.25   224.15
 ```
 
 A summary table is returned for rapidly understanding the results and
@@ -277,13 +263,13 @@ for reporting purposes.
 knitr::kable(estimates$summary[, -c("numeric_estimate")])
 ```
 
-| measure                               | estimate              |
-| :------------------------------------ | :-------------------- |
-| New confirmed cases by infection date | 2952 (500 – 10895)    |
-| Expected change in daily cases        | Unsure                |
-| Effective reproduction no.            | 0.8 (0.3 – 1.4)       |
-| Rate of growth                        | \-0.07 (-0.22 – 0.09) |
-| Doubling/halving time (days)          | \-10.3 (7.5 – -3.2)   |
+| measure                               | estimate             |
+| :------------------------------------ | :------------------- |
+| New confirmed cases by infection date | 2786 (624 – 10271)   |
+| Expected change in daily cases        | Likely decreasing    |
+| Effective reproduction no.            | 0.7 (0.3 – 1.3)      |
+| Rate of growth                        | \-0.08 (-0.2 – 0.09) |
+| Doubling/halving time (days)          | \-9.1 (8 – -3.4)     |
 
 A range of plots are returned (with the single summary plot shown
 below).
@@ -322,20 +308,20 @@ in parallel depending on the settings used).
 estimates <- regional_epinow(reported_cases = reported_cases, 
                              generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay))
-#> INFO [2020-10-15 10:40:47] Producing following optional outputs: regions, summary, samples, plots, latest
-#> INFO [2020-10-15 10:40:47] Reporting estimates using data up to: 2020-04-01
-#> INFO [2020-10-15 10:40:47] No target directory specified so returning output
-#> INFO [2020-10-15 10:40:47] Producing estimates for: testland, realland
-#> INFO [2020-10-15 10:40:47] Regions excluded: none
-#> INFO [2020-10-15 10:40:47] Showing progress using progressr. Modify this behaviour using progressr::handlers.
-#> INFO [2020-10-15 10:48:33] Completed estimates for: testland
-#> INFO [2020-10-15 10:54:08] Completed estimates for: realland
-#> INFO [2020-10-15 10:54:08] Completed regional estimates
-#> INFO [2020-10-15 10:54:08] Regions with estimates: 2
-#> INFO [2020-10-15 10:54:08] Regions with runtime errors: 0
-#> INFO [2020-10-15 10:54:08] Producing summary
-#> INFO [2020-10-15 10:54:08] No summary directory specified so returning summary output
-#> INFO [2020-10-15 10:54:08] No target directory specified so returning timings
+#> INFO [2020-10-15 18:25:36] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2020-10-15 18:25:36] Reporting estimates using data up to: 2020-04-01
+#> INFO [2020-10-15 18:25:36] No target directory specified so returning output
+#> INFO [2020-10-15 18:25:36] Producing estimates for: testland, realland
+#> INFO [2020-10-15 18:25:36] Regions excluded: none
+#> INFO [2020-10-15 18:25:36] Showing progress using progressr. Modify this behaviour using progressr::handlers.
+#> INFO [2020-10-15 18:33:04] Completed estimates for: testland
+#> INFO [2020-10-15 18:40:48] Completed estimates for: realland
+#> INFO [2020-10-15 18:40:48] Completed regional estimates
+#> INFO [2020-10-15 18:40:48] Regions with estimates: 2
+#> INFO [2020-10-15 18:40:48] Regions with runtime errors: 0
+#> INFO [2020-10-15 18:40:48] Producing summary
+#> INFO [2020-10-15 18:40:48] No summary directory specified so returning summary output
+#> INFO [2020-10-15 18:40:48] No target directory specified so returning timings
 ```
 
 Results from each region are stored in a `regional` list with across
@@ -358,8 +344,8 @@ knitr::kable(estimates$summary$summarised_results$table)
 
 | Region   | New confirmed cases by infection date | Expected change in daily cases | Effective reproduction no. | Rate of growth        | Doubling/halving time (days) |
 | :------- | :------------------------------------ | :----------------------------- | :------------------------- | :-------------------- | :--------------------------- |
-| realland | 2820 (551 – 11814)                    | Unsure                         | 0.7 (0.3 – 1.4)            | \-0.08 (-0.22 – 0.12) | \-9.2 (6 – -3.2)             |
-| testland | 3216 (549 – 12859)                    | Unsure                         | 0.8 (0.3 – 1.5)            | \-0.07 (-0.21 – 0.13) | \-10.5 (5.4 – -3.3)          |
+| realland | 2915 (609 – 10156)                    | Likely decreasing              | 0.7 (0.3 – 1.3)            | \-0.07 (-0.21 – 0.08) | \-9.6 (8.7 – -3.3)           |
+| testland | 2856 (664 – 9765)                     | Likely decreasing              | 0.8 (0.3 – 1.3)            | \-0.07 (-0.2 – 0.07)  | \-9.7 (9.6 – -3.4)           |
 
 A range of plots are again returned (with the single summary plot shown
 below).
