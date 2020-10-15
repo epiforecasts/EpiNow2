@@ -16,7 +16,7 @@ fit_model_with_nuts(
 
 \item{future}{Logical, defaults to \code{FALSE}. Should \code{future} be used to run stan chains in parallel.}
 
-\item{max_execution_time}{Numeric, defauls to Inf. What is the maximum execution time per chain. Results will
+\item{max_execution_time}{Numeric, defaults to Inf. What is the maximum execution time per chain. Results will
 still be returned as long as at least 2 chains complete successfully within the timelimit.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress information be returned.}
