@@ -272,6 +272,7 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
 }
 
 # Safe Directory Create
+# Used to create a directory for the functions
 
 safe_dir_create <- function(dir_name){
   dir_of_interest <- file.path(dir_name)
@@ -283,6 +284,9 @@ safe_dir_create <- function(dir_name){
 }
 
 # Safe Copy Stan Model
+# This copies over all of the associated functions and stan files
+# when the user users the internal model. To be used as internal function only.
+# Users shouldn't need to access this directly.
 
 copy_models <- function(dir_path){
   # First copy functions
