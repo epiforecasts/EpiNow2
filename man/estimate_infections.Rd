@@ -28,7 +28,8 @@ estimate_infections(
   max_execution_time = Inf,
   return_fit = FALSE,
   verbose = FALSE,
-  backend = "rstan"
+  backend = "rstan",
+  cache_model = TRUE
 )
 }
 \arguments{
@@ -118,6 +119,9 @@ will fail with an informative error.}
 
 \item{backend}{A character string defaults to "rstan". The backend to use for
 computation.}
+
+\item{cache_model}{Logical, defaults to \code{TRUE}. Should a local copy be made
+and compiled of the stan program.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported

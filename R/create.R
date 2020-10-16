@@ -243,6 +243,8 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be returned.
 #' @param backend A character string defaults to "rstan". The backend to use for
 #'     computation.
+#' @param cache_model Logical, defaults to `TRUE`. Should a local copy be made 
+#'     and compiled of the stan program.
 #' @return A list of stan arguments
 #' @export
 #'
@@ -257,11 +259,12 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' create_stan_args(stan_args = list(warmup = 1000))
 create_stan_args <- function(model, data = NULL, init = "random", 
                              samples = 1000, stan_args = NULL, method = "exact", 
-                             verbose = FALSE, backend = "rstan") {
+                             verbose = FALSE, backend = "rstan", cache_model=TRUE) {
   # Select the backend to use
   backend_use <- match.arg(backend, 
                            choices = c("rstan", "cmdstan"), 
                            several.ok = FALSE)
+  stopifnot(is.logical(cache_model))
   
   # use built in model if not supplied by the user
   if (missing(model)) {
@@ -274,13 +277,21 @@ create_stan_args <- function(model, data = NULL, init = "random",
   
   if (is.null(model) & backend_use == "cmdstan") {
     # To be CRAN compliant, only add 
+    if(cache_model){
     app_loc <- rappdirs::user_cache_dir("EpiNow2")
     safe_dir_create(app_loc)
     copy_models(app_loc)
     
     model <- cmdstanr::cmdstan_model(file.path(app_loc, "estimate_infections.stan"),
                                      include_paths = file.path(app_loc))
-    
+    } else{
+      app_loc <- tempdir()
+      safe_dir_create(app_loc)
+      copy_models(app_loc)
+      
+      model <- cmdstanr::cmdstan_model(file.path(app_loc, "estimate_infections.stan"),
+                                       include_paths = file.path(app_loc))
+    }
   }
   
   # Set up shared default arguments

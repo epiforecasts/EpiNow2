@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimate_infections.R
 \name{fit_model_with_nuts_cmd}
 \alias{fit_model_with_nuts_cmd}
-\title{Fit a Stan Model using the NUTs sampler}
+\title{Fit a Stan Model using the NUTs sampler with CmdStan}
 \usage{
 fit_model_with_nuts_cmd(
   args,
@@ -25,5 +25,5 @@ still be returned as long as at least 2 chains complete successfully within the 
 A stan model object
 }
 \description{
-Fit a Stan Model using the NUTs sampler
+Fit a Stan Model using the NUTs sampler with CmdStan
 }

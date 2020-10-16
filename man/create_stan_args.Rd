@@ -12,7 +12,8 @@ create_stan_args(
   stan_args = NULL,
   method = "exact",
   verbose = FALSE,
-  backend = "rstan"
+  backend = "rstan",
+  cache_model = TRUE
 )
 }
 \arguments{
@@ -39,6 +40,9 @@ several order of magnitudes faster than the exact method.}
 
 \item{backend}{A character string defaults to "rstan". The backend to use for
 computation.}
+
+\item{cache_model}{Logical, defaults to \code{TRUE}. Should a local copy be made
+and compiled of the stan program.}
 }
 \value{
 A list of stan arguments

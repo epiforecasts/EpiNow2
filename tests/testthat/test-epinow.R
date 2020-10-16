@@ -32,6 +32,26 @@ test_that("epinow produces expected output when run with default settings", {
   expect_equal(names(out$plots), c("infections", "reports", "reff", "growth_rate","summary"))
 })
 
+test_that("epinow produces expected output when run with default settings", {
+  skip_on_cran()
+  out <- suppressWarnings(epinow(reported_cases = reported_cases,
+                                 generation_time = generation_time,
+                                 delays = list(incubation_period, reporting_delay),
+                                 samples = 25, 
+                                 stan_args = list(warmup = 25, cores = 1, chains = 2,
+                                                  control = list(adapt_delta = 0.8)),
+                                 logs = NULL))
+  
+  expect_equal(names(out), c("estimates", "estimated_reported_cases", 
+                             "summary", "plots"))
+  df_non_zero(out$estimates$samples)
+  df_non_zero(out$estimates$summarised)
+  df_non_zero(out$estimated_reported_cases$samples)
+  df_non_zero(out$estimated_reported_cases$summarised)
+  df_non_zero(out$summary)
+  expect_equal(names(out$plots), c("infections", "reports", "reff", "growth_rate","summary"))
+})
+
 test_that("epinow runs without error when saving to disk", {
   skip_on_cran()
   expect_null(suppressWarnings(epinow(reported_cases = reported_cases,

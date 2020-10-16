@@ -238,7 +238,8 @@ estimate_infections <- function(reported_cases,
                                 max_execution_time = Inf, 
                                 return_fit = FALSE,
                                 verbose = FALSE,
-                                backend = "rstan"){
+                                backend = "rstan",
+                                cache_model = TRUE){
   
   backend <- match.arg(backend, backends_available())
   
@@ -354,7 +355,7 @@ estimate_infections <- function(reported_cases,
                            init = create_initial_conditions(data, delays, rt_prior, 
                                                             generation_time, mean_shift),
                            method = method, 
-                           verbose = verbose, backend = backend)
+                           verbose = verbose, backend = backend, cache_model=cache_model)
   
   # Fit model ---------------------------------------------------------------
   if(backend =="rstan"){
