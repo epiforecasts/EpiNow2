@@ -221,16 +221,56 @@ safe_dir_create <- function(dir_name){
 # when the user users the internal model. To be used as internal function only.
 # Users shouldn't need to access this directly.
 
+safe_file_copy <- function(files, x){
+  tryCatch(file.copy(files, x, overwrite = FALSE),
+           error = message("File Exists, Using Existing File\n"))
+}
+
 copy_models <- function(dir_path){
   # First copy functions
   app_file_loc <- system.file(file.path("stan", "functions"), package = "EpiNow2")
-  R.utils::copyDirectory(app_file_loc, file.path(dir_path, "functions"))
+  
+  safe_dir_create(file.path(dir_path, "functions"))
+  
+  functions_to_copy <- list.files(app_file_loc, full.names = TRUE)
+  
+  
+  
+  lapply(functions_to_copy, safe_file_copy, x = file.path(dir_path, "functions"))
+  
   # Copy Models
   stan_file_loc <- system.file(file.path("stan", "estimate_infections.stan"), 
                                package = "EpiNow2")
-  R.utils::copyFile(stan_file_loc, file.path(dir_path,
-                                             "estimate_infections.stan"))
+  
+  if(!file.exists(file.path(dir_path,
+                       "estimate_infections.stan"))){
+    tryCatch(R.utils::copyFile(stan_file_loc, file.path(dir_path,
+                                                        "estimate_infections.stan"), overwrite = FALSE),
+             error = message("Model already exists"))
+  }
+  
 }
+
+
+# Helper function for Formatting List for CmdStanR
+make_cmdstan_list <-function(stan_args){
+  
+  out <- list(
+    data = stan_args$data,
+    seed = stan_args$seed,
+    cores = stan_args$cores,
+    iter_warmup = stan_args$iter_warmup,
+    iter_sampling = stan_args$iter_sampling,
+    parallel_chains = stan_args$parallel_chains,
+    adapt_delta = stan_args$adapt_delta,
+    max_treedepth = stan_args$max_treedepth,
+    save_warmup = stan_args$save_warmup
+  )
+  
+  out
+  
+} 
+
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(

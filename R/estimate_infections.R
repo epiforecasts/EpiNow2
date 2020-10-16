@@ -362,6 +362,19 @@ estimate_infections <- function(reported_cases,
   }
   }
   
+  if(backend !="rstan"){
+    if (method == "exact") {
+      fit <- fit_model_with_nuts_cmd(args,
+                                 future = future,
+                                 max_execution_time = max_execution_time,
+                                 verbose = verbose)
+    }else if (method == "approximate"){
+      message("Variational Bayes Not Supported with CmdStan Backend at this Time")
+      fit <- fit_model_with_vb(args,
+                               verbose = verbose)
+    }
+  }
+  
   # Extract parameters of interest from the fit -----------------------------
   out <- extract_parameter_samples(fit, data, 
                                    reported_inf_dates = reported_cases$date,
@@ -491,14 +504,15 @@ fit_model_with_nuts_cmd <- function(args, future = FALSE, max_execution_time = I
   }
   
   fit_chain <- function(chain, stan_args, max_time) {
-    stan_args$chain_id <- chain
-    
+    in_chain <- chain # Not really used, but in here to make lapply work
     model_fit <- args$model
-    data_fit <- stan_args[names(args)!="model"]
+    data_fit <- make_cmdstan_list(stan_args)
     
     fit <- R.utils::withTimeout(do.call(model_fit$sample, list(data_fit)), 
                                 timeout = max_time,
                                 onTimeout = "silent")
+    
+    fit <- rstan::read_stan_csv(fit$output_files())
     return(fit)
   }
   

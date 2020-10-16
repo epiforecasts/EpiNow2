@@ -11,3 +11,4 @@ initialise_cmdstan_model <- function(model){
 }
 
 
+input <- create_stan_args("cmdstan")
