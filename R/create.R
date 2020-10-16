@@ -300,7 +300,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$save_warmup <- FALSE
     default_args$seed <- as.integer(runif(1, 1, 1e8))
   }else if (method == "exact" && backend != "rstan"){
-    default_args$cores <- 4
+    default_args$chains <- 4
     default_args$seed <- as.integer(runif(1, 1, 1e8))
     default_args$iter_warmup <- 500
     default_args$iter_sampling <- ceiling(samples / 4)
@@ -308,6 +308,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$adapt_delta <- 0.99
     default_args$max_treedepth <- 15
     default_args$save_warmup <- FALSE
+    default_args$verbose <- FALSE
   }else if (method == "approximate") {
     default_args$trials <- 10
     default_args$iter <- 10000

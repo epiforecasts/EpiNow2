@@ -212,7 +212,7 @@ safe_dir_create <- function(dir_name){
   if(dir.exists(dir_of_interest)){
     invisible()
   } else {
-    dir.create(dir_of_interest)
+    dir.create(dir_of_interest, recursive = TRUE)
   }
 }
 
@@ -255,22 +255,50 @@ copy_models <- function(dir_path){
 # Helper function for Formatting List for CmdStanR
 make_cmdstan_list <-function(stan_args){
   
+  #mk_init <- list(stan_args$init(),stan_args$init(),stan_args$init(),stan_args$init())
+  mk_init <- stan_args$init
+  
+  
+  
   out <- list(
     data = stan_args$data,
     seed = stan_args$seed,
-    cores = stan_args$cores,
+    refresh = stan_args$refresh,
+    init = mk_init,
+    save_latent_dynamics = FALSE,
+    output_dir = NULL,
+    chains = as.integer(stan_args$chains),
+    parallel_chains = stan_args$parallel_chains,
+    threads_per_chain = NULL,
     iter_warmup = stan_args$iter_warmup,
     iter_sampling = stan_args$iter_sampling,
-    parallel_chains = stan_args$parallel_chains,
-    adapt_delta = stan_args$adapt_delta,
+    save_warmup = stan_args$save_warmup,
+    thin = NULL,
     max_treedepth = stan_args$max_treedepth,
-    save_warmup = stan_args$save_warmup
+    adapt_engaged = TRUE,
+    adapt_delta = stan_args$adapt_delta,
+    step_size = NULL,
+    metric = NULL,
+    metric_file = NULL,
+    inv_metric = NULL,
+    init_buffer = NULL,
+    term_buffer = NULL,
+    window = NULL,
+    fixed_param = FALSE,
+    validate_csv = TRUE,
+    show_messages = stan_args$verbose
   )
   
   out
   
 } 
 
+
+# Backends
+
+backends_available <- function(){
+  c("rstan", "cmdstan")
+}
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(

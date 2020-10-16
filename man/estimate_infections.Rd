@@ -27,7 +27,8 @@ estimate_infections(
   future = FALSE,
   max_execution_time = Inf,
   return_fit = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  backend = "rstan"
 )
 }
 \arguments{
@@ -114,6 +115,9 @@ will fail with an informative error.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
+
+\item{backend}{A character string defaults to "rstan". The backend to use for
+computation.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported

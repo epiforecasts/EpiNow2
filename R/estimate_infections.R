@@ -240,6 +240,13 @@ estimate_infections <- function(reported_cases,
                                 verbose = FALSE,
                                 backend = "rstan"){
   
+  backend <- match.arg(backend, backends_available())
+  
+  if(backend=="cmdstan"){
+    requireNamespace("cmdstanr")
+    requireNamespace("rappdirs")
+  }
+  
   if (length(rt_prior) == 0) {
     estimate_rt <- FALSE
     rt_prior <- list(mean = 1, sd = 1)
@@ -479,7 +486,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   return(fit)
 }
 
-#' Fit a Stan Model using the NUTs sampler
+#' Fit a Stan Model using the NUTs sampler with CmdStan
 #'
 #' @param args List of stan arguments
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
@@ -505,14 +512,14 @@ fit_model_with_nuts_cmd <- function(args, future = FALSE, max_execution_time = I
   
   fit_chain <- function(chain, stan_args, max_time) {
     in_chain <- chain # Not really used, but in here to make lapply work
-    model_fit <- args$model
+    model_fit <- stan_args$object
     data_fit <- make_cmdstan_list(stan_args)
-    
-    fit <- R.utils::withTimeout(do.call(model_fit$sample, list(data_fit)), 
+    fit <- R.utils::withTimeout(do.call(model_fit$sample, data_fit), 
                                 timeout = max_time,
                                 onTimeout = "silent")
     
-    fit <- rstan::read_stan_csv(fit$output_files())
+    fit <- tryCatch(rstan::read_stan_csv(fit$output_files()),
+                    error = function(x) NULL)
     return(fit)
   }
   

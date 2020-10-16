@@ -13,3 +13,4 @@ CRAN-RELEASE
 *.log
 test
 tests/testthat/test
+data-raw/dev.R
