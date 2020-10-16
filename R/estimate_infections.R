@@ -237,7 +237,16 @@ estimate_infections <- function(reported_cases,
                                 future = FALSE, 
                                 max_execution_time = Inf, 
                                 return_fit = FALSE,
-                                verbose = FALSE){
+                                verbose = FALSE,
+                                backend = "rstan",
+                                cache_model = TRUE){
+  
+  backend <- match.arg(backend, backends_available())
+  
+  if(backend=="cmdstan"){
+    requireNamespace("cmdstanr")
+    requireNamespace("rappdirs")
+  }
   
   if (length(rt_prior) == 0) {
     estimate_rt <- FALSE
@@ -346,9 +355,10 @@ estimate_infections <- function(reported_cases,
                            init = create_initial_conditions(data, delays, rt_prior, 
                                                             generation_time, mean_shift),
                            method = method, 
-                           verbose = verbose)
+                           verbose = verbose, backend = backend, cache_model=cache_model)
   
   # Fit model ---------------------------------------------------------------
+  if(backend =="rstan"){
   if (method == "exact") {
     fit <- fit_model_with_nuts(args,
                                future = future,
@@ -357,6 +367,20 @@ estimate_infections <- function(reported_cases,
   }else if (method == "approximate"){
     fit <- fit_model_with_vb(args,
                              verbose = verbose)
+  }
+  }
+  
+  if(backend !="rstan"){
+    if (method == "exact") {
+      fit <- fit_model_with_nuts_cmd(args,
+                                 future = future,
+                                 max_execution_time = max_execution_time,
+                                 verbose = verbose)
+    }else if (method == "approximate"){
+      message("Variational Bayes Not Supported with CmdStan Backend at this Time")
+      fit <- fit_model_with_vb(args,
+                               verbose = verbose)
+    }
   }
   
   # Extract parameters of interest from the fit -----------------------------
@@ -463,7 +487,77 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   return(fit)
 }
 
-#' Fit a Stan Model using Variational Inference
+#' Fit a Stan Model using the NUTs sampler with CmdStan
+#'
+#' @param args List of stan arguments
+#' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
+#' @param max_execution_time Numeric, defauls to Inf. What is the maximum execution time per chain. Results will
+#' still be returned as long as at least 2 chains complete successfully within the timelimit. 
+#' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
+#' @return A stan model object
+fit_model_with_nuts_cmd <- function(args, future = FALSE, max_execution_time = Inf, verbose = FALSE) {
+  if (verbose) {
+    futile.logger::flog.debug(paste0("Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
+                                     " chains each with a warm up of ", args$warmup, " iterations each) and ",
+                                     args$data$t," time steps of which ", args$data$horizon, " are a forecast"),
+                              name = "EpiNow2.epinow.estimate_infections.fit")
+  }
+  
+  
+  if (exists("stuck_chains", args)) {
+    stuck_chains <- args$stuck_chains
+    args$stuck_chains <- NULL
+  }else{
+    stuck_chains <- 0
+  }
+  
+  fit_chain <- function(chain, stan_args, max_time) {
+    in_chain <- chain # Not really used, but in here to make lapply work
+    model_fit <- stan_args$object
+    data_fit <- make_cmdstan_list(stan_args)
+    fit <- R.utils::withTimeout(do.call(model_fit$sample, data_fit), 
+                                timeout = max_time,
+                                onTimeout = "silent")
+    
+    fit <- tryCatch(rstan::read_stan_csv(fit$output_files()),
+                    error = function(x) NULL)
+    return(fit)
+  }
+  
+  if(!future) {
+    fit <- fit_chain(1, stan_args = args, max_time = max_execution_time)
+    if (stuck_chains > 0) {fit <- NULL}
+    stop_timeout(fit)
+  }else{
+    chains <- args$chains
+    args$chains <- 1
+    args$cores <- 1
+    
+    fits <- future.apply::future_lapply(1:chains, fit_chain, 
+                                        stan_args = args, 
+                                        max_time = max_execution_time,
+                                        future.seed = TRUE)
+    if (stuck_chains > 0) {fits[1:stuck_chains] <- NULL}
+    fit <- purrr::compact(fits)
+    if (length(fit) == 0) {
+      fit <- NULL
+      stop_timeout(fit)
+    }else{
+      failed_chains <- chains - length(fit)
+      if (failed_chains > 0) {
+        futile.logger::flog.info(paste0(failed_chains, " chains failed or were timed out."),
+                                 name = "EpiNow2.epinow.estimate_infections.fit")
+        if ((chains - failed_chains) < 2) {
+          stop("model fitting failed as too few chains were returned to assess convergence (2 or more required)")
+        }
+      }
+      fit <- rstan::sflist2stanfit(fit)
+    }
+  }
+  return(fit)
+}
+
+#' Fit a Stan Model using Varitional Inference
 #'
 #' @inheritParams fit_model_with_nuts
 #' @importFrom futile.logger flog.debug flog.info flog.error

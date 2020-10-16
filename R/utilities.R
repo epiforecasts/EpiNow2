@@ -204,6 +204,102 @@ match_output_arguments <- function(input_args = c(),
   return(output_args)
 }
 
+# Safe Directory Create
+# Used to create a directory for the functions
+
+safe_dir_create <- function(dir_name){
+  dir_of_interest <- file.path(dir_name)
+  if(dir.exists(dir_of_interest)){
+    invisible()
+  } else {
+    dir.create(dir_of_interest, recursive = TRUE)
+  }
+}
+
+# Safe Copy Stan Model
+# This copies over all of the associated functions and stan files
+# when the user users the internal model. To be used as internal function only.
+# Users shouldn't need to access this directly.
+
+safe_file_copy <- function(files, x){
+  tryCatch(file.copy(files, x, overwrite = FALSE),
+           error = message("File Exists, Using Existing File\n"))
+}
+
+copy_models <- function(dir_path){
+  # First copy functions
+  app_file_loc <- system.file(file.path("stan", "functions"), package = "EpiNow2")
+  
+  safe_dir_create(file.path(dir_path, "functions"))
+  
+  functions_to_copy <- list.files(app_file_loc, full.names = TRUE)
+  
+  
+  
+  lapply(functions_to_copy, safe_file_copy, x = file.path(dir_path, "functions"))
+  
+  # Copy Models
+  stan_file_loc <- system.file(file.path("stan", "estimate_infections.stan"), 
+                               package = "EpiNow2")
+  
+  if(!file.exists(file.path(dir_path,
+                       "estimate_infections.stan"))){
+    tryCatch(R.utils::copyFile(stan_file_loc, file.path(dir_path,
+                                                        "estimate_infections.stan"), overwrite = FALSE),
+             error = message("Model already exists"))
+  }
+  
+}
+
+
+# Helper function for Formatting List for CmdStanR
+make_cmdstan_list <-function(stan_args){
+  
+  #mk_init <- list(stan_args$init(),stan_args$init(),stan_args$init(),stan_args$init())
+  mk_init <- stan_args$init
+  
+  
+  
+  out <- list(
+    data = stan_args$data,
+    seed = stan_args$seed,
+    refresh = stan_args$refresh,
+    init = mk_init,
+    save_latent_dynamics = FALSE,
+    output_dir = NULL,
+    chains = as.integer(stan_args$chains),
+    parallel_chains = stan_args$parallel_chains,
+    threads_per_chain = NULL,
+    iter_warmup = stan_args$iter_warmup,
+    iter_sampling = stan_args$iter_sampling,
+    save_warmup = stan_args$save_warmup,
+    thin = NULL,
+    max_treedepth = stan_args$max_treedepth,
+    adapt_engaged = TRUE,
+    adapt_delta = stan_args$adapt_delta,
+    step_size = NULL,
+    metric = NULL,
+    metric_file = NULL,
+    inv_metric = NULL,
+    init_buffer = NULL,
+    term_buffer = NULL,
+    window = NULL,
+    fixed_param = FALSE,
+    validate_csv = TRUE,
+    show_messages = stan_args$verbose
+  )
+  
+  out
+  
+} 
+
+
+# Backends
+
+backends_available <- function(){
+  c("rstan", "cmdstan")
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(
   c("bottom", "cases", "confidence", "confirm", "country_code", "crps", 

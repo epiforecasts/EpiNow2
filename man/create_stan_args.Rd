@@ -11,7 +11,9 @@ create_stan_args(
   samples = 1000,
   stan_args = NULL,
   method = "exact",
-  verbose = FALSE
+  verbose = FALSE,
+  backend = "rstan",
+  cache_model = TRUE
 )
 }
 \arguments{
@@ -35,6 +37,12 @@ from the posterior whilst the approximate method returns approximate samples. Th
 several order of magnitudes faster than the exact method.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be returned.}
+
+\item{backend}{A character string defaults to "rstan". The backend to use for
+computation.}
+
+\item{cache_model}{Logical, defaults to \code{TRUE}. Should a local copy be made
+and compiled of the stan program.}
 }
 \value{
 A list of stan arguments

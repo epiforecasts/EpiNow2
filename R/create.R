@@ -241,7 +241,10 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results 
 #' several order of magnitudes faster than the exact method.
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be returned.
-#'
+#' @param backend A character string defaults to "rstan". The backend to use for
+#'     computation.
+#' @param cache_model Logical, defaults to `TRUE`. Should a local copy be made 
+#'     and compiled of the stan program.
 #' @return A list of stan arguments
 #' @export
 #'
@@ -256,17 +259,42 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' create_stan_args(stan_args = list(warmup = 1000))
 create_stan_args <- function(model, data = NULL, init = "random", 
                              samples = 1000, stan_args = NULL, method = "exact", 
-                             verbose = FALSE) {
+                             verbose = FALSE, backend = "rstan", cache_model=TRUE) {
+  # Select the backend to use
+  backend_use <- match.arg(backend, 
+                           choices = c("rstan", "cmdstan"), 
+                           several.ok = FALSE)
+  stopifnot(is.logical(cache_model))
+  
   # use built in model if not supplied by the user
   if (missing(model)) {
     model <- NULL
   }
   
-  if (is.null(model)) {
+  if (is.null(model) & backend_use == "rstan") {
     model <- stanmodels$estimate_infections
   }
   
-  # set up shared default arguments
+  if (is.null(model) & backend_use == "cmdstan") {
+    # To be CRAN compliant, only add 
+    if(cache_model){
+    app_loc <- rappdirs::user_cache_dir("EpiNow2")
+    safe_dir_create(app_loc)
+    copy_models(app_loc)
+    
+    model <- cmdstanr::cmdstan_model(file.path(app_loc, "estimate_infections.stan"),
+                                     include_paths = file.path(app_loc))
+    } else{
+      app_loc <- tempdir()
+      safe_dir_create(app_loc)
+      copy_models(app_loc)
+      
+      model <- cmdstanr::cmdstan_model(file.path(app_loc, "estimate_infections.stan"),
+                                       include_paths = file.path(app_loc))
+    }
+  }
+  
+  # Set up shared default arguments
   default_args <- list(
     object = model,
     data = data,
@@ -275,19 +303,29 @@ create_stan_args <- function(model, data = NULL, init = "random",
   )
   
   # set up independent default arguments
-  if (method == "exact") {
+  if (method == "exact"&& backend == "rstan") {
     default_args$cores <- 4
     default_args$warmup <- 500
     default_args$chains <- 4
     default_args$control <- list(adapt_delta = 0.99, max_treedepth = 15)
     default_args$save_warmup <- FALSE
     default_args$seed <- as.integer(runif(1, 1, 1e8))
+  }else if (method == "exact" && backend != "rstan"){
+    default_args$chains <- 4
+    default_args$seed <- as.integer(runif(1, 1, 1e8))
+    default_args$iter_warmup <- 500
+    default_args$iter_sampling <- ceiling(samples / 4)
+    default_args$parallel_chains <- 4
+    default_args$adapt_delta <- 0.99
+    default_args$max_treedepth <- 15
+    default_args$save_warmup <- FALSE
+    default_args$verbose <- FALSE
   }else if (method == "approximate") {
     default_args$trials <- 10
     default_args$iter <- 10000
     default_args$output_samples <- samples
   }
-
+  
   # join with user supplied settings
   if (!is.null(stan_args)) {
     default_args <- default_args[setdiff(names(default_args), names(stan_args))]
@@ -298,7 +336,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
   
   
   # set up dependent arguments
-  if (method == "exact") {
+  if (method == "exact"&& backend == "rstan") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup
   }
   return(args)
