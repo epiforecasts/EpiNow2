@@ -3,7 +3,7 @@ template:
   opengraph:
     image:
       src: man/figures/unnamed-chunk-13-1.png
-      alt: "Example estimates produced by EpiNow2 of reproduction number, cases by date of infection and cases by date of report"
+      alt: "Example estimates produced by EpiNow2 of the reproduction number, cases by date of infection and cases by date of report"
     twitter:
       creator: "@seabbs"
       site: "@cmmid_lshtm"
@@ -71,7 +71,9 @@ reference:
   - title: Report results
     desc: Functions to report results
     contents:
-      - contains("report")
+      - report_cases
+      - report_plots
+      - report_summary
   - title: Summarise results
     desc: Functions from summarising results
     contents:
