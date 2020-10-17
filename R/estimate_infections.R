@@ -49,7 +49,7 @@
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
 #' fail gracefully (i.e when combined with `max_execution_time`). Should be combined with a call to `future::plan`
-#' @param max_execution_time Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout. 
+#' @param max_execution_time Numeric, defaults to Inf (seconds). If set will kill off processing of each chain if not finished within the specified timeout. 
 #' When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation 
 #' will fail with an informative error.
 #' @export
@@ -392,8 +392,8 @@ estimate_infections <- function(reported_cases,
 #'
 #' @param args List of stan arguments
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
-#' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain. Results will
-#' still be returned as long as at least 2 chains complete successfully within the timelimit. 
+#' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain in seconds. 
+#'     Results will still be returned as long as at least 2 chains complete successfully within the timelimit. 
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom R.utils withTimeout
