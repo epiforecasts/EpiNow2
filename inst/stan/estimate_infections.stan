@@ -233,6 +233,11 @@ model {
   eta ~ std_normal();
   }
 
+  // reporting overdispersion
+  if (model_type) {
+    rep_phi[model_type] ~ exponential(1);
+  }
+
   // penalised priors for delaysincubation period, and report delay
   if (delays) {
     for (s in 1:delays) {
@@ -259,7 +264,7 @@ model {
 
   // daily cases given reports
   if (model_type) {
-    target += neg_binomial_2_lpmf(cases | reports[1:rt_h], 1/sqrt(rep_phi[model_type]));
+    target += neg_binomial_2_lpmf(cases | reports[1:rt_h], rep_phi[model_type]);
   }else{
     target += poisson_lpmf(cases | reports[1:rt_h]);
   }
@@ -280,7 +285,7 @@ generated quantities {
   //simulate reported cases
   if (model_type) {
     for (s in 1:rt) {
-      imputed_reports[s] = neg_binomial_2_rng(reports[s] > 1e7 ? 1e7 : reports[s], 1/sqrt(rep_phi[model_type]));
+      imputed_reports[s] = neg_binomial_2_rng(reports[s] > 1e7 ? 1e7 : reports[s], rep_phi[model_type]);
     }
    }else{
     for (s in 1:rt) {
