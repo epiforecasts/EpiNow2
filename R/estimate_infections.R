@@ -14,9 +14,9 @@
 #' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 #' that delay (assuming a lognormal distribution with all parameters excepting the max allowed value 
 #' on the log scale). To use no delays set this to `list()`.
-#' @param rt_prior A list contain the mean and standard deviation (sd) of the gamma distributed prior for
-#' Rt. By default this is assumed to be mean 1 with a standard deviation of 1. To infer infections only using 
-#' non-parametric backcalculation set this to `list()`.
+#' @param rt_prior A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
+#' Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
+#' log space). To infer infections only using non-parametric backcalculation set this to `list()`.
 #' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
 #' for the prior based on reported cases.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
@@ -81,7 +81,7 @@
 #' # these settings are not suggesed for real world use.                   
 #' # run model with default setting
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                            delays = list(incubation_period, reporting_delay),
+#'                            delays = list(incubation_period, reporting_delay), 
 #'                            stan_args = list(warmup = 200, control = list(adapt_delta = 0.8),
 #'                                             cores = ifelse(interactive(), 4, 1)))
 #'

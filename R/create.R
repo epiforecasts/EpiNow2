@@ -203,8 +203,8 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rlnorm(mean_shift, meanlog = 0, sdlog = 0.1))
-      out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
-                                    scale = (rt_prior$sd^2) / rt_prior$mean))
+      out$initial_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
+                                   sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
                                                  sd = generation_time$mean_sd))
       out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
