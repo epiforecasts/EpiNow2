@@ -5,6 +5,7 @@ This release introduces multiple breaking interface changes. Please see the READ
 ## New features
 
 * Added support for either NUTs sampling (`method = "exact"`) or Variational inference (`method = "approximate"`).
+* Update the prior on the initial Rt estimate to be lognormal rather than gamma distributed. For users the interface remains unchanged but this parameterisation should be more numerically stable.
 * Added `get_dist`, `get_generation_time`, `get_incubation_period` based on ideas from @pearsonca. (This leads to breaking changes with the removal of `covid_generation_times` and `covid_incubation_periods`).
 * Added `setup_logging` to enable users to specify the level and location of logging (wrapping functionality from `futile.logger`). Also added `setup_default_logging` to give users sensible defaults and embedded this
 function in `regional_epinow` and `epinow`.
