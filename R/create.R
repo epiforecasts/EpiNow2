@@ -303,7 +303,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
   )
   
   # set up independent default arguments
-  if (method == "exact"&& backend == "rstan") {
+  if (method == "exact" && backend == "rstan") {
     default_args$cores <- 4
     default_args$warmup <- 500
     default_args$chains <- 4
@@ -326,7 +326,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$output_samples <- samples
     default_args$seed <- as.integer(runif(1, 1, 1e8))
   }
-  
+
   # join with user supplied settings
   if (!is.null(stan_args)) {
     default_args <- default_args[setdiff(names(default_args), names(stan_args))]
@@ -337,7 +337,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
   
   
   # set up dependent arguments
-  if (method == "exact"&& backend == "rstan") {
+  if (method == "exact" && backend == "rstan") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup
   }
   return(args)
