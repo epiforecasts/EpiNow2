@@ -377,8 +377,7 @@ estimate_infections <- function(reported_cases,
                                  max_execution_time = max_execution_time,
                                  verbose = verbose)
     }else if (method == "approximate"){
-      message("Variational Bayes Not Supported with CmdStan Backend at this Time")
-      fit <- fit_model_with_vb(args,
+      fit <- fit_model_with_vb_cmd(args,
                                verbose = verbose)
     }
   }
@@ -491,7 +490,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
 #'
 #' @param args List of stan arguments
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
-#' @param max_execution_time Numeric, defauls to Inf. What is the maximum execution time per chain. Results will
+#' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain. Results will
 #' still be returned as long as at least 2 chains complete successfully within the timelimit. 
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
 #' @return A stan model object
@@ -514,7 +513,7 @@ fit_model_with_nuts_cmd <- function(args, future = FALSE, max_execution_time = I
   fit_chain <- function(chain, stan_args, max_time) {
     in_chain <- chain # Not really used, but in here to make lapply work
     model_fit <- stan_args$object
-    data_fit <- make_cmdstan_list(stan_args)
+    data_fit <- make_cmdstan_list(stan_args, method = "exact")
     fit <- R.utils::withTimeout(do.call(model_fit$sample, data_fit), 
                                 timeout = max_time,
                                 onTimeout = "silent")
@@ -610,6 +609,64 @@ fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
     }
   }
   
+  return(fit)
+}
+
+
+#' Fit a Stan Model using Variational Inference
+#'
+#' @inheritParams fit_model_with_nuts_cmd
+#' @importFrom futile.logger flog.debug flog.info flog.error
+#' @importFrom purrr safely
+#' @importFrom cmdstanr $variational() method of a CmdStanModel object
+#' @return A stan model object
+fit_model_with_vb_cmd <- function(args, future = FALSE, verbose = FALSE) {
+  if (verbose) {
+    futile.logger::flog.debug(paste0("Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
+                                     args$output_samples, " approximate posterior samples for ", args$data$t," time steps of which ",
+                                     args$data$horizon, " are a forecast"),
+                              name = "EpiNow2.epinow.estimate_infections.fit")
+  }
+
+  if (exists("trials", args)) {
+    trials <- args$trials
+    args$trials <- NULL
+  }else{
+    trials <- 1
+  }
+
+  fit_vb <- function(stan_args) {
+    model_fit <- stan_args$object
+    data_fit <- make_cmdstan_list(stan_args, method = "approximate")
+
+    fit <-  do.call(model_fit$variational, data_fit)
+
+    fit <- tryCatch(rstan::read_stan_csv(fit$output_files()),
+                    error = function(x) NULL)
+
+    return(fit)
+  }
+  safe_vb <- purrr::safely(fit_vb)
+
+  fit <- NULL
+  current_trials <- 0
+
+  while (current_trials <= trials & is.null(fit)) {
+    fit <- safe_vb(args)
+
+    error <- fit[[2]]
+    fit <- fit[[1]]
+    current_trials <- current_trials + 1
+  }
+
+  if (is.null(fit)) {
+    if (is.null(fit)) {
+      futile.logger::flog.error("fitting failed - try increasing stan_args$trials or inspecting the model input",
+                                name = "EpiNow2.epinow.estimate_infections.fit")
+      stop("Variational Inference failed due to: ", error)
+    }
+  }
+
   return(fit)
 }
 

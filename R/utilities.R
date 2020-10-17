@@ -253,36 +253,57 @@ copy_models <- function(dir_path){
 
 
 # Helper function for Formatting List for CmdStanR
-make_cmdstan_list <-function(stan_args){
-  
-  out <- list(
-    data = stan_args$data,
-    seed = as.integer(abs(stan_args$seed)),
-    refresh = as.integer(abs(stan_args$refresh)),
-    init = stan_args$init,
-    save_latent_dynamics = ifelse(!is.null(stan_args$save_latent_dynamics) & is.logical(stan_args$save_latent_dynamics), stan_args$save_latent_dynamics, FALSE),
-    output_dir = stan_args$output_dir,
-    chains = as.integer(stan_args$chains),
-    parallel_chains = stan_args$parallel_chains,
-    threads_per_chain = stan_args$threads_per_chain,
-    iter_warmup = stan_args$iter_warmup,
-    iter_sampling = stan_args$iter_sampling,
-    save_warmup = stan_args$save_warmup,
-    thin = stan_args$thin,
-    max_treedepth = stan_args$max_treedepth,
-    adapt_engaged = ifelse(!is.null(stan_args$adapt_engaged) & is.logical(stan_args$adapt_engaged), stan_args$adapt_engaged, TRUE),
-    adapt_delta = stan_args$adapt_delta,
-    step_size = stan_args$step_size,
-    metric = stan_args$metric,
-    metric_file = stan_args$metric_file,
-    inv_metric = stan_args$inv_metric,
-    init_buffer = stan_args$init_buffer,
-    term_buffer = stan_args$term_buffer,
-    window = stan_args$window,
-    fixed_param = ifelse(!is.null(stan_args$fixed_param) & is.logical(stan_args$fixed_param), stan_args$fixed_param, FALSE),
-    validate_csv = ifelse(!is.null(stan_args$validate_csv) & is.logical(stan_args$validate_csv), stan_args$validate_csv, TRUE),
-    show_messages = ifelse(!is.null(stan_args$verbose) & is.logical(stan_args$verbose), stan_args$verbose, TRUE)
-  )
+make_cmdstan_list <-function(stan_args, method = "exact"){
+
+  if (method == "exact") {
+    out <- list(
+      data = stan_args$data,
+      seed = as.integer(abs(stan_args$seed)),
+      refresh = as.integer(abs(stan_args$refresh)),
+      init = stan_args$init,
+      save_latent_dynamics = ifelse(!is.null(stan_args$save_latent_dynamics) & is.logical(stan_args$save_latent_dynamics), stan_args$save_latent_dynamics, FALSE),
+      output_dir = stan_args$output_dir,
+      chains = as.integer(stan_args$chains),
+      parallel_chains = stan_args$parallel_chains,
+      threads_per_chain = stan_args$threads_per_chain,
+      iter_warmup = stan_args$iter_warmup,
+      iter_sampling = stan_args$iter_sampling,
+      save_warmup = stan_args$save_warmup,
+      thin = stan_args$thin,
+      max_treedepth = stan_args$max_treedepth,
+      adapt_engaged = ifelse(!is.null(stan_args$adapt_engaged) & is.logical(stan_args$adapt_engaged), stan_args$adapt_engaged, TRUE),
+      adapt_delta = stan_args$adapt_delta,
+      step_size = stan_args$step_size,
+      metric = stan_args$metric,
+      metric_file = stan_args$metric_file,
+      inv_metric = stan_args$inv_metric,
+      init_buffer = stan_args$init_buffer,
+      term_buffer = stan_args$term_buffer,
+      window = stan_args$window,
+      fixed_param = ifelse(!is.null(stan_args$fixed_param) & is.logical(stan_args$fixed_param), stan_args$fixed_param, FALSE),
+      validate_csv = ifelse(!is.null(stan_args$validate_csv) & is.logical(stan_args$validate_csv), stan_args$validate_csv, TRUE),
+      show_messages = ifelse(!is.null(stan_args$verbose) & is.logical(stan_args$verbose), stan_args$verbose, TRUE)
+    )
+  } else {
+    out <- list(
+      data = stan_args$data,
+      seed = as.integer(abs(stan_args$seed)),
+      refresh = as.integer(abs(stan_args$refresh)),
+      init = stan_args$init,
+      save_latent_dynamics = ifelse(!is.null(stan_args$save_latent_dynamics) & is.logical(stan_args$save_latent_dynamics), stan_args$save_latent_dynamics, FALSE),
+      output_dir = stan_args$output_dir,
+      algorithm = stan_args$algorithm,
+      iter = stan_args$iter,
+      grad_samples = stan_args$grad_samples,
+      elbo_samples = stan_args$elbo_samples,
+      eta = stan_args$eta,
+      adapt_engaged = ifelse(!is.null(stan_args$adapt_engaged) & is.logical(stan_args$adapt_engaged), stan_args$adapt_engaged, TRUE),
+      adapt_iter = stan_args$adapt_iter,
+      tol_rel_obj = stan_args$tol_rel_obj,
+      eval_elbo = stan_args$eval_elbo,
+      output_samples = stan_args$output_samples
+    )
+  }
   
   out
   
