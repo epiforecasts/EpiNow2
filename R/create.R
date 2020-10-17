@@ -124,7 +124,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
                                   list(reported_cases$confirm))),
     t = length(reported_cases$date),
     rt = length(reported_cases$date) - mean_shift,
-    time = 1:(length(reported_cases$date) - mean_shift),
+    time = 1:(length(reported_cases$date)),
     inf_time = 1:(length(reported_cases$date)),
     horizon = horizon,
     gt_mean_mean = generation_time$mean,
@@ -181,30 +181,28 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
 create_initial_conditions <- function(data, delays, rt_prior, generation_time, mean_shift) {
   
   init_fun <- function(){
-    
     out <- list()
-    
     if (data$delays > 0) {
       out$delay_mean <- array(purrr::map2_dbl(delays$mean, delays$mean_sd, 
                                               ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
       out$delay_sd <- array(purrr::map2_dbl(delays$sd, delays$sd_sd, 
                                             ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
-      
     }
-    
+   
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 1))
       out$rho <- array(truncnorm::rtruncnorm(1, a = 1, mean = 10, sd = 4))
       out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
     }
+    
     if (data$model_type == 1) {
       out$rep_phi <- array(rexp(1, 1))
     }
     
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rlnorm(mean_shift, meanlog = 0, sdlog = 0.1))
-      out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
-                                    scale = (rt_prior$sd^2) / rt_prior$mean))
+      out$initial_infectiousness <- array(rexp(1, 1/ 100))
+      out$initial_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
+                                    sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
                                                  sd = generation_time$mean_sd))
       out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,

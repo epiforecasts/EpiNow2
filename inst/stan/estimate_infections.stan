@@ -8,7 +8,7 @@ functions {
 
 data {
   int t;                             // number of time steps
-  int rt;                            // time over which to estimate rt
+  int rt;                            // time over which data is observed
   int horizon;                       // forecast horizon
   int day_of_week[rt];               // day of the week indicator (1 - 7)
   int<lower = 0> cases[rt - horizon];// observed cases
@@ -34,7 +34,7 @@ data {
 	real lengthscale_beta;             // beta for gp lengthscale prior
 	real alpha_sd;                     // standard deviation of the alpha gp kernal parameter
 	int est_week_eff;
-	vector[rt] time;
+	vector[t] time;
 	vector[t] inf_time;
 	int stationary;                    // is underlying Rt assumed to be stationary (+ GP)
 	int break_no;                      // no of breakpoints (0 = no breakpoints)
@@ -49,11 +49,11 @@ transformed data{
   real r_logsd;                              // Iniital R sd in log space
   int no_rt_time;                            // time without estimating Rt
   int rt_h;                                  // rt estimation time minus the forecasting horizon
-  int noise_time = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;
+  int noise_time = estimate_r > 0 ? (stationary > 0 ? t : t - 1) : t;
   //Update number of noise terms based on furure Rt assumption  
   int noise_terms =  future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;                                      // no. of noise terms
   matrix[noise_terms, M] PHI;  // basis function 
-  
+  real initial_infectiousness_mean = 1 / mean(shifted_cases[1:7]);
   //Update time varables
   rt_h = rt - horizon;
   
@@ -79,7 +79,7 @@ parameters{
   real<lower = 0> alpha[fixed ? 0 : 1];               // scale of of noise GP
   vector[fixed ? 0 : M] eta;                          // unconstrained noise
   vector[estimate_r] initial_R;                       // baseline reproduction number estimate
-  vector[estimate_r > 0 ? no_rt_time : 0] initial_infections;
+  vector[estimate_r > 0 ? 1 : 0] initial_infectiousness;
                                                       // seed infections adjustment when estimating Rt
   real<lower = 0> gt_mean[estimate_r];                // mean of generation time
   real <lower = 0> gt_sd[estimate_r];                 // sd of generation time
@@ -92,11 +92,11 @@ transformed parameters {
   vector[t] infections;                                   // infections over time
   vector[rt] reports;                                     // reports over time
   vector[est_week_eff ? 7 : 0] day_of_week_eff;           // day of the week effect
-  vector[estimate_r > 0 ? rt : 0] R;                      // reproduction number over time
+  vector[estimate_r > 0 ? t : 0] R;                       // reproduction number over time
  {
   // temporary transformed parameters                                 
   vector[estimate_r > 0 ? max_gt : 0] rev_generation_time;// reversed generation time pdf
-  vector[estimate_r > 0 ? rt : 0] infectiousness;         // infections over time
+  vector[estimate_r > 0 ? t : 0] infectiousness;         // infections over time
   vector[fixed > 0 ? 0 : M] diagSPD;                      // spectral density
 	vector[fixed > 0 ? 0 : M] SPD_eta;                      // spectral density * noise
 	int rt_break_count;                                     // counter for Rt breakpoints
@@ -114,7 +114,6 @@ transformed parameters {
   
   // initialise infections
   infections = rep_vector(1e-5, t);
-
   // Estimate Rt and use this estimate to generate infections
   if (estimate_r) {
     // calculate pdf of generation time from distribution
@@ -128,7 +127,7 @@ transformed parameters {
   // assume a global Rt * GP
   if (stationary) {
     R = rep_vector(initial_R[estimate_r], rt);
-    for (s in 1:rt) {
+    for (s in 1:t) {
       if (!fixed) {
          if (!future_fixed || (s <= noise_terms)) {
            R[s] += noise[s];
@@ -139,9 +138,12 @@ transformed parameters {
       }
       // apply breakpoints if present
       if (break_no > 0) {
-       rt_break_count += breakpoints[s];
-        if (rt_break_count > 0) {
-          R[s] += sum(rt_break_eff[1:rt_break_count]);
+        int p = s - no_rt_time;
+        if (p > 0) {
+          rt_break_count += breakpoints[p];
+           if (rt_break_count > 0) {
+             R[s] += sum(rt_break_eff[1:rt_break_count]);
+           }
         }
       }
     }
@@ -157,9 +159,12 @@ transformed parameters {
 
       // apply breakpoints if present
       if (break_no > 0) {
-        if (breakpoints[s] == 1) {
-          rt_break_count = sum(breakpoints[1:s]);
-          R[s] +=  rt_break_eff[rt_break_count];
+        int p = s - no_rt_time;
+        if (p > 0) {
+          if (breakpoints[p] == 1) {
+           rt_break_count = sum(breakpoints[1:p]);
+           R[s] +=  rt_break_eff[rt_break_count];
+          }
         }
       }
     }
@@ -167,18 +172,19 @@ transformed parameters {
   
   //map log R to R
   R = exp(R);
-
-     // estimate initial infections not using Rt
-     infections[1:no_rt_time] = infections[1:no_rt_time] + 
-                                  shifted_cases[1:no_rt_time] .* initial_infections;
-      
-     // estimate remaining infections using Rt
-     infectiousness = rep_vector(1e-5, rt);
-     for (s in 1:rt) {
-        infectiousness[s] += dot_product(infections[max(1, (s + no_rt_time - max_gt)):(s + no_rt_time -1)],
-                                         tail(rev_generation_time, min(max_gt, s + no_rt_time - 1)));
-        infections[s + no_rt_time] += R[s] * infectiousness[s];
+  
+  // estimate infections using Rt
+  infectiousness = rep_vector(1e-5, t);
+  for (s in 1:t) {
+    if (s == 1) {
+      infectiousness[s] = initial_infectiousness[estimate_r]; 
+      }else{
+        infectiousness[s] += dot_product(infections[max(1, (s - max_gt)):(s -1)],
+                                         tail(rev_generation_time, min(max_gt, s - 1)));
       }
+    infections[s] += R[s] * infectiousness[s];
+  }
+      
   }else{
     // generate infections from prior infections and non-parameteric noise
     if(!fixed) {
@@ -188,7 +194,6 @@ transformed parameters {
     }
 
   }
-
   // reports from onsets
   if (delays) {
      {
@@ -250,7 +255,7 @@ model {
   if (estimate_r) {
     // prior on R
     initial_R[estimate_r] ~ normal(r_logmean, r_logsd);
-    initial_infections ~ lognormal(0, 0.1);
+    initial_infectiousness[estimate_r] ~ exponential(initial_infectiousness_mean);
     
     // penalised_prior on generation interval
     target += normal_lpdf(gt_mean | gt_mean_mean, gt_mean_sd) * rt;
@@ -272,12 +277,12 @@ model {
   
 generated quantities {
   int imputed_reports[rt]; 
-  real r[estimate_r > 0 ? rt : 0];
+  real r[estimate_r > 0 ? t : 0];
   
   // estimate the growth rate
   if (estimate_r) {
       real k = pow(gt_sd[estimate_r] / gt_mean[estimate_r], 2);
-      for (s in 1:rt) {
+      for (s in 1:t) {
         r[s] = (pow(R[s], k) - 1) / (k * gt_mean[estimate_r]);
       } 
   }

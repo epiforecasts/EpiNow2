@@ -67,11 +67,11 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
   if (data$estimate_r == 1) {
     out$R <- extract_parameter("R", 
                                samples,
-                               reported_dates)
+                               reported_inf_dates)
     
     out$growth_rate <- extract_parameter("r", 
                                          samples,
-                                         reported_dates)
+                                         reported_inf_dates)
     
     if (data$break_no > 0) {
       out$breakpoints <- extract_parameter("rt_break_eff", 
