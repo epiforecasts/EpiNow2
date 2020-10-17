@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimate_infections.R
 \name{fit_model_with_vb}
 \alias{fit_model_with_vb}
-\title{Fit a Stan Model using Varitional Inference}
+\title{Fit a Stan Model using Variational Inference}
 \usage{
 fit_model_with_vb(args, future = FALSE, verbose = FALSE)
 }
@@ -17,5 +17,5 @@ fit_model_with_vb(args, future = FALSE, verbose = FALSE)
 A stan model object
 }
 \description{
-Fit a Stan Model using Varitional Inference
+Fit a Stan Model using Variational Inference
 }
