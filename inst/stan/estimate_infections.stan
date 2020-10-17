@@ -49,12 +49,10 @@ transformed data{
   real r_beta;                               // beta parameter of the R gamma prior
   int no_rt_time;                            // time without estimating Rt
   int rt_h;                                  // rt estimation time minus the forecasting horizon
-  int noise_terms = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;
-                                             // no. of noise terms
-  matrix[future_fixed > 0 ? (noise_terms - horizon) : noise_terms, M] PHI;  // basis function 
-  
-  //Update number of noise terms based on furure Rt assumption
-  noise_terms = future_fixed > 0 ? (noise_terms - horizon + fixed_from) : noise_terms;
+  int noise_time = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;
+  //Update number of noise terms based on furure Rt assumption  
+  int noise_terms =  future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;                                      // no. of noise terms
+  matrix[noise_terms, M] PHI;  // basis function 
   
   //Update time varables
   rt_h = rt - horizon;
