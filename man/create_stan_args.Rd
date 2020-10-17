@@ -42,7 +42,7 @@ A list of stan arguments
 \description{
 Generates a list of arguments as required by \code{rstan::sampling} (when \verb{method = "exact}) or
 \code{rstan::vb} (when \verb{method = "approximate}). See \code{create_stan_args()} for the defaults and the relevant \code{rstan}
-functions for additonal options.
+functions for additional options.
 }
 \examples{
 

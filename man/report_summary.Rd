@@ -4,7 +4,7 @@
 \alias{report_summary}
 \title{Provide Summary Statistics for Estimated Infections and Rt}
 \usage{
-report_summary(summarised_estimates, rt_samples)
+report_summary(summarised_estimates, rt_samples, target_folder = NULL)
 }
 \arguments{
 \item{summarised_estimates}{A data.table of summarised estimates containing the following variables:
@@ -12,6 +12,8 @@ variable, median, bottom, and top. It should contain the following estimates: R,
 (rate of growth).}
 
 \item{rt_samples}{A data.table containing Rt samples with the following variables: sample and value.}
+
+\item{target_folder}{Character string specifying where to save results (will create if not present).}
 }
 \value{
 A data.table containing formatted and numeric summary measures

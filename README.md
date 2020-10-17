@@ -1,12 +1,10 @@
 
 # EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters
 
-[![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions)
-[![Codecov test
-coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master)
-[![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211)
-[![metacran
-downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
+
+[![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions) [![Codecov test coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master) [![HitCount](http://hits.dwyl.com/epiforecasts/EpiNow2.svg)](http://hits.dwyl.com/epiforecasts/EpiNow2) [![metacran downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
+
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)  [![GitHub contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](https://github.com/epiforecasts/EpiNow2/graphs/contributors)  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](http://makeapullrequest.com) [![GitHub commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.2.0.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/) [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211) 
 
 This package estimates the time-varying reproduction number, rate of
 spread, and doubling time using a range of open-source tools ([Abbott et
@@ -36,7 +34,7 @@ time-varying reproduction number. Other options include:
   - A stationary Gaussian process (faster to estimate but currently
     gives reduced performance for real time estimates).
   - User specified breakpoints.
-  - A Fixed reproduction number is supported.
+  - A fixed reproduction number.
   - As piecewise constant by combining a fixed reproduction number with
     breakpoints.
   - As a random walk (by combining a fixed reproduction number with
@@ -63,7 +61,10 @@ for an example.
 
 ## Installation
 
-Install the stable version of the package:
+Install the stable version (*Note: The CRAN release of `EpiNow2 1.1.0`
+has a substantially different interface to the one described below. It
+is suggested to install the development version of the package or to
+review the README in `EpiNow2 1.1.0`*) of the package:
 
 ``` r
 install.packages("EpiNow2")
@@ -88,51 +89,36 @@ Windows users will need a working installation of Rtools in order to
 build the package from source. See
 [here](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#checking-the-c-toolchain)
 for a guide to installing Rtools for use with Stan (which is the
-statistical modeling platform used for the underlying model). For simple
-deployment/development a prebuilt docker image is also available (see
-documentation
+statistical modelling platform used for the underlying model). For
+simple deployment/development a prebuilt docker image is also available
+(see documentation
 [here](https://github.com/epiforecasts/EpiNow2/wiki/Docker)).
 
 ## Quick start
 
 `{EpiNow2}` is designed to be used with a single function call or to be
-used in an ad-hoc fashion via individual function calls. In the
-following section we give an overview of the simple use case. For more
-on using each function see the [function
-documentation](https://epiforecasts.io/EpiNow2/reference/index.html).
-The core functions are:
+used in an ad-hoc fashion via individual function calls. The core
+functions of `{EpiNow2}` are the two single-call functions
 [`epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
-[`regional_epinow`](https://epiforecasts.io/EpiNow2/reference/epinow.html),
+[`regional_epinow`](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html),
+plus functions
 [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html),
 and
 [`forecast_infections`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html).
+In the following section we give an overview of the simple use case for
+`epinow` and `regional_epinow`.
 [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html)
 can be use on its own to infer the underlying infection case curve from
 reported cases with Rt optionally returned (on by default). Estimating
 the underlying infection case curve alone is substantially less
-computationally demanding than also estimating Rt. The first step to
-using the package is to load it as follows.
+computationally demanding than also estimating Rt. For more details on
+using each function see the [function
+documentation](https://epiforecasts.io/EpiNow2/reference/index.html).
+
+The first step to using the package is to load it as follows.
 
 ``` r
 library(EpiNow2)
-```
-
-The next (optional) step is to define where logs should be stored (here
-summary logs are written to the console and detailed logs are stored in
-`info.logs`).
-
-``` r
-# Sets up a default info logger - this is the level of logging enabled by default
-setup_logging("INFO")
-#> Setting up logging for the EpiNow2 logger
-#> Logging threshold set at: INFO
-#> Writing logs to the console
-# Sets up a logger for epinow linked logging messages which writes to info.log
-# See ?setup_logging and the documentation of ?futile.logger for further details.
-setup_logging("INFO", file = "info.log", name = "EpiNow2.epinow")
-#> Setting up logging for the EpiNow2.epinow logger
-#> Logging threshold set at: INFO
-#> Writing logs to: info.log
 ```
 
 ### Reporting delays, incubation period and generation time
@@ -147,21 +133,6 @@ incubation period followed by a reporting delay.
 
 ``` r
 reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(4), 1), max_value = 30)
-reporting_delay
-#> $mean
-#> [1] 1.121562
-#> 
-#> $mean_sd
-#> [1] 0.1641465
-#> 
-#> $sd
-#> [1] 1.212076
-#> 
-#> $sd_sd
-#> [1] 0.1357686
-#> 
-#> $max
-#> [1] 30
 ```
 
 Here we define the incubation period and generation time based on
@@ -211,7 +182,15 @@ the default method (though this approach is experimental).
 estimates <- epinow(reported_cases = reported_cases, 
                     generation_time = generation_time,
                     delays = list(incubation_period, reporting_delay),
-                    stan_args = list(cores = 4))
+                    logs = NULL)
+#> WARN [2020-10-15 18:25:32] epinow: There were 2 divergent transitions after warmup. See
+#> http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them. - 
+#> WARN [2020-10-15 18:25:32] epinow: Examine the pairs() plot to diagnose sampling problems
+#>  - 
+#> WARN [2020-10-15 18:25:32] epinow: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> Running the chains for more iterations may help. See
+#> http://mc-stan.org/misc/warnings.html#bulk-ess -
 names(estimates)
 #> [1] "estimates"                "estimated_reported_cases"
 #> [3] "summary"                  "plots"
@@ -223,27 +202,27 @@ parameters in an easily explored format.
 ``` r
 head(estimates$estimates$samples)
 #>      variable  parameter time       date sample     value strat     type
-#> 1: infections infections    1 2020-02-11      1  1.713216  <NA> estimate
-#> 2: infections infections    2 2020-02-12      1 10.361868  <NA> estimate
-#> 3: infections infections    3 2020-02-13      1 18.112208  <NA> estimate
-#> 4: infections infections    4 2020-02-14      1 28.833484  <NA> estimate
-#> 5: infections infections    5 2020-02-15      1 43.713818  <NA> estimate
-#> 6: infections infections    6 2020-02-16      1 51.122634  <NA> estimate
+#> 1: infections infections    1 2020-02-12      1  1.920879  <NA> estimate
+#> 2: infections infections    2 2020-02-13      1 10.088548  <NA> estimate
+#> 3: infections infections    3 2020-02-14      1 17.178889  <NA> estimate
+#> 4: infections infections    4 2020-02-15      1 27.634226  <NA> estimate
+#> 5: infections infections    5 2020-02-16      1 44.621471  <NA> estimate
+#> 6: infections infections    6 2020-02-17      1 44.704228  <NA> estimate
 head(estimates$estimates$summarised)
-#>          date variable strat     type   bottom      top    lower    upper
-#> 1: 2020-02-22        R  <NA> estimate 1.460840 2.071162 1.614854 1.864393
-#> 2: 2020-02-23        R  <NA> estimate 1.523846 2.005474 1.615059 1.818843
-#> 3: 2020-02-24        R  <NA> estimate 1.566266 1.944036 1.663716 1.823922
-#> 4: 2020-02-25        R  <NA> estimate 1.641185 1.941345 1.739435 1.866124
-#> 5: 2020-02-26        R  <NA> estimate 1.657554 1.926520 1.759162 1.865628
-#> 6: 2020-02-27        R  <NA> estimate 1.674716 1.936040 1.752127 1.853318
-#>    central_lower central_upper   median     mean         sd
-#> 1:      1.741297      1.835204 1.742897 1.746969 0.19668356
-#> 2:      1.670770      1.746335 1.753774 1.758797 0.15415863
-#> 3:      1.730337      1.786061 1.767448 1.771843 0.11923808
-#> 4:      1.744617      1.786020 1.780971 1.785113 0.09431922
-#> 5:      1.767667      1.802731 1.795138 1.797524 0.08173062
-#> 6:      1.768931      1.805214 1.803765 1.807954 0.08062760
+#>          date variable strat     type   median     mean         sd lower_90
+#> 1: 2020-02-22        R  <NA> estimate 2.030470 2.041023 0.21881114 1.702665
+#> 2: 2020-02-23        R  <NA> estimate 2.013471 2.017060 0.16547736 1.749692
+#> 3: 2020-02-24        R  <NA> estimate 1.991144 1.993677 0.12344306 1.796140
+#> 4: 2020-02-25        R  <NA> estimate 1.969293 1.970475 0.09440217 1.820491
+#> 5: 2020-02-26        R  <NA> estimate 1.945436 1.947055 0.07988297 1.817648
+#> 6: 2020-02-27        R  <NA> estimate 1.924229 1.923030 0.07781099 1.793330
+#>    lower_50 lower_20 upper_20 upper_50 upper_90
+#> 1: 1.896576 1.981515 2.081383 2.177189 2.387305
+#> 2: 1.904355 1.972517 2.056468 2.125750 2.284865
+#> 3: 1.910323 1.963649 2.022345 2.077005 2.204855
+#> 4: 1.906575 1.945704 1.993524 2.030962 2.128385
+#> 5: 1.891581 1.924831 1.965225 2.002314 2.080576
+#> 6: 1.873226 1.903116 1.942468 1.972435 2.052961
 ```
 
 Reported cases are returned separately in order to ease reporting of
@@ -252,41 +231,43 @@ forecasts and model evaluation.
 ``` r
 head(estimates$estimated_reported_cases$samples)
 #>          date sample cases  type
-#> 1: 2020-02-22      1    43 gp_rt
-#> 2: 2020-02-23      1    57 gp_rt
-#> 3: 2020-02-24      1   142 gp_rt
-#> 4: 2020-02-25      1   200 gp_rt
-#> 5: 2020-02-26      1    97 gp_rt
-#> 6: 2020-02-27      1   119 gp_rt
+#> 1: 2020-02-22      1    24 gp_rt
+#> 2: 2020-02-23      1    53 gp_rt
+#> 3: 2020-02-24      1    85 gp_rt
+#> 4: 2020-02-25      1   125 gp_rt
+#> 5: 2020-02-26      1   101 gp_rt
+#> 6: 2020-02-27      1    75 gp_rt
 head(estimates$estimated_reported_cases$summarised)
-#>          date  type bottom top lower upper central_lower central_upper median
-#> 1: 2020-02-22 gp_rt     17  76    25    47            35            42     42
-#> 2: 2020-02-23 gp_rt     26 116    46    80            62            74     70
-#> 3: 2020-02-24 gp_rt     29 139    60   103            78            93     87
-#> 4: 2020-02-25 gp_rt     38 167    65   114            88           106    102
-#> 5: 2020-02-26 gp_rt     33 175    66   122            66            88    109
-#> 6: 2020-02-27 gp_rt     62 259    94   170           121           148    147
-#>       mean       sd
-#> 1:  45.414 19.91560
-#> 2:  73.724 28.75581
-#> 3:  91.419 37.51670
-#> 4: 106.639 41.72730
-#> 5: 113.897 46.27522
-#> 6: 156.919 64.67302
+#>          date  type median    mean       sd lower_90 lower_50 lower_20 upper_20
+#> 1: 2020-02-22 gp_rt     28  30.027 12.16743    13.00       21       25     32.0
+#> 2: 2020-02-23 gp_rt     49  51.730 20.07706    24.00       37       45     54.0
+#> 3: 2020-02-24 gp_rt     63  67.506 26.52160    31.00       49       57     70.0
+#> 4: 2020-02-25 gp_rt     80  83.832 33.72490    38.00       61       72     87.4
+#> 5: 2020-02-26 gp_rt     88  92.290 34.62347    44.95       67       79     97.0
+#> 6: 2020-02-27 gp_rt    124 131.439 52.05080    62.00       95      114    137.0
+#>    upper_50 upper_90
+#> 1:    37.00    52.05
+#> 2:    63.00    87.05
+#> 3:    82.00   119.00
+#> 4:   102.00   143.05
+#> 5:   113.00   155.00
+#> 6:   160.25   224.15
 ```
 
 A summary table is returned for rapidly understanding the results and
 for reporting purposes.
 
 ``` r
-estimates$summary
-#>                                  measure             estimate  numeric_estimate
-#> 1: New confirmed cases by infection date  3773 (164 -- 10052) <data.table[1x7]>
-#> 2:        Expected change in daily cases               Unsure              0.71
-#> 3:            Effective reproduction no.     0.8 (0.4 -- 1.4) <data.table[1x7]>
-#> 4:                        Rate of growth -0.05 (-0.19 -- 0.1) <data.table[1x7]>
-#> 5:          Doubling/halving time (days)  -14.9 (6.8 -- -3.6) <data.table[1x3]>
+knitr::kable(estimates$summary[, -c("numeric_estimate")])
 ```
+
+| measure                               | estimate             |
+| :------------------------------------ | :------------------- |
+| New confirmed cases by infection date | 2786 (624 – 10271)   |
+| Expected change in daily cases        | Likely decreasing    |
+| Effective reproduction no.            | 0.7 (0.3 – 1.3)      |
+| Rate of growth                        | \-0.08 (-0.2 – 0.09) |
+| Doubling/halving time (days)          | \-9.1 (8 – -3.4)     |
 
 A range of plots are returned (with the single summary plot shown
 below).
@@ -295,12 +276,12 @@ below).
 estimates$plots$summary
 ```
 
-![](man/figures/unnamed-chunk-14-1.png)<!-- -->
+![](man/figures/unnamed-chunk-13-1.png)<!-- -->
 
-### [Regional epinow](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html)
+### [regional\_epinow](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html)
 
-This function runs the the `epinow` function across multiple regions in
-an efficient manner.
+The `regional_epinow` function runs the `epinow` function across
+multiple regions in an efficient manner.
 
 Define cases in multiple regions delineated by the region variable.
 
@@ -318,20 +299,27 @@ head(reported_cases)
 #> 6: 2020-02-27      78 testland
 ```
 
-Run the pipeline on each region in turn.
+Calling `regional_epinow` runs the `epinow` on each region in turn (or
+in parallel depending on the settings used).
 
 ``` r
 estimates <- regional_epinow(reported_cases = reported_cases, 
                              generation_time = generation_time,
-                             delays = list(incubation_period, reporting_delay),
-                             stan_args = list(cores = 4))
-#> INFO [2020-10-05 16:24:40] Reporting estimates using data up to: 2020-04-01
-#> INFO [2020-10-05 16:24:40] Producing estimates for: testland, realland
-#> INFO [2020-10-05 16:24:40] Regions excluded: none
-#> INFO [2020-10-05 16:33:29] Completed regional estimates
-#> INFO [2020-10-05 16:33:29] Regions with estimates: 2
-#> INFO [2020-10-05 16:33:29] Regions with runtime errors: 0
-#> INFO [2020-10-05 16:33:29] Producing summary
+                             delays = list(incubation_period, reporting_delay))
+#> INFO [2020-10-15 18:25:36] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2020-10-15 18:25:36] Reporting estimates using data up to: 2020-04-01
+#> INFO [2020-10-15 18:25:36] No target directory specified so returning output
+#> INFO [2020-10-15 18:25:36] Producing estimates for: testland, realland
+#> INFO [2020-10-15 18:25:36] Regions excluded: none
+#> INFO [2020-10-15 18:25:36] Showing progress using progressr. Modify this behaviour using progressr::handlers.
+#> INFO [2020-10-15 18:33:04] Completed estimates for: testland
+#> INFO [2020-10-15 18:40:48] Completed estimates for: realland
+#> INFO [2020-10-15 18:40:48] Completed regional estimates
+#> INFO [2020-10-15 18:40:48] Regions with estimates: 2
+#> INFO [2020-10-15 18:40:48] Regions with runtime errors: 0
+#> INFO [2020-10-15 18:40:48] Producing summary
+#> INFO [2020-10-15 18:40:48] No summary directory specified so returning summary output
+#> INFO [2020-10-15 18:40:48] No target directory specified so returning timings
 ```
 
 Results from each region are stored in a `regional` list with across
@@ -349,17 +337,13 @@ Summary measures that are returned include a table formatted for
 reporting (along with raw results for further processing).
 
 ``` r
-estimates$summary$summarised_results$table
-#>      Region New confirmed cases by infection date
-#> 1: realland                   3816 (327 -- 10309)
-#> 2: testland                    3854 (175 -- 9971)
-#>    Expected change in daily cases Effective reproduction no.
-#> 1:                         Unsure           0.8 (0.4 -- 1.4)
-#> 2:                         Unsure           0.8 (0.4 -- 1.3)
-#>           Rate of growth Doubling/halving time (days)
-#> 1:  -0.04 (-0.19 -- 0.1)          -15.6 (6.6 -- -3.7)
-#> 2: -0.04 (-0.19 -- 0.09)          -15.6 (7.9 -- -3.6)
+knitr::kable(estimates$summary$summarised_results$table)
 ```
+
+| Region   | New confirmed cases by infection date | Expected change in daily cases | Effective reproduction no. | Rate of growth        | Doubling/halving time (days) |
+| :------- | :------------------------------------ | :----------------------------- | :------------------------- | :-------------------- | :--------------------------- |
+| realland | 2915 (609 – 10156)                    | Likely decreasing              | 0.7 (0.3 – 1.3)            | \-0.07 (-0.21 – 0.08) | \-9.6 (8.7 – -3.3)           |
+| testland | 2856 (664 – 9765)                     | Likely decreasing              | 0.8 (0.3 – 1.3)            | \-0.07 (-0.2 – 0.07)  | \-9.7 (9.6 – -3.4)           |
 
 A range of plots are again returned (with the single summary plot shown
 below).
@@ -368,7 +352,7 @@ below).
 estimates$summary$summary_plot
 ```
 
-![](man/figures/unnamed-chunk-18-1.png)<!-- -->
+![](man/figures/unnamed-chunk-17-1.png)<!-- -->
 
 ### Reporting templates
 

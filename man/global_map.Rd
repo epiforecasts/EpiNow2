@@ -58,7 +58,7 @@ eg_data <- data.table::data.table(variable = c("Increasing",
                                               "United Kingdom", 
                                               "Spain",
                                               "Australia") )
-# Make variable a factor so the ordering is sensible in the legend
+# make variable a factor so the ordering is sensible in the legend
 eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
                                                         "Unsure", "Likely increasing",
                                                         "Increasing"))
