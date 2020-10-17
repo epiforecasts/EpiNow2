@@ -324,6 +324,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$trials <- 10
     default_args$iter <- 10000
     default_args$output_samples <- samples
+    default_args$seed <- as.integer(runif(1, 1, 1e8))
   }
   
   # join with user supplied settings
