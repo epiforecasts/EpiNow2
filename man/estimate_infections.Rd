@@ -112,7 +112,7 @@ fail gracefully (i.e when combined with \code{max_execution_time}). Should be co
 When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation
 will fail with an informative error.}
 
-\item{return_fit}{Logical, defaults to FALSE. Should the fitted Stan model be returned.}
+\item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}

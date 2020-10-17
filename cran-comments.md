@@ -5,10 +5,7 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 5 notes
+0 errors | 0 warnings | 2 notes
 
-* This is a resubmission.
 * GNU make is a SystemRequirement
 * Suggests or Enhances not in mainstream repositories: EpiSoon (available using Additional_repositories from https://epiforecasts.io/drat/)
-* Checked and updated links
-* Added years to references
