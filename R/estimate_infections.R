@@ -392,7 +392,7 @@ estimate_infections <- function(reported_cases,
 #'
 #' @param args List of stan arguments
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
-#' @param max_execution_time Numeric, defauls to Inf. What is the maximum execution time per chain in seconds. 
+#' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain in seconds. 
 #'     Results will still be returned as long as at least 2 chains complete successfully within the timelimit. 
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
 #' @importFrom futile.logger flog.debug flog.info flog.error
