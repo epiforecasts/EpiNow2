@@ -13,11 +13,11 @@ create_stan_data(
   generation_time,
   rt_prior,
   estimate_rt,
-  estimate_week_eff,
+  week_effect,
   stationary,
   fixed,
   break_no,
-  fixed_future_rt,
+  future_rt,
   gp,
   family,
   delays
@@ -39,35 +39,38 @@ in date format.}
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
-Rt. By default this is assumed to be mean 1 with a standard deviation of 1.}
+\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
+Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
+log space). To infer infections only using non-parametric backcalculation set this to \code{list()}.}
 
-\item{estimate_rt}{Logical, defaults TRUE. Should Rt be estimated when imputing infections.}
+\item{estimate_rt}{Logical, should Rt be estimated.}
 
-\item{estimate_week_eff}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
+\item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
 this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
 
-\item{fixed}{Logical, defaults to FALSE. If TRUE then a Gaussian process is not used and Rt is assumed to be constant over time
-(apart from any manually included breakpoints). If \code{estimate_rt} is FALSE then this reduces the backcalculation to a simple mean shift.
-This option can be used to produce a null model estimate, to produce a single Rt estimate for a short timeseries or as part of a wider
-analysis on the impact of interventions.}
+\item{fixed}{Logical, should the gaussian process be used for non-parametric
+change over time.}
 
 \item{break_no}{Numeric, number of breakpoints}
 
-\item{fixed_future_rt}{Logical, defaults to FALSE. IF TRUE then the estimated Rt from the last time point with data is used for all
-future time points without data.}
+\item{future_rt}{A character string or integer. This argument indicates how to set future Rt values. Supported
+options are to project using the Rt model ("project"), to use the latest estimate based on partial data ("latest"),
+to use the latest estimate based on data that is over 50\% complete ("estimate"). If an integer is supplied then the Rt estimate
+from this many days into the future (or past if negative) past will be used forwards in time.}
 
-\item{gp}{List controlling the Gaussian process approximation. Must contain
-the \code{basis_prop} (number of basis functions based on scaling the time points) which defaults to 0.3 and must be
-between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of additional compute.
-Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
+\item{gp}{List controlling the Gaussian process approximation if set to \code{list()} then \code{Rt} is assumed to be constant unless
+other settings introduce variation. If set must contain the \code{basis_prop} (number of basis functions based on scaling the time points)
+which defaults to 0.3 and must be between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of
+additional compute. Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
 See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
-Can optionally also contain the  \code{lengthscale_mean} and \code{lengthscale_sd}. If these are specified this will override
-the defaults of 0 and 2 (normal distributed truncated at zero).}
+Must also contain the  \code{lengthscale_alpha} and \code{lengthscale_beta}. These tune the prior of the lengthscale. Principled
+values can be obtained using \code{tune_inv_gamma} which optimises based on the desired truncation (which should be based on the scale
+of the observed data). The default is tuned to have 98\% of the density of the distribution between 2 and 21 days. Finally the list must
+contain \code{alpha_sd} the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}
@@ -76,7 +79,7 @@ binomial ("negbin") with poisson ("poisson") also supported.}
 Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale).}
+on the log scale). To use no delays set this to \code{list()}.}
 }
 \value{
 A list of stan data

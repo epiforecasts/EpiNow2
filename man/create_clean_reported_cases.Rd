@@ -4,13 +4,17 @@
 \alias{create_clean_reported_cases}
 \title{Create Clean Reported Cases}
 \usage{
-create_clean_reported_cases(reported_cases, horizon)
+create_clean_reported_cases(reported_cases, horizon, zero_threshold = 50)
 }
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
+
+\item{zero_threshold}{Numeric defaults to 50. Indicates if detected zero cases are meaningful by
+using a threshold of 50 cases on average over the last 7 days. If the average is above this thresold
+then the zero is replaced with the}
 }
 \value{
 A cleaned data frame of reported cases

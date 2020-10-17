@@ -30,8 +30,9 @@ data {
   int estimate_r;                    // should the reproduction no be estimated (1 = yes)
   real L;				                     // boundary value for infections gp
 	int<lower=1> M;			               // basis functions for infections gp
-	real lengthscale_mean;             // mean for gp lengthscale prior
-	real lengthscale_sd;               // sd for gp lengthscale prior
+	real lengthscale_alpha;            // alpha for gp lengthscale prior
+	real lengthscale_beta;             // beta for gp lengthscale prior
+	real alpha_sd;                     // standard deviation of the alpha gp kernal parameter
 	int est_week_eff;
 	vector[rt] time;
 	vector[t] inf_time;
@@ -40,35 +41,34 @@ data {
 	int breakpoints[rt];               // when do breakpoints occur 
 	int fixed;                        // Indicates if Rt/backcalculation is fixed 
 	int future_fixed;                 // is underlying future Rt assumed to be fixed
+	int fixed_from;                   // Reference date for when Rt estimation should be fixed
 }
 
 transformed data{
-  real r_alpha;                              // alpha parameter of the R gamma prior
-  real r_beta;                               // beta parameter of the R gamma prior
+  real r_logmean;                             // Initial R mean in log space
+  real r_logsd;                              // Iniital R sd in log space
   int no_rt_time;                            // time without estimating Rt
   int rt_h;                                  // rt estimation time minus the forecasting horizon
-  int noise_terms = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;
-                                             // no. of noise terms
-  matrix[future_fixed > 0 ? (noise_terms - horizon) : noise_terms, M] PHI;  // basis function 
-  
-  //Update number of noise terms based on furure Rt assumption
-  noise_terms = future_fixed > 0 ? (noise_terms - horizon) : noise_terms;
+  int noise_time = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;
+  //Update number of noise terms based on furure Rt assumption  
+  int noise_terms =  future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;                                      // no. of noise terms
+  matrix[noise_terms, M] PHI;  // basis function 
   
   //Update time varables
   rt_h = rt - horizon;
   
   // calculate alpha and beta for gamma distribution
-  r_alpha = (r_mean / r_sd)^2;
-  r_beta = r_mean / (r_sd^2);
+  r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
+  r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
+
+  // time without estimating Rt is the differrence of t and rt
+  no_rt_time = t - rt;
    
-   // time without estimating Rt is the differrence of t and rt
-   no_rt_time = t - rt;
-   
-   // basis functions
-   // see here for details: https://arxiv.org/pdf/2004.11408.pdf
-   for (m in 1:M){ 
-     PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:noise_terms] : inf_time)); 
-    }
+  // basis functions
+  // see here for details: https://arxiv.org/pdf/2004.11408.pdf
+  for (m in 1:M){ 
+    PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:noise_terms] : inf_time)); 
+  }
 }
 parameters{
   simplex[est_week_eff ? 7 : 1] day_of_week_eff_raw;  // day of week reporting effect + control parameters
@@ -108,8 +108,8 @@ transformed parameters {
 		}
   	SPD_eta = diagSPD .* eta;
 	
-  	noise = rep_vector(1e-5, noise_terms);
-    noise = noise + exp(PHI[,] * SPD_eta);
+  	noise = rep_vector(1e-6, noise_terms);
+    noise = noise + PHI[,] * SPD_eta;
   }
   
   // initialise infections
@@ -131,7 +131,7 @@ transformed parameters {
     for (s in 1:rt) {
       if (!fixed) {
          if (!future_fixed || (s <= noise_terms)) {
-           R[s] *= noise[s];
+           R[s] += noise[s];
          }else{
            R[s] = R[s - 1];
          }
@@ -141,7 +141,7 @@ transformed parameters {
       if (break_no > 0) {
        rt_break_count += breakpoints[s];
         if (rt_break_count > 0) {
-          R[s] = R[s] * prod(rt_break_eff[1:rt_break_count]);
+          R[s] += sum(rt_break_eff[1:rt_break_count]);
         }
       }
     }
@@ -150,7 +150,7 @@ transformed parameters {
     R[1] = initial_R[estimate_r];
     for (s in 2:rt) {
       if (!future_fixed || (s <= (noise_terms + 1))) {
-        R[s] = R[s - 1] .* noise[s - 1];
+        R[s] = R[s - 1] + noise[s - 1];
       }else{
         R[s] = R[s - 1];
       }
@@ -159,15 +159,18 @@ transformed parameters {
       if (break_no > 0) {
         if (breakpoints[s] == 1) {
           rt_break_count = sum(breakpoints[1:s]);
-          R[s] = R[s] * rt_break_eff[rt_break_count];
+          R[s] +=  rt_break_eff[rt_break_count];
         }
       }
     }
   }
+  
+  //map log R to R
+  R = exp(R);
 
      // estimate initial infections not using Rt
      infections[1:no_rt_time] = infections[1:no_rt_time] + 
-                                  shifted_cases[1:no_rt_time] .* exp(initial_infections);
+                                  shifted_cases[1:no_rt_time] .* initial_infections;
       
      // estimate remaining infections using Rt
      infectiousness = rep_vector(1e-5, rt);
@@ -179,7 +182,7 @@ transformed parameters {
   }else{
     // generate infections from prior infections and non-parameteric noise
     if(!fixed) {
-      infections = infections + shifted_cases .* noise;
+      infections = infections + shifted_cases .* exp(noise);
     }else{
       infections = infections + shifted_cases;
     }
@@ -225,8 +228,8 @@ transformed parameters {
 model {
   // priors for noise GP
   if (!fixed) {
-  rho ~  normal(lengthscale_mean, lengthscale_sd);
-  alpha ~ normal(0, 0.1);
+  rho ~ inv_gamma(lengthscale_alpha, lengthscale_beta);
+  alpha ~ normal(0, alpha_sd);
   eta ~ std_normal();
   }
 
@@ -246,8 +249,8 @@ model {
   // estimate rt
   if (estimate_r) {
     // prior on R
-    initial_R[estimate_r] ~ gamma(r_alpha, r_beta);
-    initial_infections ~ normal(0, 0.1);
+    initial_R[estimate_r] ~ normal(r_logmean, r_logsd);
+    initial_infections ~ lognormal(0, 0.1);
     
     // penalised_prior on generation interval
     target += normal_lpdf(gt_mean | gt_mean_mean, gt_mean_sd) * rt;
@@ -255,7 +258,7 @@ model {
     
     //breakpoint effects on Rt
     if (break_no > 0) {
-      rt_break_eff ~ lognormal(0, 0.1);
+      rt_break_eff ~ normal(0, 0.1);
     }
   }
 

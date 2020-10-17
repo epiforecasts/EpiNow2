@@ -5,14 +5,14 @@
 \title{Generate Regional Summary Output}
 \usage{
 regional_summary(
-  regional_output,
+  regional_output = NULL,
   reported_cases,
-  results_dir,
-  summary_dir,
-  target_date,
+  results_dir = NULL,
+  summary_dir = NULL,
+  target_date = NULL,
   region_scale = "Region",
   all_regions = TRUE,
-  return_summary = TRUE,
+  return_output = FALSE,
   max_plot = 10
 )
 }
@@ -36,7 +36,8 @@ in which to store summary of results.}
 \item{all_regions}{Logical, defaults to \code{TRUE}. Should summary plots for all regions be returned
 rather than just regions of interest.}
 
-\item{return_summary}{Logical, defaults to \code{TRUE}. Should summary measures be returned.}
+\item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
+if no directory for saving is specified.}
 
 \item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
 on the maximum number of reported cases.}
@@ -49,31 +50,27 @@ Generate Regional Summary Output
 }
 \examples{
 \donttest{
-## Set up example delays
+# example delays
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
                         
-# Uses example case vector from EpiSoon
+# example case vector from EpiSoon
 cases <- EpiNow2::example_confirmed[1:30]
-
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
   
-# Run basic nowcasting pipeline
-regional_out <- regional_epinow(reported_cases = cases,
-                                generation_time = generation_time,
-                                delays = list(incubation_period, reporting_delay),
-                                stan_args = list(cores = 4),
-                                summary = FALSE)
+# run basic nowcasting pipeline
+out <- regional_epinow(reported_cases = cases,
+                       generation_time = generation_time,
+                       delays = list(incubation_period, reporting_delay),
+                       samples = 50, output = "region",
+                       stan_args = list(warmup = 50,
+                                        control = list(adapt_delta = 0.95)),
+                                        logs = NULL)
 
-results_dir <- tempdir()             
-regional_summary(regional_output = regional_out$regional,
-                 reported_cases = cases,
-                 summary_dir = results_dir,
-                 region_scale = "Country", all_regions = FALSE)
-
+regional_summary(regional_output = out$regional,
+                 reported_cases = cases)
 } 
-
 }

@@ -1,12 +1,11 @@
 #' Extract Samples for a Parameter from a Stan model
 #'
-#' @param param Character string indicating the paramter to extract
+#' @param param Character string indicating the parameter to extract
 #' @param samples Extracted stan model (using `rstan::extract`)
 #' @param dates A vector identifying the dimensionality of the parameter to extract. Generally this will be 
 #' a date
 #' @importFrom data.table melt as.data.table
 #' @return A data frame containing the parameter name, date, sample id and sample value
-#'
 extract_parameter <- function(param, samples, dates) {
   param_df <- data.table::as.data.table(
     t(
@@ -23,7 +22,6 @@ extract_parameter <- function(param, samples, dates) {
   param_df <- param_df[, date := dates, by = .(sample)]
   param_df <- param_df[, .(parameter = param, time, date, 
                            sample, value)]
-  
   return(param_df)
 }
 
@@ -51,14 +49,13 @@ extract_static_parameter <- function(param, samples) {
 #' @return A list of dataframes each containing the posterior of a parameter
 extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_inf_dates) {
   
-  ## Extract sample from stan object
+  # extract sample from stan object
   samples <- rstan::extract(stan_fit)
   
-  ## Construct reporting list
+  # construct reporting list
   out <- list()
   
-  
-  ## Report infections, and R
+  # report infections, and R
   out$infections <- extract_parameter("infections", 
                                       samples,
                                       reported_inf_dates)
@@ -118,6 +115,5 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
     out$gt_sd <- extract_static_parameter("gt_sd", samples)
     out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
   }
-  
   return(out)
 }

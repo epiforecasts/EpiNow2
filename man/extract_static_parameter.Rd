@@ -7,7 +7,7 @@
 extract_static_parameter(param, samples)
 }
 \arguments{
-\item{param}{Character string indicating the paramter to extract}
+\item{param}{Character string indicating the parameter to extract}
 
 \item{samples}{Extracted stan model (using \code{rstan::extract})}
 }
