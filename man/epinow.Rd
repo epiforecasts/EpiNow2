@@ -52,6 +52,7 @@ plots ("plots"), the run time ("timing"), copying the dated folder into a latest
 and summary statistics. This argument uses partial matching so for example passing "sam" will lead to samples
 being reported.
 }}
+
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
