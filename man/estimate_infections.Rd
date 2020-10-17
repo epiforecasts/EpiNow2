@@ -146,7 +146,7 @@ reporting_delay <- list(mean = log(5), mean_sd = log(2),
 # these settings are not suggesed for real world use.                   
 # run model with default setting
 def <- estimate_infections(reported_cases, generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay), model = model, verbose = TRUE,
+                           delays = list(incubation_period, reporting_delay), 
                            stan_args = list(warmup = 200, control = list(adapt_delta = 0.8),
                                             cores = ifelse(interactive(), 4, 1)))
 
