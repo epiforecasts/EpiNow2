@@ -39,9 +39,9 @@ in date format.}
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
-Rt. By default this is assumed to be mean 1 with a standard deviation of 1. To infer infections only using
-non-parametric backcalculation set this to \code{list()}.}
+\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
+Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
+log space). To infer infections only using non-parametric backcalculation set this to \code{list()}.}
 
 \item{estimate_rt}{Logical, should Rt be estimated.}
 

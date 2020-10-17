@@ -75,9 +75,9 @@ values can be obtained using \code{tune_inv_gamma} which optimises based on the 
 of the observed data). The default is tuned to have 98\% of the density of the distribution between 2 and 21 days. Finally the list must
 contain \code{alpha_sd} the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.}
 
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
-Rt. By default this is assumed to be mean 1 with a standard deviation of 1. To infer infections only using
-non-parametric backcalculation set this to \code{list()}.}
+\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
+Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
+log space). To infer infections only using non-parametric backcalculation set this to \code{list()}.}
 
 \item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 
