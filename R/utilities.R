@@ -255,38 +255,33 @@ copy_models <- function(dir_path){
 # Helper function for Formatting List for CmdStanR
 make_cmdstan_list <-function(stan_args){
   
-  #mk_init <- list(stan_args$init(),stan_args$init(),stan_args$init(),stan_args$init())
-  mk_init <- stan_args$init
-  
-  
-  
   out <- list(
     data = stan_args$data,
-    seed = stan_args$seed,
-    refresh = stan_args$refresh,
-    init = mk_init,
-    save_latent_dynamics = FALSE,
-    output_dir = NULL,
+    seed = as.integer(abs(stan_args$seed)),
+    refresh = as.integer(abs(stan_args$refresh)),
+    init = stan_args$init,
+    save_latent_dynamics = ifelse(!is.null(stan_args$save_latent_dynamics) & is.logical(stan_args$save_latent_dynamics), stan_args$save_latent_dynamics, FALSE),
+    output_dir = stan_args$output_dir,
     chains = as.integer(stan_args$chains),
     parallel_chains = stan_args$parallel_chains,
-    threads_per_chain = NULL,
+    threads_per_chain = stan_args$threads_per_chain,
     iter_warmup = stan_args$iter_warmup,
     iter_sampling = stan_args$iter_sampling,
     save_warmup = stan_args$save_warmup,
-    thin = NULL,
+    thin = stan_args$thin,
     max_treedepth = stan_args$max_treedepth,
-    adapt_engaged = TRUE,
+    adapt_engaged = ifelse(!is.null(stan_args$adapt_engaged) & is.logical(stan_args$adapt_engaged), stan_args$adapt_engaged, TRUE),
     adapt_delta = stan_args$adapt_delta,
-    step_size = NULL,
-    metric = NULL,
-    metric_file = NULL,
-    inv_metric = NULL,
-    init_buffer = NULL,
-    term_buffer = NULL,
-    window = NULL,
-    fixed_param = FALSE,
-    validate_csv = TRUE,
-    show_messages = stan_args$verbose
+    step_size = stan_args$step_size,
+    metric = stan_args$metric,
+    metric_file = stan_args$metric_file,
+    inv_metric = stan_args$inv_metric,
+    init_buffer = stan_args$init_buffer,
+    term_buffer = stan_args$term_buffer,
+    window = stan_args$window,
+    fixed_param = ifelse(!is.null(stan_args$fixed_param) & is.logical(stan_args$fixed_param), stan_args$fixed_param, FALSE),
+    validate_csv = ifelse(!is.null(stan_args$validate_csv) & is.logical(stan_args$validate_csv), stan_args$validate_csv, TRUE),
+    show_messages = ifelse(!is.null(stan_args$verbose) & is.logical(stan_args$verbose), stan_args$verbose, TRUE)
   )
   
   out
