@@ -14,9 +14,9 @@
 #' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 #' that delay (assuming a lognormal distribution with all parameters excepting the max allowed value 
 #' on the log scale). To use no delays set this to `list()`.
-#' @param rt_prior A list contain the mean and standard deviation (sd) of the gamma distributed prior for
-#' Rt. By default this is assumed to be mean 1 with a standard deviation of 1. To infer infections only using 
-#' non-parametric backcalculation set this to `list()`.
+#' @param rt_prior A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
+#' Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
+#' log space). To infer infections only using non-parametric backcalculation set this to `list()`.
 #' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
 #' for the prior based on reported cases.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
@@ -49,7 +49,7 @@
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
 #' fail gracefully (i.e when combined with `max_execution_time`). Should be combined with a call to `future::plan`
-#' @param max_execution_time Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout. 
+#' @param max_execution_time Numeric, defaults to Inf (seconds). If set will kill off processing of each chain if not finished within the specified timeout. 
 #' When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation 
 #' will fail with an informative error.
 #' @export
@@ -377,8 +377,7 @@ estimate_infections <- function(reported_cases,
                                  max_execution_time = max_execution_time,
                                  verbose = verbose)
     }else if (method == "approximate"){
-      message("Variational Bayes Not Supported with CmdStan Backend at this Time")
-      fit <- fit_model_with_vb(args,
+      fit <- fit_model_with_vb_cmd(args,
                                verbose = verbose)
     }
   }
@@ -416,8 +415,8 @@ estimate_infections <- function(reported_cases,
 #'
 #' @param args List of stan arguments
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
-#' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain. Results will
-#' still be returned as long as at least 2 chains complete successfully within the timelimit. 
+#' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain in seconds. 
+#'     Results will still be returned as long as at least 2 chains complete successfully within the timelimit. 
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom R.utils withTimeout
@@ -514,7 +513,7 @@ fit_model_with_nuts_cmd <- function(args, future = FALSE, max_execution_time = I
   fit_chain <- function(chain, stan_args, max_time) {
     in_chain <- chain # Not really used, but in here to make lapply work
     model_fit <- stan_args$object
-    data_fit <- make_cmdstan_list(stan_args)
+    data_fit <- make_cmdstan_list(stan_args, method = "exact")
     fit <- R.utils::withTimeout(do.call(model_fit$sample, data_fit), 
                                 timeout = max_time,
                                 onTimeout = "silent")
@@ -610,6 +609,64 @@ fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
     }
   }
   
+  return(fit)
+}
+
+
+#' Fit a Stan Model using Variational Inference
+#'
+#' @inheritParams fit_model_with_nuts_cmd
+#' @importFrom futile.logger flog.debug flog.info flog.error
+#' @importFrom purrr safely
+#' @importFrom cmdstanr $variational() method of a CmdStanModel object
+#' @return A stan model object
+fit_model_with_vb_cmd <- function(args, future = FALSE, verbose = FALSE) {
+  if (verbose) {
+    futile.logger::flog.debug(paste0("Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
+                                     args$output_samples, " approximate posterior samples for ", args$data$t," time steps of which ",
+                                     args$data$horizon, " are a forecast"),
+                              name = "EpiNow2.epinow.estimate_infections.fit")
+  }
+
+  if (exists("trials", args)) {
+    trials <- args$trials
+    args$trials <- NULL
+  }else{
+    trials <- 1
+  }
+
+  fit_vb <- function(stan_args) {
+    model_fit <- stan_args$object
+    data_fit <- make_cmdstan_list(stan_args, method = "approximate")
+
+    fit <-  do.call(model_fit$variational, data_fit)
+
+    fit <- tryCatch(rstan::read_stan_csv(fit$output_files()),
+                    error = function(x) NULL)
+
+    return(fit)
+  }
+  safe_vb <- purrr::safely(fit_vb)
+
+  fit <- NULL
+  current_trials <- 0
+
+  while (current_trials <= trials & is.null(fit)) {
+    fit <- safe_vb(args)
+
+    error <- fit[[2]]
+    fit <- fit[[1]]
+    current_trials <- current_trials + 1
+  }
+
+  if (is.null(fit)) {
+    if (is.null(fit)) {
+      futile.logger::flog.error("fitting failed - try increasing stan_args$trials or inspecting the model input",
+                                name = "EpiNow2.epinow.estimate_infections.fit")
+      stop("Variational Inference failed due to: ", error)
+    }
+  }
+
   return(fit)
 }
 

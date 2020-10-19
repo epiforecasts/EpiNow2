@@ -108,5 +108,4 @@ LinkingTo:
     RcppEigen (>= 0.3.3.3.0),
     rstan (>= 2.21.1),
     StanHeaders (>= 2.21.0-5)
-SystemRequirements: GNU make
 Language: en-GB

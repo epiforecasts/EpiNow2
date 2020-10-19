@@ -77,9 +77,9 @@ values can be obtained using \code{tune_inv_gamma} which optimises based on the 
 of the observed data). The default is tuned to have 98\% of the density of the distribution between 2 and 21 days. Finally the list must
 contain \code{alpha_sd} the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.}
 
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
-Rt. By default this is assumed to be mean 1 with a standard deviation of 1. To infer infections only using
-non-parametric backcalculation set this to \code{list()}.}
+\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
+Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
+log space). To infer infections only using non-parametric backcalculation set this to \code{list()}.}
 
 \item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 
@@ -108,7 +108,7 @@ for the prior based on reported cases.}
 \item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
 fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
 
-\item{max_execution_time}{Numeric, defaults to Inf. If set will kill off processing of each chain if not finished within the specified timeout.
+\item{max_execution_time}{Numeric, defaults to Inf (seconds). If set will kill off processing of each chain if not finished within the specified timeout.
 When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation
 will fail with an informative error.}
 

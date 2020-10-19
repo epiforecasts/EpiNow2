@@ -45,32 +45,30 @@ data {
 }
 
 transformed data{
-  real r_alpha;                              // alpha parameter of the R gamma prior
-  real r_beta;                               // beta parameter of the R gamma prior
+  real r_logmean;                             // Initial R mean in log space
+  real r_logsd;                              // Iniital R sd in log space
   int no_rt_time;                            // time without estimating Rt
   int rt_h;                                  // rt estimation time minus the forecasting horizon
-  int noise_terms = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;
-                                             // no. of noise terms
-  matrix[future_fixed > 0 ? (noise_terms - horizon) : noise_terms, M] PHI;  // basis function 
-  
-  //Update number of noise terms based on furure Rt assumption
-  noise_terms = future_fixed > 0 ? (noise_terms - horizon + fixed_from) : noise_terms;
+  int noise_time = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;
+  //Update number of noise terms based on furure Rt assumption  
+  int noise_terms =  future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;                                      // no. of noise terms
+  matrix[noise_terms, M] PHI;  // basis function 
   
   //Update time varables
   rt_h = rt - horizon;
   
   // calculate alpha and beta for gamma distribution
-  r_alpha = (r_mean / r_sd)^2;
-  r_beta = r_mean / (r_sd^2);
+  r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
+  r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
+
+  // time without estimating Rt is the differrence of t and rt
+  no_rt_time = t - rt;
    
-   // time without estimating Rt is the differrence of t and rt
-   no_rt_time = t - rt;
-   
-   // basis functions
-   // see here for details: https://arxiv.org/pdf/2004.11408.pdf
-   for (m in 1:M){ 
-     PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:noise_terms] : inf_time)); 
-    }
+  // basis functions
+  // see here for details: https://arxiv.org/pdf/2004.11408.pdf
+  for (m in 1:M){ 
+    PHI[,m] = phi_SE(L, m, (estimate_r > 0 ? time[1:noise_terms] : inf_time)); 
+  }
 }
 parameters{
   simplex[est_week_eff ? 7 : 1] day_of_week_eff_raw;  // day of week reporting effect + control parameters
@@ -129,8 +127,7 @@ transformed parameters {
   rt_break_count = 0;
   // assume a global Rt * GP
   if (stationary) {
-    real log_R = log(initial_R[estimate_r]);
-    R = rep_vector(log_R, rt);
+    R = rep_vector(initial_R[estimate_r], rt);
     for (s in 1:rt) {
       if (!fixed) {
          if (!future_fixed || (s <= noise_terms)) {
@@ -150,7 +147,7 @@ transformed parameters {
     }
   // assume GP on gradient of Rt (i.e Rt = R(t-1) * GP)
   }else{
-    R[1] = log(initial_R[estimate_r]);
+    R[1] = initial_R[estimate_r];
     for (s in 2:rt) {
       if (!future_fixed || (s <= (noise_terms + 1))) {
         R[s] = R[s - 1] + noise[s - 1];
@@ -252,7 +249,7 @@ model {
   // estimate rt
   if (estimate_r) {
     // prior on R
-    initial_R[estimate_r] ~ gamma(r_alpha, r_beta);
+    initial_R[estimate_r] ~ normal(r_logmean, r_logsd);
     initial_infections ~ lognormal(0, 0.1);
     
     // penalised_prior on generation interval

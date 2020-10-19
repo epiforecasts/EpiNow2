@@ -78,18 +78,18 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 #' @param delay Numeric mean delay
 #' @return A list containing a logical called fixed and an integer called from
 create_future_rt <- function(future_rt = "project", delay = 0) {
-  out <- list(fixed = TRUE, from = 0)
+  out <- list(fixed = FALSE, from = 0)
   if (is.character(future_rt)) {
     future_rt <- match.arg(future_rt,
                            c("project", 
                              "latest",
                              "estimate"))
     if (!(future_rt %in% "project")) {
-      out$fixed <- FALSE
+      out$fixed <- TRUE
       out$from <- ifelse(future_rt %in% "latest", 0, -delay)
     }
   }else if (is.numeric(future_rt)){
-    out$fixed <- FALSE
+    out$fixed <- TRUE
     out$from <- as.integer(future_rt)
   }
   return(out)
@@ -203,8 +203,8 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rlnorm(mean_shift, meanlog = 0, sdlog = 0.1))
-      out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
-                                    scale = (rt_prior$sd^2) / rt_prior$mean))
+      out$initial_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
+                                   sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
                                                  sd = generation_time$mean_sd))
       out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
@@ -303,7 +303,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
   )
   
   # set up independent default arguments
-  if (method == "exact"&& backend == "rstan") {
+  if (method == "exact" && backend == "rstan") {
     default_args$cores <- 4
     default_args$warmup <- 500
     default_args$chains <- 4
@@ -324,8 +324,9 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$trials <- 10
     default_args$iter <- 10000
     default_args$output_samples <- samples
+    default_args$seed <- as.integer(runif(1, 1, 1e8))
   }
-  
+
   # join with user supplied settings
   if (!is.null(stan_args)) {
     default_args <- default_args[setdiff(names(default_args), names(stan_args))]
@@ -336,7 +337,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
   
   
   # set up dependent arguments
-  if (method == "exact"&& backend == "rstan") {
+  if (method == "exact" && backend == "rstan") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup
   }
   return(args)
