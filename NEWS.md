@@ -1,10 +1,3 @@
-# EpiNow2 1.2.2
-
-Hot fixing issues in `1.2.1`
-
-## Issues fixed
-
-* Fix from @medewitt from the internal `fit_chain` function where an interaction between `rstan` and timing out may have introduced an exception that caused whole regions to fail. This did not show on current unit tests or exploration using examples etc. indicating a gap in testing. 
 
 # EpiNow2 1.2.1
 
@@ -33,6 +26,7 @@ function in `regional_epinow` and `epinow`.
 * Fix to normalisation of delay and generation time distributions from @sbfnk. This will impact nowcast infections but not reproduction number estimate.
 * Updated `discretised_gamma_pmf` (discretised truncated Gamma PMF) to constrain gamma shape and (inverse) scale parameters to be positive and finite (`alpha > 0` and `beta > 0`).
 * Fixed `readLines` incomplete final line warnings.
+* Fix from @medewitt from the internal `fit_chain` function where an interaction between `rstan` and timing out may have introduced an exception that caused whole regions to fail. This did not show on current unit tests or exploration using examples etc. indicating a gap in testing. 
 
 ## Other changes
 
