@@ -487,11 +487,11 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   return(fit)
 }
 
-#' Fit a Stan Model using the NUTs sampler with CmdStan
+#' Fit a Stan Model using the NUTs sampler with 'CmdStan'
 #'
 #' @param args List of stan arguments
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
-#' @param max_execution_time Numeric, defauls to Inf. What is the maximum execution time per chain. Results will
+#' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain. Results will
 #' still be returned as long as at least 2 chains complete successfully within the timelimit. 
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
 #' @return A stan model object
@@ -557,7 +557,7 @@ fit_model_with_nuts_cmd <- function(args, future = FALSE, max_execution_time = I
   return(fit)
 }
 
-#' Fit a Stan Model using Varitional Inference
+#' Fit a Stan Model using Variational Inference
 #'
 #' @inheritParams fit_model_with_nuts
 #' @importFrom futile.logger flog.debug flog.info flog.error

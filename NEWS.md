@@ -1,3 +1,12 @@
+#EpiNow2 1.3.0
+
+This release includes the optional use of the [`cmdstanr`](https://mc-stan.org/cmdstanr/) package to interface directly with CmdStan. Because `cmdstanr` is a lightweight package that directly interfaces with CmdStan, new features that have been introduced in CmdStan will be immediately available for users of EpiNow2 without having to wait for their introduction into `rstan` (e.g. within-chain parallelization).
+
+## New features
+
+* Added `backend` argument to specifiy one of "rstan" (default) or "cmdstan" to the `estimate_infections` function.
+
+
 # EpiNow2 1.2.1
 
 This release introduces multiple breaking interface changes. Please see the README for examples of the new interface. It adds a range of quality of life improvements including updating the `stan` interface to support fitting each chain independently and offering variational inference as an alternative, experimental, fitting option. Notably it also adds support for nesting logging and a parallel enabled progress bar via the `progressr` package. Minor bugs have been fixed in the core model implementation focussing on stability and several already implemented features have been extended. Major model developments are planned for the next release of `EpiNow2`.
