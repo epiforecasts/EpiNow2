@@ -423,7 +423,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
                                 timeout = max_time,
                                 onTimeout = "silent")
     
-    if (length(names(fit)) == 0) {
+    if (is.null(fit) || length(names(fit)) == 0) {
       return(NULL)
     }else{
       return(fit)
