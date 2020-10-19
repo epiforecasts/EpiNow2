@@ -45,7 +45,8 @@
 #'                        generation_time = generation_time,
 #'                        delays = list(incubation_period, reporting_delay),
 #'                        stan_args = list(warmup = 100, 
-#'                                         cores = ifelse(interactive(), 4, 1)))
+#'                                         cores = ifelse(interactive(), 4, 1)),
+#'                        verbose = TRUE, future = TRUE, future_rt = "estimate")
 #'}
 regional_epinow <- function(reported_cases, 
                             target_folder = NULL, 
