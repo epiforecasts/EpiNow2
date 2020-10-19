@@ -244,7 +244,7 @@ regional_summary <- function(regional_output = NULL,
       suppressWarnings(
         suppressMessages(
           ggplot2::ggsave(file.path(summary_dir, plot),
-                          high_plots$reff, dpi = 300, width = width, 
+                          plot, dpi = 300, width = width, 
                           height = height, ...)
         ))
     }
