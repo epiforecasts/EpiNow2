@@ -9,3 +9,4 @@
 
 * GNU make is a SystemRequirement
 * Suggests or Enhances not in mainstream repositories: EpiSoon (available using Additional_repositories from https://epiforecasts.io/drat/)
+* This is a resubmission fixing the link issues and adding several hot fixing based on user feedback.

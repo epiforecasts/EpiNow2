@@ -14,7 +14,7 @@ contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](
 [![PRs
 Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](http://makeapullrequest.com)
 [![GitHub
-commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.2.1.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/)
+commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.2.1.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/master/)
 [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211)
 
 This package estimates the time-varying reproduction number, rate of
@@ -375,7 +375,7 @@ are key to understanding the results from `{EpiNow2}` .
 
 `{EpiNow2}` is integrated with the `{RtD3}` package which provides
 interactive visualisations of Rt estimates. See the package
-[documentation](https://epiforecasts.io/RtD3) for details.
+[documentation](https://epiforecasts.io/RtD3/) for details.
 
 ## Contributing
 
