@@ -37,6 +37,7 @@ function in `regional_epinow` and `epinow`.
 * Cleaned up wrapper functions to move individual jobs into functions.
 * Adds testing of high level functions and some low level unit testing.
 * Adds a csv download button the interactive table in the regional summary table.
+* Makevars updated to remove the dependency on GNU Make by @hsbadr
 
 # EpiNow2 1.1.0
 
