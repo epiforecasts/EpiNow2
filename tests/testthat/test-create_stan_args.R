@@ -11,7 +11,7 @@ test_that("create_stan_args returns the expected defaults when the approximate m
   
   expect_equal(names(create_stan_args(method = "approximate")), c("object", "data", "init", 
                                                                   "refresh", "trials", "iter", 
-                                                                  "output_samples"))
+                                                                  "output_samples", "seed"))
 })
 
 

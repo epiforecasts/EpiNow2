@@ -10,6 +10,9 @@ template:
       card: summary_large_image
   params:
     bootswatch: lumen
+    docsearch:
+      api_key: 43da981922253a06c4dfab7b53f2410e
+      index_name: epinow2
 
 development:
   mode: release
