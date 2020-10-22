@@ -41,6 +41,10 @@ Authors@R: c(
            email = "badr@jhu.edu",
            role = c("ctb"),
            comment = c(ORCID = "0000-0002-9808-2344")),
+    person("Michael", "DeWitt",
+           email = "me.dewitt.jr@gmail.com",
+           role = c("ctb"),
+           comment = c(ORCID = "0000-0001-8940-1967")),
     person(given = "EpiForecasts",
              role = c("aut")),
     person("Sebastian", "Funk",
@@ -101,5 +105,4 @@ LinkingTo:
     RcppEigen (>= 0.3.3.3.0),
     rstan (>= 2.21.1),
     StanHeaders (>= 2.21.0-5)
-SystemRequirements: GNU make
 Language: en-GB
