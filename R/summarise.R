@@ -243,8 +243,8 @@ regional_summary <- function(regional_output = NULL,
     save_ggplot <- function(plot, name, height = 12, width = 12, ...) {
       suppressWarnings(
         suppressMessages(
-          ggplot2::ggsave(file.path(summary_dir, plot),
-                          high_plots$reff, dpi = 300, width = width, 
+          ggplot2::ggsave(file.path(summary_dir, name),
+                          plot, dpi = 300, width = width, 
                           height = height, ...)
         ))
     }

@@ -1,10 +1,21 @@
 
 # EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters
 
+[![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions)
+[![Codecov test
+coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master)
+[![metacran
+downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
 
-[![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions) [![Codecov test coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master) [![HitCount](http://hits.dwyl.com/epiforecasts/EpiNow2.svg)](http://hits.dwyl.com/epiforecasts/EpiNow2) [![metacran downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
-
-[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)  [![GitHub contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](https://github.com/epiforecasts/EpiNow2/graphs/contributors)  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](http://makeapullrequest.com) [![GitHub commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.2.0.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/) [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211) 
+[![MIT
+license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
+[![GitHub
+contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](https://github.com/epiforecasts/EpiNow2/graphs/contributors)
+[![PRs
+Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](http://makeapullrequest.com)
+[![GitHub
+commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.2.1.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/master/)
+[![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211)
 
 This package estimates the time-varying reproduction number, rate of
 spread, and doubling time using a range of open-source tools ([Abbott et
@@ -61,10 +72,7 @@ for an example.
 
 ## Installation
 
-Install the stable version (*Note: The CRAN release of `EpiNow2 1.1.0`
-has a substantially different interface to the one described below. It
-is suggested to install the development version of the package or to
-review the README in `EpiNow2 1.1.0`*) of the package:
+Install the stable version of the package:
 
 ``` r
 install.packages("EpiNow2")
@@ -181,14 +189,13 @@ the default method (though this approach is experimental).
 ``` r
 estimates <- epinow(reported_cases = reported_cases, 
                     generation_time = generation_time,
-                    delays = list(incubation_period, reporting_delay),
-                    logs = NULL)
-#> WARN [2020-10-15 18:25:32] epinow: There were 2 divergent transitions after warmup. See
+                    delays = list(incubation_period, reporting_delay))
+#> WARN [2020-10-17 18:51:27] epinow: There were 1 divergent transitions after warmup. See
 #> http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them. - 
-#> WARN [2020-10-15 18:25:32] epinow: Examine the pairs() plot to diagnose sampling problems
+#> WARN [2020-10-17 18:51:27] epinow: Examine the pairs() plot to diagnose sampling problems
 #>  - 
-#> WARN [2020-10-15 18:25:32] epinow: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> WARN [2020-10-17 18:51:27] epinow: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 #> Running the chains for more iterations may help. See
 #> http://mc-stan.org/misc/warnings.html#bulk-ess -
 names(estimates)
@@ -202,27 +209,27 @@ parameters in an easily explored format.
 ``` r
 head(estimates$estimates$samples)
 #>      variable  parameter time       date sample     value strat     type
-#> 1: infections infections    1 2020-02-12      1  1.920879  <NA> estimate
-#> 2: infections infections    2 2020-02-13      1 10.088548  <NA> estimate
-#> 3: infections infections    3 2020-02-14      1 17.178889  <NA> estimate
-#> 4: infections infections    4 2020-02-15      1 27.634226  <NA> estimate
-#> 5: infections infections    5 2020-02-16      1 44.621471  <NA> estimate
-#> 6: infections infections    6 2020-02-17      1 44.704228  <NA> estimate
+#> 1: infections infections    1 2020-02-10      1  2.179007  <NA> estimate
+#> 2: infections infections    2 2020-02-11      1  9.525386  <NA> estimate
+#> 3: infections infections    3 2020-02-12      1 17.027600  <NA> estimate
+#> 4: infections infections    4 2020-02-13      1 28.206571  <NA> estimate
+#> 5: infections infections    5 2020-02-14      1 43.933784  <NA> estimate
+#> 6: infections infections    6 2020-02-15      1 60.054254  <NA> estimate
 head(estimates$estimates$summarised)
 #>          date variable strat     type   median     mean         sd lower_90
-#> 1: 2020-02-22        R  <NA> estimate 2.030470 2.041023 0.21881114 1.702665
-#> 2: 2020-02-23        R  <NA> estimate 2.013471 2.017060 0.16547736 1.749692
-#> 3: 2020-02-24        R  <NA> estimate 1.991144 1.993677 0.12344306 1.796140
-#> 4: 2020-02-25        R  <NA> estimate 1.969293 1.970475 0.09440217 1.820491
-#> 5: 2020-02-26        R  <NA> estimate 1.945436 1.947055 0.07988297 1.817648
-#> 6: 2020-02-27        R  <NA> estimate 1.924229 1.923030 0.07781099 1.793330
+#> 1: 2020-02-22        R  <NA> estimate 1.549624 1.549110 0.21019172 1.211349
+#> 2: 2020-02-23        R  <NA> estimate 1.588556 1.584294 0.16866418 1.306297
+#> 3: 2020-02-24        R  <NA> estimate 1.621249 1.621112 0.13137269 1.412096
+#> 4: 2020-02-25        R  <NA> estimate 1.655946 1.658159 0.10155237 1.496369
+#> 5: 2020-02-26        R  <NA> estimate 1.691028 1.693870 0.08394599 1.565666
+#> 6: 2020-02-27        R  <NA> estimate 1.721392 1.726590 0.08133720 1.597693
 #>    lower_50 lower_20 upper_20 upper_50 upper_90
-#> 1: 1.896576 1.981515 2.081383 2.177189 2.387305
-#> 2: 1.904355 1.972517 2.056468 2.125750 2.284865
-#> 3: 1.910323 1.963649 2.022345 2.077005 2.204855
-#> 4: 1.906575 1.945704 1.993524 2.030962 2.128385
-#> 5: 1.891581 1.924831 1.965225 2.002314 2.080576
-#> 6: 1.873226 1.903116 1.942468 1.972435 2.052961
+#> 1: 1.413297 1.497266 1.607370 1.683982 1.885375
+#> 2: 1.473039 1.541564 1.634822 1.699617 1.857260
+#> 3: 1.529081 1.591867 1.653258 1.713121 1.838594
+#> 4: 1.587340 1.632850 1.679249 1.727274 1.824966
+#> 5: 1.636651 1.670006 1.713387 1.752996 1.836745
+#> 6: 1.672337 1.704040 1.744467 1.779268 1.860987
 ```
 
 Reported cases are returned separately in order to ease reporting of
@@ -231,27 +238,27 @@ forecasts and model evaluation.
 ``` r
 head(estimates$estimated_reported_cases$samples)
 #>          date sample cases  type
-#> 1: 2020-02-22      1    24 gp_rt
-#> 2: 2020-02-23      1    53 gp_rt
-#> 3: 2020-02-24      1    85 gp_rt
-#> 4: 2020-02-25      1   125 gp_rt
-#> 5: 2020-02-26      1   101 gp_rt
-#> 6: 2020-02-27      1    75 gp_rt
+#> 1: 2020-02-22      1    42 gp_rt
+#> 2: 2020-02-23      1    99 gp_rt
+#> 3: 2020-02-24      1   170 gp_rt
+#> 4: 2020-02-25      1    67 gp_rt
+#> 5: 2020-02-26      1    91 gp_rt
+#> 6: 2020-02-27      1   143 gp_rt
 head(estimates$estimated_reported_cases$summarised)
 #>          date  type median    mean       sd lower_90 lower_50 lower_20 upper_20
-#> 1: 2020-02-22 gp_rt     28  30.027 12.16743    13.00       21       25     32.0
-#> 2: 2020-02-23 gp_rt     49  51.730 20.07706    24.00       37       45     54.0
-#> 3: 2020-02-24 gp_rt     63  67.506 26.52160    31.00       49       57     70.0
-#> 4: 2020-02-25 gp_rt     80  83.832 33.72490    38.00       61       72     87.4
-#> 5: 2020-02-26 gp_rt     88  92.290 34.62347    44.95       67       79     97.0
-#> 6: 2020-02-27 gp_rt    124 131.439 52.05080    62.00       95      114    137.0
+#> 1: 2020-02-22 gp_rt     54  57.086 25.42080     24.0    39.00     47.0       60
+#> 2: 2020-02-23 gp_rt     84  89.902 39.89837     36.0    62.00     75.0       94
+#> 3: 2020-02-24 gp_rt    106 112.554 49.82889     44.0    79.00     95.0      118
+#> 4: 2020-02-25 gp_rt    123 128.696 55.77681     53.0    89.75    109.0      134
+#> 5: 2020-02-26 gp_rt    125 133.923 58.70683     55.9    91.00    112.0      139
+#> 6: 2020-02-27 gp_rt    170 182.599 79.71963     77.0   127.00    152.6      188
 #>    upper_50 upper_90
-#> 1:    37.00    52.05
-#> 2:    63.00    87.05
-#> 3:    82.00   119.00
-#> 4:   102.00   143.05
-#> 5:   113.00   155.00
-#> 6:   160.25   224.15
+#> 1:    70.00   106.00
+#> 2:   111.00   167.05
+#> 3:   139.00   197.00
+#> 4:   159.00   221.05
+#> 5:   166.00   232.05
+#> 6:   225.25   333.00
 ```
 
 A summary table is returned for rapidly understanding the results and
@@ -261,13 +268,13 @@ for reporting purposes.
 knitr::kable(estimates$summary[, -c("numeric_estimate")])
 ```
 
-| measure                               | estimate             |
-| :------------------------------------ | :------------------- |
-| New confirmed cases by infection date | 2786 (624 – 10271)   |
-| Expected change in daily cases        | Likely decreasing    |
-| Effective reproduction no.            | 0.7 (0.3 – 1.3)      |
-| Rate of growth                        | \-0.08 (-0.2 – 0.09) |
-| Doubling/halving time (days)          | \-9.1 (8 – -3.4)     |
+| measure                               | estimate              |
+| :------------------------------------ | :-------------------- |
+| New confirmed cases by infection date | 3073 (496 – 12531)    |
+| Expected change in daily cases        | Unsure                |
+| Effective reproduction no.            | 0.8 (0.3 – 1.4)       |
+| Rate of growth                        | \-0.06 (-0.22 – 0.11) |
+| Doubling/halving time (days)          | \-11.1 (6.5 – -3.1)   |
 
 A range of plots are returned (with the single summary plot shown
 below).
@@ -306,20 +313,20 @@ in parallel depending on the settings used).
 estimates <- regional_epinow(reported_cases = reported_cases, 
                              generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay))
-#> INFO [2020-10-15 18:25:36] Producing following optional outputs: regions, summary, samples, plots, latest
-#> INFO [2020-10-15 18:25:36] Reporting estimates using data up to: 2020-04-01
-#> INFO [2020-10-15 18:25:36] No target directory specified so returning output
-#> INFO [2020-10-15 18:25:36] Producing estimates for: testland, realland
-#> INFO [2020-10-15 18:25:36] Regions excluded: none
-#> INFO [2020-10-15 18:25:36] Showing progress using progressr. Modify this behaviour using progressr::handlers.
-#> INFO [2020-10-15 18:33:04] Completed estimates for: testland
-#> INFO [2020-10-15 18:40:48] Completed estimates for: realland
-#> INFO [2020-10-15 18:40:48] Completed regional estimates
-#> INFO [2020-10-15 18:40:48] Regions with estimates: 2
-#> INFO [2020-10-15 18:40:48] Regions with runtime errors: 0
-#> INFO [2020-10-15 18:40:48] Producing summary
-#> INFO [2020-10-15 18:40:48] No summary directory specified so returning summary output
-#> INFO [2020-10-15 18:40:48] No target directory specified so returning timings
+#> INFO [2020-10-17 18:51:30] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2020-10-17 18:51:30] Reporting estimates using data up to: 2020-04-01
+#> INFO [2020-10-17 18:51:30] No target directory specified so returning output
+#> INFO [2020-10-17 18:51:30] Producing estimates for: testland, realland
+#> INFO [2020-10-17 18:51:30] Regions excluded: none
+#> INFO [2020-10-17 18:51:30] Showing progress using progressr. Modify this behaviour using progressr::handlers.
+#> INFO [2020-10-17 18:56:48] Completed estimates for: testland
+#> INFO [2020-10-17 19:01:06] Completed estimates for: realland
+#> INFO [2020-10-17 19:01:06] Completed regional estimates
+#> INFO [2020-10-17 19:01:06] Regions with estimates: 2
+#> INFO [2020-10-17 19:01:06] Regions with runtime errors: 0
+#> INFO [2020-10-17 19:01:06] Producing summary
+#> INFO [2020-10-17 19:01:06] No summary directory specified so returning summary output
+#> INFO [2020-10-17 19:01:06] No target directory specified so returning timings
 ```
 
 Results from each region are stored in a `regional` list with across
@@ -342,8 +349,8 @@ knitr::kable(estimates$summary$summarised_results$table)
 
 | Region   | New confirmed cases by infection date | Expected change in daily cases | Effective reproduction no. | Rate of growth        | Doubling/halving time (days) |
 | :------- | :------------------------------------ | :----------------------------- | :------------------------- | :-------------------- | :--------------------------- |
-| realland | 2915 (609 – 10156)                    | Likely decreasing              | 0.7 (0.3 – 1.3)            | \-0.07 (-0.21 – 0.08) | \-9.6 (8.7 – -3.3)           |
-| testland | 2856 (664 – 9765)                     | Likely decreasing              | 0.8 (0.3 – 1.3)            | \-0.07 (-0.2 – 0.07)  | \-9.7 (9.6 – -3.4)           |
+| realland | 3209 (583 – 13391)                    | Unsure                         | 0.8 (0.3 – 1.4)            | \-0.07 (-0.22 – 0.11) | \-10.1 (6.5 – -3.1)          |
+| testland | 3009 (476 – 12444)                    | Unsure                         | 0.8 (0.3 – 1.4)            | \-0.07 (-0.22 – 0.11) | \-10.3 (6.2 – -3.1)          |
 
 A range of plots are again returned (with the single summary plot shown
 below).
@@ -368,7 +375,7 @@ are key to understanding the results from `{EpiNow2}` .
 
 `{EpiNow2}` is integrated with the `{RtD3}` package which provides
 interactive visualisations of Rt estimates. See the package
-[documentation](https://epiforecasts.io/RtD3) for details.
+[documentation](https://epiforecasts.io/RtD3/) for details.
 
 ## Contributing
 
