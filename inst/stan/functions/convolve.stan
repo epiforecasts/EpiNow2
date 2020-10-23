@@ -12,9 +12,9 @@ vector convolve(vector cases, vector pdf) {
 
 // convolve latent infections to reported (but still unobserved) cases
 vector convolve_to_report(vector infections, 
-                          vector delay_mean, 
-                          vector delay_sd,
-                          vector max_delay
+                          real[] delay_mean, 
+                          real[] delay_sd,
+                          int[] max_delay,
                           int seeding_time) {
   
   int t = num_elements(infections);
