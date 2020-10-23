@@ -82,8 +82,8 @@
 #' # run model with default setting
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay), 
-#'                            stan_args = list(warmup = 200, control = list(adapt_delta = 0.8),
-#'                                             cores = ifelse(interactive(), 4, 1)), model = model, verbose = TRUE)
+#'                            stan_args = list(warmup = 200,
+#'                                             cores = ifelse(interactive(), 4, 1)))
 #'
 #' plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
 #' plots$summary
