@@ -1,7 +1,6 @@
 functions {
+#include functions/pmfs.stan
 #include functions/convolve.stan
-#include functions/discretised_lognormal_pmf.stan
-#include functions/discretised_gamma_pmf.stan
 #include functions/approximate_gp_functions.stan
 }
 
@@ -47,7 +46,7 @@ data {
 transformed data{
   real r_logmean;                             // Initial R mean in log space
   real r_logsd;                              // Iniital R sd in log space
-  int no_rt_time;                            // time without estimating Rt
+  int seeding_time;                            // time without estimating Rt
   int rt_h;                                  // rt estimation time minus the forecasting horizon
   int noise_time = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;
   //Update number of noise terms based on furure Rt assumption  
@@ -62,7 +61,7 @@ transformed data{
   r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
 
   // time without estimating Rt is the differrence of t and rt
-  no_rt_time = t - rt;
+  seeding_time = t - rt;
    
   // basis functions
   // see here for details: https://arxiv.org/pdf/2004.11408.pdf
@@ -79,7 +78,7 @@ parameters{
   real<lower = 0> alpha[fixed ? 0 : 1];               // scale of of noise GP
   vector[fixed ? 0 : M] eta;                          // unconstrained noise
   vector[estimate_r] initial_R;                       // baseline reproduction number estimate
-  vector[estimate_r > 0 ? no_rt_time : 0] initial_infections;
+  vector[estimate_r > 0 ? seeding_time : 0] initial_infections;
                                                       // seed infections adjustment when estimating Rt
   real<lower = 0> gt_mean[estimate_r];                // mean of generation time
   real <lower = 0> gt_sd[estimate_r];                 // sd of generation time
@@ -169,15 +168,15 @@ transformed parameters {
   R = exp(R);
 
      // estimate initial infections not using Rt
-     infections[1:no_rt_time] = infections[1:no_rt_time] + 
-                                  shifted_cases[1:no_rt_time] .* initial_infections;
+     infections[1:seeding_time] = infections[1:seeding_time] + 
+                                  shifted_cases[1:seeding_time] .* initial_infections;
       
      // estimate remaining infections using Rt
      infectiousness = rep_vector(1e-5, rt);
      for (s in 1:rt) {
-        infectiousness[s] += dot_product(infections[max(1, (s + no_rt_time - max_gt)):(s + no_rt_time -1)],
-                                         tail(rev_generation_time, min(max_gt, s + no_rt_time - 1)));
-        infections[s + no_rt_time] += R[s] * infectiousness[s];
+        infectiousness[s] += dot_product(infections[max(1, (s + seeding_time - max_gt)):(s + seeding_time -1)],
+                                         tail(rev_generation_time, min(max_gt, s + seeding_time - 1)));
+        infections[s + seeding_time] += R[s] * infectiousness[s];
       }
   }else{
     // generate infections from prior infections and non-parameteric noise
@@ -190,27 +189,8 @@ transformed parameters {
   }
 
   // reports from onsets
-  if (delays) {
-     {
-   vector[t] reports_hold;
-   for (s in 1:delays) {
-    // reverse the distributions to allow vectorised access
-    vector[max_delay[s]] rev_delay = rep_vector(1e-5, max_delay[s]);
-    for (j in 1:(max_delay[s])) {
-      rev_delay[j] +=
-        discretised_lognormal_pmf(max_delay[s] - j, delay_mean[s], delay_sd[s], max_delay[s]);
-    }
-     if (s == 1) {
-       reports_hold = convolve(infections, rev_delay);
-     }else{
-       reports_hold = convolve(reports_hold, rev_delay);
-     }
-   }
-    reports = reports_hold[(no_rt_time + 1):t];
-    }
-  }else{
-    reports = infections[(no_rt_time + 1):t];
-  }
+  reports = convolve_to_report(infections, delay_mean, delay_sd, max_delay, seeding_time);
+
 
  // Add optional weekly reporting effect
  if (est_week_eff) {
