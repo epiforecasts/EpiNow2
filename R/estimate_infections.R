@@ -74,8 +74,8 @@
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # set delays between infection and case report 
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- list(mean = log(5), mean_sd = log(2),
-#'                         sd = log(2), sd_sd = log(1.5), max = 30)
+#' reporting_delay <- list(mean = log(3), mean_sd = 0.1,
+#'                         sd = log(1), sd_sd = 0.1, max = 30)
 #'       
 #' # Note: all examples below have been tuned to reduce the runtimes of examples
 #' # these settings are not suggesed for real world use.                   
@@ -83,7 +83,8 @@
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay), 
 #'                            stan_args = list(warmup = 200,
-#'                                             cores = ifelse(interactive(), 4, 1)))
+#'                                             cores = ifelse(interactive(), 4, 1)),
+#'                                             model = model, verbose = interactive())
 #'
 #' plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
 #' plots$summary
@@ -91,7 +92,7 @@
 #' # run the model using the approximate method (variational inference)
 #' approx <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                               delays = list(incubation_period, reporting_delay),
-#'                               method = "approximate")
+#'                               method = "approximate", verbose = interactive())
 #'
 #' plots <- report_plots(summarised_estimates = approx$summarised, reported = reported_cases)
 #' plots$summary
@@ -102,7 +103,8 @@
 #'                                   delays = list(incubation_period, reporting_delay),
 #'                                   stan_args = list(warmup = 200, 
 #'                                                    control = list(adapt_delta = 0.9),
-#'                                                    cores = ifelse(interactive(), 4, 1)))
+#'                                                    cores = ifelse(interactive(), 4, 1)),
+#'                                   verbose = interactive())
 #' 
 #' plots <- report_plots(summarised_estimates = def_future$summarised, reported = reported_cases)
 #' plots$summary                          
@@ -113,7 +115,7 @@
 #'                                 stan_args = list(warmup = 200, 
 #'                                                  control = list(adapt_delta = 0.9),
 #'                                                  cores = ifelse(interactive(), 4, 1)),
-#'                                 future_rt = "latest")
+#'                                 future_rt = "latest", verbose = interactive())
 #'
 #' plots <- report_plots(summarised_estimates = fixed_rt$summarised, reported = reported_cases)
 #' plots$summary
@@ -127,7 +129,7 @@
 #'                                 stan_args = list(warmup = 200, 
 #'                                                  control = list(adapt_delta = 0.9),
 #'                                                  cores = ifelse(interactive(), 4, 1)),
-#'                                 burn_in = 7)
+#'                                 burn_in = 7, verbose = interactive())
 #'
 #' plots <- report_plots(summarised_estimates = snapshot$summarised, reported = snapshot_cases)
 #' plots$summary    
@@ -137,7 +139,7 @@
 #'                             delays = list(incubation_period, reporting_delay),
 #'                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                              control = list(adapt_delta = 0.9)),
-#'                             stationary = TRUE)
+#'                             stationary = TRUE, verbose = interactive())
 #'
 #' plots <- report_plots(summarised_estimates = stat$summarised, reported = reported_cases)
 #' plots$summary
@@ -147,7 +149,7 @@
 #'                              delays = list(incubation_period, reporting_delay),
 #'                              stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                               control = list(adapt_delta = 0.9)),
-#'                              gp = list())
+#'                              gp = list(), verbose = interactive())
 #'
 #' plots <- report_plots(summarised_estimates = fixed$summarised, reported = reported_cases)
 #' plots$summary
@@ -156,7 +158,8 @@
 #' no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 stan_args = list(warmup = 200,
 #'                                                  cores = ifelse(interactive(), 4, 1),
-#'                                                  control = list(adapt_delta = 0.9)))
+#'                                                  control = list(adapt_delta = 0.9)),
+#'                                 verbose = interactive())
 #'
 #' plots <- report_plots(summarised_estimates = no_delay$summarised, reported = reported_cases)
 #' plots$summary         
@@ -166,7 +169,8 @@
 #'                            delays = list(incubation_period, reporting_delay),
 #'                            stan_args = list(warmup = 200, 
 #'                                             cores = ifelse(interactive(), 4, 1),
-#'                                             control = list(adapt_delta = 0.9)))
+#'                                             control = list(adapt_delta = 0.9)),
+#'                            verbose = interactive())
 #'
 #' plots <- report_plots(summarised_estimates = bkp$summarised, reported = reported_cases)
 #' plots$summary
@@ -180,7 +184,7 @@
 #'                                      lengthscale_mean = 20, lengthscale_sd = 1),
 #'                            stan_args = list(warmup = 200, 
 #'                            cores = ifelse(interactive(), 4, 1),
-#'                            control = list(adapt_delta = 0.9)))                                                                   
+#'                            control = list(adapt_delta = 0.9)), verbose = interactive())                                                                   
 #'
 #' plots <- report_plots(summarised_estimates = cbkp$summarised, reported = reported_cases)
 #' plots$summary
@@ -195,7 +199,7 @@
 #'                             stan_args = list(warmup = 200, 
 #'                                              cores = ifelse(interactive(), 4, 1),
 #'                                              control = list(adapt_delta = 0.9)),
-#'                             gp = list())                                                         
+#'                             gp = list(), verbose = interactive())                                                         
 #'
 #' plots <- report_plots(summarised_estimates = fbkp$summarised, reported = reported_cases)
 #' plots$summary
@@ -208,7 +212,7 @@
 #'                                stan_args = list(warmup = 200, 
 #'                                                 cores = ifelse(interactive(), 4, 1),
 #'                                                 control = list(adapt_delta = 0.9)),
-#'                                rt_prior = list())
+#'                                rt_prior = list(), verbose = interactive())
 #'
 #' # plot just infections as report_plots does not support the backcalculation only model
 #' plot_estimates(estimate = backcalc$summarised[variable == "infections"],

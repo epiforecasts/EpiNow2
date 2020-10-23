@@ -84,7 +84,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
   
   
   if (data$est_week_eff  == 1) {
-    out$day_of_week <- extract_parameter("day_of_week_eff", 
+    out$day_of_week <- extract_parameter("day_of_week_simplex", 
                                          samples,
                                          1:7)
     
@@ -93,7 +93,9 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
                                                         "Sunday"),
                                                time = 1:7)
     out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][, 
-                                       strat := as.character(wday)][,`:=`(time = NULL, date = NULL, wday = NULL)]
+                                       strat := as.character(wday)][,
+                                      `:=`(time = NULL, date = NULL, wday = NULL)][,
+                                       value := value * 7]
   }
   
   if (data$delays > 0) {

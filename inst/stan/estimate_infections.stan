@@ -2,48 +2,20 @@ functions {
 #include functions/pmfs.stan
 #include functions/convolve.stan
 #include functions/approximate_gp_functions.stan
-#include functions/model.stan
+#include functions/observation_model.stan
 #include functions/generated_quantities.stan
 }
 
 
 data {
-  int t;                             // number of time steps
-  int rt;                            // time over which to estimate rt
-  int horizon;                       // forecast horizon
-  int day_of_week[rt];               // day of the week indicator (1 - 7)
-  int<lower = 0> cases[rt - horizon];// observed cases
-  vector<lower = 0>[t] shifted_cases;// median shifted smoothed cases
-  int delays;                        // no. of delay distributions
-  real delay_mean_sd[delays == 0 ? 1 : delays];  // prior sd of mean incubation period
-  real delay_mean_mean[delays == 0 ? 1 : delays];// prior mean of mean incubation period
-  real delay_sd_mean[delays == 0 ? 1 : delays];  // prior sd of sd of incubation period
-  real delay_sd_sd[delays == 0 ? 1 : delays];    // prior sd of sd of incubation period
-  int max_delay[delays == 0 ? 1 : delays];       // maximum incubation period
-  real <lower = 0> r_mean;           // prior mean of reproduction number
-  real <lower = 0> r_sd;             // prior standard deviation of reproduction number
-  real gt_mean_sd;                   // prior sd of mean generation time
-  real gt_mean_mean;                 // prior mean of mean generation time
-  real gt_sd_mean;                   // prior sd of sd of generation time
-  real gt_sd_sd;                     // prior sd of sd of generation time
-  int max_gt;                        // maximum generation time
-  int model_type;                    // type of model: 0 = poisson otherwise negative binomial
-  int estimate_r;                    // should the reproduction no be estimated (1 = yes)
-  real L;				                     // boundary value for infections gp
-	int<lower=1> M;			               // basis functions for infections gp
-	real lengthscale_alpha;            // alpha for gp lengthscale prior
-	real lengthscale_beta;             // beta for gp lengthscale prior
-	real alpha_sd;                     // standard deviation of the alpha gp kernal parameter
-	int est_week_eff;
-	vector[rt] time;
-	vector[t] inf_time;
-	int stationary;                    // is underlying Rt assumed to be stationary (+ GP)
-	int break_no;                      // no of breakpoints (0 = no breakpoints)
-	int breakpoints[rt];               // when do breakpoints occur 
-	int fixed;                        // Indicates if Rt/backcalculation is fixed 
-	int future_fixed;                 // is underlying future Rt assumed to be fixed
-	int fixed_from;                   // Reference date for when Rt estimation should be fixed
+#include /data/observations.stan
+#include /data/delays.stan
+#include /data/gaussian_process.stan
+#include /data/generation_time.stan
+#include /data/observation_model.stan
+#include /data/rt.stan
 }
+
 
 transformed data{
   real r_logmean;                             // Initial R mean in log space
@@ -72,7 +44,7 @@ transformed data{
   }
 }
 parameters{
-  simplex[est_week_eff ? 7 : 1] day_of_week_eff_raw;  // day of week reporting effect + control parameters
+  simplex[est_week_eff ? 7 : 1] day_of_week_simplex;  // day of week reporting effect + control parameters
   real<lower = 0> delay_mean[delays];                 // mean of delays
   real<lower = 0> delay_sd[delays];                   // sd of delays
   real<lower = 0> rep_phi[model_type];                // overdispersion of the reporting process
@@ -92,7 +64,6 @@ transformed parameters {
   vector[fixed ? 0 : noise_terms] noise;                  // noise on the mean shifted observed cases
   vector[t] infections;                                   // infections over time
   vector[rt] reports;                                     // reports over time
-  vector[est_week_eff ? 7 : 0] day_of_week_eff;           // day of the week effect
   vector[estimate_r > 0 ? rt : 0] R;                      // reproduction number over time
  {
   // temporary transformed parameters                                 
@@ -193,16 +164,9 @@ transformed parameters {
   // reports from onsets
   reports = convolve_to_report(infections, delay_mean, delay_sd, max_delay, seeding_time);
 
-
- // Add optional weekly reporting effect
+ // weekly reporting effect
  if (est_week_eff) {
-  // define day of the week effect
-  day_of_week_eff = 7 * day_of_week_eff_raw;
-
-  for (s in 1:rt) {
-    // add reporting effects (adjust for simplex scale)
-    reports[s] *= day_of_week_eff[day_of_week[s]];
-   }
+   reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);
   }
  }
 }
@@ -215,18 +179,8 @@ model {
   eta ~ std_normal();
   }
 
-  // reporting overdispersion
-  if (model_type) {
-    rep_phi[model_type] ~ exponential(1);
-  }
-
-  // penalised priors for delaysincubation period, and report delay
-  if (delays) {
-    for (s in 1:delays) {
-      target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * t;
-      target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * t;
-    }
-  }
+  // penalised priors delay distributions
+  delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, t);
 
   // estimate rt
   if (estimate_r) {
@@ -245,8 +199,7 @@ model {
   }
 
   // evaluate simulated reports compared to observed
-  report_lp(cases, reports, rep_phi, model_type, horizon);
-
+  report_lp(cases, reports, rep_phi, 1, model_type, horizon);
 }
   
 generated quantities {
