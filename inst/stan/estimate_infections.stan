@@ -8,12 +8,12 @@ functions {
 
 
 data {
-#include /data/observations.stan
-#include /data/delays.stan
-#include /data/gaussian_process.stan
-#include /data/generation_time.stan
-#include /data/observation_model.stan
-#include /data/rt.stan
+#include data/observations.stan
+#include data/delays.stan
+#include data/gaussian_process.stan
+#include data/generation_time.stan
+#include data/observation_model.stan
+#include data/rt.stan
 }
 
 
@@ -179,7 +179,7 @@ model {
   eta ~ std_normal();
   }
 
-  // penalised priors delay distributions
+  // penalised priors for delay distributions
   delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, t);
 
   // estimate rt
@@ -199,7 +199,7 @@ model {
   }
 
   // evaluate simulated reports compared to observed
-  report_lp(cases, reports, rep_phi, 1, model_type, horizon);
+  report_lp(cases, reports, rep_phi, 1, model_type, horizon, 1);
 }
   
 generated quantities {

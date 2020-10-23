@@ -14,13 +14,14 @@ vector day_of_week_effect(vector reports, int[] day_of_week, vector effect) {
    
 void report_lp(int[] cases, vector reports, 
                real[] rep_phi, int phi_prior,
-               int model_type, int horizon) {
+               int model_type, int horizon,
+               int weight) {
   int t = num_elements(reports) - horizon;
   if (model_type) {
     //overdispersion
     rep_phi[model_type] ~ exponential(phi_prior);
-    target += neg_binomial_2_lpmf(cases | reports[1:t], rep_phi[model_type]);
+    target += neg_binomial_2_lpmf(cases | reports[1:t], rep_phi[model_type]) * weight;
   }else{
-    target += poisson_lpmf(cases | reports[1:t]);
+    target += poisson_lpmf(cases | reports[1:t]) * weight;
   }
 }
