@@ -256,10 +256,7 @@ generated quantities {
   
   // estimate the growth rate
   if (estimate_r) {
-      real k = pow(gt_sd[estimate_r] / gt_mean[estimate_r], 2);
-      for (s in 1:rt) {
-        r[s] = (pow(R[s], k) - 1) / (k * gt_mean[estimate_r]);
-      } 
+    r = R_to_growth(R, gt_mean, gt_sd);
   }
   
   //simulate reported cases
