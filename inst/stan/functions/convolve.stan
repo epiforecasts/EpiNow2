@@ -42,3 +42,14 @@ vector convolve_to_report(vector infections,
   }
   return(reports);
 }
+
+void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd, 
+               real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd, int weight){
+    int delays = num_elements(delay_mean);
+    if (delays) {
+    for (s in 1:delays) {
+      target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight;
+      target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight;
+    }
+  }
+}
