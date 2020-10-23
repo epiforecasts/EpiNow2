@@ -82,9 +82,9 @@
 #' # run model with default setting
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay), 
-#'                            stan_args = list(warmup = 200,
+#'                            stan_args = list(warmup = 200, 
 #'                                             cores = ifelse(interactive(), 4, 1)),
-#'                                             model = model, verbose = interactive())
+#'                                             verbose = interactive())
 #'
 #' plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
 #' plots$summary
@@ -425,8 +425,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
     stan_args$chain_id <- chain
     fit <- tryCatch(R.utils::withTimeout(do.call(rstan::sampling, stan_args), 
                                          timeout = max_time,
-                                         onTimeout = "silent"),
-                    error = function(x) NULL)
+                                         onTimeout = "silent"))
     
     if (is.null(fit) || length(names(fit)) == 0) {
       return(NULL)

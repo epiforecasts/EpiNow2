@@ -24,6 +24,8 @@ vector convolve_to_report(vector infections,
   
   if (delays) {
     for (s in 1:delays) {
+      
+      // 
       // reverse the distributions to allow vectorised access
       vector[max_delay[s]] rev_delay = rep_vector(1e-5, max_delay[s]);
       for (j in 1:(max_delay[s])) {
