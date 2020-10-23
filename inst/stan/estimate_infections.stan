@@ -2,6 +2,8 @@ functions {
 #include functions/pmfs.stan
 #include functions/convolve.stan
 #include functions/approximate_gp_functions.stan
+#include functions/model.stan
+#include functions/generated_quantities.stan
 }
 
 
@@ -242,12 +244,9 @@ model {
     }
   }
 
-  // daily cases given reports
-  if (model_type) {
-    target += neg_binomial_2_lpmf(cases | reports[1:rt_h], rep_phi[model_type]);
-  }else{
-    target += poisson_lpmf(cases | reports[1:rt_h]);
-  }
+  // evaluate simulated reports compared to observed
+  report_lp(cases, reports, rep_phi, model_type, horizon);
+
 }
   
 generated quantities {
@@ -256,18 +255,11 @@ generated quantities {
   
   // estimate the growth rate
   if (estimate_r) {
-    r = R_to_growth(R, gt_mean, gt_sd);
+    // Estimate growth rate from reproduction number and generation time
+    r = R_to_growth(R, gt_mean[estimate_r], gt_sd[estimate_r]);
   }
   
   //simulate reported cases
-  if (model_type) {
-    for (s in 1:rt) {
-      imputed_reports[s] = neg_binomial_2_rng(reports[s] > 1e7 ? 1e7 : reports[s], rep_phi[model_type]);
-    }
-   }else{
-    for (s in 1:rt) {
-      imputed_reports[s] = poisson_rng(reports[s] > 1e8 ? 1e8 : reports[s]);
-    }
-  }
+  imputed_reports = report_rng(reports, rep_phi, model_type);
 }
 
