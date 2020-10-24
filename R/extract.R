@@ -74,7 +74,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
                                          reported_dates)
     
     if (data$break_no > 0) {
-      out$breakpoints <- extract_parameter("rt_break_eff", 
+      out$breakpoints <- extract_parameter("bp_effects", 
                                            samples, 
                                            1:data$break_no)
       

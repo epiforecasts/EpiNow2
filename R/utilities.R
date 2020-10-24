@@ -121,7 +121,7 @@ allocate_delays <- function(delay_var, no_delays) {
   if (no_delays > 0) {
     out <- unlist(delay_var)
   }else{
-    out <- 1
+    out <- numeric(0)
   }
   return(array(out))
 }

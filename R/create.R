@@ -203,15 +203,15 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rlnorm(mean_shift, meanlog = 0, sdlog = 0.1))
-      out$initial_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
-                                   sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
+      out$logR <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
+                                     sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
                                                  sd = generation_time$mean_sd))
       out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
                                                 sd = generation_time$sd_sd))
       
       if (data$break_no > 0) {
-        out$rt_break_eff <- array(rnorm(data$break_no, 0, 0.1))
+        out$bp_effects <- array(rnorm(data$break_no, 0, 0.1))
       }
     }
     return(out)
