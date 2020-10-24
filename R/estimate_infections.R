@@ -82,7 +82,7 @@
 #' # run model with default setting
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay), 
-#'                            stan_args = list(warmup = 200, 
+#'                            stan_args = list(warmup = 200, control = list(adapt_delta = 0.9),
 #'                                             cores = ifelse(interactive(), 4, 1)),
 #'                                             verbose = interactive())
 #'
@@ -231,7 +231,7 @@ estimate_infections <- function(reported_cases,
                                 gp = list(basis_prop = 0.3, boundary_scale = 2, 
                                           lengthscale_alpha = 4.5, lengthscale_beta = 21.5,
                                           alpha_sd = 0.1),
-                                rt_prior = list(mean = 1, sd = 1),
+                                rt_prior = list(mean = 1, sd = 0.5),
                                 week_effect = TRUE, 
                                 use_breakpoints = TRUE, 
                                 stationary = FALSE, 
@@ -256,7 +256,7 @@ estimate_infections <- function(reported_cases,
     fixed <- TRUE
     stationary <- TRUE
     gp = list(basis_prop = 1, boundary_scale = 1,
-              lengthscale_mean = 1, lengthscale_sd = 1,
+              lengthscale_alpha = 1, lengthscale_beta = 1,
               alpha_sd = 0.1)
   }else{
     fixed <- FALSE

@@ -1,7 +1,8 @@
 functions {
 #include functions/pmfs.stan
 #include functions/convolve.stan
-#include functions/approximate_gp_functions.stan
+#include functions/gaussian_process.stan
+#include functions/rt.stan
 #include functions/observation_model.stan
 #include functions/generated_quantities.stan
 }
@@ -20,7 +21,7 @@ data {
 transformed data{
   real r_logmean;                             // Initial R mean in log space
   real r_logsd;                              // Iniital R sd in log space
-  int seeding_time;                            // time without estimating Rt
+  int seeding_time;                          // time without estimating Rt
   int rt_h;                                  // rt estimation time minus the forecasting horizon
   int noise_time = estimate_r > 0 ? (stationary > 0 ? rt : rt - 1) : t;
   //Update number of noise terms based on furure Rt assumption  
@@ -51,12 +52,12 @@ parameters{
   real<lower = 0> rho[fixed ? 0 : 1];                 // length scale of noise GP
   real<lower = 0> alpha[fixed ? 0 : 1];               // scale of of noise GP
   vector[fixed ? 0 : M] eta;                          // unconstrained noise
-  vector[estimate_r] initial_R;                       // baseline reproduction number estimate
+  vector[estimate_r] logR;                            // baseline reproduction number estimate
   vector[estimate_r > 0 ? seeding_time : 0] initial_infections;
                                                       // seed infections adjustment when estimating Rt
   real<lower = 0> gt_mean[estimate_r];                // mean of generation time
   real <lower = 0> gt_sd[estimate_r];                 // sd of generation time
-  real rt_break_eff[break_no];                        // Rt breakpoint effects
+  real bp_effects[break_no];                  // Rt breakpoint effects
 }
 
 transformed parameters {
@@ -71,7 +72,6 @@ transformed parameters {
   vector[estimate_r > 0 ? rt : 0] infectiousness;         // infections over time
   vector[fixed > 0 ? 0 : M] diagSPD;                      // spectral density
 	vector[fixed > 0 ? 0 : M] SPD_eta;                      // spectral density * noise
-	int rt_break_count;                                     // counter for Rt breakpoints
 	
   // GP in noise - spectral densities
   if (!fixed) {
@@ -89,57 +89,14 @@ transformed parameters {
 
   // Estimate Rt and use this estimate to generate infections
   if (estimate_r) {
+    R = update_Rt(R, logR[estimate_r], noise, breakpoints, bp_effects, stationary);
+    
     // calculate pdf of generation time from distribution
     for (j in 1:(max_gt)) {
        rev_generation_time[j] =
            discretised_gamma_pmf(max_gt - j + 1, gt_mean[estimate_r], 
                                  gt_sd[estimate_r], max_gt);
      }
-  // initialise breakpoints as 0
-  rt_break_count = 0;
-  // assume a global Rt * GP
-  if (stationary) {
-    R = rep_vector(initial_R[estimate_r], rt);
-    for (s in 1:rt) {
-      if (!fixed) {
-         if (!future_fixed || (s <= noise_terms)) {
-           R[s] += noise[s];
-         }else{
-           R[s] = R[s - 1];
-         }
-       
-      }
-      // apply breakpoints if present
-      if (break_no > 0) {
-       rt_break_count += breakpoints[s];
-        if (rt_break_count > 0) {
-          R[s] += sum(rt_break_eff[1:rt_break_count]);
-        }
-      }
-    }
-  // assume GP on gradient of Rt (i.e Rt = R(t-1) * GP)
-  }else{
-    R[1] = initial_R[estimate_r];
-    for (s in 2:rt) {
-      if (!future_fixed || (s <= (noise_terms + 1))) {
-        R[s] = R[s - 1] + noise[s - 1];
-      }else{
-        R[s] = R[s - 1];
-      }
-
-      // apply breakpoints if present
-      if (break_no > 0) {
-        if (breakpoints[s] == 1) {
-          rt_break_count = sum(breakpoints[1:s]);
-          R[s] +=  rt_break_eff[rt_break_count];
-        }
-      }
-    }
-  }
-  
-  //map log R to R
-  R = exp(R);
-
      // estimate initial infections not using Rt
      infections[1:seeding_time] = infections[1:seeding_time] + 
                                   shifted_cases[1:seeding_time] .* initial_infections;
@@ -185,7 +142,7 @@ model {
   // estimate rt
   if (estimate_r) {
     // prior on R
-    initial_R[estimate_r] ~ normal(r_logmean, r_logsd);
+    logR[estimate_r] ~ normal(r_logmean, r_logsd);
     initial_infections ~ lognormal(0, 0.1);
     
     // penalised_prior on generation interval
@@ -194,7 +151,7 @@ model {
     
     //breakpoint effects on Rt
     if (break_no > 0) {
-      rt_break_eff ~ normal(0, 0.1);
+      bp_effects ~ normal(0, 0.1);
     }
   }
 
