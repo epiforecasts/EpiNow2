@@ -20,3 +20,38 @@
 		lam = ((m*pi())/(2*L))^2;
 		return lam;
 	}
+
+
+matrix setup_gp(int M, real L, int dimension) {
+  vector[dimension] time;
+  matrix[dimension, M] PHI;
+  for (s in 1:dimension) {
+    time[s] = s;
+  }
+  for (m in 1:M){ 
+    PHI[,m] = phi_SE(L, m, time); 
+  }
+  return(PHI);
+}
+
+
+vector update_gp(matrix PHI, int M, real L, real alpha, real rho, vector eta) {
+  vector[M] diagSPD;    // spectral density
+  vector[M] SPD_eta;    // spectral density * noise
+  int noise_terms = rows(PHI);
+  vector[noise_terms] noise = rep_vector(1e-6, noise_terms);
+  // GP in noise - spectral densities
+  for(m in 1:M){ 
+    diagSPD[m] =  sqrt(spd_SE(alpha, rho, sqrt(lambda(L, m)))); 
+  }
+  SPD_eta = diagSPD .* eta;
+  noise = noise + PHI[,] * SPD_eta;
+  return(noise);
+}
+
+void gaussian_process_lp(real[] rho, real[] alpha, vector eta,
+                         real ls_alpha, real ls_beta, real alpha_sd) {
+  rho ~ inv_gamma(ls_alpha, ls_beta);
+  alpha ~ normal(0, alpha_sd);
+  eta ~ std_normal();
+}

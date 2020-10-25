@@ -124,8 +124,6 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
                                   list(reported_cases$confirm))),
     t = length(reported_cases$date),
     rt = length(reported_cases$date) - mean_shift,
-    time = 1:(length(reported_cases$date) - mean_shift),
-    inf_time = 1:(length(reported_cases$date)),
     horizon = horizon,
     gt_mean_mean = generation_time$mean,
     gt_mean_sd = generation_time$mean_sd,
@@ -138,7 +136,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     est_week_eff = ifelse(week_effect, 1, 0),
     stationary = ifelse(stationary, 1, 0),
     fixed = ifelse(fixed, 1, 0),
-    break_no = break_no,
+    bp_n = break_no,
     breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
     future_fixed = ifelse(future_rt$fixed, 1, 0),
     fixed_from = future_rt$from
@@ -210,8 +208,8 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
       out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
                                                 sd = generation_time$sd_sd))
       
-      if (data$break_no > 0) {
-        out$bp_effects <- array(rnorm(data$break_no, 0, 0.1))
+      if (data$bp_n > 0) {
+        out$bp_effects <- array(rnorm(data$bp_n, 0, 0.1))
       }
     }
     return(out)
