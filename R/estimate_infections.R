@@ -84,7 +84,8 @@
 #'                            delays = list(incubation_period, reporting_delay), 
 #'                            stan_args = list(warmup = 200, control = list(adapt_delta = 0.9),
 #'                                             cores = ifelse(interactive(), 4, 1)),
-#'                                             verbose = interactive())
+#'                                             verbose = interactive(),
+#'                                             model = model, rt_prior = list())
 #'
 #' plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
 #' plots$summary
@@ -199,7 +200,7 @@
 #'                             stan_args = list(warmup = 200, 
 #'                                              cores = ifelse(interactive(), 4, 1),
 #'                                              control = list(adapt_delta = 0.9)),
-#'                             gp = list(), verbose = interactive())                                                         
+#'                             gp = list(), verbose = interactive(), model = model)                                                         
 #'
 #' plots <- report_plots(summarised_estimates = fbkp$summarised, reported = reported_cases)
 #' plots$summary

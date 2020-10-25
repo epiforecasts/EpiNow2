@@ -5,5 +5,4 @@
   real alpha_sd;                     // standard deviation of the alpha gp kernal parameter
   int stationary;                    // is underlying gaussian process first or second order
   int fixed;                         //  should a gaussian process be used
-  vector[rt] time;                   // used to define the gaussian process
-  vector[t] inf_time;
+  

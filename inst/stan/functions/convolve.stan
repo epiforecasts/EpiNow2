@@ -19,24 +19,17 @@ vector convolve_to_report(vector infections,
   
   int t = num_elements(infections);
   vector[t - seeding_time] reports;
-  vector[t] reports_hold;
+  vector[t] reports_hold = infections;
   int delays = num_elements(delay_mean);
   
   if (delays) {
     for (s in 1:delays) {
-      
-      // 
-      // reverse the distributions to allow vectorised access
       vector[max_delay[s]] rev_delay = rep_vector(1e-5, max_delay[s]);
       for (j in 1:(max_delay[s])) {
         rev_delay[j] +=
         discretised_lognormal_pmf(max_delay[s] - j, delay_mean[s], delay_sd[s], max_delay[s]);
       }
-      if (s == 1) {
-        reports_hold = convolve(infections, rev_delay);
-      }else{
-        reports_hold = convolve(reports_hold, rev_delay);
-      }
+      reports_hold = convolve(reports_hold, rev_delay);
     }
     reports = reports_hold[(seeding_time + 1):t];
   }else{
