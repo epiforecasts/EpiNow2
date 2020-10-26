@@ -209,15 +209,15 @@
 #' 
 #' # run model without Rt estimation (just backcalculation)
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                                delays = list(incubation_period, reporting_delay),
-#'                                stan_args = list(warmup = 200, 
-#'                                                 cores = ifelse(interactive(), 4, 1),
-#'                                                 control = list(adapt_delta = 0.9)),
-#'                                rt_prior = list(), verbose = interactive())
+#'                                 delays = list(incubation_period, reporting_delay),
+#'                                 stan_args = list(warmup = 200, 
+#'                                                  cores = ifelse(interactive(), 4, 1),
+#'                                                  control = list(adapt_delta = 0.9)),
+#'                                 rt_prior = list(), verbose = interactive(), model = model)
 #'
-#' # plot just infections as report_plots does not support the backcalculation only model
-#' plot_estimates(estimate = backcalc$summarised[variable == "infections"],
-#'                reported = reported_cases, ylab = "Cases")
+#' plots <- report_plots(summarised_estimates = backcalc$summarised, reported = reported_cases)
+#' plots$summary
+#' 
 #' }                                
 estimate_infections <- function(reported_cases, 
                                 model = NULL, 
