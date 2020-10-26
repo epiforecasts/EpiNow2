@@ -69,10 +69,6 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
                                samples,
                                reported_dates)
     
-    out$growth_rate <- extract_parameter("r", 
-                                         samples,
-                                         reported_dates)
-    
     if (data$bp_n > 0) {
       out$breakpoints <- extract_parameter("bp_effects", 
                                            samples, 
@@ -80,10 +76,17 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
       
       out$breakpoints <- out$breakpoints[, strat := date][, c("time", "date") := NULL]
     }
+  }else{
+    out$R <- extract_parameter("gen_R", 
+                               samples,
+                               reported_dates)
   }
   
+  out$growth_rate <- extract_parameter("r", 
+                                       samples,
+                                       reported_dates)
   
-  if (data$est_week_eff  == 1) {
+  if (data$week_effect  == 1) {
     out$day_of_week <- extract_parameter("day_of_week_simplex", 
                                          samples,
                                          1:7)
@@ -100,15 +103,14 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
   
   if (data$delays > 0) {
     out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
-    out$delay_mean <- out$delay_mean[, strat := as.character(time)][,
-                                                                    time := NULL][, date := NULL]
+    out$delay_mean <- 
+      out$delay_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
     
     out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$delays)
-    out$delay_sd <- out$delay_sd[, strat :=  as.character(time)][,
-                                                                 time := NULL][, date := NULL]
+    out$delay_sd <- 
+      out$delay_sd[, strat :=  as.character(time)][, time := NULL][, date := NULL]
     
   }
-  
   
   if (data$estimate_r == 1) {
     out$gt_mean <- extract_static_parameter("gt_mean", samples)
