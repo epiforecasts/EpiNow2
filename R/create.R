@@ -54,7 +54,6 @@ create_shifted_cases <- function(reported_cases, mean_shift,
   final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
                                                                         t := 1:.N]
   lm_model <- stats::lm(log(confirm) ~ t, data = final_week)
-  
   ## Estimate unreported future infections using a log linear model
   shifted_reported_cases <- shifted_reported_cases[,
                                                    t := 1:.N][, 

@@ -16,7 +16,7 @@
 #' on the log scale). To use no delays set this to `list()`.
 #' @param rt_prior A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
 #' Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
-#' log space). To infer infections only using non-parametric backcalculation set this to `list()`.
+#' log space). To infer infections and then calculate Rt using backcalculation set this to `list()`.
 #' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
 #' for the prior based on reported cases.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
@@ -84,8 +84,7 @@
 #'                            delays = list(incubation_period, reporting_delay), 
 #'                            stan_args = list(warmup = 200, control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                                             cores = ifelse(interactive(), 4, 1)),
-#'                                             verbose = interactive(),
-#'                            model = model)
+#'                                             verbose = interactive())
 #'
 #' plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
 #' plots$summary
@@ -96,7 +95,7 @@
 #'                                 stan_args = list(warmup = 200, 
 #'                                                  cores = ifelse(interactive(), 4, 1),
 #'                                                  control = list(adapt_delta = 0.9)),
-#'                                 rt_prior = list(), verbose = interactive(), model = model)
+#'                                 rt_prior = list(), verbose = interactive())
 #'
 #' plots <- report_plots(summarised_estimates = backcalc$summarised, reported = reported_cases)
 #' plots$summary
@@ -116,7 +115,7 @@
 #'                                   stan_args = list(warmup = 200, 
 #'                                                    control = list(adapt_delta = 0.9),
 #'                                                    cores = ifelse(interactive(), 4, 1)),
-#'                                   verbose = interactive())
+#'                                   verbose = interactive(), future = TRUE)
 #' 
 #' plots <- report_plots(summarised_estimates = def_future$summarised, reported = reported_cases)
 #' plots$summary                          
