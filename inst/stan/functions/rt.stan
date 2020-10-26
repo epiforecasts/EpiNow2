@@ -68,3 +68,4 @@ vector update_Rt(vector input_R, real logR, vector noise, int[] bps,
   R = exp(R);
   return(R);
 }
+
