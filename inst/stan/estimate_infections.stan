@@ -14,8 +14,8 @@ data {
 #include data/delays.stan
 #include data/gaussian_process.stan
 #include data/generation_time.stan
-#include data/observation_model.stan
 #include data/rt.stan
+#include data/observation_model.stan
 }
 
 transformed data{
