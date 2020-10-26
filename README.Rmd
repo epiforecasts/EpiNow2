@@ -24,19 +24,18 @@ It estimates the time-varying reproduction number on cases by date of infection 
 
 Uncertainty is propagated from all inputs into the final parameter estimates, helping to mitigate spurious findings. This is handled internally. The time-varying reproduction estimates and the uncertain generation time also give time-varying estimates of the rate of growth.
 
-The default model uses a non-stationary Gaussian process to estimate the time-varying reproduction number. Other options include:
+The default model uses a non-stationary Gaussian process to estimate the time-varying reproduction number and then infer infections. Other options include:
 
 * A stationary Gaussian process (faster to estimate but currently gives reduced performance for real time estimates).
 * User specified breakpoints.
 * A fixed reproduction number.
 * As piecewise constant by combining a fixed reproduction number with breakpoints.
 * As a random walk (by combining a fixed reproduction number with regularly spaced breakpoints (i.e weekly)).
+* Inferring infections using back-calculation and then calculating the time-varing reproduction number.
 
 The documentation for [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) provides examples of the different options available. 
 
 Forecasting is also supported for the time-varying reproduction number, infections and reported cases. The time-varying reproduction number can be forecast forwards in time using an integration with the [`{EpiSoon}`](https://epiforecasts.io/EpiSoon/) package, and converted to a case forecast using the renewal equation. Alternatively, the time-varying reproduction number and cases can be forecast using a Gaussian process. 
-
-As a standalone tool, non-parametric back-calculation is also supported. This uses a novel formulation based on a smoothed mean delay shift of reported cases combined with a Gaussian process to determine the most likely outbreak trajectory. Again see the documentation for [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) for an example.
 
 ## Installation
 
