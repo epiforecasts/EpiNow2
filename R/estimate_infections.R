@@ -271,7 +271,7 @@ estimate_infections <- function(reported_cases,
 
   # Check breakpoints -------------------------------------------------------
   if (is.null(reported_cases$breakpoint)) {
-    reported_cases$breakpoint <- NA
+    reported_cases$breakpoint <- 0
     use_breakpoints <- FALSE
   }
   
@@ -343,9 +343,6 @@ estimate_infections <- function(reported_cases,
                            delays = delays)
 
   # Set up default settings -------------------------------------------------
-  if (missing(model)) {
-    model <- NULL
-  }
   args <- create_stan_args(model, data = data, samples = samples, 
                            stan_args = stan_args,
                            init = create_initial_conditions(data, delays, rt_prior, 

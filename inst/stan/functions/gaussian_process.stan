@@ -22,6 +22,14 @@
 	}
 
 
+int setup_noise(int ot_h, int t, int horizon, int estimate_r, 
+                int stationary, int future_fixed, int fixed_from) {
+  int noise_time = estimate_r > 0 ? (stationary > 0 ? ot_h : ot_h - 1) : t;
+  int noise_terms =  future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time; 
+  return(noise_terms);
+}
+
+
 matrix setup_gp(int M, real L, int dimension) {
   vector[dimension] time;
   matrix[dimension, M] PHI;
