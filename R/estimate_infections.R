@@ -419,7 +419,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   
   fit_chain <- function(chain, stan_args, max_time) {
     stan_args$chain_id <- chain
-    fit <- tryCatch(R.utils::withTimeout(do.call(rstan::sampling, stan_args), 
+    fit <- (R.utils::withTimeout(do.call(rstan::sampling, stan_args), 
                                          timeout = max_time,
                                          onTimeout = "silent"))
     

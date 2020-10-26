@@ -221,30 +221,16 @@ run_region <- function(target_region,
   
   futile.logger::flog.trace("calling epinow2::epinow to process data for %s", target_region,
                             name = "EpiNow2.epinow")
-  timing <- system.time(
-    out <- tryCatch(
-      withCallingHandlers(EpiNow2::epinow(
-        reported_cases = regional_cases,
-        target_folder = target_folder,
-        target_date = target_date,
-        return_output = ifelse(output["summary"], TRUE, return_output),
-        output = names(output[output]),
-        logs = NULL,
-        id = target_region,
-        ...),
-        warning = function(w) {
-          futile.logger::flog.warn("%s: %s - %s", target_region, w$message, toString(w$call),
-                                   name = "EpiNow2.epinow")
-          rlang::cnd_muffle(w)
-        }
-      ), 
-      TimeoutException = function(ex) {
-        futile.logger::flog.warn("region %s timed out", target_region,
-                                 name = "EpiNow2.epinow")
-        return(list("timing" = Inf))
-      }
-    )
-  )
+  out <- EpiNow2::epinow(
+    reported_cases = regional_cases,
+    target_folder = target_folder,
+    target_date = target_date,
+    return_output = ifelse(output["summary"], TRUE, return_output),
+    output = names(output[output]),
+    logs = NULL,
+    id = target_region,
+    ...)
+    
   out <- process_region(out, target_region, timing,
                         return_output,
                         return_timing = output["timing"],
@@ -282,9 +268,6 @@ process_region <- function(out, target_region, timing,
     out$estimated_reported_cases$plots <- NULL
   }
   
-  if (!exists("timing", out) & return_timing) { # only exists if it failed and is Inf
-    out$timing <- timing['elapsed']
-  }
   if (exists("summary", out)) { # if it failed a warning would have been output above
     futile.logger::flog.info("Completed estimates for: %s", target_region, 
                              name = complete_logger)

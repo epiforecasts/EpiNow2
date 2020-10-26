@@ -24,8 +24,8 @@
 #' @inheritParams setup_default_logging
 #' @importFrom data.table setDT
 #' @importFrom lubridate days
-#' @importFrom futile.logger flog.fatal flog.warn flog.error
-#' @importFrom rlang cnd_muffle
+#' @importFrom futile.logger flog.fatal flog.warn flog.error flog.debug ftry
+#' @importFrom rlang trace_back
 #' @examples
 #' \donttest{
 #' # construct example distributions
@@ -90,7 +90,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   }
   # target data -------------------------------------------------------------
   if (missing(target_date)) {
-    target_date <- max(reported_cases$date)
+    target_date <- max(reported_cases$date, na.rm = TRUE)
   }
 
   # setup logging -----------------------------------------------------------
@@ -199,18 +199,16 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   
   # start processing with system timing and error catching
   timing <- system.time({
-    out <- tryCatch(
+    out <-  futile.logger::ftry(
       withCallingHandlers(epinow_internal(),
         warning = function(w) {
-          futile.logger::flog.warn("%s: %s - %s", id, w$message, toString(w$call),
-                                   name = "EpiNow2.epinow")
-          rlang::cnd_muffle(w)
-        }),
-      TimeoutException = function(ex) {
-        futile.logger::flog.warn("region %s timed out", id,
-                                 name = "EpiNow2.epinow")
-        return(list("timing" = Inf))
-      })
+          futile.logger::flog.warn(capture.output(rlang::trace_back()),
+                                    name = "EpiNow2.epinow")
+        },
+        error = function(e) {
+          futile.logger::flog.error(capture.output(rlang::trace_back()),
+                                    name = "EpiNow2.epinow")
+        }))
   })
   
   # log timing if specified
