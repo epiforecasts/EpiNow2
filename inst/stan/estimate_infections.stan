@@ -53,12 +53,10 @@ transformed parameters {
   vector[estimate_r > 0 ? ot_h : 0] R;                    // reproduction number
   vector[t] infections;                                   // latent infections
   vector[ot_h] reports;                                   // observed cases
-
   // GP in noise - spectral densities
   if (!fixed) {
     noise = update_gp(PHI, M, L, alpha[1], rho[1], eta);
   }
-
   // Estimate latent infections
   if (estimate_r) {
     // via Rt
@@ -68,10 +66,8 @@ transformed parameters {
     // via deconvolution
     infections = deconvolve_infections(shifted_cases, noise, fixed);
   }
-
   // convolve from latent infections to mean of observations
   reports = convolve_to_report(infections, delay_mean, delay_sd, max_delay, seeding_time);
-
  // weekly reporting effect
  if (week_effect) {
    reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);
@@ -83,10 +79,8 @@ model {
   if (!fixed) {
     gaussian_process_lp(rho, alpha, eta, lengthscale_alpha, lengthscale_beta, alpha_sd);
   }
-
   // penalised priors for delay distributions
   delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, t);
-
   // Rt priors
   if (estimate_r) {
     // prior on R
@@ -99,7 +93,6 @@ model {
     initial_infections ~ lognormal(0, 0.1);
     // penalised_prior on generation interval
     generation_time_lp(gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot);
-
   }
   // observed reports from mean of reports
   report_lp(cases, reports, rep_phi, 1, model_type, horizon, 1);
@@ -108,7 +101,6 @@ model {
 generated quantities {
   int imputed_reports[ot_h]; 
   real r[estimate_r > 0 ? ot_h : 0];
-  
   if (estimate_r) {
     // estimate growth rate from reproduction number and generation time
     r = R_to_growth(R, gt_mean[1], gt_sd[1]);
