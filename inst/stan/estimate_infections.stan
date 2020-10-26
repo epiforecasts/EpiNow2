@@ -22,7 +22,7 @@ transformed data{
   // observations
   int ot = t - seeding_time - horizon;  // observed time
   int ot_h = ot + horizon;  // observed time + forecast horizon
-  // non-parametric noise
+  // gaussian process
   int noise_terms = setup_noise(ot_h, t, horizon, estimate_r, stationary, future_fixed, fixed_from);
   matrix[noise_terms, M] PHI = setup_gp(M, L, noise_terms);  // basis function 
   // Rt
@@ -31,7 +31,7 @@ transformed data{
 }
 
 parameters{
-  // non-parametric noise
+  // gaussian process
   real<lower = 0> rho[fixed ? 0 : 1];    // length scale of noise GP
   real<lower = 0> alpha[fixed ? 0 : 1];  // scale of of noise GP
   vector[fixed ? 0 : M] eta;             // unconstrained noise
@@ -100,10 +100,19 @@ model {
   
 generated quantities {
   int imputed_reports[ot_h]; 
-  real r[estimate_r > 0 ? ot_h : 0];
-  if (estimate_r) {
-    // estimate growth rate from reproduction number and generation time
+  vector[estimate_r > 0 ? 0: ot_h] gen_R;
+  real r[ot_h];
+  if (estimate_r){
+    // estimate growth from estimated Rt
     r = R_to_growth(R, gt_mean[1], gt_sd[1]);
+  }else{
+    // sample generation time
+    real gt_mean_sample = normal_rng(gt_mean_mean, gt_mean_sd);
+    real gt_sd_sample = normal_rng(gt_sd_mean, gt_sd_sd);
+    // calculate Rt using infections and generation time
+    gen_R = calculate_Rt(infections, seeding_time, gt_mean, gt_sd, max_gt);
+    // estimate growth from calculated Rt
+    r = R_to_growth(calc_R, gt_mean_sample, gt_sd_sample);
   }
   // simulate reported cases
   imputed_reports = report_rng(reports, rep_phi, model_type);
