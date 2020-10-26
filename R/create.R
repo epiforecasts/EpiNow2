@@ -152,9 +152,9 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   
   # Parameters for Hilbert space GP -----------------------------------------
   # no of basis functions
-  data$M <- ceiling(data$rt * gp$basis_prop)
+  data$M <- ceiling((data$t - data$seeding_time) * gp$basis_prop)
   # Boundary value for c
-  data$L <- max(data$time) * gp$boundary_scale
+  data$L <- (data$t - data$seeding_time) * gp$boundary_scale
   data$lengthscale_alpha <- gp$lengthscale_alpha
   data$lengthscale_beta <- gp$lengthscale_beta
   data$alpha_sd <- gp$alpha_sd
@@ -201,13 +201,12 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rlnorm(mean_shift, meanlog = 0, sdlog = 0.1))
-      out$logR <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
-                                     sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
+      out$log_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
+                               sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
                                                  sd = generation_time$mean_sd))
       out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
                                                 sd = generation_time$sd_sd))
-      
       if (data$bp_n > 0) {
         out$bp_effects <- array(rnorm(data$bp_n, 0, 0.1))
       }
@@ -293,7 +292,6 @@ create_stan_args <- function(model, data = NULL, init = "random",
   }else{
     args <- default_args
   }
-  
   
   # set up dependent arguments
   if (method == "exact") {
