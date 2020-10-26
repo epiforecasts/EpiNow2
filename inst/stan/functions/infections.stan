@@ -1,10 +1,10 @@
-vector update_infectiousness(vector infections, vector gt_pmf,
-                             int seeding_time, int max_gt, int index){
+real update_infectiousness(vector infections, vector gt_pmf,
+                           int seeding_time, int max_gt, int index){
   int inf_start = max(1, (index + seeding_time - max_gt));
   int inf_end = (index + seeding_time - 1);
-  int pmf_accessed = min(max_gt, s + seeding_time - 1);
+  int pmf_accessed = min(max_gt, index + seeding_time - 1);
   real new_inf = dot_product(infections[inf_start:inf_end], tail(gt_pmf, pmf_accessed));
-  return(new_inf)
+  return(new_inf);
 }
 
 vector generate_infections(vector R, int seeding_time, real[] gt_mean, 
