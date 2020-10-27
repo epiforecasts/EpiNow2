@@ -83,16 +83,13 @@ regional_epinow <- function(reported_cases,
   reported_cases <- clean_regions(reported_cases, non_zero_points)
   regions <- unique(reported_cases$region)
   
-  # function to run the pipeline in a region
-  safe_run_region <- purrr::safely(run_region) 
-  
   # run regions (make parallel using future::plan)
   futile.logger::flog.trace("calling future apply to process each region through the run_region function")
   futile.logger::flog.info("Showing progress using progressr. Modify this behaviour using progressr::handlers.")
   
   progressr::with_progress({
     progress_fn <- progressr::progressor(along = regions)
-    regional_out <- future.apply::future_lapply(regions, safe_run_region,
+    regional_out <- future.apply::future_lapply(regions, run_region,
                                                 reported_cases = reported_cases,
                                                 target_folder = target_folder, 
                                                 target_date = target_date,
@@ -298,7 +295,6 @@ process_regions <- function(regional_out, regions) {
                              name = "EpiNow2.epinow")
   } 
   
-  regional_out <- purrr::map(regional_out, ~.$result)
   sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~ is.finite(.$timing))
   return(list(all = regional_out, successful = sucessful_regional_out))
 }
