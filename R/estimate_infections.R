@@ -244,9 +244,13 @@ estimate_infections <- function(reported_cases,
                                 verbose = FALSE){
   
   # Parse Stan Arguments to set algorithm and backend
+  backend <- match.arg(stan_args[["backend"]], backends_available())
+  method <- match.arg(stan_args[["algorithm"]], algoriths_available())
+  cache_model <- stan_args[["cache_model"]]
+  model <- ifelse(is.null(stan_args[["model"]]), NULL,is.null(stan_args[["model"]]))
+  fit <- ifelse(is.null(stan_args[["fit"]]), NULL,is.null(stan_args[["fit"]]))
   
   
-  backend <- match.arg(backend, backends_available())
   
   if(backend=="cmdstan"){
     requireNamespace("cmdstanr")
