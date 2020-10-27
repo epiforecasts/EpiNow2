@@ -477,7 +477,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     }else{
       failed_chains <- chains - length(fit)
       if (failed_chains > 0) {
-        futile.logger::flog.info("%s: %s chains failed or were timed out.", id, failed_chains, 
+        futile.logger::flog.warn("%s: %s chains failed or were timed out.", id, failed_chains, 
                                  name = "EpiNow2.epinow.estimate_infections.fit")
         if ((chains - failed_chains) < 2) {
           rlang::abort("model fitting failed as too few chains were returned to assess convergence (2 or more required)")

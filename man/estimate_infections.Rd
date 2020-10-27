@@ -27,6 +27,7 @@ estimate_infections(
   future = FALSE,
   max_execution_time = Inf,
   return_fit = FALSE,
+  id = "estimate_infections",
   verbose = FALSE
 )
 }
@@ -112,6 +113,9 @@ will fail with an informative error.}
 
 \item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
 
+\item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
+to assign errors to regions. Alter the default to run with error catching.}
+
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
 }
@@ -132,7 +136,7 @@ generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani
 # set delays between infection and case report 
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- list(mean = log(3), mean_sd = 0.1,
-                        sd = log(1), sd_sd = 0.1, max = 30)
+                        sd = log(1), sd_sd = 0.1, max = 15)
       
 # Note: all examples below have been tuned to reduce the runtimes of examples
 # these settings are not suggesed for real world use.                   

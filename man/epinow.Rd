@@ -67,7 +67,7 @@ the code for \code{setup_default_logging} and the \code{setup_logging} function 
 place to start.}
 
 \item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
-to assign \code{epinow} errors to regions. Change the default switches \code{epinow} to run with error catching.}
+to assign errors to regions. Alter the default to run with error catching.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}

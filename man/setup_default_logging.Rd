@@ -7,7 +7,6 @@
 setup_default_logging(
   logs = tempdir(),
   mirror_epinow = FALSE,
-  mirror_epinow_fit = FALSE,
   target_date = NULL
 )
 }
@@ -20,9 +19,6 @@ place to start.}
 
 \item{mirror_epinow}{Logical, defaults to FALSE. Should internal logging be
 returned from \code{epinow} to the console.}
-
-\item{mirror_epinow_fit}{Logical, defaults to FALSE. Should internal logging
-be returned from internal fitting functions to the console.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 }
