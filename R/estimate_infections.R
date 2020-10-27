@@ -246,12 +246,37 @@ estimate_infections <- function(reported_cases,
   # Parse Stan Arguments to set algorithm and backend
   backend <- match.arg(stan_args[["backend"]], backends_available())
   method <- match.arg(stan_args[["algorithm"]], algoriths_available())
+  
+  method <- ifelse(method!="sampling", "approximate", method)
+  
   cache_model <- stan_args[["cache_model"]]
   model <- ifelse(is.null(stan_args[["model"]]), NULL,is.null(stan_args[["model"]]))
   fit <- ifelse(is.null(stan_args[["fit"]]), NULL,is.null(stan_args[["fit"]]))
   
+  # Check Input of Model
+  # Collapse multiple fits if they are passed
+  if(!is.null(fit)){
+    if(class(fit)=="list"){
+      if(any(lapply(fit, class)!="stanfit")){
+        stop("The fit you have passed is not a valid `stanfit` object")
+      } else{
+        fit <- rstan::sflist2stanfit(fit)
+      }
+    }
+  }
   
+  if(class(fit)!="stanfit"){
+    stop("The fit you have passed is not a valid `stanfit` object")
+  }
   
+  # Nullify non-standard arguments now
+  stan_args$backend <- NULL
+  stan_args$method <- NULL
+  stan_args$model <- NULL
+  stan_args$fit <- NULL
+  stan_args$cache_model <- NULL
+  
+  # Verify Dependencies in case of cmdstanr
   if(backend=="cmdstan"){
     requireNamespace("cmdstanr")
     requireNamespace("rappdirs")
@@ -356,9 +381,7 @@ estimate_infections <- function(reported_cases,
                            delays = delays)
 
   # Set up default settings -------------------------------------------------
-  if (missing(model)) {
-    model <- NULL
-  }
+  
   args <- create_stan_args(model, data = data, samples = samples, 
                            stan_args = stan_args,
                            init = create_initial_conditions(data, delays, rt_prior, 
@@ -367,8 +390,9 @@ estimate_infections <- function(reported_cases,
                            verbose = verbose, backend = backend, cache_model=cache_model)
   
   # Fit model ---------------------------------------------------------------
+  if(!is.null(fit)){
   if(backend =="rstan"){
-  if (method == "exact") {
+  if (method == "sampling") {
     fit <- fit_model_with_nuts(args,
                                future = future,
                                max_execution_time = max_execution_time,
@@ -380,7 +404,7 @@ estimate_infections <- function(reported_cases,
   }
   
   if(backend !="rstan"){
-    if (method == "exact") {
+    if (method == "sampling") {
       fit <- fit_model_with_nuts_cmd(args,
                                  future = future,
                                  max_execution_time = max_execution_time,
@@ -390,7 +414,7 @@ estimate_infections <- function(reported_cases,
                                verbose = verbose)
     }
   }
-  
+  }
   # Extract parameters of interest from the fit -----------------------------
   out <- extract_parameter_samples(fit, data, 
                                    reported_inf_dates = reported_cases$date,
@@ -589,9 +613,10 @@ fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
   }
   
   fit_vb <- function(stan_args) {
-    fit <-  do.call(rstan::vb, stan_args)
+    fit <-  tryCatch(do.call(rstan::vb, stan_args),
+                     error = function(x) NULL)
     
-    if (length(names(fit)) == 0) {
+    if (is.null(fit) || length(names(fit)) == 0) {
       return(NULL)
     }else{
       return(fit)

@@ -322,6 +322,23 @@ algoriths_available <- function(){
   c("sampling", "meanfield", "fullrank")
 }
 
+#' Clear EpiNow2 Cache
+#' 
+#' This function clears anything that may exist in the EpiNow2 Cache. Most
+#' Commonly if you are using the CmdStan backend, you'll have items in your 
+#' cache.
+#' @section Warning:
+#' This will removed cached models and requires that \link[rappdirs] is installed
+#' 
+#' @returns invisible
+
+clear_epinow2_cache <- function(){
+  requireNamespace("rappdirs")
+  app_loc <- rappdirs::user_cache_dir("EpiNow2")
+  unlink(app_loc, recursive = TRUE)
+  invisible()
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(
   c("bottom", "cases", "confidence", "confirm", "country_code", "crps", 
