@@ -58,8 +58,8 @@ and enable it in batch by setting \code{R_PROGRESSR_ENABLE=TRUE} as an environme
 # construct example distributions
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- list(mean = log(10), mean_sd = log(2),
-                        sd = log(2), sd_sd = log(1.1), max = 30)
+reporting_delay <- list(mean = log(3), mean_sd = 0.1,
+                        sd = log(2), sd_sd = 0.1, max = 15)
                         
 # uses example case vector
 cases <- EpiNow2::example_confirmed[1:40]
