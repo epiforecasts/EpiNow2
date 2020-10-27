@@ -13,8 +13,8 @@
 #' if no directory for saving is specified. 
 #' @param forecast_args A list of arguments to pass to `forecast_infections`. Unless at a minimum a `forecast_model` is passed 
 #' tin his list then `forecast_infections` will be bypassed. 
-#' @param id A character string used to assign logging information on error. Used by `regional_epinow`
-#' to assign `epinow` errors to regions.
+#' @param id A character string used to assign logging information on error. Used by `regional_epinow` 
+#' to assign `epinow` errors to regions. Change the default switches `epinow` to run with error catching.
 #' @param ... Additional arguments passed to `estimate_infections`. See that functions documentation for options.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
@@ -25,13 +25,13 @@
 #' @importFrom data.table setDT
 #' @importFrom lubridate days
 #' @importFrom futile.logger flog.fatal flog.warn flog.error flog.debug ftry
-#' @importFrom rlang trace_back
+#' @importFrom rlang cnd_muffle
 #' @examples
 #' \donttest{
 #' # construct example distributions
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+#' reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(2), 1), max_value = 10)
 #' 
 #' # example case data
 #' reported_cases <- EpiNow2::example_confirmed[1:40] 
@@ -39,7 +39,7 @@
 #' # estimate Rt and nowcast/forecast cases by date of infection
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
 #'               delays = list(incubation_period, reporting_delay),
-#'               stan_args = list(cores = ifelse(interactive(), 4, 1),
+#'               stan_args = list(cores = ifelse(interactive(), 4, 1),  
 #'               control = list(adapt_delta = 0.95)), verbose = interactive())
 #' out
 #' 
@@ -72,7 +72,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                    forecast_args = NULL, logs = tempdir(),
                    id = "epinow", verbose = FALSE,
                    ...) {
-
+ 
   if (is.null(target_folder)) {
     return_output <- TRUE
   }
@@ -113,7 +113,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   latest_folder <- target_folders$latest
   
   # specify internal functions
-  epinow_internal <- function() {
+  epinow_internal <- function(...) {
     # check verbose settings and set logger to match---------------------------
     if (verbose) {
       futile.logger::flog.threshold(futile.logger::DEBUG,
@@ -198,26 +198,35 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   }
   
   # start processing with system timing and error catching
-  timing <- system.time({
-    out <-  futile.logger::ftry(
-      withCallingHandlers(epinow_internal(),
-        warning = function(w) {
-          futile.logger::flog.warn(capture.output(rlang::trace_back()),
-                                    name = "EpiNow2.epinow")
-        },
-        error = function(e) {
-          futile.logger::flog.error(capture.output(rlang::trace_back()),
-                                    name = "EpiNow2.epinow")
-        }))
-  })
+  start_time <- Sys.time()
+  out <- tryCatch(withCallingHandlers(
+    epinow_internal(...),
+    warning = function(w) {
+      futile.logger::flog.warn("%s: %s - %s", id, w$message, toString(w$call),
+                               name = "EpiNow2.epinow")
+      rlang::cnd_muffle(w)
+    }),
+    error = function(e) {
+      if (id %in% "epinow") {
+        stop(e)
+      }else{
+      error_text <- sprintf("%s: %s - %s", id, e$message, toString(e$call))
+      futile.logger::flog.error(error_text,
+                                name = "EpiNow2.epinow")
+      return(list(error = error_text))}
+    })
+  end_time <- Sys.time()
+  
+  if (!is.null(target_folder) & !is.null(out$error)) {
+    saveRDS(out$error, paste0(target_folder, "/error.rds"))
+    saveRDS(out$trace, paste0(target_folder, "/trace.rds"))
+  }
   
   # log timing if specified
   if (output["timing"]) {
-    if (return_output) {
-      out$timing <- timing['elapsed']
-    }
+    out$timing <- round(as.numeric(end_time - start_time), 1)
     if (!is.null(target_folder)) {
-      saveRDS(timing['elapsed'], paste0(target_folder, "/runtime.rds"))
+      saveRDS(timing, paste0(target_folder, "/runtime.rds"))
     }
   }
   
