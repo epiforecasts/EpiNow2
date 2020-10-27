@@ -12,6 +12,7 @@ regional_epinow(
   output = c("regions", "summary", "samples", "plots", "latest"),
   return_output = FALSE,
   summary_args = list(),
+  verbose = FALSE,
   logs = tempdir(),
   ...
 )
@@ -36,6 +37,8 @@ summary statistics. If \code{target_folder} is not NULL then the default is also
 if no directory for saving is specified.}
 
 \item{summary_args}{A list of arguments passed to \code{regional_summary}. See the \code{regional_summary} documentation for details.}
+
+\item{verbose}{Logical defaults to FALSE. Outputs verbose progress messages to the console from \code{epinow}.}
 
 \item{logs}{Character path indicating the target folder in which to store log
 information. Defaults to the temporary directory if not specified. Default logging
@@ -69,11 +72,12 @@ cases <- data.table::rbindlist(list(
                 
 # run epinow across multiple regions and generate summaries
 # samples and warmup have been reduced for this example
-out <- regional_epinow(reported_cases = cases, 
+out <- regional_epinow(reported_cases = cases[, breakpoint := 1], 
                        samples = 100,
                        generation_time = generation_time,
                        delays = list(incubation_period, reporting_delay),
                        stan_args = list(warmup = 100, 
-                                        cores = ifelse(interactive(), 4, 1)))
+                                        cores = ifelse(interactive(), 4, 1)),
+                       verbose = interactive())
 }
 }
