@@ -161,14 +161,6 @@ backcalc <- estimate_infections(reported_cases, generation_time = generation_tim
 plots <- report_plots(summarised_estimates = backcalc$summarised, reported = reported_cases)
 plots$summary
 
-# run the model using the approximate method (variational inference)
-approx <- estimate_infections(reported_cases, generation_time = generation_time,
-                              delays = list(incubation_period, reporting_delay),
-                              method = "approximate", verbose = interactive())
-
-plots <- report_plots(summarised_estimates = approx$summarised, reported = reported_cases)
-plots$summary
-
 # run the model with default settings using the future backend 
 ## (combine with a call to future::plan to make this parallel).
 def_future <- estimate_infections(reported_cases, generation_time = generation_time,
@@ -196,7 +188,7 @@ plots$summary
 # data (use burn_in here to remove the first week of estimates that may
 # be impacted by this most).
 snapshot_cases <- EpiNow2::example_confirmed[80:130]
-snapshot <- estimate_infections(reported_cases, generation_time = generation_time,
+snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
                                 stan_args = list(warmup = 200, 
                                                  control = list(adapt_delta = 0.9),
