@@ -12,6 +12,7 @@
 #' overall summary across regions ("summary"). The default is to return samples and plots alongside summarised estimates and 
 #' summary statistics. If `target_folder` is not NULL then the default is also to copy all results into a latest folder.
 #' @param summary_args A list of arguments passed to `regional_summary`. See the `regional_summary` documentation for details.
+#' @param verbose Logical defaults to FALSE. Outputs verbose progress messages to the console from `epinow`.
 #' @param ... Pass additional arguments to `epinow`. See the documentation for `epinow` for details.
 #' @inheritParams epinow
 #' @inheritParams regional_summary
@@ -40,12 +41,13 @@
 #'                 
 #' # run epinow across multiple regions and generate summaries
 #' # samples and warmup have been reduced for this example
-#' out <- regional_epinow(reported_cases = cases, 
+#' out <- regional_epinow(reported_cases = cases[, breakpoint := 1], 
 #'                        samples = 100,
 #'                        generation_time = generation_time,
 #'                        delays = list(incubation_period, reporting_delay),
 #'                        stan_args = list(warmup = 100, 
-#'                                         cores = ifelse(interactive(), 4, 1)))
+#'                                         cores = ifelse(interactive(), 4, 1)),
+#'                        verbose = interactive())
 #'}
 regional_epinow <- function(reported_cases, 
                             target_folder = NULL, 
@@ -55,6 +57,7 @@ regional_epinow <- function(reported_cases,
                                        "plots", "latest"),
                             return_output = FALSE,
                             summary_args = list(), 
+                            verbose = FALSE,
                             logs = tempdir(), ...) {
   # supported output
   output <- match_output_arguments(output, 
@@ -69,7 +72,8 @@ regional_epinow <- function(reported_cases,
   }
   
   # setup logging -----------------------------------------------------------
-  setup_default_logging(logs = logs, target_date = target_date)
+  setup_default_logging(logs = logs, target_date = target_date,
+                        mirror_epinow = verbose)
   
   futile.logger::flog.info("Reporting estimates using data up to: %s", target_date)
   if (is.null(target_folder)) {
@@ -99,6 +103,7 @@ regional_epinow <- function(reported_cases,
                                                                          "EpiNow2.epinow",
                                                                          "EpiNow2"),
                                                 progress_fn = progress_fn,
+                                                verbose = verbose,
                                                 ...,
                                                 future.scheduling = Inf,
                                                 future.seed = TRUE)
@@ -195,6 +200,7 @@ clean_regions <- function(reported_cases, non_zero_points) {
 #' @inheritParams regional_epinow
 #' @importFrom data.table setDTthreads
 #' @importFrom futile.logger flog.trace flog.warn
+#' @importFrom purrr quietly 
 #' @return A list of processed output as produced by `process_region`
 run_region <- function(target_region,
                        reported_cases,
@@ -203,6 +209,7 @@ run_region <- function(target_region,
                        return_output,
                        output,
                        complete_logger,
+                       verbose,
                        progress_fn,
                        ...) {
   futile.logger::flog.info("Initialising estimates for: %s", target_region, 
@@ -218,16 +225,18 @@ run_region <- function(target_region,
   
   futile.logger::flog.trace("calling epinow2::epinow to process data for %s", target_region,
                             name = "EpiNow2.epinow")
-  out <- EpiNow2::epinow(
+  
+  out <- epinow(
     reported_cases = regional_cases,
     target_folder = target_folder,
     target_date = target_date,
     return_output = ifelse(output["summary"], TRUE, return_output),
     output = names(output[output]),
     logs = NULL,
+    verbose = verbose,
     id = target_region,
     ...)
-    
+  
   out <- process_region(out, target_region, timing,
                         return_output,
                         return_timing = output["timing"],
@@ -272,7 +281,6 @@ process_region <- function(out, target_region, timing,
   return(out)
 }
 
-
 #' Process all Region Estimates
 #'
 #' @param regional_out A list of output from multiple runs of `regional_epinow`
@@ -289,12 +297,10 @@ process_regions <- function(regional_out, regions) {
   futile.logger::flog.info("Regions with runtime errors: %s", length(problems))
   for (location in names(problems)) {
     # output timeout / error
-    futile.logger::flog.info("Runtime error in %s : %s - %s", location,
-                             problems[[location]]$error$message, 
-                             toString(problems[[location]]$error$call),
+    futile.logger::flog.info("Runtime error in %s : %s", location,
+                             problems[[location]]$error, 
                              name = "EpiNow2.epinow")
   } 
-  
   sucessful_regional_out <- purrr::keep(purrr::compact(regional_out), ~ is.finite(.$timing))
   return(list(all = regional_out, successful = sucessful_regional_out))
 }

@@ -211,6 +211,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
       error_text <- sprintf("%s: %s - %s", id, e$message, toString(e$call))
       futile.logger::flog.error(error_text,
                                 name = "EpiNow2.epinow")
+      rlang::cnd_muffle(e)
       return(list(error = error_text))}
     })
   end_time <- Sys.time()

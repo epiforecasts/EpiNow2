@@ -3,4 +3,3 @@
   int horizon;                                      // forecast horizon
   int<lower = 0> cases[t - horizon - seeding_time]; // observed cases
   vector<lower = 0>[t] shifted_cases;               // median shifted smoothed cases
-  

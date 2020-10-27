@@ -5,4 +5,3 @@
   int breakpoints[t - seeding_time]; // when do breakpoints occur 
   int future_fixed;                  // is underlying future Rt assumed to be fixed
   int fixed_from;                    // Reference date for when Rt estimation should be fixed
-  
