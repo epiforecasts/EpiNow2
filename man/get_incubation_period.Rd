@@ -4,14 +4,14 @@
 \alias{get_incubation_period}
 \title{Get a Literature Distribution for the Incubation Period}
 \usage{
-get_incubation_period(disease, source, max_value = 30)
+get_incubation_period(disease, source, max_value = 15)
 }
 \arguments{
 \item{disease}{A character string indicating the disease of interest.}
 
 \item{source}{A character string indicating the source of interest.}
 
-\item{max_value}{Numeric, the maximum value to allow. Defaults to 30 days.}
+\item{max_value}{Numeric, the maximum value to allow. Defaults to 15 days.}
 }
 \value{
 A list defining a distribution

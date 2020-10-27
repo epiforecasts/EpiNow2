@@ -126,21 +126,6 @@ allocate_delays <- function(delay_var, no_delays) {
   return(array(out))
 }
 
-
-#' Timeout Error
-#' @param fit A stan fit object
-#' @return Nothing
-#' @importFrom futile.logger flog.error
-stop_timeout <- function(fit) {
-  if (is.null(fit)) {
-    futile.logger::flog.error("fitting timed out - try increasing max_execution_time",
-                              name = "Epinow2.epinow.estimate_infections.fit")
-    stop("model fitting timed out - try increasing max_execution_time")
-  }
-  return(invisible(NULL))
-}
-
-
 #' Match Input Output Arguments with Supported Options
 #'
 #' @param input_args A character vector of input arguments (can be partial).
