@@ -75,7 +75,7 @@
 #' # set delays between infection and case report 
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- list(mean = log(3), mean_sd = 0.1,
-#'                         sd = log(1), sd_sd = 0.1, max = 30)
+#'                         sd = log(1), sd_sd = 0.1, max = 15)
 #'       
 #' # Note: all examples below have been tuned to reduce the runtimes of examples
 #' # these settings are not suggesed for real world use.                   
@@ -240,6 +240,7 @@ estimate_infections <- function(reported_cases,
                                 future = FALSE, 
                                 max_execution_time = Inf, 
                                 return_fit = FALSE,
+                                id = "estimate_infections",
                                 verbose = FALSE){
   
   if (length(rt_prior) == 0) {
@@ -353,12 +354,13 @@ estimate_infections <- function(reported_cases,
     fit <- fit_model_with_nuts(args,
                                future = future,
                                max_execution_time = max_execution_time,
-                               verbose = verbose)
+                               verbose = verbose,
+                               id = id)
   }else if (method == "approximate"){
     fit <- fit_model_with_vb(args,
-                             verbose = verbose)
+                             verbose = verbose,
+                             id = id)
   }
-  
   # Extract parameters of interest from the fit -----------------------------
   out <- extract_parameter_samples(fit, data, 
                                    reported_inf_dates = reported_cases$date,
@@ -369,9 +371,7 @@ estimate_infections <- function(reported_cases,
       out$prior_infections <- shifted_reported_cases[, 
                 .(parameter = "prior_infections", time = 1:.N, 
                   date, value = confirm, sample = 1)]
-      
     }
-    
   # Format output -----------------------------------------------------------
   format_out <- format_fit(posterior_samples = out, 
                            horizon = horizon,
@@ -394,19 +394,23 @@ estimate_infections <- function(reported_cases,
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
 #' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain in seconds. 
 #'     Results will still be returned as long as at least 2 chains complete successfully within the timelimit. 
+#' @param id A character string used to assign logging information on error. Used by `regional_epinow` 
+#' to assign errors to regions. Alter the default to run with error catching.
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom R.utils withTimeout
 #' @importFrom future.apply future_lapply
 #' @importFrom purrr compact
 #' @importFrom rstan sflist2stanfit sampling
+#' @importFrom rlang abort cnd_muffle
 #' @return A stan model object
-fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, verbose = FALSE) {
+fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
+                                id = "stan", verbose = FALSE) {
   if (verbose) {
-    futile.logger::flog.debug(paste0("Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
+    futile.logger::flog.debug(paste0("%s: Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
                                      " chains each with a warm up of ", args$warmup, " iterations each) and ",
-                                     args$data$t," time steps of which ", args$data$horizon, " are a forecast"),
-                              name = "EpiNow2.epinow.estimate_infections.fit")
+                                     args$data$t," time steps of which ", args$data$horizon, " are a forecast"), 
+                              id, name = "EpiNow2.epinow.estimate_infections.fit")
   }
   
   
@@ -417,11 +421,29 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
     stuck_chains <- 0
   }
   
-  fit_chain <- function(chain, stan_args, max_time) {
+  fit_chain <- function(chain, stan_args, max_time, catch = FALSE) {
     stan_args$chain_id <- chain
-    fit <- (R.utils::withTimeout(do.call(rstan::sampling, stan_args), 
-                                         timeout = max_time,
-                                         onTimeout = "silent"))
+    if (catch) {
+      fit <- tryCatch(withCallingHandlers(
+        R.utils::withTimeout(do.call(rstan::sampling, stan_args), 
+                             timeout = max_time,
+                             onTimeout = "silent"),
+        warning = function(w) {
+          futile.logger::flog.warn("%s (chain: %s): %s - %s", id, chain, w$message, toString(w$call),
+                                   name = "EpiNow2.epinow.estimate_infections.fit")
+          rlang::cnd_muffle(w)
+        }),
+        error = function(e) {
+            error_text <- sprintf("%s (chain: %s): %s - %s", id, chain, e$message, toString(e$call))
+            futile.logger::flog.error(error_text,
+                                      name = "EpiNow2.epinow.estimate_infections.fit")
+            return(NULL)
+        })
+    }else{
+      fit <- R.utils::withTimeout(do.call(rstan::sampling, stan_args), 
+                                  timeout = max_time,
+                                  onTimeout = "silent")
+    }
     
     if (is.null(fit) || length(names(fit)) == 0) {
       return(NULL)
@@ -433,28 +455,32 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   if(!future) {
     fit <- fit_chain(1, stan_args = args, max_time = max_execution_time)
     if (stuck_chains > 0) {fit <- NULL}
-    stop_timeout(fit)
+    if (is.null(fit)) {
+      rlang::abort("model fitting was timed out - try increasing the max_execution_time")
+    }
   }else{
     chains <- args$chains
     args$chains <- 1
     args$cores <- 1
-     
     fits <- future.apply::future_lapply(1:chains, fit_chain, 
                                        stan_args = args, 
                                        max_time = max_execution_time,
+                                       catch = TRUE,
                                        future.seed = TRUE)
     if (stuck_chains > 0) {fits[1:stuck_chains] <- NULL}
     fit <- purrr::compact(fits)
     if (length(fit) == 0) {
       fit <- NULL
-      stop_timeout(fit)
+      if (is.null(fit)) {
+        rlang::abort("all chains failed - try inspecting the output for errors or increasing the max_execution_time")
+      }
     }else{
       failed_chains <- chains - length(fit)
       if (failed_chains > 0) {
-        futile.logger::flog.info(paste0(failed_chains, " chains failed or were timed out."),
+        futile.logger::flog.info("%s: %s chains failed or were timed out.", id, failed_chains, 
                                  name = "EpiNow2.epinow.estimate_infections.fit")
         if ((chains - failed_chains) < 2) {
-          stop("model fitting failed as too few chains were returned to assess convergence (2 or more required)")
+          rlang::abort("model fitting failed as too few chains were returned to assess convergence (2 or more required)")
         }
       }
       fit <- rstan::sflist2stanfit(fit)
@@ -469,13 +495,14 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom purrr safely
 #' @importFrom rstan vb
+#' @importFrom rlang abort
 #' @return A stan model object
-fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
+fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE) {
   if (verbose) {
-    futile.logger::flog.debug(paste0("Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
+    futile.logger::flog.debug(paste0("%s: Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
                                      args$output_samples, " approximate posterior samples for ", args$data$t," time steps of which ",
                                      args$data$horizon, " are a forecast"),
-                              name = "EpiNow2.epinow.estimate_infections.fit")
+                              id, name = "EpiNow2.epinow.estimate_infections.fit")
   }
   
   if (exists("trials", args)) {
@@ -510,12 +537,11 @@ fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
   
   if (is.null(fit)) {
     if (is.null(fit)) {
-      futile.logger::flog.error("fitting failed - try increasing stan_args$trials or inspecting the model input",
-                                name = "EpiNow2.epinow.estimate_infections.fit")
-      stop("Variational Inference failed due to: ", error)
+      futile.logger::flog.error("%s: Fitting failed - try increasing stan_args$trials or inspecting the model input",
+                                id, name = "EpiNow2.epinow.estimate_infections.fit")
+      rlang::abort("Variational Inference failed due to: ", error)
     }
   }
-  
   return(fit)
 }
 
@@ -533,7 +559,6 @@ fit_model_with_vb <- function(args, future = FALSE, verbose = FALSE) {
 #' @return A list of samples and summarised posterior parameter estimates
 format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
                        CrIs){
- 
   format_out <- list()
   # bind all samples together
   format_out$samples <- data.table::rbindlist(posterior_samples, fill = TRUE, idcol = "variable")

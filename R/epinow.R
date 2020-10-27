@@ -13,8 +13,6 @@
 #' if no directory for saving is specified. 
 #' @param forecast_args A list of arguments to pass to `forecast_infections`. Unless at a minimum a `forecast_model` is passed 
 #' tin his list then `forecast_infections` will be bypassed. 
-#' @param id A character string used to assign logging information on error. Used by `regional_epinow` 
-#' to assign `epinow` errors to regions. Change the default switches `epinow` to run with error catching.
 #' @param ... Additional arguments passed to `estimate_infections`. See that functions documentation for options.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
@@ -96,8 +94,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   # setup logging -----------------------------------------------------------
   setup_default_logging(logs = logs, 
                         target_date = target_date,
-                        mirror_epinow = TRUE,
-                        mirror_epinow_fit = verbose)
+                        mirror_epinow = TRUE)
   
   # setup input -------------------------------------------------------------
   output <- match_output_arguments(output, 
@@ -138,6 +135,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                      horizon = horizon,
                                      return_fit = output["fit"],
                                      verbose = verbose,
+                                     id = id,
                                      ...)
     
     save_estimate_infections(estimates, target_folder, 
@@ -216,6 +214,9 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
       return(list(error = error_text))}
     })
   end_time <- Sys.time()
+  if (!is.null(out$error)) {
+    out$trace <- rlang::trace_back()
+  }
   
   if (!is.null(target_folder) & !is.null(out$error)) {
     saveRDS(out$error, paste0(target_folder, "/error.rds"))

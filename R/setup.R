@@ -54,8 +54,6 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' place to start.
 #' @param mirror_epinow Logical, defaults to FALSE. Should internal logging be 
 #' returned from `epinow` to the console.
-#' @param mirror_epinow_fit Logical, defaults to FALSE. Should internal logging
-#' be returned from internal fitting functions to the console.
 #' @inheritParams setup_target_folder
 #' @return NULL
 #' @export
@@ -64,7 +62,6 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' setup_default_logging()
 setup_default_logging <- function(logs = tempdir(),
                                   mirror_epinow = FALSE,
-                                  mirror_epinow_fit = FALSE,
                                   target_date = NULL) {
   if (!is.null(logs)) {
     if (is.null(target_date)) {
@@ -74,7 +71,6 @@ setup_default_logging <- function(logs = tempdir(),
     log_path <- list()
     log_path$regional_epinow <- file.path(logs, "regional-epinow")
     log_path$epinow <- file.path(logs, "epinow")
-    log_path$epinow_fit <- file.path(logs, "epinow-estimate-infections")
     
     purrr::walk(log_path, function(path){
       if (!dir.exists(path)) {
@@ -88,9 +84,6 @@ setup_default_logging <- function(logs = tempdir(),
     setup_logging("INFO", file = paste0(log_path$epinow, "/", target_date, ".log"),
                   mirror_to_console = mirror_epinow,
                   name = "EpiNow2.epinow")
-    setup_logging("INFO", file = paste0(log_path$epinow_fit, "/" , target_date, ".log"),
-                  mirror_to_console = mirror_epinow_fit,
-                  name = "EpiNow2.epinow.estimate_infections")
   }
   return(invisible(NULL))
 }

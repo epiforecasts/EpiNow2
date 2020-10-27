@@ -13,6 +13,7 @@ reporting_delay <- list(mean = log(3), mean_sd = 0.1, sd = log(2), sd_sd = 0.1, 
 test_that("estimate_infections successfully returns estimates using default settings", {
   skip_on_cran()
   out <- suppressWarnings(estimate_infections(reported_cases, 
+                                              use_breakpoints = FALSE,
                                               generation_time = generation_time,
                                               delays = list(reporting_delay), samples = 50, 
                                               stan_args=  list(chains = 2, warmup = 50,
@@ -28,8 +29,8 @@ test_that("estimate_infections fails as expected when given a very short timeout
   skip_on_cran()
   expect_error(estimate_infections(reported_cases, generation_time = generation_time,
                                    delays = list(reporting_delay),
-                                   samples = 100, stan_args=list(chains = 2, warmup = 100,
-                                                                 control = list(adapt_delta = 0.8)), 
+                                   samples = 100, stan_args = list(chains = 2, warmup = 100,
+                                                                   control = list(adapt_delta = 0.8)), 
                                    future = TRUE, max_execution_time = 1))
   expect_error(estimate_infections(reported_cases, generation_time = generation_time,
                                    delays = list(reporting_delay),
