@@ -316,6 +316,12 @@ backends_available <- function(){
   c("rstan", "cmdstan")
 }
 
+# Algorithms Available
+
+algoriths_available <- function(){
+  c("sampling", "meanfield", "fullrank")
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(
   c("bottom", "cases", "confidence", "confirm", "country_code", "crps", 

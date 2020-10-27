@@ -215,9 +215,13 @@
 #'                reported = reported_cases, ylab = "Cases")
 #' }                                
 estimate_infections <- function(reported_cases, 
-                                model = NULL, 
                                 samples = 1000,
-                                stan_args = NULL,
+                                stan_args = list(
+                                  algorithm = "sampling",
+                                  backend = "rstan",
+                                  cache_model = TRUE,
+                                  fit = NULL,
+                                  model = NULL),
                                 method = "exact", 
                                 family = "negbin", 
                                 generation_time, 
@@ -237,9 +241,10 @@ estimate_infections <- function(reported_cases,
                                 future = FALSE, 
                                 max_execution_time = Inf, 
                                 return_fit = FALSE,
-                                verbose = FALSE,
-                                backend = "rstan",
-                                cache_model = TRUE){
+                                verbose = FALSE){
+  
+  # Parse Stan Arguments to set algorithm and backend
+  
   
   backend <- match.arg(backend, backends_available())
   
