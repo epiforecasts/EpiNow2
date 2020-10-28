@@ -79,9 +79,10 @@
 #' # run model with default setting
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay), 
-#'                            stan_args = list(warmup = 200, control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                                             cores = ifelse(interactive(), 4, 1)),
-#'                                             verbose = interactive())
+#'                            stan_args = list(warmup = 200,
+#'                             control = list(adapt_delta = 0.95, max_treedepth = 15),
+#'                             cores = ifelse(interactive(), 4, 1)),
+#'                             verbose = interactive())
 #'
 #' plot(def)
 #' 

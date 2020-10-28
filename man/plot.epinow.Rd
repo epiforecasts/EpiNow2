@@ -2,7 +2,6 @@
 % Please edit documentation in R/plot.R
 \name{plot.epinow}
 \alias{plot.epinow}
-\alias{plot}
 \title{Plot the Output from epinow}
 \usage{
 \method{plot}{epinow}(x, type = "summary", ...)

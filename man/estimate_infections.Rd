@@ -140,9 +140,10 @@ reporting_delay <- list(mean = log(3), mean_sd = 0.1,
 # run model with default setting
 def <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay), 
-                           stan_args = list(warmup = 200, control = list(adapt_delta = 0.95, max_treedepth = 15),
-                                            cores = ifelse(interactive(), 4, 1)),
-                                            verbose = interactive())
+                           stan_args = list(warmup = 200,
+                            control = list(adapt_delta = 0.95, max_treedepth = 15),
+                            cores = ifelse(interactive(), 4, 1)),
+                            verbose = interactive())
 
 plot(def)
 
@@ -224,14 +225,14 @@ reported_cases_bp <- data.table::copy(reported_cases)[,
 # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
 # model fit criteria (i.e LFO), comparison to models with non-static Rt and models with partially
 # constrained non-static Rt.           
-fbkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
+bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
                             stan_args = list(warmup = 200, 
                                              cores = ifelse(interactive(), 4, 1),
                                              control = list(adapt_delta = 0.9)),
                             gp = list(), verbose = interactive())                                                         
 
-plot(fbkp)
+plot(bkp)
 # breakpoint effect
 fbkp$summarised[variable == "breakpoints"]
 }                                
