@@ -184,17 +184,6 @@ may be needed*. See fitting progress by setting `verbose = TRUE`.
 estimates <- epinow(reported_cases = reported_cases, 
                     generation_time = generation_time,
                     delays = list(incubation_period, reporting_delay))
-#> WARN [2020-10-28 18:15:55] epinow: There were 1 divergent transitions after warmup. See
-#> http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-#> to find out why this is a problem and how to eliminate them. - 
-#> WARN [2020-10-28 18:15:55] epinow: Examine the pairs() plot to diagnose sampling problems
-#>  - 
-#> WARN [2020-10-28 18:15:56] epinow: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> http://mc-stan.org/misc/warnings.html#bulk-ess - 
-#> WARN [2020-10-28 18:15:57] epinow: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> http://mc-stan.org/misc/warnings.html#tail-ess -
 names(estimates)
 #> [1] "estimates"                "estimated_reported_cases"
 #> [3] "summary"                  "plots"
