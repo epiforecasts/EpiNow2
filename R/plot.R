@@ -253,7 +253,7 @@ plot_summary <- function(summary_results,
   return(plot)
 }
 
-#' Plot the Output from estimate_infections
+#' Plot method for estimate_infections
 #'
 #' @description \code{plot} method for class "estimate_infections". 
 #' @param x A list of output as produced by `estimate_infections`
@@ -286,7 +286,7 @@ plot.estimate_infections <- function(x, type = "summary", ...) {
   }
 }
 
-#' Plot the Output from epinow
+#' Plot method for epinow
 #'
 #' @description \code{plot} method for class "epinow". 
 #' @param x A list of output as produced by `epinow`
