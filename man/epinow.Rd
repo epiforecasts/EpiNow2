@@ -67,7 +67,7 @@ the code for \code{setup_default_logging} and the \code{setup_logging} function 
 place to start.}
 
 \item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
-to assign \code{epinow} errors to regions.}
+to assign errors to regions. Alter the default to run with error catching.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
@@ -88,7 +88,7 @@ results and interpreting them.
 # construct example distributions
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(2), 1), max_value = 10)
 
 # example case data
 reported_cases <- EpiNow2::example_confirmed[1:40] 
@@ -96,10 +96,11 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 # estimate Rt and nowcast/forecast cases by date of infection
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
               delays = list(incubation_period, reporting_delay),
-              stan_args = list(cores = ifelse(interactive(), 4, 1),
-              control = list(adapt_delta = 0.95)))
-out
-
+              stan_args = list(cores = ifelse(interactive(), 4, 1),  
+              control = list(adapt_delta = 0.95)), verbose = interactive())
+              
+summary(out)             
+plot(out)
 # optional forecasting using EpiSoon plug-in
 if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
@@ -114,7 +115,8 @@ if(requireNamespace("EpiSoon")){
                           model_params = list(models = "aefz", weights = "equal"),
                           forecast_params = list(PI.combination = "mean"), ...)}
                           ),
-                 stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)))
+                 stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
+                 verbose = interactive())
     out
    }
 }

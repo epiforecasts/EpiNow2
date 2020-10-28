@@ -154,12 +154,12 @@ get_regional_results <- function(regional_output,
 #' @param data A `data.table` in the format of `generation_times`.
 #' @param disease A character string indicating the disease of interest.
 #' @param source A character string indicating the source of interest.
-#' @param max_value Numeric, the maximum value to allow. Defaults to 30 days.
+#' @param max_value Numeric, the maximum value to allow. Defaults to 15 days.
 #' @return A list defining a distribution
 #' @export
 #' @examples
 #' get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani") 
-get_dist <- function(data, disease, source, max_value = 30) {
+get_dist <- function(data, disease, source, max_value = 15) {
   
   target_disease <- disease
   target_source <- source
@@ -176,7 +176,7 @@ get_dist <- function(data, disease, source, max_value = 30) {
 #' @export
 #' @examples
 #' get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-get_generation_time <- function(disease, source, max_value = 30) {
+get_generation_time <- function(disease, source, max_value = 15) {
   dist <- get_dist(EpiNow2::generation_times,
                    disease = disease, source = source, 
                    max_value = max_value)
@@ -193,7 +193,7 @@ get_generation_time <- function(disease, source, max_value = 30) {
 #' @export
 #' @examples
 #' get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-get_incubation_period <- function(disease, source, max_value = 30) {
+get_incubation_period <- function(disease, source, max_value = 15) {
   dist <- get_dist(EpiNow2::incubation_periods,
                    disease = disease, source = source, 
                    max_value = max_value)
