@@ -269,7 +269,7 @@ regional_summary <- function(regional_output = NULL,
     purrr::map(high_plots, ~ . + ggplot2::facet_wrap(~ region, scales = "free_y", ncol = 2))
   
   if (!is.null(summary_dir)) {
-    save_ggplot(high_plots$reff, "high_rt_plot.png")
+    save_ggplot(high_plots$R, "high_rt_plot.png")
     save_ggplot(high_plots$infections, "high_infections_plot.png")
     save_ggplot(high_plots$reports, "high_reported_cases_plot.png")
   }
@@ -293,7 +293,7 @@ regional_summary <- function(regional_output = NULL,
                     width = 24, 
                     limitsize = FALSE)
       }
-      save_big_ggplot(plots$reff, "rt_plot.png")
+      save_big_ggplot(plots$R, "rt_plot.png")
       save_big_ggplot(plots$infections, "infections_plot.png")
       save_big_ggplot(plots$reports, "reported_cases_plot.png")
     }
@@ -590,3 +590,37 @@ calc_summary_measures <- function(samples,
   return(summarised)
 }
 
+
+#' Summarised Output from Epinow
+#'
+#' @description \code{summary} method for class "epinow".
+#' @param object A list of output as produced by "epinow".
+#' @param type A character vector of data types to return. Defaults to "summary" 
+#' but also supports "estimates", "forecast", "estimated_reported_cases", and "all".
+#' @seealso summary epinow report_summary
+#' @aliases summary
+#' @method summary epinow
+#' @importFrom purrr map
+#' @return Returns a list of summary output
+#' @export
+summary.epinow <- function(object, type = "summary") {
+  choices <- c("summary", "estimates", "forecast", 
+               "estimated_reported_cases", "all")
+  type <- match.arg(type, choices, several.ok = TRUE)
+  if (type %in% "all") {
+    type <- choices[-length(choices)]
+  }
+  out <- purrr::map(type, function(input) {
+    if (type %in% "summary") {
+      object$summary[, -c("numeric_estimate")]
+    }else{
+      object[[input]]$summarised
+    }
+  })
+  
+  if (length(type) == 1) {
+    return(out[[1]])
+  }else{
+    return(out)
+  }
+}

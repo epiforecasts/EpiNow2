@@ -39,8 +39,10 @@
 #'               delays = list(incubation_period, reporting_delay),
 #'               stan_args = list(cores = ifelse(interactive(), 4, 1),  
 #'               control = list(adapt_delta = 0.95)), verbose = interactive())
-#' out
-#' 
+#'               
+#'               
+#' plot(out)
+#' summary(out)
 #' # optional forecasting using EpiSoon plug-in
 #' if(requireNamespace("EpiSoon")){
 #'    if(requireNamespace("forecastHybrid")){
@@ -239,6 +241,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
 
   # return output
   if (return_output) {
+    class(out) <- c("epinow", class(out))
     return(out)
   }else{
     return(invisible(NULL))

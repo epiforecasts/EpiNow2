@@ -86,8 +86,7 @@
 #'                                             cores = ifelse(interactive(), 4, 1)),
 #'                                             verbose = interactive())
 #'
-#' plots <- report_plots(summarised_estimates = def$summarised, reported = reported_cases)
-#' plots$summary
+#' plot(def)
 #' 
 #' # run model using backcalculation
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
@@ -97,8 +96,7 @@
 #'                                                  control = list(adapt_delta = 0.9)),
 #'                                 rt_prior = list(), verbose = interactive())
 #'
-#' plots <- report_plots(summarised_estimates = backcalc$summarised, reported = reported_cases)
-#' plots$summary
+#' plot(backcalc)
 #' 
 #' # run the model with default settings using the future backend 
 #' ## (combine with a call to future::plan to make this parallel).
@@ -109,8 +107,7 @@
 #'                                                    cores = ifelse(interactive(), 4, 1)),
 #'                                   verbose = interactive(), future = TRUE)
 #' 
-#' plots <- report_plots(summarised_estimates = def_future$summarised, reported = reported_cases)
-#' plots$summary                          
+#' plot(def_future)                        
 #'                            
 #' # run model with Rt fixed into the future using the latest estimate
 #' fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
@@ -120,8 +117,7 @@
 #'                                                  cores = ifelse(interactive(), 4, 1)),
 #'                                 future_rt = "latest", verbose = interactive())
 #'
-#' plots <- report_plots(summarised_estimates = fixed_rt$summarised, reported = reported_cases)
-#' plots$summary
+#' plot(fixed_rt)
 #'
 #' # run the model with default settings on a later snapshot of 
 #' # data (use burn_in here to remove the first week of estimates that may
@@ -134,8 +130,7 @@
 #'                                                  cores = ifelse(interactive(), 4, 1)),
 #'                                 burn_in = 7, verbose = interactive())
 #'
-#' plots <- report_plots(summarised_estimates = snapshot$summarised, reported = snapshot_cases)
-#' plots$summary    
+#' plot(snapshot) 
 #' 
 #' # run model with stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, generation_time = generation_time,
@@ -144,8 +139,7 @@
 #'                                              control = list(adapt_delta = 0.9)),
 #'                             stationary = TRUE, verbose = interactive())
 #'
-#' plots <- report_plots(summarised_estimates = stat$summarised, reported = reported_cases)
-#' plots$summary
+#' plot(stat)
 #'        
 #' # run model with fixed Rt assumption 
 #' fixed <- estimate_infections(reported_cases, generation_time = generation_time,
@@ -154,8 +148,7 @@
 #'                                               control = list(adapt_delta = 0.9)),
 #'                              gp = list(), verbose = interactive())
 #'
-#' plots <- report_plots(summarised_estimates = fixed$summarised, reported = reported_cases)
-#' plots$summary
+#' plot(fixed)
 #' 
 #' # run model with no delays 
 #' no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
@@ -164,8 +157,7 @@
 #'                                                  control = list(adapt_delta = 0.9)),
 #'                                 verbose = interactive())
 #'
-#' plots <- report_plots(summarised_estimates = no_delay$summarised, reported = reported_cases)
-#' plots$summary         
+#' plot(no_delay)         
 #'               
 #' # run model with breakpoints                                                                      
 #' bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
@@ -175,8 +167,7 @@
 #'                                             control = list(adapt_delta = 0.9)),
 #'                            verbose = interactive())
 #'
-#' plots <- report_plots(summarised_estimates = bkp$summarised, reported = reported_cases)
-#' plots$summary
+#' plot(bkp)
 #'              
 #' # run model with breakpoints but with constrained non-linear change over time 
 #' # rhis formulation may increase the apparent effect of the breakpoint but needs to be tested using
@@ -189,8 +180,7 @@
 #'                            cores = ifelse(interactive(), 4, 1),
 #'                            control = list(adapt_delta = 0.9)), verbose = interactive())                                                                   
 #'
-#' plots <- report_plots(summarised_estimates = cbkp$summarised, reported = reported_cases)
-#' plots$summary
+#' plot(cbkp)
 #' # breakpoint effect
 #' cbkp$summarised[variable == "breakpoints"]
 #' 
@@ -204,8 +194,7 @@
 #'                                              control = list(adapt_delta = 0.9)),
 #'                             gp = list(), verbose = interactive(), model = model)                                                         
 #'
-#' plots <- report_plots(summarised_estimates = fbkp$summarised, reported = reported_cases)
-#' plots$summary
+#' plot(fbkp)
 #' # breakpoint effect
 #' fbkp$summarised[variable == "breakpoints"]
 #' }                                
@@ -235,6 +224,9 @@ estimate_infections <- function(reported_cases,
                                 id = "estimate_infections",
                                 verbose = FALSE){
   
+  # store dirty reported case data
+  dirty_reported_cases <- data.table::copy(reported_cases)
+  # set fall back rt prior and trigger switches
   if (length(rt_prior) == 0) {
     estimate_rt <- FALSE
     rt_prior <- list(mean = 1, sd = 1)
@@ -376,6 +368,8 @@ estimate_infections <- function(reported_cases,
   if (return_fit) {
     format_out$fit <- fit
   }
+  format_out$observations <- dirty_reported_cases
+  class(format_out) <- c("estimate_infections", class(format_out))
   return(format_out)
 }
 

@@ -110,30 +110,28 @@ estimates <- epinow(reported_cases = reported_cases,
 names(estimates)
 ```
 
-Both summary measures and posterior samples are returned for all parameters in an easily explored format.
+Both summary measures and posterior samples are returned for all parameters in an easily explored format. Summarised measures can be accessed using `summary` for ease.
 
 ```{r}
-head(estimates$estimates$samples)
-head(estimates$estimates$summarised)
+head(summary(estimates, type = "estimates"))
 ```
 
 Reported cases are returned separately in order to ease reporting of forecasts and model evaluation.
 
 ```{r}
-head(estimates$estimated_reported_cases$samples)
-head(estimates$estimated_reported_cases$summarised)
+head(summary(estimates, type = "estimated_reported_cases"))
 ```
 
 A summary table is returned for rapidly understanding the results and for reporting purposes.
 
 ```{r}
-knitr::kable(estimates$summary[, -c("numeric_estimate")])
+knitr::kable(summary(estimates))
 ```
 
-A range of plots are returned (with the single summary plot shown below).
+A range of plots are returned (with the single summary plot shown below). These plots can also be generated using a `plot` method.
 
 ```{r, dpi = 330, fig.width = 12, fig.height = 12, message = FALSE, warning = FALSE}
-estimates$plots$summary
+plot(estimates)
 ```
 
 

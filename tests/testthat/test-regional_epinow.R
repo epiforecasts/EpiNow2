@@ -34,7 +34,7 @@ test_that("regional_epinow produces expected output when run with default settin
   df_non_zero(out$regional$realland$estimated_reported_cases$samples)
   df_non_zero(out$regional$realland$estimated_reported_cases$summarised)
   df_non_zero(out$regional$realland$summary)
-  expect_equal(names(out$regional$realland$plots), c("infections", "reports", "reff", "growth_rate","summary"))
+  expect_equal(names(out$regional$realland$plots), c("infections", "reports", "R", "growth_rate","summary"))
 })
 
 test_that("regional_epinow fails as expected when given a very short timeout", {
