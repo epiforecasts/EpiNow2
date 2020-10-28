@@ -40,9 +40,8 @@
 #'               stan_args = list(cores = ifelse(interactive(), 4, 1),  
 #'               control = list(adapt_delta = 0.95)), verbose = interactive())
 #'               
-#'               
+#' summary(out)             
 #' plot(out)
-#' summary(out)
 #' # optional forecasting using EpiSoon plug-in
 #' if(requireNamespace("EpiSoon")){
 #'    if(requireNamespace("forecastHybrid")){
@@ -177,9 +176,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
     
     # plot --------------------------------------------------------------------
     if (output["plots"]) {
-      plots <- report_plots(summarised_estimates = estimates$summarised,
-                            reported = reported_cases, 
-                            target_folder = target_folder)
+      plots <- plot(estimates, type = "all", target_folder = target_folder)
     }else{
       plots <- NULL
     }
