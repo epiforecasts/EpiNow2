@@ -19,7 +19,6 @@ supplid list of target files.
 }
 \examples{
 \donttest{
-
 expose_stan_fns("rt.stan", target_dir = system.file("stan/functions", package = "EpiNow2"))
 
 # test by updating Rt
