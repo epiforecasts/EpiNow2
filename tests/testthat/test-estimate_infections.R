@@ -25,9 +25,10 @@ default_estimate_infections <- function(..., add_stan = list()) {
 
 test_estimate_infections <- function(...) {
     out <- default_estimate_infections(...)
-    expect_equal(names(out), c("samples", "summarised"))
+    expect_equal(names(out), c("samples", "summarised", "observations"))
     expect_true(nrow(out$samples) > 0)
     expect_true(nrow(out$summarised) > 0)
+    expect_true(nrow(out$observations) > 0)
 }
 
 # Test functionality ------------------------------------------------------

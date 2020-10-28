@@ -244,14 +244,14 @@ if (!is.null(target_folder)) {
 
 
 # Rt plot ------------------------------------------------------------------
-reff <- plot_estimates(estimate = summarised_estimates[variable == "R"],
+R <- plot_estimates(estimate = summarised_estimates[variable == "R"],
                        ylab = "Effective \n reproduction no.", hline = 1)
 
 if (!is.null(target_folder)) {
   suppressWarnings(
     suppressMessages(
       ggplot2::ggsave(paste0(target_folder, "/reff_plot.png"),
-                      reff,
+                      R,
                       width = 12,
                       height = 3,
                       dpi = 320)
@@ -290,7 +290,7 @@ if (!is.null(target_folder)) {
             axis.ticks.x = ggplot2::element_blank()
           ) +
           ggplot2::labs(tag = "B") +
-        reff +
+        R +
           ggplot2::labs(tag = "C") +
         patchwork::plot_layout(ncol = 1) &
         ggplot2::scale_x_date(date_breaks = "1 week",
@@ -314,7 +314,7 @@ if (!is.null(target_folder)) {
   plots <- list(
     infections = infections,
     reports = reports,
-    reff = reff,
+    R = R,
     growth_rate = growth_rate,
     summary = summary
   )
