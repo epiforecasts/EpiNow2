@@ -3,7 +3,7 @@
 \name{plot.estimate_infections}
 \alias{plot.estimate_infections}
 \alias{plot}
-\title{Plot the Output from estimate_infections}
+\title{Plot method for estimate_infections}
 \usage{
 \method{plot}{estimate_infections}(x, type = "summary", ...)
 }
