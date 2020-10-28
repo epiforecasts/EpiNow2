@@ -3,15 +3,17 @@
 \name{summary.epinow}
 \alias{summary.epinow}
 \alias{summary}
-\title{Summarised Output from Epinow}
+\title{Summarised output from epinow}
 \usage{
-\method{summary}{epinow}(object, type = "summary")
+\method{summary}{epinow}(object, type = "summary", ...)
 }
 \arguments{
 \item{object}{A list of output as produced by "epinow".}
 
 \item{type}{A character vector of data types to return. Defaults to "summary"
 but also supports "estimates", "forecast", "estimated_reported_cases", and "all".}
+
+\item{...}{Pass additional summary arguments}
 }
 \value{
 Returns a list of summary output

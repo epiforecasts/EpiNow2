@@ -1,6 +1,6 @@
 context("estimate_infections")
 if (!testthat:::on_cran()) {
-  expose_stan_fns("rt.stan", target_dir = "../../inst/stan/functions")
+  suppressMessages(expose_stan_fns("rt.stan", target_dir = "../../inst/stan/functions"))
 }
 
 # Test update_Rt 

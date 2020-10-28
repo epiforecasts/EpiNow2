@@ -591,19 +591,20 @@ calc_summary_measures <- function(samples,
 }
 
 
-#' Summarised Output from Epinow
+#' Summarised output from epinow
 #'
 #' @description \code{summary} method for class "epinow".
 #' @param object A list of output as produced by "epinow".
 #' @param type A character vector of data types to return. Defaults to "summary" 
 #' but also supports "estimates", "forecast", "estimated_reported_cases", and "all".
+#' @param ... Pass additional summary arguments
 #' @seealso summary epinow report_summary
 #' @aliases summary
 #' @method summary epinow
 #' @importFrom purrr map
 #' @return Returns a list of summary output
 #' @export
-summary.epinow <- function(object, type = "summary") {
+summary.epinow <- function(object, type = "summary", ...) {
   choices <- c("summary", "estimates", "forecast", 
                "estimated_reported_cases", "all")
   type <- match.arg(type, choices, several.ok = TRUE)
@@ -617,7 +618,6 @@ summary.epinow <- function(object, type = "summary") {
       object[[input]]$summarised
     }
   })
-  
   if (length(type) == 1) {
     return(out[[1]])
   }else{

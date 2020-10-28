@@ -5,11 +5,12 @@
 * Extended the functionality of the back calculation model so that Rt can be produced via calculation. These estimates are potentially less reliable than those produced using the generative model but the model can be estimated in a fraction of the time.
 * Reduced the default maximum generation time and incubation period allowed in the truncated distribution (from 30 days to 15). This decreases the model run time substantially at a marginal accuracy cost. This new default is not suitable for longer generation times and should be modified by the user if these are used.
 * Adds basic S3 plot and summary measures for `epinow` and a plot method for `estimate_infections`. This functionality will likely be further built out in later releases.
+* Added a new function, `expose_stan_fns` that exposes the internal stan functions into R. The enables unit testing, exploration of the stan functionality and potentially within R use cases for these functions.
 
 ## Other changes
 
 * Recoded the core stan model to be functional with the aim of making the code modular and extendable.
-* Surfaced the internal stan functions in R to allow unit testing and added basic unit tests.
+* Added unit tests for the internal stan update_rt function.
 * Reworked the package logging system to improve the reporting of issues both in `epinow` and in `regional_epinow` for large batch runs.
 
 # EpiNow2 1.2.1
