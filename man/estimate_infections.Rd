@@ -128,9 +128,6 @@ cases. It can optionally then estimate the time-varying reproduction number and 
 # get example case counts
 reported_cases <- EpiNow2::example_confirmed[1:50]
 
-# add a dummy breakpoint (used only when optionally estimating breakpoints)
-reported_cases_bp <- data.table::copy(reported_cases)[,
-              breakpoint := data.table::fifelse(date == as.Date("2020-03-16"), 1, 0)]
 # set up example generation time
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 # set delays between infection and case report 
@@ -218,42 +215,21 @@ no_delay <- estimate_infections(reported_cases, generation_time = generation_tim
                                                  control = list(adapt_delta = 0.9)),
                                 verbose = interactive())
 
-plot(no_delay)         
-              
-# run model with breakpoints                                                                      
-bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay),
-                           stan_args = list(warmup = 200, 
-                                            cores = ifelse(interactive(), 4, 1),
-                                            control = list(adapt_delta = 0.9)),
-                           verbose = interactive())
-
-plot(bkp)
-             
-# run model with breakpoints but with constrained non-linear change over time 
-# rhis formulation may increase the apparent effect of the breakpoint but needs to be tested using
-# model fit criteria (i.e LFO). 
-cbkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay),
-                           gp = list(basis_prop = 0.3, boundary_scale = 2, 
-                                     lengthscale_mean = 20, lengthscale_sd = 1),
-                           stan_args = list(warmup = 200, 
-                           cores = ifelse(interactive(), 4, 1),
-                           control = list(adapt_delta = 0.9)), verbose = interactive())                                                                   
-
-plot(cbkp)
-# breakpoint effect
-cbkp$summarised[variable == "breakpoints"]
-
+plot(no_delay)    
+     
+# add a dummy breakpoint (used only when optionally estimating breakpoints)
+reported_cases_bp <- data.table::copy(reported_cases)[,
+              breakpoint := data.table::fifelse(date == as.Date("2020-03-16"), 1, 0)]              
 # run model with breakpoints but otherwise static Rt
 # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
-# model fit criteria (i.e LFO).           
+# model fit criteria (i.e LFO), comparison to models with non-static Rt and models with partially
+# constrained non-static Rt.           
 fbkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
                             stan_args = list(warmup = 200, 
                                              cores = ifelse(interactive(), 4, 1),
                                              control = list(adapt_delta = 0.9)),
-                            gp = list(), verbose = interactive(), model = model)                                                         
+                            gp = list(), verbose = interactive())                                                         
 
 plot(fbkp)
 # breakpoint effect
