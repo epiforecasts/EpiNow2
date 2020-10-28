@@ -15,7 +15,7 @@ template:
       index_name: epinow2
 
 development:
-  mode: release
+  mode: auto
 
 authors:
   Sam Abbott:
