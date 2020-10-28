@@ -1,3 +1,15 @@
+# EpiNow2 1.3.0
+
+## New features
+
+* Extended the functionality of the back calculation model so that Rt can be produced via calculation. These estimates are potentially less reliable than those produced using the generative model but the model can be estimated in a fraction of the time.
+* Reduced the default maximum generation time and incubation period allowed in the truncated distribution (from 30 days to 15). This decreases the model run time substantially at a marginal accuracy cost. This new default is not suitable for longer generation times and should be modified by the user if these are used.
+
+## Other changes
+
+* Recoded the core stan model to be functional with the aim of making the code modular and extendable.
+* Surfaced the internal stan functions in R to allow unit testing and added basic unit tests.
+* Reworked the package logging system to improve the reporting of issues both in `epinow` and in `regional_epinow` for large batch runs.
 
 # EpiNow2 1.2.1
 
