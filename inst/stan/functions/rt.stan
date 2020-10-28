@@ -3,14 +3,14 @@
 real update_breakpoints(real input_R, real[] bp_effects,
                         int bp_index, int at_bp,
                         int stationary) {
-  real R;
+  real R = input_R;
   if (stationary) {
     if (bp_index > 0) {
-      R = input_R + sum(bp_effects[1:bp_index]);
+      R += sum(bp_effects[1:bp_index]);
       }
   }else{
     if (at_bp) {
-      R = input_R + bp_effects[bp_index];
+      R += bp_effects[bp_index];
     }
   }               
   return(R);
@@ -24,7 +24,9 @@ real update_R(vector R, vector noise, int noise_terms,
       if (index <= noise_terms) {
         cR += noise[index];
       }else{
-        cR = R[index - 1];
+        if (index > 1) {
+           cR = R[index - 1];
+        }
       }
     }else{
       if (index <= (noise_terms + 1)) {
@@ -37,31 +39,32 @@ real update_R(vector R, vector noise, int noise_terms,
   return(cR);
 }
 
-vector update_Rt(vector input_R, real logR, vector noise, int[] bps,
+vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
                  real[] bp_effects, int stationary) {
   // define control parameters
   int noise_terms = num_elements(noise);
+  int i_stationary = noise_terms > 0 ? stationary : 1;
   int t = num_elements(input_R);
   int bp_n = num_elements(bp_effects);
   int bp_in = 0;
   int at_bp = 0;
   int index;
-  vector[t] R = input_R;
+  vector[t] R;
   // initialise Rt
-  if (stationary) {
-    R = rep_vector(logR, t);
+  if (i_stationary) {
+    R = rep_vector(log_R, t);
     index = 1;
   }else{
-    R[1] = logR;
+    R[1] = log_R;
     index = 2;
   }
   // iteratively update Rt
   for (s in index:t) {
-    R[s] = update_R(R, noise, noise_terms, s, stationary);
+    R[s] = update_R(R, noise, noise_terms, s, i_stationary);
     if (bp_n > 0) {
       at_bp = bps[s];
       bp_in += at_bp;
-      R[s] = update_breakpoints(R[s], bp_effects, bp_in, at_bp, stationary);
+      R[s] = update_breakpoints(R[s], bp_effects, bp_in, at_bp, i_stationary);
     }
   }
   // convert to correct scale

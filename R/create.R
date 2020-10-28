@@ -111,7 +111,6 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
                              rt_prior, estimate_rt, week_effect, stationary,
                              fixed, break_no, future_rt, gp, family, delays) {
-  
   # create future_rt
   future_rt <- create_future_rt(future_rt = future_rt, 
                                 delay = mean_shift)
@@ -140,7 +139,6 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     future_fixed = ifelse(future_rt$fixed, 1, 0),
     fixed_from = future_rt$from
   ) 
-  
   # Delays ------------------------------------------------------------------
   data$delays <- no_delays
   data$delay_mean_mean <- allocate_delays(delays$mean, no_delays)
@@ -148,7 +146,6 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   data$delay_sd_mean <- allocate_delays(delays$sd, no_delays)
   data$delay_sd_sd <- allocate_delays(delays$sd_sd, no_delays)
   data$max_delay <- allocate_delays(delays$max, no_delays)
-  
   # Parameters for Hilbert space GP -----------------------------------------
   # no of basis functions
   data$M <- ceiling((data$t - data$seeding_time) * gp$basis_prop)
@@ -157,11 +154,9 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   data$lengthscale_alpha <- gp$lengthscale_alpha
   data$lengthscale_beta <- gp$lengthscale_beta
   data$alpha_sd <- gp$alpha_sd
-  
   ## Set model to poisson or negative binomial
   family <- match.arg(family, c("poisson", "negbin"))
   data$model_type <- ifelse(family %in% "poisson", 0, 1)
-
   return(data)
 }
 
@@ -176,11 +171,8 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
 #' @importFrom truncnorm rtruncnorm
 #' @export
 create_initial_conditions <- function(data, delays, rt_prior, generation_time, mean_shift) {
-  
   init_fun <- function(){
-    
     out <- list()
-    
     if (data$delays > 0) {
       out$delay_mean <- array(purrr::map2_dbl(delays$mean, delays$mean_sd, 
                                               ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
@@ -188,7 +180,6 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
                                             ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
       
     }
-    
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 1))
       out$rho <- array(truncnorm::rtruncnorm(1, a = 1, mean = 10, sd = 4))
@@ -197,7 +188,6 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     if (data$model_type == 1) {
       out$rep_phi <- array(rexp(1, 1))
     }
-    
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rlnorm(mean_shift, meanlog = 0, sdlog = 0.1))
       out$log_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
@@ -257,11 +247,9 @@ create_stan_args <- function(model, data = NULL, init = "random",
   if (missing(model)) {
     model <- NULL
   }
-  
   if (is.null(model)) {
     model <- stanmodels$estimate_infections
   }
-  
   # set up shared default arguments
   default_args <- list(
     object = model,
@@ -269,7 +257,6 @@ create_stan_args <- function(model, data = NULL, init = "random",
     init = init,
     refresh = ifelse(verbose, 50, 0)
   )
-  
   # set up independent default arguments
   if (method == "exact") {
     default_args$cores <- 4
@@ -283,7 +270,6 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$iter <- 10000
     default_args$output_samples <- samples
   }
-
   # join with user supplied settings
   if (!is.null(stan_args)) {
     default_args <- default_args[setdiff(names(default_args), names(stan_args))]
@@ -291,7 +277,6 @@ create_stan_args <- function(model, data = NULL, init = "random",
   }else{
     args <- default_args
   }
-  
   # set up dependent arguments
   if (method == "exact") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup

@@ -99,9 +99,8 @@ out <- epinow(reported_cases = reported_cases, generation_time = generation_time
               stan_args = list(cores = ifelse(interactive(), 4, 1),  
               control = list(adapt_delta = 0.95)), verbose = interactive())
               
-              
+summary(out)             
 plot(out)
-summary(out)
 # optional forecasting using EpiSoon plug-in
 if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){

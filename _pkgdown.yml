@@ -131,4 +131,5 @@ reference:
       - match_output_arguments
       - stop_timeout
       - run_region
+      - expose_stan_fns
 

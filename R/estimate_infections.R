@@ -223,7 +223,7 @@ estimate_infections <- function(reported_cases,
                                 return_fit = FALSE,
                                 id = "estimate_infections",
                                 verbose = FALSE){
-  
+   
   # store dirty reported case data
   dirty_reported_cases <- data.table::copy(reported_cases)
   # set fall back rt prior and trigger switches
