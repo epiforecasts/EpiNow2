@@ -12,6 +12,7 @@ run_region(
   return_output,
   output,
   complete_logger,
+  verbose,
   progress_fn,
   ...
 )
@@ -36,6 +37,8 @@ summary statistics. If \code{target_folder} is not NULL then the default is also
 
 \item{complete_logger}{Character string indicating the logger to output
 the completion of estimation to.}
+
+\item{verbose}{Logical defaults to FALSE. Outputs verbose progress messages to the console from \code{epinow}.}
 
 \item{progress_fn}{Function as returned by \code{progressr::progressor}. Allows the use of a
 progress bar.}

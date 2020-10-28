@@ -252,3 +252,49 @@ plot_summary <- function(summary_results,
   plot <- cases_plot + rt_plot + patchwork::plot_layout(ncol = 1)
   return(plot)
 }
+
+#' Plot method for estimate_infections
+#'
+#' @description \code{plot} method for class "estimate_infections". 
+#' @param x A list of output as produced by `estimate_infections`
+#' @param type A character vector indicating the name of plots to return. Defaults
+#' to  "summary" with supported options being "infections", "reports", "R", "growth_rate",
+#'  "summary", "all".
+#' @param ... Pass additional arguments to report_plots
+#' @seealso plot report_plots estimate_infections
+#' @aliases plot
+#' @method plot estimate_infections
+#' @return List of plots as produced by `report_plots`
+#' @export
+plot.estimate_infections <- function(x, type = "summary", ...) {
+  out <- report_plots(summarised_estimates = x$summarised,
+                      reported = x$observations, ...)
+  choices <- c("infections", "reports", "R", "growth_rate", "summary", "all")
+  type <- match.arg(type, choices, several.ok = TRUE)
+  if (type %in% "all") {
+    type <- choices[-length(choices)]
+  }
+  
+  if (!is.null(out)) {
+    out <- out[type]
+    if (length(type) == 1) {
+      out <- out[[1]]
+    }
+    return(out)
+  }else{
+    return(invisible(NULL))
+  }
+}
+
+#' Plot method for epinow
+#'
+#' @description \code{plot} method for class "epinow". 
+#' @param x A list of output as produced by `epinow`
+#' @inheritParams plot.estimate_infections
+#' @seealso plot plot.estimate_infections report_plots estimate_infections
+#' @method plot epinow
+#' @return List of plots as produced by `report_plots`
+#' @export
+plot.epinow <- function(x, type = "summary", ...) {
+  plot.estimate_infections(x$estimates, type = type, ...)
+}

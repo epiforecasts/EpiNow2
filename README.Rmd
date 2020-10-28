@@ -24,19 +24,18 @@ It estimates the time-varying reproduction number on cases by date of infection 
 
 Uncertainty is propagated from all inputs into the final parameter estimates, helping to mitigate spurious findings. This is handled internally. The time-varying reproduction estimates and the uncertain generation time also give time-varying estimates of the rate of growth.
 
-The default model uses a non-stationary Gaussian process to estimate the time-varying reproduction number. Other options include:
+The default model uses a non-stationary Gaussian process to estimate the time-varying reproduction number and then infer infections. Other options include:
 
 * A stationary Gaussian process (faster to estimate but currently gives reduced performance for real time estimates).
 * User specified breakpoints.
 * A fixed reproduction number.
 * As piecewise constant by combining a fixed reproduction number with breakpoints.
 * As a random walk (by combining a fixed reproduction number with regularly spaced breakpoints (i.e weekly)).
+* Inferring infections using back-calculation and then calculating the time-varing reproduction number.
 
 The documentation for [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) provides examples of the different options available. 
 
 Forecasting is also supported for the time-varying reproduction number, infections and reported cases. The time-varying reproduction number can be forecast forwards in time using an integration with the [`{EpiSoon}`](https://epiforecasts.io/EpiSoon/) package, and converted to a case forecast using the renewal equation. Alternatively, the time-varying reproduction number and cases can be forecast using a Gaussian process. 
-
-As a standalone tool, non-parametric back-calculation is also supported. This uses a novel formulation based on a smoothed mean delay shift of reported cases combined with a Gaussian process to determine the most likely outbreak trajectory. Again see the documentation for [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) for an example.
 
 ## Installation
 
@@ -80,7 +79,8 @@ library(EpiNow2)
 Distributions can either be fitted using package functionality or determined elsewhere and then defined with uncertainty for use in `{EpiNow2}`. When data is supplied a subsampled bootstrapped lognormal will be fit (to account for uncertainty in the observed data without being biased by changes in incidence). An arbitrary number of delay distributions are supported with the most common use case likely to be a incubation period followed by a reporting delay.
 
 ```{r}
-reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(4), 1), max_value = 30)
+reporting_delay <- bootstrapped_dist_fit(rlnorm(1000, log(3), 1), max_value = 15,
+                                         bootstraps = 1)
 ```
 
 Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow/tree/master/data-raw) for the code that generates these estimates).
@@ -97,11 +97,11 @@ This function represents the core functionality of the package and includes resu
 Load example case data from `{EpiNow2}`. 
 
 ```{r}
-reported_cases <- example_confirmed[1:40]
+reported_cases <- example_confirmed[1:80]
 head(reported_cases)
 ```
 
-Estimate cases by date of infection, the time-varying reproduction number, the rate of growth and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). *Note that for real use cases more samples and a longer warm up may be needed*. If compute is limited approximate estimates can be derived using `method = approximate` which makes use of variational inference and is likely to be several orders of magnitude faster than the default method (though this approach is experimental).
+Estimate cases by date of infection, the time-varying reproduction number, the rate of growth and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). *Note: For real use cases more samples and a longer warm up may be needed*. See fitting progress by setting `verbose = TRUE`.
 
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(reported_cases = reported_cases, 
@@ -110,30 +110,28 @@ estimates <- epinow(reported_cases = reported_cases,
 names(estimates)
 ```
 
-Both summary measures and posterior samples are returned for all parameters in an easily explored format.
+Both summary measures and posterior samples are returned for all parameters in an easily explored format. Summarised measures can be accessed using `summary` for ease.
 
 ```{r}
-head(estimates$estimates$samples)
-head(estimates$estimates$summarised)
+head(summary(estimates, type = "estimates"))
 ```
 
 Reported cases are returned separately in order to ease reporting of forecasts and model evaluation.
 
 ```{r}
-head(estimates$estimated_reported_cases$samples)
-head(estimates$estimated_reported_cases$summarised)
+head(summary(estimates, type = "estimated_reported_cases"))
 ```
 
 A summary table is returned for rapidly understanding the results and for reporting purposes.
 
 ```{r}
-knitr::kable(estimates$summary[, -c("numeric_estimate")])
+knitr::kable(summary(estimates))
 ```
 
-A range of plots are returned (with the single summary plot shown below).
+A range of plots are returned (with the single summary plot shown below). These plots can also be generated using a `plot` method.
 
 ```{r, dpi = 330, fig.width = 12, fig.height = 12, message = FALSE, warning = FALSE}
-estimates$plots$summary
+plot(estimates)
 ```
 
 
