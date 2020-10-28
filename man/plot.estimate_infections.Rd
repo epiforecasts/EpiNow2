@@ -5,13 +5,14 @@
 \alias{plot}
 \title{Plot the Output from estimate_infections}
 \usage{
-\method{plot}{estimate_infections}(x, plots = "summary", ...)
+\method{plot}{estimate_infections}(x, type = "summary", ...)
 }
 \arguments{
 \item{x}{A list of output as produced by \code{estimate_infections}}
 
-\item{plots}{A character vector indicating the name of plots to return. Defaults
-to  "summary" with supported options being infections, reports, R, growth_rate, summary}
+\item{type}{A character vector indicating the name of plots to return. Defaults
+to  "summary" with supported options being "infections", "reports", "R", "growth_rate",
+"summary", "all".}
 
 \item{...}{Pass additional arguments to report_plots}
 }
