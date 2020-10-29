@@ -83,7 +83,6 @@
 #'                             control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                             cores = ifelse(interactive(), 4, 1)),
 #'                             verbose = interactive())
-#'
 #' plot(def)
 #' 
 #' # run model using backcalculation
@@ -93,7 +92,6 @@
 #'                                                  cores = ifelse(interactive(), 4, 1),
 #'                                                  control = list(adapt_delta = 0.9)),
 #'                                 rt_prior = list(), verbose = interactive())
-#'
 #' plot(backcalc)
 #' 
 #' # run the model with default settings using the future backend 
@@ -104,7 +102,6 @@
 #'                                                    control = list(adapt_delta = 0.9),
 #'                                                    cores = ifelse(interactive(), 4, 1)),
 #'                                   verbose = interactive(), future = TRUE)
-#' 
 #' plot(def_future)                        
 #'                            
 #' # run model with Rt fixed into the future using the latest estimate
@@ -114,7 +111,6 @@
 #'                                                  control = list(adapt_delta = 0.9),
 #'                                                  cores = ifelse(interactive(), 4, 1)),
 #'                                 future_rt = "latest", verbose = interactive())
-#'
 #' plot(fixed_rt)
 #'
 #' # run the model with default settings on a later snapshot of 
@@ -127,7 +123,6 @@
 #'                                                  control = list(adapt_delta = 0.9),
 #'                                                  cores = ifelse(interactive(), 4, 1)),
 #'                                 burn_in = 7, verbose = interactive())
-#'
 #' plot(snapshot) 
 #' 
 #' # run model with stationary Rt assumption (likely to provide biased real-time estimates)
@@ -136,7 +131,6 @@
 #'                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                              control = list(adapt_delta = 0.9)),
 #'                             stationary = TRUE, verbose = interactive())
-#'
 #' plot(stat)
 #'        
 #' # run model with fixed Rt assumption 
@@ -145,7 +139,6 @@
 #'                              stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                               control = list(adapt_delta = 0.9)),
 #'                              gp = list(), verbose = interactive())
-#'
 #' plot(fixed)
 #' 
 #' # run model with no delays 
@@ -154,7 +147,6 @@
 #'                                                  cores = ifelse(interactive(), 4, 1),
 #'                                                  control = list(adapt_delta = 0.9)),
 #'                                 verbose = interactive())
-#'
 #' plot(no_delay)    
 #'      
 #' # add a dummy breakpoint (used only when optionally estimating breakpoints)
@@ -173,7 +165,7 @@
 #'
 #' plot(bkp)
 #' # breakpoint effect
-#' fbkp$summarised[variable == "breakpoints"]
+#' bkp$summarised[variable == "breakpoints"]
 #' }                                
 estimate_infections <- function(reported_cases, 
                                 model = NULL, 

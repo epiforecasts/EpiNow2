@@ -115,9 +115,11 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   future_rt <- create_future_rt(future_rt = future_rt, 
                                 delay = mean_shift)
   
+  cases <- reported_cases[(mean_shift + 1):(.N - horizon)]$confirm
+  
   data <- list(
     day_of_week = reported_cases[(mean_shift + 1):.N]$day_of_week,
-    cases = reported_cases[(mean_shift + 1):(.N - horizon)]$confirm,
+    cases = cases,
     shifted_cases = unlist(ifelse(no_delays > 0, list(shifted_reported_cases$confirm),
                                   list(reported_cases$confirm))),
     t = length(reported_cases$date),
@@ -128,6 +130,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     gt_sd_mean = generation_time$sd,
     gt_sd_sd = generation_time$sd_sd,
     max_gt = generation_time$max,
+    prior_infections = 1 / mean(cases[1:min(7, length(cases))]),
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
@@ -189,7 +192,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
       out$rep_phi <- array(rexp(1, 1))
     }
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rlnorm(mean_shift, meanlog = 0, sdlog = 0.1))
+      out$initial_infections <- array(rexp(1, data$prior_infections))
       out$log_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
                                sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  

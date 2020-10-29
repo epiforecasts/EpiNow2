@@ -35,7 +35,3 @@ test_that("generate_infections works as expected", {
   expect_equal(round(generate_infections(c(1, rep(1.1, 9)), 1, 3, 2, 15, 1000), 0),
                c(1000, 278, 363, 390, 407, 422, 437, 452, 468, 484, 501))
 })
-
-
-
-round(generate_infections(c(1, rep(1.1, 9)), 1, 3, 2, 15, 1000), 0)
