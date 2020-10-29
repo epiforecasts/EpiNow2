@@ -47,16 +47,19 @@ test_that("update_Rt works when Rt is variable and a breakpoint is present", {
 
 # Test update_breakpoints
 test_that("update_breakpoints can successfully update when no breakpoint is present", {
+  skip_on_cran()
   expect_equal(update_breakpoints(1.2, 0.1, 0, 0, 0), 1.2)
   expect_equal(update_breakpoints(1.2, 0.1, 0, 0, 1), 1.2)
 })
 
 test_that("update_breakpoints can successfully update when a breakpoint is present", {
+  skip_on_cran()
   expect_equal(update_breakpoints(1.2, 0.1, 1, 1, 0), 1.3)
   expect_equal(update_breakpoints(1.2, 0.1, 1, 1, 1), 1.3)
 })
 
 test_that("update_breakpoints can successfully update when a breakpoint has been present", {
+  skip_on_cran()
   expect_equal(update_breakpoints(1.2, 0.1, 1, 0, 0), 1.2)
   expect_equal(update_breakpoints(1.2, 0.1, 1, 0, 1), 1.3)
 })
