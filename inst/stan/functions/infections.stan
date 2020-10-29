@@ -36,11 +36,7 @@ vector generate_infections(vector R, int seeding_time,
                                      max_gt, seeding_time);
   // iteratively update infections
   for (s in 1:rt) {
-    if (s == 1) {
-      infectiousness[s] += initial_infectiousness[1];
-    }else{
-      infectiousness[s] += update_infectiousness(infections, gt_pmf, seeding_time, max_gt, s);
-    }
+    infectiousness[s] += update_infectiousness(infections, gt_pmf, seeding_time, max_gt, s);
     infections[s + seeding_time] += R[s] * infectiousness[s];
   }
   return(infections);
