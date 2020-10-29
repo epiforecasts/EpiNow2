@@ -15,22 +15,27 @@ test_that("update_infectiousness works as expected with default settings", {
   expect_error(update_infectiousness(rep(1, 20), rep(0.1, 5), 5, 10, 10))
 })
 
-# test initialise infections
-test_that("initialise_infections works as expected", {
-  skip_on_cran()
-  expect_equal(initialise_infections(20, 20, rep(0.1, 5), 5, 10),
-               c(rep(1e-05, 5), rep(2e+02 + 1e-5, 5), rep(1e-05, 10)))
-  expect_equal(initialise_infections(20, 20, rep(0.1, 5), 10, 5),
-               c(rep(2e+02 + 1e-5, 5), rep(1e-05, 15)))
-  expect_equal(round(
-    initialise_infections(20, 20, c(0.01, 0.02, 0.17, 0.4, 0.4), 10, 5), 0),
-               c(2000, 1000, 118, 50, 50, rep(0, 15)))
-})
 
 # test generate infections
 test_that("generate_infections works as expected", {
-  
+  expect_equal(round(generate_infections(c(1, rep(1, 9)), 10, 3, 2, 15, 1000), 0),
+               c(1000, 278, 330, 345, 349, 350, rep(351, 14)))
+  expect_equal(round(generate_infections(c(1, rep(1.1, 9)), 10, 3, 2, 15, 1000), 0),
+               c(1000, 278, 330, 345, 349, 350, 351, 351, 351, 351, 351, 386, 397, 
+                 410, 424, 438, 453, 469, 486, 502))
+  expect_equal(round(generate_infections(c(1, rep(1.1, 9)), 10, 3, 2, 15, 1000), 0),
+               c(1000, 278, 330, 345, 349, 350, 351, 351, 351, 351, 351, 386, 397, 
+                 410, 424, 438, 453, 469, 486, 502))
+  expect_equal(round(generate_infections(c(1, rep(1, 9)), 4, 3, 2, 15, 1000), 0),
+               c(1000, 278, 330, 345, 349, 350, rep(351, 8)))
+  expect_equal(round(generate_infections(c(1, rep(1.1, 9)), 4, 3, 2, 15, 1000), 0),
+               c(1000, 278, 330, 345, 349, 385, 396, 409, 423, 438, 453, 469, 485, 502))
+  expect_equal(round(generate_infections(c(1, rep(1, 9)), 1, 3, 2, 15, 1000), 0),
+               c(1000, 278, 330, 345, 349, 350, rep(351, 5)))
+  expect_equal(round(generate_infections(c(1, rep(1.1, 9)), 1, 3, 2, 15, 1000), 0),
+               c(1000, 278, 363, 390, 407, 422, 437, 452, 468, 484, 501))
 })
 
 
-generate_infections(rep(1.3, 10), 10, 3, 2, 15, 1000)
+
+round(generate_infections(c(1, rep(1.1, 9)), 1, 3, 2, 15, 1000), 0)
