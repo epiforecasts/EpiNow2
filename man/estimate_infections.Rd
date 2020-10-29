@@ -144,7 +144,6 @@ def <- estimate_infections(reported_cases, generation_time = generation_time,
                             control = list(adapt_delta = 0.95, max_treedepth = 15),
                             cores = ifelse(interactive(), 4, 1)),
                             verbose = interactive())
-
 plot(def)
 
 # run model using backcalculation
@@ -154,7 +153,6 @@ backcalc <- estimate_infections(reported_cases, generation_time = generation_tim
                                                  cores = ifelse(interactive(), 4, 1),
                                                  control = list(adapt_delta = 0.9)),
                                 rt_prior = list(), verbose = interactive())
-
 plot(backcalc)
 
 # run the model with default settings using the future backend 
@@ -165,7 +163,6 @@ def_future <- estimate_infections(reported_cases, generation_time = generation_t
                                                    control = list(adapt_delta = 0.9),
                                                    cores = ifelse(interactive(), 4, 1)),
                                   verbose = interactive(), future = TRUE)
-
 plot(def_future)                        
                            
 # run model with Rt fixed into the future using the latest estimate
@@ -175,7 +172,6 @@ fixed_rt <- estimate_infections(reported_cases, generation_time = generation_tim
                                                  control = list(adapt_delta = 0.9),
                                                  cores = ifelse(interactive(), 4, 1)),
                                 future_rt = "latest", verbose = interactive())
-
 plot(fixed_rt)
 
 # run the model with default settings on a later snapshot of 
@@ -188,7 +184,6 @@ snapshot <- estimate_infections(snapshot_cases, generation_time = generation_tim
                                                  control = list(adapt_delta = 0.9),
                                                  cores = ifelse(interactive(), 4, 1)),
                                 burn_in = 7, verbose = interactive())
-
 plot(snapshot) 
 
 # run model with stationary Rt assumption (likely to provide biased real-time estimates)
@@ -197,7 +192,6 @@ stat <- estimate_infections(reported_cases, generation_time = generation_time,
                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
                                              control = list(adapt_delta = 0.9)),
                             stationary = TRUE, verbose = interactive())
-
 plot(stat)
        
 # run model with fixed Rt assumption 
@@ -206,7 +200,6 @@ fixed <- estimate_infections(reported_cases, generation_time = generation_time,
                              stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
                                               control = list(adapt_delta = 0.9)),
                              gp = list(), verbose = interactive())
-
 plot(fixed)
 
 # run model with no delays 
@@ -215,7 +208,6 @@ no_delay <- estimate_infections(reported_cases, generation_time = generation_tim
                                                  cores = ifelse(interactive(), 4, 1),
                                                  control = list(adapt_delta = 0.9)),
                                 verbose = interactive())
-
 plot(no_delay)    
      
 # add a dummy breakpoint (used only when optionally estimating breakpoints)
@@ -234,6 +226,6 @@ bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
 
 plot(bkp)
 # breakpoint effect
-fbkp$summarised[variable == "breakpoints"]
+bkp$summarised[variable == "breakpoints"]
 }                                
 }
