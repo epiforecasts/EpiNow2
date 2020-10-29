@@ -1,43 +1,36 @@
 real update_infectiousness(vector infections, vector gt_pmf,
-                           int seeding_time, int max_gt, int index){
-  int inf_start = max(1, (index + seeding_time - max_gt));
-  int inf_end = (index + seeding_time - 1);
-  int pmf_accessed = min(max_gt, index + seeding_time - 1);
+                           int max_gt, int index){
+  int inf_start = max(1, (index - max_gt));
+  int inf_end = (index - 1);
+  int pmf_accessed = min(max_gt, index - 1);
   real new_inf = dot_product(infections[inf_start:inf_end], tail(gt_pmf, pmf_accessed));
   return(new_inf);
 }
 
-vector initialise_infections(int t, real initial_infectiousness, 
-                             vector gt_pmf, int max_gt, 
-                             int seeding) {
-  vector[t] infections = rep_vector(1e-5, t);
-  int index = min(seeding, max_gt);
-  int inf_start = seeding - index + 1;
-  vector[index] seed_inf = initial_infectiousness ./ tail(gt_pmf, index);
-  infections[inf_start:seeding] = infections[inf_start:seeding] + seed_inf;
-  return(infections);
-}
-
 vector generate_infections(vector R, int seeding_time, 
                            real[] gt_mean, real[] gt_sd, int max_gt,
-                           vector initial_infectiousness) {
+                           real[] initial_infections) {
   // time indices and storage
   int rt = num_elements(R);
   int t = rt + seeding_time;
-  vector[t] infections;
-  vector[rt] infectiousness = rep_vector(1e-5, rt);
+  vector[t] infections rep_vector(1e-5, t);
+  vector[t] infectiousness = rep_vector(1e-5, t);
+  real current_R;
   // generation time pmf
   vector[max_gt] gt_pmf;              
   for (j in 1:(max_gt)) {
     gt_pmf[j] = discretised_gamma_pmf(max_gt - j + 1, gt_mean[1], gt_sd[1], max_gt);
   }
-  // initial infections using seed infectiousness
-  infections = initialise_infections(t, initial_infectiousness[1], gt_pmf, 
-                                     max_gt, seeding_time);
   // iteratively update infections
-  for (s in 1:rt) {
-    infectiousness[s] += update_infectiousness(infections, gt_pmf, seeding_time, max_gt, s);
-    infections[s + seeding_time] += R[s] * infectiousness[s];
+  infections[1] = initial_infections[1];
+  for (s in 2:t) {
+    infectiousness[s] += update_infectiousness(infections, gt_pmf, max_gt, s);
+    if (s <= seeding_time){
+      current_R = R[1];
+    }else{
+      current_R = R[s - seeding_time];
+    }
+    infections[s] += current_R * infectiousness[s];
   }
   return(infections);
 }
