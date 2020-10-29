@@ -27,3 +27,10 @@ test_that("initialise_infections works as expected", {
                c(2000, 1000, 118, 50, 50, rep(0, 15)))
 })
 
+# test generate infections
+test_that("generate_infections works as expected", {
+  
+})
+
+
+generate_infections(rep(1.3, 10), 10, 3, 2, 15, 1000)
