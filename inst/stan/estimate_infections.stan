@@ -37,7 +37,7 @@ parameters{
   vector[fixed ? 0 : M] eta;             // unconstrained noise
   // Rt
   vector[estimate_r] log_R;             // baseline reproduction number estimate (log)
-  vector[estimate_r > 0 ? seeding_time : 0] initial_infections;// seed infections 
+  real<lower = 0> initial_infections[estimate_r] ;// seed infections 
   real<lower = 0> gt_mean[estimate_r];  // mean of generation time
   real <lower = 0> gt_sd[estimate_r];   // sd of generation time
   real bp_effects[bp_n];                // Rt breakpoint effects
@@ -61,7 +61,7 @@ transformed parameters {
   if (estimate_r) {
     // via Rt
     R = update_Rt(R, log_R[estimate_r], noise, breakpoints, bp_effects, stationary);
-    infections = generate_infections(R, seeding_time, gt_mean, gt_sd, max_gt, shifted_cases, initial_infections);
+    infections = generate_infections(R, seeding_time, gt_mean, gt_sd, max_gt, initial_infections);
   }else{
     // via deconvolution
     infections = deconvolve_infections(shifted_cases, noise, fixed);
@@ -90,7 +90,7 @@ model {
       bp_effects ~ normal(0, 0.1);
     }
     // initial infections
-    initial_infections ~ lognormal(0, 0.1);
+    initial_infections ~ exponential(prior_infections);
     // penalised_prior on generation interval
     generation_time_lp(gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot);
   }

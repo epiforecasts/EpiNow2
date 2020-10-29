@@ -1,4 +1,5 @@
   int estimate_r;                    // should the reproduction no be estimated (1 = yes)
+  real <lower = 0> prior_infections; // prior for initial infections
   real <lower = 0> r_mean;           // prior mean of reproduction number
   real <lower = 0> r_sd;             // prior standard deviation of reproduction number
   int bp_n;                          // no of breakpoints (0 = no breakpoints)
