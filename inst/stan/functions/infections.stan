@@ -1,8 +1,8 @@
 real update_infectiousness(vector infections, vector gt_pmf,
-                           int max_gt, int index){
-  int inf_start = max(1, (index - max_gt));
-  int inf_end = (index - 1);
-  int pmf_accessed = min(max_gt, index - 1);
+                           int seeding_time, int max_gt, int index){
+  int inf_start = max(1, (index + seeding_time - max_gt));
+  int inf_end = (index + seeding_time - 1);
+  int pmf_accessed = min(max_gt, index + seeding_time - 1);
   real new_inf = dot_product(infections[inf_start:inf_end], tail(gt_pmf, pmf_accessed));
   return(new_inf);
 }
@@ -13,7 +13,7 @@ vector generate_infections(vector R, int seeding_time,
   // time indices and storage
   int rt = num_elements(R);
   int t = rt + seeding_time;
-  vector[t] infections rep_vector(1e-5, t);
+  vector[t] infections = rep_vector(1e-5, t);
   vector[t] infectiousness = rep_vector(1e-5, t);
   real current_R;
   // generation time pmf
@@ -24,7 +24,7 @@ vector generate_infections(vector R, int seeding_time,
   // iteratively update infections
   infections[1] = initial_infections[1];
   for (s in 2:t) {
-    infectiousness[s] += update_infectiousness(infections, gt_pmf, max_gt, s);
+    infectiousness[s] += update_infectiousness(infections, gt_pmf, 0, max_gt, s);
     if (s <= seeding_time){
       current_R = R[1];
     }else{
@@ -34,7 +34,6 @@ vector generate_infections(vector R, int seeding_time,
   }
   return(infections);
 }
-
 
 vector deconvolve_infections(vector shifted_cases, vector noise, int fixed) {
   int t = num_elements(shifted_cases);
