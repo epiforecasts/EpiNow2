@@ -21,7 +21,7 @@ vector initialise_infections(int t, real initial_infectiousness,
 vector generate_infections(vector R, int seeding_time, 
                            real[] gt_mean, real[] gt_sd, int max_gt,
                            vector initial_infectiousness) {
-  // time indices
+  // time indices and storage
   int rt = num_elements(R);
   int t = rt + seeding_time;
   vector[t] infections;
