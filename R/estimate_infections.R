@@ -34,7 +34,7 @@
 #' @param stationary Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt 
 #' this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 #' This setting is most appropriate when estimating historic Rt or when combined with breakpoints.
-#' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
+#' @param return_fit Logical, defaults to TRUE. Should the fitted stan model be returned.
 #' @param gp List controlling the Gaussian process approximation if set to `list()` then `Rt` is assumed to be constant unless
 #' other settings introduce variation. If set must contain the `basis_prop` (number of basis functions based on scaling the time points)
 #'  which defaults to 0.3 and must be between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of 
@@ -189,7 +189,7 @@ estimate_infections <- function(reported_cases,
                                 prior_smoothing_window = 7, 
                                 future = FALSE, 
                                 max_execution_time = Inf, 
-                                return_fit = FALSE,
+                                return_fit = TRUE,
                                 id = "estimate_infections",
                                 verbose = FALSE){
    

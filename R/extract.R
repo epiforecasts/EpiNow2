@@ -108,5 +108,10 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
     out$gt_sd <- extract_static_parameter("gt_sd", samples)
     out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
   }
+  if (data$model_type == 1) {
+    out$reporting_overdispersion <- extract_static_parameter("rep_phi", samples)
+    out$reporting_overdispersion <- out$reporting_overdispersion[, value := value.V1][, 
+                                                                   value.V1 := NULL]
+  }
   return(out)
 }

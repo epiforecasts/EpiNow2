@@ -6,8 +6,7 @@
 #' results and interpreting them.
 #' @param output A character vector of optional output to return. Supported options are samples ("samples"), 
 #' plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if `target_folder` is not null
-#'  - set using "latest"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
-#' and summary statistics. This argument uses partial matching so for example passing "sam" will lead to samples
+#'  - set using "latest"), and the stan fit ("fit"). The default is to return all options. This argument uses partial matching so for example passing "sam" will lead to samples
 #' being reported.
 #' @param return_output Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE 
 #' if no directory for saving is specified. 
@@ -66,7 +65,8 @@
 epinow <- function(reported_cases, samples = 1000, horizon = 7, 
                    generation_time, delays = list(),
                    CrIs = c(0.2, 0.5, 0.9),
-                   return_output = FALSE, output = c("samples", "plots", "latest"), 
+                   return_output = FALSE, output = c("samples", "plots", 
+                                                     "latest", "fit", "timing"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, logs = tempdir(),
                    id = "epinow", verbose = FALSE,

@@ -26,7 +26,7 @@ estimate_infections(
   prior_smoothing_window = 7,
   future = FALSE,
   max_execution_time = Inf,
-  return_fit = FALSE,
+  return_fit = TRUE,
   id = "estimate_infections",
   verbose = FALSE
 )
@@ -111,7 +111,7 @@ fail gracefully (i.e when combined with \code{max_execution_time}). Should be co
 When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation
 will fail with an informative error.}
 
-\item{return_fit}{Logical, defaults to FALSE. Should the fitted stan model be returned.}
+\item{return_fit}{Logical, defaults to TRUE. Should the fitted stan model be returned.}
 
 \item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
 to assign errors to regions. Alter the default to run with error catching.}
