@@ -121,25 +121,10 @@ allocate_delays <- function(delay_var, no_delays) {
   if (no_delays > 0) {
     out <- unlist(delay_var)
   }else{
-    out <- 1
+    out <- numeric(0)
   }
   return(array(out))
 }
-
-
-#' Timeout Error
-#' @param fit A stan fit object
-#' @return Nothing
-#' @importFrom futile.logger flog.error
-stop_timeout <- function(fit) {
-  if (is.null(fit)) {
-    futile.logger::flog.error("fitting timed out - try increasing max_execution_time",
-                              name = "Epinow2.epinow.estimate_infections.fit")
-    stop("model fitting timed out - try increasing max_execution_time")
-  }
-  return(invisible(NULL))
-}
-
 
 #' Match Input Output Arguments with Supported Options
 #'
@@ -339,6 +324,35 @@ clear_epinow2_cache <- function(){
   invisible()
 }
 
+#' Expose internal package stan functions in R
+#'
+#' @description This function exposes internal stan functions in R from a user
+#' supplid list of target files. 
+#' @param files A character vector indicating the target files
+#' @param target_dir A character string indicating the target directory for the file
+#' @param ... Additional arguments passed to `rstan::expose_stan_functions`.
+#' @return NULL
+#' @export
+#' @importFrom rstan expose_stan_functions stanc
+#' @importFrom purrr map_chr
+#' @examples
+#' \donttest{
+#' expose_stan_fns("rt.stan", target_dir = system.file("stan/functions", package = "EpiNow2"))
+#' 
+#' # test by updating Rt
+#' update_Rt(rep(1, 10), log(1.2), rep(0.1, 9), rep(10, 0), numeric(0), 0)
+#' }
+expose_stan_fns <- function(files, target_dir, ...) {
+  functions <- paste0("\n functions{ \n",
+                      paste(purrr::map_chr(files, 
+                                           ~ paste(readLines(file.path(target_dir, .)), collapse = "\n")),
+                            collapse = "\n"), 
+                      "\n }")
+  rstan::expose_stan_functions(rstan::stanc(model_code = functions), ...)
+  return(invisible(NULL))
+
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(
   c("bottom", "cases", "confidence", "confirm", "country_code", "crps", 
@@ -357,5 +371,5 @@ globalVariables(
     "New confirmed cases by infection date", "Data", "R", "reference",
     ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate", 
     "point", "strat", "estimate", "breakpoint", "variable", "value.V1", "central_lower", "central_upper",
-    "mean_sd", "sd_sd", "average_7",  "..lowers", "..upper_CrI", "..uppers"))
+    "mean_sd", "sd_sd", "average_7",  "..lowers", "..upper_CrI", "..uppers", "timing"))
 
