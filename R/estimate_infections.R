@@ -249,9 +249,11 @@ estimate_infections <- function(reported_cases,
   
   method <- ifelse(method!="sampling", "approximate", method)
   
+  # Pull Cached Artciles
+  # If they are null, a null will be passed per the defaults
   cache_model <- stan_args[["cache_model"]]
-  model <- ifelse(is.null(stan_args[["model"]]), NULL,is.null(stan_args[["model"]]))
-  fit <- ifelse(is.null(stan_args[["fit"]]), NULL,is.null(stan_args[["fit"]]))
+  model <- stan_args[["model"]]
+  fit <- stan_args[["fit"]]
   
   # Check Input of Model
   # Collapse multiple fits if they are passed
@@ -260,6 +262,7 @@ estimate_infections <- function(reported_cases,
       if(any(lapply(fit, class)!="stanfit")){
         stop("The fit you have passed is not a valid `stanfit` object")
       } else{
+        # If a list was passed, combine to a single rstan fit object
         fit <- rstan::sflist2stanfit(fit)
       }
     }
@@ -269,7 +272,7 @@ estimate_infections <- function(reported_cases,
     stop("The fit you have passed is not a valid `stanfit` object")
   }
   
-  # Nullify non-standard arguments now
+  # Nullify non-standard arguments now for downstream compliance
   stan_args$backend <- NULL
   stan_args$method <- NULL
   stan_args$model <- NULL
