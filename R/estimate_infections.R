@@ -249,7 +249,6 @@ estimate_infections <- function(reported_cases,
   
   method <- ifelse(method!="sampling", "approximate", method)
   
-  # Pull Cached Artciles
   # If they are null, a null will be passed per the defaults
   cache_model <- stan_args[["cache_model"]]
   model <- stan_args[["model"]]
@@ -393,7 +392,9 @@ estimate_infections <- function(reported_cases,
                            verbose = verbose, backend = backend, cache_model=cache_model)
   
   # Fit model ---------------------------------------------------------------
-  if(!is.null(fit)){
+  # If fit is null (provided by stan_args), then complete the fit
+  #    otherwise, skip this fitting step.
+  if(is.null(fit)){
   if(backend =="rstan"){
   if (method == "sampling") {
     fit <- fit_model_with_nuts(args,
