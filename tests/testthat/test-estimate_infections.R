@@ -84,7 +84,6 @@ test_that("estimate_infections works as expected with failing chains", {
                                            future = TRUE))
 })
 
-<<<<<<< HEAD
 
 # test_that("estimate_infections produces output as expected when using approximate approach", {
 #   skip_on_cran()
@@ -97,6 +96,3 @@ test_that("estimate_infections works as expected with failing chains", {
 #   expect_true(nrow(out$samples) > 0)
 #   expect_true(nrow(out$summarised) > 0)
 # })
-
-=======
->>>>>>> d34228df93d89ee246c3a7e7f1c3d49afa3a5b2b

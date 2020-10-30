@@ -313,7 +313,7 @@ algoriths_available <- function(){
 #' Commonly if you are using the CmdStan backend, you'll have items in your 
 #' cache.
 #' @section Warning:
-#' This will removed cached models and requires that \link[rappdirs] is installed
+#' This will removed cached models and requires that `rappdirs` is installed
 #' 
 #' @returns invisible
 
@@ -371,5 +371,6 @@ globalVariables(
     "New confirmed cases by infection date", "Data", "R", "reference",
     ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate", 
     "point", "strat", "estimate", "breakpoint", "variable", "value.V1", "central_lower", "central_upper",
-    "mean_sd", "sd_sd", "average_7",  "..lowers", "..upper_CrI", "..uppers", "timing"))
+    "mean_sd", "sd_sd", "average_7",  "..lowers", "..upper_CrI", "..uppers", "timing",
+    "stop_timeout"))
 

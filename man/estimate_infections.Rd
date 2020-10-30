@@ -6,9 +6,9 @@
 \usage{
 estimate_infections(
   reported_cases,
-  model = NULL,
   samples = 1000,
-  stan_args = NULL,
+  stan_args = list(algorithm = "sampling", backend = "rstan", cache_model = TRUE, fit =
+    NULL, model = NULL),
   method = "exact",
   family = "negbin",
   generation_time,
@@ -27,21 +27,13 @@ estimate_infections(
   future = FALSE,
   max_execution_time = Inf,
   return_fit = FALSE,
-<<<<<<< HEAD
-  verbose = FALSE,
-  backend = "rstan",
-  cache_model = TRUE
-=======
   id = "estimate_infections",
   verbose = FALSE
->>>>>>> d34228df93d89ee246c3a7e7f1c3d49afa3a5b2b
 )
 }
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
-
-\item{model}{A compiled stan model. By default uses the internal package model.}
 
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
 
@@ -125,11 +117,7 @@ to assign errors to regions. Alter the default to run with error catching.}
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
 
-\item{backend}{A character string defaults to "rstan". The backend to use for
-computation.}
-
-\item{cache_model}{Logical, defaults to \code{TRUE}. Should a local copy be made
-and compiled of the stan program.}
+\item{model}{A compiled stan model. By default uses the internal package model.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported

@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimate_infections.R
 \name{fit_model_with_vb_cmd}
 \alias{fit_model_with_vb_cmd}
-\title{Fit a Stan Model using Variational Inference with CmdStan}
+\title{Fit a Stan Model using Variational Inference}
 \usage{
 fit_model_with_vb_cmd(args, future = FALSE, verbose = FALSE)
 }

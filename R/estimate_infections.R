@@ -650,7 +650,6 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE
 #' @inheritParams fit_model_with_nuts_cmd
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom purrr safely
-#' @importFrom cmdstanr $variational() method of a CmdStanModel object
 #' @return A stan model object
 fit_model_with_vb_cmd <- function(args, future = FALSE, verbose = FALSE) {
   if (verbose) {
