@@ -10,7 +10,7 @@ create_stan_args(
   init = "random",
   samples = 1000,
   stan_args = NULL,
-  method = "exact",
+  method = "sampling",
   verbose = FALSE,
   backend = "rstan",
   cache_model = TRUE
@@ -31,10 +31,10 @@ number of samples per chain as is the default in stan).}
 or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
 using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
 
-\item{method}{A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
-this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
+\item{method}{A character string defaults to "sampling". Also accepts "approximate". Indicates the fitting method to be used
+this can either be "sampling" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
 from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results
-several order of magnitudes faster than the exact method.}
+several order of magnitudes faster than the sampling method.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be returned.}
 

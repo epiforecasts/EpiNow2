@@ -13,7 +13,7 @@ reporting_delay <- list(mean = log(3), mean_sd = 0.1, sd = log(2), sd_sd = 0.1, 
 default_estimate_infections <- function(..., add_stan = list()) {
   
   def_stan <- list(chains = 2, warmup = 50,
-                   control = list(adapt_delta = 0.8))
+                   control = list(adapt_delta = 0.8), fit = NULL)
   stan_args <- def_stan[setdiff(names(def_stan), names(add_stan))]
   stan_args <- c(stan_args, add_stan)
   
@@ -36,6 +36,11 @@ test_estimate_infections <- function(...) {
 test_that("estimate_infections successfully returns estimates using default settings", {
   skip_on_cran()
   test_estimate_infections(reported_cases)
+})
+
+test_that("estimate_infections successfully returns estimates using default settings", {
+  skip_on_cran()
+  test_estimate_infections(reported_cases, stan_configuration = list(backend = "cmdstan"))
 })
 
 test_that("estimate_infections successfully returns estimates using backcalculation", {
@@ -81,6 +86,12 @@ test_that("estimate_infections works as expected with failing chains", {
   expect_error(default_estimate_infections(reported_cases,
                                            add_stan = list(chains = 4, warmup = 1,
                                                            stuck_chains = 3),
+                                           future = TRUE))
+  
+  expect_error(default_estimate_infections(reported_cases,
+                                           add_stan = list(chains = 4, warmup = 1,
+                                                           stuck_chains = 3),
+                                           stan_configuration = list(backend = "cmdstan"),
                                            future = TRUE))
 })
 

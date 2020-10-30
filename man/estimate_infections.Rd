@@ -7,9 +7,10 @@
 estimate_infections(
   reported_cases,
   samples = 1000,
-  stan_args = list(algorithm = "sampling", backend = "rstan", cache_model = TRUE, fit =
-    NULL, model = NULL),
-  method = "exact",
+  stan_configuration = list(algorithm = "sampling", backend = "rstan", cache_model =
+    TRUE, fit = NULL, model = NULL),
+  stan_args = list(),
+  method = stan_configuration[["algorithm"]],
   family = "negbin",
   generation_time,
   CrIs = c(0.2, 0.5, 0.9),
@@ -37,14 +38,19 @@ in date format.}
 
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
 
+\item{stan_configuration}{A names list. This can contain the backend (default of \code{rstan}),
+the \code{algorithm} ("sampling" for NUTS), \code{model} for compiled stan model (By default uses the internal package model),
+\code{fit} which can include a rstan fit or list of rstan fits, and \code{cache_model} which defaults to true to cache a
+CmdStan model.}
+
 \item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "exact"
 or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
 using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
 
-\item{method}{A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
-this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
+\item{method}{A character string defaults to "sampling". Also accepts "approximate". Indicates the fitting method to be used
+this can either be "sampling" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
 from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results
-several order of magnitudes faster than the exact method.}
+several order of magnitudes faster than the sampling method.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}

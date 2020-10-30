@@ -20,6 +20,10 @@
 #' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
 #' for the prior based on reported cases.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
+#' @param stan_configuration A names list. This can contain the backend (default of `rstan`),
+#'     the `algorithm` ("sampling" for NUTS), `model` for compiled stan model (By default uses the internal package model),
+#'     `fit` which can include a rstan fit or list of rstan fits, and `cache_model` which defaults to true to cache a
+#'     CmdStan model.
 #' @param model A compiled stan model. By default uses the internal package model.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
 #' @param week_effect Logical, defaults TRUE. Should weekly reporting effects be estimated.
@@ -177,13 +181,14 @@
 #' }                                
 estimate_infections <- function(reported_cases, 
                                 samples = 1000,
-                                stan_args = list(
+                                stan_configuration = list(
                                   algorithm = "sampling",
                                   backend = "rstan",
                                   cache_model = TRUE,
                                   fit = NULL,
                                   model = NULL),
-                                method = "exact", 
+                                stan_args = list(),
+                                method = stan_configuration[["algorithm"]],
                                 family = "negbin", 
                                 generation_time, 
                                 CrIs = c(0.2, 0.5, 0.9),
@@ -206,15 +211,16 @@ estimate_infections <- function(reported_cases,
                                 verbose = FALSE){
   
   # Parse Stan Arguments to set algorithm and backend
-  backend <- match.arg(stan_args[["backend"]], backends_available())
-  method <- match.arg(stan_args[["algorithm"]], algoriths_available())
+  backend <- match.arg(stan_configuration[["backend"]], backends_available())
+  method <- match.arg(stan_configuration[["algorithm"]], algoriths_available())
   
   method <- ifelse(method!="sampling", "approximate", method)
   
   # If they are null, a null will be passed per the defaults
-  cache_model <- stan_args[["cache_model"]]
-  model <- stan_args[["model"]]
-  fit <- stan_args[["fit"]]
+  
+  cache_model <- ifelse(is.null(stan_configuration[["cache_model"]]),TRUE, stan_configuration[["cache_model"]])
+  model <- stan_configuration[["model"]]
+  fit <- stan_configuration[["fit"]]
   
   # Check Input of Model
   # Collapse multiple fits if they are passed
@@ -226,12 +232,14 @@ estimate_infections <- function(reported_cases,
         # If a list was passed, combine to a single rstan fit object
         fit <- rstan::sflist2stanfit(fit)
       }
+    } else {
+      if(class(fit)!="stanfit"){
+        stop("The fit you have passed is not a valid `stanfit` object")
+      }
     }
   }
   
-  if(class(fit)!="stanfit"){
-    stop("The fit you have passed is not a valid `stanfit` object")
-  }
+  
   
   # Nullify non-standard arguments now for downstream compliance
   stan_args$backend <- NULL
@@ -544,7 +552,7 @@ fit_model_with_nuts_cmd <- function(args, future = FALSE, max_execution_time = I
   fit_chain <- function(chain, stan_args, max_time) {
     in_chain <- chain # Not really used, but in here to make lapply work
     model_fit <- stan_args$object
-    data_fit <- make_cmdstan_list(stan_args, method = "exact")
+    data_fit <- make_cmdstan_list(stan_args, method = "sampling")
     fit <- R.utils::withTimeout(do.call(model_fit$sample, data_fit), 
                                 timeout = max_time,
                                 onTimeout = "silent")

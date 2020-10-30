@@ -17,12 +17,12 @@ test_that("epinow produces expected output when run with default settings", {
   out <- suppressWarnings(epinow(reported_cases = reported_cases,
                                  generation_time = generation_time,
                 delays = list(incubation_period, reporting_delay),
-                samples = 25, 
+                samples = 25,
                 stan_args = list(warmup = 25, cores = 1, chains = 2,
                                  control = list(adapt_delta = 0.8)),
                 logs = NULL))
-  
-  expect_equal(names(out), c("estimates", "estimated_reported_cases", 
+
+  expect_equal(names(out), c("estimates", "estimated_reported_cases",
                              "summary", "plots"))
   df_non_zero(out$estimates$samples)
   df_non_zero(out$estimates$summarised)
@@ -37,12 +37,12 @@ test_that("epinow produces expected output when run with default settings", {
   out <- suppressWarnings(epinow(reported_cases = reported_cases,
                                  generation_time = generation_time,
                                  delays = list(incubation_period, reporting_delay),
-                                 samples = 25, 
+                                 samples = 25,
                                  stan_args = list(warmup = 25, cores = 1, chains = 2,
                                                   control = list(adapt_delta = 0.8)),
                                  logs = NULL))
-  
-  expect_equal(names(out), c("estimates", "estimated_reported_cases", 
+
+  expect_equal(names(out), c("estimates", "estimated_reported_cases",
                              "summary", "plots"))
   df_non_zero(out$estimates$samples)
   df_non_zero(out$estimates$summarised)
@@ -57,7 +57,7 @@ test_that("epinow runs without error when saving to disk", {
   expect_null(suppressWarnings(epinow(reported_cases = reported_cases,
                                       generation_time = generation_time,
                                       delays = list(incubation_period, reporting_delay),
-                                      samples = 25, 
+                                      samples = 25,
                                       stan_args = list(warmup = 25, cores = 1, chains = 2,
                                                        control = list(adapt_delta = 0.8)),
                                       target_folder = tempdir(),
@@ -76,7 +76,7 @@ test_that("epinow can produce partial output as specified", {
                                                   control = list(adapt_delta = 0.8)),
                                  output = c(),
                                  logs = NULL))
-  
+
   expect_equal(names(out), c("estimates", "estimated_reported_cases", "summary"))
   expect_null(out$estimates$samples)
   df_non_zero(out$estimates$summarised)
@@ -101,11 +101,11 @@ test_that("epinow fails as expected when given a short timeout", {
 
 test_that("epinow fails if given NUTs arguments when using variational inference", {
   skip_on_cran()
-  expect_error(suppressWarnings(epinow(reported_cases = reported_cases, 
+  expect_error(suppressWarnings(epinow(reported_cases = reported_cases,
                                        generation_time = generation_time,
                                        delays = list(incubation_period, reporting_delay),
-                                       method = "approximate",
-                                       samples = 100, 
+                                       stan_configuration = list(algorithm = "meanfield"),
+                                       samples = 100,
                                        stan_args = list(warmup = 100,
                                                         cores = 1, chains = 2),
                                        logs = NULL)))
@@ -114,10 +114,10 @@ test_that("epinow fails if given NUTs arguments when using variational inference
 
 test_that("epinow fails if given variational inference arguments when using NUTs", {
   skip_on_cran()
-  expect_error(suppressWarnings(epinow(reported_cases = reported_cases, 
+  expect_error(suppressWarnings(epinow(reported_cases = reported_cases,
                                        generation_time = generation_time,
                                        delays = list(incubation_period, reporting_delay),
-                                       method = "exact", 
+                                       stan_configuration = list(algorithm = "sampling"),
                                        stan_args = list(tol_rel_obj = 1),
                                        logs = NULL)))
 })

@@ -213,15 +213,21 @@ safe_file_copy <- function(files, x){
 
 copy_models <- function(dir_path){
   # First copy functions
-  app_file_loc <- system.file(file.path("stan", "functions"), package = "EpiNow2")
-  
   safe_dir_create(file.path(dir_path, "functions"))
+  
+  app_file_loc <- system.file(file.path("stan", "functions"), package = "EpiNow2")
   
   functions_to_copy <- list.files(app_file_loc, full.names = TRUE)
   
-  
-  
   lapply(functions_to_copy, safe_file_copy, x = file.path(dir_path, "functions"))
+  # Then Copy data
+  safe_dir_create(file.path(dir_path, "data"))
+  
+  app_file_loc <- system.file(file.path("stan", "data"), package = "EpiNow2")
+  
+  functions_to_copy <- list.files(app_file_loc, full.names = TRUE)
+  
+  lapply(functions_to_copy, safe_file_copy, x = file.path(dir_path, "data"))
   
   # Copy Models
   stan_file_loc <- system.file(file.path("stan", "estimate_infections.stan"), 
@@ -238,9 +244,9 @@ copy_models <- function(dir_path){
 
 
 # Helper function for Formatting List for CmdStanR
-make_cmdstan_list <-function(stan_args, method = "exact"){
+make_cmdstan_list <-function(stan_args, method = "sampling"){
 
-  if (method == "exact") {
+  if (method == "sampling") {
     out <- list(
       data = stan_args$data,
       seed = as.integer(abs(stan_args$seed)),
@@ -314,7 +320,7 @@ algoriths_available <- function(){
 #' cache.
 #' @section Warning:
 #' This will removed cached models and requires that `rappdirs` is installed
-#' 
+#' @export 
 #' @returns invisible
 
 clear_epinow2_cache <- function(){
