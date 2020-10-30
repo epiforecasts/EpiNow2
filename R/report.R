@@ -250,7 +250,7 @@ R <- plot_estimates(estimate = summarised_estimates[variable == "R"],
 if (!is.null(target_folder)) {
   suppressWarnings(
     suppressMessages(
-      ggplot2::ggsave(paste0(target_folder, "/reff_plot.png"),
+      ggplot2::ggsave(paste0(target_folder, "/R_plot.png"),
                       R,
                       width = 12,
                       height = 3,
