@@ -12,6 +12,7 @@ regional_epinow(
   output = c("regions", "summary", "samples", "plots", "latest"),
   return_output = FALSE,
   summary_args = list(),
+  verbose = FALSE,
   logs = tempdir(),
   ...
 )
@@ -37,6 +38,8 @@ if no directory for saving is specified.}
 
 \item{summary_args}{A list of arguments passed to \code{regional_summary}. See the \code{regional_summary} documentation for details.}
 
+\item{verbose}{Logical defaults to FALSE. Outputs verbose progress messages to the console from \code{epinow}.}
+
 \item{logs}{Character path indicating the target folder in which to store log
 information. Defaults to the temporary directory if not specified. Default logging
 can be disabled if \code{logs} is set to NULL. If specifying a custom logging setup then
@@ -58,8 +61,8 @@ and enable it in batch by setting \code{R_PROGRESSR_ENABLE=TRUE} as an environme
 # construct example distributions
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- list(mean = log(10), mean_sd = log(2),
-                        sd = log(2), sd_sd = log(1.1), max = 30)
+reporting_delay <- list(mean = log(3), mean_sd = 0.1,
+                        sd = log(2), sd_sd = 0.1, max = 15)
                         
 # uses example case vector
 cases <- EpiNow2::example_confirmed[1:40]
@@ -69,11 +72,12 @@ cases <- data.table::rbindlist(list(
                 
 # run epinow across multiple regions and generate summaries
 # samples and warmup have been reduced for this example
-out <- regional_epinow(reported_cases = cases, 
+out <- regional_epinow(reported_cases = cases[, breakpoint := 1], 
                        samples = 100,
                        generation_time = generation_time,
                        delays = list(incubation_period, reporting_delay),
                        stan_args = list(warmup = 100, 
-                                        cores = ifelse(interactive(), 4, 1)))
+                                        cores = ifelse(interactive(), 4, 1)),
+                       verbose = interactive())
 }
 }

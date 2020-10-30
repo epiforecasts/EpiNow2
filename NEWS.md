@@ -1,3 +1,18 @@
+# EpiNow2 1.3.0
+
+## New features
+
+* Extended the functionality of the back calculation model so that Rt can be produced via calculation. These estimates are potentially less reliable than those produced using the generative model but the model can be estimated in a fraction of the time.
+* Reduced the default maximum generation time and incubation period allowed in the truncated distribution (from 30 days to 15). This decreases the model run time substantially at a marginal accuracy cost. This new default is not suitable for longer generation times and should be modified by the user if these are used.
+* Adds basic S3 plot and summary measures for `epinow` and a plot method for `estimate_infections`. This functionality will likely be further built out in later releases.
+* Added a new function, `expose_stan_fns` that exposes the internal stan functions into R. The enables unit testing, exploration of the stan functionality and potentially within R use cases for these functions.
+
+## Other changes
+
+* Recoded the core stan model to be functional with the aim of making the code modular and extendable.
+* Added unit tests for the internal stan update_rt function.
+* Reworked the package logging system to improve the reporting of issues both in `epinow` and in `regional_epinow` for large batch runs.
+
 # EpiNow2 1.2.1
 
 This release introduces multiple breaking interface changes. Please see the README for examples of the new interface. It adds a range of quality of life improvements including updating the `stan` interface to support fitting each chain independently and offering variational inference as an alternative, experimental, fitting option. Notably it also adds support for nesting logging and a parallel enabled progress bar via the `progressr` package. Minor bugs have been fixed in the core model implementation focussing on stability and several already implemented features have been extended. Major model developments are planned for the next release of `EpiNow2`.
@@ -5,6 +20,7 @@ This release introduces multiple breaking interface changes. Please see the READ
 ## New features
 
 * Added support for either NUTs sampling (`method = "exact"`) or Variational inference (`method = "approximate"`).
+* Update the prior on the initial Rt estimate to be lognormal rather than gamma distributed. For users the interface remains unchanged but this parameterisation should be more numerically stable.
 * Added `get_dist`, `get_generation_time`, `get_incubation_period` based on ideas from @pearsonca. (This leads to breaking changes with the removal of `covid_generation_times` and `covid_incubation_periods`).
 * Added `setup_logging` to enable users to specify the level and location of logging (wrapping functionality from `futile.logger`). Also added `setup_default_logging` to give users sensible defaults and embedded this
 function in `regional_epinow` and `epinow`.
@@ -24,6 +40,7 @@ function in `regional_epinow` and `epinow`.
 * Fix to normalisation of delay and generation time distributions from @sbfnk. This will impact nowcast infections but not reproduction number estimate.
 * Updated `discretised_gamma_pmf` (discretised truncated Gamma PMF) to constrain gamma shape and (inverse) scale parameters to be positive and finite (`alpha > 0` and `beta > 0`).
 * Fixed `readLines` incomplete final line warnings.
+* Fix from @medewitt from the internal `fit_chain` function where an interaction between `rstan` and timing out may have introduced an exception that caused whole regions to fail. This did not show on current unit tests or exploration using examples etc. indicating a gap in testing. 
 
 ## Other changes
 
@@ -34,6 +51,7 @@ function in `regional_epinow` and `epinow`.
 * Cleaned up wrapper functions to move individual jobs into functions.
 * Adds testing of high level functions and some low level unit testing.
 * Adds a csv download button the interactive table in the regional summary table.
+* Makevars updated to remove the dependency on GNU Make by @hsbadr
 
 # EpiNow2 1.1.0
 

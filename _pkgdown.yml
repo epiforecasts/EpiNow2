@@ -3,16 +3,19 @@ template:
   opengraph:
     image:
       src: man/figures/unnamed-chunk-13-1.png
-      alt: "Example estimates produced by EpiNow2 of reproduction number, cases by date of infection and cases by date of report"
+      alt: "Example estimates produced by EpiNow2 of the reproduction number, cases by date of infection and cases by date of report"
     twitter:
       creator: "@seabbs"
       site: "@cmmid_lshtm"
       card: summary_large_image
   params:
     bootswatch: lumen
+    docsearch:
+      api_key: 43da981922253a06c4dfab7b53f2410e
+      index_name: epinow2
 
 development:
-  mode: release
+  mode: auto
 
 authors:
   Sam Abbott:
@@ -71,7 +74,9 @@ reference:
   - title: Report results
     desc: Functions to report results
     contents:
-      - contains("report")
+      - report_cases
+      - report_plots
+      - report_summary
   - title: Summarise results
     desc: Functions from summarising results
     contents:
@@ -126,4 +131,5 @@ reference:
       - match_output_arguments
       - stop_timeout
       - run_region
+      - expose_stan_fns
 

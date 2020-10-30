@@ -54,7 +54,6 @@ create_shifted_cases <- function(reported_cases, mean_shift,
   final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
                                                                         t := 1:.N]
   lm_model <- stats::lm(log(confirm) ~ t, data = final_week)
-  
   ## Estimate unreported future infections using a log linear model
   shifted_reported_cases <- shifted_reported_cases[,
                                                    t := 1:.N][, 
@@ -78,18 +77,18 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 #' @param delay Numeric mean delay
 #' @return A list containing a logical called fixed and an integer called from
 create_future_rt <- function(future_rt = "project", delay = 0) {
-  out <- list(fixed = TRUE, from = 0)
+  out <- list(fixed = FALSE, from = 0)
   if (is.character(future_rt)) {
     future_rt <- match.arg(future_rt,
                            c("project", 
                              "latest",
                              "estimate"))
     if (!(future_rt %in% "project")) {
-      out$fixed <- FALSE
+      out$fixed <- TRUE
       out$from <- ifelse(future_rt %in% "latest", 0, -delay)
     }
   }else if (is.numeric(future_rt)){
-    out$fixed <- FALSE
+    out$fixed <- TRUE
     out$from <- as.integer(future_rt)
   }
   return(out)
@@ -112,7 +111,6 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
                              rt_prior, estimate_rt, week_effect, stationary,
                              fixed, break_no, future_rt, gp, family, delays) {
-  
   # create future_rt
   future_rt <- create_future_rt(future_rt = future_rt, 
                                 delay = mean_shift)
@@ -123,9 +121,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     shifted_cases = unlist(ifelse(no_delays > 0, list(shifted_reported_cases$confirm),
                                   list(reported_cases$confirm))),
     t = length(reported_cases$date),
-    rt = length(reported_cases$date) - mean_shift,
-    time = 1:(length(reported_cases$date) - mean_shift),
-    inf_time = 1:(length(reported_cases$date)),
+    seeding_time = mean_shift,
     horizon = horizon,
     gt_mean_mean = generation_time$mean,
     gt_mean_sd = generation_time$mean_sd,
@@ -135,15 +131,14 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
-    est_week_eff = ifelse(week_effect, 1, 0),
+    week_effect = ifelse(week_effect, 1, 0),
     stationary = ifelse(stationary, 1, 0),
     fixed = ifelse(fixed, 1, 0),
-    break_no = break_no,
+    bp_n = break_no,
     breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
     future_fixed = ifelse(future_rt$fixed, 1, 0),
     fixed_from = future_rt$from
   ) 
-  
   # Delays ------------------------------------------------------------------
   data$delays <- no_delays
   data$delay_mean_mean <- allocate_delays(delays$mean, no_delays)
@@ -151,20 +146,17 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   data$delay_sd_mean <- allocate_delays(delays$sd, no_delays)
   data$delay_sd_sd <- allocate_delays(delays$sd_sd, no_delays)
   data$max_delay <- allocate_delays(delays$max, no_delays)
-  
   # Parameters for Hilbert space GP -----------------------------------------
   # no of basis functions
-  data$M <- ceiling(data$rt * gp$basis_prop)
+  data$M <- ceiling((data$t - data$seeding_time) * gp$basis_prop)
   # Boundary value for c
-  data$L <- max(data$time) * gp$boundary_scale
+  data$L <- (data$t - data$seeding_time) * gp$boundary_scale
   data$lengthscale_alpha <- gp$lengthscale_alpha
   data$lengthscale_beta <- gp$lengthscale_beta
   data$alpha_sd <- gp$alpha_sd
-  
   ## Set model to poisson or negative binomial
   family <- match.arg(family, c("poisson", "negbin"))
   data$model_type <- ifelse(family %in% "poisson", 0, 1)
-
   return(data)
 }
 
@@ -179,11 +171,8 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
 #' @importFrom truncnorm rtruncnorm
 #' @export
 create_initial_conditions <- function(data, delays, rt_prior, generation_time, mean_shift) {
-  
   init_fun <- function(){
-    
     out <- list()
-    
     if (data$delays > 0) {
       out$delay_mean <- array(purrr::map2_dbl(delays$mean, delays$mean_sd, 
                                               ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
@@ -191,7 +180,6 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
                                             ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
       
     }
-    
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 1))
       out$rho <- array(truncnorm::rtruncnorm(1, a = 1, mean = 10, sd = 4))
@@ -200,18 +188,16 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     if (data$model_type == 1) {
       out$rep_phi <- array(rexp(1, 1))
     }
-    
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rlnorm(mean_shift, meanlog = 0, sdlog = 0.1))
-      out$initial_R <- array(rgamma(n = 1, shape = (rt_prior$mean / rt_prior$sd)^2, 
-                                    scale = (rt_prior$sd^2) / rt_prior$mean))
+      out$log_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
+                               sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
                                                  sd = generation_time$mean_sd))
       out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
                                                 sd = generation_time$sd_sd))
-      
-      if (data$break_no > 0) {
-        out$rt_break_eff <- array(rnorm(data$break_no, 0, 0.1))
+      if (data$bp_n > 0) {
+        out$bp_effects <- array(rnorm(data$bp_n, 0, 0.1))
       }
     }
     return(out)
@@ -261,11 +247,9 @@ create_stan_args <- function(model, data = NULL, init = "random",
   if (missing(model)) {
     model <- NULL
   }
-  
   if (is.null(model)) {
     model <- stanmodels$estimate_infections
   }
-  
   # set up shared default arguments
   default_args <- list(
     object = model,
@@ -273,7 +257,6 @@ create_stan_args <- function(model, data = NULL, init = "random",
     init = init,
     refresh = ifelse(verbose, 50, 0)
   )
-  
   # set up independent default arguments
   if (method == "exact") {
     default_args$cores <- 4
@@ -287,7 +270,6 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$iter <- 10000
     default_args$output_samples <- samples
   }
-
   # join with user supplied settings
   if (!is.null(stan_args)) {
     default_args <- default_args[setdiff(names(default_args), names(stan_args))]
@@ -295,8 +277,6 @@ create_stan_args <- function(model, data = NULL, init = "random",
   }else{
     args <- default_args
   }
-  
-  
   # set up dependent arguments
   if (method == "exact") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup

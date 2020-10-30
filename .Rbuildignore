@@ -21,3 +21,4 @@
 ^info\.log$
 ^logs$
 ^test$
+^inst/dev$
