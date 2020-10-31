@@ -23,21 +23,23 @@ vector convolve(vector cases, vector pmf) {
 // convolve multiple pmfs
 vector convolve_pmf(real[] delay_pmfs, int[] max_delay, int delays) {
   conv_delay = sum(max_delay);
-  vector[conv_delay] convolved_pmf = rep_vector(0, conv_delay); 
-  vector[conv_delay] tmp_pmf;
-  convolved_pmf[1:max_delay[1]] = to_vector(delay_pmfs[1]);
+  vector[conv_delay] proc_pmf;
+  vector[conv_delay] conv_pmf = rep_vector(0, conv_delay); 
+  conv_pmf[1:max_delay[1]] = to_vector(delay_pmfs[1]);
   real index_pmf;
   for (s in 2:delays) {
-    P(z) = sum_x () P(X = x) * P(Y = z - x)
-    tmp_pmf = convolved_pmf;
+    //P(Z = z) = sum_over_x(P(X = x) * P(Y = z - x))
+    proc_pmf = rep_vector(0, conv_delay);
     for (z in 1:conv_delay) {
       for (x in 1:max_delay[s]){
-        index_pmf = tmp_pmf[z - x];
-        convolved_pmf[z] += delay_pmfs[s, x] * index_pmf;
+        if (z - x > 0) { 
+         proc_pmf[z] += delay_pmfs[s, x] * conv_pmf[z - x];
+        }
       }
     }
+    conv_pmf = proc_pmf;
   }
-  return(convolved_pmf)
+  return(conv_pmf)
 }
 
 // convolve latent infections to reported (but still unobserved) cases
@@ -52,7 +54,8 @@ vector convolve_to_report(vector infections,
   int delays = num_elements(delay_mean);
   if (delays) {
     real delay_pmfs[delays, max(max_delay)];
-    vector[sum(max_delay)] convolved_pmf;
+    int conv_delay = sum(max_delay);
+    vector[conv_delay] conv_pmf;
     for (s in 1:delays) {
       for (j in 1:(max_delay[s])) {
         delay_pmfs[s, j] =
@@ -60,11 +63,12 @@ vector convolve_to_report(vector infections,
       }
     }
     if (delays == 1) {
-      convolved_pmf = rep_vector(1e-5, max_delay[s]) + to_vector(delay_pmfs[s]);
+      conv_pmf = to_vector(delay_pmfs[s]);
     }else{
-      convolved_pmf = convolve_pmfs(delay_pmfs, max_delay, delays);
+      conv_pmf = convolve_pmfs(delay_pmfs, max_delay, delays);
     }
-    unobserved_reports = convolve(infections, convolved_pmf);
+    conv_pmf = rep_vector(1e-5, conv_delay) + conv_pmf;
+    unobserved_reports = convolve(infections, conv_pmf);
     reports = unobserved_reports[(seeding_time + 1):t];
   }else{
     reports = infections[(seeding_time + 1):t];
