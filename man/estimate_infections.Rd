@@ -48,7 +48,8 @@ which defaults to true to cache a CmdStan model.
 Indicates the fitting method to be used this can either be "sampling" (NUTs sampling) or one of
 "meanfield" or "fullranK (variational inference). The exact approach returns samples from the posterior
 whilst the approximate method returns approximate samples. The approximate method is likely to return results
-several order of magnitudes faster than the sampling method.}
+several order of magnitudes faster than the sampling method.
+\code{model} A stan model object, defaults to packaged model if not supplied.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
 binomial ("negbin") with poisson ("poisson") also supported.}

@@ -15,8 +15,6 @@ create_stan_args(
 )
 }
 \arguments{
-\item{model}{A stan model object, defaults to packaged model if not supplied.}
-
 \item{data}{A list of stan data as created by \code{create_stan_data}}
 
 \item{init}{Initial conditions passed to \code{rstan}. Defaults to "random" but can also be a function (
@@ -37,7 +35,8 @@ which defaults to true to cache a CmdStan model.
 Indicates the fitting method to be used this can either be "sampling" (NUTs sampling) or one of
 "meanfield" or "fullranK (variational inference). The exact approach returns samples from the posterior
 whilst the approximate method returns approximate samples. The approximate method is likely to return results
-several order of magnitudes faster than the sampling method.}
+several order of magnitudes faster than the sampling method.
+\code{model} A stan model object, defaults to packaged model if not supplied.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be returned.}
 }
