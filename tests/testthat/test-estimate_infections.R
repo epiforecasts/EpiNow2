@@ -41,7 +41,7 @@ test_that("estimate_infections successfully returns estimates using default sett
 test_that("estimate_infections successfully returns estimates using default settings", {
   skip_on_cran()
   testthat::skip_if_not(interactive())
-  test_estimate_infections(reported_cases, stan_configuration = list(backend = "cmdstan"))
+  test_estimate_infections(reported_cases, stan_args = list(backend = "cmdstan"))
 })
 
 test_that("estimate_infections successfully returns estimates using backcalculation", {

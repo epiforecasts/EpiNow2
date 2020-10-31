@@ -219,18 +219,20 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' as supplied by `create_intitial_conditions`).
 #' @param samples Numeric, defaults to 1000. The overall number of posterior samples to return (Note: not the 
 #' number of samples per chain as is the default in stan).
-#' @param stan_args A list of stan arguments to be passed to `rstan::sampling` or `rstan::vb` (when using the "exact"
-#' or "approximate" method). For `method = approximate` an additional argument `trials` indicates the number of attempts to make 
-#' using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.
-#' @param method A character string defaults to "sampling". Also accepts "approximate". Indicates the fitting method to be used
-#' this can either be "sampling" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
-#' from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results 
-#' several order of magnitudes faster than the sampling method.
+#' @param stan_args A list of stan arguments to be passed to `rstan::sampling` or `rstan::vb` (when using the "sampling"
+#'   or "meanfield"/"fullrank" method). For `algorithm = "meanfield"` an additional argument `trials` 
+#'   indicates the number of attempts to make using variational inference before returning an 
+#'   error (as stochastic failure is possible). The default for this is 5.
+#'   This can contain the backend (default of `rstan`), the `algorithm` ("sampling" for NUTS), 
+#'   `model` for compiled stan model (By default uses the internal package model),
+#'   `fit` which can include a rstan fit or list of rstan fits, and `cache_model` 
+#'   which defaults to true to cache a CmdStan model.
+#'   `algorithm` accepts a character string defaults to "sampling". Also accepts "approximate". 
+#'   Indicates the fitting method to be used this can either be "sampling" (NUTs sampling) or one of 
+#'   "meanfield" or "fullranK (variational inference). The exact approach returns samples from the posterior 
+#'   whilst the approximate method returns approximate samples. The approximate method is likely to return results 
+#'   several order of magnitudes faster than the sampling method.
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be returned.
-#' @param backend A character string defaults to "rstan". The backend to use for
-#'     computation.
-#' @param cache_model Logical, defaults to `TRUE`. Should a local copy be made 
-#'     and compiled of the stan program.
 #' @return A list of stan arguments
 #' @export
 #'
@@ -240,17 +242,34 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' create_stan_args()
 #' 
 #' # approximate settings
-#' create_stan_args(method = "approximate") 
+#' create_stan_args(method = "meanfield") 
 #' # increasing warmup
 #' create_stan_args(stan_args = list(warmup = 1000))
-create_stan_args <- function(model, data = NULL, init = "random", 
-                             samples = 1000, stan_args = NULL, method = "sampling", 
-                             verbose = FALSE, backend = "rstan", cache_model=TRUE) {
+create_stan_args <- function(model, 
+                             data = NULL, init = "random", 
+                             samples = 1000, 
+                             stan_args = list(
+                               algorithm = "sampling",
+                               backend = "rstan",
+                               cache_model = TRUE,
+                               fit = NULL,
+                               model = NULL
+                             ),
+                             verbose = FALSE) {
+  
   # Select the backend to use
-  backend_use <- match.arg(backend, 
+  backend_use <- match.arg(stan_args[["backend"]], 
                            choices = c("rstan", "cmdstan"), 
                            several.ok = FALSE)
-  stopifnot(is.logical(cache_model))
+  
+  method <- match.arg(stan_args[["algorithm"]], algoriths_available())
+  
+  method <- ifelse(method!="sampling", "meanfield", method)
+  
+  stopifnot(is.logical(stan_args[["cache_model"]]))
+  
+  model <- stan_args[["model"]]
+  cache_model <- stan_args[["cache_model"]]
   
   # use built in model if not supplied by the user
   if (missing(model)) {
@@ -295,10 +314,10 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$chains <- 4L
     default_args$control <- list(adapt_delta = 0.99, max_treedepth = 15)
     default_args$save_warmup <- FALSE
-    default_args$seed <- as.integer(runif(1, 1, 1e8))
+    default_args$seed <- sample.int(.Machine$integer.max, 1)
   }else if (method == "sampling" && backend != "rstan"){
     default_args$chains <- 4L
-    default_args$seed <- as.integer(runif(1, 1, 1e8))
+    default_args$seed <- sample.int(.Machine$integer.max, 1)
     default_args$iter_warmup <- 500L
     default_args$iter_sampling <- ceiling(samples / 4)
     default_args$parallel_chains <- 4L
@@ -306,11 +325,11 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$max_treedepth <- 15
     default_args$save_warmup <- FALSE
     default_args$verbose <- FALSE
-  }else if (method == "approximate") {
+  }else if (method == "meanfield") {
     default_args$trials <- 10L
     default_args$iter <- 10000L
     default_args$output_samples <- samples
-    default_args$seed <- as.integer(runif(1, 1, 1e8))
+    default_args$seed <- sample.int(.Machine$integer.max, 1)
   }
   # join with user supplied settings
   if (!is.null(stan_args)) {

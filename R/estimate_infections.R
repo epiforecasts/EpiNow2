@@ -20,11 +20,6 @@
 #' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
 #' for the prior based on reported cases.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
-#' @param stan_configuration A names list. This can contain the backend (default of `rstan`),
-#'     the `algorithm` ("sampling" for NUTS), `model` for compiled stan model (By default uses the internal package model),
-#'     `fit` which can include a rstan fit or list of rstan fits, and `cache_model` which defaults to true to cache a
-#'     CmdStan model.
-#' @param model A compiled stan model. By default uses the internal package model.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
 #' @param week_effect Logical, defaults TRUE. Should weekly reporting effects be estimated.
 #' @param use_breakpoints Logical, defaults to TRUE but only active if a `breakpoint` variable is present in the input data. 
@@ -181,14 +176,13 @@
 #' }                                
 estimate_infections <- function(reported_cases, 
                                 samples = 1000,
-                                stan_configuration = list(
-                                  algorithm = "sampling",
+                                stan_args = list(
+                                  method = "sampling",
                                   backend = "rstan",
                                   cache_model = TRUE,
                                   fit = NULL,
-                                  model = NULL),
-                                stan_args = list(),
-                                method = stan_configuration[["algorithm"]],
+                                  model = NULL
+                                ),
                                 family = "negbin", 
                                 generation_time, 
                                 CrIs = c(0.2, 0.5, 0.9),
@@ -211,16 +205,16 @@ estimate_infections <- function(reported_cases,
                                 verbose = FALSE){
   
   # Parse Stan Arguments to set algorithm and backend
-  backend <- match.arg(stan_configuration[["backend"]], backends_available())
-  method <- match.arg(stan_configuration[["algorithm"]], algoriths_available())
+  backend <- match.arg(stan_args[["backend"]], backends_available())
+  method <- match.arg(stan_args[["algorithm"]], algoriths_available())
   
-  method <- ifelse(method!="sampling", "approximate", method)
+  method <- ifelse(method!="sampling", "meanfield", method)
   
   # If they are null, a null will be passed per the defaults
   
-  cache_model <- ifelse(is.null(stan_configuration[["cache_model"]]),TRUE, stan_configuration[["cache_model"]])
-  model <- stan_configuration[["model"]]
-  fit <- stan_configuration[["fit"]]
+  cache_model <- ifelse(is.null(stan_args[["cache_model"]]),TRUE, stan_args[["cache_model"]])
+  model <- stan_args[["model"]]
+  fit <- stan_args[["fit"]]
   
   # Check Input of Model
   # Collapse multiple fits if they are passed
@@ -241,12 +235,12 @@ estimate_infections <- function(reported_cases,
   
   
   
-  # Nullify non-standard arguments now for downstream compliance
-  stan_args$backend <- NULL
-  stan_args$method <- NULL
-  stan_args$model <- NULL
-  stan_args$fit <- NULL
-  stan_args$cache_model <- NULL
+  # # Nullify non-standard arguments now for downstream compliance
+  # stan_args$backend <- NULL
+  # stan_args$method <- NULL
+  # stan_args$model <- NULL
+  # stan_args$fit <- NULL
+  # stan_args$cache_model <- NULL
   
   # Verify Dependencies in case of cmdstanr
   if(backend=="cmdstan"){
@@ -375,7 +369,7 @@ estimate_infections <- function(reported_cases,
                                max_execution_time = max_execution_time,
                                verbose = verbose,
                                id = id)
-  }else if (method == "approximate"){
+  }else if (method == "meanfield"){
     fit <- fit_model_with_vb(args,
                              verbose = verbose,
                              id = id)
@@ -388,7 +382,7 @@ estimate_infections <- function(reported_cases,
                                  future = future,
                                  max_execution_time = max_execution_time,
                                  verbose = verbose)
-    }else if (method == "approximate"){
+    }else if (method == "meanfield"){
       fit <- fit_model_with_vb_cmd(args,
                                verbose = verbose)
     }
@@ -605,8 +599,8 @@ fit_model_with_nuts_cmd <- function(args, future = FALSE, max_execution_time = I
 #' @return A stan model object
 fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE) {
   if (verbose) {
-    futile.logger::flog.debug(paste0("%s: Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
-                                     args$output_samples, " approximate posterior samples for ", args$data$t," time steps of which ",
+    futile.logger::flog.debug(paste0("%s: Running in meanfield mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
+                                     args$output_samples, " meanfield posterior samples for ", args$data$t," time steps of which ",
                                      args$data$horizon, " are a forecast"),
                               id, name = "EpiNow2.epinow.estimate_infections.fit")
   }
@@ -659,8 +653,8 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE
 #' @return A stan model object
 fit_model_with_vb_cmd <- function(args, future = FALSE, verbose = FALSE) {
   if (verbose) {
-    futile.logger::flog.debug(paste0("Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
-                                     args$output_samples, " approximate posterior samples for ", args$data$t," time steps of which ",
+    futile.logger::flog.debug(paste0("Running in meanfield mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
+                                     args$output_samples, " meanfield posterior samples for ", args$data$t," time steps of which ",
                                      args$data$horizon, " are a forecast"),
                               name = "EpiNow2.epinow.estimate_infections.fit")
   }

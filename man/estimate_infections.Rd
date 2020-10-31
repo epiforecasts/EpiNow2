@@ -7,10 +7,8 @@
 estimate_infections(
   reported_cases,
   samples = 1000,
-  stan_configuration = list(algorithm = "sampling", backend = "rstan", cache_model =
-    TRUE, fit = NULL, model = NULL),
-  stan_args = list(),
-  method = stan_configuration[["algorithm"]],
+  stan_args = list(method = "sampling", backend = "rstan", cache_model = TRUE, fit =
+    NULL, model = NULL),
   family = "negbin",
   generation_time,
   CrIs = c(0.2, 0.5, 0.9),
@@ -38,18 +36,18 @@ in date format.}
 
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
 
-\item{stan_configuration}{A names list. This can contain the backend (default of \code{rstan}),
-the \code{algorithm} ("sampling" for NUTS), \code{model} for compiled stan model (By default uses the internal package model),
-\code{fit} which can include a rstan fit or list of rstan fits, and \code{cache_model} which defaults to true to cache a
-CmdStan model.}
-
-\item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "exact"
-or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
-using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
-
-\item{method}{A character string defaults to "sampling". Also accepts "approximate". Indicates the fitting method to be used
-this can either be "sampling" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
-from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results
+\item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "sampling"
+or "meanfield"/"fullrank" method). For \code{algorithm = "meanfield"} an additional argument \code{trials}
+indicates the number of attempts to make using variational inference before returning an
+error (as stochastic failure is possible). The default for this is 5.
+This can contain the backend (default of \code{rstan}), the \code{algorithm} ("sampling" for NUTS),
+\code{model} for compiled stan model (By default uses the internal package model),
+\code{fit} which can include a rstan fit or list of rstan fits, and \code{cache_model}
+which defaults to true to cache a CmdStan model.
+\code{algorithm} accepts a character string defaults to "sampling". Also accepts "approximate".
+Indicates the fitting method to be used this can either be "sampling" (NUTs sampling) or one of
+"meanfield" or "fullranK (variational inference). The exact approach returns samples from the posterior
+whilst the approximate method returns approximate samples. The approximate method is likely to return results
 several order of magnitudes faster than the sampling method.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
@@ -122,8 +120,6 @@ to assign errors to regions. Alter the default to run with error catching.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
-
-\item{model}{A compiled stan model. By default uses the internal package model.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
