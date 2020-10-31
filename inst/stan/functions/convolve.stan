@@ -7,7 +7,7 @@ vector reverse_pmf(vector pmf, int max_pmf) {
   return rev_pmf;
 }
 
-// convolve a pdf and case vector 
+// convolve a pmf and case vector 
 vector convolve(vector cases, vector pmf) {
     int t = num_elements(cases);
     int max_pmf = num_elements(pmf);
@@ -68,7 +68,6 @@ vector convolve_to_report(vector infections,
     }else{
       conv_pmf = convolve_pmfs(delay_pmfs, max_delay, delays);
     }
-    conv_pmf = rep_vector(1e-5, conv_delay) + conv_pmf;
     unobserved_reports = convolve(infections, conv_pmf);
     reports = unobserved_reports[(seeding_time + 1):t];
   }else{

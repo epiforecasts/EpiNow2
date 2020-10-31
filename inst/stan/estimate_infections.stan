@@ -85,7 +85,7 @@ model {
   if (estimate_r) {
     // prior on R
     log_R ~ normal(r_logmean, r_logsd);
-    //breakpoint effects on Rt
+    // breakpoint effects on Rt
     if (bp_n > 0) {
       bp_effects ~ normal(0, 0.1);
     }
