@@ -643,11 +643,9 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE
   }
   
   if (is.null(fit)) {
-    if (is.null(fit)) {
       futile.logger::flog.error("%s: Fitting failed - try increasing stan_args$trials or inspecting the model input",
                                 id, name = "EpiNow2.epinow.estimate_infections.fit")
       rlang::abort("Variational Inference failed due to: ", error)
-    }
   }
   return(fit)
 }
@@ -699,11 +697,9 @@ fit_model_with_vb_cmd <- function(args, future = FALSE, verbose = FALSE) {
   }
 
   if (is.null(fit)) {
-    if (is.null(fit)) {
       futile.logger::flog.error("fitting failed - try increasing stan_args$trials or inspecting the model input",
                                 name = "EpiNow2.epinow.estimate_infections.fit")
       stop("Variational Inference failed due to: ", error)
-    }
   }
 
   return(fit)
