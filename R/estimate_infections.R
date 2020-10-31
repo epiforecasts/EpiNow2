@@ -177,7 +177,7 @@
 estimate_infections <- function(reported_cases, 
                                 samples = 1000,
                                 stan_args = list(
-                                  method = "sampling",
+                                  algorithm = "sampling",
                                   backend = "rstan",
                                   cache_model = TRUE,
                                   fit = NULL,
@@ -204,50 +204,16 @@ estimate_infections <- function(reported_cases,
                                 id = "estimate_infections",
                                 verbose = FALSE){
   
-  # Parse Stan Arguments to set algorithm and backend
-  backend <- match.arg(stan_args[["backend"]], backends_available())
-  method <- match.arg(stan_args[["algorithm"]], algoriths_available())
   
-  method <- ifelse(method!="sampling", "meanfield", method)
-  
-  # If they are null, a null will be passed per the defaults
-  
-  cache_model <- ifelse(is.null(stan_args[["cache_model"]]),TRUE, stan_args[["cache_model"]])
-  model <- stan_args[["model"]]
-  fit <- stan_args[["fit"]]
-  
-  # Check Input of Model
-  # Collapse multiple fits if they are passed
-  if(!is.null(fit)){
-    if(class(fit)=="list"){
-      if(any(lapply(fit, class)!="stanfit")){
-        stop("The fit you have passed is not a valid `stanfit` object")
-      } else{
-        # If a list was passed, combine to a single rstan fit object
-        fit <- rstan::sflist2stanfit(fit)
-      }
-    } else {
-      if(class(fit)!="stanfit"){
-        stop("The fit you have passed is not a valid `stanfit` object")
-      }
-    }
-  }
   
   
   
   # # Nullify non-standard arguments now for downstream compliance
-  # stan_args$backend <- NULL
-  # stan_args$method <- NULL
-  # stan_args$model <- NULL
-  # stan_args$fit <- NULL
-  # stan_args$cache_model <- NULL
+  std_stan_args <- create_standardised_stan_args(stan_args)
   
-  # Verify Dependencies in case of cmdstanr
-  if(backend=="cmdstan"){
-    requireNamespace("cmdstanr")
-    requireNamespace("rappdirs")
-  }
-   
+  stan_args <- std_stan_args$stan_args
+  
+  
   # store dirty reported case data
   dirty_reported_cases <- data.table::copy(reported_cases)
   # set fall back rt prior and trigger switches
@@ -351,38 +317,37 @@ estimate_infections <- function(reported_cases,
 
   # Set up default settings -------------------------------------------------
 
-  args <- create_stan_args(model, data = data, samples = samples, 
+  args <- create_stan_args(data = data, samples = samples, 
                            stan_args = stan_args,
                            init = create_initial_conditions(data, delays, rt_prior, 
                                                             generation_time, mean_shift),
-                           method = method, 
-                           verbose = verbose, backend = backend, cache_model=cache_model)
+                           verbose = verbose)
   
   # Fit model ---------------------------------------------------------------
   # If fit is null (provided by stan_args), then complete the fit
   #    otherwise, skip this fitting step.
-  if(is.null(fit)){
-  if(backend =="rstan"){
-  if (method == "sampling") {
+  if(is.null(std_stan_args$fit)){
+  if(std_stan_args$backend =="rstan"){
+  if (std_stan_args$algorithm == "sampling") {
     fit <- fit_model_with_nuts(args,
                                future = future,
                                max_execution_time = max_execution_time,
                                verbose = verbose,
                                id = id)
-  }else if (method == "meanfield"){
+  }else if (std_stan_args$algorithm == "meanfield"){
     fit <- fit_model_with_vb(args,
                              verbose = verbose,
                              id = id)
   }
   }
   
-  if(backend !="rstan"){
-    if (method == "sampling") {
+  if(std_stan_args$backend !="rstan"){
+    if (std_stan_args$algorithm == "sampling") {
       fit <- fit_model_with_nuts_cmd(args,
                                  future = future,
                                  max_execution_time = max_execution_time,
                                  verbose = verbose)
-    }else if (method == "meanfield"){
+    }else if (std_stan_args$algorithm == "meanfield"){
       fit <- fit_model_with_vb_cmd(args,
                                verbose = verbose)
     }
@@ -546,7 +511,7 @@ fit_model_with_nuts_cmd <- function(args, future = FALSE, max_execution_time = I
   fit_chain <- function(chain, stan_args, max_time) {
     in_chain <- chain # Not really used, but in here to make lapply work
     model_fit <- stan_args$object
-    data_fit <- make_cmdstan_list(stan_args, method = "sampling")
+    data_fit <- make_cmdstan_list(stan_args, algorithm = "sampling")
     fit <- R.utils::withTimeout(do.call(model_fit$sample, data_fit), 
                                 timeout = max_time,
                                 onTimeout = "silent")
@@ -668,7 +633,7 @@ fit_model_with_vb_cmd <- function(args, future = FALSE, verbose = FALSE) {
 
   fit_vb <- function(stan_args) {
     model_fit <- stan_args$object
-    data_fit <- make_cmdstan_list(stan_args, method = "approximate")
+    data_fit <- make_cmdstan_list(stan_args, algorithm = "approximate")
 
     fit <-  do.call(model_fit$variational, data_fit)
 

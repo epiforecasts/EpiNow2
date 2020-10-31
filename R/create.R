@@ -210,8 +210,8 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' Create a List of Stan Arguments
 #'
 #'
-#' @description Generates a list of arguments as required by `rstan::sampling` (when `method = "exact`) or 
-#' `rstan::vb` (when `method = "approximate`). See `create_stan_args()` for the defaults and the relevant `rstan`
+#' @description Generates a list of arguments as required by `rstan::sampling` (when `algorithm = "sampling`) or 
+#' `rstan::vb` (when `algorithm = "meanfield`). See `create_stan_args()` for the defaults and the relevant `rstan`
 #' functions for additional options.
 #' @param data A list of stan data as created by `create_stan_data`
 #' @param init Initial conditions passed to `rstan`. Defaults to "random" but can also be a function (
@@ -219,18 +219,18 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' @param samples Numeric, defaults to 1000. The overall number of posterior samples to return (Note: not the 
 #' number of samples per chain as is the default in stan).
 #' @param stan_args A list of stan arguments to be passed to `rstan::sampling` or `rstan::vb` (when using the "sampling"
-#'   or "meanfield"/"fullrank" method). For `algorithm = "meanfield"` an additional argument `trials` 
+#'   or "meanfield"/"fullrank" algorithm). For `algorithm = "meanfield"` an additional argument `trials` 
 #'   indicates the number of attempts to make using variational inference before returning an 
 #'   error (as stochastic failure is possible). The default for this is 5.
 #'   This can contain the backend (default of `rstan`), the `algorithm` ("sampling" for NUTS), 
-#'   `model` for compiled stan model (By default uses the internal package model),
+#'   `model` for compiled Stan model (By default uses the internal package model),
 #'   `fit` which can include a rstan fit or list of rstan fits, and `cache_model` 
 #'   which defaults to true to cache a CmdStan model.
 #'   `algorithm` accepts a character string defaults to "sampling". Also accepts "approximate". 
-#'   Indicates the fitting method to be used this can either be "sampling" (NUTs sampling) or one of 
+#'   Indicates the fitting algorithm to be used this can either be "sampling" (NUTs sampling) or one of 
 #'   "meanfield" or "fullranK (variational inference). The exact approach returns samples from the posterior 
-#'   whilst the approximate method returns approximate samples. The approximate method is likely to return results 
-#'   several order of magnitudes faster than the sampling method.
+#'   whilst the approximate algorithm returns approximate samples. The approximate algorithm is likely to return results 
+#'   several order of magnitudes faster than the sampling algorithm.
 #'   `model` A stan model object, defaults to packaged model if not supplied.
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be returned.
 #' @return A list of stan arguments
@@ -242,18 +242,17 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' create_stan_args()
 #' 
 #' # approximate settings
-#' create_stan_args(method = "meanfield") 
+#' create_stan_args(stan_args = list(algorithm = "meanfield") )
 #' # increasing warmup
 #' create_stan_args(stan_args = list(warmup = 1000))
-create_stan_args <- function(model, 
-                             data = NULL, init = "random", 
-                             samples = 1000, 
-                             stan_args = list(
-                               algorithm = "sampling",
-                               backend = "rstan",
-                               cache_model = TRUE,
-                               fit = NULL,
-                               model = NULL
+create_stan_args <- function( data = NULL, init = "random", 
+                              samples = 1000, 
+                              stan_args = list(
+                                algorithm = "sampling",
+                                backend = "rstan",
+                                cache_model = TRUE,
+                                fit = NULL,
+                                model = NULL
                              ),
                              verbose = FALSE) {
   
@@ -262,14 +261,21 @@ create_stan_args <- function(model,
                            choices = c("rstan", "cmdstan"), 
                            several.ok = FALSE)
   
-  method <- match.arg(stan_args[["algorithm"]], algoriths_available())
+  algorithm <- match.arg(stan_args[["algorithm"]], algoriths_available())
   
-  method <- ifelse(method!="sampling", "meanfield", method)
+  algorithm <- ifelse(algorithm!="sampling", "meanfield", algorithm)
   
   stopifnot(is.logical(stan_args[["cache_model"]]))
   
   model <- stan_args[["model"]]
   cache_model <- stan_args[["cache_model"]]
+  
+  stan_args$algorithm <- NULL
+  stan_args$backend <- NULL
+  stan_args$cache_model <- NULL
+  stan_args$fit <- NULL
+  stan_args$model <- NULL
+  
   
   # use built in model if not supplied by the user
   if (missing(model)) {
@@ -308,14 +314,14 @@ create_stan_args <- function(model,
     refresh = ifelse(verbose, 50, 0)
   )
   # set up independent default arguments
-  if (method == "sampling" && backend_use == "rstan") {
+  if (algorithm == "sampling" && backend_use == "rstan") {
     default_args$cores <- 4L
     default_args$warmup <- 500L
     default_args$chains <- 4L
     default_args$control <- list(adapt_delta = 0.99, max_treedepth = 15)
     default_args$save_warmup <- FALSE
     default_args$seed <- sample.int(.Machine$integer.max, 1)
-  }else if (method == "sampling" && backend_use != "rstan"){
+  }else if (algorithm == "sampling" && backend_use != "rstan"){
     default_args$chains <- 4L
     default_args$seed <- sample.int(.Machine$integer.max, 1)
     default_args$iter_warmup <- 500L
@@ -325,7 +331,7 @@ create_stan_args <- function(model,
     default_args$max_treedepth <- 15
     default_args$save_warmup <- FALSE
     default_args$verbose <- FALSE
-  }else if (method == "meanfield") {
+  }else if (algorithm == "meanfield") {
     default_args$trials <- 10L
     default_args$iter <- 10000L
     default_args$output_samples <- samples
@@ -339,8 +345,74 @@ create_stan_args <- function(model,
     args <- default_args
   }
   # set up dependent arguments
-  if (method == "sampling" && backend_use == "rstan") {
+  if (algorithm == "sampling" && backend_use == "rstan") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup
   }
   return(args)
 }
+
+#' Create Standardizsed Stan Arguments
+#' 
+#' This function handles some of the additional parsing of the `stan_args`
+#' argument to set features like the backend used, algorithm applied, and
+#' and previously fit models (or new models)
+#' 
+#' @param stan_args_in a named list. Arguments 
+#' @export
+#' @keywords internal
+#' @return a list of standardized values
+#' 
+
+create_standardised_stan_args <- function(stan_args_in){
+  # Parse Stan Arguments to set algorithm and backend
+  backend <- match.arg(stan_args_in[["backend"]], backends_available())
+  algorithm <- match.arg(stan_args_in[["algorithm"]], algoriths_available())
+  
+  algorithm <- ifelse(algorithm!="sampling", "meanfield", algorithm)
+  
+  # If they are null, a null will be passed per the defaults
+  
+  cache_model <- ifelse(is.null(stan_args_in[["cache_model"]]),TRUE, stan_args_in[["cache_model"]])
+  model <- stan_args_in[["model"]]
+  fit <- stan_args_in[["fit"]]
+  
+  # Ensure Deaults are Available
+  stan_args_in$cache_model <- cache_model
+  stan_args_in$backend <- backend
+  stan_args_in$algorithm <- algorithm
+  stan_args_in$model <- model
+  
+  # Check Input of Model
+  # Collapse multiple fits if they are passed
+  if(!is.null(fit)){
+    if(class(fit)=="list"){
+      if(any(lapply(fit, class)!="stanfit")){
+        stop("The fit you have passed is not a valid `stanfit` object")
+      } else{
+        # If a list was passed, combine to a single rstan fit object
+        fit <- rstan::sflist2stanfit(fit)
+      }
+    } else {
+      if(class(fit)!="stanfit"){
+        stop("The fit you have passed is not a valid `stanfit` object")
+      }
+    }
+  }
+  
+  # Verify Dependencies in case of cmdstanr
+  if(backend=="cmdstan"){
+    requireNamespace("cmdstanr")
+    requireNamespace("rappdirs")
+  }
+  
+  out <- list(
+    backend = backend,
+    algorithm = algorithm,
+    model = model,
+    fit = fit,
+    cache_model = cache_model,
+    stan_args = stan_args_in
+  )
+  
+}
+

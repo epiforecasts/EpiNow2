@@ -7,7 +7,7 @@
 estimate_infections(
   reported_cases,
   samples = 1000,
-  stan_args = list(method = "sampling", backend = "rstan", cache_model = TRUE, fit =
+  stan_args = list(algorithm = "sampling", backend = "rstan", cache_model = TRUE, fit =
     NULL, model = NULL),
   family = "negbin",
   generation_time,
@@ -37,18 +37,18 @@ in date format.}
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
 
 \item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "sampling"
-or "meanfield"/"fullrank" method). For \code{algorithm = "meanfield"} an additional argument \code{trials}
+or "meanfield"/"fullrank" algorithm). For \code{algorithm = "meanfield"} an additional argument \code{trials}
 indicates the number of attempts to make using variational inference before returning an
 error (as stochastic failure is possible). The default for this is 5.
 This can contain the backend (default of \code{rstan}), the \code{algorithm} ("sampling" for NUTS),
-\code{model} for compiled stan model (By default uses the internal package model),
+\code{model} for compiled Stan model (By default uses the internal package model),
 \code{fit} which can include a rstan fit or list of rstan fits, and \code{cache_model}
 which defaults to true to cache a CmdStan model.
 \code{algorithm} accepts a character string defaults to "sampling". Also accepts "approximate".
-Indicates the fitting method to be used this can either be "sampling" (NUTs sampling) or one of
+Indicates the fitting algorithm to be used this can either be "sampling" (NUTs sampling) or one of
 "meanfield" or "fullranK (variational inference). The exact approach returns samples from the posterior
-whilst the approximate method returns approximate samples. The approximate method is likely to return results
-several order of magnitudes faster than the sampling method.
+whilst the approximate algorithm returns approximate samples. The approximate algorithm is likely to return results
+several order of magnitudes faster than the sampling algorithm.
 \code{model} A stan model object, defaults to packaged model if not supplied.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative

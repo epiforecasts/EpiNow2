@@ -244,9 +244,9 @@ copy_models <- function(dir_path){
 
 
 # Helper function for Formatting List for CmdStanR
-make_cmdstan_list <-function(stan_args, method = "sampling"){
+make_cmdstan_list <-function(stan_args, algorithm = "sampling"){
 
-  if (method == "sampling") {
+  if (algorithm == "sampling") {
     out <- list(
       data = stan_args$data,
       seed = as.integer(abs(stan_args$seed)),
