@@ -33,7 +33,7 @@ vector convolve_pmfs(real[,] delay_pmfs, int[] max_delay, int delays) {
     proc_pmf = rep_vector(0, conv_delay);
     for (z in 1:conv_delay) {
       for (x in 1:max_delay[s]){
-        if (z - x > 0) { 
+        if (z - x >= 0) { 
          proc_pmf[z] += delay_pmfs[s, x] * conv_pmf[z - x + 1];
         }
       }
