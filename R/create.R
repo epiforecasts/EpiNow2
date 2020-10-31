@@ -213,7 +213,6 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' @description Generates a list of arguments as required by `rstan::sampling` (when `method = "exact`) or 
 #' `rstan::vb` (when `method = "approximate`). See `create_stan_args()` for the defaults and the relevant `rstan`
 #' functions for additional options.
-#' @param model A stan model object, defaults to packaged model if not supplied.
 #' @param data A list of stan data as created by `create_stan_data`
 #' @param init Initial conditions passed to `rstan`. Defaults to "random" but can also be a function (
 #' as supplied by `create_intitial_conditions`).
@@ -232,6 +231,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #'   "meanfield" or "fullranK (variational inference). The exact approach returns samples from the posterior 
 #'   whilst the approximate method returns approximate samples. The approximate method is likely to return results 
 #'   several order of magnitudes faster than the sampling method.
+#'   `model` A stan model object, defaults to packaged model if not supplied.
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be returned.
 #' @return A list of stan arguments
 #' @export
@@ -308,14 +308,14 @@ create_stan_args <- function(model,
     refresh = ifelse(verbose, 50, 0)
   )
   # set up independent default arguments
-  if (method == "sampling" && backend == "rstan") {
+  if (method == "sampling" && backend_use == "rstan") {
     default_args$cores <- 4L
     default_args$warmup <- 500L
     default_args$chains <- 4L
     default_args$control <- list(adapt_delta = 0.99, max_treedepth = 15)
     default_args$save_warmup <- FALSE
     default_args$seed <- sample.int(.Machine$integer.max, 1)
-  }else if (method == "sampling" && backend != "rstan"){
+  }else if (method == "sampling" && backend_use != "rstan"){
     default_args$chains <- 4L
     default_args$seed <- sample.int(.Machine$integer.max, 1)
     default_args$iter_warmup <- 500L
@@ -339,7 +339,7 @@ create_stan_args <- function(model,
     args <- default_args
   }
   # set up dependent arguments
-  if (method == "sampling" && backend == "rstan") {
+  if (method == "sampling" && backend_use == "rstan") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup
   }
   return(args)
