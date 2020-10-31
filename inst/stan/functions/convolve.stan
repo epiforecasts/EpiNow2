@@ -21,25 +21,26 @@ vector convolve(vector cases, vector pmf) {
   }
 
 // convolve multiple pmfs
-vector convolve_pmf(real[] delay_pmfs, int[] max_delay, int delays) {
-  conv_delay = sum(max_delay);
+vector convolve_pmfs(real[,] delay_pmfs, int[] max_delay, int delays) {
+  int conv_delay = sum(max_delay);
   vector[conv_delay] proc_pmf;
   vector[conv_delay] conv_pmf = rep_vector(0, conv_delay); 
-  conv_pmf[1:max_delay[1]] = to_vector(delay_pmfs[1]);
-  real index_pmf;
+  conv_pmf[1:max_delay[1]] = to_vector(delay_pmfs[1,]);
   for (s in 2:delays) {
     //P(Z = z) = sum_over_x(P(X = x) * P(Y = z - x))
+    // indexing tweaked to account for starting at 1 in stan
+    // this makes z = x an allowed contribution
     proc_pmf = rep_vector(0, conv_delay);
     for (z in 1:conv_delay) {
       for (x in 1:max_delay[s]){
         if (z - x > 0) { 
-         proc_pmf[z] += delay_pmfs[s, x] * conv_pmf[z - x];
+         proc_pmf[z] += delay_pmfs[s, x] * conv_pmf[z - x + 1];
         }
       }
     }
     conv_pmf = proc_pmf;
   }
-  return(conv_pmf)
+  return(conv_pmf);
 }
 
 // convolve latent infections to reported (but still unobserved) cases
@@ -63,7 +64,7 @@ vector convolve_to_report(vector infections,
       }
     }
     if (delays == 1) {
-      conv_pmf = to_vector(delay_pmfs[s]);
+      conv_pmf = to_vector(delay_pmfs[1,]);
     }else{
       conv_pmf = convolve_pmfs(delay_pmfs, max_delay, delays);
     }
