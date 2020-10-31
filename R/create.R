@@ -265,10 +265,10 @@ create_stan_args <- function( data = NULL, init = "random",
   
   algorithm <- ifelse(algorithm!="sampling", "meanfield", algorithm)
   
-  stopifnot(is.logical(stan_args[["cache_model"]]))
+  cache_model <- ifelse(is.null(stan_args[["cache_model"]]),TRUE,stan_args[["cache_model"]])
   
   model <- stan_args[["model"]]
-  cache_model <- stan_args[["cache_model"]]
+  
   
   stan_args$algorithm <- NULL
   stan_args$backend <- NULL
