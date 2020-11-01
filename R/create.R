@@ -130,7 +130,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     gt_sd_mean = generation_time$sd,
     gt_sd_sd = generation_time$sd_sd,
     max_gt = generation_time$max,
-    prior_infections = 1 / mean(cases[1:min(7, length(cases))]),
+    prior_infections = log(mean(cases[1:min(7, length(cases))])),
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
@@ -192,7 +192,8 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
       out$rep_phi <- array(rexp(1, 1))
     }
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rexp(1, data$prior_infections))
+      out$initial_infections <- array(rnorm(1, data$prior_infections, data$prior_infections * 0.1))
+      out$initial_growth <- array(rnorm(1, 0, 1))
       out$log_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
                                sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
