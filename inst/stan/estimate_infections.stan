@@ -32,7 +32,7 @@ transformed data{
 
 parameters{
   // gaussian process
-  real<lower = 0> rho[fixed ? 0 : 1];    // length scale of noise GP
+  real<lower = ls_min,upper=ls_max> rho[fixed ? 0 : 1];  // length scale of noise GP
   real<lower = 0> alpha[fixed ? 0 : 1];  // scale of of noise GP
   vector[fixed ? 0 : M] eta;             // unconstrained noise
   // Rt
@@ -40,7 +40,7 @@ parameters{
   real initial_infections[estimate_r] ; // seed infections 
   real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
   real<lower = 0> gt_mean[estimate_r];  // mean of generation time
-  real <lower = 0> gt_sd[estimate_r];   // sd of generation time
+  real<lower = 0> gt_sd[estimate_r];   // sd of generation time
   real bp_effects[bp_n];                // Rt breakpoint effects
   // observation model
   real<lower = 0> delay_mean[delays];   // mean of delays
@@ -79,7 +79,8 @@ transformed parameters {
 model {
   // priors for noise GP
   if (!fixed) {
-    gaussian_process_lp(rho, alpha, eta, lengthscale_alpha, lengthscale_beta, alpha_sd);
+    gaussian_process_lp(rho[1], alpha[1], eta, ls_meanlog, 
+                        ls_sdlog, ls_min, ls_max, alpha_sd);
   }
   // penalised priors for delay distributions
   delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, t);
@@ -93,7 +94,9 @@ model {
     }
     // initial infections
     initial_infections ~ normal(prior_infections, prior_infections * 0.1);
-    initial_growth ~ std_normal();
+    if (seeding_time) {
+      initial_growth ~ normal(0, 0.2);
+    }
     // penalised_prior on generation interval
     generation_time_lp(gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot);
   }

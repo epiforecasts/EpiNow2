@@ -65,11 +65,12 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   noise = noise + PHI[,] * SPD_eta;
   return(noise);
 }
-}
+
 // priors for gaussian process
-void gaussian_process_lp(real[] rho, real[] alpha, vector eta,
-                         real ls_alpha, real ls_beta, real alpha_sd) {
-  rho ~ inv_gamma(ls_alpha, ls_beta);
+void gaussian_process_lp(real rho, real alpha, vector eta,
+                         real ls_meanlog, real ls_sdlog,
+                         real ls_min, real ls_max, real alpha_sd) {
+  rho ~ lognormal(ls_meanlog, ls_sdlog) T[ls_min, ls_max];
   alpha ~ normal(0, alpha_sd);
   eta ~ std_normal();
 }
