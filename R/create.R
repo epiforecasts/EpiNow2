@@ -154,8 +154,10 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   data$M <- ceiling((data$t - data$seeding_time) * gp$basis_prop)
   # Boundary value for c
   data$L <- (data$t - data$seeding_time) * gp$boundary_scale / 2
-  data$lengthscale_alpha <- gp$lengthscale_alpha
-  data$lengthscale_beta <- gp$lengthscale_beta
+  data$ls_meanlog <- log(gp$ls_mean^2 / sqrt(gp$ls_sd^2 + gp$ls_mean^2))
+  data$ls_sdlog <- sqrt(log(1 + (gp$ls_sd^2 / gp$ls_mean^2)))
+  data$ls_min <- gp$ls_min
+  data$ls_max <- data$t - data$seeding_time - data$horizon
   data$alpha_sd <- gp$alpha_sd
   data$gp_type <- gp$type
   ## Set model to poisson or negative binomial
@@ -186,7 +188,8 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     }
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
-      out$rho <- array(truncnorm::rtruncnorm(1, a = 1, mean = 10, sd = 4))
+      out$rho <- array(rlnorm(1, mean = data$ls_meanlog, 
+                              sd = data$ls_sdlog))
       out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
     }
     if (data$model_type == 1) {
@@ -194,7 +197,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     }
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1, data$prior_infections, data$prior_infections * 0.1))
-      out$initial_growth <- array(rnorm(1, 0, 1))
+      out$initial_growth <- array(rnorm(1, 0, 0.1))
       out$log_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
                                sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
