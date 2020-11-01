@@ -56,7 +56,7 @@ transformed parameters {
   vector[ot_h] reports;                                   // observed cases
   // GP in noise - spectral densities
   if (!fixed) {
-    noise = update_gp(PHI, M, L, alpha[1], rho[1], eta);
+    noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);
   }
   // Estimate latent infections
   if (estimate_r) {
