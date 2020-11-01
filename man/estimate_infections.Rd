@@ -143,7 +143,7 @@ def <- estimate_infections(reported_cases, generation_time = generation_time,
                            stan_args = list(warmup = 200,
                             control = list(adapt_delta = 0.95, max_treedepth = 15),
                             cores = ifelse(interactive(), 4, 1)),
-                            verbose = interactive())
+                            verbose = interactive(), model = model)
 plot(def)
 
 # run model using backcalculation

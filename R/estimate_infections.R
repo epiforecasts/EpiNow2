@@ -82,7 +82,10 @@
 #'                            stan_args = list(warmup = 200,
 #'                             control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                             cores = ifelse(interactive(), 4, 1)),
-#'                             verbose = interactive(), model = model)
+#'                             verbose = interactive(), model = model,
+#'                             gp = list(basis_prop = 0.3, boundary_scale = 2, 
+#'                                  lengthscale_alpha = 4.5, lengthscale_beta = 21.5,
+#'                                  alpha_sd = 1, type = 0))
 #' plot(def)
 #' 
 #' # run model using backcalculation
@@ -179,7 +182,7 @@ estimate_infections <- function(reported_cases,
                                 horizon = 7,
                                 gp = list(basis_prop = 0.3, boundary_scale = 2, 
                                           lengthscale_alpha = 4.5, lengthscale_beta = 21.5,
-                                          alpha_sd = 0.1),
+                                          alpha_sd = 1, type = 0),
                                 rt_prior = list(mean = 1, sd = 0.5),
                                 week_effect = TRUE, 
                                 use_breakpoints = TRUE, 

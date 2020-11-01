@@ -153,10 +153,11 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
   # no of basis functions
   data$M <- ceiling((data$t - data$seeding_time) * gp$basis_prop)
   # Boundary value for c
-  data$L <- (data$t - data$seeding_time) * gp$boundary_scale
+  data$L <- (data$t - data$seeding_time) * gp$boundary_scale / 2
   data$lengthscale_alpha <- gp$lengthscale_alpha
   data$lengthscale_beta <- gp$lengthscale_beta
   data$alpha_sd <- gp$alpha_sd
+  data$gp_type <- gp$type
   ## Set model to poisson or negative binomial
   family <- match.arg(family, c("poisson", "negbin"))
   data$model_type <- ifelse(family %in% "poisson", 0, 1)
@@ -184,7 +185,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
       
     }
     if (data$fixed == 0) {
-      out$eta <- array(rnorm(data$M, mean = 0, sd = 1))
+      out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
       out$rho <- array(truncnorm::rtruncnorm(1, a = 1, mean = 10, sd = 4))
       out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
     }
