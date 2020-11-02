@@ -2454,7 +2454,7 @@ public:
                 current_statement_begin__ = 466;
                 if (as_bool(logical_gt(seeding_time, 1))) {
                     current_statement_begin__ = 467;
-                    lp_accum__.add(normal_log<propto__>(initial_growth, prior_growth, (prior_growth * 0.5)));
+                    lp_accum__.add(normal_log<propto__>(initial_growth, prior_growth, 0.2));
                 }
                 current_statement_begin__ = 470;
                 generation_time_lp(gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot, lp__, lp_accum__, pstream__);
