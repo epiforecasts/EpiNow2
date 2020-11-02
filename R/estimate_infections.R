@@ -95,17 +95,6 @@
 #'                                        control = list(adapt_delta = 0.95, max_treedepth = 15)),
 #'                                 rt_prior = list(), verbose = interactive())
 #' plot(backcalc)
-#' 
-#' # run the model with default settings using the future backend 
-#' ## (combine with a call to future::plan to make this parallel).
-#' def_future <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                                   delays = list(incubation_period, reporting_delay),
-#'                                   stan_args = 
-#'                                      list(warmup = 200, 
-#'                                           control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                                           cores = ifelse(interactive(), 4, 1)),
-#'                                   verbose = interactive(), future = TRUE)
-#' plot(def_future)                        
 #'                            
 #' # run model with Rt fixed into the future using the latest estimate
 #' fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
@@ -156,22 +145,19 @@
 #'                                           control = list(adapt_delta = 0.95, max_treedepth = 15)),
 #'                                 verbose = interactive())
 #' plot(no_delay)    
-#'      
-#' # add a dummy breakpoint (used only when optionally estimating breakpoints)
-#' reported_cases_bp <- data.table::copy(reported_cases)[,
-#'               breakpoint := data.table::fifelse(date == as.Date("2020-03-16"), 1, 0)]              
+#' 
 #' # run model with breakpoints but otherwise static Rt
-#' # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
-#' # model fit criteria (i.e LFO), comparison to models with non-static Rt and models with partially
-#' # constrained non-static Rt.           
+#' # add a dummy breakpoint (used only when optionally estimating breakpoints)
+#' reported_cases_bp <- 
+#'   data.table::copy(reported_cases)[, breakpoint := ifelse(date == as.Date("2020-03-16"), 
+#'                                                           1, 0)]
 #' bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
-#'                             delays = list(incubation_period, reporting_delay),
-#'                             stan_args = 
-#'                                list(warmup = 200, 
-#'                                     cores = ifelse(interactive(), 4, 1),
-#'                                     control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                             gp = list(), verbose = interactive())                                                         
-#'
+#'                            delays = list(incubation_period, reporting_delay),
+#'                            stan_args = 
+#'                               list(warmup = 200, 
+#'                                    cores = ifelse(interactive(), 4, 1),
+#'                                    control = list(adapt_delta = 0.95, max_treedepth = 15)),
+#'                            gp = list(), verbose = interactive())                                                         
 #' plot(bkp)
 #' # breakpoint effect
 #' bkp$summarised[variable == "breakpoints"]
@@ -248,7 +234,6 @@ estimate_infections <- function(reported_cases,
  
   # Organise delays ---------------------------------------------------------
   no_delays <- length(delays)
-  
   if (no_delays > 0) {
     delays <- purrr::transpose(delays)
   }
