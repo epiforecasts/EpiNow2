@@ -27,8 +27,6 @@ is if length 1; this is necessary when processing simulation results}
 
 \item{merge}{if TRUE, merge samples and data so that parameters can be
 extracted from data}
-
-\item{...}{Any additional parameters, as returned by \code{rstan::extract}}
 }
 \value{
 A list of dataframes each containing the posterior of a parameter
