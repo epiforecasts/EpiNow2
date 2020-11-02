@@ -206,7 +206,8 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
       out$rep_phi <- array(rexp(1, 1))
     }
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rnorm(1, data$prior_infections, data$prior_infections * 0.1))
+      init_inf_sd <- ifelse(data$prior_infections == 0, 1, data$prior_infections)
+      out$initial_infections <- array(rnorm(1, data$prior_infections, init_inf_sd))
       if (data$seeding_time > 1) {
         out$initial_growth <- array(rnorm(1, data$prior_growth, 0.1))
       }
