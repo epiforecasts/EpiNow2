@@ -105,6 +105,7 @@ create_future_rt <- function(future_rt = "project", delay = 0) {
 #' @param estimate_rt Logical, should Rt be estimated.
 #' @inheritParams estimate_infections
 #' @inheritParams create_future_rt
+#' @importFrom stats lm
 #' @return A list of stan data
 #' @export 
 create_stan_data <- function(reported_cases,  shifted_reported_cases,
@@ -130,7 +131,6 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     gt_sd_mean = generation_time$sd,
     gt_sd_sd = generation_time$sd_sd,
     max_gt = generation_time$max,
-    prior_infections = log(mean(cases[1:min(7, length(cases))])),
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
@@ -142,6 +142,13 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     future_fixed = ifelse(future_rt$fixed, 1, 0),
     fixed_from = future_rt$from
   ) 
+# initial estimate of growth ------------------------------------------
+  first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
+                                       t = 1:min(7, length(cases)))
+  
+  first_week_growth <- stats::lm(log(confirm) ~ t, data = first_week)$coefficients[2] 
+  data$prior_infections <- log(mean(first_week$confirm))
+  data$prior_growth = first_week_growth
   # Delays ------------------------------------------------------------------
   data$delays <- no_delays
   data$delay_mean_mean <- allocate_delays(delays$mean, no_delays)
@@ -193,6 +200,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     }
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1, data$prior_infections, data$prior_infections * 0.1))
+      out$initial_growth <- array(rnorm(1, 0, 0.1))
       out$initial_growth <- array(rnorm(1, 0, 1))
       out$log_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
                                sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
