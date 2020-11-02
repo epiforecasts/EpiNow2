@@ -48,6 +48,7 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
     saveRDS(estimates$summarised, paste0(target_folder, "/summarised_estimates.rds"))
     if (return_fit) {
       saveRDS(estimates$fit, paste0(target_folder, "/model_fit.rds"))
+      saveRDS(estimates$args, paste0(target_folder, "model_args.rds"))
     }
   }
   return(invisible(NULL))
