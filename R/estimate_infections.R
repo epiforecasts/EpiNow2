@@ -344,6 +344,7 @@ estimate_infections <- function(reported_cases,
   ## Join stan fit if required
   if (return_fit) {
     format_out$fit <- fit
+    format_out$args <- data
   }
   format_out$observations <- dirty_reported_cases
   class(format_out) <- c("estimate_infections", class(format_out))
