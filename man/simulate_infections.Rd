@@ -4,7 +4,7 @@
 \alias{simulate_infections}
 \title{Simulate infections using a given trajectory of the time-varying reproduction number}
 \usage{
-simulate_infections(estimates, R = NULL, model = NULL, verbose = TRUE)
+simulate_infections(estimates, R = NULL, model = NULL, verbose = interactive())
 }
 \arguments{
 \item{estimates}{The \code{estimates} element of an \code{epinow} run that has been done with output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.}
@@ -31,8 +31,7 @@ est <- estimate_infections(reported_cases, generation_time = generation_time,
                            stan_args = list(warmup = 200,
                             control = list(adapt_delta = 0.95, max_treedepth = 15),
                             cores = ifelse(interactive(), 4, 1)),
-                            return_fit = TRUE,
-                            verbose = interactive())
+                           verbose = interactive())
 
 R <- c(rep(NA_real_, 40), rep(0.5, 17))
 sims <- simulate_infections(est, R)

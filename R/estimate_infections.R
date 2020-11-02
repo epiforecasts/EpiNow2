@@ -45,7 +45,7 @@
 #' values can be obtained using `tune_inv_gamma` which optimises based on the desired truncation (which should be based on the scale
 #' of the observed data). The default is tuned to have 98% of the density of the distribution between 2 and 21 days. Finally the list must 
 #' contain `alpha_sd` the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.
-#' @param verbose Logical, defaults to `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
+#' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
 #' fail gracefully (i.e when combined with `max_execution_time`). Should be combined with a call to `future::plan`
@@ -82,8 +82,7 @@
 #'                            stan_args = 
 #'                               list(warmup = 200,
 #'                                    control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                                    cores = ifelse(interactive(), 4, 1)), 
-#'                            verbose = interactive())
+#'                                    cores = ifelse(interactive(), 4, 1)))
 #' plot(def)
 #' 
 #' # run model using backcalculation
@@ -93,7 +92,7 @@
 #'                                   list(warmup = 200, 
 #'                                        cores = ifelse(interactive(), 4, 1),
 #'                                        control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                                 rt_prior = list(), verbose = interactive())
+#'                                 rt_prior = list())
 #' plot(backcalc)
 #'                            
 #' # run model with Rt fixed into the future using the latest estimate
@@ -103,7 +102,7 @@
 #'                                    list(warmup = 200, 
 #'                                         control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                                         cores = ifelse(interactive(), 4, 1)),
-#'                                 future_rt = "latest", verbose = interactive())
+#'                                 future_rt = "latest")
 #' plot(fixed_rt)
 #'
 #' # run the model with default settings on a later snapshot of 
@@ -116,7 +115,7 @@
 #'                                    list(warmup = 200, 
 #'                                         control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                                         cores = ifelse(interactive(), 4, 1)),
-#'                                 burn_in = 7, verbose = interactive())
+#'                                 burn_in = 7)
 #' plot(snapshot) 
 #' 
 #' # run model with stationary Rt assumption (likely to provide biased real-time estimates)
@@ -125,7 +124,7 @@
 #'                             stan_args = 
 #'                                list(warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                     control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                             stationary = TRUE, verbose = interactive())
+#'                             stationary = TRUE)
 #' plot(stat)
 #'        
 #' # run model with fixed Rt assumption 
@@ -134,7 +133,7 @@
 #'                              stan_args = 
 #'                                 list(warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                      control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                              gp = list(), verbose = interactive())
+#'                              gp = list())
 #' plot(fixed)
 #' 
 #' # run model with no delays 
@@ -142,8 +141,7 @@
 #'                                 stan_args = 
 #'                                      list(warmup = 200,
 #'                                           cores = ifelse(interactive(), 4, 1),
-#'                                           control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                                 verbose = interactive())
+#'                                           control = list(adapt_delta = 0.95, max_treedepth = 15)))
 #' plot(no_delay)    
 #' 
 #' # run model with breakpoints but otherwise static Rt
@@ -157,7 +155,7 @@
 #'                               list(warmup = 200, 
 #'                                    cores = ifelse(interactive(), 4, 1),
 #'                                    control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                            gp = list(), verbose = interactive())                                                         
+#'                            gp = list())                                                         
 #' plot(bkp)
 #' # breakpoint effect
 #' bkp$summarised[variable == "breakpoints"]
@@ -186,7 +184,7 @@ estimate_infections <- function(reported_cases,
                                 max_execution_time = Inf, 
                                 return_fit = TRUE,
                                 id = "estimate_infections",
-                                verbose = FALSE){
+                                verbose = interactive()){
    
   # store dirty reported case data
   dirty_reported_cases <- data.table::copy(reported_cases)

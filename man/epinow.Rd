@@ -18,7 +18,7 @@ epinow(
   forecast_args = NULL,
   logs = tempdir(),
   id = "epinow",
-  verbose = FALSE,
+  verbose = interactive(),
   ...
 )
 }
@@ -68,7 +68,7 @@ place to start.}
 \item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
 to assign errors to regions. Alter the default to run with error catching.}
 
-\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
+\item{verbose}{Logical, defaults to \code{TRUE} when used interactively and otherwise \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
 
 \item{...}{Additional arguments passed to \code{estimate_infections}. See that functions documentation for options.}
@@ -97,8 +97,7 @@ out <- epinow(reported_cases = reported_cases, generation_time = generation_time
               delays = list(incubation_period, reporting_delay),
               stan_args = 
                  list(cores = ifelse(interactive(), 4, 1),  
-                      control = list(adapt_delta = 0.95, max_treedepth = 15)), 
-              verbose = interactive())
+                      control = list(adapt_delta = 0.95, max_treedepth = 15)))
 summary(out)             
 plot(out)
 # optional forecasting using EpiSoon plug-in

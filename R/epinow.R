@@ -38,8 +38,7 @@
 #'               delays = list(incubation_period, reporting_delay),
 #'               stan_args = 
 #'                  list(cores = ifelse(interactive(), 4, 1),  
-#'                       control = list(adapt_delta = 0.95, max_treedepth = 15)), 
-#'               verbose = interactive())
+#'                       control = list(adapt_delta = 0.95, max_treedepth = 15)))
 #' summary(out)             
 #' plot(out)
 #' # optional forecasting using EpiSoon plug-in
@@ -70,7 +69,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                                      "latest", "fit", "timing"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, logs = tempdir(),
-                   id = "epinow", verbose = FALSE,
+                   id = "epinow", verbose = interactive(),
                    ...) {
  
   if (is.null(target_folder)) {
