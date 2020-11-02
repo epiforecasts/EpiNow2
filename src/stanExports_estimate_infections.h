@@ -1793,7 +1793,6 @@ public:
             vals_r__ = context__.vals_r("prior_infections");
             pos__ = 0;
             prior_infections = vals_r__[pos__++];
-            check_greater_or_equal(function__, "prior_infections", prior_infections, 0);
             current_statement_begin__ = 379;
             context__.validate_dims("data initialization", "prior_growth", "double", context__.to_vec());
             prior_growth = double(0);
