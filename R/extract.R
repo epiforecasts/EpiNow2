@@ -44,7 +44,7 @@ extract_static_parameter <- function(param, samples) {
 #' @param data A list of the data supplied to the `rstan::sampling` call.
 #' @param reported_dates A vector of dates to report estimates for.
 #' @param reported_inf_dates A vector of dates to report infection estimates for.
-#' @param drop_length_1 Logical; whether the first dimension should be droped if it
+#' @param drop_length_1 Logical; whether the first dimension should be dropped if it
 #' is if length 1; this is necessary when processing simulation results
 #' @param merge if TRUE, merge samples and data so that parameters can be
 #' extracted from data
