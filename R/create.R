@@ -146,7 +146,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
 # initial estimate of growth ------------------------------------------
   first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
                                        t = 1:min(7, length(cases)))
-  data$prior_infections <- log(mean(first_week$confirm))
+  data$prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
   if (data$seeding_time > 1) {
     safe_lm <- purrr::safely(stats::lm)
     data$prior_growth <-safe_lm(log(confirm) ~ t, data = first_week)[[1]]
