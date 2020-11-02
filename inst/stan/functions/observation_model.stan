@@ -21,7 +21,7 @@ void report_lp(int[] cases, vector reports,
     // the reciprocal overdispersion parameter (phi)
     rep_phi[model_type] ~ exponential(phi_prior);
     // defer to poisson if phi is large, to avoid overflow
-    if (rep_phi[model_type] > 1e5) {
+    if (rep_phi[model_type] > 1e4) {
       target += poisson_lpmf(cases | reports[1:t]) * weight;
     } else {
       target += neg_binomial_2_lpmf(cases | reports[1:t], rep_phi[model_type]) * weight;
