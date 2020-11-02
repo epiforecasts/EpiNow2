@@ -25,7 +25,7 @@ default_estimate_infections <- function(..., add_stan = list()) {
 
 test_estimate_infections <- function(...) {
     out <- default_estimate_infections(...)
-    expect_equal(names(out), c("samples", "summarised", "observations"))
+    expect_equal(names(out), c("samples", "summarised", "fit", "observations"))
     expect_true(nrow(out$samples) > 0)
     expect_true(nrow(out$summarised) > 0)
     expect_true(nrow(out$observations) > 0)
@@ -55,7 +55,7 @@ test_that("estimate_infections successfully returns estimates using only mean sh
              
 test_that("estimate_infections successfully returns estimates using a single breakpoint", {
   skip_on_cran()
-  tmp <- default_estimate_infections(data.table::copy(reported_cases)[, breakpoint := ifelse(date == "2020-03-10", 1, 0)],
+  test_estimate_infections(data.table::copy(reported_cases)[, breakpoint := ifelse(date == "2020-03-10", 1, 0)],
                            gp = list())
 })
 

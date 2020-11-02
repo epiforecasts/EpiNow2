@@ -52,7 +52,7 @@ options include:
   - As a random walk (by combining a fixed reproduction number with
     regularly spaced breakpoints (i.e weekly)).
   - Inferring infections using back-calculation and then calculating the
-    time-varing reproduction number.
+    time-varying reproduction number.
 
 The documentation for
 [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html)
