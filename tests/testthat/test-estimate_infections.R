@@ -25,7 +25,7 @@ default_estimate_infections <- function(..., add_stan = list()) {
 
 test_estimate_infections <- function(...) {
     out <- default_estimate_infections(...)
-    expect_equal(names(out), c("samples", "summarised", "fit", "observations"))
+    expect_equal(names(out), c("samples", "summarised", "fit", "args", "observations"))
     expect_true(nrow(out$samples) > 0)
     expect_true(nrow(out$summarised) > 0)
     expect_true(nrow(out$observations) > 0)
@@ -36,6 +36,11 @@ test_estimate_infections <- function(...) {
 test_that("estimate_infections successfully returns estimates using default settings", {
   skip_on_cran()
   test_estimate_infections(reported_cases)
+})
+
+test_that("estimate_infections successfully returns estimates using the poisson observation model", {
+  skip_on_cran()
+  test_estimate_infections(reported_cases, family = "poisson")
 })
 
 test_that("estimate_infections successfully returns estimates using backcalculation", {
