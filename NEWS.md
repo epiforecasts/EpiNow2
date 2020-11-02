@@ -7,6 +7,7 @@
 * Adds basic S3 plot and summary measures for `epinow` and a plot method for `estimate_infections`. This functionality will likely be further built out in later releases.
 * Added a new function, `expose_stan_fns` that exposes the internal stan functions into R. The enables unit testing, exploration of the stan functionality and potentially within R use cases for these functions.
 * Updates the initialisation of the generative Rt model (the default) so that initial infections that occur in unobserved time (i.e before the first reported case) are generated using an exponential growth model with priors based on fitting the same model to the first week of data. This replaces the previous approach which was to use delay shifted reported cases multiplied by independent noise terms. It reduces degrees of freedom and fitting time at the cost of some model flexibility. Alternatives such as using the generative Rt model were considered but ultimately these approaches were not used as they introduced spurious variation to the gaussian process and result in unreliable Rt estimates due to the lack of historic infections.
+* New `simulate_infections` function from @sbfnk which allows the simulation of different Rt traces when combined with estimates as produced by `estimate_infections`. This function is likely to form the basis for moving all forecasting out of `estimate_infections` which may improve model stability. 
 
 ## Other changes
 
@@ -14,6 +15,7 @@
 * Added unit tests for the internal stan update_rt function.
 * Reworked the package logging system to improve the reporting of issues both in `epinow` and in `regional_epinow` for large batch runs.
 * Fix from @hsbadr to prevent overflow when overdispersion is larger (by switching to a Poisson approximation). Hitting this issue may indicate a bug in other model code that will need further work to explore.
+* Moved default verbosity for all functions (excepting `regional_epinow`) to be based on whether or not usage is interactive. 
 
 # EpiNow2 1.2.1
 
