@@ -100,25 +100,5 @@ out <- epinow(reported_cases = reported_cases, generation_time = generation_time
                       control = list(adapt_delta = 0.95, max_treedepth = 15)))
 summary(out)             
 plot(out)
-# optional forecasting using EpiSoon plug-in
-if(requireNamespace("EpiSoon")){
-   if(requireNamespace("forecastHybrid")){
-   # report Rt along with forecasts
-   out <- epinow(reported_cases = reported_cases, samples = 200,
-                 generation_time = generation_time, 
-                 delays = list(incubation_period, reporting_delay),
-                 forecast_args = list(
-                     forecast_model = function(y, ...){
-                     EpiSoon::forecastHybrid_model(
-                          y = y[max(1, length(y) - 21):length(y)],
-                          model_params = list(models = "aefz", weights = "equal"),
-                          forecast_params = list(PI.combination = "mean"), ...)}
-                          ),
-                 stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-                 verbose = interactive())
-    out
-   }
 }
-}
-
 }

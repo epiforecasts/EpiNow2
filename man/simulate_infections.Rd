@@ -10,6 +10,11 @@ simulate_infections(estimates, R = NULL, model = NULL, verbose = interactive())
 \item{estimates}{The \code{estimates} element of an \code{epinow} run that has been done with output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.}
 
 \item{R}{A numeric vector of reproduction numbers; these will overwrite the reproduction numbers contained in \code{estimates}, except elements set to NA. If it is longer than the time series of reproduction numbers contained in \code{estimates}, the values going beyond the length of estimated reproduction numbers are taken as forecast.}
+
+\item{model}{A compiled stan model. By default uses the internal package model.}
+
+\item{verbose}{Logical, defaults to \code{TRUE} when used interactively and otherwise \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
+\code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
 }
 \description{
 This function simulates infections using an existing fit to observed cases but with a modified time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
@@ -25,14 +30,16 @@ generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- list(mean = log(3), mean_sd = 0.1,
                         sd = log(1), sd_sd = 0.1, max = 15)
-
+                        
+# fit model to data to recover Rt estimates
 est <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           stan_args = list(warmup = 200,
-                            control = list(adapt_delta = 0.95, max_treedepth = 15),
-                            cores = ifelse(interactive(), 4, 1)),
-                           verbose = interactive())
-
+                           stan_args = 
+                             list(warmup = 200, 
+                                  control = list(adapt_delta = 0.95, max_treedepth = 15),
+                                  cores = ifelse(interactive(), 4, 1)))
+                                  
+# update Rt trajectory and simulate new infections using it
 R <- c(rep(NA_real_, 40), rep(0.5, 17))
 sims <- simulate_infections(est, R)
 plot(sims)

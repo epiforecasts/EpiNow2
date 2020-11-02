@@ -4,6 +4,7 @@
 #' @param estimates The \code{estimates} element of an \code{epinow} run that has been done with output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.
 #' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers contained in \code{estimates}, except elements set to NA. If it is longer than the time series of reproduction numbers contained in \code{estimates}, the values going beyond the length of estimated reproduction numbers are taken as forecast.
 #' @importFrom rstan extract sampling
+#' @inheritParams estimate_infections
 #' @export
 #' @examples
 #' \donttest{
@@ -16,14 +17,16 @@
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- list(mean = log(3), mean_sd = 0.1,
 #'                         sd = log(1), sd_sd = 0.1, max = 15)
-#'
+#'                         
+#' # fit model to data to recover Rt estimates
 #' est <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            stan_args = list(warmup = 200,
-#'                             control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                             cores = ifelse(interactive(), 4, 1)),
-#'                            verbose = interactive())
-#'
+#'                            stan_args = 
+#'                              list(warmup = 200, 
+#'                                   control = list(adapt_delta = 0.95, max_treedepth = 15),
+#'                                   cores = ifelse(interactive(), 4, 1)))
+#'                                   
+#' # update Rt trajectory and simulate new infections using it
 #' R <- c(rep(NA_real_, 40), rep(0.5, 17))
 #' sims <- simulate_infections(est, R)
 #' plot(sims)
