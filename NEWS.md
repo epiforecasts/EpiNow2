@@ -13,6 +13,7 @@
 * Recoded the core stan model to be functional with the aim of making the code modular and extendable.
 * Added unit tests for the internal stan update_rt function.
 * Reworked the package logging system to improve the reporting of issues both in `epinow` and in `regional_epinow` for large batch runs.
+* Fix from @hsbadr to prevent overflow when overdispersion is larger (by switching to a Poisson approximation). Hitting this issue may indicate a bug in other model code that will need further work to explore.
 
 # EpiNow2 1.2.1
 
