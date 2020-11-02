@@ -12,7 +12,7 @@ epinow(
   delays = list(),
   CrIs = c(0.2, 0.5, 0.9),
   return_output = FALSE,
-  output = c("samples", "plots", "latest"),
+  output = c("samples", "plots", "latest", "fit", "timing"),
   target_folder = NULL,
   target_date,
   forecast_args = NULL,
@@ -48,8 +48,7 @@ if no directory for saving is specified.}
 \item{output}{A character vector of optional output to return. Supported options are samples ("samples"),
 plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if \code{target_folder} is not null
 \itemize{
-\item set using "latest"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
-and summary statistics. This argument uses partial matching so for example passing "sam" will lead to samples
+\item set using "latest"), and the stan fit ("fit"). The default is to return all options. This argument uses partial matching so for example passing "sam" will lead to samples
 being reported.
 }}
 
@@ -96,9 +95,10 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 # estimate Rt and nowcast/forecast cases by date of infection
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
               delays = list(incubation_period, reporting_delay),
-              stan_args = list(cores = ifelse(interactive(), 4, 1),  
-              control = list(adapt_delta = 0.95)), verbose = interactive())
-              
+              stan_args = 
+                 list(cores = ifelse(interactive(), 4, 1),  
+                      control = list(adapt_delta = 0.95, max_treedepth = 15)), 
+              verbose = interactive())
 summary(out)             
 plot(out)
 # optional forecasting using EpiSoon plug-in
