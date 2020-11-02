@@ -44,14 +44,33 @@ extract_static_parameter <- function(param, samples) {
 #' @param data A list of the data supplied to the `rstan::sampling` call.
 #' @param reported_dates A vector of dates to report estimates for.
 #' @param reported_inf_dates A vector of dates to report infection estimates for.
+#' @param drop_length_1 Logical; whether the first dimension should be droped if it
+#' is if length 1; this is necessary when processing simulation results
+#' @param merge if TRUE, merge samples and data so that parameters can be
+#' extracted from data
+#' @param ... Any additional parameters, as returned by `rstan::extract`
 #' @importFrom rstan extract
 #' @importFrom data.table data.table
 #' @return A list of dataframes each containing the posterior of a parameter
-extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_inf_dates) {
+extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_inf_dates, drop_length_1 = FALSE, merge = FALSE) {
   
   # extract sample from stan object
   samples <- rstan::extract(stan_fit)
-  
+
+  ## drop initial length 1 dimensions if requested
+  if (drop_length_1) {
+    samples <- lapply(samples, function(x) {
+      if (length(dim(x)) > 1 && dim(x)[1] == 1) dim(x) <- dim(x)[-1]
+      return(x)
+    })
+  }
+
+  for (data_name in names(data)) {
+    if (!(data_name %in% names(samples))) {
+      samples[[data_name]] <- data[[data_name]]
+    }
+  }
+
   # construct reporting list
   out <- list()
   
