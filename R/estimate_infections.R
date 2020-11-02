@@ -65,7 +65,7 @@
 #' @examples
 #' \donttest{
 #' # get example case counts
-#' reported_cases <- EpiNow2::example_confirmed[1:50]
+#' reported_cases <- EpiNow2::example_confirmed[1:60]
 #' 
 #' # set up example generation time
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
@@ -82,7 +82,7 @@
 #'                            stan_args = list(warmup = 200,
 #'                             control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                             cores = ifelse(interactive(), 4, 1)),
-#'                             verbose = interactive(), model = model)
+#'                             verbose = interactive())
 #' plot(def)
 #' 
 #' # run model using backcalculation
