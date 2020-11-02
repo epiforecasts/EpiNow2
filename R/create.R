@@ -151,7 +151,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     safe_lm <- purrr::safely(stats::lm)
     data$prior_growth <-safe_lm(log(confirm) ~ t, data = first_week)[[1]]
     data$prior_growth <- ifelse(is.null(data$prior_growth), 0, 
-                                data$prior_growth$coefficients[2] )
+                                data$prior_growth$coefficients[2])
   }else{
     data$prior_growth <- 0
   }
