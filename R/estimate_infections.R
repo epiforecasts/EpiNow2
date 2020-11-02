@@ -34,7 +34,7 @@
 #' @param stationary Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt 
 #' this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
 #' This setting is most appropriate when estimating historic Rt or when combined with breakpoints.
-#' @param return_fit Logical, defaults to FALSE. Should the fitted stan model be returned.
+#' @param return_fit Logical, defaults to TRUE. Should the fitted stan model be returned.
 #' @param gp List controlling the Gaussian process approximation if set to `list()` then `Rt` is assumed to be constant unless
 #' other settings introduce variation. If set must contain the `basis_prop` (number of basis functions based on scaling the time points)
 #'  which defaults to 0.3 and must be between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of 
@@ -65,7 +65,7 @@
 #' @examples
 #' \donttest{
 #' # get example case counts
-#' reported_cases <- EpiNow2::example_confirmed[1:50]
+#' reported_cases <- EpiNow2::example_confirmed[1:60]
 #' 
 #' # set up example generation time
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
@@ -75,46 +75,35 @@
 #'                         sd = log(1), sd_sd = 0.1, max = 15)
 #'       
 #' # Note: all examples below have been tuned to reduce the runtimes of examples
-#' # these settings are not suggesed for real world use.                   
+#' # these settings are not suggested for real world use.                   
 #' # run model with default setting
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay), 
-#'                            stan_args = list(warmup = 200,
-#'                             control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                             cores = ifelse(interactive(), 4, 1)),
-#'                             verbose = interactive())
-#'
+#'                            stan_args = 
+#'                               list(warmup = 200,
+#'                                    control = list(adapt_delta = 0.95, max_treedepth = 15),
+#'                                    cores = ifelse(interactive(), 4, 1)), 
+#'                            verbose = interactive())
 #' plot(def)
 #' 
 #' # run model using backcalculation
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 stan_args = list(warmup = 200, 
-#'                                                  cores = ifelse(interactive(), 4, 1),
-#'                                                  control = list(adapt_delta = 0.9)),
+#'                                 stan_args = 
+#'                                   list(warmup = 200, 
+#'                                        cores = ifelse(interactive(), 4, 1),
+#'                                        control = list(adapt_delta = 0.95, max_treedepth = 15)),
 #'                                 rt_prior = list(), verbose = interactive())
-#'
 #' plot(backcalc)
-#' 
-#' # run the model with default settings using the future backend 
-#' ## (combine with a call to future::plan to make this parallel).
-#' def_future <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                                   delays = list(incubation_period, reporting_delay),
-#'                                   stan_args = list(warmup = 200, 
-#'                                                    control = list(adapt_delta = 0.9),
-#'                                                    cores = ifelse(interactive(), 4, 1)),
-#'                                   verbose = interactive(), future = TRUE)
-#' 
-#' plot(def_future)                        
 #'                            
 #' # run model with Rt fixed into the future using the latest estimate
 #' fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 stan_args = list(warmup = 200, 
-#'                                                  control = list(adapt_delta = 0.9),
-#'                                                  cores = ifelse(interactive(), 4, 1)),
+#'                                 stan_args = 
+#'                                    list(warmup = 200, 
+#'                                         control = list(adapt_delta = 0.95, max_treedepth = 15),
+#'                                         cores = ifelse(interactive(), 4, 1)),
 #'                                 future_rt = "latest", verbose = interactive())
-#'
 #' plot(fixed_rt)
 #'
 #' # run the model with default settings on a later snapshot of 
@@ -123,57 +112,55 @@
 #' snapshot_cases <- EpiNow2::example_confirmed[80:130]
 #' snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 stan_args = list(warmup = 200, 
-#'                                                  control = list(adapt_delta = 0.9),
-#'                                                  cores = ifelse(interactive(), 4, 1)),
+#'                                 stan_args = 
+#'                                    list(warmup = 200, 
+#'                                         control = list(adapt_delta = 0.95, max_treedepth = 15),
+#'                                         cores = ifelse(interactive(), 4, 1)),
 #'                                 burn_in = 7, verbose = interactive())
-#'
 #' plot(snapshot) 
 #' 
 #' # run model with stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
-#'                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
-#'                                              control = list(adapt_delta = 0.9)),
+#'                             stan_args = 
+#'                                list(warmup = 200, cores = ifelse(interactive(), 4, 1),
+#'                                     control = list(adapt_delta = 0.95, max_treedepth = 15)),
 #'                             stationary = TRUE, verbose = interactive())
-#'
 #' plot(stat)
 #'        
 #' # run model with fixed Rt assumption 
 #' fixed <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                              delays = list(incubation_period, reporting_delay),
-#'                              stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
-#'                                               control = list(adapt_delta = 0.9)),
+#'                              stan_args = 
+#'                                 list(warmup = 200, cores = ifelse(interactive(), 4, 1),
+#'                                      control = list(adapt_delta = 0.95, max_treedepth = 15)),
 #'                              gp = list(), verbose = interactive())
-#'
 #' plot(fixed)
 #' 
 #' # run model with no delays 
 #' no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                                 stan_args = list(warmup = 200,
-#'                                                  cores = ifelse(interactive(), 4, 1),
-#'                                                  control = list(adapt_delta = 0.9)),
+#'                                 stan_args = 
+#'                                      list(warmup = 200,
+#'                                           cores = ifelse(interactive(), 4, 1),
+#'                                           control = list(adapt_delta = 0.95, max_treedepth = 15)),
 #'                                 verbose = interactive())
-#'
 #' plot(no_delay)    
-#'      
-#' # add a dummy breakpoint (used only when optionally estimating breakpoints)
-#' reported_cases_bp <- data.table::copy(reported_cases)[,
-#'               breakpoint := data.table::fifelse(date == as.Date("2020-03-16"), 1, 0)]              
+#' 
 #' # run model with breakpoints but otherwise static Rt
-#' # This formulation may increase the apparent effect of the breakpoint but needs to be tested using
-#' # model fit criteria (i.e LFO), comparison to models with non-static Rt and models with partially
-#' # constrained non-static Rt.           
+#' # add a dummy breakpoint (used only when optionally estimating breakpoints)
+#' reported_cases_bp <- 
+#'   data.table::copy(reported_cases)[, breakpoint := ifelse(date == as.Date("2020-03-16"), 
+#'                                                           1, 0)]
 #' bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
-#'                             delays = list(incubation_period, reporting_delay),
-#'                             stan_args = list(warmup = 200, 
-#'                                              cores = ifelse(interactive(), 4, 1),
-#'                                              control = list(adapt_delta = 0.9)),
-#'                             gp = list(), verbose = interactive())                                                         
-#'
+#'                            delays = list(incubation_period, reporting_delay),
+#'                            stan_args = 
+#'                               list(warmup = 200, 
+#'                                    cores = ifelse(interactive(), 4, 1),
+#'                                    control = list(adapt_delta = 0.95, max_treedepth = 15)),
+#'                            gp = list(), verbose = interactive())                                                         
 #' plot(bkp)
 #' # breakpoint effect
-#' fbkp$summarised[variable == "breakpoints"]
+#' bkp$summarised[variable == "breakpoints"]
 #' }                                
 estimate_infections <- function(reported_cases, 
                                 model = NULL, 
@@ -197,7 +184,7 @@ estimate_infections <- function(reported_cases,
                                 prior_smoothing_window = 7, 
                                 future = FALSE, 
                                 max_execution_time = Inf, 
-                                return_fit = FALSE,
+                                return_fit = TRUE,
                                 id = "estimate_infections",
                                 verbose = FALSE){
    
@@ -247,7 +234,6 @@ estimate_infections <- function(reported_cases,
  
   # Organise delays ---------------------------------------------------------
   no_delays <- length(delays)
-  
   if (no_delays > 0) {
     delays <- purrr::transpose(delays)
   }

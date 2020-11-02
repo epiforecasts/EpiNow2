@@ -193,7 +193,7 @@ match_output_arguments <- function(input_args = c(),
 #' Expose internal package stan functions in R
 #'
 #' @description This function exposes internal stan functions in R from a user
-#' supplid list of target files. 
+#' supplied list of target files. 
 #' @param files A character vector indicating the target files
 #' @param target_dir A character string indicating the target directory for the file
 #' @param ... Additional arguments passed to `rstan::expose_stan_functions`.

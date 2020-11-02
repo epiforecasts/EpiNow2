@@ -15,7 +15,7 @@ expose_stan_fns(files, target_dir, ...)
 }
 \description{
 This function exposes internal stan functions in R from a user
-supplid list of target files.
+supplied list of target files.
 }
 \examples{
 \donttest{

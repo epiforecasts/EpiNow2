@@ -1,4 +1,23 @@
 
+vector calculate_Rt(vector infections, int seeding_time,
+                    real gt_mean, real gt_sd, int max_gt) {
+  vector[max_gt] gt_pmf;  
+  int t = num_elements(infections);
+  int ot = t - seeding_time;
+  vector[ot] R;
+  vector[ot] infectiousness = rep_vector(1e-5, ot); 
+  // calculate PMF of the generation time
+  for (j in 1:(max_gt)) {
+    gt_pmf[j] =  discretised_gamma_pmf(max_gt - j + 1, gt_mean, gt_sd, max_gt);
+  }
+  // calculate Rt using Cori et al. approach
+  for (s in 1:ot) {
+    infectiousness[s] += update_infectiousness(infections, gt_pmf, seeding_time, max_gt, s);
+    R[s] = infections[s + seeding_time] / infectiousness[s];
+  }
+  return(R);
+}
+
 real[] R_to_growth(vector R, real gt_mean, real gt_sd) {
   real k = pow(gt_sd / gt_mean, 2);
   int t = num_elements(R);
