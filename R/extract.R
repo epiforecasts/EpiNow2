@@ -48,7 +48,6 @@ extract_static_parameter <- function(param, samples) {
 #' is if length 1; this is necessary when processing simulation results
 #' @param merge if TRUE, merge samples and data so that parameters can be
 #' extracted from data
-#' @param ... Any additional parameters, as returned by `rstan::extract`
 #' @importFrom rstan extract
 #' @importFrom data.table data.table
 #' @return A list of dataframes each containing the posterior of a parameter
