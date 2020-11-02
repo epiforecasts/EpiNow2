@@ -92,7 +92,7 @@
 #'                                 stan_args = 
 #'                                   list(warmup = 200, 
 #'                                        cores = ifelse(interactive(), 4, 1),
-#'                                        control = list(adapt_delta = 0.95, max_treedepth = 15),
+#'                                        control = list(adapt_delta = 0.95, max_treedepth = 15)),
 #'                                 rt_prior = list(), verbose = interactive())
 #' plot(backcalc)
 #' 
