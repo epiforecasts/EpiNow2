@@ -13,7 +13,6 @@ extract_parameter <- function(param, samples, dates) {
         samples[[param]]
       )
     ))
-  
   param_df <- param_df[, time := 1:.N]
   param_df <- data.table::melt(param_df, id.vars = "time",
                                variable.name = "var")
@@ -51,7 +50,8 @@ extract_static_parameter <- function(param, samples) {
 #' @importFrom rstan extract
 #' @importFrom data.table data.table
 #' @return A list of dataframes each containing the posterior of a parameter
-extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_inf_dates, drop_length_1 = FALSE, merge = FALSE) {
+extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_inf_dates, 
+                                      drop_length_1 = FALSE, merge = FALSE) {
   
   # extract sample from stan object
   samples <- rstan::extract(stan_fit)
@@ -69,10 +69,9 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
       samples[[data_name]] <- data[[data_name]]
     }
   }
-
+  
   # construct reporting list
   out <- list()
-  
   # report infections, and R
   out$infections <- extract_parameter("infections", 
                                       samples,
@@ -81,17 +80,14 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
   out$reported_cases <- extract_parameter("imputed_reports", 
                                           samples, 
                                           reported_dates)
-  
   if (data$estimate_r == 1) {
     out$R <- extract_parameter("R", 
                                samples,
                                reported_dates)
-    
     if (data$bp_n > 0) {
       out$breakpoints <- extract_parameter("bp_effects", 
                                            samples, 
                                            1:data$bp_n)
-      
       out$breakpoints <- out$breakpoints[, strat := date][, c("time", "date") := NULL]
     }
   }else{
@@ -99,11 +95,9 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
                                samples,
                                reported_dates)
   }
-  
   out$growth_rate <- extract_parameter("r", 
                                        samples,
                                        reported_dates)
-  
   if (data$week_effect  == 1) {
     out$day_of_week <- extract_parameter("day_of_week_simplex", 
                                          samples,
@@ -118,7 +112,6 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
                                       `:=`(time = NULL, date = NULL, wday = NULL)][,
                                        value := value * 7]
   }
-  
   if (data$delays > 0) {
     out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
     out$delay_mean <- 
@@ -129,13 +122,17 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
       out$delay_sd[, strat :=  as.character(time)][, time := NULL][, date := NULL]
     
   }
-  
   if (data$estimate_r == 1) {
     out$gt_mean <- extract_static_parameter("gt_mean", samples)
     out$gt_mean <- out$gt_mean[, value := value.V1][, value.V1 := NULL]
     
     out$gt_sd <- extract_static_parameter("gt_sd", samples)
     out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
+  }
+  if (data$model_type == 1) {
+    out$reporting_overdispersion <- extract_static_parameter("rep_phi", samples)
+    out$reporting_overdispersion <- out$reporting_overdispersion[, value := value.V1][, 
+                                                                   value.V1 := NULL]
   }
   return(out)
 }
