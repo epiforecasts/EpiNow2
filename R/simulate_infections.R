@@ -22,8 +22,7 @@
 #'                            stan_args = list(warmup = 200,
 #'                             control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                             cores = ifelse(interactive(), 4, 1)),
-#'                             return_fit = TRUE,
-#'                             verbose = interactive())
+#'                            verbose = interactive())
 #'
 #' R <- c(rep(NA_real_, 40), rep(0.5, 17))
 #' sims <- simulate_infections(est, R)
@@ -32,7 +31,7 @@
 simulate_infections <- function(estimates,
                                 R = NULL,
                                 model = NULL,
-                                verbose = TRUE) {
+                                verbose = interactive()) {
   ## extract samples from given stanfit object
   samples <- rstan::extract(estimates$fit)
   
