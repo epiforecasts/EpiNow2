@@ -1,0 +1,30 @@
+context("simulate_infections")
+
+# Setup for testing -------------------------------------------------------
+futile.logger::flog.threshold("FATAL")
+reported_cases <- EpiNow2::example_confirmed[1:50]
+generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 10)
+incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 10)
+reporting_delay <- list(mean = log(3), mean_sd = 0.1, sd = log(2), sd_sd = 0.1, max = 10)
+
+out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
+                           delays = list(reporting_delay), samples = 50, 
+                           stan_args = list(chains = 2, warmup = 50,
+                                            control = list(adapt_delta = 0.8))))
+
+test_that("simulate_infections works to simulate a passed in estimate_infections object", {
+  sims <- simulate_infections(out)
+  expect_equal(names(sims), c("samples", "summarised", "observations"))
+})
+
+test_that("simulate_infections works to simulate a passed in estimate_infections object with an adjusted Rt", {
+  R <- c(rep(NA_real_, 40), rep(0.5, 17))
+  sims <- simulate_infections(out, R)
+  expect_equal(names(sims), c("samples", "summarised", "observations"))
+})
+
+test_that("simulate infections fails as expected", {
+  expect_error(simulate_infections())
+  expect_error(simualate_infections(out, R = rep(1, 10)))
+  expect_error(simulate_infections(out[-"fit"]))
+})
