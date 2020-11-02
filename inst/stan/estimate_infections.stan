@@ -92,8 +92,10 @@ model {
       bp_effects ~ normal(0, 0.1);
     }
     // initial infections
-    initial_infections ~ normal(prior_infections, prior_infections * 0.1);
-    initial_growth ~ std_normal();
+    initial_infections ~ normal(prior_infections, prior_infections * 0.2);
+    if (seeding_time) {
+       initial_growth ~ normal(prior_growth, prior_growth * 0.5);
+     }
     // penalised_prior on generation interval
     generation_time_lp(gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot);
   }
