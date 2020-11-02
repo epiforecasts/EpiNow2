@@ -23,13 +23,16 @@
 #'                             control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                             cores = ifelse(interactive(), 4, 1)),
 #'                             return_fit = TRUE,
-#'                             verbose = interactive(), model = model)
+#'                             verbose = interactive())
 #'
 #' R <- c(rep(NA_real_, 40), rep(0.5, 17))
 #' sims <- simulate_infections(est, R)
 #' plot(sims)
 #' }
-simulate_infections <- function(estimates, R = NULL, model = NULL) {
+simulate_infections <- function(estimates,
+                                R = NULL,
+                                model = NULL,
+                                verbose = TRUE) {
   ## extract samples from given stanfit object
   samples <- rstan::extract(estimates$fit)
   
@@ -50,7 +53,8 @@ simulate_infections <- function(estimates, R = NULL, model = NULL) {
   }
   sims <- rstan::sampling(object = model,
                           data = data, chains = 1, iter = 1,
-                          algorithm = "Fixed_param")
+                          algorithm = "Fixed_param",
+                          refresh = ifelse(verbose, 50, 0))
   
   ## extract parameters for extract_parameter_samples from passed stanfit object
   mean_shift <- estimates$args$seeding_time
