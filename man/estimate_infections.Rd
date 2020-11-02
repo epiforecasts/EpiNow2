@@ -126,7 +126,7 @@ cases. It can optionally then estimate the time-varying reproduction number and 
 \examples{
 \donttest{
 # get example case counts
-reported_cases <- EpiNow2::example_confirmed[1:50]
+reported_cases <- EpiNow2::example_confirmed[1:60]
 
 # set up example generation time
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
@@ -136,22 +136,24 @@ reporting_delay <- list(mean = log(3), mean_sd = 0.1,
                         sd = log(1), sd_sd = 0.1, max = 15)
       
 # Note: all examples below have been tuned to reduce the runtimes of examples
-# these settings are not suggesed for real world use.                   
+# these settings are not suggested for real world use.                   
 # run model with default setting
 def <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay), 
-                           stan_args = list(warmup = 200,
-                            control = list(adapt_delta = 0.95, max_treedepth = 15),
-                            cores = ifelse(interactive(), 4, 1)),
-                            verbose = interactive())
+                           stan_args = 
+                              list(warmup = 200,
+                                   control = list(adapt_delta = 0.95, max_treedepth = 15),
+                                   cores = ifelse(interactive(), 4, 1)), 
+                           verbose = interactive())
 plot(def)
 
 # run model using backcalculation
 backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                stan_args = list(warmup = 200, 
-                                                 cores = ifelse(interactive(), 4, 1),
-                                                 control = list(adapt_delta = 0.9)),
+                                stan_args = 
+                                  list(warmup = 200, 
+                                       cores = ifelse(interactive(), 4, 1),
+                                       control = list(adapt_delta = 0.95, max_treedepth = 15),
                                 rt_prior = list(), verbose = interactive())
 plot(backcalc)
 
@@ -159,18 +161,20 @@ plot(backcalc)
 ## (combine with a call to future::plan to make this parallel).
 def_future <- estimate_infections(reported_cases, generation_time = generation_time,
                                   delays = list(incubation_period, reporting_delay),
-                                  stan_args = list(warmup = 200, 
-                                                   control = list(adapt_delta = 0.9),
-                                                   cores = ifelse(interactive(), 4, 1)),
+                                  stan_args = 
+                                     list(warmup = 200, 
+                                          control = list(adapt_delta = 0.95, max_treedepth = 15),
+                                          cores = ifelse(interactive(), 4, 1)),
                                   verbose = interactive(), future = TRUE)
 plot(def_future)                        
                            
 # run model with Rt fixed into the future using the latest estimate
 fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                stan_args = list(warmup = 200, 
-                                                 control = list(adapt_delta = 0.9),
-                                                 cores = ifelse(interactive(), 4, 1)),
+                                stan_args = 
+                                   list(warmup = 200, 
+                                        control = list(adapt_delta = 0.95, max_treedepth = 15),
+                                        cores = ifelse(interactive(), 4, 1)),
                                 future_rt = "latest", verbose = interactive())
 plot(fixed_rt)
 
@@ -180,33 +184,37 @@ plot(fixed_rt)
 snapshot_cases <- EpiNow2::example_confirmed[80:130]
 snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                stan_args = list(warmup = 200, 
-                                                 control = list(adapt_delta = 0.9),
-                                                 cores = ifelse(interactive(), 4, 1)),
+                                stan_args = 
+                                   list(warmup = 200, 
+                                        control = list(adapt_delta = 0.95, max_treedepth = 15),
+                                        cores = ifelse(interactive(), 4, 1)),
                                 burn_in = 7, verbose = interactive())
 plot(snapshot) 
 
 # run model with stationary Rt assumption (likely to provide biased real-time estimates)
 stat <- estimate_infections(reported_cases, generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
-                                             control = list(adapt_delta = 0.9)),
+                            stan_args = 
+                               list(warmup = 200, cores = ifelse(interactive(), 4, 1),
+                                    control = list(adapt_delta = 0.95, max_treedepth = 15)),
                             stationary = TRUE, verbose = interactive())
 plot(stat)
        
 # run model with fixed Rt assumption 
 fixed <- estimate_infections(reported_cases, generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay),
-                             stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1),
-                                              control = list(adapt_delta = 0.9)),
+                             stan_args = 
+                                list(warmup = 200, cores = ifelse(interactive(), 4, 1),
+                                     control = list(adapt_delta = 0.95, max_treedepth = 15)),
                              gp = list(), verbose = interactive())
 plot(fixed)
 
 # run model with no delays 
 no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
-                                stan_args = list(warmup = 200,
-                                                 cores = ifelse(interactive(), 4, 1),
-                                                 control = list(adapt_delta = 0.9)),
+                                stan_args = 
+                                     list(warmup = 200,
+                                          cores = ifelse(interactive(), 4, 1),
+                                          control = list(adapt_delta = 0.95, max_treedepth = 15)),
                                 verbose = interactive())
 plot(no_delay)    
      
@@ -219,9 +227,10 @@ reported_cases_bp <- data.table::copy(reported_cases)[,
 # constrained non-static Rt.           
 bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            stan_args = list(warmup = 200, 
-                                             cores = ifelse(interactive(), 4, 1),
-                                             control = list(adapt_delta = 0.9)),
+                            stan_args = 
+                               list(warmup = 200, 
+                                    cores = ifelse(interactive(), 4, 1),
+                                    control = list(adapt_delta = 0.95, max_treedepth = 15)),
                             gp = list(), verbose = interactive())                                                         
 
 plot(bkp)
