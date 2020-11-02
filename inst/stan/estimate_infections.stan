@@ -93,7 +93,7 @@ model {
     }
     // initial infections
     initial_infections ~ normal(prior_infections, prior_infections * 0.2);
-    if (seeding_time) {
+    if (seeding_time > 1) {
        initial_growth ~ normal(prior_growth, prior_growth * 0.5);
      }
     // penalised_prior on generation interval

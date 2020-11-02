@@ -145,10 +145,12 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
 # initial estimate of growth ------------------------------------------
   first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
                                        t = 1:min(7, length(cases)))
-  
-  first_week_growth <- stats::lm(log(confirm) ~ t, data = first_week)$coefficients[2] 
   data$prior_infections <- log(mean(first_week$confirm))
-  data$prior_growth = first_week_growth
+  if (data$seeding_time > 1) {
+    data$prior_growth <- stats::lm(log(confirm) ~ t, data = first_week)$coefficients[2] 
+  }else{
+    data$prior_growth <- 0
+  }
   # Delays ------------------------------------------------------------------
   data$delays <- no_delays
   data$delay_mean_mean <- allocate_delays(delays$mean, no_delays)
@@ -188,7 +190,6 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
                                               ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
       out$delay_sd <- array(purrr::map2_dbl(delays$sd, delays$sd_sd, 
                                             ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
-      
     }
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 1))
@@ -200,8 +201,9 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
     }
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1, data$prior_infections, data$prior_infections * 0.1))
-      out$initial_growth <- array(rnorm(1, 0, 0.1))
-      out$initial_growth <- array(rnorm(1, 0, 1))
+      if (data$seeding_time > 1) {
+        out$initial_growth <- array(rnorm(1, data$prior_growth, 0.1))
+      }
       out$log_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
                                sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
