@@ -38,9 +38,8 @@
 #'               delays = list(incubation_period, reporting_delay),
 #'               stan_args = 
 #'                  list(cores = ifelse(interactive(), 4, 1),  
-#'                       control = list(adapt_delta = 0.95, maxdepth = 15)), 
+#'                       control = list(adapt_delta = 0.95, max_treedepth = 15)), 
 #'               verbose = interactive())
-#'               
 #' summary(out)             
 #' plot(out)
 #' # optional forecasting using EpiSoon plug-in
@@ -229,7 +228,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   if (output["timing"]) {
     out$timing <- round(as.numeric(end_time - start_time), 1)
     if (!is.null(target_folder)) {
-      saveRDS(timing, paste0(target_folder, "/runtime.rds"))
+      saveRDS(out$timing, paste0(target_folder, "/runtime.rds"))
     }
   }
   
