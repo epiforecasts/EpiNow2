@@ -11,6 +11,8 @@
 #'  estimated reproduction numbers are taken as forecast.
 #' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
 #' samples in the `estimates` input.
+#' @param batch_size Numeric, defaults to 100. Size of batches in which to simulate. May decrease 
+#' runtimes due to reduced IO costs.
 #' @importFrom rstan extract sampling
 #' @inheritParams estimate_infections
 #' @export
