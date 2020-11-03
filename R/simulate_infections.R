@@ -45,8 +45,7 @@ simulate_infections <- function(estimates,
                                 R = NULL,
                                 model = NULL,
                                 samples = NULL,
-                                batch_size = 100,
-                                verbose = interactive()) {
+                                batch_size = 10) {
   ## extract samples from given stanfit object
   draws <- rstan::extract(estimates$fit,
                           pars = c("noise", "eta", "lp__", "infections",
@@ -92,10 +91,10 @@ simulate_infections <- function(estimates,
                             algorithm = "Fixed_param",
                             refresh = 0)
     
-    out <- EpiNow2:::extract_parameter_samples(sims, data,
-                                               reported_inf_dates = dates,
-                                               reported_dates = dates[-(1:shift)],
-                                               drop_length_1 = TRUE, merge = TRUE)
+    out <- extract_parameter_samples(sims, data,
+                                     reported_inf_dates = dates,
+                                     reported_dates = dates[-(1:shift)],
+                                     drop_length_1 = TRUE, merge = TRUE)
     return(out)
   }
   
@@ -103,10 +102,20 @@ simulate_infections <- function(estimates,
   batch_no <- ceiling(samples / batch_size)
   nstarts <- seq(1, by = batch_size, length.out = batch_no)
   nends <- c(seq(batch_size, by = batch_size, length.out = batch_no - 1), samples)
-  
+  batches <- purrr::transpose(list(nstarts, nends))
+
   ## simulate in batches
-  out <- purrr::map2(nstarts, nends, 
-                     ~ batch_simulate(estimates, draws, model, shift, dates, .x, .y))
+  progressr::with_progress({
+    p <- progressr::progressor(along = batches)
+  out <- future.apply::future_lapply(batches, 
+                     function(batch) {
+                       p()
+                       batch_simulate(estimates, draws, model,
+                                      shift, dates, batch[[1]], 
+                                      batch[[2]])},
+                     future.seed = TRUE)
+  })
+  
   ## join batches
   out <- purrr::transpose(out)
   out <- purrr::map(out, ~ data.table::rbindlist(.)[, sample := 1:.N])
