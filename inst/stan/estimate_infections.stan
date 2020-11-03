@@ -28,6 +28,7 @@ transformed data{
   // Rt
   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2)); 
   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2))); 
+  real prior_infections_sd = prior_infections == 0 ? 0.2, prior_infections * 0.2);
 }
 
 parameters{
@@ -92,7 +93,7 @@ model {
       bp_effects ~ normal(0, 0.1);
     }
     // initial infections
-    initial_infections ~ normal(prior_infections, prior_infections * 0.2);
+    initial_infections ~ normal(prior_infections, prior_infections_sd);
     if (seeding_time > 1) {
        initial_growth ~ normal(prior_growth, 0.2);
      }
