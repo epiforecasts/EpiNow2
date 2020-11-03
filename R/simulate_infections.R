@@ -17,6 +17,7 @@
 #' @importFrom purrr transpose map
 #' @importFrom future.apply future_lapply
 #' @importFrom progressr with_progress progressor
+#' @importFrom data.table rbindlist
 #' @inheritParams estimate_infections
 #' @export
 #' @examples
