@@ -13,6 +13,8 @@
 #' samples in the `estimates` input.
 #' @param batch_size Numeric, defaults to 100. Size of batches in which to simulate. May decrease 
 #' runtimes due to reduced IO costs. If set to NULL then all simulations are done at once.
+#' @param verbose Logical defaults to `interactive()`. Should a progress bar (from `progressr`) be
+#' shown.
 #' @importFrom rstan extract sampling
 #' @importFrom purrr transpose map
 #' @importFrom future.apply future_lapply
