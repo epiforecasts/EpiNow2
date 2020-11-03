@@ -36,7 +36,7 @@
 #'                                   
 #' # update Rt trajectory and simulate new infections using it
 #' R <- c(rep(NA_real_, 40), rep(0.5, 17))
-#' sims <- simulate_infections(est, R, samples = 10)
+#' sims <- simulate_infections(est, R)
 #' plot(sims)
 #' }
 simulate_infections <- function(estimates,
@@ -59,8 +59,11 @@ simulate_infections <- function(estimates,
   }
   
   # set samples if missing
+  R_samples <- dim(draws$R)[1]
   if (is.null(samples)) {
-    samples <- dim(draws$R)[1]
+    samples <- R_samples
+  }else if(samples > R_samples) {
+    samples <- R_samples
   }
   
   # extract parameters for extract_parameter_samples from passed stanfit object
@@ -85,7 +88,7 @@ simulate_infections <- function(estimates,
     sims <- rstan::sampling(object = model,
                             data = data, chains = 1, iter = 1,
                             algorithm = "Fixed_param",
-                            refresh = ifelse(verbose, 50, 0))
+                            refresh = 0)
     
     out <- EpiNow2:::extract_parameter_samples(sims, data,
                                                reported_inf_dates = dates,
@@ -94,8 +97,15 @@ simulate_infections <- function(estimates,
     return(out)
   }
   
-  out <- purrr::map2(list(1, 99), list(100, 200), 
+  ## set up batching
+  batch_no <- ceiling(samples / batch_size)
+  nstarts <- seq(1, by = batch_size, length.out = batch_no)
+  nends <- c(seq(batch_size, by = batch_size, length.out = batch_no - 1), samples)
+  
+  ## simulate in batches
+  out <- purrr::map2(nstarts, nends, 
                      ~ batch_simulate(estimates, draws, model, shift, dates, .x, .y))
+  ## join batches
   out <- purrr::transpose(out)
   out <- purrr::map(out, ~ data.table::rbindlist(.)[, sample := 1:.N])
   
