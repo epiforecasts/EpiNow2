@@ -2449,7 +2449,7 @@ public:
                     lp_accum__.add(normal_log<propto__>(bp_effects, 0, 0.1));
                 }
                 current_statement_begin__ = 465;
-                lp_accum__.add(normal_log<propto__>(initial_infections, prior_infections, (prior_infections * 0.2)));
+                lp_accum__.add(normal_log<propto__>(initial_infections, prior_infections, 0.2));
                 current_statement_begin__ = 466;
                 if (as_bool(logical_gt(seeding_time, 1))) {
                     current_statement_begin__ = 467;
