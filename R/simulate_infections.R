@@ -2,7 +2,7 @@
 #'
 #' @description This function simulates infections using an existing fit to observed cases but
 #'  with a modified time-varying reproduction number. This can be used to explore forecast models
-#'   or past counterfactuals.
+#'   or past counterfactuals. Simulations can be run in parallel using `future::plan`.
 #' @param estimates The \code{estimates} element of an \code{epinow} run that has been done with 
 #' output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.
 #' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
@@ -14,6 +14,9 @@
 #' @param batch_size Numeric, defaults to 100. Size of batches in which to simulate. May decrease 
 #' runtimes due to reduced IO costs.
 #' @importFrom rstan extract sampling
+#' @importFrom purrr transpose map
+#' @importFrom future.apply future_lapply
+#' @importFrom progressr with_progress progressor
 #' @inheritParams estimate_infections
 #' @export
 #' @examples
@@ -38,7 +41,9 @@
 #'                                   
 #' # update Rt trajectory and simulate new infections using it
 #' R <- c(rep(NA_real_, 40), rep(0.5, 17))
+#' system.time({
 #' sims <- simulate_infections(est, R, verbose = FALSE)
+#' })
 #' plot(sims)
 #' }
 simulate_infections <- function(estimates,
@@ -134,13 +139,13 @@ simulate_infections <- function(estimates,
   
   ## extract parameters for format_fit from passed stanfit object
   horizon <- estimates$args$horizon
-  burn_in <- as.integer(min(reported_inf_dates) + mean_shift - min(estimates$observations$date))
-  start_date <- as.integer(min(reported_inf_dates) - mean_shift)
+  burn_in <- as.integer(min(dates) + shift - min(estimates$observations$date))
+  start_date <- as.integer(min(dates) - shift)
   CrIs <- extract_CrIs(estimates$summarised) / 100
 
   format_out <- format_fit(posterior_samples = out,
                            horizon = horizon,
-                           shift = mean_shift,
+                           shift = shift,
                            burn_in = burn_in,
                            start_date = start_date,
                            CrIs = CrIs)
