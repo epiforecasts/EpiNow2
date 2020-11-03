@@ -38,14 +38,21 @@
 #'                                   
 #' # update Rt trajectory and simulate new infections using it
 #' R <- c(rep(NA_real_, 40), rep(0.5, 17))
-#' sims <- simulate_infections(est, R)
+#' sims <- simulate_infections(est, R, verbose = FALSE)
 #' plot(sims)
 #' }
 simulate_infections <- function(estimates,
                                 R = NULL,
                                 model = NULL,
                                 samples = NULL,
-                                batch_size = 10) {
+                                batch_size = 10,
+                                verbose = interactive()) {
+  
+  ## check batch size
+  if (batch_size <= 1) {
+    stop("batch_size must be greater than 1")
+  }
+  
   ## extract samples from given stanfit object
   draws <- rstan::extract(estimates$fit,
                           pars = c("noise", "eta", "lp__", "infections",
@@ -106,10 +113,15 @@ simulate_infections <- function(estimates,
 
   ## simulate in batches
   progressr::with_progress({
-    p <- progressr::progressor(along = batches)
+    if (verbose) {
+      p <- progressr::progressor(along = batches)
+    }
+
   out <- future.apply::future_lapply(batches, 
                      function(batch) {
-                       p()
+                       if (verbose) {
+                         p()
+                       }
                        batch_simulate(estimates, draws, model,
                                       shift, dates, batch[[1]], 
                                       batch[[2]])},
