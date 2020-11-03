@@ -12,7 +12,7 @@
 #' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
 #' samples in the `estimates` input.
 #' @param batch_size Numeric, defaults to 100. Size of batches in which to simulate. May decrease 
-#' runtimes due to reduced IO costs.
+#' runtimes due to reduced IO costs. If set to NULL then all simulations are done at once.
 #' @importFrom rstan extract sampling
 #' @importFrom purrr transpose map
 #' @importFrom future.apply future_lapply
@@ -41,9 +41,7 @@
 #'                                   
 #' # update Rt trajectory and simulate new infections using it
 #' R <- c(rep(NA_real_, 40), rep(0.5, 17))
-#' system.time({
-#' sims <- simulate_infections(est, R, verbose = FALSE)
-#' })
+#' sims <- simulate_infections(est, R)
 #' plot(sims)
 #' }
 simulate_infections <- function(estimates,
@@ -54,8 +52,10 @@ simulate_infections <- function(estimates,
                                 verbose = interactive()) {
   
   ## check batch size
-  if (batch_size <= 1) {
-    stop("batch_size must be greater than 1")
+  if (!is.null(batch_size)) {
+    if (batch_size <= 1) {
+      stop("batch_size must be greater than 1")
+    }
   }
   
   ## extract samples from given stanfit object
@@ -111,10 +111,15 @@ simulate_infections <- function(estimates,
   }
   
   ## set up batching
-  batch_no <- ceiling(samples / batch_size)
-  nstarts <- seq(1, by = batch_size, length.out = batch_no)
-  nends <- c(seq(batch_size, by = batch_size, length.out = batch_no - 1), samples)
-  batches <- purrr::transpose(list(nstarts, nends))
+  if (!is.null(batch_size)) {
+    batch_no <- ceiling(samples / batch_size)
+    nstarts <- seq(1, by = batch_size, length.out = batch_no)
+    nends <- c(seq(batch_size, by = batch_size, length.out = batch_no - 1), samples)
+    batches <- purrr::transpose(list(nstarts, nends))
+  }else{
+    batches <- list(list(1, samples))
+  }
+
 
   ## simulate in batches
   progressr::with_progress({
