@@ -1,8 +1,16 @@
 #' Simulate infections using a given trajectory of the time-varying reproduction number
 #'
-#' @description This function simulates infections using an existing fit to observed cases but with a modified time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
-#' @param estimates The \code{estimates} element of an \code{epinow} run that has been done with output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.
-#' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers contained in \code{estimates}, except elements set to NA. If it is longer than the time series of reproduction numbers contained in \code{estimates}, the values going beyond the length of estimated reproduction numbers are taken as forecast.
+#' @description This function simulates infections using an existing fit to observed cases but
+#'  with a modified time-varying reproduction number. This can be used to explore forecast models
+#'   or past counterfactuals.
+#' @param estimates The \code{estimates} element of an \code{epinow} run that has been done with 
+#' output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.
+#' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
+#'  contained in \code{estimates}, except elements set to NA. If it is longer than the time series 
+#'  of reproduction numbers contained in \code{estimates}, the values going beyond the length of 
+#'  estimated reproduction numbers are taken as forecast.
+#' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
+#' samples in the `estimates` input.
 #' @importFrom rstan extract sampling
 #' @inheritParams estimate_infections
 #' @export
@@ -28,45 +36,69 @@
 #'                                   
 #' # update Rt trajectory and simulate new infections using it
 #' R <- c(rep(NA_real_, 40), rep(0.5, 17))
-#' sims <- simulate_infections(est, R)
+#' sims <- simulate_infections(est, R, samples = 10)
 #' plot(sims)
 #' }
 simulate_infections <- function(estimates,
                                 R = NULL,
                                 model = NULL,
+                                samples = NULL,
+                                batch_size = 100,
                                 verbose = interactive()) {
   ## extract samples from given stanfit object
-  samples <- rstan::extract(estimates$fit)
+  draws <- rstan::extract(estimates$fit,
+                          pars = c("noise", "eta", "lp__", "infections",
+                                   "reports", "imputed_reports", "r"),
+                          include = FALSE)
   
   ## if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
-    R_mat <- matrix(rep(R, each = dim(samples$R)[1]),
+    R_mat <- matrix(rep(R, each = dim(draws$R)[1]),
                     ncol = length(R), byrow = FALSE)
-    samples$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
+    draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
   }
-  nsamples <- dim(samples$R)[1]
   
-  ## prepare data for stan command
-  data <- c(list(n = nsamples), samples, estimates$args)
+  # set samples if missing
+  if (is.null(samples)) {
+    samples <- dim(draws$R)[1]
+  }
   
-  ## simulate
+  # extract parameters for extract_parameter_samples from passed stanfit object
+  shift <- estimates$args$seeding_time
+  dates <- na.omit(unique(estimates$samples$date))
+  
+  # Load model
   if (is.null(model)) {
     model <- stanmodels$simulate_infections
   }
-  sims <- rstan::sampling(object = model,
-                          data = data, chains = 1, iter = 1,
-                          algorithm = "Fixed_param",
-                          refresh = ifelse(verbose, 50, 0))
   
-  ## extract parameters for extract_parameter_samples from passed stanfit object
-  mean_shift <- estimates$args$seeding_time
-  reported_inf_dates <- na.omit(unique(estimates$samples$date))
-
-  out <- extract_parameter_samples(sims, data,
-                                   reported_inf_dates = reported_inf_dates,
-                                   reported_dates = reported_inf_dates[-(1:mean_shift)],
-                                   drop_length_1 = TRUE, merge = TRUE)
-
+  ## set up batch simulation
+  batch_simulate <- function(estimates, draws, model,
+                             shift, dates, nstart, nend) {
+    # extract batch samples from draws
+    draws <- purrr::map(draws, ~ as.matrix(.[nstart:nend, ]))
+    
+    ## prepare data for stan command
+    data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
+    
+    ## simulate
+    sims <- rstan::sampling(object = model,
+                            data = data, chains = 1, iter = 1,
+                            algorithm = "Fixed_param",
+                            refresh = ifelse(verbose, 50, 0))
+    
+    out <- EpiNow2:::extract_parameter_samples(sims, data,
+                                               reported_inf_dates = dates,
+                                               reported_dates = dates[-(1:shift)],
+                                               drop_length_1 = TRUE, merge = TRUE)
+    return(out)
+  }
+  
+  out <- purrr::map2(list(1, 99), list(100, 200), 
+                     ~ batch_simulate(estimates, draws, model, shift, dates, .x, .y))
+  out <- purrr::transpose(out)
+  out <- purrr::map(out, ~ data.table::rbindlist(.)[, sample := 1:.N])
+  
   ## extract parameters for format_fit from passed stanfit object
   horizon <- estimates$args$horizon
   burn_in <- as.integer(min(reported_inf_dates) + mean_shift - min(estimates$observations$date))
