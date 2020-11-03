@@ -84,7 +84,7 @@ simulate_infections <- function(estimates,
   
   # extract parameters for extract_parameter_samples from passed stanfit object
   shift <- estimates$args$seeding_time
-  dates <- na.omit(unique(estimates$samples$date))
+  dates <- na.omit(unique(estimates$summarised$date))
   
   # Load model
   if (is.null(model)) {
