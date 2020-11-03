@@ -84,7 +84,8 @@ simulate_infections <- function(estimates,
   
   # extract parameters for extract_parameter_samples from passed stanfit object
   shift <- estimates$args$seeding_time
-  dates <- na.omit(unique(estimates$summarised$date))
+  dates <- seq(min(na.omit(unique(estimates$summarised$date))), 
+                   by = "day", length.out = length(R) + shift)
   
   # Load model
   if (is.null(model)) {
@@ -128,17 +129,16 @@ simulate_infections <- function(estimates,
   progressr::with_progress({
     if (verbose) {
       p <- progressr::progressor(along = batches)
-    }
-
-  out <- future.apply::future_lapply(batches, 
-                     function(batch) {
-                       if (verbose) {
-                         p()
-                       }
-                       batch_simulate(estimates, draws, model,
-                                      shift, dates, batch[[1]], 
-                                      batch[[2]])},
-                     future.seed = TRUE)
+    } 
+    out <- future.apply::future_lapply(batches, 
+                                       function(batch) {
+                                         if (verbose) {
+                                           p()
+                                         }
+                                         batch_simulate(estimates, draws, model,
+                                                        shift, dates, batch[[1]], 
+                                                        batch[[2]])},
+                                       future.seed = TRUE)
   })
   
   ## join batches
@@ -148,7 +148,7 @@ simulate_infections <- function(estimates,
   ## extract parameters for format_fit from passed stanfit object
   horizon <- estimates$args$horizon
   burn_in <- as.integer(min(dates) + shift - min(estimates$observations$date))
-  start_date <- as.integer(min(dates) - shift)
+  start_date <- as.integer(min(dates) + shift)
   CrIs <- extract_CrIs(estimates$summarised) / 100
 
   format_out <- format_fit(posterior_samples = out,
