@@ -44,6 +44,7 @@ vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
   // define control parameters
   int noise_terms = num_elements(noise);
   int i_stationary = noise_terms > 0 ? stationary : 1;
+  int bp_stat;
   int t = num_elements(input_R);
   int bp_n = num_elements(bp_effects);
   int bp_in = 0;
@@ -64,7 +65,8 @@ vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
     if (bp_n > 0) {
       at_bp = bps[s];
       bp_in += at_bp;
-      R[s] = update_breakpoints(R[s], bp_effects, bp_in, at_bp, i_stationary);
+      bp_stat = index > noise_terms ? 0 : i_stationary;
+      R[s] = update_breakpoints(R[s], bp_effects, bp_in, at_bp, bp_stat);
     }
   }
   // convert to correct scale
