@@ -105,12 +105,15 @@ create_future_rt <- function(future_rt = "project", delay = 0) {
 #' @param estimate_rt Logical, should Rt be estimated.
 #' @inheritParams estimate_infections
 #' @inheritParams create_future_rt
+#' @importFrom stats lm
+#' @importFrom purrr safely
 #' @return A list of stan data
 #' @export 
-create_stan_data <- function(reported_cases,  shifted_reported_cases,
+create_stan_data <- function(reported_cases, shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
-                             rt_prior, estimate_rt, week_effect, stationary,
-                             fixed, break_no, future_rt, gp, family, delays) {
+                             rt_prior, estimate_rt, burn_in, week_effect,
+                             stationary, fixed, break_no, future_rt, gp, family,
+                             delays) {
   # create future_rt
   future_rt <- create_future_rt(future_rt = future_rt, 
                                 delay = mean_shift)
@@ -130,10 +133,10 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     gt_sd_mean = generation_time$sd,
     gt_sd_sd = generation_time$sd_sd,
     max_gt = generation_time$max,
-    prior_infections = log(mean(cases[1:min(7, length(cases))])),
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
+    burn_in = burn_in,
     week_effect = ifelse(week_effect, 1, 0),
     stationary = ifelse(stationary, 1, 0),
     fixed = ifelse(fixed, 1, 0),
@@ -142,6 +145,20 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     future_fixed = ifelse(future_rt$fixed, 1, 0),
     fixed_from = future_rt$from
   ) 
+# initial estimate of growth ------------------------------------------
+  first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
+                                       t = 1:min(7, length(cases)))
+  data$prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
+  data$prior_infections <- ifelse(is.na(data$prior_infections) | is.null(data$prior_infections), 
+                                  0, data$prior_infections)
+  if (data$seeding_time > 1) {
+    safe_lm <- purrr::safely(stats::lm)
+    data$prior_growth <-safe_lm(log(confirm) ~ t, data = first_week)[[1]]
+    data$prior_growth <- ifelse(is.null(data$prior_growth), 0, 
+                                data$prior_growth$coefficients[2])
+  }else{
+    data$prior_growth <- 0
+  }
   # Delays ------------------------------------------------------------------
   data$delays <- no_delays
   data$delay_mean_mean <- allocate_delays(delays$mean, no_delays)
@@ -184,7 +201,6 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
                                               ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
       out$delay_sd <- array(purrr::map2_dbl(delays$sd, delays$sd_sd, 
                                             ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
-      
     }
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
@@ -196,8 +212,10 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
       out$rep_phi <- array(rexp(1, 1))
     }
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rnorm(1, data$prior_infections, data$prior_infections * 0.1))
-      out$initial_growth <- array(rnorm(1, 0, 0.1))
+      out$initial_infections <- array(rnorm(1, data$prior_infections, 0.2))
+      if (data$seeding_time > 1) {
+        out$initial_growth <- array(rnorm(1, data$prior_growth, 0.1))
+      }
       out$log_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
                                sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
