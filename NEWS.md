@@ -16,6 +16,7 @@
 * Reworked the package logging system to improve the reporting of issues both in `epinow` and in `regional_epinow` for large batch runs.
 * Fix from @hsbadr to prevent overflow when overdispersion is larger (by switching to a Poisson approximation). Hitting this issue may indicate a bug in other model code that will need further work to explore.
 * Moved default verbosity for all functions (excepting `regional_epinow`) to be based on whether or not usage is interactive. 
+* Depreciated `burn_in` argument of `estimate_infections` as updates to model initialisation mean that this feature is likely no longer needed. Please contact the developers if you feel you have a use case for this argument.
 
 # EpiNow2 1.2.1
 

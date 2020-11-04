@@ -1,9 +1,26 @@
 #' Simulate infections using a given trajectory of the time-varying reproduction number
 #'
-#' @description This function simulates infections using an existing fit to observed cases but with a modified time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
-#' @param estimates The \code{estimates} element of an \code{epinow} run that has been done with output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.
-#' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers contained in \code{estimates}, except elements set to NA. If it is longer than the time series of reproduction numbers contained in \code{estimates}, the values going beyond the length of estimated reproduction numbers are taken as forecast.
+#' @description This function simulates infections using an existing fit to observed cases but
+#'  with a modified time-varying reproduction number. This can be used to explore forecast models
+#'   or past counterfactuals. Simulations can be run in parallel using `future::plan`.
+#' @param estimates The \code{estimates} element of an \code{epinow} run that has been done with 
+#' output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.
+#' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
+#'  contained in \code{estimates}, except elements set to NA. If it is longer than the time series 
+#'  of reproduction numbers contained in \code{estimates}, the values going beyond the length of 
+#'  estimated reproduction numbers are taken as forecast.
+#' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
+#' samples in the `estimates` input.
+#' @param batch_size Numeric, defaults to 100. Size of batches in which to simulate. May decrease 
+#' runtimes due to reduced IO costs. If set to NULL then all simulations are done at once.
+#' @param verbose Logical defaults to `interactive()`. Should a progress bar (from `progressr`) be
+#' shown.
 #' @importFrom rstan extract sampling
+#' @importFrom purrr transpose map
+#' @importFrom future.apply future_lapply
+#' @importFrom progressr with_progress progressor
+#' @importFrom data.table rbindlist
+#' @importFrom lubridate days
 #' @inheritParams estimate_infections
 #' @export
 #' @examples
@@ -27,58 +44,122 @@
 #'                                   cores = ifelse(interactive(), 4, 1)))
 #'                                   
 #' # update Rt trajectory and simulate new infections using it
-#' R <- c(rep(NA_real_, 40), rep(0.5, 17))
+#' R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
 #' sims <- simulate_infections(est, R)
 #' plot(sims)
 #' }
 simulate_infections <- function(estimates,
                                 R = NULL,
                                 model = NULL,
+                                samples = NULL,
+                                batch_size = 10,
                                 verbose = interactive()) {
+  
+  ## check batch size
+  if (!is.null(batch_size)) {
+    if (batch_size <= 1) {
+      stop("batch_size must be greater than 1")
+    }
+  }
+  
   ## extract samples from given stanfit object
-  samples <- rstan::extract(estimates$fit)
+  draws <- rstan::extract(estimates$fit,
+                          pars = c("noise", "eta", "lp__", "infections",
+                                   "reports", "imputed_reports", "r"),
+                          include = FALSE)
+  
+  # extract parameters from passed stanfit object
+  shift <- estimates$args$seeding_time
+  burn_in <- estimates$args$burn_in
   
   ## if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
-    R_mat <- matrix(rep(R, each = dim(samples$R)[1]),
+    if (burn_in > 0) {
+      R <- c(rep(NA_real_, burn_in), R)
+    }
+    R_mat <- matrix(rep(R, each = dim(draws$R)[1]),
                     ncol = length(R), byrow = FALSE)
-    samples$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
+    draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
+    draws$R <- matrix(draws$R, ncol = length(R))
   }
-  nsamples <- dim(samples$R)[1]
   
-  ## prepare data for stan command
-  data <- c(list(n = nsamples), samples, estimates$args)
+  # set samples if missing
+  R_samples <- dim(draws$R)[1]
+  if (is.null(samples)) {
+    samples <- R_samples
+  }else if(samples > R_samples) {
+    samples <- R_samples
+  }
+
+  dates <- 
+    seq(min(na.omit(unique(estimates$summarised[variable == "R"]$date))) 
+        - lubridate::days(burn_in + shift), 
+        by = "day", length.out = dim(draws$R)[2] + shift)
   
-  ## simulate
+  # Load model
   if (is.null(model)) {
     model <- stanmodels$simulate_infections
   }
-  sims <- rstan::sampling(object = model,
-                          data = data, chains = 1, iter = 1,
-                          algorithm = "Fixed_param",
-                          refresh = ifelse(verbose, 50, 0))
   
-  ## extract parameters for extract_parameter_samples from passed stanfit object
-  mean_shift <- estimates$args$seeding_time
-  reported_inf_dates <- na.omit(unique(estimates$samples$date))
+  ## set up batch simulation
+  batch_simulate <- function(estimates, draws, model,
+                             shift, dates, nstart, nend) {
+    # extract batch samples from draws
+    draws <- purrr::map(draws, ~ as.matrix(.[nstart:nend, ]))
+    
+    ## prepare data for stan command
+    data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
+    
+    ## simulate
+    sims <- rstan::sampling(object = model,
+                            data = data, chains = 1, iter = 1,
+                            algorithm = "Fixed_param",
+                            refresh = 0)
+    
+    out <- extract_parameter_samples(sims, data,
+                                     reported_inf_dates = dates,
+                                     reported_dates = dates[-(1:shift)],
+                                     drop_length_1 = TRUE, merge = TRUE)
+    return(out)
+  }
+  
+  ## set up batching
+  if (!is.null(batch_size)) {
+    batch_no <- ceiling(samples / batch_size)
+    nstarts <- seq(1, by = batch_size, length.out = batch_no)
+    nends <- c(seq(batch_size, by = batch_size, length.out = batch_no - 1), samples)
+    batches <- purrr::transpose(list(nstarts, nends))
+  }else{
+    batches <- list(list(1, samples))
+  }
 
-  out <- extract_parameter_samples(sims, data,
-                                   reported_inf_dates = reported_inf_dates,
-                                   reported_dates = reported_inf_dates[-(1:mean_shift)],
-                                   drop_length_1 = TRUE, merge = TRUE)
-
-  ## extract parameters for format_fit from passed stanfit object
-  horizon <- estimates$args$horizon
-  burn_in <- as.integer(min(reported_inf_dates) + mean_shift - min(estimates$observations$date))
-  start_date <- as.integer(min(reported_inf_dates) - mean_shift)
-  CrIs <- extract_CrIs(estimates$summarised) / 100
-
+  ## simulate in batches
+  progressr::with_progress({
+    if (verbose) {
+      p <- progressr::progressor(along = batches)
+    } 
+    out <- future.apply::future_lapply(batches, 
+                                       function(batch) {
+                                         if (verbose) {
+                                           p()
+                                         }
+                                         batch_simulate(estimates, draws, model,
+                                                        shift, dates, batch[[1]], 
+                                                        batch[[2]])},
+                                       future.seed = TRUE)
+  })
+  
+  ## join batches
+  out <- purrr::transpose(out)
+  out <- purrr::map(out, ~ data.table::rbindlist(.)[, sample := 1:.N])
+  
+  ## format output
   format_out <- format_fit(posterior_samples = out,
-                           horizon = horizon,
-                           shift = mean_shift,
+                           horizon = estimates$args$horizon,
+                           shift = shift,
                            burn_in = burn_in,
-                           start_date = start_date,
-                           CrIs = CrIs)
+                           start_date = min(estimates$observations$date),
+                           CrIs = extract_CrIs(estimates$summarised) / 100)
 
   format_out$observations <- estimates$observations
   class(format_out) <- c("estimate_infections", class(format_out))

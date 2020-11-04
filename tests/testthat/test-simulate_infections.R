@@ -28,3 +28,18 @@ test_that("simulate infections fails as expected", {
   expect_error(simualate_infections(out, R = rep(1, 10)))
   expect_error(simulate_infections(out[-"fit"]))
 })
+
+out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
+                                            delays = list(reporting_delay), samples = 50, 
+                                            stan_args = list(chains = 2, warmup = 50,
+                                                             control = list(adapt_delta = 0.8))))
+
+test_that("simulate_infections supports the burn_in arg", {
+  out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
+                                              delays = list(reporting_delay), samples = 50, 
+                                              stan_args = list(chains = 2, warmup = 50,
+                                                               control = list(adapt_delta = 0.8)),
+                                              burn_in = 7))
+  sims <- simulate_infections(out)
+  expect_equal(names(sims), c("samples", "summarised", "observations"))
+})

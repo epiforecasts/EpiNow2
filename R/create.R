@@ -109,10 +109,11 @@ create_future_rt <- function(future_rt = "project", delay = 0) {
 #' @importFrom purrr safely
 #' @return A list of stan data
 #' @export 
-create_stan_data <- function(reported_cases,  shifted_reported_cases,
+create_stan_data <- function(reported_cases, shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
-                             rt_prior, estimate_rt, week_effect, stationary,
-                             fixed, break_no, future_rt, gp, family, delays) {
+                             rt_prior, estimate_rt, burn_in, week_effect,
+                             stationary, fixed, break_no, future_rt, gp, family,
+                             delays) {
   # create future_rt
   future_rt <- create_future_rt(future_rt = future_rt, 
                                 delay = mean_shift)
@@ -135,6 +136,7 @@ create_stan_data <- function(reported_cases,  shifted_reported_cases,
     r_mean = rt_prior$mean,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
+    burn_in = burn_in,
     week_effect = ifelse(week_effect, 1, 0),
     stationary = ifelse(stationary, 1, 0),
     fixed = ifelse(fixed, 1, 0),
