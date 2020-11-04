@@ -36,32 +36,12 @@
 #' # estimate Rt and nowcast/forecast cases by date of infection
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
 #'               delays = list(incubation_period, reporting_delay),
-#'               stan_args = list(cores = ifelse(interactive(), 4, 1),  
-#'               control = list(adapt_delta = 0.95)), verbose = interactive())
-#'               
+#'               stan_args = 
+#'                  list(cores = ifelse(interactive(), 4, 1),  
+#'                       control = list(adapt_delta = 0.95, max_treedepth = 15)))
 #' summary(out)             
 #' plot(out)
-#' # optional forecasting using EpiSoon plug-in
-#' if(requireNamespace("EpiSoon")){
-#'    if(requireNamespace("forecastHybrid")){
-#'    # report Rt along with forecasts
-#'    out <- epinow(reported_cases = reported_cases, samples = 200,
-#'                  generation_time = generation_time, 
-#'                  delays = list(incubation_period, reporting_delay),
-#'                  forecast_args = list(
-#'                      forecast_model = function(y, ...){
-#'                      EpiSoon::forecastHybrid_model(
-#'                           y = y[max(1, length(y) - 21):length(y)],
-#'                           model_params = list(models = "aefz", weights = "equal"),
-#'                           forecast_params = list(PI.combination = "mean"), ...)}
-#'                           ),
-#'                  stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                  verbose = interactive())
-#'     out
-#'    }
 #' }
-#' }
-#'
 epinow <- function(reported_cases, samples = 1000, horizon = 7, 
                    generation_time, delays = list(),
                    CrIs = c(0.2, 0.5, 0.9),
@@ -69,7 +49,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                                      "latest", "fit", "timing"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, logs = tempdir(),
-                   id = "epinow", verbose = FALSE,
+                   id = "epinow", verbose = interactive(),
                    ...) {
  
   if (is.null(target_folder)) {
@@ -227,7 +207,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   if (output["timing"]) {
     out$timing <- round(as.numeric(end_time - start_time), 1)
     if (!is.null(target_folder)) {
-      saveRDS(timing, paste0(target_folder, "/runtime.rds"))
+      saveRDS(out$timing, paste0(target_folder, "/runtime.rds"))
     }
   }
   

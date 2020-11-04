@@ -36,7 +36,11 @@ navbar:
   right:
     - icon: fa-github
       href: https://github.com/epiforecasts/EpiNow2
-      
+
+figures:
+  fig.width: 9
+  fig.height: 9
+  
 reference:
   - title: Estimation + Reporting
     desc: Functions that faciliate end-to-end analysis including imputing cases by infection, estimating Rt and reporting results.
@@ -98,6 +102,7 @@ reference:
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases
     contents:
+      - simulate_infections
       - simulate_cases
       - adjust_infection_to_report
   - title: Data

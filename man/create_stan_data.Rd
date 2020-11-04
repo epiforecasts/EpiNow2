@@ -13,6 +13,7 @@ create_stan_data(
   generation_time,
   rt_prior,
   estimate_rt,
+  burn_in,
   week_effect,
   stationary,
   fixed,
@@ -45,6 +46,9 @@ log space). To infer infections and then calculate Rt using backcalculation set 
 
 \item{estimate_rt}{Logical, should Rt be estimated.}
 
+\item{burn_in}{Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be
+removed from the package unless a clear user need is given.}
+
 \item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 
 \item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
@@ -67,9 +71,7 @@ which defaults to 0.3 and must be between 0 and 1 (increasing this increases the
 additional compute. Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
 increases the accuracy of the approximation at the cost of additional compute.
 See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
-Must also contain the  \code{lengthscale_alpha} and \code{lengthscale_beta}. These tune the prior of the lengthscale. Principled
-values can be obtained using \code{tune_inv_gamma} which optimises based on the desired truncation (which should be based on the scale
-of the observed data). The default is tuned to have 98\% of the density of the distribution between 2 and 21 days. Finally the list must
+Must also contain the  \code{ls_mean}, \code{ls_sd} and \code{ls_min}. These tune the lognormal prior of the lengthscale. Finally the list must
 contain \code{alpha_sd} the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.}
 
 \item{family}{A character string indicating the reporting model to use. Defaults to negative
