@@ -13,6 +13,7 @@ create_stan_data(
   generation_time,
   rt_prior,
   estimate_rt,
+  burn_in,
   week_effect,
   stationary,
   fixed,
@@ -44,6 +45,9 @@ Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note
 log space). To infer infections and then calculate Rt using backcalculation set this to \code{list()}.}
 
 \item{estimate_rt}{Logical, should Rt be estimated.}
+
+\item{burn_in}{Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be
+removed from the package unless a clear user need is given.}
 
 \item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 

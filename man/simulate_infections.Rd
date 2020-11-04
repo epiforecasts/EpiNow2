@@ -28,15 +28,15 @@ estimated reproduction numbers are taken as forecast.}
 samples in the \code{estimates} input.}
 
 \item{batch_size}{Numeric, defaults to 100. Size of batches in which to simulate. May decrease
-runtimes due to reduced IO costs.}
+runtimes due to reduced IO costs. If set to NULL then all simulations are done at once.}
 
-\item{verbose}{Logical, defaults to \code{TRUE} when used interactively and otherwise \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
-\code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
+\item{verbose}{Logical defaults to \code{interactive()}. Should a progress bar (from \code{progressr}) be
+shown.}
 }
 \description{
 This function simulates infections using an existing fit to observed cases but
 with a modified time-varying reproduction number. This can be used to explore forecast models
-or past counterfactuals.
+or past counterfactuals. Simulations can be run in parallel using \code{future::plan}.
 }
 \examples{
 \donttest{
@@ -59,8 +59,8 @@ est <- estimate_infections(reported_cases, generation_time = generation_time,
                                   cores = ifelse(interactive(), 4, 1)))
                                   
 # update Rt trajectory and simulate new infections using it
-R <- c(rep(NA_real_, 40), rep(0.5, 17))
-sims <- simulate_infections(est, R, verbose = FALSE)
+R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
+sims <- simulate_infections(est, R)
 plot(sims)
 }
 }
