@@ -96,10 +96,8 @@ options are to project using the Rt model ("project"), to use the latest estimat
 to use the latest estimate based on data that is over 50\% complete ("estimate"). If an integer is supplied then the Rt estimate
 from this many days into the future (or past if negative) past will be used forwards in time.}
 
-\item{burn_in}{Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument may be used to reduce
-spurious findings when running \code{estimate_infections} on a partial timeseries (as the earliest estimates will not be informed by
-all cases that occurred only those supplied to \code{estimate_infections}). The combined delays used will inform the appropriate length
-of this burn in but 7 days is likely a sensible starting point.}
+\item{burn_in}{Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be
+removed from the package unless a clear user need is given.}
 
 \item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
 for the prior based on reported cases.}
@@ -175,8 +173,7 @@ snapshot <- estimate_infections(snapshot_cases, generation_time = generation_tim
                                 stan_args = 
                                    list(warmup = 200, 
                                         control = list(adapt_delta = 0.95, max_treedepth = 15),
-                                        cores = ifelse(interactive(), 4, 1)),
-                                burn_in = 7)
+                                        cores = ifelse(interactive(), 4, 1)))
 plot(snapshot) 
 
 # run model with stationary Rt assumption (likely to provide biased real-time estimates)
