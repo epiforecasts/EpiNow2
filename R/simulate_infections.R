@@ -20,6 +20,7 @@
 #' @importFrom future.apply future_lapply
 #' @importFrom progressr with_progress progressor
 #' @importFrom data.table rbindlist
+#' @importFrom lubridate days
 #' @inheritParams estimate_infections
 #' @export
 #' @examples
@@ -43,7 +44,7 @@
 #'                                   cores = ifelse(interactive(), 4, 1)))
 #'                                   
 #' # update Rt trajectory and simulate new infections using it
-#' R <- c(rep(NA_real_, 40), rep(0.5, 17))
+#' R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
 #' sims <- simulate_infections(est, R)
 #' plot(sims)
 #' }
@@ -67,11 +68,19 @@ simulate_infections <- function(estimates,
                                    "reports", "imputed_reports", "r"),
                           include = FALSE)
   
+  # extract parameters from passed stanfit object
+  shift <- estimates$args$seeding_time
+  burn_in <- estimates$args$burn_in
+  
   ## if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
+    if (burn_in > 0) {
+      R <- c(rep(NA_real_, burn_in), R)
+    }
     R_mat <- matrix(rep(R, each = dim(draws$R)[1]),
                     ncol = length(R), byrow = FALSE)
     draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
+    draws$R <- matrix(draws$R, ncol = length(R))
   }
   
   # set samples if missing
@@ -81,11 +90,11 @@ simulate_infections <- function(estimates,
   }else if(samples > R_samples) {
     samples <- R_samples
   }
-  
-  # extract parameters for extract_parameter_samples from passed stanfit object
-  shift <- estimates$args$seeding_time
-  dates <- seq(min(na.omit(unique(estimates$summarised$date))), 
-                   by = "day", length.out = dim(draws$R)[2] + shift)
+
+  dates <- 
+    seq(min(na.omit(unique(estimates$summarised[variable == "R"]$date))) 
+        - lubridate::days(burn_in + shift), 
+        by = "day", length.out = dim(draws$R)[2] + shift)
   
   # Load model
   if (is.null(model)) {
@@ -124,7 +133,6 @@ simulate_infections <- function(estimates,
     batches <- list(list(1, samples))
   }
 
-
   ## simulate in batches
   progressr::with_progress({
     if (verbose) {
@@ -145,18 +153,13 @@ simulate_infections <- function(estimates,
   out <- purrr::transpose(out)
   out <- purrr::map(out, ~ data.table::rbindlist(.)[, sample := 1:.N])
   
-  ## extract parameters for format_fit from passed stanfit object
-  horizon <- estimates$args$horizon
-  burn_in <- as.integer(min(dates) + shift - min(estimates$observations$date))
-  start_date <- as.integer(min(dates) + shift)
-  CrIs <- extract_CrIs(estimates$summarised) / 100
-
+  ## format output
   format_out <- format_fit(posterior_samples = out,
-                           horizon = horizon,
+                           horizon = estimates$args$horizon,
                            shift = shift,
                            burn_in = burn_in,
-                           start_date = start_date,
-                           CrIs = CrIs)
+                           start_date = min(estimates$observations$date),
+                           CrIs = extract_CrIs(estimates$summarised) / 100)
 
   format_out$observations <- estimates$observations
   class(format_out) <- c("estimate_infections", class(format_out))
