@@ -218,6 +218,39 @@ expose_stan_fns <- function(files, target_dir, ...) {
   return(invisible(NULL))
 }
 
+
+
+#' Convert mean and sd to log mean for a log normal distribution
+#'
+#' @param mean Numeric, mean of a distribution
+#' @param sd Numeric, standard deviation of a distribution
+#'
+#' @return The log mean of a lognormal distribution
+#' @export
+#'
+#' @examples
+#' 
+#' convert_to_logmean(2, 1)
+convert_to_logmean <- function(mean, sd){
+  log(mean^2 / sqrt(sd^2 + mean^2))
+}
+
+#' Convert mean and sd to log standard deviation for a log normal distribution
+#'
+#' @param mean Numeric, mean of a distribution
+#' @param sd Numeric, standard deviation of a distribution
+#'
+#' @return The log standard deviation of a lognormal distribution
+#' @export
+#'
+#' @examples
+#' 
+#' convert_to_logsd(2, 1)
+convert_to_logsd <- function(mean, sd) {
+  sqrt(log(1 + (sd^2 / mean^2)))
+}
+
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(
   c("bottom", "cases", "confidence", "confirm", "country_code", "crps", 

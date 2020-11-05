@@ -61,7 +61,7 @@
 #' @examples
 #' \donttest{
 #' # get example case counts
-#' reported_cases <- EpiNow2::example_confirmed[1:100]
+#' reported_cases <- EpiNow2::example_confirmed[1:80]
 #' 
 #' # set up example generation time
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
@@ -81,7 +81,7 @@
 #'                                    cores = ifelse(interactive(), 4, 1)),
 #'                                    gp = list(basis_prop = 0.4, boundary_scale = 2, 
 #'                                    ls_mean = 10, ls_sd = 8, ls_min = 3,
-#'                                    alpha_sd = 1, type = 1))
+#'                                    alpha_sd = 1, type = 0), model = model)
 #' plot(def)
 #' 
 #' # run model using backcalculation
@@ -185,7 +185,9 @@ estimate_infections <- function(reported_cases,
                                 verbose = interactive()){
    
   if (burn_in > 0) {
-    message("burn_in is depreciated as of EpiNow2 1.3.0 - if using this feature please contact the developers")
+    futile.logger::flog.info("burn_in is depreciated as of EpiNow2 1.3.0 - if using 
+                             this feature please contact the developers",
+                             name = "EpiNow2.epinow.estimate_infections")
   }
   
   # store dirty reported case data
@@ -198,15 +200,6 @@ estimate_infections <- function(reported_cases,
     estimate_rt <- TRUE
   }
   
-  # If no GP default to stationary setup with no assumed non-parametric change
-  # add in placeholder parameters
-  if (length(gp) == 0) {
-    fixed <- TRUE
-    stationary <- TRUE
-  }else{
-    fixed <- FALSE
-  }
-
   # Check verbose settings and set logger to match---------------------------
   if (verbose) {
     futile.logger::flog.threshold(futile.logger::DEBUG,
@@ -505,6 +498,7 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE
 #' @inheritParams calc_summary_measures
 #' @importFrom data.table fifelse rbindlist 
 #' @importFrom lubridate days
+#' @importFrom futile.logger flog.info
 #' @return A list of samples and summarised posterior parameter estimates
 format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
                        CrIs){
@@ -525,7 +519,9 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
   
   # remove burn in period if specified
   if (burn_in > 0) {
-    message("burn_in is depreciated as of EpiNow2 1.3.0 - if using this feature please contact the developers")
+    futile.logger::flog.info("burn_in is depreciated as of EpiNow2 1.3.0 - if using 
+                             this feature please contact the developers",
+                             name = "EpiNow2.epinow.estimate_infections")
     format_out$samples <- format_out$samples[is.na(date) | date >= (start_date + lubridate::days(burn_in))]
   }
   
