@@ -29,18 +29,7 @@
 #' breakpoints every n days (so every 7 days for a weekly random walk) and disable the gaussian process using `gp = list()`.
 #' @param burn_in Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be 
 #' removed from the package unless a clear user need is given.
-#' @param stationary Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt 
-#' this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
-#' This setting is most appropriate when estimating historic Rt or when combined with breakpoints.
 #' @param return_fit Logical, defaults to TRUE. Should the fitted stan model be returned.
-#' @param gp List controlling the Gaussian process approximation if set to `list()` then `Rt` is assumed to be constant unless
-#' other settings introduce variation. If set must contain the `basis_prop` (number of basis functions based on scaling the time points)
-#'  which defaults to 0.3 and must be between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of 
-#'  additional compute. Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
-#' increases the accuracy of the approximation at the cost of additional compute. 
-#' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
-#' Must also contain the  `ls_mean`, `ls_sd` and `ls_min`. These tune the lognormal prior of the lengthscale. Finally the list must 
-#' contain `alpha_sd` the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.
 #' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
@@ -50,7 +39,8 @@
 #' will fail with an informative error.
 #' @export
 #' @inheritParams create_stan_args
-#' @inheritParams create_future_rt
+#' @inheritParams create_stan_data
+#' @inheritParams create_gp_data
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams calc_CrIs
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
@@ -61,14 +51,17 @@
 #' @examples
 #' \donttest{
 #' # get example case counts
-#' reported_cases <- EpiNow2::example_confirmed[1:80]
+#' reported_cases <- EpiNow2::example_confirmed[1:60]
 #' 
 #' # set up example generation time
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # set delays between infection and case report 
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- list(mean = log(3), mean_sd = 0.1,
-#'                         sd = log(1), sd_sd = 0.1, max = 15)
+#' reporting_delay <- list(mean = convert_to_logmean(3, 1), 
+#'                         mean_sd = 0.1,
+#'                         sd = convert_to_logsd(3, 1), 
+#'                         sd_sd = 0.1, 
+#'                         max = 15)
 #'       
 #' # Note: all examples below have been tuned to reduce the runtimes of examples
 #' # these settings are not suggested for real world use.                   
@@ -79,9 +72,7 @@
 #'                               list(warmup = 200,
 #'                                    control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                                    cores = ifelse(interactive(), 4, 1)),
-#'                                    gp = list(basis_prop = 0.4, boundary_scale = 2, 
-#'                                    ls_mean = 10, ls_sd = 8, ls_min = 3,
-#'                                    alpha_sd = 1, type = 0), model = model)
+#'                                    gp = list(kernel = "matern"), model = model)
 #' plot(def)
 #' 
 #' # run model using backcalculation
@@ -101,7 +92,7 @@
 #'                                    list(warmup = 200, 
 #'                                         control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                                         cores = ifelse(interactive(), 4, 1)),
-#'                                 future_rt = "latest")
+#'                                 gp = list(future = "latest"))
 #' plot(fixed_rt)
 #'
 #' # run the model with default settings on a later snapshot of 
@@ -122,7 +113,7 @@
 #'                             stan_args = 
 #'                                list(warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                     control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                             stationary = TRUE)
+#'                             gp = list(stationary = TRUE))
 #' plot(stat)
 #'        
 #' # run model with fixed Rt assumption 
@@ -131,7 +122,7 @@
 #'                              stan_args = 
 #'                                 list(warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                      control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                              gp = list())
+#'                              gp = NULL)
 #' plot(fixed)
 #' 
 #' # run model with no delays 
@@ -153,7 +144,7 @@
 #'                               list(warmup = 200, 
 #'                                    cores = ifelse(interactive(), 4, 1),
 #'                                    control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                            gp = list())                                                         
+#'                            gp = NULL)                                                         
 #' plot(bkp)
 #' # breakpoint effect
 #' bkp$summarised[variable == "breakpoints"]
@@ -168,14 +159,10 @@ estimate_infections <- function(reported_cases,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 delays = list(),
                                 horizon = 7,
-                                gp = list(basis_prop = 0.3, boundary_scale = 2, 
-                                          ls_mean = 14, ls_sd = 4, ls_min = 3,
-                                          alpha_sd = 1, type = 1),
+                                gp = list(),
                                 rt_prior = list(mean = 1, sd = 0.5),
                                 week_effect = TRUE, 
                                 use_breakpoints = TRUE, 
-                                stationary = FALSE, 
-                                future_rt = "project",
                                 burn_in = 0, 
                                 prior_smoothing_window = 7, 
                                 future = FALSE, 
@@ -271,10 +258,7 @@ estimate_infections <- function(reported_cases,
                            estimate_rt = estimate_rt,
                            burn_in = burn_in,
                            week_effect = week_effect, 
-                           stationary = stationary,
-                           fixed = fixed,
                            break_no = break_no, 
-                           future_rt = future_rt, 
                            gp = gp,
                            family = family,
                            delays = delays)
