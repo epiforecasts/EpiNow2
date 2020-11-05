@@ -94,6 +94,78 @@ create_future_rt <- function(future_rt = "project", delay = 0) {
   return(out)
 }
 
+
+gp_settings <- function(gp = list(), time = NA) {
+  
+  if (exists("kernal", gp)) {
+    gp$kernal <- match.arg(gp$kernal, 
+                           choices = c("se", "matern_3/2"))
+  }
+  defaults <- list(
+    basis_prop = 0.3, 
+    boundary_scale = 2, 
+    ls_mean = min(data$t, 21, na.rm = TRUE), 
+    ls_sd = min(data$t, 21, na.rm = TRUE) / 3, 
+    ls_min = 3,
+    ls_max = 
+    alpha_sd = 0.1, 
+    kernal = "se")
+  
+  # replace default settings with those specified by user
+  if (length(gp) != 0) {
+    defaults <- defaults[setdiff(names(defaults), names(defaults))]
+    gp <- c(defaults, gp)
+  }else{
+    gp <- defaults
+  }
+  return(defaults)
+}
+
+create_gp_data <- funtion(gp = list(), 
+                          data,
+                          stationary,
+                          future_rt) {
+  
+  # Define if GP is on or off
+  if (is.null(gp)) {
+    fixed <- TRUE
+    stationary <- TRUE
+    gp <- list()
+  }else{
+    fixed <- FALSE
+  }
+  
+  # define future Rt arguments
+  future_rt <- create_future_rt(future_rt = future_rt, 
+                                delay = data$seeding_time)
+
+  # set up default options
+  gp <- gp_settings(gp, data$t)
+
+  
+
+  # map settings to underlying gp stan requirements
+  gp_data <- list(
+    fixed = ifelse(fixed, 1, 0),
+    stationary = ifelse(stationary, 1, 0),
+    future_fixed = ifelse(future_rt$fixed, 1, 0),
+    fixed_from = future_rt$from,
+    data$M = ceiling((data$t - data$seeding_time) * gp$basis_prop),
+    data$L = (data$t - data$seeding_time) * gp$boundary_scale / 2,
+    data$ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
+    data$ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
+    data$ls_min = gp$ls_min,
+    data$ls_max = data$t - data$seeding_time - data$horizon,
+    data$alpha_sd = gp$alpha_sd,
+    data$gp_type <- ifelse(gp$kernal == "se", 0, 
+                           ifelse(gp$kernal == "matern_3/2", 1, 0))
+  ) 
+  
+  # Parameters for Hilbert space GP -----------------------------------------
+  # no of basis functions
+
+  
+}
 #' Create Stan Data Required for estimate_infections
 #'
 #' @param shifted_reported_cases A dataframe of delay shifted reported cases
@@ -138,12 +210,8 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
     estimate_r = ifelse(estimate_rt, 1, 0),
     burn_in = burn_in,
     week_effect = ifelse(week_effect, 1, 0),
-    stationary = ifelse(stationary, 1, 0),
-    fixed = ifelse(fixed, 1, 0),
     bp_n = break_no,
-    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
-    future_fixed = ifelse(future_rt$fixed, 1, 0),
-    fixed_from = future_rt$from
+    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint
   ) 
 # initial estimate of growth ------------------------------------------
   first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
@@ -166,17 +234,7 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
   data$delay_sd_mean <- allocate_delays(delays$sd, no_delays)
   data$delay_sd_sd <- allocate_delays(delays$sd_sd, no_delays)
   data$max_delay <- allocate_delays(delays$max, no_delays)
-  # Parameters for Hilbert space GP -----------------------------------------
-  # no of basis functions
-  data$M <- ceiling((data$t - data$seeding_time) * gp$basis_prop)
-  # Boundary value for c
-  data$L <- (data$t - data$seeding_time) * gp$boundary_scale / 2
-  data$ls_meanlog <- log(gp$ls_mean^2 / sqrt(gp$ls_sd^2 + gp$ls_mean^2))
-  data$ls_sdlog <- sqrt(log(1 + (gp$ls_sd^2 / gp$ls_mean^2)))
-  data$ls_min <- gp$ls_min
-  data$ls_max <- data$t - data$seeding_time - data$horizon
-  data$alpha_sd <- gp$alpha_sd
-  data$gp_type <- gp$type
+
   ## Set model to poisson or negative binomial
   family <- match.arg(family, c("poisson", "negbin"))
   data$model_type <- ifelse(family %in% "poisson", 0, 1)

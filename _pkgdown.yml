@@ -137,4 +137,6 @@ reference:
       - stop_timeout
       - run_region
       - expose_stan_fns
+      - convert_to_logmean
+      - convert_to_logsd
 
