@@ -71,8 +71,7 @@
 #'                            stan_args = 
 #'                               list(warmup = 200,
 #'                                    control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                                    cores = ifelse(interactive(), 4, 1)),
-#'                                    gp = list(kernel = "matern"), model = model)
+#'                                    cores = ifelse(interactive(), 4, 1)))
 #' plot(def)
 #' 
 #' # run model using backcalculation
@@ -86,14 +85,14 @@
 #' plot(backcalc)
 #'                            
 #' # run model with Rt fixed into the future using the latest estimate
-#' fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
+#' latest_rt <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
 #'                                 stan_args = 
 #'                                    list(warmup = 200, 
 #'                                         control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                                         cores = ifelse(interactive(), 4, 1)),
 #'                                 gp = list(future = "latest"))
-#' plot(fixed_rt)
+#' plot(latest_rt)
 #'
 #' # run the model with default settings on a later snapshot of 
 #' # data (use burn_in here to remove the first week of estimates that may
@@ -116,7 +115,7 @@
 #'                             gp = list(stationary = TRUE))
 #' plot(stat)
 #'        
-#' # run model with fixed Rt assumption 
+#' # run model without a gaussian process (i.e fixed Rt assuming no breakpoints)
 #' fixed <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                              delays = list(incubation_period, reporting_delay),
 #'                              stan_args = 

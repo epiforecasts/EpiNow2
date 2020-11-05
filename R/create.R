@@ -107,10 +107,11 @@ create_future_rt <- function(future_rt = "project", delay = 0) {
 #'   default values of 21 days and 7 days respectively.
 #'  * The minimum and maximum values of the length scale (`ls_min` and `ls_max`) with default values 
 #'  of 3 and the maximum length of the data (input by the user) or 9 weeks if no maximum given.
-#'  * The standard deviation of the magnitude parameter of the kernel. This defaults to 0.2 and 
-#'  should be approximately the log of the expected standard deviation in Rt.
+#'  * The standard deviation of the magnitude parameter of the kernel. This defaults to 0.1 and 
+#'  should be approximately the expected standard deviation of the logged Rt.
 #'  * The type of kernel required, currently supporting the squared exponential kernel ("se") 
-#'  and the 3 over 2 Matern kernel ("matern_3/2").
+#'  and the 3 over 2 Matern kernel ("matern_3/2"). Defaulting to the Materin 3 over 2 kernel 
+#'  as discontinuities are expected in Rt and infections.
 #'  * The proportion of basis functions to time points (`basis_prop`) and the boundary scale of
 #'  the approximate gaussian process (`boundary_scale`). The proportion of basis functions
 #'  defaults to 0.3 (and much be greater than 0), and the boundary scale defaults to 2.
@@ -151,8 +152,8 @@ gp_settings <- function(gp = list(), time = NA) {
     ls_sd = min(time, 21, na.rm = TRUE) / 3, 
     ls_min = 3,
     ls_max = ifelse(is.na(time), 63, time),
-    alpha_sd = 0.2, 
-    kernal = "se",
+    alpha_sd = 0.1, 
+    kernal = "matern_3/2",
     stationary = FALSE,
     future = "project")
   
