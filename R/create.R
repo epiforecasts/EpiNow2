@@ -206,10 +206,10 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
       out$rho <- array(rlnorm(1, mean = data$ls_meanlog, 
                               sd = data$ls_sdlog))
-      out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
+      out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd))
     }
     if (data$model_type == 1) {
-      out$rep_phi <- array(rexp(1, 1))
+      out$rep_phi <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0,  sd = 1))
     }
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1, data$prior_infections, 0.2))
