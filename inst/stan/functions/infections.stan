@@ -16,10 +16,12 @@ vector generate_infections(vector R, int uot,
   vector[t] infections = rep_vector(1e-5, t);
   vector[ot] infectiousness = rep_vector(1e-5, ot);
   // generation time pmf
-  vector[max_gt] gt_pmf;               
-  for (j in 1:(max_gt)) {
-    gt_pmf[j] = discretised_gamma_pmf(max_gt - j + 1, gt_mean[1], gt_sd[1], max_gt);
+  vector[max_gt] gt_pmf = rep_vector(1e-5, max_gt);   
+  int gt_indexes[max_gt];
+  for (i in 1:(max_gt)) {
+    gt_indexes[i] = max_gt - i + 1;
   }
+  gt_pmf = gt_pmf + discretised_gamma_pmf(gt_indexes, gt_mean[1], gt_sd[1], max_gt);
   // Initialise infections using daily growth
   infections[1] = exp(initial_infections[1]);
   if (uot > 1) {
