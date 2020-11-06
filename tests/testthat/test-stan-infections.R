@@ -19,15 +19,15 @@ test_that("update_infectiousness works as expected with default settings", {
 # test generate infections
 test_that("generate_infections works as expected", {
   expect_equal(round(generate_infections(c(1, rep(1, 9)), 10, 3, 2, 15, log(1000), 0), 0),
-               c(rep(1000, 10), 996, rep(997, 9)))
+               c(rep(1000, 10), 996, rep(997, 3), rep(998, 6)))
   expect_equal(round(generate_infections(c(1, rep(1.1, 9)), 10, 3, 2, 15, log(20), 0.03), 0),
                c(20, 21, 21, 22, 23, 23, 24, 25, 25, 26, 25, 27, 28, 29, 30, 31, 32, 33, 35, 36))
   expect_equal(round(generate_infections(c(1, rep(1.1, 9)), 10, 3, 2, 15, log(100), 0), 0),
                c(rep(100, 11), 110, 113, 116, 120, 125, 129, 133, 138, 143))
   expect_equal(round(generate_infections(c(1, rep(1, 9)), 4, 3, 2, 15, log(500), -0.02), 0),
-               c(500, 490, 480, 471, 402, 413, 416, 417, rep(418, 6)))
+               c(500, 490, 480, 471, 402, 413, 417, 417, rep(418, 6)))
   expect_equal(round(generate_infections(c(1, rep(1.1, 9)), 4, 3, 2, 15, log(500), 0), 0),
-               c(rep(500, 4), 416, 472, 490, 507, 524, 543, 561, 581, 601, 622))
+               c(rep(500, 4), 416, 472, 490, 507, 524, 543, 562, 581, 601, 622))
   expect_equal(round(generate_infections(c(1, rep(1, 9)), 1, 3, 2, 15, log(40), numeric(0)), 0),
                c(40, 11, 13, rep(14, 8)))
   expect_equal(round(generate_infections(c(1, rep(1.1, 9)), 1, 3, 2, 15, log(100), 0.01), 0),

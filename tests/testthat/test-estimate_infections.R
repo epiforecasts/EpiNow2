@@ -48,20 +48,20 @@ test_that("estimate_infections successfully returns estimates using backcalculat
   test_estimate_infections(reported_cases, rt_prior = list())
 })
 
-test_that("estimate_infections successfully returns estimates using default settings", {
+test_that("estimate_infections successfully returns estimates using a fixed Rt", {
   skip_on_cran()
-  test_estimate_infections(reported_cases, gp = list())
+  test_estimate_infections(reported_cases, gp = NULL)
 })
 
 test_that("estimate_infections successfully returns estimates using only mean shifted reported cases", {
   skip_on_cran()
-  test_estimate_infections(reported_cases, gp = list(), rt_prior = list())
+  test_estimate_infections(reported_cases, gp = NULL, rt_prior = list())
 })
              
 test_that("estimate_infections successfully returns estimates using a single breakpoint", {
   skip_on_cran()
   test_estimate_infections(data.table::copy(reported_cases)[, breakpoint := ifelse(date == "2020-03-10", 1, 0)],
-                           gp = list())
+                           gp = NULL)
 })
 
 

@@ -94,17 +94,157 @@ create_future_rt <- function(future_rt = "project", delay = 0) {
   return(out)
 }
 
+
+#' Approximate Gaussian Process Settings
+#'
+#'
+#' @description Defines a list specifying the structure of the approximate Gaussian
+#'  process. Custom settings can be supplied which override the defaults. Used internally
+#'  by `create_gp_data`, `create_stan_data`, and `estimate_infections`. The settings 
+#'  returned (all of which are modifiable by the user) are:
+#'  
+#'   * The mean and standard deviation of the log normal length scale (`ls_mean` and `ls_sd`) with
+#'   default values of 21 days and 7 days respectively.
+#'  * The minimum and maximum values of the length scale (`ls_min` and `ls_max`) with default values 
+#'  of 3 and the maximum length of the data (input by the user) or 9 weeks if no maximum given.
+#'  * The standard deviation of the magnitude parameter of the kernel. This defaults to 0.1 and 
+#'  should be approximately the expected standard deviation of the logged Rt.
+#'  * The type of kernel (`kernel`) required, currently supporting the squared exponential kernel ("se") 
+#'  and the 3 over 2 Matern kernel ("matern", with `matern_type = 3/2` (no other form of Matern 
+#'  kernels are currently supported)). Defaulting to the Matern 3 over 2 kernel.
+#'  as discontinuities are expected in Rt and infections.
+#'  * The proportion of basis functions to time points (`basis_prop`) and the boundary scale of
+#'  the approximate gaussian process (`boundary_scale`). The proportion of basis functions
+#'  defaults to 0.3 (and much be greater than 0), and the boundary scale defaults to 2.
+#'  Decreasing either of these values should increase run times at the cost of the accuracy of 
+#'  gaussian process approximation. In general smaller posterior lengthscales require a 
+#'  higher proportion of basis functions and the user should only rarely alter the boundary scale. 
+#'  These settings are an area of active research. See https://arxiv.org/abs/2004.11408 for further 
+#'  details.
+#'  * Should the Gaussian process be estimated with a stationary global mean or be second
+#'    order and so depend on the previous value. A stationary Gaussian process may be more
+#'    tractable but will revert to the global average when data is sparse i.e for near real 
+#'    time estimates. The default is FALSE. This feature is experimental.
+#'  * How should the Gaussian process be extended when data is sparse. The default is to 
+#'    project the kernal forwards in time ("project") but other options project the latest estimate 
+#'    based on >50% complete data ("estimate"), based on all partial data ("latest") or a numeric 
+#'    number of days. See ?create_future_rt for further details and complete options.
+#' @param gp A list of settings to override the defaults. Defaults to an empty list.
+#' @param time The maximum observed time, defaults to NA. 
+#' @return A list of settings defining the gaussian process
+#' @export
+#' @importFrom futile.logger flog.warn
+#' @examples
+#' # default settings
+#' gp_settings()
+#' 
+#' # add a custom length scale
+#' gp_settings(gp = list(ls_mean = 4))
+gp_settings <- function(gp = list(), time = NA) {
+  
+  if (exists("kernel", gp)) {
+    gp$kernel <- match.arg(gp$kernel, 
+                           choices = c("se", "matern_3/2"))
+  }
+  defaults <- list(
+    basis_prop = 0.3, 
+    boundary_scale = 2, 
+    ls_mean = min(time, 21, na.rm = TRUE), 
+    ls_sd = min(time, 21, na.rm = TRUE) / 3, 
+    ls_min = 3,
+    ls_max = ifelse(is.na(time), 63, time),
+    alpha_sd = 0.1, 
+    kernel = "matern",
+    matern_type = 3/2,
+    stationary = FALSE,
+    future = "project")
+  
+  # replace default settings with those specified by user
+  if (length(gp) != 0) {
+    defaults <- defaults[setdiff(names(defaults), names(gp))]
+    gp <- c(defaults, gp)
+  }else{
+    gp <- defaults
+  }
+  
+  if (gp$matern_type != 3/2) {
+    futile.logger::flog.warn("Only the Matern 3/2 kernel is currently supported")
+  }
+  return(gp)
+}
+
+#' Create Gaussian Process Stan Data
+#'
+#'
+#' @param gp A list of settings to override the package default Gaussian 
+#' process settings. See the documentation for `gp_settings` for details of these 
+#' settings and `gp_settings()` for the current defaults.
+#' @param data A list containing the following numeric values: `t`, `seeding_time`,
+#' `horizon`.
+#' @seealso gp_settings
+#' @return A list of settings defining the Gaussian process
+#' @export
+#'
+#' @examples
+#' # define input data required
+#' data <- list(
+#'     t = 30,
+#'     seeding_time = 7,
+#'     horizon = 7)
+#' 
+#' # default gaussian process data     
+#' create_gp_data(data = data)
+#' 
+#' # settings when no gaussian process is desired
+#' create_gp_data(gp = NULL, data)
+#' 
+#' # custom lengthscale
+#' create_gp_data(gp = list(ls_mean = 14), data)
+create_gp_data <- function(gp = list(), data) {
+  
+  # Define if GP is on or off
+  if (is.null(gp)) {
+    fixed <- TRUE
+    gp <- list(stationary = TRUE)
+  }else{
+    fixed <- FALSE
+  }
+
+  # set up default options
+  gp <- gp_settings(gp, data$t - data$seeding_time - data$horizon)
+
+  # define future Rt arguments
+  future_rt <- create_future_rt(future_rt = gp$future, 
+                                delay = data$seeding_time)
+  
+  # map settings to underlying gp stan requirements
+  gp_data <- list(
+    fixed = ifelse(fixed, 1, 0),
+    stationary = ifelse(gp$stationary, 1, 0),
+    future_fixed = ifelse(future_rt$fixed, 1, 0),
+    fixed_from = future_rt$from,
+    M = ceiling((data$t - data$seeding_time) * gp$basis_prop),
+    L = gp$boundary_scale,
+    ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
+    ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
+    ls_min = gp$ls_min,
+    ls_max = data$t - data$seeding_time - data$horizon,
+    alpha_sd = gp$alpha_sd,
+    gp_type = ifelse(gp$kernel == "se", 0, 
+                      ifelse(gp$kernel == "matern", 1, 0))
+  ) 
+  return(gp_data)
+}
+
 #' Create Stan Data Required for estimate_infections
 #'
 #' @param shifted_reported_cases A dataframe of delay shifted reported cases
 #' @param no_delays Numeric, number of delays
 #' @param mean_shift Numeric, mean delay shift
 #' @param break_no Numeric, number of breakpoints
-#' @param fixed Logical, should the gaussian process be used for non-parametric 
-#' change over time.
 #' @param estimate_rt Logical, should Rt be estimated.
+#' @inheritParams create_gp_data
 #' @inheritParams estimate_infections
-#' @inheritParams create_future_rt
 #' @importFrom stats lm
 #' @importFrom purrr safely
 #' @return A list of stan data
@@ -112,12 +252,7 @@ create_future_rt <- function(future_rt = "project", delay = 0) {
 create_stan_data <- function(reported_cases, shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
                              rt_prior, estimate_rt, burn_in, week_effect,
-                             stationary, fixed, break_no, future_rt, gp, family,
-                             delays) {
-  # create future_rt
-  future_rt <- create_future_rt(future_rt = future_rt, 
-                                delay = mean_shift)
-  
+                             break_no, gp, family, delays) {
   cases <- reported_cases[(mean_shift + 1):(.N - horizon)]$confirm
   
   data <- list(
@@ -138,12 +273,8 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
     estimate_r = ifelse(estimate_rt, 1, 0),
     burn_in = burn_in,
     week_effect = ifelse(week_effect, 1, 0),
-    stationary = ifelse(stationary, 1, 0),
-    fixed = ifelse(fixed, 1, 0),
     bp_n = break_no,
-    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
-    future_fixed = ifelse(future_rt$fixed, 1, 0),
-    fixed_from = future_rt$from
+    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint
   ) 
 # initial estimate of growth ------------------------------------------
   first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
@@ -166,14 +297,10 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
   data$delay_sd_mean <- allocate_delays(delays$sd, no_delays)
   data$delay_sd_sd <- allocate_delays(delays$sd_sd, no_delays)
   data$max_delay <- allocate_delays(delays$max, no_delays)
-  # Parameters for Hilbert space GP -----------------------------------------
-  # no of basis functions
-  data$M <- ceiling((data$t - data$seeding_time) * gp$basis_prop)
-  # Boundary value for c
-  data$L <- (data$t - data$seeding_time) * gp$boundary_scale
-  data$lengthscale_alpha <- gp$lengthscale_alpha
-  data$lengthscale_beta <- gp$lengthscale_beta
-  data$alpha_sd <- gp$alpha_sd
+
+  ## Add gaussian process args
+  data <- c(data, create_gp_data(gp, data))
+  
   ## Set model to poisson or negative binomial
   family <- match.arg(family, c("poisson", "negbin"))
   data$model_type <- ifelse(family %in% "poisson", 0, 1)
@@ -200,12 +327,16 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
                                             ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
     }
     if (data$fixed == 0) {
-      out$eta <- array(rnorm(data$M, mean = 0, sd = 1))
-      out$rho <- array(truncnorm::rtruncnorm(1, a = 1, mean = 10, sd = 4))
-      out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
+      out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
+      out$rho <- array(rlnorm(1, mean = data$ls_meanlog, 
+                              sd = data$ls_sdlog))
+      out$rho <- ifelse(out$rho > data$ls_max, data$ls_max - 0.001, 
+                        ifelse(out$rho < data$ls_min, data$ls_min + 0.001, 
+                               out$rho))
+      out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd))
     }
     if (data$model_type == 1) {
-      out$rep_phi <- array(rexp(1, 1))
+      out$rep_phi <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0,  sd = 1))
     }
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1, data$prior_infections, 0.2))
