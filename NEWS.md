@@ -22,6 +22,7 @@
 * Depreciated `burn_in` argument of `estimate_infections` as updates to model initialisation mean that this feature is likely no longer needed. Please contact the developers if you feel you have a use case for this argument.
 * Adds utility functions to map between mean and standard deviation and the log mean and log standard deviation for a log normal distribution (`convert_to_logmean` and `convert_to_logsd`).
 * Optimised all discrete probability mass functions to be as vectorised as possible.
+* Updated the Gaussian process to be internally on the unit scale.
 
 # EpiNow2 1.2.1
 
