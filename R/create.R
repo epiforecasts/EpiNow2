@@ -173,6 +173,8 @@ gp_settings <- function(gp = list(), time = NA) {
 #' @param gp A list of settings to override the package default Gaussian 
 #' process settings. See the documentation for `gp_settings` for details of these 
 #' settings and `gp_settings()` for the current defaults.
+#' @param data A list containing the following numeric values: `t`, `seeding_time`,
+#' `horizon`.
 #' @inheritParams gp_settings
 #' @seealso gp_settings
 #' @return A list of settings defining the Gaussian process
