@@ -175,7 +175,6 @@ gp_settings <- function(gp = list(), time = NA) {
 #' settings and `gp_settings()` for the current defaults.
 #' @param data A list containing the following numeric values: `t`, `seeding_time`,
 #' `horizon`.
-#' @inheritParams gp_settings
 #' @seealso gp_settings
 #' @return A list of settings defining the Gaussian process
 #' @export
@@ -238,8 +237,8 @@ create_gp_data <- function(gp = list(), data) {
 #' @param mean_shift Numeric, mean delay shift
 #' @param break_no Numeric, number of breakpoints
 #' @param estimate_rt Logical, should Rt be estimated.
-#' @inheritParams estimate_infections
 #' @inheritParams create_gp_data
+#' @inheritParams estimate_infections
 #' @importFrom stats lm
 #' @importFrom purrr safely
 #' @return A list of stan data
