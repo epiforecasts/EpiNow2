@@ -65,6 +65,7 @@ reference:
     desc: Functions used internally by estimate_infections
     contents:
       - contains("create_")
+      - gp_settings
       - allocate_delays
   - title: Model Fitting
     desc: Functions for model fitting
@@ -137,4 +138,6 @@ reference:
       - stop_timeout
       - run_region
       - expose_stan_fns
+      - convert_to_logmean
+      - convert_to_logsd
 

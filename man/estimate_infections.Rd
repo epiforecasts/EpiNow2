@@ -15,13 +15,10 @@ estimate_infections(
   CrIs = c(0.2, 0.5, 0.9),
   delays = list(),
   horizon = 7,
-  gp = list(basis_prop = 0.3, boundary_scale = 2, lengthscale_alpha = 4.5,
-    lengthscale_beta = 21.5, alpha_sd = 0.1),
+  gp = list(),
   rt_prior = list(mean = 1, sd = 0.5),
   week_effect = TRUE,
   use_breakpoints = TRUE,
-  stationary = FALSE,
-  future_rt = "project",
   burn_in = 0,
   prior_smoothing_window = 7,
   future = FALSE,
@@ -65,16 +62,9 @@ on the log scale). To use no delays set this to \code{list()}.}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
-\item{gp}{List controlling the Gaussian process approximation if set to \code{list()} then \code{Rt} is assumed to be constant unless
-other settings introduce variation. If set must contain the \code{basis_prop} (number of basis functions based on scaling the time points)
-which defaults to 0.3 and must be between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of
-additional compute. Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
-increases the accuracy of the approximation at the cost of additional compute.
-See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
-Must also contain the  \code{lengthscale_alpha} and \code{lengthscale_beta}. These tune the prior of the lengthscale. Principled
-values can be obtained using \code{tune_inv_gamma} which optimises based on the desired truncation (which should be based on the scale
-of the observed data). The default is tuned to have 98\% of the density of the distribution between 2 and 21 days. Finally the list must
-contain \code{alpha_sd} the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.}
+\item{gp}{A list of settings to override the package default Gaussian
+process settings. See the documentation for \code{gp_settings} for details of these
+settings and \code{gp_settings()} for the current defaults.}
 
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
@@ -86,15 +76,6 @@ log space). To infer infections and then calculate Rt using backcalculation set 
 Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with
 a global non-parametric effect and so represent a conservative estimate of breakpoint changes. To specify a random walk define
 breakpoints every n days (so every 7 days for a weekly random walk) and disable the gaussian process using \code{gp = list()}.}
-
-\item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
-this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
-This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
-
-\item{future_rt}{A character string or integer. This argument indicates how to set future Rt values. Supported
-options are to project using the Rt model ("project"), to use the latest estimate based on partial data ("latest"),
-to use the latest estimate based on data that is over 50\% complete ("estimate"). If an integer is supplied then the Rt estimate
-from this many days into the future (or past if negative) past will be used forwards in time.}
 
 \item{burn_in}{Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be
 removed from the package unless a clear user need is given.}
@@ -130,8 +111,11 @@ reported_cases <- EpiNow2::example_confirmed[1:60]
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 # set delays between infection and case report 
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- list(mean = log(3), mean_sd = 0.1,
-                        sd = log(1), sd_sd = 0.1, max = 15)
+reporting_delay <- list(mean = convert_to_logmean(3, 1), 
+                        mean_sd = 0.1,
+                        sd = convert_to_logsd(3, 1), 
+                        sd_sd = 0.1, 
+                        max = 15)
       
 # Note: all examples below have been tuned to reduce the runtimes of examples
 # these settings are not suggested for real world use.                   
@@ -155,14 +139,14 @@ backcalc <- estimate_infections(reported_cases, generation_time = generation_tim
 plot(backcalc)
                            
 # run model with Rt fixed into the future using the latest estimate
-fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
+latest_rt <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
                                 stan_args = 
                                    list(warmup = 200, 
                                         control = list(adapt_delta = 0.95, max_treedepth = 15),
                                         cores = ifelse(interactive(), 4, 1)),
-                                future_rt = "latest")
-plot(fixed_rt)
+                                gp = list(future = "latest"))
+plot(latest_rt)
 
 # run the model with default settings on a later snapshot of 
 # data (use burn_in here to remove the first week of estimates that may
@@ -182,16 +166,16 @@ stat <- estimate_infections(reported_cases, generation_time = generation_time,
                             stan_args = 
                                list(warmup = 200, cores = ifelse(interactive(), 4, 1),
                                     control = list(adapt_delta = 0.95, max_treedepth = 15)),
-                            stationary = TRUE)
+                            gp = list(stationary = TRUE))
 plot(stat)
        
-# run model with fixed Rt assumption 
+# run model without a gaussian process (i.e fixed Rt assuming no breakpoints)
 fixed <- estimate_infections(reported_cases, generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay),
                              stan_args = 
                                 list(warmup = 200, cores = ifelse(interactive(), 4, 1),
                                      control = list(adapt_delta = 0.95, max_treedepth = 15)),
-                             gp = list())
+                             gp = NULL)
 plot(fixed)
 
 # run model with no delays 
@@ -213,7 +197,7 @@ bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
                               list(warmup = 200, 
                                    cores = ifelse(interactive(), 4, 1),
                                    control = list(adapt_delta = 0.95, max_treedepth = 15)),
-                           gp = list())                                                         
+                           gp = NULL)                                                         
 plot(bkp)
 # breakpoint effect
 bkp$summarised[variable == "breakpoints"]

@@ -29,20 +29,7 @@
 #' breakpoints every n days (so every 7 days for a weekly random walk) and disable the gaussian process using `gp = list()`.
 #' @param burn_in Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be 
 #' removed from the package unless a clear user need is given.
-#' @param stationary Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt 
-#' this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
-#' This setting is most appropriate when estimating historic Rt or when combined with breakpoints.
 #' @param return_fit Logical, defaults to TRUE. Should the fitted stan model be returned.
-#' @param gp List controlling the Gaussian process approximation if set to `list()` then `Rt` is assumed to be constant unless
-#' other settings introduce variation. If set must contain the `basis_prop` (number of basis functions based on scaling the time points)
-#'  which defaults to 0.3 and must be between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of 
-#'  additional compute. Must also contain the `boundary_scale` (multiplied by half the range of the input time series). Increasing this 
-#' increases the accuracy of the approximation at the cost of additional compute. 
-#' See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
-#' Must also contain the  `lengthscale_alpha` and `lengthscale_beta`. These tune the prior of the lengthscale. Principled 
-#' values can be obtained using `tune_inv_gamma` which optimises based on the desired truncation (which should be based on the scale
-#' of the observed data). The default is tuned to have 98% of the density of the distribution between 2 and 21 days. Finally the list must 
-#' contain `alpha_sd` the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.
 #' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
@@ -52,7 +39,8 @@
 #' will fail with an informative error.
 #' @export
 #' @inheritParams create_stan_args
-#' @inheritParams create_future_rt
+#' @inheritParams create_stan_data
+#' @inheritParams create_gp_data
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams calc_CrIs
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
@@ -69,8 +57,11 @@
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # set delays between infection and case report 
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- list(mean = log(3), mean_sd = 0.1,
-#'                         sd = log(1), sd_sd = 0.1, max = 15)
+#' reporting_delay <- list(mean = convert_to_logmean(3, 1), 
+#'                         mean_sd = 0.1,
+#'                         sd = convert_to_logsd(3, 1), 
+#'                         sd_sd = 0.1, 
+#'                         max = 15)
 #'       
 #' # Note: all examples below have been tuned to reduce the runtimes of examples
 #' # these settings are not suggested for real world use.                   
@@ -94,14 +85,14 @@
 #' plot(backcalc)
 #'                            
 #' # run model with Rt fixed into the future using the latest estimate
-#' fixed_rt <- estimate_infections(reported_cases, generation_time = generation_time,
+#' latest_rt <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
 #'                                 stan_args = 
 #'                                    list(warmup = 200, 
 #'                                         control = list(adapt_delta = 0.95, max_treedepth = 15),
 #'                                         cores = ifelse(interactive(), 4, 1)),
-#'                                 future_rt = "latest")
-#' plot(fixed_rt)
+#'                                 gp = list(future = "latest"))
+#' plot(latest_rt)
 #'
 #' # run the model with default settings on a later snapshot of 
 #' # data (use burn_in here to remove the first week of estimates that may
@@ -121,16 +112,16 @@
 #'                             stan_args = 
 #'                                list(warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                     control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                             stationary = TRUE)
+#'                             gp = list(stationary = TRUE))
 #' plot(stat)
 #'        
-#' # run model with fixed Rt assumption 
+#' # run model without a gaussian process (i.e fixed Rt assuming no breakpoints)
 #' fixed <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                              delays = list(incubation_period, reporting_delay),
 #'                              stan_args = 
 #'                                 list(warmup = 200, cores = ifelse(interactive(), 4, 1),
 #'                                      control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                              gp = list())
+#'                              gp = NULL)
 #' plot(fixed)
 #' 
 #' # run model with no delays 
@@ -152,7 +143,7 @@
 #'                               list(warmup = 200, 
 #'                                    cores = ifelse(interactive(), 4, 1),
 #'                                    control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                            gp = list())                                                         
+#'                            gp = NULL)                                                         
 #' plot(bkp)
 #' # breakpoint effect
 #' bkp$summarised[variable == "breakpoints"]
@@ -167,14 +158,10 @@ estimate_infections <- function(reported_cases,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 delays = list(),
                                 horizon = 7,
-                                gp = list(basis_prop = 0.3, boundary_scale = 2, 
-                                          lengthscale_alpha = 4.5, lengthscale_beta = 21.5,
-                                          alpha_sd = 0.1),
+                                gp = list(),
                                 rt_prior = list(mean = 1, sd = 0.5),
                                 week_effect = TRUE, 
                                 use_breakpoints = TRUE, 
-                                stationary = FALSE, 
-                                future_rt = "project",
                                 burn_in = 0, 
                                 prior_smoothing_window = 7, 
                                 future = FALSE, 
@@ -184,7 +171,9 @@ estimate_infections <- function(reported_cases,
                                 verbose = interactive()){
    
   if (burn_in > 0) {
-    message("burn_in is depreciated as of EpiNow2 1.3.0 - if using this feature please contact the developers")
+    futile.logger::flog.info("burn_in is depreciated as of EpiNow2 1.3.0 - if using 
+                             this feature please contact the developers",
+                             name = "EpiNow2.epinow.estimate_infections")
   }
   
   # store dirty reported case data
@@ -197,18 +186,6 @@ estimate_infections <- function(reported_cases,
     estimate_rt <- TRUE
   }
   
-  # If no GP default to stationary setup with no assumed non-parametric change
-  # add in placeholder parameters
-  if (length(gp) == 0) {
-    fixed <- TRUE
-    stationary <- TRUE
-    gp = list(basis_prop = 1, boundary_scale = 1,
-              lengthscale_alpha = 1, lengthscale_beta = 1,
-              alpha_sd = 0.1)
-  }else{
-    fixed <- FALSE
-  }
-
   # Check verbose settings and set logger to match---------------------------
   if (verbose) {
     futile.logger::flog.threshold(futile.logger::DEBUG,
@@ -280,10 +257,7 @@ estimate_infections <- function(reported_cases,
                            estimate_rt = estimate_rt,
                            burn_in = burn_in,
                            week_effect = week_effect, 
-                           stationary = stationary,
-                           fixed = fixed,
                            break_no = break_no, 
-                           future_rt = future_rt, 
                            gp = gp,
                            family = family,
                            delays = delays)
@@ -507,6 +481,7 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE
 #' @inheritParams calc_summary_measures
 #' @importFrom data.table fifelse rbindlist 
 #' @importFrom lubridate days
+#' @importFrom futile.logger flog.info
 #' @return A list of samples and summarised posterior parameter estimates
 format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
                        CrIs){
@@ -527,7 +502,9 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
   
   # remove burn in period if specified
   if (burn_in > 0) {
-    message("burn_in is depreciated as of EpiNow2 1.3.0 - if using this feature please contact the developers")
+    futile.logger::flog.info("burn_in is depreciated as of EpiNow2 1.3.0 - if using 
+                             this feature please contact the developers",
+                             name = "EpiNow2.epinow.estimate_infections")
     format_out$samples <- format_out$samples[is.na(date) | date >= (start_date + lubridate::days(burn_in))]
   }
   
