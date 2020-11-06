@@ -323,6 +323,9 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
       out$rho <- array(rlnorm(1, mean = data$ls_meanlog, 
                               sd = data$ls_sdlog))
+      out$rho <- ifelse(out$rho > data$ls_max, data$ls_max - 0.001, 
+                        ifelse(out$rho < data$ls_min, data$ls_min + 0.001, 
+                               out$rho))
       out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd))
     }
     if (data$model_type == 1) {
