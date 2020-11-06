@@ -109,8 +109,9 @@ create_future_rt <- function(future_rt = "project", delay = 0) {
 #'  of 3 and the maximum length of the data (input by the user) or 9 weeks if no maximum given.
 #'  * The standard deviation of the magnitude parameter of the kernel. This defaults to 0.1 and 
 #'  should be approximately the expected standard deviation of the logged Rt.
-#'  * The type of kernel required, currently supporting the squared exponential kernel ("se") 
-#'  and the 3 over 2 Matern kernel ("matern_3/2"). Defaulting to the Materin 3 over 2 kernel 
+#'  * The type of kernel (`kernel`) required, currently supporting the squared exponential kernel ("se") 
+#'  and the 3 over 2 Matern kernel ("matern", with `matern_type = 3/2` (no other form of Matern 
+#'  kernels are currently supported)). Defaulting to the Matern 3 over 2 kernel.
 #'  as discontinuities are expected in Rt and infections.
 #'  * The proportion of basis functions to time points (`basis_prop`) and the boundary scale of
 #'  the approximate gaussian process (`boundary_scale`). The proportion of basis functions
@@ -132,7 +133,7 @@ create_future_rt <- function(future_rt = "project", delay = 0) {
 #' @param time The maximum observed time, defaults to NA. 
 #' @return A list of settings defining the gaussian process
 #' @export
-#'
+#' @importFrom futile.logger flog.warn
 #' @examples
 #' # default settings
 #' gp_settings()
@@ -153,7 +154,8 @@ gp_settings <- function(gp = list(), time = NA) {
     ls_min = 3,
     ls_max = ifelse(is.na(time), 63, time),
     alpha_sd = 0.1, 
-    kernel = "matern_3/2",
+    kernel = "matern",
+    matern_type = 3/2,
     stationary = FALSE,
     future = "project")
   
@@ -163,6 +165,10 @@ gp_settings <- function(gp = list(), time = NA) {
     gp <- c(defaults, gp)
   }else{
     gp <- defaults
+  }
+  
+  if (gp$matern_type != 3/2) {
+    futile.logger::flog.warn("Only the Matern 3/2 kernel is currently supported")
   }
   return(gp)
 }
@@ -225,7 +231,7 @@ create_gp_data <- function(gp = list(), data) {
     ls_max = data$t - data$seeding_time - data$horizon,
     alpha_sd = gp$alpha_sd,
     gp_type = ifelse(gp$kernel == "se", 0, 
-                      ifelse(gp$kernel == "matern_3/2", 1, 0))
+                      ifelse(gp$kernel == "matern", 1, 0))
   ) 
   return(gp_data)
 }
