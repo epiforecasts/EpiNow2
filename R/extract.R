@@ -134,5 +134,10 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
     out$reporting_overdispersion <- out$reporting_overdispersion[, value := value.V1][, 
                                                                    value.V1 := NULL]
   }
+  if (data$obs_scale == 1) {
+    out$fraction_observed <- extract_static_parameter("frac_obs", samples)
+    out$fraction_observed <- out$fraction_observed[, value := value.V1][, 
+                                                     value.V1 := NULL]
+  }
   return(out)
 }

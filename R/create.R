@@ -392,6 +392,11 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
   data <- c(data, create_gp_data(gp, data))
   ## Add observation model args
   data <- c(data, create_obs_model(obs_model))
+  ## Rescale mean shifted prior for backcalculation if observation scaling is used
+  if (data$obs_scale == 1) {
+    data$shifted_cases <- data$shifted_cases / data$obs_scale_mean
+    data$prior_infections <- log(exp(data$prior_infections) / data$obs_scale_mean)
+  }
   return(data)
 }
 
