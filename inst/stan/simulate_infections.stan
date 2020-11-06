@@ -29,6 +29,8 @@ data {
   int day_of_week[t - seeding_time]; // day of the week indicator (1 - 7)
   int week_effect;                   // should a day of the week effect be estimated
   real<lower = 0> day_of_week_simplex[n, 7];
+  int obs_scale; 
+  real frac_obs[obs_scale ? n : 0, 1];
   int model_type;
   real<lower = 0> rep_phi[n, model_type];  // overdispersion of the reporting process
 }
@@ -53,9 +55,8 @@ generated quantities {
                                                     to_vector(day_of_week_simplex[i])));
     }
     // scale observations
-    if (scale_obs) {
-      reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), day_of_week, 
-                                           to_vector(day_of_week_simplex[i])));
+    if (obs_scale) {
+      reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i, 1]));
     }
    // simulate reported cases
    imputed_reports[i] = report_rng(to_vector(reports[i]), rep_phi[i], model_type);
