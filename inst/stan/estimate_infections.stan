@@ -46,7 +46,7 @@ parameters{
   real<lower = 0> delay_mean[delays];   // mean of delays
   real<lower = 0> delay_sd[delays];     // sd of delays
   simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect 
-  real<lower = 0,upper = 0> frac_obs[obs_scale]; // fraction of cases that are ultimately observed
+  real<lower = 0> frac_obs[obs_scale]; // fraction of cases that are ultimately observed
   real<lower = 0> rep_phi[model_type];  // overdispersion of the reporting process
 }
 
@@ -77,8 +77,7 @@ transformed parameters {
   }
   // scaling of reported cases by fraction oberserved
  if (obs_scale) {
-   reports = scale_observations_lp(reports, frac_obs[1],
-                                   obs_scale_mean, obs_scale_sd);
+   reports = scale_obs(reports, frac_obs[1]);
  }
 }
 
@@ -105,6 +104,9 @@ model {
      }
     // penalised_prior on generation interval
     generation_time_lp(gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot);
+  }
+  if (obs_scale) {
+    frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];
   }
   // observed reports from mean of reports
   report_lp(cases, reports, rep_phi, 1, model_type, horizon, obs_weight);

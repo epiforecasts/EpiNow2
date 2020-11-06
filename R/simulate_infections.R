@@ -38,10 +38,7 @@
 #' # fit model to data to recover Rt estimates
 #' est <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            stan_args = 
-#'                              list(warmup = 200, 
-#'                                   control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                                   cores = ifelse(interactive(), 4, 1)))
+#'                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #'                                   
 #' # update Rt trajectory and simulate new infections using it
 #' R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))

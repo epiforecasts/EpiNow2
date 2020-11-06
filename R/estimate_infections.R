@@ -1,7 +1,12 @@
 #' Estimate Infections, the Time-Varying Reproduction Number and the Rate of Growth
 #'
 #' @description This function uses a non-parametric approach to reconstruct cases by date of infection from reported 
-#' cases. It can optionally then estimate the time-varying reproduction number and the rate of growth.
+#' cases. This function uses either a generative Rt model or non-parametric back calculation to estimate underlying
+#' latent infections and then maps these infections to observed cases via uncertain reporting delays and a flexible
+#' observation model. See the examples and function arguments for the details of all options. The default settings
+#'  may not be sufficient for your use case so the number of warmup samples (`stan_args = list(warmup)`) may need to
+#'  be increased as may the overall number of samples. Follow the links provided by any warnings messages to diagnose 
+#'  issues with the MCMC fit.
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be 
 #' in date format.
 #' @param family A character string indicating the reporting model to use. Defaults to negative 
@@ -22,7 +27,6 @@
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
 #' @param model A compiled stan model. By default uses the internal package model.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
-#' @param week_effect Logical, defaults TRUE. Should weekly reporting effects be estimated.
 #' @param use_breakpoints Logical, defaults to TRUE but only active if a `breakpoint` variable is present in the input data. 
 #'  Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with
 #' a global non-parametric effect and so represent a conservative estimate of breakpoint changes. To specify a random walk define
@@ -63,37 +67,26 @@
 #'                         sd_sd = 0.1, 
 #'                         max = 15)
 #'       
-#' # Note: all examples below have been tuned to reduce the runtimes of examples
-#' # these settings are not suggested for real world use.                   
 #' # run model with default setting
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                            delays = list(incubation_period, reporting_delay), 
-#'                            stan_args = 
-#'                               list(warmup = 200,
-#'                                    control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                                    cores = ifelse(interactive(), 4, 1)),
-#'                                    obs_model = list(family = "poisson"))
+#'                            delays = list(incubation_period, reporting_delay),
+#'                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(def)
 #' 
-#' # run model using backcalculation
+#' # run model using backcalculation (combined here with under reporting)
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 stan_args = 
-#'                                   list(warmup = 200, 
-#'                                        cores = ifelse(interactive(), 4, 1),
-#'                                        control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                                 rt_prior = list())
+#'                                 rt_prior = list(),
+#'                                 obs_model = list(scale = list(mean = 0.4, sd = 0.01)),
+#'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(backcalc)
 #'                            
-#' # run model with Rt fixed into the future using the latest estimate
-#' latest_rt <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                                 delays = list(incubation_period, reporting_delay),
-#'                                 stan_args = 
-#'                                    list(warmup = 200, 
-#'                                         control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                                         cores = ifelse(interactive(), 4, 1)),
-#'                                 gp = list(future = "latest"))
-#' plot(latest_rt)
+#' # run model with Rt projected into the future using the Gaussian process
+#' project_rt <- estimate_infections(reported_cases, generation_time = generation_time,
+#'                                   delays = list(incubation_period, reporting_delay),
+#'                                   gp = list(future = "project"),
+#'                                   stan_args = list(cores = ifelse(interactive(), 4, 1)))
+#' plot(project_rt)
 #'
 #' # run the model with default settings on a later snapshot of 
 #' # data (use burn_in here to remove the first week of estimates that may
@@ -101,28 +94,21 @@
 #' snapshot_cases <- EpiNow2::example_confirmed[80:130]
 #' snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 stan_args = 
-#'                                    list(warmup = 200, 
-#'                                         control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                                         cores = ifelse(interactive(), 4, 1)))
+#'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(snapshot) 
 #' 
 #' # run model with stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
-#'                             stan_args = 
-#'                                list(warmup = 200, cores = ifelse(interactive(), 4, 1),
-#'                                     control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                             gp = list(stationary = TRUE))
+#'                             gp = list(stationary = TRUE),
+#'                             stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(stat)
 #'        
 #' # run model without a gaussian process (i.e fixed Rt assuming no breakpoints)
 #' fixed <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                              delays = list(incubation_period, reporting_delay),
-#'                              stan_args = 
-#'                                 list(warmup = 200, cores = ifelse(interactive(), 4, 1),
-#'                                      control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                              gp = NULL)
+#'                              gp = NULL,
+#'                              stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(fixed)
 #' 
 #' # run model with no delays 
@@ -150,20 +136,20 @@
 #' bkp$summarised[variable == "breakpoints"]
 #' }                                
 estimate_infections <- function(reported_cases, 
+                                generation_time, 
                                 delays = list(),
                                 obs_model = list(),
-                                model = NULL, 
-                                samples = 1000,
-                                stan_args = NULL,
-                                method = "exact", 
-                                generation_time, 
-                                CrIs = c(0.2, 0.5, 0.9),
-                                horizon = 7,
+                                stan_args = list(),
                                 gp = list(),
                                 rt_prior = list(mean = 1, sd = 0.5),
+                                horizon = 7,
+                                model = NULL, 
+                                samples = 1000,
+                                method = "exact", 
                                 use_breakpoints = TRUE, 
                                 burn_in = 0, 
                                 prior_smoothing_window = 7, 
+                                CrIs = c(0.2, 0.5, 0.9),
                                 future = FALSE, 
                                 max_execution_time = Inf, 
                                 return_fit = TRUE,

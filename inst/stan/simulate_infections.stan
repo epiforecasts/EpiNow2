@@ -52,6 +52,11 @@ generated quantities {
       reports[i] = to_row_vector(day_of_week_effect(to_vector(reports[i]), day_of_week, 
                                                     to_vector(day_of_week_simplex[i])));
     }
+    // scale observations
+    if (scale_obs) {
+      reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), day_of_week, 
+                                           to_vector(day_of_week_simplex[i])));
+    }
    // simulate reported cases
    imputed_reports[i] = report_rng(to_vector(reports[i]), rep_phi[i], model_type);
    r[i] = R_to_growth(to_vector(R[i]), gt_mean[i, 1], gt_sd[i, 1]);

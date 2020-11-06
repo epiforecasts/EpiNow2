@@ -10,20 +10,12 @@ vector day_of_week_effect(vector reports, int[] day_of_week, vector effect) {
    }
   return(scaled_reports);
 }
-// Scale observations by fraction reported
-vector scale_obs(vector reports, real frac_obs, int t) {
-  vector[t] scaled_reports;
-  scaled_reports = reports * frac_obs;
-  return(scaled_reports);
-}
 // Scale observations by fraction reported and update log density of 
 // fraction reported
-vector scale_observations_lp(vector reports, real frac_obs,
-                             real frac_mean, real frac_sd) {
+vector scale_obs(vector reports, real frac_obs) {
   int t = num_elements(reports);
   vector[t] scaled_reports;
-  frac_obs ~ normal(frac_mean, frac_sd) T[0, 1];
-  scaled_reports = scale_obs(reports, frac_obs, t);
+  scaled_reports = reports * frac_obs;
   return(scaled_reports);
 }
 // update log density for reported cases

@@ -76,7 +76,7 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 #' from this many days into the future (or past if negative) past will be used forwards in time. 
 #' @param delay Numeric mean delay
 #' @return A list containing a logical called fixed and an integer called from
-create_future_rt <- function(future_rt = "project", delay = 0) {
+create_future_rt <- function(future_rt = "latest", delay = 0) {
   out <- list(fixed = FALSE, from = 0)
   if (is.character(future_rt)) {
     future_rt <- match.arg(future_rt,
@@ -103,32 +103,35 @@ create_future_rt <- function(future_rt = "project", delay = 0) {
 #'  by `create_gp_data`, `create_stan_data`, and `estimate_infections`. The settings 
 #'  returned (all of which are modifiable by the user) are:
 #'  
-#'   * The mean and standard deviation of the log normal length scale (`ls_mean` and `ls_sd`) with
+#'   * `ls_mean` and `ls_sd`. The mean and standard deviation of the log normal length scale with
 #'   default values of 21 days and 7 days respectively.
-#'  * The minimum and maximum values of the length scale (`ls_min` and `ls_max`) with default values 
+#'  * `ls_min` and `ls_max`: The minimum and maximum values of the length scale with default values 
 #'  of 3 and the maximum length of the data (input by the user) or 9 weeks if no maximum given.
-#'  * The standard deviation of the magnitude parameter of the kernel. This defaults to 0.1 and 
+#'  * `alpha_sd`: The standard deviation of the magnitude parameter of the kernel. This defaults to 0.1 and 
 #'  should be approximately the expected standard deviation of the logged Rt.
-#'  * The type of kernel (`kernel`) required, currently supporting the squared exponential kernel ("se") 
+#'  * `kernel`: The type of kernel required, currently supporting the squared exponential kernel ("se") 
 #'  and the 3 over 2 Matern kernel ("matern", with `matern_type = 3/2` (no other form of Matern 
 #'  kernels are currently supported)). Defaulting to the Matern 3 over 2 kernel.
 #'  as discontinuities are expected in Rt and infections.
-#'  * The proportion of basis functions to time points (`basis_prop`) and the boundary scale of
-#'  the approximate gaussian process (`boundary_scale`). The proportion of basis functions
+#'  * `basis_prop` and `boundary_scale`: The proportion of basis functions to time points and 
+#'  the boundary scale of the approximate gaussian process. The proportion of basis functions
 #'  defaults to 0.3 (and much be greater than 0), and the boundary scale defaults to 2.
 #'  Decreasing either of these values should increase run times at the cost of the accuracy of 
 #'  gaussian process approximation. In general smaller posterior lengthscales require a 
 #'  higher proportion of basis functions and the user should only rarely alter the boundary scale. 
 #'  These settings are an area of active research. See https://arxiv.org/abs/2004.11408 for further 
 #'  details.
-#'  * Should the Gaussian process be estimated with a stationary global mean or be second
+#'  * `stationary`: Should the Gaussian process be estimated with a stationary global mean or be second
 #'    order and so depend on the previous value. A stationary Gaussian process may be more
 #'    tractable but will revert to the global average when data is sparse i.e for near real 
 #'    time estimates. The default is FALSE. This feature is experimental.
-#'  * How should the Gaussian process be extended when data is sparse. The default is to 
-#'    project the kernal forwards in time ("project") but other options project the latest estimate 
-#'    based on >50% complete data ("estimate"), based on all partial data ("latest") or a numeric 
-#'    number of days. See ?create_future_rt for further details and complete options.
+#'  * `future`: How should the Gaussian process be extended when data is sparse. The default
+#'     is to fix it  based on the last estimate based on partial data ("latest") but other options 
+#'     include projecting the latest estimate based on >50% complete data ("estimate"), or projecting
+#'     the kernel of the gaussian process forwards in time ("project"). Alternatively the number 
+#'     of days to project the gaussian process can be passed (if negative then fixes within
+#'     estimated time). When using backcalculation (i.e `rt_prior = list()`) only projection 
+#'     using the gaussian process is supported. See ?create_future_rt for further details and complete options.
 #' @param gp A list of settings to override the defaults. Defaults to an empty list.
 #' @param time The maximum observed time, defaults to NA. 
 #' @return A list of settings defining the gaussian process
@@ -157,7 +160,7 @@ gp_settings <- function(gp = list(), time = NA) {
     kernel = "matern",
     matern_type = 3/2,
     stationary = FALSE,
-    future = "project")
+    future = "latest")
   
   # replace default settings with those specified by user
   if (length(gp) != 0) {
@@ -181,6 +184,8 @@ gp_settings <- function(gp = list(), time = NA) {
 #' settings and `gp_settings()` for the current defaults.
 #' @param data A list containing the following numeric values: `t`, `seeding_time`,
 #' `horizon`.
+#' @param rt Logicial, defaults to `TRUE`. Is Rt being estimated? This controls Rt 
+#' specific Gaussian process settings that are not supported for back calculation.
 #' @seealso gp_settings
 #' @return A list of settings defining the Gaussian process
 #' @export
@@ -200,7 +205,7 @@ gp_settings <- function(gp = list(), time = NA) {
 #' 
 #' # custom lengthscale
 #' create_gp_data(gp = list(ls_mean = 14), data)
-create_gp_data <- function(gp = list(), data) {
+create_gp_data <- function(gp = list(), data, rt = TRUE) {
   
   # Define if GP is on or off
   if (is.null(gp)) {
@@ -209,7 +214,9 @@ create_gp_data <- function(gp = list(), data) {
   }else{
     fixed <- FALSE
   }
-
+  if (!rt) {
+    gp$future <- "project"
+  }
   # set up default options
   gp <- gp_settings(gp, data$t - data$seeding_time - data$horizon)
 
@@ -320,9 +327,9 @@ create_obs_model <- function(obs_model = list()) {
     obs_scale = ifelse(length(obs_model$scale) != 0, 1, 0))
   data <- c(data, list(
     obs_scale_mean = ifelse(data$obs_scale,
-                           obs_scale$scale$mean, 0),
+                            obs_model$scale$mean, 0),
     obs_scale_sd = ifelse(data$obs_scale,
-                          obs_scale$scale$sd, 0)
+                          obs_model$scale$sd, 0)
   ))
   return(data)
 }
@@ -389,7 +396,7 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
   data$max_delay <- allocate_delays(delays$max, no_delays)
 
   ## Add gaussian process args
-  data <- c(data, create_gp_data(gp, data))
+  data <- c(data, create_gp_data(gp, data, rt = estimate_rt))
   ## Add observation model args
   data <- c(data, create_obs_model(obs_model))
   ## Rescale mean shifted prior for backcalculation if observation scaling is used
@@ -446,6 +453,11 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
         out$bp_effects <- array(rnorm(data$bp_n, 0, 0.1))
       }
     }
+    if (data$obs_scale == 1) {
+      out$frac_obs = array(truncnorm::rtruncnorm(1, a = 0, 
+                                                 mean = data$obs_scale_mean,
+                                                 sd = data$obs_scale_sd))
+    }
     return(out)
   }
   return(init_fun)
@@ -487,7 +499,7 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' # increasing warmup
 #' create_stan_args(stan_args = list(warmup = 1000))
 create_stan_args <- function(model, data = NULL, init = "random", 
-                             samples = 1000, stan_args = NULL, method = "exact", 
+                             samples = 1000, stan_args = list(), method = "exact", 
                              verbose = FALSE) {
   # use built in model if not supplied by the user
   if (missing(model)) {
@@ -506,9 +518,9 @@ create_stan_args <- function(model, data = NULL, init = "random",
   # set up independent default arguments
   if (method == "exact") {
     default_args$cores <- 4
-    default_args$warmup <- 500
+    default_args$warmup <- 250
     default_args$chains <- 4
-    default_args$control <- list(adapt_delta = 0.99, max_treedepth = 15)
+    default_args$control <- list(adapt_delta = 0.98, max_treedepth = 15)
     default_args$save_warmup <- FALSE
     default_args$seed <- as.integer(runif(1, 1, 1e8))
   }else if (method == "approximate") {
@@ -517,7 +529,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
     default_args$output_samples <- samples
   }
   # join with user supplied settings
-  if (!is.null(stan_args)) {
+  if (length(stan_args) != 0) {
     default_args <- default_args[setdiff(names(default_args), names(stan_args))]
     args <- c(default_args, stan_args)
   }else{
