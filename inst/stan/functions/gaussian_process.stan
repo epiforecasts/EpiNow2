@@ -11,7 +11,7 @@ vector phi(real L, int m, vector x) {
   vector[rows(x)] fi;
   fi = 1/sqrt(L) * sin(m*pi()/(2*L) * (x+L));
   return fi;
-}
+}	
 // spectral density of the exponential quadratic kernal
 real spd_se(real alpha, real rho, real w) {
   real S;
