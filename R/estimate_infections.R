@@ -71,7 +71,7 @@
 #'                            stan_args = 
 #'                               list(warmup = 200,
 #'                                    control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                                    cores = ifelse(interactive(), 4, 1)), model = model)
+#'                                    cores = ifelse(interactive(), 4, 1)))
 #' plot(def)
 #' 
 #' # run model using backcalculation
@@ -81,7 +81,7 @@
 #'                                   list(warmup = 200, 
 #'                                        cores = ifelse(interactive(), 4, 1),
 #'                                        control = list(adapt_delta = 0.95, max_treedepth = 15)),
-#'                                 rt_prior = list())
+#'                                 rt_prior = list(),  gp = NULL, model = model)
 #' plot(backcalc)
 #'                            
 #' # run model with Rt fixed into the future using the latest estimate

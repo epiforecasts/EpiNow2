@@ -35,10 +35,10 @@ int setup_noise(int ot_h, int t, int horizon, int estimate_r,
 matrix setup_gp(int M, real L, int dimension) {
   vector[dimension] time;
   matrix[dimension, M] PHI;
+  real half_dim = dimension / 2.0;
   for (s in 1:dimension) {
-    time[s] = s;
+    time[s] = (s - half_dim) / half_dim;
   }
-  time = time - dimension / 2.0;
   for (m in 1:M){ 
     PHI[,m] = phi(L, m, time); 
   }
@@ -51,14 +51,15 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   vector[M] SPD_eta;    // spectral density * noise
   int noise_terms = rows(PHI);
   vector[noise_terms] noise = rep_vector(1e-6, noise_terms);
+  real unit_rho = rho / noise_terms;
   // GP in noise - spectral densities
   if (type == 0) {
     for(m in 1:M){ 
-      diagSPD[m] =  sqrt(spd_se(alpha, rho, sqrt(lambda(L, m)))); 
+      diagSPD[m] =  sqrt(spd_se(alpha, unit_rho, sqrt(lambda(L, m)))); 
     }
   }else if (type == 1) {
     for(m in 1:M){ 
-      diagSPD[m] =  sqrt(spd_matern(alpha, rho, sqrt(lambda(L, m)))); 
+      diagSPD[m] =  sqrt(spd_matern(alpha, unit_rho, sqrt(lambda(L, m)))); 
     }
   }
   SPD_eta = diagSPD .* eta;
