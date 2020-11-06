@@ -1,4 +1,4 @@
-
+// apply day of the week effect
 vector day_of_week_effect(vector reports, int[] day_of_week, vector effect) {
   int t = num_elements(reports);
   // scale day of week effect
@@ -10,8 +10,7 @@ vector day_of_week_effect(vector reports, int[] day_of_week, vector effect) {
    }
   return(scaled_reports);
 }
-
-   
+// update log density for reported cases
 void report_lp(int[] cases, vector reports, 
                real[] rep_phi, int phi_prior,
                int model_type, int horizon,

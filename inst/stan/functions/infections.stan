@@ -1,3 +1,5 @@
+// calculate infectiousness (weighted sum of the generation time and infections)
+// for a single time point
 real update_infectiousness(vector infections, vector gt_pmf,
                            int seeding_time, int max_gt, int index){
   int inf_start = max(1, (index + seeding_time - max_gt));
@@ -6,7 +8,7 @@ real update_infectiousness(vector infections, vector gt_pmf,
   real new_inf = dot_product(infections[inf_start:inf_end], tail(gt_pmf, pmf_accessed));
   return(new_inf);
 }
-
+// generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
 vector generate_infections(vector R, int uot, 
                            real[] gt_mean, real[] gt_sd, int max_gt,
                            real[] initial_infections, real[] initial_growth) {
@@ -36,7 +38,7 @@ vector generate_infections(vector R, int uot,
   }
   return(infections);
 }
-
+// backcalculate infections using mean shifted cases and non-parametric noise
 vector deconvolve_infections(vector shifted_cases, vector noise, int fixed) {
   int t = num_elements(shifted_cases);
   vector[t] infections = rep_vector(1e-5, t);
@@ -47,7 +49,7 @@ vector deconvolve_infections(vector shifted_cases, vector noise, int fixed) {
   }
   return(infections);
 }
-
+// Update the log density for the generation time distribution mean and sd
 void generation_time_lp(real[] gt_mean, real gt_mean_mean, real gt_mean_sd, 
                         real[] gt_sd, real gt_sd_mean, real gt_sd_sd, int weight) {
     target += normal_lpdf(gt_mean[1] | gt_mean_mean, gt_mean_sd) * weight;
