@@ -173,7 +173,7 @@ gp_settings <- function(gp = list(), time = NA) {
   return(gp)
 }
 
-#' Create Gaussian Process Stan Data
+#' Create Gaussian Process Data
 #'
 #'
 #' @param gp A list of settings to override the package default Gaussian 
@@ -238,12 +238,24 @@ create_gp_data <- function(gp = list(), data) {
 
 #' Observation Model Settings
 #'
+#'
+#' @description Defines a list specifying the structure of the observation 
+#' model. Custom settings can be supplied which override the defaults. Used internally
+#'  by `create_obs_model`, `create_stan_data`, and `estimate_infections`. The settings 
+#'  returned (all of which are modifiable by the user) are:
+#'  
+#'  * `family`: Observation model family. Options are Negative binomial ("negbin"), 
+#'  the default, and Poisson.
+#'  * `weight`: Weight to give the observed data in the log density. Numeric, defaults
+#'  to 1.
+#'  * `week_effect`: Logical defaulting to `TRUE`. Should a day of the week effect be used.
+#'  * `scale` List, defaulting to an empty list. Should an scaling factor be applied to map 
+#'  latent infections (convolved to date of report). If none empty a mean (`mean`) and standard
+#'  deviation (`sd`) needs to be supplied definining the normally distributed scalng factor.
 #' @param obs_model A list of settings to override the defaults. 
 #' Defaults to an empty list.
-#'
 #' @return A list of observation model settings.
 #' @export
-#'
 #' @examples
 #' # default settings
 #' obs_model_settings()
@@ -282,6 +294,23 @@ obs_model_settings <- function(obs_model = list()) {
   return(obs_model)
 }
 
+#' Create Observation Model Settings
+#'
+#' @param obs_model A list of settings to override the package default observation
+#' model settings. See the documentation for `obs_model_settings` for details of these 
+#' settings and `obs_model_settings()` for the current defaults.
+#' @seealso gp_settings
+#' @return A list of settings defining the Observation Model
+#' @export
+#' @examples
+#' # default observation model data
+#' create_obs_model()
+#' 
+#' # Poisson observation model
+#' create_obs_data(gp = NULL, data)
+#' 
+#' # Applying a observation scaling to the data
+#' create_obs_data(obs_model = list(scale = list(mean = 0.4, sd = 0.01)))
 create_obs_model <- function(obs_model = list()) {
   obs_model <- obs_model_settings(obs_model)
   data <- list(
@@ -291,9 +320,9 @@ create_obs_model <- function(obs_model = list()) {
     obs_scale = ifelse(length(obs_model$scale) != 0, 1, 0))
   data <- c(data, list(
     obs_scale_mean = ifelse(data$obs_scale,
-                           obs_scale$scale$mean),
+                           obs_scale$scale$mean, 0),
     obs_scale_sd = ifelse(data$obs_scale,
-                          obs_scale$scale$sd)
+                          obs_scale$scale$sd, 0)
   ))
   return(data)
 }
@@ -305,6 +334,7 @@ create_obs_model <- function(obs_model = list()) {
 #' @param break_no Numeric, number of breakpoints
 #' @param estimate_rt Logical, should Rt be estimated.
 #' @inheritParams create_gp_data
+#' @inheritParams create_obs_model
 #' @inheritParams estimate_infections
 #' @importFrom stats lm
 #' @importFrom purrr safely

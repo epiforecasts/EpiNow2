@@ -71,7 +71,8 @@
 #'                            stan_args = 
 #'                               list(warmup = 200,
 #'                                    control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                                    cores = ifelse(interactive(), 4, 1)))
+#'                                    cores = ifelse(interactive(), 4, 1)),
+#'                                    obs_model = list(family = "poisson"))
 #' plot(def)
 #' 
 #' # run model using backcalculation
@@ -149,18 +150,17 @@
 #' bkp$summarised[variable == "breakpoints"]
 #' }                                
 estimate_infections <- function(reported_cases, 
+                                delays = list(),
+                                obs_model = list(),
                                 model = NULL, 
                                 samples = 1000,
                                 stan_args = NULL,
                                 method = "exact", 
-                                family = "negbin", 
                                 generation_time, 
                                 CrIs = c(0.2, 0.5, 0.9),
-                                delays = list(),
                                 horizon = 7,
                                 gp = list(),
                                 rt_prior = list(mean = 1, sd = 0.5),
-                                week_effect = TRUE, 
                                 use_breakpoints = TRUE, 
                                 burn_in = 0, 
                                 prior_smoothing_window = 7, 
@@ -256,10 +256,9 @@ estimate_infections <- function(reported_cases,
                            rt_prior = rt_prior, 
                            estimate_rt = estimate_rt,
                            burn_in = burn_in,
-                           week_effect = week_effect, 
                            break_no = break_no, 
                            gp = gp,
-                           family = family,
+                           obs_model = obs_model,
                            delays = delays)
 
   # Set up default settings -------------------------------------------------

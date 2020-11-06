@@ -14,10 +14,9 @@ create_stan_data(
   rt_prior,
   estimate_rt,
   burn_in,
-  week_effect,
   break_no,
   gp,
-  family,
+  obs_model,
   delays
 )
 }
@@ -46,16 +45,15 @@ log space). To infer infections and then calculate Rt using backcalculation set 
 \item{burn_in}{Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be
 removed from the package unless a clear user need is given.}
 
-\item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
-
 \item{break_no}{Numeric, number of breakpoints}
 
 \item{gp}{A list of settings to override the package default Gaussian
 process settings. See the documentation for \code{gp_settings} for details of these
 settings and \code{gp_settings()} for the current defaults.}
 
-\item{family}{A character string indicating the reporting model to use. Defaults to negative
-binomial ("negbin") with poisson ("poisson") also supported.}
+\item{obs_model}{A list of settings to override the package default observation
+model settings. See the documentation for \code{obs_model_settings} for details of these
+settings and \code{obs_model_settings()} for the current defaults.}
 
 \item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
 Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),

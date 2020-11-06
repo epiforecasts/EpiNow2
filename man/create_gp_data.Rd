@@ -2,7 +2,7 @@
 % Please edit documentation in R/create.R
 \name{create_gp_data}
 \alias{create_gp_data}
-\title{Create Gaussian Process Stan Data}
+\title{Create Gaussian Process Data}
 \usage{
 create_gp_data(gp = list(), data)
 }
@@ -18,7 +18,7 @@ settings and \code{gp_settings()} for the current defaults.}
 A list of settings defining the Gaussian process
 }
 \description{
-Create Gaussian Process Stan Data
+Create Gaussian Process Data
 }
 \examples{
 # define input data required

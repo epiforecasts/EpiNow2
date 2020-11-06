@@ -6,18 +6,17 @@
 \usage{
 estimate_infections(
   reported_cases,
+  delays = list(),
+  obs_model = list(),
   model = NULL,
   samples = 1000,
   stan_args = NULL,
   method = "exact",
-  family = "negbin",
   generation_time,
   CrIs = c(0.2, 0.5, 0.9),
-  delays = list(),
   horizon = 7,
   gp = list(),
   rt_prior = list(mean = 1, sd = 0.5),
-  week_effect = TRUE,
   use_breakpoints = TRUE,
   burn_in = 0,
   prior_smoothing_window = 7,
@@ -32,6 +31,16 @@ estimate_infections(
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
 
+\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
+Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
+standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
+that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
+on the log scale). To use no delays set this to \code{list()}.}
+
+\item{obs_model}{A list of settings to override the package default observation
+model settings. See the documentation for \code{obs_model_settings} for details of these
+settings and \code{obs_model_settings()} for the current defaults.}
+
 \item{model}{A compiled stan model. By default uses the internal package model.}
 
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
@@ -45,20 +54,11 @@ this can either be "exact" (NUTs sampling) or "approximate" (variational inferen
 from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results
 several order of magnitudes faster than the exact method.}
 
-\item{family}{A character string indicating the reporting model to use. Defaults to negative
-binomial ("negbin") with poisson ("poisson") also supported.}
-
 \item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
-
-\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
-Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale). To use no delays set this to \code{list()}.}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
@@ -69,8 +69,6 @@ settings and \code{gp_settings()} for the current defaults.}
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
 Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
 log space). To infer infections and then calculate Rt using backcalculation set this to \code{list()}.}
-
-\item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 
 \item{use_breakpoints}{Logical, defaults to TRUE but only active if a \code{breakpoint} variable is present in the input data.
 Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with
@@ -97,6 +95,11 @@ to assign errors to regions. Alter the default to run with error catching.}
 
 \item{verbose}{Logical, defaults to \code{TRUE} when used interactively and otherwise \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
+
+\item{family}{A character string indicating the reporting model to use. Defaults to negative
+binomial ("negbin") with poisson ("poisson") also supported.}
+
+\item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
@@ -125,7 +128,8 @@ def <- estimate_infections(reported_cases, generation_time = generation_time,
                            stan_args = 
                               list(warmup = 200,
                                    control = list(adapt_delta = 0.95, max_treedepth = 15),
-                                   cores = ifelse(interactive(), 4, 1)))
+                                   cores = ifelse(interactive(), 4, 1)),
+                                   obs_model = list(family = "poisson"))
 plot(def)
 
 # run model using backcalculation
