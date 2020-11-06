@@ -41,7 +41,7 @@
 #'                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #'                                   
 #' # update Rt trajectory and simulate new infections using it
-#' R <- c(rep(NA_real_, 33), rep(0.5, 10), rep(0.8, 7))
+#' R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
 #' sims <- simulate_infections(est, R)
 #' plot(sims)
 #' }

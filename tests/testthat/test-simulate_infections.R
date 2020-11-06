@@ -18,7 +18,7 @@ test_that("simulate_infections works to simulate a passed in estimate_infections
 })
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object with an adjusted Rt", {
-  R <- c(rep(NA_real_, 33), rep(0.5, 17))
+  R <- c(rep(NA_real_, 40), rep(0.5, 17))
   sims <- simulate_infections(out, R)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
 })
