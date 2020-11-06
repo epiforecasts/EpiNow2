@@ -236,6 +236,67 @@ create_gp_data <- function(gp = list(), data) {
   return(gp_data)
 }
 
+#' Observation Model Settings
+#'
+#' @param obs_model A list of settings to override the defaults. 
+#' Defaults to an empty list.
+#'
+#' @return A list of observation model settings.
+#' @export
+#'
+#' @examples
+#' # default settings
+#' obs_model_settings()
+#' 
+#' # Turn off day of the week effect
+#' obs_model_settings(obs_model = list(week_effect = TRUE))
+#' 
+#' 
+#' # Scale reported data
+#' obs_model_settings(obs_model = list(scale = list(mean = 0.2, sd = 0.02)))
+obs_model_settings <- function(obs_model = list()) {
+  if (exists("family", obs_model)) {
+    obs_model$family <- match.arg(obs_model$family, 
+                           choices = c("poisson", "negbin"))
+  }
+  defaults <- list(
+    family = "negbin",
+    weight = 1,
+    week_effect = TRUE,
+    scale = list())
+  # replace default settings with those specified by user
+  if (length(obs_model) != 0) {
+    defaults <- defaults[setdiff(names(defaults), names(obs_model))]
+    obs_model <- c(defaults, obs_model)
+  }else{
+    obs_model <- defaults
+  }
+  
+  if (length(obs_model$scale) != 0) {
+    scale_names <- names(obs_model$scale)
+    scale_correct <- "mean" %in% scale_names & "sd" %in% scale_names
+    if (!scale_correct) {
+      stop("If specifying a scale both a mean and sd are needed")
+    }
+  }
+  return(obs_model)
+}
+
+create_obs_model <- function(obs_model = list()) {
+  obs_model <- obs_model_settings(obs_model)
+  data <- list(
+    model_type = ifelse(obs_model$family %in% "poisson", 0, 1),
+    week_effect = ifelse(obs_model$week_effect, 1, 0),
+    obs_weight = obs_model$weight,
+    obs_scale = ifelse(length(obs_model$scale) != 0, 1, 0))
+  data <- c(data, list(
+    obs_scale_mean = ifelse(data$obs_scale,
+                           obs_scale$scale$mean),
+    obs_scale_sd = ifelse(data$obs_scale,
+                          obs_scale$scale$sd)
+  ))
+  return(data)
+}
 #' Create Stan Data Required for estimate_infections
 #'
 #' @param shifted_reported_cases A dataframe of delay shifted reported cases
@@ -251,8 +312,8 @@ create_gp_data <- function(gp = list(), data) {
 #' @export 
 create_stan_data <- function(reported_cases, shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
-                             rt_prior, estimate_rt, burn_in, week_effect,
-                             break_no, gp, family, delays) {
+                             rt_prior, estimate_rt, burn_in, break_no,
+                             gp, obs_model, delays) {
   cases <- reported_cases[(mean_shift + 1):(.N - horizon)]$confirm
   
   data <- list(
@@ -272,7 +333,6 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
     r_sd = rt_prior$sd,
     estimate_r = ifelse(estimate_rt, 1, 0),
     burn_in = burn_in,
-    week_effect = ifelse(week_effect, 1, 0),
     bp_n = break_no,
     breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint
   ) 
@@ -300,10 +360,8 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
 
   ## Add gaussian process args
   data <- c(data, create_gp_data(gp, data))
-  
-  ## Set model to poisson or negative binomial
-  family <- match.arg(family, c("poisson", "negbin"))
-  data$model_type <- ifelse(family %in% "poisson", 0, 1)
+  ## Add observation model args
+  data <- c(data, create_obs_model(obs_model))
   return(data)
 }
 
