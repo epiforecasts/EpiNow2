@@ -153,7 +153,7 @@ gp_settings <- function(gp = list(), time = NA) {
     ls_min = 3,
     ls_max = ifelse(is.na(time), 63, time),
     alpha_sd = 0.1, 
-    kernal = "matern_3/2",
+    kernel = "matern_3/2",
     stationary = FALSE,
     future = "project")
   
