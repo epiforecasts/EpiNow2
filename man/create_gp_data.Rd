@@ -2,9 +2,9 @@
 % Please edit documentation in R/create.R
 \name{create_gp_data}
 \alias{create_gp_data}
-\title{Create Gaussian Process Stan Data}
+\title{Create Gaussian Process Data}
 \usage{
-create_gp_data(gp = list(), data)
+create_gp_data(gp = list(), data, rt = TRUE)
 }
 \arguments{
 \item{gp}{A list of settings to override the package default Gaussian
@@ -13,12 +13,15 @@ settings and \code{gp_settings()} for the current defaults.}
 
 \item{data}{A list containing the following numeric values: \code{t}, \code{seeding_time},
 \code{horizon}.}
+
+\item{rt}{Logical, defaults to \code{TRUE}. Is Rt being estimated? This controls Rt
+specific Gaussian process settings that are not supported for back calculation.}
 }
 \value{
 A list of settings defining the Gaussian process
 }
 \description{
-Create Gaussian Process Stan Data
+Create Gaussian Process Data
 }
 \examples{
 # define input data required

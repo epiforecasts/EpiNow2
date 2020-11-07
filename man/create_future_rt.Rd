@@ -4,7 +4,7 @@
 \alias{create_future_rt}
 \title{Construct the Required Future Rt assumption}
 \usage{
-create_future_rt(future_rt = "project", delay = 0)
+create_future_rt(future_rt = "latest", delay = 0)
 }
 \arguments{
 \item{future_rt}{A character string or integer. This argument indicates how to set future Rt values. Supported

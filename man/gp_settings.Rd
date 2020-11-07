@@ -20,31 +20,35 @@ process. Custom settings can be supplied which override the defaults. Used inter
 by \code{create_gp_data}, \code{create_stan_data}, and \code{estimate_infections}. The settings
 returned (all of which are modifiable by the user) are:
 \itemize{
-\item The mean and standard deviation of the log normal length scale (\code{ls_mean} and \code{ls_sd}) with
+\item \code{ls_mean} and \code{ls_sd}. The mean and standard deviation of the log normal length scale with
 default values of 21 days and 7 days respectively.
-\item The minimum and maximum values of the length scale (\code{ls_min} and \code{ls_max}) with default values
+\item \code{ls_min} and \code{ls_max}: The minimum and maximum values of the length scale with default values
 of 3 and the maximum length of the data (input by the user) or 9 weeks if no maximum given.
-\item The standard deviation of the magnitude parameter of the kernel. This defaults to 0.1 and
+\item \code{alpha_sd}: The standard deviation of the magnitude parameter of the kernel. This defaults to 0.1 and
 should be approximately the expected standard deviation of the logged Rt.
-\item The type of kernel required, currently supporting the squared exponential kernel ("se")
-and the 3 over 2 Matern kernel ("matern_3/2"). Defaulting to the Materin 3 over 2 kernel
+\item \code{kernel}: The type of kernel required, currently supporting the squared exponential kernel ("se")
+and the 3 over 2 Matern kernel ("matern", with \code{matern_type = 3/2} (no other form of Matern
+kernels are currently supported)). Defaulting to the Matern 3 over 2 kernel.
 as discontinuities are expected in Rt and infections.
-\item The proportion of basis functions to time points (\code{basis_prop}) and the boundary scale of
-the approximate gaussian process (\code{boundary_scale}). The proportion of basis functions
+\item \code{basis_prop} and \code{boundary_scale}: The proportion of basis functions to time points and
+the boundary scale of the approximate gaussian process. The proportion of basis functions
 defaults to 0.3 (and much be greater than 0), and the boundary scale defaults to 2.
 Decreasing either of these values should increase run times at the cost of the accuracy of
-gaussian process approximation. In general smaller posterior lengthscales require a
+Gaussian process approximation. In general smaller posterior length scales require a
 higher proportion of basis functions and the user should only rarely alter the boundary scale.
 These settings are an area of active research. See https://arxiv.org/abs/2004.11408 for further
 details.
-\item Should the Gaussian process be estimated with a stationary global mean or be second
+\item \code{stationary}: Should the Gaussian process be estimated with a stationary global mean or be second
 order and so depend on the previous value. A stationary Gaussian process may be more
 tractable but will revert to the global average when data is sparse i.e for near real
 time estimates. The default is FALSE. This feature is experimental.
-\item How should the Gaussian process be extended when data is sparse. The default is to
-project the kernal forwards in time ("project") but other options project the latest estimate
-based on >50\% complete data ("estimate"), based on all partial data ("latest") or a numeric
-number of days. See ?create_future_rt for further details and complete options.
+\item \code{future}: How should the Gaussian process be extended when data is sparse. The default
+is to fix it  based on the last estimate based on partial data ("latest") but other options
+include projecting the latest estimate based on >50\% complete data ("estimate"), or projecting
+the kernel of the gaussian process forwards in time ("project"). Alternatively the number
+of days to project the gaussian process can be passed (if negative then fixes within
+estimated time). When using backcalculation (i.e \code{rt_prior = list()}) only projection
+using the gaussian process is supported. See ?create_future_rt for further details and complete options.
 }
 }
 \examples{

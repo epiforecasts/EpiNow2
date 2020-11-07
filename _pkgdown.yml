@@ -65,7 +65,7 @@ reference:
     desc: Functions used internally by estimate_infections
     contents:
       - contains("create_")
-      - gp_settings
+      - contains("_settings")
       - allocate_delays
   - title: Model Fitting
     desc: Functions for model fitting

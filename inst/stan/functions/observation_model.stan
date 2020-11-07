@@ -10,11 +10,19 @@ vector day_of_week_effect(vector reports, int[] day_of_week, vector effect) {
    }
   return(scaled_reports);
 }
+// Scale observations by fraction reported and update log density of 
+// fraction reported
+vector scale_obs(vector reports, real frac_obs) {
+  int t = num_elements(reports);
+  vector[t] scaled_reports;
+  scaled_reports = reports * frac_obs;
+  return(scaled_reports);
+}
 // update log density for reported cases
 void report_lp(int[] cases, vector reports, 
                real[] rep_phi, int phi_prior,
                int model_type, int horizon,
-               int weight) {
+               real weight) {
   int t = num_elements(reports) - horizon;
   real sqrt_phi;
   if (model_type) {

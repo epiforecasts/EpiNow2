@@ -6,21 +6,20 @@
 \usage{
 estimate_infections(
   reported_cases,
-  model = NULL,
-  samples = 1000,
-  stan_args = NULL,
-  method = "exact",
-  family = "negbin",
   generation_time,
-  CrIs = c(0.2, 0.5, 0.9),
   delays = list(),
-  horizon = 7,
+  obs_model = list(),
+  stan_args = list(),
   gp = list(),
   rt_prior = list(mean = 1, sd = 0.5),
-  week_effect = TRUE,
+  horizon = 7,
+  model = NULL,
+  samples = 1000,
+  method = "exact",
   use_breakpoints = TRUE,
   burn_in = 0,
   prior_smoothing_window = 7,
+  CrIs = c(0.2, 0.5, 0.9),
   future = FALSE,
   max_execution_time = Inf,
   return_fit = TRUE,
@@ -32,27 +31,9 @@ estimate_infections(
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
 
-\item{model}{A compiled stan model. By default uses the internal package model.}
-
-\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
-
-\item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "exact"
-or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
-using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
-
-\item{method}{A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
-this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
-from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results
-several order of magnitudes faster than the exact method.}
-
-\item{family}{A character string indicating the reporting model to use. Defaults to negative
-binomial ("negbin") with poisson ("poisson") also supported.}
-
 \item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
-
-\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
 Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
@@ -60,17 +41,31 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale). To use no delays set this to \code{list()}.}
 
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
+\item{obs_model}{A list of settings to override the package default observation
+model settings. See the documentation for \code{obs_model_settings} for details of these
+settings and \code{obs_model_settings()} for the current defaults.}
+
+\item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "exact"
+or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
+using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
 
 \item{gp}{A list of settings to override the package default Gaussian
 process settings. See the documentation for \code{gp_settings} for details of these
 settings and \code{gp_settings()} for the current defaults.}
 
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
-Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
+\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormal prior for Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
 log space). To infer infections and then calculate Rt using backcalculation set this to \code{list()}.}
 
-\item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
+\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
+
+\item{model}{A compiled stan model. By default uses the internal package model.}
+
+\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
+
+\item{method}{A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
+this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
+from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results
+several order of magnitudes faster than the exact method.}
 
 \item{use_breakpoints}{Logical, defaults to TRUE but only active if a \code{breakpoint} variable is present in the input data.
 Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with
@@ -82,6 +77,8 @@ removed from the package unless a clear user need is given.}
 
 \item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
 for the prior based on reported cases.}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
 fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
@@ -100,7 +97,12 @@ to assign errors to regions. Alter the default to run with error catching.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
-cases. It can optionally then estimate the time-varying reproduction number and the rate of growth.
+cases. This function uses either a generative Rt model or non-parametric back calculation to estimate underlying
+latent infections and then maps these infections to observed cases via uncertain reporting delays and a flexible
+observation model. See the examples and function arguments for the details of all options. The default settings
+may not be sufficient for your use case so the number of warmup samples (\code{stan_args = list(warmup)}) may need to
+be increased as may the overall number of samples. Follow the links provided by any warnings messages to diagnose
+issues with the MCMC fit.
 }
 \examples{
 \donttest{
@@ -117,36 +119,26 @@ reporting_delay <- list(mean = convert_to_logmean(3, 1),
                         sd_sd = 0.1, 
                         max = 15)
       
-# Note: all examples below have been tuned to reduce the runtimes of examples
-# these settings are not suggested for real world use.                   
 # run model with default setting
 def <- estimate_infections(reported_cases, generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay), 
-                           stan_args = 
-                              list(warmup = 200,
-                                   control = list(adapt_delta = 0.95, max_treedepth = 15),
-                                   cores = ifelse(interactive(), 4, 1)))
+                           delays = list(incubation_period, reporting_delay),
+                           stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(def)
 
-# run model using backcalculation
+# run model using backcalculation (combined here with under reporting)
 backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                stan_args = 
-                                  list(warmup = 200, 
-                                       cores = ifelse(interactive(), 4, 1),
-                                       control = list(adapt_delta = 0.95, max_treedepth = 15)),
-                                rt_prior = list())
+                                rt_prior = list(),
+                                obs_model = list(scale = list(mean = 0.4, sd = 0.01)),
+                                stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(backcalc)
                            
-# run model with Rt fixed into the future using the latest estimate
-latest_rt <- estimate_infections(reported_cases, generation_time = generation_time,
-                                delays = list(incubation_period, reporting_delay),
-                                stan_args = 
-                                   list(warmup = 200, 
-                                        control = list(adapt_delta = 0.95, max_treedepth = 15),
-                                        cores = ifelse(interactive(), 4, 1)),
-                                gp = list(future = "latest"))
-plot(latest_rt)
+# run model with Rt projected into the future using the Gaussian process
+project_rt <- estimate_infections(reported_cases, generation_time = generation_time,
+                                  delays = list(incubation_period, reporting_delay),
+                                  gp = list(future = "project"),
+                                  stan_args = list(cores = ifelse(interactive(), 4, 1)))
+plot(project_rt)
 
 # run the model with default settings on a later snapshot of 
 # data (use burn_in here to remove the first week of estimates that may
@@ -154,28 +146,21 @@ plot(latest_rt)
 snapshot_cases <- EpiNow2::example_confirmed[80:130]
 snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                stan_args = 
-                                   list(warmup = 200, 
-                                        control = list(adapt_delta = 0.95, max_treedepth = 15),
-                                        cores = ifelse(interactive(), 4, 1)))
+                                stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(snapshot) 
 
 # run model with stationary Rt assumption (likely to provide biased real-time estimates)
 stat <- estimate_infections(reported_cases, generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
-                            stan_args = 
-                               list(warmup = 200, cores = ifelse(interactive(), 4, 1),
-                                    control = list(adapt_delta = 0.95, max_treedepth = 15)),
-                            gp = list(stationary = TRUE))
+                            gp = list(stationary = TRUE),
+                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(stat)
        
 # run model without a gaussian process (i.e fixed Rt assuming no breakpoints)
 fixed <- estimate_infections(reported_cases, generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay),
-                             stan_args = 
-                                list(warmup = 200, cores = ifelse(interactive(), 4, 1),
-                                     control = list(adapt_delta = 0.95, max_treedepth = 15)),
-                             gp = NULL)
+                             gp = NULL,
+                             stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(fixed)
 
 # run model with no delays 
