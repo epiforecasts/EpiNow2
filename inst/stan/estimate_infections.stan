@@ -32,19 +32,21 @@ transformed data{
 
 parameters{
   // gaussian process
-  real<lower = 0> rho[fixed ? 0 : 1];    // length scale of noise GP
+  real<lower = ls_min,upper=ls_max> rho[fixed ? 0 : 1];  // length scale of noise GP
   real<lower = 0> alpha[fixed ? 0 : 1];  // scale of of noise GP
   vector[fixed ? 0 : M] eta;             // unconstrained noise
   // Rt
   vector[estimate_r] log_R;             // baseline reproduction number estimate (log)
-  vector[estimate_r > 0 ? seeding_time : 0] initial_infections;// seed infections 
+  real initial_infections[estimate_r] ; // seed infections 
+  real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
   real<lower = 0> gt_mean[estimate_r];  // mean of generation time
-  real <lower = 0> gt_sd[estimate_r];   // sd of generation time
+  real<lower = 0> gt_sd[estimate_r];   // sd of generation time
   real bp_effects[bp_n];                // Rt breakpoint effects
   // observation model
   real<lower = 0> delay_mean[delays];   // mean of delays
   real<lower = 0> delay_sd[delays];     // sd of delays
   simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect 
+  real<lower = 0> frac_obs[obs_scale]; // fraction of cases that are ultimately observed
   real<lower = 0> rep_phi[model_type];  // overdispersion of the reporting process
 }
 
@@ -55,13 +57,14 @@ transformed parameters {
   vector[ot_h] reports;                                   // observed cases
   // GP in noise - spectral densities
   if (!fixed) {
-    noise = update_gp(PHI, M, L, alpha[1], rho[1], eta);
+    noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);
   }
   // Estimate latent infections
   if (estimate_r) {
     // via Rt
     R = update_Rt(R, log_R[estimate_r], noise, breakpoints, bp_effects, stationary);
-    infections = generate_infections(R, seeding_time, gt_mean, gt_sd, max_gt, shifted_cases, initial_infections);
+    infections = generate_infections(R, seeding_time, gt_mean, gt_sd, max_gt,
+                                     initial_infections, initial_growth);
   }else{
     // via deconvolution
     infections = deconvolve_infections(shifted_cases, noise, fixed);
@@ -72,12 +75,17 @@ transformed parameters {
  if (week_effect) {
    reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);
   }
+  // scaling of reported cases by fraction oberserved
+ if (obs_scale) {
+   reports = scale_obs(reports, frac_obs[1]);
+ }
 }
 
 model {
   // priors for noise GP
   if (!fixed) {
-    gaussian_process_lp(rho, alpha, eta, lengthscale_alpha, lengthscale_beta, alpha_sd);
+    gaussian_process_lp(rho[1], alpha[1], eta, ls_meanlog, 
+                        ls_sdlog, ls_min, ls_max, alpha_sd);
   }
   // penalised priors for delay distributions
   delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, t);
@@ -90,12 +98,18 @@ model {
       bp_effects ~ normal(0, 0.1);
     }
     // initial infections
-    initial_infections ~ lognormal(0, 0.1);
+    initial_infections ~ normal(prior_infections, 0.2);
+    if (seeding_time > 1) {
+       initial_growth ~ normal(prior_growth, 0.2);
+     }
     // penalised_prior on generation interval
     generation_time_lp(gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot);
   }
+  if (obs_scale) {
+    frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];
+  }
   // observed reports from mean of reports
-  report_lp(cases, reports, rep_phi, 1, model_type, horizon, 1);
+  report_lp(cases, reports, rep_phi, 1, model_type, horizon, obs_weight);
 }
   
 generated quantities {

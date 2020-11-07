@@ -36,7 +36,11 @@ navbar:
   right:
     - icon: fa-github
       href: https://github.com/epiforecasts/EpiNow2
-      
+
+figures:
+  fig.width: 9
+  fig.height: 9
+  
 reference:
   - title: Estimation + Reporting
     desc: Functions that faciliate end-to-end analysis including imputing cases by infection, estimating Rt and reporting results.
@@ -61,7 +65,9 @@ reference:
     desc: Functions used internally by estimate_infections
     contents:
       - contains("create_")
+      - contains("_settings")
       - allocate_delays
+      - allocate_empty
   - title: Model Fitting
     desc: Functions for model fitting
     contents:
@@ -98,6 +104,7 @@ reference:
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases
     contents:
+      - simulate_infections
       - simulate_cases
       - adjust_infection_to_report
   - title: Data
@@ -129,7 +136,8 @@ reference:
     desc: Utility functions
     contents:
       - match_output_arguments
-      - stop_timeout
       - run_region
       - expose_stan_fns
+      - convert_to_logmean
+      - convert_to_logsd
 
