@@ -22,7 +22,7 @@ Create Observation Model Settings
 create_obs_model()
 
 # Poisson observation model
-create_obs_model(gp = NULL, data)
+create_obs_model(obs_model = list(family = "poisson"))
 
 # Applying a observation scaling to the data
 create_obs_model(obs_model = list(scale = list(mean = 0.4, sd = 0.01)))
