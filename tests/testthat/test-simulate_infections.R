@@ -14,7 +14,7 @@ out <- suppressWarnings(estimate_infections(reported_cases, generation_time = ge
                                             control = list(adapt_delta = 0.8))))
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object", {
-  sims <- simulate_infections(out, model = model)
+  sims <- simulate_infections(out)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
 })
 

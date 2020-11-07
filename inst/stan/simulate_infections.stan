@@ -30,7 +30,7 @@ data {
   int week_effect;                   // should a day of the week effect be estimated
   real<lower = 0> day_of_week_simplex[n, 7];
   int obs_scale; 
-  real frac_obs[obs_scale ? n : 0, obs_scale];
+  real frac_obs[obs_scale ? n : 0];
   int model_type;
   real<lower = 0> rep_phi[n, model_type];  // overdispersion of the reporting process
 }
@@ -56,7 +56,7 @@ generated quantities {
     }
     // scale observations
     if (obs_scale) {
-      reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i, obs_scale]));
+      reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i]));
     }
    // simulate reported cases
    imputed_reports[i] = report_rng(to_vector(reports[i]), rep_phi[i], model_type);

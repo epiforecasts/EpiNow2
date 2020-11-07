@@ -32,8 +32,8 @@
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # set delays between infection and case report
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- list(mean = log(3), mean_sd = 0.1,
-#'                         sd = log(1), sd_sd = 0.1, max = 15)
+#' reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
+#'                         sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 15)
 #'                         
 #' # fit model to data to recover Rt estimates
 #' est <- estimate_infections(reported_cases, generation_time = generation_time,
@@ -106,6 +106,9 @@ simulate_infections <- function(estimates,
     
     ## prepare data for stan command
     data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
+    
+    ## allocate empty parameters
+    data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"))
     
     ## simulate
     sims <- rstan::sampling(object = model,

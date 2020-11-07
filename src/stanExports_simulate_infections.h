@@ -1796,7 +1796,7 @@ private:
         int week_effect;
         std::vector<std::vector<double> > day_of_week_simplex;
         int obs_scale;
-        std::vector<std::vector<double> > frac_obs;
+        std::vector<double> frac_obs;
         int model_type;
         std::vector<std::vector<double> > rep_phi;
 public:
@@ -2040,17 +2040,13 @@ public:
             obs_scale = vals_i__[pos__++];
             current_statement_begin__ = 430;
             validate_non_negative_index("frac_obs", "(obs_scale ? n : 0 )", (obs_scale ? n : 0 ));
-            validate_non_negative_index("frac_obs", "1", 1);
-            context__.validate_dims("data initialization", "frac_obs", "double", context__.to_vec((obs_scale ? n : 0 ),1));
-            frac_obs = std::vector<std::vector<double> >((obs_scale ? n : 0 ), std::vector<double>(1, double(0)));
+            context__.validate_dims("data initialization", "frac_obs", "double", context__.to_vec((obs_scale ? n : 0 )));
+            frac_obs = std::vector<double>((obs_scale ? n : 0 ), double(0));
             vals_r__ = context__.vals_r("frac_obs");
             pos__ = 0;
             size_t frac_obs_k_0_max__ = (obs_scale ? n : 0 );
-            size_t frac_obs_k_1_max__ = 1;
-            for (size_t k_1__ = 0; k_1__ < frac_obs_k_1_max__; ++k_1__) {
-                for (size_t k_0__ = 0; k_0__ < frac_obs_k_0_max__; ++k_0__) {
-                    frac_obs[k_0__][k_1__] = vals_r__[pos__++];
-                }
+            for (size_t k_0__ = 0; k_0__ < frac_obs_k_0_max__; ++k_0__) {
+                frac_obs[k_0__] = vals_r__[pos__++];
             }
             current_statement_begin__ = 431;
             context__.validate_dims("data initialization", "model_type", "int", context__.to_vec());
@@ -2246,7 +2242,7 @@ public:
                     current_statement_begin__ = 456;
                     stan::model::assign(reports, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                to_row_vector(scale_obs(to_vector(get_base1(reports, i, "reports", 1)), get_base1(get_base1(frac_obs, i, "frac_obs", 1), 1, "frac_obs", 2), pstream__)), 
+                                to_row_vector(scale_obs(to_vector(get_base1(reports, i, "reports", 1)), get_base1(frac_obs, i, "frac_obs", 1), pstream__)), 
                                 "assigning variable reports");
                 }
                 current_statement_begin__ = 459;
