@@ -40,7 +40,7 @@ test_that("estimate_infections successfully returns estimates using default sett
 
 test_that("estimate_infections successfully returns estimates using the poisson observation model", {
   skip_on_cran()
-  test_estimate_infections(reported_cases, family = "poisson")
+  test_estimate_infections(reported_cases, obs_model = list(family = "poisson"))
 })
 
 test_that("estimate_infections successfully returns estimates using backcalculation", {
