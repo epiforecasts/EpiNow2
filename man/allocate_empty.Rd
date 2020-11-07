@@ -9,11 +9,11 @@ allocate_empty(data, params)
 \arguments{
 \item{data}{A list of parameters}
 
-\item{params}{A character vector of params to allocate to
+\item{params}{A character vector of parameters to allocate to
 empty if missing.}
 }
 \value{
-A list of parameters some allocated to be emtpy
+A list of parameters some allocated to be empty
 }
 \description{
 Allocate Empty Parameters to a List

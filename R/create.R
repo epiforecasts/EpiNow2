@@ -117,7 +117,7 @@ create_future_rt <- function(future_rt = "latest", delay = 0) {
 #'  the boundary scale of the approximate gaussian process. The proportion of basis functions
 #'  defaults to 0.3 (and much be greater than 0), and the boundary scale defaults to 2.
 #'  Decreasing either of these values should increase run times at the cost of the accuracy of 
-#'  gaussian process approximation. In general smaller posterior lengthscales require a 
+#'  Gaussian process approximation. In general smaller posterior length scales require a 
 #'  higher proportion of basis functions and the user should only rarely alter the boundary scale. 
 #'  These settings are an area of active research. See https://arxiv.org/abs/2004.11408 for further 
 #'  details.
@@ -184,7 +184,7 @@ gp_settings <- function(gp = list(), time = NA) {
 #' settings and `gp_settings()` for the current defaults.
 #' @param data A list containing the following numeric values: `t`, `seeding_time`,
 #' `horizon`.
-#' @param rt Logicial, defaults to `TRUE`. Is Rt being estimated? This controls Rt 
+#' @param rt Logical, defaults to `TRUE`. Is Rt being estimated? This controls Rt 
 #' specific Gaussian process settings that are not supported for back calculation.
 #' @seealso gp_settings
 #' @return A list of settings defining the Gaussian process
@@ -258,7 +258,7 @@ create_gp_data <- function(gp = list(), data, rt = TRUE) {
 #'  * `week_effect`: Logical defaulting to `TRUE`. Should a day of the week effect be used.
 #'  * `scale` List, defaulting to an empty list. Should an scaling factor be applied to map 
 #'  latent infections (convolved to date of report). If none empty a mean (`mean`) and standard
-#'  deviation (`sd`) needs to be supplied definining the normally distributed scalng factor.
+#'  deviation (`sd`) needs to be supplied defining the normally distributed scaling factor.
 #' @param obs_model A list of settings to override the defaults. 
 #' Defaults to an empty list.
 #' @return A list of observation model settings.
@@ -314,10 +314,10 @@ obs_model_settings <- function(obs_model = list()) {
 #' create_obs_model()
 #' 
 #' # Poisson observation model
-#' create_obs_data(gp = NULL, data)
+#' create_obs_model(gp = NULL, data)
 #' 
 #' # Applying a observation scaling to the data
-#' create_obs_data(obs_model = list(scale = list(mean = 0.4, sd = 0.01)))
+#' create_obs_model(obs_model = list(scale = list(mean = 0.4, sd = 0.01)))
 create_obs_model <- function(obs_model = list()) {
   obs_model <- obs_model_settings(obs_model)
   data <- list(

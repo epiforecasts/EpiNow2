@@ -53,8 +53,7 @@ using variational inference before returning an error (as stochastic failure is 
 process settings. See the documentation for \code{gp_settings} for details of these
 settings and \code{gp_settings()} for the current defaults.}
 
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
-Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
+\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormal prior for Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
 log space). To infer infections and then calculate Rt using backcalculation set this to \code{list()}.}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}

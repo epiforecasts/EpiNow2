@@ -14,7 +14,7 @@ settings and \code{gp_settings()} for the current defaults.}
 \item{data}{A list containing the following numeric values: \code{t}, \code{seeding_time},
 \code{horizon}.}
 
-\item{rt}{Logicial, defaults to \code{TRUE}. Is Rt being estimated? This controls Rt
+\item{rt}{Logical, defaults to \code{TRUE}. Is Rt being estimated? This controls Rt
 specific Gaussian process settings that are not supported for back calculation.}
 }
 \value{

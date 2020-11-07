@@ -26,7 +26,7 @@ to 1.
 \item \code{week_effect}: Logical defaulting to \code{TRUE}. Should a day of the week effect be used.
 \item \code{scale} List, defaulting to an empty list. Should an scaling factor be applied to map
 latent infections (convolved to date of report). If none empty a mean (\code{mean}) and standard
-deviation (\code{sd}) needs to be supplied definining the normally distributed scalng factor.
+deviation (\code{sd}) needs to be supplied defining the normally distributed scaling factor.
 }
 }
 \examples{

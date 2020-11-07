@@ -17,8 +17,7 @@
 #' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 #' that delay (assuming a lognormal distribution with all parameters excepting the max allowed value 
 #' on the log scale). To use no delays set this to `list()`.
-#' @param rt_prior A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
-#' Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
+#' @param rt_prior A list contain the mean and standard deviation (sd) of the lognormal prior for Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
 #' log space). To infer infections and then calculate Rt using backcalculation set this to `list()`.
 #' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
 #' for the prior based on reported cases.

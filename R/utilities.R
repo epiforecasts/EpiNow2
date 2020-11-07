@@ -130,10 +130,10 @@ allocate_delays <- function(delay_var, no_delays) {
 #' Allocate Empty Parameters to a List
 #'
 #' @param data A list of parameters
-#' @param params A character vector of params to allocate to
+#' @param params A character vector of parameters to allocate to
 #' empty if missing.
 #'
-#' @return A list of parameters some allocated to be emtpy
+#' @return A list of parameters some allocated to be empty
 #' @examples
 #' data <- list(x = 1, y = 2, z = 30)
 #' EpiNow2:::allocate_empty(data, params = c("x", "t"))

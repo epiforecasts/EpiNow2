@@ -28,7 +28,8 @@ estimated reproduction numbers are taken as forecast.}
 samples in the \code{estimates} input.}
 
 \item{batch_size}{Numeric, defaults to 100. Size of batches in which to simulate. May decrease
-runtimes due to reduced IO costs. If set to NULL then all simulations are done at once.}
+run times due to reduced IO costs but this is still being evaluated. If set to NULL then all
+simulations are done at once.}
 
 \item{verbose}{Logical defaults to \code{interactive()}. Should a progress bar (from \code{progressr}) be
 shown.}

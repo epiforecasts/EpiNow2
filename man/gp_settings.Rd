@@ -34,7 +34,7 @@ as discontinuities are expected in Rt and infections.
 the boundary scale of the approximate gaussian process. The proportion of basis functions
 defaults to 0.3 (and much be greater than 0), and the boundary scale defaults to 2.
 Decreasing either of these values should increase run times at the cost of the accuracy of
-gaussian process approximation. In general smaller posterior lengthscales require a
+Gaussian process approximation. In general smaller posterior length scales require a
 higher proportion of basis functions and the user should only rarely alter the boundary scale.
 These settings are an area of active research. See https://arxiv.org/abs/2004.11408 for further
 details.
