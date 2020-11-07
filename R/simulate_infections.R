@@ -12,7 +12,8 @@
 #' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
 #' samples in the `estimates` input.
 #' @param batch_size Numeric, defaults to 100. Size of batches in which to simulate. May decrease 
-#' runtimes due to reduced IO costs. If set to NULL then all simulations are done at once.
+#' run times due to reduced IO costs but this is still being evaluated. If set to NULL then all 
+#' simulations are done at once.
 #' @param verbose Logical defaults to `interactive()`. Should a progress bar (from `progressr`) be
 #' shown.
 #' @importFrom rstan extract sampling
@@ -32,16 +33,13 @@
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # set delays between infection and case report
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- list(mean = log(3), mean_sd = 0.1,
-#'                         sd = log(1), sd_sd = 0.1, max = 15)
+#' reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
+#'                         sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 15)
 #'                         
 #' # fit model to data to recover Rt estimates
 #' est <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            stan_args = 
-#'                              list(warmup = 200, 
-#'                                   control = list(adapt_delta = 0.95, max_treedepth = 15),
-#'                                   cores = ifelse(interactive(), 4, 1)))
+#'                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #'                                   
 #' # update Rt trajectory and simulate new infections using it
 #' R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
@@ -109,6 +107,9 @@ simulate_infections <- function(estimates,
     
     ## prepare data for stan command
     data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
+    
+    ## allocate empty parameters
+    data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"))
     
     ## simulate
     sims <- rstan::sampling(object = model,

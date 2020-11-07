@@ -9,7 +9,7 @@ create_stan_args(
   data = NULL,
   init = "random",
   samples = 1000,
-  stan_args = NULL,
+  stan_args = list(),
   method = "exact",
   verbose = FALSE
 )
