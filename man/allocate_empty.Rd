@@ -20,5 +20,5 @@ Allocate Empty Parameters to a List
 }
 \examples{
 data <- list(x = 1, y = 2, z = 30)
-allocate_empty(data, params = c("x", "t"))
+EpiNow2:::allocate_empty(data, params = c("x", "t"))
 }

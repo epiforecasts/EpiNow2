@@ -136,7 +136,7 @@ allocate_delays <- function(delay_var, no_delays) {
 #' @return A list of parameters some allocated to be emtpy
 #' @examples
 #' data <- list(x = 1, y = 2, z = 30)
-#' allocate_empty(data, params = c("x", "t"))
+#' EpiNow2:::allocate_empty(data, params = c("x", "t"))
 allocate_empty <- function(data, params) {
   for (param in params) {
     if (!exists(param, data)) {

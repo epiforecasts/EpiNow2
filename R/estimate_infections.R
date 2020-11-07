@@ -9,8 +9,6 @@
 #'  issues with the MCMC fit.
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be 
 #' in date format.
-#' @param family A character string indicating the reporting model to use. Defaults to negative 
-#' binomial ("negbin") with poisson ("poisson") also supported.
 #' @param generation_time A list containing the mean, standard deviation of the mean (mean_sd), 
 #' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 #' generation time (assuming a gamma distribution).

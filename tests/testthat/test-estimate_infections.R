@@ -8,7 +8,8 @@ futile.logger::flog.threshold("FATAL")
 reported_cases <- EpiNow2::example_confirmed[1:30]
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 10)
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 10)
-reporting_delay <- list(mean = log(3), mean_sd = 0.1, sd = log(2), sd_sd = 0.1, max = 10)
+reporting_delay <- list(mean = convert_to_logmean(3,1), mean_sd = 0.1,
+                        sd = convert_to_logsd(3,1), sd_sd = 0.1, max = 10)
 
 default_estimate_infections <- function(..., add_stan = list()) {
   
