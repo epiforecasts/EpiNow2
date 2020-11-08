@@ -5,6 +5,7 @@
 #'   or past counterfactuals. Simulations can be run in parallel using `future::plan`.
 #' @param estimates The \code{estimates} element of an \code{epinow} run that has been done with 
 #' output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.
+#' @param model A compiled stan model as returned by `rstan::stan_model`.
 #' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
 #'  contained in \code{estimates}, except elements set to NA. If it is longer than the time series 
 #'  of reproduction numbers contained in \code{estimates}, the values going beyond the length of 
@@ -22,7 +23,6 @@
 #' @importFrom progressr with_progress progressor
 #' @importFrom data.table rbindlist
 #' @importFrom lubridate days
-#' @inheritParams estimate_infections
 #' @export
 #' @examples
 #' \donttest{
@@ -39,6 +39,7 @@
 #' # fit model to data to recover Rt estimates
 #' est <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
+#'                            rt = list(prior = list(mean = 2, sd = 0.2)),
 #'                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #'                                   
 #' # update Rt trajectory and simulate new infections using it

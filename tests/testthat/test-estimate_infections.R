@@ -46,7 +46,7 @@ test_that("estimate_infections successfully returns estimates using the poisson 
 
 test_that("estimate_infections successfully returns estimates using backcalculation", {
   skip_on_cran()
-  test_estimate_infections(reported_cases, rt_prior = list())
+  test_estimate_infections(reported_cases, rt_prior = NULL)
 })
 
 test_that("estimate_infections successfully returns estimates using a fixed Rt", {
@@ -56,7 +56,7 @@ test_that("estimate_infections successfully returns estimates using a fixed Rt",
 
 test_that("estimate_infections successfully returns estimates using only mean shifted reported cases", {
   skip_on_cran()
-  test_estimate_infections(reported_cases, gp = NULL, rt_prior = list())
+  test_estimate_infections(reported_cases, gp = NULL, rt_prior = NULL)
 })
              
 test_that("estimate_infections successfully returns estimates using a single breakpoint", {

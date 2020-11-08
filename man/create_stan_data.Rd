@@ -11,10 +11,7 @@ create_stan_data(
   no_delays,
   mean_shift,
   generation_time,
-  rt_prior,
-  estimate_rt,
-  burn_in,
-  break_no,
+  rt,
   gp,
   obs_model,
   delays
@@ -36,15 +33,8 @@ in date format.}
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormal prior for Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
-log space). To infer infections and then calculate Rt using backcalculation set this to \code{list()}.}
-
-\item{estimate_rt}{Logical, should Rt be estimated.}
-
-\item{burn_in}{Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be
-removed from the package unless a clear user need is given.}
-
-\item{break_no}{Numeric, number of breakpoints}
+\item{rt}{Logical, defaults to \code{TRUE}. Is Rt being estimated? This controls Rt
+specific Gaussian process settings that are not supported for back calculation.}
 
 \item{gp}{A list of settings to override the package default Gaussian
 process settings. See the documentation for \code{gp_settings} for details of these
@@ -59,6 +49,10 @@ Each list entry must also be a list containing the mean, standard deviation of t
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale). To use no delays set this to \code{list()}.}
+
+\item{break_no}{Numeric, number of breakpoints}
+
+\item{estimate_rt}{Logical, should Rt be estimated.}
 }
 \value{
 A list of stan data

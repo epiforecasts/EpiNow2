@@ -8,14 +8,12 @@ estimate_infections(
   reported_cases,
   generation_time,
   delays = list(),
+  rt = list(),
+  gp = list(),
   obs_model = list(),
   stan_args = list(),
-  gp = list(),
-  rt_prior = list(mean = 1, sd = 0.5),
   horizon = 7,
   samples = 1000,
-  use_breakpoints = TRUE,
-  burn_in = 0,
   prior_smoothing_window = 7,
   CrIs = c(0.2, 0.5, 0.9),
   future = FALSE,
@@ -39,6 +37,13 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale). To use no delays set this to \code{list()}.}
 
+\item{rt}{Logical, defaults to \code{TRUE}. Is Rt being estimated? This controls Rt
+specific Gaussian process settings that are not supported for back calculation.}
+
+\item{gp}{A list of settings to override the package default Gaussian
+process settings. See the documentation for \code{gp_settings} for details of these
+settings and \code{gp_settings()} for the current defaults.}
+
 \item{obs_model}{A list of settings to override the package default observation
 model settings. See the documentation for \code{obs_model_settings} for details of these
 settings and \code{obs_model_settings()} for the current defaults.}
@@ -46,24 +51,9 @@ settings and \code{obs_model_settings()} for the current defaults.}
 \item{stan_args}{A list of settings to override the package default stan settings. See the documentation
 for \code{create_stan_args} for details and \code{create_stan_args()} for current defaults.}
 
-\item{gp}{A list of settings to override the package default Gaussian
-process settings. See the documentation for \code{gp_settings} for details of these
-settings and \code{gp_settings()} for the current defaults.}
-
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormal prior for Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
-log space). To infer infections and then calculate Rt using backcalculation set this to \code{list()}.}
-
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
-
-\item{use_breakpoints}{Logical, defaults to TRUE but only active if a \code{breakpoint} variable is present in the input data.
-Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with
-a global non-parametric effect and so represent a conservative estimate of breakpoint changes. To specify a random walk define
-breakpoints every n days (so every 7 days for a weekly random walk) and disable the gaussian process using \code{gp = list()}.}
-
-\item{burn_in}{Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be
-removed from the package unless a clear user need is given.}
 
 \item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
 for the prior based on reported cases. Used for back calculation only.}
@@ -84,6 +74,17 @@ to assign errors to regions. Alter the default to run with error catching.}
 
 \item{verbose}{Logical, defaults to \code{TRUE} when used interactively and otherwise \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
+
+\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormal prior for Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
+log space). To infer infections and then calculate Rt using backcalculation set this to \code{list()}.}
+
+\item{use_breakpoints}{Logical, defaults to TRUE but only active if a \code{breakpoint} variable is present in the input data.
+Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with
+a global non-parametric effect and so represent a conservative estimate of breakpoint changes. To specify a random walk define
+breakpoints every n days (so every 7 days for a weekly random walk) and disable the gaussian process using \code{gp = list()}.}
+
+\item{burn_in}{Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be
+removed from the package unless a clear user need is given.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
@@ -109,69 +110,80 @@ reporting_delay <- list(mean = convert_to_logmean(3, 1),
                         sd_sd = 0.1, 
                         max = 15)
       
-# run model with default setting
+# default setting
 def <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
+                           rt = list(prior = list(mean = 2, sd = 0.2)),
                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
-plot(def)
-summary(def)
+ summary(def)
+ plot(def)
+
 # run model using backcalculation (combined here with under reporting)
 backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
-                                rt_prior = list(),
+                                rt = NULL,
                                 obs_model = list(scale = list(mean = 0.4, sd = 0.01)),
                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(backcalc)
                            
-# run model with Rt projected into the future using the Gaussian process
+# Rt projected into the future using the Gaussian process
 project_rt <- estimate_infections(reported_cases, generation_time = generation_time,
                                   delays = list(incubation_period, reporting_delay),
+                                  rt = list(prior = list(mean = 2, sd = 0.2)),
                                   gp = list(future = "project"),
                                   stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(project_rt)
 
-# run the model with default settings on a later snapshot of data 
+# default settings on a later snapshot of data 
 snapshot_cases <- EpiNow2::example_confirmed[80:130]
 snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
+                                rt = list(prior = list(mean = 1, sd = 0.2)),
                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(snapshot) 
 
-# run model with stationary Rt assumption (likely to provide biased real-time estimates)
+# stationary Rt assumption (likely to provide biased real-time estimates)
 stat <- estimate_infections(reported_cases, generation_time = generation_time,
                             delays = list(incubation_period, reporting_delay),
                             gp = list(stationary = TRUE),
+                            rt = list(prior = list(mean = 2, sd = 0.2)),
                             stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(stat)
        
-# run model without a gaussian process (i.e fixed Rt assuming no breakpoints)
+# no gaussian process (i.e fixed Rt assuming no breakpoints)
 fixed <- estimate_infections(reported_cases, generation_time = generation_time,
                              delays = list(incubation_period, reporting_delay),
                              gp = NULL,
                              stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(fixed)
 
-# run model with no delays 
+# no delays 
 no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
-                                stan_args = 
-                                     list(warmup = 200,
-                                          cores = ifelse(interactive(), 4, 1),
-                                          control = list(adapt_delta = 0.95, max_treedepth = 15)))
+                                stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(no_delay)    
 
-# run model with breakpoints but otherwise static Rt
-reported_cases_bp <- 
-  data.table::copy(reported_cases)[, breakpoint := ifelse(date == as.Date("2020-03-16"), 
-                                                          1, 0)]
-bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
+# breakpoints but otherwise static Rt
+bp_cases <- data.table::copy(reported_cases)
+bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
+bkp <- estimate_infections(bp_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
-                           stan_args = 
-                              list(warmup = 200, 
-                                   cores = ifelse(interactive(), 4, 1),
-                                   control = list(adapt_delta = 0.95, max_treedepth = 15)),
+                           rt = list(prior = list(mean = 2, sd = 0.2)),
+                           stan_args = list(object = model, cores = ifelse(interactive(), 4, 1)),
                            gp = NULL)                                                         
-plot(bkp)
 # breakpoint effect
 summary(bkp, type = "parameters", params = "breakpoints")
+plot(bkp)
+
+
+# weekly random walk
+rw <- estimate_infections(reported_cases, generation_time = generation_time,
+                          delays = list(incubation_period, reporting_delay),
+                          rt = list(prior = list(mean = 2, sd = 0.2), rw = 7),
+                          stan_args = list(cores = ifelse(interactive(), 4, 1)),
+                          gp = NULL)     
+
+# breakpoint effects
+summary(rw, type = "parameters", params = "breakpoints")                                                    
+plot(rw)
 }                                
 }

@@ -22,6 +22,8 @@ contained in \code{estimates}, except elements set to NA. If it is longer than t
 of reproduction numbers contained in \code{estimates}, the values going beyond the length of
 estimated reproduction numbers are taken as forecast.}
 
+\item{model}{A compiled stan model as returned by \code{rstan::stan_model}.}
+
 \item{samples}{Numeric, number of posterior samples to simulate from. The default is to use all
 samples in the \code{estimates} input.}
 
@@ -52,6 +54,7 @@ reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
 # fit model to data to recover Rt estimates
 est <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
+                           rt = list(prior = list(mean = 2, sd = 0.2)),
                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
                                   
 # update Rt trajectory and simulate new infections using it

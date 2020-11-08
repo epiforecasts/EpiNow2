@@ -63,82 +63,91 @@
 #'                         sd_sd = 0.1, 
 #'                         max = 15)
 #'       
-#' # run model with default setting
+#' # default setting
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
+#'                            rt = list(prior = list(mean = 2, sd = 0.2)),
 #'                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
-#' plot(def)
-#' summary(def)
+#'  summary(def)
+#'  plot(def)
+#' 
 #' # run model using backcalculation (combined here with under reporting)
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 rt_prior = list(),
+#'                                 rt = NULL,
 #'                                 obs_model = list(scale = list(mean = 0.4, sd = 0.01)),
 #'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(backcalc)
 #'                            
-#' # run model with Rt projected into the future using the Gaussian process
+#' # Rt projected into the future using the Gaussian process
 #' project_rt <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                   delays = list(incubation_period, reporting_delay),
+#'                                   rt = list(prior = list(mean = 2, sd = 0.2)),
 #'                                   gp = list(future = "project"),
 #'                                   stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(project_rt)
 #'
-#' # run the model with default settings on a later snapshot of data 
+#' # default settings on a later snapshot of data 
 #' snapshot_cases <- EpiNow2::example_confirmed[80:130]
 #' snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
+#'                                 rt = list(prior = list(mean = 1, sd = 0.2)),
 #'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(snapshot) 
 #' 
-#' # run model with stationary Rt assumption (likely to provide biased real-time estimates)
+#' # stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
 #'                             gp = list(stationary = TRUE),
+#'                             rt = list(prior = list(mean = 2, sd = 0.2)),
 #'                             stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(stat)
 #'        
-#' # run model without a gaussian process (i.e fixed Rt assuming no breakpoints)
+#' # no gaussian process (i.e fixed Rt assuming no breakpoints)
 #' fixed <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                              delays = list(incubation_period, reporting_delay),
 #'                              gp = NULL,
 #'                              stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(fixed)
 #' 
-#' # run model with no delays 
+#' # no delays 
 #' no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                                 stan_args = 
-#'                                      list(warmup = 200,
-#'                                           cores = ifelse(interactive(), 4, 1),
-#'                                           control = list(adapt_delta = 0.95, max_treedepth = 15)))
+#'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(no_delay)    
 #' 
-#' # run model with breakpoints but otherwise static Rt
-#' reported_cases_bp <- 
-#'   data.table::copy(reported_cases)[, breakpoint := ifelse(date == as.Date("2020-03-16"), 
-#'                                                           1, 0)]
-#' bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
+#' # breakpoints but otherwise static Rt
+#' bp_cases <- data.table::copy(reported_cases)
+#' bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
+#' bkp <- estimate_infections(bp_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            stan_args = 
-#'                               list(warmup = 200, 
-#'                                    cores = ifelse(interactive(), 4, 1),
-#'                                    control = list(adapt_delta = 0.95, max_treedepth = 15)),
+#'                            rt = list(prior = list(mean = 2, sd = 0.2)),
+#'                            stan_args = list(object = model, cores = ifelse(interactive(), 4, 1)),
 #'                            gp = NULL)                                                         
-#' plot(bkp)
 #' # breakpoint effect
 #' summary(bkp, type = "parameters", params = "breakpoints")
+#' plot(bkp)
+#' 
+#' 
+#' # weekly random walk
+#' rw <- estimate_infections(reported_cases, generation_time = generation_time,
+#'                           delays = list(incubation_period, reporting_delay),
+#'                           rt = list(prior = list(mean = 2, sd = 0.2), rw = 7),
+#'                           stan_args = list(cores = ifelse(interactive(), 4, 1)),
+#'                           gp = NULL)     
+#'
+#' # breakpoint effects
+#' summary(rw, type = "parameters", params = "breakpoints")                                                    
+#' plot(rw)
 #' }                                
 estimate_infections <- function(reported_cases, 
                                 generation_time, 
                                 delays = list(),
+                                rt = list(),
+                                gp = list(),
                                 obs_model = list(),
                                 stan_args = list(),
-                                gp = list(),
-                                rt_prior = list(mean = 1, sd = 0.5),
                                 horizon = 7,
                                 samples = 1000,
-                                use_breakpoints = TRUE, 
-                                burn_in = 0, 
                                 prior_smoothing_window = 7, 
                                 CrIs = c(0.2, 0.5, 0.9),
                                 future = FALSE, 
@@ -146,43 +155,14 @@ estimate_infections <- function(reported_cases,
                                 return_fit = TRUE,
                                 id = "estimate_infections",
                                 verbose = interactive()){
-   
-  if (burn_in > 0) {
-    futile.logger::flog.info("burn_in is depreciated as of EpiNow2 1.3.0 - if using 
-                             this feature please contact the developers",
-                             name = "EpiNow2.epinow.estimate_infections")
-  }
   
   # store dirty reported case data
   dirty_reported_cases <- data.table::copy(reported_cases)
-  # set fall back rt prior and trigger switches
-  if (length(rt_prior) == 0) {
-    estimate_rt <- FALSE
-    rt_prior <- list(mean = 1, sd = 1)
-  }else{
-    estimate_rt <- TRUE
-  }
   
   # Check verbose settings and set logger to match---------------------------
   if (verbose) {
     futile.logger::flog.threshold(futile.logger::DEBUG,
                                   name = "EpiNow2.epinow.estimate_infections")
-  }
-
-  # Check breakpoints -------------------------------------------------------
-  if (is.null(reported_cases$breakpoint)) {
-    reported_cases$breakpoint <- 0
-    use_breakpoints <- FALSE
-  }
-  
-  if (use_breakpoints) {
-   break_no <- sum(reported_cases$breakpoint, na.rm = TRUE)
-   if (break_no == 0) {
-     futile.logger::flog.warn("Breakpoint estimation was specified but no breakpoints were detected.",
-                              name = "EpiNow2.epinow.estimate_infections")
-   }
-  }else{
-    break_no <- 0
   }
  
   # Organise delays ---------------------------------------------------------
@@ -230,10 +210,7 @@ estimate_infections <- function(reported_cases,
                            no_delays = no_delays,
                            mean_shift = mean_shift,
                            generation_time = generation_time,
-                           rt_prior = rt_prior, 
-                           estimate_rt = estimate_rt,
-                           burn_in = burn_in,
-                           break_no = break_no, 
+                           rt = rt,
                            gp = gp,
                            obs_model = obs_model,
                            delays = delays)
@@ -241,8 +218,7 @@ estimate_infections <- function(reported_cases,
   # Set up default settings -------------------------------------------------
   args <- create_stan_args(stan_args = stan_args,
                            data = data, samples = samples, 
-                           init = create_initial_conditions(data, delays, rt_prior, 
-                                                            generation_time, mean_shift),
+                           init = create_initial_conditions(data),
                            verbose = verbose)
   
   # Fit model ---------------------------------------------------------------
@@ -272,7 +248,7 @@ estimate_infections <- function(reported_cases,
   format_out <- format_fit(posterior_samples = out, 
                            horizon = horizon,
                            shift = mean_shift,
-                           burn_in = burn_in,
+                           burn_in = 0,
                            start_date = start_date,
                            CrIs = CrIs)
   

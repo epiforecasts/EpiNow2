@@ -11,6 +11,7 @@
 * Updates the over dispersion prior to be `1 / sqrt(half_normal(0, rho_prior))` based on [this](https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations) advice and as the over dispersion being measured is in reports and not infections and hence a priori there is not strong evidence for over dispersion (which may be the case for infections) so the previous prior was overly weighted towards this.
 * Updates the interface for the observation model with arguments now  passed using `obs_model`. This removes `week_effect` and `family` from the main argument list which will allow for future extensions. Also adds a new argument `scale` which controls the uncertain fraction of cases that are eventually observed (defined as normally distributed). Setting this parameter will not 
 impact Rt estimates.
+* Updates the interface to the Rt settings with all arguments passed to `rt` this includes the initial prior, and `use_breakpoints`. Adds a new helper argument `rw` which enables easy parameterisation of a fixed length random walk. This changes also helps make it clear that these arguments only impact the Rt generative model and not the backcalculation model.
 
 ## Other changes
 
@@ -19,7 +20,7 @@ impact Rt estimates.
 * Reworked the package logging system to improve the reporting of issues both in `epinow` and in `regional_epinow` for large batch runs.
 * Fix from @hsbadr to prevent overflow when overdispersion is larger (by switching to a Poisson approximation). Hitting this issue may indicate a bug in other model code that will need further work to explore.
 * Moved default verbosity for all functions (excepting `regional_epinow`) to be based on whether or not usage is interactive. 
-* Depreciated `burn_in` argument of `estimate_infections` as updates to model initialisation mean that this feature is likely no longer needed. Please contact the developers if you feel you have a use case for this argument.
+* Removed the `burn_in` argument of `estimate_infections` as updates to model initialisation mean that this feature is likely no longer needed. Please contact the developers if you feel you have a use case for this argument.
 * Adds utility functions to map between mean and standard deviation and the log mean and log standard deviation for a log normal distribution (`convert_to_logmean` and `convert_to_logsd`).
 * Optimised all discrete probability mass functions to be as vectorised as possible.
 * Updated the Gaussian process to be internally on the unit scale.

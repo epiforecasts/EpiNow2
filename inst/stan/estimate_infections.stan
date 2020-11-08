@@ -41,7 +41,8 @@ parameters{
   real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
   real<lower = 0> gt_mean[estimate_r];  // mean of generation time
   real<lower = 0> gt_sd[estimate_r];   // sd of generation time
-  real bp_effects[bp_n];                // Rt breakpoint effects
+  real bp_sd[bp_n > 0 ? 1 : 0];        // standard deviation of breakpoint effect
+  real bp_effects[bp_n];               // Rt breakpoint effects
   // observation model
   real<lower = 0> delay_mean[delays];   // mean of delays
   real<lower = 0> delay_sd[delays];     // sd of delays
@@ -95,7 +96,8 @@ model {
     log_R ~ normal(r_logmean, r_logsd);
     //breakpoint effects on Rt
     if (bp_n > 0) {
-      bp_effects ~ normal(0, 0.1);
+      bp_sd[1] ~ normal(0, 0.1) T[0,];
+      bp_effects ~ normal(0, bp_sd);
     }
     // initial infections
     initial_infections ~ normal(prior_infections, 0.2);
