@@ -85,9 +85,7 @@
 #'                                   stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(project_rt)
 #'
-#' # run the model with default settings on a later snapshot of 
-#' # data (use burn_in here to remove the first week of estimates that may
-#' # be impacted by this most).
+#' # run the model with default settings on a later snapshot of data 
 #' snapshot_cases <- EpiNow2::example_confirmed[80:130]
 #' snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
@@ -117,7 +115,6 @@
 #' plot(no_delay)    
 #' 
 #' # run model with breakpoints but otherwise static Rt
-#' # add a dummy breakpoint (used only when optionally estimating breakpoints)
 #' reported_cases_bp <- 
 #'   data.table::copy(reported_cases)[, breakpoint := ifelse(date == as.Date("2020-03-16"), 
 #'                                                           1, 0)]

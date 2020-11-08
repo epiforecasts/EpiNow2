@@ -26,7 +26,6 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
                            )
                          })
                 }
-                
               })
 }
 
