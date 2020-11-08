@@ -123,6 +123,12 @@ backcalc_settings <- function(backcalc = list()) {
 #'   the input data. Break points should be defined as 1 if present and otherwise 0. By default
 #'   breakpoints are fit jointly with a global non-parametric effect and so represent a conservative
 #'   estimate of break point changes (alter this by setting `gp = NULL`).
+#'  * `future`: How should Rt be extended when data is sparse (applies to the GP, and automated breakpoints).
+#'     The default is to fix it  based on the last estimate based on partial data ("latest") but other options 
+#'     include projecting the latest estimate based on >50% complete data ("estimate"), or projecting
+#'     the kernel of the gaussian process forwards in time ("project"). Alternatively the number 
+#'     of days to project can be passed (if negative then fixes within
+#'     estimated time). See ?create_future_rt for further details and complete options.
 #' @param rt A list of settings to override the defaults. Defaults to an empty list.
 #' @return A list of settings defining the time-varying reproduction number
 #' @export
@@ -140,7 +146,8 @@ rt_settings <- function(rt = list()) {
     prior = list(mean = 1, sd = 1),
     use_rt = TRUE,
     rw = 0,
-    use_breakpoints = TRUE
+    use_breakpoints = TRUE,
+    future = "latest"
   )
   # replace default settings with those specified by user
   rt <- update_defaults(defaults, rt)
@@ -148,51 +155,6 @@ rt_settings <- function(rt = list()) {
     rt$use_breakpoints <- TRUE
   }
   return(rt)
-}
-
-#' Create Time-varying Reproduction Number Data
-#'
-#' @param rt A list of settings to override the package default time-varying reproduction
-#' number settings. See the documentation for `?rt_settings` for details of these settings 
-#' and `rt_settings()` for the current defaults. Set to `NULL` to switch to using 
-#' back calculation rather than generating infections using Rt.
-#' @param breakpoints An integer vector (binary) indicating the location of breakpoints.
-#' @seealso rt_settings
-#' @return A list of settings defining the time-varying reproduction number
-#' @export
-#' @examples
-#' # default Rt data     
-#' create_rt_data()
-#' 
-#' # settings when no Rt is desired
-#' create_rt_data(rt = NULL)
-#' 
-#' # using breakpoints
-#' create_rt_data(rt = list(use_breakpoints = TRUE), breakpoints = rep(1, 10))
-create_rt_data <- function(rt = list(), breakpoints = NULL) {
-  # Define if GP is on or off
-  if (is.null(rt)) {
-    rt <- list(use_rt = FALSE)
-  }
-  # set up default options
-  rt <- rt_settings(rt)
-  # apply random walk
-  if (rt$rw != 0) {
-    breakpoints <- as.integer(1:length(breakpoints) %% rt$rw == 0)
-  }
-  # check breakpoints 
-  if (is.null(breakpoints) | sum(breakpoints) == 0) {
-    rt$use_breakpoints <- FALSE
-  }
-  # map settings to underlying gp stan requirements
-  rt_data <- list(
-    r_mean = rt$prior$mean,
-    r_sd = rt$prior$sd,
-    estimate_r = ifelse(rt$use_rt, 1, 0),
-    bp_n = ifelse(rt$use_breakpoints, sum(breakpoints, na.rm = TRUE), 0),
-    breakpoints = breakpoints
-  ) 
-  return(rt_data)
 }
 
 #' Construct the Required Future Rt assumption
@@ -219,6 +181,67 @@ create_future_rt <- function(future_rt = "latest", delay = 0) {
     out$from <- as.integer(future_rt)
   }
   return(out)
+}
+
+#' Create Time-varying Reproduction Number Data
+#'
+#' @param rt A list of settings to override the package default time-varying reproduction
+#' number settings. See the documentation for `?rt_settings` for details of these settings 
+#' and `rt_settings()` for the current defaults. Set to `NULL` to switch to using 
+#' back calculation rather than generating infections using Rt.
+#' @param breakpoints An integer vector (binary) indicating the location of breakpoints.
+#' @param horizon Numeric, forecast horizon.
+#' @seealso rt_settings
+#' @return A list of settings defining the time-varying reproduction number
+#' @inheritParams create_future_rt
+#' @export
+#' @examples
+#' # default Rt data     
+#' create_rt_data()
+#' 
+#' # settings when no Rt is desired
+#' create_rt_data(rt = NULL)
+#' 
+#' # using breakpoints
+#' create_rt_data(rt = list(use_breakpoints = TRUE), breakpoints = rep(1, 10))
+create_rt_data <- function(rt = list(), breakpoints = NULL,
+                           delay = 0, horizon = 0) {
+  # Define if GP is on or off
+  if (is.null(rt)) {
+    rt <- list(use_rt = FALSE,
+               future = "project")
+  }
+  # set up default options
+  rt <- rt_settings(rt)
+  # define future Rt arguments
+  future_rt <- create_future_rt(future_rt = rt$future, 
+                                delay = delay)
+  # apply random walk
+  if (rt$rw != 0) {
+    breakpoints <- as.integer(1:length(breakpoints) %% rt$rw == 0)
+    if (!(rt$future %in% "project")) {
+      max_bps <- length(breakpoints) - horizon + future_rt$from
+      if (max_bps < length(breakpoints)){
+        breakpoints[(max_bps + 1):length(breakpoints)] <- 0
+      }
+    }
+
+  }
+  # check breakpoints 
+  if (is.null(breakpoints) | sum(breakpoints) == 0) {
+    rt$use_breakpoints <- FALSE
+  }
+  # map settings to underlying gp stan requirements
+  rt_data <- list(
+    r_mean = rt$prior$mean,
+    r_sd = rt$prior$sd,
+    estimate_r = ifelse(rt$use_rt, 1, 0),
+    bp_n = ifelse(rt$use_breakpoints, sum(breakpoints, na.rm = TRUE), 0),
+    breakpoints = breakpoints,
+    future_fixed = ifelse(future_rt$fixed, 1, 0),
+    fixed_from = future_rt$from
+  ) 
+  return(rt_data)
 }
 
 #' Approximate Gaussian Process Settings
@@ -251,13 +274,6 @@ create_future_rt <- function(future_rt = "latest", delay = 0) {
 #'    order and so depend on the previous value. A stationary Gaussian process may be more
 #'    tractable but will revert to the global average when data is sparse i.e for near real 
 #'    time estimates. The default is FALSE. This feature is experimental.
-#'  * `future`: How should the Gaussian process be extended when data is sparse. The default
-#'     is to fix it  based on the last estimate based on partial data ("latest") but other options 
-#'     include projecting the latest estimate based on >50% complete data ("estimate"), or projecting
-#'     the kernel of the gaussian process forwards in time ("project"). Alternatively the number 
-#'     of days to project the gaussian process can be passed (if negative then fixes within
-#'     estimated time). When using backcalculation (i.e `rt_prior = list()`) only projection 
-#'     using the gaussian process is supported. See ?create_future_rt for further details and complete options.
 #' @param gp A list of settings to override the defaults. Defaults to an empty list.
 #' @param time The maximum observed time, defaults to NA. 
 #' @return A list of settings defining the gaussian process
@@ -284,8 +300,7 @@ gp_settings <- function(gp = list(), time = NA) {
     alpha_sd = 0.1, 
     kernel = "matern",
     matern_type = 3/2,
-    stationary = FALSE,
-    future = "latest")
+    stationary = FALSE)
   
   # replace default settings with those specified by user
   gp <- update_defaults(defaults, gp)
@@ -298,14 +313,11 @@ gp_settings <- function(gp = list(), time = NA) {
 
 #' Create Gaussian Process Data
 #'
-#'
 #' @param gp A list of settings to override the package default Gaussian 
 #' process settings. See the documentation for `?gp_settings` for details of these 
 #' settings and `gp_settings()` for the current defaults.
 #' @param data A list containing the following numeric values: `t`, `seeding_time`,
 #' `horizon`.
-#' @param rt Logical, defaults to `TRUE`. Is Rt being estimated? This controls Rt 
-#' specific Gaussian process settings that are not supported for back calculation.
 #' @seealso gp_settings
 #' @return A list of settings defining the Gaussian process
 #' @export
@@ -325,7 +337,7 @@ gp_settings <- function(gp = list(), time = NA) {
 #' 
 #' # custom lengthscale
 #' create_gp_data(gp = list(ls_mean = 14), data)
-create_gp_data <- function(gp = list(), data, rt = TRUE) {
+create_gp_data <- function(gp = list(), data) {
   # Define if GP is on or off
   if (is.null(gp)) {
     fixed <- TRUE
@@ -333,22 +345,13 @@ create_gp_data <- function(gp = list(), data, rt = TRUE) {
   }else{
     fixed <- FALSE
   }
-  if (!rt) {
-    gp$future <- "project"
-  }
   # set up default options
   gp <- gp_settings(gp, data$t - data$seeding_time - data$horizon)
 
-  # define future Rt arguments
-  future_rt <- create_future_rt(future_rt = gp$future, 
-                                delay = data$seeding_time)
-  
   # map settings to underlying gp stan requirements
   gp_data <- list(
     fixed = ifelse(fixed, 1, 0),
     stationary = ifelse(gp$stationary, 1, 0),
-    future_fixed = ifelse(future_rt$fixed, 1, 0),
-    fixed_from = future_rt$from,
     M = ceiling((data$t - data$seeding_time) * gp$basis_prop),
     L = gp$boundary_scale,
     ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
@@ -486,8 +489,11 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
   ) 
   
 # Add Rt data -------------------------------------------------------------
-  data <- c(data, create_rt_data(rt, breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint))
-  
+  data <- c(data, 
+            create_rt_data(rt,
+                           breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
+                           delay = data$seeding_time, horizon = data$horizon))
+   
 # initial estimate of growth ------------------------------------------
   first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
                                        t = 1:min(7, length(cases)))
@@ -511,7 +517,7 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
   data$max_delay <- allocate_delays(delays$max, no_delays)
 
   ## Add gaussian process args
-  data <- c(data, create_gp_data(gp, data, rt = data$estimate_r == 1))
+  data <- c(data, create_gp_data(gp, data))
   ## Add observation model args
   data <- c(data, create_obs_model(obs_model))
   ## Rescale mean shifted prior for backcalculation if observation scaling is used

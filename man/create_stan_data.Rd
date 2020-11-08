@@ -33,9 +33,6 @@ in date format.}
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
-\item{rt}{Logical, defaults to \code{TRUE}. Is Rt being estimated? This controls Rt
-specific Gaussian process settings that are not supported for back calculation.}
-
 \item{gp}{A list of settings to override the package default Gaussian
 process settings. See the documentation for \code{?gp_settings} for details of these
 settings and \code{gp_settings()} for the current defaults.}

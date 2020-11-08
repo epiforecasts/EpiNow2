@@ -4,7 +4,7 @@
 \alias{create_rt_data}
 \title{Create Time-varying Reproduction Number Data}
 \usage{
-create_rt_data(rt = list(), breakpoints = NULL)
+create_rt_data(rt = list(), breakpoints = NULL, delay = 0, horizon = 0)
 }
 \arguments{
 \item{rt}{A list of settings to override the package default time-varying reproduction
@@ -13,6 +13,10 @@ and \code{rt_settings()} for the current defaults. Set to \code{NULL} to switch 
 back calculation rather than generating infections using Rt.}
 
 \item{breakpoints}{An integer vector (binary) indicating the location of breakpoints.}
+
+\item{delay}{Numeric mean delay}
+
+\item{horizon}{Numeric, forecast horizon.}
 }
 \value{
 A list of settings defining the time-varying reproduction number
