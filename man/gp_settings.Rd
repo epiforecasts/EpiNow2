@@ -42,13 +42,6 @@ details.
 order and so depend on the previous value. A stationary Gaussian process may be more
 tractable but will revert to the global average when data is sparse i.e for near real
 time estimates. The default is FALSE. This feature is experimental.
-\item \code{future}: How should the Gaussian process be extended when data is sparse. The default
-is to fix it  based on the last estimate based on partial data ("latest") but other options
-include projecting the latest estimate based on >50\% complete data ("estimate"), or projecting
-the kernel of the gaussian process forwards in time ("project"). Alternatively the number
-of days to project the gaussian process can be passed (if negative then fixes within
-estimated time). When using backcalculation (i.e \code{rt_prior = list()}) only projection
-using the gaussian process is supported. See ?create_future_rt for further details and complete options.
 }
 }
 \examples{

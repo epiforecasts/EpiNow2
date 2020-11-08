@@ -37,9 +37,6 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale). To use no delays set this to \code{list()}.}
 
-\item{rt}{Logical, defaults to \code{TRUE}. Is Rt being estimated? This controls Rt
-specific Gaussian process settings that are not supported for back calculation.}
-
 \item{gp}{A list of settings to override the package default Gaussian
 process settings. See the documentation for \code{?gp_settings} for details of these
 settings and \code{gp_settings()} for the current defaults.}
@@ -120,8 +117,8 @@ plot(backcalc)
 # Rt projected into the future using the Gaussian process
 project_rt <- estimate_infections(reported_cases, generation_time = generation_time,
                                   delays = list(incubation_period, reporting_delay),
-                                  rt = list(prior = list(mean = 2, sd = 0.2)),
-                                  gp = list(future = "project"),
+                                  rt = list(prior = list(mean = 2, sd = 0.2), 
+                                            future = "project"),
                                   stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(project_rt)
 
