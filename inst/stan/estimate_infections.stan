@@ -41,7 +41,7 @@ parameters{
   real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
   real<lower = 0> gt_mean[estimate_r];  // mean of generation time
   real<lower = 0> gt_sd[estimate_r];   // sd of generation time
-  real bp_sd[bp_n > 0 ? 1 : 0];        // standard deviation of breakpoint effect
+  real<lower = 0> bp_sd[bp_n > 0 ? 1 : 0]; // standard deviation of breakpoint effect
   real bp_effects[bp_n];               // Rt breakpoint effects
   // observation model
   real<lower = 0> delay_mean[delays];   // mean of delays
