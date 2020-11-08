@@ -16,6 +16,9 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
     reported_cases , reported_cases_grid, 
     by = c("date"), all.y = TRUE)
   
+  if (is.null(reported_cases$breakpoint)) {
+    reported_cases$breakpoint <- 0
+  }
   reported_cases <- reported_cases[is.na(confirm), confirm := 0][,.(date = date, confirm, breakpoint)]
   reported_cases <- reported_cases[is.na(breakpoint), breakpoint := 0]
   reported_cases <- data.table::setorder(reported_cases, date)
@@ -34,21 +37,25 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
 
 #' Create a Data Frame of Mean Delay Shifted Cases
 #'
+#' @param smoothing_window Numeric, the rolling average smoothing window
+#' to apply.
 #' @inheritParams estimate_infections
 #' @inheritParams create_stan_data
 #' @importFrom data.table copy shift frollmean fifelse .N
 #' @importFrom stats lm
 #' @return A dataframe for shifted reported cases
 #' @export
+#' @examples
+#' create_shifted_cases(example_confirmed, 7, 14, 7)
 create_shifted_cases <- function(reported_cases, mean_shift, 
-                                 prior_smoothing_window, horizon) {
+                                 smoothing_window, horizon) {
   
   shifted_reported_cases <- data.table::copy(reported_cases)[,
               confirm := data.table::shift(confirm, n = mean_shift,
                                            type = "lead", fill = NA)][,
-              confirm := data.table::frollmean(confirm, n = prior_smoothing_window, 
-                                               align = "right", fill = 0)][,
-              confirm := data.table::fifelse(confirm == 0, 1e-3, confirm)]
+              confirm := data.table::frollmean(confirm, n = smoothing_window, 
+                                               align = "right", fill = 1)][,
+              confirm := data.table::fifelse(confirm == 0, 1, confirm)]
   
   ## Forecast trend on reported cases using the last week of data
   final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
@@ -63,10 +70,130 @@ create_shifted_cases <- function(reported_cases, mean_shift,
                                                                                   confirm)][, t := NULL]
   
   ##Drop median generation interval initial values
-  shifted_reported_cases <- shifted_reported_cases[-(1:prior_smoothing_window)]
+  shifted_reported_cases <- shifted_reported_cases[, confirm := ceiling(confirm)]
+  shifted_reported_cases <- shifted_reported_cases[-(1:smoothing_window)]
   return(shifted_reported_cases)
 }
 
+#' Back Calculation Settings
+#'
+#'
+#' @description Defines a list specifying the optional arguments for the back calculation
+#' of cases. Only used if `rt = NULL`. Custom settings can be supplied which override the 
+#' defaults. Used internally `estimate_infections`. The settings returned (all of which 
+#' are modifiable by the user) are:
+#'  
+#'   * `smoothing_window`: Numeric, defaults to 7 days. The mean smoothing window to apply
+#'   to mean shifted reports (used as a prior during back calculation). 7 days is the default
+#'   as this smooths day of the week effects but depending on the quality of the data and the 
+#'   amount of information users wish to use as a prior (higher values equaling a less 
+#'   informative prior).
+#' @param backcalc A list of settings to override the back calculation settings. See
+#' `?backcalc_settings` for options and `backcalc_settings()` for current defaults.
+#' @return A list of back calculation settings
+#' @export
+#' @examples
+#' # default settings
+#' backcalc_settings()
+backcalc_settings <- function(backcalc = list()) {
+  defaults <- list(
+    smoothing_window = 7
+  )
+  # replace default settings with those specified by user
+  out <- update_defaults(defaults, backcalc)
+  return(out)
+}
+
+#' Time-Varying Reproduction Number Settings
+#'
+#'
+#' @description Defines a list specifying the optional arguments for the time-varying
+#'  reproduction number. Custom settings can be supplied which override the defaults. Used internally
+#'  by `create_rt_data`, `create_stan_data`, and `estimate_infections`. The settings 
+#'  returned (all of which are modifiable by the user) are:
+#'  
+#'   * `prior`: The mean and standard deviation of the log normal Rt prior. Defaults to 
+#'   mean of 1 and standard deviation of 1.
+#'   * `use_rt` Should Rt be used to generate infections and hence reported cases. Defaults
+#'   to `TRUE`.
+#'   * `rw`: Numeric step size of the random walk. Defaults to 0. To specify a weekly random 
+#'   walk set `rw = 7`. For more custom break point settings consider passing in a `breakpoints`
+#'   variable as outlined in the next section.
+#'   * `use_breakpoints`: Should break points be used if present as a `breakpoint` variable in 
+#'   the input data. Break points should be defined as 1 if present and otherwise 0. By default
+#'   breakpoints are fit jointly with a global non-parametric effect and so represent a conservative
+#'   estimate of break point changes (alter this by setting `gp = NULL`).
+#' @param rt A list of settings to override the defaults. Defaults to an empty list.
+#' @return A list of settings defining the time-varying reproduction number
+#' @export
+#' @examples
+#' # default settings
+#' rt_settings()
+#' 
+#' # add a custom length scale
+#' rt_settings(rt = list(prior = list(mean = 2, sd = 1)))
+#' 
+#' # add a weekly random walk
+#' rt_settings(rt = list(rw = 7))
+rt_settings <- function(rt = list()) {
+  defaults <- list(
+    prior = list(mean = 1, sd = 1),
+    use_rt = TRUE,
+    rw = 0,
+    use_breakpoints = TRUE
+  )
+  # replace default settings with those specified by user
+  rt <- update_defaults(defaults, rt)
+  if (rt$rw > 0) {
+    rt$use_breakpoints <- TRUE
+  }
+  return(rt)
+}
+
+#' Create Time-varying Reproduction Number Data
+#'
+#' @param rt A list of settings to override the package default time-varying reproduction
+#' number settings. See the documentation for `?rt_settings` for details of these settings 
+#' and `rt_settings()` for the current defaults. Set to `NULL` to switch to using 
+#' back calculation rather than generating infections using Rt.
+#' @param breakpoints An integer vector (binary) indicating the location of breakpoints.
+#' @seealso rt_settings
+#' @return A list of settings defining the time-varying reproduction number
+#' @export
+#' @examples
+#' # default Rt data     
+#' create_rt_data()
+#' 
+#' # settings when no Rt is desired
+#' create_rt_data(rt = NULL)
+#' 
+#' # using breakpoints
+#' create_rt_data(rt = list(use_breakpoints = TRUE), breakpoints = rep(1, 10))
+create_rt_data <- function(rt = list(), breakpoints = NULL) {
+  # Define if GP is on or off
+  if (is.null(rt)) {
+    rt <- list(use_rt = FALSE)
+  }
+  # set up default options
+  rt <- rt_settings(rt)
+  # apply random walk
+  if (rt$rw != 0) {
+    breakpoints <- as.integer(1:length(breakpoints) %% rt$rw == 0)
+  }
+  # check breakpoints 
+  if (is.null(breakpoints) | sum(breakpoints) == 0) {
+    rt$use_breakpoints <- FALSE
+  }
+  # map settings to underlying gp stan requirements
+  rt_data <- list(
+    r_mean = rt$prior$mean,
+    r_sd = rt$prior$sd,
+    estimate_r = ifelse(rt$use_rt, 1, 0),
+    bp_n = ifelse(rt$use_breakpoints, sum(breakpoints, na.rm = TRUE), 0),
+    breakpoints = breakpoints
+  ) 
+  return(rt_data)
+}
 
 #' Construct the Required Future Rt assumption
 #'
@@ -94,7 +221,6 @@ create_future_rt <- function(future_rt = "latest", delay = 0) {
   return(out)
 }
 
-
 #' Approximate Gaussian Process Settings
 #'
 #'
@@ -103,7 +229,7 @@ create_future_rt <- function(future_rt = "latest", delay = 0) {
 #'  by `create_gp_data`, `create_stan_data`, and `estimate_infections`. The settings 
 #'  returned (all of which are modifiable by the user) are:
 #'  
-#'   * `ls_mean` and `ls_sd`. The mean and standard deviation of the log normal length scale with
+#'   * `ls_mean` and `ls_sd`: The mean and standard deviation of the log normal length scale with
 #'   default values of 21 days and 7 days respectively.
 #'  * `ls_min` and `ls_max`: The minimum and maximum values of the length scale with default values 
 #'  of 3 and the maximum length of the data (input by the user) or 9 weeks if no maximum given.
@@ -144,7 +270,6 @@ create_future_rt <- function(future_rt = "latest", delay = 0) {
 #' # add a custom length scale
 #' gp_settings(gp = list(ls_mean = 4))
 gp_settings <- function(gp = list(), time = NA) {
-  
   if (exists("kernel", gp)) {
     gp$kernel <- match.arg(gp$kernel, 
                            choices = c("se", "matern_3/2"))
@@ -163,12 +288,7 @@ gp_settings <- function(gp = list(), time = NA) {
     future = "latest")
   
   # replace default settings with those specified by user
-  if (length(gp) != 0) {
-    defaults <- defaults[setdiff(names(defaults), names(gp))]
-    gp <- c(defaults, gp)
-  }else{
-    gp <- defaults
-  }
+  gp <- update_defaults(defaults, gp)
   
   if (gp$matern_type != 3/2) {
     futile.logger::flog.warn("Only the Matern 3/2 kernel is currently supported")
@@ -180,7 +300,7 @@ gp_settings <- function(gp = list(), time = NA) {
 #'
 #'
 #' @param gp A list of settings to override the package default Gaussian 
-#' process settings. See the documentation for `gp_settings` for details of these 
+#' process settings. See the documentation for `?gp_settings` for details of these 
 #' settings and `gp_settings()` for the current defaults.
 #' @param data A list containing the following numeric values: `t`, `seeding_time`,
 #' `horizon`.
@@ -206,7 +326,6 @@ gp_settings <- function(gp = list(), time = NA) {
 #' # custom lengthscale
 #' create_gp_data(gp = list(ls_mean = 14), data)
 create_gp_data <- function(gp = list(), data, rt = TRUE) {
-  
   # Define if GP is on or off
   if (is.null(gp)) {
     fixed <- TRUE
@@ -304,7 +423,7 @@ obs_model_settings <- function(obs_model = list()) {
 #' Create Observation Model Settings
 #'
 #' @param obs_model A list of settings to override the package default observation
-#' model settings. See the documentation for `obs_model_settings` for details of these 
+#' model settings. See the documentation for `?obs_model_settings` for details of these 
 #' settings and `obs_model_settings()` for the current defaults.
 #' @seealso gp_settings
 #' @return A list of settings defining the Observation Model
@@ -338,8 +457,6 @@ create_obs_model <- function(obs_model = list()) {
 #' @param shifted_reported_cases A dataframe of delay shifted reported cases
 #' @param no_delays Numeric, number of delays
 #' @param mean_shift Numeric, mean delay shift
-#' @param break_no Numeric, number of breakpoints
-#' @param estimate_rt Logical, should Rt be estimated.
 #' @inheritParams create_gp_data
 #' @inheritParams create_obs_model
 #' @inheritParams estimate_infections
@@ -349,8 +466,7 @@ create_obs_model <- function(obs_model = list()) {
 #' @export 
 create_stan_data <- function(reported_cases, shifted_reported_cases,
                              horizon, no_delays, mean_shift, generation_time,
-                             rt_prior, estimate_rt, burn_in, break_no,
-                             gp, obs_model, delays) {
+                             rt, gp, obs_model, delays) {
   cases <- reported_cases[(mean_shift + 1):(.N - horizon)]$confirm
   
   data <- list(
@@ -366,13 +482,12 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
     gt_sd_mean = generation_time$sd,
     gt_sd_sd = generation_time$sd_sd,
     max_gt = generation_time$max,
-    r_mean = rt_prior$mean,
-    r_sd = rt_prior$sd,
-    estimate_r = ifelse(estimate_rt, 1, 0),
-    burn_in = burn_in,
-    bp_n = break_no,
-    breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint
+    burn_in = 0
   ) 
+  
+# Add Rt data -------------------------------------------------------------
+  data <- c(data, create_rt_data(rt, breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint))
+  
 # initial estimate of growth ------------------------------------------
   first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
                                        t = 1:min(7, length(cases)))
@@ -396,7 +511,7 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
   data$max_delay <- allocate_delays(delays$max, no_delays)
 
   ## Add gaussian process args
-  data <- c(data, create_gp_data(gp, data, rt = estimate_rt))
+  data <- c(data, create_gp_data(gp, data, rt = data$estimate_r == 1))
   ## Add observation model args
   data <- c(data, create_obs_model(obs_model))
   ## Rescale mean shifted prior for backcalculation if observation scaling is used
@@ -407,23 +522,19 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
   return(data)
 }
 
-
-
 #' Create Initial Conditions Generating Function
 #' @param data A list of data as produced by `create_stan_data.`
-#' @inheritParams create_stan_data
-#'
 #' @return An initial condition generating function
 #' @importFrom purrr map2_dbl
 #' @importFrom truncnorm rtruncnorm
 #' @export
-create_initial_conditions <- function(data, delays, rt_prior, generation_time, mean_shift) {
+create_initial_conditions <- function(data) {
   init_fun <- function(){
     out <- list()
     if (data$delays > 0) {
-      out$delay_mean <- array(purrr::map2_dbl(delays$mean, delays$mean_sd, 
+      out$delay_mean <- array(purrr::map2_dbl(data$delay_mean_mean, data$delay_mean_sd, 
                                               ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
-      out$delay_sd <- array(purrr::map2_dbl(delays$sd, delays$sd_sd, 
+      out$delay_sd <- array(purrr::map2_dbl(data$delay_sd_mean, data$delay_sd_sd, 
                                             ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
     }
     if (data$fixed == 0) {
@@ -443,13 +554,14 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
       if (data$seeding_time > 1) {
         out$initial_growth <- array(rnorm(1, data$prior_growth, 0.1))
       }
-      out$log_R <- array(rnorm(n = 1, mean = log(rt_prior$mean^2 / sqrt(rt_prior$sd^2 + rt_prior$mean^2)), 
-                               sd = sqrt(log(1 + (rt_prior$sd^2 / rt_prior$mean^2)))))
-      out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$mean,  
-                                                 sd = generation_time$mean_sd))
-      out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = generation_time$sd,
-                                                sd = generation_time$sd_sd))
+      out$log_R <- array(rnorm(n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
+                                      sd = convert_to_logsd(data$r_mean, data$r_sd)))
+      out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = data$gt_mean_mean,  
+                                                 sd = data$gt_mean_sd))
+      out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = data$gt_sd_mean,
+                                                sd = data$gt_sd_sd))
       if (data$bp_n > 0) {
+        out$bp_sd <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
         out$bp_effects <- array(rnorm(data$bp_n, 0, 0.1))
       }
     }
@@ -468,75 +580,61 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' Create a List of Stan Arguments
 #'
 #'
-#' @description Generates a list of arguments as required by `rstan::sampling` (when `method = "exact`) or 
-#' `rstan::vb` (when `method = "approximate`). See `create_stan_args()` for the defaults and the relevant `rstan`
-#' functions for additional options.
-#' @param model A stan model object, defaults to packaged model if not supplied.
+#' @description Generates a list of arguments as required by `rstan::sampling` (when `stan_args$method = "sampling`) 
+#' or `rstan::vb` (when `stan_args$method = "vb`). See `create_stan_args()` for the defaults and the relevant `rstan`
+#' functions for additional options. Defaults can be overwritten by passing a list containing the new setting to 
+#' `stan_args`. 
 #' @param data A list of stan data as created by `create_stan_data`
 #' @param init Initial conditions passed to `rstan`. Defaults to "random" but can also be a function (
 #' as supplied by `create_intitial_conditions`).
 #' @param samples Numeric, defaults to 1000. The overall number of posterior samples to return (Note: not the 
 #' number of samples per chain as is the default in stan).
-#' @param stan_args A list of stan arguments to be passed to `rstan::sampling` or `rstan::vb` (when using the "exact"
-#' or "approximate" method). For `method = approximate` an additional argument `trials` indicates the number of attempts to make 
-#' using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.
-#' @param method A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
-#' this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
-#' from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results 
-#' several order of magnitudes faster than the exact method.
+#' @param stan_args A list of settings to override the package default stan settings. See the documentation 
+#' for `create_stan_args` for details and `create_stan_args()` for current defaults. 
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be returned.
-#'
 #' @return A list of stan arguments
 #' @export
-#'
 #' @examples
-#' 
 #' # default settings
 #' create_stan_args()
 #' 
-#' # approximate settings
-#' create_stan_args(method = "approximate") 
 #' # increasing warmup
 #' create_stan_args(stan_args = list(warmup = 1000))
-create_stan_args <- function(model, data = NULL, init = "random", 
-                             samples = 1000, stan_args = list(), method = "exact", 
-                             verbose = FALSE) {
-  # use built in model if not supplied by the user
-  if (missing(model)) {
-    model <- NULL
-  }
-  if (is.null(model)) {
-    model <- stanmodels$estimate_infections
-  }
+create_stan_args <- function(stan_args = list(), data = NULL, init = "random", 
+                             samples = 1000, verbose = FALSE) {
   # set up shared default arguments
   default_args <- list(
-    object = model,
+    object = stanmodels$estimate_infections,
+    method = "sampling",
     data = data,
     init = init,
     refresh = ifelse(verbose, 50, 0)
   )
+  
+  if (exists("method", stan_args)) {
+    method <- stan_args$method
+  }else{
+    method <- default_args$method
+  }
+  
   # set up independent default arguments
-  if (method == "exact") {
+  if (method == "sampling") {
     default_args$cores <- 4
     default_args$warmup <- 250
     default_args$chains <- 4
     default_args$control <- list(adapt_delta = 0.98, max_treedepth = 15)
     default_args$save_warmup <- FALSE
     default_args$seed <- as.integer(runif(1, 1, 1e8))
-  }else if (method == "approximate") {
+  }else if (method == "vb") {
     default_args$trials <- 10
     default_args$iter <- 10000
     default_args$output_samples <- samples
   }
   # join with user supplied settings
-  if (length(stan_args) != 0) {
-    default_args <- default_args[setdiff(names(default_args), names(stan_args))]
-    args <- c(default_args, stan_args)
-  }else{
-    args <- default_args
-  }
+  args <- update_defaults(default_args, stan_args)
+
   # set up dependent arguments
-  if (method == "exact") {
+  if (method == "sampling") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup
   }
   return(args)

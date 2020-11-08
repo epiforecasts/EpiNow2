@@ -20,7 +20,7 @@ process. Custom settings can be supplied which override the defaults. Used inter
 by \code{create_gp_data}, \code{create_stan_data}, and \code{estimate_infections}. The settings
 returned (all of which are modifiable by the user) are:
 \itemize{
-\item \code{ls_mean} and \code{ls_sd}. The mean and standard deviation of the log normal length scale with
+\item \code{ls_mean} and \code{ls_sd}: The mean and standard deviation of the log normal length scale with
 default values of 21 days and 7 days respectively.
 \item \code{ls_min} and \code{ls_max}: The minimum and maximum values of the length scale with default values
 of 3 and the maximum length of the data (input by the user) or 9 weeks if no maximum given.

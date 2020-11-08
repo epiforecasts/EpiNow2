@@ -8,7 +8,7 @@ create_obs_model(obs_model = list())
 }
 \arguments{
 \item{obs_model}{A list of settings to override the package default observation
-model settings. See the documentation for \code{obs_model_settings} for details of these
+model settings. See the documentation for \code{?obs_model_settings} for details of these
 settings and \code{obs_model_settings()} for the current defaults.}
 }
 \value{
