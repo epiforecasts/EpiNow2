@@ -91,7 +91,8 @@ Suggests:
     rstantools,
     spelling,
     tidyr,
-    testthat
+    testthat,
+    covr
 Additional_repositories: 
   https://epiforecasts.io/drat/
 Roxygen: list(markdown = TRUE)

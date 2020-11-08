@@ -100,13 +100,15 @@ report_cases <- function(case_estimates,
 #'  variable, median, bottom, and top. It should contain the following estimates: R, infections, and r 
 #'  (rate of growth).
 #' @param rt_samples A data.table containing Rt samples with the following variables: sample and value.
+#' @param return_numeric Should numeric summary information be returned.
 #' @inheritParams setup_target_folder
 #' @return A data.table containing formatted and numeric summary measures
 #' @export
 #' @importFrom data.table data.table setDT
 #' @importFrom purrr map
 report_summary <- function(summarised_estimates,
-                           rt_samples, target_folder = NULL) { 
+                           rt_samples, target_folder = NULL,
+                           return_numeric = FALSE) { 
   # set input to data.table
   summarised_estimates <- data.table::setDT(summarised_estimates)
   rt_samples <- data.table::setDT(rt_samples)
@@ -153,13 +155,15 @@ report_summary <- function(summarised_estimates,
                  as.character(EpiNow2::map_prob_change(prob_control)),
                  make_conf(R_latest, max_CrI),
                  make_conf(r_latest, max_CrI),
-                 make_conf(doubling_time_latest, max_CrI, reverse = TRUE)),
-    numeric_estimate = list(current_cases,
-                         prob_control,
-                         R_latest,
-                         r_latest,
-                         doubling_time_latest)
-  )
+                 make_conf(doubling_time_latest, max_CrI, reverse = TRUE)))
+ 
+ if (return_numeric) {
+   summary$numeric_estimate = list(current_cases,
+                                   prob_control,
+                                   R_latest,
+                                   r_latest,
+                                   doubling_time_latest)
+ }
  
  if (!is.null(target_folder)) {
    saveRDS(summary, paste0(target_folder, "/summary.rds"))

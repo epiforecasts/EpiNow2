@@ -82,10 +82,10 @@ test_that("epinow fails if given NUTs arguments when using variational inference
   expect_error(suppressWarnings(epinow(reported_cases = reported_cases, 
                                        generation_time = generation_time,
                                        delays = list(incubation_period, reporting_delay),
-                                       method = "approximate",
                                        samples = 100, 
                                        stan_args = list(warmup = 100,
-                                                        cores = 1, chains = 2),
+                                                        cores = 1, chains = 2,
+                                                        method = "vb"),
                                        logs = NULL)))
 })
 
@@ -95,7 +95,6 @@ test_that("epinow fails if given variational inference arguments when using NUTs
   expect_error(suppressWarnings(epinow(reported_cases = reported_cases, 
                                        generation_time = generation_time,
                                        delays = list(incubation_period, reporting_delay),
-                                       method = "exact", 
-                                       stan_args = list(tol_rel_obj = 1),
+                                       stan_args = list(method = "sampling", tol_rel_obj = 1),
                                        logs = NULL)))
 })

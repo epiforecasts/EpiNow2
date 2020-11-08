@@ -26,10 +26,7 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
                            )
                          })
                 }
-                
               })
-  
-  
 }
 
 #' Format Credible Intervals
@@ -269,6 +266,22 @@ convert_to_logsd <- function(mean, sd) {
   sqrt(log(1 + (sd^2 / mean^2)))
 }
 
+
+#' Update Default Settings
+#'
+#' @param defaults A list of default settings
+#' @param optional A list of optional settings to override defaults
+#'
+#' @return A list
+update_defaults <- function(defaults = list(), optional = list()) {
+  if (length(optional) != 0) {
+    defaults <- defaults[setdiff(names(defaults), names(optional))]
+    updated <- c(defaults, optional)
+  }else{
+    updated <- defaults
+  }
+  return(updated)
+}
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(
