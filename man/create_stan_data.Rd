@@ -49,10 +49,6 @@ Each list entry must also be a list containing the mean, standard deviation of t
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale). To use no delays set this to \code{list()}.}
-
-\item{break_no}{Numeric, number of breakpoints}
-
-\item{estimate_rt}{Logical, should Rt be estimated.}
 }
 \value{
 A list of stan data

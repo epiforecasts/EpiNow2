@@ -77,14 +77,6 @@ to assign errors to regions. Alter the default to run with error catching.}
 
 \item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormal prior for Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
 log space). To infer infections and then calculate Rt using backcalculation set this to \code{list()}.}
-
-\item{use_breakpoints}{Logical, defaults to TRUE but only active if a \code{breakpoint} variable is present in the input data.
-Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with
-a global non-parametric effect and so represent a conservative estimate of breakpoint changes. To specify a random walk define
-breakpoints every n days (so every 7 days for a weekly random walk) and disable the gaussian process using \code{gp = list()}.}
-
-\item{burn_in}{Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be
-removed from the package unless a clear user need is given.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
@@ -162,18 +154,17 @@ no_delay <- estimate_infections(reported_cases, generation_time = generation_tim
                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(no_delay)    
 
-# breakpoints but otherwise static Rt
+# break point but otherwise static Rt
 bp_cases <- data.table::copy(reported_cases)
 bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
 bkp <- estimate_infections(bp_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
                            rt = list(prior = list(mean = 2, sd = 0.2)),
-                           stan_args = list(object = model, cores = ifelse(interactive(), 4, 1)),
+                           stan_args = list(cores = ifelse(interactive(), 4, 1)),
                            gp = NULL)                                                         
-# breakpoint effect
+# break point effect
 summary(bkp, type = "parameters", params = "breakpoints")
 plot(bkp)
-
 
 # weekly random walk
 rw <- estimate_infections(reported_cases, generation_time = generation_time,
@@ -182,7 +173,7 @@ rw <- estimate_infections(reported_cases, generation_time = generation_time,
                           stan_args = list(cores = ifelse(interactive(), 4, 1)),
                           gp = NULL)     
 
-# breakpoint effects
+# random walk effects
 summary(rw, type = "parameters", params = "breakpoints")                                                    
 plot(rw)
 }                                

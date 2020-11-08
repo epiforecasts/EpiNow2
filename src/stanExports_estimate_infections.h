@@ -2849,7 +2849,7 @@ public:
                     if (get_base1(bp_sd, 1, "bp_sd", 1) < 0) lp_accum__.add(-std::numeric_limits<double>::infinity());
                     else lp_accum__.add(-normal_ccdf_log(0, 0, 0.1));
                     current_statement_begin__ = 535;
-                    lp_accum__.add(normal_log<propto__>(bp_effects, 0, bp_sd));
+                    lp_accum__.add(normal_log<propto__>(bp_effects, 0, get_base1(bp_sd, 1, "bp_sd", 1)));
                 }
                 current_statement_begin__ = 538;
                 lp_accum__.add(normal_log<propto__>(initial_infections, prior_infections, 0.2));

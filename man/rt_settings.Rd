@@ -37,4 +37,7 @@ rt_settings()
 
 # add a custom length scale
 rt_settings(rt = list(prior = list(mean = 2, sd = 1)))
+
+# add a weekly random walk
+rt_settings(rt = list(rw = 7))
 }

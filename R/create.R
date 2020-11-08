@@ -98,6 +98,9 @@ create_shifted_cases <- function(reported_cases, mean_shift,
 #' 
 #' # add a custom length scale
 #' rt_settings(rt = list(prior = list(mean = 2, sd = 1)))
+#' 
+#' # add a weekly random walk
+#' rt_settings(rt = list(rw = 7))
 rt_settings <- function(rt = list()) {
   defaults <- list(
     prior = list(mean = 1, sd = 1),
@@ -430,8 +433,6 @@ create_obs_model <- function(obs_model = list()) {
 #' @param shifted_reported_cases A dataframe of delay shifted reported cases
 #' @param no_delays Numeric, number of delays
 #' @param mean_shift Numeric, mean delay shift
-#' @param break_no Numeric, number of breakpoints
-#' @param estimate_rt Logical, should Rt be estimated.
 #' @inheritParams create_gp_data
 #' @inheritParams create_obs_model
 #' @inheritParams estimate_infections
