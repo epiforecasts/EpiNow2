@@ -22,8 +22,6 @@ contained in \code{estimates}, except elements set to NA. If it is longer than t
 of reproduction numbers contained in \code{estimates}, the values going beyond the length of
 estimated reproduction numbers are taken as forecast.}
 
-\item{model}{A compiled stan model. By default uses the internal package model.}
-
 \item{samples}{Numeric, number of posterior samples to simulate from. The default is to use all
 samples in the \code{estimates} input.}
 

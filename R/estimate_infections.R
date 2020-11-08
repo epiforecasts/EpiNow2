@@ -22,7 +22,6 @@
 #' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
 #' for the prior based on reported cases. Used for back calculation only.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
-#' @param model A compiled stan model. By default uses the internal package model.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
 #' @param use_breakpoints Logical, defaults to TRUE but only active if a `breakpoint` variable is present in the input data. 
 #'  Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with

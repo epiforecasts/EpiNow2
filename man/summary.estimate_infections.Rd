@@ -2,7 +2,6 @@
 % Please edit documentation in R/summarise.R
 \name{summary.estimate_infections}
 \alias{summary.estimate_infections}
-\alias{summary}
 \title{Summary output from estimate_infections}
 \usage{
 \method{summary}{estimate_infections}(object, type = "snapshot", date = NULL, params = NULL, ...)
