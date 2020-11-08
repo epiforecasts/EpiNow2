@@ -92,16 +92,16 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
         ggplot2::geom_col(data = reported[date >= min(estimate$date, na.rm = TRUE) &
                                             date <= max(estimate$date, na.rm = TRUE)],
                           ggplot2::aes(y = confirm), fill = "grey", col = "white",
-                          show.legend = FALSE)
+                          show.legend = FALSE, na.rm = TRUE)
     }else{
       plot <- plot +
         ggplot2::geom_line(data = reported, 
                            ggplot2::aes(y = confirm, fill = NULL),
-                           size = 1.1, alpha = 0.5, col = "black") +
+                           size = 1.1, alpha = 0.5, col = "black", na.rm = TRUE) +
         ggplot2::geom_point(data = reported,
                             ggplot2::aes(y = confirm, fill = NULL),
                             size = 1.1, alpha = 1, col = "black",
-                            show.legend = FALSE)
+                            show.legend = FALSE, na.rm = TRUE)
     }
   }
   
