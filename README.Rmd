@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 This package estimates the time-varying reproduction number, rate of spread, and doubling time using a range of open-source tools ([Abbott et al.](https://doi.org/10.12688/wellcomeopenres.16006.1)), and current best practices ([Gostic et al.](https://doi.org/10.1101/2020.06.18.20134858)). It aims to help users avoid some of the limitations of naive implementations in a framework that is informed by community feedback and is under active development. 
 
-It estimates the time-varying reproduction number on cases by date of infection (using a similar approach to that implemented in the [`{EpiEstim}`](https://github.com/mrc-ide/EpiEstim)). Imputed infections are then mapped to observed data (for example cases by date of report) via a series of uncertain delay distributions (in the examples in the package documentation these are an incubation period and a reporting delay) and a reporting model that can include weekly periodicity. 
+It estimates the time-varying reproduction number on cases by date of infection (using a similar approach to that implemented in [`{EpiEstim}`](https://github.com/mrc-ide/EpiEstim)). Imputed infections are then mapped to observed data (for example cases by date of report) via a series of uncertain delay distributions (in the examples in the package documentation these are an incubation period and a reporting delay) and a reporting model that can include weekly periodicity. 
 
 Uncertainty is propagated from all inputs into the final parameter estimates, helping to mitigate spurious findings. This is handled internally. The time-varying reproduction estimates and the uncertain generation time also give time-varying estimates of the rate of growth.
 

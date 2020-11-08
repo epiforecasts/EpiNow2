@@ -2454,7 +2454,7 @@ public:
         size_t bp_sd_i_0_max__ = (logical_gt(bp_n, 0) ? 1 : 0 );
         for (size_t i_0__ = 0; i_0__ < bp_sd_i_0_max__; ++i_0__) {
             try {
-                writer__.scalar_unconstrain(bp_sd[i_0__]);
+                writer__.scalar_lb_unconstrain(0, bp_sd[i_0__]);
             } catch (const std::exception& e) {
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable bp_sd: ") + e.what()), current_statement_begin__, prog_reader__());
             }
@@ -2681,9 +2681,9 @@ public:
             bp_sd.reserve(bp_sd_d_0_max__);
             for (size_t d_0__ = 0; d_0__ < bp_sd_d_0_max__; ++d_0__) {
                 if (jacobian__)
-                    bp_sd.push_back(in__.scalar_constrain(lp__));
+                    bp_sd.push_back(in__.scalar_lb_constrain(0, lp__));
                 else
-                    bp_sd.push_back(in__.scalar_constrain());
+                    bp_sd.push_back(in__.scalar_lb_constrain(0));
             }
             current_statement_begin__ = 480;
             std::vector<local_scalar_t__> bp_effects;
@@ -3071,7 +3071,7 @@ public:
         size_t bp_sd_d_0_max__ = (logical_gt(bp_n, 0) ? 1 : 0 );
         bp_sd.reserve(bp_sd_d_0_max__);
         for (size_t d_0__ = 0; d_0__ < bp_sd_d_0_max__; ++d_0__) {
-            bp_sd.push_back(in__.scalar_constrain());
+            bp_sd.push_back(in__.scalar_lb_constrain(0));
         }
         size_t bp_sd_k_0_max__ = (logical_gt(bp_n, 0) ? 1 : 0 );
         for (size_t k_0__ = 0; k_0__ < bp_sd_k_0_max__; ++k_0__) {
