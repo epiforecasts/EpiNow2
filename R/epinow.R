@@ -48,8 +48,6 @@
 #' 
 #' # summary of R estimates
 #' summary(out, type = "parameters", params = "R")
-#' 
-#' summary(out, output = "estimated")
 #' }
 epinow <- function(reported_cases, samples = 1000, horizon = 7, 
                    generation_time, delays = list(),
