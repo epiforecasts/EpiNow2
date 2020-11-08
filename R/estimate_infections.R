@@ -20,7 +20,7 @@
 #' @param rt_prior A list contain the mean and standard deviation (sd) of the lognormal prior for Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
 #' log space). To infer infections and then calculate Rt using backcalculation set this to `list()`.
 #' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
-#' for the prior based on reported cases.
+#' for the prior based on reported cases. Used for back calculation only.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
 #' @param model A compiled stan model. By default uses the internal package model.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
@@ -140,9 +140,7 @@ estimate_infections <- function(reported_cases,
                                 gp = list(),
                                 rt_prior = list(mean = 1, sd = 0.5),
                                 horizon = 7,
-                                model = NULL, 
                                 samples = 1000,
-                                method = "exact", 
                                 use_breakpoints = TRUE, 
                                 burn_in = 0, 
                                 prior_smoothing_window = 7, 
@@ -245,21 +243,20 @@ estimate_infections <- function(reported_cases,
                            delays = delays)
 
   # Set up default settings -------------------------------------------------
-  args <- create_stan_args(model, data = data, samples = samples, 
-                           stan_args = stan_args,
+  args <- create_stan_args(stan_args = stan_args,
+                           data = data, samples = samples, 
                            init = create_initial_conditions(data, delays, rt_prior, 
                                                             generation_time, mean_shift),
-                           method = method, 
                            verbose = verbose)
   
   # Fit model ---------------------------------------------------------------
-  if (method == "exact") {
+  if (args$method == "sampling") {
     fit <- fit_model_with_nuts(args,
                                future = future,
                                max_execution_time = max_execution_time,
                                verbose = verbose,
                                id = id)
-  }else if (method == "approximate"){
+  }else if (args$method == "vb"){
     fit <- fit_model_with_vb(args,
                              verbose = verbose,
                              id = id)

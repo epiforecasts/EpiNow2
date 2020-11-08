@@ -13,9 +13,7 @@ estimate_infections(
   gp = list(),
   rt_prior = list(mean = 1, sd = 0.5),
   horizon = 7,
-  model = NULL,
   samples = 1000,
-  method = "exact",
   use_breakpoints = TRUE,
   burn_in = 0,
   prior_smoothing_window = 7,
@@ -45,9 +43,8 @@ on the log scale). To use no delays set this to \code{list()}.}
 model settings. See the documentation for \code{obs_model_settings} for details of these
 settings and \code{obs_model_settings()} for the current defaults.}
 
-\item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "exact"
-or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
-using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
+\item{stan_args}{A list of settings to override the package default stan settings. See the documentation
+for \code{create_stan_args} for details and \code{create_stan_args()} for current defaults.}
 
 \item{gp}{A list of settings to override the package default Gaussian
 process settings. See the documentation for \code{gp_settings} for details of these
@@ -58,14 +55,7 @@ log space). To infer infections and then calculate Rt using backcalculation set 
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
-\item{model}{A compiled stan model. By default uses the internal package model.}
-
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
-
-\item{method}{A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
-this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
-from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results
-several order of magnitudes faster than the exact method.}
 
 \item{use_breakpoints}{Logical, defaults to TRUE but only active if a \code{breakpoint} variable is present in the input data.
 Breakpoints should be defined as 1 if present and otherwise 0. By default breakpoints are fit jointly with
@@ -76,7 +66,7 @@ breakpoints every n days (so every 7 days for a weekly random walk) and disable 
 removed from the package unless a clear user need is given.}
 
 \item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
-for the prior based on reported cases.}
+for the prior based on reported cases. Used for back calculation only.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
@@ -94,6 +84,8 @@ to assign errors to regions. Alter the default to run with error catching.}
 
 \item{verbose}{Logical, defaults to \code{TRUE} when used interactively and otherwise \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
+
+\item{model}{A compiled stan model. By default uses the internal package model.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported

@@ -18,7 +18,7 @@ in date format.}
 \item{mean_shift}{Numeric, mean delay shift}
 
 \item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
-for the prior based on reported cases.}
+for the prior based on reported cases. Used for back calculation only.}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 }

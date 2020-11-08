@@ -5,17 +5,16 @@
 \title{Create a List of Stan Arguments}
 \usage{
 create_stan_args(
-  model,
+  stan_args = list(),
   data = NULL,
   init = "random",
   samples = 1000,
-  stan_args = list(),
-  method = "exact",
   verbose = FALSE
 )
 }
 \arguments{
-\item{model}{A stan model object, defaults to packaged model if not supplied.}
+\item{stan_args}{A list of settings to override the package default stan settings. See the documentation
+for \code{create_stan_args} for details and \code{create_stan_args()} for current defaults.}
 
 \item{data}{A list of stan data as created by \code{create_stan_data}}
 
@@ -25,32 +24,21 @@ as supplied by \code{create_intitial_conditions}).}
 \item{samples}{Numeric, defaults to 1000. The overall number of posterior samples to return (Note: not the
 number of samples per chain as is the default in stan).}
 
-\item{stan_args}{A list of stan arguments to be passed to \code{rstan::sampling} or \code{rstan::vb} (when using the "exact"
-or "approximate" method). For \code{method = approximate} an additional argument \code{trials} indicates the number of attempts to make
-using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.}
-
-\item{method}{A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
-this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
-from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results
-several order of magnitudes faster than the exact method.}
-
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be returned.}
 }
 \value{
 A list of stan arguments
 }
 \description{
-Generates a list of arguments as required by \code{rstan::sampling} (when \verb{method = "exact}) or
-\code{rstan::vb} (when \verb{method = "approximate}). See \code{create_stan_args()} for the defaults and the relevant \code{rstan}
-functions for additional options.
+Generates a list of arguments as required by \code{rstan::sampling} (when \verb{stan_args$method = "sampling})
+or \code{rstan::vb} (when \verb{stan_args$method = "vb}). See \code{create_stan_args()} for the defaults and the relevant \code{rstan}
+functions for additional options. Defaults can be overwritten by passing a list containing the new setting to
+\code{stan_args}.
 }
 \examples{
-
 # default settings
 create_stan_args()
 
-# approximate settings
-create_stan_args(method = "approximate") 
 # increasing warmup
 create_stan_args(stan_args = list(warmup = 1000))
 }

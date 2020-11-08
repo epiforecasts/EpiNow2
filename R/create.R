@@ -468,62 +468,52 @@ create_initial_conditions <- function(data, delays, rt_prior, generation_time, m
 #' Create a List of Stan Arguments
 #'
 #'
-#' @description Generates a list of arguments as required by `rstan::sampling` (when `method = "exact`) or 
-#' `rstan::vb` (when `method = "approximate`). See `create_stan_args()` for the defaults and the relevant `rstan`
-#' functions for additional options.
-#' @param model A stan model object, defaults to packaged model if not supplied.
+#' @description Generates a list of arguments as required by `rstan::sampling` (when `stan_args$method = "sampling`) 
+#' or `rstan::vb` (when `stan_args$method = "vb`). See `create_stan_args()` for the defaults and the relevant `rstan`
+#' functions for additional options. Defaults can be overwritten by passing a list containing the new setting to 
+#' `stan_args`. 
 #' @param data A list of stan data as created by `create_stan_data`
 #' @param init Initial conditions passed to `rstan`. Defaults to "random" but can also be a function (
 #' as supplied by `create_intitial_conditions`).
 #' @param samples Numeric, defaults to 1000. The overall number of posterior samples to return (Note: not the 
 #' number of samples per chain as is the default in stan).
-#' @param stan_args A list of stan arguments to be passed to `rstan::sampling` or `rstan::vb` (when using the "exact"
-#' or "approximate" method). For `method = approximate` an additional argument `trials` indicates the number of attempts to make 
-#' using variational inference before returning an error (as stochastic failure is possible). The default for this is 5.
-#' @param method A character string defaults to "exact". Also accepts "approximate". Indicates the fitting method to be used
-#' this can either be "exact" (NUTs sampling) or "approximate" (variational inference). The exact approach returns samples
-#' from the posterior whilst the approximate method returns approximate samples. The approximate method is likely to return results 
-#' several order of magnitudes faster than the exact method.
+#' @param stan_args A list of settings to override the package default stan settings. See the documentation 
+#' for `create_stan_args` for details and `create_stan_args()` for current defaults. 
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be returned.
-#'
 #' @return A list of stan arguments
 #' @export
-#'
 #' @examples
-#' 
 #' # default settings
 #' create_stan_args()
 #' 
-#' # approximate settings
-#' create_stan_args(method = "approximate") 
 #' # increasing warmup
 #' create_stan_args(stan_args = list(warmup = 1000))
-create_stan_args <- function(model, data = NULL, init = "random", 
-                             samples = 1000, stan_args = list(), method = "exact", 
-                             verbose = FALSE) {
-  # use built in model if not supplied by the user
-  if (missing(model)) {
-    model <- NULL
-  }
-  if (is.null(model)) {
-    model <- stanmodels$estimate_infections
-  }
+create_stan_args <- function(stan_args = list(), data = NULL, init = "random", 
+                             samples = 1000, verbose = FALSE) {
   # set up shared default arguments
   default_args <- list(
-    object = model,
+    object = stanmodels$estimate_infections,
+    method = "exact",
     data = data,
     init = init,
     refresh = ifelse(verbose, 50, 0)
   )
+  
+  if (exists("method", stan_args)) {
+    method <- stan_args$method
+  }else{
+    method <- default_args$method
+  }
+  
   # set up independent default arguments
-  if (method == "exact") {
+  if (method == "sampling") {
     default_args$cores <- 4
     default_args$warmup <- 250
     default_args$chains <- 4
     default_args$control <- list(adapt_delta = 0.98, max_treedepth = 15)
     default_args$save_warmup <- FALSE
     default_args$seed <- as.integer(runif(1, 1, 1e8))
-  }else if (method == "approximate") {
+  }else if (method == "vb") {
     default_args$trials <- 10
     default_args$iter <- 10000
     default_args$output_samples <- samples
@@ -536,7 +526,7 @@ create_stan_args <- function(model, data = NULL, init = "random",
     args <- default_args
   }
   # set up dependent arguments
-  if (method == "exact") {
+  if (method == "sampling") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup
   }
   return(args)
