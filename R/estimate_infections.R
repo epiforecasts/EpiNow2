@@ -309,6 +309,7 @@ estimate_infections <- function(reported_cases,
 #' @return A stan model object
 fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
                                 id = "stan", verbose = FALSE) {
+  args$method <- NULL
   if (verbose) {
     futile.logger::flog.debug(paste0("%s: Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
                                      " chains each with a warm up of ", args$warmup, " iterations each) and ",
@@ -402,6 +403,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 #' @importFrom rlang abort
 #' @return A stan model object
 fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE) {
+  args$method <- NULL
   if (verbose) {
     futile.logger::flog.debug(paste0("%s: Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
                                      args$output_samples, " approximate posterior samples for ", args$data$t," time steps of which ",

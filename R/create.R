@@ -493,7 +493,7 @@ create_stan_args <- function(stan_args = list(), data = NULL, init = "random",
   # set up shared default arguments
   default_args <- list(
     object = stanmodels$estimate_infections,
-    method = "exact",
+    method = "sampling",
     data = data,
     init = init,
     refresh = ifelse(verbose, 50, 0)
