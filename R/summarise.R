@@ -638,7 +638,6 @@ summary.epinow <- function(object, output = "estimates",
 #' @param params A character vector of parameters to filter for.
 #' @param ... Pass additional arguments to `report_summary`
 #' @seealso summary estimate_infections report_summary
-#' @aliases summary
 #' @method summary estimate_infections
 #' @return Returns a data frame of summary output
 #' @export

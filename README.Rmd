@@ -97,7 +97,7 @@ This function represents the core functionality of the package and includes resu
 Load example case data from `{EpiNow2}`. 
 
 ```{r}
-reported_cases <- example_confirmed[1:80]
+reported_cases <- example_confirmed[1:90]
 head(reported_cases)
 ```
 
@@ -106,7 +106,8 @@ Estimate cases by date of infection, the time-varying reproduction number, the r
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(reported_cases = reported_cases, 
                     generation_time = generation_time,
-                    delays = list(incubation_period, reporting_delay))
+                    delays = list(incubation_period, reporting_delay),
+                    rt_prior = list(mean = 2, sd = 0.25))
 names(estimates)
 ```
 
@@ -154,7 +155,8 @@ Calling `regional_epinow` runs the `epinow` on each region in turn (or in parall
 ```{r, message = FALSE, warning = FALSE}
 estimates <- regional_epinow(reported_cases = reported_cases, 
                              generation_time = generation_time,
-                             delays = list(incubation_period, reporting_delay))
+                             delays = list(incubation_period, reporting_delay),
+                             rt_prior = list(mean = 2, sd = 0.25))
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = TRUE) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the `{future}` package for details on nested futures.
