@@ -67,6 +67,7 @@ reference:
       - contains("create_")
       - contains("_settings")
       - allocate_delays
+      - allocate_empty
   - title: Model Fitting
     desc: Functions for model fitting
     contents:
@@ -135,7 +136,6 @@ reference:
     desc: Utility functions
     contents:
       - match_output_arguments
-      - stop_timeout
       - run_region
       - expose_stan_fns
       - convert_to_logmean
