@@ -70,8 +70,6 @@ for the prior based on reported cases. Used for back calculation only.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{CrIs}{Numeric vector of credible intervals to calculate.}
-
 \item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel using \code{future}. This allows users to have chains
 fail gracefully (i.e when combined with \code{max_execution_time}). Should be combined with a call to \code{future::plan}}
 
