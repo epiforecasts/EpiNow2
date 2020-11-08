@@ -2866,8 +2866,7 @@ public:
                 current_statement_begin__ = 546;
                 lp_accum__.add(normal_log<propto__>(get_base1(frac_obs, 1, "frac_obs", 1), obs_scale_mean, obs_scale_sd));
                 if (get_base1(frac_obs, 1, "frac_obs", 1) < 0) lp_accum__.add(-std::numeric_limits<double>::infinity());
-                else if (get_base1(frac_obs, 1, "frac_obs", 1) > 1) lp_accum__.add(-std::numeric_limits<double>::infinity());
-                else lp_accum__.add(-log_diff_exp(normal_cdf_log(1, obs_scale_mean, obs_scale_sd), normal_cdf_log(0, obs_scale_mean, obs_scale_sd)));
+                else lp_accum__.add(-normal_ccdf_log(0, obs_scale_mean, obs_scale_sd));
             }
             current_statement_begin__ = 549;
             report_lp(cases, reports, rep_phi, 1, model_type, horizon, obs_weight, lp__, lp_accum__, pstream__);
