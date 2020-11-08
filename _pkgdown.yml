@@ -51,8 +51,6 @@ reference:
     contents:
       - estimate_infections
       - forecast_infections
-      - growth_to_R
-      - R_to_growth
   - title: Internal epinow Functions
     desc: Functions used internally by epinow
     contents:
@@ -140,4 +138,5 @@ reference:
       - expose_stan_fns
       - convert_to_logmean
       - convert_to_logsd
-
+      - growth_to_R
+      - R_to_growth

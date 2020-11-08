@@ -89,7 +89,7 @@ to assign errors to regions. Alter the default to run with error catching.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
-cases. This function uses either a generative Rt model or non-parametric back calculation to estimate underlying
+cases. It uses either a generative Rt model or non-parametric back calculation to estimate underlying
 latent infections and then maps these infections to observed cases via uncertain reporting delays and a flexible
 observation model. See the examples and function arguments for the details of all options. The default settings
 may not be sufficient for your use case so the number of warmup samples (\code{stan_args = list(warmup)}) may need to
@@ -116,7 +116,7 @@ def <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(def)
-
+summary(def)
 # run model using backcalculation (combined here with under reporting)
 backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
@@ -174,6 +174,6 @@ bkp <- estimate_infections(reported_cases_bp, generation_time = generation_time,
                            gp = NULL)                                                         
 plot(bkp)
 # breakpoint effect
-bkp$summarised[variable == "breakpoints"]
+summary(bkp, type = "parameters", params = "breakpoints")
 }                                
 }

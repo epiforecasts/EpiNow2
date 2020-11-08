@@ -87,7 +87,11 @@ results and interpreting them.
 # construct example distributions
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(2), 1), max_value = 10)
+reporting_delay <- list(mean = convert_to_logmean(3, 1), 
+                        mean_sd = 0.1,
+                        sd = convert_to_logsd(3, 1), 
+                        sd_sd = 0.1, 
+                        max = 10)
 
 # example case data
 reported_cases <- EpiNow2::example_confirmed[1:40] 
@@ -96,7 +100,14 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
               delays = list(incubation_period, reporting_delay),
               stan_args = list(cores = ifelse(interactive(), 4, 1)))
-summary(out)             
+# summarise the latest estimates
+summary(out)     
+# plot estimates        
 plot(out)
+
+# summary of R estimates
+summary(out, type = "parameters", params = "R")
+
+summary(out, output = "estimated")
 }
 }

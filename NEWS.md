@@ -26,6 +26,7 @@ impact Rt estimates.
 * Added a new function, `expose_stan_fns` that exposes the internal stan functions into R. The enables unit testing, exploration of the stan functionality and potentially within R use cases for these functions.
 * Updates the default `warmup` to be 250 samples and the default `adapt_delta` to be 0.98.
 * Dropped the `model` and `method` arguments from `estimate_infections` as these are now included in `stan_args`. Also clarified the documentation for `stan_args` to better indicate what the defaults are and how they can be updated.
+* Adds a new `summary` method for `estimate_infections` and updates the `epinow` summary method to be based on it.
 
 # EpiNow2 1.2.1
 

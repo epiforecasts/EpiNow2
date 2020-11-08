@@ -113,13 +113,13 @@ names(estimates)
 Both summary measures and posterior samples are returned for all parameters in an easily explored format. Summarised measures can be accessed using `summary` for ease.
 
 ```{r}
-head(summary(estimates, type = "estimates"))
+head(summary(estimates, output = "estimates"))
 ```
 
 Reported cases are returned separately in order to ease reporting of forecasts and model evaluation.
 
 ```{r}
-head(summary(estimates, type = "estimated_reported_cases"))
+head(summary(estimates, output = "estimated_reported_cases"))
 ```
 
 A summary table is returned for rapidly understanding the results and for reporting purposes.

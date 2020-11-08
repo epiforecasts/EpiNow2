@@ -591,36 +591,80 @@ calc_summary_measures <- function(samples,
 }
 
 
-#' Summarised output from epinow
+#' Summary output from epinow
 #'
 #' @description \code{summary} method for class "epinow".
 #' @param object A list of output as produced by "epinow".
-#' @param type A character vector of data types to return. Defaults to "summary" 
-#' but also supports "estimates", "forecast", "estimated_reported_cases", and "all".
-#' @param ... Pass additional summary arguments
-#' @seealso summary epinow report_summary
+#' @param output A character string of output to summarise. Defaults to "estimates" 
+#' but also supports "forecast", and "estimated_reported_cases".
+#' @inheritParams summary.estimate_infections
+#' @param ... Pass additional summary arguments to lower level methods
+#' @seealso summary.estimate_infections epinow 
 #' @aliases summary
 #' @method summary epinow
-#' @importFrom purrr map
-#' @return Returns a list of summary output
+#' @return Returns a data frame of summary output
 #' @export
-summary.epinow <- function(object, type = "summary", ...) {
-  choices <- c("summary", "estimates", "forecast", 
-               "estimated_reported_cases", "all")
-  type <- match.arg(type, choices, several.ok = TRUE)
-  if (type %in% "all") {
-    type <- choices[-length(choices)]
+summary.epinow <- function(object, output = "estimates", 
+                           date = NULL, params = NULL,
+                           ...) {
+  choices <- c("estimates", "forecast", "estimated_reported_cases")
+  output <- match.arg(output, choices, several.ok = FALSE)
+  if (output %in% "estimates") {
+    out <- summary(object$estimates, date = date, 
+            params = params, ...)
+  }else {
+   out <- object[[output]]$summarised
+   if (!is.null(date)) {
+     target_date <- as.Date(date)
+     out <- out[date == target_date]
+   }
+   if (!is.null(params)) {
+     out <- out[variable == params]
+   }
   }
-  out <- purrr::map(type, function(input) {
-    if (type %in% "summary") {
-      object$summary[, -c("numeric_estimate")]
-    }else{
-      object[[input]]$summarised
-    }
-  })
-  if (length(type) == 1) {
-    return(out[[1]])
+  return(out)
+}
+
+#' Summary output from estimate_infections
+#'
+#' @description \code{summary} method for class "estimate_infections".
+#' @param object A list of output as produced by "estimate_infections".
+#' @param type A character vector of data types to return. Defaults to "snapshot" 
+#' but also supports "parameters". "snapshot" returns a summary at a given date 
+#' (by default the latest date informed by data). "parameters" returns summarised
+#' parameter estimates that can be further filtered using `params` to show just the 
+#' parameters of interest and date.
+#' @param date A date in the form "yyyy-mm-dd" to inspect estimates for.
+#' @param params A character vector of parameters to filter for.
+#' @param ... Pass additional arguments to `report_summary`
+#' @seealso summary estimate_infections report_summary
+#' @aliases summary
+#' @method summary estimate_infections
+#' @return Returns a data frame of summary output
+#' @export
+summary.estimate_infections <- function(object, type = "snapshot",
+                                        date = NULL, params = NULL, ...) {
+  choices <- c("snapshot", "parameters")
+  type <- match.arg(type, choices, several.ok = FALSE)
+  if (is.null(date)) {
+    target_date <- unique(object$summarised[type != "forecast"][date == max(date)]$date)
   }else{
-    return(out)
+    target_date <- as.Date(date)
   }
+  
+  if (type %in% "snapshot") {
+    out <- report_summary(
+      summarised_estimates = object$summarised[date == target_date],
+      rt_samples = object$samples[variable == "R"][, date == target_date, .(sample, value)],
+      ...)
+  }else if (type %in% "parameters") {
+    out <- object$summarised
+    if (!is.null(date)) {
+      out <- out[date == target_date]
+    }
+    if (!is.null(params)) {
+      out <- out[variable %in% params]
+    }
+  }
+  return(out)
 }
