@@ -84,6 +84,7 @@ reference:
   - title: Summarise results
     desc: Functions from summarising results
     contents:
+      - contains("summary.")
       - contains("summarise")
       - contains("calc_")
       - contains("process_")
@@ -140,3 +141,4 @@ reference:
       - convert_to_logsd
       - growth_to_R
       - R_to_growth
+      - update_defaults
