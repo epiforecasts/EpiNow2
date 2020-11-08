@@ -8,7 +8,7 @@ create_gp_data(gp = list(), data, rt = TRUE)
 }
 \arguments{
 \item{gp}{A list of settings to override the package default Gaussian
-process settings. See the documentation for \code{gp_settings} for details of these
+process settings. See the documentation for \code{?gp_settings} for details of these
 settings and \code{gp_settings()} for the current defaults.}
 
 \item{data}{A list containing the following numeric values: \code{t}, \code{seeding_time},

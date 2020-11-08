@@ -108,7 +108,7 @@ model {
     generation_time_lp(gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot);
   }
   if (obs_scale) {
-    frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];
+    frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
   }
   // observed reports from mean of reports
   report_lp(cases, reports, rep_phi, 1, model_type, horizon, obs_weight);

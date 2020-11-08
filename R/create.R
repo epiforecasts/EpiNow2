@@ -37,21 +37,25 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
 
 #' Create a Data Frame of Mean Delay Shifted Cases
 #'
+#' @param smoothing_window Numeric, the rolling average smoothing window
+#' to apply.
 #' @inheritParams estimate_infections
 #' @inheritParams create_stan_data
 #' @importFrom data.table copy shift frollmean fifelse .N
 #' @importFrom stats lm
 #' @return A dataframe for shifted reported cases
 #' @export
+#' @examples
+#' create_shifted_cases(example_confirmed, 7, 14, 7)
 create_shifted_cases <- function(reported_cases, mean_shift, 
-                                 prior_smoothing_window, horizon) {
+                                 smoothing_window, horizon) {
   
   shifted_reported_cases <- data.table::copy(reported_cases)[,
               confirm := data.table::shift(confirm, n = mean_shift,
                                            type = "lead", fill = NA)][,
-              confirm := data.table::frollmean(confirm, n = prior_smoothing_window, 
-                                               align = "right", fill = 0)][,
-              confirm := data.table::fifelse(confirm == 0, 1e-3, confirm)]
+              confirm := data.table::frollmean(confirm, n = smoothing_window, 
+                                               align = "right", fill = 1)][,
+              confirm := data.table::fifelse(confirm == 0, 1, confirm)]
   
   ## Forecast trend on reported cases using the last week of data
   final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
@@ -66,8 +70,38 @@ create_shifted_cases <- function(reported_cases, mean_shift,
                                                                                   confirm)][, t := NULL]
   
   ##Drop median generation interval initial values
-  shifted_reported_cases <- shifted_reported_cases[-(1:prior_smoothing_window)]
+  shifted_reported_cases <- shifted_reported_cases[, confirm := ceiling(confirm)]
+  shifted_reported_cases <- shifted_reported_cases[-(1:smoothing_window)]
   return(shifted_reported_cases)
+}
+
+#' Back Calculation Settings
+#'
+#'
+#' @description Defines a list specifying the optional arguments for the back calculation
+#' of cases. Only used if `rt = NULL`. Custom settings can be supplied which override the 
+#' defaults. Used internally `estimate_infections`. The settings returned (all of which 
+#' are modifiable by the user) are:
+#'  
+#'   * `smoothing_window`: Numeric, defaults to 7 days. The mean smoothing window to apply
+#'   to mean shifted reports (used as a prior during back calculation). 7 days is the default
+#'   as this smooths day of the week effects but depending on the quality of the data and the 
+#'   amount of information users wish to use as a prior (higher values equaling a less 
+#'   informative prior).
+#' @param backcalc A list of settings to override the back calculation settings. See
+#' `?backcalc_settings` for options and `backcalc_settings()` for current defaults.
+#' @return A list of back calculation settings
+#' @export
+#' @examples
+#' # default settings
+#' backcalc_settings()
+backcalc_settings <- function(backcalc = list()) {
+  defaults <- list(
+    smoothing_window = 7
+  )
+  # replace default settings with those specified by user
+  out <- update_defaults(defaults, backcalc)
+  return(out)
 }
 
 #' Time-Varying Reproduction Number Settings
@@ -109,12 +143,7 @@ rt_settings <- function(rt = list()) {
     use_breakpoints = TRUE
   )
   # replace default settings with those specified by user
-  if (length(rt) != 0) {
-    defaults <- defaults[setdiff(names(defaults), names(rt))]
-    rt <- c(defaults, rt)
-  }else{
-    rt <- defaults
-  }
+  rt <- update_defaults(defaults, rt)
   if (rt$rw > 0) {
     rt$use_breakpoints <- TRUE
   }
@@ -124,7 +153,7 @@ rt_settings <- function(rt = list()) {
 #' Create Time-varying Reproduction Number Data
 #'
 #' @param rt A list of settings to override the package default time-varying reproduction
-#' number settings. See the documentation for `rt_settings` for details of these settings 
+#' number settings. See the documentation for `?rt_settings` for details of these settings 
 #' and `rt_settings()` for the current defaults. Set to `NULL` to switch to using 
 #' back calculation rather than generating infections using Rt.
 #' @param breakpoints An integer vector (binary) indicating the location of breakpoints.
@@ -259,12 +288,7 @@ gp_settings <- function(gp = list(), time = NA) {
     future = "latest")
   
   # replace default settings with those specified by user
-  if (length(gp) != 0) {
-    defaults <- defaults[setdiff(names(defaults), names(gp))]
-    gp <- c(defaults, gp)
-  }else{
-    gp <- defaults
-  }
+  gp <- update_defaults(defaults, gp)
   
   if (gp$matern_type != 3/2) {
     futile.logger::flog.warn("Only the Matern 3/2 kernel is currently supported")
@@ -276,7 +300,7 @@ gp_settings <- function(gp = list(), time = NA) {
 #'
 #'
 #' @param gp A list of settings to override the package default Gaussian 
-#' process settings. See the documentation for `gp_settings` for details of these 
+#' process settings. See the documentation for `?gp_settings` for details of these 
 #' settings and `gp_settings()` for the current defaults.
 #' @param data A list containing the following numeric values: `t`, `seeding_time`,
 #' `horizon`.
@@ -399,7 +423,7 @@ obs_model_settings <- function(obs_model = list()) {
 #' Create Observation Model Settings
 #'
 #' @param obs_model A list of settings to override the package default observation
-#' model settings. See the documentation for `obs_model_settings` for details of these 
+#' model settings. See the documentation for `?obs_model_settings` for details of these 
 #' settings and `obs_model_settings()` for the current defaults.
 #' @seealso gp_settings
 #' @return A list of settings defining the Observation Model
@@ -607,12 +631,8 @@ create_stan_args <- function(stan_args = list(), data = NULL, init = "random",
     default_args$output_samples <- samples
   }
   # join with user supplied settings
-  if (length(stan_args) != 0) {
-    default_args <- default_args[setdiff(names(default_args), names(stan_args))]
-    args <- c(default_args, stan_args)
-  }else{
-    args <- default_args
-  }
+  args <- update_defaults(default_args, stan_args)
+
   # set up dependent arguments
   if (method == "sampling") {
     args$iter <-  ceiling(samples / args$chains) + args$warmup

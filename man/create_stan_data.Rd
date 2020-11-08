@@ -37,11 +37,11 @@ generation time (assuming a gamma distribution).}
 specific Gaussian process settings that are not supported for back calculation.}
 
 \item{gp}{A list of settings to override the package default Gaussian
-process settings. See the documentation for \code{gp_settings} for details of these
+process settings. See the documentation for \code{?gp_settings} for details of these
 settings and \code{gp_settings()} for the current defaults.}
 
 \item{obs_model}{A list of settings to override the package default observation
-model settings. See the documentation for \code{obs_model_settings} for details of these
+model settings. See the documentation for \code{?obs_model_settings} for details of these
 settings and \code{obs_model_settings()} for the current defaults.}
 
 \item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.

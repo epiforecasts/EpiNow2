@@ -12,6 +12,7 @@
 * Updates the interface for the observation model with arguments now  passed using `obs_model`. This removes `week_effect` and `family` from the main argument list which will allow for future extensions. Also adds a new argument `scale` which controls the uncertain fraction of cases that are eventually observed (defined as normally distributed). Setting this parameter will not 
 impact Rt estimates.
 * Updates the interface to the Rt settings with all arguments passed to `rt` this includes the initial prior, and `use_breakpoints`. Adds a new helper argument `rw` which enables easy parameterisation of a fixed length random walk. These changes also help make it clear that these arguments only impact the Rt generative model and not the back calculation model.
+* Updates the interface to back calculation options to be passed via `backcalc`. Currently this only impacts `prior_smoothing_window` which can now be passed using `backcalc = list(smoothing_window = 7)`
 
 ## Other changes
 

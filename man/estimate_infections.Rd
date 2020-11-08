@@ -12,9 +12,9 @@ estimate_infections(
   gp = list(),
   obs_model = list(),
   stan_args = list(),
+  backcalc = list(),
   horizon = 7,
   samples = 1000,
-  prior_smoothing_window = 7,
   CrIs = c(0.2, 0.5, 0.9),
   future = FALSE,
   max_execution_time = Inf,
@@ -41,22 +41,22 @@ on the log scale). To use no delays set this to \code{list()}.}
 specific Gaussian process settings that are not supported for back calculation.}
 
 \item{gp}{A list of settings to override the package default Gaussian
-process settings. See the documentation for \code{gp_settings} for details of these
+process settings. See the documentation for \code{?gp_settings} for details of these
 settings and \code{gp_settings()} for the current defaults.}
 
 \item{obs_model}{A list of settings to override the package default observation
-model settings. See the documentation for \code{obs_model_settings} for details of these
+model settings. See the documentation for \code{?obs_model_settings} for details of these
 settings and \code{obs_model_settings()} for the current defaults.}
 
 \item{stan_args}{A list of settings to override the package default stan settings. See the documentation
 for \code{create_stan_args} for details and \code{create_stan_args()} for current defaults.}
 
+\item{backcalc}{A list of settings to override the back calculation settings. See
+\code{?backcalc_settings} for options and \code{backcalc_settings()} for current defaults.}
+
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
 \item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
-
-\item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
-for the prior based on reported cases. Used for back calculation only.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
@@ -74,9 +74,6 @@ to assign errors to regions. Alter the default to run with error catching.}
 
 \item{verbose}{Logical, defaults to \code{TRUE} when used interactively and otherwise \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
-
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormal prior for Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
-log space). To infer infections and then calculate Rt using backcalculation set this to \code{list()}.}
 }
 \description{
 This function uses a non-parametric approach to reconstruct cases by date of infection from reported
@@ -107,14 +104,16 @@ def <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = list(incubation_period, reporting_delay),
                            rt = list(prior = list(mean = 2, sd = 0.2)),
                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
- summary(def)
- plot(def)
+# real time estimates
+summary(def)
+# summary plot
+plot(def)
 
-# run model using backcalculation (combined here with under reporting)
+# using back calculation (combined here with under reporting)
 backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = list(incubation_period, reporting_delay),
                                 rt = NULL,
-                                obs_model = list(scale = list(mean = 0.4, sd = 0.01)),
+                                obs_model = list(scale = list(mean = 0.4, sd = 0.05)),
                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 plot(backcalc)
                            

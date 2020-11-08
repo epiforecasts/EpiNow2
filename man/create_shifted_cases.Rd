@@ -4,12 +4,7 @@
 \alias{create_shifted_cases}
 \title{Create a Data Frame of Mean Delay Shifted Cases}
 \usage{
-create_shifted_cases(
-  reported_cases,
-  mean_shift,
-  prior_smoothing_window,
-  horizon
-)
+create_shifted_cases(reported_cases, mean_shift, smoothing_window, horizon)
 }
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
@@ -17,8 +12,8 @@ in date format.}
 
 \item{mean_shift}{Numeric, mean delay shift}
 
-\item{prior_smoothing_window}{Numeric defaults to 7. The number of days over which to take a rolling average
-for the prior based on reported cases. Used for back calculation only.}
+\item{smoothing_window}{Numeric, the rolling average smoothing window
+to apply.}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 }
@@ -27,4 +22,7 @@ A dataframe for shifted reported cases
 }
 \description{
 Create a Data Frame of Mean Delay Shifted Cases
+}
+\examples{
+create_shifted_cases(example_confirmed, 7, 14, 7)
 }

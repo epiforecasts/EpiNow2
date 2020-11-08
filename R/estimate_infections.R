@@ -17,10 +17,6 @@
 #' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 #' that delay (assuming a lognormal distribution with all parameters excepting the max allowed value 
 #' on the log scale). To use no delays set this to `list()`.
-#' @param rt_prior A list contain the mean and standard deviation (sd) of the lognormal prior for Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
-#' log space). To infer infections and then calculate Rt using backcalculation set this to `list()`.
-#' @param prior_smoothing_window Numeric defaults to 7. The number of days over which to take a rolling average
-#' for the prior based on reported cases. Used for back calculation only.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
 #' @param samples Numeric, defaults to 1000. Number of samples post warmup.
 #' @param return_fit Logical, defaults to TRUE. Should the fitted stan model be returned.
@@ -37,6 +33,7 @@
 #' @inheritParams create_gp_data
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams calc_CrIs
+#' @inheritParams backcalc_settings
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose 
 #' @importFrom lubridate wday days
@@ -62,14 +59,16 @@
 #'                            delays = list(incubation_period, reporting_delay),
 #'                            rt = list(prior = list(mean = 2, sd = 0.2)),
 #'                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
-#'  summary(def)
-#'  plot(def)
+#' # real time estimates
+#' summary(def)
+#' # summary plot
+#' plot(def)
 #' 
-#' # run model using backcalculation (combined here with under reporting)
+#' # using back calculation (combined here with under reporting)
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
 #'                                 rt = NULL,
-#'                                 obs_model = list(scale = list(mean = 0.4, sd = 0.01)),
+#'                                 obs_model = list(scale = list(mean = 0.4, sd = 0.05)),
 #'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(backcalc)
 #'                            
@@ -139,9 +138,9 @@ estimate_infections <- function(reported_cases,
                                 gp = list(),
                                 obs_model = list(),
                                 stan_args = list(),
+                                backcalc = list(),
                                 horizon = 7,
                                 samples = 1000,
-                                prior_smoothing_window = 7, 
                                 CrIs = c(0.2, 0.5, 0.9),
                                 future = FALSE, 
                                 max_execution_time = Inf, 
@@ -179,18 +178,24 @@ estimate_infections <- function(reported_cases,
   }else{
     mean_shift <- 1
   } 
+  
+
+  # Update backcalc settings ------------------------------------------------
+  backcalc <- backcalc_settings(backcalc)
+  
   # Add the mean delay and incubation period on as 0 case days ------------
   # Create mean shifted reported cases as prior ------------------------------
   if (no_delays > 0) {
     reported_cases <- data.table::rbindlist(list(
-      data.table::data.table(date = seq(min(reported_cases$date) - mean_shift - prior_smoothing_window, 
-                                        min(reported_cases$date) - 1, by = "days"),
-                             confirm = 0,  breakpoint = 0),
+      data.table::data.table(
+        date = seq(min(reported_cases$date) - mean_shift - backcalc$smoothing_window,
+                   min(reported_cases$date) - 1, by = "days"),
+        confirm = 0,  breakpoint = 0), 
       reported_cases))  
     
     shifted_reported_cases <- create_shifted_cases(reported_cases, mean_shift, 
-                                                   prior_smoothing_window, horizon)
-    reported_cases <- reported_cases[-(1:prior_smoothing_window)]
+                                                   backcalc$smoothing_window, horizon)
+    reported_cases <- reported_cases[-(1:backcalc$smoothing_window)]
   }
   
   # Add week day info -------------------------------------------------------
@@ -207,7 +212,7 @@ estimate_infections <- function(reported_cases,
                            gp = gp,
                            obs_model = obs_model,
                            delays = delays)
-
+ 
   # Set up default settings -------------------------------------------------
   args <- create_stan_args(stan_args = stan_args,
                            data = data, samples = samples, 

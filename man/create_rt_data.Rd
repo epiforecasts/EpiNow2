@@ -8,7 +8,7 @@ create_rt_data(rt = list(), breakpoints = NULL)
 }
 \arguments{
 \item{rt}{A list of settings to override the package default time-varying reproduction
-number settings. See the documentation for \code{rt_settings} for details of these settings
+number settings. See the documentation for \code{?rt_settings} for details of these settings
 and \code{rt_settings()} for the current defaults. Set to \code{NULL} to switch to using
 back calculation rather than generating infections using Rt.}
 
