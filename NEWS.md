@@ -11,7 +11,7 @@
 * Updates the over dispersion prior to be `1 / sqrt(half_normal(0, rho_prior))` based on [this](https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations) advice and as the over dispersion being measured is in reports and not infections and hence a priori there is not strong evidence for over dispersion (which may be the case for infections) so the previous prior was overly weighted towards this.
 * Updates the interface for the observation model with arguments now  passed using `obs_model`. This removes `week_effect` and `family` from the main argument list which will allow for future extensions. Also adds a new argument `scale` which controls the uncertain fraction of cases that are eventually observed (defined as normally distributed). Setting this parameter will not 
 impact Rt estimates.
-* Updates the interface to the Rt settings with all arguments passed to `rt` this includes the initial prior, and `use_breakpoints`. Adds a new helper argument `rw` which enables easy parameterisation of a fixed length random walk. This changes also helps make it clear that these arguments only impact the Rt generative model and not the backcalculation model.
+* Updates the interface to the Rt settings with all arguments passed to `rt` this includes the initial prior, and `use_breakpoints`. Adds a new helper argument `rw` which enables easy parameterisation of a fixed length random walk. These changes also help make it clear that these arguments only impact the Rt generative model and not the back calculation model.
 
 ## Other changes
 
