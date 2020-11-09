@@ -10,6 +10,8 @@ create_shifted_cases(reported_cases, shift, smoothing_window, horizon)
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
 
+\item{shift}{Numeric, mean delay shift to apply.}
+
 \item{smoothing_window}{Numeric, the rolling average smoothing window
 to apply.}
 

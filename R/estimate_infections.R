@@ -106,7 +106,7 @@
 #' # weekly random walk
 #' rw <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                           delays = delay_opts(incubation_period, reporting_delay),
-#'                           rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7)
+#'                           rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7),
 #'                           gp = NULL)     
 #'
 #' # random walk effects

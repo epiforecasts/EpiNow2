@@ -39,6 +39,7 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
 #'
 #' @param smoothing_window Numeric, the rolling average smoothing window
 #' to apply.
+#' @param shift Numeric, mean delay shift to apply.
 #' @inheritParams estimate_infections
 #' @inheritParams create_stan_data
 #' @importFrom data.table copy shift frollmean fifelse .N
