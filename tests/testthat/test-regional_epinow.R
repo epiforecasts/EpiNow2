@@ -19,11 +19,13 @@ df_non_zero <- function(df) {
 
 test_that("regional_epinow produces expected output when run with default settings", {
   skip_on_cran()
-  out <- suppressWarnings(regional_epinow(reported_cases = cases, generation_time = generation_time,
-                                 delays = list(reporting_delay),
-                                 samples = 100, stan_args = list(warmup = 100, cores = 1, chains = 2,
-                                                                 control = list(adapt_delta = 0.8)),
-                                 logs = NULL))
+  out <- suppressWarnings(
+    regional_epinow(reported_cases = cases, generation_time = generation_time,
+                    delays = delay_opts(reporting_delay),
+                    stan = stan_opts(samples = 100, warmup = 100, 
+                                     cores = 1, chains = 2,
+                                     control = list(adapt_delta = 0.8)),
+                    logs = NULL))
   expect_equal(names(out$regional), c("testland", "realland"))
   expect_equal(names(out$summary), c("latest_date", "results", "summarised_results", "summary_plot",
                                       "summarised_measures", "reported_cases", "high_plots", "plots"))
@@ -37,17 +39,22 @@ test_that("regional_epinow produces expected output when run with default settin
   expect_equal(names(out$regional$realland$plots), c("infections", "reports", "R", "growth_rate","summary"))
 })
 
-test_that("regional_epinow fails as expected when given a very short timeout", {
+test_that("regional_epinow runs without error when given a very short timeout", {
   skip_on_cran()
-  expect_error(regional_epinow(reported_cases = cases, generation_time = generation_time,
-                              delays = list(incubation_period, reporting_delay),
-                              stan_args = list(warmup = 100, cores = 1, chains = 2,
-                                               control = list(adapt_delta = 0.8)),
-                              max_execution_time = 1, logs = NULL))
-  expect_error(regional_epinow(reported_cases = cases, generation_time = generation_time,
-                               delays = list(incubation_period, reporting_delay),
-                               stan_args = list(warmup = 100, cores = 1, chains = 2,
-                                                control = list(adapt_delta = 0.8)),
-                               max_execution_time = 1, future = TRUE, logs = NULL))
-
+  expect_error(
+    regional_epinow(reported_cases = cases, generation_time = generation_time,
+                    delays = delay_opts(reporting_delay),
+                    stan = stan_opts(samples = 1000, warmup = 100, 
+                                     cores = 1, chains = 2,
+                                     control = list(adapt_delta = 0.8),
+                                     max_execution_time = 1), logs = NULL),
+    NA)
+  expect_error(
+    regional_epinow(reported_cases = cases, generation_time = generation_time,
+                    delays = delay_opts(reporting_delay),
+                    stan = stan_opts(samples = 1000, warmup = 100, 
+                                     cores = 1, chains = 2,
+                                     control = list(adapt_delta = 0.8),
+                                     max_execution_time = 1, future = TRUE), logs = NULL),
+    NA)
 })

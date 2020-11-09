@@ -64,10 +64,8 @@ get_raw_result <- function(file, region, date,
 #' regional_out <- regional_epinow(reported_cases = cases,
 #'                                 samples = 100,
 #'                                 generation_time = generation_time,
-#'                                 delays = list(incubation_period, reporting_delay),
-#'                                 stan_args = list(warmup = 100,
-#'                                                  cores = ifelse(interactive(), 4, 1)),
-#'                                 output = c("regions"))
+#'                                 delays = delay_opts(incubation_period, reporting_delay),
+#'                                 rt = NULL, output = c("regions"))
 #'
 #' summary_only <- get_regional_results(regional_out$regional, forecast = FALSE, samples = FALSE)
 #' names(summary_only)

@@ -62,8 +62,8 @@ reference:
   - title: Internal estimate_infections Functions
     desc: Functions used internally by estimate_infections
     contents:
+      - contains("_opts")
       - contains("create_")
-      - contains("_settings")
       - allocate_delays
       - allocate_empty
   - title: Model Fitting
@@ -75,12 +75,6 @@ reference:
     contents:
       - regional_summary
       - regional_runtimes
-  - title: Report results
-    desc: Functions to report results
-    contents:
-      - report_cases
-      - report_plots
-      - report_summary
   - title: Summarise results
     desc: Functions from summarising results
     contents:
@@ -91,15 +85,21 @@ reference:
       - format_fit
       - make_conf
       - map_prob_change
+  - title: Plot Results
+    desc: Plot generated results
+    contents: 
+      - contains("plot")
+  - title: Report results
+    desc: Functions to report results
+    contents:
+      - report_cases
+      - report_plots
+      - report_summary  
   - title: Define, Fit and Parameterise Distributions
     desc: Functions to define, fit and parameterise distributions
     contents:
       - contains("dist")
       - tune_inv_gamma
-  - title: Plot Results
-    desc: Plot generated results
-    contents: 
-      - contains("plot")
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases
     contents:

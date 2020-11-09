@@ -6,10 +6,9 @@
 \usage{
 epinow(
   reported_cases,
-  samples = 1000,
-  horizon = 7,
   generation_time,
-  delays = list(),
+  delays = delay_opts(),
+  horizon = 7,
   CrIs = c(0.2, 0.5, 0.9),
   return_output = FALSE,
   output = c("samples", "plots", "latest", "fit", "timing"),
@@ -26,19 +25,14 @@ epinow(
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
 
-\item{samples}{Numeric, defaults to 1000. Number of samples post warmup.}
-
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
-
 \item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
-\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
-Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale). To use no delays set this to \code{list()}.}
+\item{delays}{A call to \code{delay_opts} defining delay distributions and options. See the documentation of \code{delay_opts}
+and the examples below for details.}
+
+\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
@@ -98,8 +92,8 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 
 # estimate Rt and nowcast/forecast cases by date of infection
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
-              delays = list(incubation_period, reporting_delay),
-              stan_args = list(cores = ifelse(interactive(), 4, 1)))
+              rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+              delays = delay_opts(incubation_period, reporting_delay))
 # summary of the latest estimates
 summary(out)     
 # plot estimates        

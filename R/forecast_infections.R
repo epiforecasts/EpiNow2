@@ -34,10 +34,8 @@
 #' 
 #' # estimate Rt and infections from data
 #' out <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                            delays = list(incubation_period, reporting_delay),
-#'                            gp = list(), samples = 100,
-#'                            stan_args = list(cores = ifelse(interactive(), 4, 1), 
-#'                                             warmup = 100, chains = 4))
+#'                            delays = delay_opts(incubation_period, reporting_delay),
+#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
 #'
 #' # forecast Rt and infections from estimates
 #' forecast <- forecast_infections(
