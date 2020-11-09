@@ -63,7 +63,7 @@ reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_va
 # estimate Rt and infections from data
 out <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = delay_opts(incubation_period, reporting_delay),
-                           rt = rt_opts(prior = list(mean = 2, sd = 0.1))
+                           rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
 
 # forecast Rt and infections from estimates
 forecast <- forecast_infections(
