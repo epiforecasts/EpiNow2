@@ -10,8 +10,10 @@ reporting_delay <- list(mean = convert_to_logmean(3,1), mean_sd = 0.1,
 
 out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
                            delays = delay_opts(reporting_delay), 
-                           stan = stan_opts(chains = 2, warmup = 50, samples = 50,
-                                            control = list(adapt_delta = 0.8))))
+                           gp = gp_opts(boundary_scale = 1.5, basis_prop = 0.1,
+                                        ls_min = 10),
+                           stan = stan_opts(chains = 2, warmup = 100, samples = 100,
+                                            control = list(adapt_delta = 0.9))))
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object", {
   sims <- simulate_infections(out)
