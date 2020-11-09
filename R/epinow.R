@@ -49,11 +49,12 @@
 #' # summary of R estimates
 #' summary(out, type = "parameters", params = "R")
 #' }
-epinow <- function(reported_cases, samples = 1000, horizon = 7, 
-                   generation_time, delays = list(),
+epinow <- function(reported_cases, 
+                   generation_time, delays = delay_opts(),
+                   horizon = 7,
                    CrIs = c(0.2, 0.5, 0.9),
-                   return_output = FALSE, output = c("samples", "plots", 
-                                                     "latest", "fit", "timing"), 
+                   return_output = FALSE,
+                   output = c("samples", "plots", "latest", "fit", "timing"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, logs = tempdir(),
                    id = "epinow", verbose = interactive(),
@@ -119,7 +120,6 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                      generation_time = generation_time,
                                      CrIs = CrIs,
                                      delays = delays,
-                                     samples = samples,
                                      horizon = horizon,
                                      return_fit = output["fit"],
                                      verbose = verbose,
@@ -139,7 +139,6 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
                                  gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
                                  gt_max = generation_time$max,
                                  horizon = horizon,
-                                 samples = samples,
                                  CrIs = CrIs),
                             forecast_args))
       

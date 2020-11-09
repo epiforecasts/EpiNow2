@@ -1,24 +1,38 @@
-#' Back Calculation Options
-#'
-#'
-#' @description Defines a list specifying the optional arguments for the back calculation
-#' of cases. Only used if `rt = NULL`. 
-#'  
-#' @param smoothing_window Numeric, defaults to 7 days. The mean smoothing window to apply
-#'   to mean shifted reports (used as a prior during back calculation). 7 days is the default
-#'   as this smooths day of the week effects but depending on the quality of the data and the 
-#'   amount of information users wish to use as a prior (higher values equaling a less 
-#'   informative prior).
-#' @return A list of back calculation settings
+#' Delay Distribution Options
+#' 
+#' @description Returns delay distributions formatted for usage by downstream 
+#' functions.
+#' @param ... Delay distributions as a list with the following paramters:
+#' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
+#' normal (with all parameters except for max defined in logged form).
+#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+#' @return A list summarising the input delay distributions.
 #' @export
 #' @examples
-#' # default settings
-#' backcalc_opts()
-backcalc_opts <- function(smoothing_window = 7) {
-  backcalc <- list(
-    smoothing_window = smoothing_window
-  )
-  return(backcalc)
+#' # no delays
+#' delay_opts()
+delay_opts <- function(...) {
+  delays <- list(...)
+  data <- list()
+  data$delays <- length(delays)
+  if (data$delays > 0) {
+    delays <- purrr::transpose(delays)
+  }
+  
+  # Estimate the mean delay -----------------------------------------------
+  if (data$delays > 0) {
+    data$seeding_time <- as.integer(sum(
+      purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))
+      ))
+  }else{
+    data$seeding_time <- 1
+  } 
+  data$delay_mean_mean <- allocate_delays(delays$mean, data$delays)
+  data$delay_mean_sd <- allocate_delays(delays$mean_sd, data$delays)
+  data$delay_sd_mean <- allocate_delays(delays$sd, data$delays)
+  data$delay_sd_sd <- allocate_delays(delays$sd_sd, data$delays)
+  data$max_delay <- allocate_delays(delays$max, data$delays)
+  return(data)
 }
 
 #' Time-Varying Reproduction Number Options
@@ -74,6 +88,28 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
   return(rt)
 }
 
+#' Back Calculation Options
+#'
+#'
+#' @description Defines a list specifying the optional arguments for the back calculation
+#' of cases. Only used if `rt = NULL`. 
+#'  
+#' @param smoothing_window Numeric, defaults to 7 days. The mean smoothing window to apply
+#'   to mean shifted reports (used as a prior during back calculation). 7 days is the default
+#'   as this smooths day of the week effects but depending on the quality of the data and the 
+#'   amount of information users wish to use as a prior (higher values equaling a less 
+#'   informative prior).
+#' @return A list of back calculation settings
+#' @export
+#' @examples
+#' # default settings
+#' backcalc_opts()
+backcalc_opts <- function(smoothing_window = 7) {
+  backcalc <- list(
+    smoothing_window = smoothing_window
+  )
+  return(backcalc)
+}
 
 #' Approximate Gaussian Process Settings
 #'
@@ -267,6 +303,24 @@ rstan_vb_opts <- function(samples = 1000,
   return(opts)
 }
 
+#' Rstan Options
+#'
+#' @description Defines a list specifying the arguments passed to underlying `rstan`
+#' functions via `rstan_sampling_opts` and `rstan_vb_opts`.Custom settings can be supplied
+#'  which override the defaults.
+#' @param object Stan model object. By default uses the compiled package default.
+#' @param method A character string, defaulting to sampling. Currently supports
+#' `rstan::sampling` ("sampling") or `rstan:vb` ("vb").
+#' @param ... Additional parameters to pass  underlying option functions.
+#' @return A list of arguments to pass to the appropriate rstan functions.
+#' @export
+#' @inheritParams rstan_sampling_opts
+#' @seealso rstan_sampling_opts rstan_vb_opts
+#' @examples
+#' rstan_opts(samples = 2000)
+#' 
+#' # using vb
+#' rstan_opts(method = "vb")
 rstan_opts <- function(object = NULL,
                        samples = 1000,
                        method = "sampling", ...) {
@@ -287,14 +341,35 @@ rstan_opts <- function(object = NULL,
   return(opts)
 }
 
+#' Stan Options
+#'
+#' @description Defines a list specifying the arguments passed to underlying stan
+#' backend functions via `rstan_sampling_opts` and `rstan_vb_opts`. Custom settings
+#' can be supplied which override the defaults.
+#' @param object Stan model object. By default uses the compiled package default.
+#' @param method A character string, defaulting to sampling. Currently supports
+#' `rstan::sampling` ("sampling") or `rstan:vb` ("vb").
+#' @param return_fit Logical, defaults to TRUE. Should the fit stan model be returned.
+#' @param ... Additional parameters to pass  underlying option functions.
+#' @return A list of arguments to pass to the appropriate rstan functions.
+#' @export
+#' @inheritParams rstan_opts
+#' @seealso rstan_opts 
+#' @examples
+#' # using default of rstan::sampling
+#' stan_opts(samples = 2000)
+#' 
+#' # using vb
+#' stan_opts(method = "vb")
 stan_opts <- function(samples = 1000,
-                      method = "sampling", 
-                      backend = "rstan", ...){
+                      backend = "rstan", 
+                      return_fit = TRUE,
+                      ...){
   backend <- match.arg(backend, choices = c("rstan"))
   if (backend %in% "rstan") {
     opts <- rstan_opts(samples = samples,
-                       method = method,
                        ...)
   }
+  opts <- c(opts, list(return_fit = return_fit))
   return(opts)
 }

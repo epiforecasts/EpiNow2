@@ -47,24 +47,24 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
 #' @export
 #' @examples
 #' create_shifted_cases(example_confirmed, 7, 14, 7)
-create_shifted_cases <- function(reported_cases, mean_shift, 
+create_shifted_cases <- function(reported_cases, shift, 
                                  smoothing_window, horizon) {
   
   shifted_reported_cases <- data.table::copy(reported_cases)[,
-              confirm := data.table::shift(confirm, n = mean_shift,
+              confirm := data.table::shift(confirm, n = shift,
                                            type = "lead", fill = NA)][,
               confirm := data.table::frollmean(confirm, n = smoothing_window, 
                                                align = "right", fill = 1)][,
               confirm := data.table::fifelse(confirm == 0, 1, confirm)]
   
   ## Forecast trend on reported cases using the last week of data
-  final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - mean_shift)][max(1, .N - 6):.N]$confirm)[,
+  final_week <- data.table::data.table(confirm = shifted_reported_cases[1:(.N - horizon - shift)][max(1, .N - 6):.N]$confirm)[,
                                                                         t := 1:.N]
   lm_model <- stats::lm(log(confirm) ~ t, data = final_week)
   ## Estimate unreported future infections using a log linear model
   shifted_reported_cases <- shifted_reported_cases[,
                                                    t := 1:.N][, 
-                                                   t := t - (.N - horizon - mean_shift - 6)][,
+                                                   t := t - (.N - horizon - shift - 6)][,
                                                    confirm := data.table::fifelse(t >= 7,
                                                                                   exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t),
                                                                                   confirm)][, t := NULL]
@@ -247,9 +247,7 @@ create_obs_model <- function(obs = obs_opts()) {
 }
 #' Create Stan Data Required for estimate_infections
 #'
-#' @param shifted_reported_cases A dataframe of delay shifted reported cases
-#' @param no_delays Numeric, number of delays
-#' @param mean_shift Numeric, mean delay shift
+#' @param shifted_cases A dataframe of delay shifted cases
 #' @inheritParams create_gp_data
 #' @inheritParams create_obs_model
 #' @inheritParams create_rt_data
@@ -258,18 +256,16 @@ create_obs_model <- function(obs = obs_opts()) {
 #' @importFrom purrr safely
 #' @return A list of stan data
 #' @export 
-create_stan_data <- function(reported_cases, shifted_reported_cases,
-                             horizon, no_delays, mean_shift, generation_time,
-                             rt, gp, obs, delays) {
-  cases <- reported_cases[(mean_shift + 1):(.N - horizon)]$confirm
+create_stan_data <- function(reported_cases, generation_time,
+                             rt, gp, obs, delays, horizon,
+                             shifted_cases) {
+  cases <- reported_cases[(delays$seeding_time + 1):(.N - horizon)]$confirm
   
   data <- list(
-    day_of_week = reported_cases[(mean_shift + 1):.N]$day_of_week,
+    day_of_week = reported_cases[(delays$seeding_time + 1):.N]$day_of_week,
     cases = cases,
-    shifted_cases = unlist(ifelse(no_delays > 0, list(shifted_reported_cases$confirm),
-                                  list(reported_cases$confirm))),
+    shifted_cases = shifted_cases,
     t = length(reported_cases$date),
-    seeding_time = mean_shift,
     horizon = horizon,
     gt_mean_mean = generation_time$mean,
     gt_mean_sd = generation_time$mean_sd,
@@ -279,13 +275,16 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
     burn_in = 0
   ) 
   
-# Add Rt data -------------------------------------------------------------
+  # add delay data
+  data <- c(data, delays)
+  
+  # add Rt data
   data <- c(data, 
             create_rt_data(rt,
-                           breakpoints = reported_cases[(mean_shift + 1):.N]$breakpoint,
+                           breakpoints = reported_cases[(data$seeding_time + 1):.N]$breakpoint,
                            delay = data$seeding_time, horizon = data$horizon))
    
-# initial estimate of growth ------------------------------------------
+  # initial estimate of growth
   first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
                                        t = 1:min(7, length(cases)))
   data$prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
@@ -299,19 +298,14 @@ create_stan_data <- function(reported_cases, shifted_reported_cases,
   }else{
     data$prior_growth <- 0
   }
-  # Delays ------------------------------------------------------------------
-  data$delays <- no_delays
-  data$delay_mean_mean <- allocate_delays(delays$mean, no_delays)
-  data$delay_mean_sd <- allocate_delays(delays$mean_sd, no_delays)
-  data$delay_sd_mean <- allocate_delays(delays$sd, no_delays)
-  data$delay_sd_sd <- allocate_delays(delays$sd_sd, no_delays)
-  data$max_delay <- allocate_delays(delays$max, no_delays)
 
-  ## Add gaussian process args
+  # gaussian process data
   data <- c(data, create_gp_data(gp, data))
-  ## Add observation model args
+  
+  # observation model data
   data <- c(data, create_obs_model(obs))
-  ## Rescale mean shifted prior for backcalculation if observation scaling is used
+  
+  # rescale mean shifted prior for back calculation if observation scaling is used
   if (data$obs_scale == 1) {
     data$shifted_cases <- data$shifted_cases / data$obs_scale_mean
     data$prior_infections <- log(exp(data$prior_infections) / data$obs_scale_mean)
@@ -372,8 +366,6 @@ create_initial_conditions <- function(data) {
   return(init_fun)
 }
 
-
-
 #' Create a List of Stan Arguments
 #'
 #'
@@ -408,5 +400,6 @@ create_stan_args <- function(stan = stan_opts(),
     refresh = ifelse(verbose, 50, 0)
   )
   args <- update_defaults(args, stan)
+  args$return_fit <- NULL
   return(args)
 }
