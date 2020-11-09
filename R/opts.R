@@ -71,14 +71,15 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
                     use_rt = TRUE,
                     rw = 0,
                     use_breakpoints = TRUE,
-                    future = "latest") {
+                    future = "latest",
+                    pop = 0) {
   rt <- list(
     prior = prior,
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
     future = future,
-    pop = 0
+    pop = pop
   )
   
   # replace default settings with those specified by user

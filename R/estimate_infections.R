@@ -58,7 +58,8 @@
 #' # These settings are an area of active research. See ?gp_opts for details.
 #' agp <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
-#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1),
+#'                                         pop = 200000),
 #'                            gp = gp_opts(ls_min = 10, boundary_scale = 1.5,
 #'                                         basis_prop = 0.1),
 #'                            stan = stan_opts(control = list(adapt_delta = 0.95)))

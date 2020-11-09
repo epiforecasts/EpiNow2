@@ -43,7 +43,7 @@ vector generate_infections(vector oR, int uot,
   for (s in 1:ot) {
     infectiousness[s] += update_infectiousness(infections, gt_pmf, uot, max_gt, s);
     if (pop && s > nht) {
-      R[s] *= (pop - cum_infections[s]) / pop;
+      R[s] *= (pop - cum_infections[s]) / (pop - cum_infections[nht]);
     } 
     infections[s + uot] += R[s] * infectiousness[s];
     if (pop && s < ot) {
