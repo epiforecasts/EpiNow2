@@ -55,7 +55,7 @@
 #' plot(def)
 #' 
 #' # decreasing the accuracy of the approximate Gaussian to speed up computation. 
-#' These settings are an area of active research. See ?gp_opts for details.
+#' # These settings are an area of active research. See ?gp_opts for details.
 #' agp <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
