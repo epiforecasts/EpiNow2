@@ -185,7 +185,7 @@ may be needed*. See fitting progress by setting `verbose = TRUE`.
 estimates <- epinow(reported_cases = reported_cases, 
                     generation_time = generation_time,
                     delays = delay_opts(incubation_period, reporting_delay),
-                    rt = delay_opts(prior = list(mean = 2, sd = 0.2)))
+                    rt = rt_opts(prior = list(mean = 2, sd = 0.2)))
 names(estimates)
 #> [1] "estimates"                "estimated_reported_cases"
 #> [3] "summary"                  "plots"                   
