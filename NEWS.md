@@ -2,7 +2,7 @@
 
 ## New features
 
-* Rewritten the interface for `estimate_infections` to be divided into calls to `_opts` functions. Options are now divided by type for delays (`delay_opts`), Rt (`rt_opts`), backcalculation (`backcacl`), the Gaussian process (`gp`), and stan arguments (`stan`). This has resulted in a larger number of the arguments from `estimate_infections` being folded into the related `_opts` function. Please see the function documentation and examples for details.
+* Rewritten the interface for `estimate_infections` to be divided into calls to `_opts` functions. Options are now divided by type for delays (`delay_opts`), Rt (`rt_opts`), backcalculation (`backcalc_opts`), the Gaussian process (`gp_opts`), and stan arguments (`stan_opts`). This has resulted in a larger number of the arguments from `estimate_infections` being folded into the related `_opts` function. Please see the function documentation and examples for details.
 * Extended the functionality of the back calculation model so that Rt can be produced via calculation. These estimates are potentially less reliable than those produced using the generative model but the model can be estimated in a fraction of the time.
 * Reduced the default maximum generation time and incubation period allowed in the truncated distribution (from 30 days to 15). This decreases the model run time substantially at a marginal accuracy cost. This new default is not suitable for longer generation times and should be modified by the user if these are used.
 * Adds basic S3 plot and summary measures for `epinow` and `estimate_infections`.
