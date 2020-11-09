@@ -37,6 +37,11 @@ standard deviation (sd), standard deviation of the standard deviation and the ma
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale). To use no delays set this to \code{list()}.}
 
+\item{rt}{A list of settings to override the package default time-varying reproduction
+number settings. See the documentation for \code{?rt_settings} for details of these settings
+and \code{rt_settings()} for the current defaults. Set to \code{NULL} to switch to using
+back calculation rather than generating infections using Rt.}
+
 \item{gp}{A list of settings to override the package default Gaussian
 process settings. See the documentation for \code{?gp_settings} for details of these
 settings and \code{gp_settings()} for the current defaults.}

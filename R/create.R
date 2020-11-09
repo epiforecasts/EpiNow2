@@ -406,12 +406,7 @@ obs_model_settings <- function(obs_model = list()) {
     week_effect = TRUE,
     scale = list())
   # replace default settings with those specified by user
-  if (length(obs_model) != 0) {
-    defaults <- defaults[setdiff(names(defaults), names(obs_model))]
-    obs_model <- c(defaults, obs_model)
-  }else{
-    obs_model <- defaults
-  }
+  obs_model <- update_defaults(defaults, obs_model)
   
   if (length(obs_model$scale) != 0) {
     scale_names <- names(obs_model$scale)
@@ -462,6 +457,7 @@ create_obs_model <- function(obs_model = list()) {
 #' @param mean_shift Numeric, mean delay shift
 #' @inheritParams create_gp_data
 #' @inheritParams create_obs_model
+#' @inheritParams create_rt_data
 #' @inheritParams estimate_infections
 #' @importFrom stats lm
 #' @importFrom purrr safely

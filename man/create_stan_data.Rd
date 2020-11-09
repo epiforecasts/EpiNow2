@@ -23,7 +23,7 @@ in date format.}
 
 \item{shifted_reported_cases}{A dataframe of delay shifted reported cases}
 
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
+\item{horizon}{Numeric, forecast horizon.}
 
 \item{no_delays}{Numeric, number of delays}
 
@@ -32,6 +32,11 @@ in date format.}
 \item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
+
+\item{rt}{A list of settings to override the package default time-varying reproduction
+number settings. See the documentation for \code{?rt_settings} for details of these settings
+and \code{rt_settings()} for the current defaults. Set to \code{NULL} to switch to using
+back calculation rather than generating infections using Rt.}
 
 \item{gp}{A list of settings to override the package default Gaussian
 process settings. See the documentation for \code{?gp_settings} for details of these
