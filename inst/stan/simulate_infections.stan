@@ -21,7 +21,7 @@ data {
   real<lower = 0> gt_sd[n, 1];   // sd of generation time
   int max_gt;                    // maximum generation time
   matrix[n, t - seeding_time] R; // reproduction number
-  int pop                        // susceptible population
+  int pop;                       // susceptible population
   // delay from infection to report
   int delays;                           // no. of delay distributions
   real<lower = 0> delay_mean[n, delays];// mean of delays
