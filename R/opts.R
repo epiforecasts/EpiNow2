@@ -2,7 +2,7 @@
 #' 
 #' @description Returns delay distributions formatted for usage by downstream 
 #' functions.
-#' @param ... Delay distributions as a list with the following paramters:
+#' @param ... Delay distributions as a list with the following parameters:
 #' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
 #' normal (with all parameters except for max defined in logged form).
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
@@ -97,7 +97,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' @param smoothing_window Numeric, defaults to 7 days. The mean smoothing window to apply
 #'   to mean shifted reports (used as a prior during back calculation). 7 days is the default
 #'   as this smooths day of the week effects but depending on the quality of the data and the 
-#'   amount of information users wish to use as a prior (higher values equaling a less 
+#'   amount of information users wish to use as a prior (higher values equalling a less 
 #'   informative prior).
 #' @return A list of back calculation settings
 #' @export

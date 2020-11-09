@@ -7,7 +7,7 @@
 delay_opts(...)
 }
 \arguments{
-\item{...}{Delay distributions as a list with the following paramters:
+\item{...}{Delay distributions as a list with the following parameters:
 "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
 normal (with all parameters except for max defined in logged form).}
 }

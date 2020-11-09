@@ -10,7 +10,7 @@ backcalc_opts(smoothing_window = 7)
 \item{smoothing_window}{Numeric, defaults to 7 days. The mean smoothing window to apply
 to mean shifted reports (used as a prior during back calculation). 7 days is the default
 as this smooths day of the week effects but depending on the quality of the data and the
-amount of information users wish to use as a prior (higher values equaling a less
+amount of information users wish to use as a prior (higher values equalling a less
 informative prior).}
 }
 \value{
