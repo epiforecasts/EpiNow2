@@ -18,22 +18,16 @@
 #' that delay (assuming a lognormal distribution with all parameters excepting the max allowed value 
 #' on the log scale). To use no delays set this to `list()`.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
-#' @param samples Numeric, defaults to 1000. Number of samples post warmup.
 #' @param return_fit Logical, defaults to TRUE. Should the fitted stan model be returned.
 #' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
-#' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel using `future`. This allows users to have chains
-#' fail gracefully (i.e when combined with `max_execution_time`). Should be combined with a call to `future::plan`
-#' @param max_execution_time Numeric, defaults to Inf (seconds). If set will kill off processing of each chain if not finished within the specified timeout. 
-#' When more than 2 chains finish successfully estimates will still be returned. If less than 2 chains return within the allowed time then estimation 
-#' will fail with an informative error.
 #' @export
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
 #' @inheritParams create_gp_data
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams calc_CrIs
-#' @inheritParams backcalc_settings
+#' @inheritParams backcalc_opts
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose 
 #' @importFrom lubridate wday days
@@ -58,7 +52,7 @@
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-#'                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
+#'                            stan = stan_opts(control = list(adapt_delta = 0.7)))
 #' # real time estimates
 #' summary(def)
 #' # summary plot
@@ -68,44 +62,38 @@
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
 #'                                 rt = NULL,
-#'                                 obs_model = obs_opts(scale = list(mean = 0.4, sd = 0.05)),
-#'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
+#'                                 obs_model = obs_opts(scale = list(mean = 0.4, sd = 0.05)))
 #' plot(backcalc)
 #'                            
 #' # Rt projected into the future using the Gaussian process
 #' project_rt <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                   delays = list(incubation_period, reporting_delay),
 #'                                   rt = rt_opts(prior = list(mean = 2, sd = 0.2), 
-#'                                             future = "project"),
-#'                                   stan_args = list(cores = ifelse(interactive(), 4, 1)))
+#'                                             future = "project"))
 #' plot(project_rt)
 #'
 #' # default settings on a later snapshot of data 
 #' snapshot_cases <- EpiNow2::example_confirmed[80:130]
 #' snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 rt = rt_opts(prior = list(mean = 1, sd = 0.2)),
-#'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
+#'                                 rt = rt_opts(prior = list(mean = 1, sd = 0.2)))
 #' plot(snapshot) 
 #' 
 #' # stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
 #'                             gp = gp_opts(stationary = TRUE),
-#'                             rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-#'                             stan_args = list(cores = ifelse(interactive(), 4, 1)))
+#'                             rt = rt_opts(prior = list(mean = 2, sd = 0.2)))
 #' plot(stat)
 #'        
 #' # no gaussian process (i.e fixed Rt assuming no breakpoints)
 #' fixed <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                              delays = list(incubation_period, reporting_delay),
-#'                              gp = NULL,
-#'                              stan_args = list(cores = ifelse(interactive(), 4, 1)))
+#'                              gp = NULL)
 #' plot(fixed)
 #' 
 #' # no delays 
-#' no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
+#' no_delay <- estimate_infections(reported_cases, generation_time = generation_time)
 #' plot(no_delay)    
 #' 
 #' # break point but otherwise static Rt
@@ -113,8 +101,7 @@
 #' bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
 #' bkp <- estimate_infections(bp_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-#'                            stan_args = list(cores = ifelse(interactive(), 4, 1)),
+#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.2))
 #'                            gp = NULL)                                                         
 #' # break point effect
 #' summary(bkp, type = "parameters", params = "breakpoints")
@@ -123,8 +110,7 @@
 #' # weekly random walk
 #' rw <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                           delays = list(incubation_period, reporting_delay),
-#'                           rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
-#'                           stan_args = list(cores = ifelse(interactive(), 4, 1)),
+#'                           rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7)
 #'                           gp = NULL)     
 #'
 #' # random walk effects
@@ -135,19 +121,16 @@ estimate_infections <- function(reported_cases,
                                 generation_time, 
                                 delays = list(),
                                 rt = rt_opts(),
+                                backcalc = backcalc_opts(),
                                 gp = gp_opts(),
                                 obs = obs_opts(),
-                                stan_args = list(),
-                                backcalc = backcalc_opts(),
+                                stan = stan_opts(),
                                 horizon = 7,
-                                samples = 1000,
                                 CrIs = c(0.2, 0.5, 0.9),
-                                future = FALSE, 
-                                max_execution_time = Inf, 
                                 return_fit = TRUE,
                                 id = "estimate_infections",
                                 verbose = interactive()){
-  
+   
   # store dirty reported case data
   dirty_reported_cases <- data.table::copy(reported_cases)
   
@@ -210,16 +193,16 @@ estimate_infections <- function(reported_cases,
                            delays = delays)
  
   # Set up default settings -------------------------------------------------
-  args <- create_stan_args(stan_args = stan_args,
-                           data = data, samples = samples, 
+  args <- create_stan_args(stan = stan,
+                           data = data,
                            init = create_initial_conditions(data),
                            verbose = verbose)
   
   # Fit model ---------------------------------------------------------------
   if (args$method == "sampling") {
     fit <- fit_model_with_nuts(args,
-                               future = future,
-                               max_execution_time = max_execution_time,
+                               future = args$future,
+                               max_execution_time = args$max_execution_time,
                                verbose = verbose,
                                id = id)
   }else if (args$method == "vb"){
@@ -276,6 +259,9 @@ estimate_infections <- function(reported_cases,
 fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
                                 id = "stan", verbose = FALSE) {
   args$method <- NULL
+  args$max_execution_time <- NULL
+  args$future <- NULL
+  
   if (verbose) {
     futile.logger::flog.debug(paste0("%s: Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
                                      " chains each with a warm up of ", args$warmup, " iterations each) and ",

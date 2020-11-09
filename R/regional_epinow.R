@@ -47,7 +47,7 @@
 #'                        samples = 100,
 #'                        generation_time = generation_time,
 #'                        delays = list(incubation_period, reporting_delay),
-#'                        stan_args = list(cores = ifelse(interactive(), 4, 1)),
+#'                        rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
 #'                        verbose = interactive())
 #'}
 regional_epinow <- function(reported_cases, 

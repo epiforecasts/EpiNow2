@@ -184,3 +184,117 @@ obs_opts <- function(family = "negbin",
   }
   return(obs)
 }
+
+#' Rstan Sampling Options
+#'
+#' @description Defines a list specifying the arguments passed to 
+#' `rstan::sampling`. Custom settings can be supplied which override the defaults.
+#' @param cores Numeric, number of cores to use in parallel. Defaults to 4 
+#' if in interactive mode and otherwise 1.
+#' @param warmup Numeric, defaults to 250. Number of warmup samples per chain.
+#' @param samples Numeric, default 1000. Overall number of posterior samples. 
+#' When using multiple chains iterations per chain is samples / chains.
+#' @param chains Numeric, defaults to 4. Number of MCMC chains to use.
+#' @param control List, defaults to empty. control parameters to pass to underlying
+#' `rstan` function. By default `adapt_delta = 0.98` and `max_treedepth = 15` 
+#' though these settings can be overwritten.
+#' @param save_warmup Logical, defaults to FALSE. Should warmup progress be saved.
+#' @param seed Numeric, defaults uniform random number between 1 and 1e8. Seed of 
+#' sampling process.
+#' @param future Logical, defaults to `FALSE`. Should stan chains be run in parallel
+#' using `future`. This allows users to have chains fail gracefully (i.e when combined with 
+#' `max_execution_time`). Should be combined with a call to `future::plan`
+#' @param max_execution_time Numeric, defaults to Inf (seconds). If set will kill off
+#' processing of each chain if not finished within the specified timeout. When more than 2 chains 
+#' finish successfully estimates will still be returned. If less than 2 chains return within the
+#' allowed time then estimation will fail with an informative error.
+#' @param ... Additional parameters to pass to `rstan::sampling`.
+#' @return A list of arguments to pass to `rstan::sampling`
+#' @export
+#' @examples
+#' rstan_sampling_opts(samples = 2000)
+rstan_sampling_opts <- function(cores = ifelse(interactive(), 4, 1),
+                                warmup = 250,
+                                samples = 1000,
+                                chains = 4,
+                                control = list(),
+                                save_warmup = FALSE,
+                                seed = as.integer(runif(1, 1, 1e8)),
+                                future = FALSE,
+                                max_execution_time = Inf,
+                                ...) {
+  
+  opts <- list(
+    cores = cores, 
+    warmup = warmup,
+    chains = chains,
+    save_warmup = save_warmup,
+    seed = seed,
+    future = future,
+    max_execution_time = max_execution_time
+  )
+  control_def <- list(adapt_delta = 0.98, max_treedepth = 15)
+  opts$control <- update_defaults(control_def, control)
+  opts$iter <- ceiling(samples / opts$chains) + opts$warmup
+  opts$samples <- NULL
+  opts <- c(opts, ...)
+  return(opts)
+}
+
+#' Rstan Variational Bayes Options
+#'
+#' @description Defines a list specifying the arguments passed to 
+#' `rstan::vb`. Custom settings can be supplied which override the defaults.
+#' @param samples Numeric, default 1000. Overall number of approximate posterior 
+#' samples.
+#' @param trials Numeric, defaults to 10. Number of attempts to use `rstan::vb` 
+#' before failing.
+#' @param iter Numeric, defaulting to 10000. Number of iterations to use in 
+#' `rtan::vb`.
+#' @param ... Additional parameters to pass to `rstan::vb`.
+#' @return A list of arguments to pass to `rstan::vb`
+#' @export
+#' @examples
+#' rstan_vb_opts(samples = 2000)
+rstan_vb_opts <- function(samples = 1000,
+                          trials = 10,
+                          iter = 10000) {
+  opts <- list(
+    trials = trials,
+    iter = iter, 
+    output_samples = samples
+  )
+  return(opts)
+}
+
+rstan_opts <- function(object = NULL,
+                       samples = 1000,
+                       method = "sampling", ...) {
+  method <- match.arg(method, choices = c("sampling", "vb"))
+  # shared everywhere opts
+  if (is.null(object)) {
+    object <- stanmodels$estimate_infections
+  }
+  opts <- list(
+    object = object,
+    method = method
+  )
+  if (method %in% "sampling") {
+    opts <- c(opts, rstan_sampling_opts(samples = samples, ...))
+  }else if (method %in% "vb") {
+    opts <- c(opts, rstan_vb_opts(samples = samples, ...))
+  }
+  return(opts)
+}
+
+stan_opts <- function(samples = 1000,
+                      method = "sampling", 
+                      backend = "rstan", ...){
+  backend <- match.arg(backend, choices = c("rstan"))
+  if (backend %in% "rstan") {
+    opts <- rstan_opts(samples = samples,
+                       method = method,
+                       ...)
+  }
+  return(opts)
+}
