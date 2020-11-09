@@ -121,10 +121,14 @@ epinow <- function(reported_cases,
                                      CrIs = CrIs,
                                      delays = delays,
                                      horizon = horizon,
-                                     return_fit = output["fit"],
                                      verbose = verbose,
                                      id = id,
                                      ...)
+    
+    if (!output["fit"]) {
+      estimates$fit <- NULL
+      estimates$args <- NULL
+    }
     
     save_estimate_infections(estimates, target_folder, 
                              samples = output["samples"],

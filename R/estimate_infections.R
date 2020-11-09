@@ -12,11 +12,10 @@
 #' @param generation_time A list containing the mean, standard deviation of the mean (mean_sd), 
 #' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 #' generation time (assuming a gamma distribution).
-#' @param delays A list of delays (i.e incubation period/reporting delay) between infection and report.
-#' Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd), 
-#' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-#' that delay (assuming a lognormal distribution with all parameters excepting the max allowed value 
-#' on the log scale). To use no delays set this to `list()`.
+#' @param delays A call to `delay_opts` defining delay distributions and options. See the documentation of `delay_opts` 
+#' and the examples below for details.
+#' @param backcalc A call to `backcalc_opts` defining back calculation settings. See the documentation of `backcalc_opts` 
+#' and the examples below for details. Only used if `rt = NULL`.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
 #' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
@@ -26,8 +25,6 @@
 #' @inheritParams create_gp_data
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams calc_CrIs
-#' @inheritParams backcalc_opts
-#' @inheritParams delay_opts
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose 
 #' @importFrom lubridate wday days

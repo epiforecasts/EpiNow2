@@ -29,11 +29,8 @@ in date format.}
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
-\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
-Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale). To use no delays set this to \code{list()}.}
+\item{delays}{A call to \code{delay_opts} defining delay distributions and options. See the documentation of \code{delay_opts}
+and the examples below for details.}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 

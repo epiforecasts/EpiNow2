@@ -31,7 +31,7 @@ data <- list(
 create_gp_data(data = data)
 
 # settings when no gaussian process is desired
-create_gp_data(opts = NULL, data)
+create_gp_data(NULL, data)
 
 # custom lengthscale
 create_gp_data(gp_opts(ls_mean = 14), data)

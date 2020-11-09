@@ -9,8 +9,8 @@ reporting_delay <- list(mean = convert_to_logmean(3,1), mean_sd = 0.1,
                         sd = convert_to_logsd(3,1), sd_sd = 0.1, max = 10)
 
 out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
-                           delays = list(reporting_delay), samples = 50, 
-                           stan_args = list(chains = 2, warmup = 50,
+                           delays = delay_opts(reporting_delay), 
+                           stan = stan_opts(chains = 2, warmup = 50, samples = 50,
                                             control = list(adapt_delta = 0.8))))
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object", {
@@ -29,8 +29,3 @@ test_that("simulate infections fails as expected", {
   expect_error(simualate_infections(out, R = rep(1, 10)))
   expect_error(simulate_infections(out[-"fit"]))
 })
-
-out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
-                                            delays = list(reporting_delay), samples = 50, 
-                                            stan_args = list(chains = 2, warmup = 50,
-                                                             control = list(adapt_delta = 0.8))))

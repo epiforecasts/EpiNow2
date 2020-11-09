@@ -125,9 +125,10 @@ backcalc_opts <- function(smoothing_window = 7) {
 #' @param alpha_sd Numeric, defaults to 0.1. The standard deviation of the magnitude parameter of
 #' the Gaussian process kernel. Should be approximately the expected standard deviation of the logged Rt.
 #' @param kernel Character string, the type of kernel required. Currently supporting the squared exponential 
-#' kernel ("se") and the 3 over 2 Matern kernel ("matern", with `matern_type = 3/2` (no other form of Matern 
-#' kernels are currently supported)). Defaulting to the Matern 3 over 2 kernel as discontinuities are expected 
+#' kernel ("se") and the 3 over 2 Matern kernel ("matern", with `matern_type = 3/2`). Defaulting to the Matern 3 over 2 kernel as discontinuities are expected 
 #' in Rt and infections.
+#' @param matern_type Numeric, defaults to 3/2. Type of Matern Kernel to use. Currently only the Matern
+#' 3/2 kernel is supported.
 #' @param basis_prop Numeric, proportion of time points to use as basis functions. Decreasing this value 
 #' results in a decrease in accuracy but a faster compute time. In general smaller posterior length scales 
 #' require a higher proportion of basis functions. See (Riutort-Mayol et al. 2020 <https://arxiv.org/abs/2004.11408>) 
@@ -272,7 +273,6 @@ rstan_sampling_opts <- function(cores = ifelse(interactive(), 4, 1),
   control_def <- list(adapt_delta = 0.98, max_treedepth = 15)
   opts$control <- update_defaults(control_def, control)
   opts$iter <- ceiling(samples / opts$chains) + opts$warmup
-  opts$samples <- NULL
   opts <- c(opts, ...)
   return(opts)
 }
@@ -294,12 +294,13 @@ rstan_sampling_opts <- function(cores = ifelse(interactive(), 4, 1),
 #' rstan_vb_opts(samples = 2000)
 rstan_vb_opts <- function(samples = 1000,
                           trials = 10,
-                          iter = 10000) {
+                          iter = 10000, ...) {
   opts <- list(
     trials = trials,
     iter = iter, 
     output_samples = samples
   )
+  opts <- c(opts, ...)
   return(opts)
 }
 
@@ -346,9 +347,8 @@ rstan_opts <- function(object = NULL,
 #' @description Defines a list specifying the arguments passed to underlying stan
 #' backend functions via `rstan_sampling_opts` and `rstan_vb_opts`. Custom settings
 #' can be supplied which override the defaults.
-#' @param object Stan model object. By default uses the compiled package default.
-#' @param method A character string, defaulting to sampling. Currently supports
-#' `rstan::sampling` ("sampling") or `rstan:vb` ("vb").
+#' @param backend Character string indicating the backend to use for fitting stan models.
+#' Currently only "rstan" is supported.
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be returned.
 #' @param ... Additional parameters to pass  underlying option functions.
 #' @return A list of arguments to pass to the appropriate rstan functions.

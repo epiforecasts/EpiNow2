@@ -19,11 +19,8 @@ report_cases(
 \item{case_forecast}{A data.table of case forecasts with the following variables: date, sample, cases. If not supplied the
 default is not to incorporate forecasts.}
 
-\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
-Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale). To use no delays set this to \code{list()}.}
+\item{delays}{A call to \code{delay_opts} defining delay distributions and options. See the documentation of \code{delay_opts}
+and the examples below for details.}
 
 \item{type}{Character string indicating the method to use to transform counts. Supports either "sample"
 which approximates sampling or "median" would shift by the median of the distribution.}

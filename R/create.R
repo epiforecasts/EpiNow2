@@ -77,26 +77,26 @@ create_shifted_cases <- function(reported_cases, shift,
 
 #' Construct the Required Future Rt assumption
 #'
-#' @param future_rt A character string or integer. This argument indicates how to set future Rt values. Supported 
+#' @param future A character string or integer. This argument indicates how to set future Rt values. Supported 
 #' options are to project using the Rt model ("project"), to use the latest estimate based on partial data ("latest"),
 #' to use the latest estimate based on data that is over 50% complete ("estimate"). If an integer is supplied then the Rt estimate
 #' from this many days into the future (or past if negative) past will be used forwards in time. 
 #' @param delay Numeric mean delay
 #' @return A list containing a logical called fixed and an integer called from
-create_future_rt <- function(future_rt = "latest", delay = 0) {
+create_future_rt <- function(future = "latest", delay = 0) {
   out <- list(fixed = FALSE, from = 0)
-  if (is.character(future_rt)) {
-    future_rt <- match.arg(future_rt,
+  if (is.character(future)) {
+    future <- match.arg(future,
                            c("project", 
                              "latest",
                              "estimate"))
-    if (!(future_rt %in% "project")) {
+    if (!(future %in% "project")) {
       out$fixed <- TRUE
-      out$from <- ifelse(future_rt %in% "latest", 0, -delay)
+      out$from <- ifelse(future %in% "latest", 0, -delay)
     }
-  }else if (is.numeric(future_rt)){
+  }else if (is.numeric(future)){
     out$fixed <- TRUE
-    out$from <- as.integer(future_rt)
+    out$from <- as.integer(future)
   }
   return(out)
 }
@@ -129,7 +129,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
                   future = "project")
   }
   # define future Rt arguments
-  future_rt <- create_future_rt(future_rt = rt$future, 
+  future_rt <- create_future_rt(future = rt$future, 
                                 delay = delay)
   # apply random walk
   if (rt$rw != 0) {
@@ -180,7 +180,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #' create_gp_data(data = data)
 #' 
 #' # settings when no gaussian process is desired
-#' create_gp_data(opts = NULL, data)
+#' create_gp_data(NULL, data)
 #' 
 #' # custom lengthscale
 #' create_gp_data(gp_opts(ls_mean = 14), data)
@@ -378,8 +378,6 @@ create_initial_conditions <- function(data) {
 #' @param data A list of stan data as created by `create_stan_data`
 #' @param init Initial conditions passed to `rstan`. Defaults to "random" but can also be a function (
 #' as supplied by `create_intitial_conditions`).
-#' @param samples Numeric, defaults to 1000. The overall number of posterior samples to return (Note: not the 
-#' number of samples per chain as is the default in stan).
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress messages be returned.
 #' @return A list of stan arguments
 #' @export

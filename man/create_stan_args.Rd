@@ -21,9 +21,6 @@ create_stan_args(
 as supplied by \code{create_intitial_conditions}).}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be returned.}
-
-\item{samples}{Numeric, defaults to 1000. The overall number of posterior samples to return (Note: not the
-number of samples per chain as is the default in stan).}
 }
 \value{
 A list of stan arguments

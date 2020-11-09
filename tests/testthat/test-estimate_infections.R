@@ -13,15 +13,15 @@ reporting_delay <- list(mean = convert_to_logmean(3,1), mean_sd = 0.1,
 
 default_estimate_infections <- function(..., add_stan = list()) {
   
-  def_stan <- list(chains = 2, warmup = 50,
-                   control = list(adapt_delta = 0.8))
+  def_stan <- stan_opts(chains = 2, warmup = 50, samples = 50,
+                        control = list(adapt_delta = 0.8))
   stan_args <- def_stan[setdiff(names(def_stan), names(add_stan))]
   stan_args <- c(stan_args, add_stan)
   
   suppressWarnings(estimate_infections(...,
     generation_time = generation_time,
-    delays = list(reporting_delay), samples = 50, 
-    stan_args = stan_args))
+    delays = delay_opts(reporting_delay),
+    stan = stan_args))
 }
 
 test_estimate_infections <- function(...) {
@@ -41,7 +41,7 @@ test_that("estimate_infections successfully returns estimates using default sett
 
 test_that("estimate_infections successfully returns estimates using the poisson observation model", {
   skip_on_cran()
-  test_estimate_infections(reported_cases, obs_model = list(family = "poisson"))
+  test_estimate_infections(reported_cases, obs = obs_opts(family = "poisson"))
 })
 
 test_that("estimate_infections successfully returns estimates using backcalculation", {
@@ -68,30 +68,28 @@ test_that("estimate_infections successfully returns estimates using a single bre
 
 test_that("estimate_infections successfully returns estimates using a random walk", {
   skip_on_cran()
-  test_estimate_infections(reported_cases,gp = NULL, rt = list(rw = 7))
+  test_estimate_infections(reported_cases, gp = NULL, rt = rt_opts(rw = 7))
 })
 
 test_that("estimate_infections fails as expected when given a very short timeout", {
   skip_on_cran()
-  expect_error(default_estimate_infections(reported_cases, future = TRUE, max_execution_time = 1))
-  expect_error(default_estimate_infections(reported_cases, future = FALSE, max_execution_time = 1))
+  expect_error(default_estimate_infections(reported_cases, add_stan = list(future = TRUE, max_execution_time = 1)))
+  expect_error(default_estimate_infections(reported_cases, add_stan = list(future = FALSE, max_execution_time = 1)))
 })
 
 
 test_that("estimate_infections works as expected with failing chains", {
   skip_on_cran()
-  test_estimate_infections(reported_cases, future = TRUE,
+  test_estimate_infections(reported_cases, 
                            add_stan = list(chains = 4, warmup = 100,
-                                           stuck_chains = 2,
+                                           stuck_chains = 2, future = TRUE,
                                            control = list(adapt_delta = 0.8)))
   
-  expect_error(default_estimate_infections(reported_cases, generation_time = generation_time,
-                                                    delays = list(reporting_delay), samples = 1,
-                                                    stan_args = list(chains = 4, warmup = 1,
-                                                                     stuck_chains = 1)))
   expect_error(default_estimate_infections(reported_cases,
-                                           add_stan = list(chains = 4, warmup = 1,
-                                                           stuck_chains = 3),
-                                           future = TRUE))
+                                           add_stan = list(chains = 4, stuck_chains = 1)))
+  expect_error(default_estimate_infections(reported_cases,
+                                           add_stan = list(chains = 4, warmup = 100,
+                                                           stuck_chains = 3, 
+                                                           future = TRUE)))
 })
 

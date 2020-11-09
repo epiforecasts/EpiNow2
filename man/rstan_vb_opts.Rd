@@ -4,7 +4,7 @@
 \alias{rstan_vb_opts}
 \title{Rstan Variational Bayes Options}
 \usage{
-rstan_vb_opts(samples = 1000, trials = 10, iter = 10000)
+rstan_vb_opts(samples = 1000, trials = 10, iter = 10000, ...)
 }
 \arguments{
 \item{samples}{Numeric, default 1000. Overall number of approximate posterior

@@ -17,6 +17,9 @@ save_estimate_infections(
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
 \item{samples}{Logical, defaults to TRUE. Should samples be saved}
+
+\item{return_fit}{Logical, defaults to TRUE. Should the fit stan object
+be returned.}
 }
 \description{
 Save Estimated Infections

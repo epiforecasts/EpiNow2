@@ -10,14 +10,12 @@ stan_opts(samples = 1000, backend = "rstan", return_fit = TRUE, ...)
 \item{samples}{Numeric, default 1000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}
 
+\item{backend}{Character string indicating the backend to use for fitting stan models.
+Currently only "rstan" is supported.}
+
 \item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be returned.}
 
 \item{...}{Additional parameters to pass  underlying option functions.}
-
-\item{object}{Stan model object. By default uses the compiled package default.}
-
-\item{method}{A character string, defaulting to sampling. Currently supports
-\code{rstan::sampling} ("sampling") or \code{rstan:vb} ("vb").}
 }
 \value{
 A list of arguments to pass to the appropriate rstan functions.
