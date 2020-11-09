@@ -11,11 +11,14 @@ real update_infectiousness(vector infections, vector gt_pmf,
 // generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
 vector generate_infections(vector R, int uot, 
                            real[] gt_mean, real[] gt_sd, int max_gt,
-                           real[] initial_infections, real[] initial_growth) {
+                           real[] initial_infections, real[] initial_growth,
+                           int pop, int ht) {
   // time indices and storage
   int ot = num_elements(R);
+  int nht = ot - ht;
   int t = ot + uot;
   vector[t] infections = rep_vector(1e-5, t);
+  vector[ot] cum_infections;
   vector[ot] infectiousness = rep_vector(1e-5, ot);
   // generation time pmf
   vector[max_gt] gt_pmf = rep_vector(1e-5, max_gt);   
@@ -27,14 +30,24 @@ vector generate_infections(vector R, int uot,
   // Initialise infections using daily growth
   infections[1] = exp(initial_infections[1]);
   if (uot > 1) {
-      for (s in 2:uot) {
-        infections[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));
-      }
+    for (s in 2:uot) {
+      infections[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));
+    }
+  }
+  // calculate cumulative infections
+  if (pop) {
+    cum_infections[1] = cumulative_sum(infections[1:uot]);
   }
   // iteratively update infections using Cori et al method
   for (s in 1:ot) {
     infectiousness[s] += update_infectiousness(infections, gt_pmf, uot, max_gt, s);
+    if (pop & s > nht) {
+      R[s] = (pop - cum_infections[s]) * R[s] / pop;
+    } 
     infections[s + uot] += R[s] * infectiousness[s];
+    if (pop & s < ot) {
+      cum_infections[s + 1] += infections[s + uot];
+    }
   }
   return(infections);
 }
