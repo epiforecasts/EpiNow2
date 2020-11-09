@@ -81,14 +81,14 @@ test_that("estimate_infections fails as expected when given a very short timeout
 test_that("estimate_infections works as expected with failing chains", {
   skip_on_cran()
   test_estimate_infections(reported_cases, 
-                           add_stan = list(chains = 4, warmup = 100,
+                           add_stan = list(chains = 4, 
                                            stuck_chains = 2, future = TRUE,
                                            control = list(adapt_delta = 0.8)))
   
   expect_error(default_estimate_infections(reported_cases,
                                            add_stan = list(chains = 4, stuck_chains = 1)))
   expect_error(default_estimate_infections(reported_cases,
-                                           add_stan = list(chains = 4, warmup = 100,
+                                           add_stan = list(chains = 4, 
                                                            stuck_chains = 3, 
                                                            future = TRUE)))
 })
