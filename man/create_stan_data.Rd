@@ -6,28 +6,18 @@
 \usage{
 create_stan_data(
   reported_cases,
-  shifted_reported_cases,
-  horizon,
-  no_delays,
-  mean_shift,
   generation_time,
   rt,
   gp,
   obs,
-  delays
+  delays,
+  horizon,
+  shifted_cases
 )
 }
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
-
-\item{shifted_reported_cases}{A dataframe of delay shifted reported cases}
-
-\item{horizon}{Numeric, forecast horizon.}
-
-\item{no_delays}{Numeric, number of delays}
-
-\item{mean_shift}{Numeric, mean delay shift}
 
 \item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
@@ -49,6 +39,10 @@ Each list entry must also be a list containing the mean, standard deviation of t
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale). To use no delays set this to \code{list()}.}
+
+\item{horizon}{Numeric, forecast horizon.}
+
+\item{shifted_cases}{A dataframe of delay shifted cases}
 }
 \value{
 A list of stan data

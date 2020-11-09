@@ -7,7 +7,7 @@
 estimate_infections(
   reported_cases,
   generation_time,
-  delays = list(),
+  delays = delay_opts(),
   rt = rt_opts(),
   backcalc = backcalc_opts(),
   gp = gp_opts(),
@@ -15,7 +15,6 @@ estimate_infections(
   stan = stan_opts(),
   horizon = 7,
   CrIs = c(0.2, 0.5, 0.9),
-  return_fit = TRUE,
   id = "estimate_infections",
   verbose = interactive()
 )
@@ -52,8 +51,6 @@ observation model. Defaults to \code{obs_opts()}.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{return_fit}{Logical, defaults to TRUE. Should the fitted stan model be returned.}
-
 \item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
 to assign errors to regions. Alter the default to run with error catching.}
 
@@ -86,9 +83,8 @@ reporting_delay <- list(mean = convert_to_logmean(3, 1),
       
 # default setting
 def <- estimate_infections(reported_cases, generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay),
-                           rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-                           stan = stan_opts(control = list(adapt_delta = 0.7)))
+                           delays = delay_opts(incubation_period, reporting_delay),
+                           rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
 # real time estimates
 summary(def)
 # summary plot
@@ -96,35 +92,35 @@ plot(def)
 
 # using back calculation (combined here with under reporting)
 backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
-                                delays = list(incubation_period, reporting_delay),
+                                delays = delay_opts(incubation_period, reporting_delay),
                                 rt = NULL,
-                                obs_model = obs_opts(scale = list(mean = 0.4, sd = 0.05)))
+                                obs = obs_opts(scale = list(mean = 0.4, sd = 0.05)))
 plot(backcalc)
                            
 # Rt projected into the future using the Gaussian process
 project_rt <- estimate_infections(reported_cases, generation_time = generation_time,
-                                  delays = list(incubation_period, reporting_delay),
-                                  rt = rt_opts(prior = list(mean = 2, sd = 0.2), 
-                                            future = "project"))
+                                  delays = delay_opts(incubation_period, reporting_delay),
+                                  rt = rt_opts(prior = list(mean = 2, sd = 0.1), 
+                                               future = "project"))
 plot(project_rt)
 
 # default settings on a later snapshot of data 
 snapshot_cases <- EpiNow2::example_confirmed[80:130]
 snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
-                                delays = list(incubation_period, reporting_delay),
-                                rt = rt_opts(prior = list(mean = 1, sd = 0.2)))
+                                delays = delay_opts(incubation_period, reporting_delay),
+                                rt = rt_opts(prior = list(mean = 1, sd = 0.1)))
 plot(snapshot) 
 
 # stationary Rt assumption (likely to provide biased real-time estimates)
 stat <- estimate_infections(reported_cases, generation_time = generation_time,
-                            delays = list(incubation_period, reporting_delay),
+                            delays = delay_opts(incubation_period, reporting_delay),
                             gp = gp_opts(stationary = TRUE),
-                            rt = rt_opts(prior = list(mean = 2, sd = 0.2)))
+                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
 plot(stat)
        
 # no gaussian process (i.e fixed Rt assuming no breakpoints)
 fixed <- estimate_infections(reported_cases, generation_time = generation_time,
-                             delays = list(incubation_period, reporting_delay),
+                             delays = delay_opts(incubation_period, reporting_delay),
                              gp = NULL)
 plot(fixed)
 
@@ -136,8 +132,8 @@ plot(no_delay)
 bp_cases <- data.table::copy(reported_cases)
 bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
 bkp <- estimate_infections(bp_cases, generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay),
-                           rt = rt_opts(prior = list(mean = 2, sd = 0.2))
+                           delays = delay_opts(incubation_period, reporting_delay),
+                           rt = rt_opts(prior = list(mean = 2, sd = 0.1))
                            gp = NULL)                                                         
 # break point effect
 summary(bkp, type = "parameters", params = "breakpoints")
@@ -145,8 +141,8 @@ plot(bkp)
 
 # weekly random walk
 rw <- estimate_infections(reported_cases, generation_time = generation_time,
-                          delays = list(incubation_period, reporting_delay),
-                          rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7)
+                          delays = delay_opts(incubation_period, reporting_delay),
+                          rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7)
                           gp = NULL)     
 
 # random walk effects

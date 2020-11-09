@@ -77,7 +77,7 @@ cases <- data.table::rbindlist(list(
 out <- regional_epinow(reported_cases = cases[, breakpoint := 1], 
                        samples = 100,
                        generation_time = generation_time,
-                       delays = list(incubation_period, reporting_delay),
+                       delays = delay_opts(incubation_period, reporting_delay),
                        rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
                        verbose = interactive())
 }

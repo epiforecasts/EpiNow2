@@ -4,11 +4,13 @@
 \alias{stan_opts}
 \title{Stan Options}
 \usage{
-stan_opts(samples = 1000, backend = "rstan", ...)
+stan_opts(samples = 1000, backend = "rstan", return_fit = TRUE, ...)
 }
 \arguments{
 \item{samples}{Numeric, default 1000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}
+
+\item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be returned.}
 
 \item{...}{Additional parameters to pass  underlying option functions.}
 

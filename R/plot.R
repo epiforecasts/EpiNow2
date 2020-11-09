@@ -29,8 +29,7 @@
 #'                         
 #' # run model
 #' out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
-#'                                     delays = list(incubation_period, reporting_delay),
-#'                                     stan_args = list(cores = ifelse(interactive(), 4, 1)))
+#'                                     delays = delay_opts(incubation_period, reporting_delay))
 #' # plot infections
 #' plot_estimates(
 #'   estimate = out$summarised[variable == "infections"],

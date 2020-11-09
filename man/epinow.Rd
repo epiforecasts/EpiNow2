@@ -6,10 +6,9 @@
 \usage{
 epinow(
   reported_cases,
-  samples = 1000,
-  horizon = 7,
   generation_time,
-  delays = list(),
+  delays = delay_opts(),
+  horizon = 7,
   CrIs = c(0.2, 0.5, 0.9),
   return_output = FALSE,
   output = c("samples", "plots", "latest", "fit", "timing"),
@@ -26,10 +25,6 @@ epinow(
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
 
-\item{samples}{Numeric, the number of forecast samples to take.}
-
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
-
 \item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
@@ -39,6 +34,8 @@ Each list entry must also be a list containing the mean, standard deviation of t
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
 on the log scale). To use no delays set this to \code{list()}.}
+
+\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
@@ -98,8 +95,8 @@ reported_cases <- EpiNow2::example_confirmed[1:40]
 
 # estimate Rt and nowcast/forecast cases by date of infection
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
-              rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-              delays = list(incubation_period, reporting_delay))
+              rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+              delays = delay_opts(incubation_period, reporting_delay))
 # summary of the latest estimates
 summary(out)     
 # plot estimates        

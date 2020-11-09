@@ -39,8 +39,8 @@
 #' 
 #' # estimate Rt and nowcast/forecast cases by date of infection
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
-#'               rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-#'               delays = list(incubation_period, reporting_delay))
+#'               rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+#'               delays = delay_opts(incubation_period, reporting_delay))
 #' # summary of the latest estimates
 #' summary(out)     
 #' # plot estimates        

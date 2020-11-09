@@ -51,7 +51,7 @@
 #' # default setting
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
-#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.2)))
+#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
 #' # real time estimates
 #' summary(def)
 #' # summary plot
@@ -67,7 +67,7 @@
 #' # Rt projected into the future using the Gaussian process
 #' project_rt <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                   delays = delay_opts(incubation_period, reporting_delay),
-#'                                   rt = rt_opts(prior = list(mean = 2, sd = 0.2), 
+#'                                   rt = rt_opts(prior = list(mean = 2, sd = 0.1), 
 #'                                                future = "project"))
 #' plot(project_rt)
 #'
@@ -75,14 +75,14 @@
 #' snapshot_cases <- EpiNow2::example_confirmed[80:130]
 #' snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
 #'                                 delays = delay_opts(incubation_period, reporting_delay),
-#'                                 rt = rt_opts(prior = list(mean = 1, sd = 0.2)))
+#'                                 rt = rt_opts(prior = list(mean = 1, sd = 0.1)))
 #' plot(snapshot) 
 #' 
 #' # stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                             delays = delay_opts(incubation_period, reporting_delay),
 #'                             gp = gp_opts(stationary = TRUE),
-#'                             rt = rt_opts(prior = list(mean = 2, sd = 0.2)))
+#'                             rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
 #' plot(stat)
 #'        
 #' # no gaussian process (i.e fixed Rt assuming no breakpoints)
@@ -100,7 +100,7 @@
 #' bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
 #' bkp <- estimate_infections(bp_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
-#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.2))
+#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1))
 #'                            gp = NULL)                                                         
 #' # break point effect
 #' summary(bkp, type = "parameters", params = "breakpoints")
@@ -109,7 +109,7 @@
 #' # weekly random walk
 #' rw <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                           delays = delay_opts(incubation_period, reporting_delay),
-#'                           rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7)
+#'                           rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7)
 #'                           gp = NULL)     
 #'
 #' # random walk effects

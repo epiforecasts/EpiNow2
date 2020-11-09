@@ -124,11 +124,9 @@ summarise_results <- function(regions,
 #' # run basic nowcasting pipeline
 #' out <- regional_epinow(reported_cases = cases,
 #'                        generation_time = generation_time,
-#'                        delays = list(incubation_period, reporting_delay),
-#'                        samples = 50, output = "region",
-#'                        stan_args = list(warmup = 50,
-#'                                         control = list(adapt_delta = 0.95)),
-#'                                         logs = NULL)
+#'                        delays = delay_opts(incubation_period, reporting_delay),
+#'                        output = "region",
+#'                        rt = NULL)
 #'
 #' regional_summary(regional_output = out$regional,
 #'                  reported_cases = cases)
