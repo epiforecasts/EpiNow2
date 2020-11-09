@@ -35,6 +35,8 @@ save_input <- function(reported_cases, target_folder) {
 #'
 #' @param estimates List of data frames as output by `estimate_infections`
 #' @param samples Logical, defaults to TRUE. Should samples be saved
+#' @param return_fit Logical, defaults to TRUE. Should the fit stan object
+#' be returned.
 #' @inheritParams setup_target_folder
 #' @inheritParams  estimate_infections
 #' @return NULL

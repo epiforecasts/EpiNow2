@@ -19,11 +19,8 @@ report_cases(
 \item{case_forecast}{A data.table of case forecasts with the following variables: date, sample, cases. If not supplied the
 default is not to incorporate forecasts.}
 
-\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
-Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale). To use no delays set this to \code{list()}.}
+\item{delays}{A call to \code{delay_opts} defining delay distributions and options. See the documentation of \code{delay_opts}
+and the examples below for details.}
 
 \item{type}{Character string indicating the method to use to transform counts. Supports either "sample"
 which approximates sampling or "median" would shift by the median of the distribution.}
@@ -44,20 +41,18 @@ Report case counts by date of report
 \examples{
 \donttest{
 # define example cases
-cases <- EpiNow2::example_confirmed[1:40]
+cases <- example_confirmed[1:40]
 
 # set up example delays
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
                         
 # run model
-out <- EpiNow2::estimate_infections(cases, samples = 100, 
-                                    generation_time = generation_time,
-                                    delays = list(incubation_period, reporting_delay),
-                                    stan_args = list(warmup = 100, 
-                                                     cores = ifelse(interactive(), 4, 1)),
-                                    estimate_rt = FALSE)
+out <- estimate_infections(cases, samples = 100, 
+                           generation_time = generation_time,
+                           delays = delay_opts(incubation_period, reporting_delay),
+                           rt = NULL)
                             
 reported_cases <- report_cases(case_estimates = 
                                 out$samples[variable == "infections"][, 
