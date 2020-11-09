@@ -52,6 +52,9 @@ delay_opts <- function(...) {
 #'  as a `breakpoint` variable in the input data. Break points should be defined as 1 if present 
 #'  and otherwise 0. By default breakpoints are fit jointly with a global non-parametric effect 
 #'  and so represent a conservative estimate of break point changes (alter this by setting `gp = NULL`).
+#' @param pop Integer, defaults to 0. Susceptible population initially present. Used to adjust 
+#' Rt estimates when otherwise fixed based on the proportion of the population that is 
+#' susceptible. When set to 0 no population adjustment is done.
 #' @return A list of settings defining the time-varying reproduction number
 #' @inheritParams create_future_rt
 #' @export
@@ -74,7 +77,8 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
-    future = future
+    future = future,
+    pop = 0
   )
   
   # replace default settings with those specified by user

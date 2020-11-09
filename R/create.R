@@ -155,7 +155,8 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     bp_n = ifelse(rt$use_breakpoints, sum(breakpoints, na.rm = TRUE), 0),
     breakpoints = breakpoints,
     future_fixed = ifelse(future_rt$fixed, 1, 0),
-    fixed_from = future_rt$from
+    fixed_from = future_rt$from,
+    pop = rt$pop
   ) 
   return(rt_data)
 }
