@@ -57,7 +57,7 @@
 #' # default setting
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            rt = list(prior = list(mean = 2, sd = 0.2)),
+#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
 #'                            stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' # real time estimates
 #' summary(def)
@@ -68,14 +68,14 @@
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
 #'                                 rt = NULL,
-#'                                 obs_model = list(scale = list(mean = 0.4, sd = 0.05)),
+#'                                 obs_model = obs_opts(scale = list(mean = 0.4, sd = 0.05)),
 #'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(backcalc)
 #'                            
 #' # Rt projected into the future using the Gaussian process
 #' project_rt <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                   delays = list(incubation_period, reporting_delay),
-#'                                   rt = list(prior = list(mean = 2, sd = 0.2), 
+#'                                   rt = rt_opts(prior = list(mean = 2, sd = 0.2), 
 #'                                             future = "project"),
 #'                                   stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(project_rt)
@@ -84,15 +84,15 @@
 #' snapshot_cases <- EpiNow2::example_confirmed[80:130]
 #' snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
 #'                                 delays = list(incubation_period, reporting_delay),
-#'                                 rt = list(prior = list(mean = 1, sd = 0.2)),
+#'                                 rt = rt_opts(prior = list(mean = 1, sd = 0.2)),
 #'                                 stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(snapshot) 
 #' 
 #' # stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                             delays = list(incubation_period, reporting_delay),
-#'                             gp = list(stationary = TRUE),
-#'                             rt = list(prior = list(mean = 2, sd = 0.2)),
+#'                             gp = gp_opts(stationary = TRUE),
+#'                             rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
 #'                             stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' plot(stat)
 #'        
@@ -113,7 +113,7 @@
 #' bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
 #' bkp <- estimate_infections(bp_cases, generation_time = generation_time,
 #'                            delays = list(incubation_period, reporting_delay),
-#'                            rt = list(prior = list(mean = 2, sd = 0.2)),
+#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
 #'                            stan_args = list(cores = ifelse(interactive(), 4, 1)),
 #'                            gp = NULL)                                                         
 #' # break point effect
@@ -123,7 +123,7 @@
 #' # weekly random walk
 #' rw <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                           delays = list(incubation_period, reporting_delay),
-#'                           rt = list(prior = list(mean = 2, sd = 0.2), rw = 7),
+#'                           rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
 #'                           stan_args = list(cores = ifelse(interactive(), 4, 1)),
 #'                           gp = NULL)     
 #'
@@ -134,11 +134,11 @@
 estimate_infections <- function(reported_cases, 
                                 generation_time, 
                                 delays = list(),
-                                rt = list(),
-                                gp = list(),
-                                obs_model = list(),
+                                rt = rt_opts(),
+                                gp = gp_opts(),
+                                obs = obs_opts(),
                                 stan_args = list(),
-                                backcalc = list(),
+                                backcalc = backcalc_opts(),
                                 horizon = 7,
                                 samples = 1000,
                                 CrIs = c(0.2, 0.5, 0.9),
@@ -179,10 +179,6 @@ estimate_infections <- function(reported_cases,
     mean_shift <- 1
   } 
   
-
-  # Update backcalc settings ------------------------------------------------
-  backcalc <- backcalc_settings(backcalc)
-  
   # Add the mean delay and incubation period on as 0 case days ------------
   # Create mean shifted reported cases as prior ------------------------------
   if (no_delays > 0) {
@@ -210,7 +206,7 @@ estimate_infections <- function(reported_cases,
                            generation_time = generation_time,
                            rt = rt,
                            gp = gp,
-                           obs_model = obs_model,
+                           obs = obs,
                            delays = delays)
  
   # Set up default settings -------------------------------------------------
