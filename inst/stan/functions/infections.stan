@@ -17,7 +17,7 @@ vector generate_infections(vector oR, int uot,
   int ot = num_elements(oR);
   int nht = ot - ht;
   int t = ot + uot;
-  vector[t] R = oR;
+  vector[ot] R = oR;
   vector[t] infections = rep_vector(1e-5, t);
   vector[ot] cum_infections;
   vector[ot] infectiousness = rep_vector(1e-5, ot);
@@ -47,7 +47,7 @@ vector generate_infections(vector oR, int uot,
     } 
     infections[s + uot] += R[s] * infectiousness[s];
     if (pop && s < ot) {
-      cum_infections[s + 1] += infections[s + uot];
+      cum_infections[s + 1] = cum_infections[s] + infections[s + uot];
     }
   }
   return(infections);

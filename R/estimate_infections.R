@@ -61,8 +61,9 @@
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1),
 #'                                         pop = 200000),
 #'                            gp = gp_opts(ls_min = 10, boundary_scale = 1.5,
-#'                                         basis_prop = 0.1),
-#'                            stan = stan_opts(control = list(adapt_delta = 0.95)))
+#'                                         basis_prop = 0.1), horizon = 21,
+#'                            stan = stan_opts(object = model, 
+#'                                             control = list(adapt_delta = 0.95)))
 #' # real time estimates
 #' summary(agp)
 #' # summary plot
