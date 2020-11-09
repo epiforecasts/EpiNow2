@@ -13,7 +13,7 @@ data {
   int n; // number of samples
   int t; // unobserved time
   int seeding_time; // time period used for seeding and not observed
-  int horizon; // forecast horizon
+  int ft; // fixed future time
   // Rt
   real initial_infections[seeding_time ? n : 0, 1]; // initial logged infections
   real initial_growth[seeding_time > 1 ? n : 0, 1]; //initial growth
@@ -48,7 +48,7 @@ generated quantities {
     infections[i] = to_row_vector(generate_infections(to_vector(R[i]), seeding_time, 
                                                       gt_mean[i], gt_sd[i], max_gt, 
                                                       initial_infections[i], initial_growth[i],
-                                                      pop, horizon));
+                                                      pop, ft));
     // convolve from latent infections to mean of observations
     reports[i] = to_row_vector(convolve_to_report(to_vector(infections[i]), delay_mean[i], 
                                                   delay_sd[i], max_delay, seeding_time));

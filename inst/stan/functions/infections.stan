@@ -36,7 +36,7 @@ vector generate_infections(vector R, int uot,
   }
   // calculate cumulative infections
   if (pop) {
-    cum_infections[1] = cumulative_sum(infections[1:uot]);
+    cum_infections[1] = sum(infections[1:uot]);
   }
   // iteratively update infections using Cori et al method
   for (s in 1:ot) {
