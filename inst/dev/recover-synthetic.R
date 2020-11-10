@@ -18,7 +18,7 @@ init <- estimate_infections(example_confirmed[1:100],
                             delays = delay_opts(incubation_period, reporting_delay),
                             rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
                             gp = gp_opts(ls_min = 10, boundary_scale = 1.5,
-                                        basis_prop = 0.05), horizon = 0,
+                                         basis_prop = 0.05), horizon = 0,
                             obs = obs_opts(scale = list(mean = 0.1, sd = 0.025)))
 
 
@@ -92,7 +92,7 @@ make_plot(weekly_rw, R, "weekly_rw")
 daily_rw <- estimate_infections(sim_cases, generation_time = generation_time,
                           delays = delay_opts(incubation_period, reporting_delay),
                           rt = rt_opts(prior = list(mean = 2.5, sd = 0.25),
-                                       rw = 2),
+                                       rw = 1),
                           gp = NULL,
                           stan = stan_opts(control = list(adapt_delta = 0.9)),
                           horizon = 0)
