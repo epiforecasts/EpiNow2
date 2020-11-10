@@ -32,6 +32,8 @@
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @examples
 #' \donttest{
+#' #set number of cores to use
+#' options(mc.cores = ifelse(interactve(), 4, 1))
 #' # get example case counts
 #' reported_cases <- EpiNow2::example_confirmed[1:60]
 #' 

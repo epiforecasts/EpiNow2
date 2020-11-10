@@ -231,8 +231,9 @@ obs_opts <- function(family = "negbin",
 #'
 #' @description Defines a list specifying the arguments passed to 
 #' `rstan::sampling`. Custom settings can be supplied which override the defaults.
-#' @param cores Numeric, number of cores to use in parallel. Defaults to 4 
-#' if in interactive mode and otherwise 1.
+#' @param cores Number of cores to use when executing the chains in parallel,
+#'  which defaults to 1 but it is recommended to set the mc.cores option to be as 
+#'  many processors as the hardware and RAM allow (up to the number of chains).
 #' @param warmup Numeric, defaults to 250. Number of warmup samples per chain.
 #' @param samples Numeric, default 1000. Overall number of posterior samples. 
 #' When using multiple chains iterations per chain is samples / chains.
@@ -255,7 +256,7 @@ obs_opts <- function(family = "negbin",
 #' @export
 #' @examples
 #' rstan_sampling_opts(samples = 2000)
-rstan_sampling_opts <- function(cores = ifelse(interactive(), 4, 1),
+rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                 warmup = 250,
                                 samples = 1000,
                                 chains = 4,
