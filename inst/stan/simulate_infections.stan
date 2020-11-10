@@ -59,7 +59,7 @@ generated quantities {
     }
     // scale observations
     if (obs_scale) {
-      reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i]));
+      reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i, 1]));
     }
    // simulate reported cases
    imputed_reports[i] = report_rng(to_vector(reports[i]), rep_phi[i], model_type);
