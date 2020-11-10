@@ -176,6 +176,8 @@ estimate_infections <- function(reported_cases,
                                                    backcalc$smoothing_window,
                                                    horizon)
     reported_cases <- reported_cases[-(1:backcalc$smoothing_window)]
+  }else{
+    shifted_cases <- reported_cases
   }
   
   # Add week day info
