@@ -285,7 +285,7 @@ create_stan_data <- function(reported_cases, generation_time,
             create_rt_data(rt,
                            breakpoints = reported_cases[(data$seeding_time + 1):.N]$breakpoint,
                            delay = data$seeding_time, horizon = data$horizon))
-   
+   data$future_time <- data$horizon - data$fixed_from
   # initial estimate of growth
   first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
                                        t = 1:min(7, length(cases)))

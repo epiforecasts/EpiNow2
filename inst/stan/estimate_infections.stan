@@ -22,7 +22,6 @@ transformed data{
   // observations
   int ot = t - seeding_time - horizon;  // observed time
   int ot_h = ot + horizon;  // observed time + forecast horizon
-  int ft = horizon - fixed_from; // time Rt is fixed for
   // gaussian process
   int noise_terms = setup_noise(ot_h, t, horizon, estimate_r, stationary, future_fixed, fixed_from);
   matrix[noise_terms, M] PHI = setup_gp(M, L, noise_terms);  // basis function 
@@ -67,7 +66,7 @@ transformed parameters {
     R = update_Rt(R, log_R[estimate_r], noise, breakpoints, bp_effects, stationary);
     infections = generate_infections(R, seeding_time, gt_mean, gt_sd, max_gt,
                                      initial_infections, initial_growth,
-                                     pop, ft);
+                                     pop, future_time);
   }else{
     // via deconvolution
     infections = deconvolve_infections(shifted_cases, noise, fixed);
