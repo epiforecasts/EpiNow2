@@ -59,7 +59,7 @@
 #' agp <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1),
-#'                                         pop = 200000),
+#'                                         pop = 1000000, future = "latest"),
 #'                            gp = gp_opts(ls_min = 10, boundary_scale = 1.5,
 #'                                         basis_prop = 0.1), horizon = 21,
 #'                            stan = stan_opts(object = model, 

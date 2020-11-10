@@ -77,7 +77,6 @@ simulate_infections <- function(estimates,
     if (burn_in > 0) {
       R <- c(rep(NA_real_, burn_in), R)
     }
-    t <- dim(draws$R)[2]
     R_mat <- matrix(rep(R, each = dim(draws$R)[1]),
                     ncol = length(R), byrow = FALSE)
     draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
