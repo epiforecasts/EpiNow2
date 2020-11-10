@@ -44,10 +44,10 @@
 #' # run epinow across multiple regions and generate summaries
 #' # samples and warmup have been reduced for this example
 #' out <- regional_epinow(reported_cases = cases[, breakpoint := 1], 
-#'                        samples = 100,
 #'                        generation_time = generation_time,
 #'                        delays = delay_opts(incubation_period, reporting_delay),
 #'                        rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
+#'                        stan = stan_opts(samples = 100, warmup = 100),
 #'                        verbose = interactive())
 #'}
 regional_epinow <- function(reported_cases, 
@@ -226,7 +226,7 @@ run_region <- function(target_region,
   
   futile.logger::flog.trace("calling epinow2::epinow to process data for %s", target_region,
                             name = "EpiNow2.epinow")
-  
+
   out <- epinow(
     reported_cases = regional_cases,
     target_folder = target_folder,

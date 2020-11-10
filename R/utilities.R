@@ -137,7 +137,7 @@ allocate_delays <- function(delay_var, no_delays) {
 allocate_empty <- function(data, params) {
   for (param in params) {
     if (!exists(param, data)) {
-      data[[param]] <- numeric(0)
+      data[[param]] <- array(0, dim = c(0, 0))
     }
   }
   return(data)

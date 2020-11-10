@@ -9,13 +9,18 @@ real update_infectiousness(vector infections, vector gt_pmf,
   return(new_inf);
 }
 // generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
-vector generate_infections(vector R, int uot, 
+vector generate_infections(vector oR, int uot, 
                            real[] gt_mean, real[] gt_sd, int max_gt,
-                           real[] initial_infections, real[] initial_growth) {
+                           real[] initial_infections, real[] initial_growth,
+                           int pop, int ht) {
   // time indices and storage
-  int ot = num_elements(R);
+  int ot = num_elements(oR);
+  int nht = ot - ht;
   int t = ot + uot;
+  vector[ot] R = oR;
+  real exp_adj_Rt;
   vector[t] infections = rep_vector(1e-5, t);
+  vector[ot] cum_infections = rep_vector(0, ot);
   vector[ot] infectiousness = rep_vector(1e-5, ot);
   // generation time pmf
   vector[max_gt] gt_pmf = rep_vector(1e-5, max_gt);   
@@ -27,14 +32,27 @@ vector generate_infections(vector R, int uot,
   // Initialise infections using daily growth
   infections[1] = exp(initial_infections[1]);
   if (uot > 1) {
-      for (s in 2:uot) {
-        infections[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));
-      }
+    for (s in 2:uot) {
+      infections[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));
+    }
   }
-  // iteratively update infections using Cori et al method
+  // calculate cumulative infections
+  if (pop) {
+    cum_infections[1] = sum(infections[1:uot]);
+  }
+  // iteratively update infections
   for (s in 1:ot) {
     infectiousness[s] += update_infectiousness(infections, gt_pmf, uot, max_gt, s);
-    infections[s + uot] += R[s] * infectiousness[s];
+    if (pop && s > nht) {
+      exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[nht]));
+      exp_adj_Rt = exp_adj_Rt > 1 ? 1 : exp_adj_Rt;
+      infections[s + uot] = (pop - cum_infections[s]) * (1 - exp_adj_Rt);
+    }else{
+      infections[s + uot] += R[s] * infectiousness[s];
+    }
+    if (pop && s < ot) {
+      cum_infections[s + 1] = cum_infections[s] + infections[s + uot];
+    }
   }
   return(infections);
 }

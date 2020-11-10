@@ -75,10 +75,10 @@ cases <- data.table::rbindlist(list(
 # run epinow across multiple regions and generate summaries
 # samples and warmup have been reduced for this example
 out <- regional_epinow(reported_cases = cases[, breakpoint := 1], 
-                       samples = 100,
                        generation_time = generation_time,
                        delays = delay_opts(incubation_period, reporting_delay),
                        rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
+                       stan = stan_opts(samples = 100, warmup = 100),
                        verbose = interactive())
 }
 }

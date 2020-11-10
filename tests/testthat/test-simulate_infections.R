@@ -31,3 +31,15 @@ test_that("simulate infections fails as expected", {
   expect_error(simualate_infections(out, R = rep(1, 10)))
   expect_error(simulate_infections(out[-"fit"]))
 })
+
+test_that("simulate_infections works with optional arguments", {
+  out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
+                                              delays = delay_opts(reporting_delay), 
+                                              gp = gp_opts(boundary_scale = 1.5, basis_prop = 0.1,
+                                                           ls_min = 10),
+                                              obs = obs_opts(scale = list(mean = 0.1, sd = 0.01)),
+                                              stan = stan_opts(chains = 2, warmup = 100, samples = 100,
+                                                               control = list(adapt_delta = 0.9))))
+  sims <- simulate_infections(out)
+  expect_equal(names(sims), c("samples", "summarised", "observations"))
+})
