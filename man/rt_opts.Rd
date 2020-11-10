@@ -9,7 +9,8 @@ rt_opts(
   use_rt = TRUE,
   rw = 0,
   use_breakpoints = TRUE,
-  future = "latest"
+  future = "latest",
+  pop = 0
 )
 }
 \arguments{
@@ -33,6 +34,10 @@ and so represent a conservative estimate of break point changes (alter this by s
 options are to project using the Rt model ("project"), to use the latest estimate based on partial data ("latest"),
 to use the latest estimate based on data that is over 50\% complete ("estimate"). If an integer is supplied then the Rt estimate
 from this many days into the future (or past if negative) past will be used forwards in time.}
+
+\item{pop}{Integer, defaults to 0. Susceptible population initially present. Used to adjust
+Rt estimates when otherwise fixed based on the proportion of the population that is
+susceptible. When set to 0 no population adjustment is done.}
 }
 \value{
 A list of settings defining the time-varying reproduction number

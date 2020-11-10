@@ -54,7 +54,9 @@ reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
 # fit model to data to recover Rt estimates
 est <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = delay_opts(incubation_period, reporting_delay),
-                           rt = rt_opts(prior = list(mean = 2, sd = 0.2)))
+                           rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+                           gp = gp_opts(ls_min = 10, boundary_scale = 1.5,
+                                        basis_prop = 0.1))
                                   
 # update Rt trajectory and simulate new infections using it
 R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))

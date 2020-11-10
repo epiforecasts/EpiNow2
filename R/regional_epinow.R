@@ -51,7 +51,6 @@
 #'                        verbose = interactive())
 #'}
 regional_epinow <- function(reported_cases, 
-                            region_opts = NULL,
                             target_folder = NULL, 
                             target_date,
                             non_zero_points = 2, 
@@ -106,7 +105,6 @@ regional_epinow <- function(reported_cases,
                                                                          "EpiNow2"),
                                                 progress_fn = progress_fn,
                                                 verbose = verbose,
-                                                region_opts = region_opts,
                                                 ...,
                                                 future.scheduling = Inf,
                                                 future.seed = TRUE)
@@ -214,7 +212,6 @@ run_region <- function(target_region,
                        complete_logger,
                        verbose,
                        progress_fn,
-                       region_opts
                        ...) {
   futile.logger::flog.info("Initialising estimates for: %s", target_region, 
                            name = "EpiNow2.epinow")
@@ -229,7 +226,7 @@ run_region <- function(target_region,
   
   futile.logger::flog.trace("calling epinow2::epinow to process data for %s", target_region,
                             name = "EpiNow2.epinow")
-  
+
   out <- epinow(
     reported_cases = regional_cases,
     target_folder = target_folder,
