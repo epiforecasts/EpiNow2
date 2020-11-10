@@ -1849,7 +1849,7 @@ private:
         int n;
         int t;
         int seeding_time;
-        int ft;
+        int future_time;
         std::vector<std::vector<double> > initial_infections;
         std::vector<std::vector<double> > initial_growth;
         std::vector<std::vector<double> > gt_mean;
@@ -1865,7 +1865,7 @@ private:
         int week_effect;
         std::vector<std::vector<double> > day_of_week_simplex;
         int obs_scale;
-        std::vector<double> frac_obs;
+        std::vector<std::vector<double> > frac_obs;
         int model_type;
         std::vector<std::vector<double> > rep_phi;
 public:
@@ -1917,11 +1917,11 @@ public:
             pos__ = 0;
             seeding_time = vals_i__[pos__++];
             current_statement_begin__ = 433;
-            context__.validate_dims("data initialization", "ft", "int", context__.to_vec());
-            ft = int(0);
-            vals_i__ = context__.vals_i("ft");
+            context__.validate_dims("data initialization", "future_time", "int", context__.to_vec());
+            future_time = int(0);
+            vals_i__ = context__.vals_i("future_time");
             pos__ = 0;
-            ft = vals_i__[pos__++];
+            future_time = vals_i__[pos__++];
             current_statement_begin__ = 435;
             validate_non_negative_index("initial_infections", "(seeding_time ? n : 0 )", (seeding_time ? n : 0 ));
             validate_non_negative_index("initial_infections", "1", 1);
@@ -2121,13 +2121,17 @@ public:
             obs_scale = vals_i__[pos__++];
             current_statement_begin__ = 452;
             validate_non_negative_index("frac_obs", "(obs_scale ? n : 0 )", (obs_scale ? n : 0 ));
-            context__.validate_dims("data initialization", "frac_obs", "double", context__.to_vec((obs_scale ? n : 0 )));
-            frac_obs = std::vector<double>((obs_scale ? n : 0 ), double(0));
+            validate_non_negative_index("frac_obs", "obs_scale", obs_scale);
+            context__.validate_dims("data initialization", "frac_obs", "double", context__.to_vec((obs_scale ? n : 0 ),obs_scale));
+            frac_obs = std::vector<std::vector<double> >((obs_scale ? n : 0 ), std::vector<double>(obs_scale, double(0)));
             vals_r__ = context__.vals_r("frac_obs");
             pos__ = 0;
             size_t frac_obs_k_0_max__ = (obs_scale ? n : 0 );
-            for (size_t k_0__ = 0; k_0__ < frac_obs_k_0_max__; ++k_0__) {
-                frac_obs[k_0__] = vals_r__[pos__++];
+            size_t frac_obs_k_1_max__ = obs_scale;
+            for (size_t k_1__ = 0; k_1__ < frac_obs_k_1_max__; ++k_1__) {
+                for (size_t k_0__ = 0; k_0__ < frac_obs_k_0_max__; ++k_0__) {
+                    frac_obs[k_0__][k_1__] = vals_r__[pos__++];
+                }
             }
             current_statement_begin__ = 453;
             context__.validate_dims("data initialization", "model_type", "int", context__.to_vec());
@@ -2303,7 +2307,7 @@ public:
                 current_statement_begin__ = 465;
                 stan::model::assign(infections, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                            to_row_vector(generate_infections(to_vector(get_base1(R, i, "R", 1)), seeding_time, get_base1(gt_mean, i, "gt_mean", 1), get_base1(gt_sd, i, "gt_sd", 1), max_gt, get_base1(initial_infections, i, "initial_infections", 1), get_base1(initial_growth, i, "initial_growth", 1), pop, ft, pstream__)), 
+                            to_row_vector(generate_infections(to_vector(get_base1(R, i, "R", 1)), seeding_time, get_base1(gt_mean, i, "gt_mean", 1), get_base1(gt_sd, i, "gt_sd", 1), max_gt, get_base1(initial_infections, i, "initial_infections", 1), get_base1(initial_growth, i, "initial_growth", 1), pop, future_time, pstream__)), 
                             "assigning variable infections");
                 current_statement_begin__ = 470;
                 stan::model::assign(reports, 
@@ -2323,7 +2327,7 @@ public:
                     current_statement_begin__ = 479;
                     stan::model::assign(reports, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                to_row_vector(scale_obs(to_vector(get_base1(reports, i, "reports", 1)), get_base1(frac_obs, i, "frac_obs", 1), pstream__)), 
+                                to_row_vector(scale_obs(to_vector(get_base1(reports, i, "reports", 1)), get_base1(get_base1(frac_obs, i, "frac_obs", 1), 1, "frac_obs", 2), pstream__)), 
                                 "assigning variable reports");
                 }
                 current_statement_begin__ = 482;
