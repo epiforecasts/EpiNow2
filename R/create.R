@@ -155,7 +155,8 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     bp_n = ifelse(rt$use_breakpoints, sum(breakpoints, na.rm = TRUE), 0),
     breakpoints = breakpoints,
     future_fixed = ifelse(future_rt$fixed, 1, 0),
-    fixed_from = future_rt$from
+    fixed_from = future_rt$from,
+    pop = rt$pop
   ) 
   return(rt_data)
 }
@@ -284,7 +285,7 @@ create_stan_data <- function(reported_cases, generation_time,
             create_rt_data(rt,
                            breakpoints = reported_cases[(data$seeding_time + 1):.N]$breakpoint,
                            delay = data$seeding_time, horizon = data$horizon))
-   
+   data$future_time <- data$horizon - data$fixed_from
   # initial estimate of growth
   first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
                                        t = 1:min(7, length(cases)))

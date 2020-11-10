@@ -11,7 +11,7 @@ incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lau
 reporting_delay <- list(mean = convert_to_logmean(3,1), mean_sd = 0.1,
                         sd = convert_to_logsd(3,1), sd_sd = 0.1, max = 10)
 
-default_estimate_infections <- function(..., add_stan = list()) {
+default_estimate_infections <- function(..., add_stan = list(), delay = TRUE) {
   
   def_stan <- stan_opts(chains = 2, warmup = 50, samples = 50,
                         control = list(adapt_delta = 0.8))
@@ -20,7 +20,7 @@ default_estimate_infections <- function(..., add_stan = list()) {
   
   suppressWarnings(estimate_infections(...,
     generation_time = generation_time,
-    delays = delay_opts(reporting_delay),
+    delays = ifelse(delay, list(delay_opts(reporting_delay)), list(delay_opts()))[[1]],
     stan = stan_args))
 }
 
@@ -39,6 +39,10 @@ test_that("estimate_infections successfully returns estimates using default sett
   test_estimate_infections(reported_cases)
 })
 
+test_that("estimate_infections successfully returns estimates using no delays", {
+  skip_on_cran()
+  test_estimate_infections(reported_cases, delay = FALSE)
+})
 test_that("estimate_infections successfully returns estimates using the poisson observation model", {
   skip_on_cran()
   test_estimate_infections(reported_cases, obs = obs_opts(family = "poisson"))

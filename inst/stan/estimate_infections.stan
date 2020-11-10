@@ -65,7 +65,8 @@ transformed parameters {
     // via Rt
     R = update_Rt(R, log_R[estimate_r], noise, breakpoints, bp_effects, stationary);
     infections = generate_infections(R, seeding_time, gt_mean, gt_sd, max_gt,
-                                     initial_infections, initial_growth);
+                                     initial_infections, initial_growth,
+                                     pop, future_time);
   }else{
     // via deconvolution
     infections = deconvolve_infections(shifted_cases, noise, fixed);

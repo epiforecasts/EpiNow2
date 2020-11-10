@@ -13,6 +13,7 @@ data {
   int n; // number of samples
   int t; // unobserved time
   int seeding_time; // time period used for seeding and not observed
+  int future_time; // fixed future time
   // Rt
   real initial_infections[seeding_time ? n : 0, 1]; // initial logged infections
   real initial_growth[seeding_time > 1 ? n : 0, 1]; //initial growth
@@ -20,6 +21,7 @@ data {
   real<lower = 0> gt_sd[n, 1];   // sd of generation time
   int max_gt;                    // maximum generation time
   matrix[n, t - seeding_time] R; // reproduction number
+  int pop;                       // susceptible population
   // delay from infection to report
   int delays;                           // no. of delay distributions
   real<lower = 0> delay_mean[n, delays];// mean of delays
@@ -30,7 +32,7 @@ data {
   int week_effect;                   // should a day of the week effect be estimated
   real<lower = 0> day_of_week_simplex[n, 7];
   int obs_scale; 
-  real frac_obs[obs_scale ? n : 0];
+  real frac_obs[obs_scale ? n : 0, obs_scale];
   int model_type;
   real<lower = 0> rep_phi[n, model_type];  // overdispersion of the reporting process
 }
@@ -45,7 +47,8 @@ generated quantities {
     // generate infections from Rt trace
     infections[i] = to_row_vector(generate_infections(to_vector(R[i]), seeding_time, 
                                                       gt_mean[i], gt_sd[i], max_gt, 
-                                                      initial_infections[i], initial_growth[i]));
+                                                      initial_infections[i], initial_growth[i],
+                                                      pop, future_time));
     // convolve from latent infections to mean of observations
     reports[i] = to_row_vector(convolve_to_report(to_vector(infections[i]), delay_mean[i], 
                                                   delay_sd[i], max_delay, seeding_time));
@@ -56,7 +59,7 @@ generated quantities {
     }
     // scale observations
     if (obs_scale) {
-      reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i]));
+      reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i, 1]));
     }
    // simulate reported cases
    imputed_reports[i] = report_rng(to_vector(reports[i]), rep_phi[i], model_type);

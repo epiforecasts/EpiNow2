@@ -63,7 +63,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
       return(x)
     })
   }
- 
+  
   for (data_name in names(data)) {
     if (!(data_name %in% names(samples))) {
       samples[[data_name]] <- data[[data_name]]
