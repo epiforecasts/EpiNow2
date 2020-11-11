@@ -105,7 +105,7 @@ epinow <- function(reported_cases,
   latest_folder <- target_folders$latest
   
   # specify internal functions
-  epinow_internal <- function(...) {
+  epinow_internal <- function() {
     # check verbose settings and set logger to match---------------------------
     if (verbose) {
       futile.logger::flog.threshold(futile.logger::DEBUG,
@@ -194,7 +194,7 @@ epinow <- function(reported_cases,
   # start processing with system timing and error catching
   start_time <- Sys.time()
   out <- tryCatch(withCallingHandlers(
-    epinow_internal(...),
+    epinow_internal(),
     warning = function(w) {
       futile.logger::flog.warn("%s: %s - %s", id, w$message, toString(w$call),
                                name = "EpiNow2.epinow")

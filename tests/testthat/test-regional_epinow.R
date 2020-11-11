@@ -22,6 +22,7 @@ test_that("regional_epinow produces expected output when run with default settin
   out <- suppressWarnings(
     regional_epinow(reported_cases = cases, generation_time = generation_time,
                     delays = delay_opts(reporting_delay),
+                    rt = rt_opts(rw = 10), gp = NULL,
                     stan = stan_opts(samples = 100, warmup = 100, 
                                      cores = 1, chains = 2,
                                      control = list(adapt_delta = 0.8)),
