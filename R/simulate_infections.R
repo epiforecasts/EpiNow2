@@ -26,6 +26,8 @@
 #' @export
 #' @examples
 #' \donttest{
+#' #set number of cores to use
+#' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # get example case counts
 #' reported_cases <- EpiNow2::example_confirmed[1:50]
 #'
@@ -155,7 +157,7 @@ simulate_infections <- function(estimates,
   
   ## join batches
   out <- purrr::transpose(out)
-  out <- purrr::map(out, ~ data.table::rbindlist(.)[, sample := 1:.N])
+  out <- purrr::map(out, ~ data.table::rbindlist(.))
   
   ## format output
   format_out <- format_fit(posterior_samples = out,
@@ -164,6 +166,9 @@ simulate_infections <- function(estimates,
                            burn_in = burn_in,
                            start_date = min(estimates$observations$date),
                            CrIs = extract_CrIs(estimates$summarised) / 100)
+  format_out$samples <- format_out$samples[, sample := 1:.N, 
+                                           by = c("variable", "time","date", "strat")]
+                    
 
   format_out$observations <- estimates$observations
   class(format_out) <- c("estimate_infections", class(format_out))

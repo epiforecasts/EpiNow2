@@ -64,10 +64,13 @@ latent infections and then maps these infections to observed cases via uncertain
 observation model. See the examples and function arguments for the details of all options. The default settings
 may not be sufficient for your use case so the number of warmup samples (\code{stan_args = list(warmup)}) may need to
 be increased as may the overall number of samples. Follow the links provided by any warnings messages to diagnose
-issues with the MCMC fit.
+issues with the MCMC fit. It is recommended to explore several of the Rt estimation approaches supported as not all
+of them may be suited to users own use cases.
 }
 \examples{
 \donttest{
+#set number of cores to use
+options(mc.cores = ifelse(interactive(), 4, 1))
 # get example case counts
 reported_cases <- EpiNow2::example_confirmed[1:60]
 
@@ -95,8 +98,7 @@ plot(def)
 agp <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = delay_opts(incubation_period, reporting_delay),
                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-                           gp = gp_opts(ls_min = 10, boundary_scale = 1.5,
-                                        basis_prop = 0.1),
+                           gp = gp_opts(ls_min = 10, basis_prop = 0.1),
                            stan = stan_opts(control = list(adapt_delta = 0.95)))
 summary(agp)
 plot(agp) 
@@ -106,8 +108,7 @@ dep <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = delay_opts(incubation_period, reporting_delay),
                            rt = rt_opts(prior = list(mean = 2, sd = 0.1),
                                         pop = 1000000, future = "latest"),
-                           gp = gp_opts(ls_min = 10, boundary_scale = 1.5,
-                                        basis_prop = 0.1), horizon = 21,
+                           gp = gp_opts(ls_min = 10, basis_prop = 0.1), horizon = 21,
                            stan = stan_opts(control = list(adapt_delta = 0.95)))
 plot(dep) 
 
@@ -135,8 +136,8 @@ plot(snapshot)
 # stationary Rt assumption (likely to provide biased real-time estimates)
 stat <- estimate_infections(reported_cases, generation_time = generation_time,
                             delays = delay_opts(incubation_period, reporting_delay),
-                            gp = gp_opts(stationary = TRUE),
-                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
+                            rt = rt_opts(prior = list(mean = 2, sd = 0.1),
+                                         gp_on = "R0"))
 plot(stat)
        
 # no gaussian process (i.e fixed Rt assuming no breakpoints)
