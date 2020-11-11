@@ -17,8 +17,7 @@ init <- estimate_infections(example_confirmed[1:100],
                             generation_time = generation_time,
                             delays = delay_opts(incubation_period, reporting_delay),
                             rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-                            gp = gp_opts(ls_min = 10, boundary_scale = 1.5,
-                                         basis_prop = 0.05), horizon = 0,
+                            gp = gp_opts(ls_min = 10, basis_prop = 0.05), horizon = 0,
                             obs = obs_opts(scale = list(mean = 0.1, sd = 0.025)))
 
 

@@ -10,6 +10,7 @@ rt_opts(
   rw = 0,
   use_breakpoints = TRUE,
   future = "latest",
+  gp_on = "R_t-1",
   pop = 0
 )
 }
@@ -34,6 +35,13 @@ and so represent a conservative estimate of break point changes (alter this by s
 options are to project using the Rt model ("project"), to use the latest estimate based on partial data ("latest"),
 to use the latest estimate based on data that is over 50\% complete ("estimate"). If an integer is supplied then the Rt estimate
 from this many days into the future (or past if negative) past will be used forwards in time.}
+
+\item{gp_on}{Character string, defaulting to  "R_t-1". Indicates how the Gaussian process,
+if in use, should be applied to Rt.  Currently supported options are applying the Gaussian
+process to the last estimated Rt (i.e Rt = Rt-1 * GP), and applying the Gaussian process to
+a global mean (i.e Rt = R0 * GP). Both should produced comparable results when data is not
+sparse but the method relying on a global mean will revert to this for real time estimates,
+which may not be desirable.}
 
 \item{pop}{Integer, defaults to 0. Susceptible population initially present. Used to adjust
 Rt estimates when otherwise fixed based on the proportion of the population that is

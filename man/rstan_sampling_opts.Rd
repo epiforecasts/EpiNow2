@@ -5,7 +5,7 @@
 \title{Rstan Sampling Options}
 \usage{
 rstan_sampling_opts(
-  cores = ifelse(interactive(), 4, 1),
+  cores = getOption("mc.cores", 1L),
   warmup = 250,
   samples = 1000,
   chains = 4,
@@ -18,8 +18,9 @@ rstan_sampling_opts(
 )
 }
 \arguments{
-\item{cores}{Numeric, number of cores to use in parallel. Defaults to 4
-if in interactive mode and otherwise 1.}
+\item{cores}{Number of cores to use when executing the chains in parallel,
+which defaults to 1 but it is recommended to set the mc.cores option to be as
+many processors as the hardware and RAM allow (up to the number of chains).}
 
 \item{warmup}{Numeric, defaults to 250. Number of warmup samples per chain.}
 

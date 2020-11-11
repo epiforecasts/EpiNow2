@@ -12,7 +12,6 @@
 #' if no directory for saving is specified. 
 #' @param forecast_args A list of arguments to pass to `forecast_infections`. Unless at a minimum a `forecast_model` is passed 
 #' tin his list then `forecast_infections` will be bypassed. 
-#' @param ... Additional arguments passed to `estimate_infections`. See that functions documentation for options.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @inheritParams setup_target_folder
@@ -52,15 +51,20 @@
 #' summary(out, type = "parameters", params = "R")
 #' }
 epinow <- function(reported_cases, 
-                   generation_time, delays = delay_opts(),
+                   generation_time, 
+                   delays = delay_opts(),
+                   rt = rt_opts(),
+                   backcalc = backcalc_opts(),
+                   gp = gp_opts(),
+                   obs = obs_opts(),
+                   stan = stan_opts(),
                    horizon = 7,
                    CrIs = c(0.2, 0.5, 0.9),
                    return_output = FALSE,
                    output = c("samples", "plots", "latest", "fit", "timing"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, logs = tempdir(),
-                   id = "epinow", verbose = interactive(),
-                   ...) {
+                   id = "epinow", verbose = interactive()) {
  
   if (is.null(target_folder)) {
     return_output <- TRUE
@@ -120,12 +124,16 @@ epinow <- function(reported_cases,
     # estimate infections and Reproduction no ---------------------------------
     estimates <- estimate_infections(reported_cases = reported_cases, 
                                      generation_time = generation_time,
-                                     CrIs = CrIs,
                                      delays = delays,
+                                     rt = rt,
+                                     backcalc = backcalc,
+                                     gp = gp,
+                                     obs = obs,
+                                     stan = stan,
+                                     CrIs = CrIs,
                                      horizon = horizon,
                                      verbose = verbose,
-                                     id = id,
-                                     ...)
+                                     id = id)
     
     if (!output["fit"]) {
       estimates$fit <- NULL

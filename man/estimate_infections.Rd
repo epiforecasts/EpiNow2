@@ -68,6 +68,8 @@ issues with the MCMC fit.
 }
 \examples{
 \donttest{
+#set number of cores to use
+options(mc.cores = ifelse(interactve(), 4, 1))
 # get example case counts
 reported_cases <- EpiNow2::example_confirmed[1:60]
 
@@ -135,8 +137,8 @@ plot(snapshot)
 # stationary Rt assumption (likely to provide biased real-time estimates)
 stat <- estimate_infections(reported_cases, generation_time = generation_time,
                             delays = delay_opts(incubation_period, reporting_delay),
-                            gp = gp_opts(stationary = TRUE),
-                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
+                            rt = rt_opts(prior = list(mean = 2, sd = 0.1),
+                                         gp_on = "R0"))
 plot(stat)
        
 # no gaussian process (i.e fixed Rt assuming no breakpoints)

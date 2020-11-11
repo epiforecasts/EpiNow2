@@ -127,7 +127,8 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   # Define if GP is on or off
   if (is.null(rt)) {
     rt <- rt_opts(use_rt = FALSE,
-                  future = "project")
+                  future = "project",
+                  gp_on = "R0")
   }
   # define future Rt arguments
   future_rt <- create_future_rt(future = rt$future, 
@@ -156,7 +157,9 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     breakpoints = breakpoints,
     future_fixed = ifelse(future_rt$fixed, 1, 0),
     fixed_from = future_rt$from,
-    pop = rt$pop
+    pop = rt$pop,
+    stationary = ifelse(rt$gp_on %in% "R0", 1, 0),
+    future_time = data$horizon - data$fixed_from
   ) 
   return(rt_data)
 }
@@ -190,7 +193,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
   # Define if GP is on or off
   if (is.null(gp)) {
     fixed <- TRUE
-    gp <- gp_opts(stationary = TRUE)
+    data$stationary <- 1
   }else{
     fixed <- FALSE
   }
@@ -199,11 +202,16 @@ create_gp_data <- function(gp = gp_opts(), data) {
   if (gp$ls_max > time) {
     gp$ls_max <- time
   }
+  
+  # basis functions
+  M <- data$t - data$seeding_time
+  M <- ifelse(data$future_fixed == 1, M - (data$horizon - data$fixed_from))
+  M <- ceiling(M * gp$basis_prop)
+  
   # map settings to underlying gp stan requirements
   gp_data <- list(
     fixed = ifelse(fixed, 1, 0),
-    stationary = ifelse(gp$stationary, 1, 0),
-    M = ceiling((data$t - data$seeding_time) * gp$basis_prop),
+    M = M,
     L = gp$boundary_scale,
     ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
     ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
@@ -213,6 +221,8 @@ create_gp_data <- function(gp = gp_opts(), data) {
     gp_type = ifelse(gp$kernel == "se", 0, 
                       ifelse(gp$kernel == "matern", 1, 0))
   ) 
+  
+  gp_data <- c(data, gp_data)
   return(gp_data)
 }
 
@@ -285,7 +295,6 @@ create_stan_data <- function(reported_cases, generation_time,
             create_rt_data(rt,
                            breakpoints = reported_cases[(data$seeding_time + 1):.N]$breakpoint,
                            delay = data$seeding_time, horizon = data$horizon))
-   data$future_time <- data$horizon - data$fixed_from
   # initial estimate of growth
   first_week <- data.table::data.table(confirm = cases[1:min(7, length(cases))],
                                        t = 1:min(7, length(cases)))
@@ -302,7 +311,7 @@ create_stan_data <- function(reported_cases, generation_time,
   }
 
   # gaussian process data
-  data <- c(data, create_gp_data(gp, data))
+  data <- create_gp_data(gp, data)
   
   # observation model data
   data <- c(data, create_obs_model(obs))

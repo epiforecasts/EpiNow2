@@ -55,6 +55,12 @@ delay_opts <- function(...) {
 #' @param pop Integer, defaults to 0. Susceptible population initially present. Used to adjust 
 #' Rt estimates when otherwise fixed based on the proportion of the population that is 
 #' susceptible. When set to 0 no population adjustment is done.
+#' @param gp_on Character string, defaulting to  "R_t-1". Indicates how the Gaussian process,
+#' if in use, should be applied to Rt.  Currently supported options are applying the Gaussian 
+#' process to the last estimated Rt (i.e Rt = Rt-1 * GP), and applying the Gaussian process to
+#'  a global mean (i.e Rt = R0 * GP). Both should produced comparable results when data is not 
+#'  sparse but the method relying on a global mean will revert to this for real time estimates,
+#'  which may not be desirable.
 #' @return A list of settings defining the time-varying reproduction number
 #' @inheritParams create_future_rt
 #' @export
@@ -72,6 +78,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
                     rw = 0,
                     use_breakpoints = TRUE,
                     future = "latest",
+                    gp_on = "R_t-1",
                     pop = 0) {
   rt <- list(
     prior = prior,
@@ -79,7 +86,8 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
     rw = rw,
     use_breakpoints = use_breakpoints,
     future = future,
-    pop = pop
+    pop = pop,
+    gp_on = match.arg(gp_on, choices = c("R_t-1", "R0"))
   )
   
   # replace default settings with those specified by user
@@ -126,7 +134,7 @@ backcalc_opts <- function(smoothing_window = 7) {
 #' scale with..
 #' @param ls_max Numeric, defaults to 60. The maximum value of the length scale. Updated in 
 #' `create_gp_data` to be the length of the input data if this is smaller.
-#' @param ls_min Numeric, defaults to 3. The minimum value of the length scale.
+#' @param ls_min Numeric, defaults to 7. The minimum value of the length scale.
 #' @param alpha_sd Numeric, defaults to 0.1. The standard deviation of the magnitude parameter of
 #' the Gaussian process kernel. Should be approximately the expected standard deviation of the logged Rt.
 #' @param kernel Character string, the type of kernel required. Currently supporting the squared exponential 
@@ -134,17 +142,14 @@ backcalc_opts <- function(smoothing_window = 7) {
 #' in Rt and infections.
 #' @param matern_type Numeric, defaults to 3/2. Type of Matern Kernel to use. Currently only the Matern
 #' 3/2 kernel is supported.
-#' @param basis_prop Numeric, proportion of time points to use as basis functions. Decreasing this value 
-#' results in a decrease in accuracy but a faster compute time. In general smaller posterior length scales 
-#' require a higher proportion of basis functions. See (Riutort-Mayol et al. 2020 <https://arxiv.org/abs/2004.11408>) 
-#' for advice on updating this default. This setting is an area of active research.
-#' @param boundary_scale Numeric, boundary scale of the approximate Gaussian process. Defaults to 
-#' 2. See (Riutort-Mayol et al. 2020 <https://arxiv.org/abs/2004.11408>) for advice on updating this 
+#' @param basis_prop Numeric, proportion of time points to use as basis functions. Defaults to 0.1. Decreasing 
+#' this value results in a decrease in accuracy but a faster compute time (with increasing it having the first 
+#' effect). In general smaller posterior length scales require a higher proportion of basis functions. 
+#' See (Riutort-Mayol et al. 2020 <https://arxiv.org/abs/2004.11408>) for advice on updating this default. 
+#' This setting is an area of active research.
+#' @param boundary_scale Numeric, defaults to 1.5. Boundary scale of the approximate Gaussian process. See 
+#' (Riutort-Mayol et al. 2020 <https://arxiv.org/abs/2004.11408>) for advice on updating this 
 #' default.
-#' @param stationary Logical, defaults to `FALSE`. Should the Gaussian process be estimated with
-#' a stationary global mean or be second order and so depend on the previous value. A stationary 
-#' Gaussian process may be more tractable but will revert to the global average when data is 
-#' sparse i.e for near real time estimates. This feature is experimental.
 #' @return A list of settings defining the Gaussian process
 #' @export
 #' @examples
@@ -153,16 +158,15 @@ backcalc_opts <- function(smoothing_window = 7) {
 #' 
 #' # add a custom length scale
 #' gp_opts(ls_mean = 4)
-gp_opts <- function(basis_prop = 0.3, 
-                    boundary_scale = 2, 
+gp_opts <- function(basis_prop = 0.2, 
+                    boundary_scale = 1.5, 
                     ls_mean = 21, 
                     ls_sd = 7, 
-                    ls_min = 3,
+                    ls_min = 7,
                     ls_max = 60,
                     alpha_sd = 0.1, 
                     kernel = "matern",
-                    matern_type = 3/2,
-                    stationary = FALSE) {
+                    matern_type = 3/2) {
   gp <- list(
     basis_prop = basis_prop, 
     boundary_scale = boundary_scale, 
@@ -172,9 +176,7 @@ gp_opts <- function(basis_prop = 0.3,
     ls_max = ls_max,
     alpha_sd = alpha_sd, 
     kernel = match.arg(kernel, choices = c("se", "matern_3/2")),
-    matern_type = matern_type,
-    stationary = stationary)
-  
+    matern_type = matern_type)
   
   if (gp$matern_type != 3/2) {
     stop("only the Matern 3/2 kernel is currently supported")
