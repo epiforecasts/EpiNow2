@@ -96,7 +96,7 @@ and enable it in batch by setting \code{R_PROGRESSR_ENABLE=TRUE} as an environme
 \examples{
  \donttest{
 #set number of cores to use
-options(mc.cores = ifelse(interactve(), 4, 1))
+options(mc.cores = ifelse(interactive(), 4, 1))
 
 # construct example distributions
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")

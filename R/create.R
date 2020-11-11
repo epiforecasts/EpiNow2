@@ -159,7 +159,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     fixed_from = future_rt$from,
     pop = rt$pop,
     stationary = ifelse(rt$gp_on %in% "R0", 1, 0),
-    future_time = data$horizon - data$fixed_from
+    future_time = horizon - future_rt$from
   ) 
   return(rt_data)
 }
