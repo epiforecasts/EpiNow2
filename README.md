@@ -185,7 +185,8 @@ may be needed*. See fitting progress by setting `verbose = TRUE`.
 estimates <- epinow(reported_cases = reported_cases, 
                     generation_time = generation_time,
                     delays = delay_opts(incubation_period, reporting_delay),
-                    rt = rt_opts(prior = list(mean = 2, sd = 0.2)))
+                    rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
+                    stan = stan_opts(cores = 4))
 names(estimates)
 #> [1] "estimates"                "estimated_reported_cases"
 #> [3] "summary"                  "plots"                   
@@ -289,7 +290,8 @@ in parallel depending on the settings used).
 estimates <- regional_epinow(reported_cases = reported_cases, 
                              generation_time = generation_time,
                              delays = delay_opts(incubation_period, reporting_delay),
-                             rt = rt_opts(prior = list(mean = 2, sd = 0.2)))
+                             rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
+                             stan = stan_opts(cores = 4))
 #> INFO [2020-11-08 21:10:44] Producing following optional outputs: regions, summary, samples, plots, latest
 #> INFO [2020-11-08 21:10:44] Reporting estimates using data up to: 2020-05-21
 #> INFO [2020-11-08 21:10:44] No target directory specified so returning output

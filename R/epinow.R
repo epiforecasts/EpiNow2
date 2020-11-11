@@ -12,7 +12,6 @@
 #' if no directory for saving is specified. 
 #' @param forecast_args A list of arguments to pass to `forecast_infections`. Unless at a minimum a `forecast_model` is passed 
 #' tin his list then `forecast_infections` will be bypassed. 
-#' @param ... Additional arguments passed to `estimate_infections`. See that functions documentation for options.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @inheritParams setup_target_folder
@@ -25,6 +24,8 @@
 #' @importFrom rlang cnd_muffle
 #' @examples
 #' \donttest{
+#' #set number of cores to use
+#' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # construct example distributions
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
@@ -50,15 +51,20 @@
 #' summary(out, type = "parameters", params = "R")
 #' }
 epinow <- function(reported_cases, 
-                   generation_time, delays = delay_opts(),
+                   generation_time, 
+                   delays = delay_opts(),
+                   rt = rt_opts(),
+                   backcalc = backcalc_opts(),
+                   gp = gp_opts(),
+                   obs = obs_opts(),
+                   stan = stan_opts(),
                    horizon = 7,
                    CrIs = c(0.2, 0.5, 0.9),
                    return_output = FALSE,
                    output = c("samples", "plots", "latest", "fit", "timing"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, logs = tempdir(),
-                   id = "epinow", verbose = interactive(),
-                   ...) {
+                   id = "epinow", verbose = interactive()) {
  
   if (is.null(target_folder)) {
     return_output <- TRUE
@@ -99,7 +105,7 @@ epinow <- function(reported_cases,
   latest_folder <- target_folders$latest
   
   # specify internal functions
-  epinow_internal <- function(...) {
+  epinow_internal <- function() {
     # check verbose settings and set logger to match---------------------------
     if (verbose) {
       futile.logger::flog.threshold(futile.logger::DEBUG,
@@ -118,12 +124,16 @@ epinow <- function(reported_cases,
     # estimate infections and Reproduction no ---------------------------------
     estimates <- estimate_infections(reported_cases = reported_cases, 
                                      generation_time = generation_time,
-                                     CrIs = CrIs,
                                      delays = delays,
+                                     rt = rt,
+                                     backcalc = backcalc,
+                                     gp = gp,
+                                     obs = obs,
+                                     stan = stan,
+                                     CrIs = CrIs,
                                      horizon = horizon,
                                      verbose = verbose,
-                                     id = id,
-                                     ...)
+                                     id = id)
     
     if (!output["fit"]) {
       estimates$fit <- NULL
@@ -184,7 +194,7 @@ epinow <- function(reported_cases,
   # start processing with system timing and error catching
   start_time <- Sys.time()
   out <- tryCatch(withCallingHandlers(
-    epinow_internal(...),
+    epinow_internal(),
     warning = function(w) {
       futile.logger::flog.warn("%s: %s - %s", id, w$message, toString(w$call),
                                name = "EpiNow2.epinow")

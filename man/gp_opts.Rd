@@ -5,26 +5,26 @@
 \title{Approximate Gaussian Process Settings}
 \usage{
 gp_opts(
-  basis_prop = 0.3,
-  boundary_scale = 2,
+  basis_prop = 0.2,
+  boundary_scale = 1.5,
   ls_mean = 21,
   ls_sd = 7,
-  ls_min = 3,
+  ls_min = 7,
   ls_max = 60,
   alpha_sd = 0.1,
   kernel = "matern",
-  matern_type = 3/2,
-  stationary = FALSE
+  matern_type = 3/2
 )
 }
 \arguments{
-\item{basis_prop}{Numeric, proportion of time points to use as basis functions. Decreasing this value
-results in a decrease in accuracy but a faster compute time. In general smaller posterior length scales
-require a higher proportion of basis functions. See (Riutort-Mayol et al. 2020 \url{https://arxiv.org/abs/2004.11408})
-for advice on updating this default. This setting is an area of active research.}
+\item{basis_prop}{Numeric, proportion of time points to use as basis functions. Defaults to 0.1. Decreasing
+this value results in a decrease in accuracy but a faster compute time (with increasing it having the first
+effect). In general smaller posterior length scales require a higher proportion of basis functions.
+See (Riutort-Mayol et al. 2020 \url{https://arxiv.org/abs/2004.11408}) for advice on updating this default.
+This setting is an area of active research.}
 
-\item{boundary_scale}{Numeric, boundary scale of the approximate Gaussian process. Defaults to
-2. See (Riutort-Mayol et al. 2020 \url{https://arxiv.org/abs/2004.11408}) for advice on updating this
+\item{boundary_scale}{Numeric, defaults to 1.5. Boundary scale of the approximate Gaussian process. See
+(Riutort-Mayol et al. 2020 \url{https://arxiv.org/abs/2004.11408}) for advice on updating this
 default.}
 
 \item{ls_mean}{Numeric, defaults to 21 days. The mean of the lognormal length scale.}
@@ -32,7 +32,7 @@ default.}
 \item{ls_sd}{Numeric, defaults to 7 days. The standard deviation of the log normal length
 scale with..}
 
-\item{ls_min}{Numeric, defaults to 3. The minimum value of the length scale.}
+\item{ls_min}{Numeric, defaults to 7. The minimum value of the length scale.}
 
 \item{ls_max}{Numeric, defaults to 60. The maximum value of the length scale. Updated in
 \code{create_gp_data} to be the length of the input data if this is smaller.}
@@ -46,11 +46,6 @@ in Rt and infections.}
 
 \item{matern_type}{Numeric, defaults to 3/2. Type of Matern Kernel to use. Currently only the Matern
 3/2 kernel is supported.}
-
-\item{stationary}{Logical, defaults to \code{FALSE}. Should the Gaussian process be estimated with
-a stationary global mean or be second order and so depend on the previous value. A stationary
-Gaussian process may be more tractable but will revert to the global average when data is
-sparse i.e for near real time estimates. This feature is experimental.}
 }
 \value{
 A list of settings defining the Gaussian process

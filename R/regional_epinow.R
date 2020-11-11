@@ -27,6 +27,9 @@
 #' @importFrom progressr with_progress progressor
 #' @examples
 #'  \donttest{
+#' #set number of cores to use
+#' options(mc.cores = ifelse(interactive(), 4, 1))
+#' 
 #' # construct example distributions
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
@@ -51,6 +54,15 @@
 #'                        verbose = interactive())
 #'}
 regional_epinow <- function(reported_cases, 
+                            generation_time, 
+                            delays = delay_opts(),
+                            rt = rt_opts(),
+                            backcalc = backcalc_opts(),
+                            gp = gp_opts(),
+                            obs = obs_opts(),
+                            stan = stan_opts(),
+                            horizon = 7,
+                            CrIs = c(0.2, 0.5, 0.9),
                             target_folder = NULL, 
                             target_date,
                             non_zero_points = 2, 
@@ -95,6 +107,15 @@ regional_epinow <- function(reported_cases,
   progressr::with_progress({
     progress_fn <- progressr::progressor(along = regions)
     regional_out <- future.apply::future_lapply(regions, run_region,
+                                                generation_time = generation_time, 
+                                                delays = delays,
+                                                rt = rt,
+                                                backcalc = backcalc,
+                                                gp = gp,
+                                                obs = obs,
+                                                stan = stan,
+                                                horizon = horizon,
+                                                CrIs = CrIs,
                                                 reported_cases = reported_cases,
                                                 target_folder = target_folder, 
                                                 target_date = target_date,
@@ -204,6 +225,15 @@ clean_regions <- function(reported_cases, non_zero_points) {
 #' @importFrom purrr quietly 
 #' @return A list of processed output as produced by `process_region`
 run_region <- function(target_region,
+                       generation_time, 
+                       delays,
+                       rt,
+                       backcalc,
+                       gp,
+                       obs,
+                       stan,
+                       horizon,
+                       CrIs,
                        reported_cases,
                        target_folder,
                        target_date,
@@ -228,6 +258,15 @@ run_region <- function(target_region,
                             name = "EpiNow2.epinow")
 
   out <- epinow(
+    generation_time = generation_time, 
+    delays = delays,
+    rt = rt,
+    backcalc = backcalc,
+    gp = gp,
+    obs = obs,
+    stan = stan,
+    horizon = horizon,
+    CrIs = CrIs,
     reported_cases = regional_cases,
     target_folder = target_folder,
     target_date = target_date,
