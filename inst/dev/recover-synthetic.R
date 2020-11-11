@@ -16,8 +16,8 @@ reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
 init <- estimate_infections(example_confirmed[1:100], 
                             generation_time = generation_time,
                             delays = delay_opts(incubation_period, reporting_delay),
-                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-                            gp = gp_opts(ls_min = 10, basis_prop = 0.05), horizon = 0,
+                            rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 14),
+                            gp = NULL, horizon = 0,
                             obs = obs_opts(scale = list(mean = 0.1, sd = 0.025)))
 
 
@@ -53,30 +53,25 @@ make_plot <- function(est, R, name) {
   save_ggplot(plot, name)
 }
 
-## GP
+# GP
 gp <- estimate_infections(sim_cases, generation_time = generation_time,
                           delays = delay_opts(incubation_period, reporting_delay),
                           rt = rt_opts(prior = list(mean = 2.5, sd = 0.25)),
-                          gp = gp_opts(ls_min = 5, boundary_scale = 1.5,
-                                       basis_prop = 0.2),
-                          stan = stan_opts(control = list(adapt_delta = 0.9),
-                                           warmup = 100),
+                          stan = stan_opts(control = list(adapt_delta = 0.9)),
                           horizon = 0)
-
+# runtime ~ 12 minutes
 make_plot(gp, R, "gp")
 
-## Backcalculation
+# Backcalculation
 backcalc <- estimate_infections(sim_cases, generation_time = generation_time,
                                 delays = delay_opts(incubation_period, reporting_delay),
                                 rt = NULL,
-                                gp = gp_opts(ls_min = 5, boundary_scale = 1.5,
-                                             basis_prop = 0.1),
                                 stan = stan_opts(control = list(adapt_delta = 0.9)),
                                 horizon = 0)
-
+# runtime ~ 30 seconds
 make_plot(backcalc, R, "backcalc")
 
-## RW (weekly)
+# RW (weekly)
 weekly_rw <- estimate_infections(sim_cases, generation_time = generation_time,
                           delays = delay_opts(incubation_period, reporting_delay),
                           rt = rt_opts(prior = list(mean = 2.5, sd = 0.25),
@@ -84,10 +79,10 @@ weekly_rw <- estimate_infections(sim_cases, generation_time = generation_time,
                           gp = NULL,
                           stan = stan_opts(control = list(adapt_delta = 0.9)),
                           horizon = 0)
-
+# runtime ~ 5 minutes
 make_plot(weekly_rw, R, "weekly_rw")
 
-## RW (every 2 days)
+# RW (every 2 days)
 daily_rw <- estimate_infections(sim_cases, generation_time = generation_time,
                           delays = delay_opts(incubation_period, reporting_delay),
                           rt = rt_opts(prior = list(mean = 2.5, sd = 0.25),
@@ -95,8 +90,7 @@ daily_rw <- estimate_infections(sim_cases, generation_time = generation_time,
                           gp = NULL,
                           stan = stan_opts(control = list(adapt_delta = 0.9)),
                           horizon = 0)
-
-
+# runtime ~ 10 minutes (with 40+ divergent transitions)
 make_plot(daily_rw, R, "daily_rw")
 
 
