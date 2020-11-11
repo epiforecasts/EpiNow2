@@ -82,7 +82,7 @@ weekly_rw <- estimate_infections(sim_cases, generation_time = generation_time,
 # runtime ~ 5 minutes
 make_plot(weekly_rw, R, "weekly_rw")
 
-# RW (every 2 days)
+# RW 
 daily_rw <- estimate_infections(sim_cases, generation_time = generation_time,
                           delays = delay_opts(incubation_period, reporting_delay),
                           rt = rt_opts(prior = list(mean = 2.5, sd = 0.25),
