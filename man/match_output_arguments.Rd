@@ -32,16 +32,16 @@ internal usage
 }
 \examples{
 # select nothing
-match_output_arguments(supported_args = c("fit", "plots", "samples"))
+EpiNow2:::match_output_arguments(supported_args = c("fit", "plots", "samples"))
 
 # select just plots
-match_output_arguments("plots", supported_args = c("fit", "plots", "samples"))
+EpiNow2:::match_output_arguments("plots", supported_args = c("fit", "plots", "samples"))
 
 # select plots and samples
-match_output_arguments(c("plots", "samples"),
+EpiNow2:::match_output_arguments(c("plots", "samples"),
                        supported_args = c("fit", "plots", "samples"))
 
 # lazily select arguments
-match_output_arguments("p",
+EpiNow2:::match_output_arguments("p",
                        supported_args = c("fit", "plots", "samples"))
 }
