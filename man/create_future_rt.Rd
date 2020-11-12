@@ -18,5 +18,6 @@ from this many days into the future (or past if negative) past will be used forw
 A list containing a logical called fixed and an integer called from
 }
 \description{
-Construct the Required Future Rt assumption
+\lifecycle{stable}
+Converts the \code{future} argument from \code{rt_opts} into arguments that can be passed to \code{stan}.
 }

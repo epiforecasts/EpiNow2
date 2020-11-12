@@ -26,10 +26,11 @@ as supplied by \code{create_intitial_conditions}).}
 A list of stan arguments
 }
 \description{
+\lifecycle{stable}
 Generates a list of arguments as required by \code{rstan::sampling} (when \verb{stan_args$method = "sampling})
-or \code{rstan::vb} (when \verb{stan_args$method = "vb}). See \code{create_stan_args()} for the defaults and the relevant \code{rstan}
-functions for additional options. Defaults can be overwritten by passing a list containing the new setting to
-\code{stan_args}.
+or \code{rstan::vb} (when \verb{stan_args$method = "vb}) by combining the required options, with data, and type of
+initilisation. Initialisation defaults to random but it is expected that \code{create_initial_conditions} will
+be used.
 }
 \examples{
 # default settings
