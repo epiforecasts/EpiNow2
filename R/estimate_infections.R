@@ -16,8 +16,6 @@
 #' generation time (assuming a gamma distribution).
 #' @param delays A call to `delay_opts` defining delay distributions and options. See the documentation of `delay_opts` 
 #' and the examples below for details.
-#' @param backcalc A call to `backcalc_opts` defining back calculation settings. See the documentation of `backcalc_opts` 
-#' and the examples below for details. Only used if `rt = NULL`.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
 #' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
@@ -81,7 +79,8 @@
 #' # using back calculation (combined here with under reporting)
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = delay_opts(incubation_period, reporting_delay),
-#'                                 rt = NULL,
+#'                                 rt = NULL, stan = stan_opts(object = model),
+#'                                 backcalc = backcalc_opts(rt_window = 1),
 #'                                 obs = obs_opts(scale = list(mean = 0.4, sd = 0.05)))
 #' plot(backcalc)
 #'                            
@@ -169,16 +168,16 @@ estimate_infections <- function(reported_cases,
   if (delays$delays > 0) {
     reported_cases <- data.table::rbindlist(list(
       data.table::data.table(
-        date = seq(min(reported_cases$date) - delays$seeding_time - backcalc$smoothing_window,
+        date = seq(min(reported_cases$date) - delays$seeding_time - backcalc$prior_window,
                    min(reported_cases$date) - 1, by = "days"),
         confirm = 0,  breakpoint = 0), 
       reported_cases))  
     
     shifted_cases <- create_shifted_cases(reported_cases, 
                                                    delays$seeding_time, 
-                                                   backcalc$smoothing_window,
+                                                   backcalc$prior_window,
                                                    horizon)
-    reported_cases <- reported_cases[-(1:backcalc$smoothing_window)]
+    reported_cases <- reported_cases[-(1:backcalc$prior_window)]
   }else{
     shifted_cases <- reported_cases
   }
@@ -193,6 +192,7 @@ estimate_infections <- function(reported_cases,
                            rt = rt,
                            gp = gp,
                            obs = obs,
+                           backcalc = backcalc,
                            shifted_cases = shifted_cases$confirm,
                            horizon = horizon)
  

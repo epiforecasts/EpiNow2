@@ -107,20 +107,25 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' @description \lifecycle{stable}
 #' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`. 
-#' @param smoothing_window Numeric, defaults to 7 days. The mean smoothing window to apply
-#'   to mean shifted reports (used as a prior during back calculation). 7 days is the default
-#'   as this smooths day of the week effects but depending on the quality of the data and the 
-#'   amount of information users wish to use as a prior (higher values equalling a less 
-#'   informative prior).
+#' @param prior_window Integer, defaults to 7 days. The mean smoothing window to apply
+#' to mean shifted reports (used as a prior during back calculation). 7 days is the default
+#' as this smooths day of the week effects but depending on the quality of the data and the 
+#' amount of information users wish to use as a prior (higher values equalling a less informative prior).
+#' @param rt_window Integer, defaults to 1. The size of the centered rolling average to use when estimating 
+#' Rt. This must be odd so that the central estimate is included.
 #' @return A list of back calculation settings
 #' @export
 #' @examples
 #' # default settings
 #' backcalc_opts()
-backcalc_opts <- function(smoothing_window = 7) {
+backcalc_opts <- function(prior_window = 7, rt_window = 1) {
   backcalc <- list(
-    smoothing_window = smoothing_window
+    prior_window = prior_window,
+    rt_window = as.integer(rt_window)
   )
+  if (backcalc$rt_window %% 2 == 0) {
+    stop("Rt rolling average window must be odd in order to include the current estimate")
+  }
   return(backcalc)
 }
 

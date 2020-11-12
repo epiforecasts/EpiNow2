@@ -1,6 +1,6 @@
 #' Report case counts by date of report  
 #' 
-#' @description \lifecycle{soft-depreciated}
+#' @description \lifecycle{soft-deprecated}
 #' Convolves latent infections to reported cases via an observation model. Likely to be removed/replaced 
 #' in later releases by functionality drawing on the `stan` implementation.                      
 #' @param case_estimates A data.table of case estimates with the following variables: date, sample, cases
