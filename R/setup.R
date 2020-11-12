@@ -149,7 +149,7 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
 }
 
 #' Convert to Data Table
-#' \description \lifecycle{stable}
+#' @description \lifecycle{stable}
 #' Conveniance function that sets the number of `data.table` cores to 1 and 
 #' maps input to be a `data.table`
 #' @inheritParams estimate_infections

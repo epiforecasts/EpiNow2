@@ -2,10 +2,7 @@
 % Please edit documentation in R/setup.R
 \name{setup_dt}
 \alias{setup_dt}
-\title{Convert to Data Table
-\description \lifecycle{stable}
-Conveniance function that sets the number of \code{data.table} cores to 1 and
-maps input to be a \code{data.table}}
+\title{Convert to Data Table}
 \usage{
 setup_dt(reported_cases)
 }
@@ -17,8 +14,7 @@ in date format.}
 A data table
 }
 \description{
-Convert to Data Table
-\description \lifecycle{stable}
+\lifecycle{stable}
 Conveniance function that sets the number of \code{data.table} cores to 1 and
 maps input to be a \code{data.table}
 }

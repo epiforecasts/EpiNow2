@@ -15,5 +15,6 @@ allocate_delays(delay_var, no_delays)
 A numeric array
 }
 \description{
-Allocate Delays into Required Stan Format
+\lifecycle{stable}
+Allocate delays for stan. Used in \code{delay_opts}.
 }

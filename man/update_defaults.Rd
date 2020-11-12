@@ -15,5 +15,6 @@ update_defaults(defaults = list(), optional = list())
 A list
 }
 \description{
-Update Default Settings
+\lifecycle{stable}
+Used internally to handle updating default settings in a list.
 }

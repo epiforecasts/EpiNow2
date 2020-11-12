@@ -29,6 +29,7 @@ impact Rt estimates.
 * Added a new function, `expose_stan_fns` that exposes the internal stan functions into R. The enables unit testing, exploration of the stan functionality and potentially within R use cases for these functions.
 * Updates the default `warmup` to be 250 samples and the default `adapt_delta` to be 0.98.
 * Adds a pooling parameter for the standard deviation of breakpoint effects.
+* Updated all documentation and added `{lifecycle}` badges to all functions to indicate develoment stage.
 
 # EpiNow2 1.2.1
 
