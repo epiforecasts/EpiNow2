@@ -13,7 +13,8 @@ extract_CrIs(summarised)
 A numeric vector of credible intervals detected in the data frame.
 }
 \description{
-Extract Credible Intervals Present
+\lifecycle{stable}
+Helper function to extract the credible intervals present in a data frame.
 }
 \examples{
 samples <- data.frame(value = 1:10, type = "car")

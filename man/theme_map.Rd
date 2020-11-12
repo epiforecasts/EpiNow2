@@ -41,5 +41,7 @@ expects the possible values to be "Increasing", "Likely increasing", "Likely dec
 A \code{ggplot2} object
 }
 \description{
-Custom Map Theme
+\lifecycle{questioning}
+Applies a custom map theme to be used with \code{global_map}, \code{country_map}, and other \code{ggplot2} maps. Status of
+this function is currently questioning as it is uncertain if it is in use. Future releases may depreciate it.
 }

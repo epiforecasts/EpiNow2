@@ -15,6 +15,7 @@ normal (with all parameters except for max defined in logged form).}
 A list summarising the input delay distributions.
 }
 \description{
+\lifecycle{stable}
 Returns delay distributions formatted for usage by downstream
 functions.
 }

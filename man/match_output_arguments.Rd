@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{match_output_arguments}
 \alias{match_output_arguments}
-\title{Match Input Output Arguments with Supported Options}
+\title{Match User Supplied Arguments with Supported Options}
 \usage{
 match_output_arguments(
   input_args = c(),
@@ -26,20 +26,22 @@ of futile.logger for details. Supported options are "info" and "debug"}
 A logical vector of named output arguments
 }
 \description{
-Match Input Output Arguments with Supported Options
+\lifecycle{stable}
+Match user supplied arguments with supported options and return a logical list for
+internal usage
 }
 \examples{
 # select nothing
-match_output_arguments(supported_args = c("fit", "plots", "samples"))
+EpiNow2:::match_output_arguments(supported_args = c("fit", "plots", "samples"))
 
 # select just plots
-match_output_arguments("plots", supported_args = c("fit", "plots", "samples"))
+EpiNow2:::match_output_arguments("plots", supported_args = c("fit", "plots", "samples"))
 
 # select plots and samples
-match_output_arguments(c("plots", "samples"),
+EpiNow2:::match_output_arguments(c("plots", "samples"),
                        supported_args = c("fit", "plots", "samples"))
 
 # lazily select arguments
-match_output_arguments("p",
+EpiNow2:::match_output_arguments("p",
                        supported_args = c("fit", "plots", "samples"))
 }

@@ -25,6 +25,7 @@ parameters of interest and date.}
 Returns a data frame of summary output
 }
 \description{
+\lifecycle{stable}
 \code{summary} method for class "estimate_infections".
 }
 \seealso{

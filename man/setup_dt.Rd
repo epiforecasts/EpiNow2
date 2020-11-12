@@ -14,5 +14,7 @@ in date format.}
 A data table
 }
 \description{
-Convert to Data Table
+\lifecycle{stable}
+Conveniance function that sets the number of \code{data.table} cores to 1 and
+maps input to be a \code{data.table}
 }

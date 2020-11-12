@@ -31,7 +31,9 @@ gamma (\code{"gamma"}) and lognormal (\code{"lognorma"}) are also supported.}
 A \code{stan} fit of an interval censored distribution
 }
 \description{
-Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
+\lifecycle{stable}
+Fits an integer adjusted exponential, gamma or lognormal distribution using
+\code{stan}.
 }
 \examples{
 \donttest{

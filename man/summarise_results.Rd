@@ -30,5 +30,7 @@ for this date.}
 A list of summary data
 }
 \description{
-Summarise Real-time Results
+\lifecycle{questioning}
+Used internally by \code{regional_summary} to produce a summary table of results. May be streamlined in later
+releases.
 }

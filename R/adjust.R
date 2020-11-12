@@ -1,6 +1,7 @@
 #' Adjust from Case Counts by Infection Date to Date of Report
 #'
-#' @description Maps from cases by date of infection to date of report via date of 
+#' @description  \lifecycle{soft-deprecated}
+#' Maps from cases by date of infection to date of report via date of 
 #' onset.
 #' @param infections `data.table` containing a `date` variable and a numeric `cases` variable.
 #' @param delay_defs A list of single row data.tables that each  defines a delay distribution (model, parameters and maximum delay for each model). 

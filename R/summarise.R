@@ -1,5 +1,8 @@
 #' Summarise Real-time Results
 #'
+#' @description \lifecycle{questioning}
+#' Used internally by `regional_summary` to produce a summary table of results. May be streamlined in later 
+#' releases.
 #' @param regions An character string containing the list of regions to extract results for 
 #' (must all have results for the same target date).
 #' @param summaries A list of summary data frames as output by `epinow` 
@@ -86,8 +89,10 @@ summarise_results <- function(regions,
 }
 
 
-#' Generate Regional Summary Output
+#' Regional Summary Output
 #'
+#' @description \lifecycle{maturing}
+#' Used to produce summary output either internally in `regional_epinow` or externally.
 #' @param summary_dir A character string giving the directory
 #'  in which to store summary of results.
 #' @param target_date A character string giving the target date for which to extract results
@@ -96,6 +101,7 @@ summarise_results <- function(regions,
 #' rather than just regions of interest.
 #' @return A list of summary measures and plots
 #' @export
+#' @seealso regional_epinow
 #' @inheritParams summarise_results
 #' @inheritParams plot_summary
 #' @inheritParams summarise_key_measures
@@ -317,11 +323,14 @@ regional_summary <- function(regional_output = NULL,
 
 #' Summarise rt and cases
 #'
+#' @description \lifecycle{maturing}
+#' Produces summarised data frames of output across regions. Used internally by `regional_summary`.
 #' @param regional_results A list of dataframes as produced by `get_regional_results`
 #' @param results_dir Character string indicating the directory from which to extract results.
 #' @param summary_dir Character string the directory into which to save results as a csv.
 #' @param type Character string, the region identifier to apply (defaults to region).
 #' @inheritParams get_regional_results
+#' @seealso regional_summary
 #' @return A list of summarised Rt, cases by date of infection and cases by date of report
 #' @export
 #' @importFrom data.table setnames fwrite setorderv
@@ -378,6 +387,9 @@ summarise_key_measures <- function(regional_results = NULL,
 
 #' Summarise Regional Runtimes
 #'
+#' @description \lifecycle{maturing}
+#' Used internally by `regional_epinow` to summarise region runtimes.
+#' @seealso regional_summary regional_epinow
 #' @inheritParams regional_summary
 #' @inheritParams epinow
 #' @return A data.table of region run times
@@ -450,7 +462,8 @@ regional_runtimes <- function(regional_output = NULL,
 
 #' Calculate Credible Interval
 #'
-#' @description Adds symmetric a credible interval based on quantiles.
+#' @description \lifecycle{stable}
+#' Adds symmetric a credible interval based on quantiles.
 #' @param samples A data.table containing at least a value variable
 #' @param summarise_by A character vector of variables to group by.
 #' @param CrI Numeric between 0 and 1. The credible interval for which to return values. 
@@ -481,7 +494,8 @@ calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
 
 #' Calculate Credible Intervals
 #' 
-#' @description Adds symmetric credible intervals based on quantiles.
+#' @description \lifecycle{stable}
+#' Adds symmetric credible intervals based on quantiles.
 #' @param CrIs Numeric vector of credible intervals to calculate.
 #' @inheritParams calc_CrI
 #' @return A data.table containing the `summarise_by` variables and the specified lower and upper 
@@ -511,6 +525,8 @@ calc_CrIs <- function(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9)) {
 
 #' Extract Credible Intervals Present
 #'
+#' @description \lifecycle{stable}
+#' Helper function to extract the credible intervals present in a data frame.
 #' @param summarised A data frame as processed by `calc_CrIs`
 #' @return A numeric vector of credible intervals detected in the data frame.
 #' @export
@@ -528,7 +544,8 @@ extract_CrIs <- function(summarised) {
 
 #' Calculate Summary Statistics
 #'
-#' @description Calculate summary statistics from a data frame by group. Currently supports the 
+#' @description \lifecycle{stable}
+#' Calculate summary statistics from a data frame by group. Currently supports the 
 #' mean, median and standard deviation.
 #' @return A data.table containing the upper and lower bounds for the specified credible interval 
 #' @export
@@ -552,7 +569,8 @@ calc_summary_stats <- function(samples, summarise_by = c()) {
 
 #' Calculate All Summary Measures
 #'
-#' @description Calculate summary statistics and credible intervals from a data frame by group. 
+#' @description \lifecycle{stable}
+#' Calculate summary statistics and credible intervals from a data frame by group. 
 #' @param order_by A character vector of parameters to order by, defaults to all `summarise_by`
 #' variables.
 #' @return A data.table containing summary statistics by group. 
@@ -591,7 +609,8 @@ calc_summary_measures <- function(samples,
 
 #' Summary output from epinow
 #'
-#' @description \code{summary} method for class "epinow".
+#' @description \lifecycle{stable}
+#'  \code{summary} method for class "epinow".
 #' @param object A list of output as produced by "epinow".
 #' @param output A character string of output to summarise. Defaults to "estimates" 
 #' but also supports "forecast", and "estimated_reported_cases".
@@ -625,7 +644,8 @@ summary.epinow <- function(object, output = "estimates",
 
 #' Summary output from estimate_infections
 #'
-#' @description \code{summary} method for class "estimate_infections".
+#' @description \lifecycle{stable}
+#' \code{summary} method for class "estimate_infections".
 #' @param object A list of output as produced by "estimate_infections".
 #' @param type A character vector of data types to return. Defaults to "snapshot" 
 #' but also supports "parameters". "snapshot" returns a summary at a given date 

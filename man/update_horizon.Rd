@@ -18,6 +18,7 @@ in date format.}
 Numeric forecast horizon adjusted for the users intention
 }
 \description{
-This function makes sure that a forecast is returned for the user specified
+\lifecycle{stable}
+Makes sure that a forecast is returned for the user specified
 time period beyond the target date.
 }

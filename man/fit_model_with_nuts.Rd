@@ -29,5 +29,7 @@ to assign errors to regions. Alter the default to run with error catching.}
 A stan model object
 }
 \description{
-Fit a Stan Model using the NUTs sampler
+\lifecycle{maturing}
+Fits a stan model using \code{rstan::sampling}. Provides the optional ability to run chains using
+\code{future} with error catching, timeouts and merging of completed chains.
 }

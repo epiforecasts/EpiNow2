@@ -1,6 +1,7 @@
 #' Clean Nowcasts for a Supplied Date
 #'
-#' @description This function removes nowcasts in the format produced by `EpiNow2` from a target
+#' @description \lifecycle{stable}
+#' This function removes nowcasts in the format produced by `EpiNow2` from a target
 #' directory for the date supplied.
 #' @param date Date object. Defaults to today's date
 #' @param nowcast_dir Character string giving the filepath to the nowcast results directory. Defaults 
@@ -31,6 +32,8 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 
 #' Format Credible Intervals
 #' 
+#' @description \lifecycle{stable}
+#' Combines a list of values into formatted credible intervals.
 #' @param value List of value to map into a string. Requires,
 #'  `point`, `lower`, and `upper.`
 #' @param CrI Numeric, credible interval to report. Defaults to 90
@@ -53,7 +56,8 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 
 #' Categorise the Probability of Change for Rt
 #'
-#' @description Categorises a numeric variable into "Increasing" (< 0.05), 
+#' @description \lifecycle{stable}
+#' Categorises a numeric variable into "Increasing" (< 0.05), 
 #' "Likely increasing" (<0.2), "Unsure" (< 0.8), "Likely decreasing" (< 0.95), "Decreasing" (<= 1)
 #' @param var Numeric variable to be categorised
 #'
@@ -77,8 +81,10 @@ map_prob_change <- function(var) {
 
 #' Convert Growth Rates to Reproduction numbers.
 #'
-#' @description See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) 
-#' for justification.
+#' @description \lifecycle{questioning}
+#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) 
+#' for justification. Now handled internally by stan so may be removed in future updates if 
+#' no user demand.
 #' @param r Numeric, rate of growth estimates
 #' @param gamma_mean Numeric, mean of the gamma distribution
 #' @param gamma_sd Numeric, standard deviation of the gamma distribution
@@ -94,8 +100,10 @@ growth_to_R <- function(r, gamma_mean, gamma_sd) {
   
 #' Convert Reproduction Numbers to Growth Rates
 #'
-#' @description See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) 
-#' for justification.
+#' @description \lifecycle{questioning}
+#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) 
+#' for justification. Now handled internally by stan so may be removed in future updates if 
+#' no user demand.
 #' @param R Numeric, Reproduction number estimates
 #' @inheritParams growth_to_R
 #' @return Numeric vector of reproduction number estimates
@@ -111,6 +119,8 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 
 #' Allocate Delays into Required Stan Format
 #'
+#' @description \lifecycle{stable}
+#' Allocate delays for stan. Used in `delay_opts`.
 #' @param delay_var List of numeric delays
 #' @param no_delays Numeric, number of delays
 #' @return A numeric array
@@ -126,10 +136,12 @@ allocate_delays <- function(delay_var, no_delays) {
 
 #' Allocate Empty Parameters to a List
 #'
+#' @description \lifecycle{stable}
+#' Allocate missing parameters to be empty two dimensional arrays. Used 
+#' internally by `simulate_infections.`
 #' @param data A list of parameters
 #' @param params A character vector of parameters to allocate to
 #' empty if missing.
-#'
 #' @return A list of parameters some allocated to be empty
 #' @examples
 #' data <- list(x = 1, y = 2, z = 30)
@@ -142,31 +154,32 @@ allocate_empty <- function(data, params) {
   }
   return(data)
 }
-#' Match Input Output Arguments with Supported Options
+#' Match User Supplied Arguments with Supported Options
 #'
+#' @description \lifecycle{stable}
+#' Match user supplied arguments with supported options and return a logical list for 
+#' internal usage
 #' @param input_args A character vector of input arguments (can be partial).
 #' @param supported_args A character vector of supported output arguments.
 #' @param logger A character vector indicating the logger to target messages at. Defaults 
 #' to no logging.
 #' @param level Character string defaulting to "info". Logging level see documentation 
 #' of futile.logger for details. Supported options are "info" and "debug"
-#'
 #' @return A logical vector of named output arguments
-#' @export
 #' @importFrom  futile.logger flog.info flog.debug
 #' @examples
 #' # select nothing
-#' match_output_arguments(supported_args = c("fit", "plots", "samples"))
+#' EpiNow2:::match_output_arguments(supported_args = c("fit", "plots", "samples"))
 #' 
 #' # select just plots
-#' match_output_arguments("plots", supported_args = c("fit", "plots", "samples"))
+#' EpiNow2:::match_output_arguments("plots", supported_args = c("fit", "plots", "samples"))
 #' 
 #' # select plots and samples
-#' match_output_arguments(c("plots", "samples"),
+#' EpiNow2:::match_output_arguments(c("plots", "samples"),
 #'                        supported_args = c("fit", "plots", "samples"))
 #' 
 #' # lazily select arguments
-#' match_output_arguments("p",
+#' EpiNow2:::match_output_arguments("p",
 #'                        supported_args = c("fit", "plots", "samples"))
 match_output_arguments <- function(input_args = c(),
                                    supported_args =  c(),
@@ -208,8 +221,10 @@ match_output_arguments <- function(input_args = c(),
 
 #' Expose internal package stan functions in R
 #'
-#' @description This function exposes internal stan functions in R from a user
-#' supplied list of target files. 
+#' @description \lifecycle{stable}
+#' his function exposes internal stan functions in R from a user
+#' supplied list of target files. Allows for testing of stan functions in R and potentially 
+#' user use in R code.
 #' @param files A character vector indicating the target files
 #' @param target_dir A character string indicating the target directory for the file
 #' @param ... Additional arguments passed to `rstan::expose_stan_functions`.
@@ -238,6 +253,10 @@ expose_stan_fns <- function(files, target_dir, ...) {
 
 #' Convert mean and sd to log mean for a log normal distribution
 #'
+#' @description \lifecycle{stable}
+#' Convert from mean and standard deviation to the log mean of the 
+#' lognormal distribution. Useful for defining distributions supported by 
+#' `estimate_infections`, `epinow`, and `regional_epinow`.
 #' @param mean Numeric, mean of a distribution
 #' @param sd Numeric, standard deviation of a distribution
 #'
@@ -253,6 +272,10 @@ convert_to_logmean <- function(mean, sd){
 
 #' Convert mean and sd to log standard deviation for a log normal distribution
 #'
+#' @description \lifecycle{stable}
+#' Convert from mean and standard deviation to the log standard deviation of the 
+#' lognormal distribution. Useful for defining distributions supported by 
+#' `estimate_infections`, `epinow`, and `regional_epinow`.
 #' @param mean Numeric, mean of a distribution
 #' @param sd Numeric, standard deviation of a distribution
 #'
@@ -269,9 +292,10 @@ convert_to_logsd <- function(mean, sd) {
 
 #' Update Default Settings
 #'
+#' @description \lifecycle{stable}
+#' Used internally to handle updating default settings in a list.
 #' @param defaults A list of default settings
 #' @param optional A list of optional settings to override defaults
-#'
 #' @return A list
 update_defaults <- function(defaults = list(), optional = list()) {
   if (length(optional) != 0) {

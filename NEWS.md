@@ -3,7 +3,7 @@
 ## New features
 
 * Rewritten the interface for `estimate_infections` to be divided into calls to `_opts` functions. Options are now divided by type for delays (`delay_opts`), Rt (`rt_opts`), backcalculation (`backcalc_opts`), the Gaussian process (`gp_opts`), and stan arguments (`stan_opts`). This has resulted in a larger number of the arguments from `estimate_infections` being folded into the related `_opts` function. Please see the function documentation and examples for details.
-* Extended the functionality of the back calculation model so that Rt can be produced via calculation. These estimates are potentially less reliable than those produced using the generative model but the model can be estimated in a fraction of the time.
+* Extended the functionality of the back calculation model so that Rt can be produced via calculation. These estimates are potentially less reliable than those produced using the generative model but the model can be estimated in a fraction of the time. In essence this is similar to using a back projection method and then estimating Rt using `{EpiEstim}` (here with a default window of 1 but this can be updated using `backcalc_opts(rt_window))` but this approaches incorporates uncertainty from all inputs in a single estimate. 
 * Reduced the default maximum generation time and incubation period allowed in the truncated distribution (from 30 days to 15). This decreases the model run time substantially at a marginal accuracy cost. This new default is not suitable for longer generation times and should be modified by the user if these are used.
 * Adds basic S3 plot and summary measures for `epinow` and `estimate_infections`.
 * Updates the initialisation of the generative Rt model (the default) so that initial infections that occur in unobserved time (i.e before the first reported case) are generated using an exponential growth model with priors based on fitting the same model to the first week of data. This replaces the previous approach which was to use delay shifted reported cases multiplied by independent noise terms. It reduces degrees of freedom and fitting time at the cost of some model flexibility. Alternatives such as using the generative Rt model were considered but ultimately these approaches were not used as they introduced spurious variation to the gaussian process and result in unreliable Rt estimates due to the lack of historic infections.
@@ -29,6 +29,7 @@ impact Rt estimates.
 * Added a new function, `expose_stan_fns` that exposes the internal stan functions into R. The enables unit testing, exploration of the stan functionality and potentially within R use cases for these functions.
 * Updates the default `warmup` to be 250 samples and the default `adapt_delta` to be 0.98.
 * Adds a pooling parameter for the standard deviation of breakpoint effects.
+* Updated all documentation and added `{lifecycle}` badges to all functions to indicate develoment stage.
 
 # EpiNow2 1.2.1
 

@@ -28,6 +28,7 @@ of this range are resampled.}
 A vector of samples or a probability distribution.
 }
 \description{
+\lifecycle{questioning}
 This function acts as a skeleton for a truncated distribution defined by
 model type, maximum value and model parameters. It is designed to be used with the
 output from \code{get_dist}.

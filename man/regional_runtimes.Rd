@@ -27,7 +27,8 @@ if no directory for saving is specified.}
 A data.table of region run times
 }
 \description{
-Summarise Regional Runtimes
+\lifecycle{maturing}
+Used internally by \code{regional_epinow} to summarise region runtimes.
 }
 \examples{
 \donttest{
@@ -51,4 +52,7 @@ regional_out <- regional_epinow(reported_cases = cases,
 
 regional_runtimes(regional_output = regional_out$regional)
 } 
+}
+\seealso{
+regional_summary regional_epinow
 }

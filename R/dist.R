@@ -1,6 +1,7 @@
 #' Distribution Skeleton
 #'
-#' @description This function acts as a skeleton for a truncated distribution defined by 
+#' @description \lifecycle{questioning}
+#' This function acts as a skeleton for a truncated distribution defined by 
 #' model type, maximum value and model parameters. It is designed to be used with the
 #' output from `get_dist`.
 #' @param n Numeric vector, number of samples to take (or days for the probability density).
@@ -120,7 +121,9 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 
 #' Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
 #'
-#'
+#' @description \lifecycle{stable}
+#' Fits an integer adjusted exponential, gamma or lognormal distribution using 
+#' `stan`. 
 #' @param values Numeric vector of values
 #' @param samples Numeric, number of samples to take
 #' @param dist Character string, which distribution to fit. Defaults to exponential (`"exp"`) but
@@ -209,7 +212,8 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
 
 #' Generate a Gamma Distribution Definition Based on Parameter Estimates
 #'
-#' @description Generates a distribution definition when only parameter estimates 
+#' @description \lifecycle{soft-deprecated}
+#' Generates a distribution definition when only parameter estimates 
 #' are available for gamma distributed parameters. See `rgamma` for distribution information.
 #' @param shape Numeric, shape parameter of the gamma distribution.
 #' @param shape_sd Numeric, standard deviation of the shape parameter.
@@ -264,7 +268,8 @@ gamma_dist_def <- function(shape, shape_sd,
 
 #' Generate a Log Normal Distribution Definition Based on Parameter Estimates
 #'
-#' @description Generates a distribution definition when only parameter estimates 
+#' @description \lifecycle{soft-deprecated}
+#' Generates a distribution definition when only parameter estimates 
 #' are available for log normal distributed parameters. See `rlnorm` for distribution information.
 #' @param mean Numeric, log mean parameter of the gamma distribution.
 #' @param mean_sd Numeric, standard deviation of the log mean parameter.
@@ -329,6 +334,11 @@ lognorm_dist_def <- function(mean, mean_sd,
   
 #' Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters
 #'
+#' @description \lifecycle{stable}
+#' Fits an integer adjusted distribution to a subsampled bootstrap of data and then intergrates 
+#' the posterior samples into a single set of summary statistics. Can be used to generate a robust
+#' reporting delay that accounts for the fact the underlying delay likely varies over time or that 
+#' the size of the available reporting delay sample may not be representative of the current case load.
 #' @param values Numeric vector of integer values.
 #' @param dist Character string, which distribution to fit. Defaults to lognormal (`"lognormal"`) but
 #' gamma (`"gamma"`) is also supported.
@@ -423,6 +433,9 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
 
 #' Approximate Sampling a Distribution using Counts
 #'
+#' @description \lifecycle{soft-deprecated}
+#' Convolves cases by a PMF function. This function will soon be removed or replaced with a 
+#' more robust `stan` implementation.
 #' @param cases A dataframe of cases (in date order) with the following variables:
 #' `date` and `cases`. 
 #' @param max_value Numeric, maximum value to allow. Defaults to 120 days
@@ -563,6 +576,12 @@ sample_approx_dist <- function(cases = NULL,
 
 #' Tune an Inverse Gamma to Achieve the Target Truncation
 #'
+#' @description \lifecycle{questioning}
+#' Allows an inverse gamma distribution to be. tuned so that less than 0.01 of its 
+#' probability mass function falls outside of the specified 
+#' bounds. This is required when using an inverse gamma prior, for example for a 
+#' Gaussian process. As no inverse gamma priors are currently in use and this function 
+#' has some stability issues it may be deprecated at a later date.
 #' @param lower Numeric, defaults to 2. Lower truncation bound.
 #' @param upper Numeric, defaults to 21. Upper truncation bound.
 #'

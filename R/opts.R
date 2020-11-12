@@ -1,6 +1,7 @@
 #' Delay Distribution Options
 #' 
-#' @description Returns delay distributions formatted for usage by downstream 
+#' @description \lifecycle{stable}
+#' Returns delay distributions formatted for usage by downstream 
 #' functions.
 #' @param ... Delay distributions as a list with the following parameters:
 #' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
@@ -37,9 +38,9 @@ delay_opts <- function(...) {
 
 #' Time-Varying Reproduction Number Options
 #'
-#' @description Defines a list specifying the optional arguments for the time-varying
-#'  reproduction number. Custom settings can be supplied which override the defaults.
-#'  
+#' @description \lifecycle{stable}
+#' Defines a list specifying the optional arguments for the time-varying reproduction number. 
+#' Custom settings can be supplied which override the defaults.
 #' @param prior List containing named numeric elements "mean" and "sd". The mean and
 #'  standard deviation of the log normal Rt prior. Defaults to mean of 1 and standard 
 #'  deviation of 1.
@@ -103,32 +104,36 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 
 #' Back Calculation Options
 #'
-#'
-#' @description Defines a list specifying the optional arguments for the back calculation
+#' @description \lifecycle{stable}
+#' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`. 
-#'  
-#' @param smoothing_window Numeric, defaults to 7 days. The mean smoothing window to apply
-#'   to mean shifted reports (used as a prior during back calculation). 7 days is the default
-#'   as this smooths day of the week effects but depending on the quality of the data and the 
-#'   amount of information users wish to use as a prior (higher values equalling a less 
-#'   informative prior).
+#' @param prior_window Integer, defaults to 7 days. The mean smoothing window to apply
+#' to mean shifted reports (used as a prior during back calculation). 7 days is the default
+#' as this smooths day of the week effects but depending on the quality of the data and the 
+#' amount of information users wish to use as a prior (higher values equalling a less informative prior).
+#' @param rt_window Integer, defaults to 1. The size of the centered rolling average to use when estimating 
+#' Rt. This must be odd so that the central estimate is included.
 #' @return A list of back calculation settings
 #' @export
 #' @examples
 #' # default settings
 #' backcalc_opts()
-backcalc_opts <- function(smoothing_window = 7) {
+backcalc_opts <- function(prior_window = 7, rt_window = 1) {
   backcalc <- list(
-    smoothing_window = smoothing_window
+    prior_window = prior_window,
+    rt_window = as.integer(rt_window)
   )
+  if (backcalc$rt_window %% 2 == 0) {
+    stop("Rt rolling average window must be odd in order to include the current estimate")
+  }
   return(backcalc)
 }
 
 #' Approximate Gaussian Process Settings
 #'
-#' @description Defines a list specifying the structure of the approximate Gaussian
+#' @description \lifecycle{stable}
+#' Defines a list specifying the structure of the approximate Gaussian
 #'  process. Custom settings can be supplied which override the defaults. 
-#'  
 #' @param ls_mean Numeric, defaults to 21 days. The mean of the lognormal length scale.
 #' @param ls_sd Numeric, defaults to 7 days. The standard deviation of the log normal length 
 #' scale with..
@@ -186,7 +191,8 @@ gp_opts <- function(basis_prop = 0.2,
 
 #' Observation Model Options
 #'
-#' @description Defines a list specifying the structure of the observation 
+#' @description \lifecycle{stable}
+#' Defines a list specifying the structure of the observation 
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are 
 #' Negative binomial ("negbin"), the default, and Poisson.
@@ -231,7 +237,8 @@ obs_opts <- function(family = "negbin",
 
 #' Rstan Sampling Options
 #'
-#' @description Defines a list specifying the arguments passed to 
+#' @description \lifecycle{stable}
+#'  Defines a list specifying the arguments passed to 
 #' `rstan::sampling`. Custom settings can be supplied which override the defaults.
 #' @param cores Number of cores to use when executing the chains in parallel,
 #'  which defaults to 1 but it is recommended to set the mc.cores option to be as 
@@ -287,7 +294,8 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 
 #' Rstan Variational Bayes Options
 #'
-#' @description Defines a list specifying the arguments passed to 
+#' @description \lifecycle{stable}
+#'  Defines a list specifying the arguments passed to 
 #' `rstan::vb`. Custom settings can be supplied which override the defaults.
 #' @param samples Numeric, default 1000. Overall number of approximate posterior 
 #' samples.
@@ -314,7 +322,8 @@ rstan_vb_opts <- function(samples = 1000,
 
 #' Rstan Options
 #'
-#' @description Defines a list specifying the arguments passed to underlying `rstan`
+#' @description \lifecycle{stable}
+#' Defines a list specifying the arguments passed to underlying `rstan`
 #' functions via `rstan_sampling_opts` and `rstan_vb_opts`.Custom settings can be supplied
 #'  which override the defaults.
 #' @param object Stan model object. By default uses the compiled package default.
@@ -352,7 +361,8 @@ rstan_opts <- function(object = NULL,
 
 #' Stan Options
 #'
-#' @description Defines a list specifying the arguments passed to underlying stan
+#' @description \lifecycle{stable}
+#' Defines a list specifying the arguments passed to underlying stan
 #' backend functions via `rstan_sampling_opts` and `rstan_vb_opts`. Custom settings
 #' can be supplied which override the defaults.
 #' @param backend Character string indicating the backend to use for fitting stan models.

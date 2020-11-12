@@ -15,7 +15,10 @@ convert_to_logmean(mean, sd)
 The log mean of a lognormal distribution
 }
 \description{
-Convert mean and sd to log mean for a log normal distribution
+\lifecycle{stable}
+Convert from mean and standard deviation to the log mean of the
+lognormal distribution. Useful for defining distributions supported by
+\code{estimate_infections}, \code{epinow}, and \code{regional_epinow}.
 }
 \examples{
 

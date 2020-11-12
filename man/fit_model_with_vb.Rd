@@ -20,5 +20,6 @@ to assign errors to regions. Alter the default to run with error catching.}
 A stan model object
 }
 \description{
-Fit a Stan Model using Variational Inference
+\lifecycle{maturing}
+Fits a stan model using variational inference.
 }

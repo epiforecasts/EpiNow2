@@ -1,9 +1,11 @@
 #' Generate a global map for a single variable.
 #'
 #'
-#' @description This general purpose function can be used to generate a global map for a single variable. It has few defaults but
+#' @description \lifecycle{questioning}
+#' This general purpose function can be used to generate a global map for a single variable. It has few defaults but
 #' the data supplied must contain a \code{country} variable for linking to mapping data. This function requires the 
-#' installation of the `rnaturalearth` package.
+#' installation of the `rnaturalearth` package. Status of this function is currently questioning as it is uncertain 
+#' if it is in use. Future releases may depreciate it.
 #' @param data Dataframe containing variables to be mapped. Must contain a \code{country} variable.
 #' @param variable A character string indicating the variable to map data for. This must be supplied.
 #' @return A \code{ggplot2} object containing a global map.
@@ -118,9 +120,11 @@ global_map <- function(data = NULL, variable = NULL,
 #' Generate a country map for a single variable.
 #'
 #'
-#' @description This general purpose function can be used to generate a country map for a single variable. It has few defaults but
+#' @description \lifecycle{questioning}
+#' This general purpose function can be used to generate a country map for a single variable. It has few defaults but
 #' the data supplied must contain a \code{region_code} variable for linking to mapping data. This function requires 
-#' the installation of the `rnaturalearth` package.
+#' the installation of the `rnaturalearth` package. Status of this function is currently questioning as it is uncertain 
+#' if it is in use. Future releases may depreciate it.
 #' @param data Dataframe containing variables to be mapped. Must contain a \code{region_code} variable.
 #' @param country Character string indicating the name of the country to be mapped.
 #' @param region_col_ne Character string indicating the name of a column in the data returned by
@@ -224,6 +228,9 @@ country_map <- function(data = NULL, country = NULL,
 
 #' Custom Map Theme
 #'
+#' @description \lifecycle{questioning}
+#' Applies a custom map theme to be used with `global_map`, `country_map`, and other `ggplot2` maps. Status of 
+#' this function is currently questioning as it is uncertain if it is in use. Future releases may depreciate it.
 #' @param map `ggplot2` map object 
 #' @param continuous Logical defaults to `FALSE`. Is the fill variable continuous.
 #' @param variable_label A character string indicating the variable label to use. If not supplied then the underlying

@@ -51,8 +51,9 @@ susceptible. When set to 0 no population adjustment is done.}
 A list of settings defining the time-varying reproduction number
 }
 \description{
-Defines a list specifying the optional arguments for the time-varying
-reproduction number. Custom settings can be supplied which override the defaults.
+\lifecycle{stable}
+Defines a list specifying the optional arguments for the time-varying reproduction number.
+Custom settings can be supplied which override the defaults.
 }
 \examples{
 # default settings

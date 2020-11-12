@@ -13,6 +13,7 @@ clean_nowcasts(date = NULL, nowcast_dir = ".")
 to the current directory.}
 }
 \description{
+\lifecycle{stable}
 This function removes nowcasts in the format produced by \code{EpiNow2} from a target
 directory for the date supplied.
 }

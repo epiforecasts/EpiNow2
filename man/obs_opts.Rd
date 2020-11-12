@@ -25,6 +25,7 @@ distributed scaling factor.}
 A list of observation model settings.
 }
 \description{
+\lifecycle{stable}
 Defines a list specifying the structure of the observation
 model. Custom settings can be supplied which override the defaults.
 }

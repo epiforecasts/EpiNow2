@@ -32,5 +32,7 @@ extracted from data}
 A list of dataframes each containing the posterior of a parameter
 }
 \description{
-Extract Parameter Samples from a Stan Model
+\lifecycle{stable}
+Extracts a custom set of parameters from a stan object and adds stratification and
+dates where appropriate.
 }
