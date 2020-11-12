@@ -1,5 +1,8 @@
 #' Create Clean Reported Cases
-#'
+#' @description \lifecycle{stable}
+#' Cleans a data frame of reported cases by replacing missing dates with 0 cases and applies an optional
+#' threshold at which point 0 cases are replaced with a moving average of observed cases. See `zero_threshold`
+#' for details.
 #' @param zero_threshold Numeric defaults to 50. Indicates if detected zero cases are meaningful by 
 #' using a threshold of 50 cases on average over the last 7 days. If the average is above this thresold
 #' then the zero is replaced with the 
@@ -35,8 +38,13 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
   return(reported_cases)
 }
 
-#' Create a Data Frame of Mean Delay Shifted Cases
+#' Create Delay Shifted Cases
 #'
+#' @description \lifecycle{stable}
+#' This functions creates a data frame of reported cases that has been smoothed using 
+#' a rolling average (with a period set by `smoothing_window`) and shifted back in time 
+#' by some delay. It is used by `estimate_infections` to generate the mean shifted prior
+#' on which the backcalculation (see `backcalc_opts`) is based.
 #' @param smoothing_window Numeric, the rolling average smoothing window
 #' to apply.
 #' @param shift Numeric, mean delay shift to apply.
@@ -44,7 +52,7 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
 #' @inheritParams create_stan_data
 #' @importFrom data.table copy shift frollmean fifelse .N
 #' @importFrom stats lm
-#' @return A dataframe for shifted reported cases
+#' @return A data frame for shifted reported cases
 #' @export
 #' @examples
 #' create_shifted_cases(example_confirmed, 7, 14, 7)
