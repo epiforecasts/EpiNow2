@@ -16,7 +16,9 @@ empty if missing.}
 A list of parameters some allocated to be empty
 }
 \description{
-Allocate Empty Parameters to a List
+\lifecycle{stable}
+Allocate missing parameters to be empty two dimensional arrays. Used
+internally by \code{simulate_infections.}
 }
 \examples{
 data <- list(x = 1, y = 2, z = 30)

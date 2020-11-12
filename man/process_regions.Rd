@@ -15,5 +15,10 @@ process_regions(regional_out, regions)
 A list of all regional estimates and successful regional estimates
 }
 \description{
-Process all Region Estimates
+\lifecycle{stable}
+Internal function that processes the output from multiple \code{epinow} runs, adds
+summary logging information.
+}
+\seealso{
+regional_epinow epinow
 }

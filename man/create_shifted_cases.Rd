@@ -2,7 +2,7 @@
 % Please edit documentation in R/create.R
 \name{create_shifted_cases}
 \alias{create_shifted_cases}
-\title{Create a Data Frame of Mean Delay Shifted Cases}
+\title{Create Delay Shifted Cases}
 \usage{
 create_shifted_cases(reported_cases, shift, smoothing_window, horizon)
 }
@@ -18,10 +18,14 @@ to apply.}
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 }
 \value{
-A dataframe for shifted reported cases
+A data frame for shifted reported cases
 }
 \description{
-Create a Data Frame of Mean Delay Shifted Cases
+\lifecycle{stable}
+This functions creates a data frame of reported cases that has been smoothed using
+a rolling average (with a period set by \code{smoothing_window}) and shifted back in time
+by some delay. It is used by \code{estimate_infections} to generate the mean shifted prior
+on which the back calculation method (see \code{backcalc_opts}) is based.
 }
 \examples{
 create_shifted_cases(example_confirmed, 7, 14, 7)

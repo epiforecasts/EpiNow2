@@ -1,5 +1,4 @@
-
-
+// Update an individual breakpoint effect
 real update_breakpoints(real input_R, real[] bp_effects,
                         int bp_index, int at_bp,
                         int stationary) {
@@ -15,7 +14,7 @@ real update_breakpoints(real input_R, real[] bp_effects,
   }               
   return(R);
 }
-
+// update an individual R
 real update_R(vector R, vector noise, int noise_terms,
               int index, int stationary) {
   real cR = R[index];
@@ -38,7 +37,7 @@ real update_R(vector R, vector noise, int noise_terms,
   }
   return(cR);
 }
-
+// update a vector of Rts
 vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
                  real[] bp_effects, int stationary) {
   // define control parameters

@@ -21,6 +21,7 @@ When using multiple chains iterations per chain is samples / chains.}
 A list of arguments to pass to the appropriate rstan functions.
 }
 \description{
+\lifecycle{stable}
 Defines a list specifying the arguments passed to underlying \code{rstan}
 functions via \code{rstan_sampling_opts} and \code{rstan_vb_opts}.Custom settings can be supplied
 which override the defaults.

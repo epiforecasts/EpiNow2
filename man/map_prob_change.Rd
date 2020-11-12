@@ -13,6 +13,7 @@ map_prob_change(var)
 A character variable.
 }
 \description{
+\lifecycle{stable}
 Categorises a numeric variable into "Increasing" (< 0.05),
 "Likely increasing" (<0.2), "Unsure" (< 0.8), "Likely decreasing" (< 0.95), "Decreasing" (<= 1)
 }

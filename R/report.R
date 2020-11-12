@@ -1,4 +1,8 @@
-#' Report case counts by date of report                        
+#' Report case counts by date of report  
+#' 
+#' @description \lifecycle{soft-deprecated}
+#' Convolves latent infections to reported cases via an observation model. Likely to be removed/replaced 
+#' in later releases by functionality drawing on the `stan` implementation.                      
 #' @param case_estimates A data.table of case estimates with the following variables: date, sample, cases
 #' @param case_forecast A data.table of case forecasts with the following variables: date, sample, cases. If not supplied the
 #' default is not to incorporate forecasts.
@@ -94,6 +98,9 @@ report_cases <- function(case_estimates,
 
 
 #' Provide Summary Statistics for Estimated Infections and Rt
+#' @description \lifecycle{questioning}
+#' Creates a snapshot summary of estimates. May be depcreciated in later releases as S3 methods are 
+#' enhanced.
 #' @param summarised_estimates A data.table of summarised estimates containing the following variables:
 #'  variable, median, bottom, and top. It should contain the following estimates: R, infections, and r 
 #'  (rate of growth).
@@ -173,6 +180,9 @@ report_summary <- function(summarised_estimates,
 
 #' Report plots
 #'
+#' @description \lifecycle{questioning}
+#' Returns key summary plots for estimates. May be depreciated in later releases as current S3 methods 
+#' are enhanced.
 #' @param summarised_estimates A data.table of summarised estimates containing the following variables:
 #'  variable, median, bottom, and top. It should contain the following estimates: R, infections, reported_cases_rt,
 #'   and r (rate of growth).

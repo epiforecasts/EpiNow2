@@ -13,5 +13,8 @@ create_initial_conditions(data)
 An initial condition generating function
 }
 \description{
-Create Initial Conditions Generating Function
+\lifecycle{stable}
+Uses the output of \code{create_stan_data} to create a function which can be used to
+sample from the prior distributions (or as close as possible) for parameters. Used
+in order to initialise each \code{stan} chain within a range of plausible values.
 }

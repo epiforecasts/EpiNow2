@@ -30,7 +30,9 @@ data for. Defaults to "latest" which finds the latest results available.}
 A list of estimates, forecasts and estimated cases by date of report.
 }
 \description{
-Get Combined Regional Results
+\lifecycle{stable}
+Summarises results across regions either from input or from disk. See the examples for
+details.
 }
 \examples{
 \donttest{

@@ -1,5 +1,9 @@
 #' Simulate Cases by Date of Infection, Onset and Report
 #'
+#' \@description \lifecycle{questioning}
+#'  Simulate cases from a single Rt trace, an initial number of cases, and a reporting model
+#'  This functionality has largely been superseded by `simulate_infections` and will likely to replaced 
+#'  or updated to depend on `stan` code.
 #' @param rts A dataframe of containing two variables `rt` and  `date` with
 #' `rt` being numeric and `date` being a date.
 #' @param initial_cases Integer, initial number of cases.
@@ -11,6 +15,7 @@
 #' @inheritParams adjust_infection_to_report
 #' @return A dataframe containing three variables: `date`, `cases` and `reference`.
 #' @export
+#' @seealso simulate_infections
 #' @importFrom data.table data.table setDT rbindlist
 #' @importFrom lubridate days
 simulate_cases <- function(rts, initial_cases, initial_date, generation_interval,

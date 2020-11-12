@@ -20,5 +20,8 @@ then the zero is replaced with the}
 A cleaned data frame of reported cases
 }
 \description{
-Create Clean Reported Cases
+\lifecycle{stable}
+Cleans a data frame of reported cases by replacing missing dates with 0 cases and applies an optional
+threshold at which point 0 cases are replaced with a moving average of observed cases. See \code{zero_threshold}
+for details.
 }

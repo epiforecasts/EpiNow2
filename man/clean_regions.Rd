@@ -10,11 +10,16 @@ clean_regions(reported_cases, non_zero_points)
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
 \item{non_zero_points}{Numeric, the minimum number of time points with non-zero cases in a region required for
-that region to be evaluated. Defaults to 2.}
+that region to be evaluated. Defaults to 7.}
 }
 \value{
 A dataframe of cleaned regional data
 }
 \description{
-Clean Regions
+\lifecycle{stable}
+Removes regions with insufficient time points, and provides logging information on the
+input.
+}
+\seealso{
+regional_epinow
 }

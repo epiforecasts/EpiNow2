@@ -35,9 +35,10 @@ simulations are done at once.}
 shown.}
 }
 \description{
-This function simulates infections using an existing fit to observed cases but
-with a modified time-varying reproduction number. This can be used to explore forecast models
-or past counterfactuals. Simulations can be run in parallel using \code{future::plan}.
+\lifecycle{stable}
+This function simulates infections using an existing fit to observed cases but with a modified
+time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
+Simulations can be run in parallel using \code{future::plan}.
 }
 \examples{
 \donttest{

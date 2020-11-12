@@ -18,6 +18,7 @@ Defaults to 0.9.}
 A data.table containing the upper and lower bounds for the specified credible interval
 }
 \description{
+\lifecycle{stable}
 Adds symmetric a credible interval based on quantiles.
 }
 \examples{

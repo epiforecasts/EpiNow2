@@ -33,7 +33,9 @@ on the maximum number of reported cases.}
 A \code{ggplot2} object
 }
 \description{
-Plot Estimates
+\lifecycle{questioning}
+Allows users to plot the output from \code{estimate_infections} easily. In future releases it
+may be depreciated in favour of increasing the functionality of the S3 plot methods.
 }
 \examples{
 \donttest{
@@ -45,7 +47,6 @@ generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 
-                        
 # run model
 out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
                                     delays = delay_opts(incubation_period, reporting_delay))

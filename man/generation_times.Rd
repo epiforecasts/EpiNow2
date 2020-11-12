@@ -11,7 +11,8 @@ A \code{data.table} of summarising the distribution
 generation_times
 }
 \description{
-Generation time estimates. See
-here for details: https://github.com/epiforecasts/EpiNow2/blob/master/data-raw/generation-time.R
+\lifecycle{stable}
+Generation time estimates. See here for details:
+https://github.com/epiforecasts/EpiNow2/blob/master/data-raw/generation-time.R
 }
 \keyword{datasets}

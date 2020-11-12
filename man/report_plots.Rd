@@ -27,7 +27,9 @@ on the maximum number of reported cases.}
 A \code{ggplot2} object
 }
 \description{
-Report plots
+\lifecycle{questioning}
+Returns key summary plots for estimates. May be depreciated in later releases as current S3 methods
+are enhanced.
 }
 \examples{
 \donttest{

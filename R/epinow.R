@@ -1,6 +1,7 @@
 #' Real-time Rt Estimation, Forecasting and Reporting
 #'
-#' @description This function wraps the functionality of `estimate_infections` and `forecast_infections` in order
+#' @description \lifecycle{maturing}
+#' This function wraps the functionality of `estimate_infections` and `forecast_infections` in order
 #' to estimate Rt and cases by date of infection, forecast into these infections into the future. It also contains 
 #' additional functionality to convert forecasts to date of report and produce summary output useful for reporting 
 #' results and interpreting them.
@@ -14,6 +15,7 @@
 #' tin his list then `forecast_infections` will be bypassed. 
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
+#' @seealso estimate_infections simulate_infections forecast_infections regional_epinow
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
 #' @inheritParams forecast_infections

@@ -18,5 +18,6 @@ Defaults to 7 days.}
 A character vector of regions with the highest reported cases
 }
 \description{
-Get Regions with Most Reported Cases
+\lifecycle{stable}
+Extract a vector of regions with the most reported cases in a set time window.
 }

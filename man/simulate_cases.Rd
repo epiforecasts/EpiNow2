@@ -50,5 +50,11 @@ which approximates sampling or "median" would shift by the median of the distrib
 A dataframe containing three variables: \code{date}, \code{cases} and \code{reference}.
 }
 \description{
-Simulate Cases by Date of Infection, Onset and Report
+\@description \lifecycle{questioning}
+Simulate cases from a single Rt trace, an initial number of cases, and a reporting model
+This functionality has largely been superseded by \code{simulate_infections} and will likely to replaced
+or updated to depend on \code{stan} code.
+}
+\seealso{
+simulate_infections
 }

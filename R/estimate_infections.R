@@ -1,6 +1,7 @@
 #' Estimate Infections, the Time-Varying Reproduction Number and the Rate of Growth
 #'
-#' @description This function uses a non-parametric approach to reconstruct cases by date of infection from reported 
+#' @description \lifecycle{maturing}
+#' Uses a non-parametric approach to reconstruct cases by date of infection from reported 
 #' cases. It uses either a generative Rt model or non-parametric back calculation to estimate underlying
 #' latent infections and then maps these infections to observed cases via uncertain reporting delays and a flexible
 #' observation model. See the examples and function arguments for the details of all options. The default settings
@@ -15,12 +16,11 @@
 #' generation time (assuming a gamma distribution).
 #' @param delays A call to `delay_opts` defining delay distributions and options. See the documentation of `delay_opts` 
 #' and the examples below for details.
-#' @param backcalc A call to `backcalc_opts` defining back calculation settings. See the documentation of `backcalc_opts` 
-#' and the examples below for details. Only used if `rt = NULL`.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
 #' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @export
+#' @seealso epinow regional_epinow forecast_infections simulate_infections
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
 #' @inheritParams create_gp_data
@@ -79,7 +79,7 @@
 #' # using back calculation (combined here with under reporting)
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = delay_opts(incubation_period, reporting_delay),
-#'                                 rt = NULL,
+#'                                 rt = NULL, backcalc = backcalc_opts(rt_window = 1),
 #'                                 obs = obs_opts(scale = list(mean = 0.4, sd = 0.05)))
 #' plot(backcalc)
 #'                            
@@ -167,16 +167,16 @@ estimate_infections <- function(reported_cases,
   if (delays$delays > 0) {
     reported_cases <- data.table::rbindlist(list(
       data.table::data.table(
-        date = seq(min(reported_cases$date) - delays$seeding_time - backcalc$smoothing_window,
+        date = seq(min(reported_cases$date) - delays$seeding_time - backcalc$prior_window,
                    min(reported_cases$date) - 1, by = "days"),
         confirm = 0,  breakpoint = 0), 
       reported_cases))  
     
     shifted_cases <- create_shifted_cases(reported_cases, 
                                                    delays$seeding_time, 
-                                                   backcalc$smoothing_window,
+                                                   backcalc$prior_window,
                                                    horizon)
-    reported_cases <- reported_cases[-(1:backcalc$smoothing_window)]
+    reported_cases <- reported_cases[-(1:backcalc$prior_window)]
   }else{
     shifted_cases <- reported_cases
   }
@@ -191,6 +191,7 @@ estimate_infections <- function(reported_cases,
                            rt = rt,
                            gp = gp,
                            obs = obs,
+                           backcalc = backcalc,
                            shifted_cases = shifted_cases$confirm,
                            horizon = horizon)
  
@@ -244,6 +245,9 @@ estimate_infections <- function(reported_cases,
 
 #' Fit a Stan Model using the NUTs sampler
 #'
+#' @description \lifecycle{maturing}
+#' Fits a stan model using `rstan::sampling`. Provides the optional ability to run chains using 
+#' `future` with error catching, timeouts and merging of completed chains.
 #' @param args List of stan arguments
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
 #' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain in seconds. 
@@ -350,6 +354,8 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 
 #' Fit a Stan Model using Variational Inference
 #'
+#' @description \lifecycle{maturing}
+#' Fits a stan model using variational inference.
 #' @inheritParams fit_model_with_nuts
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom purrr safely
@@ -408,6 +414,8 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE
 
 #' Format Posterior Samples
 #'
+#' @description \lifecycle{stable}
+#' Summaries posterior samples and adds additional custom variables. 
 #' @param posterior_samples A list of posterior samples as returned by `extract_parameter_samples`
 #' @param horizon Numeric, forecast horizon
 #' @param shift Numeric, the shift to apply to estimates

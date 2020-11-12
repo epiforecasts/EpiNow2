@@ -4,19 +4,22 @@
 \alias{backcalc_opts}
 \title{Back Calculation Options}
 \usage{
-backcalc_opts(smoothing_window = 7)
+backcalc_opts(prior_window = 7, rt_window = 1)
 }
 \arguments{
-\item{smoothing_window}{Numeric, defaults to 7 days. The mean smoothing window to apply
+\item{prior_window}{Integer, defaults to 7 days. The mean smoothing window to apply
 to mean shifted reports (used as a prior during back calculation). 7 days is the default
 as this smooths day of the week effects but depending on the quality of the data and the
-amount of information users wish to use as a prior (higher values equalling a less
-informative prior).}
+amount of information users wish to use as a prior (higher values equalling a less informative prior).}
+
+\item{rt_window}{Integer, defaults to 1. The size of the centered rolling average to use when estimating
+Rt. This must be odd so that the central estimate is included.}
 }
 \value{
 A list of back calculation settings
 }
 \description{
+\lifecycle{stable}
 Defines a list specifying the optional arguments for the back calculation
 of cases. Only used if \code{rt = NULL}.
 }

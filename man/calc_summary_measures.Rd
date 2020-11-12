@@ -25,6 +25,7 @@ variables.}
 A data.table containing summary statistics by group.
 }
 \description{
+\lifecycle{stable}
 Calculate summary statistics and credible intervals from a data frame by group.
 }
 \examples{

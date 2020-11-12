@@ -11,6 +11,7 @@ A data frame containing cases reported on each date.
 example_confirmed
 }
 \description{
+\lifecycle{stable}
 An example data frame of observed cases
 }
 \keyword{datasets}

@@ -15,7 +15,8 @@ A list of settings ready to be passed to stan defining
 the Observation Model
 }
 \description{
-Create Observation Model Settings
+\lifecycle{stable}
+Takes the output of \code{obs_opts} and convrts it into a list understood by \code{stan}.
 }
 \examples{
 # default observation model data

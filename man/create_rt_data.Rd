@@ -21,7 +21,9 @@ rather than generating infections using Rt.}
 A list of settings defining the time-varying reproduction number
 }
 \description{
-Create Time-varying Reproduction Number Data
+\lifecycle{stable}
+Takes the output from \code{rt_opts} and converts it into a list understood by
+\code{stan}.
 }
 \examples{
 # default Rt data     
