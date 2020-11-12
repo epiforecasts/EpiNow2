@@ -119,12 +119,10 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
     futile.logger::flog.error("1 or 2 strategies should be used")
     stop("1 or 2 strategies should be used")
   }
-  
   if (is.null(reported_cases$region)) {
     futile.logger::flog.error("Reported cases must contain a region")
     stop("Exactly 2 strategies should be used")
   }
-  
   if (length(strategies) == 1) {
     workers <- future::availableCores()
     futile.logger::flog.info("Using %s workers with 1 core per worker",
