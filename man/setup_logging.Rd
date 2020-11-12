@@ -30,9 +30,11 @@ all logging for \code{epinow} and nested functions, EpiNow2.epinow.estimate_infe
 Nothing
 }
 \description{
+\lifecycle{questioning}
 Sets up \code{futile.logger} logging, which is integrated into \code{EpiNow2}. See the
 documentation for \code{futile.logger} for full details. By default \code{EpiNow2} prints all logs at
-the "INFO" level and returns them to the console.
+the "INFO" level and returns them to the console. Usage of logging is currently being explored
+as the current setup cannot log stan errors or progress.
 }
 \examples{
 # set up info only logs with errors only 

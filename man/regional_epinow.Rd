@@ -129,5 +129,5 @@ out <- regional_epinow(reported_cases = cases[, breakpoint := 1],
 }
 }
 \seealso{
-epinow estimate_infections forecast_infections setup_future
+epinow estimate_infections forecast_infections setup_future regional_summary
 }

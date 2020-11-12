@@ -2,7 +2,7 @@
 % Please edit documentation in R/summarise.R
 \name{regional_summary}
 \alias{regional_summary}
-\title{Generate Regional Summary Output}
+\title{Regional Summary Output}
 \usage{
 regional_summary(
   regional_output = NULL,
@@ -46,7 +46,8 @@ on the maximum number of reported cases.}
 A list of summary measures and plots
 }
 \description{
-Generate Regional Summary Output
+\lifecycle{maturing}
+Used to produce summary output either internally in \code{regional_epinow} or externally.
 }
 \examples{
 \donttest{
@@ -71,4 +72,7 @@ out <- regional_epinow(reported_cases = cases,
 regional_summary(regional_output = out$regional,
                  reported_cases = cases)
 } 
+}
+\seealso{
+regional_epinow
 }

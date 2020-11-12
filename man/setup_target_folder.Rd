@@ -15,5 +15,6 @@ setup_target_folder(target_folder = NULL, target_date)
 A list containing the path to the dated folder and the latest folder
 }
 \description{
-Setup Target Folder for Saving
+\lifecycle{stable}
+Sets up a folders for saving results
 }

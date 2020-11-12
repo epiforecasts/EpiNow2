@@ -23,6 +23,7 @@ but also supports "forecast", and "estimated_reported_cases".}
 Returns a data frame of summary output
 }
 \description{
+\lifecycle{stable}
 \code{summary} method for class "epinow".
 }
 \seealso{

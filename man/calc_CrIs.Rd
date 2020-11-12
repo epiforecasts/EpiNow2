@@ -18,6 +18,7 @@ A data.table containing the \code{summarise_by} variables and the specified lowe
 credible intervals
 }
 \description{
+\lifecycle{stable}
 Adds symmetric credible intervals based on quantiles.
 }
 \examples{

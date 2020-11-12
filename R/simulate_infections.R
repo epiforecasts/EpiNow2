@@ -1,8 +1,9 @@
 #' Simulate infections using a given trajectory of the time-varying reproduction number
 #'
-#' @description This function simulates infections using an existing fit to observed cases but
-#'  with a modified time-varying reproduction number. This can be used to explore forecast models
-#'   or past counterfactuals. Simulations can be run in parallel using `future::plan`.
+#' @description \lifecycle{stable}
+#' This function simulates infections using an existing fit to observed cases but with a modified 
+#' time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
+#' Simulations can be run in parallel using `future::plan`.
 #' @param estimates The \code{estimates} element of an \code{epinow} run that has been done with 
 #' output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.
 #' @param model A compiled stan model as returned by `rstan::stan_model`.

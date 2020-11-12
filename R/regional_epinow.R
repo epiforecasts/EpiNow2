@@ -24,7 +24,7 @@
 #' @inheritParams regional_summary
 #' @return A list of output stratified at the top level into regional output and across region output summary output
 #' @export
-#' @seealso epinow estimate_infections forecast_infections setup_future
+#' @seealso epinow estimate_infections forecast_infections setup_future regional_summary
 #' @importFrom future.apply future_lapply
 #' @importFrom data.table as.data.table setDT copy setorder
 #' @importFrom purrr safely map compact keep

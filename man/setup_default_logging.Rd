@@ -23,7 +23,9 @@ returned from \code{epinow} to the console.}
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 }
 \description{
-Setup Default Logging
+\lifecycle{questioning}
+Sets up default logging. Usage of logging is currently being explored as the current setup
+cannot log stan errors or progress.
 }
 \examples{
 setup_default_logging()
