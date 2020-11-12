@@ -116,8 +116,7 @@ plot(dep)
 # using back calculation (combined here with under reporting)
 backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = delay_opts(incubation_period, reporting_delay),
-                                rt = NULL, stan = stan_opts(object = model),
-                                backcalc = backcalc_opts(rt_window = 1),
+                                rt = NULL, backcalc = backcalc_opts(rt_window = 1),
                                 obs = obs_opts(scale = list(mean = 0.4, sd = 0.05)))
 plot(backcalc)
                            
