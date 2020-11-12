@@ -58,6 +58,7 @@ to assign errors to regions. Alter the default to run with error catching.}
 \code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
 }
 \description{
+\lifecycle{maturing}
 Uses a non-parametric approach to reconstruct cases by date of infection from reported
 cases. It uses either a generative Rt model or non-parametric back calculation to estimate underlying
 latent infections and then maps these infections to observed cases via uncertain reporting delays and a flexible
@@ -171,4 +172,7 @@ rw <- estimate_infections(reported_cases, generation_time = generation_time,
 summary(rw, type = "parameters", params = "breakpoints")                                                    
 plot(rw)
 }                                
+}
+\seealso{
+epinow regional_epinow forecast_infections
 }

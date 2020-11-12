@@ -1,6 +1,6 @@
 #' Estimate Infections, the Time-Varying Reproduction Number and the Rate of Growth
 #'
-#' @description 
+#' @description \lifecycle{maturing}
 #' Uses a non-parametric approach to reconstruct cases by date of infection from reported 
 #' cases. It uses either a generative Rt model or non-parametric back calculation to estimate underlying
 #' latent infections and then maps these infections to observed cases via uncertain reporting delays and a flexible
@@ -22,6 +22,7 @@
 #' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 
 #' `futile.logger`. See `setup_logging` for more detailed logging options.
 #' @export
+#' @seealso epinow regional_epinow forecast_infections simulate_infections
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
 #' @inheritParams create_gp_data
@@ -245,6 +246,9 @@ estimate_infections <- function(reported_cases,
 
 #' Fit a Stan Model using the NUTs sampler
 #'
+#' @description \lifecycle{maturing}
+#' Fits a stan model using `rstan::sampling`. Provides the optional ability to run chains using 
+#' `future` with error catching, timeouts and merging of completed chains.
 #' @param args List of stan arguments
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
 #' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain in seconds. 
@@ -351,6 +355,8 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 
 #' Fit a Stan Model using Variational Inference
 #'
+#' @description \lifecycle{maturing}
+#' Fits a stan model using variational inference.
 #' @inheritParams fit_model_with_nuts
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom purrr safely
@@ -409,6 +415,8 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE
 
 #' Format Posterior Samples
 #'
+#' @description \lifecycle{stable}
+#' Summaries posterior samples and adds additional custom variables. 
 #' @param posterior_samples A list of posterior samples as returned by `extract_parameter_samples`
 #' @param horizon Numeric, forecast horizon
 #' @param shift Numeric, the shift to apply to estimates

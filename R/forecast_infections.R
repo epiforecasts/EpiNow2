@@ -1,6 +1,7 @@
 #' Forecast Infections and the Time-Varying Reproduction Number
 #'
-#' @description This function provides optional tools for forecasting cases and Rt estimates using the timeseries methods
+#' @description \lifecycle{experimental}
+#' Provides optional tools for forecasting cases and Rt estimates using the timeseries methods
 #' (via the `EpiSoon` package). It requires the `Episoon` package. Installation instructions for the EpiSoon package are
 #' available [here](https://epiforecasts.io/EpiSoon/).
 #' @param infections A data frame of cases by date of infection containing the following variables: date, mean, sd

@@ -23,5 +23,6 @@ format_fit(posterior_samples, horizon, shift, burn_in, start_date, CrIs)
 A list of samples and summarised posterior parameter estimates
 }
 \description{
-Format Posterior Samples
+\lifecycle{stable}
+Summaries posterior samples and adds additional custom variables.
 }

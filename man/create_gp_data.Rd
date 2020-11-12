@@ -18,7 +18,7 @@ Gaussian process.}
 A list of settings defining the Gaussian process
 }
 \description{
-\lifecylce{stable}
+\lifecycle{stable}
 Takes the output of \code{gp_opts} and converts it into a list understood by \code{stan}.
 }
 \examples{
