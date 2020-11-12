@@ -17,6 +17,7 @@ get_incubation_period(disease, source, max_value = 15)
 A list defining a distribution
 }
 \description{
+\lifecycle{stable}
 Extracts a literature distribution from \code{incubation_periods}
 }
 \examples{

@@ -174,5 +174,5 @@ plot(rw)
 }                                
 }
 \seealso{
-epinow regional_epinow forecast_infections
+epinow regional_epinow forecast_infections simulate_infections
 }

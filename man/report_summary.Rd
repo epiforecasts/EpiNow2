@@ -26,5 +26,7 @@ variable, median, bottom, and top. It should contain the following estimates: R,
 A data.table containing formatted and numeric summary measures
 }
 \description{
-Provide Summary Statistics for Estimated Infections and Rt
+\lifecycle{questioning}
+Creates a snapshot summary of estimates. May be depcreciated in later releases as S3 methods are
+enhanced.
 }

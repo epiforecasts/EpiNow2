@@ -15,7 +15,7 @@
 #' tin his list then `forecast_infections` will be bypassed. 
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
-#' @seealso estimate_infections forecast_infections regional_epinow
+#' @seealso estimate_infections simulate_infections forecast_infections regional_epinow
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
 #' @inheritParams forecast_infections

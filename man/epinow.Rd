@@ -126,5 +126,5 @@ summary(out, type = "parameters", params = "R")
 }
 }
 \seealso{
-estimate_infections forecast_infections regional_epinow
+estimate_infections simulate_infections forecast_infections regional_epinow
 }

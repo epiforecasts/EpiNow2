@@ -1,8 +1,8 @@
-#' Get Folders with Nowcast Results
+#' Get Folders with Results
 #'
+#' @description \lifecycle{stable}
 #' @param results_dir A character string giving the directory in which results
 #'  are stored (as produced by `regional_rt_pipeline`).
-#'
 #' @return A named character vector containing the results to plot.
 #' @export
 get_regions <- function(results_dir) {
@@ -16,11 +16,9 @@ get_regions <- function(results_dir) {
   names(regions) <- regions
   return(regions)
 }
-
-
-
 #' Get a Single Raw Result
 #'
+#' @description \lifecycle{stable}
 #' @param file Character string giving the result files name.
 #' @param region Character string giving the region of interest.
 #' @param date Target date (in the format `"yyyy-mm-dd`).
@@ -33,8 +31,11 @@ get_raw_result <- function(file, region, date,
   object <- readRDS(file_path)
   return(object)
 }
-
 #' Get Combined Regional Results
+#' 
+#' @description \lifecycle{stable}
+#' Summarises results across regions either from input or from disk. See the examples for
+#' details.
 #' @param regional_output A list of output as produced by `regional_epinow` and stored in the 
 #' `regional` list.
 #' @param results_dir A character string indicating the folder containing the `EpiNow2`
@@ -145,10 +146,12 @@ get_regional_results <- function(regional_output,
   }
   return(out)
 }
-
-
 #' Get a Literature Distribution
 #'
+#'
+#' @description \lifecycle{stable}
+#' Search a data frame for a distribution and return it in the format expected 
+#' by `delay_opts` and the `generation_time` argument of `epinow` and `estimate_infections`.
 #' @param data A `data.table` in the format of `generation_times`.
 #' @param disease A character string indicating the disease of interest.
 #' @param source A character string indicating the source of interest.
@@ -165,10 +168,10 @@ get_dist <- function(data, disease, source, max_value = 15) {
   dist <- as.list(data[, .(mean, mean_sd, sd, sd_sd, max = max_value)])
   return(dist)
 }
-
 #'  Get a Literature Distribution for the Generation Time
 #'
-#' @description Extracts a literature distribution from `generation_times`
+#' @description \lifecycle{stable}
+#' Extracts a literature distribution from `generation_times`
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @export
@@ -181,11 +184,10 @@ get_generation_time <- function(disease, source, max_value = 15) {
   
   return(dist)
 }
-
-
 #'  Get a Literature Distribution for the Incubation Period
 #'
-#' @description Extracts a literature distribution from `incubation_periods`
+#' @description \lifecycle{stable}
+#' Extracts a literature distribution from `incubation_periods`
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @export
@@ -198,11 +200,10 @@ get_incubation_period <- function(disease, source, max_value = 15) {
   
   return(dist)
 }
-
-
-
 #' Get Regions with Most Reported Cases
 #'
+#' @description \lifecycle{stable}
+#' Extract a vector of regions with the most reported cases in a set time window.
 #' @param time_window Numeric, number of days to include from latest date in data.
 #' Defaults to 7 days.
 #' @param no_regions Numeric, number of regions to return. Defaults to 6.

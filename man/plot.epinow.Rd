@@ -19,6 +19,7 @@ to  "summary" with supported options being "infections", "reports", "R", "growth
 List of plots as produced by \code{report_plots}
 }
 \description{
+\lifecycle{maturing}
 \code{plot} method for class "epinow".
 }
 \seealso{

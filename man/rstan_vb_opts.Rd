@@ -22,6 +22,7 @@ before failing.}
 A list of arguments to pass to \code{rstan::vb}
 }
 \description{
+\lifecycle{stable}
 Defines a list specifying the arguments passed to
 \code{rstan::vb}. Custom settings can be supplied which override the defaults.
 }

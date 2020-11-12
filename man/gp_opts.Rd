@@ -51,6 +51,7 @@ in Rt and infections.}
 A list of settings defining the Gaussian process
 }
 \description{
+\lifecycle{stable}
 Defines a list specifying the structure of the approximate Gaussian
 process. Custom settings can be supplied which override the defaults.
 }

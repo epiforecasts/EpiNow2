@@ -17,6 +17,7 @@ informative prior).}
 A list of back calculation settings
 }
 \description{
+\lifecycle{stable}
 Defines a list specifying the optional arguments for the back calculation
 of cases. Only used if \code{rt = NULL}.
 }

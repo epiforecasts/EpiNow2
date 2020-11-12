@@ -46,9 +46,11 @@ expects the possible values to be "Increasing", "Likely increasing", "Likely dec
 A \code{ggplot2} object containing a country map.
 }
 \description{
+\lifecycle{questioning}
 This general purpose function can be used to generate a country map for a single variable. It has few defaults but
 the data supplied must contain a \code{region_code} variable for linking to mapping data. This function requires
-the installation of the \code{rnaturalearth} package.
+the installation of the \code{rnaturalearth} package. Status of this function is currently questioning as it is uncertain
+if it is in use. Future releases may depreciate it.
 }
 \examples{
 \donttest{
