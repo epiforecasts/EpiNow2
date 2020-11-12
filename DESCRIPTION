@@ -76,7 +76,8 @@ Imports:
     rstan (>= 2.21.1),
     scales,
     stats,
-    truncnorm
+    truncnorm,
+    lifecycle
 Suggests:
     countrycode,
     dplyr,
@@ -92,8 +93,7 @@ Suggests:
     spelling,
     tidyr,
     testthat,
-    covr,
-    lifecycle
+    covr
 Additional_repositories: 
   https://epiforecasts.io/drat/
 Roxygen: list(markdown = TRUE)
