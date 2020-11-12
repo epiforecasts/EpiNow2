@@ -1,6 +1,6 @@
 #' Adjust from Case Counts by Infection Date to Date of Report
 #'
-#' @description  \lifecycle{questioning}
+#' @description  \lifecycle{soft-deprecated}
 #' Maps from cases by date of infection to date of report via date of 
 #' onset.
 #' @param infections `data.table` containing a `date` variable and a numeric `cases` variable.

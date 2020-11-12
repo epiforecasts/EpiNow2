@@ -36,7 +36,7 @@ A \code{data.table} containing a \code{date} variable (date of report) and a \co
 a third variable \code{reference} which indicates what the date variable refers to.
 }
 \description{
-\lifecycle{questioning}
+\lifecycle{soft-deprecated}
 Maps from cases by date of infection to date of report via date of
 onset.
 }
