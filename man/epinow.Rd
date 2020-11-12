@@ -90,6 +90,7 @@ to assign errors to regions. Alter the default to run with error catching.}
 A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 }
 \description{
+\lifecycle{maturing}
 This function wraps the functionality of \code{estimate_infections} and \code{forecast_infections} in order
 to estimate Rt and cases by date of infection, forecast into these infections into the future. It also contains
 additional functionality to convert forecasts to date of report and produce summary output useful for reporting
@@ -123,4 +124,7 @@ plot(out)
 # summary of R estimates
 summary(out, type = "parameters", params = "R")
 }
+}
+\seealso{
+estimate_infections forecast_infections regional_epinow
 }

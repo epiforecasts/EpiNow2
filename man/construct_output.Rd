@@ -31,5 +31,6 @@ construct_output(
 A list of output as returned by \code{epinow}
 }
 \description{
-Construct Output
+\lifecycle{stable}
+Combines the output produced internally by \code{epinow} into a single list.
 }

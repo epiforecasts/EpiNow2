@@ -1,6 +1,7 @@
 #' Estimate Infections, the Time-Varying Reproduction Number and the Rate of Growth
 #'
-#' @description This function uses a non-parametric approach to reconstruct cases by date of infection from reported 
+#' @description 
+#' Uses a non-parametric approach to reconstruct cases by date of infection from reported 
 #' cases. It uses either a generative Rt model or non-parametric back calculation to estimate underlying
 #' latent infections and then maps these infections to observed cases via uncertain reporting delays and a flexible
 #' observation model. See the examples and function arguments for the details of all options. The default settings

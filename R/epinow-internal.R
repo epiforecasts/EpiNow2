@@ -1,6 +1,7 @@
 #' Updates Forecast Horizon Based on Input Data and Target
 #'
-#' @description This function makes sure that a forecast is returned for the user specified
+#' @description \lifecycle{stable}
+#' Makes sure that a forecast is returned for the user specified
 #' time period beyond the target date.
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
@@ -15,6 +16,8 @@ update_horizon <- function(horizon, target_date, reported_cases) {
 
 #' Save Observed Data
 #'
+#' @description \lifecycle{stable}
+#' Saves observed data to a target location if given.
 #' @inheritParams setup_target_folder
 #' @inheritParams epinow
 #' @return NULL
@@ -33,10 +36,13 @@ save_input <- function(reported_cases, target_folder) {
 
 #' Save Estimated Infections
 #'
+#' @description \lifecycle{stable}
+#' Saves output from `estimate_infections` to a target directory.
 #' @param estimates List of data frames as output by `estimate_infections`
 #' @param samples Logical, defaults to TRUE. Should samples be saved
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan object
 #' be returned.
+#' @seealso estimate_infections
 #' @inheritParams setup_target_folder
 #' @inheritParams  estimate_infections
 #' @return NULL
@@ -59,8 +65,11 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
 
 #' Save Forecast Infections
 #'
+#' @description \lifecycle{experimental}
+#' Saves the output from `forecast_infections` to a target directory.
 #' @param forecast A list of data frames as output by `forecast_infections`
 #' @inheritParams save_estimate_infections
+#' @seealso forecast_infections
 #' @return NULL
 #' @export
 save_forecast_infections <- function(forecast, target_folder = NULL, samples = TRUE) {
@@ -76,6 +85,11 @@ save_forecast_infections <- function(forecast, target_folder = NULL, samples = T
 
 #' Estimate Cases by Report Date
 #'
+#' @description \lifecycle{questioning}
+#' Either extracts or converts reported cases from an input datatable. For ouput from
+#' `estimate_infections` this is a simple filtering step but for output from `forecast_infection`
+#' this is currently an approximate convolution. This step is likely to be updated/deprecated 
+#' in new releases as `forecast_infections` evolves to be based on `stan` functionality.
 #' @inheritParams setup_target_folder
 #' @inheritParams save_estimate_infections
 #' @inheritParams save_forecast_infections
@@ -144,6 +158,8 @@ estimates_by_report_date <- function(estimates, forecast, delays, CrIs = c(0.2, 
 
 #' Copy Results From Dated Folder to Latest
 #'
+#' @description \lifecycle{questioning}
+#' Copies output from the dated folder to a latest folder. May be undergo changes in later releases.
 #' @param latest_folder Character string containing the path to the latest target folder. 
 #' As produced by `setup_target_folder`.
 #' @inheritParams setup_target_folder
@@ -172,6 +188,8 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
 
 #' Construct Output
 #'
+#' @description \lifecycle{stable}
+#' Combines the output produced internally by `epinow` into a single list.
 #' @param estimated_reported_cases A list of dataframes as produced by 
 #' `estimates_by_report_date`.
 #' @param plots A list of plots as produced by `report_plots`

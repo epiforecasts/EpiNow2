@@ -13,5 +13,6 @@ in date format.}
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 }
 \description{
-Save Observed Data
+\lifecycle{stable}
+Saves observed data to a target location if given.
 }

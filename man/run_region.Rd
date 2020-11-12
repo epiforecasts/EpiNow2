@@ -86,5 +86,11 @@ progress bar.}
 A list of processed output as produced by \code{process_region}
 }
 \description{
-Run epinow with Regional Processing Code
+\lifecycle{maturing}
+Internal function that handles calling \code{epinow}. Future work will extend this
+function to better handle \code{stan} logs and allow the user to modify settings between
+regions.
+}
+\seealso{
+regional_epinow
 }
