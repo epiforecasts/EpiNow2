@@ -31,13 +31,13 @@ vector truncate(vector reports, real[] truncation_mean, real[] truncation_sd,
     vector[trunc_max] cmf;
     int first_t = t - trunc_max + 1;
     for (i in 1:(trunc_max)) {
-      trunc_indexes[i] = trunc_max - i;
+      trunc_indexes[i] = i - 1;
     }
     cmf = discretised_lognormal_pmf(trunc_indexes, truncation_mean[1], 
                                     truncation_sd[1], trunc_max);   
     cmf[1] = cmf[1] + 1e-5;
     cmf = cumulative_sum(cmf);
-    cmf = cmf ./ cmf[trunc_max];
+    cmf = reverse_mf(cmf, trunc_max);
     // Apply cdf of truncation delay to truncation max last entries in reports
     trunc_reports[first_t:t] = trunc_reports[first_t:t] .* cmf;
   }

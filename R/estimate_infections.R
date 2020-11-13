@@ -42,11 +42,8 @@
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # set delays between infection and case report 
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- list(mean = convert_to_logmean(3, 1), 
-#'                         mean_sd = 0.1,
-#'                         sd = convert_to_logsd(3, 1), 
-#'                         sd_sd = 0.1, 
-#'                         max = 15)
+#' reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
+#'                         sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 10)
 #'       
 #' # default setting 
 #' # here we assume that the observed data is truncated by the same delay as 
@@ -78,11 +75,9 @@
 #' plot(dep) 
 #' 
 #' # Adjusting for truncation of the most recent data
-#' trunc_dist <- list(mean = convert_to_logmean(1, 1), 
-#'                    mean_sd = 0.1,
-#'                    sd = convert_to_logsd(1, 1), 
-#'                    sd_sd = 0.1, 
-#'                    max = 5)
+#' trunc_dist <- list(mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
+#'                    sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1, 
+#'                    max = 3)
 #' trunc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                              delays = delay_opts(incubation_period, reporting_delay),
 #'                              truncation = trunc_opts(trunc_dist),
