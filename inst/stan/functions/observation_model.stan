@@ -18,6 +18,25 @@ vector scale_obs(vector reports, real frac_obs) {
   scaled_reports = reports * frac_obs;
   return(scaled_reports);
 }
+// Truncate observed data by some truncation distribution
+vector truncate(vector reports, real[] truncation_mean, real[]truncation_sd, 
+                int truncation_max) {
+  int t = num_elements(reports);
+  vector[t] trunc_reports;
+  // Calculate cdf of truncation delay
+  // Apply cdf of truncation delay to truncation max last entries in reports
+  return(trunc_reports);
+}
+// Truncation distribution priors
+void truncation_lp(real[] truncation_mean, real[] truncation_sd, 
+                   real trunc_mean_mean, real trunc_mean_sd, 
+                   real trunc_sd_mean, real trunc_sd_sd) {
+  int truncation = num_elements(truncation_mean);
+  if (truncation) {
+    truncation_mean ~ normal(trunc_mean_mean, trunc_mean_sd);
+    truncation_sd ~ normal(trunc_sd_mean, trunc_sd_sd);
+  }                     
+}
 // update log density for reported cases
 void report_lp(int[] cases, vector reports, 
                real[] rep_phi, int phi_prior,

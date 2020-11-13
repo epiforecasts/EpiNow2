@@ -48,6 +48,8 @@ parameters{
   real<lower = 0> delay_sd[delays];     // sd of delays
   simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect 
   real<lower = 0> frac_obs[obs_scale]; // fraction of cases that are ultimately observed
+  real<lower = 0> truncation_mean[truncation];   // mean of truncation
+  real<lower = 0> truncation_sd[truncation];     // sd of truncation
   real<lower = 0> rep_phi[model_type];  // overdispersion of the reporting process
 }
 
@@ -81,6 +83,10 @@ transformed parameters {
  if (obs_scale) {
    reports = scale_obs(reports, frac_obs[1]);
  }
+ // truncate near time cases
+ if (truncation) { 
+   reports = truncate(reports, truncation_mean, truncation_sd, max_truncation);
+ }
 }
 
 model {
@@ -91,20 +97,13 @@ model {
   }
   // penalised priors for delay distributions
   delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, t);
-  // Rt priors
+  // priors for truncation
+  truncation_lp(truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd, 
+                trunc_sd_mean, trunc_sd_sd);
   if (estimate_r) {
-    // prior on R
-    log_R ~ normal(r_logmean, r_logsd);
-    //breakpoint effects on Rt
-    if (bp_n > 0) {
-      bp_sd[1] ~ normal(0, 0.1) T[0,];
-      bp_effects ~ normal(0, bp_sd[1]);
-    }
-    // initial infections
-    initial_infections ~ normal(prior_infections, 0.2);
-    if (seeding_time > 1) {
-       initial_growth ~ normal(prior_growth, 0.2);
-     }
+    // priors on Rt
+    rt_lp(log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n, seeding_time,
+          r_logmean, r_logsd, prior_infections, prior_growth);
     // penalised_prior on generation interval
     generation_time_lp(gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot);
   }
