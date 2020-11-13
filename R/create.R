@@ -322,7 +322,8 @@ create_obs_model <- function(obs = obs_opts()) {
 #' @export 
 create_stan_data <- function(reported_cases, generation_time,
                              rt, gp, obs, delays, horizon,
-                             backcalc, shifted_cases) {
+                             backcalc, shifted_cases,
+                             truncation) {
   cases <- reported_cases[(delays$seeding_time + 1):(.N - horizon)]$confirm
   
   data <- list(
@@ -338,10 +339,10 @@ create_stan_data <- function(reported_cases, generation_time,
     max_gt = generation_time$max,
     burn_in = 0
   ) 
-   
   # add delay data
   data <- c(data, delays)
-  
+  # add truncation data
+  data <- c(data, truncation)
   # add Rt data
   data <- c(data, 
             create_rt_data(rt,
@@ -393,9 +394,15 @@ create_initial_conditions <- function(data) {
     out <- list()
     if (data$delays > 0) {
       out$delay_mean <- array(purrr::map2_dbl(data$delay_mean_mean, data$delay_mean_sd, 
-                                              ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
+                                              ~ rnorm(1, mean = .x, sd = .y)))
       out$delay_sd <- array(purrr::map2_dbl(data$delay_sd_mean, data$delay_sd_sd, 
-                                            ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)))
+                                            ~ rnorm(1, mean = .x, sd = .y)))
+    }
+    if (data$truncation > 0) {
+      out$truncation_mean <- array(rnorm(1, mean = data$trunc_mean_mean,
+                                        sd = data$trunc_mean_sd))
+      out$truncation_sd <- array(rnorm(1, mean = data$trunc_sd_mean,
+                                       sd = data$trunc_sd_sd))
     }
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))

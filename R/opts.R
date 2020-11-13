@@ -36,6 +36,31 @@ delay_opts <- function(...) {
   return(data)
 }
 
+#' Truncation Distribution Options
+#' 
+#' @description \lifecycle{stable}
+#' Returns a truncation distribution formatted for usage by downstream functions
+#' @param dist A list defining the truncation distribution, defaults to `NULL` in which
+#' case no truncation is used. Must have the following elements if defined: "mean", "mean_sd",
+#'"sd_mean", "sd_sd", and "max" defining a truncated log normal (with all parameters except
+#' for max defined in logged form).
+#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+#' @return A list summarising the input truncation distribution.
+#' @export
+#' @examples
+#' # no truncation
+#' trunc_opts()
+trunc_opts <- function(dist = NULL) {
+  data <- list()
+  trunc <- ifelse(is.null(dist), 0, 1)
+  data$trunc_mean_mean <- allocate_delays(dist$mean, trunc)
+  data$trunc_mean_sd <- allocate_delays(dist$mean_sd, trunc)
+  data$trunc_sd_mean <- allocate_delays(dist$sd, trunc)
+  data$trunc_sd_sd <- allocate_delays(dist$sd_sd, trunc)
+  data$max_truncation <- allocate_delays(dist$max, trunc)
+  return(data)
+}
+
 #' Time-Varying Reproduction Number Options
 #'
 #' @description \lifecycle{stable}

@@ -133,7 +133,6 @@ allocate_delays <- function(delay_var, no_delays) {
   return(array(out))
 }
 
-
 #' Allocate Empty Parameters to a List
 #'
 #' @description \lifecycle{stable}
