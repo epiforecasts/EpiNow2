@@ -44,8 +44,8 @@ parameters{
   real<lower = 0> bp_sd[bp_n > 0 ? 1 : 0]; // standard deviation of breakpoint effect
   real bp_effects[bp_n];               // Rt breakpoint effects
   // observation model
-  real<lower = 0> delay_mean[delays];   // mean of delays
-  real<lower = 0> delay_sd[delays];     // sd of delays
+  real delay_mean[delays];            // mean of delays
+  real delay_sd[delays];              // sd of delays
   simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect 
   real<lower = 0> frac_obs[obs_scale]; // fraction of cases that are ultimately observed
   real<lower = 0> truncation_mean[truncation];   // mean of truncation
