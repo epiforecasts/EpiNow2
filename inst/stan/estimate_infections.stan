@@ -33,24 +33,24 @@ transformed data{
 parameters{
   // gaussian process
   real<lower = ls_min,upper=ls_max> rho[fixed ? 0 : 1];  // length scale of noise GP
-  real<lower = 0> alpha[fixed ? 0 : 1];  // scale of of noise GP
-  vector[fixed ? 0 : M] eta;             // unconstrained noise
+  real<lower = 0> alpha[fixed ? 0 : 1];     // scale of of noise GP
+  vector[fixed ? 0 : M] eta;                // unconstrained noise
   // Rt
-  vector[estimate_r] log_R;             // baseline reproduction number estimate (log)
-  real initial_infections[estimate_r] ; // seed infections 
+  vector[estimate_r] log_R;                 // baseline reproduction number estimate (log)
+  real initial_infections[estimate_r] ;     // seed infections 
   real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
-  real<lower = 0> gt_mean[estimate_r];  // mean of generation time
-  real<lower = 0> gt_sd[estimate_r];   // sd of generation time
+  real<lower = 0> gt_mean[estimate_r];     // mean of generation time
+  real<lower = 0> gt_sd[estimate_r];       // sd of generation time
   real<lower = 0> bp_sd[bp_n > 0 ? 1 : 0]; // standard deviation of breakpoint effect
-  real bp_effects[bp_n];               // Rt breakpoint effects
+  real bp_effects[bp_n];                  // Rt breakpoint effects
   // observation model
-  real delay_mean[delays];            // mean of delays
-  real delay_sd[delays];              // sd of delays
+  real delay_mean[delays];                // mean of delays
+  real delay_sd[delays];                 // sd of delays
   simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect 
-  real<lower = 0> frac_obs[obs_scale]; // fraction of cases that are ultimately observed
-  real<lower = 0> truncation_mean[truncation];   // mean of truncation
-  real<lower = 0> truncation_sd[truncation];     // sd of truncation
-  real<lower = 0> rep_phi[model_type];  // overdispersion of the reporting process
+  real<lower = 0> frac_obs[obs_scale];   // fraction of cases that are ultimately observed
+  real truncation_mean[truncation];      // mean of truncation
+  real truncation_sd[truncation];        // sd of truncation
+  real<lower = 0> rep_phi[model_type];   // overdispersion of the reporting process
 }
 
 transformed parameters {
