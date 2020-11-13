@@ -24,9 +24,9 @@ vector truncate(vector reports, real[] truncation_mean, real[] truncation_sd,
   int t = num_elements(reports);
   int truncation = num_elements(truncation_mean);
   vector[t] trunc_reports = reports;
-  int trunc_max = truncation_max[1] > t ? t : truncation_max[1];
   if (truncation) {
     // Calculate cmf of truncation delay
+    int trunc_max = truncation_max[1] > t ? t : truncation_max[1];
     int  trunc_indexes[trunc_max];
     vector[trunc_max] cmf;
     int first_t = t - trunc_max + 1;
