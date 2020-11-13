@@ -48,7 +48,8 @@
 #'                         sd_sd = 0.1, 
 #'                         max = 15)
 #'       
-#' # default setting
+#' # default setting 
+#' # here we assume that the observed data is truncated by the same delay as 
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
@@ -67,7 +68,7 @@
 #' summary(agp)
 #' plot(agp) 
 #' 
-#' #' Adjusting for future susceptible depletion
+#' # Adjusting for future susceptible depletion
 #' dep <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1),
@@ -75,6 +76,20 @@
 #'                            gp = gp_opts(ls_min = 10, basis_prop = 0.1), horizon = 21,
 #'                            stan = stan_opts(control = list(adapt_delta = 0.95)))
 #' plot(dep) 
+#' 
+#' # Adjusting for truncation of the most recent data
+#' trunc_dist <- list(mean = convert_to_logmean(1, 1), 
+#'                    mean_sd = 0.1,
+#'                    sd = convert_to_logsd(1, 1), 
+#'                    sd_sd = 0.1, 
+#'                    max = 5)
+#' trunc <- estimate_infections(reported_cases, generation_time = generation_time,
+#'                              delays = delay_opts(incubation_period, reporting_delay),
+#'                              truncation = trunc_opts(trunc_dist),
+#'                              rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+#'                              gp = gp_opts(ls_min = 10, basis_prop = 0.1),
+#'                              stan = stan_opts(object = model, control = list(adapt_delta = 0.95)))
+#' plot(trunc) 
 #' 
 #' # using back calculation (combined here with under reporting)
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,

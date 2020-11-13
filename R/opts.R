@@ -52,12 +52,12 @@ delay_opts <- function(...) {
 #' trunc_opts()
 trunc_opts <- function(dist = NULL) {
   data <- list()
-  trunc <- ifelse(is.null(dist), 0, 1)
-  data$trunc_mean_mean <- allocate_delays(dist$mean, trunc)
-  data$trunc_mean_sd <- allocate_delays(dist$mean_sd, trunc)
-  data$trunc_sd_mean <- allocate_delays(dist$sd, trunc)
-  data$trunc_sd_sd <- allocate_delays(dist$sd_sd, trunc)
-  data$max_truncation <- allocate_delays(dist$max, trunc)
+  data$truncation <- ifelse(is.null(dist), 0, 1)
+  data$trunc_mean_mean <- allocate_delays(dist$mean, data$truncation)
+  data$trunc_mean_sd <- allocate_delays(dist$mean_sd, data$truncation)
+  data$trunc_sd_mean <- allocate_delays(dist$sd, data$truncation)
+  data$trunc_sd_sd <- allocate_delays(dist$sd_sd, data$truncation)
+  data$max_truncation <- allocate_delays(dist$max, data$truncation)
   return(data)
 }
 
@@ -322,7 +322,7 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 #' @description \lifecycle{stable}
 #'  Defines a list specifying the arguments passed to 
 #' `rstan::vb`. Custom settings can be supplied which override the defaults.
-#' @param samples Numeric, default 1000. Overall number of approximate posterior 
+#' @param samples Numeric, default 2000. Overall number of approximate posterior 
 #' samples.
 #' @param trials Numeric, defaults to 10. Number of attempts to use `rstan::vb` 
 #' before failing.
@@ -332,8 +332,8 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 #' @return A list of arguments to pass to `rstan::vb`
 #' @export
 #' @examples
-#' rstan_vb_opts(samples = 2000)
-rstan_vb_opts <- function(samples = 1000,
+#' rstan_vb_opts(samples = 1000)
+rstan_vb_opts <- function(samples = 2000,
                           trials = 10,
                           iter = 10000, ...) {
   opts <- list(
@@ -360,12 +360,12 @@ rstan_vb_opts <- function(samples = 1000,
 #' @inheritParams rstan_sampling_opts
 #' @seealso rstan_sampling_opts rstan_vb_opts
 #' @examples
-#' rstan_opts(samples = 2000)
+#' rstan_opts(samples = 1000)
 #' 
 #' # using vb
 #' rstan_opts(method = "vb")
 rstan_opts <- function(object = NULL,
-                       samples = 1000,
+                       samples = 2000,
                        method = "sampling", ...) {
   method <- match.arg(method, choices = c("sampling", "vb"))
   # shared everywhere opts
@@ -400,11 +400,11 @@ rstan_opts <- function(object = NULL,
 #' @seealso rstan_opts 
 #' @examples
 #' # using default of rstan::sampling
-#' stan_opts(samples = 2000)
+#' stan_opts(samples = 1000)
 #' 
 #' # using vb
 #' stan_opts(method = "vb")
-stan_opts <- function(samples = 1000,
+stan_opts <- function(samples = 2000,
                       backend = "rstan", 
                       return_fit = TRUE,
                       ...){

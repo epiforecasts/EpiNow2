@@ -19,14 +19,14 @@ vector scale_obs(vector reports, real frac_obs) {
   return(scaled_reports);
 }
 // Truncate observed data by some truncation distribution
-vector truncate(vector reports, real[] truncation_mean, real[]truncation_sd, 
-                int truncation_max) {
+vector truncate(vector reports, real[] truncation_mean, real[] truncation_sd, 
+                int[] truncation_max) {
   int t = num_elements(reports);
   int truncation = num_elements(truncation_mean);
   vector[t] trunc_reports = reports;
-  int trunc_max = truncation_max > t ? t : truncation_max;
+  int trunc_max = truncation_max[1] > t ? t : truncation_max[1];
   if (truncation) {
-    // generation time pmf
+    // Calculate cmf of truncation delay
     int  trunc_indexes[trunc_max];
     vector[trunc_max] cmf;
     int first_t = t - trunc_max + 1;
@@ -38,17 +38,15 @@ vector truncate(vector reports, real[] truncation_mean, real[]truncation_sd,
     cmf[1] = cmf[1] + 1e-5;
     cmf = cumulative_sum(cmf);
     cmf = cmf ./ cmf[trunc_max];
-    cmf = reverse_mf(cmf, trunc_max);
+    // Apply cdf of truncation delay to truncation max last entries in reports
     trunc_reports[first_t:t] = trunc_reports[first_t:t] .* cmf;
   }
-  // Calculate cdf of truncation delay
-  // Apply cdf of truncation delay to truncation max last entries in reports
   return(trunc_reports);
 }
 // Truncation distribution priors
 void truncation_lp(real[] truncation_mean, real[] truncation_sd, 
-                   real trunc_mean_mean, real trunc_mean_sd, 
-                   real trunc_sd_mean, real trunc_sd_sd) {
+                   real[] trunc_mean_mean, real[] trunc_mean_sd, 
+                   real[] trunc_sd_mean, real[] trunc_sd_sd) {
   int truncation = num_elements(truncation_mean);
   if (truncation) {
     truncation_mean ~ normal(trunc_mean_mean, trunc_mean_sd);
@@ -58,9 +56,7 @@ void truncation_lp(real[] truncation_mean, real[] truncation_sd,
 // update log density for reported cases
 void report_lp(int[] cases, vector reports, 
                real[] rep_phi, int phi_prior,
-               int model_type, int horizon,
-               real weight) {
-  int t = num_elements(reports) - horizon;
+               int model_type, real weight) {
   real sqrt_phi;
   if (model_type) {
     // the reciprocal overdispersion parameter (phi)
@@ -68,11 +64,11 @@ void report_lp(int[] cases, vector reports,
     sqrt_phi = 1 / sqrt(rep_phi[model_type]);
     // defer to poisson if phi is large, to avoid overflow
     if (sqrt_phi > 1e4) {
-      target += poisson_lpmf(cases | reports[1:t]) * weight;
+      target += poisson_lpmf(cases | reports) * weight;
     } else {
-      target += neg_binomial_2_lpmf(cases | reports[1:t], sqrt_phi) * weight;
+      target += neg_binomial_2_lpmf(cases | reports, sqrt_phi) * weight;
     }
   } else {
-    target += poisson_lpmf(cases | reports[1:t]) * weight;
+    target += poisson_lpmf(cases | reports) * weight;
   }
 }
