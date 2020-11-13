@@ -4,7 +4,7 @@
 \alias{stan_opts}
 \title{Stan Options}
 \usage{
-stan_opts(samples = 1000, backend = "rstan", return_fit = TRUE, ...)
+stan_opts(samples = 2000, backend = "rstan", return_fit = TRUE, ...)
 }
 \arguments{
 \item{samples}{Numeric, default 1000. Overall number of posterior samples.
@@ -28,7 +28,7 @@ can be supplied which override the defaults.
 }
 \examples{
 # using default of rstan::sampling
-stan_opts(samples = 2000)
+stan_opts(samples = 1000)
 
 # using vb
 stan_opts(method = "vb")

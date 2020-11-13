@@ -4,10 +4,10 @@
 \alias{rstan_vb_opts}
 \title{Rstan Variational Bayes Options}
 \usage{
-rstan_vb_opts(samples = 1000, trials = 10, iter = 10000, ...)
+rstan_vb_opts(samples = 2000, trials = 10, iter = 10000, ...)
 }
 \arguments{
-\item{samples}{Numeric, default 1000. Overall number of approximate posterior
+\item{samples}{Numeric, default 2000. Overall number of approximate posterior
 samples.}
 
 \item{trials}{Numeric, defaults to 10. Number of attempts to use \code{rstan::vb}
@@ -27,5 +27,5 @@ Defines a list specifying the arguments passed to
 \code{rstan::vb}. Custom settings can be supplied which override the defaults.
 }
 \examples{
-rstan_vb_opts(samples = 2000)
+rstan_vb_opts(samples = 1000)
 }

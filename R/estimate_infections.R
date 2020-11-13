@@ -83,7 +83,7 @@
 #'                              truncation = trunc_opts(trunc_dist),
 #'                              rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
 #'                              gp = gp_opts(ls_min = 10, basis_prop = 0.1),
-#'                              stan = stan_opts(object = model, control = list(adapt_delta = 0.95)))
+#'                              stan = stan_opts(control = list(adapt_delta = 0.95)))
 #' plot(trunc) 
 #' 
 #' # using back calculation (combined here with under reporting)
