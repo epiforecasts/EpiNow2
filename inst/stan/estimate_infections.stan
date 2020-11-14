@@ -119,6 +119,7 @@ generated quantities {
   int imputed_reports[ot_h]; 
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
   real r[ot_h];
+  vector[ot_h] log_lik;
   if (estimate_r){
     // estimate growth from estimated Rt
     r = R_to_growth(R, gt_mean[1], gt_sd[1]);
@@ -133,4 +134,22 @@ generated quantities {
   }
   // simulate reported cases
   imputed_reports = report_rng(reports, rep_phi, model_type);
+  if (model_type) {
+    // the reciprocal overdispersion parameter (phi)
+    real sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+    // defer to poisson if phi is large, to avoid overflow
+    if (sqrt_phi > 1e4) {
+      for (i in 1:ot) {
+        log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * obs_weight;
+      }
+    } else {
+      for (i in 1:ot) {
+        log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], sqrt_phi) * obs_weight;
+      }
+    }
+  } else {
+    for (i in 1:ot) {
+      log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * obs_weight;
+    }
+  }
 }
