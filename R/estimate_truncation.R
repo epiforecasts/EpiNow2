@@ -18,24 +18,30 @@
 #' # get example case counts
 #' reported_cases <- EpiNow2::example_confirmed[1:60]
 #' 
-#' # define and construc truncation
+#' # define example truncation distribution (note not integer adjusted)
 #' trunc_dist <- list(mean = convert_to_logmean(3, 2),
+#'                    mean_sd = 0.1,
 #'                    sd = convert_to_logsd(3, 2),
+#'                    sd_sd = 0.1,
 #'                    max = 10)
-#' trunc_cmf <- cumsum(
-#'  dlnorm(1:(trunc_dist$max + 1), trunc_dist$mean, trunc_dist$sd))
-#' trunc_cmf <- trunc_cmf / trunc_cmf[trunc_dist$max + 1]
-#' trunc_cmf <- rev(trunc_cmf)[-1]
 #'
 #' # apply truncation to example data
-#' construct_truncation <- function(index, cases, cmf) {
+#' construct_truncation <- function(index, cases, dist) {
+#' set.seed(index)
+#'   cmf <- cumsum(
+#'      dlnorm(1:(dist$max + 1), 
+#'             rnorm(1, dist$mean, dist$mean_sd),
+#'             rnorm(1, dist$sd, dist$sd_sd)))
+#'   cmf <- cmf / cmf[dist$max + 1]
+#'   cmf <- rev(cmf)[-1]
 #'   trunc_cases <- data.table::copy(cases)[1:(.N - index)]
 #'   trunc_cases[(.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)]
 #'   return(trunc_cases)
 #'  }
-#' example_data <- purrr::map(c(20, 0), construct_truncation,
+#' example_data <- purrr::map(10:0, 
+#'                            construct_truncation,
 #'                            cases = reported_cases,
-#'                            cmf = trunc_cmf)
+#'                            dist = trunc_dist)
 #'     
 #' # compile dev model                      
 #' model <- rstan::stan_model("inst/stan/estimate_truncation.stan")
@@ -80,10 +86,12 @@ estimate_truncation <- function(obs, max_truncation = 10, model = NULL, ...) {
   fit <- rstan::sampling(model, 
                          data = data, 
                          init = init_fn,
-                         control = list(adapt_delta = 0.99),
                          ...)
-  
-  return(fit)
+
+  out <- list()
+  out$data <- data
+  out$fit <- fit
+  return(out)
 }
 
 

@@ -12,9 +12,11 @@ data {
 parameters {
   real logmean[1];
   real<lower=0> logsd[1];
+  real<lower=0> phi;
 }
 transformed parameters{
   matrix[trunc_max[1], obs_sets - 1] trunc_obs;
+  real sqrt_phi = 1 / sqrt(phi);
   {
   vector[t] last_obs;
   // reconstruct latest data without truncation
@@ -31,11 +33,12 @@ model {
   // priors for the log normal truncation distribution
   logmean ~ normal(0, 1);
   logsd[1] ~ normal(0, 1) T[0,];
+  phi ~ normal(0, 1) T[0,];
   // log density of truncated latest data vs that observed
   for (i in 1:(obs_sets - 1)) {
     int start_t = t - obs_dist[i] - trunc_max[1];
     for (j in 1:trunc_max[1]) {
-      obs[start_t + j, i] ~ poisson(trunc_obs[j, i]);
+      obs[start_t + j, i] ~ neg_binomial(trunc_obs[j, i], sqrt_phi);
     }
   }
 }
