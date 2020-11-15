@@ -339,7 +339,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' the posterior samples into a single set of summary statistics. Can be used to generate a robust
 #' reporting delay that accounts for the fact the underlying delay likely varies over time or that 
 #' the size of the available reporting delay sample may not be representative of the current case load.
-#' @param values Numeric vector of integer values.
+#' @param values Integer vector of values.
 #' @param dist Character string, which distribution to fit. Defaults to lognormal (`"lognormal"`) but
 #' gamma (`"gamma"`) is also supported.
 #' @param verbose Logical, defaults to `FALSE`. Should progress messages be printed
@@ -430,6 +430,27 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
   return(out)
 }
 
+#' Estimate a Delay Distribution
+#'
+#' @description \lifecycle{maturing}
+#' Estimate a log normal delay distribution from a vector of integer delays. 
+#' Currently this function is a simple wrapper for `bootstrapped_dist_fit`. 
+#' @param delays Integer vector of delays
+#' @param ... Arguments to pass to internal methods.
+#' @return A list summarising the bootstrapped distribution
+#' @export
+#' @inheritParams bootstrapped_dist_fit
+#' @seealso bootstrapped_dist_fit
+#' @examples
+#' \donttest{
+#' delays <- rlnorm(500, log(5), 1)
+#' estimate_delay(delays, samples = 1000, bootstraps = 10, 
+#'                dist = "lognormal")
+#'}
+estimate_delay <- function(delays, ...) {
+  bootstrapped_dist_fit(values = delays, 
+                        dist = "lognormal", ...)
+}
 
 #' Approximate Sampling a Distribution using Counts
 #'

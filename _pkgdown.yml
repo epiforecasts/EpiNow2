@@ -47,10 +47,12 @@ reference:
     contents:
       - contains("epinow")
   - title: Estimate Parameters
-    desc: Function to estimate time-varying parameters of interest.
+    desc: Function to estimate parameters of interest.
     contents:
       - estimate_infections
       - forecast_infections
+      - estimate_delay
+      - estimate_truncation
   - title: Internal epinow Functions
     desc: Functions used internally by epinow
     contents:

@@ -14,6 +14,8 @@
 impact Rt estimates.
 * Updates the interface to the Rt settings with all arguments passed via `rt`, using `rt_opts`, this includes the initial prior,`use_breakpoints`, and `future`. Adds a new helper argument `rw` which enables easy parameterisation of a fixed length random walk. These changes also help make it clear that these arguments only impact the Rt generative model and not the back calculation model.
 * Adds an adjustment for population susceptibility based on that used in [`{epidemia}`](https://github.com/ImperialCollegeLondon/epidemia) when Rt is fixed into the future (set by passing a population to `rt_opts(pop = initial susceptible population)`. Note this only impacts case forecasts and not output Rt estimates and only impacts estimates at all beyond the forecast horizon as those based on data already account for population susceptibility by definition. The impact of this assumption can be explored using `simulate_infections` (by updating `est$arg$pop` in the example).
+* Adds `truncation` as a new argument to `estimate_infections` and higher level functions. This takes output from `trunc_opts` and allows for internally adjusted observed cases for truncation. A new method `estimate_truncation` has also been added to support estimating a log normal truncation distribution from archived versions of the same data set though this method is currently experimental.
+* Adds `estimate_delay` as a user friendly wrapper around `bootstrapped_dist_fit`. 
 
 ## Other changes
 
