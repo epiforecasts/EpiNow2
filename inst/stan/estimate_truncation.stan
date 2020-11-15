@@ -42,13 +42,13 @@ model {
     }
   }
 }
-// generated quantities {
-//   // reconstruct all truncated datasets using posterior of the truncation distribution
-//   matrix[t, obs_sets] recon_obs;
-//   for (i in 1:obs_sets) {
-//     int end_t = t - obs_dist[i];
-//     recon_obs[1:end_t, i] = truncate(to_vector(obs[1:end_t, i]), logmean, logsd, trunc_max, 1);
-//     recon_obs[(end_t + 1):t, i] = rep_vector(0, obs_dist[i]);
-//   }
-// }
+generated quantities {
+  // reconstruct all truncated datasets using posterior of the truncation distribution
+  matrix[trunc_max[1], obs_sets] recon_obs;
+  for (i in 1:obs_sets) {
+    int end_t = t - obs_dist[i];
+    int start_t = end_t - trunc_max[1] + 1;
+    recon_obs[, i] = truncate(to_vector(obs[start_t:end_t, i]), logmean, logsd, trunc_max, 1);
+  }
+}
 
