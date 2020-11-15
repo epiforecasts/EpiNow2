@@ -24,7 +24,7 @@ transformed parameters{
    int end_t = t - obs_dist[i];
    int start_t = end_t - trunc_max[1] + 1;
    trunc_obs[, i] = truncate(last_obs[start_t:end_t], logmean, logsd, trunc_max, 0);
-  }
+   }
   }
 }
 model {
@@ -35,7 +35,7 @@ model {
   for (i in 1:(obs_sets - 1)) {
     int start_t = t - obs_dist[i] - trunc_max[1];
     for (j in 1:trunc_max[1]) {
-      obs[start_t + j, obs_sets] ~ poisson(trunc_obs[j, i]);
+      obs[start_t + j, i] ~ poisson(trunc_obs[j, i]);
     }
   }
 }

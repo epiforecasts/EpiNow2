@@ -23,9 +23,9 @@
 #'                    sd = convert_to_logsd(3, 2),
 #'                    max = 10)
 #' trunc_cmf <- cumsum(
-#'  dlnorm(1:(trunc_dist$max), trunc_dist$mean, trunc_dist$sd))
-#' trunc_cmf <- trunc_cmf / trunc_cmf[trunc_dist$max]
-#' trunc_cmf <- rev(trunc_cmf)
+#'  dlnorm(1:(trunc_dist$max + 1), trunc_dist$mean, trunc_dist$sd))
+#' trunc_cmf <- trunc_cmf / trunc_cmf[trunc_dist$max + 1]
+#' trunc_cmf <- rev(trunc_cmf)[-1]
 #'
 #' # apply truncation to example data
 #' construct_truncation <- function(index, cases, cmf) {
@@ -44,10 +44,11 @@
 #' est <- estimate_truncation(example_data, model = model)
 estimate_truncation <- function(obs, max_truncation = 10, model = NULL, ...) {
   # combine into ordered matrix
+  obs <- data.table::copy(obs)
   nrow_obs <- order(purrr::map_dbl(obs, nrow))
   obs <- obs[nrow_obs]
   obs <- purrr::map(1:length(obs), ~ obs[[.]][, (as.character(.)) := confirm][, 
-                                                                              confirm := NULL])
+                                                 confirm := NULL])
   obs <- purrr::reduce(obs, merge, all = TRUE)
   obs_start <- nrow(obs) - max_truncation - sum(is.na(obs$`1`)) + 1
   obs <- obs[obs_start:.N]
