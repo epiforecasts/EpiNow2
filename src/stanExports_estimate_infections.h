@@ -1670,13 +1670,13 @@ truncate(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& reports,
         stan::math::fill(trunc_reports, DUMMY_VAR__);
         stan::math::assign(trunc_reports,reports);
         current_statement_begin__ = 372;
-        int trunc_max(0);
-        (void) trunc_max;  // dummy to suppress unused var warning
-        stan::math::fill(trunc_max, std::numeric_limits<int>::min());
-        stan::math::assign(trunc_max,(logical_gt(get_base1(truncation_max, 1, "truncation_max", 1), t) ? t : get_base1(truncation_max, 1, "truncation_max", 1) ));
-        current_statement_begin__ = 373;
         if (as_bool(truncation)) {
             {
+            current_statement_begin__ = 374;
+            int trunc_max(0);
+            (void) trunc_max;  // dummy to suppress unused var warning
+            stan::math::fill(trunc_max, std::numeric_limits<int>::min());
+            stan::math::assign(trunc_max,(logical_gt(get_base1(truncation_max, 1, "truncation_max", 1), t) ? t : get_base1(truncation_max, 1, "truncation_max", 1) ));
             current_statement_begin__ = 375;
             validate_non_negative_index("trunc_indexes", "trunc_max", trunc_max);
             std::vector<int  > trunc_indexes(trunc_max, int(0));
