@@ -48,7 +48,8 @@
 #'
 #' # fit model to example data
 #' est <- estimate_truncation(example_data, model = model)
-estimate_truncation <- function(obs, max_truncation = 10, model = NULL, ...) {
+estimate_truncation <- function(obs, max_truncation = 10, model = NULL, 
+                                CrIs = c(0.2, 0.5, 0.9), ...) {
   # combine into ordered matrix
   obs <- data.table::copy(obs)
   nrow_obs <- order(purrr::map_dbl(obs, nrow))
@@ -57,9 +58,10 @@ estimate_truncation <- function(obs, max_truncation = 10, model = NULL, ...) {
                                                  confirm := NULL])
   obs <- purrr::reduce(obs, merge, all = TRUE)
   obs_start <- nrow(obs) - max_truncation - sum(is.na(obs$`1`)) + 1
-  obs <- obs[obs_start:.N]
+ 
   obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
   obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
+  obs_data <- obs_data[obs_start:.N]
   
   # convert to stan list
   data <- list(
@@ -89,6 +91,26 @@ estimate_truncation <- function(obs, max_truncation = 10, model = NULL, ...) {
                          ...)
 
   out <- list()
+  # Summarise fit truncation distribution for downstream usage
+  out$dist <- list(
+    mean = round(summary(fit, pars = "logmean")$summary[1], 3),
+    mean_sd = round(summary(fit, pars = "logmean")$summary[3], 3),
+    sd = round(summary(fit, pars = "logsd")$summary[1], 3),
+    sd_sd = round(summary(fit, pars = "logsd")$summary[3], 3),
+    max = max_truncation
+  )
+  
+  # summarise reconstructed obs
+  CrIs <- c(0.5, 0.5 - CrIs / 2, 0.5 + CrIs / 2)
+  CrIs <- CrIs[order(CrIs)]
+  recon_obs <- summary(fit, pars = "recon_obs", probs = CrIs)$summary
+  recon_obs <- data.table::as.data.table(recon_obs, 
+                                         keep.rownames = "id")
+  recon_obs <- recon_obs[, dataset := 1:.N][, 
+                           dataset := dataset %% data$obs_sets][
+                        dataset == 0, dataset := data$obs_sets]
+  
+  example_data
   out$data <- data
   out$fit <- fit
   return(out)
