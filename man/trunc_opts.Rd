@@ -17,7 +17,8 @@ A list summarising the input truncation distribution.
 }
 \description{
 \lifecycle{stable}
-Returns a truncation distribution formatted for usage by downstream functions
+Returns a truncation distribution formatted for usage by downstream functions. See
+\code{estimate_truncation} for an approach to esimate this distribution.
 }
 \examples{
 # no truncation
