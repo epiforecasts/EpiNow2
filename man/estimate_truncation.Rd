@@ -105,5 +105,7 @@ est$dist
 # summary of the estimated truncation cmf (can be applied to new data)
 print(est$cmf)
 # observations linked to truncation adjusted estimates
-print(est$obs)      
+print(est$obs)    
+# validation plot of observations vs estimates
+plot(est)
 }

@@ -40,7 +40,7 @@ delay_opts <- function(...) {
 #' 
 #' @description \lifecycle{stable}
 #' Returns a truncation distribution formatted for usage by downstream functions. See 
-#' `estimate_truncation` for an approach to esimate this distribution.
+#' `estimate_truncation` for an approach to estimate this distribution.
 #' @param dist A list defining the truncation distribution, defaults to `NULL` in which
 #' case no truncation is used. Must have the following elements if defined: "mean", "mean_sd",
 #'"sd_mean", "sd_sd", and "max" defining a truncated log normal (with all parameters except

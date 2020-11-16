@@ -75,6 +75,7 @@
 #' plot(dep) 
 #' 
 #' # Adjusting for truncation of the most recent data
+#' # See estimate_truncation for an approach to estimating this from data
 #' trunc_dist <- list(mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
 #'                    sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1, 
 #'                    max = 3)
