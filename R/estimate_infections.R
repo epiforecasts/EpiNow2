@@ -175,22 +175,18 @@ estimate_infections <- function(reported_cases,
   start_date <- min(reported_cases$date, na.rm = TRUE)
   
   # Create mean shifted reported cases as prior
-  if (delays$delays > 0) {
-    reported_cases <- data.table::rbindlist(list(
-      data.table::data.table(
-        date = seq(min(reported_cases$date) - delays$seeding_time - backcalc$prior_window,
-                   min(reported_cases$date) - 1, by = "days"),
-        confirm = 0,  breakpoint = 0), 
-      reported_cases))  
-    
-    shifted_cases <- create_shifted_cases(reported_cases, 
-                                                   delays$seeding_time, 
-                                                   backcalc$prior_window,
-                                                   horizon)
-    reported_cases <- reported_cases[-(1:backcalc$prior_window)]
-  }else{
-    shifted_cases <- reported_cases
-  }
+  reported_cases <- data.table::rbindlist(list(
+    data.table::data.table(
+      date = seq(min(reported_cases$date) - delays$seeding_time - backcalc$prior_window,
+                 min(reported_cases$date) - 1, by = "days"),
+      confirm = 0,  breakpoint = 0), 
+    reported_cases))  
+  
+  shifted_cases <- create_shifted_cases(reported_cases, 
+                                        delays$seeding_time, 
+                                        backcalc$prior_window,
+                                        horizon)
+  reported_cases <- reported_cases[-(1:backcalc$prior_window)]
   
   # Add week day info
   reported_cases <- reported_cases[, day_of_week := lubridate::wday(date, week_start = 1)]

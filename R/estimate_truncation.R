@@ -10,7 +10,8 @@
 #' standard deviation that is informed by the data.
 #' 2. The data set with the latest observations is adjusted for truncation using 
 #' the truncation distribution.
-#' 3. Earlier data sets are recreated using the adjusted latest observations and these
+#' 3. Earlier data sets are recreated by applying the truncation distribution to
+#' the adjusted latest observations in the time period of the earlier data set. These 
 #' data sets are then compared to the earlier observations assuming a negative binomial
 #' observation model.
 #' 

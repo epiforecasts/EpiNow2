@@ -48,7 +48,8 @@ The model of truncation is as follows:
 standard deviation that is informed by the data.
 \item The data set with the latest observations is adjusted for truncation using
 the truncation distribution.
-\item Earlier data sets are recreated using the adjusted latest observations and these
+\item Earlier data sets are recreated by applying the truncation distribution to
+the adjusted latest observations in the time period of the earlier data set. These
 data sets are then compared to the earlier observations assuming a negative binomial
 observation model.
 }
