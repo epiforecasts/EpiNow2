@@ -69,7 +69,7 @@
 #'   trunc_cases[(.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)]
 #'   return(trunc_cases)
 #'  }
-#' example_data <- purrr::map(c(15, 10, 5, 0), 
+#' example_data <- purrr::map(c(20, 15, 10, 0), 
 #'                            construct_truncation,
 #'                            cases = reported_cases,
 #'                            dist = trunc_dist)
