@@ -33,8 +33,10 @@
 #' @param verbose Logical, should model fitting progress be returned.
 #' @param ... Additional parameters to pass to `rstan::sampling`.
 #' @return A list containing: the summary parameters of the truncation distribution
-#'  (`dist`), a data frame containing the observed truncated data, latest observed data
-#'  and the adjusted for truncation observations (`obs`), the data used for fitting 
+#'  (`dist`), the estimated CMF of the truncation distribution (`cmf`, can be used to adjusted 
+#'  new data), a data frame containing the observed truncated data, latest observed data
+#'  and the adjusted for truncation observations (`obs`), a data frame containing the last 
+#'  observed data (`last_obs`, useful for plotting and validation), the data used for fitting 
 #'  (`data`) and the fit object (`fit`).
 #' @export
 #' @inheritParams calc_CrIs
@@ -78,14 +80,14 @@
 #' # summary of the distribution
 #' est$dist
 #' # summary of the estimated truncation cmf (can be applied to new data)
-#' est$cmf
+#' print(est$cmf)
 #' # observations linked to truncation adjusted estimates
-#' est$obs      
+#' print(est$obs)      
 estimate_truncation <- function(obs, max_truncation = 10, 
                                 model = NULL, 
                                 CrIs = c(0.2, 0.5, 0.9),
                                 verbose = TRUE,
-                                ...) {
+                                ...) { 
   # combine into ordered matrix
   dirty_obs <- purrr::map(obs, data.table::as.data.table)
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
@@ -138,10 +140,17 @@ estimate_truncation <- function(obs, max_truncation = 10,
   )
   
   # generate symmetric CrIs
-  CrIs <- c(0.5, 0.5 - CrIs / 2, 0.5 + CrIs / 2)
   CrIs <- CrIs[order(CrIs)]
+  sym_CrIs <- c(0.5, 0.5 - CrIs / 2, 0.5 + CrIs / 2)
+  sym_CrIs <- sym_CrIs[order(sym_CrIs)]
+  CrIs <- c(paste0("lower_", CrIs), "median", paste0("upper_", CrIs))
+  customised_summary <- function(par) {
+    summary <- rstan::summary(fit, pars = par, probs = sym_CrIs)$summary
+    colnames(summary) <- c("mean", "se_mean", "sd", CrIs, "n_eff", "Rhat")
+    return(summary)
+  }
   # summarise reconstructed observations
-  recon_obs <- rstan::summary(fit, pars = "recon_obs", probs = CrIs)$summary
+  recon_obs <- customised_summary("recon_obs")
   recon_obs <- data.table::as.data.table(recon_obs, 
                                          keep.rownames = "id")
   recon_obs <- recon_obs[, dataset := 1:.N][, 
@@ -169,9 +178,9 @@ estimate_truncation <- function(obs, max_truncation = 10,
   }
   out$obs <- purrr::map(1:(data$obs_sets), link_obs)
   out$obs <- data.table::rbindlist(out$obs)
-  
+  out$last_obs <- last_obs
   # summarise estimated cmf of the truncation distribution
-  out$cmf <- rstan::summary(fit, pars = "cmf", probs = CrIs)$summary
+  out$cmf <- customised_summary("cmf")
   out$cmf <- data.table::as.data.table(out$cmf)[, index := .N:1]
   out$cmf <- out$cmf[, c("n_eff", "Rhat") := NULL]
   data.table::setcolorder(out$cmf, "index")
@@ -181,3 +190,4 @@ estimate_truncation <- function(obs, max_truncation = 10,
   class(out) <- c("estimate_truncation", class(out))
   return(out)
 }
+

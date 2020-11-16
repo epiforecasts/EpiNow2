@@ -33,8 +33,10 @@ useful for package developers or those developing extensions.}
 }
 \value{
 A list containing: the summary parameters of the truncation distribution
-(\code{dist}), a data frame containing the observed truncated data, latest observed data
-and the adjusted for truncation observations (\code{obs}), the data used for fitting
+(\code{dist}), the estimated CMF of the truncation distribution (\code{cmf}, can be used to adjusted
+new data), a data frame containing the observed truncated data, latest observed data
+and the adjusted for truncation observations (\code{obs}), a data frame containing the last
+observed data (\code{last_obs}, useful for plotting and validation), the data used for fitting
 (\code{data}) and the fit object (\code{fit}).
 }
 \description{
@@ -101,7 +103,7 @@ est <- estimate_truncation(example_data, verbose = interactive())
 # summary of the distribution
 est$dist
 # summary of the estimated truncation cmf (can be applied to new data)
-est$cmf
+print(est$cmf)
 # observations linked to truncation adjusted estimates
-est$obs      
+print(est$obs)      
 }
