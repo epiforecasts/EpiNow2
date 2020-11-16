@@ -312,7 +312,7 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
     max_execution_time = max_execution_time
   )
   control_def <- list(adapt_delta = 0.98, max_treedepth = 15)
-  opts$control <- update_defaults(control_def, control)
+  opts$control <- update_list(control_def, control)
   opts$iter <- ceiling(samples / opts$chains) + opts$warmup
   opts <- c(opts, ...)
   return(opts)
@@ -416,4 +416,79 @@ stan_opts <- function(samples = 2000,
   }
   opts <- c(opts, list(return_fit = return_fit))
   return(opts)
+}
+
+#' Return an _opts List per Region
+#'
+#' @description \lifecycle{maturing}
+#' Define a list of `_opts` to pass to `regional_epinow` `_opts` accepting arguments.
+#' This is useful when different settings are needed between regions within a single 
+#' `regional_epinow` call. Using `opts_list` the defaults can be applied to all regions 
+#' present with an override passed to regions as necessary (either within `opts_list` or 
+#' externally).
+#' @param opts An `_opts` function call such as `rt_opts()`
+#' @param reported_cases A data frame containing a `region` variable
+#' indicating the target regions
+#' @param ... Optional override for region defaults. See the examples
+#' for use case.
+#' @return A named list of options per region which can be passed to the `_opt` 
+#' accepting arguments of `regional_epinow`
+#' @seealso regional_epinow rt_opts
+#' @export
+#' @examples
+#' # uses example case vector
+#' cases <- example_confirmed[1:40]
+#' cases <- data.table::rbindlist(list(
+#'   data.table::copy(cases)[, region := "testland"],
+#'   cases[, region := "realland"]))
+#'   
+#' # default settings
+#' opts_list(rt_opts(), cases)
+#' 
+#' # add a weekly random walk in realland
+#' opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+#' 
+#' # add a weekly random walk externally
+#' rt <- opts_list(rt_opts(), cases)
+#' rt$realland$rw <- 7
+#' rt
+opts_list <- function(opts, reported_cases, ...) {
+  regions <- unique(reported_cases$region)
+  default <- rep(list(opts), length(regions))
+  names(default) <- regions
+  out <- update_list(default, list(...))
+  return(out)
+}
+
+#' Filter Options for a Target Region
+#' 
+#' @description \lifecycle{maturing}
+#' A helper function that allows the selection of region specific settings if 
+#' present and otherwise applies the overarching settings
+#' @param opts Either a list of calls to an `_opts` function or a single 
+#' call to an `_opts` function.
+#' @param region A character string indicating a region of interest. 
+#' @return A list of options
+#' @examples
+#' # uses example case vector
+#' cases <- example_confirmed[1:40]
+#' cases <- data.table::rbindlist(list(
+#'   data.table::copy(cases)[, region := "testland"],
+#'   cases[, region := "realland"]))
+#'   
+#' # regional options
+#' regional_opts <- opts_list(rt_opts(), cases)
+#' EpiNow2:::filter_opts(regional_opts, "realland")
+#' # default only
+#' EpiNow2:::filter_opts(rt_opts(), "realland")
+#' #settings are NULL in one regions
+#' regional_opts <- update_list(regional_opts, list(realland = NULL))
+#' EpiNow2:::filter_opts(regional_opts, "realland")
+filter_opts <- function(opts, region) {
+  if (region %in% names(opts)) {
+    out <- opts[[region]]
+  }else{
+    out <- opts
+  }
+  return(out)
 }

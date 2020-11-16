@@ -475,7 +475,7 @@ create_stan_args <- function(stan = stan_opts(),
     init = init,
     refresh = ifelse(verbose, 50, 0)
   )
-  args <- update_defaults(args, stan)
+  args <- update_list(args, stan)
   args$return_fit <- NULL
   return(args)
 }

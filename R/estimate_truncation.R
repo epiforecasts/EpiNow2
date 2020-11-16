@@ -205,10 +205,10 @@ estimate_truncation <- function(obs, max_truncation = 10,
 #' @seealso plot estimate_truncation
 #' @method plot estimate_truncation
 #' @return `ggplot2` object
-#' @inheritParams ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme
-#' @inheritParams cowplot theme_cowplot
+#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme
+#' @importFrom cowplot theme_cowplot
 #' @export
-plot.estimate_truncation <- function(x) {
+plot.estimate_truncation <- function(x, ...) {
   plot <- ggplot2::ggplot(x$obs, ggplot2::aes(x = date, y = last_confirm)) +
     ggplot2::geom_col(fill = "grey", col = "white",
                       show.legend = FALSE, na.rm = TRUE) +

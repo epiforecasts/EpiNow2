@@ -4,7 +4,7 @@
 \alias{plot.estimate_truncation}
 \title{Plot method for estimate_truncation}
 \usage{
-\method{plot}{estimate_truncation}(x)
+\method{plot}{estimate_truncation}(x, ...)
 }
 \arguments{
 \item{x}{A list of output as produced by \code{estimate_truncation}}

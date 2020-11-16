@@ -97,11 +97,15 @@ A list of output stratified at the top level into regional output and across reg
 Efficiently runs \code{epinow} across multiple regions in an efficient manner and conducts basic data checks and
 cleaning such as removing regions with fewer than \code{non_zero_points} as these are unlikely to produce reasonable
 results whilst consuming significant resources. See the documentation for \code{epinow} for further information.
+
+By default all arguments supporting input from \verb{_opts} functions are shared across regions (including delays,
+truncation, Rt settings, stan settings, and gaussian process settings). Region specific settings are supported
+by passing a named list of \verb{_opts} calls (with an entry per region) to the relevant argument. A helper function
+(\code{opts_list}) is available to facilitate building this list.
+
 Regions can be estimated in parallel using the \code{{future}} package (see \code{setup_future}). The progress of producing
 estimates across multiple regions is tracked using the \code{progressr} package. Modify this behaviour using
 progressr::handlers and enable it in batch by setting \code{R_PROGRESSR_ENABLE=TRUE} as an environment variable.
-This function is maturing but additional analyses of large batch runs will be added in the future as will
-additional options for customising settings with individual regions.
 }
 \examples{
  \donttest{
@@ -117,19 +121,31 @@ reporting_delay <- list(mean = convert_to_logmean(3,1),
                         sd_sd = 0.1, max = 15)
                         
 # uses example case vector
-cases <- EpiNow2::example_confirmed[1:40]
+cases <- EpiNow2::example_confirmed[1:60]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))
                 
 # run epinow across multiple regions and generate summaries
 # samples and warmup have been reduced for this example
-out <- regional_epinow(reported_cases = cases[, breakpoint := 1], 
+def <- regional_epinow(reported_cases = cases, 
                        generation_time = generation_time,
                        delays = delay_opts(incubation_period, reporting_delay),
                        rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-                       stan = stan_opts(samples = 100, warmup = 100),
+                       stan = stan_opts(samples = 100, warmup = 200),
                        verbose = interactive())
+                       
+# apply a different rt method per region
+# (here a gaussian process and a weekly random walk)
+gp <- opts_list(gp_opts(), cases)
+gp <- update_list(gp, list(realland = NULL))
+rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+region_rt <- regional_epinow(reported_cases = cases, 
+                             generation_time = generation_time,
+                             delays = delay_opts(incubation_period, reporting_delay),
+                             rt = rt, gp = gp,
+                             stan = stan_opts(samples = 100, warmup = 200),
+                             verbose = interactive())
 }
 }
 \seealso{

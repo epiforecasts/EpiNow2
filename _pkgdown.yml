@@ -62,9 +62,10 @@ reference:
       - copy_results_to_latest
       - construct_output
   - title: Internal estimate_infections Functions
-    desc: Functions used internally by estimate_infections
+    desc: Functions used by estimate_infections
     contents:
       - contains("_opts")
+      - opts_list
       - contains("create_")
       - allocate_delays
       - allocate_empty
@@ -143,4 +144,4 @@ reference:
       - convert_to_logsd
       - growth_to_R
       - R_to_growth
-      - update_defaults
+      - update_list
