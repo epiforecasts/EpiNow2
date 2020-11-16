@@ -100,6 +100,8 @@ est <- estimate_truncation(example_data, verbose = interactive())
                            
 # summary of the distribution
 est$dist
+# summary of the estimated truncation cmf (can be applied to new data)
+est$cmf
 # observations linked to truncation adjusted estimates
 est$obs      
 }

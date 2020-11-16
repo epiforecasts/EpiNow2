@@ -439,7 +439,6 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
 #' @param ... Arguments to pass to internal methods.
 #' @return A list summarising the bootstrapped distribution
 #' @export
-#' @inheritParams bootstrapped_dist_fit
 #' @seealso bootstrapped_dist_fit
 #' @examples
 #' \donttest{
