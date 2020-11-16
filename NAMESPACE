@@ -2,6 +2,7 @@
 
 S3method(plot,epinow)
 S3method(plot,estimate_infections)
+S3method(plot,estimate_truncation)
 S3method(summary,epinow)
 S3method(summary,estimate_infections)
 export(R_to_growth)

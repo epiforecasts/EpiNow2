@@ -69,7 +69,7 @@
 #'   trunc_cases[(.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)]
 #'   return(trunc_cases)
 #'  }
-#' example_data <- purrr::map(10:0, 
+#' example_data <- purrr::map(c(15, 10, 5, 0), 
 #'                            construct_truncation,
 #'                            cases = reported_cases,
 #'                            dist = trunc_dist)
@@ -82,7 +82,9 @@
 #' # summary of the estimated truncation cmf (can be applied to new data)
 #' print(est$cmf)
 #' # observations linked to truncation adjusted estimates
-#' print(est$obs)      
+#' print(est$obs)    
+#' # validation plot of observations vs estimates
+#' plot(est)
 estimate_truncation <- function(obs, max_truncation = 10, 
                                 model = NULL, 
                                 CrIs = c(0.2, 0.5, 0.9),
@@ -143,6 +145,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
   CrIs <- CrIs[order(CrIs)]
   sym_CrIs <- c(0.5, 0.5 - CrIs / 2, 0.5 + CrIs / 2)
   sym_CrIs <- sym_CrIs[order(sym_CrIs)]
+  CrIs <- round(100 * CrIs, 0)
   CrIs <- c(paste0("lower_", CrIs), "median", paste0("upper_", CrIs))
   customised_summary <- function(par) {
     summary <- rstan::summary(fit, pars = par, probs = sym_CrIs)$summary
@@ -190,4 +193,39 @@ estimate_truncation <- function(obs, max_truncation = 10,
   class(out) <- c("estimate_truncation", class(out))
   return(out)
 }
+
+#' Plot method for estimate_truncation
+#'
+#' @description \lifecycle{experimental}
+#' \code{plot} method for class "estimate_truncation". Returns 
+#' a plot facetted over each dataset used in fitting with the latest 
+#' observations as columns, the data observed at the time (and so truncated) 
+#' as dots and the truncation adjusted estimates as a ribbon.
+#' @param x A list of output as produced by `estimate_truncation`
+#' @seealso plot estimate_truncation
+#' @method plot estimate_truncation
+#' @return `ggplot2` object
+#' @inheritParams ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme
+#' @inheritParams cowplot theme_cowplot
+#' @export
+plot.estimate_truncation <- function(x) {
+  plot <- ggplot2::ggplot(x$obs, ggplot2::aes(x = date, y = last_confirm)) +
+    ggplot2::geom_col(fill = "grey", col = "white",
+                      show.legend = FALSE, na.rm = TRUE) +
+    ggplot2::geom_point(data = x$obs,
+                        ggplot2::aes(x = date, y = confirm)) +
+    ggplot2::facet_wrap(~report_date, scales = "free")
+  
+  plot <- plot_CrIs(plot, extract_CrIs(x$obs),
+                    alpha = 0.8, size = 1)
+  
+  plot <- plot +       
+    cowplot::theme_cowplot() +
+    ggplot2::labs(y = "Confirmed Cases", x = "Date", col = "Type", fill = "Type") +
+    ggplot2::scale_x_date(date_breaks = "day", date_labels = "%b %d") +
+    ggplot2::scale_y_continuous(labels = scales::comma) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
+  return(plot)
+}
+
 
