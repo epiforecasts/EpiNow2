@@ -41,8 +41,8 @@ vector discretised_lognormal_pmf(int[] y, real mu, real sigma, int max_val) {
   return(pmf);
 }
 
-// reverse a pmf
-vector reverse_pmf(vector pmf, int max_pmf) {
+// reverse a mf
+vector reverse_mf(vector pmf, int max_pmf) {
   vector[max_pmf] rev_pmf;
   for (d in 1:max_pmf) {
     rev_pmf[d] = pmf[max_pmf - d + 1];

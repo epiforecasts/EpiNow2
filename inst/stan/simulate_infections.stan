@@ -24,8 +24,8 @@ data {
   int pop;                       // susceptible population
   // delay from infection to report
   int delays;                           // no. of delay distributions
-  real<lower = 0> delay_mean[n, delays];// mean of delays
-  real<lower = 0> delay_sd[n, delays];  // sd of delays
+  real delay_mean[n, delays];           // mean of delays
+  real delay_sd[n, delays];             // sd of delays
   int max_delay[delays];                // maximum delay
   // observation model
   int day_of_week[t - seeding_time]; // day of the week indicator (1 - 7)
