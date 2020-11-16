@@ -202,6 +202,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
 #' observations as columns, the data observed at the time (and so truncated) 
 #' as dots and the truncation adjusted estimates as a ribbon.
 #' @param x A list of output as produced by `estimate_truncation`
+#' @param ... Pass additional arguments to plot function. Not currently in use.
 #' @seealso plot estimate_truncation
 #' @method plot estimate_truncation
 #' @return `ggplot2` object

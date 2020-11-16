@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{x}{A list of output as produced by \code{estimate_truncation}}
+
+\item{...}{Pass additional arguments to plot function. Not currently in use.}
 }
 \value{
 \code{ggplot2} object
