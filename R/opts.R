@@ -36,6 +36,32 @@ delay_opts <- function(...) {
   return(data)
 }
 
+#' Truncation Distribution Options
+#' 
+#' @description \lifecycle{stable}
+#' Returns a truncation distribution formatted for usage by downstream functions. See 
+#' `estimate_truncation` for an approach to estimate this distribution.
+#' @param dist A list defining the truncation distribution, defaults to `NULL` in which
+#' case no truncation is used. Must have the following elements if defined: "mean", "mean_sd",
+#'"sd_mean", "sd_sd", and "max" defining a truncated log normal (with all parameters except
+#' for max defined in logged form).
+#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+#' @return A list summarising the input truncation distribution.
+#' @export
+#' @examples
+#' # no truncation
+#' trunc_opts()
+trunc_opts <- function(dist = NULL) {
+  data <- list()
+  data$truncation <- ifelse(is.null(dist), 0, 1)
+  data$trunc_mean_mean <- allocate_delays(dist$mean, data$truncation)
+  data$trunc_mean_sd <- allocate_delays(dist$mean_sd, data$truncation)
+  data$trunc_sd_mean <- allocate_delays(dist$sd, data$truncation)
+  data$trunc_sd_sd <- allocate_delays(dist$sd_sd, data$truncation)
+  data$max_truncation <- allocate_delays(dist$max, data$truncation)
+  return(data)
+}
+
 #' Time-Varying Reproduction Number Options
 #'
 #' @description \lifecycle{stable}
@@ -286,7 +312,7 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
     max_execution_time = max_execution_time
   )
   control_def <- list(adapt_delta = 0.98, max_treedepth = 15)
-  opts$control <- update_defaults(control_def, control)
+  opts$control <- update_list(control_def, control)
   opts$iter <- ceiling(samples / opts$chains) + opts$warmup
   opts <- c(opts, ...)
   return(opts)
@@ -297,7 +323,7 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 #' @description \lifecycle{stable}
 #'  Defines a list specifying the arguments passed to 
 #' `rstan::vb`. Custom settings can be supplied which override the defaults.
-#' @param samples Numeric, default 1000. Overall number of approximate posterior 
+#' @param samples Numeric, default 2000. Overall number of approximate posterior 
 #' samples.
 #' @param trials Numeric, defaults to 10. Number of attempts to use `rstan::vb` 
 #' before failing.
@@ -307,8 +333,8 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 #' @return A list of arguments to pass to `rstan::vb`
 #' @export
 #' @examples
-#' rstan_vb_opts(samples = 2000)
-rstan_vb_opts <- function(samples = 1000,
+#' rstan_vb_opts(samples = 1000)
+rstan_vb_opts <- function(samples = 2000,
                           trials = 10,
                           iter = 10000, ...) {
   opts <- list(
@@ -335,12 +361,12 @@ rstan_vb_opts <- function(samples = 1000,
 #' @inheritParams rstan_sampling_opts
 #' @seealso rstan_sampling_opts rstan_vb_opts
 #' @examples
-#' rstan_opts(samples = 2000)
+#' rstan_opts(samples = 1000)
 #' 
 #' # using vb
 #' rstan_opts(method = "vb")
 rstan_opts <- function(object = NULL,
-                       samples = 1000,
+                       samples = 2000,
                        method = "sampling", ...) {
   method <- match.arg(method, choices = c("sampling", "vb"))
   # shared everywhere opts
@@ -375,11 +401,11 @@ rstan_opts <- function(object = NULL,
 #' @seealso rstan_opts 
 #' @examples
 #' # using default of rstan::sampling
-#' stan_opts(samples = 2000)
+#' stan_opts(samples = 1000)
 #' 
 #' # using vb
 #' stan_opts(method = "vb")
-stan_opts <- function(samples = 1000,
+stan_opts <- function(samples = 2000,
                       backend = "rstan", 
                       return_fit = TRUE,
                       ...){
@@ -390,4 +416,79 @@ stan_opts <- function(samples = 1000,
   }
   opts <- c(opts, list(return_fit = return_fit))
   return(opts)
+}
+
+#' Return an _opts List per Region
+#'
+#' @description \lifecycle{maturing}
+#' Define a list of `_opts` to pass to `regional_epinow` `_opts` accepting arguments.
+#' This is useful when different settings are needed between regions within a single 
+#' `regional_epinow` call. Using `opts_list` the defaults can be applied to all regions 
+#' present with an override passed to regions as necessary (either within `opts_list` or 
+#' externally).
+#' @param opts An `_opts` function call such as `rt_opts()`
+#' @param reported_cases A data frame containing a `region` variable
+#' indicating the target regions
+#' @param ... Optional override for region defaults. See the examples
+#' for use case.
+#' @return A named list of options per region which can be passed to the `_opt` 
+#' accepting arguments of `regional_epinow`
+#' @seealso regional_epinow rt_opts
+#' @export
+#' @examples
+#' # uses example case vector
+#' cases <- example_confirmed[1:40]
+#' cases <- data.table::rbindlist(list(
+#'   data.table::copy(cases)[, region := "testland"],
+#'   cases[, region := "realland"]))
+#'   
+#' # default settings
+#' opts_list(rt_opts(), cases)
+#' 
+#' # add a weekly random walk in realland
+#' opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+#' 
+#' # add a weekly random walk externally
+#' rt <- opts_list(rt_opts(), cases)
+#' rt$realland$rw <- 7
+#' rt
+opts_list <- function(opts, reported_cases, ...) {
+  regions <- unique(reported_cases$region)
+  default <- rep(list(opts), length(regions))
+  names(default) <- regions
+  out <- update_list(default, list(...))
+  return(out)
+}
+
+#' Filter Options for a Target Region
+#' 
+#' @description \lifecycle{maturing}
+#' A helper function that allows the selection of region specific settings if 
+#' present and otherwise applies the overarching settings
+#' @param opts Either a list of calls to an `_opts` function or a single 
+#' call to an `_opts` function.
+#' @param region A character string indicating a region of interest. 
+#' @return A list of options
+#' @examples
+#' # uses example case vector
+#' cases <- example_confirmed[1:40]
+#' cases <- data.table::rbindlist(list(
+#'   data.table::copy(cases)[, region := "testland"],
+#'   cases[, region := "realland"]))
+#'   
+#' # regional options
+#' regional_opts <- opts_list(rt_opts(), cases)
+#' EpiNow2:::filter_opts(regional_opts, "realland")
+#' # default only
+#' EpiNow2:::filter_opts(rt_opts(), "realland")
+#' #settings are NULL in one regions
+#' regional_opts <- update_list(regional_opts, list(realland = NULL))
+#' EpiNow2:::filter_opts(regional_opts, "realland")
+filter_opts <- function(opts, region) {
+  if (region %in% names(opts)) {
+    out <- opts[[region]]
+  }else{
+    out <- opts
+  }
+  return(out)
 }

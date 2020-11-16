@@ -15,7 +15,7 @@ bootstrapped_dist_fit(
 )
 }
 \arguments{
-\item{values}{Numeric vector of integer values.}
+\item{values}{Integer vector of values.}
 
 \item{dist}{Character string, which distribution to fit. Defaults to lognormal (\code{"lognormal"}) but
 gamma (\code{"gamma"}) is also supported.}

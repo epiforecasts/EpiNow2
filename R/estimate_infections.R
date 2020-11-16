@@ -42,13 +42,11 @@
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # set delays between infection and case report 
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- list(mean = convert_to_logmean(3, 1), 
-#'                         mean_sd = 0.1,
-#'                         sd = convert_to_logsd(3, 1), 
-#'                         sd_sd = 0.1, 
-#'                         max = 15)
+#' reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
+#'                         sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 10)
 #'       
-#' # default setting
+#' # default setting 
+#' # here we assume that the observed data is truncated by the same delay as 
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
@@ -67,7 +65,7 @@
 #' summary(agp)
 #' plot(agp) 
 #' 
-#' #' Adjusting for future susceptible depletion
+#' # Adjusting for future susceptible depletion
 #' dep <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1),
@@ -75,6 +73,19 @@
 #'                            gp = gp_opts(ls_min = 10, basis_prop = 0.1), horizon = 21,
 #'                            stan = stan_opts(control = list(adapt_delta = 0.95)))
 #' plot(dep) 
+#' 
+#' # Adjusting for truncation of the most recent data
+#' # See estimate_truncation for an approach to estimating this from data
+#' trunc_dist <- list(mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
+#'                    sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1, 
+#'                    max = 3)
+#' trunc <- estimate_infections(reported_cases, generation_time = generation_time,
+#'                              delays = delay_opts(incubation_period, reporting_delay),
+#'                              truncation = trunc_opts(trunc_dist),
+#'                              rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+#'                              gp = gp_opts(ls_min = 10, basis_prop = 0.1),
+#'                              stan = stan_opts(control = list(adapt_delta = 0.95)))
+#' plot(trunc) 
 #' 
 #' # using back calculation (combined here with under reporting)
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
@@ -138,6 +149,7 @@
 estimate_infections <- function(reported_cases, 
                                 generation_time, 
                                 delays = delay_opts(),
+                                truncation = trunc_opts(),
                                 rt = rt_opts(),
                                 backcalc = backcalc_opts(),
                                 gp = gp_opts(),
@@ -164,22 +176,18 @@ estimate_infections <- function(reported_cases,
   start_date <- min(reported_cases$date, na.rm = TRUE)
   
   # Create mean shifted reported cases as prior
-  if (delays$delays > 0) {
-    reported_cases <- data.table::rbindlist(list(
-      data.table::data.table(
-        date = seq(min(reported_cases$date) - delays$seeding_time - backcalc$prior_window,
-                   min(reported_cases$date) - 1, by = "days"),
-        confirm = 0,  breakpoint = 0), 
-      reported_cases))  
-    
-    shifted_cases <- create_shifted_cases(reported_cases, 
-                                                   delays$seeding_time, 
-                                                   backcalc$prior_window,
-                                                   horizon)
-    reported_cases <- reported_cases[-(1:backcalc$prior_window)]
-  }else{
-    shifted_cases <- reported_cases
-  }
+  reported_cases <- data.table::rbindlist(list(
+    data.table::data.table(
+      date = seq(min(reported_cases$date) - delays$seeding_time - backcalc$prior_window,
+                 min(reported_cases$date) - 1, by = "days"),
+      confirm = 0,  breakpoint = 0), 
+    reported_cases))  
+  
+  shifted_cases <- create_shifted_cases(reported_cases, 
+                                        delays$seeding_time, 
+                                        backcalc$prior_window,
+                                        horizon)
+  reported_cases <- reported_cases[-(1:backcalc$prior_window)]
   
   # Add week day info
   reported_cases <- reported_cases[, day_of_week := lubridate::wday(date, week_start = 1)]
@@ -188,6 +196,7 @@ estimate_infections <- function(reported_cases,
   data <- create_stan_data(reported_cases = reported_cases,
                            generation_time = generation_time,
                            delays = delays,
+                           truncation = truncation,
                            rt = rt,
                            gp = gp,
                            obs = obs,

@@ -1,14 +1,13 @@
 
 # EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters
 
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) 
 [![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master)
 [![metacran
 downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
 
-[![Lifecycle:
-maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
 [![MIT
 license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
 [![GitHub
@@ -139,8 +138,8 @@ distributions are supported with the most common use case likely to be a
 incubation period followed by a reporting delay.
 
 ``` r
-reporting_delay <- bootstrapped_dist_fit(rlnorm(1000,  log(3), 1),
-                                         max_value = 15, bootstraps = 1)
+reporting_delay <- estimate_delay(rlnorm(1000,  log(3), 1),
+                                  max_value = 15, bootstraps = 1)
 ```
 
 Here we define the incubation period and generation time based on
