@@ -40,7 +40,7 @@
 #' @inheritParams calc_CrIs
 #' @importFrom purrr map reduce map_dbl
 #' @importFrom rstan sampling
-#' @importFrom data.table copy .N as.data.table merge.data.table
+#' @importFrom data.table copy .N as.data.table merge.data.table setDT setcolorder
 #' @examples
 #' #set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
@@ -77,6 +77,8 @@
 #'                            
 #' # summary of the distribution
 #' est$dist
+#' # summary of the estimated truncation cmf (can be applied to new data)
+#' est$cmf
 #' # observations linked to truncation adjusted estimates
 #' est$obs      
 estimate_truncation <- function(obs, max_truncation = 10, 
@@ -85,10 +87,10 @@ estimate_truncation <- function(obs, max_truncation = 10,
                                 verbose = TRUE,
                                 ...) {
   # combine into ordered matrix
-  dirty_obs <- data.table::copy(obs)
+  dirty_obs <- purrr::map(obs, data.table::as.data.table)
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
-  obs <- data.table::copy(dirty_obs)
+  obs <- purrr::map(dirty_obs, data.table::copy)
   obs <- purrr::map(1:length(obs), ~ obs[[.]][, (as.character(.)) := confirm][, 
                                                   confirm := NULL])
   obs <- purrr::reduce(obs, merge, all = TRUE)
@@ -135,9 +137,10 @@ estimate_truncation <- function(obs, max_truncation = 10,
     max = max_truncation
   )
   
-  # summarise reconstructed observations
+  # generate symmetric CrIs
   CrIs <- c(0.5, 0.5 - CrIs / 2, 0.5 + CrIs / 2)
   CrIs <- CrIs[order(CrIs)]
+  # summarise reconstructed observations
   recon_obs <- rstan::summary(fit, pars = "recon_obs", probs = CrIs)$summary
   recon_obs <- data.table::as.data.table(recon_obs, 
                                          keep.rownames = "id")
@@ -155,17 +158,23 @@ estimate_truncation <- function(obs, max_truncation = 10,
     estimates <- estimates[, lapply(.SD, as.integer)]
     estimates <- estimates[, index := .N - 0:(.N-1)]
     estimates[, c("n_eff", "Rhat") := NULL]
-    target_obs <- data.table::merge.data.table(target_obs, estimates,
-                                               by = "index", all.x = TRUE)
-    target_obs <- target_obs[order(date)][, index := NULL]
     target_obs <- 
       data.table::merge.data.table(
         target_obs, last_obs, by = "date")
     target_obs[,report_date := max(date)]
+    target_obs <- data.table::merge.data.table(target_obs, estimates,
+                                               by = "index", all.x = TRUE)
+    target_obs <- target_obs[order(date)][, index := NULL]
     return(target_obs)
   }
   out$obs <- purrr::map(1:(data$obs_sets), link_obs)
   out$obs <- data.table::rbindlist(out$obs)
+  
+  # summarise estimated cmf of the truncation distribution
+  out$cmf <- rstan::summary(fit, pars = "cmf", probs = CrIs)$summary
+  out$cmf <- data.table::as.data.table(out$cmf)[, index := .N:1]
+  out$cmf <- out$cmf[, c("n_eff", "Rhat") := NULL]
+  data.table::setcolorder(out$cmf, "index")
   out$data <- data
   out$fit <- fit
 

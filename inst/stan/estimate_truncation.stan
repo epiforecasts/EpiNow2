@@ -38,17 +38,20 @@ model {
   for (i in 1:(obs_sets - 1)) {
     int start_t = t - obs_dist[i] - trunc_max[1];
     for (j in 1:trunc_max[1]) {
-      obs[start_t + j, i] ~ neg_binomial(trunc_obs[j, i], sqrt_phi);
+      obs[start_t + j, i] ~ neg_binomial_2(trunc_obs[j, i], sqrt_phi);
     }
   }
 }
 generated quantities {
-  // reconstruct all truncated datasets using posterior of the truncation distribution
   matrix[trunc_max[1], obs_sets] recon_obs;
+  vector[trunc_max[1]] cmf;
+  // reconstruct all truncated datasets using posterior of the truncation distribution
   for (i in 1:obs_sets) {
     int end_t = t - obs_dist[i];
     int start_t = end_t - trunc_max[1] + 1;
     recon_obs[, i] = truncate(to_vector(obs[start_t:end_t, i]), logmean, logsd, trunc_max, 1);
   }
+  // generate a posterior for the cmf of the truncation distribution
+  cmf = truncation_cmf(logmean[1], logsd[1], trunc_max[1]);
 }
 

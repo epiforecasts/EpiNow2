@@ -18,6 +18,19 @@ vector scale_obs(vector reports, real frac_obs) {
   scaled_reports = reports * frac_obs;
   return(scaled_reports);
 }
+// Calculate a truncation CMF
+vector truncation_cmf(real trunc_mean, real trunc_sd, int trunc_max) {
+    int  trunc_indexes[trunc_max];
+    vector[trunc_max] cmf;
+    for (i in 1:(trunc_max)) {
+      trunc_indexes[i] = i - 1;
+    }
+    cmf = discretised_lognormal_pmf(trunc_indexes, trunc_mean, trunc_sd, trunc_max);   
+    cmf[1] = cmf[1] + 1e-8;
+    cmf = cumulative_sum(cmf);
+    cmf = reverse_mf(cmf, trunc_max);
+    return(cmf);
+}
 // Truncate observed data by some truncation distribution
 vector truncate(vector reports, real[] truncation_mean, real[] truncation_sd, 
                 int[] truncation_max, int reconstruct) {
@@ -30,14 +43,7 @@ vector truncate(vector reports, real[] truncation_mean, real[] truncation_sd,
     int  trunc_indexes[trunc_max];
     vector[trunc_max] cmf;
     int first_t = t - trunc_max + 1;
-    for (i in 1:(trunc_max)) {
-      trunc_indexes[i] = i - 1;
-    }
-    cmf = discretised_lognormal_pmf(trunc_indexes, truncation_mean[1], 
-                                    truncation_sd[1], trunc_max);   
-    cmf[1] = cmf[1] + 1e-5;
-    cmf = cumulative_sum(cmf);
-    cmf = reverse_mf(cmf, trunc_max);
+    cmf = truncation_cmf(truncation_mean[1], truncation_sd[1], trunc_max);
     // Apply cdf of truncation delay to truncation max last entries in reports
     if (reconstruct) {
       trunc_reports[first_t:t] = trunc_reports[first_t:t] ./ cmf;
