@@ -335,7 +335,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters
 #'
 #' @description \lifecycle{stable}
-#' Fits an integer adjusted distribution to a subsampled bootstrap of data and then intergrates 
+#' Fits an integer adjusted distribution to a subsampled bootstrap of data and then integrates 
 #' the posterior samples into a single set of summary statistics. Can be used to generate a robust
 #' reporting delay that accounts for the fact the underlying delay likely varies over time or that 
 #' the size of the available reporting delay sample may not be representative of the current case load.

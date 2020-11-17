@@ -12,7 +12,7 @@ to mean shifted reports (used as a prior during back calculation). 7 days is the
 as this smooths day of the week effects but depending on the quality of the data and the
 amount of information users wish to use as a prior (higher values equalling a less informative prior).}
 
-\item{rt_window}{Integer, defaults to 1. The size of the centered rolling average to use when estimating
+\item{rt_window}{Integer, defaults to 1. The size of the centred rolling average to use when estimating
 Rt. This must be odd so that the central estimate is included.}
 }
 \value{

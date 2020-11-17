@@ -16,7 +16,7 @@ the Observation Model
 }
 \description{
 \lifecycle{stable}
-Takes the output of \code{obs_opts} and convrts it into a list understood by \code{stan}.
+Takes the output of \code{obs_opts} and converts it into a list understood by \code{stan}.
 }
 \examples{
 # default observation model data

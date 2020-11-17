@@ -388,7 +388,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' Summarise Regional Runtimes
 #'
 #' @description \lifecycle{maturing}
-#' Used internally by `regional_epinow` to summarise region runtimes.
+#' Used internally by `regional_epinow` to summarise region run times.
 #' @seealso regional_summary regional_epinow
 #' @inheritParams regional_summary
 #' @inheritParams epinow

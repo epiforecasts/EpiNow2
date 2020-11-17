@@ -32,7 +32,7 @@ A list of samples and summarised estimates of estimated cases by date of report
 }
 \description{
 \lifecycle{questioning}
-Either extracts or converts reported cases from an input datatable. For ouput from
+Either extracts or converts reported cases from an input data table. For output from
 \code{estimate_infections} this is a simple filtering step but for output from \code{forecast_infection}
 this is currently an approximate convolution. This step is likely to be updated/deprecated
 in new releases as \code{forecast_infections} evolves to be based on \code{stan} functionality.

@@ -198,7 +198,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
 #'
 #' @description \lifecycle{experimental}
 #' \code{plot} method for class "estimate_truncation". Returns 
-#' a plot facetted over each dataset used in fitting with the latest 
+#' a plot faceted over each dataset used in fitting with the latest 
 #' observations as columns, the data observed at the time (and so truncated) 
 #' as dots and the truncation adjusted estimates as a ribbon.
 #' @param x A list of output as produced by `estimate_truncation`
