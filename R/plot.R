@@ -1,3 +1,34 @@
+#' Plot EpiNow2 Credible Intervals
+#'
+#' @description \lifecycle{stable}
+#' Adds lineranges for user specified credible intervals
+#' @param plot A `ggplot2` plot
+#' @param CrIs Numeric list of credible intervals present in the data. As produced
+#' by `extract_CrIs`
+#' @param alpha Numeric, overall alpha of the target line range
+#' @param size Numeric, size of the default line range.
+#' @return A `ggplot2` plot.
+plot_CrIs <- function(plot, CrIs, alpha, size) {
+  index <- 1
+  alpha_per_CrI <- alpha / (length(CrIs) - 1)
+  for (CrI in CrIs) {
+    bottom <- paste0("lower_", CrI)
+    top <-  paste0("upper_", CrI)
+    if (index == 1) {
+      plot <- plot +
+        ggplot2::geom_ribbon(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]), 
+                             alpha = 0.2, size = size)
+    }else{
+      plot <- plot +
+        ggplot2::geom_ribbon(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]],
+                                          col = NULL), 
+                             alpha = alpha_per_CrI)
+    }
+    index <- index + 1
+  }
+  return(plot)
+}
+
 #' Plot Estimates
 #'
 #' @description \lifecycle{questioning}
@@ -22,16 +53,16 @@
 #' @examples
 #' \donttest{
 #' # define example cases
-#' cases <- EpiNow2::example_confirmed[1:40]
+#' cases <- example_confirmed[1:40]
 #' 
 #' # set up example delays
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+#' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 #' 
 #' # run model
-#' out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
-#'                                     delays = delay_opts(incubation_period, reporting_delay))
+#' out <- estimate_infections(cases, generation_time = generation_time,
+#'                            delays = delay_opts(incubation_period, reporting_delay))
 #' # plot infections
 #' plot_estimates(
 #'   estimate = out$summarised[variable == "infections"],
@@ -113,37 +144,21 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
       linetype = 2)
   
   # plot CrIs
-  CrIs <- extract_CrIs(estimate)
-  index <- 1
-  alpha_per_CrI <- 0.6 / (length(CrIs) - 1)
-  for (CrI in CrIs) {
-    bottom <- paste0("lower_", CrI)
-    top <-  paste0("upper_", CrI)
-    if (index == 1) {
-      plot <- plot +
-        ggplot2::geom_ribbon(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]), 
-                             alpha = 0.2, size = 0.05)
-    }else{
-      plot <- plot +
-        ggplot2::geom_ribbon(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]],
-                                          col = NULL), 
-                             alpha = alpha_per_CrI)
-    }
-    index <- index + 1
-  }
+  plot <- plot_CrIs(plot, extract_CrIs(estimate),
+                    alpha = 0.6, size = 0.05)
   
 # add plot theming
-plot <- plot +
-    cowplot::theme_cowplot() +
-    ggplot2::theme(legend.position = "bottom") +
-    ggplot2::scale_color_brewer(palette = "Dark2") +
-    ggplot2::scale_fill_brewer(palette = "Dark2") +
-    ggplot2::labs(y = ylab, x = "Date", col = "Type", fill = "Type") +
-    ggplot2::expand_limits(y = 0) + 
-    ggplot2::scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
-    ggplot2::scale_y_continuous(labels = scales::comma) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
-  
+  plot <- plot +
+      cowplot::theme_cowplot() +
+      ggplot2::theme(legend.position = "bottom") +
+      ggplot2::scale_color_brewer(palette = "Dark2") +
+      ggplot2::scale_fill_brewer(palette = "Dark2") +
+      ggplot2::labs(y = ylab, x = "Date", col = "Type", fill = "Type") +
+      ggplot2::expand_limits(y = 0) + 
+      ggplot2::scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+      ggplot2::scale_y_continuous(labels = scales::comma) +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
+    
   # add in a horizontal line if required
   if (!missing(hline)) {
     plot <- plot + 

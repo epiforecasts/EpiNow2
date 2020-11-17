@@ -4,7 +4,7 @@
 \alias{rstan_opts}
 \title{Rstan Options}
 \usage{
-rstan_opts(object = NULL, samples = 1000, method = "sampling", ...)
+rstan_opts(object = NULL, samples = 2000, method = "sampling", ...)
 }
 \arguments{
 \item{object}{Stan model object. By default uses the compiled package default.}
@@ -27,7 +27,7 @@ functions via \code{rstan_sampling_opts} and \code{rstan_vb_opts}.Custom setting
 which override the defaults.
 }
 \examples{
-rstan_opts(samples = 2000)
+rstan_opts(samples = 1000)
 
 # using vb
 rstan_opts(method = "vb")

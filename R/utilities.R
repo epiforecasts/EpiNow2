@@ -133,7 +133,6 @@ allocate_delays <- function(delay_var, no_delays) {
   return(array(out))
 }
 
-
 #' Allocate Empty Parameters to a List
 #'
 #' @description \lifecycle{stable}
@@ -290,14 +289,16 @@ convert_to_logsd <- function(mean, sd) {
 }
 
 
-#' Update Default Settings
+#' Update a List
 #'
 #' @description \lifecycle{stable}
-#' Used internally to handle updating default settings in a list.
+#' Used to handle updating settings in a list. For example when making
+#' changes to `opts_list` output.
 #' @param defaults A list of default settings
 #' @param optional A list of optional settings to override defaults
 #' @return A list
-update_defaults <- function(defaults = list(), optional = list()) {
+#' @export
+update_list <- function(defaults = list(), optional = list()) {
   if (length(optional) != 0) {
     defaults <- defaults[setdiff(names(defaults), names(optional))]
     updated <- c(defaults, optional)
@@ -325,5 +326,6 @@ globalVariables(
     "New confirmed cases by infection date", "Data", "R", "reference",
     ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate", 
     "point", "strat", "estimate", "breakpoint", "variable", "value.V1", "central_lower", "central_upper",
-    "mean_sd", "sd_sd", "average_7",  "..lowers", "..upper_CrI", "..uppers", "timing"))
+    "mean_sd", "sd_sd", "average_7",  "..lowers", "..upper_CrI", "..uppers", "timing",
+    "dataset", "last_confirm", "report_date"))
 

@@ -4,11 +4,15 @@
 #' Efficiently runs `epinow` across multiple regions in an efficient manner and conducts basic data checks and 
 #' cleaning such as removing regions with fewer than `non_zero_points` as these are unlikely to produce reasonable 
 #' results whilst consuming significant resources. See the documentation for `epinow` for further information.
+#' 
+#' By default all arguments supporting input from `_opts` functions are shared across regions (including delays, 
+#' truncation, Rt settings, stan settings, and gaussian process settings). Region specific settings are supported 
+#' by passing a named list of `_opts` calls (with an entry per region) to the relevant argument. A helper function
+#' (`opts_list`) is available to facilitate building this list.  
+#' 
 #' Regions can be estimated in parallel using the `{future}` package (see `setup_future`). The progress of producing
 #' estimates across multiple regions is tracked using the `progressr` package. Modify this behaviour using
 #' progressr::handlers and enable it in batch by setting `R_PROGRESSR_ENABLE=TRUE` as an environment variable. 
-#' This function is maturing but additional analyses of large batch runs will be added in the future as will 
-#' additional options for customising settings with individual regions.
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date), and region (`region`).
 #' @param non_zero_points Numeric, the minimum number of time points with non-zero cases in a region required for
 #' that region to be evaluated. Defaults to 7.
@@ -46,23 +50,36 @@
 #'                         sd_sd = 0.1, max = 15)
 #'                         
 #' # uses example case vector
-#' cases <- EpiNow2::example_confirmed[1:40]
+#' cases <- EpiNow2::example_confirmed[1:60]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
 #'                 
 #' # run epinow across multiple regions and generate summaries
 #' # samples and warmup have been reduced for this example
-#' out <- regional_epinow(reported_cases = cases[, breakpoint := 1], 
+#' def <- regional_epinow(reported_cases = cases, 
 #'                        generation_time = generation_time,
 #'                        delays = delay_opts(incubation_period, reporting_delay),
 #'                        rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-#'                        stan = stan_opts(samples = 100, warmup = 100),
+#'                        stan = stan_opts(samples = 100, warmup = 200),
 #'                        verbose = interactive())
+#'                        
+#' # apply a different rt method per region
+#' # (here a gaussian process and a weekly random walk)
+#' gp <- opts_list(gp_opts(), cases)
+#' gp <- update_list(gp, list(realland = NULL))
+#' rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+#' region_rt <- regional_epinow(reported_cases = cases, 
+#'                              generation_time = generation_time,
+#'                              delays = delay_opts(incubation_period, reporting_delay),
+#'                              rt = rt, gp = gp,
+#'                              stan = stan_opts(samples = 100, warmup = 200),
+#'                              verbose = interactive())
 #'}
 regional_epinow <- function(reported_cases, 
                             generation_time, 
                             delays = delay_opts(),
+                            truncation = trunc_opts(),
                             rt = rt_opts(),
                             backcalc = backcalc_opts(),
                             gp = gp_opts(),
@@ -109,13 +126,14 @@ regional_epinow <- function(reported_cases,
   
   # run regions (make parallel using future::plan)
   futile.logger::flog.trace("calling future apply to process each region through the run_region function")
-  futile.logger::flog.info("Showing progress using progressr. Modify this behaviour using progressr::handlers.")
+  futile.logger::flog.info("Showing progress using progressr.")
   
   progressr::with_progress({
     progress_fn <- progressr::progressor(along = regions)
     regional_out <- future.apply::future_lapply(regions, run_region,
                                                 generation_time = generation_time, 
                                                 delays = delays,
+                                                truncation = truncation,
                                                 rt = rt,
                                                 backcalc = backcalc,
                                                 gp = gp,
@@ -244,6 +262,7 @@ clean_regions <- function(reported_cases, non_zero_points) {
 run_region <- function(target_region,
                        generation_time, 
                        delays,
+                       truncation,
                        rt,
                        backcalc,
                        gp,
@@ -276,12 +295,13 @@ run_region <- function(target_region,
 
   out <- epinow(
     generation_time = generation_time, 
-    delays = delays,
-    rt = rt,
-    backcalc = backcalc,
-    gp = gp,
-    obs = obs,
-    stan = stan,
+    delays = filter_opts(delays, target_region),
+    truncation = filter_opts(truncation, target_region),
+    rt = filter_opts(rt, target_region),
+    backcalc = filter_opts(backcalc, target_region),
+    gp = filter_opts(gp, target_region),
+    obs = filter_opts(obs, target_region),
+    stan = filter_opts(stan, target_region),
     horizon = horizon,
     CrIs = CrIs,
     reported_cases = regional_cases,

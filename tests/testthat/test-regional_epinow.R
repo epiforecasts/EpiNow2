@@ -59,3 +59,30 @@ test_that("regional_epinow runs without error when given a very short timeout", 
                                      max_execution_time = 1, future = TRUE), logs = NULL),
     NA)
 })
+
+
+test_that("regional_epinow produces expected output when run with region specific settings", {
+  skip_on_cran()
+  gp <- opts_list(gp_opts(), cases)
+  gp <- update_list(gp, list(realland = NULL))
+  rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+  out <- suppressWarnings(
+    regional_epinow(reported_cases = cases, generation_time = generation_time,
+                    delays = delay_opts(reporting_delay),
+                    rt = rt, gp = gp,
+                    stan = stan_opts(samples = 100, warmup = 100, 
+                                     cores = 1, chains = 2,
+                                     control = list(adapt_delta = 0.8)),
+                    logs = NULL))
+  expect_equal(names(out$regional), c("testland", "realland"))
+  expect_equal(names(out$summary), c("latest_date", "results", "summarised_results", "summary_plot",
+                                     "summarised_measures", "reported_cases", "high_plots", "plots"))
+  expect_equal(names(out$regional$realland), c("estimates", "estimated_reported_cases", "summary", "plots", "timing"))
+  expect_type(out$regional$realland$timing, "double")
+  df_non_zero(out$regional$realland$estimates$samples)
+  df_non_zero(out$regional$realland$estimates$summarised)
+  df_non_zero(out$regional$realland$estimated_reported_cases$samples)
+  df_non_zero(out$regional$realland$estimated_reported_cases$summarised)
+  df_non_zero(out$regional$realland$summary)
+  expect_equal(names(out$regional$realland$plots), c("infections", "reports", "R", "growth_rate","summary"))
+})
