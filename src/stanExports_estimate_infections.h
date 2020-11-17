@@ -3420,6 +3420,7 @@ public:
         names__.push_back("imputed_reports");
         names__.push_back("gen_R");
         names__.push_back("r");
+        names__.push_back("log_lik");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
@@ -3495,6 +3496,9 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back((logical_gt(estimate_r, 0) ? 0 : ot_h ));
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(ot_h);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(ot_h);
@@ -3802,6 +3806,46 @@ public:
             }
             current_statement_begin__ = 671;
             stan::math::assign(imputed_reports, report_rng(reports, rep_phi, model_type, base_rng__, pstream__));
+            current_statement_begin__ = 607;
+            if (as_bool(model_type)) {
+                {
+                current_statement_begin__ = 609;
+                local_scalar_t__ sqrt_phi(DUMMY_VAR__);
+                (void) sqrt_phi;  // dummy to suppress unused var warning
+                stan::math::initialize(sqrt_phi, DUMMY_VAR__);
+                stan::math::fill(sqrt_phi, DUMMY_VAR__);
+                stan::math::assign(sqrt_phi,(1 / stan::math::sqrt(get_base1(rep_phi, model_type, "rep_phi", 1))));
+                current_statement_begin__ = 611;
+                if (as_bool(logical_gt(sqrt_phi, 1e4))) {
+                    current_statement_begin__ = 612;
+                    for (int i = 1; i <= ot; ++i) {
+                        current_statement_begin__ = 613;
+                        stan::model::assign(log_lik, 
+                                    stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                    (poisson_log(get_base1(cases, i, "cases", 1), get_base1(reports, i, "reports", 1)) * obs_weight), 
+                                    "assigning variable log_lik");
+                    }
+                } else {
+                    current_statement_begin__ = 616;
+                    for (int i = 1; i <= ot; ++i) {
+                        current_statement_begin__ = 617;
+                        stan::model::assign(log_lik, 
+                                    stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                    (neg_binomial_2_log(get_base1(cases, i, "cases", 1), get_base1(reports, i, "reports", 1), sqrt_phi) * obs_weight), 
+                                    "assigning variable log_lik");
+                    }
+                }
+                }
+            } else {
+                current_statement_begin__ = 621;
+                for (int i = 1; i <= ot; ++i) {
+                    current_statement_begin__ = 622;
+                    stan::model::assign(log_lik, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                (poisson_log(get_base1(cases, i, "cases", 1), get_base1(reports, i, "reports", 1)) * obs_weight), 
+                                "assigning variable log_lik");
+                }
+            }
             // validate, write generated quantities
             current_statement_begin__ = 654;
             size_t imputed_reports_k_0_max__ = ot_h;
@@ -3817,6 +3861,11 @@ public:
             size_t r_k_0_max__ = ot_h;
             for (size_t k_0__ = 0; k_0__ < r_k_0_max__; ++k_0__) {
                 vars__.push_back(r[k_0__]);
+            }
+            current_statement_begin__ = 592;
+            size_t log_lik_j_1_max__ = ot_h;
+            for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
+                vars__.push_back(log_lik(j_1__));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -4002,6 +4051,12 @@ public:
             param_name_stream__ << "r" << '.' << k_0__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
+        size_t log_lik_j_1_max__ = ot_h;
+        for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "log_lik" << '.' << j_1__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
     }
     void unconstrained_param_names(std::vector<std::string>& param_names__,
                                    bool include_tparams__ = true,
@@ -4159,6 +4214,12 @@ public:
         for (size_t k_0__ = 0; k_0__ < r_k_0_max__; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "r" << '.' << k_0__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        size_t log_lik_j_1_max__ = ot_h;
+        for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "log_lik" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
     }
