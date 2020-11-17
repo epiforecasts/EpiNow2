@@ -193,7 +193,11 @@ report_summary <- function(summarised_estimates,
 #' @inheritParams setup_target_folder
 #' @inheritParams epinow
 #' @inheritParams plot_estimates
-#' @return A `ggplot2` object
+#' @return A named list of `ggplot2` objects, `list(infections, reports, R, growth_rate, summary)`,
+#'   which correspond to a summary combination (last item) and for the leading items
+#'   @seealso [plot_estimates()] of `summarised_estimates[variable == "infections"]`,
+#'   `summarised_estimates[variable == "reported_cases"]`, `summarised_estimates[variable == "R"]`,
+#'   and `summarised_estimates[variable == "growth_rate"]`, respectively.
 #' @export
 #' @examples 
 #' \donttest{
