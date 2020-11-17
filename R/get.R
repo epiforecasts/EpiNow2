@@ -12,6 +12,7 @@ get_regions <- function(results_dir) {
                        full.names = FALSE)
   
   # put into alphabetical order
+  regions <- regions[!(regions %in% "runtimes.csv")]
   regions <- regions[order(regions)]
   names(regions) <- regions
   return(regions)
