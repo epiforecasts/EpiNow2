@@ -228,61 +228,19 @@ report_plots <- function(summarised_estimates, reported,
                               ylab = "Cases by \n date of infection",
                               max_plot = max_plot)
   
-if (!is.null(target_folder)) {
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(paste0(target_folder, "/infections_plot.png"),
-                      infections,
-                      width = 12,
-                      height = 3,
-                      dpi = 320)
-    ))
-}
 # cases by report ---------------------------------------------------------
 reports <- plot_estimates(estimate = summarised_estimates[variable == "reported_cases"],
                           reported = reported, ylab = "Cases by \n date of report",
                           max_plot = max_plot)
 
-if (!is.null(target_folder)) {
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(paste0(target_folder, "/reported_plot.png"),
-                      reports,
-                      width = 12,
-                      height = 3,
-                      dpi = 320)
-    ))
-}
-
-
 # Rt plot ------------------------------------------------------------------
 R <- plot_estimates(estimate = summarised_estimates[variable == "R"],
                        ylab = "Effective \n reproduction no.", hline = 1)
 
-if (!is.null(target_folder)) {
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(paste0(target_folder, "/reff_plot.png"),
-                      R,
-                      width = 12,
-                      height = 3,
-                      dpi = 320)
-    ))
-}
 # r plot ------------------------------------------------------------------
 growth_rate <- plot_estimates(estimate = summarised_estimates[variable == "growth_rate"],
                               ylab = "Growth rate", hline = 0)
 
-if (!is.null(target_folder)) {
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(paste0(target_folder, "/growth_rate_plot.png"),
-                      growth_rate,
-                      width = 12,
-                      height = 3,
-                      dpi = 320)
-    ))
-}
 # summary plot ------------------------------------------------------------
   summary <- suppressWarnings(
     suppressMessages(
@@ -311,17 +269,6 @@ if (!is.null(target_folder)) {
                                          max(summarised_estimates[variable == "R"]$date)))
     ))
   
-  if (!is.null(target_folder)) {
-    suppressWarnings(
-      suppressMessages(
-        ggplot2::ggsave(paste0(target_folder, "/summary_plot.png"),
-                        summary,
-                        width = 12,
-                        height = 12,
-                        dpi = 320)
-      ))
-  }
-  
   # organise output
   plots <- list(
     infections = infections,
@@ -330,5 +277,20 @@ if (!is.null(target_folder)) {
     growth_rate = growth_rate,
     summary = summary
   )
+  
+  if (!is.null(target_folder)) suppressWarnings(suppressMessages({
+        wd <- 12
+        ht <- rep(3, length(plots))
+        # summary plot is stack of panels
+        ht[length(plots)] <- ht[length(plots)]*4
+        dpi <- 320
+        pths <- file.path(target_folder, c(
+          infection="infections_plot.png", reports="reported_plot.png",
+          R = "reff_plot.png", growth_rate = "growth_rate_plot.png",
+          summary = "summary_plot.png"
+        ))
+        mapply(ggplot2::ggsave, filename = pths, plot = plots, width = wd, height = ht, dpi = dpi)
+  }))
+  
   return(plots)
 }
