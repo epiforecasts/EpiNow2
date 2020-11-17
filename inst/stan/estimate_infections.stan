@@ -110,7 +110,7 @@ model {
   if (obs_scale) {
     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
   }
-  // observed reports from mean of reports
+  // observed reports from mean of reports (update likelihood)
   report_lp(cases, obs_reports, rep_phi, 1, model_type, obs_weight);
 }
   
@@ -118,7 +118,7 @@ generated quantities {
   int imputed_reports[ot_h]; 
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
   real r[ot_h];
-  vector[ot_h] log_lik;
+  vector[ot] log_lik;
   if (estimate_r){
     // estimate growth from estimated Rt
     r = R_to_growth(R, gt_mean[1], gt_sd[1]);
@@ -134,22 +134,6 @@ generated quantities {
   }
   // simulate reported cases
   imputed_reports = report_rng(reports, rep_phi, model_type);
-  if (model_type) {
-    // the reciprocal overdispersion parameter (phi)
-    real sqrt_phi = 1 / sqrt(rep_phi[model_type]);
-    // defer to poisson if phi is large, to avoid overflow
-    if (sqrt_phi > 1e4) {
-      for (i in 1:ot) {
-        log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * obs_weight;
-      }
-    } else {
-      for (i in 1:ot) {
-        log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], sqrt_phi) * obs_weight;
-      }
-    }
-  } else {
-    for (i in 1:ot) {
-      log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * obs_weight;
-    }
-  }
+  // log likelihood of model
+  log_lik = report_log_lik(cases, obs_reports, rep_phi, model_type, obs_weight);
 }

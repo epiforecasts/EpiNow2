@@ -82,3 +82,28 @@ void report_lp(int[] cases, vector reports,
     target += poisson_lpmf(cases | reports) * weight;
   }
 }
+// update log likelihood (as above but not vectorised and returning log likelihood)
+vector report_log_lik(int[] cases, vector reports, 
+                      real[] rep_phi, int model_type, real weight) {
+    int t = num_elements(reports);
+    vector[t] log_lik;
+    if (model_type) {
+    // the reciprocal overdispersion parameter (phi)
+    real sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+    // defer to poisson if phi is large, to avoid overflow
+    if (sqrt_phi > 1e4) {
+      for (i in 1:t) {
+        log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;
+      }
+    } else {
+      for (i in 1:t) {
+        log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], sqrt_phi) * weight;
+      }
+    }
+  } else {
+    for (i in 1:t) {
+      log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;
+    }
+  }
+  return(log_lik);
+}

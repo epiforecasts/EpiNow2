@@ -62,7 +62,7 @@ daily_rw <- list()
 for (method in c("vb", "nuts")) {
   
   if (method == "vb") {
-    stanopts <- stan_opts(method = "vb")
+    stanopts <- stan_opts(method = "vb", trials = 5, iter = 50000)
   } else {
     stanopts <- stan_opts(control = list(adapt_delta = 0.9))
   }
