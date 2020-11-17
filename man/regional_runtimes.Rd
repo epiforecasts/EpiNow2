@@ -28,7 +28,7 @@ A data.table of region run times
 }
 \description{
 \lifecycle{maturing}
-Used internally by \code{regional_epinow} to summarise region runtimes.
+Used internally by \code{regional_epinow} to summarise region run times.
 }
 \examples{
 \donttest{

@@ -137,7 +137,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' to mean shifted reports (used as a prior during back calculation). 7 days is the default
 #' as this smooths day of the week effects but depending on the quality of the data and the 
 #' amount of information users wish to use as a prior (higher values equalling a less informative prior).
-#' @param rt_window Integer, defaults to 1. The size of the centered rolling average to use when estimating 
+#' @param rt_window Integer, defaults to 1. The size of the centred rolling average to use when estimating 
 #' Rt. This must be odd so that the central estimate is included.
 #' @return A list of back calculation settings
 #' @export

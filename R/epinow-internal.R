@@ -86,7 +86,7 @@ save_forecast_infections <- function(forecast, target_folder = NULL, samples = T
 #' Estimate Cases by Report Date
 #'
 #' @description \lifecycle{questioning}
-#' Either extracts or converts reported cases from an input datatable. For ouput from
+#' Either extracts or converts reported cases from an input data table. For output from
 #' `estimate_infections` this is a simple filtering step but for output from `forecast_infection`
 #' this is currently an approximate convolution. This step is likely to be updated/deprecated 
 #' in new releases as `forecast_infections` evolves to be based on `stan` functionality.

@@ -99,7 +99,7 @@ report_cases <- function(case_estimates,
 
 #' Provide Summary Statistics for Estimated Infections and Rt
 #' @description \lifecycle{questioning}
-#' Creates a snapshot summary of estimates. May be depcreciated in later releases as S3 methods are 
+#' Creates a snapshot summary of estimates. May be removed in later releases as S3 methods are 
 #' enhanced.
 #' @param summarised_estimates A data.table of summarised estimates containing the following variables:
 #'  variable, median, bottom, and top. It should contain the following estimates: R, infections, and r 

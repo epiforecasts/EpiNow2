@@ -15,6 +15,6 @@ A data table
 }
 \description{
 \lifecycle{stable}
-Conveniance function that sets the number of \code{data.table} cores to 1 and
+Convenience function that sets the number of \code{data.table} cores to 1 and
 maps input to be a \code{data.table}
 }
