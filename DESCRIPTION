@@ -109,3 +109,4 @@ LinkingTo:
     StanHeaders (>= 2.21.0-5)
 Language: en-GB
 RdMacros: lifecycle
+VignetteBuilder: knitr
