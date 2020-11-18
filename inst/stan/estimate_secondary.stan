@@ -1,16 +1,14 @@
 functions {
-#include ../stan/functions/pmfs.stan
-#include ../stan/functions/convolve.stan
-#include ../stan/functions/observation_model.stan
-#include ../stan/functions/generated_quantities.stan
-#include 
+#include functions/pmfs.stan
+#include functions/convolve.stan
+#include functions/observation_model.stan
+#include functions/secondary.stan
 }
 
-
-data {
-#include ../data/observations.stan
-#include ../data/delays.stan
-#include ../data/observation_model.stan
+data {  
+#include data/secondary.stan
+#include data/delays.stan
+#include data/observation_model.stan
 }
 
 parameters{
@@ -25,31 +23,12 @@ parameters{
 }
 
 transformed parameters {
-  vector[t] scaled_reports;
-  vector[t] conv_reports;                            
-  vector[t] secondary_reports = rep_vector(0.0, t);
-  // scaling of reported cases by fraction 
-  scaled_reports = scale_obs(reports, frac_obs[1]);
-  // convolve from reports to contributions from these reports
-  conv_reports = convolve_to_report(scaled_reports, delay_mean, delay_sd, max_delay, seeding_time);
-  // combine reports with previous secondary data
-  for (i in 1:t) {
-    if (cum_reports & i > 1) {
-      secondary_reports[i] = obs[i - 1];
-    }
-    if (conv_additive) {
-      secondary_reports[i] += conv_reports[i];
-    }else{
-      secondary_reports[i] -= conv_reports[i];
-    }
-    if (current_reports) {
-      if (current_additive) {
-        secondary_reports[i] += scaled_reports[i];
-      }else{
-        secondary_reports[i] -= scaled_reports[i];
-      }
-    }
-  }
+  vector[t] secondary_reports;
+  // calculate secondary reports from primary
+  secondary_reports = calculate_secondary(reports, obs, frac_obs[1], delay_mean, 
+                                          delay_sd, max_delay, cumulative, 
+                                          historic, primary_hist_additive, 
+                                          current, primary_current_additive, t);
  // weekly reporting effect
  if (week_effect) {
    secondary_reports = day_of_week_effect(secondary_reports, day_of_week, day_of_week_simplex);
@@ -64,17 +43,17 @@ model {
   // priors for truncation
   truncation_lp(truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd, 
                 trunc_sd_mean, trunc_sd_sd);
-  // prior observation scaling
+  // prior primary report scaling
   frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
-  // observed reports from mean of reports (update likelihood)
+  // observed secondary reports from mean of secondary reports (update likelihood)
   report_lp(obs, secondary_reports, rep_phi, 1, model_type, 1);
 }
   
 generated quantities {
   int sim_reports[t]; 
   vector[t] log_lik;
-  // simulate reported cases
+  // simulate secondary reports
   sim_reports = report_rng(secondary_reports, rep_phi, model_type);
   // log likelihood of model
-  log_lik = report_log_lik(cases, obs_reports, rep_phi, model_type, obs_weight);
+  log_lik = report_log_lik(obs, secondary_reports, rep_phi, model_type, obs_weight);
 }
