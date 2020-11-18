@@ -342,20 +342,20 @@ process_region <- function(out, target_region, timing,
                            return_output = TRUE, return_timing = TRUE,
                            complete_logger = "EpiNow2.epinow") {
   
-  if (exists("estimates", out) & !return_output) {
+  if (!is.null(out[["estimates"]]) & !return_output) {
     out$estimates$samples <- NULL
   }
-  if (exists("forecast", out) & !return_output) {
+  if (!is.null(out[["forecast"]]) & !return_output) {
     out$forecast$samples <- NULL
   }
-  if (exists("estimated_reported_cases", out) & !return_output) {
+  if (!is.null(out[["estimated_reported_cases"]]) & !return_output) {
     out$estimated_reported_cases$samples <- NULL
   }
-  if (exists("plots", out) & !return_output) {
+  if (!is.null(out[["plots"]]) & !return_output) {
     out$estimated_reported_cases$plots <- NULL
   }
   
-  if (exists("summary", out)) { # if it failed a warning would have been output above
+  if (!is.null(out[["summary"]])) { # if it failed a warning would have been output above
     futile.logger::flog.info("Completed estimates for: %s", target_region, 
                              name = complete_logger)
   }
