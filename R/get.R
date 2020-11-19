@@ -54,7 +54,7 @@ get_raw_result <- function(file, region, date,
 #' # construct example distributions
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+#' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 #' 
 #' # example case vector from EpiSoon
 #' cases <- EpiNow2::example_confirmed[1:30]
@@ -62,18 +62,23 @@ get_raw_result <- function(file, region, date,
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
 #'   
+#' # save results to tmp folder
+#' dir <- file.path(tempdir(), "results")
 #' # run multiregion estimates
 #' regional_out <- regional_epinow(reported_cases = cases,
-#'                                 samples = 100,
 #'                                 generation_time = generation_time,
 #'                                 delays = delay_opts(incubation_period, reporting_delay),
-#'                                 rt = NULL, output = c("regions"))
-#'
-#' summary_only <- get_regional_results(regional_out$regional, forecast = FALSE, samples = FALSE)
-#' names(summary_only)
+#'                                 rt = rt_opts(rw = 7), gp = NULL,
+#'                                 output = c("regions", "latest"), 
+#'                                 target_folder = dir, 
+#'                                 return_output = TRUE)
+#' # from output
+#' results <- get_regional_results(regional_out$regional, samples = FALSE)
+#' names(results)
 #' 
-#' all <- get_regional_results(regional_out$regional, forecast = TRUE)
-#' names(all)
+#' # from a folder
+#' folder_results <- get_regional_results(results_dir = dir, samples = FALSE)
+#' names(folder_results)
 #' }
 get_regional_results <- function(regional_output,
                                  results_dir, date,
@@ -89,8 +94,7 @@ get_regional_results <- function(regional_output,
       date <- "latest"
     }
     # find all regions
-    regions <- list.files(results_dir, recursive = FALSE)
-    names(regions) <- regions
+    regions <- get_regions(results_dir)
     
     load_data <- purrr::safely(EpiNow2::get_raw_result)
   

@@ -168,7 +168,9 @@ estimate_infections <- function(reported_cases,
     futile.logger::flog.threshold(futile.logger::DEBUG,
                                   name = "EpiNow2.epinow.estimate_infections")
   }
-
+  if (is.null(delays$delays)) {
+    stop("A call to delay_opts must be passed to delays")
+  }
   # Make sure there are no missing dates and order cases
   reported_cases <- create_clean_reported_cases(reported_cases, horizon)
 

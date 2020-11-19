@@ -270,7 +270,7 @@ obs_opts <- function(family = "negbin",
 #'  which defaults to 1 but it is recommended to set the mc.cores option to be as 
 #'  many processors as the hardware and RAM allow (up to the number of chains).
 #' @param warmup Numeric, defaults to 250. Number of warmup samples per chain.
-#' @param samples Numeric, default 1000. Overall number of posterior samples. 
+#' @param samples Numeric, default 2000. Overall number of posterior samples. 
 #' When using multiple chains iterations per chain is samples / chains.
 #' @param chains Numeric, defaults to 4. Number of MCMC chains to use.
 #' @param control List, defaults to empty. control parameters to pass to underlying
@@ -293,7 +293,7 @@ obs_opts <- function(family = "negbin",
 #' rstan_sampling_opts(samples = 2000)
 rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                 warmup = 250,
-                                samples = 1000,
+                                samples = 2000,
                                 chains = 4,
                                 control = list(),
                                 save_warmup = FALSE,

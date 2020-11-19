@@ -43,7 +43,9 @@ observed data (\code{last_obs}, useful for plotting and validation), the data us
 \lifecycle{experimental}
 Estimates a truncation distribution from multiple snapshots of the same
 data source over time. This distribution can then be used in \code{regional_epinow},
-\code{epinow}, and \code{estimate_infections} to adjust for truncated data.
+\code{epinow}, and \code{estimate_infections} to adjust for truncated data. See \href{https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a}{here}
+for an example of using this approach on Covid-19 data in England.
+
 The model of truncation is as follows:
 \enumerate{
 \item The truncation distribution is assumed to be log normal with a mean and

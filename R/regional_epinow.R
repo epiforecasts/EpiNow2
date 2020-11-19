@@ -18,7 +18,7 @@
 #' that region to be evaluated. Defaults to 7.
 #' @param output A character vector of optional output to return. Supported options are the individual regional estimates
 #' ("regions"),  samples ("samples"), plots ("plots"), copying the individual region dated folder into 
-#' a latest folder (if `target_folder` is not null - set using "latest"), the stan fit of the underlying model ("fit"), and an 
+#' a latest folder (if `target_folder` is not null, set using "latest"), the stan fit of the underlying model ("fit"), and an 
 #' overall summary across regions ("summary"). The default is to return samples and plots alongside summarised estimates and 
 #' summary statistics. If `target_folder` is not NULL then the default is also to copy all results into a latest folder.
 #' @param summary_args A list of arguments passed to `regional_summary`. See the `regional_summary` documentation for details.
@@ -307,7 +307,7 @@ run_region <- function(target_region,
     reported_cases = regional_cases,
     target_folder = target_folder,
     target_date = target_date,
-    return_output = ifelse(output["summary"], TRUE, return_output),
+    return_output = TRUE,
     output = names(output[output]),
     logs = NULL,
     verbose = verbose,
@@ -342,20 +342,20 @@ process_region <- function(out, target_region, timing,
                            return_output = TRUE, return_timing = TRUE,
                            complete_logger = "EpiNow2.epinow") {
   
-  if (exists("estimates", out) & !return_output) {
+  if (!is.null(out[["estimates"]]) & !return_output) {
     out$estimates$samples <- NULL
   }
-  if (exists("forecast", out) & !return_output) {
+  if (!is.null(out[["forecast"]]) & !return_output) {
     out$forecast$samples <- NULL
   }
-  if (exists("estimated_reported_cases", out) & !return_output) {
+  if (!is.null(out[["estimated_reported_cases"]]) & !return_output) {
     out$estimated_reported_cases$samples <- NULL
   }
-  if (exists("plots", out) & !return_output) {
+  if (!is.null(out[["plots"]]) & !return_output) {
     out$estimated_reported_cases$plots <- NULL
   }
   
-  if (exists("summary", out)) { # if it failed a warning would have been output above
+  if (!is.null(out[["summary"]])) { # if it failed a warning would have been output above
     futile.logger::flog.info("Completed estimates for: %s", target_region, 
                              name = complete_logger)
   }

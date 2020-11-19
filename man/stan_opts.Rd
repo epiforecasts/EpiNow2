@@ -7,7 +7,7 @@
 stan_opts(samples = 2000, backend = "rstan", return_fit = TRUE, ...)
 }
 \arguments{
-\item{samples}{Numeric, default 1000. Overall number of posterior samples.
+\item{samples}{Numeric, default 2000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}
 
 \item{backend}{Character string indicating the backend to use for fitting stan models.

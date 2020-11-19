@@ -65,7 +65,10 @@ be forecast forwards in time using an integration with the
 [`{EpiSoon}`](https://epiforecasts.io/EpiSoon/) package, and converted
 to a case forecast using the renewal equation. Alternatively, the
 time-varying reproduction number and cases can be forecast using a
-Gaussian process.
+Gaussian process. 
+
+A simple example of using the package to estimate a 
+national Rt for Covid-19 can be found [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867).
 
 ## Installation
 
