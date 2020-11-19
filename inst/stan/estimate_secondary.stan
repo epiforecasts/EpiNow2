@@ -23,18 +23,18 @@ parameters{
 }
 
 transformed parameters {
-  vector[t] secondary_reports;
+  vector[t] secondary;
   // calculate secondary reports from primary
-  secondary_reports = calculate_secondary(reports, obs, frac_obs, delay_mean, 
-                                          delay_sd, max_delay, cumulative, 
-                                          historic, primary_hist_additive, 
-                                          current, primary_current_additive, t);
+  secondary = calculate_secondary(primary, obs, frac_obs, delay_mean, 
+                                  delay_sd, max_delay, cumulative, 
+                                  historic, primary_hist_additive, 
+                                  current, primary_current_additive, t);
  // weekly reporting effect
  if (week_effect) {
-   secondary_reports = day_of_week_effect(secondary_reports, day_of_week, day_of_week_simplex);
+   secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
   }
  // truncate near time cases to observed reports 
- secondary_reports = truncate(secondary_reports, truncation_mean, truncation_sd, max_truncation, 0);
+ secondary = truncate(secondary, truncation_mean, truncation_sd, max_truncation, 0);
 }
 
 model {
@@ -48,14 +48,14 @@ model {
     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
    }
   // observed secondary reports from mean of secondary reports (update likelihood)
-  report_lp(obs, secondary_reports, rep_phi, 1, model_type, 1);
+  report_lp(obs, secondary, rep_phi, 1, model_type, 1);
 }
   
 generated quantities {
-  int sim_reports[t]; 
+  int sim_secondary[t]; 
   vector[t] log_lik;
   // simulate secondary reports
-  sim_reports = report_rng(secondary_reports, rep_phi, model_type);
+  sim_secondary = report_rng(secondary, rep_phi, model_type);
   // log likelihood of model
-  log_lik = report_log_lik(obs, secondary_reports, rep_phi, model_type, obs_weight);
+  log_lik = report_log_lik(obs, secondary, rep_phi, model_type, obs_weight);
 }
