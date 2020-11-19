@@ -3,7 +3,9 @@
 #' @description \lifecycle{experimental}
 #' Estimates a truncation distribution from multiple snapshots of the same 
 #' data source over time. This distribution can then be used in `regional_epinow`,
-#' `epinow`, and `estimate_infections` to adjust for truncated data. 
+#' `epinow`, and `estimate_infections` to adjust for truncated data. See [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a) 
+#' for an example of using this approach on Covid-19 data in England. 
+#' 
 #' The model of truncation is as follows:
 #' 
 #' 1. The truncation distribution is assumed to be log normal with a mean and 

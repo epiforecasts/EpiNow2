@@ -9,7 +9,7 @@ rstan_opts(object = NULL, samples = 2000, method = "sampling", ...)
 \arguments{
 \item{object}{Stan model object. By default uses the compiled package default.}
 
-\item{samples}{Numeric, default 1000. Overall number of posterior samples.
+\item{samples}{Numeric, default 2000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}
 
 \item{method}{A character string, defaulting to sampling. Currently supports
