@@ -25,7 +25,7 @@ parameters{
 transformed parameters {
   vector[t] secondary_reports;
   // calculate secondary reports from primary
-  secondary_reports = calculate_secondary(reports, obs, frac_obs[1], delay_mean, 
+  secondary_reports = calculate_secondary(reports, obs, frac_obs, delay_mean, 
                                           delay_sd, max_delay, cumulative, 
                                           historic, primary_hist_additive, 
                                           current, primary_current_additive, t);
@@ -44,7 +44,9 @@ model {
   truncation_lp(truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd, 
                 trunc_sd_mean, trunc_sd_sd);
   // prior primary report scaling
-  frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
+  if (obs_scale) {
+    frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
+   }
   // observed secondary reports from mean of secondary reports (update likelihood)
   report_lp(obs, secondary_reports, rep_phi, 1, model_type, 1);
 }

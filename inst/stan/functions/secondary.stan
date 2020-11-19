@@ -1,15 +1,20 @@
 // Calculate secondary reports condition only on primary reports
-vector calculate_secondary(vector reports, int[] obs, real frac_obs,
+vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
                            real[] delay_mean, real[] delay_sd,
                            int[] max_delay, int cumulative, int historic,
                            int primary_hist_additive, int current,
                            int primary_current_additive, int predict) {
   int t = num_elements(reports);
+  int obs_scale = num_elements(frac_obs);
   vector[t] scaled_reports;
   vector[t] conv_reports;                            
   vector[t] secondary_reports = rep_vector(0.0, t);
   // scaling of reported cases by fraction 
-  scaled_reports = scale_obs(reports, frac_obs);
+  if (obs_scale) {
+    scaled_reports = scale_obs(reports, frac_obs[1]);
+  }else{
+    scaled_reports = reports;
+  }
   // convolve from reports to contributions from these reports
   conv_reports = convolve_to_report(scaled_reports, delay_mean, delay_sd, max_delay, 0);
   // if predicting and using a cumulative target
