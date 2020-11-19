@@ -98,7 +98,8 @@ A list of output from estimate_infections, forecast_infections,  report_cases, a
 This function wraps the functionality of \code{estimate_infections} and \code{forecast_infections} in order
 to estimate Rt and cases by date of infection, forecast into these infections into the future. It also contains
 additional functionality to convert forecasts to date of report and produce summary output useful for reporting
-results and interpreting them.
+results and interpreting them. See \href{https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867}{here} for an
+example of using \code{epinow} to estimate Rt for Covid-19 in a country from the ECDC data source.
 }
 \examples{
 \donttest{
