@@ -42,7 +42,7 @@ incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lau
 reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 
 # example case vector from EpiSoon
-cases <- EpiNow2::example_confirmed[1:30]
+cases <- example_confirmed[1:30]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))

@@ -50,7 +50,7 @@
 #'                         sd_sd = 0.1, max = 15)
 #'                         
 #' # uses example case vector
-#' cases <- EpiNow2::example_confirmed[1:60]
+#' cases <- example_confirmed[1:60]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
