@@ -525,7 +525,7 @@ calc_CrIs <- function(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9)) {
 
 #' Extract Credible Intervals Present
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Helper function to extract the credible intervals present in a data frame.
 #' @param summarised A data frame as processed by `calc_CrIs`
 #' @return A numeric vector of credible intervals detected in the data frame.
