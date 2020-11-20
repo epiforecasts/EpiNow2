@@ -19,5 +19,5 @@ A list containing a logical called fixed and an integer called from
 }
 \description{
 \lifecycle{stable}
-Converts the \code{future} argument from \code{rt_opts} into arguments that can be passed to \code{stan}.
+Converts the \code{future} argument from \code{rt_opts()} into arguments that can be passed to \code{stan}.
 }
