@@ -33,9 +33,9 @@
 #'                            rt = NULL)
 #'                             
 #' reported_cases <- report_cases(case_estimates = 
-#'                                 out$samples[variable == "infections"][, 
-#'                                 cases := as.integer(value)][, value := NULL],
-#'                                delays = list(incubation_period, reporting_delay),
+#'                                out$samples[variable == "infections"][, 
+#'                                cases := as.integer(value)][, value := NULL],
+#'                                delays = delay_opts(incubation_period, reporting_delay),
 #'                                type = "sample")
 #' print(reported_cases)
 #' }

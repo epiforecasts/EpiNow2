@@ -45,7 +45,7 @@ Simulations can be run in parallel using \code{future::plan}.
 #set number of cores to use
 options(mc.cores = ifelse(interactive(), 4, 1))
 # get example case counts
-reported_cases <- EpiNow2::example_confirmed[1:50]
+reported_cases <- example_confirmed[1:50]
 
 # set up example generation time
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")

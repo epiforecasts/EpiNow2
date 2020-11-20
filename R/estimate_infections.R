@@ -36,7 +36,7 @@
 #' #set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # get example case counts
-#' reported_cases <- EpiNow2::example_confirmed[1:60]
+#' reported_cases <- example_confirmed[1:60]
 #' 
 #' # set up example generation time
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
@@ -102,7 +102,7 @@
 #' plot(project_rt)
 #'
 #' # default settings on a later snapshot of data 
-#' snapshot_cases <- EpiNow2::example_confirmed[80:130]
+#' snapshot_cases <- example_confirmed[80:130]
 #' snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
 #'                                 delays = delay_opts(incubation_period, reporting_delay),
 #'                                 rt = rt_opts(prior = list(mean = 1, sd = 0.1)))

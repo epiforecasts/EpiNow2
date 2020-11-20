@@ -45,7 +45,7 @@ Convolves cases by a PMF function. This function will soon be removed or replace
 more robust \code{stan} implementation.
 }
 \examples{
-cases <- EpiNow2::example_confirmed
+cases <- example_confirmed
 cases <- cases[, cases := as.integer(confirm)] 
 print(cases)
 
