@@ -76,7 +76,7 @@ being reported.
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{forecast_args}{A list of arguments to pass to \code{forecast_infections}. Unless at a minimum a \code{forecast_model} is passed
+\item{forecast_args}{A list of arguments to pass to \code{forecast_infections()}. Unless at a minimum a \code{forecast_model} is passed
 tin his list then \code{forecast_infections} will be bypassed.}
 
 \item{logs}{Character path indicating the target folder in which to store log
@@ -96,7 +96,7 @@ A list of output from estimate_infections, forecast_infections,  report_cases, a
 }
 \description{
 \lifecycle{maturing}
-This function wraps the functionality of \code{estimate_infections} and \code{forecast_infections} in order
+This function wraps the functionality of \code{estimate_infections()} and \code{forecast_infections()} in order
 to estimate Rt and cases by date of infection, forecast into these infections into the future. It also contains
 additional functionality to convert forecasts to date of report and produce summary output useful for reporting
 results and interpreting them. See \href{https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867}{here} for an
@@ -116,7 +116,7 @@ reporting_delay <- list(mean = convert_to_logmean(3, 1),
                         max = 10)
 
 # example case data
-reported_cases <- EpiNow2::example_confirmed[1:40] 
+reported_cases <- example_confirmed[1:40] 
 
 # estimate Rt and nowcast/forecast cases by date of infection
 out <- epinow(reported_cases = reported_cases, generation_time = generation_time,

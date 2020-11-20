@@ -95,7 +95,7 @@ A list of output stratified at the top level into regional output and across reg
 }
 \description{
 \lifecycle{maturing}
-Efficiently runs \code{epinow} across multiple regions in an efficient manner and conducts basic data checks and
+Efficiently runs \code{epinow()} across multiple regions in an efficient manner and conducts basic data checks and
 cleaning such as removing regions with fewer than \code{non_zero_points} as these are unlikely to produce reasonable
 results whilst consuming significant resources. See the documentation for \code{epinow} for further information.
 

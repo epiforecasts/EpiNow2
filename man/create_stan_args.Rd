@@ -27,10 +27,9 @@ A list of stan arguments
 }
 \description{
 \lifecycle{stable}
-Generates a list of arguments as required by \code{rstan::sampling} (when \verb{stan_args$method = "sampling})
-or \code{rstan::vb} (when \verb{stan_args$method = "vb}) by combining the required options, with data, and type of
-initialisation. Initialisation defaults to random but it is expected that \code{create_initial_conditions} will
-be used.
+Generates a list of arguments as required by \code{rstan::sampling} or \code{rstan::vb} by combining the required options,
+with data, and type of initialisation. Initialisation defaults to random but it is expected that \code{create_initial_conditions}
+will be used.
 }
 \examples{
 # default settings
