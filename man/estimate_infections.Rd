@@ -185,7 +185,7 @@ rw <- estimate_infections(reported_cases, generation_time = generation_time,
                           gp = NULL)     
 
 # random walk effects
-summary(rw, type = "parameters", params = "breakpoints")                                                    
+summary(rw, type = "parameters", params = "breakpoints") 
 plot(rw)
 }                                
 }

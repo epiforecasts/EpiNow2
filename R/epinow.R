@@ -174,11 +174,13 @@ epinow <- function(reported_cases,
                                                          CrIs = CrIs)
     
     # report estimates --------------------------------------------------------
-    summary <- summary(estimates, return_numeric = TRUE, target_folder = target_folder)
+    summary <- summary.estimate_infections(estimates, return_numeric = TRUE, 
+                                           target_folder = target_folder)
     
     # plot --------------------------------------------------------------------
     if (output["plots"]) {
-      plots <- plot(estimates, type = "all", target_folder = target_folder)
+      plots <- plot.estimate_infections(estimates, type = "all", 
+                                        target_folder = target_folder)
     }else{
       plots <- NULL
     }
