@@ -13,7 +13,7 @@ license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit
 [![GitHub
 contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](https://github.com/epiforecasts/EpiNow2/graphs/contributors)
 [![PRs
-Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](http://makeapullrequest.com)
+Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](http://makeapullrequest.com/)
 [![GitHub
 commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.2.1.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/master/)
 [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211)
