@@ -143,7 +143,7 @@
 #'                           gp = NULL)     
 #'
 #' # random walk effects
-#' summary(rw, type = "parameters", params = "breakpoints")                                                    
+#' summary(rw, type = "parameters", params = "breakpoints") 
 #' plot(rw)
 #' }                                
 estimate_infections <- function(reported_cases, 
