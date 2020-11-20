@@ -443,8 +443,7 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
 #' @examples
 #' \donttest{
 #' delays <- rlnorm(500, log(5), 1)
-#' estimate_delay(delays, samples = 1000, bootstraps = 10, 
-#'                dist = "lognormal")
+#' estimate_delay(delays, samples = 1000, bootstraps = 10)
 #'}
 estimate_delay <- function(delays, ...) {
   bootstrapped_dist_fit(values = delays, 
