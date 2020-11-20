@@ -1,6 +1,6 @@
 #' Clean Nowcasts for a Supplied Date
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' This function removes nowcasts in the format produced by `EpiNow2` from a target
 #' directory for the date supplied.
 #' @param date Date object. Defaults to today's date
@@ -32,7 +32,7 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 
 #' Format Credible Intervals
 #' 
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Combines a list of values into formatted credible intervals.
 #' @param value List of value to map into a string. Requires,
 #'  `point`, `lower`, and `upper.`
@@ -56,7 +56,7 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 
 #' Categorise the Probability of Change for Rt
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Categorises a numeric variable into "Increasing" (< 0.05), 
 #' "Likely increasing" (<0.2), "Unsure" (< 0.8), "Likely decreasing" (< 0.95), "Decreasing" (<= 1)
 #' @param var Numeric variable to be categorised
@@ -81,7 +81,7 @@ map_prob_change <- function(var) {
 
 #' Convert Growth Rates to Reproduction numbers.
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) 
 #' for justification. Now handled internally by stan so may be removed in future updates if 
 #' no user demand.
@@ -100,7 +100,7 @@ growth_to_R <- function(r, gamma_mean, gamma_sd) {
   
 #' Convert Reproduction Numbers to Growth Rates
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) 
 #' for justification. Now handled internally by stan so may be removed in future updates if 
 #' no user demand.
@@ -119,7 +119,7 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 
 #' Allocate Delays into Required Stan Format
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Allocate delays for stan. Used in `delay_opts`.
 #' @param delay_var List of numeric delays
 #' @param no_delays Numeric, number of delays
@@ -135,7 +135,7 @@ allocate_delays <- function(delay_var, no_delays) {
 
 #' Allocate Empty Parameters to a List
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Allocate missing parameters to be empty two dimensional arrays. Used 
 #' internally by `simulate_infections.`
 #' @param data A list of parameters
@@ -155,7 +155,7 @@ allocate_empty <- function(data, params) {
 }
 #' Match User Supplied Arguments with Supported Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Match user supplied arguments with supported options and return a logical list for 
 #' internal usage
 #' @param input_args A character vector of input arguments (can be partial).
@@ -220,7 +220,7 @@ match_output_arguments <- function(input_args = c(),
 
 #' Expose internal package stan functions in R
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' his function exposes internal stan functions in R from a user
 #' supplied list of target files. Allows for testing of stan functions in R and potentially 
 #' user use in R code.
@@ -252,7 +252,7 @@ expose_stan_fns <- function(files, target_dir, ...) {
 
 #' Convert mean and sd to log mean for a log normal distribution
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Convert from mean and standard deviation to the log mean of the 
 #' lognormal distribution. Useful for defining distributions supported by 
 #' `estimate_infections`, `epinow`, and `regional_epinow`.
@@ -271,7 +271,7 @@ convert_to_logmean <- function(mean, sd){
 
 #' Convert mean and sd to log standard deviation for a log normal distribution
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Convert from mean and standard deviation to the log standard deviation of the 
 #' lognormal distribution. Useful for defining distributions supported by 
 #' `estimate_infections`, `epinow`, and `regional_epinow`.
@@ -291,7 +291,7 @@ convert_to_logsd <- function(mean, sd) {
 
 #' Update a List
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Used to handle updating settings in a list. For example when making
 #' changes to `opts_list` output.
 #' @param defaults A list of default settings

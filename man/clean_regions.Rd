@@ -16,7 +16,7 @@ that region to be evaluated. Defaults to 7.}
 A dataframe of cleaned regional data
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Removes regions with insufficient time points, and provides logging information on the
 input.
 }

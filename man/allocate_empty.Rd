@@ -16,7 +16,7 @@ empty if missing.}
 A list of parameters some allocated to be empty
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Allocate missing parameters to be empty two dimensional arrays. Used
 internally by \code{simulate_infections.}
 }

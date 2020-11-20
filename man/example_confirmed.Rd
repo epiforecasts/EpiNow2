@@ -11,7 +11,7 @@ A data frame containing cases reported on each date.
 example_confirmed
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 An example data frame of observed cases
 }
 \keyword{datasets}

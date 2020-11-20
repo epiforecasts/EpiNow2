@@ -1,6 +1,6 @@
 #' Get Folders with Results
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' @param results_dir A character string giving the directory in which results
 #'  are stored (as produced by `regional_rt_pipeline`).
 #' @return A named character vector containing the results to plot.
@@ -19,7 +19,7 @@ get_regions <- function(results_dir) {
 }
 #' Get a Single Raw Result
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' @param file Character string giving the result files name.
 #' @param region Character string giving the region of interest.
 #' @param date Target date (in the format `"yyyy-mm-dd`).
@@ -34,7 +34,7 @@ get_raw_result <- function(file, region, date,
 }
 #' Get Combined Regional Results
 #' 
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Summarises results across regions either from input or from disk. See the examples for
 #' details.
 #' @param regional_output A list of output as produced by `regional_epinow` and stored in the 
@@ -154,7 +154,7 @@ get_regional_results <- function(regional_output,
 #' Get a Literature Distribution
 #'
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Search a data frame for a distribution and return it in the format expected 
 #' by `delay_opts` and the `generation_time` argument of `epinow` and `estimate_infections`.
 #' @param data A `data.table` in the format of `generation_times`.
@@ -175,7 +175,7 @@ get_dist <- function(data, disease, source, max_value = 15) {
 }
 #'  Get a Literature Distribution for the Generation Time
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Extracts a literature distribution from `generation_times`
 #' @inheritParams get_dist
 #' @inherit get_dist
@@ -191,7 +191,7 @@ get_generation_time <- function(disease, source, max_value = 15) {
 }
 #'  Get a Literature Distribution for the Incubation Period
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Extracts a literature distribution from `incubation_periods`
 #' @inheritParams get_dist
 #' @inherit get_dist
@@ -207,7 +207,7 @@ get_incubation_period <- function(disease, source, max_value = 15) {
 }
 #' Get Regions with Most Reported Cases
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Extract a vector of regions with the most reported cases in a set time window.
 #' @param time_window Numeric, number of days to include from latest date in data.
 #' Defaults to 7 days.

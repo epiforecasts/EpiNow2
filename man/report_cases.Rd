@@ -36,7 +36,7 @@ A list of \code{data.table}s. The first entry contains the following variables \
 being summarised across samples.
 }
 \description{
-\lifecycle{soft-deprecated}
+\ifelse{html}{\figure{lifecycle-soft-deprecated.svg}{options: alt='Soft-deprecated lifecycle'}}{\strong{Soft-deprecated}}
 Convolves latent infections to reported cases via an observation model. Likely to be removed/replaced
 in later releases by functionality drawing on the \code{stan} implementation.
 }

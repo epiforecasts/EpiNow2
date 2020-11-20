@@ -1,6 +1,6 @@
 #' Updates Forecast Horizon Based on Input Data and Target
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Makes sure that a forecast is returned for the user specified
 #' time period beyond the target date.
 #' @inheritParams setup_target_folder
@@ -16,7 +16,7 @@ update_horizon <- function(horizon, target_date, reported_cases) {
 
 #' Save Observed Data
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Saves observed data to a target location if given.
 #' @inheritParams setup_target_folder
 #' @inheritParams epinow
@@ -36,7 +36,7 @@ save_input <- function(reported_cases, target_folder) {
 
 #' Save Estimated Infections
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Saves output from `estimate_infections` to a target directory.
 #' @param estimates List of data frames as output by `estimate_infections`
 #' @param samples Logical, defaults to TRUE. Should samples be saved
@@ -65,7 +65,7 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
 
 #' Save Forecast Infections
 #'
-#' @description \lifecycle{experimental}
+#' @description `r lifecycle::badge("experimental")`
 #' Saves the output from `forecast_infections` to a target directory.
 #' @param forecast A list of data frames as output by `forecast_infections`
 #' @inheritParams save_estimate_infections
@@ -85,7 +85,7 @@ save_forecast_infections <- function(forecast, target_folder = NULL, samples = T
 
 #' Estimate Cases by Report Date
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Either extracts or converts reported cases from an input data table. For output from
 #' `estimate_infections` this is a simple filtering step but for output from `forecast_infection`
 #' this is currently an approximate convolution. This step is likely to be updated/deprecated 
@@ -158,7 +158,7 @@ estimates_by_report_date <- function(estimates, forecast, delays, CrIs = c(0.2, 
 
 #' Copy Results From Dated Folder to Latest
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Copies output from the dated folder to a latest folder. May be undergo changes in later releases.
 #' @param latest_folder Character string containing the path to the latest target folder. 
 #' As produced by `setup_target_folder`.
@@ -188,7 +188,7 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
 
 #' Construct Output
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Combines the output produced internally by `epinow` into a single list.
 #' @param estimated_reported_cases A list of dataframes as produced by 
 #' `estimates_by_report_date`.

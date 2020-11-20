@@ -15,7 +15,7 @@ convert_to_logmean(mean, sd)
 The log mean of a lognormal distribution
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Convert from mean and standard deviation to the log mean of the
 lognormal distribution. Useful for defining distributions supported by
 \code{estimate_infections}, \code{epinow}, and \code{regional_epinow}.

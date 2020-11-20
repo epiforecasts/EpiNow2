@@ -1,6 +1,6 @@
 #' Setup Logging
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Sets up `futile.logger` logging, which is integrated into `EpiNow2`. See the 
 #' documentation for `futile.logger` for full details. By default `EpiNow2` prints all logs at 
 #' the "INFO" level and returns them to the console. Usage of logging is currently being explored 
@@ -49,7 +49,7 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 
 #' Setup Default Logging
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Sets up default logging. Usage of logging is currently being explored as the current setup
 #' cannot log stan errors or progress.
 #' @param logs Character path indicating the target folder in which to store log 
@@ -94,7 +94,7 @@ setup_default_logging <- function(logs = tempdir(),
 }
 
 #' Set up Future Backend
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' A utility function that aims to streamline the set up 
 #' of the required future backend with sensible defaults for most users of `regional_epinow`.
 #' More advanced users are recommended to setup their own `future` backend based on their
@@ -147,7 +147,7 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
 }
 
 #' Convert to Data Table
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Convenience function that sets the number of `data.table` cores to 1 and 
 #' maps input to be a `data.table`
 #' @inheritParams estimate_infections
@@ -162,7 +162,7 @@ setup_dt <- function(reported_cases) {
 
 #' Setup Target Folder for Saving
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Sets up a folders for saving results
 #' @param target_date Date, defaults to maximum found in the data if not specified.
 #' @param target_folder Character string specifying where to save results (will create if not present).

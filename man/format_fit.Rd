@@ -23,6 +23,6 @@ format_fit(posterior_samples, horizon, shift, burn_in, start_date, CrIs)
 A list of samples and summarised posterior parameter estimates
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Summaries posterior samples and adds additional custom variables.
 }

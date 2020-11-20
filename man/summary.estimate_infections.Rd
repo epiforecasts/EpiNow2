@@ -25,7 +25,7 @@ parameters of interest and date.}
 Returns a data frame of summary output
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 \code{summary} method for class "estimate_infections".
 }
 \seealso{

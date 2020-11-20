@@ -45,7 +45,7 @@ A list of \code{data.tables}. The first entry ("samples") contains raw forecast 
 summarised forecasts.
 }
 \description{
-\lifecycle{experimental}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
 Provides optional tools for forecasting cases and Rt estimates using the timeseries methods
 (via the \code{EpiSoon} package). It requires the \code{Episoon} package. Installation instructions for the EpiSoon package are
 available \href{https://epiforecasts.io/EpiSoon/}{here}.

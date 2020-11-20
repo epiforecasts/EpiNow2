@@ -51,7 +51,7 @@ susceptible. When set to 0 no population adjustment is done.}
 A list of settings defining the time-varying reproduction number
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Defines a list specifying the optional arguments for the time-varying reproduction number.
 Custom settings can be supplied which override the defaults.
 }

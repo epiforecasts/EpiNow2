@@ -1,6 +1,6 @@
 #' Distribution Skeleton
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' This function acts as a skeleton for a truncated distribution defined by 
 #' model type, maximum value and model parameters. It is designed to be used with the
 #' output from `get_dist`.
@@ -121,7 +121,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 
 #' Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Fits an integer adjusted exponential, gamma or lognormal distribution using 
 #' `stan`. 
 #' @param values Numeric vector of values
@@ -212,7 +212,7 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
 
 #' Generate a Gamma Distribution Definition Based on Parameter Estimates
 #'
-#' @description \lifecycle{soft-deprecated}
+#' @description `r lifecycle::badge("soft-deprecated")`
 #' Generates a distribution definition when only parameter estimates 
 #' are available for gamma distributed parameters. See `rgamma` for distribution information.
 #' @param shape Numeric, shape parameter of the gamma distribution.
@@ -268,7 +268,7 @@ gamma_dist_def <- function(shape, shape_sd,
 
 #' Generate a Log Normal Distribution Definition Based on Parameter Estimates
 #'
-#' @description \lifecycle{soft-deprecated}
+#' @description `r lifecycle::badge("soft-deprecated")`
 #' Generates a distribution definition when only parameter estimates 
 #' are available for log normal distributed parameters. See `rlnorm` for distribution information.
 #' @param mean Numeric, log mean parameter of the gamma distribution.
@@ -334,7 +334,7 @@ lognorm_dist_def <- function(mean, mean_sd,
   
 #' Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Fits an integer adjusted distribution to a subsampled bootstrap of data and then integrates 
 #' the posterior samples into a single set of summary statistics. Can be used to generate a robust
 #' reporting delay that accounts for the fact the underlying delay likely varies over time or that 
@@ -432,7 +432,7 @@ bootstrapped_dist_fit <- function(values,  dist = "lognormal",
 
 #' Estimate a Delay Distribution
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Estimate a log normal delay distribution from a vector of integer delays. 
 #' Currently this function is a simple wrapper for `bootstrapped_dist_fit`. 
 #' @param delays Integer vector of delays
@@ -452,7 +452,7 @@ estimate_delay <- function(delays, ...) {
 
 #' Approximate Sampling a Distribution using Counts
 #'
-#' @description \lifecycle{soft-deprecated}
+#' @description `r lifecycle::badge("soft-deprecated")`
 #' Convolves cases by a PMF function. This function will soon be removed or replaced with a 
 #' more robust `stan` implementation.
 #' @param cases A dataframe of cases (in date order) with the following variables:
@@ -595,7 +595,7 @@ sample_approx_dist <- function(cases = NULL,
 
 #' Tune an Inverse Gamma to Achieve the Target Truncation
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Allows an inverse gamma distribution to be. tuned so that less than 0.01 of its 
 #' probability mass function falls outside of the specified 
 #' bounds. This is required when using an inverse gamma prior, for example for a 

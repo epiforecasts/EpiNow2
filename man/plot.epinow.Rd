@@ -19,7 +19,7 @@ to  "summary" with supported options being "infections", "reports", "R", "growth
 List of plots as produced by \code{report_plots}
 }
 \description{
-\lifecycle{maturing}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#maturing'><img src='figures/lifecycle-maturing.svg' alt='Maturing lifecycle'></a>}}{\strong{Maturing}}
 \code{plot} method for class "epinow".
 }
 \seealso{
