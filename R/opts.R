@@ -1,6 +1,6 @@
 #' Delay Distribution Options
 #' 
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Returns delay distributions formatted for usage by downstream 
 #' functions.
 #' @param ... Delay distributions as a list with the following parameters:
