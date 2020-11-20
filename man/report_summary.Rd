@@ -26,7 +26,7 @@ variable, median, bottom, and top. It should contain the following estimates: R,
 A data.table containing formatted and numeric summary measures
 }
 \description{
-\lifecycle{questioning}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
 Creates a snapshot summary of estimates. May be removed in later releases as S3 methods are
 enhanced.
 }

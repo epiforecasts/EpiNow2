@@ -28,7 +28,7 @@ of this range are resampled.}
 A vector of samples or a probability distribution.
 }
 \description{
-\lifecycle{questioning}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
 This function acts as a skeleton for a truncated distribution defined by
 model type, maximum value and model parameters. It is designed to be used with the
 output from \code{get_dist}.

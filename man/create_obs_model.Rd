@@ -15,7 +15,7 @@ A list of settings ready to be passed to stan defining
 the Observation Model
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Takes the output of \code{obs_opts()} and converts it into a list understood by \code{stan}.
 }
 \examples{

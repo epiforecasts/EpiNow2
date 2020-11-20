@@ -22,7 +22,7 @@ save_estimate_infections(
 be returned.}
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Saves output from \code{estimate_infections} to a target directory.
 }
 \seealso{

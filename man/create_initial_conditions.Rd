@@ -13,7 +13,7 @@ create_initial_conditions(data)
 An initial condition generating function
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Uses the output of \code{create_stan_data} to create a function which can be used to
 sample from the prior distributions (or as close as possible) for parameters. Used
 in order to initialise each \code{stan} chain within a range of plausible values.

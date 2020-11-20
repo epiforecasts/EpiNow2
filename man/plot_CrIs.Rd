@@ -20,6 +20,6 @@ by \code{extract_CrIs}}
 A \code{ggplot2} plot.
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Adds lineranges for user specified credible intervals
 }

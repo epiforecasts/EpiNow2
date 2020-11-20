@@ -27,7 +27,7 @@ on the maximum number of reported cases.}
 A \code{ggplot2} object
 }
 \description{
-\lifecycle{questioning}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
 Returns key summary plots for estimates. May be depreciated in later releases as current S3 methods
 are enhanced.
 }

@@ -51,7 +51,7 @@ in Rt and infections.}
 A list of settings defining the Gaussian process
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Defines a list specifying the structure of the approximate Gaussian
 process. Custom settings can be supplied which override the defaults.
 }

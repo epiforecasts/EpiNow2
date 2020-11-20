@@ -16,7 +16,7 @@ call to an \verb{_opts} function.}
 A list of options
 }
 \description{
-\lifecycle{maturing}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#maturing'><img src='figures/lifecycle-maturing.svg' alt='Maturing lifecycle'></a>}}{\strong{Maturing}}
 A helper function that allows the selection of region specific settings if
 present and otherwise applies the overarching settings
 }

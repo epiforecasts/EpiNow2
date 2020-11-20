@@ -1,6 +1,6 @@
 #' Forecast Infections and the Time-Varying Reproduction Number
 #'
-#' @description \lifecycle{experimental}
+#' @description `r lifecycle::badge("experimental")`
 #' Provides optional tools for forecasting cases and Rt estimates using the timeseries methods
 #' (via the `EpiSoon` package). It requires the `Episoon` package. Installation instructions for the EpiSoon package are
 #' available [here](https://epiforecasts.io/EpiSoon/).

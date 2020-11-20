@@ -1,6 +1,6 @@
 #' Estimate Infections, the Time-Varying Reproduction Number and the Rate of Growth
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Uses a non-parametric approach to reconstruct cases by date of infection from reported 
 #' cases. It uses either a generative Rt model or non-parametric back calculation to estimate underlying
 #' latent infections and then maps these infections to observed cases via uncertain reporting delays and a flexible
@@ -256,7 +256,7 @@ estimate_infections <- function(reported_cases,
 
 #' Fit a Stan Model using the NUTs sampler
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Fits a stan model using `rstan::sampling`. Provides the optional ability to run chains using 
 #' `future` with error catching, timeouts and merging of completed chains.
 #' @param args List of stan arguments
@@ -365,7 +365,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 
 #' Fit a Stan Model using Variational Inference
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Fits a stan model using variational inference.
 #' @inheritParams fit_model_with_nuts
 #' @importFrom futile.logger flog.debug flog.info flog.error
@@ -425,7 +425,7 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE
 
 #' Format Posterior Samples
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Summaries posterior samples and adds additional custom variables. 
 #' @param posterior_samples A list of posterior samples as returned by `extract_parameter_samples`
 #' @param horizon Numeric, forecast horizon

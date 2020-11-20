@@ -23,7 +23,7 @@ returned from \code{epinow} to the console.}
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 }
 \description{
-\lifecycle{questioning}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
 Sets up default logging. Usage of logging is currently being explored as the current setup
 cannot log stan errors or progress.
 }

@@ -1,6 +1,6 @@
 #' Simulate infections using a given trajectory of the time-varying reproduction number
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' This function simulates infections using an existing fit to observed cases but with a modified 
 #' time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
 #' Simulations can be run in parallel using `future::plan`.

@@ -40,7 +40,7 @@ observed data (\code{last_obs}, useful for plotting and validation), the data us
 (\code{data}) and the fit object (\code{fit}).
 }
 \description{
-\lifecycle{experimental}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
 Estimates a truncation distribution from multiple snapshots of the same
 data source over time. This distribution can then be used in \code{regional_epinow},
 \code{epinow}, and \code{estimate_infections} to adjust for truncated data. See \href{https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a}{here}

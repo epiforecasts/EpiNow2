@@ -15,6 +15,6 @@ setup_target_folder(target_folder = NULL, target_date)
 A list containing the path to the dated folder and the latest folder
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Sets up a folders for saving results
 }

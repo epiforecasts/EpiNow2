@@ -1,6 +1,6 @@
 #' Summarise Real-time Results
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Used internally by `regional_summary` to produce a summary table of results. May be streamlined in later 
 #' releases.
 #' @param regions An character string containing the list of regions to extract results for 
@@ -91,7 +91,7 @@ summarise_results <- function(regions,
 
 #' Regional Summary Output
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Used to produce summary output either internally in `regional_epinow` or externally.
 #' @param summary_dir A character string giving the directory
 #'  in which to store summary of results.
@@ -323,7 +323,7 @@ regional_summary <- function(regional_output = NULL,
 
 #' Summarise rt and cases
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Produces summarised data frames of output across regions. Used internally by `regional_summary`.
 #' @param regional_results A list of dataframes as produced by `get_regional_results`
 #' @param results_dir Character string indicating the directory from which to extract results.
@@ -387,7 +387,7 @@ summarise_key_measures <- function(regional_results = NULL,
 
 #' Summarise Regional Runtimes
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Used internally by `regional_epinow` to summarise region run times.
 #' @seealso regional_summary regional_epinow
 #' @inheritParams regional_summary
@@ -462,7 +462,7 @@ regional_runtimes <- function(regional_output = NULL,
 
 #' Calculate Credible Interval
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Adds symmetric a credible interval based on quantiles.
 #' @param samples A data.table containing at least a value variable
 #' @param summarise_by A character vector of variables to group by.
@@ -494,7 +494,7 @@ calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
 
 #' Calculate Credible Intervals
 #' 
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Adds symmetric credible intervals based on quantiles.
 #' @param CrIs Numeric vector of credible intervals to calculate.
 #' @inheritParams calc_CrI
@@ -544,7 +544,7 @@ extract_CrIs <- function(summarised) {
 
 #' Calculate Summary Statistics
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Calculate summary statistics from a data frame by group. Currently supports the 
 #' mean, median and standard deviation.
 #' @return A data.table containing the upper and lower bounds for the specified credible interval 
@@ -569,7 +569,7 @@ calc_summary_stats <- function(samples, summarise_by = c()) {
 
 #' Calculate All Summary Measures
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Calculate summary statistics and credible intervals from a data frame by group. 
 #' @param order_by A character vector of parameters to order by, defaults to all `summarise_by`
 #' variables.
@@ -609,7 +609,7 @@ calc_summary_measures <- function(samples,
 
 #' Summary output from epinow
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #'  \code{summary} method for class "epinow".
 #' @param object A list of output as produced by "epinow".
 #' @param output A character string of output to summarise. Defaults to "estimates" 
@@ -644,7 +644,7 @@ summary.epinow <- function(object, output = "estimates",
 
 #' Summary output from estimate_infections
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' \code{summary} method for class "estimate_infections".
 #' @param object A list of output as produced by "estimate_infections".
 #' @param type A character vector of data types to return. Defaults to "snapshot" 
