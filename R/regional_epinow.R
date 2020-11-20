@@ -1,7 +1,7 @@
 #' Real-time Rt Estimation, Forecasting and Reporting by Region
 #'
 #' @description \lifecycle{maturing}
-#' Efficiently runs `epinow` across multiple regions in an efficient manner and conducts basic data checks and 
+#' Efficiently runs `epinow()` across multiple regions in an efficient manner and conducts basic data checks and 
 #' cleaning such as removing regions with fewer than `non_zero_points` as these are unlikely to produce reasonable 
 #' results whilst consuming significant resources. See the documentation for `epinow` for further information.
 #' 
