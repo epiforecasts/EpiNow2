@@ -100,7 +100,8 @@ example_data <- purrr::map(c(20, 15, 10, 0),
                            dist = trunc_dist)
 
 # fit model to example data
-est <- estimate_truncation(example_data, verbose = interactive())
+est <- estimate_truncation(example_data, verbose = interactive(),
+                           chains = 2, iter = 2000)
                            
 # summary of the distribution
 est$dist
