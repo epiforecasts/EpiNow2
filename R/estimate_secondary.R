@@ -25,7 +25,7 @@
 #' # make some example data
 #' cases <- example_confirmed
 #' cases <- as.data.table(cases)
-#' cases <- cases[, .(date, primary = confirm, secondary = shift(confirm, n = 5, type = "lag"))]
+#' cases <- cases[, .(date, primary = confirm, secondary = shift(confirm, n = 7, type = "lag"))]
 #' cases <- cases[, secondary := frollmean(secondary, 3, align = "center")]
 #' cases <- cases[!is.na(secondary)][, secondary := as.integer(secondary)]
 #' 
@@ -34,8 +34,10 @@
 #'
 #' # fit model to example data
 #' est <- estimate_secondary(cases, verbose = interactive(), model = model,
-#'                           obs = obs_opts(week_effect = FALSE, family = "poisson"),
+#'                           obs = obs_opts(),
 #'                           chains = 2)
+#'                           
+#' plot(est, primary = TRUE)
 estimate_secondary <- function(reports, 
                                delays = delay_opts(
                                   list(mean = 2.5, mean_sd = 1, 
@@ -85,6 +87,48 @@ estimate_secondary <- function(reports,
   out$fit <- fit
   class(out) <- c("estimate_secondary", class(out))
   return(out)
+}
+
+
+#' Plot method for estimate_secondary
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' `plot` method for class "estimate_secondary". 
+#' @param x A list of output as produced by `estimate_secondary`
+#' @param primary Logical, defaults to `FALSE`. Should `primary` reports also
+#' be plot? 
+#' @param ... Pass additional arguments to plot function. Not currently in use.
+#' @seealso plot estimate_secondary
+#' @method plot estimate_secondary
+#' @return `ggplot2` object
+#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme
+#' @importFrom cowplot theme_cowplot
+#' @export
+plot.estimate_secondary <- function(x, primary = FALSE, ...) {
+  plot <- ggplot2::ggplot(x$predictions, ggplot2::aes(x = date, y = secondary)) +
+    ggplot2::geom_col(fill = "grey", col = "white",
+                      show.legend = FALSE, na.rm = TRUE)
+  
+  if (primary) {
+    plot <- plot + 
+       ggplot2::geom_point(data = x$predictions,
+                          ggplot2::aes(y = primary), 
+                          alpha = 0.4, size = 0.8) +
+      ggplot2::geom_line(data = x$predictions,
+                          ggplot2::aes(y = primary), alpha = 0.4)
+      
+  }
+  
+  plot <- plot_CrIs(plot, extract_CrIs(x$predictions),
+                    alpha = 0.6, size = 1)
+  
+  plot <- plot +       
+    cowplot::theme_cowplot() +
+    ggplot2::labs(y = "Confirmed Cases", x = "Date") +
+    ggplot2::scale_x_date(date_breaks = "week", date_labels = "%b %d") +
+    ggplot2::scale_y_continuous(labels = scales::comma) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
+  return(plot)
 }
 
 
