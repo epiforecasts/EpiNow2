@@ -35,7 +35,7 @@
 #' cases <- example_confirmed
 #' cases <- as.data.table(cases)
 #' cases <- cases[, .(date, primary = confirm, secondary = shift(confirm, n = 7, type = "lag"))]
-#' cases <- cases[, secondary := frollmean(secondary, 3, align = "center")]
+#' cases <- cases[, secondary := frollmean(secondary, 3, align = "right")]
 #' cases <- cases[!is.na(secondary)][, secondary := as.integer(secondary)]
 #' 
 #' # dev model compile
@@ -44,8 +44,7 @@
 #' # fit model to example data
 #' est <- estimate_secondary(cases, verbose = interactive(), model = model,
 #'                           obs = obs_opts(),
-#'                           chains = 2)
-#'                           
+#'                           chains = 2, iter = 1000)
 #' plot(est, primary = TRUE)
 estimate_secondary <- function(reports, 
                                secondary = secondary_opts(),
