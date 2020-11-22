@@ -43,7 +43,6 @@
 #'
 #' # fit model to example data
 #' est <- estimate_secondary(cases, verbose = interactive(), model = model,
-#'                           obs = obs_opts(),
 #'                           chains = 2, iter = 1000)
 #' plot(est, primary = TRUE)
 estimate_secondary <- function(reports, 
@@ -140,4 +139,11 @@ plot.estimate_secondary <- function(x, primary = FALSE, ...) {
   return(plot)
 }
 
+
+
+predict.estimate_secondary <- function(object, ...) {
+  
+  
+  return(object)
+}
 
