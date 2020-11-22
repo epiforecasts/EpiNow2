@@ -1,6 +1,6 @@
 #' Estimate a Secondary Observation from a Primary Observation
 #'
-#' @description \lifecycle{experimental}
+#' @description `r lifecycle::badge("experimental")`
 #' Estimates the relationship between a primary and secondary observation, for 
 #' example hospital admissions and deaths or hospital admissions and bed 
 #' occupancy. 
@@ -14,6 +14,8 @@
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams calc_CrIs
+#' @importFrom rstan sampling
+#' @importFrom lubridate wday
 #' @examples
 #' #set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
@@ -31,25 +33,35 @@
 #'
 #' # fit model to example data
 #' est <- estimate_secondary(cases, verbose = interactive(), model = model)
-estimate_truncation <- function(reports, 
+estimate_secondary <- function(reports, 
+                               delays = delay_opts(
+                                  list(mean = 1.6, mean_sd = 0.5, 
+                                       sd = 0.83, sd_sd = 0.5, max = 30)),
                                 truncation = trunc_opts(),
                                 obs = obs_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
                                 model = NULL, 
                                 verbose = TRUE,
                                 ...) { 
-  # convert to stan list
+  # observation and control data
   data <- list(
     t = nrow(reports), 
     obs = reports$secondary,
     primary = reports$primary,
-    seeding_time = 0, 
+    day_of_week = lubridate::wday(reports$date, week_start = 1),
     cumulative = 0,               
     historic = 1,               
     primary_hist_additive = 1,   
     current = 0,               
     primary_current_additive = 0
   )
+  # delay data
+  data <- c(data, delays)
+  data$seeding_time <- 0
+  # truncation data
+  data <- c(data, truncation)
+  # observation model data
+  data <- c(data, create_obs_model(obs))
   
   # fit
   if (is.null(model)) {
