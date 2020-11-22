@@ -14,7 +14,7 @@
 #' @param generation_time A list containing the mean, standard deviation of the mean (mean_sd), 
 #' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 #' generation time (assuming a gamma distribution).
-#' @param delays A call to `delay_opts` defining delay distributions and options. See the documentation of `delay_opts` 
+#' @param delays A call to `delay_opts()` defining delay distributions and options. See the documentation of `delay_opts()` 
 #' and the examples below for details.
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
 #' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from 

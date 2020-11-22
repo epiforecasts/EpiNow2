@@ -4,6 +4,15 @@
 #' Estimates the relationship between a primary and secondary observation, for 
 #' example hospital admissions and deaths or hospital admissions and bed 
 #' occupancy. 
+#' @param secondary A call to `secondary_opts()` or a list containing the following 
+#' binary variables: cumulative, historic, primary_hist_additive, current, 
+#' primary_current_additive. These parameters control the structure of the 
+#' secondary model, see `secondary_opts()` for details.
+#' @param delays A call to `delay_opts()` defining delay distributions and options
+#' for the relationship between the primary and secondary observed data. See the 
+#' documentation of `delay_opts()` for generic details. BY default a diffuse prior 
+#' is assumed with a mean of 14 days and standard deviation of 7 days (both with a 
+#' standard deviation of 1 on the log scale).
 #' @param reports A data frame containing the `date` of report and both `primary` 
 #' and `secondary` reports.
 #' @param model A compiled stan model to override the default model. May be
@@ -39,6 +48,7 @@
 #'                           
 #' plot(est, primary = TRUE)
 estimate_secondary <- function(reports, 
+                               secondary = secondary_opts(),
                                delays = delay_opts(
                                   list(mean = 2.5, mean_sd = 1, 
                                        sd = 0.47, sd_sd = 1, max = 30)),
