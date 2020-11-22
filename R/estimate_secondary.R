@@ -16,6 +16,7 @@
 #' @inheritParams calc_CrIs
 #' @importFrom rstan sampling
 #' @importFrom lubridate wday
+#' @importFrom data.table as.data.table
 #' @examples
 #' #set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
@@ -32,17 +33,20 @@
 #' model <- rstan::stan_model("inst/stan/estimate_secondary.stan")
 #'
 #' # fit model to example data
-#' est <- estimate_secondary(cases, verbose = interactive(), model = model)
+#' est <- estimate_secondary(cases, verbose = interactive(), model = model,
+#'                           obs = obs_opts(week_effect = FALSE, family = "poisson"),
+#'                           chains = 2)
 estimate_secondary <- function(reports, 
                                delays = delay_opts(
-                                  list(mean = 1.6, mean_sd = 0.5, 
-                                       sd = 0.83, sd_sd = 0.5, max = 30)),
+                                  list(mean = 2.5, mean_sd = 1, 
+                                       sd = 0.47, sd_sd = 1, max = 30)),
                                 truncation = trunc_opts(),
                                 obs = obs_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
                                 model = NULL, 
                                 verbose = TRUE,
                                 ...) { 
+  reports <- data.table::as.data.table(reports)
   # observation and control data
   data <- list(
     t = nrow(reports), 
@@ -74,12 +78,13 @@ estimate_secondary <- function(reports,
                          ...)
   
   out <- list()
-  out$obs <- obs
+  out$predictions <- extract_rstan(fit, "secondary", CrIs = CrIs)
+  out$predictions <- out$predictions[, lapply(.SD, round, 1)]
+  out$predictions <- cbind(reports, out$predictions)
   out$data <- data
   out$fit <- fit
   class(out) <- c("estimate_secondary", class(out))
   return(out)
 }
-
 
 
