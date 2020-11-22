@@ -25,7 +25,7 @@ variables.}
 A data.table containing summary statistics by group.
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Calculate summary statistics and credible intervals from a data frame by group.
 }
 \examples{

@@ -1,6 +1,6 @@
 #' Summarise Real-time Results
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Used internally by `regional_summary` to produce a summary table of results. May be streamlined in later 
 #' releases.
 #' @param regions An character string containing the list of regions to extract results for 
@@ -91,7 +91,7 @@ summarise_results <- function(regions,
 
 #' Regional Summary Output
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Used to produce summary output either internally in `regional_epinow` or externally.
 #' @param summary_dir A character string giving the directory
 #'  in which to store summary of results.
@@ -119,10 +119,10 @@ summarise_results <- function(regions,
 #' # example delays
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- EpiNow2::estimate_delay(rlnorm(100, log(6), 1), max_value = 30)
+#' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 30)
 #'                         
 #' # example case vector from EpiSoon
-#' cases <- EpiNow2::example_confirmed[1:30]
+#' cases <- example_confirmed[1:30]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
@@ -323,7 +323,7 @@ regional_summary <- function(regional_output = NULL,
 
 #' Summarise rt and cases
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Produces summarised data frames of output across regions. Used internally by `regional_summary`.
 #' @param regional_results A list of dataframes as produced by `get_regional_results`
 #' @param results_dir Character string indicating the directory from which to extract results.
@@ -387,7 +387,7 @@ summarise_key_measures <- function(regional_results = NULL,
 
 #' Summarise Regional Runtimes
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Used internally by `regional_epinow` to summarise region run times.
 #' @seealso regional_summary regional_epinow
 #' @inheritParams regional_summary
@@ -401,10 +401,10 @@ summarise_key_measures <- function(regional_results = NULL,
 #' # example delays
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+#' reporting_delay <- example_delay(rlnorm(100, log(6), 1), max_value = 15)
 #'                         
 #' # example case vector from EpiSoon
-#' cases <- EpiNow2::example_confirmed[1:30]
+#' cases <- example_confirmed[1:30]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
@@ -412,7 +412,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' # run basic nowcasting pipeline
 #' regional_out <- regional_epinow(reported_cases = cases,
 #'                                 generation_time = generation_time,
-#'                                 delays = list(incubation_period, reporting_delay),
+#'                                 delays = delay_opts(incubation_period, reporting_delay),
 #'                                 samples = 100, stan_args = list(warmup = 100),
 #'                                 output = c("region", "timing"))
 #'
@@ -462,7 +462,7 @@ regional_runtimes <- function(regional_output = NULL,
 
 #' Calculate Credible Interval
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Adds symmetric a credible interval based on quantiles.
 #' @param samples A data.table containing at least a value variable
 #' @param summarise_by A character vector of variables to group by.
@@ -494,7 +494,7 @@ calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
 
 #' Calculate Credible Intervals
 #' 
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Adds symmetric credible intervals based on quantiles.
 #' @param CrIs Numeric vector of credible intervals to calculate.
 #' @inheritParams calc_CrI
@@ -525,7 +525,7 @@ calc_CrIs <- function(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9)) {
 
 #' Extract Credible Intervals Present
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Helper function to extract the credible intervals present in a data frame.
 #' @param summarised A data frame as processed by `calc_CrIs`
 #' @return A numeric vector of credible intervals detected in the data frame.
@@ -544,7 +544,7 @@ extract_CrIs <- function(summarised) {
 
 #' Calculate Summary Statistics
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Calculate summary statistics from a data frame by group. Currently supports the 
 #' mean, median and standard deviation.
 #' @return A data.table containing the upper and lower bounds for the specified credible interval 
@@ -569,7 +569,7 @@ calc_summary_stats <- function(samples, summarise_by = c()) {
 
 #' Calculate All Summary Measures
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Calculate summary statistics and credible intervals from a data frame by group. 
 #' @param order_by A character vector of parameters to order by, defaults to all `summarise_by`
 #' variables.
@@ -609,7 +609,7 @@ calc_summary_measures <- function(samples,
 
 #' Summary output from epinow
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #'  \code{summary} method for class "epinow".
 #' @param object A list of output as produced by "epinow".
 #' @param output A character string of output to summarise. Defaults to "estimates" 
@@ -644,7 +644,7 @@ summary.epinow <- function(object, output = "estimates",
 
 #' Summary output from estimate_infections
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' \code{summary} method for class "estimate_infections".
 #' @param object A list of output as produced by "estimate_infections".
 #' @param type A character vector of data types to return. Defaults to "snapshot" 

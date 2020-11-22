@@ -36,29 +36,24 @@ A \code{data.table} containing a \code{date} variable (date of report) and a \co
 a third variable \code{reference} which indicates what the date variable refers to.
 }
 \description{
-\lifecycle{soft-deprecated}
+\ifelse{html}{\figure{lifecycle-soft-deprecated.svg}{options: alt='Soft-deprecated lifecycle'}}{\strong{Soft-deprecated}}
 Maps from cases by date of infection to date of report via date of
 onset.
 }
 \examples{
 # define example cases
-cases <- EpiNow2::example_confirmed[, `:=`(cases = as.integer(confirm))]
+cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
 
 # define a single report delay distribution
-delay_def <- EpiNow2::lognorm_dist_def(mean = 5, 
-                                      mean_sd = 1,
-                                      sd = 3,
-                                      sd_sd = 1,
-                                      max_value = 30,
-                                      samples = 1,
-                                      to_log = TRUE)
+delay_def <- lognorm_dist_def(mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
+                             max_value = 30, samples = 1, to_log = TRUE)
                                        
 # define a single incubation period
-incubation_def <- EpiNow2::lognorm_dist_def(mean = EpiNow2::incubation_periods[1, ]$mean,
-                                           mean_sd = EpiNow2::incubation_periods[1, ]$mean_sd,
-                                           sd = EpiNow2::incubation_periods[1, ]$sd,
-                                           sd_sd = EpiNow2::incubation_periods[1, ]$sd_sd,
-                                           max_value = 30, samples = 1)
+incubation_def <- lognorm_dist_def(mean = incubation_periods[1, ]$mean,
+                                   mean_sd = incubation_periods[1, ]$mean_sd,
+                                   sd = incubation_periods[1, ]$sd,
+                                   sd_sd = incubation_periods[1, ]$sd_sd,
+                                   max_value = 30, samples = 1)
                                            
 # simple mapping
 report <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def))   

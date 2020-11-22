@@ -1,7 +1,7 @@
 #' Real-time Rt Estimation, Forecasting and Reporting by Region
 #'
-#' @description \lifecycle{maturing}
-#' Efficiently runs `epinow` across multiple regions in an efficient manner and conducts basic data checks and 
+#' @description `r lifecycle::badge("maturing")`
+#' Efficiently runs `epinow()` across multiple regions in an efficient manner and conducts basic data checks and 
 #' cleaning such as removing regions with fewer than `non_zero_points` as these are unlikely to produce reasonable 
 #' results whilst consuming significant resources. See the documentation for `epinow` for further information.
 #' 
@@ -50,7 +50,7 @@
 #'                         sd_sd = 0.1, max = 15)
 #'                         
 #' # uses example case vector
-#' cases <- EpiNow2::example_confirmed[1:60]
+#' cases <- example_confirmed[1:60]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
@@ -207,7 +207,7 @@ regional_epinow <- function(reported_cases,
 
 #' Clean Regions
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Removes regions with insufficient time points, and provides logging information on the 
 #' input.
 #' @seealso regional_epinow
@@ -244,7 +244,7 @@ clean_regions <- function(reported_cases, non_zero_points) {
 
 #' Run epinow with Regional Processing Code
 #' 
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Internal function that handles calling `epinow`. Future work will extend this 
 #' function to better handle `stan` logs and allow the user to modify settings between
 #' regions.
@@ -327,7 +327,7 @@ run_region <- function(target_region,
 
 #' Process regional estimate
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Internal function that removes output that is not required, and returns logging 
 #' information. 
 #' @param out List of output returned by `epinow`
@@ -364,7 +364,7 @@ process_region <- function(out, target_region, timing,
 
 #' Process all Region Estimates
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Internal function that processes the output from multiple `epinow` runs, adds 
 #' summary logging information.
 #' @param regional_out A list of output from multiple runs of `regional_epinow`

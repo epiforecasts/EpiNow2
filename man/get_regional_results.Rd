@@ -30,7 +30,7 @@ data for. Defaults to "latest" which finds the latest results available.}
 A list of estimates, forecasts and estimated cases by date of report.
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Summarises results across regions either from input or from disk. See the examples for
 details.
 }
@@ -42,7 +42,7 @@ incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lau
 reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 
 # example case vector from EpiSoon
-cases <- EpiNow2::example_confirmed[1:30]
+cases <- example_confirmed[1:30]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))

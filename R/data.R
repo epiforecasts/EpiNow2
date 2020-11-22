@@ -1,6 +1,6 @@
 #' Literature Estimates of Generation Times
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Generation time estimates. See here for details: 
 #' https://github.com/epiforecasts/EpiNow2/blob/master/data-raw/generation-time.R
 #' @format A `data.table` of summarising the distribution
@@ -8,7 +8,7 @@
 
 #' Literature Estimates of Incubation Periods
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Incubation period estimates. See here for details:
 #'  https://github.com/epiforecasts/EpiNow2/blob/master/data-raw/incubation-period.R
 #' @format A `data.table` of summarising the distribution
@@ -17,7 +17,7 @@
 
 #' Example Confirmed Case Data Set
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' An example data frame of observed cases
 #' @format A data frame containing cases reported on each date.
 "example_confirmed"

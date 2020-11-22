@@ -1,6 +1,6 @@
 #' Estimate Truncation of Observed Data
 #'
-#' @description \lifecycle{experimental}
+#' @description `r lifecycle::badge("experimental")`
 #' Estimates a truncation distribution from multiple snapshots of the same 
 #' data source over time. This distribution can then be used in `regional_epinow`,
 #' `epinow`, and `estimate_infections` to adjust for truncated data. See [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a) 
@@ -77,7 +77,8 @@
 #'                            dist = trunc_dist)
 #'
 #' # fit model to example data
-#' est <- estimate_truncation(example_data, verbose = interactive())
+#' est <- estimate_truncation(example_data, verbose = interactive(),
+#'                            chains = 2, iter = 2000)
 #'                            
 #' # summary of the distribution
 #' est$dist
@@ -198,8 +199,8 @@ estimate_truncation <- function(obs, max_truncation = 10,
 
 #' Plot method for estimate_truncation
 #'
-#' @description \lifecycle{experimental}
-#' \code{plot} method for class "estimate_truncation". Returns 
+#' @description `r lifecycle::badge("experimental")`
+#' `plot` method for class "estimate_truncation". Returns 
 #' a plot faceted over each dataset used in fitting with the latest 
 #' observations as columns, the data observed at the time (and so truncated) 
 #' as dots and the truncation adjusted estimates as a ribbon.

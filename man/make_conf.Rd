@@ -19,7 +19,7 @@ credible interval be switched.}
 A character vector formatted for reporting
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Combines a list of values into formatted credible intervals.
 }
 \examples{

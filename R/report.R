@@ -1,6 +1,6 @@
 #' Report case counts by date of report  
 #' 
-#' @description \lifecycle{soft-deprecated}
+#' @description `r lifecycle::badge("soft-deprecated")`
 #' Convolves latent infections to reported cases via an observation model. Likely to be removed/replaced 
 #' in later releases by functionality drawing on the `stan` implementation.                      
 #' @param case_estimates A data.table of case estimates with the following variables: date, sample, cases
@@ -33,9 +33,9 @@
 #'                            rt = NULL)
 #'                             
 #' reported_cases <- report_cases(case_estimates = 
-#'                                 out$samples[variable == "infections"][, 
-#'                                 cases := as.integer(value)][, value := NULL],
-#'                                delays = list(incubation_period, reporting_delay),
+#'                                out$samples[variable == "infections"][, 
+#'                                cases := as.integer(value)][, value := NULL],
+#'                                delays = delay_opts(incubation_period, reporting_delay),
 #'                                type = "sample")
 #' print(reported_cases)
 #' }
@@ -98,7 +98,7 @@ report_cases <- function(case_estimates,
 
 
 #' Provide Summary Statistics for Estimated Infections and Rt
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Creates a snapshot summary of estimates. May be removed in later releases as S3 methods are 
 #' enhanced.
 #' @param summarised_estimates A data.table of summarised estimates containing the following variables:
@@ -180,7 +180,7 @@ report_summary <- function(summarised_estimates,
 
 #' Report plots
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Returns key summary plots for estimates. May be depreciated in later releases as current S3 methods 
 #' are enhanced.
 #' @param summarised_estimates A data.table of summarised estimates containing the following variables:

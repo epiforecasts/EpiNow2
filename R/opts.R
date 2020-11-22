@@ -1,6 +1,6 @@
 #' Delay Distribution Options
 #' 
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Returns delay distributions formatted for usage by downstream 
 #' functions.
 #' @param ... Delay distributions as a list with the following parameters:
@@ -38,7 +38,7 @@ delay_opts <- function(...) {
 
 #' Truncation Distribution Options
 #' 
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Returns a truncation distribution formatted for usage by downstream functions. See 
 #' `estimate_truncation` for an approach to estimate this distribution.
 #' @param dist A list defining the truncation distribution, defaults to `NULL` in which
@@ -64,7 +64,7 @@ trunc_opts <- function(dist = NULL) {
 
 #' Time-Varying Reproduction Number Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the optional arguments for the time-varying reproduction number. 
 #' Custom settings can be supplied which override the defaults.
 #' @param prior List containing named numeric elements "mean" and "sd". The mean and
@@ -130,7 +130,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 
 #' Back Calculation Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`. 
 #' @param prior_window Integer, defaults to 7 days. The mean smoothing window to apply
@@ -157,7 +157,7 @@ backcalc_opts <- function(prior_window = 7, rt_window = 1) {
 
 #' Approximate Gaussian Process Settings
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the structure of the approximate Gaussian
 #'  process. Custom settings can be supplied which override the defaults. 
 #' @param ls_mean Numeric, defaults to 21 days. The mean of the lognormal length scale.
@@ -217,7 +217,7 @@ gp_opts <- function(basis_prop = 0.2,
 
 #' Observation Model Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the structure of the observation 
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are 
@@ -263,7 +263,7 @@ obs_opts <- function(family = "negbin",
 
 #' Rstan Sampling Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #'  Defines a list specifying the arguments passed to 
 #' `rstan::sampling`. Custom settings can be supplied which override the defaults.
 #' @param cores Number of cores to use when executing the chains in parallel,
@@ -320,7 +320,7 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 
 #' Rstan Variational Bayes Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #'  Defines a list specifying the arguments passed to 
 #' `rstan::vb`. Custom settings can be supplied which override the defaults.
 #' @param samples Numeric, default 2000. Overall number of approximate posterior 
@@ -348,7 +348,7 @@ rstan_vb_opts <- function(samples = 2000,
 
 #' Rstan Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the arguments passed to underlying `rstan`
 #' functions via `rstan_sampling_opts` and `rstan_vb_opts`.Custom settings can be supplied
 #'  which override the defaults.
@@ -387,7 +387,7 @@ rstan_opts <- function(object = NULL,
 
 #' Stan Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the arguments passed to underlying stan
 #' backend functions via `rstan_sampling_opts` and `rstan_vb_opts`. Custom settings
 #' can be supplied which override the defaults.
@@ -420,7 +420,7 @@ stan_opts <- function(samples = 2000,
 
 #' Return an _opts List per Region
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Define a list of `_opts` to pass to `regional_epinow` `_opts` accepting arguments.
 #' This is useful when different settings are needed between regions within a single 
 #' `regional_epinow` call. Using `opts_list` the defaults can be applied to all regions 
@@ -462,7 +462,7 @@ opts_list <- function(opts, reported_cases, ...) {
 
 #' Filter Options for a Target Region
 #' 
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' A helper function that allows the selection of region specific settings if 
 #' present and otherwise applies the overarching settings
 #' @param opts Either a list of calls to an `_opts` function or a single 

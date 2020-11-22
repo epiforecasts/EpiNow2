@@ -15,15 +15,14 @@ estimate_delay(delays, ...)
 A list summarising the bootstrapped distribution
 }
 \description{
-\lifecycle{maturing}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#maturing'><img src='figures/lifecycle-maturing.svg' alt='Maturing lifecycle'></a>}}{\strong{Maturing}}
 Estimate a log normal delay distribution from a vector of integer delays.
 Currently this function is a simple wrapper for \code{bootstrapped_dist_fit}.
 }
 \examples{
 \donttest{
 delays <- rlnorm(500, log(5), 1)
-estimate_delay(delays, samples = 1000, bootstraps = 10, 
-               dist = "lognormal")
+estimate_delay(delays, samples = 1000, bootstraps = 10)
 }
 }
 \seealso{

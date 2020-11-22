@@ -21,7 +21,7 @@ to apply.}
 A data frame for shifted reported cases
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 This functions creates a data frame of reported cases that has been smoothed using
 a rolling average (with a period set by \code{smoothing_window}) and shifted back in time
 by some delay. It is used by \code{estimate_infections} to generate the mean shifted prior

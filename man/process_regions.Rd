@@ -15,7 +15,7 @@ process_regions(regional_out, regions)
 A list of all regional estimates and successful regional estimates
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Internal function that processes the output from multiple \code{epinow} runs, adds
 summary logging information.
 }

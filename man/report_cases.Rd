@@ -36,7 +36,7 @@ A list of \code{data.table}s. The first entry contains the following variables \
 being summarised across samples.
 }
 \description{
-\lifecycle{soft-deprecated}
+\ifelse{html}{\figure{lifecycle-soft-deprecated.svg}{options: alt='Soft-deprecated lifecycle'}}{\strong{Soft-deprecated}}
 Convolves latent infections to reported cases via an observation model. Likely to be removed/replaced
 in later releases by functionality drawing on the \code{stan} implementation.
 }
@@ -57,9 +57,9 @@ out <- estimate_infections(cases, samples = 100,
                            rt = NULL)
                             
 reported_cases <- report_cases(case_estimates = 
-                                out$samples[variable == "infections"][, 
-                                cases := as.integer(value)][, value := NULL],
-                               delays = list(incubation_period, reporting_delay),
+                               out$samples[variable == "infections"][, 
+                               cases := as.integer(value)][, value := NULL],
+                               delays = delay_opts(incubation_period, reporting_delay),
                                type = "sample")
 print(reported_cases)
 }

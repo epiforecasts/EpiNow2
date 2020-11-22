@@ -15,7 +15,7 @@ calc_summary_stats(samples, summarise_by = c())
 A data.table containing the upper and lower bounds for the specified credible interval
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Calculate summary statistics from a data frame by group. Currently supports the
 mean, median and standard deviation.
 }

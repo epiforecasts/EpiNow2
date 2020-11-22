@@ -46,7 +46,7 @@ on the maximum number of reported cases.}
 A list of summary measures and plots
 }
 \description{
-\lifecycle{maturing}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#maturing'><img src='figures/lifecycle-maturing.svg' alt='Maturing lifecycle'></a>}}{\strong{Maturing}}
 Used to produce summary output either internally in \code{regional_epinow} or externally.
 }
 \examples{
@@ -54,10 +54,10 @@ Used to produce summary output either internally in \code{regional_epinow} or ex
 # example delays
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- EpiNow2::estimate_delay(rlnorm(100, log(6), 1), max_value = 30)
+reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 30)
                         
 # example case vector from EpiSoon
-cases <- EpiNow2::example_confirmed[1:30]
+cases <- example_confirmed[1:30]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]))

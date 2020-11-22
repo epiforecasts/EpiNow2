@@ -18,6 +18,6 @@ from this many days into the future (or past if negative) past will be used forw
 A list containing a logical called fixed and an integer called from
 }
 \description{
-\lifecycle{stable}
-Converts the \code{future} argument from \code{rt_opts} into arguments that can be passed to \code{stan}.
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
+Converts the \code{future} argument from \code{rt_opts()} into arguments that can be passed to \code{stan}.
 }

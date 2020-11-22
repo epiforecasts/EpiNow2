@@ -14,7 +14,7 @@ save_forecast_infections(forecast, target_folder = NULL, samples = TRUE)
 \item{samples}{Logical, defaults to TRUE. Should samples be saved}
 }
 \description{
-\lifecycle{experimental}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
 Saves the output from \code{forecast_infections} to a target directory.
 }
 \seealso{

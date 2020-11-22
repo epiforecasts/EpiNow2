@@ -1,6 +1,6 @@
 #' Simulate Cases by Date of Infection, Onset and Report
 #'
-#' \@description \lifecycle{questioning}
+#' \@description `r lifecycle::badge("questioning")`
 #'  Simulate cases from a single Rt trace, an initial number of cases, and a reporting model
 #'  This functionality has largely been superseded by `simulate_infections` and will likely to replaced 
 #'  or updated to depend on `stan` code.

@@ -28,7 +28,7 @@ data for. Defaults to "latest" which finds the latest results available.}
 A list of summarised Rt, cases by date of infection and cases by date of report
 }
 \description{
-\lifecycle{maturing}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#maturing'><img src='figures/lifecycle-maturing.svg' alt='Maturing lifecycle'></a>}}{\strong{Maturing}}
 Produces summarised data frames of output across regions. Used internally by \code{regional_summary}.
 }
 \seealso{
