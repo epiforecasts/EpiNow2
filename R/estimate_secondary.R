@@ -31,7 +31,7 @@
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # load data.table for manipulation
 #' library(data.table)
-#' # make some example data
+#' # make some example secondary incidence data
 #' cases <- example_confirmed
 #' cases <- as.data.table(cases)
 #' cases <- cases[, .(date, primary = confirm, secondary = shift(confirm, n = 7, type = "lag"))]
@@ -42,9 +42,38 @@
 #' model <- rstan::stan_model("inst/stan/estimate_secondary.stan")
 #'
 #' # fit model to example data
-#' est <- estimate_secondary(cases, verbose = interactive(), model = model,
+#' inc <- estimate_secondary(cases, verbose = interactive(), model = model,
 #'                           chains = 2, iter = 1000)
-#' plot(est, primary = TRUE)
+#' plot(inc, primary = TRUE)
+#' \donttest{
+#' # make some example prevalence data
+#' cases <- example_confirmed
+#' cases <- as.data.table(cases)
+#' cases <- 
+#'   cases[, .(date, primary = confirm, scaled_primary = confirm * 0.1)]
+#' cases$secondary <- 0
+#' cases$secondary[1:6] <- as.integer(cumsum(cases$scaled_primary[1:6]))
+#' for (i in 7:nrow(cases)) {
+#'   cases$secondary[i] <- as.integer(
+#'   cases$secondary[i -1] + cases$scaled_primary[i] - 
+#'           cases$scaled_primary[i - 6] * 0.125-
+#'           cases$scaled_primary[i - 5] * 0.75 -
+#'           cases$scaled_primary[i - 4] * 0.125)
+#'   cases$secondary[i] <- ifelse(cases$secondary[i] < 0, 0,
+#'                                cases$secondary[i])
+#' }
+#' 
+#' # fit model to example data
+#' # here we assume no day of the week effect
+#' # this is motivated by the expected level of auto-correlation in prevalence
+#' # variables
+#' prev <- estimate_secondary(cases, verbose = interactive(), model = model,
+#'                           secondary = secondary_opts(type = "prevalence"),
+#'                           obs = obs_opts(week_effect = TRUE, 
+#'                                          scale = list(mean = 0.2, sd = 0.1)),
+#'                           control = list(max_treedepth = 15))
+#' plot(prev)
+#' }
 estimate_secondary <- function(reports, 
                                secondary = secondary_opts(),
                                delays = delay_opts(
@@ -62,13 +91,10 @@ estimate_secondary <- function(reports,
     t = nrow(reports), 
     obs = reports$secondary,
     primary = reports$primary,
-    day_of_week = lubridate::wday(reports$date, week_start = 1),
-    cumulative = 0,               
-    historic = 1,               
-    primary_hist_additive = 1,   
-    current = 0,               
-    primary_current_additive = 0
+    day_of_week = lubridate::wday(reports$date, week_start = 1)
   )
+  # secondary model options
+  data <- c(data, secondary)
   # delay data
   data <- c(data, delays)
   data$seeding_time <- 0
@@ -97,6 +123,62 @@ estimate_secondary <- function(reports,
   return(out)
 }
 
+#' Secondary Reports Options
+#' 
+#' @description `r lifecycle::badge("experimental")`
+#' Returns a list of options defining the secondary model used in `estimate_secondary()`. 
+#' This model is a combination of a convolution of previously observed primary reports 
+#' combined with current primary reports (either additive or subtractive). This model 
+#' can optionally be cumulative. See the documentation of `type` for sensible options 
+#' to cover most use cases and the returned values of `secondary_opts()` for all 
+#' currently supported options.
+#' @param type A character string indicating the type of observation the secondary reports
+#' are. Options include: 
+#' - "incidence": Assumes that secondary reports equal a convolution of previously
+#' observed primary reported cases. An example application is deaths from an infectious
+#' disease predicted by reported cases of that disease (or estimated infections).
+#' - "prevalence": Assumes that secondary reports are cumulative and are defined by
+#' currently observed primary reports minus a convolution of secondary reports. An example
+#' application is hospital bed usage predicted by hospital admissions.
+#' @param ... Overwrite options defined by type. See the returned values for all 
+#' options that can be passed.
+#' @seealso estimate_secondary
+#' @return A list of binary options summarising secondary model used in `estimate_secondary()`. 
+#' Options returned are `cumulative` (should the secondary report be cumulative), `historic`
+#' (should a convolution of primary reported cases be used to predict secondary reported 
+#' cases), `primary_hist_additive` (should the historic convolution of primary reported cases 
+#' be additive or subtractive), `current` (should currently observed primary reported cases 
+#' contribute to current secondary reported cases), `primary_current_additive` (should current
+#' primary reported cases be additive or subtractive).
+#' @export
+#' @examples
+#' # incidence model
+#' secondary_opts("incidence")
+#' 
+#' # prevalence model
+#' secondary_opts("prevalence")
+secondary_opts <- function(type = "incidence", ...)  {
+  type <- match.arg(type, choices = c("incidence", "prevalence"))
+  if (type %in% "incidence") {
+    data <- list(
+      cumulative = 0,               
+      historic = 1,               
+      primary_hist_additive = 1,   
+      current = 0,               
+      primary_current_additive = 0
+    )
+  }else if (type %in% "prevalence") {
+    data <- list(
+      cumulative = 1,               
+      historic = 1,               
+      primary_hist_additive = 0,   
+      current = 1,               
+      primary_current_additive = 1
+    )
+  }
+  data <- update_list(data, list(...))
+  return(data)
+}
 
 #' Plot method for estimate_secondary
 #'
@@ -138,8 +220,6 @@ plot.estimate_secondary <- function(x, primary = FALSE, ...) {
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
   return(plot)
 }
-
-
 
 predict.estimate_secondary <- function(object, ...) {
   
