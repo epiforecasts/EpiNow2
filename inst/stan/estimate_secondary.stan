@@ -15,7 +15,7 @@ parameters{
   // observation model
   real delay_mean[delays];               // mean of delays
   real delay_sd[delays];                 // sd of delays
-  simplex[week_effect ? 7 : 0] day_of_week_simplex;   // day of week reporting effect 
+  simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect 
   real<lower = 0> frac_obs[obs_scale];   // fraction of cases that are ultimately observed
   real truncation_mean[truncation];      // mean of truncation
   real truncation_sd[truncation];        // sd of truncation
@@ -23,7 +23,7 @@ parameters{
 }
 
 transformed parameters {
-  vector[t] secondary;
+  vector<lower=0>[t] secondary;
   // calculate secondary reports from primary
   secondary = calculate_secondary(primary, obs, frac_obs, delay_mean, 
                                   delay_sd, max_delay, cumulative, 

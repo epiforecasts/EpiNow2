@@ -7,7 +7,7 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
   int t = num_elements(reports);
   int obs_scale = num_elements(frac_obs);
   vector[t] scaled_reports;
-  vector[t] conv_reports;                            
+  vector[t] conv_reports = rep_vector(1e-5, t);                            
   vector[t] secondary_reports = rep_vector(0.0, t);
   // scaling of reported cases by fraction 
   if (obs_scale) {
@@ -16,7 +16,8 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
     scaled_reports = reports;
   }
   // convolve from reports to contributions from these reports
-  conv_reports = convolve_to_report(scaled_reports, delay_mean, delay_sd, max_delay, 0);
+  conv_reports =
+    conv_reports + convolve_to_report(scaled_reports, delay_mean, delay_sd, max_delay, 0);
   // if predicting and using a cumulative target
   // combine reports with previous secondary data
   for (i in 1:t) {
@@ -33,6 +34,9 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
       if (primary_hist_additive) {
       secondary_reports[i] += conv_reports[i];
       }else{
+        if (conv_reports[i] > secondary_reports[i]) {
+          conv_reports[i] = secondary_reports[i];
+        }
       secondary_reports[i] -= conv_reports[i];
       }
     }
@@ -44,6 +48,7 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
         secondary_reports[i] -= scaled_reports[i];
       }
     }
+    secondary_reports[i] = secondary_reports[i] <= 0 ? 1e-5 : secondary_reports[i];
   }
   return(secondary_reports);
 }

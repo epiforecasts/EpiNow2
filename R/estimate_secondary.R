@@ -3,21 +3,22 @@
 #' @description `r lifecycle::badge("experimental")`
 #' Estimates the relationship between a primary and secondary observation, for 
 #' example hospital admissions and deaths or hospital admissions and bed 
-#' occupancy. 
+#' occupancy. See `secondary_opts()` for model structure options. See parameter 
+#' documentation for model defaults and options.
 #' @param secondary A call to `secondary_opts()` or a list containing the following 
 #' binary variables: cumulative, historic, primary_hist_additive, current, 
 #' primary_current_additive. These parameters control the structure of the 
 #' secondary model, see `secondary_opts()` for details.
-#' @param delays A call to `delay_opts()` defining delay distributions and options
-#' for the relationship between the primary and secondary observed data. See the 
-#' documentation of `delay_opts()` for generic details. BY default a diffuse prior 
-#' is assumed with a mean of 14 days and standard deviation of 7 days (both with a 
-#' standard deviation of 1 on the log scale).
+#' @param delays A call to `delay_opts()` defining delay distributions between
+#' primary and secondary observations See the documentation of `delay_opts()` for 
+#' details. BY default a diffuse prior  is assumed with a mean of 14 days and 
+#' standard deviation of 7 days (both with a standard deviation of 1 on the log scale).
 #' @param reports A data frame containing the `date` of report and both `primary` 
 #' and `secondary` reports.
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
-#' @param verbose Logical, should model fitting progress be returned.
+#' @param verbose Logical, should model fitting progress be returned. Defaults to
+#' `interactive()`.
 #' @param ... Additional parameters to pass to `rstan::sampling`.
 #' @return 
 #' @export
@@ -50,28 +51,31 @@
 #' cases <- example_confirmed
 #' cases <- as.data.table(cases)
 #' cases <- 
-#'   cases[, .(date, primary = confirm, scaled_primary = confirm * 0.1)]
+#'   cases[, .(date, primary = confirm, 
+#'                   scaled_primary = confirm * rnorm(.N, 0.25, 0.05))]
 #' cases$secondary <- 0
-#' cases$secondary[1:6] <- as.integer(cumsum(cases$scaled_primary[1:6]))
-#' for (i in 7:nrow(cases)) {
+#' cases$secondary[1] <- as.integer(cases$scaled_primary[1])
+#' for (i in 2:nrow(cases)) {
+#'   meanlog <- rnorm(1, 1.3, 0.05)
+#'   sdlog <- rnorm(1, 0.6, 0.01)
+#'   cmf <- cumsum(dlnorm(1:min(i-1,20), meanlog, sdlog)) - 
+#'            cumsum(dlnorm(0:min(19,i-2), meanlog, sdlog))
+#'   reducing_cases <- sum(cases$scaled_primary[(i-1):max(1,i-20)] * cmf)
+#'   reducing_cases <- ifelse(cases$secondary[i - 1] < reducing_cases, 
+#'                            cases$secondary[i - 1], reducing_cases) 
 #'   cases$secondary[i] <- as.integer(
-#'   cases$secondary[i -1] + cases$scaled_primary[i] - 
-#'           cases$scaled_primary[i - 6] * 0.125-
-#'           cases$scaled_primary[i - 5] * 0.75 -
-#'           cases$scaled_primary[i - 4] * 0.125)
+#'   cases$secondary[i - 1] + cases$scaled_primary[i] - reducing_cases
+#'   ) 
 #'   cases$secondary[i] <- ifelse(cases$secondary[i] < 0, 0,
 #'                                cases$secondary[i])
 #' }
-#' 
-#' # fit model to example data
-#' # here we assume no day of the week effect
-#' # this is motivated by the expected level of auto-correlation in prevalence
-#' # variables
+#' # fit model to example prevalence data
+#' # here we assume no day of the week effect and a Poisson observation model
+#' # this is motivated by the expected level of auto-correlation in cumulative
 #' prev <- estimate_secondary(cases, verbose = interactive(), model = model,
 #'                           secondary = secondary_opts(type = "prevalence"),
-#'                           obs = obs_opts(week_effect = TRUE, 
-#'                                          scale = list(mean = 0.2, sd = 0.1)),
-#'                           control = list(max_treedepth = 15))
+#'                           obs = obs_opts(week_effect = FALSE, 
+#'                                          scale = list(mean = 0.3, sd = 0.1)))
 #' plot(prev)
 #' }
 estimate_secondary <- function(reports, 
@@ -83,11 +87,11 @@ estimate_secondary <- function(reports,
                                 obs = obs_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
                                 model = NULL, 
-                                verbose = TRUE,
+                                verbose = interactive(),
                                 ...) { 
   reports <- data.table::as.data.table(reports)
   # observation and control data
-  data <- list(
+  data <- list( 
     t = nrow(reports), 
     obs = reports$secondary,
     primary = reports$primary,
@@ -103,18 +107,22 @@ estimate_secondary <- function(reports,
   # observation model data
   data <- c(data, create_obs_model(obs))
   
+  # initial conditions (from estimate_infections)
+  inits <- create_initial_conditions(
+    c(data, list(estimate_r = 0, fixed = 1, bp_n = 0))
+    )
   # fit
   if (is.null(model)) {
     model <- stanmodels$estimate_truncation
   }
   fit <- rstan::sampling(model, 
                          data = data, 
-                         init = "random",
+                         init = inits,
                          refresh = ifelse(verbose, 50, 0),
                          ...)
   
   out <- list()
-  out$predictions <- extract_rstan(fit, "secondary", CrIs = CrIs)
+  out$predictions <- extract_stan_param(fit, "secondary", CrIs = CrIs)
   out$predictions <- out$predictions[, lapply(.SD, round, 1)]
   out$predictions <- cbind(reports, out$predictions)
   out$data <- data

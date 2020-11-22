@@ -46,7 +46,7 @@ parameters{
   // observation model
   real delay_mean[delays];                // mean of delays
   real delay_sd[delays];                 // sd of delays
-  simplex[week_effect ? 7 : 0] day_of_week_simplex;   // day of week reporting effect 
+  simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect 
   real<lower = 0> frac_obs[obs_scale];   // fraction of cases that are ultimately observed
   real truncation_mean[truncation];      // mean of truncation
   real truncation_sd[truncation];        // sd of truncation
