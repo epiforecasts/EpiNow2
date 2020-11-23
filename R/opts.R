@@ -141,7 +141,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' No prior and using infections are only supported when a Gaussian process is present. If observed 
 #' data is not reliable then it a sensible first step is to explore increasing the `prior_window` with
 #' a sensible second step being to no longer use reported cases as a prior (i.e set `prior = "none"`).
-#' @param prior_window Integer, defaults to 14 days and must be odd. The mean centered smoothing window 
+#' @param prior_window Integer, defaults to 14 days. The mean centred smoothing window 
 #' to apply to mean shifted reports (used as a prior during back calculation). 7 days is minimum recommended 
 #' settings as this smooths day of the week effects but depending on the quality of the data and the 
 #' amount of information users wish to use as a prior (higher values equalling a less informative prior).
@@ -160,9 +160,6 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
   )
   if (backcalc$rt_window %% 2 == 0) {
     stop("Rt rolling average window must be odd in order to include the current estimate")
-  }
-  if (backcalc$prior_window %% 2 == 0) {
-    stop("rolling average window for reported cases must be odd in order to include the current estimate")
   }
   return(backcalc)
 }

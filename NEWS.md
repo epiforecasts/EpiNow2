@@ -8,7 +8,10 @@ This release is under development and features listed below may change.
 underlying latent infections when estimating using deconvolution/back-calculation rather than the package
 default of using a generated Rt model (enable this option by setting `rt = NULL`). The default prior 
 remains smoothed mean delay shifted reported cases but optionally no prior can now also be used (for 
-scenarios when the data is very untrustworthy but likely to perform extremely poorly in realtime).
+scenarios when the data is very untrustworthy but likely to perform extremely poorly in realtime).In addition,
+the previously estimated infections can be used (i.e infections[t] = infections[t-1] * exp(GP)) with this being
+an approximate version of the generative Rt model that does not weight previous infections using the generation
+time.
 * Updates the smoothing applied to mean shifted reported cases used as a prior for back calculation when 
 `prior = "reports"` to be a partial centered moving average rather than a right aligned moving average. 
 This choice means that increasing the `prior` window does not alter the location of epidemic peaks as when using 

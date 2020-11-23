@@ -59,9 +59,6 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
 #' create_shifted_cases(example_confirmed, 7, 14, 7)
 create_shifted_cases <- function(reported_cases, shift, 
                                  smoothing_window, horizon) {
-  if (smoothing_window %% 2 == 0) {
-    stop("smoothing window must be odd in order to be used as a centered rolling average")
-  }
   shifted_reported_cases <- data.table::copy(reported_cases)[,
               confirm := data.table::shift(confirm, n = shift,
                                            type = "lead", fill = NA)][,
