@@ -133,9 +133,17 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`. 
-#' @param prior_window Integer, defaults to 7 days. The mean smoothing window to apply
-#' to mean shifted reports (used as a prior during back calculation). 7 days is the default
-#' as this smooths day of the week effects but depending on the quality of the data and the 
+#' @param prior A character string defaulting to "reports". Defines the prior to use
+#' when deconvolving. Currently implemented options are to use smoothed mean delay 
+#' shifted reported cases ("reports"), to use the estimated infections from the 
+#' previous time step seeded for the first time step using mean shifted reported cases
+#' ("infections"), or no prior ("none"). Using no prior will result in poor real time performance. 
+#' No prior and using infections are only supported when a Gaussian process is present. If observed 
+#' data is not reliable then it a sensible first step is to explore increasing the `prior_window` with
+#' a sensible second step being to no longer use reported cases as a prior (i.e set `prior = "none"`).
+#' @param prior_window Integer, defaults to 14 days and must be odd. The mean centered smoothing window 
+#' to apply to mean shifted reports (used as a prior during back calculation). 7 days is minimum recommended 
+#' settings as this smooths day of the week effects but depending on the quality of the data and the 
 #' amount of information users wish to use as a prior (higher values equalling a less informative prior).
 #' @param rt_window Integer, defaults to 1. The size of the centred rolling average to use when estimating 
 #' Rt. This must be odd so that the central estimate is included.
@@ -144,13 +152,17 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' @examples
 #' # default settings
 #' backcalc_opts()
-backcalc_opts <- function(prior_window = 7, rt_window = 1) {
+backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
   backcalc <- list(
+    prior = match.arg(prior, choices = c("reports", "none", "infections")),
     prior_window = prior_window,
     rt_window = as.integer(rt_window)
   )
   if (backcalc$rt_window %% 2 == 0) {
     stop("Rt rolling average window must be odd in order to include the current estimate")
+  }
+  if (backcalc$prior_window %% 2 == 0) {
+    stop("rolling average window for reported cases must be odd in order to include the current estimate")
   }
   return(backcalc)
 }

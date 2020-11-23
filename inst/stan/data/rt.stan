@@ -8,4 +8,3 @@
   int future_fixed;                  // is underlying future Rt assumed to be fixed
   int fixed_from;                    // Reference date for when Rt estimation should be fixed
   int pop;                           // Initial susceptible population
-  int rt_half_window;                // Half the moving average window used when calculating Rt
