@@ -57,11 +57,22 @@ vector generate_infections(vector oR, int uot,
   return(infections);
 }
 // backcalculate infections using mean shifted cases and non-parametric noise
-vector deconvolve_infections(vector shifted_cases, vector noise, int fixed) {
+vector deconvolve_infections(vector shifted_cases, vector noise, int fixed,
+                             int prior) {
   int t = num_elements(shifted_cases);
   vector[t] infections = rep_vector(1e-5, t);
   if(!fixed) {
-    infections = infections + shifted_cases .* exp(noise);
+    vector[t] exp_noise = exp(noise);
+    if (prior == 1) {
+      infections = infections + shifted_cases .* exp_noise;
+    }else if (prior == 0) {
+     infections = infections + exp_noise; 
+    }else if (prior == 2) {
+      infections[1] = infections[1] + shifted_cases[1] * exp_noise[1];
+      for (i in 2:t) {
+        infections[i] = infections[i - 1] * exp_noise[i];
+      }
+    }
   }else{
     infections = infections + shifted_cases;
   }

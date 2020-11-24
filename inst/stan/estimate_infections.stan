@@ -15,6 +15,7 @@ data {
 #include data/gaussian_process.stan
 #include data/generation_time.stan
 #include data/rt.stan
+#include data/backcalc.stan
 #include data/observation_model.stan
 }
 
@@ -72,7 +73,7 @@ transformed parameters {
                                      pop, future_time);
   }else{
     // via deconvolution
-    infections = deconvolve_infections(shifted_cases, noise, fixed);
+    infections = deconvolve_infections(shifted_cases, noise, fixed, backcalc_prior);
   }
   // convolve from latent infections to mean of observations
   reports = convolve_to_report(infections, delay_mean, delay_sd, max_delay, seeding_time);
