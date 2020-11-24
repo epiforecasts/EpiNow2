@@ -88,10 +88,15 @@
 #' plot(trunc) 
 #' 
 #' # using back calculation (combined here with under reporting)
+#' # this model is in the order of 10 ~ 100 faster than the gaussian process method
+#' # it is likely robust for retrospective Rt but less reliable for real time estimates
+#' # the width of the prior window controls the reliance on observed data and can be 
+#' # optionally switched off using backcalc_opts(prior = "none")
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = delay_opts(incubation_period, reporting_delay),
-#'                                 rt = NULL, backcalc = backcalc_opts(rt_window = 1),
-#'                                 obs = obs_opts(scale = list(mean = 0.4, sd = 0.05)))
+#'                                 rt = NULL, backcalc = backcalc_opts(),
+#'                                 obs = obs_opts(scale = list(mean = 0.4, sd = 0.05)),
+#'                                 horizon = 0)
 #' plot(backcalc)
 #'                            
 #' # Rt projected into the future using the Gaussian process

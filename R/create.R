@@ -42,28 +42,27 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
 #'
 #' @description `r lifecycle::badge("stable")`
 #' This functions creates a data frame of reported cases that has been smoothed using 
-#' a rolling average (with a period set by `smoothing_window`) and shifted back in time 
+#' a centered partial rolling average (with a period set by `smoothing_window`) and shifted back in time 
 #' by some delay. It is used by `estimate_infections` to generate the mean shifted prior
 #' on which the back calculation method (see `backcalc_opts`) is based.
 #' @param smoothing_window Numeric, the rolling average smoothing window
-#' to apply.
+#' to apply. Must be odd in order to be defined as a centered average.
 #' @param shift Numeric, mean delay shift to apply.
 #' @inheritParams estimate_infections
 #' @inheritParams create_stan_data
 #' @importFrom data.table copy shift frollmean fifelse .N
 #' @importFrom stats lm
+#' @importFrom runner mean_run
 #' @return A data frame for shifted reported cases
 #' @export
 #' @examples
 #' create_shifted_cases(example_confirmed, 7, 14, 7)
 create_shifted_cases <- function(reported_cases, shift, 
                                  smoothing_window, horizon) {
-  
   shifted_reported_cases <- data.table::copy(reported_cases)[,
               confirm := data.table::shift(confirm, n = shift,
                                            type = "lead", fill = NA)][,
-              confirm := data.table::frollmean(confirm, n = smoothing_window, 
-                                               align = "right", fill = 1)][,
+              confirm := runner::mean_run(confirm, k = smoothing_window, lag = -floor(smoothing_window / 2))][,
               confirm := data.table::fifelse(confirm == 0, 1, confirm)]
   
   ## Forecast trend on reported cases using the last week of data
@@ -202,7 +201,10 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #' create_gp_data(gp_opts(ls_mean = 14), data)
 create_backcalc_data <- function(backcalc = backcalc_opts) {
   data <- list(
-    rt_half_window = as.integer((backcalc$rt_window - 1) / 2)
+    rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
+    backcalc_prior = ifelse(backcalc$prior == "none", 0,
+                            ifelse(backcalc$prior == "reports", 1, 
+                                   ifelse(backcalc$prior == "infections", 2, 0)))
   )
   return(data)
 }
