@@ -393,6 +393,11 @@ rstan_opts <- function(object = NULL,
 #' can be supplied which override the defaults.
 #' @param backend Character string indicating the backend to use for fitting stan models.
 #' Currently only "rstan" is supported.
+#' @param init_fit `r lifecycle::badge("experimental")` 
+#' Logical, defaults to `FALSE`. Should a cumulative fit be used to initialise chains. 
+#' This may be useful for certain data sets where the sampler gets stuck or struggles 
+#' to initialise. See `init_cumulative_fit()` for details. This implementation is based on
+#' the approach taken in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) authored by James Scott.
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be returned.
 #' @param ... Additional parameters to pass  underlying option functions.
 #' @return A list of arguments to pass to the appropriate rstan functions.
@@ -406,7 +411,8 @@ rstan_opts <- function(object = NULL,
 #' # using vb
 #' stan_opts(method = "vb")
 stan_opts <- function(samples = 2000,
-                      backend = "rstan", 
+                      backend = "rstan",
+                      init_fit = FALSE,
                       return_fit = TRUE,
                       ...){
   backend <- match.arg(backend, choices = c("rstan"))
@@ -414,7 +420,7 @@ stan_opts <- function(samples = 2000,
     opts <- rstan_opts(samples = samples,
                        ...)
   }
-  opts <- c(opts, list(return_fit = return_fit))
+  opts <- c(opts, list(init_fit = init_fit, return_fit = return_fit))
   return(opts)
 }
 

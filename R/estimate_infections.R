@@ -33,7 +33,7 @@
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @examples
 #' \donttest{
-#' #set number of cores to use
+#' # set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:60]
@@ -49,7 +49,8 @@
 #' # here we assume that the observed data is truncated by the same delay as 
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
-#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
+#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+#'                            stan = stan_opts(init_fit = TRUE))
 #' # real time estimates
 #' summary(def)
 #' # summary plot
@@ -212,6 +213,15 @@ estimate_infections <- function(reported_cases,
                            init = create_initial_conditions(data),
                            verbose = verbose)
   
+  # Initialise fitting by first fitting to cumulative cases
+  if (stan$init_fit) {
+    inits <- init_cumulative_fit(args, warmup = 50, samples = 50, 
+                                 id = id, verbose = FALSE)
+    inits()
+    args$init <- inits
+    args$init_fit <- NULL
+  }
+  
   # Fit model
   if (args$method == "sampling") {
     fit <- fit_model_with_nuts(args,
@@ -254,18 +264,39 @@ estimate_infections <- function(reported_cases,
 }
 
 
-initial_fit <- function(args) { 
-  futile.logger::flog.info("Starting cumulative fit to initialise chains",
-                           name = "EpiNow2.epinow.estimate_infections.fit")
+#' Generate initial conditions by fitting to cumulative cases
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Fits a model to cumulative cases and then extracts posterior samples to use to initialise
+#' a full model fit. This may be useful for certain data sets where the sampler gets stuck or 
+#' cannot easily be initialised as fitting to cumulative cases changes the shape of the posterior
+#' distribution. In `estimate_infections()`, `epinow()` and `regional_epinow()` this option can be
+#' engaged by setting `stan_opts(init_fit = TRUE)`.
+#' 
+#' This implementation is based on the approach taken in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/)
+#' authored by James Scott.
+#' @param samples Numeric, defaults to 50. Number of posterior samples.
+#' @param warmup Numeric, defaults to 50. Number of warmup samples.
+#' @inheritParams create_initial_conditions
+#' @importFrom purrr map
+#' @importFrom rstan sampling extract
+#' @importFrom futile.logger flog.debug
+#' @return A function that when called returns a set of initial conditions as a named list.
+init_cumulative_fit <- function(args, samples = 50, warmup = 50,
+                                id = "init", verbose = FALSE) { 
+  futile.logger::flog.debug("%s: Fitting to cumulative data to initialise chains", id,
+                            name = "EpiNow2.epinow.estimate_infections.fit")
   # copy main run settings and override to use only 100 iterations and a single chain
   initial_args <- list(
     object = args$object,
     data = args$data,
     init = args$init,
-    iter = 100, 
+    iter = samples + warmup,
+    warmup = warmup,
     chains = 1,
     cores = 1,
-    control = list(adapt_delta = 0.99)
+    control = list(adapt_delta = 0.9, max_treedepth = 15),
+    refresh = ifelse(verbose, 50, 0)
   )
   # change observations to be cumulative in order to protect against noise and give 
   # an approximate fit (though for Rt constrained to be > 1)
@@ -273,12 +304,16 @@ initial_fit <- function(args) {
   initial_args$data$shifted_cases <- cumsum(initial_args$data$shifted_cases)
 
   # initial fit
-  capture.output({
-    fit <- do.call(rstan::sampling, initial_args)}, 
-    file = tempfile(tmpdir = tempdir(check = TRUE)))
+  if (verbose) {
+    fit <- do.call(rstan::sampling, initial_args)
+  }else{
+    out <- tempfile(tmpdir = tempdir(check = TRUE))
+    capture.output({fit <- do.call(rstan::sampling, initial_args)}, 
+                    type = c("output", "message"), split = FALSE,
+                    file = out)
+  }
   # extract and generate samples as function
-  init_fun <- function() {
-    i <- sample(1:50, 1)
+  init_fun <- function(i) {
     res <- lapply(
       rstan::extract(fit),
       function(x) {
@@ -297,9 +332,20 @@ initial_fit <- function(args) {
         res[[j]] <- as.array(res[[j]])
       }
     }
+    res$r <- NULL
+    res$log_lik <- NULL
+    res$lp__ <- NULL
     return(res)
   }
+  # extract samples
+  inits <- purrr::map(1:samples, init_fun)
+  # set up sampling function
+  inits_sample <- function(inits_list = inits) {
+    i <- sample(1:length(inits_list), 1)
+    return(inits_list[[i]])
   }
+  return(inits_sample)
+}
 
 #' Fit a Stan Model using the NUTs sampler
 #'
@@ -377,7 +423,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
                      catch = !id %in% c("estimate_infections", "epinow"))
     if (stuck_chains > 0) {fit <- NULL}
     if (is.null(fit)) {
-      rlang::abort("model fitting was timed out - try increasing the max_execution_time")
+      rlang::abort("model fitting was timed out or failed")
     }
   }else{
     chains <- args$chains
