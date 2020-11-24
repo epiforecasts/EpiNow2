@@ -254,6 +254,53 @@ estimate_infections <- function(reported_cases,
 }
 
 
+initial_fit <- function(args) { 
+  futile.logger::flog.info("Starting cumulative fit to initialise chains",
+                           name = "EpiNow2.epinow.estimate_infections.fit")
+  # copy main run settings and override to use only 100 iterations and a single chain
+  initial_args <- list(
+    object = args$object,
+    data = args$data,
+    init = args$init,
+    iter = 100, 
+    chains = 1,
+    cores = 1,
+    control = list(adapt_delta = 0.99)
+  )
+  # change observations to be cumulative in order to protect against noise and give 
+  # an approximate fit (though for Rt constrained to be > 1)
+  initial_args$data$cases <- cumsum(initial_args$data$cases)
+  initial_args$data$shifted_cases <- cumsum(initial_args$data$shifted_cases)
+
+  # initial fit
+  capture.output({
+    fit <- do.call(rstan::sampling, initial_args)}, 
+    file = tempfile(tmpdir = tempdir(check = TRUE)))
+  # extract and generate samples as function
+  init_fun <- function() {
+    i <- sample(1:50, 1)
+    res <- lapply(
+      rstan::extract(fit),
+      function(x) {
+        if (length(dim(x)) == 1) {
+          as.array(x[i])
+        }
+        else if (length(dim(x)) == 2) {
+          x[i, ]
+        } else {
+          x[i, , ]
+        }
+      }
+    )
+    for (j in names(res)) {
+      if (length(res[j]) == 1) {
+        res[[j]] <- as.array(res[[j]])
+      }
+    }
+    return(res)
+  }
+  }
+
 #' Fit a Stan Model using the NUTs sampler
 #'
 #' @description `r lifecycle::badge("maturing")`
