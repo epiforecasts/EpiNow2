@@ -62,8 +62,7 @@
 #'                            delays = delay_opts(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
 #'                            gp = gp_opts(ls_min = 10, basis_prop = 0.1),
-#'                            stan = stan_opts(control = list(adapt_delta = 0.95),
-#'                                             init_fit = "cumulative"))
+#'                            stan = stan_opts(control = list(adapt_delta = 0.95)))
 #' summary(agp)
 #' plot(agp) 
 #' 
@@ -301,9 +300,11 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
     iter = samples + warmup,
     warmup = warmup,
     chains = 1,
-    cores = 1,
+    cores = 2,
+    open_progress = FALSE,
+    show_messages = FALSE,
     control = list(adapt_delta = 0.9, max_treedepth = 15),
-    refresh = ifelse(verbose, 50, 0)
+    refresh = ifelse(verbose, 50, -1)
   )
   # change observations to be cumulative in order to protect against noise and give 
   # an approximate fit (though for Rt constrained to be > 1)

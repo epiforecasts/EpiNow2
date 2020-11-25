@@ -105,7 +105,7 @@ agp <- estimate_infections(reported_cases, generation_time = generation_time,
                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
                            gp = gp_opts(ls_min = 10, basis_prop = 0.1),
                            stan = stan_opts(control = list(adapt_delta = 0.95),
-                                            init_fit = agp$fit))
+                                            init_fit = "cumulative"))
 summary(agp)
 plot(agp) 
 

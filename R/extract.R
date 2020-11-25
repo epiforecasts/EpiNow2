@@ -164,7 +164,6 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
 #' authored by James Scott.
 #' @param fit A stanfit object
 #' @param samples Numeric, defaults to 50. Number of posterior samples.
-#' @inheritParams create_initial_conditions
 #' @importFrom purrr map
 #' @importFrom rstan extract
 #' @export

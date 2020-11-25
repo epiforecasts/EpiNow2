@@ -18,6 +18,8 @@ This choice means that increasing the `prior` window does not alter the location
 a right alighted moving average.
 * Updates the default smoothing applied to mean shifted reported cases to be 14 days rather than 7 as usage indicates this 
 provided too much weight to small scale changes. This remains user set able.
+* Adds a new argument `init_fit` to `stan_opts()` that enables the user to pass in a `stanfit` to use to initialise a model fit
+in `estimate_infections()`. Optionally `init_fit = "cumulative"` can also be passed which first fits to cumulative data and then uses the result to initialise the full fit on incidence data. This approach is based on the approach used in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) authored by James Scott. Currently `stan` warnings from this initial fit are broadcast to the user and may cause concern as the short run time and approximate settings often lead to poor convergence. 
 
 # EpiNow2 1.3.1
 
