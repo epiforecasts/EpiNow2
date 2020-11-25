@@ -18,15 +18,15 @@ init_cumulative_fit(
 \item{warmup}{Numeric, defaults to 50. Number of warmup samples.}
 }
 \value{
-A function that when called returns a set of initial conditions as a named list.
+A stanfit object
 }
 \description{
 \ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
-Fits a model to cumulative cases and then extracts posterior samples to use to initialise
-a full model fit. This may be useful for certain data sets where the sampler gets stuck or
-cannot easily be initialised as fitting to cumulative cases changes the shape of the posterior
+Fits a model to cumulative cases. This may be a useful approach to initialising
+a full model fit for certain data sets where the sampler gets stuck or cannot easily
+be initialised as fitting to cumulative cases changes the shape of the posterior
 distribution. In \code{estimate_infections()}, \code{epinow()} and \code{regional_epinow()} this option can be
-engaged by setting \code{stan_opts(init_fit = TRUE)}.
+engaged by setting \code{stan_opts(init_fit = "cumulative")}.
 
 This implementation is based on the approach taken in \href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia}
 authored by James Scott.

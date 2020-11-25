@@ -62,7 +62,8 @@
 #'                            delays = delay_opts(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
 #'                            gp = gp_opts(ls_min = 10, basis_prop = 0.1),
-#'                            stan = stan_opts(control = list(adapt_delta = 0.95)))
+#'                            stan = stan_opts(control = list(adapt_delta = 0.95),
+#'                                             init_fit = "cumulative"))
 #' summary(agp)
 #' plot(agp) 
 #' 
@@ -218,15 +219,17 @@ estimate_infections <- function(reported_cases,
                            init = create_initial_conditions(data),
                            verbose = verbose)
   
-  # Initialise fitting by first fitting to cumulative cases
-  if (stan$init_fit) {
-    inits <- init_cumulative_fit(args, warmup = 50, samples = 50, 
-                                 id = id, verbose = FALSE)
-    inits()
-    args$init <- inits
+  # Initialise fitting by using a previous fit or fitting to cumulative cases
+  if (!is.null(args$init_fit)) {
+    if (!("stanfit" %in% class(args$init_fit))) {
+      if (args$init_fit %in% "cumulative") {
+        args$init_fit <- init_cumulative_fit(args, warmup = 50, samples = 50, 
+                                             id = id, verbose = FALSE)
+      }
+    }
+    args$init <- extract_inits(args$init_fit, samples = 50)
     args$init_fit <- NULL
   }
-  
   # Fit model
   if (args$method == "sampling") {
     fit <- fit_model_with_nuts(args,
@@ -272,21 +275,20 @@ estimate_infections <- function(reported_cases,
 #' Generate initial conditions by fitting to cumulative cases
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' Fits a model to cumulative cases and then extracts posterior samples to use to initialise
-#' a full model fit. This may be useful for certain data sets where the sampler gets stuck or 
-#' cannot easily be initialised as fitting to cumulative cases changes the shape of the posterior
+#' Fits a model to cumulative cases. This may be a useful approach to initialising 
+#' a full model fit for certain data sets where the sampler gets stuck or cannot easily
+#' be initialised as fitting to cumulative cases changes the shape of the posterior
 #' distribution. In `estimate_infections()`, `epinow()` and `regional_epinow()` this option can be
-#' engaged by setting `stan_opts(init_fit = TRUE)`.
+#' engaged by setting `stan_opts(init_fit = "cumulative")`.
 #' 
 #' This implementation is based on the approach taken in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/)
 #' authored by James Scott.
 #' @param samples Numeric, defaults to 50. Number of posterior samples.
 #' @param warmup Numeric, defaults to 50. Number of warmup samples.
 #' @inheritParams create_initial_conditions
-#' @importFrom purrr map
-#' @importFrom rstan sampling extract
+#' @importFrom rstan sampling
 #' @importFrom futile.logger flog.debug
-#' @return A function that when called returns a set of initial conditions as a named list.
+#' @return A stanfit object
 init_cumulative_fit <- function(args, samples = 50, warmup = 50,
                                 id = "init", verbose = FALSE) { 
   futile.logger::flog.debug("%s: Fitting to cumulative data to initialise chains", id,
@@ -317,39 +319,7 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
                     type = c("output", "message"), split = FALSE,
                     file = out)
   }
-  # extract and generate samples as function
-  init_fun <- function(i) {
-    res <- lapply(
-      rstan::extract(fit),
-      function(x) {
-        if (length(dim(x)) == 1) {
-          as.array(x[i])
-        }
-        else if (length(dim(x)) == 2) {
-          x[i, ]
-        } else {
-          x[i, , ]
-        }
-      }
-    )
-    for (j in names(res)) {
-      if (length(res[j]) == 1) {
-        res[[j]] <- as.array(res[[j]])
-      }
-    }
-    res$r <- NULL
-    res$log_lik <- NULL
-    res$lp__ <- NULL
-    return(res)
-  }
-  # extract samples
-  inits <- purrr::map(1:samples, init_fun)
-  # set up sampling function
-  inits_sample <- function(inits_list = inits) {
-    i <- sample(1:length(inits_list), 1)
-    return(inits_list[[i]])
-  }
-  return(inits_sample)
+  return(fit)
 }
 
 #' Fit a Stan Model using the NUTs sampler

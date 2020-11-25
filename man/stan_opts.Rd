@@ -7,7 +7,7 @@
 stan_opts(
   samples = 2000,
   backend = "rstan",
-  init_fit = FALSE,
+  init_fit = NULL,
   return_fit = TRUE,
   ...
 )
@@ -20,10 +20,13 @@ When using multiple chains iterations per chain is samples / chains.}
 Currently only "rstan" is supported.}
 
 \item{init_fit}{\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
-Logical, defaults to \code{FALSE}. Should a cumulative fit be used to initialise chains.
-This may be useful for certain data sets where the sampler gets stuck or struggles
-to initialise. See \code{init_cumulative_fit()} for details. This implementation is based on
-the approach taken in \href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia} authored by James Scott.}
+Character string or \code{stanfit} object, defaults to NULL. Should an initial fit be used to
+initialise the full fit. An example scenario would be using a national level fit to parametrise
+regional level fits. Optionally a character string can be passed with the currently supported
+option being "cumulative". This fits the model to cumulative cases and may be useful for certain
+data sets where the sampler gets stuck or struggles to initialise. See \code{init_cumulative_fit()} for details.
+This implementation is based on the approach taken in \href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia}
+authored by James Scott.}
 
 \item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be returned.}
 
