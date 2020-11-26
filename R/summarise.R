@@ -56,7 +56,7 @@ summarise_results <- function(regions,
     data.table::copy(estimates)[measure %in% c("New confirmed cases by infection date",
                                                "Effective reproduction no.")][,
               .(data.table::data.table(region, measure, estimate), 
-                data.table::rbindlist(numeric_estimate))][,
+                data.table::rbindlist(numeric_estimate, fill = TRUE))][,
               metric :=  factor(measure, levels = c("New confirmed cases by infection date",
                                                     "Effective reproduction no."))][, measure := NULL]
   
