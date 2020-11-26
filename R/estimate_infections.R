@@ -62,7 +62,8 @@
 #'                            delays = delay_opts(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
 #'                            gp = gp_opts(ls_min = 10, basis_prop = 0.1),
-#'                            stan = stan_opts(control = list(adapt_delta = 0.95)))
+#'                            stan = stan_opts(control = list(adapt_delta = 0.95), 
+#'                                             init_fit = "cumulative"))
 #' summary(agp)
 #' plot(agp) 
 #' 
@@ -211,7 +212,7 @@ estimate_infections <- function(reported_cases,
                            backcalc = backcalc,
                            shifted_cases = shifted_cases$confirm,
                            horizon = horizon)
- 
+  
   # Set up default settings 
   args <- create_stan_args(stan = stan,
                            data = data,
@@ -226,7 +227,9 @@ estimate_infections <- function(reported_cases,
                                              id = id, verbose = FALSE)
       }
     }
-    args$init <- extract_inits(args$init_fit, samples = 50)
+    args$init <- extract_inits(args$init_fit, current_inits = args$init, 
+                               exclude_list = c("initial_infections", "initial_growth"),
+                               samples = 50)
     args$init_fit <- NULL
   }
   # Fit model
@@ -303,7 +306,7 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
     cores = 2,
     open_progress = FALSE,
     show_messages = FALSE,
-    control = list(adapt_delta = 0.9, max_treedepth = 15),
+    control = list(adapt_delta = 0.9, max_treedepth = 13),
     refresh = ifelse(verbose, 50, -1)
   )
   # change observations to be cumulative in order to protect against noise and give 

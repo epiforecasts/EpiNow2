@@ -4,10 +4,16 @@
 \alias{extract_inits}
 \title{Generate initial conditions from a Stan fit}
 \usage{
-extract_inits(fit, samples = 50)
+extract_inits(fit, current_inits, exclude_list = NULL, samples = 50)
 }
 \arguments{
 \item{fit}{A stanfit object}
+
+\item{current_inits}{A function that returns a list of initial conditions (such as
+\code{create_initial_conditions()}). Only used in \code{exclude_list} is specified.}
+
+\item{exclude_list}{A character vector of parameters to not initialise from the fit
+object, defaulting to \code{NULL}.}
 
 \item{samples}{Numeric, defaults to 50. Number of posterior samples.}
 }
