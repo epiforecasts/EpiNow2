@@ -18,6 +18,8 @@ This choice means that increasing the `prior` window does not alter the location
 a right alighted moving average.
 * Updates the default smoothing applied to mean shifted reported cases to be 14 days rather than 7 as usage indicates this 
 provided too much weight to small scale changes. This remains user set able.
+* Updates `discretised_gamma_pmf` (discretised truncated Gamma PMF) and `discretised_lognormal_pmf` (discretised truncated lognormal PMF) 
+to properly limit/clip the values of the parameters by prespecified lower and upper bounds.
 
 # EpiNow2 1.3.1
 
