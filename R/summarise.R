@@ -177,6 +177,7 @@ regional_summary <- function(regional_output = NULL,
   # get estimates
   results <- get_regional_results(regional_output,
                                   results_dir = results_dir,
+                                  date = target_date,
                                   samples = FALSE,
                                   forecast = FALSE)
   
