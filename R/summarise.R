@@ -51,7 +51,7 @@ summarise_results <- function(regions,
     estimates <- summaries
   }
 
-  estimates <- data.table::rbindlist(estimates, idcol = "region")
+  estimates <- data.table::rbindlist(estimates, idcol = "region", fill = TRUE)
   numeric_estimates  <- 
     data.table::copy(estimates)[measure %in% c("New confirmed cases by infection date",
                                                "Effective reproduction no.")][,
@@ -395,7 +395,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @return A data.table of region run times
 #' @export
 #' @importFrom data.table data.table fwrite
-#' @importFrom purrr map
+#' @importFrom purrr map safely
 #' @examples
 #' \donttest{
 #' # example delays
@@ -440,19 +440,18 @@ regional_runtimes <- function(regional_output = NULL,
     if (is.null(target_date)) {
       target_date <- "latest"
     }
+    safe_read <- purrr::safely(readRDS)
     regions <- get_regions(target_folder)
     timings <- data.table::data.table(
       region = regions,
-      time = unlist(purrr::map(regions, ~ readRDS(paste0(target_folder, 
-                                                         "/", .,"/", target_date,
-                                                         "/runtime.rds"))))
+      time = unlist(purrr::map(regions, ~ safe_read(paste0(target_folder,
+                                                           "/", .,"/", target_date,
+                                                           "/runtime.rds")))[[1]])
     )
   } 
-  
   if (!is.null(target_folder)) {
     data.table::fwrite(timings, paste0(target_folder, "/runtimes.csv"))
   }
-  
   if (return_output) {
     return(timings)
   }else{
