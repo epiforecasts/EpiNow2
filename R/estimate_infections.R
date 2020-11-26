@@ -290,6 +290,8 @@ estimate_infections <- function(reported_cases,
 #' @inheritParams create_initial_conditions
 #' @importFrom rstan sampling
 #' @importFrom futile.logger flog.debug
+#' @importFrom utils capture.output
+#' @inheritParams fit_model_with_nuts
 #' @return A stanfit object
 init_cumulative_fit <- function(args, samples = 50, warmup = 50,
                                 id = "init", verbose = FALSE) { 

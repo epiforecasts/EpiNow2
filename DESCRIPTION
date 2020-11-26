@@ -78,7 +78,8 @@ Imports:
     scales,
     stats,
     truncnorm,
-    lifecycle
+    lifecycle,
+    utils
 Suggests:
     countrycode,
     dplyr,
