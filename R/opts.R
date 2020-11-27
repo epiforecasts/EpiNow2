@@ -402,6 +402,14 @@ rstan_opts <- function(object = NULL,
 #' can be supplied which override the defaults.
 #' @param backend Character string indicating the backend to use for fitting stan models.
 #' Currently only "rstan" is supported.
+#' @param init_fit `r lifecycle::badge("experimental")` 
+#' Character string or `stanfit` object, defaults to NULL. Should an initial fit be used to 
+#' initialise the full fit. An example scenario would be using a national level fit to parametrise
+#' regional level fits. Optionally a character string can be passed with the currently supported 
+#' option being "cumulative". This fits the model to cumulative cases and may be useful for certain
+#' data sets where the sampler gets stuck or struggles to initialise. See `init_cumulative_fit()` for details. 
+#' This implementation is based on the approach taken in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) 
+#' authored by James Scott.
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be returned.
 #' @param ... Additional parameters to pass  underlying option functions.
 #' @return A list of arguments to pass to the appropriate rstan functions.
@@ -415,13 +423,20 @@ rstan_opts <- function(object = NULL,
 #' # using vb
 #' stan_opts(method = "vb")
 stan_opts <- function(samples = 2000,
-                      backend = "rstan", 
+                      backend = "rstan",
+                      init_fit = NULL,
                       return_fit = TRUE,
                       ...){
   backend <- match.arg(backend, choices = c("rstan"))
   if (backend %in% "rstan") {
     opts <- rstan_opts(samples = samples,
                        ...)
+  }
+  if (!is.null(init_fit)) {
+    if (is.character(init_fit)) {
+      init_fit <- match.arg(init_fit, choices = "cumulative")
+    }
+    opts$init_fit <- init_fit
   }
   opts <- c(opts, list(return_fit = return_fit))
   return(opts)

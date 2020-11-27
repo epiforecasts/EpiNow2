@@ -148,7 +148,7 @@ regional_summary <- function(regional_output = NULL,
                              max_plot = 10) {
     
   reported_cases <- data.table::setDT(reported_cases)
-  
+   
   if (is.null(summary_dir)) {
     futile.logger::flog.info("No summary directory specified so returning summary output")
     return_output <- TRUE
@@ -158,7 +158,7 @@ regional_summary <- function(regional_output = NULL,
 
   if (!is.null(results_dir) & !is.null(regional_output)) {
     stop("Only one of results_dir and regional_output should be specified")
-  }
+  } 
   
   if (is.null(regional_output)) {
     if (!is.null(results_dir)) {

@@ -95,7 +95,7 @@ regional_epinow <- function(reported_cases,
                             return_output = FALSE,
                             summary_args = list(), 
                             verbose = FALSE,
-                            logs = tempdir(), ...) {
+                            logs = tempdir(check = TRUE), ...) {
   # supported output
   output <- match_output_arguments(output, 
                                    supported_args = c("plots", "samples", "fit",

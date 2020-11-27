@@ -43,7 +43,7 @@ test_that("epinow runs without error when saving to disk", {
                                       delays = delay_opts(incubation_period, reporting_delay),
                                       stan = stan_opts(samples = 25, warmup = 25, cores = 1, chains = 2,
                                                   control = list(adapt_delta = 0.8)),
-                                      target_folder = tempdir(),
+                                      target_folder = tempdir(check = TRUE),
                                       logs = NULL,
                                       )))
 })

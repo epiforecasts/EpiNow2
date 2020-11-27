@@ -23,7 +23,7 @@ regional_epinow(
   return_output = FALSE,
   summary_args = list(),
   verbose = FALSE,
-  logs = tempdir(),
+  logs = tempdir(check = TRUE),
   ...
 )
 }

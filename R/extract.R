@@ -151,3 +151,77 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
   }
   return(out)
 }
+
+#' Generate initial conditions from a Stan fit
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Extracts posterior samples to use to initialise a full model fit. This may be useful
+#' for certain data sets where the sampler gets stuck or cannot easily be initialised. 
+#' In `estimate_infections()`, `epinow()` and `regional_epinow()` this option can be
+#' engaged by setting `stan_opts(init_fit = <stanfit>)`.
+#' 
+#' This implementation is based on the approach taken in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/)
+#' authored by James Scott.
+#' @param fit A stanfit object
+#' @param current_inits A function that returns a list of initial conditions (such as 
+#' `create_initial_conditions()`). Only used in `exclude_list` is specified.
+#' @param exclude_list A character vector of parameters to not initialise from the fit
+#' object, defaulting to `NULL`.
+#' @param samples Numeric, defaults to 50. Number of posterior samples.
+#' @importFrom purrr map
+#' @importFrom rstan extract
+#' @export
+#' @return A function that when called returns a set of initial conditions as a named list.
+extract_inits <- function(fit, current_inits, 
+                          exclude_list = NULL,
+                          samples = 50) {
+  # extract and generate samples as function
+  init_fun <- function(i) {
+    res <- lapply(
+      rstan::extract(fit),
+      function(x) {
+        if (length(dim(x)) == 1) {
+          as.array(x[i])
+        }
+        else if (length(dim(x)) == 2) {
+          x[i, ]
+        } else {
+          x[i, , ]
+        }
+      }
+    )
+    for (j in names(res)) {
+      if (length(res[j]) == 1) {
+        res[[j]] <- as.array(res[[j]])
+      }
+    }
+    res$r <- NULL
+    res$log_lik <- NULL
+    res$lp__ <- NULL
+    res$infections <- NULL
+    res$reports <- NULL
+    res$obs_reports <- NULL
+    res$imputed_reports <- NULL
+    return(res)
+  } 
+  # extract samples
+  fit_inits <- purrr::map(1:samples, init_fun)
+  # set up sampling function
+  exclude_vars <- exclude_list
+  old_init_fn <- current_inits
+  inits_sample <- function(inits_list = fit_inits, 
+                           old_inits = old_init_fn, 
+                           exclude = exclude_vars) {
+    i <- sample(1:length(inits_list), 1)
+    fit_inits <- inits_list[[i]]
+    if (!is.null(exclude_list)) {
+      old_inits_sample <- old_inits()
+      old_inits_sample <-  old_inits_sample[exclude]
+      new_inits <- update_list(fit_inits, old_inits_sample)
+    }else{
+      new_inits <- fit_inits
+    }
+    return(new_inits)
+  }
+  return(inits_sample)
+}
