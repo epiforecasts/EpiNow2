@@ -27,6 +27,7 @@ Rts
 Runtimes
 backcalc
 backcalculation
+centered
 com
 csv
 dd
@@ -34,6 +35,7 @@ defato
 discretised
 dist
 doi
+epidemia
 epiforecasts
 epinow
 filepath
@@ -58,7 +60,9 @@ rstan
 sam
 sd
 se
+seealso
 stan
+stanfit
 testland
 thresold
 tibbles
