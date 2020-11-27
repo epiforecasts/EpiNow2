@@ -20,7 +20,11 @@ a right alighted moving average.
 provided too much weight to small scale changes. This remains user set able.
 * Adds a new argument `init_fit` to `stan_opts()` that enables the user to pass in a `stanfit` to use to initialise a model fit
 in `estimate_infections()`. Optionally `init_fit = "cumulative"` can also be passed which first fits to cumulative data and then uses the result to initialise the full fit on incidence data. This approach is based on the approach used in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) authored by James Scott. Currently `stan` warnings from this initial fit are broadcast to the user and may cause concern as the short run time and approximate settings often lead to poor convergence. 
+
+## Other changes
+
 * Updates `discretised_gamma_pmf` (discretised truncated Gamma PMF) and `discretised_lognormal_pmf` (discretised truncated lognormal PMF) to limit/clip the values of the parameters by prespecified lower and upper bounds.
+* Tightens the initialisation of fitting in `estimate_infections` by reducing all standard deviations used by a scaling factor of 0.1. 
 
 # EpiNow2 1.3.1
 

@@ -398,28 +398,28 @@ create_initial_conditions <- function(data) {
   init_fun <- function(){
     out <- list()
     if (data$delays > 0) {
-      out$delay_mean <- array(purrr::map2_dbl(data$delay_mean_mean, data$delay_mean_sd, 
+      out$delay_mean <- array(purrr::map2_dbl(data$delay_mean_mean, data$delay_mean_sd * 0.1, 
                                               ~ rnorm(1, mean = .x, sd = .y)))
-      out$delay_sd <- array(purrr::map2_dbl(data$delay_sd_mean, data$delay_sd_sd, 
+      out$delay_sd <- array(purrr::map2_dbl(data$delay_sd_mean, data$delay_sd_sd * 0.1, 
                                             ~ rnorm(1, mean = .x, sd = .y)))
     }
     if (data$truncation > 0) {
       out$truncation_mean <- array(rnorm(1, mean = data$trunc_mean_mean,
-                                        sd = data$trunc_mean_sd))
+                                        sd = data$trunc_mean_sd * 0.1))
       out$truncation_sd <- array(rnorm(1, mean = data$trunc_sd_mean,
-                                       sd = data$trunc_sd_sd))
+                                       sd = data$trunc_sd_sd * 0.1))
     }
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
       out$rho <- array(rlnorm(1, meanlog = data$ls_meanlog, 
-                              sdlog = data$ls_sdlog))
+                              sdlog = data$ls_sdlog * 0.1))
       out$rho <- ifelse(out$rho > data$ls_max, data$ls_max - 0.001, 
                         ifelse(out$rho < data$ls_min, data$ls_min + 0.001, 
                                out$rho))
       out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd))
     }
     if (data$model_type == 1) {
-      out$rep_phi <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0,  sd = 1))
+      out$rep_phi <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0,  sd = 1 * 0.1))
     }
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1, data$prior_infections, 0.2))
@@ -427,11 +427,11 @@ create_initial_conditions <- function(data) {
         out$initial_growth <- array(rnorm(1, data$prior_growth, 0.1))
       }
       out$log_R <- array(rnorm(n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
-                                      sd = convert_to_logsd(data$r_mean, data$r_sd)))
+                                      sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1))
       out$gt_mean <- array(truncnorm::rtruncnorm(1, a = 0, mean = data$gt_mean_mean,  
-                                                 sd = data$gt_mean_sd))
+                                                 sd = data$gt_mean_sd * 0.1))
       out$gt_sd <-  array(truncnorm::rtruncnorm(1, a = 0, mean = data$gt_sd_mean,
-                                                sd = data$gt_sd_sd))
+                                                sd = data$gt_sd_sd * 0.1))
       if (data$bp_n > 0) {
         out$bp_sd <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
         out$bp_effects <- array(rnorm(data$bp_n, 0, 0.1))
@@ -440,7 +440,7 @@ create_initial_conditions <- function(data) {
     if (data$obs_scale == 1) {
       out$frac_obs = array(truncnorm::rtruncnorm(1, a = 0, 
                                                  mean = data$obs_scale_mean,
-                                                 sd = data$obs_scale_sd))
+                                                 sd = data$obs_scale_sd * 0.1))
     }
     return(out)
   }

@@ -105,7 +105,7 @@ discretised_gamma_pmf(const std::vector<int>& y,
         (void) large;  // dummy to suppress unused var warning
         stan::math::initialize(large, DUMMY_VAR__);
         stan::math::fill(large, DUMMY_VAR__);
-        stan::math::assign(large,1e9);
+        stan::math::assign(large,1e8);
         current_statement_begin__ = 10;
         local_scalar_t__ c_sigma(DUMMY_VAR__);
         (void) c_sigma;  // dummy to suppress unused var warning

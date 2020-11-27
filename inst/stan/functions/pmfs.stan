@@ -5,7 +5,7 @@ vector discretised_gamma_pmf(int[] y, real mu, real sigma, int max_val) {
   real trunc_pmf;
   // calculate alpha and beta for gamma distribution
   real small = 1e-5;
-  real large = 1e9;
+  real large = 1e8;
   real c_sigma = sigma < small ? small : sigma;
   real c_mu = mu < small ? small : mu;
   real alpha = ((c_mu) / c_sigma)^2;
