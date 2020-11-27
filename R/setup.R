@@ -65,7 +65,7 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' @importFrom purrr walk
 #' @examples
 #' setup_default_logging()
-setup_default_logging <- function(logs = tempdir(),
+setup_default_logging <- function(logs = tempdir(check = TRUE),
                                   mirror_epinow = FALSE,
                                   target_date = NULL) {
   if (!is.null(logs)) {

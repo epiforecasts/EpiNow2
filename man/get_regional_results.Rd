@@ -48,7 +48,7 @@ cases <- data.table::rbindlist(list(
   cases[, region := "realland"]))
   
 # save results to tmp folder
-dir <- file.path(tempdir(), "results")
+dir <- file.path(tempdir(check = TRUE), "results")
 # run multiregion estimates
 regional_out <- regional_epinow(reported_cases = cases,
                                 generation_time = generation_time,
