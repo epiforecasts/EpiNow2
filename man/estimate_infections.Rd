@@ -91,8 +91,7 @@ reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
 # here we assume that the observed data is truncated by the same delay as 
 def <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = delay_opts(incubation_period, reporting_delay),
-                           rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-                           stan = stan_opts(init_fit = TRUE))
+                           rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
 # real time estimates
 summary(def)
 # summary plot
@@ -104,8 +103,7 @@ agp <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = delay_opts(incubation_period, reporting_delay),
                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
                            gp = gp_opts(ls_min = 10, basis_prop = 0.1),
-                           stan = stan_opts(control = list(adapt_delta = 0.95), 
-                                            init_fit = "cumulative"))
+                           stan = stan_opts(control = list(adapt_delta = 0.95))
 summary(agp)
 plot(agp) 
 
