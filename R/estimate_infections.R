@@ -33,7 +33,7 @@
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @examples
 #' \donttest{
-#' #set number of cores to use
+#' # set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:60]
@@ -49,7 +49,8 @@
 #' # here we assume that the observed data is truncated by the same delay as 
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
-#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
+#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+#'                            stan = stan_opts(control = list(adapt_delta = 0.95)))
 #' # real time estimates
 #' summary(def)
 #' # summary plot
@@ -88,10 +89,15 @@
 #' plot(trunc) 
 #' 
 #' # using back calculation (combined here with under reporting)
+#' # this model is in the order of 10 ~ 100 faster than the gaussian process method
+#' # it is likely robust for retrospective Rt but less reliable for real time estimates
+#' # the width of the prior window controls the reliance on observed data and can be 
+#' # optionally switched off using backcalc_opts(prior = "none")
 #' backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                                 delays = delay_opts(incubation_period, reporting_delay),
-#'                                 rt = NULL, backcalc = backcalc_opts(rt_window = 1),
-#'                                 obs = obs_opts(scale = list(mean = 0.4, sd = 0.05)))
+#'                                 rt = NULL, backcalc = backcalc_opts(),
+#'                                 obs = obs_opts(scale = list(mean = 0.4, sd = 0.05)),
+#'                                 horizon = 0)
 #' plot(backcalc)
 #'                            
 #' # Rt projected into the future using the Gaussian process
@@ -205,13 +211,26 @@ estimate_infections <- function(reported_cases,
                            backcalc = backcalc,
                            shifted_cases = shifted_cases$confirm,
                            horizon = horizon)
- 
+  
   # Set up default settings 
   args <- create_stan_args(stan = stan,
                            data = data,
                            init = create_initial_conditions(data),
                            verbose = verbose)
   
+  # Initialise fitting by using a previous fit or fitting to cumulative cases
+  if (!is.null(args$init_fit)) {
+    if (!("stanfit" %in% class(args$init_fit))) {
+      if (args$init_fit %in% "cumulative") {
+        args$init_fit <- init_cumulative_fit(args, warmup = 50, samples = 50, 
+                                             id = id, verbose = FALSE)
+      }
+    }
+    args$init <- extract_inits(args$init_fit, current_inits = args$init, 
+                               exclude_list = c("initial_infections", "initial_growth"),
+                               samples = 50)
+    args$init_fit <- NULL
+  }
   # Fit model
   if (args$method == "sampling") {
     fit <- fit_model_with_nuts(args,
@@ -253,6 +272,60 @@ estimate_infections <- function(reported_cases,
   return(format_out)
 }
 
+
+#' Generate initial conditions by fitting to cumulative cases
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Fits a model to cumulative cases. This may be a useful approach to initialising 
+#' a full model fit for certain data sets where the sampler gets stuck or cannot easily
+#' be initialised as fitting to cumulative cases changes the shape of the posterior
+#' distribution. In `estimate_infections()`, `epinow()` and `regional_epinow()` this option can be
+#' engaged by setting `stan_opts(init_fit = "cumulative")`.
+#' 
+#' This implementation is based on the approach taken in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/)
+#' authored by James Scott.
+#' @param samples Numeric, defaults to 50. Number of posterior samples.
+#' @param warmup Numeric, defaults to 50. Number of warmup samples.
+#' @inheritParams create_initial_conditions
+#' @importFrom rstan sampling
+#' @importFrom futile.logger flog.debug
+#' @importFrom utils capture.output
+#' @inheritParams fit_model_with_nuts
+#' @return A stanfit object
+init_cumulative_fit <- function(args, samples = 50, warmup = 50,
+                                id = "init", verbose = FALSE) { 
+  futile.logger::flog.debug("%s: Fitting to cumulative data to initialise chains", id,
+                            name = "EpiNow2.epinow.estimate_infections.fit")
+  # copy main run settings and override to use only 100 iterations and a single chain
+  initial_args <- list(
+    object = args$object,
+    data = args$data,
+    init = args$init,
+    iter = samples + warmup,
+    warmup = warmup,
+    chains = 1,
+    cores = 2,
+    open_progress = FALSE,
+    show_messages = FALSE,
+    control = list(adapt_delta = 0.9, max_treedepth = 13),
+    refresh = ifelse(verbose, 50, -1)
+  )
+  # change observations to be cumulative in order to protect against noise and give 
+  # an approximate fit (though for Rt constrained to be > 1)
+  initial_args$data$cases <- cumsum(initial_args$data$cases)
+  initial_args$data$shifted_cases <- cumsum(initial_args$data$shifted_cases)
+
+  # initial fit
+  if (verbose) {
+    fit <- do.call(rstan::sampling, initial_args)
+  }else{
+    out <- tempfile(tmpdir = tempdir(check = TRUE))
+    capture.output({fit <- do.call(rstan::sampling, initial_args)}, 
+                    type = c("output", "message"), split = FALSE,
+                    file = out)
+  }
+  return(fit)
+}
 
 #' Fit a Stan Model using the NUTs sampler
 #'
@@ -330,7 +403,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
                      catch = !id %in% c("estimate_infections", "epinow"))
     if (stuck_chains > 0) {fit <- NULL}
     if (is.null(fit)) {
-      rlang::abort("model fitting was timed out - try increasing the max_execution_time")
+      rlang::abort("model fitting was timed out or failed")
     }
   }else{
     chains <- args$chains

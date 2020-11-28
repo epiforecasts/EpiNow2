@@ -138,9 +138,17 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`. 
-#' @param prior_window Integer, defaults to 7 days. The mean smoothing window to apply
-#' to mean shifted reports (used as a prior during back calculation). 7 days is the default
-#' as this smooths day of the week effects but depending on the quality of the data and the 
+#' @param prior A character string defaulting to "reports". Defines the prior to use
+#' when deconvolving. Currently implemented options are to use smoothed mean delay 
+#' shifted reported cases ("reports"), to use the estimated infections from the 
+#' previous time step seeded for the first time step using mean shifted reported cases
+#' ("infections"), or no prior ("none"). Using no prior will result in poor real time performance. 
+#' No prior and using infections are only supported when a Gaussian process is present. If observed 
+#' data is not reliable then it a sensible first step is to explore increasing the `prior_window` with
+#' a sensible second step being to no longer use reported cases as a prior (i.e set `prior = "none"`).
+#' @param prior_window Integer, defaults to 14 days. The mean centred smoothing window 
+#' to apply to mean shifted reports (used as a prior during back calculation). 7 days is minimum recommended 
+#' settings as this smooths day of the week effects but depending on the quality of the data and the 
 #' amount of information users wish to use as a prior (higher values equalling a less informative prior).
 #' @param rt_window Integer, defaults to 1. The size of the centred rolling average to use when estimating 
 #' Rt. This must be odd so that the central estimate is included.
@@ -149,8 +157,9 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' @examples
 #' # default settings
 #' backcalc_opts()
-backcalc_opts <- function(prior_window = 7, rt_window = 1) {
+backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
   backcalc <- list(
+    prior = match.arg(prior, choices = c("reports", "none", "infections")),
     prior_window = prior_window,
     rt_window = as.integer(rt_window)
   )
@@ -171,7 +180,7 @@ backcalc_opts <- function(prior_window = 7, rt_window = 1) {
 #' @param ls_max Numeric, defaults to 60. The maximum value of the length scale. Updated in 
 #' `create_gp_data` to be the length of the input data if this is smaller.
 #' @param ls_min Numeric, defaults to 7. The minimum value of the length scale.
-#' @param alpha_sd Numeric, defaults to 0.1. The standard deviation of the magnitude parameter of
+#' @param alpha_sd Numeric, defaults to 0.2. The standard deviation of the magnitude parameter of
 #' the Gaussian process kernel. Should be approximately the expected standard deviation of the logged Rt.
 #' @param kernel Character string, the type of kernel required. Currently supporting the squared exponential 
 #' kernel ("se") and the 3 over 2 Matern kernel ("matern", with `matern_type = 3/2`). Defaulting to the Matern 3 over 2 kernel as discontinuities are expected 
@@ -398,6 +407,14 @@ rstan_opts <- function(object = NULL,
 #' can be supplied which override the defaults.
 #' @param backend Character string indicating the backend to use for fitting stan models.
 #' Currently only "rstan" is supported.
+#' @param init_fit `r lifecycle::badge("experimental")` 
+#' Character string or `stanfit` object, defaults to NULL. Should an initial fit be used to 
+#' initialise the full fit. An example scenario would be using a national level fit to parametrise
+#' regional level fits. Optionally a character string can be passed with the currently supported 
+#' option being "cumulative". This fits the model to cumulative cases and may be useful for certain
+#' data sets where the sampler gets stuck or struggles to initialise. See `init_cumulative_fit()` for details. 
+#' This implementation is based on the approach taken in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) 
+#' authored by James Scott.
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be returned.
 #' @param ... Additional parameters to pass  underlying option functions.
 #' @return A list of arguments to pass to the appropriate rstan functions.
@@ -411,13 +428,20 @@ rstan_opts <- function(object = NULL,
 #' # using vb
 #' stan_opts(method = "vb")
 stan_opts <- function(samples = 2000,
-                      backend = "rstan", 
+                      backend = "rstan",
+                      init_fit = NULL,
                       return_fit = TRUE,
                       ...){
   backend <- match.arg(backend, choices = c("rstan"))
   if (backend %in% "rstan") {
     opts <- rstan_opts(samples = samples,
                        ...)
+  }
+  if (!is.null(init_fit)) {
+    if (is.character(init_fit)) {
+      init_fit <- match.arg(init_fit, choices = "cumulative")
+    }
+    opts$init_fit <- init_fit
   }
   opts <- c(opts, list(return_fit = return_fit))
   return(opts)

@@ -5,7 +5,7 @@
 \title{Setup Default Logging}
 \usage{
 setup_default_logging(
-  logs = tempdir(),
+  logs = tempdir(check = TRUE),
   mirror_epinow = FALSE,
   target_date = NULL
 )

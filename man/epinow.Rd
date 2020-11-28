@@ -66,18 +66,16 @@ observation model. Defaults to \code{obs_opts()}.}
 if no directory for saving is specified.}
 
 \item{output}{A character vector of optional output to return. Supported options are samples ("samples"),
-plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if \code{target_folder} is not null
-\itemize{
-\item set using "latest"), and the stan fit ("fit"). The default is to return all options. This argument uses partial matching so for example passing "sam" will lead to samples
-being reported.
-}}
+plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if \code{target_folder} is not null,
+set using "latest"), and the stan fit ("fit"). The default is to return all options. This argument uses partial matching
+so for example passing "sam" will lead to samples being reported.}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
 \item{forecast_args}{A list of arguments to pass to \code{forecast_infections()}. Unless at a minimum a \code{forecast_model} is passed
-tin his list then \code{forecast_infections} will be bypassed.}
+then \code{forecast_infections} will be bypassed.}
 
 \item{logs}{Character path indicating the target folder in which to store log
 information. Defaults to the temporary directory if not specified. Default logging
