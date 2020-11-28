@@ -419,12 +419,12 @@ create_initial_conditions <- function(data) {
       out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd))
     }
     if (data$model_type == 1) {
-      out$rep_phi <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0,  sd = 1 * 0.1))
+      out$rep_phi <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0,  sd = 0.1))
     }
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1, data$prior_infections, 0.02))
       if (data$seeding_time > 1) {
-        out$initial_growth <- array(rnorm(1, data$prior_growth, 0.011))
+        out$initial_growth <- array(rnorm(1, data$prior_growth, 0.01))
       }
       out$log_R <- array(rnorm(n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
                                       sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1))
