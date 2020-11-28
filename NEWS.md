@@ -14,8 +14,7 @@ an approximate version of the generative Rt model that does not weight previous 
 time.
 * Updates the smoothing applied to mean shifted reported cases used as a prior for back calculation when 
 `prior = "reports"` to be a partial centred moving average rather than a right aligned moving average. 
-This choice means that increasing the `prior` window does not alter the location of epidemic peaks as when using 
-a right alighted moving average.
+This choice means that increasing the `prior` window does not alter the location of epidemic peaks as when using a right alighted moving average.
 * Updates the default smoothing applied to mean shifted reported cases to be 14 days rather than 7 as usage indicates this 
 provided too much weight to small scale changes. This remains user set able.
 * Adds a new argument `init_fit` to `stan_opts()` that enables the user to pass in a `stanfit` to use to initialise a model fit

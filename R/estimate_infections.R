@@ -127,7 +127,9 @@
 #' plot(fixed)
 #' 
 #' # no delays 
-#' no_delay <- estimate_infections(reported_cases, generation_time = generation_time)
+#' no_delay <- estimate_infections(reported_cases, generation_time = generation_time,
+#'                                 stan = stan_opts(samples = 32 * 250, chains = 32,
+#'                                                  control = list(adapt_delta = 0.95)))
 #' plot(no_delay)    
 #' 
 #' # break point but otherwise static Rt
