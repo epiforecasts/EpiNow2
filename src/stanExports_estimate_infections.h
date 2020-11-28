@@ -3002,7 +3002,7 @@ public:
         size_t gt_mean_i_0_max__ = estimate_r;
         for (size_t i_0__ = 0; i_0__ < gt_mean_i_0_max__; ++i_0__) {
             try {
-                writer__.scalar_lb_unconstrain(0, gt_mean[i_0__]);
+                writer__.scalar_lub_unconstrain(0, max_gt, gt_mean[i_0__]);
             } catch (const std::exception& e) {
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable gt_mean: ") + e.what()), current_statement_begin__, prog_reader__());
             }
@@ -3102,7 +3102,7 @@ public:
         size_t delay_sd_i_0_max__ = delays;
         for (size_t i_0__ = 0; i_0__ < delay_sd_i_0_max__; ++i_0__) {
             try {
-                writer__.scalar_unconstrain(delay_sd[i_0__]);
+                writer__.scalar_lb_unconstrain(0, delay_sd[i_0__]);
             } catch (const std::exception& e) {
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable delay_sd: ") + e.what()), current_statement_begin__, prog_reader__());
             }
@@ -3179,7 +3179,7 @@ public:
         size_t truncation_sd_i_0_max__ = truncation;
         for (size_t i_0__ = 0; i_0__ < truncation_sd_i_0_max__; ++i_0__) {
             try {
-                writer__.scalar_unconstrain(truncation_sd[i_0__]);
+                writer__.scalar_lb_unconstrain(0, truncation_sd[i_0__]);
             } catch (const std::exception& e) {
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable truncation_sd: ") + e.what()), current_statement_begin__, prog_reader__());
             }
@@ -3289,9 +3289,9 @@ public:
             gt_mean.reserve(gt_mean_d_0_max__);
             for (size_t d_0__ = 0; d_0__ < gt_mean_d_0_max__; ++d_0__) {
                 if (jacobian__)
-                    gt_mean.push_back(in__.scalar_lb_constrain(0, lp__));
+                    gt_mean.push_back(in__.scalar_lub_constrain(0, max_gt, lp__));
                 else
-                    gt_mean.push_back(in__.scalar_lb_constrain(0));
+                    gt_mean.push_back(in__.scalar_lub_constrain(0, max_gt));
             }
             current_statement_begin__ = 619;
             std::vector<local_scalar_t__> gt_sd;
@@ -3339,9 +3339,9 @@ public:
             delay_sd.reserve(delay_sd_d_0_max__);
             for (size_t d_0__ = 0; d_0__ < delay_sd_d_0_max__; ++d_0__) {
                 if (jacobian__)
-                    delay_sd.push_back(in__.scalar_constrain(lp__));
+                    delay_sd.push_back(in__.scalar_lb_constrain(0, lp__));
                 else
-                    delay_sd.push_back(in__.scalar_constrain());
+                    delay_sd.push_back(in__.scalar_lb_constrain(0));
             }
             current_statement_begin__ = 625;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> day_of_week_simplex;
@@ -3376,9 +3376,9 @@ public:
             truncation_sd.reserve(truncation_sd_d_0_max__);
             for (size_t d_0__ = 0; d_0__ < truncation_sd_d_0_max__; ++d_0__) {
                 if (jacobian__)
-                    truncation_sd.push_back(in__.scalar_constrain(lp__));
+                    truncation_sd.push_back(in__.scalar_lb_constrain(0, lp__));
                 else
-                    truncation_sd.push_back(in__.scalar_constrain());
+                    truncation_sd.push_back(in__.scalar_lb_constrain(0));
             }
             current_statement_begin__ = 629;
             std::vector<local_scalar_t__> rep_phi;
@@ -3467,6 +3467,7 @@ public:
                     stan::lang::rethrow_located(std::runtime_error(std::string("Error initializing variable R: ") + msg__.str()), current_statement_begin__, prog_reader__());
                 }
             }
+            check_less_or_equal(function__, "R", R, (10 * r_mean));
             current_statement_begin__ = 635;
             size_t infections_j_1_max__ = t;
             for (size_t j_1__ = 0; j_1__ < infections_j_1_max__; ++j_1__) {
@@ -3717,7 +3718,7 @@ public:
         size_t gt_mean_d_0_max__ = estimate_r;
         gt_mean.reserve(gt_mean_d_0_max__);
         for (size_t d_0__ = 0; d_0__ < gt_mean_d_0_max__; ++d_0__) {
-            gt_mean.push_back(in__.scalar_lb_constrain(0));
+            gt_mean.push_back(in__.scalar_lub_constrain(0, max_gt));
         }
         size_t gt_mean_k_0_max__ = estimate_r;
         for (size_t k_0__ = 0; k_0__ < gt_mean_k_0_max__; ++k_0__) {
@@ -3767,7 +3768,7 @@ public:
         size_t delay_sd_d_0_max__ = delays;
         delay_sd.reserve(delay_sd_d_0_max__);
         for (size_t d_0__ = 0; d_0__ < delay_sd_d_0_max__; ++d_0__) {
-            delay_sd.push_back(in__.scalar_constrain());
+            delay_sd.push_back(in__.scalar_lb_constrain(0));
         }
         size_t delay_sd_k_0_max__ = delays;
         for (size_t k_0__ = 0; k_0__ < delay_sd_k_0_max__; ++k_0__) {
@@ -3802,7 +3803,7 @@ public:
         size_t truncation_sd_d_0_max__ = truncation;
         truncation_sd.reserve(truncation_sd_d_0_max__);
         for (size_t d_0__ = 0; d_0__ < truncation_sd_d_0_max__; ++d_0__) {
-            truncation_sd.push_back(in__.scalar_constrain());
+            truncation_sd.push_back(in__.scalar_lb_constrain(0));
         }
         size_t truncation_sd_k_0_max__ = truncation;
         for (size_t k_0__ = 0; k_0__ < truncation_sd_k_0_max__; ++k_0__) {
@@ -3885,6 +3886,8 @@ public:
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
+            current_statement_begin__ = 634;
+            check_less_or_equal(function__, "R", R, (10 * r_mean));
             // write transformed parameters
             if (include_tparams__) {
                 size_t noise_j_1_max__ = (fixed ? 0 : noise_terms );
