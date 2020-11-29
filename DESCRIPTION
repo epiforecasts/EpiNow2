@@ -11,15 +11,15 @@ Authors@R: c(
            email = "joel.hellewell@lshtm.ac.uk", 
            role = c("aut"),
            comment = c(ORCID = "0000-0003-2683-0849")),
-    person("Robin", "Thompson", 
-           email = "robin.thompson@lshtm.ac.uk", 
-           role = c("aut")), 
-    person("Katelyn", "Gostic",
-           email = "kgostic@uchicago.edu",
-           role = c("aut")),
     person("Katharine", "Sherratt",
            email = "katharine.sherratt@lshtm.ac.uk",
            role = c("aut")),
+    person("Katelyn", "Gostic",
+           email = "kgostic@uchicago.edu",
+           role = c("aut")),
+    person("Joe", "Hickson",
+           email = "joseph.hickson@metoffice.gov.uk",
+           role = c("aut")),  
     person("Hamada S.", "Badr",
            email = "badr@jhu.edu",
            role = c("aut"),
@@ -28,17 +28,17 @@ Authors@R: c(
            email = "me.dewitt.jr@gmail.com",
            role = c("aut"),
            comment = c(ORCID = "0000-0001-8940-1967")),
+    person("Robin", "Thompson", 
+           email = "robin.thompson@lshtm.ac.uk", 
+           role = c("aut")), 
     person("Sophie", "Meakin", 
            email = "sophie.meaking@lshtm.ac.uk", 
-           role = c("aut")), 
+           role = c("ctb")), 
     person("James", "Munday",
            email = "james.munday@lshtm.ac.uk",
-           role = c("aut")),
+           role = c("ctb")),
     person("Nikos", "Bosse", 
-           role = c("aut")),
-    person("Joe", "Hickson",
-           email = "joseph.hickson@metoffice.gov.uk",
-           role = c("aut")),       
+           role = c("ctb")),
     person("Paul", "Mee",
            email = "paul.mee@lshtm.ac.uk",
            role = c("ctb")),
@@ -56,8 +56,10 @@ Description: Estimates the time-varying reproduction number, rate of spread,
              It aims to help users avoid some of the limitations of naive implementations in a framework
              that is informed by community feedback and is under active development.
 License: MIT + file LICENSE
-Encoding: UTF-8
-LazyData: true
+URL: https:/epiforecasts.io/EpiNow2/,
+     https:/epiforecasts.io/EpiNow2/dev/,
+     https://github.com/epiforecasts/EpiNow2
+BugReports: https://github.com/epiforecasts/EpiNow2/issues
 Imports:
     cowplot,
     data.table,
@@ -110,3 +112,5 @@ LinkingTo:
     rstan (>= 2.21.1),
     StanHeaders (>= 2.21.0-5)
 Language: en-GB
+Encoding: UTF-8
+LazyData: true
