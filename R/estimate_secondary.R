@@ -52,8 +52,8 @@
 #' cases$secondary <- 0
 #' cases$secondary[1] <- as.integer(cases$scaled_primary[1])
 #' for (i in 2:nrow(cases)) {
-#'   meanlog <- rnorm(1, 1.3, 0.05)
-#'   sdlog <- rnorm(1, 0.6, 0.01)
+#'   meanlog <- rnorm(1, 1.6, 0.05)
+#'   sdlog <- rnorm(1, 0.8, 0.01)
 #'   cmf <- cumsum(dlnorm(1:min(i-1,20), meanlog, sdlog)) - 
 #'            cumsum(dlnorm(0:min(19,i-2), meanlog, sdlog))
 #'   reducing_cases <- sum(cases$scaled_primary[(i-1):max(1,i-20)] * cmf)
@@ -71,7 +71,7 @@
 #' prev <- estimate_secondary(cases, secondary = secondary_opts(type = "prevalence"),
 #'                           obs = obs_opts(week_effect = FALSE, 
 #'                                          scale = list(mean = 0.3, sd = 0.1)))
-#' plot(prev)
+#' plot(prev, primary = TRUE)
 #' }
 estimate_secondary <- function(reports, 
                                secondary = secondary_opts(),
