@@ -141,14 +141,15 @@ allocate_delays <- function(delay_var, no_delays) {
 #' @param data A list of parameters
 #' @param params A character vector of parameters to allocate to
 #' empty if missing.
+#' @param n Numeric, number of samples to assign an empty array
 #' @return A list of parameters some allocated to be empty
 #' @examples
 #' data <- list(x = 1, y = 2, z = 30)
 #' EpiNow2:::allocate_empty(data, params = c("x", "t"))
-allocate_empty <- function(data, params) {
+allocate_empty <- function(data, params, n = 0) {
   for (param in params) {
     if (!exists(param, data)) {
-      data[[param]] <- array(0, dim = c(0, 0))
+      data[[param]] <- array(0, dim = c(n, 0))
     }
   }
   return(data)

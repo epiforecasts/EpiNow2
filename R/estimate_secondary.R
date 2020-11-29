@@ -33,7 +33,7 @@
 #' # load data.table for manipulation
 #' library(data.table)
 #' # make some example secondary incidence data
-#' cases <- example_confirmed
+#' cases <- example_confirmed[1:110]
 #' cases <- as.data.table(cases)
 #' cases <- cases[, .(date, primary = confirm, secondary = shift(confirm, n = 7, type = "lag"))]
 #' cases <- cases[, secondary := frollmean(secondary, 3, align = "right")]
@@ -52,7 +52,7 @@
 #' cases$secondary <- 0
 #' cases$secondary[1] <- as.integer(cases$scaled_primary[1])
 #' for (i in 2:nrow(cases)) {
-#'   meanlog <- rnorm(1, 1.6, 0.05)
+#'   meanlog <- rnorm(1, 1.6, 0.1)
 #'   sdlog <- rnorm(1, 0.8, 0.01)
 #'   cmf <- cumsum(dlnorm(1:min(i-1,20), meanlog, sdlog)) - 
 #'            cumsum(dlnorm(0:min(19,i-2), meanlog, sdlog))
@@ -230,3 +230,119 @@ predict.estimate_secondary <- function(object, ...) {
   return(object)
 }
 
+#' Simulate infections using a given trajectory of the time-varying reproduction number
+#'
+#' @description `r lifecycle::badge("stable")`
+#' This function simulates infections using an existing fit to observed cases but with a modified 
+#' time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
+#' Simulations can be run in parallel using `future::plan`.
+#' @param estimates The \code{estimates} element of an \code{epinow} run that has been done with 
+#' output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.
+#' @param model A compiled stan model as returned by `rstan::stan_model`.
+#' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
+#'  contained in \code{estimates}, except elements set to NA. If it is longer than the time series 
+#'  of reproduction numbers contained in \code{estimates}, the values going beyond the length of 
+#'  estimated reproduction numbers are taken as forecast.
+#' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
+#' samples in the `estimates` input.
+#' @param batch_size Numeric, defaults to 100. Size of batches in which to simulate. May decrease 
+#' run times due to reduced IO costs but this is still being evaluated. If set to NULL then all 
+#' simulations are done at once.
+#' @param verbose Logical defaults to `interactive()`. Should a progress bar (from `progressr`) be
+#' shown.
+#' @importFrom rstan extract sampling
+#' @importFrom purrr transpose map
+#' @importFrom future.apply future_lapply
+#' @importFrom progressr with_progress progressor
+#' @importFrom data.table rbindlist
+#' @importFrom lubridate days
+#' @export
+#' @examples
+#' \donttest{
+#' #set number of cores to use
+#' options(mc.cores = ifelse(interactive(), 4, 1))
+#' # load data.table for manipulation
+#' library(data.table)
+#' # make some future data
+#' primary <- example_confirmed[111:130]
+#' primary <- as.data.table(primary)
+#' primary <- primary[, .(date, sample = list(1:100), value = confirm)]
+#' primary <- primary[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
+#' sims <- simulate_secondary(est, primary)
+#' plot(sims)
+#' }
+simulate_secondary <- function(estimates,
+                               primary,
+                               model = NULL,
+                               samples = NULL,
+                               batch_size = 10,
+                               verbose = interactive()) {
+  
+  ## check batch size
+  if (!is.null(batch_size)) {
+    if (batch_size <= 1) {
+      stop("batch_size must be greater than 1")
+    }
+  }
+  
+  ## extract samples from given stanfit object
+  draws <- rstan::extract(estimates$fit,
+                          pars = c("sim_secondary", "log_lik",
+                                   "lp__", "secondary"),
+                          include = FALSE)
+  # extract data
+  data <- estimates$data
+  
+  # combined primary from data and input primary
+  updated_primary <- primary
+  primary_fit <- estimates$predictions[, .(date, value = primary, sample = list(unique(updated_primary$sample)))]
+  primary_fit <- primary_fit[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
+  primary_fit <- data.table::rbindlist(list(primary_fit, updated_primary), use.names = TRUE)
+  data.table::setorderv(primary_fit, c("sample", "date"))
+  
+  # update data with primary samples and day of week
+  data$primary <- t(
+    matrix(primary_fit$value, ncol = length(unique(primary_fit$sample)))
+  )
+  data$day_of_week <- lubridate::wday(unique(primary_fit$date), week_start = 1)
+  data$n <- nrow(data$primary)
+  data$t <- ncol(data$primary)
+  data$h <- nrow(primary[sample == min(sample)])
+  
+  # extract samples for posterior of estimates
+  draws <- purrr::map(draws, ~ as.matrix(.[sample(1:nrow(.), data$n, replace = TRUE),]))
+  # combine with data
+  data <- c(data, draws)
+  
+  # load model
+  if (is.null(model)) {
+    model <- stanmodels$simulate_secondary
+  }
+  
+  # allocate empty parameters
+  data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"),
+                         n = data$n)
+  
+  ## simulate
+  sims <- rstan::sampling(object = model,
+                          data = data, chains = 1, iter = 1,
+                          algorithm = "Fixed_param",
+                          refresh = 0)
+  
+  # extract samples and organise
+  dates <- unique(primary_fit$date)
+  samples <- rstan::extract(sims, "sim_secondary")$sim_secondary
+  samples <- as.data.table(samples)
+  colnames(samples) <- c("iterations", "sample", "time", "value")
+  samples <- samples[, c("iterations", "time") := NULL][, date := rep(dates, data$n)]
+  
+  # summarise samples
+  summarised <- calc_summary_measures(samples, summarise_by = "date")
+  
+  # construct output
+  out <- list()
+  out$samples <- samples
+  out$predictions <- summarised
+  class(out) <- c("estimate_secondary", class(out))
+  return(out)
+}

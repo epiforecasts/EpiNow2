@@ -21,21 +21,20 @@ data {
 }
 
 generated quantities {
-  matrix[n, t] secondary;
   int sim_secondary[n, t]; 
   for (i in 1:n) {
+    vector[t] secondary;
     // calculate secondary reports from primary
-    secondary[i] = to_row_vector(
+    secondary = 
        calculate_secondary(to_vector(primary[i]), obs, frac_obs[i], delay_mean[i], 
                            delay_sd[i], max_delay, cumulative, 
                            historic, primary_hist_additive, 
-                           current, primary_current_additive, t - h));
+                           current, primary_current_additive, t - h);
     // weekly reporting effect
     if (week_effect) {
-      secondary[i] = to_row_vector(
-        day_of_week_effect(to_vector(secondary[i]), day_of_week, to_vector(day_of_week_simplex[i])));
+      secondary = day_of_week_effect(secondary, day_of_week, to_vector(day_of_week_simplex[i]));
     }
     // simulate secondary reports
-    sim_secondary[i] = report_rng(to_vector(secondary[i]), rep_phi[i], model_type);
+    sim_secondary[i] = report_rng(secondary, rep_phi[i], model_type);
   }
 }

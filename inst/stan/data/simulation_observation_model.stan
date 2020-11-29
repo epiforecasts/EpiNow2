@@ -2,6 +2,6 @@
   int week_effect;                   // should a day of the week effect be estimated
   real<lower = 0> day_of_week_simplex[n, week_effect ? 7 : 1];
   int obs_scale; 
-  real frac_obs[obs_scale ? n : 0, obs_scale];
+  real frac_obs[n, obs_scale];
   int model_type;
   real<lower = 0> rep_phi[n, model_type];  // overdispersion of the reporting process

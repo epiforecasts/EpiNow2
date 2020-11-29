@@ -190,7 +190,11 @@ extract_stan_param <- function(fit, params = NULL,
                                        keep.rownames = ifelse(var_names, 
                                                               "variable",
                                                               FALSE))
-  colnames(summary) <- c("mean", "se_mean", "sd", CrIs, "n_eff", "Rhat")
+  cols <- c("mean", "se_mean", "sd", CrIs, "n_eff", "Rhat")
+  if (var_names) {
+    cols <- c("variable", cols)
+  }
+  colnames(summary) <- cols
   summary <- summary[, c("n_eff", "Rhat") := NULL]
   return(summary)
 }

@@ -115,7 +115,8 @@ simulate_infections <- function(estimates,
     data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
     
     ## allocate empty parameters
-    data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"))
+    data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"),
+                           n = data$n)
     
     ## simulate
     sims <- rstan::sampling(object = model,
