@@ -146,7 +146,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
   
   # summarise reconstructed observations
   recon_obs <- extract_stan_param(fit, "recon_obs", CrIs = CrIs,
-                                  vars_named = TRUE)
+                                  var_names = TRUE)
   recon_obs <- recon_obs[, id := variable][, variable := NULL]
   recon_obs <- recon_obs[, dataset := 1:.N][, 
                            dataset := dataset %% data$obs_sets][

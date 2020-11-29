@@ -39,12 +39,8 @@
 #' cases <- cases[, secondary := frollmean(secondary, 3, align = "right")]
 #' cases <- cases[!is.na(secondary)][, secondary := as.integer(secondary)]
 #' 
-#' # dev model compile
-#' model <- rstan::stan_model("inst/stan/estimate_secondary.stan")
-#'
 #' # fit model to example data
-#' inc <- estimate_secondary(cases, verbose = interactive(), model = model,
-#'                           chains = 2, iter = 1000)
+#' inc <- estimate_secondary(cases, chains = 2, iter = 1000)
 #' plot(inc, primary = TRUE)
 #' \donttest{
 #' # make some example prevalence data
@@ -72,8 +68,7 @@
 #' # fit model to example prevalence data
 #' # here we assume no day of the week effect and a Poisson observation model
 #' # this is motivated by the expected level of auto-correlation in cumulative
-#' prev <- estimate_secondary(cases, verbose = interactive(), model = model,
-#'                           secondary = secondary_opts(type = "prevalence"),
+#' prev <- estimate_secondary(cases, secondary = secondary_opts(type = "prevalence"),
 #'                           obs = obs_opts(week_effect = FALSE, 
 #'                                          scale = list(mean = 0.3, sd = 0.1)))
 #' plot(prev)
@@ -113,7 +108,7 @@ estimate_secondary <- function(reports,
     )
   # fit
   if (is.null(model)) {
-    model <- stanmodels$estimate_truncation
+    model <- stanmodels$estimate_secondary
   }
   fit <- rstan::sampling(model, 
                          data = data, 

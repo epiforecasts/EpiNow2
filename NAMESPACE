@@ -40,11 +40,8 @@ export(estimate_truncation)
 export(estimates_by_report_date)
 export(expose_stan_fns)
 export(extract_CrIs)
-<<<<<<< HEAD
-export(extract_stan_param)
-=======
 export(extract_inits)
->>>>>>> master
+export(extract_stan_param)
 export(forecast_infections)
 export(gamma_dist_def)
 export(get_dist)

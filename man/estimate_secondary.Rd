@@ -69,12 +69,8 @@ cases <- cases[, .(date, primary = confirm, secondary = shift(confirm, n = 7, ty
 cases <- cases[, secondary := frollmean(secondary, 3, align = "right")]
 cases <- cases[!is.na(secondary)][, secondary := as.integer(secondary)]
 
-# dev model compile
-model <- rstan::stan_model("inst/stan/estimate_secondary.stan")
-
 # fit model to example data
-inc <- estimate_secondary(cases, verbose = interactive(), model = model,
-                          chains = 2, iter = 1000)
+inc <- estimate_secondary(cases, chains = 2, iter = 1000)
 plot(inc, primary = TRUE)
 \donttest{
 # make some example prevalence data
@@ -82,25 +78,29 @@ cases <- example_confirmed
 cases <- as.data.table(cases)
 cases <- 
   cases[, .(date, primary = confirm, 
-                  scaled_primary = confirm * rnorm(.N, 0.2, 0.05))]
+                  scaled_primary = confirm * rnorm(.N, 0.25, 0.05))]
 cases$secondary <- 0
-cases$secondary[1] <- as.integer(cases$scaled_primary[1))
+cases$secondary[1] <- as.integer(cases$scaled_primary[1])
 for (i in 2:nrow(cases)) {
-  cmf <- cumsum(dlnorm(1:min(i-1,10), rnorm(1, 1.3, 0.05), 0.4)) - 
-           cumsum(dlnorm(0:min(9,i-2), rnorm(1, 1.3, 0.05), 0.4))
+  meanlog <- rnorm(1, 1.3, 0.05)
+  sdlog <- rnorm(1, 0.6, 0.01)
+  cmf <- cumsum(dlnorm(1:min(i-1,20), meanlog, sdlog)) - 
+           cumsum(dlnorm(0:min(19,i-2), meanlog, sdlog))
+  reducing_cases <- sum(cases$scaled_primary[(i-1):max(1,i-20)] * cmf)
+  reducing_cases <- ifelse(cases$secondary[i - 1] < reducing_cases, 
+                           cases$secondary[i - 1], reducing_cases) 
   cases$secondary[i] <- as.integer(
-  cases$secondary[i -1] + cases$scaled_primary[i] - 
-        sum(cases$scaled_primary[(i-1):max(1,i-10)] * cmf)) 
+  cases$secondary[i - 1] + cases$scaled_primary[i] - reducing_cases
+  ) 
   cases$secondary[i] <- ifelse(cases$secondary[i] < 0, 0,
                                cases$secondary[i])
 }
 # fit model to example prevalence data
 # here we assume no day of the week effect and a Poisson observation model
 # this is motivated by the expected level of auto-correlation in cumulative
-prev <- estimate_secondary(cases, verbose = interactive(), model = model,
-                          secondary = secondary_opts(type = "prevalence"),
-                          obs = obs_opts(week_effect = FALSE, family = "poisson",
-                                         scale = list(mean = 0.1, sd = 0.1)))
+prev <- estimate_secondary(cases, secondary = secondary_opts(type = "prevalence"),
+                          obs = obs_opts(week_effect = FALSE, 
+                                         scale = list(mean = 0.3, sd = 0.1)))
 plot(prev)
 }
 }

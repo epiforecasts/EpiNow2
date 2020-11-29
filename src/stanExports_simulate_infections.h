@@ -61,7 +61,19 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(492, 0, "start", "functions/generated_quantities.stan");
     reader.add_event(538, 46, "end", "functions/generated_quantities.stan");
     reader.add_event(538, 8, "restart", "model_simulate_infections");
-    reader.add_event(600, 68, "end", "model_simulate_infections");
+    reader.add_event(547, 17, "include", "data/simulation_rt.stan");
+    reader.add_event(547, 0, "start", "data/simulation_rt.stan");
+    reader.add_event(554, 7, "end", "data/simulation_rt.stan");
+    reader.add_event(554, 18, "restart", "model_simulate_infections");
+    reader.add_event(555, 19, "include", "data/simulation_delays.stan");
+    reader.add_event(555, 0, "start", "data/simulation_delays.stan");
+    reader.add_event(559, 4, "end", "data/simulation_delays.stan");
+    reader.add_event(559, 20, "restart", "model_simulate_infections");
+    reader.add_event(560, 21, "include", "data/simulation_observation_model.stan");
+    reader.add_event(560, 0, "start", "data/simulation_observation_model.stan");
+    reader.add_event(567, 7, "end", "data/simulation_observation_model.stan");
+    reader.add_event(567, 22, "restart", "model_simulate_infections");
+    reader.add_event(600, 53, "end", "model_simulate_infections");
     return reader;
 }
 template <typename T1__, typename T2__>
