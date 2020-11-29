@@ -1,6 +1,3 @@
-  int t;                             // time of observations
-  int<lower = 0> obs[t];             // observed secondary data
-  vector[t] primary;                 // observed primary data
   int seeding_time;                  // required for setting up observation model
   int cumulative;                    // Should secondary reports be cumulative
   int historic;                      // Should primary historic reports be considered

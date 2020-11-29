@@ -5,7 +5,10 @@ functions {
 #include functions/secondary.stan
 }
 
-data {  
+data { 
+  int t;                             // time of observations
+  int<lower = 0> obs[t];             // observed secondary data
+  vector[t] primary;                 // observed primary data
 #include data/secondary.stan
 #include data/delays.stan
 #include data/observation_model.stan

@@ -6,28 +6,36 @@ functions {
 }
 
 data {  
+  // dimensions
+  int n; // number of samples
+  int t; // time
+  int h; // forecast horizon
+  // secondary model specific data
+  int<lower = 0> obs[t - h];         // observed secondary data
+  matrix[n, t] primary;              // observed primary data
 #include data/secondary.stan
-#include data/delays.stan
-#include data/observation_model.stan
+  // delay from infection to report
+#include data/simulation_delays.stan  
+  // observation model
+#include data/simulation_observation_model.stan
 }
 
 generated quantities {
-  vector[t] secondary;
-  int sim_secondary[t]; 
-  vector[t] log_lik;
-  // calculate secondary reports from primary
-  secondary = calculate_secondary(primary, obs, frac_obs, delay_mean, 
-                                  delay_sd, max_delay, cumulative, 
-                                  historic, primary_hist_additive, 
-                                  current, primary_current_additive, t);
- // weekly reporting effect
- if (week_effect) {
-   secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
+  matrix[n, t] secondary;
+  int sim_secondary[n, t]; 
+  for (i in 1:n) {
+    // calculate secondary reports from primary
+    secondary[i] = to_row_vector(
+       calculate_secondary(to_vector(primary[i]), obs, frac_obs[i], delay_mean[i], 
+                           delay_sd[i], max_delay, cumulative, 
+                           historic, primary_hist_additive, 
+                           current, primary_current_additive, t - h));
+    // weekly reporting effect
+    if (week_effect) {
+      secondary[i] = to_row_vector(
+        day_of_week_effect(to_vector(secondary[i]), day_of_week, to_vector(day_of_week_simplex[i])));
+    }
+    // simulate secondary reports
+    sim_secondary[i] = report_rng(to_vector(secondary[i]), rep_phi[i], model_type);
   }
- // truncate near time cases to observed reports 
- secondary = truncate(secondary, truncation_mean, truncation_sd, max_truncation, 0);
-  // simulate secondary reports
-  sim_secondary = report_rng(secondary, rep_phi, model_type);
-  // log likelihood of model
-  log_lik = report_log_lik(obs, secondary, rep_phi, model_type, obs_weight);
 }
