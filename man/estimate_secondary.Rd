@@ -94,7 +94,7 @@ inc <- estimate_secondary(cases[1:100], chains = 2, iter = 1000,
 plot(inc, primary = TRUE)
 
 # forecast future secondary cases from primary
-predictions <- forecast_secondary(inc,cases[101:.N])
+predictions <- forecast_secondary(inc, cases[101:.N][, value := primary])
 plot(predictions, new_obs = cases, from = "2020-06-01")
 
 

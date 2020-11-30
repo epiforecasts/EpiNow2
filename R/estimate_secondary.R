@@ -64,7 +64,7 @@
 #' plot(inc, primary = TRUE)
 #' 
 #' # forecast future secondary cases from primary
-#' predictions <- forecast_secondary(inc,cases[101:.N])
+#' predictions <- forecast_secondary(inc, cases[101:.N][, value := primary])
 #' plot(predictions, new_obs = cases, from = "2020-06-01")
 #' 
 #' 
@@ -234,12 +234,6 @@ plot.estimate_secondary <- function(x, primary = FALSE,
                                     new_obs = NULL,
                                     ...) {
   predictions <- data.table::copy(x$predictions)
-  if (!is.null(from)) {
-    predictions <- predictions[date >= from]
-  }
-  if (!is.null(to)) {
-    predictions <- predictions[data <= to]
-  }
   
   if (!is.null(new_obs)) {
     new_obs <- data.table::as.data.table(new_obs)
@@ -247,6 +241,13 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     predictions <- predictions[, secondary := NULL]
     predictions <- data.table::merge.data.table(predictions, new_obs, all = TRUE, by = "date")
   }
+  if (!is.null(from)) {
+    predictions <- predictions[date >= from]
+  }
+  if (!is.null(to)) {
+    predictions <- predictions[date <= to]
+  }
+  
   plot <- ggplot2::ggplot(predictions, ggplot2::aes(x = date, y = secondary)) +
     ggplot2::geom_col(fill = "grey", col = "white",
                       show.legend = FALSE, na.rm = TRUE)
@@ -292,6 +293,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' @importFrom rstan extract sampling
 #' @importFrom data.table rbindlist merge.data.table as.data.table
 #' @importFrom lubridate days wday
+#' @importFrom utils tail
 #' @inheritParams estimate_secondary
 #' @seealso estimate_secondary
 #' @export

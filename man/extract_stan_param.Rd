@@ -16,6 +16,8 @@ extract_stan_param(
 
 \item{params}{A character vector of parameters to extract. Defaults to all parameters.}
 
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
+
 \item{var_names}{Logical defaults to \code{FALSE}. Should variables be named. Automatically set
 to TRUE if multiple parameters are to be extracted.}
 }

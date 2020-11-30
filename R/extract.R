@@ -165,6 +165,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
 #' @return A `data.table` summarising parameter posteriors. Contains a following variables:
 #' `variable`, `mean`, `mean_se`, `sd`, `median`, and `lower_`, `upper_` followed by 
 #' credible interval labels indicating the credible intervals present.
+#' @inheritParams calc_summary_measures
 #' @export
 #' @importFrom data.table as.data.table :=
 #' @importFrom rstan summary
