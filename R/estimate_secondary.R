@@ -304,7 +304,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' `samples` a data frame of forecast secondary observation posterior samples, and `forecast` a
 #' summary of the forecast secondary observation posterior.
 #' @importFrom rstan extract sampling
-#' @importFrom data.table rbindlist merge.data.table as.data.table setorderv setcolorder
+#' @importFrom data.table rbindlist merge.data.table as.data.table setorderv setcolorder copy
 #' @importFrom lubridate days wday
 #' @importFrom utils tail
 #' @importFrom purrr map
