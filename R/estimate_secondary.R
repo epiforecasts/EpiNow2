@@ -265,11 +265,6 @@ predict.estimate_secondary <- function(object, ...) {
 #'  estimated reproduction numbers are taken as forecast.
 #' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
 #' samples in the `estimates` input.
-#' @param batch_size Numeric, defaults to 100. Size of batches in which to simulate. May decrease 
-#' run times due to reduced IO costs but this is still being evaluated. If set to NULL then all 
-#' simulations are done at once.
-#' @param verbose Logical defaults to `interactive()`. Should a progress bar (from `progressr`) be
-#' shown.
 #' @importFrom rstan extract sampling
 #' @importFrom purrr transpose map
 #' @importFrom future.apply future_lapply
@@ -284,38 +279,43 @@ predict.estimate_secondary <- function(object, ...) {
 #' # load data.table for manipulation
 #' library(data.table)
 #' # make some future data
-#' primary <- example_confirmed[111:130]
+#' primary <- example_confirmed
 #' primary <- as.data.table(primary)
-#' primary <- primary[, .(date, sample = list(1:100), value = confirm)]
-#' primary <- primary[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
-#' sims <- simulate_secondary(est, primary)
+#' primary <- primary[date > "2020-06-14"]
+#' primary <- primary[, .(date, value = confirm)]
+#' sims <- simulate_secondary(inc, primary, model = model)
 #' plot(sims)
 #' }
 simulate_secondary <- function(estimates,
                                primary,
                                model = NULL,
                                samples = NULL,
-                               batch_size = 10,
-                               verbose = interactive()) {
-  
-  ## check batch size
-  if (!is.null(batch_size)) {
-    if (batch_size <= 1) {
-      stop("batch_size must be greater than 1")
-    }
+                               CrIs = c(0.2, 0.5, 0.9)) {
+  ## deal with input if data frame
+  if (any(class(primary) %in% "data.frame")) {
+    primary <- data.table::as.data.table(primary)
+    if (is.null(primary$sample)) {
+      if (is.null(samples)) {
+        samples <- 1000
+      }
+      primary <- primary[, .(date, sample = list(1:samples), value)]
+      primary <- primary[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
+    } 
   }
+  ## rename to avoid conflict with estimates
+  updated_primary <- primary
   
   ## extract samples from given stanfit object
   draws <- rstan::extract(estimates$fit,
                           pars = c("sim_secondary", "log_lik",
                                    "lp__", "secondary"),
                           include = FALSE)
-  # extract data
+  # extract data from stanfit
   data <- estimates$data
   
   # combined primary from data and input primary
-  updated_primary <- primary
   primary_fit <- estimates$predictions[, .(date, value = primary, sample = list(unique(updated_primary$sample)))]
+  primary_fit <- primary_fit[date <= min(primary$date, na.rm = TRUE)]
   primary_fit <- primary_fit[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
   primary_fit <- data.table::rbindlist(list(primary_fit, updated_primary), use.names = TRUE)
   data.table::setorderv(primary_fit, c("sample", "date"))
@@ -355,14 +355,28 @@ simulate_secondary <- function(estimates,
   samples <- as.data.table(samples)
   colnames(samples) <- c("iterations", "sample", "time", "value")
   samples <- samples[, c("iterations", "time") := NULL][, date := rep(dates, data$n)]
+  samples <- samples[date >= min(primary$date, na.rm = TRUE)]
   
   # summarise samples
-  summarised <- calc_summary_measures(samples, summarise_by = "date")
+  summarised <- calc_summary_measures(samples, summarise_by = "date",
+                                      CrIs = CrIs)
+  summarised <- summarised[, purrr::map(.SD, ~ round(., 1))]
   
   # construct output
   out <- list()
   out$samples <- samples
-  out$predictions <- summarised
+  out$forecast <- summarised
+  # link previous prediction observations with forecast observations
+  forecast_obs <- data.table::rbindlist(list(
+    estimates$predictions[, .(date, primary, secondary)], 
+    data.table::copy(primary)[, .(primary = median(value)), by = "date"]),
+    use.names = TRUE, fill = TRUE)
+  data.table::setorderv(forecast_obs, "date")
+  # add in predictions in estimate_secondary format
+  out$predictions <- data.table::merge.data.table(summarised, 
+                                                  forecast_obs,
+                                                  on = "date", all = TRUE)
+  data.table::setcolorder(out$predictions, c("date", "primary", "secondary", "mean", 'sd'))
   class(out) <- c("estimate_secondary", class(out))
   return(out)
 }
