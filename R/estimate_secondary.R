@@ -62,7 +62,14 @@
 #' inc <- estimate_secondary(cases[1:100], chains = 2, iter = 1000, 
 #'                           obs = obs_opts(scale = list(mean = 0.2, sd = 0.2)))
 #' plot(inc, primary = TRUE)
+#' 
+#' # forecast future secondary cases from primary
+#' predictions <- forecast_secondary(inc,cases[101:.N])
+#' plot(predictions, new_obs = cases, from = "2020-06-01")
+#' 
+#' 
 #' \donttest{
+#' # prevalence data test
 #' # make some example prevalence data
 #' cases <- example_confirmed
 #' cases <- as.data.table(cases)
@@ -210,31 +217,51 @@ secondary_opts <- function(type = "incidence", ...)  {
 #' @param x A list of output as produced by `estimate_secondary`
 #' @param primary Logical, defaults to `FALSE`. Should `primary` reports also
 #' be plot? 
+#' @param from Date object indicating when to plot from. 
+#' @param to Date object indicating when to plot up to.
+#' @param new_obs A data.frame containing the columns `date` and `secondary` which replace
+#' the secondary observations stored in the `estimate_secondary` output.
 #' @param ... Pass additional arguments to plot function. Not currently in use.
 #' @seealso plot estimate_secondary
 #' @method plot estimate_secondary
 #' @return `ggplot2` object
 #' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme
 #' @importFrom cowplot theme_cowplot
+#' @importFrom data.table as.data.table merge.data.table
 #' @export
-plot.estimate_secondary <- function(x, primary = FALSE, ...) {
-  plot <- ggplot2::ggplot(x$predictions, ggplot2::aes(x = date, y = secondary)) +
+plot.estimate_secondary <- function(x, primary = FALSE, 
+                                    from = NULL, to = NULL,
+                                    new_obs = NULL,
+                                    ...) {
+  predictions <- data.table::copy(x$predictions)
+  if (!is.null(from)) {
+    predictions <- predictions[date >= from]
+  }
+  if (!is.null(to)) {
+    predictions <- predictions[data <= to]
+  }
+  
+  if (!is.null(new_obs)) {
+    new_obs <- data.table::as.data.table(new_obs)
+    new_obs <- new_obs[, .(date, secondary)]
+    predictions <- predictions[, secondary := NULL]
+    predictions <- data.table::merge.data.table(predictions, new_obs, all = TRUE, by = "date")
+  }
+  plot <- ggplot2::ggplot(predictions, ggplot2::aes(x = date, y = secondary)) +
     ggplot2::geom_col(fill = "grey", col = "white",
                       show.legend = FALSE, na.rm = TRUE)
   
   if (primary) {
     plot <- plot + 
-       ggplot2::geom_point(data = x$predictions,
+       ggplot2::geom_point(data = predictions,
                           ggplot2::aes(y = primary), 
                           alpha = 0.4, size = 0.8) +
-      ggplot2::geom_line(data = x$predictions,
+      ggplot2::geom_line(data = predictions,
                           ggplot2::aes(y = primary), alpha = 0.4)
       
   }
-  
-  plot <- plot_CrIs(plot, extract_CrIs(x$predictions),
+  plot <- plot_CrIs(plot, extract_CrIs(predictions),
                     alpha = 0.6, size = 1)
-  
   plot <- plot +       
     cowplot::theme_cowplot() +
     ggplot2::labs(y = "Confirmed Cases", x = "Date") +
@@ -244,50 +271,33 @@ plot.estimate_secondary <- function(x, primary = FALSE, ...) {
   return(plot)
 }
 
-predict.estimate_secondary <- function(object, ...) {
-  
-  
-  return(object)
-}
-
-#' Simulate infections using a given trajectory of the time-varying reproduction number
+#' Forecast Secondary Observations Given a Fit from estimate_secondary
 #'
-#' @description `r lifecycle::badge("stable")`
-#' This function simulates infections using an existing fit to observed cases but with a modified 
-#' time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
-#' Simulations can be run in parallel using `future::plan`.
-#' @param estimates The \code{estimates} element of an \code{epinow} run that has been done with 
-#' output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.
+#' @description `r lifecycle::badge("experimental")`
+#' This function forecasts secondary observations using the output of `estimate_secondary()` and either 
+#' observed primary data or a forecast of primary observations. See the examples of `estimate_secondary()` 
+#' for one use case. It can also be combined with `estimate_infections()` to produce a forecast for a secondary
+#' observation from a forecast of a primary observation.
+#' @param estimate An object of class "estimate_secondary" as produced by `estimate_secondary()`.
+#' @param primary A data.frame containing at least `date` and `value` (integer) variables and optionally
+#' `sample`. Used as the primary observation used to forecast the secondary observations. Alternatively,
+#' this may be an object of class "estimate_infections" as produced by `estimate_infections()`. If `primary`
+#' is of class "estimate_infections" then the internal samples will be filtered to have a minimum date ahead of
+#' those observed in the `estimate` object.
+#' @param primary_variable A character string indicating the primary variable, defaulting to "reported_cases".
+#' Only used when primary is of class "estimate_infections".
 #' @param model A compiled stan model as returned by `rstan::stan_model`.
-#' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
-#'  contained in \code{estimates}, except elements set to NA. If it is longer than the time series 
-#'  of reproduction numbers contained in \code{estimates}, the values going beyond the length of 
-#'  estimated reproduction numbers are taken as forecast.
 #' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
-#' samples in the `estimates` input.
+#' samples in the `primary` input when present. If not present the default is to use 1000 samples.
 #' @importFrom rstan extract sampling
-#' @importFrom purrr transpose map
-#' @importFrom future.apply future_lapply
-#' @importFrom progressr with_progress progressor
-#' @importFrom data.table rbindlist
-#' @importFrom lubridate days
+#' @importFrom data.table rbindlist merge.data.table as.data.table
+#' @importFrom lubridate days wday
+#' @inheritParams estimate_secondary
+#' @seealso estimate_secondary
 #' @export
-#' @examples
-#' \donttest{
-#' #set number of cores to use
-#' options(mc.cores = ifelse(interactive(), 4, 1))
-#' # load data.table for manipulation
-#' library(data.table)
-#' # make some future data
-#' primary <- example_confirmed
-#' primary <- as.data.table(primary)
-#' primary <- primary[date > "2020-06-14"]
-#' primary <- primary[, .(date, value = confirm)]
-#' sims <- simulate_secondary(inc, primary, model = model)
-#' plot(sims)
-#' }
-simulate_secondary <- function(estimates,
+forecast_secondary <- function(estimate,
                                primary,
+                               primary_variable = "reported_cases",
                                model = NULL,
                                samples = NULL,
                                CrIs = c(0.2, 0.5, 0.9)) {
@@ -302,19 +312,26 @@ simulate_secondary <- function(estimates,
       primary <- primary[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
     } 
   }
-  ## rename to avoid conflict with estimates
+  if (any(class(primary) %in% "estimate_infections")) {
+    primary <- data.table::as.data.table(primary$samples[variable == primary_variable])
+    primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
+    if (!is.null(samples)) {
+      primary <- primary[sample(1:.N, samples, replace = TRUE)]
+    }
+  }
+  ## rename to avoid conflict with estimate
   updated_primary <- primary
   
   ## extract samples from given stanfit object
-  draws <- rstan::extract(estimates$fit,
+  draws <- rstan::extract(estimate$fit,
                           pars = c("sim_secondary", "log_lik",
                                    "lp__", "secondary"),
                           include = FALSE)
   # extract data from stanfit
-  data <- estimates$data
+  data <- estimate$data
   
   # combined primary from data and input primary
-  primary_fit <- estimates$predictions[, .(date, value = primary, sample = list(unique(updated_primary$sample)))]
+  primary_fit <- estimate$predictions[, .(date, value = primary, sample = list(unique(updated_primary$sample)))]
   primary_fit <- primary_fit[date <= min(primary$date, na.rm = TRUE)]
   primary_fit <- primary_fit[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
   primary_fit <- data.table::rbindlist(list(primary_fit, updated_primary), use.names = TRUE)
@@ -354,8 +371,7 @@ simulate_secondary <- function(estimates,
   samples <- rstan::extract(sims, "sim_secondary")$sim_secondary
   samples <- as.data.table(samples)
   colnames(samples) <- c("iterations", "sample", "time", "value")
-  samples <- samples[, c("iterations", "time") := NULL][, date := rep(dates, data$n)]
-  samples <- samples[date >= min(primary$date, na.rm = TRUE)]
+  samples <- samples[, c("iterations", "time") := NULL][, date := rep(tail(dates, data$h), data$n)]
   
   # summarise samples
   summarised <- calc_summary_measures(samples, summarise_by = "date",
@@ -368,7 +384,7 @@ simulate_secondary <- function(estimates,
   out$forecast <- summarised
   # link previous prediction observations with forecast observations
   forecast_obs <- data.table::rbindlist(list(
-    estimates$predictions[, .(date, primary, secondary)], 
+    estimate$predictions[, .(date, primary, secondary)], 
     data.table::copy(primary)[, .(primary = median(value)), by = "date"]),
     use.names = TRUE, fill = TRUE)
   data.table::setorderv(forecast_obs, "date")

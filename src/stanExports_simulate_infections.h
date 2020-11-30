@@ -2551,13 +2551,13 @@ public:
             pos__ = 0;
             obs_scale = vals_i__[pos__++];
             current_statement_begin__ = 565;
-            validate_non_negative_index("frac_obs", "(obs_scale ? n : 0 )", (obs_scale ? n : 0 ));
+            validate_non_negative_index("frac_obs", "n", n);
             validate_non_negative_index("frac_obs", "obs_scale", obs_scale);
-            context__.validate_dims("data initialization", "frac_obs", "double", context__.to_vec((obs_scale ? n : 0 ),obs_scale));
-            frac_obs = std::vector<std::vector<double> >((obs_scale ? n : 0 ), std::vector<double>(obs_scale, double(0)));
+            context__.validate_dims("data initialization", "frac_obs", "double", context__.to_vec(n,obs_scale));
+            frac_obs = std::vector<std::vector<double> >(n, std::vector<double>(obs_scale, double(0)));
             vals_r__ = context__.vals_r("frac_obs");
             pos__ = 0;
-            size_t frac_obs_k_0_max__ = (obs_scale ? n : 0 );
+            size_t frac_obs_k_0_max__ = n;
             size_t frac_obs_k_1_max__ = obs_scale;
             for (size_t k_1__ = 0; k_1__ < frac_obs_k_1_max__; ++k_1__) {
                 for (size_t k_0__ = 0; k_0__ < frac_obs_k_0_max__; ++k_0__) {

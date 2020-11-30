@@ -21,7 +21,7 @@ data {
 }
 
 generated quantities {
-  int sim_secondary[n, t]; 
+  int sim_secondary[n, h]; 
   for (i in 1:n) {
     vector[t] secondary;
     // calculate secondary reports from primary
@@ -35,6 +35,6 @@ generated quantities {
       secondary = day_of_week_effect(secondary, day_of_week, to_vector(day_of_week_simplex[i]));
     }
     // simulate secondary reports
-    sim_secondary[i] = report_rng(secondary, rep_phi[i], model_type);
+    sim_secondary[i] = report_rng(tail(secondary, h), rep_phi[i], model_type);
   }
 }

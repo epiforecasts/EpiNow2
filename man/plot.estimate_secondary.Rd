@@ -4,13 +4,20 @@
 \alias{plot.estimate_secondary}
 \title{Plot method for estimate_secondary}
 \usage{
-\method{plot}{estimate_secondary}(x, primary = FALSE, ...)
+\method{plot}{estimate_secondary}(x, primary = FALSE, from = NULL, to = NULL, new_obs = NULL, ...)
 }
 \arguments{
 \item{x}{A list of output as produced by \code{estimate_secondary}}
 
 \item{primary}{Logical, defaults to \code{FALSE}. Should \code{primary} reports also
 be plot?}
+
+\item{from}{Date object indicating when to plot from.}
+
+\item{to}{Date object indicating when to plot up to.}
+
+\item{new_obs}{A data.frame containing the columns \code{date} and \code{secondary} which replace
+the secondary observations stored in the \code{estimate_secondary} output.}
 
 \item{...}{Pass additional arguments to plot function. Not currently in use.}
 }
