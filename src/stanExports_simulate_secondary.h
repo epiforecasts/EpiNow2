@@ -61,7 +61,7 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(315, 0, "start", "data/simulation_observation_model.stan");
     reader.add_event(322, 7, "end", "data/simulation_observation_model.stan");
     reader.add_event(322, 20, "restart", "model_simulate_secondary");
-    reader.add_event(345, 41, "end", "model_simulate_secondary");
+    reader.add_event(344, 40, "end", "model_simulate_secondary");
     return reader;
 }
 template <typename T1__, typename T2__>
@@ -1417,13 +1417,13 @@ public:
             pos__ = 0;
             obs_scale = vals_i__[pos__++];
             current_statement_begin__ = 320;
-            validate_non_negative_index("frac_obs", "(obs_scale ? n : 0 )", (obs_scale ? n : 0 ));
+            validate_non_negative_index("frac_obs", "n", n);
             validate_non_negative_index("frac_obs", "obs_scale", obs_scale);
-            context__.validate_dims("data initialization", "frac_obs", "double", context__.to_vec((obs_scale ? n : 0 ),obs_scale));
-            frac_obs = std::vector<std::vector<double> >((obs_scale ? n : 0 ), std::vector<double>(obs_scale, double(0)));
+            context__.validate_dims("data initialization", "frac_obs", "double", context__.to_vec(n,obs_scale));
+            frac_obs = std::vector<std::vector<double> >(n, std::vector<double>(obs_scale, double(0)));
             vals_r__ = context__.vals_r("frac_obs");
             pos__ = 0;
-            size_t frac_obs_k_0_max__ = (obs_scale ? n : 0 );
+            size_t frac_obs_k_0_max__ = n;
             size_t frac_obs_k_1_max__ = obs_scale;
             for (size_t k_1__ = 0; k_1__ < frac_obs_k_1_max__; ++k_1__) {
                 for (size_t k_0__ = 0; k_0__ < frac_obs_k_0_max__; ++k_0__) {
@@ -1526,7 +1526,6 @@ public:
     }
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
-        names__.push_back("secondary");
         names__.push_back("sim_secondary");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
@@ -1534,11 +1533,7 @@ public:
         std::vector<size_t> dims__;
         dims__.resize(0);
         dims__.push_back(n);
-        dims__.push_back(t);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dims__.push_back(n);
-        dims__.push_back(t);
+        dims__.push_back(h);
         dimss__.push_back(dims__);
     }
     template <typename RNG>
@@ -1566,50 +1561,37 @@ public:
             if (!include_gqs__) return;
             // declare and define generated quantities
             current_statement_begin__ = 326;
-            validate_non_negative_index("secondary", "n", n);
-            validate_non_negative_index("secondary", "t", t);
-            Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> secondary(n, t);
-            stan::math::initialize(secondary, DUMMY_VAR__);
-            stan::math::fill(secondary, DUMMY_VAR__);
-            current_statement_begin__ = 327;
             validate_non_negative_index("sim_secondary", "n", n);
-            validate_non_negative_index("sim_secondary", "t", t);
-            std::vector<std::vector<int> > sim_secondary(n, std::vector<int>(t, int(0)));
+            validate_non_negative_index("sim_secondary", "h", h);
+            std::vector<std::vector<int> > sim_secondary(n, std::vector<int>(h, int(0)));
             stan::math::fill(sim_secondary, std::numeric_limits<int>::min());
             // generated quantities statements
-            current_statement_begin__ = 328;
+            current_statement_begin__ = 327;
             for (int i = 1; i <= n; ++i) {
+                {
+                current_statement_begin__ = 328;
+                validate_non_negative_index("secondary", "t", t);
+                Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> secondary(t);
+                stan::math::initialize(secondary, DUMMY_VAR__);
+                stan::math::fill(secondary, DUMMY_VAR__);
                 current_statement_begin__ = 330;
-                stan::model::assign(secondary, 
-                            stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                            to_row_vector(calculate_secondary(to_vector(get_base1(primary, i, "primary", 1)), obs, get_base1(frac_obs, i, "frac_obs", 1), get_base1(delay_mean, i, "delay_mean", 1), get_base1(delay_sd, i, "delay_sd", 1), max_delay, cumulative, historic, primary_hist_additive, current, primary_current_additive, (t - h), pstream__)), 
-                            "assigning variable secondary");
+                stan::math::assign(secondary, calculate_secondary(to_vector(get_base1(primary, i, "primary", 1)), obs, get_base1(frac_obs, i, "frac_obs", 1), get_base1(delay_mean, i, "delay_mean", 1), get_base1(delay_sd, i, "delay_sd", 1), max_delay, cumulative, historic, primary_hist_additive, current, primary_current_additive, (t - h), pstream__));
                 current_statement_begin__ = 336;
                 if (as_bool(week_effect)) {
                     current_statement_begin__ = 337;
-                    stan::model::assign(secondary, 
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                to_row_vector(day_of_week_effect(to_vector(get_base1(secondary, i, "secondary", 1)), day_of_week, to_vector(get_base1(day_of_week_simplex, i, "day_of_week_simplex", 1)), pstream__)), 
-                                "assigning variable secondary");
+                    stan::math::assign(secondary, day_of_week_effect(secondary, day_of_week, to_vector(get_base1(day_of_week_simplex, i, "day_of_week_simplex", 1)), pstream__));
                 }
-                current_statement_begin__ = 341;
+                current_statement_begin__ = 340;
                 stan::model::assign(sim_secondary, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                            report_rng(to_vector(get_base1(secondary, i, "secondary", 1)), get_base1(rep_phi, i, "rep_phi", 1), model_type, base_rng__, pstream__), 
+                            report_rng(tail(secondary, h), get_base1(rep_phi, i, "rep_phi", 1), model_type, base_rng__, pstream__), 
                             "assigning variable sim_secondary");
+                }
             }
             // validate, write generated quantities
             current_statement_begin__ = 326;
-            size_t secondary_j_2_max__ = t;
-            size_t secondary_j_1_max__ = n;
-            for (size_t j_2__ = 0; j_2__ < secondary_j_2_max__; ++j_2__) {
-                for (size_t j_1__ = 0; j_1__ < secondary_j_1_max__; ++j_1__) {
-                    vars__.push_back(secondary(j_1__, j_2__));
-                }
-            }
-            current_statement_begin__ = 327;
             size_t sim_secondary_k_0_max__ = n;
-            size_t sim_secondary_k_1_max__ = t;
+            size_t sim_secondary_k_1_max__ = h;
             for (size_t k_1__ = 0; k_1__ < sim_secondary_k_1_max__; ++k_1__) {
                 for (size_t k_0__ = 0; k_0__ < sim_secondary_k_0_max__; ++k_0__) {
                     vars__.push_back(sim_secondary[k_0__][k_1__]);
@@ -1649,17 +1631,8 @@ public:
         if (include_tparams__) {
         }
         if (!include_gqs__) return;
-        size_t secondary_j_2_max__ = t;
-        size_t secondary_j_1_max__ = n;
-        for (size_t j_2__ = 0; j_2__ < secondary_j_2_max__; ++j_2__) {
-            for (size_t j_1__ = 0; j_1__ < secondary_j_1_max__; ++j_1__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "secondary" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
-                param_names__.push_back(param_name_stream__.str());
-            }
-        }
         size_t sim_secondary_k_0_max__ = n;
-        size_t sim_secondary_k_1_max__ = t;
+        size_t sim_secondary_k_1_max__ = h;
         for (size_t k_1__ = 0; k_1__ < sim_secondary_k_1_max__; ++k_1__) {
             for (size_t k_0__ = 0; k_0__ < sim_secondary_k_0_max__; ++k_0__) {
                 param_name_stream__.str(std::string());
@@ -1676,17 +1649,8 @@ public:
         if (include_tparams__) {
         }
         if (!include_gqs__) return;
-        size_t secondary_j_2_max__ = t;
-        size_t secondary_j_1_max__ = n;
-        for (size_t j_2__ = 0; j_2__ < secondary_j_2_max__; ++j_2__) {
-            for (size_t j_1__ = 0; j_1__ < secondary_j_1_max__; ++j_1__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "secondary" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
-                param_names__.push_back(param_name_stream__.str());
-            }
-        }
         size_t sim_secondary_k_0_max__ = n;
-        size_t sim_secondary_k_1_max__ = t;
+        size_t sim_secondary_k_1_max__ = h;
         for (size_t k_1__ = 0; k_1__ < sim_secondary_k_1_max__; ++k_1__) {
             for (size_t k_0__ = 0; k_0__ < sim_secondary_k_0_max__; ++k_0__) {
                 param_name_stream__.str(std::string());
