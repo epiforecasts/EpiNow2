@@ -32,15 +32,35 @@
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # load data.table for manipulation
 #' library(data.table)
-#' # make some example secondary incidence data
-#' cases <- example_confirmed[1:110]
-#' cases <- as.data.table(cases)
-#' cases <- cases[, .(date, primary = confirm, secondary = shift(confirm, n = 7, type = "lag"))]
-#' cases <- cases[, secondary := frollmean(secondary, 3, align = "right")]
-#' cases <- cases[!is.na(secondary)][, secondary := as.integer(secondary)]
 #' 
-#' # fit model to example data
-#' inc <- estimate_secondary(cases, chains = 2, iter = 1000)
+#' # make some example secondary incidence data
+#' cases <- example_confirmed
+#' cases <- as.data.table(cases)
+#' 
+#' # apply a convolution of a log normal to a vector of observations
+#' weight_cmf <- function(x, ...) {
+#'    set.seed(x[1])
+#'    meanlog <- rnorm(1, 1.6, 0.2)
+#'    sdlog <- rnorm(1, 0.8, 0.1)
+#'    cmf <- cumsum(dlnorm(1:length(x), meanlog, sdlog)) - 
+#'            cumsum(dlnorm(0:(length(x) - 1), meanlog, sdlog))
+#'    conv <- sum(x * rev(cmf), na.rm = TRUE)
+#'    conv <- round(conv, 0)
+#'  return(conv)
+#' }
+#' # roll over observed cases to produce a convolution
+#' cases <- cases[, .(date, primary = confirm, secondary = confirm)]
+#' cases <- cases[, secondary := frollapply(secondary, 15, weight_cmf, align = "right")]
+#' cases <- cases[!is.na(secondary)][, secondary := as.integer(secondary)]
+#' # add a day of the week effect and scale secondary observations at 40% of primary
+#' cases <- cases[lubridate::wday(date) == 1, secondary := round(0.5 * secondary, 0)] 
+#' cases <- cases[, secondary := round(secondary * rnorm(.N, 0.4, 0.025), 0)]
+#' cases <- cases[secondary < 0, secondary := 0]
+#' 
+#' # fit model to example data assuming only a given fraction of primary observations
+#' # become secondary observations
+#' inc <- estimate_secondary(cases[1:100], chains = 2, iter = 1000, 
+#'                           obs = obs_opts(scale = list(mean = 0.2, sd = 0.2)))
 #' plot(inc, primary = TRUE)
 #' \donttest{
 #' # make some example prevalence data
@@ -117,7 +137,7 @@ estimate_secondary <- function(reports,
                          ...)
   
   out <- list()
-  out$predictions <- extract_stan_param(fit, "secondary", CrIs = CrIs)
+  out$predictions <- extract_stan_param(fit, "sim_secondary", CrIs = CrIs)
   out$predictions <- out$predictions[, lapply(.SD, round, 1)]
   out$predictions <- cbind(reports, out$predictions)
   out$data <- data
