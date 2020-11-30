@@ -20,7 +20,9 @@
 #' @param verbose Logical, should model fitting progress be returned. Defaults to
 #' `interactive()`.
 #' @param ... Additional parameters to pass to `rstan::sampling`.
-#' @return 
+#' @return A list containing: `predictions` (a data frame ordered by date with the primary, 
+#' and secondary observations, and a summary of the model estimated secondary observations),
+#' `data` (a list of data used to fit the model), and `fit` (the `stanfit` object).
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams calc_CrIs
@@ -28,6 +30,8 @@
 #' @importFrom lubridate wday
 #' @importFrom data.table as.data.table
 #' @examples
+#' \donttest{
+#' #### Incidence data example ####
 #' #set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # load data.table for manipulation
@@ -59,28 +63,27 @@
 #' 
 #' # fit model to example data assuming only a given fraction of primary observations
 #' # become secondary observations
-#' inc <- estimate_secondary(cases[1:100], chains = 2, iter = 1000, 
+#' inc <- estimate_secondary(cases[1:60], 
 #'                           obs = obs_opts(scale = list(mean = 0.2, sd = 0.2)))
 #' plot(inc, primary = TRUE)
 #' 
 #' # forecast future secondary cases from primary
-#' predictions <- forecast_secondary(inc, cases[101:.N][, value := primary])
-#' plot(predictions, new_obs = cases, from = "2020-06-01")
+#' inc_preds <- forecast_secondary(inc, cases[61:.N][, value := primary])
+#' plot(inc_preds, new_obs = cases, from = "2020-05-01")
 #' 
+#' #### Prevalence data example #### 
 #' 
-#' \donttest{
-#' # prevalence data test
 #' # make some example prevalence data
 #' cases <- example_confirmed
 #' cases <- as.data.table(cases)
 #' cases <- 
 #'   cases[, .(date, primary = confirm, 
-#'                   scaled_primary = confirm * rnorm(.N, 0.25, 0.05))]
+#'                   scaled_primary = confirm * rnorm(.N, 0.4, 0.05))]
 #' cases$secondary <- 0
 #' cases$secondary[1] <- as.integer(cases$scaled_primary[1])
 #' for (i in 2:nrow(cases)) {
 #'   meanlog <- rnorm(1, 1.6, 0.1)
-#'   sdlog <- rnorm(1, 0.8, 0.01)
+#'   sdlog <- rnorm(1, 0.8, 0.05)
 #'   cmf <- cumsum(dlnorm(1:min(i-1,20), meanlog, sdlog)) - 
 #'            cumsum(dlnorm(0:min(19,i-2), meanlog, sdlog))
 #'   reducing_cases <- sum(cases$scaled_primary[(i-1):max(1,i-20)] * cmf)
@@ -93,12 +96,14 @@
 #'                                cases$secondary[i])
 #' }
 #' # fit model to example prevalence data
-#' # here we assume no day of the week effect and a Poisson observation model
-#' # this is motivated by the expected level of auto-correlation in cumulative
-#' prev <- estimate_secondary(cases, secondary = secondary_opts(type = "prevalence"),
+#' prev <- estimate_secondary(cases[1:100], secondary = secondary_opts(type = "prevalence"),
 #'                           obs = obs_opts(week_effect = FALSE, 
 #'                                          scale = list(mean = 0.3, sd = 0.1)))
 #' plot(prev, primary = TRUE)
+#' 
+#' # forecast future secondary cases from primary
+#' prev_preds <- forecast_secondary(prev, cases[101:.N][, value := primary])
+#' plot(prev_preds, new_obs = cases, from = "2020-06-01")
 #' }
 estimate_secondary <- function(reports, 
                                secondary = secondary_opts(),
@@ -278,7 +283,8 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' This function forecasts secondary observations using the output of `estimate_secondary()` and either 
 #' observed primary data or a forecast of primary observations. See the examples of `estimate_secondary()` 
 #' for one use case. It can also be combined with `estimate_infections()` to produce a forecast for a secondary
-#' observation from a forecast of a primary observation.
+#' observation from a forecast of a primary observation. See the examples of `estimate_secondary()` for 
+#' example use cases on synthetic data.
 #' @param estimate An object of class "estimate_secondary" as produced by `estimate_secondary()`.
 #' @param primary A data.frame containing at least `date` and `value` (integer) variables and optionally
 #' `sample`. Used as the primary observation used to forecast the secondary observations. Alternatively,
@@ -290,10 +296,18 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' @param model A compiled stan model as returned by `rstan::stan_model`.
 #' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
 #' samples in the `primary` input when present. If not present the default is to use 1000 samples.
+#' @param all_dates Logical, defaults to FALSE. Should a forecast for all dates and not just those in 
+#' the forecast horizon be returned.
+#' @return A list containing: `predictions` (a data frame ordered by date with the primary, 
+#' and secondary observations, and a summary of the forecast secondary observations. For primary
+#'  observations in the forecast horizon when uncertainty is present the median is used),
+#' `samples` a data frame of forecast secondary observation posterior samples, and `forecast` a
+#' summary of the forecast secondary observation posterior.
 #' @importFrom rstan extract sampling
-#' @importFrom data.table rbindlist merge.data.table as.data.table
+#' @importFrom data.table rbindlist merge.data.table as.data.table setorderv setcolorder
 #' @importFrom lubridate days wday
 #' @importFrom utils tail
+#' @importFrom purrr map
 #' @inheritParams estimate_secondary
 #' @seealso estimate_secondary
 #' @export
@@ -302,8 +316,9 @@ forecast_secondary <- function(estimate,
                                primary_variable = "reported_cases",
                                model = NULL,
                                samples = NULL,
+                               all_dates = FALSE,
                                CrIs = c(0.2, 0.5, 0.9)) {
-  ## deal with input if data frame
+  ## deal with input if data frame 
   if (any(class(primary) %in% "data.frame")) {
     primary <- data.table::as.data.table(primary)
     if (is.null(primary$sample)) {
@@ -312,7 +327,8 @@ forecast_secondary <- function(estimate,
       }
       primary <- primary[, .(date, sample = list(1:samples), value)]
       primary <- primary[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
-    } 
+    }
+    primary <- primary[, .(date, sample, value)]
   }
   if (any(class(primary) %in% "estimate_infections")) {
     primary <- data.table::as.data.table(primary$samples[variable == primary_variable])
@@ -361,7 +377,7 @@ forecast_secondary <- function(estimate,
   # allocate empty parameters
   data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"),
                          n = data$n)
-  
+  data$all_dates <- as.integer(all_dates)
   ## simulate
   sims <- rstan::sampling(object = model,
                           data = data, chains = 1, iter = 1,
@@ -373,7 +389,8 @@ forecast_secondary <- function(estimate,
   samples <- rstan::extract(sims, "sim_secondary")$sim_secondary
   samples <- as.data.table(samples)
   colnames(samples) <- c("iterations", "sample", "time", "value")
-  samples <- samples[, c("iterations", "time") := NULL][, date := rep(tail(dates, data$h), data$n)]
+  samples <- samples[, c("iterations", "time") := NULL]
+  samples <- samples[, date := rep(tail(dates, ifelse(all_dates, data$t, data$h)), data$n)]
   
   # summarise samples
   summarised <- calc_summary_measures(samples, summarise_by = "date",

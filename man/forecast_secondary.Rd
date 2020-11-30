@@ -10,6 +10,7 @@ forecast_secondary(
   primary_variable = "reported_cases",
   model = NULL,
   samples = NULL,
+  all_dates = FALSE,
   CrIs = c(0.2, 0.5, 0.9)
 )
 }
@@ -30,14 +31,25 @@ Only used when primary is of class "estimate_infections".}
 \item{samples}{Numeric, number of posterior samples to simulate from. The default is to use all
 samples in the \code{primary} input when present. If not present the default is to use 1000 samples.}
 
+\item{all_dates}{Logical, defaults to FALSE. Should a forecast for all dates and not just those in
+the forecast horizon be returned.}
+
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
+}
+\value{
+A list containing: \code{predictions} (a data frame ordered by date with the primary,
+and secondary observations, and a summary of the forecast secondary observations. For primary
+observations in the forecast horizon when uncertainty is present the median is used),
+\code{samples} a data frame of forecast secondary observation posterior samples, and \code{forecast} a
+summary of the forecast secondary observation posterior.
 }
 \description{
 \ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
 This function forecasts secondary observations using the output of \code{estimate_secondary()} and either
 observed primary data or a forecast of primary observations. See the examples of \code{estimate_secondary()}
 for one use case. It can also be combined with \code{estimate_infections()} to produce a forecast for a secondary
-observation from a forecast of a primary observation.
+observation from a forecast of a primary observation. See the examples of \code{estimate_secondary()} for
+example use cases on synthetic data.
 }
 \seealso{
 estimate_secondary

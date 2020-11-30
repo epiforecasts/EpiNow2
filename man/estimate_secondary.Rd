@@ -48,7 +48,9 @@ useful for package developers or those developing extensions.}
 \item{...}{Additional parameters to pass to \code{rstan::sampling}.}
 }
 \value{
-
+A list containing: \code{predictions} (a data frame ordered by date with the primary,
+and secondary observations, and a summary of the model estimated secondary observations),
+\code{data} (a list of data used to fit the model), and \code{fit} (the \code{stanfit} object).
 }
 \description{
 \ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
@@ -58,6 +60,8 @@ occupancy. See \code{secondary_opts()} for model structure options. See paramete
 documentation for model defaults and options.
 }
 \examples{
+\donttest{
+#### Incidence data example ####
 #set number of cores to use
 options(mc.cores = ifelse(interactive(), 4, 1))
 # load data.table for manipulation
@@ -89,28 +93,27 @@ cases <- cases[secondary < 0, secondary := 0]
 
 # fit model to example data assuming only a given fraction of primary observations
 # become secondary observations
-inc <- estimate_secondary(cases[1:100], chains = 2, iter = 1000, 
+inc <- estimate_secondary(cases[1:60], 
                           obs = obs_opts(scale = list(mean = 0.2, sd = 0.2)))
 plot(inc, primary = TRUE)
 
 # forecast future secondary cases from primary
-predictions <- forecast_secondary(inc, cases[101:.N][, value := primary])
-plot(predictions, new_obs = cases, from = "2020-06-01")
+inc_preds <- forecast_secondary(inc, cases[61:.N][, value := primary])
+plot(inc_preds, new_obs = cases, from = "2020-05-01")
 
+#### Prevalence data example #### 
 
-\donttest{
-# prevalence data test
 # make some example prevalence data
 cases <- example_confirmed
 cases <- as.data.table(cases)
 cases <- 
   cases[, .(date, primary = confirm, 
-                  scaled_primary = confirm * rnorm(.N, 0.25, 0.05))]
+                  scaled_primary = confirm * rnorm(.N, 0.4, 0.05))]
 cases$secondary <- 0
 cases$secondary[1] <- as.integer(cases$scaled_primary[1])
 for (i in 2:nrow(cases)) {
   meanlog <- rnorm(1, 1.6, 0.1)
-  sdlog <- rnorm(1, 0.8, 0.01)
+  sdlog <- rnorm(1, 0.8, 0.05)
   cmf <- cumsum(dlnorm(1:min(i-1,20), meanlog, sdlog)) - 
            cumsum(dlnorm(0:min(19,i-2), meanlog, sdlog))
   reducing_cases <- sum(cases$scaled_primary[(i-1):max(1,i-20)] * cmf)
@@ -123,11 +126,13 @@ for (i in 2:nrow(cases)) {
                                cases$secondary[i])
 }
 # fit model to example prevalence data
-# here we assume no day of the week effect and a Poisson observation model
-# this is motivated by the expected level of auto-correlation in cumulative
-prev <- estimate_secondary(cases, secondary = secondary_opts(type = "prevalence"),
+prev <- estimate_secondary(cases[1:100], secondary = secondary_opts(type = "prevalence"),
                           obs = obs_opts(week_effect = FALSE, 
                                          scale = list(mean = 0.3, sd = 0.1)))
 plot(prev, primary = TRUE)
+
+# forecast future secondary cases from primary
+prev_preds <- forecast_secondary(prev, cases[101:.N][, value := primary])
+plot(prev_preds, new_obs = cases, from = "2020-06-01")
 }
 }

@@ -23,7 +23,7 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
   for (i in 1:t) {
     // update cumulative target
     if (cumulative && i > 1) {
-      if (t > predict) {
+      if (i > predict) {
         secondary_reports[i] = secondary_reports[i - 1];       
       }else{
         secondary_reports[i] = obs[i - 1];

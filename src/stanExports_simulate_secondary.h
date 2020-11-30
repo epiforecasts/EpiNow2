@@ -49,19 +49,19 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(239, 0, "start", "functions/secondary.stan");
     reader.add_event(293, 54, "end", "functions/secondary.stan");
     reader.add_event(293, 5, "restart", "model_simulate_secondary");
-    reader.add_event(303, 15, "include", "data/secondary.stan");
-    reader.add_event(303, 0, "start", "data/secondary.stan");
-    reader.add_event(309, 6, "end", "data/secondary.stan");
-    reader.add_event(309, 16, "restart", "model_simulate_secondary");
-    reader.add_event(310, 17, "include", "data/simulation_delays.stan");
-    reader.add_event(310, 0, "start", "data/simulation_delays.stan");
-    reader.add_event(314, 4, "end", "data/simulation_delays.stan");
-    reader.add_event(314, 18, "restart", "model_simulate_secondary");
-    reader.add_event(315, 19, "include", "data/simulation_observation_model.stan");
-    reader.add_event(315, 0, "start", "data/simulation_observation_model.stan");
-    reader.add_event(322, 7, "end", "data/simulation_observation_model.stan");
-    reader.add_event(322, 20, "restart", "model_simulate_secondary");
-    reader.add_event(344, 40, "end", "model_simulate_secondary");
+    reader.add_event(304, 16, "include", "data/secondary.stan");
+    reader.add_event(304, 0, "start", "data/secondary.stan");
+    reader.add_event(310, 6, "end", "data/secondary.stan");
+    reader.add_event(310, 17, "restart", "model_simulate_secondary");
+    reader.add_event(311, 18, "include", "data/simulation_delays.stan");
+    reader.add_event(311, 0, "start", "data/simulation_delays.stan");
+    reader.add_event(315, 4, "end", "data/simulation_delays.stan");
+    reader.add_event(315, 19, "restart", "model_simulate_secondary");
+    reader.add_event(316, 20, "include", "data/simulation_observation_model.stan");
+    reader.add_event(316, 0, "start", "data/simulation_observation_model.stan");
+    reader.add_event(323, 7, "end", "data/simulation_observation_model.stan");
+    reader.add_event(323, 21, "restart", "model_simulate_secondary");
+    reader.add_event(345, 41, "end", "model_simulate_secondary");
     return reader;
 }
 template <typename T1__, typename T2__>
@@ -1102,7 +1102,7 @@ calculate_secondary(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& reports,
             current_statement_begin__ = 264;
             if (as_bool((primitive_value(cumulative) && primitive_value(logical_gt(i, 1))))) {
                 current_statement_begin__ = 265;
-                if (as_bool(logical_gt(t, predict))) {
+                if (as_bool(logical_gt(i, predict))) {
                     current_statement_begin__ = 266;
                     stan::model::assign(secondary_reports, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
@@ -1198,6 +1198,7 @@ private:
         int n;
         int t;
         int h;
+        int all_dates;
         std::vector<int> obs;
         matrix_d primary;
         int seeding_time;
@@ -1265,7 +1266,13 @@ public:
             vals_i__ = context__.vals_i("h");
             pos__ = 0;
             h = vals_i__[pos__++];
-            current_statement_begin__ = 302;
+            current_statement_begin__ = 301;
+            context__.validate_dims("data initialization", "all_dates", "int", context__.to_vec());
+            all_dates = int(0);
+            vals_i__ = context__.vals_i("all_dates");
+            pos__ = 0;
+            all_dates = vals_i__[pos__++];
+            current_statement_begin__ = 303;
             validate_non_negative_index("obs", "(t - h)", (t - h));
             context__.validate_dims("data initialization", "obs", "int", context__.to_vec((t - h)));
             obs = std::vector<int>((t - h), int(0));
@@ -1279,7 +1286,7 @@ public:
             for (size_t i_0__ = 0; i_0__ < obs_i_0_max__; ++i_0__) {
                 check_greater_or_equal(function__, "obs[i_0__]", obs[i_0__], 0);
             }
-            current_statement_begin__ = 303;
+            current_statement_begin__ = 304;
             validate_non_negative_index("primary", "n", n);
             validate_non_negative_index("primary", "t", t);
             context__.validate_dims("data initialization", "primary", "matrix_d", context__.to_vec(n,t));
@@ -1293,49 +1300,49 @@ public:
                     primary(j_1__, j_2__) = vals_r__[pos__++];
                 }
             }
-            current_statement_begin__ = 304;
+            current_statement_begin__ = 305;
             context__.validate_dims("data initialization", "seeding_time", "int", context__.to_vec());
             seeding_time = int(0);
             vals_i__ = context__.vals_i("seeding_time");
             pos__ = 0;
             seeding_time = vals_i__[pos__++];
-            current_statement_begin__ = 305;
+            current_statement_begin__ = 306;
             context__.validate_dims("data initialization", "cumulative", "int", context__.to_vec());
             cumulative = int(0);
             vals_i__ = context__.vals_i("cumulative");
             pos__ = 0;
             cumulative = vals_i__[pos__++];
-            current_statement_begin__ = 306;
+            current_statement_begin__ = 307;
             context__.validate_dims("data initialization", "historic", "int", context__.to_vec());
             historic = int(0);
             vals_i__ = context__.vals_i("historic");
             pos__ = 0;
             historic = vals_i__[pos__++];
-            current_statement_begin__ = 307;
+            current_statement_begin__ = 308;
             context__.validate_dims("data initialization", "primary_hist_additive", "int", context__.to_vec());
             primary_hist_additive = int(0);
             vals_i__ = context__.vals_i("primary_hist_additive");
             pos__ = 0;
             primary_hist_additive = vals_i__[pos__++];
-            current_statement_begin__ = 308;
+            current_statement_begin__ = 309;
             context__.validate_dims("data initialization", "current", "int", context__.to_vec());
             current = int(0);
             vals_i__ = context__.vals_i("current");
             pos__ = 0;
             current = vals_i__[pos__++];
-            current_statement_begin__ = 309;
+            current_statement_begin__ = 310;
             context__.validate_dims("data initialization", "primary_current_additive", "int", context__.to_vec());
             primary_current_additive = int(0);
             vals_i__ = context__.vals_i("primary_current_additive");
             pos__ = 0;
             primary_current_additive = vals_i__[pos__++];
-            current_statement_begin__ = 311;
+            current_statement_begin__ = 312;
             context__.validate_dims("data initialization", "delays", "int", context__.to_vec());
             delays = int(0);
             vals_i__ = context__.vals_i("delays");
             pos__ = 0;
             delays = vals_i__[pos__++];
-            current_statement_begin__ = 312;
+            current_statement_begin__ = 313;
             validate_non_negative_index("delay_mean", "n", n);
             validate_non_negative_index("delay_mean", "delays", delays);
             context__.validate_dims("data initialization", "delay_mean", "double", context__.to_vec(n,delays));
@@ -1349,7 +1356,7 @@ public:
                     delay_mean[k_0__][k_1__] = vals_r__[pos__++];
                 }
             }
-            current_statement_begin__ = 313;
+            current_statement_begin__ = 314;
             validate_non_negative_index("delay_sd", "n", n);
             validate_non_negative_index("delay_sd", "delays", delays);
             context__.validate_dims("data initialization", "delay_sd", "double", context__.to_vec(n,delays));
@@ -1363,7 +1370,7 @@ public:
                     delay_sd[k_0__][k_1__] = vals_r__[pos__++];
                 }
             }
-            current_statement_begin__ = 314;
+            current_statement_begin__ = 315;
             validate_non_negative_index("max_delay", "delays", delays);
             context__.validate_dims("data initialization", "max_delay", "int", context__.to_vec(delays));
             max_delay = std::vector<int>(delays, int(0));
@@ -1373,7 +1380,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < max_delay_k_0_max__; ++k_0__) {
                 max_delay[k_0__] = vals_i__[pos__++];
             }
-            current_statement_begin__ = 316;
+            current_statement_begin__ = 317;
             validate_non_negative_index("day_of_week", "(t - seeding_time)", (t - seeding_time));
             context__.validate_dims("data initialization", "day_of_week", "int", context__.to_vec((t - seeding_time)));
             day_of_week = std::vector<int>((t - seeding_time), int(0));
@@ -1383,13 +1390,13 @@ public:
             for (size_t k_0__ = 0; k_0__ < day_of_week_k_0_max__; ++k_0__) {
                 day_of_week[k_0__] = vals_i__[pos__++];
             }
-            current_statement_begin__ = 317;
+            current_statement_begin__ = 318;
             context__.validate_dims("data initialization", "week_effect", "int", context__.to_vec());
             week_effect = int(0);
             vals_i__ = context__.vals_i("week_effect");
             pos__ = 0;
             week_effect = vals_i__[pos__++];
-            current_statement_begin__ = 318;
+            current_statement_begin__ = 319;
             validate_non_negative_index("day_of_week_simplex", "n", n);
             validate_non_negative_index("day_of_week_simplex", "(week_effect ? 7 : 1 )", (week_effect ? 7 : 1 ));
             context__.validate_dims("data initialization", "day_of_week_simplex", "double", context__.to_vec(n,(week_effect ? 7 : 1 )));
@@ -1410,13 +1417,13 @@ public:
                     check_greater_or_equal(function__, "day_of_week_simplex[i_0__][i_1__]", day_of_week_simplex[i_0__][i_1__], 0);
                 }
             }
-            current_statement_begin__ = 319;
+            current_statement_begin__ = 320;
             context__.validate_dims("data initialization", "obs_scale", "int", context__.to_vec());
             obs_scale = int(0);
             vals_i__ = context__.vals_i("obs_scale");
             pos__ = 0;
             obs_scale = vals_i__[pos__++];
-            current_statement_begin__ = 320;
+            current_statement_begin__ = 321;
             validate_non_negative_index("frac_obs", "n", n);
             validate_non_negative_index("frac_obs", "obs_scale", obs_scale);
             context__.validate_dims("data initialization", "frac_obs", "double", context__.to_vec(n,obs_scale));
@@ -1430,13 +1437,13 @@ public:
                     frac_obs[k_0__][k_1__] = vals_r__[pos__++];
                 }
             }
-            current_statement_begin__ = 321;
+            current_statement_begin__ = 322;
             context__.validate_dims("data initialization", "model_type", "int", context__.to_vec());
             model_type = int(0);
             vals_i__ = context__.vals_i("model_type");
             pos__ = 0;
             model_type = vals_i__[pos__++];
-            current_statement_begin__ = 322;
+            current_statement_begin__ = 323;
             validate_non_negative_index("rep_phi", "n", n);
             validate_non_negative_index("rep_phi", "model_type", model_type);
             context__.validate_dims("data initialization", "rep_phi", "double", context__.to_vec(n,model_type));
@@ -1533,7 +1540,7 @@ public:
         std::vector<size_t> dims__;
         dims__.resize(0);
         dims__.push_back(n);
-        dims__.push_back(h);
+        dims__.push_back((all_dates ? t : h ));
         dimss__.push_back(dims__);
     }
     template <typename RNG>
@@ -1560,38 +1567,38 @@ public:
             if (!include_gqs__ && !include_tparams__) return;
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 326;
+            current_statement_begin__ = 327;
             validate_non_negative_index("sim_secondary", "n", n);
-            validate_non_negative_index("sim_secondary", "h", h);
-            std::vector<std::vector<int> > sim_secondary(n, std::vector<int>(h, int(0)));
+            validate_non_negative_index("sim_secondary", "(all_dates ? t : h )", (all_dates ? t : h ));
+            std::vector<std::vector<int> > sim_secondary(n, std::vector<int>((all_dates ? t : h ), int(0)));
             stan::math::fill(sim_secondary, std::numeric_limits<int>::min());
             // generated quantities statements
-            current_statement_begin__ = 327;
+            current_statement_begin__ = 328;
             for (int i = 1; i <= n; ++i) {
                 {
-                current_statement_begin__ = 328;
+                current_statement_begin__ = 329;
                 validate_non_negative_index("secondary", "t", t);
                 Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> secondary(t);
                 stan::math::initialize(secondary, DUMMY_VAR__);
                 stan::math::fill(secondary, DUMMY_VAR__);
-                current_statement_begin__ = 330;
-                stan::math::assign(secondary, calculate_secondary(to_vector(get_base1(primary, i, "primary", 1)), obs, get_base1(frac_obs, i, "frac_obs", 1), get_base1(delay_mean, i, "delay_mean", 1), get_base1(delay_sd, i, "delay_sd", 1), max_delay, cumulative, historic, primary_hist_additive, current, primary_current_additive, (t - h), pstream__));
-                current_statement_begin__ = 336;
+                current_statement_begin__ = 331;
+                stan::math::assign(secondary, calculate_secondary(to_vector(get_base1(primary, i, "primary", 1)), obs, get_base1(frac_obs, i, "frac_obs", 1), get_base1(delay_mean, i, "delay_mean", 1), get_base1(delay_sd, i, "delay_sd", 1), max_delay, cumulative, historic, primary_hist_additive, current, primary_current_additive, ((t - h) + 1), pstream__));
+                current_statement_begin__ = 337;
                 if (as_bool(week_effect)) {
-                    current_statement_begin__ = 337;
+                    current_statement_begin__ = 338;
                     stan::math::assign(secondary, day_of_week_effect(secondary, day_of_week, to_vector(get_base1(day_of_week_simplex, i, "day_of_week_simplex", 1)), pstream__));
                 }
-                current_statement_begin__ = 340;
+                current_statement_begin__ = 341;
                 stan::model::assign(sim_secondary, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                            report_rng(tail(secondary, h), get_base1(rep_phi, i, "rep_phi", 1), model_type, base_rng__, pstream__), 
+                            report_rng(tail(secondary, (all_dates ? t : h )), get_base1(rep_phi, i, "rep_phi", 1), model_type, base_rng__, pstream__), 
                             "assigning variable sim_secondary");
                 }
             }
             // validate, write generated quantities
-            current_statement_begin__ = 326;
+            current_statement_begin__ = 327;
             size_t sim_secondary_k_0_max__ = n;
-            size_t sim_secondary_k_1_max__ = h;
+            size_t sim_secondary_k_1_max__ = (all_dates ? t : h );
             for (size_t k_1__ = 0; k_1__ < sim_secondary_k_1_max__; ++k_1__) {
                 for (size_t k_0__ = 0; k_0__ < sim_secondary_k_0_max__; ++k_0__) {
                     vars__.push_back(sim_secondary[k_0__][k_1__]);
@@ -1632,7 +1639,7 @@ public:
         }
         if (!include_gqs__) return;
         size_t sim_secondary_k_0_max__ = n;
-        size_t sim_secondary_k_1_max__ = h;
+        size_t sim_secondary_k_1_max__ = (all_dates ? t : h );
         for (size_t k_1__ = 0; k_1__ < sim_secondary_k_1_max__; ++k_1__) {
             for (size_t k_0__ = 0; k_0__ < sim_secondary_k_0_max__; ++k_0__) {
                 param_name_stream__.str(std::string());
@@ -1650,7 +1657,7 @@ public:
         }
         if (!include_gqs__) return;
         size_t sim_secondary_k_0_max__ = n;
-        size_t sim_secondary_k_1_max__ = h;
+        size_t sim_secondary_k_1_max__ = (all_dates ? t : h );
         for (size_t k_1__ = 0; k_1__ < sim_secondary_k_1_max__; ++k_1__) {
             for (size_t k_0__ = 0; k_0__ < sim_secondary_k_0_max__; ++k_0__) {
                 param_name_stream__.str(std::string());

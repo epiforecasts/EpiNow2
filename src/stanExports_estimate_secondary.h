@@ -1102,7 +1102,7 @@ calculate_secondary(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& reports,
             current_statement_begin__ = 264;
             if (as_bool((primitive_value(cumulative) && primitive_value(logical_gt(i, 1))))) {
                 current_statement_begin__ = 265;
-                if (as_bool(logical_gt(t, predict))) {
+                if (as_bool(logical_gt(i, predict))) {
                     current_statement_begin__ = 266;
                     stan::model::assign(secondary_reports, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
