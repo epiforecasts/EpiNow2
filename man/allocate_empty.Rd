@@ -4,13 +4,15 @@
 \alias{allocate_empty}
 \title{Allocate Empty Parameters to a List}
 \usage{
-allocate_empty(data, params)
+allocate_empty(data, params, n = 0)
 }
 \arguments{
 \item{data}{A list of parameters}
 
 \item{params}{A character vector of parameters to allocate to
 empty if missing.}
+
+\item{n}{Numeric, number of samples to assign an empty array}
 }
 \value{
 A list of parameters some allocated to be empty

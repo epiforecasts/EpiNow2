@@ -15,26 +15,11 @@ data {
   int seeding_time; // time period used for seeding and not observed
   int future_time; // fixed future time
   // Rt
-  real initial_infections[seeding_time ? n : 0, 1]; // initial logged infections
-  real initial_growth[seeding_time > 1 ? n : 0, 1]; //initial growth
-  real<lower = 0> gt_mean[n, 1];  // mean of generation time
-  real<lower = 0> gt_sd[n, 1];   // sd of generation time
-  int max_gt;                    // maximum generation time
-  matrix[n, t - seeding_time] R; // reproduction number
-  int pop;                       // susceptible population
+#include data/simulation_rt.stan
   // delay from infection to report
-  int delays;                           // no. of delay distributions
-  real delay_mean[n, delays];           // mean of delays
-  real delay_sd[n, delays];             // sd of delays
-  int max_delay[delays];                // maximum delay
+#include data/simulation_delays.stan
   // observation model
-  int day_of_week[t - seeding_time]; // day of the week indicator (1 - 7)
-  int week_effect;                   // should a day of the week effect be estimated
-  real<lower = 0> day_of_week_simplex[n, 7];
-  int obs_scale; 
-  real frac_obs[obs_scale ? n : 0, obs_scale];
-  int model_type;
-  real<lower = 0> rep_phi[n, model_type];  // overdispersion of the reporting process
+#include data/simulation_observation_model.stan
 }
 
 generated quantities {

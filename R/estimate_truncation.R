@@ -144,21 +144,10 @@ estimate_truncation <- function(obs, max_truncation = 10,
     max = max_truncation
   )
   
-  # generate symmetric CrIs
-  CrIs <- CrIs[order(CrIs)]
-  sym_CrIs <- c(0.5, 0.5 - CrIs / 2, 0.5 + CrIs / 2)
-  sym_CrIs <- sym_CrIs[order(sym_CrIs)]
-  CrIs <- round(100 * CrIs, 0)
-  CrIs <- c(paste0("lower_", CrIs), "median", paste0("upper_", CrIs))
-  customised_summary <- function(par) {
-    summary <- rstan::summary(fit, pars = par, probs = sym_CrIs)$summary
-    colnames(summary) <- c("mean", "se_mean", "sd", CrIs, "n_eff", "Rhat")
-    return(summary)
-  }
   # summarise reconstructed observations
-  recon_obs <- customised_summary("recon_obs")
-  recon_obs <- data.table::as.data.table(recon_obs, 
-                                         keep.rownames = "id")
+  recon_obs <- extract_stan_param(fit, "recon_obs", CrIs = CrIs,
+                                  var_names = TRUE)
+  recon_obs <- recon_obs[, id := variable][, variable := NULL]
   recon_obs <- recon_obs[, dataset := 1:.N][, 
                            dataset := dataset %% data$obs_sets][
                            dataset == 0, dataset := data$obs_sets]
@@ -186,9 +175,8 @@ estimate_truncation <- function(obs, max_truncation = 10,
   out$obs <- data.table::rbindlist(out$obs)
   out$last_obs <- last_obs
   # summarise estimated cmf of the truncation distribution
-  out$cmf <- customised_summary("cmf")
+  out$cmf <- extract_stan_param(fit, "cmf", CrIs = CrIs)
   out$cmf <- data.table::as.data.table(out$cmf)[, index := .N:1]
-  out$cmf <- out$cmf[, c("n_eff", "Rhat") := NULL]
   data.table::setcolorder(out$cmf, "index")
   out$data <- data
   out$fit <- fit
