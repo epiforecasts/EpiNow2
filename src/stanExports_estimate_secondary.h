@@ -49,19 +49,19 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(239, 0, "start", "functions/secondary.stan");
     reader.add_event(293, 54, "end", "functions/secondary.stan");
     reader.add_event(293, 5, "restart", "model_estimate_secondary");
-    reader.add_event(299, 11, "include", "data/secondary.stan");
-    reader.add_event(299, 0, "start", "data/secondary.stan");
-    reader.add_event(305, 6, "end", "data/secondary.stan");
-    reader.add_event(305, 12, "restart", "model_estimate_secondary");
-    reader.add_event(305, 12, "include", "data/delays.stan");
-    reader.add_event(305, 0, "start", "data/delays.stan");
-    reader.add_event(311, 6, "end", "data/delays.stan");
-    reader.add_event(311, 13, "restart", "model_estimate_secondary");
-    reader.add_event(311, 13, "include", "data/observation_model.stan");
-    reader.add_event(311, 0, "start", "data/observation_model.stan");
-    reader.add_event(324, 13, "end", "data/observation_model.stan");
-    reader.add_event(324, 14, "restart", "model_estimate_secondary");
-    reader.add_event(376, 64, "end", "model_estimate_secondary");
+    reader.add_event(300, 12, "include", "data/secondary.stan");
+    reader.add_event(300, 0, "start", "data/secondary.stan");
+    reader.add_event(306, 6, "end", "data/secondary.stan");
+    reader.add_event(306, 13, "restart", "model_estimate_secondary");
+    reader.add_event(306, 13, "include", "data/delays.stan");
+    reader.add_event(306, 0, "start", "data/delays.stan");
+    reader.add_event(312, 6, "end", "data/delays.stan");
+    reader.add_event(312, 14, "restart", "model_estimate_secondary");
+    reader.add_event(312, 14, "include", "data/observation_model.stan");
+    reader.add_event(312, 0, "start", "data/observation_model.stan");
+    reader.add_event(325, 13, "end", "data/observation_model.stan");
+    reader.add_event(325, 15, "restart", "model_estimate_secondary");
+    reader.add_event(377, 65, "end", "model_estimate_secondary");
     return reader;
 }
 template <typename T1__, typename T2__>
@@ -1198,6 +1198,7 @@ private:
         int t;
         std::vector<int> obs;
         vector_d primary;
+        int burn_in;
         int seeding_time;
         int cumulative;
         int historic;
@@ -1284,48 +1285,54 @@ public:
                 primary(j_1__) = vals_r__[pos__++];
             }
             current_statement_begin__ = 300;
+            context__.validate_dims("data initialization", "burn_in", "int", context__.to_vec());
+            burn_in = int(0);
+            vals_i__ = context__.vals_i("burn_in");
+            pos__ = 0;
+            burn_in = vals_i__[pos__++];
+            current_statement_begin__ = 301;
             context__.validate_dims("data initialization", "seeding_time", "int", context__.to_vec());
             seeding_time = int(0);
             vals_i__ = context__.vals_i("seeding_time");
             pos__ = 0;
             seeding_time = vals_i__[pos__++];
-            current_statement_begin__ = 301;
+            current_statement_begin__ = 302;
             context__.validate_dims("data initialization", "cumulative", "int", context__.to_vec());
             cumulative = int(0);
             vals_i__ = context__.vals_i("cumulative");
             pos__ = 0;
             cumulative = vals_i__[pos__++];
-            current_statement_begin__ = 302;
+            current_statement_begin__ = 303;
             context__.validate_dims("data initialization", "historic", "int", context__.to_vec());
             historic = int(0);
             vals_i__ = context__.vals_i("historic");
             pos__ = 0;
             historic = vals_i__[pos__++];
-            current_statement_begin__ = 303;
+            current_statement_begin__ = 304;
             context__.validate_dims("data initialization", "primary_hist_additive", "int", context__.to_vec());
             primary_hist_additive = int(0);
             vals_i__ = context__.vals_i("primary_hist_additive");
             pos__ = 0;
             primary_hist_additive = vals_i__[pos__++];
-            current_statement_begin__ = 304;
+            current_statement_begin__ = 305;
             context__.validate_dims("data initialization", "current", "int", context__.to_vec());
             current = int(0);
             vals_i__ = context__.vals_i("current");
             pos__ = 0;
             current = vals_i__[pos__++];
-            current_statement_begin__ = 305;
+            current_statement_begin__ = 306;
             context__.validate_dims("data initialization", "primary_current_additive", "int", context__.to_vec());
             primary_current_additive = int(0);
             vals_i__ = context__.vals_i("primary_current_additive");
             pos__ = 0;
             primary_current_additive = vals_i__[pos__++];
-            current_statement_begin__ = 306;
+            current_statement_begin__ = 307;
             context__.validate_dims("data initialization", "delays", "int", context__.to_vec());
             delays = int(0);
             vals_i__ = context__.vals_i("delays");
             pos__ = 0;
             delays = vals_i__[pos__++];
-            current_statement_begin__ = 307;
+            current_statement_begin__ = 308;
             validate_non_negative_index("delay_mean_sd", "delays", delays);
             context__.validate_dims("data initialization", "delay_mean_sd", "double", context__.to_vec(delays));
             delay_mean_sd = std::vector<double>(delays, double(0));
@@ -1335,7 +1342,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < delay_mean_sd_k_0_max__; ++k_0__) {
                 delay_mean_sd[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 308;
+            current_statement_begin__ = 309;
             validate_non_negative_index("delay_mean_mean", "delays", delays);
             context__.validate_dims("data initialization", "delay_mean_mean", "double", context__.to_vec(delays));
             delay_mean_mean = std::vector<double>(delays, double(0));
@@ -1345,7 +1352,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < delay_mean_mean_k_0_max__; ++k_0__) {
                 delay_mean_mean[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 309;
+            current_statement_begin__ = 310;
             validate_non_negative_index("delay_sd_mean", "delays", delays);
             context__.validate_dims("data initialization", "delay_sd_mean", "double", context__.to_vec(delays));
             delay_sd_mean = std::vector<double>(delays, double(0));
@@ -1355,7 +1362,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < delay_sd_mean_k_0_max__; ++k_0__) {
                 delay_sd_mean[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 310;
+            current_statement_begin__ = 311;
             validate_non_negative_index("delay_sd_sd", "delays", delays);
             context__.validate_dims("data initialization", "delay_sd_sd", "double", context__.to_vec(delays));
             delay_sd_sd = std::vector<double>(delays, double(0));
@@ -1365,7 +1372,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < delay_sd_sd_k_0_max__; ++k_0__) {
                 delay_sd_sd[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 311;
+            current_statement_begin__ = 312;
             validate_non_negative_index("max_delay", "delays", delays);
             context__.validate_dims("data initialization", "max_delay", "int", context__.to_vec(delays));
             max_delay = std::vector<int>(delays, int(0));
@@ -1375,7 +1382,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < max_delay_k_0_max__; ++k_0__) {
                 max_delay[k_0__] = vals_i__[pos__++];
             }
-            current_statement_begin__ = 312;
+            current_statement_begin__ = 313;
             validate_non_negative_index("day_of_week", "(t - seeding_time)", (t - seeding_time));
             context__.validate_dims("data initialization", "day_of_week", "int", context__.to_vec((t - seeding_time)));
             day_of_week = std::vector<int>((t - seeding_time), int(0));
@@ -1385,25 +1392,25 @@ public:
             for (size_t k_0__ = 0; k_0__ < day_of_week_k_0_max__; ++k_0__) {
                 day_of_week[k_0__] = vals_i__[pos__++];
             }
-            current_statement_begin__ = 313;
+            current_statement_begin__ = 314;
             context__.validate_dims("data initialization", "model_type", "int", context__.to_vec());
             model_type = int(0);
             vals_i__ = context__.vals_i("model_type");
             pos__ = 0;
             model_type = vals_i__[pos__++];
-            current_statement_begin__ = 314;
+            current_statement_begin__ = 315;
             context__.validate_dims("data initialization", "week_effect", "int", context__.to_vec());
             week_effect = int(0);
             vals_i__ = context__.vals_i("week_effect");
             pos__ = 0;
             week_effect = vals_i__[pos__++];
-            current_statement_begin__ = 315;
+            current_statement_begin__ = 316;
             context__.validate_dims("data initialization", "truncation", "int", context__.to_vec());
             truncation = int(0);
             vals_i__ = context__.vals_i("truncation");
             pos__ = 0;
             truncation = vals_i__[pos__++];
-            current_statement_begin__ = 316;
+            current_statement_begin__ = 317;
             validate_non_negative_index("trunc_mean_mean", "truncation", truncation);
             context__.validate_dims("data initialization", "trunc_mean_mean", "double", context__.to_vec(truncation));
             trunc_mean_mean = std::vector<double>(truncation, double(0));
@@ -1413,7 +1420,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < trunc_mean_mean_k_0_max__; ++k_0__) {
                 trunc_mean_mean[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 317;
+            current_statement_begin__ = 318;
             validate_non_negative_index("trunc_mean_sd", "truncation", truncation);
             context__.validate_dims("data initialization", "trunc_mean_sd", "double", context__.to_vec(truncation));
             trunc_mean_sd = std::vector<double>(truncation, double(0));
@@ -1423,7 +1430,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < trunc_mean_sd_k_0_max__; ++k_0__) {
                 trunc_mean_sd[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 318;
+            current_statement_begin__ = 319;
             validate_non_negative_index("trunc_sd_mean", "truncation", truncation);
             context__.validate_dims("data initialization", "trunc_sd_mean", "double", context__.to_vec(truncation));
             trunc_sd_mean = std::vector<double>(truncation, double(0));
@@ -1433,7 +1440,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < trunc_sd_mean_k_0_max__; ++k_0__) {
                 trunc_sd_mean[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 319;
+            current_statement_begin__ = 320;
             validate_non_negative_index("trunc_sd_sd", "truncation", truncation);
             context__.validate_dims("data initialization", "trunc_sd_sd", "double", context__.to_vec(truncation));
             trunc_sd_sd = std::vector<double>(truncation, double(0));
@@ -1443,7 +1450,7 @@ public:
             for (size_t k_0__ = 0; k_0__ < trunc_sd_sd_k_0_max__; ++k_0__) {
                 trunc_sd_sd[k_0__] = vals_r__[pos__++];
             }
-            current_statement_begin__ = 320;
+            current_statement_begin__ = 321;
             validate_non_negative_index("max_truncation", "truncation", truncation);
             context__.validate_dims("data initialization", "max_truncation", "int", context__.to_vec(truncation));
             max_truncation = std::vector<int>(truncation, int(0));
@@ -1453,25 +1460,25 @@ public:
             for (size_t k_0__ = 0; k_0__ < max_truncation_k_0_max__; ++k_0__) {
                 max_truncation[k_0__] = vals_i__[pos__++];
             }
-            current_statement_begin__ = 321;
+            current_statement_begin__ = 322;
             context__.validate_dims("data initialization", "obs_scale", "int", context__.to_vec());
             obs_scale = int(0);
             vals_i__ = context__.vals_i("obs_scale");
             pos__ = 0;
             obs_scale = vals_i__[pos__++];
-            current_statement_begin__ = 322;
+            current_statement_begin__ = 323;
             context__.validate_dims("data initialization", "obs_scale_mean", "double", context__.to_vec());
             obs_scale_mean = double(0);
             vals_r__ = context__.vals_r("obs_scale_mean");
             pos__ = 0;
             obs_scale_mean = vals_r__[pos__++];
-            current_statement_begin__ = 323;
+            current_statement_begin__ = 324;
             context__.validate_dims("data initialization", "obs_scale_sd", "double", context__.to_vec());
             obs_scale_sd = double(0);
             vals_r__ = context__.vals_r("obs_scale_sd");
             pos__ = 0;
             obs_scale_sd = vals_r__[pos__++];
-            current_statement_begin__ = 324;
+            current_statement_begin__ = 325;
             context__.validate_dims("data initialization", "obs_weight", "double", context__.to_vec());
             obs_weight = double(0);
             vals_r__ = context__.vals_r("obs_weight");
@@ -1483,25 +1490,25 @@ public:
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 329;
+            current_statement_begin__ = 330;
             validate_non_negative_index("delay_mean", "delays", delays);
             num_params_r__ += (1 * delays);
-            current_statement_begin__ = 330;
+            current_statement_begin__ = 331;
             validate_non_negative_index("delay_sd", "delays", delays);
             num_params_r__ += (1 * delays);
-            current_statement_begin__ = 331;
+            current_statement_begin__ = 332;
             validate_non_negative_index("day_of_week_simplex", "(week_effect ? 7 : 1 )", (week_effect ? 7 : 1 ));
             num_params_r__ += ((week_effect ? 7 : 1 ) - 1);
-            current_statement_begin__ = 332;
+            current_statement_begin__ = 333;
             validate_non_negative_index("frac_obs", "obs_scale", obs_scale);
             num_params_r__ += (1 * obs_scale);
-            current_statement_begin__ = 333;
+            current_statement_begin__ = 334;
             validate_non_negative_index("truncation_mean", "truncation", truncation);
             num_params_r__ += (1 * truncation);
-            current_statement_begin__ = 334;
+            current_statement_begin__ = 335;
             validate_non_negative_index("truncation_sd", "truncation", truncation);
             num_params_r__ += (1 * truncation);
-            current_statement_begin__ = 335;
+            current_statement_begin__ = 336;
             validate_non_negative_index("rep_phi", "model_type", model_type);
             num_params_r__ += (1 * model_type);
         } catch (const std::exception& e) {
@@ -1521,7 +1528,7 @@ public:
         (void) pos__; // dummy call to supress warning
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
-        current_statement_begin__ = 329;
+        current_statement_begin__ = 330;
         if (!(context__.contains_r("delay_mean")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable delay_mean missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("delay_mean");
@@ -1541,7 +1548,7 @@ public:
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable delay_mean: ") + e.what()), current_statement_begin__, prog_reader__());
             }
         }
-        current_statement_begin__ = 330;
+        current_statement_begin__ = 331;
         if (!(context__.contains_r("delay_sd")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable delay_sd missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("delay_sd");
@@ -1561,7 +1568,7 @@ public:
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable delay_sd: ") + e.what()), current_statement_begin__, prog_reader__());
             }
         }
-        current_statement_begin__ = 331;
+        current_statement_begin__ = 332;
         if (!(context__.contains_r("day_of_week_simplex")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable day_of_week_simplex missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("day_of_week_simplex");
@@ -1578,7 +1585,7 @@ public:
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable day_of_week_simplex: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 332;
+        current_statement_begin__ = 333;
         if (!(context__.contains_r("frac_obs")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable frac_obs missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("frac_obs");
@@ -1598,7 +1605,7 @@ public:
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable frac_obs: ") + e.what()), current_statement_begin__, prog_reader__());
             }
         }
-        current_statement_begin__ = 333;
+        current_statement_begin__ = 334;
         if (!(context__.contains_r("truncation_mean")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable truncation_mean missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("truncation_mean");
@@ -1618,7 +1625,7 @@ public:
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable truncation_mean: ") + e.what()), current_statement_begin__, prog_reader__());
             }
         }
-        current_statement_begin__ = 334;
+        current_statement_begin__ = 335;
         if (!(context__.contains_r("truncation_sd")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable truncation_sd missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("truncation_sd");
@@ -1638,7 +1645,7 @@ public:
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable truncation_sd: ") + e.what()), current_statement_begin__, prog_reader__());
             }
         }
-        current_statement_begin__ = 335;
+        current_statement_begin__ = 336;
         if (!(context__.contains_r("rep_phi")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable rep_phi missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("rep_phi");
@@ -1683,7 +1690,7 @@ public:
         try {
             stan::io::reader<local_scalar_t__> in__(params_r__, params_i__);
             // model parameters
-            current_statement_begin__ = 329;
+            current_statement_begin__ = 330;
             std::vector<local_scalar_t__> delay_mean;
             size_t delay_mean_d_0_max__ = delays;
             delay_mean.reserve(delay_mean_d_0_max__);
@@ -1693,7 +1700,7 @@ public:
                 else
                     delay_mean.push_back(in__.scalar_constrain());
             }
-            current_statement_begin__ = 330;
+            current_statement_begin__ = 331;
             std::vector<local_scalar_t__> delay_sd;
             size_t delay_sd_d_0_max__ = delays;
             delay_sd.reserve(delay_sd_d_0_max__);
@@ -1703,14 +1710,14 @@ public:
                 else
                     delay_sd.push_back(in__.scalar_constrain());
             }
-            current_statement_begin__ = 331;
+            current_statement_begin__ = 332;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> day_of_week_simplex;
             (void) day_of_week_simplex;  // dummy to suppress unused var warning
             if (jacobian__)
                 day_of_week_simplex = in__.simplex_constrain((week_effect ? 7 : 1 ), lp__);
             else
                 day_of_week_simplex = in__.simplex_constrain((week_effect ? 7 : 1 ));
-            current_statement_begin__ = 332;
+            current_statement_begin__ = 333;
             std::vector<local_scalar_t__> frac_obs;
             size_t frac_obs_d_0_max__ = obs_scale;
             frac_obs.reserve(frac_obs_d_0_max__);
@@ -1720,7 +1727,7 @@ public:
                 else
                     frac_obs.push_back(in__.scalar_lb_constrain(0));
             }
-            current_statement_begin__ = 333;
+            current_statement_begin__ = 334;
             std::vector<local_scalar_t__> truncation_mean;
             size_t truncation_mean_d_0_max__ = truncation;
             truncation_mean.reserve(truncation_mean_d_0_max__);
@@ -1730,7 +1737,7 @@ public:
                 else
                     truncation_mean.push_back(in__.scalar_constrain());
             }
-            current_statement_begin__ = 334;
+            current_statement_begin__ = 335;
             std::vector<local_scalar_t__> truncation_sd;
             size_t truncation_sd_d_0_max__ = truncation;
             truncation_sd.reserve(truncation_sd_d_0_max__);
@@ -1740,7 +1747,7 @@ public:
                 else
                     truncation_sd.push_back(in__.scalar_constrain());
             }
-            current_statement_begin__ = 335;
+            current_statement_begin__ = 336;
             std::vector<local_scalar_t__> rep_phi;
             size_t rep_phi_d_0_max__ = model_type;
             rep_phi.reserve(rep_phi_d_0_max__);
@@ -1751,25 +1758,25 @@ public:
                     rep_phi.push_back(in__.scalar_lb_constrain(0));
             }
             // transformed parameters
-            current_statement_begin__ = 339;
+            current_statement_begin__ = 340;
             validate_non_negative_index("secondary", "t", t);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> secondary(t);
             stan::math::initialize(secondary, DUMMY_VAR__);
             stan::math::fill(secondary, DUMMY_VAR__);
             // transformed parameters block statements
-            current_statement_begin__ = 341;
+            current_statement_begin__ = 342;
             stan::math::assign(secondary, calculate_secondary(primary, obs, frac_obs, delay_mean, delay_sd, max_delay, cumulative, historic, primary_hist_additive, current, primary_current_additive, t, pstream__));
-            current_statement_begin__ = 346;
+            current_statement_begin__ = 347;
             if (as_bool(week_effect)) {
-                current_statement_begin__ = 347;
+                current_statement_begin__ = 348;
                 stan::math::assign(secondary, day_of_week_effect(secondary, day_of_week, day_of_week_simplex, pstream__));
             }
-            current_statement_begin__ = 350;
+            current_statement_begin__ = 351;
             stan::math::assign(secondary, truncate(secondary, truncation_mean, truncation_sd, max_truncation, 0, pstream__));
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
-            current_statement_begin__ = 339;
+            current_statement_begin__ = 340;
             size_t secondary_j_1_max__ = t;
             for (size_t j_1__ = 0; j_1__ < secondary_j_1_max__; ++j_1__) {
                 if (stan::math::is_uninitialized(secondary(j_1__))) {
@@ -1780,19 +1787,19 @@ public:
             }
             check_greater_or_equal(function__, "secondary", secondary, 0);
             // model body
-            current_statement_begin__ = 355;
+            current_statement_begin__ = 356;
             delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, 1, lp__, lp_accum__, pstream__);
-            current_statement_begin__ = 357;
+            current_statement_begin__ = 358;
             truncation_lp(truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd, trunc_sd_mean, trunc_sd_sd, lp__, lp_accum__, pstream__);
-            current_statement_begin__ = 360;
+            current_statement_begin__ = 361;
             if (as_bool(obs_scale)) {
-                current_statement_begin__ = 361;
+                current_statement_begin__ = 362;
                 lp_accum__.add(normal_log<propto__>(get_base1(frac_obs, 1, "frac_obs", 1), obs_scale_mean, obs_scale_sd));
                 if (get_base1(frac_obs, 1, "frac_obs", 1) < 0) lp_accum__.add(-std::numeric_limits<double>::infinity());
                 else lp_accum__.add(-normal_ccdf_log(0, obs_scale_mean, obs_scale_sd));
             }
-            current_statement_begin__ = 364;
-            report_lp(obs, secondary, rep_phi, 1, model_type, 1, lp__, lp_accum__, pstream__);
+            current_statement_begin__ = 365;
+            report_lp(stan::model::rvalue(obs, stan::model::cons_list(stan::model::index_min_max((burn_in + 1), t), stan::model::nil_index_list()), "obs"), stan::model::rvalue(secondary, stan::model::cons_list(stan::model::index_min_max((burn_in + 1), t), stan::model::nil_index_list()), "secondary"), rep_phi, 1, model_type, 1, lp__, lp_accum__, pstream__);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return
@@ -1852,10 +1859,10 @@ public:
         dims__.push_back(t);
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dims__.push_back(t);
+        dims__.push_back((t - burn_in));
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dims__.push_back(t);
+        dims__.push_back((t - burn_in));
         dimss__.push_back(dims__);
     }
     template <typename RNG>
@@ -1945,26 +1952,26 @@ public:
         if (!include_tparams__ && !include_gqs__) return;
         try {
             // declare and define transformed parameters
-            current_statement_begin__ = 339;
+            current_statement_begin__ = 340;
             validate_non_negative_index("secondary", "t", t);
             Eigen::Matrix<double, Eigen::Dynamic, 1> secondary(t);
             stan::math::initialize(secondary, DUMMY_VAR__);
             stan::math::fill(secondary, DUMMY_VAR__);
             // do transformed parameters statements
-            current_statement_begin__ = 341;
+            current_statement_begin__ = 342;
             stan::math::assign(secondary, calculate_secondary(primary, obs, frac_obs, delay_mean, delay_sd, max_delay, cumulative, historic, primary_hist_additive, current, primary_current_additive, t, pstream__));
-            current_statement_begin__ = 346;
+            current_statement_begin__ = 347;
             if (as_bool(week_effect)) {
-                current_statement_begin__ = 347;
+                current_statement_begin__ = 348;
                 stan::math::assign(secondary, day_of_week_effect(secondary, day_of_week, day_of_week_simplex, pstream__));
             }
-            current_statement_begin__ = 350;
+            current_statement_begin__ = 351;
             stan::math::assign(secondary, truncate(secondary, truncation_mean, truncation_sd, max_truncation, 0, pstream__));
             if (!include_gqs__ && !include_tparams__) return;
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
-            current_statement_begin__ = 339;
+            current_statement_begin__ = 340;
             check_greater_or_equal(function__, "secondary", secondary, 0);
             // write transformed parameters
             if (include_tparams__) {
@@ -1975,28 +1982,28 @@ public:
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 368;
-            validate_non_negative_index("sim_secondary", "t", t);
-            std::vector<int> sim_secondary(t, int(0));
-            stan::math::fill(sim_secondary, std::numeric_limits<int>::min());
             current_statement_begin__ = 369;
-            validate_non_negative_index("log_lik", "t", t);
-            Eigen::Matrix<double, Eigen::Dynamic, 1> log_lik(t);
+            validate_non_negative_index("sim_secondary", "(t - burn_in)", (t - burn_in));
+            std::vector<int> sim_secondary((t - burn_in), int(0));
+            stan::math::fill(sim_secondary, std::numeric_limits<int>::min());
+            current_statement_begin__ = 370;
+            validate_non_negative_index("log_lik", "(t - burn_in)", (t - burn_in));
+            Eigen::Matrix<double, Eigen::Dynamic, 1> log_lik((t - burn_in));
             stan::math::initialize(log_lik, DUMMY_VAR__);
             stan::math::fill(log_lik, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 371;
-            stan::math::assign(sim_secondary, report_rng(secondary, rep_phi, model_type, base_rng__, pstream__));
-            current_statement_begin__ = 373;
-            stan::math::assign(log_lik, report_log_lik(obs, secondary, rep_phi, model_type, obs_weight, pstream__));
+            current_statement_begin__ = 372;
+            stan::math::assign(sim_secondary, report_rng(stan::model::rvalue(secondary, stan::model::cons_list(stan::model::index_min_max((burn_in + 1), t), stan::model::nil_index_list()), "secondary"), rep_phi, model_type, base_rng__, pstream__));
+            current_statement_begin__ = 374;
+            stan::math::assign(log_lik, report_log_lik(stan::model::rvalue(obs, stan::model::cons_list(stan::model::index_min_max((burn_in + 1), t), stan::model::nil_index_list()), "obs"), stan::model::rvalue(secondary, stan::model::cons_list(stan::model::index_min_max((burn_in + 1), t), stan::model::nil_index_list()), "secondary"), rep_phi, model_type, obs_weight, pstream__));
             // validate, write generated quantities
-            current_statement_begin__ = 368;
-            size_t sim_secondary_k_0_max__ = t;
+            current_statement_begin__ = 369;
+            size_t sim_secondary_k_0_max__ = (t - burn_in);
             for (size_t k_0__ = 0; k_0__ < sim_secondary_k_0_max__; ++k_0__) {
                 vars__.push_back(sim_secondary[k_0__]);
             }
-            current_statement_begin__ = 369;
-            size_t log_lik_j_1_max__ = t;
+            current_statement_begin__ = 370;
+            size_t log_lik_j_1_max__ = (t - burn_in);
             for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
                 vars__.push_back(log_lik(j_1__));
             }
@@ -2082,13 +2089,13 @@ public:
             }
         }
         if (!include_gqs__) return;
-        size_t sim_secondary_k_0_max__ = t;
+        size_t sim_secondary_k_0_max__ = (t - burn_in);
         for (size_t k_0__ = 0; k_0__ < sim_secondary_k_0_max__; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "sim_secondary" << '.' << k_0__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        size_t log_lik_j_1_max__ = t;
+        size_t log_lik_j_1_max__ = (t - burn_in);
         for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "log_lik" << '.' << j_1__ + 1;
@@ -2151,13 +2158,13 @@ public:
             }
         }
         if (!include_gqs__) return;
-        size_t sim_secondary_k_0_max__ = t;
+        size_t sim_secondary_k_0_max__ = (t - burn_in);
         for (size_t k_0__ = 0; k_0__ < sim_secondary_k_0_max__; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "sim_secondary" << '.' << k_0__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        size_t log_lik_j_1_max__ = t;
+        size_t log_lik_j_1_max__ = (t - burn_in);
         for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "log_lik" << '.' << j_1__ + 1;

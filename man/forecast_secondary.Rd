@@ -49,7 +49,8 @@ This function forecasts secondary observations using the output of \code{estimat
 observed primary data or a forecast of primary observations. See the examples of \code{estimate_secondary()}
 for one use case. It can also be combined with \code{estimate_infections()} to produce a forecast for a secondary
 observation from a forecast of a primary observation. See the examples of \code{estimate_secondary()} for
-example use cases on synthetic data.
+example use cases on synthetic data. See \href{https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17}{here}
+for an example of forecasting Covid-19 deaths from Covid-19 cases.
 }
 \seealso{
 estimate_secondary

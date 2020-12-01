@@ -71,7 +71,9 @@ observation model. See the examples and function arguments for the details of al
 may not be sufficient for your use case so the number of warmup samples (\code{stan_args = list(warmup)}) may need to
 be increased as may the overall number of samples. Follow the links provided by any warnings messages to diagnose
 issues with the MCMC fit. It is recommended to explore several of the Rt estimation approaches supported as not all
-of them may be suited to users own use cases.
+of them may be suited to users own use cases. See \href{https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867}{here}
+for an example of using \code{estimate_infections} with the \code{epinow} wrapper to estimate Rt for Covid-19 in a country from
+the ECDC data source.
 }
 \examples{
 \donttest{

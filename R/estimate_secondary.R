@@ -4,7 +4,9 @@
 #' Estimates the relationship between a primary and secondary observation, for 
 #' example hospital admissions and deaths or hospital admissions and bed 
 #' occupancy. See `secondary_opts()` for model structure options. See parameter 
-#' documentation for model defaults and options.
+#' documentation for model defaults and options. See the examples for case studies 
+#' using synthetic data and [here](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17) 
+#' for an example of forecasting Covid-19 deaths from Covid-19 cases.
 #' @param secondary A call to `secondary_opts()` or a list containing the following 
 #' binary variables: cumulative, historic, primary_hist_additive, current, 
 #' primary_current_additive. These parameters control the structure of the 
@@ -17,6 +19,9 @@
 #' and `secondary` reports.
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
+#' @param burn_in Integer, defaults to 14 days. The number of data points to use for 
+#' estimation but not to fit to at the beginning of the time series. This must be less 
+#' than the number of observations.
 #' @param verbose Logical, should model fitting progress be returned. Defaults to
 #' `interactive()`.
 #' @param ... Additional parameters to pass to `rstan::sampling`.
@@ -28,7 +33,7 @@
 #' @inheritParams calc_CrIs
 #' @importFrom rstan sampling
 #' @importFrom lubridate wday
-#' @importFrom data.table as.data.table
+#' @importFrom data.table as.data.table merge.data.table
 #' @examples
 #' \donttest{
 #' #set number of cores to use
@@ -112,18 +117,25 @@ estimate_secondary <- function(reports,
                                delays = delay_opts(
                                   list(mean = 2.5, mean_sd = 1, 
                                        sd = 0.47, sd_sd = 1, max = 30)),
-                                truncation = trunc_opts(),
-                                obs = obs_opts(),
-                                CrIs = c(0.2, 0.5, 0.9),
-                                model = NULL, 
-                                verbose = interactive(),
-                                ...) { 
+                               truncation = trunc_opts(),
+                               obs = obs_opts(),
+                               burn_in = 14,
+                               CrIs = c(0.2, 0.5, 0.9),
+                               model = NULL, 
+                               verbose = interactive(),
+                               ...) { 
   reports <- data.table::as.data.table(reports)
+  
+  if (burn_in >= nrow(reports)) {
+    stop("burn_in is greater or equal to the number of observations. 
+         Some observations must be used in fitting")
+  }
   # observation and control data
   data <- list( 
     t = nrow(reports), 
     obs = reports$secondary,
     primary = reports$primary,
+    burn_in = burn_in,
     day_of_week = lubridate::wday(reports$date, week_start = 1)
   )
   # secondary model options
@@ -153,7 +165,8 @@ estimate_secondary <- function(reports,
   out <- list()
   out$predictions <- extract_stan_param(fit, "sim_secondary", CrIs = CrIs)
   out$predictions <- out$predictions[, lapply(.SD, round, 1)]
-  out$predictions <- cbind(reports, out$predictions)
+  out$predictions <- out$predictions[, date := reports[(burn_in + 1):.N]$date]
+  out$predictions <- data.table::merge.data.table(reports, out$predictions, all = TRUE, by = "date")
   out$data <- data
   out$fit <- fit
   class(out) <- c("estimate_secondary", class(out))
@@ -286,7 +299,8 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' observed primary data or a forecast of primary observations. See the examples of `estimate_secondary()` 
 #' for one use case. It can also be combined with `estimate_infections()` to produce a forecast for a secondary
 #' observation from a forecast of a primary observation. See the examples of `estimate_secondary()` for 
-#' example use cases on synthetic data.
+#' example use cases on synthetic data. See [here](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17) 
+#' for an example of forecasting Covid-19 deaths from Covid-19 cases.
 #' @param estimate An object of class "estimate_secondary" as produced by `estimate_secondary()`.
 #' @param primary A data.frame containing at least `date` and `value` (integer) variables and optionally
 #' `sample`. Used as the primary observation used to forecast the secondary observations. Alternatively,
@@ -320,6 +334,7 @@ forecast_secondary <- function(estimate,
                                samples = NULL,
                                all_dates = FALSE,
                                CrIs = c(0.2, 0.5, 0.9)) {
+  
   ## deal with input if data frame 
   if (any(class(primary) %in% "data.frame")) {
     primary <- data.table::as.data.table(primary)

@@ -9,6 +9,7 @@ data {
   int t;                             // time of observations
   int<lower = 0> obs[t];             // observed secondary data
   vector[t] primary;                 // observed primary data
+  int burn_in;                       // time period to not use for fitting
 #include data/secondary.stan
 #include data/delays.stan
 #include data/observation_model.stan
@@ -51,14 +52,14 @@ model {
     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
    }
   // observed secondary reports from mean of secondary reports (update likelihood)
-  report_lp(obs, secondary, rep_phi, 1, model_type, 1);
+  report_lp(obs[(burn_in + 1):t], secondary[(burn_in + 1):t], rep_phi, 1, model_type, 1);
 }
   
 generated quantities {
-  int sim_secondary[t]; 
-  vector[t] log_lik;
+  int sim_secondary[t - burn_in]; 
+  vector[t - burn_in] log_lik;
   // simulate secondary reports
-  sim_secondary = report_rng(secondary, rep_phi, model_type);
+  sim_secondary = report_rng(secondary[(burn_in + 1):t], rep_phi, model_type);
   // log likelihood of model
-  log_lik = report_log_lik(obs, secondary, rep_phi, model_type, obs_weight);
+  log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t], rep_phi, model_type, obs_weight);
 }

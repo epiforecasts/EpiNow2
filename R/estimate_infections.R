@@ -4,11 +4,13 @@
 #' Uses a non-parametric approach to reconstruct cases by date of infection from reported 
 #' cases. It uses either a generative Rt model or non-parametric back calculation to estimate underlying
 #' latent infections and then maps these infections to observed cases via uncertain reporting delays and a flexible
-#' observation model. See the examples and function arguments for the details of all options. The default settings
-#'  may not be sufficient for your use case so the number of warmup samples (`stan_args = list(warmup)`) may need to
-#'  be increased as may the overall number of samples. Follow the links provided by any warnings messages to diagnose 
-#'  issues with the MCMC fit. It is recommended to explore several of the Rt estimation approaches supported as not all 
-#'  of them may be suited to users own use cases. 
+#' observation model. See the examples and function arguments for the details of all options. The default settings 
+#' may not be sufficient for your use case so the number of warmup samples (`stan_args = list(warmup)`) may need to 
+#' be increased as may the overall number of samples. Follow the links provided by any warnings messages to diagnose 
+#' issues with the MCMC fit. It is recommended to explore several of the Rt estimation approaches supported as not all 
+#' of them may be suited to users own use cases. See [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867) 
+#' for an example of using `estimate_infections` with the `epinow` wrapper to estimate Rt for Covid-19 in a country from 
+#' the ECDC data source.
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be 
 #' in date format.
 #' @param generation_time A list containing the mean, standard deviation of the mean (mean_sd), 
