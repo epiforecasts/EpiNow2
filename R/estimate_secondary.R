@@ -14,7 +14,8 @@
 #' @param delays A call to `delay_opts()` defining delay distributions between
 #' primary and secondary observations See the documentation of `delay_opts()` for 
 #' details. BY default a diffuse prior  is assumed with a mean of 14 days and 
-#' standard deviation of 7 days (both with a standard deviation of 1 on the log scale).
+#' standard deviation of 7 days (with a standard deviation of 0.5 and 0.25 respectively 
+#' on the log scale).
 #' @param reports A data frame containing the `date` of report and both `primary` 
 #' and `secondary` reports.
 #' @param model A compiled stan model to override the default model. May be
@@ -115,8 +116,8 @@
 estimate_secondary <- function(reports, 
                                secondary = secondary_opts(),
                                delays = delay_opts(
-                                  list(mean = 2.5, mean_sd = 1, 
-                                       sd = 0.47, sd_sd = 1, max = 30)),
+                                  list(mean = 2.5, mean_sd = 0.5, 
+                                       sd = 0.47, sd_sd = 0.25, max = 30)),
                                truncation = trunc_opts(),
                                obs = obs_opts(),
                                burn_in = 14,
