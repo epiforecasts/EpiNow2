@@ -61,11 +61,14 @@ documentation for model defaults and options.
 }
 \examples{
 \donttest{
-#### Incidence data example ####
 #set number of cores to use
 options(mc.cores = ifelse(interactive(), 4, 1))
-# load data.table for manipulation
+#' # load data.table for manipulation
 library(data.table)
+# load lubridate for dates
+library(lubridate)
+
+#### Incidence data example ####
 
 # make some example secondary incidence data
 cases <- example_confirmed
@@ -106,8 +109,7 @@ plot(inc_preds, new_obs = cases, from = "2020-05-01")
 # make some example prevalence data
 cases <- example_confirmed
 cases <- as.data.table(cases)
-cases <- 
-  cases[, .(date, primary = confirm, 
+cases <- cases[, .(date, primary = confirm, 
                   scaled_primary = confirm * rnorm(.N, 0.4, 0.05))]
 cases$secondary <- 0
 cases$secondary[1] <- as.integer(cases$scaled_primary[1])
