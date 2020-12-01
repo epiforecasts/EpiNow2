@@ -18,7 +18,7 @@ estimates_by_report_date(
 
 \item{forecast}{A list of data frames as output by \code{forecast_infections}}
 
-\item{delays}{A call to \code{delay_opts} defining delay distributions and options. See the documentation of \code{delay_opts}
+\item{delays}{A call to \code{delay_opts()} defining delay distributions and options. See the documentation of \code{delay_opts()}
 and the examples below for details.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}

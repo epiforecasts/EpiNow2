@@ -19,7 +19,7 @@
 #' @param verbose Logical defaults to `interactive()`. Should a progress bar (from `progressr`) be
 #' shown.
 #' @importFrom rstan extract sampling
-#' @importFrom purrr transpose map
+#' @importFrom purrr transpose map safely compact
 #' @importFrom future.apply future_lapply
 #' @importFrom progressr with_progress progressor
 #' @importFrom data.table rbindlist
@@ -115,7 +115,8 @@ simulate_infections <- function(estimates,
     data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
     
     ## allocate empty parameters
-    data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"))
+    data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"),
+                           n = data$n)
     
     ## simulate
     sims <- rstan::sampling(object = model,
@@ -140,6 +141,8 @@ simulate_infections <- function(estimates,
     batches <- list(list(1, samples))
   }
 
+  safe_batch <- purrr::safely(batch_simulate)
+  
   ## simulate in batches
   progressr::with_progress({
     if (verbose) {
@@ -150,13 +153,14 @@ simulate_infections <- function(estimates,
                                          if (verbose) {
                                            p()
                                          }
-                                         batch_simulate(estimates, draws, model,
-                                                        shift, dates, batch[[1]], 
-                                                        batch[[2]])},
+                                         safe_batch(estimates, draws, model,
+                                                    shift, dates, batch[[1]], 
+                                                    batch[[2]])[[1]]},
                                        future.seed = TRUE)
   })
   
   ## join batches
+  out <- purrr::compact(out)
   out <- purrr::transpose(out)
   out <- purrr::map(out, ~ data.table::rbindlist(.))
   

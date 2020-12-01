@@ -53,6 +53,8 @@ reference:
       - forecast_infections
       - estimate_delay
       - estimate_truncation
+      - estimate_secondary
+      - forecast_secondary
   - title: Internal epinow Functions
     desc: Functions used internally by epinow
     contents:

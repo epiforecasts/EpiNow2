@@ -59,7 +59,7 @@ backcalc <- list()
 weekly_rw <- list()
 daily_rw <- list()
 
-for (method in c("vb", "nuts")) {
+for (method in c("nuts")) {
   
   if (method == "vb") {
     stanopts <- stan_opts(method = "vb", trials = 5, iter = 50000)

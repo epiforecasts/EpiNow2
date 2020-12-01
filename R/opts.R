@@ -22,9 +22,14 @@ delay_opts <- function(...) {
   
   # Estimate the mean delay -----------------------------------------------
   if (data$delays > 0) {
-    data$seeding_time <- as.integer(sum(
+    data$seeding_time <- sum(
       purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))
-      ))
+    )
+    if (data$seeding_time < 1) {
+      data$seeding_time <- 1
+    }else{
+      data$seeding_time <- as.integer(data$seeding_time)
+    }
   }else{
     data$seeding_time <- 1
   } 
