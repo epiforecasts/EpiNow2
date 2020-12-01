@@ -326,7 +326,7 @@ forecast_secondary <- function(estimate,
     if (is.null(primary$sample)) {
       if (is.null(samples)) {
         samples <- 1000
-      }
+      } 
       primary <- primary[, .(date, sample = list(1:samples), value)]
       primary <- primary[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
     }
@@ -335,6 +335,7 @@ forecast_secondary <- function(estimate,
   if (any(class(primary) %in% "estimate_infections")) {
     primary <- data.table::as.data.table(primary$samples[variable == primary_variable])
     primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
+    primary <- primary[, .(date, sample, value)]
     if (!is.null(samples)) {
       primary <- primary[sample(1:.N, samples, replace = TRUE)]
     }
