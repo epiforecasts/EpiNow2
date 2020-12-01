@@ -1563,7 +1563,7 @@ public:
         size_t delay_sd_i_0_max__ = delays;
         for (size_t i_0__ = 0; i_0__ < delay_sd_i_0_max__; ++i_0__) {
             try {
-                writer__.scalar_unconstrain(delay_sd[i_0__]);
+                writer__.scalar_lb_unconstrain(0, delay_sd[i_0__]);
             } catch (const std::exception& e) {
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable delay_sd: ") + e.what()), current_statement_begin__, prog_reader__());
             }
@@ -1706,9 +1706,9 @@ public:
             delay_sd.reserve(delay_sd_d_0_max__);
             for (size_t d_0__ = 0; d_0__ < delay_sd_d_0_max__; ++d_0__) {
                 if (jacobian__)
-                    delay_sd.push_back(in__.scalar_constrain(lp__));
+                    delay_sd.push_back(in__.scalar_lb_constrain(0, lp__));
                 else
-                    delay_sd.push_back(in__.scalar_constrain());
+                    delay_sd.push_back(in__.scalar_lb_constrain(0));
             }
             current_statement_begin__ = 332;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> day_of_week_simplex;
@@ -1893,7 +1893,7 @@ public:
         size_t delay_sd_d_0_max__ = delays;
         delay_sd.reserve(delay_sd_d_0_max__);
         for (size_t d_0__ = 0; d_0__ < delay_sd_d_0_max__; ++d_0__) {
-            delay_sd.push_back(in__.scalar_constrain());
+            delay_sd.push_back(in__.scalar_lb_constrain(0));
         }
         size_t delay_sd_k_0_max__ = delays;
         for (size_t k_0__ = 0; k_0__ < delay_sd_k_0_max__; ++k_0__) {
