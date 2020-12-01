@@ -50,6 +50,6 @@ test_that("calculate_secondary can switch into prediction mode as expected", {
   check_equal(args = list(reports, obs, 0.1, log(3), 0.1, 5, 1, 0, 1, 1, 1, 20),
               target = c(1, rep(5, 19)), dof = 0)
   check_equal(args = list(reports, obs, 0.1, log(3), 0.1, 5, 1, 0, 1, 1, 1, 10) ,
-              target = 1:20, dof = 0)
+              target = c(1, rep(5, 9), 6:15), dof = 0)
 })
 
