@@ -88,7 +88,7 @@ weight_cmf <- function(x, ...) {
 # roll over observed cases to produce a convolution
 cases <- cases[, .(date, primary = confirm, secondary = confirm)]
 cases <- cases[, secondary := frollapply(secondary, 15, weight_cmf, align = "right")]
-cases <- cases[!is.na(secondary)][, secondary := as.integer(secondary)]
+cases <- cases[!is.na(secondary)]
 # add a day of the week effect and scale secondary observations at 40\% of primary
 cases <- cases[lubridate::wday(date) == 1, secondary := round(0.5 * secondary, 0)] 
 cases <- cases[, secondary := round(secondary * rnorm(.N, 0.4, 0.025), 0)]
