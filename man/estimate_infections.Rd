@@ -136,7 +136,8 @@ plot(trunc)
 # this model is in the order of 10 ~ 100 faster than the gaussian process method
 # it is likely robust for retrospective Rt but less reliable for real time estimates
 # the width of the prior window controls the reliance on observed data and can be 
-# optionally switched off using backcalc_opts(prior = "none")
+# optionally switched off using backcalc_opts(prior = "none"), see ?backcalc_opts for 
+# other options
 backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
                                 delays = delay_opts(incubation_period, reporting_delay),
                                 rt = NULL, backcalc = backcalc_opts(),
