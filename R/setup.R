@@ -34,10 +34,12 @@ setup_logging <- function(threshold = "INFO", file = NULL,
   futile.logger::flog.threshold(threshold, name = name)
   
   if (!is.null(file)) {
-    message(sprintf("Writing %s logs to: %s", name, file))
+
     if (mirror_to_console) {
+      message(sprintf("Writing %s logs to the console and: %s", name, file))
       futile.logger::flog.appender(futile.logger::appender.tee(file), name = name)
     }else{
+      message(sprintf("Writing %s logs to: %s", name, file))
       futile.logger::flog.appender(futile.logger::appender.file(file), name = name)  
     }
   }else{
