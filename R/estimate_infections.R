@@ -9,7 +9,7 @@
 #' be increased as may the overall number of samples. Follow the links provided by any warnings messages to diagnose 
 #' issues with the MCMC fit. It is recommended to explore several of the Rt estimation approaches supported as not all 
 #' of them may be suited to users own use cases. See [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867) 
-#' for an example of using `estimate_infections` with the `epinow` wrapper to estimate Rt for Covid-19 in a country from 
+#' for an example of using `estimate_infections` within the `epinow` wrapper to estimate Rt for Covid-19 in a country from 
 #' the ECDC data source.
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be 
 #' in date format.
@@ -52,7 +52,7 @@
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-#'                            stan = stan_opts(control = list(adapt_delta = 0.95)))
+#'                            stan = stan_opts(control = list(adapt_delta = 0.95), object = model))
 #' # real time estimates
 #' summary(def)
 #' # summary plot
