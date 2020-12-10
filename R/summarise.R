@@ -352,7 +352,7 @@ summarise_key_measures <- function(regional_results = NULL,
   summarise_variable <- function(df, dof = 0) {
     cols <- setdiff(names(df), c("region", "date", "type", "strat"))
     df[,(cols) := round(.SD, dof), .SDcols = cols]
-    data.table::setorderv(df, cols = cols)
+    data.table::setorderv(df, cols = c("region", "date", "type", "strat"))
     data.table::setnames(df, "region", type)
     return(df)
   }
