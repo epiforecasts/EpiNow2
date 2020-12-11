@@ -1,6 +1,6 @@
 context("estimate_infections")
 if (!testthat:::on_cran()) {
-  suppressMessages(expose_stan_fns("rt.stan", target_dir = system.file("stan/functions", package = "EpiNow2")))
+  suppressMessages(expose_stan_fns("rt.stan", target_dir = "inst/stan/functions/")) #system.file("stan/functions", package = "EpiNow2")))
 }
 
 # Test update_Rt 
@@ -43,24 +43,5 @@ test_that("update_Rt works when Rt is variable and a breakpoint is present", {
                c(1.2, 1.2, rep(1.33, 3)))
   expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0.1, 9), c(0, 0, 1, 0, 0), 0.1, 0), 2),
                c(1.20, 1.33, 1.62, 1.79, 1.98))
-})
-
-# Test update_breakpoints
-test_that("update_breakpoints can successfully update when no breakpoint is present", {
-  skip_on_cran()
-  expect_equal(update_breakpoints(1.2, 0.1, 0, 0, 0), 1.2)
-  expect_equal(update_breakpoints(1.2, 0.1, 0, 0, 1), 1.2)
-})
-
-test_that("update_breakpoints can successfully update when a breakpoint is present", {
-  skip_on_cran()
-  expect_equal(update_breakpoints(1.2, 0.1, 1, 1, 0), 1.3)
-  expect_equal(update_breakpoints(1.2, 0.1, 1, 1, 1), 1.3)
-})
-
-test_that("update_breakpoints can successfully update when a breakpoint has been present", {
-  skip_on_cran()
-  expect_equal(update_breakpoints(1.2, 0.1, 1, 0, 0), 1.2)
-  expect_equal(update_breakpoints(1.2, 0.1, 1, 0, 1), 1.3)
 })
 
