@@ -283,6 +283,7 @@ estimate_infections <- function(reported_cases,
 #' authored by James Scott.
 #' @param samples Numeric, defaults to 50. Number of posterior samples.
 #' @param warmup Numeric, defaults to 50. Number of warmup samples.
+#' @param verbose Logical, should fitting progress be returned. Defaults to `FALSE`.
 #' @inheritParams create_initial_conditions
 #' @importFrom rstan sampling
 #' @importFrom futile.logger flog.debug

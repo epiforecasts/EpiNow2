@@ -152,7 +152,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
   return(out)
 }
 
-#' Extract a Paramater Summary from a Stan Object
+#' Extract a Parameter Summary from a Stan Object
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Extracts summarised parameter posteriors from a `stanfit` object using
