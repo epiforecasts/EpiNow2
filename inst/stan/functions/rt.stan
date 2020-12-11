@@ -11,7 +11,7 @@ vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
   vector[t] gp = rep_vector(0, t);
   vector[t] R;
   // initialise breakpoints
-  if (bp_n > 0) {
+  if (bp_n) {
     for (s in 1:t) {
       if (bps[s]) {
         bp_c += bps[s];
