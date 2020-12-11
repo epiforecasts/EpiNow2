@@ -37,30 +37,11 @@ test_that("update_Rt works when Rt is fixed but a breakpoint is present", {
 })
 test_that("update_Rt works when Rt is variable and a breakpoint is present", {
   skip_on_cran()
-  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0, 9), c(0, 0, 1, 0, 0), 0.1, 0), 2),
+  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0, 4), c(0, 0, 1, 0, 0), 0.1, 0), 2),
                c(1.2, 1.2, rep(1.33, 3)))
-  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0, 10), c(0, 0, 1, 0, 0), 0.1, 1), 2),
+  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0, 5), c(0, 0, 1, 0, 0), 0.1, 1), 2),
                c(1.2, 1.2, rep(1.33, 3)))
-  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0.1, 9), c(0, 0, 1, 0, 0), 0.1, 0), 2),
+  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0.1, 4), c(0, 0, 1, 0, 0), 0.1, 0), 2),
                c(1.20, 1.33, 1.62, 1.79, 1.98))
-})
-
-# Test update_breakpoints
-test_that("update_breakpoints can successfully update when no breakpoint is present", {
-  skip_on_cran()
-  expect_equal(update_breakpoints(1.2, 0.1, 0, 0, 0), 1.2)
-  expect_equal(update_breakpoints(1.2, 0.1, 0, 0, 1), 1.2)
-})
-
-test_that("update_breakpoints can successfully update when a breakpoint is present", {
-  skip_on_cran()
-  expect_equal(update_breakpoints(1.2, 0.1, 1, 1, 0), 1.3)
-  expect_equal(update_breakpoints(1.2, 0.1, 1, 1, 1), 1.3)
-})
-
-test_that("update_breakpoints can successfully update when a breakpoint has been present", {
-  skip_on_cran()
-  expect_equal(update_breakpoints(1.2, 0.1, 1, 0, 0), 1.2)
-  expect_equal(update_breakpoints(1.2, 0.1, 1, 0, 1), 1.3)
 })
 

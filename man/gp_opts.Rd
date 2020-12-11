@@ -9,7 +9,7 @@ gp_opts(
   boundary_scale = 1.5,
   ls_mean = 21,
   ls_sd = 7,
-  ls_min = 7,
+  ls_min = 3,
   ls_max = 60,
   alpha_sd = 0.1,
   kernel = "matern",

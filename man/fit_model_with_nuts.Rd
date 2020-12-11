@@ -8,8 +8,7 @@ fit_model_with_nuts(
   args,
   future = FALSE,
   max_execution_time = Inf,
-  id = "stan",
-  verbose = FALSE
+  id = "stan"
 )
 }
 \arguments{
@@ -22,8 +21,6 @@ Results will still be returned as long as at least 2 chains complete successfull
 
 \item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
 to assign errors to regions. Alter the default to run with error catching.}
-
-\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress information be returned.}
 }
 \value{
 A stan model object
