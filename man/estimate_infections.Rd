@@ -94,7 +94,7 @@ reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
 def <- estimate_infections(reported_cases, generation_time = generation_time,
                            delays = delay_opts(incubation_period, reporting_delay),
                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-                           stan = stan_opts(control = list(adapt_delta = 0.95), object = model))
+                           stan = stan_opts(control = list(adapt_delta = 0.95)))
 # real time estimates
 summary(def)
 # summary plot
