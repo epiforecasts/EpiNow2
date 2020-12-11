@@ -5,8 +5,9 @@ vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
   int t = num_elements(input_R);
   int bp_n = num_elements(bp_effects);
   int bp_c = 0;
-  vector[t] bp = rep_vector(0, t);
   int gp_n = num_elements(noise);
+  // define result vectors
+  vector[t] bp = rep_vector(0, t);
   vector[t] gp = rep_vector(0, t);
   vector[t] R;
   // initialise breakpoints
@@ -24,7 +25,7 @@ vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
     if (stationary) {
       gp[1:gp_n] = noise;
     }else{
-      gp[2:gp_n] = noise;
+      gp[2:(gp_n + 1)] = noise;
       gp = cumulative_sum(gp);
     }
   }

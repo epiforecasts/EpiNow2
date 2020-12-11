@@ -1,6 +1,6 @@
 context("estimate_infections")
 if (!testthat:::on_cran()) {
-  suppressMessages(expose_stan_fns("rt.stan", target_dir = "inst/stan/functions/")) #system.file("stan/functions", package = "EpiNow2")))
+  suppressMessages(expose_stan_fns("rt.stan", target_dir = system.file("stan/functions", package = "EpiNow2")))
 }
 
 # Test update_Rt 
@@ -37,11 +37,11 @@ test_that("update_Rt works when Rt is fixed but a breakpoint is present", {
 })
 test_that("update_Rt works when Rt is variable and a breakpoint is present", {
   skip_on_cran()
-  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0, 9), c(0, 0, 1, 0, 0), 0.1, 0), 2),
+  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0, 4), c(0, 0, 1, 0, 0), 0.1, 0), 2),
                c(1.2, 1.2, rep(1.33, 3)))
-  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0, 10), c(0, 0, 1, 0, 0), 0.1, 1), 2),
+  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0, 5), c(0, 0, 1, 0, 0), 0.1, 1), 2),
                c(1.2, 1.2, rep(1.33, 3)))
-  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0.1, 9), c(0, 0, 1, 0, 0), 0.1, 0), 2),
+  expect_equal(round(update_Rt(rep(1, 5), log(1.2), rep(0.1, 4), c(0, 0, 1, 0, 0), 0.1, 0), 2),
                c(1.20, 1.33, 1.62, 1.79, 1.98))
 })
 
