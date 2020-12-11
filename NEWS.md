@@ -25,7 +25,7 @@ provided too much weight to small scale changes. This remains user set able.
 * Updates `discretised_gamma_pmf` (discretised truncated Gamma PMF) and `discretised_lognormal_pmf` (discretised truncated lognormal PMF) to limit/clip the values of the parameters by prespecified lower and upper bounds.
 * Tightens the initialisation of fitting in `estimate_infections` by reducing all standard deviations used by a scaling factor of 0.1 in `create_initial_conditions`.
 * Adds boundary checking on `gt_mean` (the mean of the generation time) to reject samples with a mean greater than `gt_max` (the maximum allowed generation time). Adds boundary checking to reject standard deviations that are negative. Adds a boundary check on R values to reject them if 10 times greater than the mean of the initial prior. In some scenarios this will require users to supply a prior not is not completely misspecified (i.e if the prior has a mean of 1 and the posterior has a mean of 50).  
-* Refactor of `update_rt` (an internal `stan` function found in `inst/stan/functions/rt.stan`) to be vectorised. This change reduces run times by approximately 40% (though only tested on a small subset of examples) and opens the way for future model extensions (such as additive rather than multiplicative random walks, introducing covariates etc).
+* Refactor of `update_rt` (an internal `stan` function found in `inst/stan/functions/rt.stan`) to be vectorised. This change reduces run times by approximately 15 ~ 30% (though only tested on a small subset of examples) and opens the way for future model extensions (such as additive rather than multiplicative random walks, introducing covariates etc).
 * Switched to reporting two significant figures in all summary measures.
 
 # EpiNow2 1.3.1

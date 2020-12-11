@@ -1003,7 +1003,7 @@ update_Rt(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& input_R,
         stan::math::initialize(R, DUMMY_VAR__);
         stan::math::fill(R, DUMMY_VAR__);
         current_statement_begin__ = 196;
-        if (as_bool(logical_gt(bp_n, 0))) {
+        if (as_bool(bp_n)) {
             current_statement_begin__ = 197;
             for (int s = 1; s <= t; ++s) {
                 current_statement_begin__ = 198;
