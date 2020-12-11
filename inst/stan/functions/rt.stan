@@ -24,6 +24,10 @@ vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
   if (gp_n) {
     if (stationary) {
       gp[1:gp_n] = noise;
+      // fix future gp based on last estimated
+      if (t > gp_n) {
+        gp[(gp_n + 1):t] = rep_vector(noise[gp_n], t - gp_n);
+      }
     }else{
       gp[2:(gp_n + 1)] = noise;
       gp = cumulative_sum(gp);
