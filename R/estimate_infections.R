@@ -52,7 +52,7 @@
 #' def <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                            delays = delay_opts(incubation_period, reporting_delay),
 #'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-#'                            stan = stan_opts(control = list(adapt_delta = 0.95), object = model))
+#'                            stan = stan_opts(control = list(adapt_delta = 0.95)))
 #' # real time estimates
 #' summary(def)
 #' # summary plot
@@ -120,8 +120,7 @@
 #' # stationary Rt assumption (likely to provide biased real-time estimates)
 #' stat <- estimate_infections(reported_cases, generation_time = generation_time,
 #'                             delays = delay_opts(incubation_period, reporting_delay),
-#'                             rt = rt_opts(prior = list(mean = 2, sd = 0.1),
-#'                                          gp_on = "R0"))
+#'                             rt = rt_opts(prior = list(mean = 2, sd = 0.1), gp_on = "R0"))
 #' plot(stat)
 #'        
 #' # no gaussian process (i.e fixed Rt assuming no breakpoints)
@@ -236,15 +235,10 @@ estimate_infections <- function(reported_cases,
   }
   # Fit model
   if (args$method == "sampling") {
-    fit <- fit_model_with_nuts(args,
-                               future = args$future,
-                               max_execution_time = args$max_execution_time,
-                               verbose = verbose,
-                               id = id)
+    fit <- fit_model_with_nuts(args, future = args$future,
+                               max_execution_time = args$max_execution_time, id = id)
   }else if (args$method == "vb"){
-    fit <- fit_model_with_vb(args,
-                             verbose = verbose,
-                             id = id)
+    fit <- fit_model_with_vb(args, id = id)
   }
   # Extract parameters of interest from the fit
   out <- extract_parameter_samples(fit, data, 
@@ -341,7 +335,6 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 #'     Results will still be returned as long as at least 2 chains complete successfully within the timelimit. 
 #' @param id A character string used to assign logging information on error. Used by `regional_epinow` 
 #' to assign errors to regions. Alter the default to run with error catching.
-#' @param verbose Logical, defaults to `FALSE`. Should verbose progress information be returned.
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom R.utils withTimeout
 #' @importFrom future.apply future_lapply
@@ -349,19 +342,15 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 #' @importFrom rstan sflist2stanfit sampling
 #' @importFrom rlang abort cnd_muffle
 #' @return A stan model object
-fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
-                                id = "stan", verbose = FALSE) {
+fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, id = "stan") {
   args$method <- NULL
   args$max_execution_time <- NULL
   args$future <- NULL
   
-  if (verbose) {
-    futile.logger::flog.debug(paste0("%s: Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
-                                     " chains each with a warm up of ", args$warmup, " iterations each) and ",
-                                     args$data$t," time steps of which ", args$data$horizon, " are a forecast"), 
+  futile.logger::flog.debug(paste0("%s: Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains," samples (across ", args$chains,
+                                   " chains each with a warm up of ", args$warmup, " iterations each) and ",
+                                    args$data$t," time steps of which ", args$data$horizon, " are a forecast"), 
                               id, name = "EpiNow2.epinow.estimate_infections.fit")
-  }
-  
   
   if (exists("stuck_chains", args)) {
     stuck_chains <- args$stuck_chains
@@ -449,14 +438,12 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 #' @importFrom rstan vb
 #' @importFrom rlang abort
 #' @return A stan model object
-fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE) {
+fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
   args$method <- NULL
-  if (verbose) {
-    futile.logger::flog.debug(paste0("%s: Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
-                                     args$output_samples, " approximate posterior samples for ", args$data$t," time steps of which ",
-                                     args$data$horizon, " are a forecast"),
-                              id, name = "EpiNow2.epinow.estimate_infections.fit")
-  }
+  futile.logger::flog.debug(paste0("%s: Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
+                                   args$output_samples, " approximate posterior samples for ", args$data$t," time steps of which ",
+                                   args$data$horizon, " are a forecast"),
+                            id, name = "EpiNow2.epinow.estimate_infections.fit") 
   
   if (exists("trials", args)) {
     trials <- args$trials
@@ -476,7 +463,6 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan", verbose = FALSE
     return(fit)
   }
   safe_vb <- purrr::safely(fit_vb)
-  
   fit <- NULL
   current_trials <- 0
   
