@@ -30,7 +30,7 @@ Authors@R: c(
            comment = c(ORCID = "0000-0001-8940-1967")),
     person("Robin", "Thompson", 
            email = "robin.thompson@lshtm.ac.uk", 
-           role = c("aut")), 
+           role = c("ctb")), 
     person("Sophie", "Meakin", 
            email = "sophie.meaking@lshtm.ac.uk", 
            role = c("ctb")), 
@@ -56,8 +56,8 @@ Description: Estimates the time-varying reproduction number, rate of spread,
              It aims to help users avoid some of the limitations of naive implementations in a framework
              that is informed by community feedback and is under active development.
 License: MIT + file LICENSE
-URL: https:/epiforecasts.io/EpiNow2/,
-     https:/epiforecasts.io/EpiNow2/dev/,
+URL: https://epiforecasts.io/EpiNow2/,
+     https://epiforecasts.io/EpiNow2/dev/,
      https://github.com/epiforecasts/EpiNow2
 BugReports: https://github.com/epiforecasts/EpiNow2/issues
 Imports:
