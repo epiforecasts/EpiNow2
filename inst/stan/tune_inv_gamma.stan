@@ -23,15 +23,15 @@ data {
 
 transformed data {
   vector[2] theta = [l, u]';
-    
+
   real delta = 1;
   real a = square(delta * (u + l) / (u - l)) + 2;
   real b =  ((u + l) / 2) * (square(delta * (u + l) / (u - l)) + 1);
   vector[2] y_guess = [log(a), log(b)]';
-  
+
   real x_r[0];
   int x_i[0];
-  
+
   vector[2] y = algebra_solver(tail_delta, y_guess, theta, x_r, x_i);
 }
 

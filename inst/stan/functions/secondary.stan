@@ -7,9 +7,9 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
   int t = num_elements(reports);
   int obs_scale = num_elements(frac_obs);
   vector[t] scaled_reports;
-  vector[t] conv_reports = rep_vector(1e-5, t);                            
+  vector[t] conv_reports = rep_vector(1e-5, t);
   vector[t] secondary_reports = rep_vector(0.0, t);
-  // scaling of reported cases by fraction 
+  // scaling of reported cases by fraction
   if (obs_scale) {
     scaled_reports = scale_obs(reports, frac_obs[1]);
   }else{
@@ -24,7 +24,7 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
     // update cumulative target
     if (cumulative && i > 1) {
       if (i > predict) {
-        secondary_reports[i] = secondary_reports[i - 1];       
+        secondary_reports[i] = secondary_reports[i - 1];
       }else{
         secondary_reports[i] = obs[i - 1];
       }

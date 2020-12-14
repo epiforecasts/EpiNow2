@@ -30,16 +30,16 @@ generated quantities {
   real r[n, t - seeding_time];
   for (i in 1:n) {
     // generate infections from Rt trace
-    infections[i] = to_row_vector(generate_infections(to_vector(R[i]), seeding_time, 
-                                                      gt_mean[i], gt_sd[i], max_gt, 
+    infections[i] = to_row_vector(generate_infections(to_vector(R[i]), seeding_time,
+                                                      gt_mean[i], gt_sd[i], max_gt,
                                                       initial_infections[i], initial_growth[i],
                                                       pop, future_time));
     // convolve from latent infections to mean of observations
-    reports[i] = to_row_vector(convolve_to_report(to_vector(infections[i]), delay_mean[i], 
+    reports[i] = to_row_vector(convolve_to_report(to_vector(infections[i]), delay_mean[i],
                                                   delay_sd[i], max_delay, seeding_time));
-    // weekly reporting effect 
+    // weekly reporting effect
     if (week_effect) {
-      reports[i] = to_row_vector(day_of_week_effect(to_vector(reports[i]), day_of_week, 
+      reports[i] = to_row_vector(day_of_week_effect(to_vector(reports[i]), day_of_week,
                                                     to_vector(day_of_week_simplex[i])));
     }
     // scale observations

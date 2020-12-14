@@ -2,13 +2,13 @@
 vector calculate_Rt(vector infections, int seeding_time,
                     real gt_mean, real gt_sd, int max_gt,
                     int smooth) {
-  vector[max_gt] gt_pmf;  
+  vector[max_gt] gt_pmf;
   int gt_indexes[max_gt];
   int t = num_elements(infections);
   int ot = t - seeding_time;
   vector[ot] R;
   vector[ot] sR;
-  vector[ot] infectiousness = rep_vector(1e-5, ot); 
+  vector[ot] infectiousness = rep_vector(1e-5, ot);
   // calculate PMF of the generation time
   for (i in 1:(max_gt)) {
     gt_indexes[i] = max_gt - i + 1;
@@ -41,6 +41,6 @@ real[] R_to_growth(vector R, real gt_mean, real gt_sd) {
   real r[t];
   for (s in 1:t) {
     r[s] = (pow(R[s], k) - 1) / (k * gt_mean);
-  } 
+  }
   return(r);
 }

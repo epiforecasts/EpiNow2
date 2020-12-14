@@ -11,7 +11,7 @@ vector phi(real L, int m, vector x) {
   vector[rows(x)] fi;
   fi = 1/sqrt(L) * sin(m*pi()/(2*L) * (x+L));
   return fi;
-}	
+}
 // spectral density of the exponential quadratic kernal
 real spd_se(real alpha, real rho, real w) {
   real S;
@@ -25,10 +25,10 @@ real spd_matern(real alpha, real rho, real w) {
   return S;
 }
 // setup gaussian process noise dimensions
-int setup_noise(int ot_h, int t, int horizon, int estimate_r, 
+int setup_noise(int ot_h, int t, int horizon, int estimate_r,
                 int stationary, int future_fixed, int fixed_from) {
   int noise_time = estimate_r > 0 ? (stationary > 0 ? ot_h : ot_h - 1) : t;
-  int noise_terms =  future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time; 
+  int noise_terms =  future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
   return(noise_terms);
 }
 // setup approximate gaussian process
@@ -39,13 +39,13 @@ matrix setup_gp(int M, real L, int dimension) {
   for (s in 1:dimension) {
     time[s] = (s - half_dim) / half_dim;
   }
-  for (m in 1:M){ 
-    PHI[,m] = phi(L, m, time); 
+  for (m in 1:M){
+    PHI[,m] = phi(L, m, time);
   }
   return(PHI);
 }
 // update gaussian process using spectral densities
-vector update_gp(matrix PHI, int M, real L, real alpha, 
+vector update_gp(matrix PHI, int M, real L, real alpha,
                  real rho, vector eta, int type) {
   vector[M] diagSPD;    // spectral density
   vector[M] SPD_eta;    // spectral density * noise
@@ -54,12 +54,12 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   real unit_rho = rho / noise_terms;
   // GP in noise - spectral densities
   if (type == 0) {
-    for(m in 1:M){ 
-      diagSPD[m] =  sqrt(spd_se(alpha, unit_rho, sqrt(lambda(L, m)))); 
+    for(m in 1:M){
+      diagSPD[m] =  sqrt(spd_se(alpha, unit_rho, sqrt(lambda(L, m))));
     }
   }else if (type == 1) {
-    for(m in 1:M){ 
-      diagSPD[m] =  sqrt(spd_matern(alpha, unit_rho, sqrt(lambda(L, m)))); 
+    for(m in 1:M){
+      diagSPD[m] =  sqrt(spd_matern(alpha, unit_rho, sqrt(lambda(L, m))));
     }
   }
   SPD_eta = diagSPD .* eta;

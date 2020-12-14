@@ -25,10 +25,10 @@ transformed data{
   int ot_h = ot + horizon;  // observed time + forecast horizon
   // gaussian process
   int noise_terms = setup_noise(ot_h, t, horizon, estimate_r, stationary, future_fixed, fixed_from);
-  matrix[noise_terms, M] PHI = setup_gp(M, L, noise_terms);  // basis function 
+  matrix[noise_terms, M] PHI = setup_gp(M, L, noise_terms);  // basis function
   // Rt
-  real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2)); 
-  real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2))); 
+  real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
+  real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
 }
 
 parameters{
@@ -38,7 +38,7 @@ parameters{
   vector[fixed ? 0 : M] eta;               // unconstrained noise
   // Rt
   vector[estimate_r] log_R;                // baseline reproduction number estimate (log)
-  real initial_infections[estimate_r] ;    // seed infections 
+  real initial_infections[estimate_r] ;    // seed infections
   real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
   real<lower = 0, upper = max_gt> gt_mean[estimate_r]; // mean of generation time
   real<lower = 0> gt_sd[estimate_r];       // sd of generation time
@@ -47,7 +47,7 @@ parameters{
   // observation model
   real delay_mean[delays];                 // mean of delays
   real<lower = 0> delay_sd[delays];        // sd of delays
-  simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect 
+  simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect
   real<lower = 0> frac_obs[obs_scale];     // fraction of cases that are ultimately observed
   real truncation_mean[truncation];        // mean of truncation
   real<lower = 0> truncation_sd[truncation]; // sd of truncation
@@ -85,20 +85,20 @@ transformed parameters {
  if (obs_scale) {
    reports = scale_obs(reports, frac_obs[1]);
  }
- // truncate near time cases to observed reports 
+ // truncate near time cases to observed reports
  obs_reports = truncate(reports[1:ot], truncation_mean, truncation_sd, max_truncation, 0);
 }
 
 model {
   // priors for noise GP
   if (!fixed) {
-    gaussian_process_lp(rho[1], alpha[1], eta, ls_meanlog, 
+    gaussian_process_lp(rho[1], alpha[1], eta, ls_meanlog,
                         ls_sdlog, ls_min, ls_max, alpha_sd);
   }
   // penalised priors for delay distributions
   delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, t);
   // priors for truncation
-  truncation_lp(truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd, 
+  truncation_lp(truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd,
                 trunc_sd_mean, trunc_sd_sd);
   if (estimate_r) {
     // priors on Rt
@@ -114,9 +114,9 @@ model {
   // observed reports from mean of reports (update likelihood)
   report_lp(cases, obs_reports, rep_phi, 1, model_type, obs_weight);
 }
-  
+
 generated quantities {
-  int imputed_reports[ot_h]; 
+  int imputed_reports[ot_h];
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
   real r[ot_h];
   vector[ot] log_lik;
@@ -128,7 +128,7 @@ generated quantities {
     real gt_mean_sample = normal_rng(gt_mean_mean, gt_mean_sd);
     real gt_sd_sample = normal_rng(gt_sd_mean, gt_sd_sd);
     // calculate Rt using infections and generation time
-    gen_R = calculate_Rt(infections, seeding_time, gt_mean_sample, gt_mean_sample, 
+    gen_R = calculate_Rt(infections, seeding_time, gt_mean_sample, gt_mean_sample,
                          max_gt, rt_half_window);
     // estimate growth from calculated Rt
     r = R_to_growth(gen_R, gt_mean_sample, gt_sd_sample);
