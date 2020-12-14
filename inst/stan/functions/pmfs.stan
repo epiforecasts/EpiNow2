@@ -18,7 +18,7 @@ vector discretised_gamma_pmf(int[] y, real mu, real sigma, int max_val) {
   // calculate pmf
   trunc_pmf = gamma_cdf(max_val + 1, alpha, beta) - gamma_cdf(1, alpha, beta);
   for (i in 1:n){
-    pmf[i] = (gamma_cdf(y[i] + 1, alpha, beta) - gamma_cdf(y[i], alpha, beta)) / 
+    pmf[i] = (gamma_cdf(y[i] + 1, alpha, beta) - gamma_cdf(y[i], alpha, beta)) /
     trunc_pmf;
   }
   return(pmf);

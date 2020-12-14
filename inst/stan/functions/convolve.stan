@@ -1,4 +1,4 @@
-// convolve a pdf and case vector 
+// convolve a pdf and case vector
 vector convolve(vector cases, vector rev_pmf) {
     int t = num_elements(cases);
     int max_pmf = num_elements(rev_pmf);
@@ -12,8 +12,8 @@ vector convolve(vector cases, vector rev_pmf) {
 
 
 // convolve latent infections to reported (but still unobserved) cases
-vector convolve_to_report(vector infections, 
-                          real[] delay_mean, 
+vector convolve_to_report(vector infections,
+                          real[] delay_mean,
                           real[] delay_sd,
                           int[] max_delay,
                           int seeding_time) {
@@ -39,7 +39,7 @@ vector convolve_to_report(vector infections,
   return(reports);
 }
 
-void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd, 
+void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,
                real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd, int weight){
     int delays = num_elements(delay_mean);
     if (delays) {
