@@ -22,7 +22,7 @@
 #' # then the default fill scale works
 #' eg_data <- data.table::data.table(variable = c("Increasing", 
 #'                                                "Decreasing", 
-#'                                                "Unsure", 
+#'                                                "Stable", 
 #'                                                "Likely decreasing",
 #'                                                "Likely increasing"),
 #'                                   country = c("France", 
@@ -32,7 +32,7 @@
 #'                                               "Australia") )
 #' # make variable a factor so the ordering is sensible in the legend
 #' eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
-#'                                                         "Unsure", "Likely increasing",
+#'                                                         "Stable", "Likely increasing",
 #'                                                         "Increasing"))
 #' global_map(eg_data, variable = "variable", variable_label = "Direction\nof change")
 #' 
@@ -141,13 +141,13 @@ global_map <- function(data = NULL, variable = NULL,
 #' # if you know the provnum_ne codes you can use them directly
 #' eg_data <- data.table::data.table(variable = c("Increasing", 
 #'                                                "Decreasing", 
-#'                                                "Unsure", 
+#'                                                "Stable", 
 #'                                                "Likely decreasing",
 #'                                                "Likely increasing"),
 #'                                   region_code = c(5, 7, 6, 8, 9))
 #' # make variable a factor so the ordering is sensible
 #' eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
-#'                                                         "Unsure", "Likely increasing",
+#'                                                         "Stable", "Likely increasing",
 #'                                                         "Increasing"))
 #' 
 #' country_map(data = eg_data, country = "Australia", variable = "variable")
@@ -157,7 +157,7 @@ global_map <- function(data = NULL, variable = NULL,
 #' # sometimes it will be more convenient to join your data by name than provnum_ne code:
 #' us_data <- data.table::data.table(variable = c("Increasing", 
 #'                                                "Decreasing", 
-#'                                                "Unsure", 
+#'                                                "Stable", 
 #'                                                "Likely decreasing",
 #'                                                "Likely increasing"),
 #'                                   region_code = c("California",
@@ -167,7 +167,7 @@ global_map <- function(data = NULL, variable = NULL,
 #'                                                   "New York"))
 #' # make variable a factor so the ordering is sensible in the legend
 #' us_data$variable <- factor(us_data$variable, levels = c("Decreasing", "Likely decreasing",
-#'                                                         "Unsure", "Likely increasing",
+#'                                                         "Stable", "Likely increasing",
 #'                                                         "Increasing"))
 #' 
 #' country_map(data = us_data, country = "United States of America",
@@ -241,7 +241,7 @@ country_map <- function(data = NULL, country = NULL,
 #' @param fill_labels A function to use to allocate legend labels. An example (used below) is \code{scales::percent},
 #' which can be used for percentage data.
 #' @param scale_fill Function to use for scaling the fill. Defaults to a custom `ggplot2::scale_fill_manual`, which
-#' expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Unsure".
+#' expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Stable".
 #' @param breaks Breaks to use in legend. Defaults to `ggplot2::waiver`.
 #' @param ... Additional arguments passed to the `scale_fill` function
 #' @return A `ggplot2` object 
@@ -262,7 +262,7 @@ theme_map <- function(map = NULL, continuous = FALSE,
       "Likely increasing" = "#fd9e49",
       "Likely decreasing" = "#5fa2ce",
       "Decreasing" = "#1170aa",
-      "Unsure" = "#7b848f")
+      "Stable" = "#7b848f")
   }
   
   if (is.null(breaks)) {
