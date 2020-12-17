@@ -30,7 +30,7 @@ transform ("identity"). Other options include log scaling ("log") and log base 1
 which can be used for percentage data.}
 
 \item{scale_fill}{Function to use for scaling the fill. Defaults to a custom \code{ggplot2::scale_fill_manual}, which
-expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Unsure".}
+expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Stable".}
 
 \item{...}{Additional arguments passed to the \code{scale_fill} function}
 }
@@ -52,7 +52,7 @@ if(requireNamespace("rnaturalearth") & requireNamespace("scales")){
 # then the default fill scale works
 eg_data <- data.table::data.table(variable = c("Increasing", 
                                                "Decreasing", 
-                                               "Unsure", 
+                                               "Stable", 
                                                "Likely decreasing",
                                                "Likely increasing"),
                                   country = c("France", 
@@ -62,7 +62,7 @@ eg_data <- data.table::data.table(variable = c("Increasing",
                                               "Australia") )
 # make variable a factor so the ordering is sensible in the legend
 eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
-                                                        "Unsure", "Likely increasing",
+                                                        "Stable", "Likely increasing",
                                                         "Increasing"))
 global_map(eg_data, variable = "variable", variable_label = "Direction\nof change")
 
