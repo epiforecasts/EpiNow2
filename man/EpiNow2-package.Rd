@@ -15,8 +15,8 @@ Estimates the time-varying reproduction number, rate of spread,
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https:/epiforecasts.io/EpiNow2/}
-  \item \url{https:/epiforecasts.io/EpiNow2/dev/}
+  \item \url{https://epiforecasts.io/EpiNow2/}
+  \item \url{https://epiforecasts.io/EpiNow2/dev/}
   \item \url{https://github.com/epiforecasts/EpiNow2}
   \item Report bugs at \url{https://github.com/epiforecasts/EpiNow2/issues}
 }
@@ -33,13 +33,13 @@ Authors:
   \item Joe Hickson \email{joseph.hickson@metoffice.gov.uk}
   \item Hamada S. Badr \email{badr@jhu.edu} (\href{https://orcid.org/0000-0002-9808-2344}{ORCID})
   \item Michael DeWitt \email{me.dewitt.jr@gmail.com} (\href{https://orcid.org/0000-0001-8940-1967}{ORCID})
-  \item Robin Thompson \email{robin.thompson@lshtm.ac.uk}
   \item EpiForecasts
   \item Sebastian Funk \email{sebastian.funk@lshtm.ac.uk}
 }
 
 Other contributors:
 \itemize{
+  \item Robin Thompson \email{robin.thompson@lshtm.ac.uk} [contributor]
   \item Sophie Meakin \email{sophie.meaking@lshtm.ac.uk} [contributor]
   \item James Munday \email{james.munday@lshtm.ac.uk} [contributor]
   \item Nikos Bosse [contributor]

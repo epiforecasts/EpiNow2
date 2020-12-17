@@ -34,7 +34,7 @@ transform ("identity"). Other options include log scaling ("log") and log base 1
 which can be used for percentage data.}
 
 \item{scale_fill}{Function to use for scaling the fill. Defaults to a custom \code{ggplot2::scale_fill_manual}, which
-expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Unsure".}
+expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Stable".}
 
 \item{region_col_ne}{Character string indicating the name of a column in the data returned by
 \code{rnaturalearth::ne_states()} that \code{data$region_code} corresponds to. Possibilities include
@@ -59,13 +59,13 @@ if(requireNamespace("rnaturalearth") & requireNamespace("scales")){
 # if you know the provnum_ne codes you can use them directly
 eg_data <- data.table::data.table(variable = c("Increasing", 
                                                "Decreasing", 
-                                               "Unsure", 
+                                               "Stable", 
                                                "Likely decreasing",
                                                "Likely increasing"),
                                   region_code = c(5, 7, 6, 8, 9))
 # make variable a factor so the ordering is sensible
 eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
-                                                        "Unsure", "Likely increasing",
+                                                        "Stable", "Likely increasing",
                                                         "Increasing"))
 
 country_map(data = eg_data, country = "Australia", variable = "variable")
@@ -75,7 +75,7 @@ country_map(data = eg_data, country = "Australia", variable = "variable")
 # sometimes it will be more convenient to join your data by name than provnum_ne code:
 us_data <- data.table::data.table(variable = c("Increasing", 
                                                "Decreasing", 
-                                               "Unsure", 
+                                               "Stable", 
                                                "Likely decreasing",
                                                "Likely increasing"),
                                   region_code = c("California",
@@ -85,7 +85,7 @@ us_data <- data.table::data.table(variable = c("Increasing",
                                                   "New York"))
 # make variable a factor so the ordering is sensible in the legend
 us_data$variable <- factor(us_data$variable, levels = c("Decreasing", "Likely decreasing",
-                                                        "Unsure", "Likely increasing",
+                                                        "Stable", "Likely increasing",
                                                         "Increasing"))
 
 country_map(data = us_data, country = "United States of America",
