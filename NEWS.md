@@ -1,3 +1,11 @@
+# EpiNow2 1.3.3
+
+This release is underdevelopment and the features outlined below may change before release.
+
+## Other changes
+
+* Updated the classification of growth to use stable rather than unsure when Rt is approximately 1.
+
 # EpiNow2 1.3.2
 
 In this release model run times have been reduced using a combination of code optimisation and testing to reduce the likelihood of long running edge cases. Model flexibility has also been increased, particularly for the back calculation approach which now supports an increased range of prior choices. A significant development in this release is the edition of the experimental `estimate_secondary` model (and supporting `forecast` and `plot` functions). This allows a downstream target to be forecast from an observation. Example use cases include forecasting deaths from test positive cases and hospital bed usage from hospital admissions. This approach is intended to provide an alternative to models in which multiple targets are estimated jointly.
