@@ -14,7 +14,7 @@ expose_stan_fns(files, target_dir, ...)
 \item{...}{Additional arguments passed to \code{rstan::expose_stan_functions}.}
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 his function exposes internal stan functions in R from a user
 supplied list of target files. Allows for testing of stan functions in R and potentially
 user use in R code.

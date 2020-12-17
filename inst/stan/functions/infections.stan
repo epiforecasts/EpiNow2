@@ -9,7 +9,7 @@ real update_infectiousness(vector infections, vector gt_pmf,
   return(new_inf);
 }
 // generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
-vector generate_infections(vector oR, int uot, 
+vector generate_infections(vector oR, int uot,
                            real[] gt_mean, real[] gt_sd, int max_gt,
                            real[] initial_infections, real[] initial_growth,
                            int pop, int ht) {
@@ -23,7 +23,7 @@ vector generate_infections(vector oR, int uot,
   vector[ot] cum_infections = rep_vector(0, ot);
   vector[ot] infectiousness = rep_vector(1e-5, ot);
   // generation time pmf
-  vector[max_gt] gt_pmf = rep_vector(1e-5, max_gt);   
+  vector[max_gt] gt_pmf = rep_vector(1e-5, max_gt);
   int gt_indexes[max_gt];
   for (i in 1:(max_gt)) {
     gt_indexes[i] = max_gt - i + 1;
@@ -57,18 +57,29 @@ vector generate_infections(vector oR, int uot,
   return(infections);
 }
 // backcalculate infections using mean shifted cases and non-parametric noise
-vector deconvolve_infections(vector shifted_cases, vector noise, int fixed) {
+vector deconvolve_infections(vector shifted_cases, vector noise, int fixed,
+                             int prior) {
   int t = num_elements(shifted_cases);
   vector[t] infections = rep_vector(1e-5, t);
   if(!fixed) {
-    infections = infections + shifted_cases .* exp(noise);
+    vector[t] exp_noise = exp(noise);
+    if (prior == 1) {
+      infections = infections + shifted_cases .* exp_noise;
+    }else if (prior == 0) {
+     infections = infections + exp_noise;
+    }else if (prior == 2) {
+      infections[1] = infections[1] + shifted_cases[1] * exp_noise[1];
+      for (i in 2:t) {
+        infections[i] = infections[i - 1] * exp_noise[i];
+      }
+    }
   }else{
     infections = infections + shifted_cases;
   }
   return(infections);
 }
 // Update the log density for the generation time distribution mean and sd
-void generation_time_lp(real[] gt_mean, real gt_mean_mean, real gt_mean_sd, 
+void generation_time_lp(real[] gt_mean, real gt_mean_mean, real gt_mean_sd,
                         real[] gt_sd, real gt_sd_mean, real gt_sd_sd, int weight) {
     target += normal_lpdf(gt_mean[1] | gt_mean_mean, gt_mean_sd) * weight;
     target += normal_lpdf(gt_sd[1] | gt_sd_mean, gt_sd_sd) * weight;

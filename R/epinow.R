@@ -1,18 +1,19 @@
 #' Real-time Rt Estimation, Forecasting and Reporting
 #'
-#' @description \lifecycle{maturing}
-#' This function wraps the functionality of `estimate_infections` and `forecast_infections` in order
+#' @description `r lifecycle::badge("maturing")`
+#' This function wraps the functionality of `estimate_infections()` and `forecast_infections()` in order
 #' to estimate Rt and cases by date of infection, forecast into these infections into the future. It also contains 
 #' additional functionality to convert forecasts to date of report and produce summary output useful for reporting 
-#' results and interpreting them.
+#' results and interpreting them. See [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867) for an 
+#' example of using `epinow` to estimate Rt for Covid-19 in a country from the ECDC data source. 
 #' @param output A character vector of optional output to return. Supported options are samples ("samples"), 
-#' plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if `target_folder` is not null
-#'  - set using "latest"), and the stan fit ("fit"). The default is to return all options. This argument uses partial matching so for example passing "sam" will lead to samples
-#' being reported.
+#' plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if `target_folder` is not null, 
+#' set using "latest"), and the stan fit ("fit"). The default is to return all options. This argument uses partial matching 
+#' so for example passing "sam" will lead to samples being reported.
 #' @param return_output Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE 
 #' if no directory for saving is specified. 
-#' @param forecast_args A list of arguments to pass to `forecast_infections`. Unless at a minimum a `forecast_model` is passed 
-#' tin his list then `forecast_infections` will be bypassed. 
+#' @param forecast_args A list of arguments to pass to `forecast_infections()`. Unless at a minimum a `forecast_model` is passed 
+#' then `forecast_infections` will be bypassed. 
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @seealso estimate_infections simulate_infections forecast_infections regional_epinow
@@ -38,7 +39,7 @@
 #'                         max = 10)
 #' 
 #' # example case data
-#' reported_cases <- EpiNow2::example_confirmed[1:40] 
+#' reported_cases <- example_confirmed[1:40] 
 #' 
 #' # estimate Rt and nowcast/forecast cases by date of infection
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
@@ -173,11 +174,13 @@ epinow <- function(reported_cases,
                                                          CrIs = CrIs)
     
     # report estimates --------------------------------------------------------
-    summary <- summary(estimates, return_numeric = TRUE, target_folder = target_folder)
+    summary <- summary.estimate_infections(estimates, return_numeric = TRUE, 
+                                           target_folder = target_folder)
     
     # plot --------------------------------------------------------------------
     if (output["plots"]) {
-      plots <- plot(estimates, type = "all", target_folder = target_folder)
+      plots <- plot.estimate_infections(estimates, type = "all", 
+                                        target_folder = target_folder)
     }else{
       plots <- NULL
     }

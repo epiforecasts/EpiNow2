@@ -35,7 +35,7 @@ simulations are done at once.}
 shown.}
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 This function simulates infections using an existing fit to observed cases but with a modified
 time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
 Simulations can be run in parallel using \code{future::plan}.
@@ -45,7 +45,7 @@ Simulations can be run in parallel using \code{future::plan}.
 #set number of cores to use
 options(mc.cores = ifelse(interactive(), 4, 1))
 # get example case counts
-reported_cases <- EpiNow2::example_confirmed[1:50]
+reported_cases <- example_confirmed[1:50]
 
 # set up example generation time
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")

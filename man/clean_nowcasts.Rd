@@ -13,7 +13,7 @@ clean_nowcasts(date = NULL, nowcast_dir = ".")
 to the current directory.}
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 This function removes nowcasts in the format produced by \code{EpiNow2} from a target
 directory for the date supplied.
 }

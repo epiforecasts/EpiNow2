@@ -46,7 +46,7 @@ expects the possible values to be "Increasing", "Likely increasing", "Likely dec
 A \code{ggplot2} object containing a country map.
 }
 \description{
-\lifecycle{questioning}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
 This general purpose function can be used to generate a country map for a single variable. It has few defaults but
 the data supplied must contain a \code{region_code} variable for linking to mapping data. This function requires
 the installation of the \code{rnaturalearth} package. Status of this function is currently questioning as it is uncertain

@@ -14,5 +14,5 @@ are stored (as produced by \code{regional_rt_pipeline}).}
 A named character vector containing the results to plot.
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 }

@@ -13,6 +13,6 @@ copy_results_to_latest(target_folder = NULL, latest_folder = NULL)
 As produced by \code{setup_target_folder}.}
 }
 \description{
-\lifecycle{questioning}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
 Copies output from the dated folder to a latest folder. May be undergo changes in later releases.
 }

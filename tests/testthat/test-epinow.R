@@ -1,19 +1,21 @@
 context("epinow")
 
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 15)
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 15)
-reporting_delay <- list(mean = convert_to_logmean(3,1), mean_sd = 0.1, 
-                        sd = convert_to_logsd(3,1), sd_sd = 0.1,
-                        max = 10)
-
-reported_cases <- EpiNow2::example_confirmed[1:30]
-
-futile.logger::flog.threshold("FATAL")
-
-df_non_zero <- function(df) {
-  expect_true(nrow(df) > 0)
+if (!testthat:::on_cran()) {
+  generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 15)
+  incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 15)
+  reporting_delay <- list(mean = convert_to_logmean(3,1), mean_sd = 0.1, 
+                          sd = convert_to_logsd(3,1), sd_sd = 0.1,
+                          max = 10)
+  
+  reported_cases <- EpiNow2::example_confirmed[1:30]
+  
+  futile.logger::flog.threshold("FATAL")
+  
+  df_non_zero <- function(df) {
+    expect_true(nrow(df) > 0)
+  }
+  expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "timing")  
 }
-expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "timing")  
 
 test_that("epinow produces expected output when run with default settings", {
   skip_on_cran()
@@ -41,7 +43,7 @@ test_that("epinow runs without error when saving to disk", {
                                       delays = delay_opts(incubation_period, reporting_delay),
                                       stan = stan_opts(samples = 25, warmup = 25, cores = 1, chains = 2,
                                                   control = list(adapt_delta = 0.8)),
-                                      target_folder = tempdir(),
+                                      target_folder = tempdir(check = TRUE),
                                       logs = NULL,
                                       )))
 })

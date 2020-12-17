@@ -45,7 +45,7 @@ A list of \code{data.tables}. The first entry ("samples") contains raw forecast 
 summarised forecasts.
 }
 \description{
-\lifecycle{experimental}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
 Provides optional tools for forecasting cases and Rt estimates using the timeseries methods
 (via the \code{EpiSoon} package). It requires the \code{Episoon} package. Installation instructions for the EpiSoon package are
 available \href{https://epiforecasts.io/EpiSoon/}{here}.
@@ -55,11 +55,11 @@ available \href{https://epiforecasts.io/EpiSoon/}{here}.
 if(requireNamespace("EpiSoon")){
    if(requireNamespace("forecastHybrid")){
 # example case data
-reported_cases <- EpiNow2::example_confirmed[1:40]
+reported_cases <- example_confirmed[1:40]
  
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- EpiNow2::estimate_delay(rlnorm(100, log(6), 1), max_value = 15)
+reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 15)
 
 # estimate Rt and infections from data
 out <- estimate_infections(reported_cases, generation_time = generation_time,

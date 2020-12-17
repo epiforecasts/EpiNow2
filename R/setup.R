@@ -1,6 +1,6 @@
 #' Setup Logging
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Sets up `futile.logger` logging, which is integrated into `EpiNow2`. See the 
 #' documentation for `futile.logger` for full details. By default `EpiNow2` prints all logs at 
 #' the "INFO" level and returns them to the console. Usage of logging is currently being explored 
@@ -18,12 +18,6 @@
 #' @importFrom futile.logger flog.threshold flog.appender appender.tee appender.file flog.info
 #' @return Nothing
 #' @export
-#' @examples
-#' # set up info only logs with errors only 
-#' # for logging related to epinow (or nested) calls
-#' # (info logs are enabled by default at all levels.)
-#' setup_logging("Info", name = "EpiNow2")
-#' setup_logging("ERROR", name = "EpiNow2.epinow")
 setup_logging <- function(threshold = "INFO", file = NULL,
                           mirror_to_console = FALSE, name = "EpiNow2") {
   if (is.null(name)) {
@@ -34,10 +28,12 @@ setup_logging <- function(threshold = "INFO", file = NULL,
   futile.logger::flog.threshold(threshold, name = name)
   
   if (!is.null(file)) {
-    message(sprintf("Writing %s logs to: %s", name, file))
+
     if (mirror_to_console) {
+      message(sprintf("Writing %s logs to the console and: %s", name, file))
       futile.logger::flog.appender(futile.logger::appender.tee(file), name = name)
     }else{
+      message(sprintf("Writing %s logs to: %s", name, file))
       futile.logger::flog.appender(futile.logger::appender.file(file), name = name)  
     }
   }else{
@@ -49,7 +45,7 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 
 #' Setup Default Logging
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Sets up default logging. Usage of logging is currently being explored as the current setup
 #' cannot log stan errors or progress.
 #' @param logs Character path indicating the target folder in which to store log 
@@ -65,7 +61,7 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' @importFrom purrr walk
 #' @examples
 #' setup_default_logging()
-setup_default_logging <- function(logs = tempdir(),
+setup_default_logging <- function(logs = tempdir(check = TRUE),
                                   mirror_epinow = FALSE,
                                   target_date = NULL) {
   if (!is.null(logs)) {
@@ -94,7 +90,7 @@ setup_default_logging <- function(logs = tempdir(),
 }
 
 #' Set up Future Backend
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' A utility function that aims to streamline the set up 
 #' of the required future backend with sensible defaults for most users of `regional_epinow`.
 #' More advanced users are recommended to setup their own `future` backend based on their
@@ -147,7 +143,7 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
 }
 
 #' Convert to Data Table
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Convenience function that sets the number of `data.table` cores to 1 and 
 #' maps input to be a `data.table`
 #' @inheritParams estimate_infections
@@ -162,7 +158,7 @@ setup_dt <- function(reported_cases) {
 
 #' Setup Target Folder for Saving
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Sets up a folders for saving results
 #' @param target_date Date, defaults to maximum found in the data if not specified.
 #' @param target_folder Character string specifying where to save results (will create if not present).

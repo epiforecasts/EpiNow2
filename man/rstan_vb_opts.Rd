@@ -22,7 +22,7 @@ before failing.}
 A list of arguments to pass to \code{rstan::vb}
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Defines a list specifying the arguments passed to
 \code{rstan::vb}. Custom settings can be supplied which override the defaults.
 }

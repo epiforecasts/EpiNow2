@@ -1,7 +1,7 @@
 #' Real-time Rt Estimation, Forecasting and Reporting by Region
 #'
-#' @description \lifecycle{maturing}
-#' Efficiently runs `epinow` across multiple regions in an efficient manner and conducts basic data checks and 
+#' @description `r lifecycle::badge("maturing")`
+#' Efficiently runs `epinow()` across multiple regions in an efficient manner and conducts basic data checks and 
 #' cleaning such as removing regions with fewer than `non_zero_points` as these are unlikely to produce reasonable 
 #' results whilst consuming significant resources. See the documentation for `epinow` for further information.
 #' 
@@ -18,7 +18,7 @@
 #' that region to be evaluated. Defaults to 7.
 #' @param output A character vector of optional output to return. Supported options are the individual regional estimates
 #' ("regions"),  samples ("samples"), plots ("plots"), copying the individual region dated folder into 
-#' a latest folder (if `target_folder` is not null - set using "latest"), the stan fit of the underlying model ("fit"), and an 
+#' a latest folder (if `target_folder` is not null, set using "latest"), the stan fit of the underlying model ("fit"), and an 
 #' overall summary across regions ("summary"). The default is to return samples and plots alongside summarised estimates and 
 #' summary statistics. If `target_folder` is not NULL then the default is also to copy all results into a latest folder.
 #' @param summary_args A list of arguments passed to `regional_summary`. See the `regional_summary` documentation for details.
@@ -50,7 +50,7 @@
 #'                         sd_sd = 0.1, max = 15)
 #'                         
 #' # uses example case vector
-#' cases <- EpiNow2::example_confirmed[1:60]
+#' cases <- example_confirmed[1:60]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
@@ -61,7 +61,8 @@
 #'                        generation_time = generation_time,
 #'                        delays = delay_opts(incubation_period, reporting_delay),
 #'                        rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-#'                        stan = stan_opts(samples = 100, warmup = 200),
+#'                        stan = stan_opts(samples = 100, warmup = 200, 
+#'                                         control = list(adapt_delta = 0.95)),
 #'                        verbose = interactive())
 #'                        
 #' # apply a different rt method per region
@@ -73,7 +74,8 @@
 #'                              generation_time = generation_time,
 #'                              delays = delay_opts(incubation_period, reporting_delay),
 #'                              rt = rt, gp = gp,
-#'                              stan = stan_opts(samples = 100, warmup = 200),
+#'                              stan = stan_opts(samples = 100, warmup = 200,
+#'                                               control = list(adapt_delta = 0.95)),
 #'                              verbose = interactive())
 #'}
 regional_epinow <- function(reported_cases, 
@@ -95,7 +97,7 @@ regional_epinow <- function(reported_cases,
                             return_output = FALSE,
                             summary_args = list(), 
                             verbose = FALSE,
-                            logs = tempdir(), ...) {
+                            logs = tempdir(check = TRUE), ...) {
   # supported output
   output <- match_output_arguments(output, 
                                    supported_args = c("plots", "samples", "fit",
@@ -126,7 +128,6 @@ regional_epinow <- function(reported_cases,
   
   # run regions (make parallel using future::plan)
   futile.logger::flog.trace("calling future apply to process each region through the run_region function")
-  futile.logger::flog.info("Showing progress using progressr.")
   
   progressr::with_progress({
     progress_fn <- progressr::progressor(along = regions)
@@ -207,7 +208,7 @@ regional_epinow <- function(reported_cases,
 
 #' Clean Regions
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Removes regions with insufficient time points, and provides logging information on the 
 #' input.
 #' @seealso regional_epinow
@@ -244,7 +245,7 @@ clean_regions <- function(reported_cases, non_zero_points) {
 
 #' Run epinow with Regional Processing Code
 #' 
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Internal function that handles calling `epinow`. Future work will extend this 
 #' function to better handle `stan` logs and allow the user to modify settings between
 #' regions.
@@ -307,7 +308,7 @@ run_region <- function(target_region,
     reported_cases = regional_cases,
     target_folder = target_folder,
     target_date = target_date,
-    return_output = ifelse(output["summary"], TRUE, return_output),
+    return_output = TRUE,
     output = names(output[output]),
     logs = NULL,
     verbose = verbose,
@@ -327,7 +328,7 @@ run_region <- function(target_region,
 
 #' Process regional estimate
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Internal function that removes output that is not required, and returns logging 
 #' information. 
 #' @param out List of output returned by `epinow`
@@ -342,20 +343,20 @@ process_region <- function(out, target_region, timing,
                            return_output = TRUE, return_timing = TRUE,
                            complete_logger = "EpiNow2.epinow") {
   
-  if (exists("estimates", out) & !return_output) {
+  if (!is.null(out[["estimates"]]) & !return_output) {
     out$estimates$samples <- NULL
   }
-  if (exists("forecast", out) & !return_output) {
+  if (!is.null(out[["forecast"]]) & !return_output) {
     out$forecast$samples <- NULL
   }
-  if (exists("estimated_reported_cases", out) & !return_output) {
+  if (!is.null(out[["estimated_reported_cases"]]) & !return_output) {
     out$estimated_reported_cases$samples <- NULL
   }
-  if (exists("plots", out) & !return_output) {
+  if (!is.null(out[["plots"]]) & !return_output) {
     out$estimated_reported_cases$plots <- NULL
   }
   
-  if (exists("summary", out)) { # if it failed a warning would have been output above
+  if (!is.null(out[["summary"]])) { # if it failed a warning would have been output above
     futile.logger::flog.info("Completed estimates for: %s", target_region, 
                              name = complete_logger)
   }
@@ -364,7 +365,7 @@ process_region <- function(out, target_region, timing,
 
 #' Process all Region Estimates
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Internal function that processes the output from multiple `epinow` runs, adds 
 #' summary logging information.
 #' @param regional_out A list of output from multiple runs of `regional_epinow`

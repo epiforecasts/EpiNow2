@@ -9,7 +9,7 @@ rstan_opts(object = NULL, samples = 2000, method = "sampling", ...)
 \arguments{
 \item{object}{Stan model object. By default uses the compiled package default.}
 
-\item{samples}{Numeric, default 1000. Overall number of posterior samples.
+\item{samples}{Numeric, default 2000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}
 
 \item{method}{A character string, defaulting to sampling. Currently supports
@@ -21,7 +21,7 @@ When using multiple chains iterations per chain is samples / chains.}
 A list of arguments to pass to the appropriate rstan functions.
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Defines a list specifying the arguments passed to underlying \code{rstan}
 functions via \code{rstan_sampling_opts} and \code{rstan_vb_opts}.Custom settings can be supplied
 which override the defaults.

@@ -19,5 +19,5 @@ get_raw_result(file, region, date, result_dir)
 An R object read in from the targeted .rds file
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 }

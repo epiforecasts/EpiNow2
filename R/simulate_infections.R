@@ -1,6 +1,6 @@
 #' Simulate infections using a given trajectory of the time-varying reproduction number
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' This function simulates infections using an existing fit to observed cases but with a modified 
 #' time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
 #' Simulations can be run in parallel using `future::plan`.
@@ -19,7 +19,7 @@
 #' @param verbose Logical defaults to `interactive()`. Should a progress bar (from `progressr`) be
 #' shown.
 #' @importFrom rstan extract sampling
-#' @importFrom purrr transpose map
+#' @importFrom purrr transpose map safely compact
 #' @importFrom future.apply future_lapply
 #' @importFrom progressr with_progress progressor
 #' @importFrom data.table rbindlist
@@ -30,7 +30,7 @@
 #' #set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # get example case counts
-#' reported_cases <- EpiNow2::example_confirmed[1:50]
+#' reported_cases <- example_confirmed[1:50]
 #'
 #' # set up example generation time
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
@@ -115,7 +115,8 @@ simulate_infections <- function(estimates,
     data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
     
     ## allocate empty parameters
-    data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"))
+    data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"),
+                           n = data$n)
     
     ## simulate
     sims <- rstan::sampling(object = model,
@@ -140,6 +141,8 @@ simulate_infections <- function(estimates,
     batches <- list(list(1, samples))
   }
 
+  safe_batch <- purrr::safely(batch_simulate)
+  
   ## simulate in batches
   progressr::with_progress({
     if (verbose) {
@@ -150,13 +153,14 @@ simulate_infections <- function(estimates,
                                          if (verbose) {
                                            p()
                                          }
-                                         batch_simulate(estimates, draws, model,
-                                                        shift, dates, batch[[1]], 
-                                                        batch[[2]])},
+                                         safe_batch(estimates, draws, model,
+                                                    shift, dates, batch[[1]], 
+                                                    batch[[2]])[[1]]},
                                        future.seed = TRUE)
   })
   
   ## join batches
+  out <- purrr::compact(out)
   out <- purrr::transpose(out)
   out <- purrr::map(out, ~ data.table::rbindlist(.))
   

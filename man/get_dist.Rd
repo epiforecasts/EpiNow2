@@ -19,7 +19,7 @@ get_dist(data, disease, source, max_value = 15)
 A list defining a distribution
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Search a data frame for a distribution and return it in the format expected
 by \code{delay_opts} and the \code{generation_time} argument of \code{epinow} and \code{estimate_infections}.
 }

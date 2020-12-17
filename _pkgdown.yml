@@ -53,6 +53,8 @@ reference:
       - forecast_infections
       - estimate_delay
       - estimate_truncation
+      - estimate_secondary
+      - forecast_secondary
   - title: Internal epinow Functions
     desc: Functions used internally by epinow
     contents:
@@ -73,6 +75,7 @@ reference:
     desc: Functions for model fitting
     contents:
       - contains("fit_")
+      - init_cumulative_fit
   - title: Summarise Across Regions
     desc: Functions used for summarising across regions (designed for use with regional_epinow)
     contents:

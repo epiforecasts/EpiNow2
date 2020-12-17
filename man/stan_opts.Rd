@@ -4,14 +4,29 @@
 \alias{stan_opts}
 \title{Stan Options}
 \usage{
-stan_opts(samples = 2000, backend = "rstan", return_fit = TRUE, ...)
+stan_opts(
+  samples = 2000,
+  backend = "rstan",
+  init_fit = NULL,
+  return_fit = TRUE,
+  ...
+)
 }
 \arguments{
-\item{samples}{Numeric, default 1000. Overall number of posterior samples.
+\item{samples}{Numeric, default 2000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}
 
 \item{backend}{Character string indicating the backend to use for fitting stan models.
 Currently only "rstan" is supported.}
+
+\item{init_fit}{\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
+Character string or \code{stanfit} object, defaults to NULL. Should an initial fit be used to
+initialise the full fit. An example scenario would be using a national level fit to parametrise
+regional level fits. Optionally a character string can be passed with the currently supported
+option being "cumulative". This fits the model to cumulative cases and may be useful for certain
+data sets where the sampler gets stuck or struggles to initialise. See \code{init_cumulative_fit()} for details.
+This implementation is based on the approach taken in \href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia}
+authored by James Scott.}
 
 \item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be returned.}
 
@@ -21,7 +36,7 @@ Currently only "rstan" is supported.}
 A list of arguments to pass to the appropriate rstan functions.
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Defines a list specifying the arguments passed to underlying stan
 backend functions via \code{rstan_sampling_opts} and \code{rstan_vb_opts}. Custom settings
 can be supplied which override the defaults.

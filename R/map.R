@@ -1,7 +1,7 @@
 #' Generate a global map for a single variable.
 #'
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' This general purpose function can be used to generate a global map for a single variable. It has few defaults but
 #' the data supplied must contain a \code{country} variable for linking to mapping data. This function requires the 
 #' installation of the `rnaturalearth` package. Status of this function is currently questioning as it is uncertain 
@@ -120,7 +120,7 @@ global_map <- function(data = NULL, variable = NULL,
 #' Generate a country map for a single variable.
 #'
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' This general purpose function can be used to generate a country map for a single variable. It has few defaults but
 #' the data supplied must contain a \code{region_code} variable for linking to mapping data. This function requires 
 #' the installation of the `rnaturalearth` package. Status of this function is currently questioning as it is uncertain 
@@ -228,7 +228,7 @@ country_map <- function(data = NULL, country = NULL,
 
 #' Custom Map Theme
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Applies a custom map theme to be used with `global_map`, `country_map`, and other `ggplot2` maps. Status of 
 #' this function is currently questioning as it is uncertain if it is in use. Future releases may depreciate it.
 #' @param map `ggplot2` map object 

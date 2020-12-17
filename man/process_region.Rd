@@ -32,7 +32,7 @@ the completion of estimation to.}
 A list of processed output
 }
 \description{
-\lifecycle{maturing}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#maturing'><img src='figures/lifecycle-maturing.svg' alt='Maturing lifecycle'></a>}}{\strong{Maturing}}
 Internal function that removes output that is not required, and returns logging
 information.
 }

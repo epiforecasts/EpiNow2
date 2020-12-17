@@ -24,10 +24,14 @@ and r (rate of growth).}
 on the maximum number of reported cases.}
 }
 \value{
-A \code{ggplot2} object
+A named list of \code{ggplot2} objects, \code{list(infections, reports, R, growth_rate, summary)},
+which correspond to a summary combination (last item) and for the leading items
+@seealso \code{\link[=plot_estimates]{plot_estimates()}} of \code{summarised_estimates[variable == "infections"]},
+\code{summarised_estimates[variable == "reported_cases"]}, \code{summarised_estimates[variable == "R"]},
+and \code{summarised_estimates[variable == "growth_rate"]}, respectively.
 }
 \description{
-\lifecycle{questioning}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
 Returns key summary plots for estimates. May be depreciated in later releases as current S3 methods
 are enhanced.
 }

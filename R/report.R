@@ -1,6 +1,6 @@
 #' Report case counts by date of report  
 #' 
-#' @description \lifecycle{soft-deprecated}
+#' @description `r lifecycle::badge("soft-deprecated")`
 #' Convolves latent infections to reported cases via an observation model. Likely to be removed/replaced 
 #' in later releases by functionality drawing on the `stan` implementation.                      
 #' @param case_estimates A data.table of case estimates with the following variables: date, sample, cases
@@ -33,9 +33,9 @@
 #'                            rt = NULL)
 #'                             
 #' reported_cases <- report_cases(case_estimates = 
-#'                                 out$samples[variable == "infections"][, 
-#'                                 cases := as.integer(value)][, value := NULL],
-#'                                delays = list(incubation_period, reporting_delay),
+#'                                out$samples[variable == "infections"][, 
+#'                                cases := as.integer(value)][, value := NULL],
+#'                                delays = delay_opts(incubation_period, reporting_delay),
 #'                                type = "sample")
 #' print(reported_cases)
 #' }
@@ -98,7 +98,7 @@ report_cases <- function(case_estimates,
 
 
 #' Provide Summary Statistics for Estimated Infections and Rt
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Creates a snapshot summary of estimates. May be removed in later releases as S3 methods are 
 #' enhanced.
 #' @param summarised_estimates A data.table of summarised estimates containing the following variables:
@@ -128,7 +128,7 @@ report_summary <- function(summarised_estimates,
   
   # extract latest R estimate
   R_latest <- summarised_estimates[variable == "R"][, variable := NULL][,
-                                   purrr::map(.SD, ~ round(., 1))]
+                                   purrr::map(.SD, ~ signif(., 2))]
    
   # estimate probability of control
   prob_control <- rt_samples[, .(prob_control = sum(value <= 1) / .N)]$prob_control
@@ -136,14 +136,14 @@ report_summary <- function(summarised_estimates,
   
   # extract current cases
   current_cases <- summarised_estimates[variable == "infections"][, variable := NULL][,
-                                        purrr::map(.SD, ~ as.integer(.))]
+                                        purrr::map(.SD, ~ signif(as.integer(.)), 2)]
   
   # get individual estimates
   r_latest <- summarised_estimates[variable == "growth_rate"][, variable := NULL][,
-                                  purrr::map(.SD, ~ round(., 2))]
+                                  purrr::map(.SD, ~ signif(., 2))]
   
   doubling_time <- function(r) {
-    round(log(2) * 1 / r, 1)
+    signif(log(2) * 1 / r, 2)
   }
   doubling_time_latest <- summarised_estimates[variable == "growth_rate"][,
                                                variable := NULL][,
@@ -180,7 +180,7 @@ report_summary <- function(summarised_estimates,
 
 #' Report plots
 #'
-#' @description \lifecycle{questioning}
+#' @description `r lifecycle::badge("questioning")`
 #' Returns key summary plots for estimates. May be depreciated in later releases as current S3 methods 
 #' are enhanced.
 #' @param summarised_estimates A data.table of summarised estimates containing the following variables:
@@ -193,7 +193,11 @@ report_summary <- function(summarised_estimates,
 #' @inheritParams setup_target_folder
 #' @inheritParams epinow
 #' @inheritParams plot_estimates
-#' @return A `ggplot2` object
+#' @return A named list of `ggplot2` objects, `list(infections, reports, R, growth_rate, summary)`,
+#'   which correspond to a summary combination (last item) and for the leading items
+#'   @seealso [plot_estimates()] of `summarised_estimates[variable == "infections"]`,
+#'   `summarised_estimates[variable == "reported_cases"]`, `summarised_estimates[variable == "R"]`,
+#'   and `summarised_estimates[variable == "growth_rate"]`, respectively.
 #' @export
 #' @examples 
 #' \donttest{
@@ -228,61 +232,19 @@ report_plots <- function(summarised_estimates, reported,
                               ylab = "Cases by \n date of infection",
                               max_plot = max_plot)
   
-if (!is.null(target_folder)) {
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(paste0(target_folder, "/infections_plot.png"),
-                      infections,
-                      width = 12,
-                      height = 3,
-                      dpi = 320)
-    ))
-}
 # cases by report ---------------------------------------------------------
 reports <- plot_estimates(estimate = summarised_estimates[variable == "reported_cases"],
                           reported = reported, ylab = "Cases by \n date of report",
                           max_plot = max_plot)
 
-if (!is.null(target_folder)) {
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(paste0(target_folder, "/reported_plot.png"),
-                      reports,
-                      width = 12,
-                      height = 3,
-                      dpi = 320)
-    ))
-}
-
-
 # Rt plot ------------------------------------------------------------------
 R <- plot_estimates(estimate = summarised_estimates[variable == "R"],
                        ylab = "Effective \n reproduction no.", hline = 1)
 
-if (!is.null(target_folder)) {
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(paste0(target_folder, "/reff_plot.png"),
-                      R,
-                      width = 12,
-                      height = 3,
-                      dpi = 320)
-    ))
-}
 # r plot ------------------------------------------------------------------
 growth_rate <- plot_estimates(estimate = summarised_estimates[variable == "growth_rate"],
                               ylab = "Growth rate", hline = 0)
 
-if (!is.null(target_folder)) {
-  suppressWarnings(
-    suppressMessages(
-      ggplot2::ggsave(paste0(target_folder, "/growth_rate_plot.png"),
-                      growth_rate,
-                      width = 12,
-                      height = 3,
-                      dpi = 320)
-    ))
-}
 # summary plot ------------------------------------------------------------
   summary <- suppressWarnings(
     suppressMessages(
@@ -311,17 +273,6 @@ if (!is.null(target_folder)) {
                                          max(summarised_estimates[variable == "R"]$date)))
     ))
   
-  if (!is.null(target_folder)) {
-    suppressWarnings(
-      suppressMessages(
-        ggplot2::ggsave(paste0(target_folder, "/summary_plot.png"),
-                        summary,
-                        width = 12,
-                        height = 12,
-                        dpi = 320)
-      ))
-  }
-  
   # organise output
   plots <- list(
     infections = infections,
@@ -330,5 +281,20 @@ if (!is.null(target_folder)) {
     growth_rate = growth_rate,
     summary = summary
   )
+  
+  if (!is.null(target_folder)) suppressWarnings(suppressMessages({
+        wd <- 12
+        ht <- rep(3, length(plots))
+        # summary plot is stack of panels
+        ht[length(plots)] <- ht[length(plots)]*4
+        dpi <- 320
+        pths <- file.path(target_folder, c(
+          infection="infections_plot.png", reports="reported_plot.png",
+          R = "reff_plot.png", growth_rate = "growth_rate_plot.png",
+          summary = "summary_plot.png"
+        ))
+        mapply(ggplot2::ggsave, filename = pths, plot = plots, width = wd, height = ht, dpi = dpi)
+  }))
+  
   return(plots)
 }

@@ -10,7 +10,7 @@ vector day_of_week_effect(vector reports, int[] day_of_week, vector effect) {
    }
   return(scaled_reports);
 }
-// Scale observations by fraction reported and update log density of 
+// Scale observations by fraction reported and update log density of
 // fraction reported
 vector scale_obs(vector reports, real frac_obs) {
   int t = num_elements(reports);
@@ -25,14 +25,14 @@ vector truncation_cmf(real trunc_mean, real trunc_sd, int trunc_max) {
     for (i in 1:(trunc_max)) {
       trunc_indexes[i] = i - 1;
     }
-    cmf = discretised_lognormal_pmf(trunc_indexes, trunc_mean, trunc_sd, trunc_max);   
+    cmf = discretised_lognormal_pmf(trunc_indexes, trunc_mean, trunc_sd, trunc_max);
     cmf[1] = cmf[1] + 1e-8;
     cmf = cumulative_sum(cmf);
     cmf = reverse_mf(cmf, trunc_max);
     return(cmf);
 }
 // Truncate observed data by some truncation distribution
-vector truncate(vector reports, real[] truncation_mean, real[] truncation_sd, 
+vector truncate(vector reports, real[] truncation_mean, real[] truncation_sd,
                 int[] truncation_max, int reconstruct) {
   int t = num_elements(reports);
   int truncation = num_elements(truncation_mean);
@@ -54,17 +54,17 @@ vector truncate(vector reports, real[] truncation_mean, real[] truncation_sd,
   return(trunc_reports);
 }
 // Truncation distribution priors
-void truncation_lp(real[] truncation_mean, real[] truncation_sd, 
-                   real[] trunc_mean_mean, real[] trunc_mean_sd, 
+void truncation_lp(real[] truncation_mean, real[] truncation_sd,
+                   real[] trunc_mean_mean, real[] trunc_mean_sd,
                    real[] trunc_sd_mean, real[] trunc_sd_sd) {
   int truncation = num_elements(truncation_mean);
   if (truncation) {
     truncation_mean ~ normal(trunc_mean_mean, trunc_mean_sd);
     truncation_sd ~ normal(trunc_sd_mean, trunc_sd_sd);
-  }                     
+  }
 }
 // update log density for reported cases
-void report_lp(int[] cases, vector reports, 
+void report_lp(int[] cases, vector reports,
                real[] rep_phi, int phi_prior,
                int model_type, real weight) {
   real sqrt_phi;
@@ -83,7 +83,7 @@ void report_lp(int[] cases, vector reports,
   }
 }
 // update log likelihood (as above but not vectorised and returning log likelihood)
-vector report_log_lik(int[] cases, vector reports, 
+vector report_log_lik(int[] cases, vector reports,
                       real[] rep_phi, int model_type, real weight) {
     int t = num_elements(reports);
     vector[t] log_lik;
@@ -107,3 +107,27 @@ vector report_log_lik(int[] cases, vector reports,
   }
   return(log_lik);
 }
+// sample reported cases from the observation model
+int[] report_rng(vector reports, real[] rep_phi, int model_type) {
+  int t = num_elements(reports);
+  int sampled_reports[t];
+  real sqrt_phi;
+  if (model_type) {
+    sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+    for (s in 1:t) {
+      // defer to poisson if phi is large, to avoid overflow
+      if (sqrt_phi > 1e4) {
+        sampled_reports[s] = poisson_rng(reports[s] > 1e8 ? 1e8 : reports[s]);
+      } else {
+        sampled_reports[s] = neg_binomial_2_rng(reports[s] > 1e8 ? 1e8 : reports[s], sqrt_phi);
+      }
+    }
+  }else {
+    for (s in 1:t) {
+      sampled_reports[s] = poisson_rng(reports[s] > 1e8 ? 1e8 : reports[s]);
+    }
+  }
+  return(sampled_reports);
+}
+
+

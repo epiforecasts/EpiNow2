@@ -14,7 +14,7 @@ in date format.}
 A data table
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Convenience function that sets the number of \code{data.table} cores to 1 and
 maps input to be a \code{data.table}
 }

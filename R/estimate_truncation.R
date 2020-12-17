@@ -1,9 +1,11 @@
 #' Estimate Truncation of Observed Data
 #'
-#' @description \lifecycle{experimental}
+#' @description `r lifecycle::badge("experimental")`
 #' Estimates a truncation distribution from multiple snapshots of the same 
 #' data source over time. This distribution can then be used in `regional_epinow`,
-#' `epinow`, and `estimate_infections` to adjust for truncated data. 
+#' `epinow`, and `estimate_infections` to adjust for truncated data. See [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a) 
+#' for an example of using this approach on Covid-19 data in England. 
+#' 
 #' The model of truncation is as follows:
 #' 
 #' 1. The truncation distribution is assumed to be log normal with a mean and 
@@ -75,7 +77,8 @@
 #'                            dist = trunc_dist)
 #'
 #' # fit model to example data
-#' est <- estimate_truncation(example_data, verbose = interactive())
+#' est <- estimate_truncation(example_data, verbose = interactive(),
+#'                            chains = 2, iter = 2000)
 #'                            
 #' # summary of the distribution
 #' est$dist
@@ -141,21 +144,10 @@ estimate_truncation <- function(obs, max_truncation = 10,
     max = max_truncation
   )
   
-  # generate symmetric CrIs
-  CrIs <- CrIs[order(CrIs)]
-  sym_CrIs <- c(0.5, 0.5 - CrIs / 2, 0.5 + CrIs / 2)
-  sym_CrIs <- sym_CrIs[order(sym_CrIs)]
-  CrIs <- round(100 * CrIs, 0)
-  CrIs <- c(paste0("lower_", CrIs), "median", paste0("upper_", CrIs))
-  customised_summary <- function(par) {
-    summary <- rstan::summary(fit, pars = par, probs = sym_CrIs)$summary
-    colnames(summary) <- c("mean", "se_mean", "sd", CrIs, "n_eff", "Rhat")
-    return(summary)
-  }
   # summarise reconstructed observations
-  recon_obs <- customised_summary("recon_obs")
-  recon_obs <- data.table::as.data.table(recon_obs, 
-                                         keep.rownames = "id")
+  recon_obs <- extract_stan_param(fit, "recon_obs", CrIs = CrIs,
+                                  var_names = TRUE)
+  recon_obs <- recon_obs[, id := variable][, variable := NULL]
   recon_obs <- recon_obs[, dataset := 1:.N][, 
                            dataset := dataset %% data$obs_sets][
                            dataset == 0, dataset := data$obs_sets]
@@ -183,9 +175,8 @@ estimate_truncation <- function(obs, max_truncation = 10,
   out$obs <- data.table::rbindlist(out$obs)
   out$last_obs <- last_obs
   # summarise estimated cmf of the truncation distribution
-  out$cmf <- customised_summary("cmf")
+  out$cmf <- extract_stan_param(fit, "cmf", CrIs = CrIs)
   out$cmf <- data.table::as.data.table(out$cmf)[, index := .N:1]
-  out$cmf <- out$cmf[, c("n_eff", "Rhat") := NULL]
   data.table::setcolorder(out$cmf, "index")
   out$data <- data
   out$fit <- fit
@@ -196,8 +187,8 @@ estimate_truncation <- function(obs, max_truncation = 10,
 
 #' Plot method for estimate_truncation
 #'
-#' @description \lifecycle{experimental}
-#' \code{plot} method for class "estimate_truncation". Returns 
+#' @description `r lifecycle::badge("experimental")`
+#' `plot` method for class "estimate_truncation". Returns 
 #' a plot faceted over each dataset used in fitting with the latest 
 #' observations as columns, the data observed at the time (and so truncated) 
 #' as dots and the truncation adjusted estimates as a ribbon.

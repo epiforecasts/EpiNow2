@@ -18,6 +18,7 @@ test_that("update_infectiousness works as expected with default settings", {
 
 # test generate infections
 test_that("generate_infections works as expected", {
+  skip_on_cran()
   expect_equal(round(generate_infections(c(1, rep(1, 9)), 10, 3, 2, 15, log(1000), 0, 0 ,0), 0),
                c(rep(1000, 10), 996, rep(997, 3), rep(998, 6)))
   expect_equal(round(generate_infections(c(1, rep(1.1, 9)), 10, 3, 2, 15, log(20), 0.03, 0 ,0), 0),

@@ -18,7 +18,7 @@ Defaults to 0.9.}
 A data.table containing the upper and lower bounds for the specified credible interval
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Adds symmetric a credible interval based on quantiles.
 }
 \examples{

@@ -7,7 +7,7 @@
 rstan_sampling_opts(
   cores = getOption("mc.cores", 1L),
   warmup = 250,
-  samples = 1000,
+  samples = 2000,
   chains = 4,
   control = list(),
   save_warmup = FALSE,
@@ -24,7 +24,7 @@ many processors as the hardware and RAM allow (up to the number of chains).}
 
 \item{warmup}{Numeric, defaults to 250. Number of warmup samples per chain.}
 
-\item{samples}{Numeric, default 1000. Overall number of posterior samples.
+\item{samples}{Numeric, default 2000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}
 
 \item{chains}{Numeric, defaults to 4. Number of MCMC chains to use.}
@@ -53,7 +53,7 @@ allowed time then estimation will fail with an informative error.}
 A list of arguments to pass to \code{rstan::sampling}
 }
 \description{
-\lifecycle{stable}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Defines a list specifying the arguments passed to
 \code{rstan::sampling}. Custom settings can be supplied which override the defaults.
 }

@@ -1,6 +1,6 @@
 #' Delay Distribution Options
 #' 
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Returns delay distributions formatted for usage by downstream 
 #' functions.
 #' @param ... Delay distributions as a list with the following parameters:
@@ -22,9 +22,14 @@ delay_opts <- function(...) {
   
   # Estimate the mean delay -----------------------------------------------
   if (data$delays > 0) {
-    data$seeding_time <- as.integer(sum(
+    data$seeding_time <- sum(
       purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))
-      ))
+    )
+    if (data$seeding_time < 1) {
+      data$seeding_time <- 1
+    }else{
+      data$seeding_time <- as.integer(data$seeding_time)
+    }
   }else{
     data$seeding_time <- 1
   } 
@@ -38,7 +43,7 @@ delay_opts <- function(...) {
 
 #' Truncation Distribution Options
 #' 
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Returns a truncation distribution formatted for usage by downstream functions. See 
 #' `estimate_truncation` for an approach to estimate this distribution.
 #' @param dist A list defining the truncation distribution, defaults to `NULL` in which
@@ -64,7 +69,7 @@ trunc_opts <- function(dist = NULL) {
 
 #' Time-Varying Reproduction Number Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the optional arguments for the time-varying reproduction number. 
 #' Custom settings can be supplied which override the defaults.
 #' @param prior List containing named numeric elements "mean" and "sd". The mean and
@@ -130,12 +135,20 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 
 #' Back Calculation Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`. 
-#' @param prior_window Integer, defaults to 7 days. The mean smoothing window to apply
-#' to mean shifted reports (used as a prior during back calculation). 7 days is the default
-#' as this smooths day of the week effects but depending on the quality of the data and the 
+#' @param prior A character string defaulting to "reports". Defines the prior to use
+#' when deconvolving. Currently implemented options are to use smoothed mean delay 
+#' shifted reported cases ("reports"), to use the estimated infections from the 
+#' previous time step seeded for the first time step using mean shifted reported cases
+#' ("infections"), or no prior ("none"). Using no prior will result in poor real time performance. 
+#' No prior and using infections are only supported when a Gaussian process is present. If observed 
+#' data is not reliable then it a sensible first step is to explore increasing the `prior_window` with
+#' a sensible second step being to no longer use reported cases as a prior (i.e set `prior = "none"`).
+#' @param prior_window Integer, defaults to 14 days. The mean centred smoothing window 
+#' to apply to mean shifted reports (used as a prior during back calculation). 7 days is minimum recommended 
+#' settings as this smooths day of the week effects but depending on the quality of the data and the 
 #' amount of information users wish to use as a prior (higher values equalling a less informative prior).
 #' @param rt_window Integer, defaults to 1. The size of the centred rolling average to use when estimating 
 #' Rt. This must be odd so that the central estimate is included.
@@ -144,8 +157,9 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' @examples
 #' # default settings
 #' backcalc_opts()
-backcalc_opts <- function(prior_window = 7, rt_window = 1) {
+backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
   backcalc <- list(
+    prior = match.arg(prior, choices = c("reports", "none", "infections")),
     prior_window = prior_window,
     rt_window = as.integer(rt_window)
   )
@@ -157,7 +171,7 @@ backcalc_opts <- function(prior_window = 7, rt_window = 1) {
 
 #' Approximate Gaussian Process Settings
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the structure of the approximate Gaussian
 #'  process. Custom settings can be supplied which override the defaults. 
 #' @param ls_mean Numeric, defaults to 21 days. The mean of the lognormal length scale.
@@ -166,7 +180,7 @@ backcalc_opts <- function(prior_window = 7, rt_window = 1) {
 #' @param ls_max Numeric, defaults to 60. The maximum value of the length scale. Updated in 
 #' `create_gp_data` to be the length of the input data if this is smaller.
 #' @param ls_min Numeric, defaults to 7. The minimum value of the length scale.
-#' @param alpha_sd Numeric, defaults to 0.1. The standard deviation of the magnitude parameter of
+#' @param alpha_sd Numeric, defaults to 0.2. The standard deviation of the magnitude parameter of
 #' the Gaussian process kernel. Should be approximately the expected standard deviation of the logged Rt.
 #' @param kernel Character string, the type of kernel required. Currently supporting the squared exponential 
 #' kernel ("se") and the 3 over 2 Matern kernel ("matern", with `matern_type = 3/2`). Defaulting to the Matern 3 over 2 kernel as discontinuities are expected 
@@ -193,7 +207,7 @@ gp_opts <- function(basis_prop = 0.2,
                     boundary_scale = 1.5, 
                     ls_mean = 21, 
                     ls_sd = 7, 
-                    ls_min = 7,
+                    ls_min = 3,
                     ls_max = 60,
                     alpha_sd = 0.1, 
                     kernel = "matern",
@@ -217,7 +231,7 @@ gp_opts <- function(basis_prop = 0.2,
 
 #' Observation Model Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the structure of the observation 
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are 
@@ -263,14 +277,14 @@ obs_opts <- function(family = "negbin",
 
 #' Rstan Sampling Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #'  Defines a list specifying the arguments passed to 
 #' `rstan::sampling`. Custom settings can be supplied which override the defaults.
 #' @param cores Number of cores to use when executing the chains in parallel,
 #'  which defaults to 1 but it is recommended to set the mc.cores option to be as 
 #'  many processors as the hardware and RAM allow (up to the number of chains).
 #' @param warmup Numeric, defaults to 250. Number of warmup samples per chain.
-#' @param samples Numeric, default 1000. Overall number of posterior samples. 
+#' @param samples Numeric, default 2000. Overall number of posterior samples. 
 #' When using multiple chains iterations per chain is samples / chains.
 #' @param chains Numeric, defaults to 4. Number of MCMC chains to use.
 #' @param control List, defaults to empty. control parameters to pass to underlying
@@ -293,7 +307,7 @@ obs_opts <- function(family = "negbin",
 #' rstan_sampling_opts(samples = 2000)
 rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                 warmup = 250,
-                                samples = 1000,
+                                samples = 2000,
                                 chains = 4,
                                 control = list(),
                                 save_warmup = FALSE,
@@ -320,7 +334,7 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 
 #' Rstan Variational Bayes Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #'  Defines a list specifying the arguments passed to 
 #' `rstan::vb`. Custom settings can be supplied which override the defaults.
 #' @param samples Numeric, default 2000. Overall number of approximate posterior 
@@ -348,7 +362,7 @@ rstan_vb_opts <- function(samples = 2000,
 
 #' Rstan Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the arguments passed to underlying `rstan`
 #' functions via `rstan_sampling_opts` and `rstan_vb_opts`.Custom settings can be supplied
 #'  which override the defaults.
@@ -387,12 +401,20 @@ rstan_opts <- function(object = NULL,
 
 #' Stan Options
 #'
-#' @description \lifecycle{stable}
+#' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the arguments passed to underlying stan
 #' backend functions via `rstan_sampling_opts` and `rstan_vb_opts`. Custom settings
 #' can be supplied which override the defaults.
 #' @param backend Character string indicating the backend to use for fitting stan models.
 #' Currently only "rstan" is supported.
+#' @param init_fit `r lifecycle::badge("experimental")` 
+#' Character string or `stanfit` object, defaults to NULL. Should an initial fit be used to 
+#' initialise the full fit. An example scenario would be using a national level fit to parametrise
+#' regional level fits. Optionally a character string can be passed with the currently supported 
+#' option being "cumulative". This fits the model to cumulative cases and may be useful for certain
+#' data sets where the sampler gets stuck or struggles to initialise. See `init_cumulative_fit()` for details. 
+#' This implementation is based on the approach taken in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) 
+#' authored by James Scott.
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be returned.
 #' @param ... Additional parameters to pass  underlying option functions.
 #' @return A list of arguments to pass to the appropriate rstan functions.
@@ -406,7 +428,8 @@ rstan_opts <- function(object = NULL,
 #' # using vb
 #' stan_opts(method = "vb")
 stan_opts <- function(samples = 2000,
-                      backend = "rstan", 
+                      backend = "rstan",
+                      init_fit = NULL,
                       return_fit = TRUE,
                       ...){
   backend <- match.arg(backend, choices = c("rstan"))
@@ -414,13 +437,19 @@ stan_opts <- function(samples = 2000,
     opts <- rstan_opts(samples = samples,
                        ...)
   }
+  if (!is.null(init_fit)) {
+    if (is.character(init_fit)) {
+      init_fit <- match.arg(init_fit, choices = "cumulative")
+    }
+    opts$init_fit <- init_fit
+  }
   opts <- c(opts, list(return_fit = return_fit))
   return(opts)
 }
 
 #' Return an _opts List per Region
 #'
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' Define a list of `_opts` to pass to `regional_epinow` `_opts` accepting arguments.
 #' This is useful when different settings are needed between regions within a single 
 #' `regional_epinow` call. Using `opts_list` the defaults can be applied to all regions 
@@ -462,7 +491,7 @@ opts_list <- function(opts, reported_cases, ...) {
 
 #' Filter Options for a Target Region
 #' 
-#' @description \lifecycle{maturing}
+#' @description `r lifecycle::badge("maturing")`
 #' A helper function that allows the selection of region specific settings if 
 #' present and otherwise applies the overarching settings
 #' @param opts Either a list of calls to an `_opts` function or a single 
