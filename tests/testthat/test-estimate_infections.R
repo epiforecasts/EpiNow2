@@ -12,12 +12,12 @@ reporting_delay <- list(mean = convert_to_logmean(3,1), mean_sd = 0.1,
                         sd = convert_to_logsd(3,1), sd_sd = 0.1, max = 10)
 
 default_estimate_infections <- function(..., add_stan = list(), delay = TRUE) {
-  
+
   def_stan <- stan_opts(chains = 2, warmup = 50, samples = 50,
                         control = list(adapt_delta = 0.8))
   stan_args <- def_stan[setdiff(names(def_stan), names(add_stan))]
   stan_args <- c(stan_args, add_stan)
-  
+
   suppressWarnings(estimate_infections(...,
     generation_time = generation_time,
     delays = ifelse(delay, list(delay_opts(reporting_delay)), list(delay_opts()))[[1]],
@@ -62,7 +62,7 @@ test_that("estimate_infections successfully returns estimates using only mean sh
   skip_on_cran()
   test_estimate_infections(reported_cases, gp = NULL, rt = NULL)
 })
-             
+
 test_that("estimate_infections successfully returns estimates using a single breakpoint", {
   skip_on_cran()
   test_estimate_infections(data.table::copy(reported_cases)[, breakpoint := ifelse(date == "2020-03-10", 1, 0)],
@@ -84,16 +84,16 @@ test_that("estimate_infections fails as expected when given a very short timeout
 
 test_that("estimate_infections works as expected with failing chains", {
   skip_on_cran()
-  test_estimate_infections(reported_cases, 
-                           add_stan = list(chains = 4, 
+  test_estimate_infections(reported_cases,
+                           add_stan = list(chains = 4,
                                            stuck_chains = 2, future = TRUE,
                                            control = list(adapt_delta = 0.8)))
-  
+
   expect_error(default_estimate_infections(reported_cases,
                                            add_stan = list(chains = 4, stuck_chains = 1)))
   expect_error(default_estimate_infections(reported_cases,
-                                           add_stan = list(chains = 4, 
-                                                           stuck_chains = 3, 
+                                           add_stan = list(chains = 4,
+                                                           stuck_chains = 3,
                                                            future = TRUE)))
 })
 

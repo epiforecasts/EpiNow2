@@ -25,7 +25,7 @@ update_horizon <- function(horizon, target_date, reported_cases) {
 save_input <- function(reported_cases, target_folder) {
   if (!is.null(target_folder)) {
     latest_date <- reported_cases[confirm > 0][date == max(date)]$date
-  
+
     saveRDS(latest_date, paste0(target_folder, "/latest_date.rds"))
     saveRDS(reported_cases, paste0(target_folder, "/reported_cases.rds"))
   }
@@ -47,7 +47,7 @@ save_input <- function(reported_cases, target_folder) {
 #' @inheritParams  estimate_infections
 #' @return NULL
 #' @export
-save_estimate_infections <- function(estimates, target_folder = NULL, 
+save_estimate_infections <- function(estimates, target_folder = NULL,
                                      samples = TRUE, return_fit = TRUE) {
   if (!is.null(target_folder)) {
     if (samples) {
@@ -88,7 +88,7 @@ save_forecast_infections <- function(forecast, target_folder = NULL, samples = T
 #' @description `r lifecycle::badge("questioning")`
 #' Either extracts or converts reported cases from an input data table. For output from
 #' `estimate_infections` this is a simple filtering step but for output from `forecast_infection`
-#' this is currently an approximate convolution. This step is likely to be updated/deprecated 
+#' this is currently an approximate convolution. This step is likely to be updated/deprecated
 #' in new releases as `forecast_infections` evolves to be based on `stan` functionality.
 #' @inheritParams setup_target_folder
 #' @inheritParams save_estimate_infections
@@ -96,10 +96,10 @@ save_forecast_infections <- function(forecast, target_folder = NULL, samples = T
 #' @inheritParams estimate_infections
 #' @return A list of samples and summarised estimates of estimated cases by date of report
 #' @export
-#' @importFrom data.table := rbindlist 
+#' @importFrom data.table := rbindlist
 estimates_by_report_date <- function(estimates, forecast, delays, CrIs = c(0.2, 0.5, 0.9),
                                      target_folder = NULL, samples = TRUE) {
-  
+
   if (is.null(forecast)) {
     estimated_reported_cases <- list()
     if (samples) {
@@ -120,13 +120,13 @@ estimates_by_report_date <- function(estimates, forecast, delays, CrIs = c(0.2, 
                                      type = "sample")
       return(reported_cases)
     }
-  
+
     estimated_reported_cases <- list()
     if (samples) {
       reported_cases_rt <- report_cases_with_forecast(model = "rt")
       reported_cases_cases <- report_cases_with_forecast(model = "case")
       reported_cases_ensemble <- report_cases_with_forecast(model = "ensemble")
-      
+
       estimated_reported_cases$samples <- data.table::rbindlist(list(
         reported_cases_rt$samples[, type := "rt"],
         reported_cases_cases$samples[, type := "case"],
@@ -135,7 +135,7 @@ estimates_by_report_date <- function(estimates, forecast, delays, CrIs = c(0.2, 
                           .(date, sample, cases = value, type = "gp_rt")]
       ), use.names = TRUE)
     }
-    
+
     estimated_reported_cases$summarised <- data.table::rbindlist(list(
       reported_cases_rt$summarised[, type := "rt"],
       reported_cases_cases$summarised[, type := "case"],
@@ -144,7 +144,7 @@ estimates_by_report_date <- function(estimates, forecast, delays, CrIs = c(0.2, 
                            variable := NULL][, strat := NULL]
     ), use.names = TRUE)
   }
-  
+
   if (!is.null(target_folder)) {
     if (samples) {
       saveRDS(estimated_reported_cases$samples, paste0(target_folder, "/estimated_reported_cases_samples.rds"))
@@ -160,7 +160,7 @@ estimates_by_report_date <- function(estimates, forecast, delays, CrIs = c(0.2, 
 #'
 #' @description `r lifecycle::badge("questioning")`
 #' Copies output from the dated folder to a latest folder. May be undergo changes in later releases.
-#' @param latest_folder Character string containing the path to the latest target folder. 
+#' @param latest_folder Character string containing the path to the latest target folder.
 #' As produced by `setup_target_folder`.
 #' @inheritParams setup_target_folder
 #' @return NULL
@@ -171,12 +171,12 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
     suppressWarnings(
       if (dir.exists(latest_folder)) {
         unlink(latest_folder)
-      }) 
-    
+      })
+
     suppressWarnings(
       dir.create(latest_folder)
     )
-    
+
     suppressWarnings(
       file.copy(file.path(target_folder, "."),
                 latest_folder, recursive = TRUE)
@@ -190,7 +190,7 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Combines the output produced internally by `epinow` into a single list.
-#' @param estimated_reported_cases A list of dataframes as produced by 
+#' @param estimated_reported_cases A list of dataframes as produced by
 #' `estimates_by_report_date`.
 #' @param plots A list of plots as produced by `report_plots`
 #' @param summary A list of summary output as produced by `report_summary`
@@ -199,7 +199,7 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
 #'
 #' @return A list of output as returned by `epinow`
 #' @export
-construct_output <- function(estimates, forecast = NULL, 
+construct_output <- function(estimates, forecast = NULL,
                              estimated_reported_cases,
                              plots = NULL,
                              summary = NULL,
@@ -213,11 +213,11 @@ construct_output <- function(estimates, forecast = NULL,
     out$forecast <- forecast
     if (!samples) {
       out$forecast$samples <- NULL
-    } 
+    }
   }
   out$estimated_reported_cases <- estimated_reported_cases
   out$summary <- summary
-  
+
   if (!is.null(plots)) {
     out$plots <- plots
   }

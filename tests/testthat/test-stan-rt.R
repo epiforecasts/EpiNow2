@@ -3,7 +3,7 @@ if (!testthat:::on_cran()) {
   suppressMessages(expose_stan_fns("rt.stan", target_dir = system.file("stan/functions", package = "EpiNow2")))
 }
 
-# Test update_Rt 
+# Test update_Rt
 test_that("update_Rt works to produce multiple Rt estimates with a static gaussian process", {
   skip_on_cran()
   expect_equal(update_Rt(rep(1, 10), log(1.2), rep(0, 9), rep(10, 0), numeric(0), 0),

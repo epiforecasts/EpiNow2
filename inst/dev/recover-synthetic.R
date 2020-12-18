@@ -13,7 +13,7 @@ reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
 
 # fit model to data to recover realistic parameter estimates and define settings
 # shared simulation settings
-init <- estimate_infections(example_confirmed[1:100], 
+init <- estimate_infections(example_confirmed[1:100],
                             generation_time = generation_time,
                             delays = delay_opts(incubation_period, reporting_delay),
                             rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 14),
@@ -22,7 +22,7 @@ init <- estimate_infections(example_confirmed[1:100],
 
 
 # Rt scenario
-R <- c(rep(2, 20), rep(0.5, 10), rep(1, 10), 1 + 0.04 * 1:10, rep(1.4, 5), 
+R <- c(rep(2, 20), rep(0.5, 10), rep(1, 10), 1 + 0.04 * 1:10, rep(1.4, 5),
        1.4 - 0.02 * 1:20, rep(1.4, 10), rep(0.8, 5), 0.8 + 0.02 * 1:10)
 noisy_R <- R * rnorm(100, 1, 0.05)
 # update Rt trajectory and simulate new infections using it
@@ -60,7 +60,7 @@ weekly_rw <- list()
 daily_rw <- list()
 
 for (method in c("nuts")) {
-  
+
   if (method == "vb") {
     stanopts <- stan_opts(method = "vb", trials = 5, iter = 50000)
   } else {
@@ -68,7 +68,7 @@ for (method in c("nuts")) {
   }
 
   # GP
-  gp[[method]] <- 
+  gp[[method]] <-
 	  estimate_infections(sim_cases, generation_time = generation_time,
                               delays = delay_opts(incubation_period, reporting_delay),
                               rt = rt_opts(prior = list(mean = 2.5, sd = 0.25)),
@@ -79,7 +79,7 @@ for (method in c("nuts")) {
   make_plot(gp[[method]], R, paste("gp", method, sep = "_"))
 
   # Backcalculation
-  backcalc[[method]] <- 
+  backcalc[[method]] <-
 	  estimate_infections(sim_cases, generation_time = generation_time,
                               delays = delay_opts(incubation_period, reporting_delay),
                               rt = NULL,
@@ -90,7 +90,7 @@ for (method in c("nuts")) {
   make_plot(backcalc[[method]], R, paste("backcalc", method, sep = "_"))
 
   # RW (weekly)
-  weekly_rw[[method]] <- 
+  weekly_rw[[method]] <-
 	  estimate_infections(sim_cases, generation_time = generation_time,
                               delays = delay_opts(incubation_period, reporting_delay),
                               rt = rt_opts(prior = list(mean = 2.5, sd = 0.25),
@@ -102,8 +102,8 @@ for (method in c("nuts")) {
   # runtime ~ 5 minutes
   make_plot(weekly_rw[[method]], R, paste("weekly_rw", method, sep = "_"))
 
-  # RW 
-  daily_rw[[method]] <- 
+  # RW
+  daily_rw[[method]] <-
 	  estimate_infections(sim_cases, generation_time = generation_time,
                               delays = delay_opts(incubation_period, reporting_delay),
                               rt = rt_opts(prior = list(mean = 2.5, sd = 0.25),
@@ -117,14 +117,14 @@ for (method in c("nuts")) {
 }
 
 models <- c(gp, backcalc, weekly_rw, daily_rw)
-model_names <- 
+model_names <-
 	c(sapply(seq_along(gp), function(x) paste0("gp_", names(gp)[x])),
           sapply(seq_along(backcalc), function(x) paste0("backcalc_", names(backcalc)[x])),
           sapply(seq_along(weekly_rw), function(x) paste0("weekly_rw_", names(weekly_rw)[x])),
           sapply(seq_along(daily_rw), function(x) paste0("daily_rw_", names(daily_rw)[x])) )
 
-saveRDS(list(truth = list(noisy_R = noisy_R, R = R, sim_cases = sim_cases, 
-			  sim_inf = sim_inf), 
+saveRDS(list(truth = list(noisy_R = noisy_R, R = R, sim_cases = sim_cases,
+			  sim_inf = sim_inf),
 	     models = models, model_names = model_names),
         file = "synthetic.rds",)
 
@@ -170,9 +170,9 @@ rdf <- bind_rows(rcrps) %>%
        mutate(time = rep(1:(n() / 3), times = 3)) %>%
        pivot_longer(names_to = "model", c(-time, -metric))
 
-p <- ggplot(rdf, aes(x = time, y = value, colour = model)) + 
-    geom_line() + 
-    scale_colour_brewer("Model", palette = "Dark2") + 
+p <- ggplot(rdf, aes(x = time, y = value, colour = model)) +
+    geom_line() +
+    scale_colour_brewer("Model", palette = "Dark2") +
     facet_wrap( ~ metric, ncol = 1, scale = "free_y") +
     xlab("Time") + ylab("Score") +
     cowplot::theme_cowplot() +
@@ -198,9 +198,9 @@ idf <- bind_rows(icrps) %>%
        mutate(time = time - 7) %>%
        filter(time >= 0)
 
-p <- ggplot(idf, aes(x = time, y = value, colour = model)) + 
-    geom_line() + 
-    scale_colour_brewer("Model", palette = "Dark2") + 
+p <- ggplot(idf, aes(x = time, y = value, colour = model)) +
+    geom_line() +
+    scale_colour_brewer("Model", palette = "Dark2") +
     facet_wrap( ~ metric, ncol = 1, scale = "free_y") +
     xlab("Time") + ylab("Score") +
     cowplot::theme_cowplot() +

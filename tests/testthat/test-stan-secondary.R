@@ -2,7 +2,7 @@ context("estimate_secondary")
 if (!testthat:::on_cran()) {
   files <- c("pmfs.stan", "convolve.stan", "observation_model.stan", "secondary.stan")
   suppressMessages(
-    expose_stan_fns(files, 
+    expose_stan_fns(files,
                     target_dir = system.file("stan/functions", package = "EpiNow2")
                     )
     )

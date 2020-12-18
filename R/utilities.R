@@ -4,7 +4,7 @@
 #' This function removes nowcasts in the format produced by `EpiNow2` from a target
 #' directory for the date supplied.
 #' @param date Date object. Defaults to today's date
-#' @param nowcast_dir Character string giving the filepath to the nowcast results directory. Defaults 
+#' @param nowcast_dir Character string giving the filepath to the nowcast results directory. Defaults
 #' to the current directory.
 #' @importFrom purrr walk
 #' @importFrom futile.logger flog.info
@@ -31,13 +31,13 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 }
 
 #' Format Credible Intervals
-#' 
+#'
 #' @description `r lifecycle::badge("stable")`
 #' Combines a list of values into formatted credible intervals.
 #' @param value List of value to map into a string. Requires,
 #'  `point`, `lower`, and `upper.`
 #' @param CrI Numeric, credible interval to report. Defaults to 90
-#' @param reverse Logical, defaults to FALSE. Should the reported 
+#' @param reverse Logical, defaults to FALSE. Should the reported
 #' credible interval be switched.
 #' @return A character vector formatted for reporting
 #' @export
@@ -47,8 +47,8 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 make_conf <- function(value, CrI = 90, reverse = FALSE) {
   CrI <- list(lower = value[[paste0("lower_", CrI)]],
               upper = value[[paste0("upper_", CrI)]])
-  conf <- paste0(value$median, " (", 
-                 ifelse(!reverse, CrI$lower, CrI$upper), " -- ", 
+  conf <- paste0(value$median, " (",
+                 ifelse(!reverse, CrI$lower, CrI$upper), " -- ",
                  ifelse(!reverse, CrI$upper, CrI$lower), ")")
   return(conf)
 }
@@ -57,7 +57,7 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 #' Categorise the Probability of Change for Rt
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Categorises a numeric variable into "Increasing" (< 0.05), 
+#' Categorises a numeric variable into "Increasing" (< 0.05),
 #' "Likely increasing" (<0.4), "Stable" (< 0.6), "Likely decreasing" (< 0.95), "Decreasing" (<= 1)
 #' @param var Numeric variable to be categorised
 #'
@@ -66,7 +66,7 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 #' @examples
 #' var <- seq(0.01, 1, 0.01)
 #' var
-#'  
+#'
 #' map_prob_change(var)
 map_prob_change <- function(var) {
   var <- ifelse(var < 0.05, "Increasing",
@@ -74,7 +74,7 @@ map_prob_change <- function(var) {
                        ifelse(var < 0.6, "Stable",
                               ifelse(var < 0.95, "Likely decreasing",
                                      "Decreasing"))))
-  var <- factor(var, levels = c("Increasing", "Likely increasing", "Stable", 
+  var <- factor(var, levels = c("Increasing", "Likely increasing", "Stable",
                                 "Likely decreasing", "Decreasing"))
   return(var)
 }
@@ -82,8 +82,8 @@ map_prob_change <- function(var) {
 #' Convert Growth Rates to Reproduction numbers.
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) 
-#' for justification. Now handled internally by stan so may be removed in future updates if 
+#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf)
+#' for justification. Now handled internally by stan so may be removed in future updates if
 #' no user demand.
 #' @param r Numeric, rate of growth estimates
 #' @param gamma_mean Numeric, mean of the gamma distribution
@@ -97,24 +97,24 @@ growth_to_R <- function(r, gamma_mean, gamma_sd) {
   R <- (1 + k * r * gamma_mean)^(1/k)
   return(R)
 }
-  
+
 #' Convert Reproduction Numbers to Growth Rates
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) 
-#' for justification. Now handled internally by stan so may be removed in future updates if 
+#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf)
+#' for justification. Now handled internally by stan so may be removed in future updates if
 #' no user demand.
 #' @param R Numeric, Reproduction number estimates
 #' @inheritParams growth_to_R
 #' @return Numeric vector of reproduction number estimates
 #' @export
 #' @examples
-#' R_to_growth(2.18, 4, 1)  
+#' R_to_growth(2.18, 4, 1)
 R_to_growth <- function(R, gamma_mean, gamma_sd) {
   k <- (gamma_sd / gamma_mean)^2
   r <- (R^k - 1) / (k * gamma_mean)
   return(r)
-}  
+}
 
 
 #' Allocate Delays into Required Stan Format
@@ -136,7 +136,7 @@ allocate_delays <- function(delay_var, no_delays) {
 #' Allocate Empty Parameters to a List
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Allocate missing parameters to be empty two dimensional arrays. Used 
+#' Allocate missing parameters to be empty two dimensional arrays. Used
 #' internally by `simulate_infections.`
 #' @param data A list of parameters
 #' @param params A character vector of parameters to allocate to
@@ -157,27 +157,27 @@ allocate_empty <- function(data, params, n = 0) {
 #' Match User Supplied Arguments with Supported Options
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Match user supplied arguments with supported options and return a logical list for 
+#' Match user supplied arguments with supported options and return a logical list for
 #' internal usage
 #' @param input_args A character vector of input arguments (can be partial).
 #' @param supported_args A character vector of supported output arguments.
-#' @param logger A character vector indicating the logger to target messages at. Defaults 
+#' @param logger A character vector indicating the logger to target messages at. Defaults
 #' to no logging.
-#' @param level Character string defaulting to "info". Logging level see documentation 
+#' @param level Character string defaulting to "info". Logging level see documentation
 #' of futile.logger for details. Supported options are "info" and "debug"
 #' @return A logical vector of named output arguments
 #' @importFrom  futile.logger flog.info flog.debug
 #' @examples
 #' # select nothing
 #' EpiNow2:::match_output_arguments(supported_args = c("fit", "plots", "samples"))
-#' 
+#'
 #' # select just plots
 #' EpiNow2:::match_output_arguments("plots", supported_args = c("fit", "plots", "samples"))
-#' 
+#'
 #' # select plots and samples
 #' EpiNow2:::match_output_arguments(c("plots", "samples"),
 #'                        supported_args = c("fit", "plots", "samples"))
-#' 
+#'
 #' # lazily select arguments
 #' EpiNow2:::match_output_arguments("p",
 #'                        supported_args = c("fit", "plots", "samples"))
@@ -185,7 +185,7 @@ match_output_arguments <- function(input_args = c(),
                                    supported_args =  c(),
                                    logger = NULL,
                                    level = "info") {
-  
+
   if (level %in% "info") {
     flog_fn <- futile.logger::flog.info
   }else if (level %in% "debug") {
@@ -194,14 +194,14 @@ match_output_arguments <- function(input_args = c(),
   # make supported args a logical vector
   output_args <- rep(FALSE, length(supported_args))
   names(output_args) <- supported_args
-  
+
   # get arguments supplied and linked to supported args
   found_args <- lapply(input_args, function(arg){
     supported_args[grepl(arg, supported_args)]
   })
   found_args <- unlist(found_args)
   found_args <- unique(found_args)
-  
+
   # tell the user about what has been passed in
   if (!is.null(logger)) {
     if (length(found_args) > 0) {
@@ -223,7 +223,7 @@ match_output_arguments <- function(input_args = c(),
 #'
 #' @description `r lifecycle::badge("stable")`
 #' his function exposes internal stan functions in R from a user
-#' supplied list of target files. Allows for testing of stan functions in R and potentially 
+#' supplied list of target files. Allows for testing of stan functions in R and potentially
 #' user use in R code.
 #' @param files A character vector indicating the target files
 #' @param target_dir A character string indicating the target directory for the file
@@ -235,15 +235,15 @@ match_output_arguments <- function(input_args = c(),
 #' @examples
 #' \donttest{
 #' expose_stan_fns("rt.stan", target_dir = system.file("stan/functions", package = "EpiNow2"))
-#' 
+#'
 #' # test by updating Rt
 #' update_Rt(rep(1, 10), log(1.2), rep(0.1, 9), rep(10, 0), numeric(0), 0)
 #' }
 expose_stan_fns <- function(files, target_dir, ...) {
   functions <- paste0("\n functions{ \n",
-                      paste(purrr::map_chr(files, 
+                      paste(purrr::map_chr(files,
                                            ~ paste(readLines(file.path(target_dir, .)), collapse = "\n")),
-                            collapse = "\n"), 
+                            collapse = "\n"),
                       "\n }")
   rstan::expose_stan_functions(rstan::stanc(model_code = functions), ...)
   return(invisible(NULL))
@@ -254,8 +254,8 @@ expose_stan_fns <- function(files, target_dir, ...) {
 #' Convert mean and sd to log mean for a log normal distribution
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Convert from mean and standard deviation to the log mean of the 
-#' lognormal distribution. Useful for defining distributions supported by 
+#' Convert from mean and standard deviation to the log mean of the
+#' lognormal distribution. Useful for defining distributions supported by
 #' `estimate_infections`, `epinow`, and `regional_epinow`.
 #' @param mean Numeric, mean of a distribution
 #' @param sd Numeric, standard deviation of a distribution
@@ -264,7 +264,7 @@ expose_stan_fns <- function(files, target_dir, ...) {
 #' @export
 #'
 #' @examples
-#' 
+#'
 #' convert_to_logmean(2, 1)
 convert_to_logmean <- function(mean, sd){
   log(mean^2 / sqrt(sd^2 + mean^2))
@@ -273,8 +273,8 @@ convert_to_logmean <- function(mean, sd){
 #' Convert mean and sd to log standard deviation for a log normal distribution
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Convert from mean and standard deviation to the log standard deviation of the 
-#' lognormal distribution. Useful for defining distributions supported by 
+#' Convert from mean and standard deviation to the log standard deviation of the
+#' lognormal distribution. Useful for defining distributions supported by
 #' `estimate_infections`, `epinow`, and `regional_epinow`.
 #' @param mean Numeric, mean of a distribution
 #' @param sd Numeric, standard deviation of a distribution
@@ -283,7 +283,7 @@ convert_to_logmean <- function(mean, sd){
 #' @export
 #'
 #' @examples
-#' 
+#'
 #' convert_to_logsd(2, 1)
 convert_to_logsd <- function(mean, sd) {
   sqrt(log(1 + (sd^2 / mean^2)))
@@ -311,21 +311,21 @@ update_list <- function(defaults = list(), optional = list()) {
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(
-  c("bottom", "cases", "confidence", "confirm", "country_code", "crps", 
-    "cum_cases", "Date", "date_confirm", "date_confirmation", "date_onset", 
+  c("bottom", "cases", "confidence", "confirm", "country_code", "crps",
+    "cum_cases", "Date", "date_confirm", "date_confirmation", "date_onset",
     "date_onset_sample", "date_onset_symptoms", "date_onset.x", "date_onset.y",
     "date_report", "day", "doubling_time", "effect",  "Effective reproduction no.",
-    "estimates", "Expected change in daily cases", "fit_meas", "goodness_of_fit", 
-    "gt_sample", "import_status", "imported", "index", "latest", "little_r", 
+    "estimates", "Expected change in daily cases", "fit_meas", "goodness_of_fit",
+    "gt_sample", "import_status", "imported", "index", "latest", "little_r",
     "lower", "max_time", "mean_R", "Mean(R)", "metric", "mid_lower", "mid_upper",
     "min_time", "model", "modifier", "n", "New", "confirmed cases by infection date",
     "overall_little_r", "params", "prob_control", "provnum_ne", "R0_range",
     "region", "region_code", "report_delay", "results_dir", "rt", "rt_type",
     "sample_R", "sampled_r", "sd_R", "sd_rt", "Std(R)", "t_end", "t_start",
-    "target_date", "time", "time_varying_r", "top", "total", "type", "upper", 
+    "target_date", "time", "time_varying_r", "top", "total", "type", "upper",
     "value", "var", "vars", "viridis_palette", "window", ".", "%>%",
     "New confirmed cases by infection date", "Data", "R", "reference",
-    ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate", 
+    ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate",
     "point", "strat", "estimate", "breakpoint", "variable", "value.V1", "central_lower", "central_upper",
     "mean_sd", "sd_sd", "average_7",  "..lowers", "..upper_CrI", "..uppers", "timing",
     "dataset", "last_confirm", "report_date", "secondary", "id"))

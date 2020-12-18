@@ -4,7 +4,7 @@ context("calc_CrIs")
 samples <- data.frame(value = 1:10, type = "car")
 
 test_that("calc_CrI works as expected with default arguments", {
-  expect_known_output(calc_CrIs(samples), 
+  expect_known_output(calc_CrIs(samples),
                       file = testthat::test_path("test-data/calc_CrIs_default.rds"))
 })
 

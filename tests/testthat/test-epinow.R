@@ -3,18 +3,18 @@ context("epinow")
 if (!testthat:::on_cran()) {
   generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 15)
   incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 15)
-  reporting_delay <- list(mean = convert_to_logmean(3,1), mean_sd = 0.1, 
+  reporting_delay <- list(mean = convert_to_logmean(3,1), mean_sd = 0.1,
                           sd = convert_to_logsd(3,1), sd_sd = 0.1,
                           max = 10)
-  
+
   reported_cases <- EpiNow2::example_confirmed[1:30]
-  
+
   futile.logger::flog.threshold("FATAL")
-  
+
   df_non_zero <- function(df) {
     expect_true(nrow(df) > 0)
   }
-  expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "timing")  
+  expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "timing")
 }
 
 test_that("epinow produces expected output when run with default settings", {
@@ -22,11 +22,11 @@ test_that("epinow produces expected output when run with default settings", {
   out <- suppressWarnings(epinow(reported_cases = reported_cases,
                                  generation_time = generation_time,
                 delays = delay_opts(incubation_period, reporting_delay),
-                stan = stan_opts(samples = 25, warmup = 25, 
+                stan = stan_opts(samples = 25, warmup = 25,
                                  cores = 1, chains = 2,
                                  control = list(adapt_delta = 0.8)),
                 logs = NULL))
-  
+
   expect_equal(names(out), expected_out)
   df_non_zero(out$estimates$samples)
   df_non_zero(out$estimates$summarised)
@@ -73,7 +73,7 @@ test_that("epinow fails as expected when given a short timeout", {
   expect_error(suppressWarnings(epinow(reported_cases = reported_cases,
                 generation_time = generation_time,
                 delays = delay_opts(incubation_period, reporting_delay),
-                stan = stan_opts(samples = 100, warmup = 100, 
+                stan = stan_opts(samples = 100, warmup = 100,
                                  cores = 1, chains = 2,
                                  control = list(adapt_delta = 0.8),
                                  max_execution_time = 10),
@@ -83,7 +83,7 @@ test_that("epinow fails as expected when given a short timeout", {
 
 test_that("epinow fails if given NUTs arguments when using variational inference", {
   skip_on_cran()
-  expect_error(suppressWarnings(epinow(reported_cases = reported_cases, 
+  expect_error(suppressWarnings(epinow(reported_cases = reported_cases,
                                        generation_time = generation_time,
                                        delays = delay_opts(incubation_period, reporting_delay),
                                        stan = delay_opts(samples = 100, warmup = 100,
@@ -95,7 +95,7 @@ test_that("epinow fails if given NUTs arguments when using variational inference
 
 test_that("epinow fails if given variational inference arguments when using NUTs", {
   skip_on_cran()
-  expect_error(suppressWarnings(epinow(reported_cases = reported_cases, 
+  expect_error(suppressWarnings(epinow(reported_cases = reported_cases,
                                        generation_time = generation_time,
                                        delays = delay_opts(incubation_period, reporting_delay),
                                        stan = stan_opts(method = "sampling", tol_rel_obj = 1),

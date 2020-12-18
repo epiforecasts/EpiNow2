@@ -77,14 +77,14 @@ tail_delta(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& y,
         current_statement_begin__ = 12;
         stan::math::assign(beta, (logical_gte(beta, 1e6) ? stan::math::promote_scalar<local_scalar_t__>(1e6) : stan::math::promote_scalar<local_scalar_t__>(beta) ));
         current_statement_begin__ = 13;
-        stan::model::assign(deltas, 
-                    stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
-                    (inv_gamma_cdf(get_base1(theta, 1, "theta", 1), alpha, beta) - 0.01), 
+        stan::model::assign(deltas,
+                    stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()),
+                    (inv_gamma_cdf(get_base1(theta, 1, "theta", 1), alpha, beta) - 0.01),
                     "assigning variable deltas");
         current_statement_begin__ = 14;
-        stan::model::assign(deltas, 
-                    stan::model::cons_list(stan::model::index_uni(2), stan::model::nil_index_list()), 
-                    ((1 - inv_gamma_cdf(get_base1(theta, 2, "theta", 1), alpha, beta)) - 0.01), 
+        stan::model::assign(deltas,
+                    stan::model::cons_list(stan::model::index_uni(2), stan::model::nil_index_list()),
+                    ((1 - inv_gamma_cdf(get_base1(theta, 2, "theta", 1), alpha, beta)) - 0.01),
                     "assigning variable deltas");
         current_statement_begin__ = 15;
         return stan::math::promote_scalar<fun_return_scalar_t__>(deltas);

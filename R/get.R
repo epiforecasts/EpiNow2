@@ -10,7 +10,7 @@ get_regions <- function(results_dir) {
   # regions to include - based on folder names
   regions <- list.dirs(results_dir, recursive = FALSE,
                        full.names = FALSE)
-  
+
   # put into alphabetical order
   regions <- regions[!(regions %in% "runtimes.csv")]
   regions <- regions[order(regions)]
@@ -23,27 +23,27 @@ get_regions <- function(results_dir) {
 #' @param file Character string giving the result files name.
 #' @param region Character string giving the region of interest.
 #' @param date Target date (in the format `"yyyy-mm-dd`).
-#' @param result_dir Character string giving the location of the target directory 
+#' @param result_dir Character string giving the location of the target directory
 #' @export
 #' @return An R object read in from the targeted .rds file
-get_raw_result <- function(file, region, date, 
+get_raw_result <- function(file, region, date,
                            result_dir) {
   file_path <- file.path(result_dir, region, date, file)
   object <- readRDS(file_path)
   return(object)
 }
 #' Get Combined Regional Results
-#' 
+#'
 #' @description `r lifecycle::badge("stable")`
 #' Summarises results across regions either from input or from disk. See the examples for
 #' details.
-#' @param regional_output A list of output as produced by `regional_epinow` and stored in the 
+#' @param regional_output A list of output as produced by `regional_epinow` and stored in the
 #' `regional` list.
 #' @param results_dir A character string indicating the folder containing the `EpiNow2`
 #' results to extract.
 #' @param date A Character string (in the format "yyyy-mm-dd") indicating the date to extract
 #' data for. Defaults to "latest" which finds the latest results available.
-#' @param samples Logical, defaults to `TRUE`. Should samples be returned. 
+#' @param samples Logical, defaults to `TRUE`. Should samples be returned.
 #' @param forecast Logical, defaults to `FALSE`. Should forecast results be returned.
 #' @return A list of estimates, forecasts and estimated cases by date of report.
 #' @export
@@ -55,13 +55,13 @@ get_raw_result <- function(file, region, date,
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
-#' 
+#'
 #' # example case vector from EpiSoon
 #' cases <- example_confirmed[1:30]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]))
-#'   
+#'
 #' # save results to tmp folder
 #' dir <- file.path(tempdir(check = TRUE), "results")
 #' # run multiregion estimates
@@ -69,13 +69,13 @@ get_raw_result <- function(file, region, date,
 #'                                 generation_time = generation_time,
 #'                                 delays = delay_opts(incubation_period, reporting_delay),
 #'                                 rt = rt_opts(rw = 7), gp = NULL,
-#'                                 output = c("regions", "latest"), 
-#'                                 target_folder = dir, 
+#'                                 output = c("regions", "latest"),
+#'                                 target_folder = dir,
 #'                                 return_output = TRUE)
 #' # from output
 #' results <- get_regional_results(regional_out$regional, samples = FALSE)
 #' names(results)
-#' 
+#'
 #' # from a folder
 #' folder_results <- get_regional_results(results_dir = dir, samples = FALSE)
 #' names(folder_results)
@@ -87,7 +87,7 @@ get_regional_results <- function(regional_output,
   if (missing(regional_output)) {
     regional_output <- NULL
   }
-  
+
   if (is.null(regional_output)) {
     # assign to latest likely date if not given
     if (missing(date)) {
@@ -95,13 +95,13 @@ get_regional_results <- function(regional_output,
     }
     # find all regions
     regions <- get_regions(results_dir)
-    
+
     load_data <- purrr::safely(EpiNow2::get_raw_result)
-  
+
     # get estimates
     get_estimates_file <- function(samples_path, summarised_path) {
       out <- list()
-      
+
       if (samples) {
         samples <- purrr::map(regions, ~ load_data(samples_path, .,
                                                    result_dir = results_dir,
@@ -120,11 +120,11 @@ get_regional_results <- function(regional_output,
     out <- list()
     out$estimates <- get_estimates_file(samples_path = "estimate_samples.rds",
                                         summarised_path = "summarised_estimates.rds")
-    
+
     if (forecast) {
       out$forecast <- get_estimates_file(samples_path = "forecast_samples.rds",
                                          summarised_path = "summarised_forecast.rds")
-      
+
       out$estimated_reported_cases <- get_estimates_file(samples_path = "estimated_reported_cases_samples.rds",
                                                          summarised_path = "summarised_estimated_reported_cases.rds")
     }
@@ -155,7 +155,7 @@ get_regional_results <- function(regional_output,
 #'
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Search a data frame for a distribution and return it in the format expected 
+#' Search a data frame for a distribution and return it in the format expected
 #' by `delay_opts` and the `generation_time` argument of `epinow` and `estimate_infections`.
 #' @param data A `data.table` in the format of `generation_times`.
 #' @param disease A character string indicating the disease of interest.
@@ -164,9 +164,9 @@ get_regional_results <- function(regional_output,
 #' @return A list defining a distribution
 #' @export
 #' @examples
-#' get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani") 
+#' get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani")
 get_dist <- function(data, disease, source, max_value = 15) {
-  
+
   target_disease <- disease
   target_source <- source
   data <- data[disease == target_disease][source == target_source]
@@ -184,9 +184,9 @@ get_dist <- function(data, disease, source, max_value = 15) {
 #' get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 get_generation_time <- function(disease, source, max_value = 15) {
   dist <- get_dist(EpiNow2::generation_times,
-                   disease = disease, source = source, 
+                   disease = disease, source = source,
                    max_value = max_value)
-  
+
   return(dist)
 }
 #'  Get a Literature Distribution for the Incubation Period
@@ -200,9 +200,9 @@ get_generation_time <- function(disease, source, max_value = 15) {
 #' get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 get_incubation_period <- function(disease, source, max_value = 15) {
   dist <- get_dist(EpiNow2::incubation_periods,
-                   disease = disease, source = source, 
+                   disease = disease, source = source,
                    max_value = max_value)
-  
+
   return(dist)
 }
 #' Get Regions with Most Reported Cases
@@ -214,14 +214,14 @@ get_incubation_period <- function(disease, source, max_value = 15) {
 #' @param no_regions Numeric, number of regions to return. Defaults to 6.
 #' @inheritParams regional_epinow
 #' @return A character vector of regions with the highest reported cases
-#' @importFrom data.table copy setorderv 
+#' @importFrom data.table copy setorderv
 #' @importFrom lubridate days
 #' @export
-get_regions_with_most_reports <- function(reported_cases, 
+get_regions_with_most_reports <- function(reported_cases,
                                           time_window = 7,
                                           no_regions = 6) {
   most_reports <- data.table::copy(reported_cases)
-  most_reports <- 
+  most_reports <-
     most_reports[, .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(time_window))],
                  by = "region"]
   most_reports <-  most_reports[, .(confirm = sum(confirm, na.rm = TRUE)), by = "region"]

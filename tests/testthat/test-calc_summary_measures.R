@@ -3,7 +3,7 @@ context("calc_summary_measures")
 samples <- data.frame(value = 1:10, type = "car")
 
 test_that("calc_summary_measures works as expected with default arguments", {
-  expect_known_output(calc_summary_measures(samples), 
+  expect_known_output(calc_summary_measures(samples),
                       file = testthat::test_path("test-data/calc_summary_measures_default.rds"))
 })
 
