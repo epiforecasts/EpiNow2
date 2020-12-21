@@ -6,3 +6,8 @@
 # Remove trailing whitespaces
 find . -type f \( -name 'DESCRIPTION' -name "*.R" -o -name "*.stan" \) -exec sed -i 's/[ \t]*$//' {} \;
 find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec sed -i 's/[ \t]*$//' {} \;
+
+# Format C/C++ code using clang-format
+if command -v clang-format >&/dev/null 2>&1; then
+    find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec clang-format -style=Google --verbose -i {} \;
+fi
