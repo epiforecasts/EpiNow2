@@ -95,6 +95,7 @@ Suggests:
     rnaturalearth,
     rstantools,
     spelling,
+    styler,
     tidyr,
     testthat,
     covr

@@ -11,3 +11,6 @@ find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o
 if command -v clang-format >&/dev/null 2>&1; then
     find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec clang-format -style=Google --verbose -i {} \;
 fi
+
+# Format R code using styler (tidyverse style)
+Rscript -e 'styler::style_file(list.files(path = ".", pattern = "*.*.R$", full.names = TRUE, recursive = TRUE))'
