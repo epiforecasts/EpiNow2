@@ -32,8 +32,9 @@ externally).
 cases <- example_confirmed[1:40]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
-  cases[, region := "realland"]))
-  
+  cases[, region := "realland"]
+))
+
 # default settings
 opts_list(rt_opts(), cases)
 

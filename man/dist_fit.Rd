@@ -38,16 +38,22 @@ Fits an integer adjusted exponential, gamma or lognormal distribution using
 \examples{
 \donttest{
 # integer adjusted exponential model
-dist_fit(rexp(1:100, 2), samples = 1000, dist = "exp", 
-         cores = ifelse(interactive(), 4, 1), verbose = TRUE)
+dist_fit(rexp(1:100, 2),
+  samples = 1000, dist = "exp",
+  cores = ifelse(interactive(), 4, 1), verbose = TRUE
+)
 
 
 # integer adjusted gamma model
-dist_fit(rgamma(1:100, 5, 5), samples = 1000, dist = "gamma", 
-         cores = ifelse(interactive(), 4, 1), verbose = TRUE)
+dist_fit(rgamma(1:100, 5, 5),
+  samples = 1000, dist = "gamma",
+  cores = ifelse(interactive(), 4, 1), verbose = TRUE
+)
 
 # integer adjusted lognormal model
-dist_fit(rlnorm(1:100, log(5), 0.2), samples = 1000, dist = "lognormal",
-         cores = ifelse(interactive(), 4, 1), verbose = TRUE)
+dist_fit(rlnorm(1:100, log(5), 0.2),
+  samples = 1000, dist = "lognormal",
+  cores = ifelse(interactive(), 4, 1), verbose = TRUE
+)
 }
 }

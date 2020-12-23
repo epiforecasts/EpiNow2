@@ -24,5 +24,5 @@ Search a data frame for a distribution and return it in the format expected
 by \code{delay_opts} and the \code{generation_time} argument of \code{epinow} and \code{estimate_infections}.
 }
 \examples{
-get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani") 
+get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani")
 }

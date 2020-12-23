@@ -109,46 +109,58 @@ estimates across multiple regions is tracked using the \code{progressr} package.
 progressr::handlers and enable it in batch by setting \code{R_PROGRESSR_ENABLE=TRUE} as an environment variable.
 }
 \examples{
- \donttest{
-#set number of cores to use
+
+\donttest{
+# set number of cores to use
 options(mc.cores = ifelse(interactive(), 4, 1))
 
 # construct example distributions
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- list(mean = convert_to_logmean(3,1),
-                        mean_sd = 0.1,
-                        sd = convert_to_logsd(3,1),
-                        sd_sd = 0.1, max = 15)
-                        
+reporting_delay <- list(
+  mean = convert_to_logmean(3, 1),
+  mean_sd = 0.1,
+  sd = convert_to_logsd(3, 1),
+  sd_sd = 0.1, max = 15
+)
+
 # uses example case vector
 cases <- example_confirmed[1:60]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
-  cases[, region := "realland"]))
-                
+  cases[, region := "realland"]
+))
+
 # run epinow across multiple regions and generate summaries
 # samples and warmup have been reduced for this example
-def <- regional_epinow(reported_cases = cases, 
-                       generation_time = generation_time,
-                       delays = delay_opts(incubation_period, reporting_delay),
-                       rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-                       stan = stan_opts(samples = 100, warmup = 200, 
-                                        control = list(adapt_delta = 0.95)),
-                       verbose = interactive())
-                       
+def <- regional_epinow(
+  reported_cases = cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
+  stan = stan_opts(
+    samples = 100, warmup = 200,
+    control = list(adapt_delta = 0.95)
+  ),
+  verbose = interactive()
+)
+
 # apply a different rt method per region
 # (here a gaussian process and a weekly random walk)
 gp <- opts_list(gp_opts(), cases)
 gp <- update_list(gp, list(realland = NULL))
 rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
-region_rt <- regional_epinow(reported_cases = cases, 
-                             generation_time = generation_time,
-                             delays = delay_opts(incubation_period, reporting_delay),
-                             rt = rt, gp = gp,
-                             stan = stan_opts(samples = 100, warmup = 200,
-                                              control = list(adapt_delta = 0.95)),
-                             verbose = interactive())
+region_rt <- regional_epinow(
+  reported_cases = cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt, gp = gp,
+  stan = stan_opts(
+    samples = 100, warmup = 200,
+    control = list(adapt_delta = 0.95)
+  ),
+  verbose = interactive()
+)
 }
 }
 \seealso{

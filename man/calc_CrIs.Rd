@@ -26,5 +26,5 @@ samples <- data.frame(value = 1:10, type = "car")
 # add credible intervals
 calc_CrIs(samples)
 # add 90\% credible interval grouped by type
-calc_CrIs(samples, summarise_by = "type") 
+calc_CrIs(samples, summarise_by = "type")
 }

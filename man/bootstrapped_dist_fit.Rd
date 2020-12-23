@@ -47,8 +47,10 @@ the size of the available reporting delay sample may not be representative of th
 \donttest{
 # lognormal
 delays <- rlnorm(500, log(5), 1)
-out <- bootstrapped_dist_fit(delays, samples = 1000, bootstraps = 10, 
-                             dist = "lognormal")
+out <- bootstrapped_dist_fit(delays,
+  samples = 1000, bootstraps = 10,
+  dist = "lognormal"
+)
 out
 }
 }

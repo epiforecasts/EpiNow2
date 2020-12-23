@@ -46,32 +46,40 @@ if it is in use. Future releases may depreciate it.
 }
 \examples{
 \donttest{
-if(requireNamespace("rnaturalearth") & requireNamespace("scales")){
-# Example 1 - categorical data
-# If values are "Increasing", "Likely increasing" etc (see ?EpiNow2::theme_map), 
-# then the default fill scale works
-eg_data <- data.table::data.table(variable = c("Increasing", 
-                                               "Decreasing", 
-                                               "Stable", 
-                                               "Likely decreasing",
-                                               "Likely increasing"),
-                                  country = c("France", 
-                                              "Germany", 
-                                              "United Kingdom", 
-                                              "Spain",
-                                              "Australia") )
-# make variable a factor so the ordering is sensible in the legend
-eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
-                                                        "Stable", "Likely increasing",
-                                                        "Increasing"))
-global_map(eg_data, variable = "variable", variable_label = "Direction\nof change")
+if (requireNamespace("rnaturalearth") & requireNamespace("scales")) {
+  # Example 1 - categorical data
+  # If values are "Increasing", "Likely increasing" etc (see ?EpiNow2::theme_map),
+  # then the default fill scale works
+  eg_data <- data.table::data.table(
+    variable = c(
+      "Increasing",
+      "Decreasing",
+      "Stable",
+      "Likely decreasing",
+      "Likely increasing"
+    ),
+    country = c(
+      "France",
+      "Germany",
+      "United Kingdom",
+      "Spain",
+      "Australia"
+    )
+  )
+  # make variable a factor so the ordering is sensible in the legend
+  eg_data$variable <- factor(eg_data$variable, levels = c(
+    "Decreasing", "Likely decreasing",
+    "Stable", "Likely increasing",
+    "Increasing"
+  ))
+  global_map(eg_data, variable = "variable", variable_label = "Direction\nof change")
 
 
-# Example 2 - numeric data
-# numeric data requires scale_fill and a global viridis_palette specified
-eg_data$second_variable <- runif(nrow(eg_data))
-viridis_palette <- "A"
-global_map(eg_data, variable = "second_variable", scale_fill = scale_fill_viridis_c)
+  # Example 2 - numeric data
+  # numeric data requires scale_fill and a global viridis_palette specified
+  eg_data$second_variable <- runif(nrow(eg_data))
+  viridis_palette <- "A"
+  global_map(eg_data, variable = "second_variable", scale_fill = scale_fill_viridis_c)
 }
 }
 }

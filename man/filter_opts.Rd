@@ -25,14 +25,15 @@ present and otherwise applies the overarching settings
 cases <- example_confirmed[1:40]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
-  cases[, region := "realland"]))
-  
+  cases[, region := "realland"]
+))
+
 # regional options
 regional_opts <- opts_list(rt_opts(), cases)
 EpiNow2:::filter_opts(regional_opts, "realland")
 # default only
 EpiNow2:::filter_opts(rt_opts(), "realland")
-#settings are NULL in one regions
+# settings are NULL in one regions
 regional_opts <- update_list(regional_opts, list(realland = NULL))
 EpiNow2:::filter_opts(regional_opts, "realland")
 }

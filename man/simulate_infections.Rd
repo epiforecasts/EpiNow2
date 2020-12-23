@@ -42,7 +42,7 @@ Simulations can be run in parallel using \code{future::plan}.
 }
 \examples{
 \donttest{
-#set number of cores to use
+# set number of cores to use
 options(mc.cores = ifelse(interactive(), 4, 1))
 # get example case counts
 reported_cases <- example_confirmed[1:50]
@@ -51,17 +51,23 @@ reported_cases <- example_confirmed[1:50]
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 # set delays between infection and case report
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
-                        sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 15)
-                        
+reporting_delay <- list(
+  mean = convert_to_logmean(3, 1), mean_sd = 0.1,
+  sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 15
+)
+
 # fit model to data to recover Rt estimates
-est <- estimate_infections(reported_cases, generation_time = generation_time,
-                           delays = delay_opts(incubation_period, reporting_delay),
-                           rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-                           gp = gp_opts(ls_min = 10, boundary_scale = 1.5,,
-                                        basis_prop = 0.1),
-                           obs = obs_opts(scale = list(mean = 0.1, sd = 0.01)))
-                                  
+est <- estimate_infections(reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+  gp = gp_opts(
+    ls_min = 10, boundary_scale = 1.5, ,
+    basis_prop = 0.1
+  ),
+  obs = obs_opts(scale = list(mean = 0.1, sd = 0.01))
+)
+
 # update Rt trajectory and simulate new infections using it
 R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
 sims <- simulate_infections(est, R)
