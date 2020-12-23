@@ -23,20 +23,21 @@ setup_logging <- function(threshold = "INFO", file = NULL,
   if (is.null(name)) {
     name <- "ROOT"
   }
-  message(sprintf("Logging threshold set at %s for the %s logger",
-                           threshold, name))
+  message(sprintf(
+    "Logging threshold set at %s for the %s logger",
+    threshold, name
+  ))
   futile.logger::flog.threshold(threshold, name = name)
 
   if (!is.null(file)) {
-
     if (mirror_to_console) {
       message(sprintf("Writing %s logs to the console and: %s", name, file))
       futile.logger::flog.appender(futile.logger::appender.tee(file), name = name)
-    }else{
+    } else {
       message(sprintf("Writing %s logs to: %s", name, file))
       futile.logger::flog.appender(futile.logger::appender.file(file), name = name)
     }
-  }else{
+  } else {
     message(sprintf("Writing %s logs to the console", name))
     futile.logger::flog.appender(futile.logger::appender.console(), name = name)
   }
@@ -73,18 +74,22 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
     log_path$regional_epinow <- file.path(logs, "regional-epinow")
     log_path$epinow <- file.path(logs, "epinow")
 
-    purrr::walk(log_path, function(path){
+    purrr::walk(log_path, function(path) {
       if (!dir.exists(path)) {
         dir.create(path, recursive = TRUE)
       }
     })
 
     # set up logs
-    setup_logging("INFO", file = paste0(log_path$regional_epinow, "/", target_date, ".log"),
-                  mirror_to_console = TRUE)
-    setup_logging("INFO", file = paste0(log_path$epinow, "/", target_date, ".log"),
-                  mirror_to_console = mirror_epinow,
-                  name = "EpiNow2.epinow")
+    setup_logging("INFO",
+      file = paste0(log_path$regional_epinow, "/", target_date, ".log"),
+      mirror_to_console = TRUE
+    )
+    setup_logging("INFO",
+      file = paste0(log_path$epinow, "/", target_date, ".log"),
+      mirror_to_console = mirror_epinow,
+      name = "EpiNow2.epinow"
+    )
   }
   return(invisible(NULL))
 }
@@ -110,7 +115,6 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 #' used then nothing is returned.
 setup_future <- function(reported_cases, strategies = c("multiprocess", "multiprocess"),
                          min_cores_per_worker = 4) {
-
   if (length(strategies) > 2 | length(strategies) == 0) {
     futile.logger::flog.error("1 or 2 strategies should be used")
     stop("1 or 2 strategies should be used")
@@ -121,23 +125,33 @@ setup_future <- function(reported_cases, strategies = c("multiprocess", "multipr
   }
   if (length(strategies) == 1) {
     workers <- future::availableCores()
-    futile.logger::flog.info("Using %s workers with 1 core per worker",
-                             workers)
-    future::plan(strategies, workers = workers,
-                 gc = TRUE, earlySignal = TRUE)
+    futile.logger::flog.info(
+      "Using %s workers with 1 core per worker",
+      workers
+    )
+    future::plan(strategies,
+      workers = workers,
+      gc = TRUE, earlySignal = TRUE
+    )
     cores_per_worker <- 1
     return(invisible(NULL))
-  }else{
+  } else {
     jobs <- length(unique(reported_cases$region))
     workers <- min(ceiling(future::availableCores() / min_cores_per_worker), jobs)
     cores_per_worker <- max(1, round(future::availableCores() / workers, 0))
 
-    futile.logger::flog.info("Using %s workers with %s cores per worker",
-                             workers, cores_per_worker)
+    futile.logger::flog.info(
+      "Using %s workers with %s cores per worker",
+      workers, cores_per_worker
+    )
 
-    future::plan(list(future::tweak(strategies[1], workers = workers,
-                                    gc = TRUE, earlySignal = TRUE),
-                      future::tweak(strategies[2], workers = cores_per_worker)))
+    future::plan(list(
+      future::tweak(strategies[1],
+        workers = workers,
+        gc = TRUE, earlySignal = TRUE
+      ),
+      future::tweak(strategies[2], workers = cores_per_worker)
+    ))
     return(cores_per_worker)
   }
 }
@@ -172,7 +186,7 @@ setup_target_folder <- function(target_folder = NULL, target_date) {
       dir.create(target_folder, recursive = TRUE)
     }
     return(list(date = target_folder, latest = latest_folder))
-  }else{
+  } else {
     return(invisible(NULL))
   }
 }

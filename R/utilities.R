@@ -15,19 +15,23 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
     date <- Sys.Date()
   }
   dirs <- list.dirs(nowcast_dir, recursive = FALSE)
-  purrr::walk(dirs,
-              function(dir) {
-                remove_dir <- file.path(dir, date)
-                if (dir.exists(remove_dir)) {
-                  futile.logger::flog.info("Removing files from: %s", remove_dir)
-                  lapply(list.files(file.path(remove_dir)),
-                         function(file){
-                           file.remove(
-                             file.path(remove_dir, file)
-                           )
-                         })
-                }
-              })
+  purrr::walk(
+    dirs,
+    function(dir) {
+      remove_dir <- file.path(dir, date)
+      if (dir.exists(remove_dir)) {
+        futile.logger::flog.info("Removing files from: %s", remove_dir)
+        lapply(
+          list.files(file.path(remove_dir)),
+          function(file) {
+            file.remove(
+              file.path(remove_dir, file)
+            )
+          }
+        )
+      }
+    }
+  )
 }
 
 #' Format Credible Intervals
@@ -45,11 +49,15 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 #' value <- list(median = 2, lower_90 = 1, upper_90 = 3)
 #' make_conf(value)
 make_conf <- function(value, CrI = 90, reverse = FALSE) {
-  CrI <- list(lower = value[[paste0("lower_", CrI)]],
-              upper = value[[paste0("upper_", CrI)]])
-  conf <- paste0(value$median, " (",
-                 ifelse(!reverse, CrI$lower, CrI$upper), " -- ",
-                 ifelse(!reverse, CrI$upper, CrI$lower), ")")
+  CrI <- list(
+    lower = value[[paste0("lower_", CrI)]],
+    upper = value[[paste0("upper_", CrI)]]
+  )
+  conf <- paste0(
+    value$median, " (",
+    ifelse(!reverse, CrI$lower, CrI$upper), " -- ",
+    ifelse(!reverse, CrI$upper, CrI$lower), ")"
+  )
   return(conf)
 }
 
@@ -70,12 +78,18 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 #' map_prob_change(var)
 map_prob_change <- function(var) {
   var <- ifelse(var < 0.05, "Increasing",
-                ifelse(var < 0.4, "Likely increasing",
-                       ifelse(var < 0.6, "Stable",
-                              ifelse(var < 0.95, "Likely decreasing",
-                                     "Decreasing"))))
-  var <- factor(var, levels = c("Increasing", "Likely increasing", "Stable",
-                                "Likely decreasing", "Decreasing"))
+    ifelse(var < 0.4, "Likely increasing",
+      ifelse(var < 0.6, "Stable",
+        ifelse(var < 0.95, "Likely decreasing",
+          "Decreasing"
+        )
+      )
+    )
+  )
+  var <- factor(var, levels = c(
+    "Increasing", "Likely increasing", "Stable",
+    "Likely decreasing", "Decreasing"
+  ))
   return(var)
 }
 
@@ -94,7 +108,7 @@ map_prob_change <- function(var) {
 #' growth_to_R(0.2, 4, 1)
 growth_to_R <- function(r, gamma_mean, gamma_sd) {
   k <- (gamma_sd / gamma_mean)^2
-  R <- (1 + k * r * gamma_mean)^(1/k)
+  R <- (1 + k * r * gamma_mean)^(1 / k)
   return(R)
 }
 
@@ -127,7 +141,7 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 allocate_delays <- function(delay_var, no_delays) {
   if (no_delays > 0) {
     out <- unlist(delay_var)
-  }else{
+  } else {
     out <- numeric(0)
   }
   return(array(out))
@@ -176,19 +190,20 @@ allocate_empty <- function(data, params, n = 0) {
 #'
 #' # select plots and samples
 #' EpiNow2:::match_output_arguments(c("plots", "samples"),
-#'                        supported_args = c("fit", "plots", "samples"))
+#'   supported_args = c("fit", "plots", "samples")
+#' )
 #'
 #' # lazily select arguments
 #' EpiNow2:::match_output_arguments("p",
-#'                        supported_args = c("fit", "plots", "samples"))
+#'   supported_args = c("fit", "plots", "samples")
+#' )
 match_output_arguments <- function(input_args = c(),
-                                   supported_args =  c(),
+                                   supported_args = c(),
                                    logger = NULL,
                                    level = "info") {
-
   if (level %in% "info") {
     flog_fn <- futile.logger::flog.info
-  }else if (level %in% "debug") {
+  } else if (level %in% "debug") {
     flog_fn <- futile.logger::flog.debug
   }
   # make supported args a logical vector
@@ -196,7 +211,7 @@ match_output_arguments <- function(input_args = c(),
   names(output_args) <- supported_args
 
   # get arguments supplied and linked to supported args
-  found_args <- lapply(input_args, function(arg){
+  found_args <- lapply(input_args, function(arg) {
     supported_args[grepl(arg, supported_args)]
   })
   found_args <- unlist(found_args)
@@ -206,11 +221,13 @@ match_output_arguments <- function(input_args = c(),
   if (!is.null(logger)) {
     if (length(found_args) > 0) {
       flog_fn("Producing following optional outputs: %s",
-              paste(found_args, collapse = ", "),
-              name = logger)
-    }else{
+        paste(found_args, collapse = ", "),
+        name = logger
+      )
+    } else {
       flog_fn("No optional output specified",
-              name = logger)
+        name = logger
+      )
     }
   }
   # assign true false to supported arguments based on found arguments
@@ -240,11 +257,16 @@ match_output_arguments <- function(input_args = c(),
 #' update_Rt(rep(1, 10), log(1.2), rep(0.1, 9), rep(10, 0), numeric(0), 0)
 #' }
 expose_stan_fns <- function(files, target_dir, ...) {
-  functions <- paste0("\n functions{ \n",
-                      paste(purrr::map_chr(files,
-                                           ~ paste(readLines(file.path(target_dir, .)), collapse = "\n")),
-                            collapse = "\n"),
-                      "\n }")
+  functions <- paste0(
+    "\n functions{ \n",
+    paste(purrr::map_chr(
+      files,
+      ~ paste(readLines(file.path(target_dir, .)), collapse = "\n")
+    ),
+    collapse = "\n"
+    ),
+    "\n }"
+  )
   rstan::expose_stan_functions(rstan::stanc(model_code = functions), ...)
   return(invisible(NULL))
 }
@@ -266,7 +288,7 @@ expose_stan_fns <- function(files, target_dir, ...) {
 #' @examples
 #'
 #' convert_to_logmean(2, 1)
-convert_to_logmean <- function(mean, sd){
+convert_to_logmean <- function(mean, sd) {
   log(mean^2 / sqrt(sd^2 + mean^2))
 }
 
@@ -303,7 +325,7 @@ update_list <- function(defaults = list(), optional = list()) {
   if (length(optional) != 0) {
     defaults <- defaults[setdiff(names(defaults), names(optional))]
     updated <- c(defaults, optional)
-  }else{
+  } else {
     updated <- defaults
   }
   return(updated)
@@ -311,10 +333,11 @@ update_list <- function(defaults = list(), optional = list()) {
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(
-  c("bottom", "cases", "confidence", "confirm", "country_code", "crps",
+  c(
+    "bottom", "cases", "confidence", "confirm", "country_code", "crps",
     "cum_cases", "Date", "date_confirm", "date_confirmation", "date_onset",
     "date_onset_sample", "date_onset_symptoms", "date_onset.x", "date_onset.y",
-    "date_report", "day", "doubling_time", "effect",  "Effective reproduction no.",
+    "date_report", "day", "doubling_time", "effect", "Effective reproduction no.",
     "estimates", "Expected change in daily cases", "fit_meas", "goodness_of_fit",
     "gt_sample", "import_status", "imported", "index", "latest", "little_r",
     "lower", "max_time", "mean_R", "Mean(R)", "metric", "mid_lower", "mid_upper",
@@ -325,8 +348,9 @@ globalVariables(
     "target_date", "time", "time_varying_r", "top", "total", "type", "upper",
     "value", "var", "vars", "viridis_palette", "window", ".", "%>%",
     "New confirmed cases by infection date", "Data", "R", "reference",
-    ".SD", "day_of_week", "forecast_type", "measure" ,"numeric_estimate",
+    ".SD", "day_of_week", "forecast_type", "measure", "numeric_estimate",
     "point", "strat", "estimate", "breakpoint", "variable", "value.V1", "central_lower", "central_upper",
-    "mean_sd", "sd_sd", "average_7",  "..lowers", "..upper_CrI", "..uppers", "timing",
-    "dataset", "last_confirm", "report_date", "secondary", "id"))
-
+    "mean_sd", "sd_sd", "average_7", "..lowers", "..upper_CrI", "..uppers", "timing",
+    "dataset", "last_confirm", "report_date", "secondary", "id"
+  )
+)

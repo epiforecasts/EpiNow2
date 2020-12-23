@@ -46,39 +46,47 @@
 #' @importFrom rstan sampling
 #' @importFrom data.table copy .N as.data.table merge.data.table setDT setcolorder
 #' @examples
-#' #set number of cores to use
+#' # set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:60]
 #'
 #' # define example truncation distribution (note not integer adjusted)
-#' trunc_dist <- list(mean = convert_to_logmean(3, 2),
-#'                    mean_sd = 0.1,
-#'                    sd = convert_to_logsd(3, 2),
-#'                    sd_sd = 0.1,
-#'                    max = 10)
+#' trunc_dist <- list(
+#'   mean = convert_to_logmean(3, 2),
+#'   mean_sd = 0.1,
+#'   sd = convert_to_logsd(3, 2),
+#'   sd_sd = 0.1,
+#'   max = 10
+#' )
 #'
 #' # apply truncation to example data
 #' construct_truncation <- function(index, cases, dist) {
-#' set.seed(index)
+#'   set.seed(index)
 #'   cmf <- cumsum(
-#'      dlnorm(1:(dist$max + 1),
-#'             rnorm(1, dist$mean, dist$mean_sd),
-#'             rnorm(1, dist$sd, dist$sd_sd)))
+#'     dlnorm(
+#'       1:(dist$max + 1),
+#'       rnorm(1, dist$mean, dist$mean_sd),
+#'       rnorm(1, dist$sd, dist$sd_sd)
+#'     )
+#'   )
 #'   cmf <- cmf / cmf[dist$max + 1]
 #'   cmf <- rev(cmf)[-1]
 #'   trunc_cases <- data.table::copy(cases)[1:(.N - index)]
 #'   trunc_cases[(.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)]
 #'   return(trunc_cases)
-#'  }
+#' }
 #' example_data <- purrr::map(c(20, 15, 10, 0),
-#'                            construct_truncation,
-#'                            cases = reported_cases,
-#'                            dist = trunc_dist)
+#'   construct_truncation,
+#'   cases = reported_cases,
+#'   dist = trunc_dist
+#' )
 #'
 #' # fit model to example data
-#' est <- estimate_truncation(example_data, verbose = interactive(),
-#'                            chains = 2, iter = 2000)
+#' est <- estimate_truncation(example_data,
+#'   verbose = interactive(),
+#'   chains = 2, iter = 2000
+#' )
 #'
 #' # summary of the distribution
 #' est$dist
@@ -98,8 +106,10 @@ estimate_truncation <- function(obs, max_truncation = 10,
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
   obs <- purrr::map(dirty_obs, data.table::copy)
-  obs <- purrr::map(1:length(obs), ~ obs[[.]][, (as.character(.)) := confirm][,
-                                                  confirm := NULL])
+  obs <- purrr::map(1:length(obs), ~ obs[[.]][, (as.character(.)) := confirm][
+    ,
+    confirm := NULL
+  ])
   obs <- purrr::reduce(obs, merge, all = TRUE)
   obs_start <- nrow(obs) - max_truncation - sum(is.na(obs$`1`)) + 1
   obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
@@ -129,10 +139,11 @@ estimate_truncation <- function(obs, max_truncation = 10,
     model <- stanmodels$estimate_truncation
   }
   fit <- rstan::sampling(model,
-                         data = data,
-                         init = init_fn,
-                         refresh = ifelse(verbose, 50, 0),
-                         ...)
+    data = data,
+    init = init_fn,
+    refresh = ifelse(verbose, 50, 0),
+    ...
+  )
 
   out <- list()
   # Summarise fit truncation distribution for downstream usage
@@ -145,29 +156,39 @@ estimate_truncation <- function(obs, max_truncation = 10,
   )
 
   # summarise reconstructed observations
-  recon_obs <- extract_stan_param(fit, "recon_obs", CrIs = CrIs,
-                                  var_names = TRUE)
+  recon_obs <- extract_stan_param(fit, "recon_obs",
+    CrIs = CrIs,
+    var_names = TRUE
+  )
   recon_obs <- recon_obs[, id := variable][, variable := NULL]
-  recon_obs <- recon_obs[, dataset := 1:.N][,
-                           dataset := dataset %% data$obs_sets][
-                           dataset == 0, dataset := data$obs_sets]
+  recon_obs <- recon_obs[, dataset := 1:.N][
+    ,
+    dataset := dataset %% data$obs_sets
+  ][
+    dataset == 0, dataset := data$obs_sets
+  ]
   # link reconstructed observations to observed
   last_obs <-
-    data.table::copy(dirty_obs[[length(dirty_obs)]])[, last_confirm := confirm][,
-                                     confirm := NULL]
+    data.table::copy(dirty_obs[[length(dirty_obs)]])[, last_confirm := confirm][
+      ,
+      confirm := NULL
+    ]
   link_obs <- function(index) {
-    target_obs <- dirty_obs[[index]][, index := .N - 0:(.N-1)]
+    target_obs <- dirty_obs[[index]][, index := .N - 0:(.N - 1)]
     target_obs <- target_obs[index < max_truncation]
     estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
     estimates <- estimates[, lapply(.SD, as.integer)]
-    estimates <- estimates[, index := .N - 0:(.N-1)]
+    estimates <- estimates[, index := .N - 0:(.N - 1)]
     estimates[, c("n_eff", "Rhat") := NULL]
     target_obs <-
       data.table::merge.data.table(
-        target_obs, last_obs, by = "date")
-    target_obs[,report_date := max(date)]
+        target_obs, last_obs,
+        by = "date"
+      )
+    target_obs[, report_date := max(date)]
     target_obs <- data.table::merge.data.table(target_obs, estimates,
-                                               by = "index", all.x = TRUE)
+      by = "index", all.x = TRUE
+    )
     target_obs <- target_obs[order(date)][, index := NULL]
     return(target_obs)
   }
@@ -202,14 +223,19 @@ estimate_truncation <- function(obs, max_truncation = 10,
 #' @export
 plot.estimate_truncation <- function(x, ...) {
   plot <- ggplot2::ggplot(x$obs, ggplot2::aes(x = date, y = last_confirm)) +
-    ggplot2::geom_col(fill = "grey", col = "white",
-                      show.legend = FALSE, na.rm = TRUE) +
-    ggplot2::geom_point(data = x$obs,
-                        ggplot2::aes(x = date, y = confirm)) +
+    ggplot2::geom_col(
+      fill = "grey", col = "white",
+      show.legend = FALSE, na.rm = TRUE
+    ) +
+    ggplot2::geom_point(
+      data = x$obs,
+      ggplot2::aes(x = date, y = confirm)
+    ) +
     ggplot2::facet_wrap(~report_date, scales = "free")
 
   plot <- plot_CrIs(plot, extract_CrIs(x$obs),
-                    alpha = 0.8, size = 1)
+    alpha = 0.8, size = 1
+  )
 
   plot <- plot +
     cowplot::theme_cowplot() +
@@ -219,5 +245,3 @@ plot.estimate_truncation <- function(x, ...) {
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
   return(plot)
 }
-
-

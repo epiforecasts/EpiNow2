@@ -5,17 +5,22 @@ futile.logger::flog.threshold("FATAL")
 reported_cases <- EpiNow2::example_confirmed[1:50]
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 10)
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 10)
-reporting_delay <- list(mean = convert_to_logmean(3,1), mean_sd = 0.1,
-                        sd = convert_to_logsd(3,1), sd_sd = 0.1, max = 10)
+reporting_delay <- list(
+  mean = convert_to_logmean(3, 1), mean_sd = 0.1,
+  sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 10
+)
 
-if (!testthat:::on_cran()){
-  out <- suppressWarnings(estimate_infections(reported_cases, generation_time = generation_time,
-                                              delays = delay_opts(reporting_delay),
-                                              gp = NULL, rt = rt_opts(rw = 14),
-                                              stan = stan_opts(chains = 2, warmup = 100, samples = 100,
-                                                               control = list(adapt_delta = 0.9))))
-
-  }
+if (!testthat:::on_cran()) {
+  out <- suppressWarnings(estimate_infections(reported_cases,
+    generation_time = generation_time,
+    delays = delay_opts(reporting_delay),
+    gp = NULL, rt = rt_opts(rw = 14),
+    stan = stan_opts(
+      chains = 2, warmup = 100, samples = 100,
+      control = list(adapt_delta = 0.9)
+    )
+  ))
+}
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object", {
   skip_on_cran()

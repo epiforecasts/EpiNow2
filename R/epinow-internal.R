@@ -99,25 +99,34 @@ save_forecast_infections <- function(forecast, target_folder = NULL, samples = T
 #' @importFrom data.table := rbindlist
 estimates_by_report_date <- function(estimates, forecast, delays, CrIs = c(0.2, 0.5, 0.9),
                                      target_folder = NULL, samples = TRUE) {
-
   if (is.null(forecast)) {
     estimated_reported_cases <- list()
     if (samples) {
-      estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][,
-                                               .(date, sample, cases = value, type = "gp_rt")]
+      estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][
+        ,
+        .(date, sample, cases = value, type = "gp_rt")
+      ]
     }
-    estimated_reported_cases$summarised <- estimates$summarised[variable == "reported_cases"][,
-                                               type := "gp_rt"][, variable := NULL][, strat := NULL]
-  }else{
+    estimated_reported_cases$summarised <- estimates$summarised[variable == "reported_cases"][
+      ,
+      type := "gp_rt"
+    ][, variable := NULL][, strat := NULL]
+  } else {
     report_cases_with_forecast <- function(model) {
-      reported_cases <- report_cases(case_estimates = estimates$samples[variable == "infections"][type != "forecast"][,
-                                               .(date, sample, cases = as.integer(value))],
-                                     case_forecast = forecast$samples[type == "case" &
-                                                                      forecast_type == model][,
-                                                                      .(date, sample, cases = as.integer(value))],
-                                     delays = delays,
-                                     CrIs = CrIs,
-                                     type = "sample")
+      reported_cases <- report_cases(
+        case_estimates = estimates$samples[variable == "infections"][type != "forecast"][
+          ,
+          .(date, sample, cases = as.integer(value))
+        ],
+        case_forecast = forecast$samples[type == "case" &
+          forecast_type == model][
+          ,
+          .(date, sample, cases = as.integer(value))
+        ],
+        delays = delays,
+        CrIs = CrIs,
+        type = "sample"
+      )
       return(reported_cases)
     }
 
@@ -131,8 +140,10 @@ estimates_by_report_date <- function(estimates, forecast, delays, CrIs = c(0.2, 
         reported_cases_rt$samples[, type := "rt"],
         reported_cases_cases$samples[, type := "case"],
         reported_cases_ensemble$samples[, type := "ensemble"],
-        estimates$samples[variable == "reported_cases"][,
-                          .(date, sample, cases = value, type = "gp_rt")]
+        estimates$samples[variable == "reported_cases"][
+          ,
+          .(date, sample, cases = value, type = "gp_rt")
+        ]
       ), use.names = TRUE)
     }
 
@@ -140,8 +151,10 @@ estimates_by_report_date <- function(estimates, forecast, delays, CrIs = c(0.2, 
       reported_cases_rt$summarised[, type := "rt"],
       reported_cases_cases$summarised[, type := "case"],
       reported_cases_ensemble$summarised[, type := "ensemble"],
-      estimates$summarised[variable == "reported_cases"][, type := "gp_rt"][,
-                           variable := NULL][, strat := NULL]
+      estimates$summarised[variable == "reported_cases"][, type := "gp_rt"][
+        ,
+        variable := NULL
+      ][, strat := NULL]
     ), use.names = TRUE)
   }
 
@@ -171,7 +184,8 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
     suppressWarnings(
       if (dir.exists(latest_folder)) {
         unlink(latest_folder)
-      })
+      }
+    )
 
     suppressWarnings(
       dir.create(latest_folder)
@@ -179,7 +193,9 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
 
     suppressWarnings(
       file.copy(file.path(target_folder, "."),
-                latest_folder, recursive = TRUE)
+        latest_folder,
+        recursive = TRUE
+      )
     )
   }
   return(invisible(NULL))

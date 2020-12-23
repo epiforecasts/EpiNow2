@@ -21,15 +21,19 @@
 #' cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
 #'
 #' # define a single report delay distribution
-#' delay_def <- lognorm_dist_def(mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
-#'                              max_value = 30, samples = 1, to_log = TRUE)
+#' delay_def <- lognorm_dist_def(
+#'   mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
+#'   max_value = 30, samples = 1, to_log = TRUE
+#' )
 #'
 #' # define a single incubation period
-#' incubation_def <- lognorm_dist_def(mean = incubation_periods[1, ]$mean,
-#'                                    mean_sd = incubation_periods[1, ]$mean_sd,
-#'                                    sd = incubation_periods[1, ]$sd,
-#'                                    sd_sd = incubation_periods[1, ]$sd_sd,
-#'                                    max_value = 30, samples = 1)
+#' incubation_def <- lognorm_dist_def(
+#'   mean = incubation_periods[1, ]$mean,
+#'   mean_sd = incubation_periods[1, ]$mean_sd,
+#'   sd = incubation_periods[1, ]$sd,
+#'   sd_sd = incubation_periods[1, ]$sd_sd,
+#'   max_value = 30, samples = 1
+#' )
 #'
 #' # simple mapping
 #' report <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def))
@@ -37,49 +41,58 @@
 #'
 #' # mapping with a weekly reporting effect
 #' report_weekly <- adjust_infection_to_report(
-#'                       cases, delay_defs = list(incubation_def, delay_def),
-#'                       reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))
+#'   cases,
+#'   delay_defs = list(incubation_def, delay_def),
+#'   reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95)
+#' )
 #' print(report_weekly)
 #'
 #' # map using a deterministic median shift for both delays
-#' report_median <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def),
-#'                                             type = "median")
+#' report_median <- adjust_infection_to_report(cases,
+#'   delay_defs = list(incubation_def, delay_def),
+#'   type = "median"
+#' )
 #' print(report_median)
 #'
 #' # map with a weekly reporting effect and stochastic reporting model
 #' report_stochastic <- adjust_infection_to_report(
-#'                       cases, delay_defs = list(incubation_def, delay_def),
-#'                       reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
-#'                       reporting_model = function(n) {
-#'                       out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))
-#'                       out <- ifelse(is.na(out), 0, out)
-#'                       })
+#'   cases,
+#'   delay_defs = list(incubation_def, delay_def),
+#'   reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
+#'   reporting_model = function(n) {
+#'     out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))
+#'     out <- ifelse(is.na(out), 0, out)
+#'   }
+#' )
 #' print(report_stochastic)
 adjust_infection_to_report <- function(infections, delay_defs,
                                        reporting_model, reporting_effect,
                                        type = "sample",
-                                       truncate_future = TRUE){
-
+                                       truncate_future = TRUE) {
   data.table::setDTthreads(1)
 
   sample_single_dist <- function(input, delay_def) {
     ## Define sample delay fn
     sample_delay_fn <- function(n, ...) {
-      EpiNow2::dist_skel(n = n,
-                         model = delay_def$model[[1]],
-                         params = delay_def$params[[1]],
-                         max_value = delay_def$max_value[[1]],
-                         ...)
+      EpiNow2::dist_skel(
+        n = n,
+        model = delay_def$model[[1]],
+        params = delay_def$params[[1]],
+        max_value = delay_def$max_value[[1]],
+        ...
+      )
     }
 
 
     ## Infection to onset
-    out <- EpiNow2::sample_approx_dist(cases = input,
-                                         dist_fn = sample_delay_fn,
-                                         max_value = delay_def$max_value,
-                                         direction = "forwards",
-                                         type = type,
-                                         truncate_future = FALSE)
+    out <- EpiNow2::sample_approx_dist(
+      cases = input,
+      dist_fn = sample_delay_fn,
+      max_value = delay_def$max_value,
+      direction = "forwards",
+      type = type,
+      truncate_future = FALSE
+    )
 
     return(out)
   }
@@ -101,8 +114,10 @@ adjust_infection_to_report <- function(infections, delay_defs,
 
     report <- report[, day := lubridate::wday(date, week_start = 1)]
     report <- report[reporting_effect, on = "day"]
-    report <- report[, cases := as.integer(cases * effect)][,
-                       `:=`(effect = NULL, day = NULL)]
+    report <- report[, cases := as.integer(cases * effect)][
+      ,
+      `:=`(effect = NULL, day = NULL)
+    ]
 
     report <- data.table::setorder(report, date)
   }

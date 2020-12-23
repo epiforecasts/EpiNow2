@@ -10,21 +10,21 @@ library(magrittr)
 gi <- data.table::setDT(readRDS("data-raw/gi.rds"))
 ## Check mean and standard deviation
 covid_generation_times_summary <-
-  gi[, .(mean = median(mean), mean_sd = sd(mean),
-       sd = median(sd), sd_sd = sd(sd))]
+  gi[, .(
+    mean = median(mean), mean_sd = sd(mean),
+    sd = median(sd), sd_sd = sd(sd)
+  )]
 
 generation_times <-
   covid_generation_times_summary[, `:=`(
-  as_reported = "3.64 (SD 3.08)",
-  dist = "gamma",
-  disease = "SARS-CoV-2",
-  source = "ganyani",
-  url = "https://www.eurosurveillance.org/content/10.2807/1560-7917.ES.2020.25.17.2000257"
-)]
+    as_reported = "3.64 (SD 3.08)",
+    dist = "gamma",
+    disease = "SARS-CoV-2",
+    source = "ganyani",
+    url = "https://www.eurosurveillance.org/content/10.2807/1560-7917.ES.2020.25.17.2000257"
+  )]
 
 generation_times
 
 
 usethis::use_data(generation_times, overwrite = TRUE)
-
-

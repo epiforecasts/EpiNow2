@@ -11,4 +11,3 @@ incubation_periods <- data.table(
 )
 
 usethis::use_data(incubation_periods, overwrite = TRUE)
-

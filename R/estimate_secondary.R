@@ -41,7 +41,7 @@
 #' @importFrom data.table as.data.table merge.data.table
 #' @examples
 #' \donttest{
-#' #set number of cores to use
+#' # set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' #' # load data.table for manipulation
 #' library(data.table)
@@ -56,20 +56,20 @@
 #'
 #' # apply a convolution of a log normal to a vector of observations
 #' weight_cmf <- function(x, ...) {
-#'    set.seed(x[1])
-#'    meanlog <- rnorm(1, 1.6, 0.2)
-#'    sdlog <- rnorm(1, 0.8, 0.1)
-#'    cmf <- cumsum(dlnorm(1:length(x), meanlog, sdlog)) -
-#'            cumsum(dlnorm(0:(length(x) - 1), meanlog, sdlog))
-#'    conv <- sum(x * rev(cmf), na.rm = TRUE)
-#'    conv <- round(conv, 0)
-#'  return(conv)
+#'   set.seed(x[1])
+#'   meanlog <- rnorm(1, 1.6, 0.2)
+#'   sdlog <- rnorm(1, 0.8, 0.1)
+#'   cmf <- cumsum(dlnorm(1:length(x), meanlog, sdlog)) -
+#'     cumsum(dlnorm(0:(length(x) - 1), meanlog, sdlog))
+#'   conv <- sum(x * rev(cmf), na.rm = TRUE)
+#'   conv <- round(conv, 0)
+#'   return(conv)
 #' }
 #' # roll over observed cases to produce a convolution
 #' cases <- cases[, .(date, primary = confirm, secondary = confirm)]
 #' cases <- cases[, secondary := frollapply(secondary, 15, weight_cmf, align = "right")]
 #' cases <- cases[!is.na(secondary)]
-#' # add a day of the week effect and scale secondary observations at 40% of primary
+#' # add a day of the week effect and scale secondary observations at 40\% of primary
 #' cases <- cases[lubridate::wday(date) == 1, secondary := round(0.5 * secondary, 0)]
 #' cases <- cases[, secondary := round(secondary * rnorm(.N, 0.4, 0.025), 0)]
 #' cases <- cases[secondary < 0, secondary := 0]
@@ -77,7 +77,8 @@
 #' # fit model to example data assuming only a given fraction of primary observations
 #' # become secondary observations
 #' inc <- estimate_secondary(cases[1:60],
-#'                           obs = obs_opts(scale = list(mean = 0.2, sd = 0.2)))
+#'   obs = obs_opts(scale = list(mean = 0.2, sd = 0.2))
+#' )
 #' plot(inc, primary = TRUE)
 #'
 #' # forecast future secondary cases from primary
@@ -89,28 +90,36 @@
 #' # make some example prevalence data
 #' cases <- example_confirmed
 #' cases <- as.data.table(cases)
-#' cases <- cases[, .(date, primary = confirm,
-#'                   scaled_primary = confirm * rnorm(.N, 0.4, 0.05))]
+#' cases <- cases[, .(date,
+#'   primary = confirm,
+#'   scaled_primary = confirm * rnorm(.N, 0.4, 0.05)
+#' )]
 #' cases$secondary <- 0
 #' cases$secondary[1] <- as.integer(cases$scaled_primary[1])
 #' for (i in 2:nrow(cases)) {
 #'   meanlog <- rnorm(1, 1.6, 0.1)
 #'   sdlog <- rnorm(1, 0.8, 0.05)
-#'   cmf <- cumsum(dlnorm(1:min(i-1,40), meanlog, sdlog)) -
-#'            cumsum(dlnorm(0:min(39,i-2), meanlog, sdlog))
-#'   reducing_cases <- sum(cases$scaled_primary[(i-1):max(1,i-20)] * cmf)
+#'   cmf <- cumsum(dlnorm(1:min(i - 1, 40), meanlog, sdlog)) -
+#'     cumsum(dlnorm(0:min(39, i - 2), meanlog, sdlog))
+#'   reducing_cases <- sum(cases$scaled_primary[(i - 1):max(1, i - 20)] * cmf)
 #'   reducing_cases <- ifelse(cases$secondary[i - 1] < reducing_cases,
-#'                            cases$secondary[i - 1], reducing_cases)
+#'     cases$secondary[i - 1], reducing_cases
+#'   )
 #'   cases$secondary[i] <- as.integer(
-#'   cases$secondary[i - 1] + cases$scaled_primary[i] - reducing_cases
+#'     cases$secondary[i - 1] + cases$scaled_primary[i] - reducing_cases
 #'   )
 #'   cases$secondary[i] <- ifelse(cases$secondary[i] < 0, 0,
-#'                                cases$secondary[i])
+#'     cases$secondary[i]
+#'   )
 #' }
 #' # fit model to example prevalence data
-#' prev <- estimate_secondary(cases[1:100], secondary = secondary_opts(type = "prevalence"),
-#'                           obs = obs_opts(week_effect = FALSE,
-#'                                          scale = list(mean = 0.3, sd = 0.1)))
+#' prev <- estimate_secondary(cases[1:100],
+#'   secondary = secondary_opts(type = "prevalence"),
+#'   obs = obs_opts(
+#'     week_effect = FALSE,
+#'     scale = list(mean = 0.3, sd = 0.1)
+#'   )
+#' )
 #' plot(prev, primary = TRUE)
 #'
 #' # forecast future secondary cases from primary
@@ -120,8 +129,11 @@
 estimate_secondary <- function(reports,
                                secondary = secondary_opts(),
                                delays = delay_opts(
-                                  list(mean = 2.5, mean_sd = 0.5,
-                                       sd = 0.47, sd_sd = 0.25, max = 30)),
+                                 list(
+                                   mean = 2.5, mean_sd = 0.5,
+                                   sd = 0.47, sd_sd = 0.25, max = 30
+                                 )
+                               ),
                                truncation = trunc_opts(),
                                obs = obs_opts(),
                                burn_in = 14,
@@ -156,16 +168,17 @@ estimate_secondary <- function(reports,
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(
     c(data, list(estimate_r = 0, fixed = 1, bp_n = 0))
-    )
+  )
   # fit
   if (is.null(model)) {
     model <- stanmodels$estimate_secondary
   }
   fit <- rstan::sampling(model,
-                         data = data,
-                         init = inits,
-                         refresh = ifelse(verbose, 50, 0),
-                         ...)
+    data = data,
+    init = inits,
+    refresh = ifelse(verbose, 50, 0),
+    ...
+  )
 
   out <- list()
   out$predictions <- extract_stan_param(fit, "sim_secondary", CrIs = CrIs)
@@ -212,7 +225,7 @@ estimate_secondary <- function(reports,
 #'
 #' # prevalence model
 #' secondary_opts("prevalence")
-secondary_opts <- function(type = "incidence", ...)  {
+secondary_opts <- function(type = "incidence", ...) {
   type <- match.arg(type, choices = c("incidence", "prevalence"))
   if (type %in% "incidence") {
     data <- list(
@@ -222,7 +235,7 @@ secondary_opts <- function(type = "incidence", ...)  {
       current = 0,
       primary_current_additive = 0
     )
-  }else if (type %in% "prevalence") {
+  } else if (type %in% "prevalence") {
     data <- list(
       cumulative = 1,
       historic = 1,
@@ -274,20 +287,26 @@ plot.estimate_secondary <- function(x, primary = FALSE,
   }
 
   plot <- ggplot2::ggplot(predictions, ggplot2::aes(x = date, y = secondary)) +
-    ggplot2::geom_col(fill = "grey", col = "white",
-                      show.legend = FALSE, na.rm = TRUE)
+    ggplot2::geom_col(
+      fill = "grey", col = "white",
+      show.legend = FALSE, na.rm = TRUE
+    )
 
   if (primary) {
     plot <- plot +
-       ggplot2::geom_point(data = predictions,
-                          ggplot2::aes(y = primary),
-                          alpha = 0.4, size = 0.8) +
-      ggplot2::geom_line(data = predictions,
-                          ggplot2::aes(y = primary), alpha = 0.4)
-
+      ggplot2::geom_point(
+        data = predictions,
+        ggplot2::aes(y = primary),
+        alpha = 0.4, size = 0.8
+      ) +
+      ggplot2::geom_line(
+        data = predictions,
+        ggplot2::aes(y = primary), alpha = 0.4
+      )
   }
   plot <- plot_CrIs(plot, extract_CrIs(predictions),
-                    alpha = 0.6, size = 1)
+    alpha = 0.6, size = 1
+  )
   plot <- plot +
     cowplot::theme_cowplot() +
     ggplot2::labs(y = "Confirmed Cases", x = "Date") +
@@ -365,9 +384,12 @@ forecast_secondary <- function(estimate,
 
   ## extract samples from given stanfit object
   draws <- rstan::extract(estimate$fit,
-                          pars = c("sim_secondary", "log_lik",
-                                   "lp__", "secondary"),
-                          include = FALSE)
+    pars = c(
+      "sim_secondary", "log_lik",
+      "lp__", "secondary"
+    ),
+    include = FALSE
+  )
   # extract data from stanfit
   data <- estimate$data
 
@@ -389,7 +411,7 @@ forecast_secondary <- function(estimate,
 
   # extract samples for posterior of estimates
   posterior_samples <- sample(1:data$n, data$n, replace = TRUE)
-  draws <- purrr::map(draws, ~ as.matrix(.[posterior_samples,]))
+  draws <- purrr::map(draws, ~ as.matrix(.[posterior_samples, ]))
   # combine with data
   data <- c(data, draws)
 
@@ -400,13 +422,16 @@ forecast_secondary <- function(estimate,
 
   # allocate empty parameters
   data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"),
-                         n = data$n)
+    n = data$n
+  )
   data$all_dates <- as.integer(all_dates)
   ## simulate
-  sims <- rstan::sampling(object = model,
-                          data = data, chains = 1, iter = 1,
-                          algorithm = "Fixed_param",
-                          refresh = 0)
+  sims <- rstan::sampling(
+    object = model,
+    data = data, chains = 1, iter = 1,
+    algorithm = "Fixed_param",
+    refresh = 0
+  )
 
   # extract samples and organise
   dates <- unique(primary_fit$date)
@@ -417,8 +442,10 @@ forecast_secondary <- function(estimate,
   samples <- samples[, date := rep(tail(dates, ifelse(all_dates, data$t, data$h)), data$n)]
 
   # summarise samples
-  summarised <- calc_summary_measures(samples, summarise_by = "date",
-                                      CrIs = CrIs)
+  summarised <- calc_summary_measures(samples,
+    summarise_by = "date",
+    CrIs = CrIs
+  )
   summarised <- summarised[, purrr::map(.SD, ~ round(., 1))]
 
   # construct output
@@ -428,14 +455,17 @@ forecast_secondary <- function(estimate,
   # link previous prediction observations with forecast observations
   forecast_obs <- data.table::rbindlist(list(
     estimate$predictions[, .(date, primary, secondary)],
-    data.table::copy(primary)[, .(primary = median(value)), by = "date"]),
-    use.names = TRUE, fill = TRUE)
+    data.table::copy(primary)[, .(primary = median(value)), by = "date"]
+  ),
+  use.names = TRUE, fill = TRUE
+  )
   data.table::setorderv(forecast_obs, "date")
   # add in predictions in estimate_secondary format
   out$predictions <- data.table::merge.data.table(summarised,
-                                                  forecast_obs,
-                                                  on = "date", all = TRUE)
-  data.table::setcolorder(out$predictions, c("date", "primary", "secondary", "mean", 'sd'))
+    forecast_obs,
+    on = "date", all = TRUE
+  )
+  data.table::setcolorder(out$predictions, c("date", "primary", "secondary", "mean", "sd"))
   class(out) <- c("estimate_secondary", class(out))
   return(out)
 }

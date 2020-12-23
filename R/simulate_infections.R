@@ -27,7 +27,7 @@
 #' @export
 #' @examples
 #' \donttest{
-#' #set number of cores to use
+#' # set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:50]
@@ -36,16 +36,22 @@
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # set delays between infection and case report
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
-#'                         sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 15)
+#' reporting_delay <- list(
+#'   mean = convert_to_logmean(3, 1), mean_sd = 0.1,
+#'   sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 15
+#' )
 #'
 #' # fit model to data to recover Rt estimates
-#' est <- estimate_infections(reported_cases, generation_time = generation_time,
-#'                            delays = delay_opts(incubation_period, reporting_delay),
-#'                            rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-#'                            gp = gp_opts(ls_min = 10, boundary_scale = 1.5,,
-#'                                         basis_prop = 0.1),
-#'                            obs = obs_opts(scale = list(mean = 0.1, sd = 0.01)))
+#' est <- estimate_infections(reported_cases,
+#'   generation_time = generation_time,
+#'   delays = delay_opts(incubation_period, reporting_delay),
+#'   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+#'   gp = gp_opts(
+#'     ls_min = 10, boundary_scale = 1.5, ,
+#'     basis_prop = 0.1
+#'   ),
+#'   obs = obs_opts(scale = list(mean = 0.1, sd = 0.01))
+#' )
 #'
 #' # update Rt trajectory and simulate new infections using it
 #' R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
@@ -68,9 +74,12 @@ simulate_infections <- function(estimates,
 
   ## extract samples from given stanfit object
   draws <- rstan::extract(estimates$fit,
-                          pars = c("noise", "eta", "lp__", "infections",
-                                   "reports", "imputed_reports", "r"),
-                          include = FALSE)
+    pars = c(
+      "noise", "eta", "lp__", "infections",
+      "reports", "imputed_reports", "r"
+    ),
+    include = FALSE
+  )
 
   # extract parameters from passed stanfit object
   shift <- estimates$args$seeding_time
@@ -82,7 +91,8 @@ simulate_infections <- function(estimates,
       R <- c(rep(NA_real_, burn_in), R)
     }
     R_mat <- matrix(rep(R, each = dim(draws$R)[1]),
-                    ncol = length(R), byrow = FALSE)
+      ncol = length(R), byrow = FALSE
+    )
     draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
     draws$R <- matrix(draws$R, ncol = length(R))
   }
@@ -91,14 +101,15 @@ simulate_infections <- function(estimates,
   R_samples <- dim(draws$R)[1]
   if (is.null(samples)) {
     samples <- R_samples
-  }else if(samples > R_samples) {
+  } else if (samples > R_samples) {
     samples <- R_samples
   }
 
   dates <-
     seq(min(na.omit(unique(estimates$summarised[variable == "R"]$date)))
-        - lubridate::days(burn_in + shift),
-        by = "day", length.out = dim(draws$R)[2] + shift)
+    - lubridate::days(burn_in + shift),
+    by = "day", length.out = dim(draws$R)[2] + shift
+    )
 
   # Load model
   if (is.null(model)) {
@@ -116,18 +127,22 @@ simulate_infections <- function(estimates,
 
     ## allocate empty parameters
     data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"),
-                           n = data$n)
+      n = data$n
+    )
 
     ## simulate
-    sims <- rstan::sampling(object = model,
-                            data = data, chains = 1, iter = 1,
-                            algorithm = "Fixed_param",
-                            refresh = 0)
+    sims <- rstan::sampling(
+      object = model,
+      data = data, chains = 1, iter = 1,
+      algorithm = "Fixed_param",
+      refresh = 0
+    )
 
     out <- extract_parameter_samples(sims, data,
-                                     reported_inf_dates = dates,
-                                     reported_dates = dates[-(1:shift)],
-                                     drop_length_1 = TRUE, merge = TRUE)
+      reported_inf_dates = dates,
+      reported_dates = dates[-(1:shift)],
+      drop_length_1 = TRUE, merge = TRUE
+    )
     return(out)
   }
 
@@ -137,7 +152,7 @@ simulate_infections <- function(estimates,
     nstarts <- seq(1, by = batch_size, length.out = batch_no)
     nends <- c(seq(batch_size, by = batch_size, length.out = batch_no - 1), samples)
     batches <- purrr::transpose(list(nstarts, nends))
-  }else{
+  } else {
     batches <- list(list(1, samples))
   }
 
@@ -149,14 +164,18 @@ simulate_infections <- function(estimates,
       p <- progressr::progressor(along = batches)
     }
     out <- future.apply::future_lapply(batches,
-                                       function(batch) {
-                                         if (verbose) {
-                                           p()
-                                         }
-                                         safe_batch(estimates, draws, model,
-                                                    shift, dates, batch[[1]],
-                                                    batch[[2]])[[1]]},
-                                       future.seed = TRUE)
+      function(batch) {
+        if (verbose) {
+          p()
+        }
+        safe_batch(
+          estimates, draws, model,
+          shift, dates, batch[[1]],
+          batch[[2]]
+        )[[1]]
+      },
+      future.seed = TRUE
+    )
   })
 
   ## join batches
@@ -165,14 +184,17 @@ simulate_infections <- function(estimates,
   out <- purrr::map(out, ~ data.table::rbindlist(.))
 
   ## format output
-  format_out <- format_fit(posterior_samples = out,
-                           horizon = estimates$args$horizon,
-                           shift = shift,
-                           burn_in = burn_in,
-                           start_date = min(estimates$observations$date),
-                           CrIs = extract_CrIs(estimates$summarised) / 100)
+  format_out <- format_fit(
+    posterior_samples = out,
+    horizon = estimates$args$horizon,
+    shift = shift,
+    burn_in = burn_in,
+    start_date = min(estimates$observations$date),
+    CrIs = extract_CrIs(estimates$summarised) / 100
+  )
   format_out$samples <- format_out$samples[, sample := 1:.N,
-                                           by = c("variable", "time","date", "strat")]
+    by = c("variable", "time", "date", "strat")
+  ]
 
 
   format_out$observations <- estimates$observations

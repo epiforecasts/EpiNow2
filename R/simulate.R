@@ -22,7 +22,6 @@ simulate_cases <- function(rts, initial_cases, initial_date, generation_interval
                            rdist = rpois, delay_defs, reporting_effect,
                            reporting_model, truncate_future = TRUE,
                            type = "sample") {
-
   if (!requireNamespace("EpiSoon", quietly = TRUE)) {
     stop('The EpiSoon package is missing. Install it with:
          install.packages("drat"); drat:::add("epiforecasts"); install.packages("EpiSoon")')
@@ -31,7 +30,8 @@ simulate_cases <- function(rts, initial_cases, initial_date, generation_interval
   # simulating cases initialising a data.table
   cases <- data.table::data.table(
     date = initial_date,
-    cases = initial_cases)
+    cases = initial_cases
+  )
 
   # structuring rts as a data.table with dates
   rts <- data.table::data.table(
@@ -41,18 +41,21 @@ simulate_cases <- function(rts, initial_cases, initial_date, generation_interval
 
   #  return a dataframe of cases by date of infection
   simulated_cases <- data.table::setDT(
-                     EpiSoon::predict_cases(cases = cases,
-                                            rt = rts,
-                                            serial_interval = generation_interval,
-                                            rdist = rdist)
-                     )
+    EpiSoon::predict_cases(
+      cases = cases,
+      rt = rts,
+      serial_interval = generation_interval,
+      rdist = rdist
+    )
+  )
 
   # mapping with a weekly reporting effect
   report <- EpiNow2::adjust_infection_to_report(simulated_cases,
-                                               delay_defs = delay_defs,
-                                               reporting_effect = reporting_effect,
-                                               reporting_model = reporting_model,
-                                               type = type, truncate_future = truncate_future)
+    delay_defs = delay_defs,
+    reporting_effect = reporting_effect,
+    reporting_model = reporting_model,
+    type = type, truncate_future = truncate_future
+  )
 
   # bind in simulated cases with reported cases
   report <- data.table::rbindlist(list(

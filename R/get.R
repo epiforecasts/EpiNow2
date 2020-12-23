@@ -8,8 +8,10 @@
 get_regions <- function(results_dir) {
 
   # regions to include - based on folder names
-  regions <- list.dirs(results_dir, recursive = FALSE,
-                       full.names = FALSE)
+  regions <- list.dirs(results_dir,
+    recursive = FALSE,
+    full.names = FALSE
+  )
 
   # put into alphabetical order
   regions <- regions[!(regions %in% "runtimes.csv")]
@@ -60,18 +62,21 @@ get_raw_result <- function(file, region, date,
 #' cases <- example_confirmed[1:30]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
-#'   cases[, region := "realland"]))
+#'   cases[, region := "realland"]
+#' ))
 #'
 #' # save results to tmp folder
 #' dir <- file.path(tempdir(check = TRUE), "results")
 #' # run multiregion estimates
-#' regional_out <- regional_epinow(reported_cases = cases,
-#'                                 generation_time = generation_time,
-#'                                 delays = delay_opts(incubation_period, reporting_delay),
-#'                                 rt = rt_opts(rw = 7), gp = NULL,
-#'                                 output = c("regions", "latest"),
-#'                                 target_folder = dir,
-#'                                 return_output = TRUE)
+#' regional_out <- regional_epinow(
+#'   reported_cases = cases,
+#'   generation_time = generation_time,
+#'   delays = delay_opts(incubation_period, reporting_delay),
+#'   rt = rt_opts(rw = 7), gp = NULL,
+#'   output = c("regions", "latest"),
+#'   target_folder = dir,
+#'   return_output = TRUE
+#' )
 #' # from output
 #' results <- get_regional_results(regional_out$regional, samples = FALSE)
 #' names(results)
@@ -104,31 +109,39 @@ get_regional_results <- function(regional_output,
 
       if (samples) {
         samples <- purrr::map(regions, ~ load_data(samples_path, .,
-                                                   result_dir = results_dir,
-                                                   date = date)[[1]])
-        samples <- data.table::rbindlist(samples, idcol = "region",  fill = TRUE)
+          result_dir = results_dir,
+          date = date
+        )[[1]])
+        samples <- data.table::rbindlist(samples, idcol = "region", fill = TRUE)
         out$samples <- samples
       }
       # get incidence values and combine
       summarised <- purrr::map(regions, ~ load_data(summarised_path, .,
-                                                    result_dir = results_dir,
-                                                    date = date)[[1]])
+        result_dir = results_dir,
+        date = date
+      )[[1]])
       summarised <- data.table::rbindlist(summarised, idcol = "region", fill = TRUE)
       out$summarised <- summarised
       return(out)
     }
     out <- list()
-    out$estimates <- get_estimates_file(samples_path = "estimate_samples.rds",
-                                        summarised_path = "summarised_estimates.rds")
+    out$estimates <- get_estimates_file(
+      samples_path = "estimate_samples.rds",
+      summarised_path = "summarised_estimates.rds"
+    )
 
     if (forecast) {
-      out$forecast <- get_estimates_file(samples_path = "forecast_samples.rds",
-                                         summarised_path = "summarised_forecast.rds")
+      out$forecast <- get_estimates_file(
+        samples_path = "forecast_samples.rds",
+        summarised_path = "summarised_forecast.rds"
+      )
 
-      out$estimated_reported_cases <- get_estimates_file(samples_path = "estimated_reported_cases_samples.rds",
-                                                         summarised_path = "summarised_estimated_reported_cases.rds")
+      out$estimated_reported_cases <- get_estimates_file(
+        samples_path = "estimated_reported_cases_samples.rds",
+        summarised_path = "summarised_estimated_reported_cases.rds"
+      )
     }
-  }else{
+  } else {
     get_estimates_data <- function(data) {
       out <- list()
       if (samples) {
@@ -166,7 +179,6 @@ get_regional_results <- function(regional_output,
 #' @examples
 #' get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani")
 get_dist <- function(data, disease, source, max_value = 15) {
-
   target_disease <- disease
   target_source <- source
   data <- data[disease == target_disease][source == target_source]
@@ -184,8 +196,9 @@ get_dist <- function(data, disease, source, max_value = 15) {
 #' get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 get_generation_time <- function(disease, source, max_value = 15) {
   dist <- get_dist(EpiNow2::generation_times,
-                   disease = disease, source = source,
-                   max_value = max_value)
+    disease = disease, source = source,
+    max_value = max_value
+  )
 
   return(dist)
 }
@@ -200,8 +213,9 @@ get_generation_time <- function(disease, source, max_value = 15) {
 #' get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 get_incubation_period <- function(disease, source, max_value = 15) {
   dist <- get_dist(EpiNow2::incubation_periods,
-                   disease = disease, source = source,
-                   max_value = max_value)
+    disease = disease, source = source,
+    max_value = max_value
+  )
 
   return(dist)
 }
@@ -223,9 +237,10 @@ get_regions_with_most_reports <- function(reported_cases,
   most_reports <- data.table::copy(reported_cases)
   most_reports <-
     most_reports[, .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(time_window))],
-                 by = "region"]
-  most_reports <-  most_reports[, .(confirm = sum(confirm, na.rm = TRUE)), by = "region"]
-  most_reports <-  data.table::setorderv(most_reports, cols = "confirm", order = -1)
-  most_reports <-  most_reports[1:no_regions][!is.na(region)]$region
+      by = "region"
+    ]
+  most_reports <- most_reports[, .(confirm = sum(confirm, na.rm = TRUE)), by = "region"]
+  most_reports <- data.table::setorderv(most_reports, cols = "confirm", order = -1)
+  most_reports <- most_reports[1:no_regions][!is.na(region)]$region
   return(most_reports)
 }

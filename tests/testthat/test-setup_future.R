@@ -13,12 +13,15 @@ test_that("setup_future runs when only using a single level of parallisation", {
 })
 
 test_that("setup_future runs with an error when strategies are incorrectly defined", {
-
   expect_error(suppressWarnings(setup_future(reported_cases,
-                                             strategies = c("nothing", "problems"))))
+    strategies = c("nothing", "problems")
+  )))
   expect_error(suppressWarnings(setup_future(reported_cases,
-                                             strategies = c("multiprocess", "multiprocess",
-                                                            "multiprocess"))))
+    strategies = c(
+      "multiprocess", "multiprocess",
+      "multiprocess"
+    )
+  )))
 })
 
 
