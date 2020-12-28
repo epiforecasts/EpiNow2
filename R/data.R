@@ -1,7 +1,7 @@
 #' Literature Estimates of Generation Times
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Generation time estimates. See here for details: 
+#' Generation time estimates. See here for details:
 #' https://github.com/epiforecasts/EpiNow2/blob/master/data-raw/generation-time.R
 #' @format A `data.table` of summarising the distribution
 "generation_times"

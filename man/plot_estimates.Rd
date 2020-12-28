@@ -48,22 +48,29 @@ incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lau
 reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 
 # run model
-out <- estimate_infections(cases, generation_time = generation_time,
-                           delays = delay_opts(incubation_period, reporting_delay))
+out <- estimate_infections(cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay)
+)
 # plot infections
 plot_estimates(
   estimate = out$summarised[variable == "infections"],
   reported = cases,
-  ylab = "Cases", max_plot = 2) + ggplot2::facet_wrap(~type, scales = "free_y")
+  ylab = "Cases", max_plot = 2
+) + ggplot2::facet_wrap(~type, scales = "free_y")
 
 # plot reported cases estimated via Rt
-plot_estimates(estimate = out$summarised[variable == "reported_cases"],
-               reported = cases,
-               ylab = "Cases")
-               
+plot_estimates(
+  estimate = out$summarised[variable == "reported_cases"],
+  reported = cases,
+  ylab = "Cases"
+)
+
 # plot Rt estimates
-plot_estimates(estimate = out$summarised[variable == "R"],
-               ylab = "Effective Reproduction No.",
-               hline = 1)
+plot_estimates(
+  estimate = out$summarised[variable == "R"],
+  ylab = "Effective Reproduction No.",
+  hline = 1
+)
 }
 }

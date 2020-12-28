@@ -55,23 +55,28 @@ Used to produce summary output either internally in \code{regional_epinow} or ex
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 30)
-                        
+
 # example case vector from EpiSoon
 cases <- example_confirmed[1:30]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
-  cases[, region := "realland"]))
-  
-# run basic nowcasting pipeline
-out <- regional_epinow(reported_cases = cases,
-                       generation_time = generation_time,
-                       delays = delay_opts(incubation_period, reporting_delay),
-                       output = "region",
-                       rt = NULL)
+  cases[, region := "realland"]
+))
 
-regional_summary(regional_output = out$regional,
-                 reported_cases = cases)
-} 
+# run basic nowcasting pipeline
+out <- regional_epinow(
+  reported_cases = cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  output = "region",
+  rt = NULL
+)
+
+regional_summary(
+  regional_output = out$regional,
+  reported_cases = cases
+)
+}
 }
 \seealso{
 regional_epinow

@@ -23,5 +23,5 @@ for justification. Now handled internally by stan so may be removed in future up
 no user demand.
 }
 \examples{
-R_to_growth(2.18, 4, 1)  
+R_to_growth(2.18, 4, 1)
 }

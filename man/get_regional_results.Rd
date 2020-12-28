@@ -45,18 +45,21 @@ reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 cases <- example_confirmed[1:30]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
-  cases[, region := "realland"]))
-  
+  cases[, region := "realland"]
+))
+
 # save results to tmp folder
 dir <- file.path(tempdir(check = TRUE), "results")
 # run multiregion estimates
-regional_out <- regional_epinow(reported_cases = cases,
-                                generation_time = generation_time,
-                                delays = delay_opts(incubation_period, reporting_delay),
-                                rt = rt_opts(rw = 7), gp = NULL,
-                                output = c("regions", "latest"), 
-                                target_folder = dir, 
-                                return_output = TRUE)
+regional_out <- regional_epinow(
+  reported_cases = cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(rw = 7), gp = NULL,
+  output = c("regions", "latest"),
+  target_folder = dir,
+  return_output = TRUE
+)
 # from output
 results <- get_regional_results(regional_out$regional, samples = FALSE)
 names(results)

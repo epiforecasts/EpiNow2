@@ -26,7 +26,7 @@ Takes the output from \code{rt_opts()} and converts it into a list understood by
 \code{stan}.
 }
 \examples{
-# default Rt data     
+# default Rt data
 create_rt_data()
 
 # settings when no Rt is desired
