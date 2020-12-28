@@ -4,7 +4,7 @@ on:
 name: Commands
 jobs:
   document:
-    if: startsWith(github.event.comment.body, '/document')
+    if: contains(github.event.comment.body, '/document')
     name: document
     runs-on: macOS-latest
     env:
@@ -29,9 +29,9 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
   style:
-    if: startsWith(github.event.comment.body, '/style')
+    if: contains(github.event.comment.body, '/style')
     name: style
-    runs-on: macOS-latest
+    runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -42,21 +42,29 @@ jobs:
       - uses: r-lib/actions/setup-r@v1
       - name: Install dependencies
         run: Rscript -e 'install.packages("styler")'
+      - name: Whitespace
+        run: |
+          find . -type f \( -name 'DESCRIPTION' -name "*.R" -o -name "*.stan" \) -exec sed -i 's/[ \t]*$//' {} \;
       - name: Style
         run: Rscript -e 'styler::style_pkg()'
+      - name: Document
+        run: Rscript -e 'roxygen2::roxygenise()'
       - name: commit
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git add \*.R
+          git add \*.stan
+          git add DESCRIPTION
+          git add man/\* NAMESPACE
           git commit -m 'Style'
       - uses: r-lib/actions/pr-push@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-  stan:
-    if: startsWith(github.event.comment.body, '/stan')
-    name: stan
-    runs-on: ubuntu-16.04
+  cpp:
+    if: contains(github.event.comment.body, '/cpp')
+    name: cpp
+    runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -65,10 +73,8 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: r-lib/actions/setup-r@v1
-      - name: Clean Stan
+      - name: Clean stan
         run: | 
-          find . -type f \( -name 'DESCRIPTION' -name "*.R" -o -name "*.stan" \) -exec sed -i 's/[ \t]*$//' {} \;
-          find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec sed -i 's/[ \t]*$//' {} \;
           if command -v clang-format >&/dev/null 2>&1; then
             find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec clang-format -style=Google --verbose -i {} \;
           fi
@@ -76,8 +82,13 @@ jobs:
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
-          git add .
-          git commit -m 'Style Stan'
+          git add \*.h
+          git add \*.hpp
+          git add \*.c
+          git add \*.cc
+          git add \*.cpp
+          git add \*.cxx
+          git commit -m 'Style C++'
       - uses: r-lib/actions/pr-push@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
