@@ -45,38 +45,48 @@ onset.
 cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
 
 # define a single report delay distribution
-delay_def <- lognorm_dist_def(mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
-                             max_value = 30, samples = 1, to_log = TRUE)
-                                       
+delay_def <- lognorm_dist_def(
+  mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
+  max_value = 30, samples = 1, to_log = TRUE
+)
+
 # define a single incubation period
-incubation_def <- lognorm_dist_def(mean = incubation_periods[1, ]$mean,
-                                   mean_sd = incubation_periods[1, ]$mean_sd,
-                                   sd = incubation_periods[1, ]$sd,
-                                   sd_sd = incubation_periods[1, ]$sd_sd,
-                                   max_value = 30, samples = 1)
-                                           
+incubation_def <- lognorm_dist_def(
+  mean = incubation_periods[1, ]$mean,
+  mean_sd = incubation_periods[1, ]$mean_sd,
+  sd = incubation_periods[1, ]$sd,
+  sd_sd = incubation_periods[1, ]$sd_sd,
+  max_value = 30, samples = 1
+)
+
 # simple mapping
-report <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def))   
-print(report)   
+report <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def))
+print(report)
 
 # mapping with a weekly reporting effect
 report_weekly <- adjust_infection_to_report(
-                      cases, delay_defs = list(incubation_def, delay_def),
-                      reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95))          
-print(report_weekly) 
+  cases,
+  delay_defs = list(incubation_def, delay_def),
+  reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95)
+)
+print(report_weekly)
 
 # map using a deterministic median shift for both delays
-report_median <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def), 
-                                            type = "median")      
+report_median <- adjust_infection_to_report(cases,
+  delay_defs = list(incubation_def, delay_def),
+  type = "median"
+)
 print(report_median)
-                                                         
+
 # map with a weekly reporting effect and stochastic reporting model
 report_stochastic <- adjust_infection_to_report(
-                      cases, delay_defs = list(incubation_def, delay_def),
-                      reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
-                      reporting_model = function(n) {
-                      out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))
-                      out <- ifelse(is.na(out), 0, out)
-                      })          
-print(report_stochastic)         
+  cases,
+  delay_defs = list(incubation_def, delay_def),
+  reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
+  reporting_model = function(n) {
+    out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))
+    out <- ifelse(is.na(out), 0, out)
+  }
+)
+print(report_stochastic)
 }

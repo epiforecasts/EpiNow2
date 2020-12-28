@@ -84,118 +84,148 @@ reported_cases <- example_confirmed[1:60]
 
 # set up example generation time
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-# set delays between infection and case report 
+# set delays between infection and case report
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- list(mean = convert_to_logmean(3, 1), mean_sd = 0.1,
-                        sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 10)
-      
-# default setting 
-# here we assume that the observed data is truncated by the same delay as 
-def <- estimate_infections(reported_cases, generation_time = generation_time,
-                           delays = delay_opts(incubation_period, reporting_delay),
-                           rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-                           stan = stan_opts(control = list(adapt_delta = 0.95)))
+reporting_delay <- list(
+  mean = convert_to_logmean(3, 1), mean_sd = 0.1,
+  sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 10
+)
+
+# default setting
+# here we assume that the observed data is truncated by the same delay as
+def <- estimate_infections(reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+  stan = stan_opts(control = list(adapt_delta = 0.95))
+)
 # real time estimates
 summary(def)
 # summary plot
 plot(def)
 
-# decreasing the accuracy of the approximate Gaussian to speed up computation. 
+# decreasing the accuracy of the approximate Gaussian to speed up computation.
 # These settings are an area of active research. See ?gp_opts for details.
-agp <- estimate_infections(reported_cases, generation_time = generation_time,
-                           delays = delay_opts(incubation_period, reporting_delay),
-                           rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-                           gp = gp_opts(ls_min = 10, basis_prop = 0.1),
-                           stan = stan_opts(control = list(adapt_delta = 0.95)))
+agp <- estimate_infections(reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+  gp = gp_opts(ls_min = 10, basis_prop = 0.1),
+  stan = stan_opts(control = list(adapt_delta = 0.95))
+)
 summary(agp)
-plot(agp) 
+plot(agp)
 
 # Adjusting for future susceptible depletion
-dep <- estimate_infections(reported_cases, generation_time = generation_time,
-                           delays = delay_opts(incubation_period, reporting_delay),
-                           rt = rt_opts(prior = list(mean = 2, sd = 0.1),
-                                        pop = 1000000, future = "latest"),
-                           gp = gp_opts(ls_min = 10, basis_prop = 0.1), horizon = 21,
-                           stan = stan_opts(control = list(adapt_delta = 0.95)))
-plot(dep) 
+dep <- estimate_infections(reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(
+    prior = list(mean = 2, sd = 0.1),
+    pop = 1000000, future = "latest"
+  ),
+  gp = gp_opts(ls_min = 10, basis_prop = 0.1), horizon = 21,
+  stan = stan_opts(control = list(adapt_delta = 0.95))
+)
+plot(dep)
 
 # Adjusting for truncation of the most recent data
 # See estimate_truncation for an approach to estimating this from data
-trunc_dist <- list(mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
-                   sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1, 
-                   max = 3)
-trunc <- estimate_infections(reported_cases, generation_time = generation_time,
-                             delays = delay_opts(incubation_period, reporting_delay),
-                             truncation = trunc_opts(trunc_dist),
-                             rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-                             gp = gp_opts(ls_min = 10, basis_prop = 0.1),
-                             stan = stan_opts(control = list(adapt_delta = 0.95)))
-plot(trunc) 
+trunc_dist <- list(
+  mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
+  sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1,
+  max = 3
+)
+trunc <- estimate_infections(reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  truncation = trunc_opts(trunc_dist),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+  gp = gp_opts(ls_min = 10, basis_prop = 0.1),
+  stan = stan_opts(control = list(adapt_delta = 0.95))
+)
+plot(trunc)
 
 # using back calculation (combined here with under reporting)
 # this model is in the order of 10 ~ 100 faster than the gaussian process method
 # it is likely robust for retrospective Rt but less reliable for real time estimates
-# the width of the prior window controls the reliance on observed data and can be 
-# optionally switched off using backcalc_opts(prior = "none"), see ?backcalc_opts for 
+# the width of the prior window controls the reliance on observed data and can be
+# optionally switched off using backcalc_opts(prior = "none"), see ?backcalc_opts for
 # other options
-backcalc <- estimate_infections(reported_cases, generation_time = generation_time,
-                                delays = delay_opts(incubation_period, reporting_delay),
-                                rt = NULL, backcalc = backcalc_opts(),
-                                obs = obs_opts(scale = list(mean = 0.4, sd = 0.05)),
-                                horizon = 0)
+backcalc <- estimate_infections(reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = NULL, backcalc = backcalc_opts(),
+  obs = obs_opts(scale = list(mean = 0.4, sd = 0.05)),
+  horizon = 0
+)
 plot(backcalc)
-                           
+
 # Rt projected into the future using the Gaussian process
-project_rt <- estimate_infections(reported_cases, generation_time = generation_time,
-                                  delays = delay_opts(incubation_period, reporting_delay),
-                                  rt = rt_opts(prior = list(mean = 2, sd = 0.1), 
-                                               future = "project"))
+project_rt <- estimate_infections(reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(
+    prior = list(mean = 2, sd = 0.1),
+    future = "project"
+  )
+)
 plot(project_rt)
 
-# default settings on a later snapshot of data 
+# default settings on a later snapshot of data
 snapshot_cases <- example_confirmed[80:130]
-snapshot <- estimate_infections(snapshot_cases, generation_time = generation_time,
-                                delays = delay_opts(incubation_period, reporting_delay),
-                                rt = rt_opts(prior = list(mean = 1, sd = 0.1)))
-plot(snapshot) 
+snapshot <- estimate_infections(snapshot_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(prior = list(mean = 1, sd = 0.1))
+)
+plot(snapshot)
 
 # stationary Rt assumption (likely to provide biased real-time estimates)
-stat <- estimate_infections(reported_cases, generation_time = generation_time,
-                            delays = delay_opts(incubation_period, reporting_delay),
-                            rt = rt_opts(prior = list(mean = 2, sd = 0.1), gp_on = "R0"))
+stat <- estimate_infections(reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.1), gp_on = "R0")
+)
 plot(stat)
-       
+
 # no gaussian process (i.e fixed Rt assuming no breakpoints)
-fixed <- estimate_infections(reported_cases, generation_time = generation_time,
-                             delays = delay_opts(incubation_period, reporting_delay),
-                             gp = NULL)
+fixed <- estimate_infections(reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  gp = NULL
+)
 plot(fixed)
 
-# no delays 
+# no delays
 no_delay <- estimate_infections(reported_cases, generation_time = generation_time)
-plot(no_delay)    
+plot(no_delay)
 
 # break point but otherwise static Rt
 bp_cases <- data.table::copy(reported_cases)
 bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
-bkp <- estimate_infections(bp_cases, generation_time = generation_time,
-                           delays = delay_opts(incubation_period, reporting_delay),
-                           rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-                           gp = NULL)                                                         
+bkp <- estimate_infections(bp_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+  gp = NULL
+)
 # break point effect
 summary(bkp, type = "parameters", params = "breakpoints")
 plot(bkp)
 
 # weekly random walk
-rw <- estimate_infections(reported_cases, generation_time = generation_time,
-                          delays = delay_opts(incubation_period, reporting_delay),
-                          rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7),
-                          gp = NULL)     
+rw <- estimate_infections(reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7),
+  gp = NULL
+)
 
 # random walk effects
-summary(rw, type = "parameters", params = "breakpoints") 
+summary(rw, type = "parameters", params = "breakpoints")
 plot(rw)
-}                                
+}
 }
 \seealso{
 epinow regional_epinow forecast_infections simulate_infections

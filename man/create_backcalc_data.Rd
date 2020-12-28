@@ -20,11 +20,12 @@ Takes the output of \code{backcalc_opts()} and converts it into a list understoo
 \examples{
 # define input data required
 data <- list(
-    t = 30,
-    seeding_time = 7,
-    horizon = 7)
+  t = 30,
+  seeding_time = 7,
+  horizon = 7
+)
 
-# default gaussian process data     
+# default gaussian process data
 create_gp_data(data = data)
 
 # settings when no gaussian process is desired

@@ -20,6 +20,6 @@ Categorises a numeric variable into "Increasing" (< 0.05),
 \examples{
 var <- seq(0.01, 1, 0.01)
 var
- 
+
 map_prob_change(var)
 }

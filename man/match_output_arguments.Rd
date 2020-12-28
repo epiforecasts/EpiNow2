@@ -39,9 +39,11 @@ EpiNow2:::match_output_arguments("plots", supported_args = c("fit", "plots", "sa
 
 # select plots and samples
 EpiNow2:::match_output_arguments(c("plots", "samples"),
-                       supported_args = c("fit", "plots", "samples"))
+  supported_args = c("fit", "plots", "samples")
+)
 
 # lazily select arguments
 EpiNow2:::match_output_arguments("p",
-                       supported_args = c("fit", "plots", "samples"))
+  supported_args = c("fit", "plots", "samples")
+)
 }

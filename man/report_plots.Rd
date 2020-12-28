@@ -44,16 +44,20 @@ cases <- example_confirmed[1:40]
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
-                        
+
 # run model
-out <- estimate_infections(cases, samples = 100, 
-                           generation_time = generation_time,
-                           delays = delay_opts(incubation_period, reporting_delay),
-                           rt = NULL)
-                            
+out <- estimate_infections(cases,
+  samples = 100,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = NULL
+)
+
 # plot infections
-plots <- report_plots(summarised_estimates = out$summarised,
-                      reported = cases)
+plots <- report_plots(
+  summarised_estimates = out$summarised,
+  reported = cases
+)
 plots
 }
 }
