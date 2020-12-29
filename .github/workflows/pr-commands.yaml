@@ -44,7 +44,7 @@ jobs:
         run: Rscript -e 'install.packages(c("styler", "roxygen2", "remotes"))' -e 'remotes::install_deps(dependencies = TRUE)'
       - name: Whitespace
         run: |
-          find . -type f \( -name 'DESCRIPTION' -name "*.R" -o -name "*.stan" \) -exec sed -i 's/[ \t]*$//' {} \;
+          find . -type f \( -name 'DESCRIPTION' -name "*.R" -o -name "*.stan" \) -exec sed -i '' -e 's/[ \t]*$//' {} \;
       - name: Style
         run: Rscript -e 'styler::style_pkg()'
       - name: Document
