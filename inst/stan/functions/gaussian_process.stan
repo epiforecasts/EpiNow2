@@ -28,7 +28,7 @@ real spd_matern(real alpha, real rho, real w) {
 int setup_noise(int ot_h, int t, int horizon, int estimate_r,
                 int stationary, int future_fixed, int fixed_from) {
   int noise_time = estimate_r > 0 ? (stationary > 0 ? ot_h : ot_h - 1) : t;
-  int noise_terms =  future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
+  int noise_terms =  (estimate_r && future_fixed > 0) ? (noise_time - horizon + fixed_from) : noise_time;
   return(noise_terms);
 }
 // setup approximate gaussian process

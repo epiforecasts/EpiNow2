@@ -35,10 +35,10 @@ vector calculate_Rt(vector infections, int seeding_time,
   return(sR);
 }
 // Convert an estimate of Rt to growth
-real[] R_to_growth(vector R, real gt_mean, real gt_sd) {
+vector R_to_growth(vector R, real gt_mean, real gt_sd) {
   real k = pow(gt_sd / gt_mean, 2);
   int t = num_elements(R);
-  real r[t];
+  vector[t] r;
   for (s in 1:t) {
     r[s] = (pow(R[s], k) - 1) / (k * gt_mean);
   }

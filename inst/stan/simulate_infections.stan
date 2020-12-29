@@ -27,13 +27,13 @@ generated quantities {
   matrix[n, t] infections; //latent infections
   matrix[n, t - seeding_time] reports; // observed cases
   int imputed_reports[n, t - seeding_time];
-  real r[n, t - seeding_time];
+  matrix[n, t - seeding_time] r;
   for (i in 1:n) {
     // generate infections from Rt trace
     infections[i] = to_row_vector(generate_infections(to_vector(R[i]), seeding_time,
                                                       gt_mean[i], gt_sd[i], max_gt,
                                                       initial_infections[i], initial_growth[i],
-                                                      pop, future_time));
+                                                      pop, future_time, 0));
     // convolve from latent infections to mean of observations
     reports[i] = to_row_vector(convolve_to_report(to_vector(infections[i]), delay_mean[i],
                                                   delay_sd[i], max_delay, seeding_time));
@@ -48,6 +48,6 @@ generated quantities {
     }
    // simulate reported cases
    imputed_reports[i] = report_rng(to_vector(reports[i]), rep_phi[i], model_type);
-   r[i] = R_to_growth(to_vector(R[i]), gt_mean[i, 1], gt_sd[i, 1]);
+   r[i] = to_row_vector(R_to_growth(to_vector(R[i]), gt_mean[i, 1], gt_sd[i, 1]));
   }
 }

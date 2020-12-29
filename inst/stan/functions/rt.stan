@@ -1,6 +1,6 @@
 // update a vector of Rts
-vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
-                 real[] bp_effects, int stationary) {
+vector update_Rt(vector input_R, real base_R, vector noise, int[] bps,
+                 real[] bp_effects, int stationary, int R_gp) {
   // define control parameters
   int t = num_elements(input_R);
   int bp_n = num_elements(bp_effects);
@@ -33,9 +33,13 @@ vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
       gp = cumulative_sum(gp);
     }
   }
-  // Calculate Rt
-  R = rep_vector(log_R, t) + bp + gp;
-  R = exp(R);
+  // Calculate Rt/rt
+  if (R_gp) {
+    R = rep_vector(base_R, t) + bp + gp;
+    R = exp(R);
+  } else {
+    R = rep_vector(base_R, t) + bp + gp;
+  }
   return(R);
 }
 // Rt priors

@@ -1,4 +1,4 @@
-  int estimate_r;                    // should the reproduction no be estimated (1 = yes)
+  int prior_model;                   // 0 = GP prior on infections; 1 = GP prior on R; 2 = GP prior on growth rate
   real prior_infections;             // prior for initial infections
   real prior_growth;                 // prior on initial growth rate
   real <lower = 0> r_mean;           // prior mean of reproduction number

@@ -8,27 +8,32 @@ real update_infectiousness(vector infections, vector gt_pmf,
   real new_inf = dot_product(infections[inf_start:inf_end], tail(gt_pmf, pmf_accessed));
   return(new_inf);
 }
-// generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
+// generate infections by using either Rt = Rt-1 * sum(reversed generation time pmf * infections) or Rt = Rt - 1 * exp(infections * Rt)
 vector generate_infections(vector oR, int uot,
                            real[] gt_mean, real[] gt_sd, int max_gt,
                            real[] initial_infections, real[] initial_growth,
-                           int pop, int ht) {
+                           int pop, int ht, int R_gp) {
   // time indices and storage
   int ot = num_elements(oR);
   int nht = ot - ht;
   int t = ot + uot;
   vector[ot] R = oR;
+  real exp_new_inf;
   real exp_adj_Rt;
   vector[t] infections = rep_vector(1e-5, t);
   vector[ot] cum_infections = rep_vector(0, ot);
-  vector[ot] infectiousness = rep_vector(1e-5, ot);
+  vector[R_gp * ot] infectiousness;
   // generation time pmf
-  vector[max_gt] gt_pmf = rep_vector(1e-5, max_gt);
-  int gt_indexes[max_gt];
-  for (i in 1:(max_gt)) {
-    gt_indexes[i] = max_gt - i + 1;
+  vector[R_gp * max_gt] gt_pmf;
+  int gt_indexes[R_gp * max_gt];
+  if (R_gp) {
+    infectiousness = rep_vector(1e-5, ot);
+    gt_pmf = rep_vector(1e-5, max_gt);
+    for (i in 1:(max_gt)) {
+      gt_indexes[i] = max_gt - i + 1;
+    }
+    gt_pmf = gt_pmf + discretised_gamma_pmf(gt_indexes, gt_mean[1], gt_sd[1], max_gt);
   }
-  gt_pmf = gt_pmf + discretised_gamma_pmf(gt_indexes, gt_mean[1], gt_sd[1], max_gt);
   // Initialise infections using daily growth
   infections[1] = exp(initial_infections[1]);
   if (uot > 1) {
@@ -42,13 +47,18 @@ vector generate_infections(vector oR, int uot,
   }
   // iteratively update infections
   for (s in 1:ot) {
-    infectiousness[s] += update_infectiousness(infections, gt_pmf, uot, max_gt, s);
+    if (R_gp) {
+      infectiousness[s] += update_infectiousness(infections, gt_pmf, uot, max_gt, s);
+      exp_new_inf = R[s] * infectiousness[s];
+    } else{
+      exp_new_inf = infections[s + uot - 1] * exp(R[s]);
+    }
     if (pop && s > nht) {
-      exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[nht]));
+      exp_adj_Rt = exp(-exp_new_inf / (pop - cum_infections[nht]));
       exp_adj_Rt = exp_adj_Rt > 1 ? 1 : exp_adj_Rt;
       infections[s + uot] = (pop - cum_infections[s]) * (1 - exp_adj_Rt);
     }else{
-      infections[s + uot] += R[s] * infectiousness[s];
+      infections[s + uot] += exp_new_inf;
     }
     if (pop && s < ot) {
       cum_infections[s + 1] = cum_infections[s] + infections[s + uot];
