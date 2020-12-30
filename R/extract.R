@@ -14,15 +14,20 @@ extract_parameter <- function(param, samples, dates) {
       data.table::as.data.table(
         samples[[param]]
       )
-    ))
+    )
+  )
   param_df <- param_df[, time := 1:.N]
-  param_df <- data.table::melt(param_df, id.vars = "time",
-                               variable.name = "var")
+  param_df <- data.table::melt(param_df,
+    id.vars = "time",
+    variable.name = "var"
+  )
 
   param_df <- param_df[, var := NULL][, sample := 1:.N, by = .(time)]
   param_df <- param_df[, date := dates, by = .(sample)]
-  param_df <- param_df[, .(parameter = param, time, date,
-                           sample, value)]
+  param_df <- param_df[, .(
+    parameter = param, time, date,
+    sample, value
+  )]
   return(param_df)
 }
 
@@ -35,7 +40,8 @@ extract_static_parameter <- function(param, samples) {
   data.table::data.table(
     parameter = param,
     sample = 1:length(samples[[param]]),
-    value = samples[[param]])
+    value = samples[[param]]
+  )
 }
 
 
@@ -78,53 +84,76 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
   # construct reporting list
   out <- list()
   # report infections, and R
-  out$infections <- extract_parameter("infections",
-                                      samples,
-                                      reported_inf_dates)
+  out$infections <- extract_parameter(
+    "infections",
+    samples,
+    reported_inf_dates
+  )
   out$infections <- out$infections[date >= min(reported_dates)]
-  out$reported_cases <- extract_parameter("imputed_reports",
-                                          samples,
-                                          reported_dates)
+  out$reported_cases <- extract_parameter(
+    "imputed_reports",
+    samples,
+    reported_dates
+  )
   if (data$prior_model == 1) {
-    out$R <- extract_parameter("R",
-                               samples,
-                               reported_dates)
+    out$R <- extract_parameter(
+      "R",
+      samples,
+      reported_dates
+    )
   } else {
-    out$R <- extract_parameter("gen_R",
-                               samples,
-                               reported_dates)
+    out$R <- extract_parameter(
+      "gen_R",
+      samples,
+      reported_dates
+    )
   }
-
   if (data$prior_model == 2) {
-    out$growth_rate <- extract_parameter("R",
-                                         samples,
-                                         reported_dates)
+    out$growth_rate <- extract_parameter(
+      "R",
+      samples,
+      reported_dates
+    )
   } else {
-    out$growth_rate <- extract_parameter("r",
-                                         samples,
-                                         reported_dates)
+    out$growth_rate <- extract_parameter(
+      "r",
+      samples,
+      reported_dates
+    )
   }
-
   if (data$prior_model > 0 && data$bp_n > 0) {
-    out$breakpoints <- extract_parameter("bp_effects",
-                                         samples,
-                                         1:data$bp_n)
+    out$breakpoints <- extract_parameter(
+      "bp_effects",
+      samples,
+      1:data$bp_n
+    )
     out$breakpoints <- out$breakpoints[, strat := date][, c("time", "date") := NULL]
   }
+  if (data$week_effect == 1) {
+    out$day_of_week <- extract_parameter(
+      "day_of_week_simplex",
+      samples,
+      1:7
+    )
 
-  if (data$week_effect  == 1) {
-    out$day_of_week <- extract_parameter("day_of_week_simplex",
-                                         samples,
-                                         1:7)
-
-    char_day_of_week <- data.table::data.table(wday = c("Monday", "Tuesday", "Wednesday",
-                                                        "Thursday", "Friday", "Saturday",
-                                                        "Sunday"),
-                                               time = 1:7)
-    out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][,
-                                       strat := as.character(wday)][,
-                                      `:=`(time = NULL, date = NULL, wday = NULL)][,
-                                       value := value * 7]
+    char_day_of_week <- data.table::data.table(
+      wday = c(
+        "Monday", "Tuesday", "Wednesday",
+        "Thursday", "Friday", "Saturday",
+        "Sunday"
+      ),
+      time = 1:7
+    )
+    out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][
+      ,
+      strat := as.character(wday)
+    ][
+      ,
+      `:=`(time = NULL, date = NULL, wday = NULL)
+    ][
+      ,
+      value := value * 7
+    ]
   }
   if (data$delays > 0) {
     out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
@@ -132,7 +161,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
       out$delay_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
     out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$delays)
     out$delay_sd <-
-      out$delay_sd[, strat :=  as.character(time)][, time := NULL][, date := NULL]
+      out$delay_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
   }
   if (data$truncation > 0) {
     out$truncation_mean <- extract_parameter("truncation_mean", samples, 1)
@@ -140,7 +169,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
       out$truncation_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
     out$truncation_sd <- extract_parameter("truncation_sd", samples, 1)
     out$truncation_sd <-
-      out$truncation_sd[, strat :=  as.character(time)][, time := NULL][, date := NULL]
+      out$truncation_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
   }
   if (data$prior_model > 0) {
     out$gt_mean <- extract_static_parameter("gt_mean", samples)
@@ -150,13 +179,17 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
   }
   if (data$model_type == 1) {
     out$reporting_overdispersion <- extract_static_parameter("rep_phi", samples)
-    out$reporting_overdispersion <- out$reporting_overdispersion[, value := value.V1][,
-                                                                   value.V1 := NULL]
+    out$reporting_overdispersion <- out$reporting_overdispersion[, value := value.V1][
+      ,
+      value.V1 := NULL
+    ]
   }
   if (data$obs_scale == 1) {
     out$fraction_observed <- extract_static_parameter("frac_obs", samples)
-    out$fraction_observed <- out$fraction_observed[, value := value.V1][,
-                                                     value.V1 := NULL]
+    out$fraction_observed <- out$fraction_observed[, value := value.V1][
+      ,
+      value.V1 := NULL
+    ]
   }
   return(out)
 }
@@ -189,17 +222,19 @@ extract_stan_param <- function(fit, params = NULL,
   args <- list(object = fit, probs = sym_CrIs)
   if (!is.null(params)) {
     if (length(params) > 1) {
-      var_names = TRUE
+      var_names <- TRUE
     }
     args <- c(args, pars = params)
-  }else{
+  } else {
     var_names <- TRUE
   }
   summary <- do.call(rstan::summary, args)
   summary <- data.table::as.data.table(summary$summary,
-                                       keep.rownames = ifelse(var_names,
-                                                              "variable",
-                                                              FALSE))
+    keep.rownames = ifelse(var_names,
+      "variable",
+      FALSE
+    )
+  )
   cols <- c("mean", "se_mean", "sd", CrIs, "n_eff", "Rhat")
   if (var_names) {
     cols <- c("variable", cols)
@@ -273,9 +308,9 @@ extract_inits <- function(fit, current_inits,
     fit_inits <- inits_list[[i]]
     if (!is.null(exclude_list)) {
       old_inits_sample <- old_inits()
-      old_inits_sample <-  old_inits_sample[exclude]
+      old_inits_sample <- old_inits_sample[exclude]
       new_inits <- update_list(fit_inits, old_inits_sample)
-    }else{
+    } else {
       new_inits <- fit_inits
     }
     return(new_inits)

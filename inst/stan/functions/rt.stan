@@ -49,6 +49,7 @@ void rt_lp(vector log_R, real[] initial_infections, real[] initial_growth,
            real prior_growth) {
   // prior on R
   log_R ~ normal(r_logmean, r_logsd);
+
   //breakpoint effects on Rt
   if (bp_n > 0) {
     bp_sd[1] ~ normal(0, 0.1) T[0,];

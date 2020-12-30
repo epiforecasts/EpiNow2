@@ -23,14 +23,14 @@ delay_opts <- function(...) {
   # Estimate the mean delay -----------------------------------------------
   if (data$delays > 0) {
     data$seeding_time <- sum(
-      purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2/2))
+      purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2 / 2))
     )
     if (data$seeding_time < 1) {
       data$seeding_time <- 1
-    }else{
+    } else {
       data$seeding_time <- as.integer(data$seeding_time)
     }
-  }else{
+  } else {
     data$seeding_time <- 1
   }
   data$delay_mean_mean <- allocate_delays(delays$mean, data$delays)
@@ -48,7 +48,7 @@ delay_opts <- function(...) {
 #' `estimate_truncation` for an approach to estimate this distribution.
 #' @param dist A list defining the truncation distribution, defaults to `NULL` in which
 #' case no truncation is used. Must have the following elements if defined: "mean", "mean_sd",
-#'"sd_mean", "sd_sd", and "max" defining a truncated log normal (with all parameters except
+#' "sd_mean", "sd_sd", and "max" defining a truncated log normal (with all parameters except
 #' for max defined in logged form).
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input truncation distribution.
@@ -85,14 +85,16 @@ trunc_opts <- function(dist = NULL) {
 #' @param pop Integer, defaults to 0. Susceptible population initially present. Used to adjust
 #' Rt estimates when otherwise fixed based on the proportion of the population that is
 #' susceptible. When set to 0 no population adjustment is done.
-#' @param gp_on Character string, defaulting to  "R_t-1". Indicates where the Gaussian process prior applies.
-#' Currently supported options are applying the Gaussian process to
-#' the last estimated Rt so that Rt = Rt-1 * GP ("R_t-1"), applying it to
-#' a global mean so that Rt = R0 * GP ("R0"), applying it to the last
-#' estimated growth rate ("gr_t-1"), applying it to a global mean of the growth
-#' rate ("gr"), and applying it to backclaculated infections ("infections"). All should produced comparable results when data is not
-#' sparse but the method relying on a global means will revert to this for real-time estimates,
-#'  which may not be desirable, and the method relying on backcalculated infections will produce significantly noisier estimates of Rt.
+#' @param gp_on Character string, defaulting to  "R_t-1". Indicates where the
+#' Gaussian process prior applies. Currently supported options are applying the
+#' Gaussian process to the last estimated Rt so that Rt = Rt-1 * GP ("R_t-1"),
+#' applying it to a global mean so that Rt = R0 * GP ("R0"), applying it to the
+#' last estimated growth rate ("gr_t-1"), applying it to a global mean of the
+#' growth rate ("gr"), and applying it to backclaculated infections
+#' ("infections"). All should produced comparable results when data is not
+#' sparse but the method relying on a global means will revert to this for
+#' real-time estimates, which may not be desirable, and the method relying on
+#' backcalculated infections will produce significantly noisier estimates of Rt.
 #' @return A list of settings defining the time-varying reproduction number
 #' @inheritParams create_future_rt
 #' @export
@@ -125,7 +127,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
     rt$use_breakpoints <- TRUE
   }
 
-  if (!("mean" %in% names(rt$prior)  & "sd" %in% names(rt$prior))) {
+  if (!("mean" %in% names(rt$prior) & "sd" %in% names(rt$prior))) {
     stop("prior must have both a mean and sd specified")
   }
   return(rt)
@@ -209,7 +211,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_max = 60,
                     alpha_sd = 0.1,
                     kernel = "matern",
-                    matern_type = 3/2) {
+                    matern_type = 3 / 2) {
   gp <- list(
     basis_prop = basis_prop,
     boundary_scale = boundary_scale,
@@ -219,9 +221,10 @@ gp_opts <- function(basis_prop = 0.2,
     ls_max = ls_max,
     alpha_sd = alpha_sd,
     kernel = match.arg(kernel, choices = c("se", "matern_3/2")),
-    matern_type = matern_type)
+    matern_type = matern_type
+  )
 
-  if (gp$matern_type != 3/2) {
+  if (gp$matern_type != 3 / 2) {
     stop("only the Matern 3/2 kernel is currently supported")
   }
   return(gp)
@@ -261,7 +264,8 @@ obs_opts <- function(family = "negbin",
     family = match.arg(family, choices = c("poisson", "negbin")),
     weight = weight,
     week_effect = week_effect,
-    scale = scale)
+    scale = scale
+  )
 
   if (length(obs$scale) != 0) {
     scale_names <- names(obs$scale)
@@ -313,7 +317,6 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                 future = FALSE,
                                 max_execution_time = Inf,
                                 ...) {
-
   opts <- list(
     cores = cores,
     warmup = warmup,
@@ -391,7 +394,7 @@ rstan_opts <- function(object = NULL,
   )
   if (method %in% "sampling") {
     opts <- c(opts, rstan_sampling_opts(samples = samples, ...))
-  }else if (method %in% "vb") {
+  } else if (method %in% "vb") {
     opts <- c(opts, rstan_vb_opts(samples = samples, ...))
   }
   return(opts)
@@ -429,11 +432,13 @@ stan_opts <- function(samples = 2000,
                       backend = "rstan",
                       init_fit = NULL,
                       return_fit = TRUE,
-                      ...){
+                      ...) {
   backend <- match.arg(backend, choices = c("rstan"))
   if (backend %in% "rstan") {
-    opts <- rstan_opts(samples = samples,
-                       ...)
+    opts <- rstan_opts(
+      samples = samples,
+      ...
+    )
   }
   if (!is.null(init_fit)) {
     if (is.character(init_fit)) {
@@ -467,7 +472,8 @@ stan_opts <- function(samples = 2000,
 #' cases <- example_confirmed[1:40]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
-#'   cases[, region := "realland"]))
+#'   cases[, region := "realland"]
+#' ))
 #'
 #' # default settings
 #' opts_list(rt_opts(), cases)
@@ -501,20 +507,21 @@ opts_list <- function(opts, reported_cases, ...) {
 #' cases <- example_confirmed[1:40]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
-#'   cases[, region := "realland"]))
+#'   cases[, region := "realland"]
+#' ))
 #'
 #' # regional options
 #' regional_opts <- opts_list(rt_opts(), cases)
 #' EpiNow2:::filter_opts(regional_opts, "realland")
 #' # default only
 #' EpiNow2:::filter_opts(rt_opts(), "realland")
-#' #settings are NULL in one regions
+#' # settings are NULL in one regions
 #' regional_opts <- update_list(regional_opts, list(realland = NULL))
 #' EpiNow2:::filter_opts(regional_opts, "realland")
 filter_opts <- function(opts, region) {
   if (region %in% names(opts)) {
     out <- opts[[region]]
-  }else{
+  } else {
     out <- opts
   }
   return(out)
