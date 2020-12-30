@@ -1,15 +1,15 @@
-// update a vector of Rts
-vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
-                 real[] bp_effects, int stationary) {
+// update combined covariates
+vector update_covariate(real base_cov, vector noise, int[] bps,
+                        real[] bp_effects, int stationary,
+                        int t, int link) {
   // define control parameters
-  int t = num_elements(input_R);
   int bp_n = num_elements(bp_effects);
   int bp_c = 0;
   int gp_n = num_elements(noise);
   // define result vectors
   vector[t] bp = rep_vector(0, t);
   vector[t] gp = rep_vector(0, t);
-  vector[t] R;
+  vector[t] cov;
   // initialise breakpoints
   if (bp_n) {
     for (s in 1:t) {
@@ -33,18 +33,20 @@ vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
       gp = cumulative_sum(gp);
     }
   }
-  // Calculate Rt
-  R = rep_vector(log_R, t) + bp + gp;
-  R = exp(R);
-  return(R);
+  // Calculate combined covariates
+  cov = rep_vector(base_cov, t) + bp + gp;
+  if (link == 0) {
+    cov = exp(cov);
+  }
+  return(cov);
 }
 // Rt priors
-void rt_lp(vector log_R, real[] initial_infections, real[] initial_growth,
-           real[] bp_effects, real[] bp_sd, int bp_n, int seeding_time,
-           real r_logmean, real r_logsd, real prior_infections,
-           real prior_growth) {
-  // prior on R
-  log_R ~ normal(r_logmean, r_logsd);
+void covariate_lp(vector base_cov, real[] initial_infections, real[] initial_growth,
+                  real[] bp_effects, real[] bp_sd, int bp_n, int seeding_time,
+                  real r_logmean, real r_logsd, real prior_infections,
+                  real prior_growth) {
+  // initial prior
+  base_cov ~ normal(base_logmean, base_logsd);
   //breakpoint effects on Rt
   if (bp_n > 0) {
     bp_sd[1] ~ normal(0, 0.1) T[0,];
