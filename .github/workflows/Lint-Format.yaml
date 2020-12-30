@@ -57,6 +57,7 @@ jobs:
           remotes::install_cran("lintr")
           remotes::install_cran("rmarkdown")
           remotes::install_cran("roxygen2")
+          remotes::install_cran("sessioninfo")
           remotes::install_cran("styler")
           remotes::install_local(".")
         shell: Rscript {0}
