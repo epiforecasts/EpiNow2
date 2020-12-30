@@ -1,7 +1,7 @@
 context("estimate_infections")
 if (!testthat:::on_cran()) {
   files <- c("pmfs.stan", "infections.stan", "generated_quantities.stan")
-  suppressMessages(expose_stan_fns(files, target_dir = "inst/stan/functions"))# system.file("stan/functions", package = "EpiNow2")))
+  suppressMessages(expose_stan_fns(files, target_dir = system.file("stan/functions", package = "EpiNow2")))
 }
 
 
