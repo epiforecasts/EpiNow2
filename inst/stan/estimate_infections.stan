@@ -156,16 +156,11 @@ model {
 generated quantities {
   int imputed_reports[ot_h];
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
-  real r[ot_h];
+  real r[ot_h] - 1;
   real gt_mean;
   real gt_var;
   vector[return_likelihood ? ot : 0] log_lik;
-  if (estimate_r){
-    // estimate growth from estimated Rt
-    gt_mean = rev_pmf_mean(gt_rev_pmf, 1);
-    gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);
-    r = R_to_growth(R, gt_mean, gt_var);
-  } else {
+  if (estimate_r == 0){
     // sample generation time
     real delay_mean_sample[delay_n_p] =
       normal_rng(delay_mean_mean, delay_mean_sd);
@@ -183,9 +178,9 @@ generated quantities {
     gen_R = calculate_Rt(
       infections, seeding_time, sampled_gt_rev_pmf, rt_half_window
     );
-    // estimate growth from calculated Rt
-    r = R_to_growth(gen_R, gt_mean, gt_var);
   }
+  // estimate growth from infections
+  r = calculate_growth(infections, seeding_time + 1);
   // simulate reported cases
   imputed_reports = report_rng(reports, rep_phi, model_type);
   // log likelihood of model
