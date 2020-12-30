@@ -8,6 +8,17 @@ real update_infectiousness(vector infections, vector gt_pmf,
   real new_inf = dot_product(infections[inf_start:inf_end], tail(gt_pmf, pmf_accessed));
   return(new_inf);
 }
+// generate seed infections
+vector generate_seed(real[] initial_infections, real[] initial_growth, int uot) {
+  vector[uot] seed_infs;
+  seed_infs[1] = exp(initial_infections[1]);
+  if (uot > 1) {
+    for (s in 2:uot) {
+      seed_infs[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));
+    }
+  }
+  return(seed_infs)
+}
 // generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
 vector generate_infections(vector oR, int uot,
                            real[] gt_mean, real[] gt_sd, int max_gt,
@@ -22,6 +33,12 @@ vector generate_infections(vector oR, int uot,
   vector[t] infections = rep_vector(1e-5, t);
   vector[ot] cum_infections = rep_vector(0, ot);
   vector[ot] infectiousness = rep_vector(1e-5, ot);
+  // Initialise infections
+  infections[1:uot] = generate_seed(initial_infections, initial_growth, uot);
+  // calculate cumulative infections
+  if (pop) {
+    cum_infections[1] = sum(infections[1:uot]);
+  }
   // generation time pmf
   vector[max_gt] gt_pmf = rep_vector(1e-5, max_gt);
   int gt_indexes[max_gt];
@@ -29,17 +46,6 @@ vector generate_infections(vector oR, int uot,
     gt_indexes[i] = max_gt - i + 1;
   }
   gt_pmf = gt_pmf + discretised_gamma_pmf(gt_indexes, gt_mean[1], gt_sd[1], max_gt);
-  // Initialise infections using daily growth
-  infections[1] = exp(initial_infections[1]);
-  if (uot > 1) {
-    for (s in 2:uot) {
-      infections[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));
-    }
-  }
-  // calculate cumulative infections
-  if (pop) {
-    cum_infections[1] = sum(infections[1:uot]);
-  }
   // iteratively update infections
   for (s in 1:ot) {
     infectiousness[s] += update_infectiousness(infections, gt_pmf, uot, max_gt, s);
