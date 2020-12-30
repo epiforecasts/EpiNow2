@@ -27,7 +27,7 @@ generated quantities {
   matrix[n, t] infections; //latent infections
   matrix[n, t - seeding_time] reports; // observed cases
   int imputed_reports[n, t - seeding_time];
-  real r[n, t - seeding_time];
+  real r[n, t - seeding_time - 1];
   for (i in 1:n) {
     // generate infections from Rt trace
     infections[i] = to_row_vector(generate_infections(to_vector(R[i]), seeding_time,
@@ -48,6 +48,6 @@ generated quantities {
     }
    // simulate reported cases
    imputed_reports[i] = report_rng(to_vector(reports[i]), rep_phi[i], model_type);
-   r[i] = calculate_growth(to_vector(infections[i]), seeding_time);
+   r[i] = calculate_growth(to_vector(infections[i]), seeding_time + 1);
   }
 }

@@ -118,7 +118,7 @@ model {
 generated quantities {
   int imputed_reports[ot_h];
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
-  real r[ot_h];
+  real r[ot_h - 1];
   vector[ot] log_lik;
   if (estimate_r == 0){
     // sample generation time
@@ -129,7 +129,7 @@ generated quantities {
                          max_gt, rt_half_window);
   }
   // estimate growth from infections
-  r = calculate_growth(infections, seeding_time);
+  r = calculate_growth(infections, seeding_time + 1);
   // simulate reported cases
   imputed_reports = report_rng(reports, rep_phi, model_type);
   // log likelihood of model
