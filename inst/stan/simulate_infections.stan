@@ -35,7 +35,7 @@ generated quantities {
   matrix[n, t] infections; //latent infections
   matrix[n, t - seeding_time] reports; // observed cases
   array[n, t - seeding_time] int imputed_reports;
-  array[n, t - seeding_time] real r;
+  array[n, t - seeding_time - 1] real r;
   for (i in 1:n) {
     // generate infections from Rt trace
     vector[delay_type_max[gt_id] + 1] gt_rev_pmf;
@@ -94,10 +94,6 @@ generated quantities {
     imputed_reports[i] = report_rng(
       to_vector(reports[i]), rep_phi[i], model_type
     );
-  {
-    real gt_mean = rev_pmf_mean(gt_rev_pmf, 0);
-    real gt_var = rev_pmf_var(gt_rev_pmf, 0, gt_mean);
-    r[i] = R_to_growth(to_vector(R[i]), gt_mean, gt_var);
-  }
+    r[i] = calculate_growth(to_vector(infections[i]), seeding_time + 1);
   }
 }

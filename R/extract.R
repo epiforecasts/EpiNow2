@@ -207,7 +207,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
   out$growth_rate <- extract_parameter(
     "r",
     samples,
-    reported_dates
+    reported_dates[-1]
   )
   if (data$week_effect > 1) {
     out$day_of_week <- extract_parameter(
