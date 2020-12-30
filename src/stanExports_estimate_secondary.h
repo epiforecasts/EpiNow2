@@ -143,9 +143,9 @@ discretised_gamma_pmf(const std::vector<int>& y,
         current_statement_begin__ = 21;
         for (int i = 1; i <= n; ++i) {
             current_statement_begin__ = 22;
-            stan::model::assign(pmf,
-                        stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                        ((gamma_cdf((get_base1(y, i, "y", 1) + 1), alpha, beta) - gamma_cdf(get_base1(y, i, "y", 1), alpha, beta)) / trunc_pmf),
+            stan::model::assign(pmf, 
+                        stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                        ((gamma_cdf((get_base1(y, i, "y", 1) + 1), alpha, beta) - gamma_cdf(get_base1(y, i, "y", 1), alpha, beta)) / trunc_pmf), 
                         "assigning variable pmf");
         }
         current_statement_begin__ = 25;
@@ -249,9 +249,9 @@ discretised_lognormal_pmf(const std::vector<int>& y,
         current_statement_begin__ = 41;
         for (int i = 1; i <= n; ++i) {
             current_statement_begin__ = 42;
-            stan::model::assign(pmf,
-                        stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                        ((normal_cdf(get_base1(upper_y, i, "upper_y", 1), 0.0, 1.0) - normal_cdf(get_base1(lower_y, i, "lower_y", 1), 0.0, 1.0)) / trunc_cdf),
+            stan::model::assign(pmf, 
+                        stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                        ((normal_cdf(get_base1(upper_y, i, "upper_y", 1), 0.0, 1.0) - normal_cdf(get_base1(lower_y, i, "lower_y", 1), 0.0, 1.0)) / trunc_cdf), 
                         "assigning variable pmf");
         }
         current_statement_begin__ = 45;
@@ -294,9 +294,9 @@ reverse_mf(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& pmf,
         current_statement_begin__ = 51;
         for (int d = 1; d <= max_pmf; ++d) {
             current_statement_begin__ = 52;
-            stan::model::assign(rev_pmf,
-                        stan::model::cons_list(stan::model::index_uni(d), stan::model::nil_index_list()),
-                        get_base1(pmf, ((max_pmf - d) + 1), "pmf", 1),
+            stan::model::assign(rev_pmf, 
+                        stan::model::cons_list(stan::model::index_uni(d), stan::model::nil_index_list()), 
+                        get_base1(pmf, ((max_pmf - d) + 1), "pmf", 1), 
                         "assigning variable rev_pmf");
         }
         current_statement_begin__ = 54;
@@ -348,9 +348,9 @@ convolve(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& cases,
         current_statement_begin__ = 61;
         for (int s = 1; s <= t; ++s) {
             current_statement_begin__ = 62;
-            stan::model::assign(conv_cases,
-                        stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()),
-                        (stan::model::rvalue(conv_cases, stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), "conv_cases") + dot_product(stan::model::rvalue(cases, stan::model::cons_list(stan::model::index_min_max(std::max(1, ((s - max_pmf) + 1)), s), stan::model::nil_index_list()), "cases"), tail(rev_pmf, std::min(max_pmf, s)))),
+            stan::model::assign(conv_cases, 
+                        stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
+                        (stan::model::rvalue(conv_cases, stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), "conv_cases") + dot_product(stan::model::rvalue(cases, stan::model::cons_list(stan::model::index_min_max(std::max(1, ((s - max_pmf) + 1)), s), stan::model::nil_index_list()), "cases"), tail(rev_pmf, std::min(max_pmf, s)))), 
                         "assigning variable conv_cases");
         }
         current_statement_begin__ = 65;
@@ -425,9 +425,9 @@ convolve_to_report(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& infections,
                 current_statement_begin__ = 83;
                 for (int i = 1; i <= get_base1(max_delay, s, "max_delay", 1); ++i) {
                     current_statement_begin__ = 84;
-                    stan::model::assign(delay_indexes,
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                                (get_base1(max_delay, s, "max_delay", 1) - i),
+                    stan::model::assign(delay_indexes, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                (get_base1(max_delay, s, "max_delay", 1) - i), 
                                 "assigning variable delay_indexes");
                 }
                 current_statement_begin__ = 86;
@@ -548,9 +548,9 @@ day_of_week_effect(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& reports,
         current_statement_begin__ = 113;
         for (int s = 1; s <= t; ++s) {
             current_statement_begin__ = 115;
-            stan::model::assign(scaled_reports,
-                        stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()),
-                        (get_base1(reports, s, "reports", 1) * get_base1(scaled_effect, get_base1(day_of_week, s, "day_of_week", 1), "scaled_effect", 1)),
+            stan::model::assign(scaled_reports, 
+                        stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
+                        (get_base1(reports, s, "reports", 1) * get_base1(scaled_effect, get_base1(day_of_week, s, "day_of_week", 1), "scaled_effect", 1)), 
                         "assigning variable scaled_reports");
         }
         current_statement_begin__ = 117;
@@ -639,17 +639,17 @@ truncation_cmf(const T0__& trunc_mean,
         current_statement_begin__ = 131;
         for (int i = 1; i <= trunc_max; ++i) {
             current_statement_begin__ = 132;
-            stan::model::assign(trunc_indexes,
-                        stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                        (i - 1),
+            stan::model::assign(trunc_indexes, 
+                        stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                        (i - 1), 
                         "assigning variable trunc_indexes");
         }
         current_statement_begin__ = 134;
         stan::math::assign(cmf, discretised_lognormal_pmf(trunc_indexes, trunc_mean, trunc_sd, trunc_max, pstream__));
         current_statement_begin__ = 135;
-        stan::model::assign(cmf,
-                    stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()),
-                    (get_base1(cmf, 1, "cmf", 1) + 1e-8),
+        stan::model::assign(cmf, 
+                    stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
+                    (get_base1(cmf, 1, "cmf", 1) + 1e-8), 
                     "assigning variable cmf");
         current_statement_begin__ = 136;
         stan::math::assign(cmf, cumulative_sum(cmf));
@@ -732,15 +732,15 @@ truncate(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& reports,
             current_statement_begin__ = 154;
             if (as_bool(reconstruct)) {
                 current_statement_begin__ = 155;
-                stan::model::assign(trunc_reports,
-                            stan::model::cons_list(stan::model::index_min_max(first_t, t), stan::model::nil_index_list()),
-                            stan::model::deep_copy(elt_divide(stan::model::rvalue(trunc_reports, stan::model::cons_list(stan::model::index_min_max(first_t, t), stan::model::nil_index_list()), "trunc_reports"), cmf)),
+                stan::model::assign(trunc_reports, 
+                            stan::model::cons_list(stan::model::index_min_max(first_t, t), stan::model::nil_index_list()), 
+                            stan::model::deep_copy(elt_divide(stan::model::rvalue(trunc_reports, stan::model::cons_list(stan::model::index_min_max(first_t, t), stan::model::nil_index_list()), "trunc_reports"), cmf)), 
                             "assigning variable trunc_reports");
             } else {
                 current_statement_begin__ = 157;
-                stan::model::assign(trunc_reports,
-                            stan::model::cons_list(stan::model::index_min_max(first_t, t), stan::model::nil_index_list()),
-                            stan::model::deep_copy(elt_multiply(stan::model::rvalue(trunc_reports, stan::model::cons_list(stan::model::index_min_max(first_t, t), stan::model::nil_index_list()), "trunc_reports"), cmf)),
+                stan::model::assign(trunc_reports, 
+                            stan::model::cons_list(stan::model::index_min_max(first_t, t), stan::model::nil_index_list()), 
+                            stan::model::deep_copy(elt_multiply(stan::model::rvalue(trunc_reports, stan::model::cons_list(stan::model::index_min_max(first_t, t), stan::model::nil_index_list()), "trunc_reports"), cmf)), 
                             "assigning variable trunc_reports");
             }
             }
@@ -914,18 +914,18 @@ report_log_lik(const std::vector<int>& cases,
                 current_statement_begin__ = 201;
                 for (int i = 1; i <= t; ++i) {
                     current_statement_begin__ = 202;
-                    stan::model::assign(log_lik,
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                                (poisson_log(get_base1(cases, i, "cases", 1), get_base1(reports, i, "reports", 1)) * weight),
+                    stan::model::assign(log_lik, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                (poisson_log(get_base1(cases, i, "cases", 1), get_base1(reports, i, "reports", 1)) * weight), 
                                 "assigning variable log_lik");
                 }
             } else {
                 current_statement_begin__ = 205;
                 for (int i = 1; i <= t; ++i) {
                     current_statement_begin__ = 206;
-                    stan::model::assign(log_lik,
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                                (neg_binomial_2_log(get_base1(cases, i, "cases", 1), get_base1(reports, i, "reports", 1), sqrt_phi) * weight),
+                    stan::model::assign(log_lik, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                (neg_binomial_2_log(get_base1(cases, i, "cases", 1), get_base1(reports, i, "reports", 1), sqrt_phi) * weight), 
                                 "assigning variable log_lik");
                 }
             }
@@ -934,9 +934,9 @@ report_log_lik(const std::vector<int>& cases,
             current_statement_begin__ = 210;
             for (int i = 1; i <= t; ++i) {
                 current_statement_begin__ = 211;
-                stan::model::assign(log_lik,
-                            stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                            (poisson_log(get_base1(cases, i, "cases", 1), get_base1(reports, i, "reports", 1)) * weight),
+                stan::model::assign(log_lik, 
+                            stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                            (poisson_log(get_base1(cases, i, "cases", 1), get_base1(reports, i, "reports", 1)) * weight), 
                             "assigning variable log_lik");
             }
         }
@@ -997,15 +997,15 @@ report_rng(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& reports,
                 current_statement_begin__ = 225;
                 if (as_bool(logical_gt(sqrt_phi, 1e4))) {
                     current_statement_begin__ = 226;
-                    stan::model::assign(sampled_reports,
-                                stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()),
-                                poisson_rng((logical_gt(get_base1(reports, s, "reports", 1), 1e8) ? 1e8 : get_base1(reports, s, "reports", 1) ), base_rng__),
+                    stan::model::assign(sampled_reports, 
+                                stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
+                                poisson_rng((logical_gt(get_base1(reports, s, "reports", 1), 1e8) ? 1e8 : get_base1(reports, s, "reports", 1) ), base_rng__), 
                                 "assigning variable sampled_reports");
                 } else {
                     current_statement_begin__ = 228;
-                    stan::model::assign(sampled_reports,
-                                stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()),
-                                neg_binomial_2_rng((logical_gt(get_base1(reports, s, "reports", 1), 1e8) ? 1e8 : get_base1(reports, s, "reports", 1) ), sqrt_phi, base_rng__),
+                    stan::model::assign(sampled_reports, 
+                                stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
+                                neg_binomial_2_rng((logical_gt(get_base1(reports, s, "reports", 1), 1e8) ? 1e8 : get_base1(reports, s, "reports", 1) ), sqrt_phi, base_rng__), 
                                 "assigning variable sampled_reports");
                 }
             }
@@ -1013,9 +1013,9 @@ report_rng(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& reports,
             current_statement_begin__ = 232;
             for (int s = 1; s <= t; ++s) {
                 current_statement_begin__ = 233;
-                stan::model::assign(sampled_reports,
-                            stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()),
-                            poisson_rng((logical_gt(get_base1(reports, s, "reports", 1), 1e8) ? 1e8 : get_base1(reports, s, "reports", 1) ), base_rng__),
+                stan::model::assign(sampled_reports, 
+                            stan::model::cons_list(stan::model::index_uni(s), stan::model::nil_index_list()), 
+                            poisson_rng((logical_gt(get_base1(reports, s, "reports", 1), 1e8) ? 1e8 : get_base1(reports, s, "reports", 1) ), base_rng__), 
                             "assigning variable sampled_reports");
             }
         }
@@ -1104,15 +1104,15 @@ calculate_secondary(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& reports,
                 current_statement_begin__ = 265;
                 if (as_bool(logical_gt(i, predict))) {
                     current_statement_begin__ = 266;
-                    stan::model::assign(secondary_reports,
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                                get_base1(secondary_reports, (i - 1), "secondary_reports", 1),
+                    stan::model::assign(secondary_reports, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                get_base1(secondary_reports, (i - 1), "secondary_reports", 1), 
                                 "assigning variable secondary_reports");
                 } else {
                     current_statement_begin__ = 268;
-                    stan::model::assign(secondary_reports,
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                                get_base1(obs, (i - 1), "obs", 1),
+                    stan::model::assign(secondary_reports, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                get_base1(obs, (i - 1), "obs", 1), 
                                 "assigning variable secondary_reports");
                 }
             }
@@ -1121,23 +1121,23 @@ calculate_secondary(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& reports,
                 current_statement_begin__ = 273;
                 if (as_bool(primary_hist_additive)) {
                     current_statement_begin__ = 274;
-                    stan::model::assign(secondary_reports,
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                                (stan::model::rvalue(secondary_reports, stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), "secondary_reports") + get_base1(conv_reports, i, "conv_reports", 1)),
+                    stan::model::assign(secondary_reports, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                (stan::model::rvalue(secondary_reports, stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), "secondary_reports") + get_base1(conv_reports, i, "conv_reports", 1)), 
                                 "assigning variable secondary_reports");
                 } else {
                     current_statement_begin__ = 276;
                     if (as_bool(logical_gt(get_base1(conv_reports, i, "conv_reports", 1), get_base1(secondary_reports, i, "secondary_reports", 1)))) {
                         current_statement_begin__ = 277;
-                        stan::model::assign(conv_reports,
-                                    stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                                    get_base1(secondary_reports, i, "secondary_reports", 1),
+                        stan::model::assign(conv_reports, 
+                                    stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                    get_base1(secondary_reports, i, "secondary_reports", 1), 
                                     "assigning variable conv_reports");
                     }
                     current_statement_begin__ = 279;
-                    stan::model::assign(secondary_reports,
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                                (stan::model::rvalue(secondary_reports, stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), "secondary_reports") - get_base1(conv_reports, i, "conv_reports", 1)),
+                    stan::model::assign(secondary_reports, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                (stan::model::rvalue(secondary_reports, stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), "secondary_reports") - get_base1(conv_reports, i, "conv_reports", 1)), 
                                 "assigning variable secondary_reports");
                 }
             }
@@ -1146,22 +1146,22 @@ calculate_secondary(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& reports,
                 current_statement_begin__ = 284;
                 if (as_bool(primary_current_additive)) {
                     current_statement_begin__ = 285;
-                    stan::model::assign(secondary_reports,
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                                (stan::model::rvalue(secondary_reports, stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), "secondary_reports") + get_base1(scaled_reports, i, "scaled_reports", 1)),
+                    stan::model::assign(secondary_reports, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                (stan::model::rvalue(secondary_reports, stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), "secondary_reports") + get_base1(scaled_reports, i, "scaled_reports", 1)), 
                                 "assigning variable secondary_reports");
                 } else {
                     current_statement_begin__ = 287;
-                    stan::model::assign(secondary_reports,
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                                (stan::model::rvalue(secondary_reports, stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), "secondary_reports") - get_base1(scaled_reports, i, "scaled_reports", 1)),
+                    stan::model::assign(secondary_reports, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                (stan::model::rvalue(secondary_reports, stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), "secondary_reports") - get_base1(scaled_reports, i, "scaled_reports", 1)), 
                                 "assigning variable secondary_reports");
                 }
             }
             current_statement_begin__ = 290;
-            stan::model::assign(secondary_reports,
-                        stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()),
-                        (logical_lte(get_base1(secondary_reports, i, "secondary_reports", 1), 0) ? stan::math::promote_scalar<local_scalar_t__>(1e-5) : stan::math::promote_scalar<local_scalar_t__>(get_base1(secondary_reports, i, "secondary_reports", 1)) ),
+            stan::model::assign(secondary_reports, 
+                        stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                        (logical_lte(get_base1(secondary_reports, i, "secondary_reports", 1), 0) ? stan::math::promote_scalar<local_scalar_t__>(1e-5) : stan::math::promote_scalar<local_scalar_t__>(get_base1(secondary_reports, i, "secondary_reports", 1)) ), 
                         "assigning variable secondary_reports");
         }
         current_statement_begin__ = 292;
