@@ -120,19 +120,16 @@ generated quantities {
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
   real r[ot_h];
   vector[ot] log_lik;
-  if (estimate_r){
-    // estimate growth from estimated Rt
-    r = R_to_growth(R, gt_mean[1], gt_sd[1]);
-  }else{
+  if (estimate_r == 0){
     // sample generation time
     real gt_mean_sample = normal_rng(gt_mean_mean, gt_mean_sd);
     real gt_sd_sample = normal_rng(gt_sd_mean, gt_sd_sd);
     // calculate Rt using infections and generation time
     gen_R = calculate_Rt(infections, seeding_time, gt_mean_sample, gt_mean_sample,
                          max_gt, rt_half_window);
-    // estimate growth from calculated Rt
-    r = R_to_growth(gen_R, gt_mean_sample, gt_sd_sample);
   }
+  // estimate growth from infections
+  r = calculate_growth(infections, seeding_time);
   // simulate reported cases
   imputed_reports = report_rng(reports, rep_phi, model_type);
   // log likelihood of model
