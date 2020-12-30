@@ -66,7 +66,7 @@ jobs:
           sessioninfo::session_info(pkgs, include_base = TRUE)
         shell: Rscript {0}
 
-      - name: Format
+      - name: Render
         run: |
           Rscript -e 'if (file.exists("README.Rmd")) rmarkdown::render("README.Rmd", output_format = "md_document")'
           Rscript -e 'roxygen2::roxygenize()'
