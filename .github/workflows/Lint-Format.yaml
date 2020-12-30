@@ -73,7 +73,7 @@ jobs:
 
       - name: Format
         run: |
-          Rscript -e 'styler::style_file(list.files(path = ".", pattern = "*.*.R$", full.names = TRUE, recursive = TRUE))'
+          Rscript -e 'styler::style_pkg()'
           find . -type f \( -name 'DESCRIPTION' -name "*.R" -o -name "*.stan" \) -exec sed -i -e 's/[ \t]*$//' {} \;
           find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec sed -i -e 's/[ \t]*$//' {} \;
           sudo apt install clang-format
