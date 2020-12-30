@@ -17,6 +17,17 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
   );
   return(new_inf);
 }
+// generate seed infections
+vector generate_seed(real[] initial_infections, real[] initial_growth, int uot) {
+  vector[uot] seed_infs;
+  seed_infs[1] = exp(initial_infections[1]);
+  if (uot > 1) {
+    for (s in 2:uot) {
+      seed_infs[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));
+    }
+  }
+  return(seed_infs)
+}
 // generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
 vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
                            real[] initial_infections, real[] initial_growth,
@@ -30,13 +41,8 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   vector[t] infections = rep_vector(1e-5, t);
   vector[ot] cum_infections = rep_vector(0, ot);
   vector[ot] infectiousness = rep_vector(1e-5, ot);
-  // Initialise infections using daily growth
-  infections[1] = exp(initial_infections[1]);
-  if (uot > 1) {
-    for (s in 2:uot) {
-      infections[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));
-    }
-  }
+  // Initialise infections
+  infections[1:uot] = generate_seed(initial_infections, initial_growth, uot);
   // calculate cumulative infections
   if (pop) {
     cum_infections[1] = sum(infections[1:uot]);
