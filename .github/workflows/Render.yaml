@@ -10,10 +10,10 @@ on:
     branches:
       - '**'
 
-name: Format
+name: Render
 
 jobs:
-  Format:
+  Render:
     if: "! contains(github.event.head_commit.message, '[ci skip]')"
     runs-on: ubuntu-20.04
 
@@ -49,13 +49,13 @@ jobs:
           do
             eval sudo $cmd
           done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
-          sudo apt install clang-format
 
       - name: Install dependencies
         run: |
           remotes::install_deps(dependencies = TRUE)
+          remotes::install_cran("rmarkdown")
+          remotes::install_cran("roxygen2")
           remotes::install_cran("sessioninfo")
-          remotes::install_cran("styler")
           remotes::install_local(".")
         shell: Rscript {0}
 
@@ -68,17 +68,13 @@ jobs:
 
       - name: Format
         run: |
-          Rscript -e 'styler::style_pkg()'
-          find . -type f \( -name 'DESCRIPTION' -name "*.R" -o -name "*.stan" \) -exec sed -i -e 's/[ \t]*$//' {} \;
-          find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec sed -i -e 's/[ \t]*$//' {} \;
-          find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec clang-format -style=Google --verbose -i {} \;
+          Rscript -e 'if (file.exists("README.Rmd")) rmarkdown::render("README.Rmd", output_format = "md_document")'
+          Rscript -e 'roxygen2::roxygenize()'
 
       - name: Commit results
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
-          find . -type f \( -name 'DESCRIPTION' -name "*.R" -o -name "*.stan" \) -exec git add {} \;
-          git commit -m 'Formatting R code using styler' || echo 'No changes to commit'
-          find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec git add {} \;
-          git commit -m 'Formatting C/C++ code using clang-format' || echo 'No changes to commit'
+          git add README.md NAMESPACE man/\*
+          git commit -m 'Roxygenize and render documents' || echo 'No changes to commit'
           git push origin || echo "No changes to commit"
