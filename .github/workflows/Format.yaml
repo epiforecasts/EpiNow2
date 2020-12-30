@@ -10,10 +10,10 @@ on:
     branches:
       - '**'
 
-name: Lint-Format
+name: Format
 
 jobs:
-  Lint-Format:
+  Format:
     if: "! contains(github.event.head_commit.message, '[ci skip]')"
     runs-on: ubuntu-20.04
 
@@ -54,7 +54,6 @@ jobs:
       - name: Install dependencies
         run: |
           remotes::install_deps(dependencies = TRUE)
-          remotes::install_cran("lintr")
           remotes::install_cran("rmarkdown")
           remotes::install_cran("roxygen2")
           remotes::install_cran("sessioninfo")
@@ -69,16 +68,12 @@ jobs:
           sessioninfo::session_info(pkgs, include_base = TRUE)
         shell: Rscript {0}
 
-      - name: Lint
-        run: lintr::lint_package()
-        shell: Rscript {0}
-
       - name: Format
         run: |
           Rscript -e 'styler::style_pkg()'
           find . -type f \( -name 'DESCRIPTION' -name "*.R" -o -name "*.stan" \) -exec sed -i -e 's/[ \t]*$//' {} \;
-          find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec sed -i -e 's/[ \t]*$//' {} \;
-          find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec clang-format -style=Google --verbose -i {} \;
+          find src -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec sed -i -e 's/[ \t]*$//' {} \;
+          find src -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec clang-format -style=Google --verbose -i {} \;
           Rscript -e 'if (file.exists("README.Rmd")) rmarkdown::render("README.Rmd", output_format = "md_document")'
           Rscript -e 'roxygen2::roxygenize()'
 
@@ -88,7 +83,7 @@ jobs:
           git config --local user.name "GitHub Actions"
           find . -type f \( -name 'DESCRIPTION' -name "*.R" -o -name "*.stan" \) -exec git add {} \;
           git commit -m 'Formatting R code using styler' || echo 'No changes to commit'
-          find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec git add {} \;
+          find src -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec git add {} \;
           git commit -m 'Formatting C/C++ code using clang-format' || echo 'No changes to commit'
           git add README.md NAMESPACE man/\*
           git commit -m 'Roxygenize and render documents' || echo 'No changes to commit'
