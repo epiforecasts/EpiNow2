@@ -20,12 +20,12 @@ vector generate_seed(real[] initial_infections, real[] initial_growth, int uot) 
   return(seed_infs)
 }
 // generate infections using infectiousness
-vector generate_infections_with_infectiousness(vector oR, int uot,
-                           real[] gt_mean, real[] gt_sd, int max_gt,
-                           real[] initial_infections, real[] initial_growth,
-                           int pop, int ht) {
+vector renewal_model(vector oR, vector uobs_infs
+                     real[] gt_mean, real[] gt_sd, int max_gt,
+                     int pop, int ht) {
   // time indices and storage
   int ot = num_elements(oR);
+  int uot = num_elements(uobs_infs);
   int nht = ot - ht;
   int t = ot + uot;
   vector[ot] R = oR;
@@ -34,7 +34,7 @@ vector generate_infections_with_infectiousness(vector oR, int uot,
   vector[ot] cum_infections = rep_vector(0, ot);
   vector[ot] infectiousness = rep_vector(1e-5, ot);
   // Initialise infections
-  infections[1:uot] = generate_seed(initial_infections, initial_growth, uot);
+  infections[1:uot] = uobs_infs;
   // calculate cumulative infections
   if (pop) {
     cum_infections[1] = sum(infections[1:uot]);
@@ -62,19 +62,16 @@ vector generate_infections_with_infectiousness(vector oR, int uot,
   }
   return(infections);
 }
-// Generate infections directly
-vector generate_infections_directly(vector r, int uot, int ht
-                                    real[] initial_infections, real[] initial_growth, 
-                                    int prior, vector constant) {
+// update infections using a growth model (linear,log, or non-parametric growth)
+vector growth_model(vector r, int ht, vector uobs_infs,
+                    int prior, vector constant) {
   // time indices and storage
   int ot = num_elements(r);
+  int uot = num_elements(seed_infections);
   int nht = ot - ht;
   int t = ot + uot;
   vector[t] infections = rep_vector(1e-5, t);
-  vector[uot] uobs_inf;
   vector[ot] obs_inf;
-  // Initialise infections
-  uobs_inf = generate_seed(initial_infections, initial_growth, uot);
   // Update observed infections
   if (link == 0) {
    if (prior == 1) {
@@ -96,7 +93,6 @@ vector generate_infections_directly(vector r, int uot, int ht
    }
    obs_inf = exp(obs_inf);
   }
-
    infections[1:uot] = infections[1:uot] + uobs_inf;
    infections[(uot + 1):t] = infections[(uot + 1):t] + obs_inf;
   return(infections);
