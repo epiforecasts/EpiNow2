@@ -28,12 +28,12 @@ vector generate_seed(real[] initial_infections, real[] initial_growth, int uot) 
   }
   return(seed_infs)
 }
-// generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
-vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
-                           array[] real initial_infections, array[] real initial_growth,
-                           int pop, int ht) {
+// generate infections using infectiousness
+vector renewal_model(vector oR, vector uobs_infs, vector gt_rev_pmf,
+                     int pop, int ht) {
   // time indices and storage
   int ot = num_elements(oR);
+  int uot = num_elements(uobs_infs);
   int nht = ot - ht;
   int t = ot + uot;
   vector[ot] R = oR;
@@ -42,7 +42,7 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   vector[ot] cum_infections;
   vector[ot] infectiousness;
   // Initialise infections
-  infections[1:uot] = generate_seed(initial_infections, initial_growth, uot);
+  infections[1:uot] = uobs_infs;
   // calculate cumulative infections
   if (pop) {
     cum_infections[1] = sum(infections[1:uot]);
@@ -63,25 +63,39 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   }
   return(infections);
 }
-// backcalculate infections using mean shifted cases and non-parametric noise
-vector deconvolve_infections(vector shifted_cases, vector noise, int fixed,
-                             int prior) {
-  int t = num_elements(shifted_cases);
+
+// update infections using a growth model (linear,log, or non-parametric growth)
+vector growth_model(vector r, int ht, vector uobs_infs,
+                    int prior, vector constant) {
+  // time indices and storage
+  int ot = num_elements(r);
+  int uot = num_elements(seed_infections);
+  int nht = ot - ht;
+  int t = ot + uot;
   vector[t] infections = rep_vector(1e-5, t);
-  if(!fixed) {
-    vector[t] exp_noise = exp(noise);
-    if (prior == 1) {
-      infections = infections + shifted_cases .* exp_noise;
-    }else if (prior == 0) {
-     infections = infections + exp_noise;
-    }else if (prior == 2) {
-      infections[1] = infections[1] + shifted_cases[1] * exp_noise[1];
-      for (i in 2:t) {
-        infections[i] = infections[i - 1] * exp_noise[i];
-      }
-    }
-  }else{
-    infections = infections + shifted_cases;
+  vector[ot] obs_inf;
+  // Update observed infections
+  if (link == 0) {
+   if (prior == 1) {
+    obs_inf = constant .* r;
+   }else if (prior == 2) {
+     obs_inf[1] = uobs_inf[uot] * r[1];
+     for (i in 2:t) {
+       obs_inf[i] = obs_inf[i - 1] * r[i];
+     }
+   }
+  }else if (link == 1) {
+   if (prior == 1) {
+    obs_inf = constant + r;
+   }else if (prior == 2) {
+     obs_inf[1] = log(uobs_inf[uot]) + r[1];
+     for (i in 2:t) {
+       obs_inf[i] = obs_inf[i - 1] + r[i];
+     }
+   }
+   obs_inf = exp(obs_inf);
   }
+   infections[1:uot] = infections[1:uot] + uobs_inf;
+   infections[(uot + 1):t] = infections[(uot + 1):t] + obs_inf;
   return(infections);
 }
