@@ -4,8 +4,6 @@ on:
       - develop
       - main
       - master
-  schedule:
-      - cron: "0 0 * * *"
   pull_request:
     branches:
       - '**'
