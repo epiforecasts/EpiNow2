@@ -250,11 +250,11 @@ plot_summary <- function(summary_results,
       cowplot::theme_cowplot() +
       cowplot::panel_border() +
       ggplot2::scale_color_manual(values = c(
-        "Increasing" = "#e75f00",
-        "Likely increasing" = "#fd9e49",
-        "Likely decreasing" = "#5fa2ce",
-        "Decreasing" = "#1170aa",
-        "Unsure" = "#7b848f"
+      "Increasing" = "#e75f00",
+      "Likely increasing" = "#fd9e49",
+      "Likely decreasing" = "#5fa2ce",
+      "Decreasing" = "#1170aa",
+      "Stable" = "#7b848f"
       ), drop = FALSE)
   }
 
