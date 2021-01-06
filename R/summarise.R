@@ -246,7 +246,7 @@ regional_summary <- function(regional_output = NULL,
     df[, `Expected change in daily cases` :=
       factor(`Expected change in daily cases`,
         levels = c(
-          "Increasing", "Likely increasing", "Unsure",
+          "Increasing", "Likely increasing", "Stable",
           "Likely decreasing", "Decreasing"
         )
       )]
