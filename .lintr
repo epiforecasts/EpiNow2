@@ -2,6 +2,8 @@ linters: with_defaults(
     line_length_linter = line_length_linter(120)
   )
 exclusions: list(
-  "inst",
-  "vignettes"
- )
+    "inst/dev/load-stan-functions.R",
+    "inst/dev/recover-synthetic.R",
+    "inst/dev/test-secondary.R",
+    "inst/pkg-structure/generate-pkgstructure-report.R"
+  )
