@@ -6,6 +6,7 @@ exclusions: list(
     "inst/dev/recover-synthetic.R",
     "inst/dev/test-secondary.R",
     "inst/pkg-structure/generate-pkgstructure-report.R",
+    "R/stanmodels.R",
     "tests/spelling.R",
     "tests/testthat.R",
     "tests/testthat/test-calc_CrI.R",
