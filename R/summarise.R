@@ -76,7 +76,7 @@ summarise_results <- function(regions,
   numeric_estimates <- data.table::merge.data.table(numeric_estimates,
     estimates[measure %in% "Expected change in daily cases"][
       ,
-      .(region, `Expected change in daily cases` = estimate)
+      .(region, `Expected change in daily cases` = estimate, prob_control = numeric_estimate)
     ],
     by = "region", all.x = TRUE
   )
