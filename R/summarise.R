@@ -76,7 +76,7 @@ summarise_results <- function(regions,
   numeric_estimates <- data.table::merge.data.table(numeric_estimates,
     estimates[measure %in% "Expected change in daily cases"][
       ,
-      .(region, `Expected change in daily cases` = estimate)
+      .(region, `Expected change in daily cases` = estimate, prob_control = numeric_estimate)
     ],
     by = "region", all.x = TRUE
   )
@@ -743,7 +743,7 @@ summary.estimate_infections <- function(object, type = "snapshot",
   if (type %in% "snapshot") {
     out <- report_summary(
       summarised_estimates = object$summarised[date == target_date],
-      rt_samples = object$samples[variable == "R"][, date == target_date, .(sample, value)],
+      rt_samples = object$samples[variable == "R"][date == target_date, .(sample, value)],
       ...
     )
   } else if (type %in% "parameters") {
