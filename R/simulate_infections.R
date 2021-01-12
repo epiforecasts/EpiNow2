@@ -83,7 +83,7 @@ simulate_infections <- function(estimates,
 
   # extract parameters from passed stanfit object
   shift <- estimates$args$seeding_time
-
+  
   ## if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
     if(any(class(R) %in% "data.frame")) {
@@ -112,11 +112,30 @@ simulate_infections <- function(estimates,
   }
 
   # sample from posterior if samples != posterior
-  if (data$n < samples) {
-    posterior_samples <- sample(1:data$n, samples, replace = TRUE)
+  posterior_sample <-  dim(draws$obs_reports)[1]
+  if (posterior_sample < samples) {
+    posterior_samples <- sample(1:posterior_sample, samples, replace = TRUE)
     R_draws <- draws$R
     draws <- purrr::map(draws, ~ as.matrix(.[posterior_samples, ]))
-    draws$R
+    draws$R <- R_draws
+  }
+  
+  # redefine time if Rt != data$t
+  time <- estimates$args$t
+  horizon <-  estimates$args$h
+  obs_time <- time - shift
+  
+  if (obs_time != dim(draws$R)[2]) {
+    horizon <- dim(draws$R)[2] - time + horizon + shift
+    time <- dim(draws$R)[2] + shift
+    starting_day <- estimates$args$day_of_week[1]
+    day_of_week <- ((starting_day + rep(0:6, ceiling((obs_time) / 7))) %% 7)
+    day_of_week <- day_of_week[1:(obs_time)]
+    day_of_week <- ifelse(day_of_week == 0, 7, day_of_week)
+    
+    estimates$args$h <- horizon
+    estimates$args$t <- time
+    estimates$args$day_of_week <- day_of_week
   }
 
   # define dates of interest
