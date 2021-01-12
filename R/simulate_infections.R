@@ -86,11 +86,21 @@ simulate_infections <- function(estimates,
 
   ## if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
-    R_mat <- matrix(rep(R, each = dim(draws$R)[1]),
-      ncol = length(R), byrow = FALSE
-    )
-    draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
-    draws$R <- matrix(draws$R, ncol = length(R))
+    if(any(class(R) %in% "data.frame")) {
+      R <- data.table::as.data.table(R)
+      if (is.null(R$sample)) {
+        R <- R[, .(date, sample = list(1:dim(draws$R)[1]), value)]
+        R <- R[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
+      }
+      R <- R[, .(date, sample, value)]
+      draws$R <- t(matrix(R$value, ncol = length(unique(R$sample))))
+    }else{
+      R_mat <- matrix(rep(R, each = dim(draws$R)[1]),
+                      ncol = length(R), byrow = FALSE
+      )
+      draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
+      draws$R <- matrix(draws$R, ncol = length(R))
+    }
   }
 
   # set samples if missing
@@ -101,6 +111,15 @@ simulate_infections <- function(estimates,
     samples <- R_samples
   }
 
+  # sample from posterior if samples != posterior
+  if (data$n < samples) {
+    posterior_samples <- sample(1:data$n, samples, replace = TRUE)
+    R_draws <- draws$R
+    draws <- purrr::map(draws, ~ as.matrix(.[posterior_samples, ]))
+    draws$R
+  }
+
+  # define dates of interest
   dates <-
     seq(min(na.omit(unique(estimates$summarised[variable == "R"]$date)))
     - lubridate::days(shift),
