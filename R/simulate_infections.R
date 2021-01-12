@@ -83,13 +83,9 @@ simulate_infections <- function(estimates,
 
   # extract parameters from passed stanfit object
   shift <- estimates$args$seeding_time
-  burn_in <- estimates$args$burn_in
 
   ## if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
-    if (burn_in > 0) {
-      R <- c(rep(NA_real_, burn_in), R)
-    }
     R_mat <- matrix(rep(R, each = dim(draws$R)[1]),
       ncol = length(R), byrow = FALSE
     )
@@ -107,7 +103,7 @@ simulate_infections <- function(estimates,
 
   dates <-
     seq(min(na.omit(unique(estimates$summarised[variable == "R"]$date)))
-    - lubridate::days(burn_in + shift),
+    - lubridate::days(shift),
     by = "day", length.out = dim(draws$R)[2] + shift
     )
 
@@ -188,7 +184,7 @@ simulate_infections <- function(estimates,
     posterior_samples = out,
     horizon = estimates$args$horizon,
     shift = shift,
-    burn_in = burn_in,
+    burn_in = 0,
     start_date = min(estimates$observations$date),
     CrIs = extract_CrIs(estimates$summarised) / 100
   )
@@ -201,3 +197,41 @@ simulate_infections <- function(estimates,
   class(format_out) <- c("estimate_infections", class(format_out))
   return(format_out)
 }
+
+
+## deal with input if data frame
+if (any(class(primary) %in% "data.frame")) {
+  primary <- data.table::as.data.table(primary)
+  if (is.null(primary$sample)) {
+    if (is.null(samples)) {
+      samples <- 1000
+    }
+    primary <- primary[, .(date, sample = list(1:samples), value)]
+    primary <- primary[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
+  }
+  primary <- primary[, .(date, sample, value)]
+}
+
+
+## Update data
+# combined primary from data and input primary
+primary_fit <- estimate$predictions[, .(date, value = primary, sample = list(unique(updated_primary$sample)))]
+primary_fit <- primary_fit[date <= min(primary$date, na.rm = TRUE)]
+primary_fit <- primary_fit[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
+primary_fit <- data.table::rbindlist(list(primary_fit, updated_primary), use.names = TRUE)
+data.table::setorderv(primary_fit, c("sample", "date"))
+
+# update data with primary samples and day of week
+data$primary <- t(
+  matrix(primary_fit$value, ncol = length(unique(primary_fit$sample)))
+)
+data$day_of_week <- lubridate::wday(unique(primary_fit$date), week_start = 1)
+data$n <- nrow(data$primary)
+data$t <- ncol(data$primary)
+data$h <- nrow(primary[sample == min(sample)])
+
+# extract samples for posterior of estimates
+posterior_samples <- sample(1:data$n, data$n, replace = TRUE)
+draws <- purrr::map(draws, ~ as.matrix(.[posterior_samples, ]))
+# combine with data
+data <- c(data, draws)
