@@ -10,7 +10,8 @@
 #' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
 #'  contained in \code{estimates}, except elements set to NA. If it is longer than the time series
 #'  of reproduction numbers contained in \code{estimates}, the values going beyond the length of
-#'  estimated reproduction numbers are taken as forecast.
+#'  estimated reproduction numbers are taken as forecast. Alternatively accepts a data.frame containing
+#'  at least `date` and `value` (integer) variables and optionally `sample`.
 #' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
 #' samples in the `estimates` input.
 #' @param batch_size Numeric, defaults to 100. Size of batches in which to simulate. May decrease
@@ -22,7 +23,7 @@
 #' @importFrom purrr transpose map safely compact
 #' @importFrom future.apply future_lapply
 #' @importFrom progressr with_progress progressor
-#' @importFrom data.table rbindlist
+#' @importFrom data.table rbindlist as.data.table
 #' @importFrom lubridate days
 #' @export
 #' @examples
@@ -81,38 +82,34 @@ simulate_infections <- function(estimates,
     include = FALSE
   )
 
+  # set samples if missing
+  R_samples <- dim(draws$R)[1]
+  if (is.null(samples)) {
+    samples <- R_samples
+  } 
   # extract parameters from passed stanfit object
   shift <- estimates$args$seeding_time
   
-  ## if R is given, update trajectories in stanfit object
+  # if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
     if(any(class(R) %in% "data.frame")) {
       R <- data.table::as.data.table(R)
       if (is.null(R$sample)) {
-        R <- R[, .(date, sample = list(1:dim(draws$R)[1]), value)]
+        R <- R[, .(date, sample = list(1:samples), value)]
         R <- R[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
       }
       R <- R[, .(date, sample, value)]
       draws$R <- t(matrix(R$value, ncol = length(unique(R$sample))))
     }else{
-      R_mat <- matrix(rep(R, each = dim(draws$R)[1]),
-                      ncol = length(R), byrow = FALSE
-      )
+      R_mat <- matrix(rep(R, each = samples),
+                      ncol = length(R), byrow = FALSE)
       draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
       draws$R <- matrix(draws$R, ncol = length(R))
     }
   }
-
-  # set samples if missing
-  R_samples <- dim(draws$R)[1]
-  if (is.null(samples)) {
-    samples <- R_samples
-  } else if (samples > R_samples) {
-    samples <- R_samples
-  }
-
+  
   # sample from posterior if samples != posterior
-  posterior_sample <-  dim(draws$obs_reports)[1]
+  posterior_sample <- dim(draws$obs_reports)[1]
   if (posterior_sample < samples) {
     posterior_samples <- sample(1:posterior_sample, samples, replace = TRUE)
     R_draws <- draws$R
@@ -235,41 +232,3 @@ simulate_infections <- function(estimates,
   class(format_out) <- c("estimate_infections", class(format_out))
   return(format_out)
 }
-
-
-## deal with input if data frame
-if (any(class(primary) %in% "data.frame")) {
-  primary <- data.table::as.data.table(primary)
-  if (is.null(primary$sample)) {
-    if (is.null(samples)) {
-      samples <- 1000
-    }
-    primary <- primary[, .(date, sample = list(1:samples), value)]
-    primary <- primary[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
-  }
-  primary <- primary[, .(date, sample, value)]
-}
-
-
-## Update data
-# combined primary from data and input primary
-primary_fit <- estimate$predictions[, .(date, value = primary, sample = list(unique(updated_primary$sample)))]
-primary_fit <- primary_fit[date <= min(primary$date, na.rm = TRUE)]
-primary_fit <- primary_fit[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
-primary_fit <- data.table::rbindlist(list(primary_fit, updated_primary), use.names = TRUE)
-data.table::setorderv(primary_fit, c("sample", "date"))
-
-# update data with primary samples and day of week
-data$primary <- t(
-  matrix(primary_fit$value, ncol = length(unique(primary_fit$sample)))
-)
-data$day_of_week <- lubridate::wday(unique(primary_fit$date), week_start = 1)
-data$n <- nrow(data$primary)
-data$t <- ncol(data$primary)
-data$h <- nrow(primary[sample == min(sample)])
-
-# extract samples for posterior of estimates
-posterior_samples <- sample(1:data$n, data$n, replace = TRUE)
-draws <- purrr::map(draws, ~ as.matrix(.[posterior_samples, ]))
-# combine with data
-data <- c(data, draws)
