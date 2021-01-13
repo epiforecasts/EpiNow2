@@ -110,7 +110,7 @@ and
 In the following section we give an overview of the simple use case for
 `epinow` and `regional_epinow`.
 [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html)
-can be use on its own to infer the underlying infection case curve from
+can be used on its own to infer the underlying infection case curve from
 reported cases and estimate Rt. Estimating the underlying infection case
 curve via back-calculation (and then calculating Rt) is substantially
 less computationally demanding than generating using default settings
