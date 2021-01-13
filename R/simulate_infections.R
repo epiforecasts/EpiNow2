@@ -65,16 +65,14 @@ simulate_infections <- function(estimates,
                                 samples = NULL,
                                 batch_size = 10,
                                 verbose = interactive()) {
-
   ## check batch size
   if (!is.null(batch_size)) {
     if (batch_size <= 1) {
       stop("batch_size must be greater than 1")
     }
   }
-
   ## extract samples from given stanfit object
-  draws <- rstan::extract(estimates$fit,
+  draws <- extract(estimates$fit,
     pars = c(
       "noise", "eta", "lp__", "infections",
       "reports", "imputed_reports", "r"
@@ -93,13 +91,15 @@ simulate_infections <- function(estimates,
   # if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
     if(any(class(R) %in% "data.frame")) {
-      R <- data.table::as.data.table(R)
+      R <- as.data.table(R)
       if (is.null(R$sample)) {
         R <- R[, .(date, sample = list(1:samples), value)]
         R <- R[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
       }
       R <- R[, .(date, sample, value)]
       draws$R <- t(matrix(R$value, ncol = length(unique(R$sample))))
+      # ignore samples and use data.frame max instead
+      samples <- max(R$sample)
     }else{
       R_mat <- matrix(rep(R, each = samples),
                       ncol = length(R), byrow = FALSE)
@@ -113,7 +113,7 @@ simulate_infections <- function(estimates,
   if (posterior_sample < samples) {
     posterior_samples <- sample(1:posterior_sample, samples, replace = TRUE)
     R_draws <- draws$R
-    draws <- purrr::map(draws, ~ as.matrix(.[posterior_samples, ]))
+    draws <- map(draws, ~ as.matrix(.[posterior_samples, ]))
     draws$R <- R_draws
   }
   
@@ -138,7 +138,7 @@ simulate_infections <- function(estimates,
   # define dates of interest
   dates <-
     seq(min(na.omit(unique(estimates$summarised[variable == "R"]$date)))
-    - lubridate::days(shift),
+    - days(shift),
     by = "day", length.out = dim(draws$R)[2] + shift
     )
 
@@ -151,7 +151,7 @@ simulate_infections <- function(estimates,
   batch_simulate <- function(estimates, draws, model,
                              shift, dates, nstart, nend) {
     # extract batch samples from draws
-    draws <- purrr::map(draws, ~ as.matrix(.[nstart:nend, ]))
+    draws <- map(draws, ~ as.matrix(.[nstart:nend, ]))
 
     ## prepare data for stan command
     data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
@@ -162,7 +162,7 @@ simulate_infections <- function(estimates,
     )
 
     ## simulate
-    sims <- rstan::sampling(
+    sims <- sampling(
       object = model,
       data = data, chains = 1, iter = 1,
       algorithm = "Fixed_param",
@@ -182,19 +182,19 @@ simulate_infections <- function(estimates,
     batch_no <- ceiling(samples / batch_size)
     nstarts <- seq(1, by = batch_size, length.out = batch_no)
     nends <- c(seq(batch_size, by = batch_size, length.out = batch_no - 1), samples)
-    batches <- purrr::transpose(list(nstarts, nends))
+    batches <- transpose(list(nstarts, nends))
   } else {
     batches <- list(list(1, samples))
   }
 
-  safe_batch <- purrr::safely(batch_simulate)
+  safe_batch <- safely(batch_simulate)
 
   ## simulate in batches
-  progressr::with_progress({
+  with_progress({
     if (verbose) {
-      p <- progressr::progressor(along = batches)
+      p <- progressor(along = batches)
     }
-    out <- future.apply::future_lapply(batches,
+    out <- future_lapply(batches,
       function(batch) {
         if (verbose) {
           p()
@@ -210,9 +210,9 @@ simulate_infections <- function(estimates,
   })
 
   ## join batches
-  out <- purrr::compact(out)
-  out <- purrr::transpose(out)
-  out <- purrr::map(out, ~ data.table::rbindlist(.))
+  out <- compact(out)
+  out <- transpose(out)
+  out <- map(out, ~ data.table::rbindlist(.))
 
   ## format output
   format_out <- format_fit(
@@ -226,7 +226,6 @@ simulate_infections <- function(estimates,
   format_out$samples <- format_out$samples[, sample := 1:.N,
     by = c("variable", "time", "date", "strat")
   ]
-
 
   format_out$observations <- estimates$observations
   class(format_out) <- c("estimate_infections", class(format_out))
