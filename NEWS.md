@@ -2,6 +2,11 @@
 
 This release is underdevelopment and the features outlined below may change before release.
 
+
+## New features
+
+* Added supported to `simulate_infections` so that a `data.frame` of R samples can be passed in instead of a vector of R values.
+* Added extraction of posterior samples to the summary method for `estimate_infections`.
 ## Other changes
 
 * Updated the classification of growth to use stable rather than unsure when Rt is approximately 1.
