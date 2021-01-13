@@ -58,6 +58,21 @@
 #' R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
 #' sims <- simulate_infections(est, R)
 #' plot(sims)
+#' 
+#' # with a data.frame input of samples
+#' R_dt <- data.frame(date = summary(est, type = "parameters", param = "R")$date,
+#'                 value = R)
+#' sims <- simulate_infections(est, R_dt)
+#' plot(sims) 
+#' 
+#' #' # with a data.frame input of samples
+#' R_samples <- summary(est, type = "samples", param = "R")
+#' 
+#' data.frame(date = summary(est, type = "parameters", param = "R")$date,
+#'                 value = R)
+#' sims <- simulate_infections(est, R_dt)
+#' plot(sims) 
+#' 
 #' }
 simulate_infections <- function(estimates,
                                 R = NULL,
@@ -90,17 +105,16 @@ simulate_infections <- function(estimates,
   
   # if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
-    if(any(class(R) %in% "data.frame")) {
+    if(any(class(R) %in% "data.frame") & !is.null(R$sample)) {
       R <- as.data.table(R)
-      if (is.null(R$sample)) {
-        R <- R[, .(date, sample = list(1:samples), value)]
-        R <- R[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
-      }
       R <- R[, .(date, sample, value)]
       draws$R <- t(matrix(R$value, ncol = length(unique(R$sample))))
       # ignore samples and use data.frame max instead
       samples <- max(R$sample)
     }else{
+      if (any(class(R) %in% "data.frame")) {
+        R <- R$value
+      }
       R_mat <- matrix(rep(R, each = samples),
                       ncol = length(R), byrow = FALSE)
       draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
