@@ -719,10 +719,11 @@ summary.epinow <- function(object, output = "estimates",
 #' \code{summary} method for class "estimate_infections".
 #' @param object A list of output as produced by "estimate_infections".
 #' @param type A character vector of data types to return. Defaults to "snapshot"
-#' but also supports "parameters". "snapshot" returns a summary at a given date
-#' (by default the latest date informed by data). "parameters" returns summarised
-#' parameter estimates that can be further filtered using `params` to show just the
-#' parameters of interest and date.
+#' but also supports "parameters", and "samples". "snapshot" returns a summary at
+#' a given date (by default the latest date informed by data). "parameters" returns 
+#' summarised parameter estimates that can be further filtered using `params` to 
+#' show just the parameters of interest and date. "samples" similarly returns posterior
+#' samples.
 #' @param date A date in the form "yyyy-mm-dd" to inspect estimates for.
 #' @param params A character vector of parameters to filter for.
 #' @param ... Pass additional arguments to `report_summary`
@@ -732,7 +733,7 @@ summary.epinow <- function(object, output = "estimates",
 #' @export
 summary.estimate_infections <- function(object, type = "snapshot",
                                         date = NULL, params = NULL, ...) {
-  choices <- c("snapshot", "parameters")
+  choices <- c("snapshot", "parameters", "samples")
   type <- match.arg(type, choices, several.ok = FALSE)
   if (is.null(date)) {
     target_date <- unique(object$summarised[type != "forecast"][date == max(date)]$date)
@@ -746,8 +747,11 @@ summary.estimate_infections <- function(object, type = "snapshot",
       rt_samples = object$samples[variable == "R"][date == target_date, .(sample, value)],
       ...
     )
-  } else if (type %in% "parameters") {
-    out <- object$summarised
+  } else if (type %in% c("parameters", "samples")) {
+    if (type %in% "parameters") {
+      type <- "summarised"
+    }
+    out <- object[[type]]
     if (!is.null(date)) {
       out <- out[date == target_date]
     }
