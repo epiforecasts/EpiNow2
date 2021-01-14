@@ -10,7 +10,8 @@
 #' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
 #'  contained in \code{estimates}, except elements set to NA. If it is longer than the time series
 #'  of reproduction numbers contained in \code{estimates}, the values going beyond the length of
-#'  estimated reproduction numbers are taken as forecast.
+#'  estimated reproduction numbers are taken as forecast. Alternatively accepts a data.frame containing
+#'  at least `date` and `value` (integer) variables and optionally `sample`.
 #' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
 #' samples in the `estimates` input.
 #' @param batch_size Numeric, defaults to 100. Size of batches in which to simulate. May decrease
@@ -22,7 +23,7 @@
 #' @importFrom purrr transpose map safely compact
 #' @importFrom future.apply future_lapply
 #' @importFrom progressr with_progress progressor
-#' @importFrom data.table rbindlist
+#' @importFrom data.table rbindlist as.data.table
 #' @importFrom lubridate days
 #' @export
 #' @examples
@@ -57,6 +58,19 @@
 #' R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
 #' sims <- simulate_infections(est, R)
 #' plot(sims)
+#' 
+#' # with a data.frame input of samples
+#' R_dt <- data.frame(date = summary(est, type = "parameters", param = "R")$date,
+#'                 value = R)
+#' sims <- simulate_infections(est, R_dt)
+#' plot(sims) 
+#' 
+#' #' # with a data.frame input of samples
+#' R_samples <- summary(est, type = "samples", param = "R")
+#' R_samples <- R_samples[,.(date, sample, value)][sample <= 1000][date <= "2020-04-10"]
+#' R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
+#' sims <- simulate_infections(est, R_samples)
+#' plot(sims) 
 #' }
 simulate_infections <- function(estimates,
                                 R = NULL,
@@ -64,16 +78,14 @@ simulate_infections <- function(estimates,
                                 samples = NULL,
                                 batch_size = 10,
                                 verbose = interactive()) {
-
   ## check batch size
   if (!is.null(batch_size)) {
     if (batch_size <= 1) {
       stop("batch_size must be greater than 1")
     }
   }
-
   ## extract samples from given stanfit object
-  draws <- rstan::extract(estimates$fit,
+  draws <- extract(estimates$fit,
     pars = c(
       "noise", "eta", "lp__", "infections",
       "reports", "imputed_reports", "r"
@@ -81,33 +93,68 @@ simulate_infections <- function(estimates,
     include = FALSE
   )
 
-  # extract parameters from passed stanfit object
-  shift <- estimates$args$seeding_time
-  burn_in <- estimates$args$burn_in
-
-  ## if R is given, update trajectories in stanfit object
-  if (!is.null(R)) {
-    if (burn_in > 0) {
-      R <- c(rep(NA_real_, burn_in), R)
-    }
-    R_mat <- matrix(rep(R, each = dim(draws$R)[1]),
-      ncol = length(R), byrow = FALSE
-    )
-    draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
-    draws$R <- matrix(draws$R, ncol = length(R))
-  }
-
   # set samples if missing
   R_samples <- dim(draws$R)[1]
   if (is.null(samples)) {
     samples <- R_samples
-  } else if (samples > R_samples) {
-    samples <- R_samples
+  } 
+  # extract parameters from passed stanfit object
+  shift <- estimates$args$seeding_time
+  
+  # if R is given, update trajectories in stanfit object
+  if (!is.null(R)) {
+    if(any(class(R) %in% "data.frame")) {
+      if (is.null(R$sample)) {
+        R <- R$value
+      }
+    }
+    if(any(class(R) %in% "data.frame")) {
+      R <- as.data.table(R)
+      R <- R[, .(date, sample, value)]
+      draws$R <- t(matrix(R$value, ncol = length(unique(R$sample))))
+      # ignore samples and use data.frame max instead
+      samples <- max(R$sample)
+    }else{
+      R_mat <- matrix(rep(R, each = samples),
+                      ncol = length(R), byrow = FALSE)
+      draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
+      draws$R <- matrix(draws$R, ncol = length(R))
+    }
+  }
+  
+  # sample from posterior if samples != posterior
+  posterior_sample <- dim(draws$obs_reports)[1]
+  if (posterior_sample < samples) {
+    posterior_samples <- sample(1:posterior_sample, samples, replace = TRUE)
+    R_draws <- draws$R
+    draws <- map(draws, ~ as.matrix(.[posterior_samples, ]))
+    draws$R <- R_draws
+  }
+   
+  # redefine time if Rt != data$t
+  time <- estimates$args$t
+  horizon <-  estimates$args$h
+  obs_time <- time - shift
+  
+  if (obs_time != dim(draws$R)[2]) {
+    horizon <- dim(draws$R)[2] - time + horizon + shift
+    horizon <- ifelse(horizon < 0, 0, horizon)
+    time <- dim(draws$R)[2] + shift
+    obs_time <- time - shift
+    starting_day <- estimates$args$day_of_week[1]
+    day_of_week <- ((starting_day + rep(0:6, ceiling((obs_time) / 7))) %% 7)
+    day_of_week <- day_of_week[1:(obs_time)]
+    day_of_week <- ifelse(day_of_week == 0, 7, day_of_week)
+    
+    estimates$args$horizon <- horizon
+    estimates$args$t <- time
+    estimates$args$day_of_week <- day_of_week
   }
 
+  # define dates of interest
   dates <-
     seq(min(na.omit(unique(estimates$summarised[variable == "R"]$date)))
-    - lubridate::days(burn_in + shift),
+    - days(shift),
     by = "day", length.out = dim(draws$R)[2] + shift
     )
 
@@ -120,7 +167,7 @@ simulate_infections <- function(estimates,
   batch_simulate <- function(estimates, draws, model,
                              shift, dates, nstart, nend) {
     # extract batch samples from draws
-    draws <- purrr::map(draws, ~ as.matrix(.[nstart:nend, ]))
+    draws <- map(draws, ~ as.matrix(.[nstart:nend, ]))
 
     ## prepare data for stan command
     data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
@@ -131,7 +178,7 @@ simulate_infections <- function(estimates,
     )
 
     ## simulate
-    sims <- rstan::sampling(
+    sims <- sampling(
       object = model,
       data = data, chains = 1, iter = 1,
       algorithm = "Fixed_param",
@@ -151,19 +198,19 @@ simulate_infections <- function(estimates,
     batch_no <- ceiling(samples / batch_size)
     nstarts <- seq(1, by = batch_size, length.out = batch_no)
     nends <- c(seq(batch_size, by = batch_size, length.out = batch_no - 1), samples)
-    batches <- purrr::transpose(list(nstarts, nends))
+    batches <- transpose(list(nstarts, nends))
   } else {
     batches <- list(list(1, samples))
   }
 
-  safe_batch <- purrr::safely(batch_simulate)
+  safe_batch <- safely(batch_simulate)
 
   ## simulate in batches
-  progressr::with_progress({
+  with_progress({
     if (verbose) {
-      p <- progressr::progressor(along = batches)
+      p <- progressor(along = batches)
     }
-    out <- future.apply::future_lapply(batches,
+    out <- future_lapply(batches,
       function(batch) {
         if (verbose) {
           p()
@@ -179,23 +226,22 @@ simulate_infections <- function(estimates,
   })
 
   ## join batches
-  out <- purrr::compact(out)
-  out <- purrr::transpose(out)
-  out <- purrr::map(out, ~ data.table::rbindlist(.))
+  out <- compact(out)
+  out <- transpose(out)
+  out <- map(out, ~ data.table::rbindlist(.))
 
   ## format output
   format_out <- format_fit(
     posterior_samples = out,
     horizon = estimates$args$horizon,
     shift = shift,
-    burn_in = burn_in,
+    burn_in = 0,
     start_date = min(estimates$observations$date),
     CrIs = extract_CrIs(estimates$summarised) / 100
   )
   format_out$samples <- format_out$samples[, sample := 1:.N,
     by = c("variable", "time", "date", "strat")
   ]
-
 
   format_out$observations <- estimates$observations
   class(format_out) <- c("estimate_infections", class(format_out))
