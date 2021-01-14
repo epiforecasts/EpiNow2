@@ -141,7 +141,7 @@ reporting_delay <- estimate_delay(rlnorm(1000,  log(3), 1),
 
 Here we define the incubation period and generation time based on
 literature estimates for Covid-19 (see
-[here](https://github.com/epiforecasts/EpiNow/tree/master/data-raw) for
+[here](https://github.com/epiforecasts/EpiNow2/tree/master/data-raw) for
 the code that generates these estimates).
 
 ``` r
