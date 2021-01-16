@@ -2,11 +2,11 @@
 # Github Actions workflow to deploy EpiNow2 website
 # yamllint disable rule:line-length
 
+name: pkgdown
+
 'on':
   push:
     branches: master
-
-name: pkgdown
 
 jobs:
   pkgdown:

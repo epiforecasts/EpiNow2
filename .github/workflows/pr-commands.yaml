@@ -2,10 +2,12 @@
 # Github Actions workflow to render EpiNow2 documents
 # yamllint disable rule:line-length
 
+name: Commands
+
 'on':
   issue_comment:
     types: [created]
-name: Commands
+
 jobs:
   document:
     if: contains(github.event.comment.body, '/document')
@@ -32,6 +34,7 @@ jobs:
       - uses: r-lib/actions/pr-push@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
   style:
     if: contains(github.event.comment.body, '/style')
     name: style
@@ -65,6 +68,7 @@ jobs:
       - uses: r-lib/actions/pr-push@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
   cpp:
     if: contains(github.event.comment.body, '/cpp')
     name: cpp

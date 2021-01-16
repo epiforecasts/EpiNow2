@@ -2,6 +2,8 @@
 # Github Actions workflow to format EpiNow2 code
 # yamllint disable rule:line-length
 
+name: Format
+
 'on':
   push:
     branches:
@@ -11,8 +13,6 @@
   pull_request:
     branches:
       - '**'
-
-name: Format
 
 jobs:
   Format:

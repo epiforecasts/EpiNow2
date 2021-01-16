@@ -2,6 +2,8 @@
 # Github Actions workflow to check EpiNow2
 # yamllint disable rule:line-length
 
+name: R-CMD-check
+
 'on':
   push:
     branches:
@@ -11,8 +13,6 @@
   pull_request:
     branches:
       - '*'
-
-name: R-CMD-check
 
 jobs:
   R-CMD-check:
