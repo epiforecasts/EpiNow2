@@ -1,5 +1,10 @@
+---
+# Github Actions workflow to publish Docker image for EpiNow2
+# yamllint disable rule:line-length
+
 name: Publish Docker image
-on:
+
+'on':
   push:
     branches:
       - master

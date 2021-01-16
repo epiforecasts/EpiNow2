@@ -1,4 +1,8 @@
-on:
+---
+# Github Actions workflow to Lint EpiNow2 R code
+# yamllint disable rule:line-length
+
+'on':
   push:
     branches:
       - develop

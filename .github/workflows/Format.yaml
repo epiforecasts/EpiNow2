@@ -1,4 +1,8 @@
-on:
+---
+# Github Actions workflow to format EpiNow2 code
+# yamllint disable rule:line-length
+
+'on':
   push:
     branches:
       - develop

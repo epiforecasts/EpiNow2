@@ -1,10 +1,14 @@
-on:
+---
+# Github Actions workflow to analyze EpiNow2 code, test coverage
+# yamllint disable rule:line-length
+
+'on':
   push:
     branches:
       - master
   pull_request:
     branches:
-      - '**'       
+      - '*'
 
 name: test-coverage
 
