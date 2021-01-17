@@ -164,7 +164,7 @@ jobs:
   Format:
     runs-on: ubuntu-20.04
 
-    needs: [R-CMD-check, Lint]
+    needs: [R-CMD-check]
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -284,7 +284,7 @@ jobs:
     if: github.ref == 'refs/heads/master' && github.repository == 'epiforecasts/EpiNow2'
     runs-on: macOS-latest
 
-    needs: [R-CMD-check, Format, test-coverage]
+    needs: [R-CMD-check, Lint, Format, test-coverage]
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -331,7 +331,7 @@ jobs:
     name: Push Docker image to GitHub Packages
     runs-on: ubuntu-latest
 
-    needs: [R-CMD-check, pkgdown]
+    needs: [R-CMD-check, pkgdown, test-coverage]
 
     steps:
       - name: Check out the repo
