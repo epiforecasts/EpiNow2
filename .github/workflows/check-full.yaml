@@ -286,3 +286,21 @@ jobs:
           git config --local user.name "GitHub Actions"
           Rscript -e "pkgdown::deploy_to_branch(new_process = FALSE)"
         shell: bash
+
+  push_to_registry:
+    name: Push Docker image to GitHub Packages
+    runs-on: ubuntu-latest
+
+    needs: [R-CMD-check, pkgdown]
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v2
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: epiforecasts/epinow2/epinow2
+          tag_with_ref: true
