@@ -241,6 +241,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   test-coverage:
+    if: github.ref == 'refs/heads/master' && github.repository == 'epiforecasts/EpiNow2'
     runs-on: macOS-latest
 
     needs: [R-CMD-check, Format]
@@ -278,7 +279,7 @@ jobs:
 
 
   pkgdown:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' && github.repository == 'epiforecasts/EpiNow2'
     runs-on: macOS-latest
 
     needs: [R-CMD-check, Format, test-coverage]
@@ -324,6 +325,7 @@ jobs:
         shell: bash
 
   push_to_registry:
+    if: github.ref == 'refs/heads/master' && github.repository == 'epiforecasts/EpiNow2'
     name: Push Docker image to GitHub Packages
     runs-on: ubuntu-latest
 
