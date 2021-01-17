@@ -52,6 +52,7 @@ jobs:
             eval sudo $cmd
           done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
           sudo apt install clang-format
+        shell: bash
 
       - name: Install dependencies
         run: |
@@ -74,6 +75,7 @@ jobs:
           find . -type f \( -name 'DESCRIPTION' -name "*.R" -o -name "*.stan" \) -exec sed -i -e 's/[ \t]*$//' {} \;
           find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec sed -i -e 's/[ \t]*$//' {} \;
           find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec clang-format -style=Google --verbose -i {} \;
+        shell: bash
 
       - name: Commit results
         run: |
@@ -84,3 +86,4 @@ jobs:
           find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) -exec git add {} \;
           git commit -m 'Formatting C/C++ code using clang-format' || echo 'No changes to commit'
           git push origin || echo "No changes to commit"
+        shell: bash
