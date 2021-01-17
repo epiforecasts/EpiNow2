@@ -241,3 +241,50 @@ jobs:
         uses: r-lib/actions/pr-push@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  pkgdown:
+    if: github.ref == 'refs/heads/master'
+    runs-on: macOS-latest
+
+    needs: [R-CMD-check, Format]
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: r-lib/actions/setup-r@v1
+
+      - uses: r-lib/actions/setup-pandoc@v1
+
+      - name: Query dependencies
+        run: |
+          install.packages('remotes')
+          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
+        shell: Rscript {0}
+
+      - name: Cache R packages
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: macOS-r-4.0-1-${{ hashFiles('.github/depends.Rds') }}
+          restore-keys: macOS-r-4.0-1-
+
+      - name: Install dependencies
+        run: |
+          install.packages(c("remotes", "pkgbuild"))
+          remotes::install_deps(dependencies = TRUE)
+          remotes::install_dev("pkgdown")
+        shell: Rscript {0}
+
+      - name: Install package
+        run: R CMD INSTALL .
+
+      - name: Deploy package
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          Rscript -e "pkgdown::deploy_to_branch(new_process = FALSE)"
+        shell: bash
