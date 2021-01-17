@@ -244,7 +244,7 @@ jobs:
     if: github.ref == 'refs/heads/master' && github.repository == 'epiforecasts/EpiNow2'
     runs-on: macOS-latest
 
-    needs: [R-CMD-check, Format]
+    needs: [R-CMD-check]
 
     steps:
       - uses: actions/checkout@v2
