@@ -114,7 +114,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
     )
     cols <- setdiff(colnames(reported), c("date", "confirm", "breakpoint"))
 
-    if (length(cols > 1)) {
+    if (length(cols) > 1) {
       max_cases_to_plot <- data.table::copy(reported)[,
         .(max = round(max(confirm, na.rm = TRUE) * max_plot, 0)),
         by = cols
