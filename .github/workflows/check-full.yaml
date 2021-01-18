@@ -63,11 +63,12 @@ jobs:
         env:
           RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
         run: |
+          while read -r cmd
+          do
+            eval sudo $cmd
+          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "16.04"))')
+          sudo apt-get -y install libudunits2-dev libgdal-dev libqpdf-dev libcurl4-openssl-dev
           Rscript -e "remotes::install_github('epiforecasts/EpiSoon')"
-          Rscript -e "remotes::install_github('r-hub/sysreqs')"
-          sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
-          sudo -s eval "$sysreqs"
-          sudo apt-get -y install libudunits2-dev libgdal-dev libqpdf-dev
         shell: bash
 
       - name: Install dependencies
@@ -138,11 +139,12 @@ jobs:
         env:
           RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
         run: |
+          while read -r cmd
+          do
+            eval sudo $cmd
+          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "16.04"))')
+          sudo apt-get -y install libudunits2-dev libgdal-dev libqpdf-dev libcurl4-openssl-dev
           Rscript -e "remotes::install_github('epiforecasts/EpiSoon')"
-          Rscript -e "remotes::install_github('r-hub/sysreqs')"
-          sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
-          sudo -s eval "$sysreqs"
-          sudo apt-get -y install libudunits2-dev libgdal-dev libqpdf-dev
         shell: bash
 
       - name: Install dependencies
@@ -201,12 +203,12 @@ jobs:
         env:
           RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
         run: |
+          while read -r cmd
+          do
+            eval sudo $cmd
+          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "16.04"))')
+          sudo apt-get -y install clang-format libudunits2-dev libgdal-dev libqpdf-dev libcurl4-openssl-dev
           Rscript -e "remotes::install_github('epiforecasts/EpiSoon')"
-          Rscript -e "remotes::install_github('r-hub/sysreqs')"
-          sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
-          sudo -s eval "$sysreqs"
-          sudo apt-get -y install libudunits2-dev libgdal-dev libqpdf-dev
-          sudo apt-get -y install clang-format
         shell: bash
 
       - name: Install dependencies
