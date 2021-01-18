@@ -27,8 +27,9 @@ jobs:
         config:
           - {os: macOS-latest, r: 'release'}
           - {os: windows-latest, r: 'release'}
-          - {os: ubuntu-16.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
-          - {os: ubuntu-16.04, r: 'oldrel', rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
+          - {os: ubuntu-20.04, r: 'release'}
+          - {os: ubuntu-20.04, r: 'oldrel'}
+
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       RSPM: ${{ matrix.config.rspm }}
@@ -66,7 +67,7 @@ jobs:
           while read -r cmd
           do
             eval sudo $cmd
-          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "16.04"))')
+          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
           sudo apt-get -y install libudunits2-dev libgdal-dev libqpdf-dev libcurl4-openssl-dev
           Rscript -e "remotes::install_github('epiforecasts/EpiSoon')"
         shell: bash
@@ -106,7 +107,7 @@ jobs:
           path: check
 
   Lint:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
 
     needs: [R-CMD-check]
 
@@ -143,7 +144,7 @@ jobs:
           while read -r cmd
           do
             eval sudo $cmd
-          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "16.04"))')
+          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
           sudo apt-get -y install libudunits2-dev libgdal-dev libqpdf-dev libcurl4-openssl-dev
           Rscript -e "remotes::install_github('epiforecasts/EpiSoon')"
         shell: bash
@@ -171,7 +172,7 @@ jobs:
 
   Format:
     if: startsWith(github.event.head_commit.message, '[format]')
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
 
     needs: [R-CMD-check]
 
@@ -208,7 +209,7 @@ jobs:
           while read -r cmd
           do
             eval sudo $cmd
-          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "16.04"))')
+          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
           sudo apt-get -y install clang-format libudunits2-dev libgdal-dev libqpdf-dev libcurl4-openssl-dev
           Rscript -e "remotes::install_github('epiforecasts/EpiSoon')"
         shell: bash
@@ -342,7 +343,7 @@ jobs:
   push_to_registry:
     if: github.ref == 'refs/heads/master' && github.repository == 'epiforecasts/EpiNow2'
     name: Push Docker image to GitHub Packages
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     needs: [R-CMD-check, pkgdown, test-coverage]
 
