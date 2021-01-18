@@ -164,6 +164,7 @@ jobs:
 
 
   Format:
+    if: startsWith(github.event.head_commit.message, '[format]')
     runs-on: ubuntu-16.04
 
     needs: [R-CMD-check]
