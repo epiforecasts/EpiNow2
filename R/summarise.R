@@ -393,9 +393,11 @@ summarise_key_measures <- function(regional_results = NULL,
   } else {
     timeseries <- regional_results
   }
-  summarise_variable <- function(df, dof = 2) {
+  summarise_variable <- function(df, dof = NULL) {
     cols <- setdiff(names(df), c("region", "date", "type", "strat"))
-    df[, (cols) := round(.SD, dof), .SDcols = cols]
+    if (!is.null(dof)) {
+      df[, (cols) := round(.SD, dof), .SDcols = cols]
+    }
     data.table::setorderv(df, cols = c("region", "date", "type", "strat"))
     data.table::setnames(df, "region", type)
     return(df)
