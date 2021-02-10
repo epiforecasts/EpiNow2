@@ -393,7 +393,7 @@ summarise_key_measures <- function(regional_results = NULL,
   } else {
     timeseries <- regional_results
   }
-  summarise_variable <- function(df, dof = NULL) {
+  summarise_variable <- function(df, dof = Inf) {
     cols <- setdiff(names(df), c("region", "date", "type", "strat"))
     if (!is.null(dof)) {
       df[, (cols) := round(.SD, dof), .SDcols = cols]
@@ -411,33 +411,31 @@ summarise_key_measures <- function(regional_results = NULL,
   out <- list()
   sum_est <- timeseries$estimates$summarised
   # clean and save Rt estimates
-  out$rt <- summarise_variable(sum_est[variable == "R"][, variable := NULL], 2)
+  out$rt <- summarise_variable(sum_est[variable == "R"][, variable := NULL])
   save_variable(out$rt, "rt")
 
   # clean and save growth rate estimates
   out$growth_rate <- summarise_variable(sum_est[variable == "growth_rate"][
     ,
     variable := NULL
-  ], 3)
+  ])
   save_variable(out$growth_rate, "growth_rate")
 
   # clean and save case estimates
   out$cases_by_infection <- summarise_variable(sum_est[variable == "infections"][
     ,
     variable := NULL
-  ], 0)
+  ], 1)
   save_variable(out$cases_by_infection, "cases_by_infection")
 
   # clean and save case estimates
   out$cases_by_report <- summarise_variable(sum_est[variable == "reported_cases"][
     ,
     variable := NULL
-  ], 0)
+  ], 1)
   save_variable(out$cases_by_report, "cases_by_report")
   return(out)
 }
-
-
 #' Summarise Regional Runtimes
 #'
 #' @description `r lifecycle::badge("maturing")`
