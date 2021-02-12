@@ -16,7 +16,7 @@ This package estimates the time-varying reproduction number, rate of
 spread, and doubling time using a range of open-source tools ([Abbott et
 al.](https://doi.org/10.12688/wellcomeopenres.16006.1)), and current
 best practices ([Gostic et
-al.](https://doi.org/10.1101/2020.06.18.20134858)). It aims to help
+al.](https://doi.org/10.1371/journal.pcbi.1008409)). It aims to help
 users avoid some of the limitations of naive implementations in a
 framework that is informed by community feedback and is under active
 development.
