@@ -361,4 +361,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: epiforecasts/epinow2/epinow2:latest
+          tags: docker.pkg.github.com/epiforecasts/epinow2/epinow2:latest
