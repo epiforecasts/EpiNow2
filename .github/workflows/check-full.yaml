@@ -192,7 +192,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Cache R packages
-        if: runner.os != 'Windows' & startsWith(github.event.head_commit.message, '[format]')
+        if: runner.os != 'Windows' && startsWith(github.event.head_commit.message, '[format]')
         uses: actions/cache@v2
         with:
           path: ${{ env.R_LIBS_USER }}
@@ -200,7 +200,7 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
       - name: Install system dependencies
-        if: runner.os == 'Linux' & startsWith(github.event.head_commit.message, '[format]')
+        if: runner.os == 'Linux' && startsWith(github.event.head_commit.message, '[format]')
         env:
           RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
         run: |
@@ -355,4 +355,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: epiforecasts/EpiNow2/epinow2:latest
+          tags: epiforecasts/epinow2/epinow2:latest
