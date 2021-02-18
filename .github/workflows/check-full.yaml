@@ -353,8 +353,6 @@ jobs:
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v2
         with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: docker.pkg.github.com
-          repository: epiforecasts/epinow2/epinow2
-          tag_with_ref: true
+          context: .
+          push: true
+          tags: epiforecasts/EpiNow2/epinow2:latest
