@@ -23,7 +23,7 @@ dist_fit(
 \item{chains}{Numeric, defaults to 2. Number of MCMC chains to use. More is better with the minimum being two.}
 
 \item{dist}{Character string, which distribution to fit. Defaults to exponential (\code{"exp"}) but
-gamma (\code{"gamma"}) and lognormal (\code{"lognorma"}) are also supported.}
+gamma (\code{"gamma"}) and lognormal (\code{"lognormal"}) are also supported.}
 
 \item{verbose}{Logical, defaults to FALSE. Should verbose progress messages be printed.}
 }
