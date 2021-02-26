@@ -128,7 +128,7 @@ generated quantities {
     real gt_mean_sample = normal_rng(gt_mean_mean, gt_mean_sd);
     real gt_sd_sample = normal_rng(gt_sd_mean, gt_sd_sd);
     // calculate Rt using infections and generation time
-    gen_R = calculate_Rt(infections, seeding_time, gt_mean_sample, gt_mean_sample,
+    gen_R = calculate_Rt(infections, seeding_time, gt_mean_sample, gt_sd_sample,
                          max_gt, rt_half_window);
     // estimate growth from calculated Rt
     r = R_to_growth(gen_R, gt_mean_sample, gt_sd_sample);
