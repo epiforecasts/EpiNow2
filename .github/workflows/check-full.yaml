@@ -257,7 +257,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   test-coverage:
-    if: github.ref == 'refs/heads/master' && github.repository == 'epiforecasts/EpiNow2'
+    if: github.repository == 'epiforecasts/EpiNow2'
     runs-on: macOS-latest
 
     needs: [R-CMD-check]
