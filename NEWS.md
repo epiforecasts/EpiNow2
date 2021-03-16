@@ -9,6 +9,10 @@ This release is underdevelopment and the features outlined below may change befo
 * Added extraction of posterior samples to the summary method for `estimate_infections`.
 * Added 
 
+## Package changes
+
+* Added a `contributing.md` to guide contributors and added `pre-commit` support to check new contributions styling. 
+
 ## Other changes
 
 * Updated the classification of growth to use stable rather than unsure when Rt is approximately 1.

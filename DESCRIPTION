@@ -115,6 +115,7 @@ Suggests:
     kableExtra,
     knitr,
     magrittr,
+    precommit,
     rmarkdown,
     rnaturalearth,
     rstantools,

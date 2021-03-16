@@ -1,8 +1,6 @@
 # Contributing to EpiNow2
 
 This outlines how to propose a change to EpiNow2. 
-For more detailed info about contributing to this, and other tidyverse packages, please see the
-[**development contributing guide**](https://rstd.io/tidy-contrib). 
 
 ## Fixing typos
 
@@ -23,6 +21,18 @@ If you’ve found a bug, please file an issue that illustrates the bug with a mi
 *   Install all development dependences with `devtools::install_dev_deps()`, and then make sure the package passes R CMD check by running `devtools::check()`. 
     If R CMD check doesn't pass cleanly, it's a good idea to ask for help before continuing. 
 *   Create a Git branch for your pull request (PR). We recommend using `usethis::pr_init("brief-description-of-change")`.
+
+* We use `pre-commit` to check our changes match our package standards. This is optional but can be enabled using the following steps.
+
+```r
+# if python is not installed on your system
+install.packages("reticulate")
+reticulate::install_miniconda()
+# install precommit if not already installed
+precommit::install_precommit()
+# set up precommit for use
+precommit::use_precommit()
+```
 
 *   Make your changes, commit to git, and then create a PR by running `usethis::pr_push()`, and following the prompts in your browser.
     The title of your PR should briefly describe the change.
