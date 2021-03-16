@@ -328,14 +328,18 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #' the Observation Model
 #' @export
 #' @examples
+#' dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
 #' # default observation model data
-#' create_obs_model()
+#' create_obs_model(dates = dates)
 #'
 #' # Poisson observation model
-#' create_obs_model(obs_opts(family = "poisson"))
+#' create_obs_model(obs_opts(family = "poisson"), dates = dates)
 #'
 #' # Applying a observation scaling to the data
-#' create_obs_model(obs_opts(scale = list(mean = 0.4, sd = 0.01)))
+#' create_obs_model(obs_opts(scale = list(mean = 0.4, sd = 0.01)), dates = dates)
+#'
+#' # Apply a custom week week lenght
+#' create_obs_model(obs_opts(week_length = 3), dates = dates)
 create_obs_model <- function(obs = obs_opts(), dates) {
   data <- list(
     model_type = ifelse(obs$family %in% "poisson", 0, 1),
