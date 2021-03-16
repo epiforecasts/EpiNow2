@@ -3,10 +3,10 @@
 #' Cleans a data frame of reported cases by replacing missing dates with 0 cases and applies an optional
 #' threshold at which point 0 cases are replaced with a moving average of observed cases. See `zero_threshold`
 #' for details.
-#' @param zero_threshold Numeric defaults to 50. Indicates if detected zero cases are meaningful by
-#' using a threshold of 50 cases on average over the last 7 days. If the average is above this threshold
-#' then the zero is replaced with the right day rolling average. If set to infinity then no changes are
-#' made.
+#' @param zero_threshold `r lifecycle::badge("experimental")` Numeric defaults to 50. Indicates if detected zero
+#' cases are meaningful by using a threshold of 50 cases on average over the last 7 days. If the average is
+#' above this threshold then the zero is replaced with the backwards looking rolling average. If set to infinity
+#' then no changes are made.
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases

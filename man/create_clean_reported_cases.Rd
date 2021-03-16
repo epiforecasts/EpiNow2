@@ -12,10 +12,10 @@ in date format.}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
-\item{zero_threshold}{Numeric defaults to 50. Indicates if detected zero cases are meaningful by
-using a threshold of 50 cases on average over the last 7 days. If the average is above this threshold
-then the zero is replaced with the right day rolling average. If set to infinity then no changes are
-made.}
+\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults to 50. Indicates if detected zero
+cases are meaningful by using a threshold of 50 cases on average over the last 7 days. If the average is
+above this threshold then the zero is replaced with the backwards looking rolling average. If set to infinity
+then no changes are made.}
 }
 \value{
 A cleaned data frame of reported cases
