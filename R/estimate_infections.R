@@ -241,9 +241,6 @@ estimate_infections <- function(reported_cases,
   )
   reported_cases <- reported_cases[-(1:backcalc$prior_window)]
 
-  # Add week day info
-  reported_cases <- reported_cases[, day_of_week := lubridate::wday(date, week_start = 1)]
-
   # Define stan model parameters
   data <- create_stan_data(
     reported_cases = reported_cases,

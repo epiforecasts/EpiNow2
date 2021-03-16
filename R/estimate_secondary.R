@@ -404,6 +404,7 @@ forecast_secondary <- function(estimate,
     matrix(primary_fit$value, ncol = length(unique(primary_fit$sample)))
   )
   data$day_of_week <- add_day_of_week(unique(primary_fit$date), data$week_effect)
+  data$n <- nrow(data$primary)
   data$t <- ncol(data$primary)
   data$h <- nrow(primary[sample == min(sample)])
 

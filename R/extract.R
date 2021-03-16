@@ -127,8 +127,8 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
       samples,
       1:data$week_effect
     )
-    out$day_of_week <-
-      out$day_of_week[, value := value * data$week_effect]
+    out$day_of_week <- out$day_of_week[, value := value * data$week_effect]
+    out$day_of_week <- out$day_of_week[, strat := date][, c("time", "date") := NULL]
   }
   if (data$delays > 0) {
     out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
