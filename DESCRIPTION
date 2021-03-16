@@ -116,6 +116,7 @@ Suggests:
     knitr,
     magrittr,
     precommit,
+    precommit,
     rmarkdown,
     rnaturalearth,
     rstantools,

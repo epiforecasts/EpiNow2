@@ -122,8 +122,10 @@ logmean
 lognorm
 logsd
 lp
+lpmf
 lshtm
 lt
+lte
 lub
 lubridate
 magrittr
@@ -157,6 +159,7 @@ Nowcasts
 num
 NUTs
 nz
+oberserved
 obs
 optimisation
 Optimised
@@ -169,6 +172,7 @@ parallisation
 param
 params
 paul
+periodicty
 pietro
 Pietro
 pmf
@@ -194,6 +198,7 @@ README
 realland
 Rebased
 Recoded
+recon
 reprex
 rethrow
 Riutort
@@ -221,6 +226,7 @@ sebastian
 seealso
 sherratt
 Sherratt
+sim
 sophie
 spd
 SPD
@@ -271,5 +277,6 @@ vec
 vectorised
 warmup
 wellcomeopenres
+wl
 www
 yyyy

@@ -38,9 +38,10 @@ generated quantities {
     reports[i] = to_row_vector(convolve_to_report(to_vector(infections[i]), delay_mean[i],
                                                   delay_sd[i], max_delay, seeding_time));
     // weekly reporting effect
-    if (week_effect) {
-      reports[i] = to_row_vector(day_of_week_effect(to_vector(reports[i]), day_of_week,
-                                                    to_vector(day_of_week_simplex[i])));
+    if (week_effect > 1) {
+      reports[i] = to_row_vector(
+        day_of_week_effect(to_vector(reports[i]), day_of_week,
+                           to_vector(day_of_week_simplex[i])));
     }
     // scale observations
     if (obs_scale) {

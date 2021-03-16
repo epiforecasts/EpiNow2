@@ -4,7 +4,13 @@
 \alias{obs_opts}
 \title{Observation Model Options}
 \usage{
-obs_opts(family = "negbin", weight = 1, week_effect = TRUE, scale = list())
+obs_opts(
+  family = "negbin",
+  weight = 1,
+  week_effect = TRUE,
+  week_length = 7,
+  scale = list()
+)
 }
 \arguments{
 \item{family}{Character string defining the observation model. Options are
@@ -15,6 +21,10 @@ the log density.}
 
 \item{week_effect}{Logical defaulting to \code{TRUE}. Should a day of the week effect
 be used in the observation model.}
+
+\item{week_length}{Numeric assumed length of the week in days, defaulting to
+7 days. This can be modified if data aggregated over a period other than a week
+or if data has a non-weekly periodicity.}
 
 \item{scale}{List, defaulting to an empty list. Should an scaling factor be applied
 to map latent infections (convolved to date of report). If none empty a mean

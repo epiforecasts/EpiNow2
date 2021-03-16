@@ -241,6 +241,9 @@ gp_opts <- function(basis_prop = 0.2,
 #'  the log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week effect
 #'  be used in the observation model.
+#' @param week_length Numeric assumed length of the week in days, defaulting to
+#' 7 days. This can be modified if data aggregated over a period other than a week
+#' or if data has a non-weekly periodicity.
 #' @param scale List, defaulting to an empty list. Should an scaling factor be applied
 #'  to map latent infections (convolved to date of report). If none empty a mean
 #'  (`mean`) and standard deviation (`sd`) needs to be supplied defining the normally
@@ -259,11 +262,13 @@ gp_opts <- function(basis_prop = 0.2,
 obs_opts <- function(family = "negbin",
                      weight = 1,
                      week_effect = TRUE,
+                     week_length = 7,
                      scale = list()) {
   obs <- list(
     family = match.arg(family, choices = c("poisson", "negbin")),
     weight = weight,
     week_effect = week_effect,
+    week_length = week_length,
     scale = scale
   )
 

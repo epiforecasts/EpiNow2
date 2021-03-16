@@ -1,6 +1,6 @@
   int day_of_week[t - seeding_time]; // day of the week indicator (1 - 7)
   int model_type;                    // type of model: 0 = poisson otherwise negative binomial
-  int week_effect;                   // should a day of the week effect be estimated
+  int week_effect;                   // length of week effect
   int truncation;                    // 1/0 indicating if truncation should be adjusted for
   real trunc_mean_mean[truncation];  // truncation mean of mean
   real trunc_mean_sd[truncation];    // truncation sd of mean

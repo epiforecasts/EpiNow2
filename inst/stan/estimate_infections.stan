@@ -47,7 +47,7 @@ parameters{
   // observation model
   real delay_mean[delays];                 // mean of delays
   real<lower = 0> delay_sd[delays];        // sd of delays
-  simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect
+  simplex[week_effect] day_of_week_simplex;// day of week reporting effect
   real<lower = 0> frac_obs[obs_scale];     // fraction of cases that are ultimately observed
   real truncation_mean[truncation];        // mean of truncation
   real<lower = 0> truncation_sd[truncation]; // sd of truncation
@@ -78,10 +78,10 @@ transformed parameters {
   // convolve from latent infections to mean of observations
   reports = convolve_to_report(infections, delay_mean, delay_sd, max_delay, seeding_time);
  // weekly reporting effect
- if (week_effect) {
+ if (week_effect > 1) {
    reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);
   }
-  // scaling of reported cases by fraction oberserved
+  // scaling of reported cases by fraction observed
  if (obs_scale) {
    reports = scale_obs(reports, frac_obs[1]);
  }

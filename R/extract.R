@@ -121,31 +121,14 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
     samples,
     reported_dates
   )
-  if (data$week_effect == 1) {
+  if (data$week_effect > 1) {
     out$day_of_week <- extract_parameter(
       "day_of_week_simplex",
       samples,
-      1:7
+      1:data$week_effect
     )
-
-    char_day_of_week <- data.table::data.table(
-      wday = c(
-        "Monday", "Tuesday", "Wednesday",
-        "Thursday", "Friday", "Saturday",
-        "Sunday"
-      ),
-      time = 1:7
-    )
-    out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][
-      ,
-      strat := as.character(wday)
-    ][
-      ,
-      `:=`(time = NULL, date = NULL, wday = NULL)
-    ][
-      ,
-      value := value * 7
-    ]
+    out$day_of_week <-
+      out$day_of_week[, value := value * data$week_effect]
   }
   if (data$delays > 0) {
     out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
