@@ -3838,7 +3838,7 @@ public:
                 stan::math::fill(gt_sd_sample, DUMMY_VAR__);
                 stan::math::assign(gt_sd_sample,normal_rng(gt_sd_mean, gt_sd_sd, base_rng__));
                 current_statement_begin__ = 674;
-                stan::math::assign(gen_R, calculate_Rt(infections, seeding_time, gt_mean_sample, gt_mean_sample, max_gt, rt_half_window, pstream__));
+                stan::math::assign(gen_R, calculate_Rt(infections, seeding_time, gt_mean_sample, gt_sd_sample, max_gt, rt_half_window, pstream__));
                 current_statement_begin__ = 677;
                 stan::math::assign(r, R_to_growth(gen_R, gt_mean_sample, gt_sd_sample, pstream__));
                 }

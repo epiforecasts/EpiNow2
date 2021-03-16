@@ -31,7 +31,7 @@ which correspond to a summary combination (last item) and for the leading items
 and \code{summarised_estimates[variable == "growth_rate"]}, respectively.
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 Returns key summary plots for estimates. May be depreciated in later releases as current S3 methods
 are enhanced.
 }

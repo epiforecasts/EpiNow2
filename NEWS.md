@@ -7,6 +7,7 @@ This release is underdevelopment and the features outlined below may change befo
 
 * Added supported to `simulate_infections` so that a `data.frame` of R samples can be passed in instead of a vector of R values.
 * Added extraction of posterior samples to the summary method for `estimate_infections`.
+* Added 
 
 ## Other changes
 

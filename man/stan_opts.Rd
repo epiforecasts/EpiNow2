@@ -19,7 +19,7 @@ When using multiple chains iterations per chain is samples / chains.}
 \item{backend}{Character string indicating the backend to use for fitting stan models.
 Currently only "rstan" is supported.}
 
-\item{init_fit}{\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
+\item{init_fit}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 Character string or \code{stanfit} object, defaults to NULL. Should an initial fit be used to
 initialise the full fit. An example scenario would be using a national level fit to parametrise
 regional level fits. Optionally a character string can be passed with the currently supported
@@ -36,7 +36,7 @@ authored by James Scott.}
 A list of arguments to pass to the appropriate rstan functions.
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to underlying stan
 backend functions via \code{rstan_sampling_opts} and \code{rstan_vb_opts}. Custom settings
 can be supplied which override the defaults.

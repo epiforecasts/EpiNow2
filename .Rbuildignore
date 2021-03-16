@@ -24,3 +24,4 @@
 ^inst/dev$
 ^codecov\.yml$
 ^\.lintr$
+^\.pre-commit-config\.yaml$

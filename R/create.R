@@ -4,8 +4,9 @@
 #' threshold at which point 0 cases are replaced with a moving average of observed cases. See `zero_threshold`
 #' for details.
 #' @param zero_threshold Numeric defaults to 50. Indicates if detected zero cases are meaningful by
-#' using a threshold of 50 cases on average over the last 7 days. If the average is above this thresold
-#' then the zero is replaced with the
+#' using a threshold of 50 cases on average over the last 7 days. If the average is above this threshold
+#' then the zero is replaced with the right day rolling average. If set to infinity then no changes are
+#' made.
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases
@@ -33,14 +34,20 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
 
   # Check case counts surrounding zero cases and set to 7 day average if average is over 7 days
   # is greater than a threshold
-  reported_cases <- reported_cases[, `:=`(average_7 = data.table::frollsum(confirm, n = 8) / 7)]
-  reported_cases <- reported_cases[
-    confirm == 0 & average_7 > zero_threshold,
-    confirm := as.integer(average_7)
-  ][
-    ,
-    c("average_7") := NULL
-  ]
+  if (is.infinite(zero_threshold)) {
+    reported_cases <-
+      reported_cases[
+        ,
+        `:=`(average_7 = data.table::frollsum(confirm, n = 8) / 7)
+      ]
+    reported_cases <- reported_cases[
+      confirm == 0 & average_7 > zero_threshold,
+      confirm := as.integer(average_7)
+    ][
+      ,
+      c("average_7") := NULL
+    ]
+  }
   return(reported_cases)
 }
 

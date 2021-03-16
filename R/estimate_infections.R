@@ -27,6 +27,7 @@
 #' @inheritParams create_stan_data
 #' @inheritParams create_gp_data
 #' @inheritParams fit_model_with_nuts
+#' @inheritParams create_clean_reported_cases
 #' @inheritParams calc_CrIs
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose
@@ -195,6 +196,7 @@ estimate_infections <- function(reported_cases,
                                 stan = stan_opts(),
                                 horizon = 7,
                                 CrIs = c(0.2, 0.5, 0.9),
+                                zero_threshold = 50,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
   suppressMessages(data.table::setDTthreads(threads = 1))
@@ -211,7 +213,10 @@ estimate_infections <- function(reported_cases,
     stop("A call to delay_opts must be passed to delays")
   }
   # Make sure there are no missing dates and order cases
-  reported_cases <- create_clean_reported_cases(reported_cases, horizon)
+  reported_cases <- create_clean_reported_cases(
+    reported_cases, horizon,
+    zero_threshold = zero_threshold
+  )
 
   # Record earliest date with data
   start_date <- min(reported_cases$date, na.rm = TRUE)
