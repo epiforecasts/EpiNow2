@@ -312,6 +312,11 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v1
 
+      - name: Install system dependencies
+        run: |
+          brew install udunits
+        shell: bash
+        
       - name: Query dependencies
         run: |
           install.packages('remotes')
