@@ -4,7 +4,13 @@
 \alias{obs_opts}
 \title{Observation Model Options}
 \usage{
-obs_opts(family = "negbin", weight = 1, week_effect = TRUE, scale = list())
+obs_opts(
+  family = "negbin",
+  weight = 1,
+  week_effect = TRUE,
+  week_length = 7,
+  scale = list()
+)
 }
 \arguments{
 \item{family}{Character string defining the observation model. Options are
@@ -16,6 +22,10 @@ the log density.}
 \item{week_effect}{Logical defaulting to \code{TRUE}. Should a day of the week effect
 be used in the observation model.}
 
+\item{week_length}{Numeric assumed length of the week in days, defaulting to
+7 days. This can be modified if data aggregated over a period other than a week
+or if data has a non-weekly periodicity.}
+
 \item{scale}{List, defaulting to an empty list. Should an scaling factor be applied
 to map latent infections (convolved to date of report). If none empty a mean
 (\code{mean}) and standard deviation (\code{sd}) needs to be supplied defining the normally
@@ -25,7 +35,7 @@ distributed scaling factor.}
 A list of observation model settings.
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the structure of the observation
 model. Custom settings can be supplied which override the defaults.
 }

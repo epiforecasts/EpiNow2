@@ -26,7 +26,7 @@ as supplied by \code{create_intitial_conditions}).}
 A list of stan arguments
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Generates a list of arguments as required by \code{rstan::sampling} or \code{rstan::vb} by combining the required options,
 with data, and type of initialisation. Initialisation defaults to random but it is expected that \code{create_initial_conditions}
 will be used.

@@ -27,10 +27,11 @@
 #' @inheritParams create_stan_data
 #' @inheritParams create_gp_data
 #' @inheritParams fit_model_with_nuts
+#' @inheritParams create_clean_reported_cases
 #' @inheritParams calc_CrIs
 #' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
 #' @importFrom purrr transpose
-#' @importFrom lubridate wday days
+#' @importFrom lubridate days
 #' @importFrom purrr transpose
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @examples
@@ -195,6 +196,7 @@ estimate_infections <- function(reported_cases,
                                 stan = stan_opts(),
                                 horizon = 7,
                                 CrIs = c(0.2, 0.5, 0.9),
+                                zero_threshold = 50,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
   suppressMessages(data.table::setDTthreads(threads = 1))
@@ -211,7 +213,10 @@ estimate_infections <- function(reported_cases,
     stop("A call to delay_opts must be passed to delays")
   }
   # Make sure there are no missing dates and order cases
-  reported_cases <- create_clean_reported_cases(reported_cases, horizon)
+  reported_cases <- create_clean_reported_cases(
+    reported_cases, horizon,
+    zero_threshold = zero_threshold
+  )
 
   # Record earliest date with data
   start_date <- min(reported_cases$date, na.rm = TRUE)
@@ -235,9 +240,6 @@ estimate_infections <- function(reported_cases,
     horizon
   )
   reported_cases <- reported_cases[-(1:backcalc$prior_window)]
-
-  # Add week day info
-  reported_cases <- reported_cases[, day_of_week := lubridate::wday(date, week_start = 1)]
 
   # Define stan model parameters
   data <- create_stan_data(

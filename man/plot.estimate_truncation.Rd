@@ -15,7 +15,7 @@
 \code{ggplot2} object
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 \code{plot} method for class "estimate_truncation". Returns
 a plot faceted over each dataset used in fitting with the latest
 observations as columns, the data observed at the time (and so truncated)

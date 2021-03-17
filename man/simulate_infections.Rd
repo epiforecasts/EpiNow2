@@ -20,7 +20,8 @@ output = "fit", or the result of \code{estimate_infections} with \code{return_fi
 \item{R}{A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
 contained in \code{estimates}, except elements set to NA. If it is longer than the time series
 of reproduction numbers contained in \code{estimates}, the values going beyond the length of
-estimated reproduction numbers are taken as forecast.}
+estimated reproduction numbers are taken as forecast. Alternatively accepts a data.frame containing
+at least \code{date} and \code{value} (integer) variables and optionally \code{sample}.}
 
 \item{model}{A compiled stan model as returned by \code{rstan::stan_model}.}
 
@@ -35,7 +36,7 @@ simulations are done at once.}
 shown.}
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This function simulates infections using an existing fit to observed cases but with a modified
 time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
 Simulations can be run in parallel using \code{future::plan}.
@@ -71,6 +72,21 @@ est <- estimate_infections(reported_cases,
 # update Rt trajectory and simulate new infections using it
 R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
 sims <- simulate_infections(est, R)
+plot(sims)
+
+# with a data.frame input of samples
+R_dt <- data.frame(
+  date = summary(est, type = "parameters", param = "R")$date,
+  value = R
+)
+sims <- simulate_infections(est, R_dt)
+plot(sims)
+
+#' # with a data.frame input of samples
+R_samples <- summary(est, type = "samples", param = "R")
+R_samples <- R_samples[, .(date, sample, value)][sample <= 1000][date <= "2020-04-10"]
+R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
+sims <- simulate_infections(est, R_samples)
 plot(sims)
 }
 }

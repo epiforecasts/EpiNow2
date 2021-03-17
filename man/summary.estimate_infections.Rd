@@ -10,10 +10,11 @@
 \item{object}{A list of output as produced by "estimate_infections".}
 
 \item{type}{A character vector of data types to return. Defaults to "snapshot"
-but also supports "parameters". "snapshot" returns a summary at a given date
-(by default the latest date informed by data). "parameters" returns summarised
-parameter estimates that can be further filtered using \code{params} to show just the
-parameters of interest and date.}
+but also supports "parameters", and "samples". "snapshot" returns a summary at
+a given date (by default the latest date informed by data). "parameters" returns
+summarised parameter estimates that can be further filtered using \code{params} to
+show just the parameters of interest and date. "samples" similarly returns posterior
+samples.}
 
 \item{date}{A date in the form "yyyy-mm-dd" to inspect estimates for.}
 
@@ -25,7 +26,7 @@ parameters of interest and date.}
 Returns a data frame of summary output
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 \code{summary} method for class "estimate_infections".
 }
 \seealso{

@@ -30,7 +30,7 @@ all logging for \code{epinow} and nested functions, EpiNow2.epinow.estimate_infe
 Nothing
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 Sets up \code{futile.logger} logging, which is integrated into \code{EpiNow2}. See the
 documentation for \code{futile.logger} for full details. By default \code{EpiNow2} prints all logs at
 the "INFO" level and returns them to the console. Usage of logging is currently being explored

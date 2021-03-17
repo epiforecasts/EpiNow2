@@ -1,8 +1,9 @@
 // apply day of the week effect
 vector day_of_week_effect(vector reports, int[] day_of_week, vector effect) {
   int t = num_elements(reports);
+  int wl = num_elements(effect);
   // scale day of week effect
-  vector[7] scaled_effect = 7 * effect;
+  vector[wl] scaled_effect = wl * effect;
   vector[t] scaled_reports;
   for (s in 1:t) {
     // add reporting effects (adjust for simplex scale)
@@ -129,5 +130,3 @@ int[] report_rng(vector reports, real[] rep_phi, int model_type) {
   }
   return(sampled_reports);
 }
-
-

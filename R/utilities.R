@@ -331,6 +331,31 @@ update_list <- function(defaults = list(), optional = list()) {
   return(updated)
 }
 
+#' Adds a day of the week vector
+#'
+#' @param dates Vector of dates
+#' @param week_effect Numeric from 1 to 7 defaults to 7
+#'
+#' @return A numeric vector containing the period day of the week index
+#' @export
+#' @importFrom lubridate wday
+#' @examples
+#' dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
+#' # Add date based day of week
+#' add_day_of_week(dates, 7)
+#'
+#' # Add shorter week
+#' add_day_of_week(dates, 4)
+add_day_of_week <- function(dates, week_effect = 7) {
+  if (week_effect == 7) {
+    day_of_week <- lubridate::wday(dates, week_start = 1)
+  } else {
+    day_of_week <- as.numeric(dates - min(dates)) %% week_effect
+    day_of_week <- ifelse(day_of_week == 0, week_effect, day_of_week)
+  }
+  return(day_of_week)
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(
   c(

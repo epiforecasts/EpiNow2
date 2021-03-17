@@ -152,8 +152,7 @@ estimate_secondary <- function(reports,
     t = nrow(reports),
     obs = reports$secondary,
     primary = reports$primary,
-    burn_in = burn_in,
-    day_of_week = lubridate::wday(reports$date, week_start = 1)
+    burn_in = burn_in
   )
   # secondary model options
   data <- c(data, secondary)
@@ -163,7 +162,7 @@ estimate_secondary <- function(reports,
   # truncation data
   data <- c(data, truncation)
   # observation model data
-  data <- c(data, create_obs_model(obs))
+  data <- c(data, create_obs_model(obs, dates = reports$date))
 
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(
@@ -404,7 +403,7 @@ forecast_secondary <- function(estimate,
   data$primary <- t(
     matrix(primary_fit$value, ncol = length(unique(primary_fit$sample)))
   )
-  data$day_of_week <- lubridate::wday(unique(primary_fit$date), week_start = 1)
+  data$day_of_week <- add_day_of_week(unique(primary_fit$date), data$week_effect)
   data$n <- nrow(data$primary)
   data$t <- ncol(data$primary)
   data$h <- nrow(primary[sample == min(sample)])
