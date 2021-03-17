@@ -268,7 +268,7 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v1
       - name: Install system dependencies
         run: |
-          brew install udunits
+          brew install udunits gdal
         shell: bash
         
       - name: Query dependencies
