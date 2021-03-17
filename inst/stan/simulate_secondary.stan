@@ -32,7 +32,7 @@ generated quantities {
                            historic, primary_hist_additive,
                            current, primary_current_additive, t - h + 1);
     // weekly reporting effect
-    if (week_effect) {
+    if (week_effect > 1) {
       secondary = day_of_week_effect(secondary, day_of_week, to_vector(day_of_week_simplex[i]));
     }
     // simulate secondary reports

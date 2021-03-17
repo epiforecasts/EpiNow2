@@ -36,7 +36,7 @@ A \code{data.table} containing a \code{date} variable (date of report) and a \co
 a third variable \code{reference} which indicates what the date variable refers to.
 }
 \description{
-\ifelse{html}{\figure{lifecycle-soft-deprecated.svg}{options: alt='Soft-deprecated lifecycle'}}{\strong{Soft-deprecated}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
 Maps from cases by date of infection to date of report via date of
 onset.
 }

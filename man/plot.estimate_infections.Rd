@@ -20,7 +20,7 @@ to  "summary" with supported options being "infections", "reports", "R", "growth
 List of plots as produced by \code{report_plots}
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#maturing'><img src='figures/lifecycle-maturing.svg' alt='Maturing lifecycle'></a>}}{\strong{Maturing}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 \code{plot} method for class "estimate_infections".
 }
 \seealso{

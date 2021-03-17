@@ -19,7 +19,7 @@ parameters{
   // observation model
   real delay_mean[delays];               // mean of delays
   real<lower = 0> delay_sd[delays];      // sd of delays
-  simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect
+  simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   real<lower = 0> frac_obs[obs_scale];   // fraction of cases that are ultimately observed
   real truncation_mean[truncation];      // mean of truncation
   real truncation_sd[truncation];        // sd of truncation
@@ -34,7 +34,7 @@ transformed parameters {
                                   historic, primary_hist_additive,
                                   current, primary_current_additive, t);
  // weekly reporting effect
- if (week_effect) {
+ if (week_effect > 1) {
    secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
   }
  // truncate near time cases to observed reports

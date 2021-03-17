@@ -58,19 +58,21 @@
 #' R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
 #' sims <- simulate_infections(est, R)
 #' plot(sims)
-#' 
+#'
 #' # with a data.frame input of samples
-#' R_dt <- data.frame(date = summary(est, type = "parameters", param = "R")$date,
-#'                 value = R)
+#' R_dt <- data.frame(
+#'   date = summary(est, type = "parameters", param = "R")$date,
+#'   value = R
+#' )
 #' sims <- simulate_infections(est, R_dt)
-#' plot(sims) 
-#' 
+#' plot(sims)
+#'
 #' #' # with a data.frame input of samples
 #' R_samples <- summary(est, type = "samples", param = "R")
-#' R_samples <- R_samples[,.(date, sample, value)][sample <= 1000][date <= "2020-04-10"]
+#' R_samples <- R_samples[, .(date, sample, value)][sample <= 1000][date <= "2020-04-10"]
 #' R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
 #' sims <- simulate_infections(est, R_samples)
-#' plot(sims) 
+#' plot(sims)
 #' }
 simulate_infections <- function(estimates,
                                 R = NULL,
@@ -97,31 +99,32 @@ simulate_infections <- function(estimates,
   R_samples <- dim(draws$R)[1]
   if (is.null(samples)) {
     samples <- R_samples
-  } 
+  }
   # extract parameters from passed stanfit object
   shift <- estimates$args$seeding_time
-  
+
   # if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
-    if(any(class(R) %in% "data.frame")) {
+    if (any(class(R) %in% "data.frame")) {
       if (is.null(R$sample)) {
         R <- R$value
       }
     }
-    if(any(class(R) %in% "data.frame")) {
+    if (any(class(R) %in% "data.frame")) {
       R <- as.data.table(R)
       R <- R[, .(date, sample, value)]
       draws$R <- t(matrix(R$value, ncol = length(unique(R$sample))))
       # ignore samples and use data.frame max instead
       samples <- max(R$sample)
-    }else{
+    } else {
       R_mat <- matrix(rep(R, each = samples),
-                      ncol = length(R), byrow = FALSE)
+        ncol = length(R), byrow = FALSE
+      )
       draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
       draws$R <- matrix(draws$R, ncol = length(R))
     }
   }
-  
+
   # sample from posterior if samples != posterior
   posterior_sample <- dim(draws$obs_reports)[1]
   if (posterior_sample < samples) {
@@ -130,22 +133,24 @@ simulate_infections <- function(estimates,
     draws <- map(draws, ~ as.matrix(.[posterior_samples, ]))
     draws$R <- R_draws
   }
-   
+
   # redefine time if Rt != data$t
   time <- estimates$args$t
-  horizon <-  estimates$args$h
+  horizon <- estimates$args$h
   obs_time <- time - shift
-  
+
   if (obs_time != dim(draws$R)[2]) {
     horizon <- dim(draws$R)[2] - time + horizon + shift
     horizon <- ifelse(horizon < 0, 0, horizon)
     time <- dim(draws$R)[2] + shift
     obs_time <- time - shift
     starting_day <- estimates$args$day_of_week[1]
-    day_of_week <- ((starting_day + rep(0:6, ceiling((obs_time) / 7))) %% 7)
+    days <- max(estimates$args$day_of_week)
+    day_of_week <- (
+      (starting_day + rep(0:(days - 1), ceiling((obs_time) / days))) %% days)
     day_of_week <- day_of_week[1:(obs_time)]
-    day_of_week <- ifelse(day_of_week == 0, 7, day_of_week)
-    
+    day_of_week <- ifelse(day_of_week == 0, days, day_of_week)
+
     estimates$args$horizon <- horizon
     estimates$args$t <- time
     estimates$args$day_of_week <- day_of_week

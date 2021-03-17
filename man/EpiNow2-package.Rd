@@ -4,13 +4,16 @@
 \name{EpiNow2-package}
 \alias{EpiNow2}
 \alias{EpiNow2-package}
-\title{EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters}
+\title{EpiNow2: Estimate Real-Time Case Counts and Time-Varying
+    Epidemiological Parameters}
 \description{
-Estimates the time-varying reproduction number, rate of spread,
-             and doubling time using a range of open-source tools (Abbott et al. (2020) <doi:10.12688/wellcomeopenres.16006.1>),
-             and current best practices (Gostic et al. (2020) <doi:10.1101/2020.06.18.20134858>).
-             It aims to help users avoid some of the limitations of naive implementations in a framework
-             that is informed by community feedback and is under active development.
+Estimates the time-varying reproduction number,
+    rate of spread, and doubling time using a range of open-source tools
+    (Abbott et al. (2020) <doi:10.12688/wellcomeopenres.16006.1>), and
+    current best practices (Gostic et al. (2020)
+    <doi:10.1101/2020.06.18.20134858>).  It aims to help users avoid some
+    of the limitations of naive implementations in a framework that is
+    informed by community feedback and is under active development.
 }
 \seealso{
 Useful links:
@@ -45,6 +48,7 @@ Other contributors:
   \item Nikos Bosse [contributor]
   \item Paul Mee \email{paul.mee@lshtm.ac.uk} [contributor]
   \item Peter Ellis \email{peter.ellis2013nz@gmail.com} [contributor]
+  \item Pietro Monticone \email{pietro.monticone@edu.unito.it} [contributor]
 }
 
 }
