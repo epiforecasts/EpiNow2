@@ -314,7 +314,7 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          brew install udunits
+          brew install udunits gdal
         shell: bash
         
       - name: Query dependencies
