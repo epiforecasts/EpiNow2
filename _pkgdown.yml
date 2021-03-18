@@ -148,3 +148,4 @@ reference:
       - growth_to_R
       - R_to_growth
       - update_list
+      - add_day_of_week
