@@ -13,13 +13,10 @@ create_stan_data(
   generation_time,
   rt_prior,
   estimate_rt,
-  week_effect,
-  stationary,
-  fixed,
+  burn_in,
   break_no,
-  future_rt,
   gp,
-  family,
+  obs_model,
   delays
 )
 }
@@ -39,41 +36,23 @@ in date format.}
 standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
 generation time (assuming a gamma distribution).}
 
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormally distributed prior for
-Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
+\item{rt_prior}{A list contain the mean and standard deviation (sd) of the lognormal prior for Rt. By default this is assumed to be mean 1 with a standard deviation of 1 (note in model these will be mapped to
 log space). To infer infections and then calculate Rt using backcalculation set this to \code{list()}.}
 
 \item{estimate_rt}{Logical, should Rt be estimated.}
 
-\item{week_effect}{Logical, defaults TRUE. Should weekly reporting effects be estimated.}
-
-\item{stationary}{Logical, defaults to FALSE. Should Rt be estimated with a global mean. When estimating Rt
-this should substantially improve run times but will revert to the global average for real time and forecasted estimates.
-This setting is most appropriate when estimating historic Rt or when combined with breakpoints.}
-
-\item{fixed}{Logical, should the gaussian process be used for non-parametric
-change over time.}
+\item{burn_in}{Numeric, defaults to 0. The number of initial Rt estimates to discard. This argument is depreciated and will be
+removed from the package unless a clear user need is given.}
 
 \item{break_no}{Numeric, number of breakpoints}
 
-\item{future_rt}{A character string or integer. This argument indicates how to set future Rt values. Supported
-options are to project using the Rt model ("project"), to use the latest estimate based on partial data ("latest"),
-to use the latest estimate based on data that is over 50\% complete ("estimate"). If an integer is supplied then the Rt estimate
-from this many days into the future (or past if negative) past will be used forwards in time.}
+\item{gp}{A list of settings to override the package default Gaussian
+process settings. See the documentation for \code{gp_settings} for details of these
+settings and \code{gp_settings()} for the current defaults.}
 
-\item{gp}{List controlling the Gaussian process approximation if set to \code{list()} then \code{Rt} is assumed to be constant unless
-other settings introduce variation. If set must contain the \code{basis_prop} (number of basis functions based on scaling the time points)
-which defaults to 0.3 and must be between 0 and 1 (increasing this increases the accuracy of the approximation and the cost of
-additional compute. Must also contain the \code{boundary_scale} (multiplied by half the range of the input time series). Increasing this
-increases the accuracy of the approximation at the cost of additional compute.
-See here: https://arxiv.org/abs/2004.11408 for more information on setting these parameters.
-Must also contain the  \code{lengthscale_alpha} and \code{lengthscale_beta}. These tune the prior of the lengthscale. Principled
-values can be obtained using \code{tune_inv_gamma} which optimises based on the desired truncation (which should be based on the scale
-of the observed data). The default is tuned to have 98\% of the density of the distribution between 2 and 21 days. Finally the list must
-contain \code{alpha_sd} the standard deviation for the alpha parameter of the gaussian process. This defaults to 0.1.}
-
-\item{family}{A character string indicating the reporting model to use. Defaults to negative
-binomial ("negbin") with poisson ("poisson") also supported.}
+\item{obs_model}{A list of settings to override the package default observation
+model settings. See the documentation for \code{obs_model_settings} for details of these
+settings and \code{obs_model_settings()} for the current defaults.}
 
 \item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
 Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),

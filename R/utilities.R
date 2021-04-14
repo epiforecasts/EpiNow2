@@ -126,6 +126,25 @@ allocate_delays <- function(delay_var, no_delays) {
   return(array(out))
 }
 
+
+#' Allocate Empty Parameters to a List
+#'
+#' @param data A list of parameters
+#' @param params A character vector of parameters to allocate to
+#' empty if missing.
+#'
+#' @return A list of parameters some allocated to be empty
+#' @examples
+#' data <- list(x = 1, y = 2, z = 30)
+#' EpiNow2:::allocate_empty(data, params = c("x", "t"))
+allocate_empty <- function(data, params) {
+  for (param in params) {
+    if (!exists(param, data)) {
+      data[[param]] <- numeric(0)
+    }
+  }
+  return(data)
+}
 #' Match Input Output Arguments with Supported Options
 #'
 #' @param input_args A character vector of input arguments (can be partial).
@@ -333,7 +352,7 @@ clear_epinow2_cache <- function(){
 #' Expose internal package stan functions in R
 #'
 #' @description This function exposes internal stan functions in R from a user
-#' supplid list of target files. 
+#' supplied list of target files. 
 #' @param files A character vector indicating the target files
 #' @param target_dir A character string indicating the target directory for the file
 #' @param ... Additional arguments passed to `rstan::expose_stan_functions`.
@@ -358,6 +377,39 @@ expose_stan_fns <- function(files, target_dir, ...) {
   return(invisible(NULL))
 
 }
+
+
+
+#' Convert mean and sd to log mean for a log normal distribution
+#'
+#' @param mean Numeric, mean of a distribution
+#' @param sd Numeric, standard deviation of a distribution
+#'
+#' @return The log mean of a lognormal distribution
+#' @export
+#'
+#' @examples
+#' 
+#' convert_to_logmean(2, 1)
+convert_to_logmean <- function(mean, sd){
+  log(mean^2 / sqrt(sd^2 + mean^2))
+}
+
+#' Convert mean and sd to log standard deviation for a log normal distribution
+#'
+#' @param mean Numeric, mean of a distribution
+#' @param sd Numeric, standard deviation of a distribution
+#'
+#' @return The log standard deviation of a lognormal distribution
+#' @export
+#'
+#' @examples
+#' 
+#' convert_to_logsd(2, 1)
+convert_to_logsd <- function(mean, sd) {
+  sqrt(log(1 + (sd^2 / mean^2)))
+}
+
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(

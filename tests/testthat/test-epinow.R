@@ -11,6 +11,7 @@ futile.logger::flog.threshold("FATAL")
 df_non_zero <- function(df) {
   expect_true(nrow(df) > 0)
 }
+expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "timing")  
 
 test_that("epinow produces expected output when run with default settings", {
   skip_on_cran()
@@ -63,7 +64,6 @@ test_that("epinow runs without error when saving to disk", {
                                       target_folder = tempdir(),
                                       logs = NULL,
                                       )))
-
 })
 
 test_that("epinow can produce partial output as specified", {

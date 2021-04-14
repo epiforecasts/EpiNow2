@@ -8,8 +8,13 @@ create_stan_args(
   data = NULL,
   init = "random",
   samples = 1000,
+<<<<<<< HEAD
   stan_args = list(algorithm = "sampling", backend = "rstan", cache_model = TRUE, fit =
     NULL, model = NULL),
+=======
+  stan_args = list(),
+  method = "exact",
+>>>>>>> 376d9587455e8fb24bf674c6cddcd67171ada857
   verbose = FALSE
 )
 }

@@ -6,8 +6,7 @@
 #' results and interpreting them.
 #' @param output A character vector of optional output to return. Supported options are samples ("samples"), 
 #' plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if `target_folder` is not null
-#'  - set using "latest"), and the stan fit ("fit"). The default is to return samples and plots alongside summarised estimates
-#' and summary statistics. This argument uses partial matching so for example passing "sam" will lead to samples
+#'  - set using "latest"), and the stan fit ("fit"). The default is to return all options. This argument uses partial matching so for example passing "sam" will lead to samples
 #' being reported.
 #' @param return_output Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE 
 #' if no directory for saving is specified. 
@@ -37,39 +36,18 @@
 #' # estimate Rt and nowcast/forecast cases by date of infection
 #' out <- epinow(reported_cases = reported_cases, generation_time = generation_time,
 #'               delays = list(incubation_period, reporting_delay),
-#'               stan_args = list(cores = ifelse(interactive(), 4, 1),  
-#'               control = list(adapt_delta = 0.95)), verbose = interactive())
-#'               
+#'               stan_args = list(cores = ifelse(interactive(), 4, 1)))
 #' summary(out)             
 #' plot(out)
-#' # optional forecasting using EpiSoon plug-in
-#' if(requireNamespace("EpiSoon")){
-#'    if(requireNamespace("forecastHybrid")){
-#'    # report Rt along with forecasts
-#'    out <- epinow(reported_cases = reported_cases, samples = 200,
-#'                  generation_time = generation_time, 
-#'                  delays = list(incubation_period, reporting_delay),
-#'                  forecast_args = list(
-#'                      forecast_model = function(y, ...){
-#'                      EpiSoon::forecastHybrid_model(
-#'                           y = y[max(1, length(y) - 21):length(y)],
-#'                           model_params = list(models = "aefz", weights = "equal"),
-#'                           forecast_params = list(PI.combination = "mean"), ...)}
-#'                           ),
-#'                  stan_args = list(warmup = 200, cores = ifelse(interactive(), 4, 1)),
-#'                  verbose = interactive())
-#'     out
-#'    }
 #' }
-#' }
-#'
 epinow <- function(reported_cases, samples = 1000, horizon = 7, 
                    generation_time, delays = list(),
                    CrIs = c(0.2, 0.5, 0.9),
-                   return_output = FALSE, output = c("samples", "plots", "latest"), 
+                   return_output = FALSE, output = c("samples", "plots", 
+                                                     "latest", "fit", "timing"), 
                    target_folder = NULL, target_date, 
                    forecast_args = NULL, logs = tempdir(),
-                   id = "epinow", verbose = FALSE,
+                   id = "epinow", verbose = interactive(),
                    ...) {
  
   if (is.null(target_folder)) {
@@ -227,7 +205,7 @@ epinow <- function(reported_cases, samples = 1000, horizon = 7,
   if (output["timing"]) {
     out$timing <- round(as.numeric(end_time - start_time), 1)
     if (!is.null(target_folder)) {
-      saveRDS(timing, paste0(target_folder, "/runtime.rds"))
+      saveRDS(out$timing, paste0(target_folder, "/runtime.rds"))
     }
   }
   
