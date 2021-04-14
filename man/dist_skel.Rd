@@ -28,6 +28,7 @@ of this range are resampled.}
 A vector of samples or a probability distribution.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 This function acts as a skeleton for a truncated distribution defined by
 model type, maximum value and model parameters. It is designed to be used with the
 output from \code{get_dist}.
@@ -42,31 +43,40 @@ dist_skel(10, model = "exp", params = list(rate = 1))
 dist_skel(1:10, model = "exp", dist = TRUE, params = list(rate = 1))
 
 # probability density
-dist_skel(1:10, model = "exp", dist = TRUE, 
-          cum = FALSE, params = list(rate = 1))
+dist_skel(1:10,
+  model = "exp", dist = TRUE,
+  cum = FALSE, params = list(rate = 1)
+)
 
 ## Gamma model
 # sample
 dist_skel(10, model = "gamma", params = list(alpha = 1, beta = 2))
 
 # cumulative prob density
-dist_skel(0:10, model = "gamma", dist = TRUE,
-          params = list(alpha = 1, beta = 2))
+dist_skel(0:10,
+  model = "gamma", dist = TRUE,
+  params = list(alpha = 1, beta = 2)
+)
 
 # probability density
-dist_skel(0:10, model = "gamma", dist = TRUE, 
-          cum = FALSE, params = list(alpha = 2, beta = 2))
+dist_skel(0:10,
+  model = "gamma", dist = TRUE,
+  cum = FALSE, params = list(alpha = 2, beta = 2)
+)
 
 ## Log normal model
 # sample
 dist_skel(10, model = "lognorm", params = list(mean = log(5), sd = log(2)))
 
 # cumulative prob density
-dist_skel(0:10, model = "lognorm", dist = TRUE,
-          params = list(mean = log(5), sd = log(2)))
+dist_skel(0:10,
+  model = "lognorm", dist = TRUE,
+  params = list(mean = log(5), sd = log(2))
+)
 
 # probability density
-dist_skel(0:10, model = "lognorm", dist = TRUE, cum = FALSE,
-          params = list(mean = log(5), sd = log(2)))
-        
+dist_skel(0:10,
+  model = "lognorm", dist = TRUE, cum = FALSE,
+  params = list(mean = log(5), sd = log(2))
+)
 }

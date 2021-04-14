@@ -23,7 +23,7 @@ dist_fit(
 \item{chains}{Numeric, defaults to 2. Number of MCMC chains to use. More is better with the minimum being two.}
 
 \item{dist}{Character string, which distribution to fit. Defaults to exponential (\code{"exp"}) but
-gamma (\code{"gamma"}) and lognormal (\code{"lognorma"}) are also supported.}
+gamma (\code{"gamma"}) and lognormal (\code{"lognormal"}) are also supported.}
 
 \item{verbose}{Logical, defaults to FALSE. Should verbose progress messages be printed.}
 }
@@ -31,21 +31,29 @@ gamma (\code{"gamma"}) and lognormal (\code{"lognorma"}) are also supported.}
 A \code{stan} fit of an interval censored distribution
 }
 \description{
-Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Fits an integer adjusted exponential, gamma or lognormal distribution using
+\code{stan}.
 }
 \examples{
 \donttest{
 # integer adjusted exponential model
-dist_fit(rexp(1:100, 2), samples = 1000, dist = "exp", 
-         cores = ifelse(interactive(), 4, 1), verbose = TRUE)
+dist_fit(rexp(1:100, 2),
+  samples = 1000, dist = "exp",
+  cores = ifelse(interactive(), 4, 1), verbose = TRUE
+)
 
 
 # integer adjusted gamma model
-dist_fit(rgamma(1:100, 5, 5), samples = 1000, dist = "gamma", 
-         cores = ifelse(interactive(), 4, 1), verbose = TRUE)
+dist_fit(rgamma(1:100, 5, 5),
+  samples = 1000, dist = "gamma",
+  cores = ifelse(interactive(), 4, 1), verbose = TRUE
+)
 
 # integer adjusted lognormal model
-dist_fit(rlnorm(1:100, log(5), 0.2), samples = 1000, dist = "lognormal",
-         cores = ifelse(interactive(), 4, 1), verbose = TRUE)
+dist_fit(rlnorm(1:100, log(5), 0.2),
+  samples = 1000, dist = "lognormal",
+  cores = ifelse(interactive(), 4, 1), verbose = TRUE
+)
 }
 }

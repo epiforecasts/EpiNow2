@@ -34,7 +34,7 @@ transform ("identity"). Other options include log scaling ("log") and log base 1
 which can be used for percentage data.}
 
 \item{scale_fill}{Function to use for scaling the fill. Defaults to a custom \code{ggplot2::scale_fill_manual}, which
-expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Unsure".}
+expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Stable".}
 
 \item{region_col_ne}{Character string indicating the name of a column in the data returned by
 \code{rnaturalearth::ne_states()} that \code{data$region_code} corresponds to. Possibilities include
@@ -46,48 +46,66 @@ expects the possible values to be "Increasing", "Likely increasing", "Likely dec
 A \code{ggplot2} object containing a country map.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 This general purpose function can be used to generate a country map for a single variable. It has few defaults but
 the data supplied must contain a \code{region_code} variable for linking to mapping data. This function requires
-the installation of the \code{rnaturalearth} package.
+the installation of the \code{rnaturalearth} package. Status of this function is currently questioning as it is uncertain
+if it is in use. Future releases may depreciate it.
 }
 \examples{
 \donttest{
-if(requireNamespace("rnaturalearth") & requireNamespace("scales")){
-# Example 1
-# if you know the provnum_ne codes you can use them directly
-eg_data <- data.table::data.table(variable = c("Increasing", 
-                                               "Decreasing", 
-                                               "Unsure", 
-                                               "Likely decreasing",
-                                               "Likely increasing"),
-                                  region_code = c(5, 7, 6, 8, 9))
-# make variable a factor so the ordering is sensible
-eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
-                                                        "Unsure", "Likely increasing",
-                                                        "Increasing"))
+if (requireNamespace("rnaturalearth") & requireNamespace("scales")) {
+  # Example 1
+  # if you know the provnum_ne codes you can use them directly
+  eg_data <- data.table::data.table(
+    variable = c(
+      "Increasing",
+      "Decreasing",
+      "Stable",
+      "Likely decreasing",
+      "Likely increasing"
+    ),
+    region_code = c(5, 7, 6, 8, 9)
+  )
+  # make variable a factor so the ordering is sensible
+  eg_data$variable <- factor(eg_data$variable, levels = c(
+    "Decreasing", "Likely decreasing",
+    "Stable", "Likely increasing",
+    "Increasing"
+  ))
 
-country_map(data = eg_data, country = "Australia", variable = "variable")
+  country_map(data = eg_data, country = "Australia", variable = "variable")
 
 
-# Example 2
-# sometimes it will be more convenient to join your data by name than provnum_ne code:
-us_data <- data.table::data.table(variable = c("Increasing", 
-                                               "Decreasing", 
-                                               "Unsure", 
-                                               "Likely decreasing",
-                                               "Likely increasing"),
-                                  region_code = c("California",
-                                                  "Texas",
-                                                  "Florida",
-                                                  "Arizona",
-                                                  "New York"))
-# make variable a factor so the ordering is sensible in the legend
-us_data$variable <- factor(us_data$variable, levels = c("Decreasing", "Likely decreasing",
-                                                        "Unsure", "Likely increasing",
-                                                        "Increasing"))
+  # Example 2
+  # sometimes it will be more convenient to join your data by name than provnum_ne code:
+  us_data <- data.table::data.table(
+    variable = c(
+      "Increasing",
+      "Decreasing",
+      "Stable",
+      "Likely decreasing",
+      "Likely increasing"
+    ),
+    region_code = c(
+      "California",
+      "Texas",
+      "Florida",
+      "Arizona",
+      "New York"
+    )
+  )
+  # make variable a factor so the ordering is sensible in the legend
+  us_data$variable <- factor(us_data$variable, levels = c(
+    "Decreasing", "Likely decreasing",
+    "Stable", "Likely increasing",
+    "Increasing"
+  ))
 
-country_map(data = us_data, country = "United States of America",
-            variable = "variable", region_col_ne = "name")
+  country_map(
+    data = us_data, country = "United States of America",
+    variable = "variable", region_col_ne = "name"
+  )
 }
 }
 }

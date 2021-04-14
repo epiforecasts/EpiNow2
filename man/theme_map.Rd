@@ -31,7 +31,7 @@ transform ("identity"). Other options include log scaling ("log") and log base 1
 which can be used for percentage data.}
 
 \item{scale_fill}{Function to use for scaling the fill. Defaults to a custom \code{ggplot2::scale_fill_manual}, which
-expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Unsure".}
+expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Stable".}
 
 \item{breaks}{Breaks to use in legend. Defaults to \code{ggplot2::waiver}.}
 
@@ -41,5 +41,7 @@ expects the possible values to be "Increasing", "Likely increasing", "Likely dec
 A \code{ggplot2} object
 }
 \description{
-Custom Map Theme
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+Applies a custom map theme to be used with \code{global_map}, \code{country_map}, and other \code{ggplot2} maps. Status of
+this function is currently questioning as it is uncertain if it is in use. Future releases may depreciate it.
 }

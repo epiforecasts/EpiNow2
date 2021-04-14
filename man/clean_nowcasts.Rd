@@ -13,6 +13,7 @@ clean_nowcasts(date = NULL, nowcast_dir = ".")
 to the current directory.}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This function removes nowcasts in the format produced by \code{EpiNow2} from a target
 directory for the date supplied.
 }

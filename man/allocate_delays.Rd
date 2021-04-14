@@ -15,5 +15,6 @@ allocate_delays(delay_var, no_delays)
 A numeric array
 }
 \description{
-Allocate Delays into Required Stan Format
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Allocate delays for stan. Used in \code{delay_opts}.
 }

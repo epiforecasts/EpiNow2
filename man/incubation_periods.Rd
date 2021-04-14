@@ -11,7 +11,8 @@ A \code{data.table} of summarising the distribution
 incubation_periods
 }
 \description{
-Incubation period estimates. See
-here for details: https://github.com/epiforecasts/EpiNow2/blob/master/data-raw/incubation-period.R
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Incubation period estimates. See here for details:
+https://github.com/epiforecasts/EpiNow2/blob/master/data-raw/incubation-period.R
 }
 \keyword{datasets}

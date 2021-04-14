@@ -30,7 +30,7 @@ transform ("identity"). Other options include log scaling ("log") and log base 1
 which can be used for percentage data.}
 
 \item{scale_fill}{Function to use for scaling the fill. Defaults to a custom \code{ggplot2::scale_fill_manual}, which
-expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Unsure".}
+expects the possible values to be "Increasing", "Likely increasing", "Likely decreasing", "Decreasing" or "Stable".}
 
 \item{...}{Additional arguments passed to the \code{scale_fill} function}
 }
@@ -38,38 +38,48 @@ expects the possible values to be "Increasing", "Likely increasing", "Likely dec
 A \code{ggplot2} object containing a global map.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 This general purpose function can be used to generate a global map for a single variable. It has few defaults but
 the data supplied must contain a \code{country} variable for linking to mapping data. This function requires the
-installation of the \code{rnaturalearth} package.
+installation of the \code{rnaturalearth} package. Status of this function is currently questioning as it is uncertain
+if it is in use. Future releases may depreciate it.
 }
 \examples{
 \donttest{
-if(requireNamespace("rnaturalearth") & requireNamespace("scales")){
-# Example 1 - categorical data
-# If values are "Increasing", "Likely increasing" etc (see ?EpiNow2::theme_map), 
-# then the default fill scale works
-eg_data <- data.table::data.table(variable = c("Increasing", 
-                                               "Decreasing", 
-                                               "Unsure", 
-                                               "Likely decreasing",
-                                               "Likely increasing"),
-                                  country = c("France", 
-                                              "Germany", 
-                                              "United Kingdom", 
-                                              "Spain",
-                                              "Australia") )
-# make variable a factor so the ordering is sensible in the legend
-eg_data$variable <- factor(eg_data$variable, levels = c("Decreasing", "Likely decreasing",
-                                                        "Unsure", "Likely increasing",
-                                                        "Increasing"))
-global_map(eg_data, variable = "variable", variable_label = "Direction\nof change")
+if (requireNamespace("rnaturalearth") & requireNamespace("scales")) {
+  # Example 1 - categorical data
+  # If values are "Increasing", "Likely increasing" etc (see ?EpiNow2::theme_map),
+  # then the default fill scale works
+  eg_data <- data.table::data.table(
+    variable = c(
+      "Increasing",
+      "Decreasing",
+      "Stable",
+      "Likely decreasing",
+      "Likely increasing"
+    ),
+    country = c(
+      "France",
+      "Germany",
+      "United Kingdom",
+      "Spain",
+      "Australia"
+    )
+  )
+  # make variable a factor so the ordering is sensible in the legend
+  eg_data$variable <- factor(eg_data$variable, levels = c(
+    "Decreasing", "Likely decreasing",
+    "Stable", "Likely increasing",
+    "Increasing"
+  ))
+  global_map(eg_data, variable = "variable", variable_label = "Direction\nof change")
 
 
-# Example 2 - numeric data
-# numeric data requires scale_fill and a global viridis_palette specified
-eg_data$second_variable <- runif(nrow(eg_data))
-viridis_palette <- "A"
-global_map(eg_data, variable = "second_variable", scale_fill = scale_fill_viridis_c)
+  # Example 2 - numeric data
+  # numeric data requires scale_fill and a global viridis_palette specified
+  eg_data$second_variable <- runif(nrow(eg_data))
+  viridis_palette <- "A"
+  global_map(eg_data, variable = "second_variable", scale_fill = scale_fill_viridis_c)
 }
 }
 }

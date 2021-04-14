@@ -2,7 +2,7 @@
 % Please edit documentation in R/get.R
 \name{get_regions}
 \alias{get_regions}
-\title{Get Folders with Nowcast Results}
+\title{Get Folders with Results}
 \usage{
 get_regions(results_dir)
 }
@@ -14,5 +14,5 @@ are stored (as produced by \code{regional_rt_pipeline}).}
 A named character vector containing the results to plot.
 }
 \description{
-Get Folders with Nowcast Results
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 }

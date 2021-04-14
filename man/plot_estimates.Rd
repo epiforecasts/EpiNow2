@@ -33,37 +33,44 @@ on the maximum number of reported cases.}
 A \code{ggplot2} object
 }
 \description{
-Plot Estimates
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+Allows users to plot the output from \code{estimate_infections} easily. In future releases it
+may be depreciated in favour of increasing the functionality of the S3 plot methods.
 }
 \examples{
 \donttest{
 # define example cases
-cases <- EpiNow2::example_confirmed[1:40]
+cases <- example_confirmed[1:40]
 
 # set up example delays
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 
-                        
 # run model
-out <- EpiNow2::estimate_infections(cases, generation_time = generation_time,
-                                    delays = list(incubation_period, reporting_delay),
-                                    stan_args = list(cores = ifelse(interactive(), 4, 1)))
+out <- estimate_infections(cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay)
+)
 # plot infections
 plot_estimates(
   estimate = out$summarised[variable == "infections"],
   reported = cases,
-  ylab = "Cases", max_plot = 2) + ggplot2::facet_wrap(~type, scales = "free_y")
+  ylab = "Cases", max_plot = 2
+) + ggplot2::facet_wrap(~type, scales = "free_y")
 
 # plot reported cases estimated via Rt
-plot_estimates(estimate = out$summarised[variable == "reported_cases"],
-               reported = cases,
-               ylab = "Cases")
-               
+plot_estimates(
+  estimate = out$summarised[variable == "reported_cases"],
+  reported = cases,
+  ylab = "Cases"
+)
+
 # plot Rt estimates
-plot_estimates(estimate = out$summarised[variable == "R"],
-               ylab = "Effective Reproduction No.",
-               hline = 1)
+plot_estimates(
+  estimate = out$summarised[variable == "R"],
+  ylab = "Effective Reproduction No.",
+  hline = 1
+)
 }
 }

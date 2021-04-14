@@ -4,30 +4,17 @@
 \alias{create_initial_conditions}
 \title{Create Initial Conditions Generating Function}
 \usage{
-create_initial_conditions(data, delays, rt_prior, generation_time, mean_shift)
+create_initial_conditions(data)
 }
 \arguments{
 \item{data}{A list of data as produced by \code{create_stan_data.}}
-
-\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
-Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale). To use no delays set this to \code{list()}.}
-
-\item{rt_prior}{A list contain the mean and standard deviation (sd) of the gamma distributed prior for
-Rt. By default this is assumed to be mean 1 with a standard deviation of 1. To infer infections only using
-non-parametric backcalculation set this to \code{list()}.}
-
-\item{generation_time}{A list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-generation time (assuming a gamma distribution).}
-
-\item{mean_shift}{Numeric, mean delay shift}
 }
 \value{
 An initial condition generating function
 }
 \description{
-Create Initial Conditions Generating Function
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Uses the output of \code{create_stan_data} to create a function which can be used to
+sample from the prior distributions (or as close as possible) for parameters. Used
+in order to initialise each \code{stan} chain within a range of plausible values.
 }
