@@ -27,7 +27,7 @@ Numeric number of cores to use per worker. If greater than 1 pass to
 used then nothing is returned.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 A utility function that aims to streamline the set up
 of the required future backend with sensible defaults for most users of \code{regional_epinow}.
 More advanced users are recommended to setup their own \code{future} backend based on their

@@ -28,7 +28,7 @@ to assign errors to regions. Alter the default to run with error catching.}
 A stanfit object
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
 Fits a model to cumulative cases. This may be a useful approach to initialising
 a full model fit for certain data sets where the sampler gets stuck or cannot easily
 be initialised as fitting to cumulative cases changes the shape of the posterior

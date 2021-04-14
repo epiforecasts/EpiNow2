@@ -32,7 +32,7 @@ extracted from data}
 A list of dataframes each containing the posterior of a parameter
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Extracts a custom set of parameters from a stan object and adds stratification and
 dates where appropriate.
 }

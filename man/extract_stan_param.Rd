@@ -27,7 +27,7 @@ A \code{data.table} summarising parameter posteriors. Contains a following varia
 credible interval labels indicating the credible intervals present.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Extracts summarised parameter posteriors from a \code{stanfit} object using
 \code{rstan::summary} in a format consistent with other summary functions in
 \code{EpiNow2}.

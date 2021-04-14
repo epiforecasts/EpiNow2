@@ -17,7 +17,7 @@ get_incubation_period(disease, source, max_value = 15)
 A list defining a distribution
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Extracts a literature distribution from \code{incubation_periods}
 }
 \examples{

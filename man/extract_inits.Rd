@@ -21,7 +21,7 @@ object, defaulting to \code{NULL}.}
 A function that when called returns a set of initial conditions as a named list.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
 Extracts posterior samples to use to initialise a full model fit. This may be useful
 for certain data sets where the sampler gets stuck or cannot easily be initialised.
 In \code{estimate_infections()}, \code{epinow()} and \code{regional_epinow()} this option can be

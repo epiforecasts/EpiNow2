@@ -50,7 +50,7 @@ which approximates sampling or "median" would shift by the median of the distrib
 A dataframe containing three variables: \code{date}, \code{cases} and \code{reference}.
 }
 \description{
-\@description \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+\@description \ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
 Simulate cases from a single Rt trace, an initial number of cases, and a reporting model
 This functionality has largely been superseded by \code{simulate_infections} and will likely to replaced
 or updated to depend on \code{stan} code.

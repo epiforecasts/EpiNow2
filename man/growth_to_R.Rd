@@ -17,7 +17,7 @@ growth_to_R(r, gamma_mean, gamma_sd)
 Numeric vector of reproduction number estimates
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
 See \href{https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf}{here}
 for justification. Now handled internally by stan so may be removed in future updates if
 no user demand.

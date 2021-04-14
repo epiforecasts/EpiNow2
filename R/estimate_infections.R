@@ -29,7 +29,7 @@
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams create_clean_reported_cases
 #' @inheritParams calc_CrIs
-#' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT
+#' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist setDTthreads melt .N setDT getDTthreads
 #' @importFrom purrr transpose
 #' @importFrom lubridate days
 #' @importFrom purrr transpose
@@ -199,7 +199,12 @@ estimate_infections <- function(reported_cases,
                                 zero_threshold = 50,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
+  
+  dt_threads <- data.table::getDTthreads()
+  
   suppressMessages(data.table::setDTthreads(threads = 1))
+  
+  on.exit(expr = data.table::setDTthreads(dt_threads))
   # store dirty reported case data
   dirty_reported_cases <- data.table::copy(reported_cases)
 

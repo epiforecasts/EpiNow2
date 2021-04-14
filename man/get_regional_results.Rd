@@ -30,7 +30,7 @@ data for. Defaults to "latest" which finds the latest results available.}
 A list of estimates, forecasts and estimated cases by date of report.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 Summarises results across regions either from input or from disk. See the examples for
 details.
 }

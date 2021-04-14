@@ -43,7 +43,7 @@ of this range are resampled.}
 A data.table defining the distribution as used by \code{dist_skel}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
+\ifelse{html}{\figure{lifecycle-soft-deprecated.svg}{options: alt='Soft-deprecated lifecycle'}}{\strong{Soft-deprecated}}
 Generates a distribution definition when only parameter estimates
 are available for gamma distributed parameters. See \code{rgamma} for distribution information.
 }

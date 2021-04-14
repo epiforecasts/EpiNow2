@@ -33,7 +33,7 @@ on the maximum number of reported cases.}
 A \code{ggplot2} object
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
 Allows users to plot the output from \code{estimate_infections} easily. In future releases it
 may be depreciated in favour of increasing the functionality of the S3 plot methods.
 }

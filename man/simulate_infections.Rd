@@ -36,7 +36,7 @@ simulations are done at once.}
 shown.}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
 This function simulates infections using an existing fit to observed cases but with a modified
 time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
 Simulations can be run in parallel using \code{future::plan}.

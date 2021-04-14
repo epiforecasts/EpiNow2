@@ -20,7 +20,7 @@ A named list of options per region which can be passed to the \verb{_opt}
 accepting arguments of \code{regional_epinow}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
+\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#maturing'><img src='figures/lifecycle-maturing.svg' alt='Maturing lifecycle'></a>}}{\strong{Maturing}}
 Define a list of \verb{_opts} to pass to \code{regional_epinow} \verb{_opts} accepting arguments.
 This is useful when different settings are needed between regions within a single
 \code{regional_epinow} call. Using \code{opts_list} the defaults can be applied to all regions

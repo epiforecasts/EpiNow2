@@ -40,7 +40,7 @@ Defaults to \code{TRUE}.}
 A \code{data.table} of cases by date of onset
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
+\ifelse{html}{\figure{lifecycle-soft-deprecated.svg}{options: alt='Soft-deprecated lifecycle'}}{\strong{Soft-deprecated}}
 Convolves cases by a PMF function. This function will soon be removed or replaced with a
 more robust \code{stan} implementation.
 }
