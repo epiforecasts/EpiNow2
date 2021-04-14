@@ -4,7 +4,14 @@
 \alias{extract_parameter_samples}
 \title{Extract Parameter Samples from a Stan Model}
 \usage{
-extract_parameter_samples(stan_fit, data, reported_dates, reported_inf_dates)
+extract_parameter_samples(
+  stan_fit,
+  data,
+  reported_dates,
+  reported_inf_dates,
+  drop_length_1 = FALSE,
+  merge = FALSE
+)
 }
 \arguments{
 \item{stan_fit}{A fit Stan model as returned by \code{rstan:sampling}}
@@ -14,10 +21,18 @@ extract_parameter_samples(stan_fit, data, reported_dates, reported_inf_dates)
 \item{reported_dates}{A vector of dates to report estimates for.}
 
 \item{reported_inf_dates}{A vector of dates to report infection estimates for.}
+
+\item{drop_length_1}{Logical; whether the first dimension should be dropped if it
+is if length 1; this is necessary when processing simulation results}
+
+\item{merge}{if TRUE, merge samples and data so that parameters can be
+extracted from data}
 }
 \value{
 A list of dataframes each containing the posterior of a parameter
 }
 \description{
-Extract Parameter Samples from a Stan Model
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Extracts a custom set of parameters from a stan object and adds stratification and
+dates where appropriate.
 }

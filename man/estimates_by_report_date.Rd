@@ -18,11 +18,8 @@ estimates_by_report_date(
 
 \item{forecast}{A list of data frames as output by \code{forecast_infections}}
 
-\item{delays}{A list of delays (i.e incubation period/reporting delay) between infection and report.
-Each list entry must also be a list containing the mean, standard deviation of the mean (mean_sd),
-standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-that delay (assuming a lognormal distribution with all parameters excepting the max allowed value
-on the log scale). To use no delays set this to \code{list()}.}
+\item{delays}{A call to \code{delay_opts()} defining delay distributions and options. See the documentation of \code{delay_opts()}
+and the examples below for details.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
@@ -34,5 +31,9 @@ on the log scale). To use no delays set this to \code{list()}.}
 A list of samples and summarised estimates of estimated cases by date of report
 }
 \description{
-Estimate Cases by Report Date
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+Either extracts or converts reported cases from an input data table. For output from
+\code{estimate_infections} this is a simple filtering step but for output from \code{forecast_infection}
+this is currently an approximate convolution. This step is likely to be updated/deprecated
+in new releases as \code{forecast_infections} evolves to be based on \code{stan} functionality.
 }

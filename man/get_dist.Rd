@@ -4,7 +4,7 @@
 \alias{get_dist}
 \title{Get a Literature Distribution}
 \usage{
-get_dist(data, disease, source, max_value = 30)
+get_dist(data, disease, source, max_value = 15)
 }
 \arguments{
 \item{data}{A \code{data.table} in the format of \code{generation_times}.}
@@ -13,14 +13,16 @@ get_dist(data, disease, source, max_value = 30)
 
 \item{source}{A character string indicating the source of interest.}
 
-\item{max_value}{Numeric, the maximum value to allow. Defaults to 30 days.}
+\item{max_value}{Numeric, the maximum value to allow. Defaults to 15 days.}
 }
 \value{
 A list defining a distribution
 }
 \description{
-Get a Literature Distribution
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Search a data frame for a distribution and return it in the format expected
+by \code{delay_opts} and the \code{generation_time} argument of \code{epinow} and \code{estimate_infections}.
 }
 \examples{
-get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani") 
+get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani")
 }

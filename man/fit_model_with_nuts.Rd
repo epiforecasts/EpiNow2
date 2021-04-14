@@ -8,7 +8,7 @@ fit_model_with_nuts(
   args,
   future = FALSE,
   max_execution_time = Inf,
-  verbose = FALSE
+  id = "stan"
 )
 }
 \arguments{
@@ -16,14 +16,17 @@ fit_model_with_nuts(
 
 \item{future}{Logical, defaults to \code{FALSE}. Should \code{future} be used to run stan chains in parallel.}
 
-\item{max_execution_time}{Numeric, defaults to Inf. What is the maximum execution time per chain. Results will
-still be returned as long as at least 2 chains complete successfully within the timelimit.}
+\item{max_execution_time}{Numeric, defaults to Inf. What is the maximum execution time per chain in seconds.
+Results will still be returned as long as at least 2 chains complete successfully within the timelimit.}
 
-\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress information be returned.}
+\item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
+to assign errors to regions. Alter the default to run with error catching.}
 }
 \value{
 A stan model object
 }
 \description{
-Fit a Stan Model using the NUTs sampler
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
+Fits a stan model using \code{rstan::sampling}. Provides the optional ability to run chains using
+\code{future} with error catching, timeouts and merging of completed chains.
 }

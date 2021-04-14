@@ -43,21 +43,26 @@ of this range are resampled.}
 A data.table defining the distribution as used by \code{dist_skel}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
 Generates a distribution definition when only parameter estimates
 are available for gamma distributed parameters. See \code{rgamma} for distribution information.
 }
 \examples{
 # using estimated shape and scale
-def <- gamma_dist_def(shape = 5.807, shape_sd = 0.2,
-               scale = 0.9, scale_sd = 0.05,
-               max_value = 20, samples = 10)
+def <- gamma_dist_def(
+  shape = 5.807, shape_sd = 0.2,
+  scale = 0.9, scale_sd = 0.05,
+  max_value = 20, samples = 10
+)
 print(def)
 def$params[[1]]
 
 # using mean and sd
-def <- gamma_dist_def(mean = 3, mean_sd = 0.5,
-               sd = 3, sd_sd = 0.1,
-               max_value = 20, samples = 10)
+def <- gamma_dist_def(
+  mean = 3, mean_sd = 0.5,
+  sd = 3, sd_sd = 0.1,
+  max_value = 20, samples = 10
+)
 print(def)
 def$params[[1]]
 }

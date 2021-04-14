@@ -3,16 +3,19 @@ template:
   opengraph:
     image:
       src: man/figures/unnamed-chunk-13-1.png
-      alt: "Example estimates produced by EpiNow2 of reproduction number, cases by date of infection and cases by date of report"
+      alt: "Example estimates produced by EpiNow2 of the reproduction number, cases by date of infection and cases by date of report"
     twitter:
       creator: "@seabbs"
       site: "@cmmid_lshtm"
       card: summary_large_image
   params:
     bootswatch: lumen
+    docsearch:
+      api_key: 43da981922253a06c4dfab7b53f2410e
+      index_name: epinow2
 
 development:
-  mode: release
+  mode: auto
 
 authors:
   Sam Abbott:
@@ -33,19 +36,25 @@ navbar:
   right:
     - icon: fa-github
       href: https://github.com/epiforecasts/EpiNow2
-      
+
+figures:
+  fig.width: 9
+  fig.height: 9
+  
 reference:
   - title: Estimation + Reporting
     desc: Functions that faciliate end-to-end analysis including imputing cases by infection, estimating Rt and reporting results.
     contents:
       - contains("epinow")
   - title: Estimate Parameters
-    desc: Function to estimate time-varying parameters of interest.
+    desc: Function to estimate parameters of interest.
     contents:
       - estimate_infections
       - forecast_infections
-      - growth_to_R
-      - R_to_growth
+      - estimate_delay
+      - estimate_truncation
+      - estimate_secondary
+      - forecast_secondary
   - title: Internal epinow Functions
     desc: Functions used internally by epinow
     contents:
@@ -55,44 +64,52 @@ reference:
       - copy_results_to_latest
       - construct_output
   - title: Internal estimate_infections Functions
-    desc: Functions used internally by estimate_infections
+    desc: Functions used by estimate_infections
     contents:
+      - contains("_opts")
+      - opts_list
       - contains("create_")
       - allocate_delays
+      - allocate_empty
   - title: Model Fitting
     desc: Functions for model fitting
     contents:
       - contains("fit_")
+      - init_cumulative_fit
   - title: Summarise Across Regions
     desc: Functions used for summarising across regions (designed for use with regional_epinow)
     contents:
       - regional_summary
       - regional_runtimes
-  - title: Report results
-    desc: Functions to report results
-    contents:
-      - contains("report")
   - title: Summarise results
     desc: Functions from summarising results
     contents:
+      - contains("summary.")
       - contains("summarise")
       - contains("calc_")
       - contains("process_")
       - format_fit
       - make_conf
       - map_prob_change
+  - title: Plot Results
+    desc: Plot generated results
+    contents: 
+      - contains("plot")
+  - title: Report results
+    desc: Functions to report results
+    contents:
+      - report_cases
+      - report_plots
+      - report_summary  
   - title: Define, Fit and Parameterise Distributions
     desc: Functions to define, fit and parameterise distributions
     contents:
       - contains("dist")
       - tune_inv_gamma
-  - title: Plot Results
-    desc: Plot generated results
-    contents: 
-      - contains("plot")
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases
     contents:
+      - simulate_infections
       - simulate_cases
       - adjust_infection_to_report
   - title: Data
@@ -124,6 +141,11 @@ reference:
     desc: Utility functions
     contents:
       - match_output_arguments
-      - stop_timeout
       - run_region
-
+      - expose_stan_fns
+      - convert_to_logmean
+      - convert_to_logsd
+      - growth_to_R
+      - R_to_growth
+      - update_list
+      - add_day_of_week

@@ -40,47 +40,60 @@ Defaults to \code{TRUE}.}
 A \code{data.table} of cases by date of onset
 }
 \description{
-Approximate Sampling a Distribution using Counts
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
+Convolves cases by a PMF function. This function will soon be removed or replaced with a
+more robust \code{stan} implementation.
 }
 \examples{
-cases <- EpiNow2::example_confirmed
-cases <- cases[, cases := as.integer(confirm)] 
+cases <- example_confirmed
+cases <- cases[, cases := as.integer(confirm)]
 print(cases)
 
 # total cases
 sum(cases$cases)
 
 delay_fn <- function(n, dist, cum) {
-              if(dist) {
-                pgamma(n + 0.9999, 2, 1) - pgamma(n - 1e-5, 2, 1)
-               }else{
-                as.integer(rgamma(n, 2, 1))
-               }
-             }
+  if (dist) {
+    pgamma(n + 0.9999, 2, 1) - pgamma(n - 1e-5, 2, 1)
+  } else {
+    as.integer(rgamma(n, 2, 1))
+  }
+}
 
-onsets <- sample_approx_dist(cases = cases,
-                             dist_fn = delay_fn)
-   
+onsets <- sample_approx_dist(
+  cases = cases,
+  dist_fn = delay_fn
+)
+
 # estimated onset distribution
 print(onsets)
-  
+
 # check that sum is equal to reported cases
 total_onsets <- median(
-   purrr::map_dbl(1:100, 
-                  ~ sum(sample_approx_dist(cases = cases,
-                  dist_fn = delay_fn)$cases))) 
+  purrr::map_dbl(
+    1:100,
+    ~ sum(sample_approx_dist(
+      cases = cases,
+      dist_fn = delay_fn
+    )$cases)
+  )
+)
 total_onsets
- 
-                   
-# map from onset cases to reported                  
-reports <- sample_approx_dist(cases = cases,
-                              dist_fn = delay_fn,
-                              direction = "forwards")
-                              
-                              
-# map from onset cases to reported using a mean shift               
-reports <- sample_approx_dist(cases = cases,
-                              dist_fn = delay_fn,
-                              direction = "forwards",
-                              type = "median")
+
+
+# map from onset cases to reported
+reports <- sample_approx_dist(
+  cases = cases,
+  dist_fn = delay_fn,
+  direction = "forwards"
+)
+
+
+# map from onset cases to reported using a mean shift
+reports <- sample_approx_dist(
+  cases = cases,
+  dist_fn = delay_fn,
+  direction = "forwards",
+  type = "median"
+)
 }

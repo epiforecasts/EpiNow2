@@ -24,30 +24,40 @@ and r (rate of growth).}
 on the maximum number of reported cases.}
 }
 \value{
-A \code{ggplot2} object
+A named list of \code{ggplot2} objects, \code{list(infections, reports, R, growth_rate, summary)},
+which correspond to a summary combination (last item) and for the leading items
+@seealso \code{\link[=plot_estimates]{plot_estimates()}} of \code{summarised_estimates[variable == "infections"]},
+\code{summarised_estimates[variable == "reported_cases"]}, \code{summarised_estimates[variable == "R"]},
+and \code{summarised_estimates[variable == "growth_rate"]}, respectively.
 }
 \description{
-Report plots
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+Returns key summary plots for estimates. May be depreciated in later releases as current S3 methods
+are enhanced.
 }
 \examples{
 \donttest{
 # define example cases
-cases <- EpiNow2::example_confirmed[1:40]
+cases <- example_confirmed[1:40]
 
 # set up example delays
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
-                        
+reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+
 # run model
-out <- EpiNow2::estimate_infections(cases, samples = 100, 
-                                    generation_time = generation_time,
-                                    delays = list(incubation_period, reporting_delay),
-                                    stan_args = list(warmup = 100, cores = 4))
-                            
+out <- estimate_infections(cases,
+  samples = 100,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = NULL
+)
+
 # plot infections
-plots <- report_plots(summarised_estimates = out$summarised,
-                      reported = cases)
+plots <- report_plots(
+  summarised_estimates = out$summarised,
+  reported = cases
+)
 plots
 }
 }

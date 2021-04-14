@@ -31,5 +31,6 @@ construct_output(
 A list of output as returned by \code{epinow}
 }
 \description{
-Construct Output
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Combines the output produced internally by \code{epinow} into a single list.
 }

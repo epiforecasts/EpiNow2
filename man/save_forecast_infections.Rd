@@ -14,5 +14,9 @@ save_forecast_infections(forecast, target_folder = NULL, samples = TRUE)
 \item{samples}{Logical, defaults to TRUE. Should samples be saved}
 }
 \description{
-Save Forecast Infections
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+Saves the output from \code{forecast_infections} to a target directory.
+}
+\seealso{
+forecast_infections
 }

@@ -30,34 +30,42 @@ data for. Defaults to "latest" which finds the latest results available.}
 A list of estimates, forecasts and estimated cases by date of report.
 }
 \description{
-Get Combined Regional Results
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Summarises results across regions either from input or from disk. See the examples for
+details.
 }
 \examples{
 \donttest{
 # construct example distributions
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 
 # example case vector from EpiSoon
-cases <- EpiNow2::example_confirmed[1:30]
+cases <- example_confirmed[1:30]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
-  cases[, region := "realland"]))
-  
+  cases[, region := "realland"]
+))
+
+# save results to tmp folder
+dir <- file.path(tempdir(check = TRUE), "results")
 # run multiregion estimates
-regional_out <- regional_epinow(reported_cases = cases,
-                                samples = 100,
-                                generation_time = generation_time,
-                                delays = list(incubation_period, reporting_delay),
-                                stan_args = list(warmup = 100,
-                                                 cores = ifelse(interactive(), 4, 1)),
-                                output = c("regions"))
+regional_out <- regional_epinow(
+  reported_cases = cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(rw = 7), gp = NULL,
+  output = c("regions", "latest"),
+  target_folder = dir,
+  return_output = TRUE
+)
+# from output
+results <- get_regional_results(regional_out$regional, samples = FALSE)
+names(results)
 
-summary_only <- get_regional_results(regional_out$regional, forecast = FALSE, samples = FALSE)
-names(summary_only)
-
-all <- get_regional_results(regional_out$regional, forecast = TRUE)
-names(all)
+# from a folder
+folder_results <- get_regional_results(results_dir = dir, samples = FALSE)
+names(folder_results)
 }
 }

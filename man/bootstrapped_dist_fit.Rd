@@ -15,7 +15,7 @@ bootstrapped_dist_fit(
 )
 }
 \arguments{
-\item{values}{Numeric vector of integer values.}
+\item{values}{Integer vector of values.}
 
 \item{dist}{Character string, which distribution to fit. Defaults to lognormal (\code{"lognormal"}) but
 gamma (\code{"gamma"}) is also supported.}
@@ -37,14 +37,20 @@ allow (added to output but does impact fitting).}
 A list summarising the bootstrapped distribution
 }
 \description{
-Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Fits an integer adjusted distribution to a subsampled bootstrap of data and then integrates
+the posterior samples into a single set of summary statistics. Can be used to generate a robust
+reporting delay that accounts for the fact the underlying delay likely varies over time or that
+the size of the available reporting delay sample may not be representative of the current case load.
 }
 \examples{
 \donttest{
 # lognormal
 delays <- rlnorm(500, log(5), 1)
-out <- bootstrapped_dist_fit(delays, samples = 1000, bootstraps = 10, 
-                             dist = "lognormal")
+out <- bootstrapped_dist_fit(delays,
+  samples = 1000, bootstraps = 10,
+  dist = "lognormal"
+)
 out
 }
 }
