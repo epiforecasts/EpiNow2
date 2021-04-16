@@ -69,7 +69,7 @@
 #'
 #' #' # with a data.frame input of samples
 #' R_samples <- summary(est, type = "samples", param = "R")
-#' R_samples <- R_samples[, .(date, sample, value)][sample <= 1000][date <= "2020-04-10"]
+#' R_samples <- R_samples[, .(date, sample, value)][sample <= 1000][date <= "2020-04-18"]
 #' R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
 #' sims <- simulate_infections(est, R_samples)
 #' plot(sims)
@@ -100,6 +100,7 @@ simulate_infections <- function(estimates,
   if (is.null(samples)) {
     samples <- R_samples
   }
+  
   # extract parameters from passed stanfit object
   shift <- estimates$args$seeding_time
 
@@ -108,15 +109,24 @@ simulate_infections <- function(estimates,
     if (any(class(R) %in% "data.frame")) {
       if (is.null(R$sample)) {
         R <- R$value
+        if (dim(draws$R)[2] != length(R)) {
+          stop("The R provided does not have the same length as the original")
+        } 
+      } else {
+        R <- as.data.table(R)
+        R <- R[, .(date, sample, value)]
+        
+        if (dim(draws$R)[2] != length(R$value) / length(unique(R$sample))) {
+          stop("The R provided does not have the same dates as the original")
+        }
+        draws$R <- t(matrix(R$value, ncol = length(unique(R$sample))))
+        # ignore samples and use data.frame max instead
+        samples <- max(R$sample)
       }
-    }
-    if (any(class(R) %in% "data.frame")) {
-      R <- as.data.table(R)
-      R <- R[, .(date, sample, value)]
-      draws$R <- t(matrix(R$value, ncol = length(unique(R$sample))))
-      # ignore samples and use data.frame max instead
-      samples <- max(R$sample)
     } else {
+      if (dim(draws$R)[2] != length(R)) {
+        stop("The R provided does not have the same length as the original")
+      }
       R_mat <- matrix(rep(R, each = samples),
         ncol = length(R), byrow = FALSE
       )
