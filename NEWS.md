@@ -1,6 +1,6 @@
 # EpiNow2 1.3.3
 
-This release is underdevelopment and the features outlined below may change before release.
+This release is under development and the features outlined below may change before release.
 
 
 ## New features
