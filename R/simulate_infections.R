@@ -14,7 +14,7 @@
 #'  at least `date` and `value` (integer) variables and optionally `sample`.
 #' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
 #' samples in the `estimates` input.
-#' @param batch_size Numeric, defaults to 100. Size of batches in which to simulate. May decrease
+#' @param batch_size Numeric, defaults to 10. Size of batches in which to simulate. May decrease
 #' run times due to reduced IO costs but this is still being evaluated. If set to NULL then all
 #' simulations are done at once.
 #' @param verbose Logical defaults to `interactive()`. Should a progress bar (from `progressr`) be
