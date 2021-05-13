@@ -14,7 +14,7 @@ back calculation. Defaults to \code{backcalc_opts()}.}
 A list of settings defining the Gaussian process
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Takes the output of \code{backcalc_opts()} and converts it into a list understood by \code{stan}.
 }
 \examples{

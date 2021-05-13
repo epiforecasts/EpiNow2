@@ -21,6 +21,8 @@ This release is underdevelopment and the features outlined below may change befo
 ## Bug fixes
 
 * Fixed a bug in the deconvolution Rt estimation method where the mean of the generation time was being used as the standard deviation. For the default package generation time these are close and so the impact will be limited but in cases where the standard deviation is << than the mean this should result in more accurate Rt estimates. 
+* Fixed a bug where the number of threads used by the data.table package were set to one in the global environment. 
+Now the number of threads used by data.table are set to whatever the used specified on exit (@medewitt).
 
 # EpiNow2 1.3.2
 

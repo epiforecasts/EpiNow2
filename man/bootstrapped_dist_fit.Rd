@@ -37,7 +37,7 @@ allow (added to output but does impact fitting).}
 A list summarising the bootstrapped distribution
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Fits an integer adjusted distribution to a subsampled bootstrap of data and then integrates
 the posterior samples into a single set of summary statistics. Can be used to generate a robust
 reporting delay that accounts for the fact the underlying delay likely varies over time or that

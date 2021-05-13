@@ -26,7 +26,7 @@ to assign errors to regions. Alter the default to run with error catching.}
 A stan model object
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#maturing'><img src='figures/lifecycle-maturing.svg' alt='Maturing lifecycle'></a>}}{\strong{Maturing}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Fits a stan model using \code{rstan::sampling}. Provides the optional ability to run chains using
 \code{future} with error catching, timeouts and merging of completed chains.
 }
