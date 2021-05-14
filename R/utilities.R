@@ -376,7 +376,7 @@ add_day_of_week <- function(dates, week_effect = 7) {
 #' 
 #' }
 #' test_function()
-#' data.table::getDT
+#' data.table::getDTthreads()
 #' }
 #' @export
 #' 
