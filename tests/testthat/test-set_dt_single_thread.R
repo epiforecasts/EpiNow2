@@ -11,7 +11,7 @@ test_set_dt_threads <- function(){
   data.table::getDTthreads()
 }
 
-out <- list(function_threada = test_function(),
+out <- list(function_threads = test_function(),
             exit_threads = data.table::getDTthreads())
 
 return(out)
@@ -26,6 +26,10 @@ test_that("set_dt_single_thread returns correct number of threads after call", {
 })
 
 test_that("set_dt_single_thread uses only one thread during function", {
-  expect_equal(1L, test_set_dt_threads()$function_threada)
+  expect_equal(1L, test_set_dt_threads()$function_threads)
 })
+} else {
+  test_that("set_dt_single_thread uses only one thread during function", {
+    expect_equal(1L, test_set_dt_threads()$function_threads)
+  })
 }
