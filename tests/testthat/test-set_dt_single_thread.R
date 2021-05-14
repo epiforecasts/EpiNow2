@@ -17,7 +17,9 @@ out <- list(function_threads = test_function(),
 return(out)
 }
 
-if(parallel::detectCores()>=2){
+dt_recognised_threads <-data.table::getDTthreads()
+
+if(dt_recognised_threads>=2){
 data.table::setDTthreads(2)
 
 

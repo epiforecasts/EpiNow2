@@ -7,7 +7,7 @@
 set_dt_single_thread()
 }
 \value{
-an environment in the parent.frame named "dt_settings"
+an environment in the parent frame named "dt_settings"
 }
 \description{
 This function sets the threads used by data.table to 1 in the parent function
