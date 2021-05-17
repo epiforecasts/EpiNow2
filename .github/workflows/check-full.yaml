@@ -315,6 +315,7 @@ jobs:
 
       - name: Install system dependencies
         run: |
+          rm '/usr/local/bin/gfortran'
           brew install udunits gdal
         shell: bash
         
