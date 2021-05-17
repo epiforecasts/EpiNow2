@@ -295,7 +295,6 @@ clean_regions <- function(reported_cases, non_zero_points) {
 #' @param complete_logger Character string indicating the logger to output
 #' the completion of estimation to.
 #' @inheritParams regional_epinow
-#' @importFrom data.table setDTthreads
 #' @importFrom futile.logger flog.trace flog.warn
 #' @importFrom purrr quietly
 #' @seealso regional_epinow
@@ -323,7 +322,7 @@ run_region <- function(target_region,
   futile.logger::flog.info("Initialising estimates for: %s", target_region,
     name = "EpiNow2.epinow"
   )
-  data.table::setDTthreads(threads = 1)
+  set_dt_single_thread()
 
   if (!is.null(target_folder)) {
     target_folder <- file.path(target_folder, target_region)

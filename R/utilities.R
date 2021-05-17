@@ -356,6 +356,43 @@ add_day_of_week <- function(dates, week_effect = 7) {
   return(day_of_week)
 }
 
+#' Set to Single Threading
+#' 
+#' This function sets the threads used by data.table to 1 in the parent function
+#' and then restores the initial data.table threads when the function exits.
+#' This is primarily used as an internal function inside of other functions
+#' and will generally not be used on its own.
+#' 
+#' @importFrom data.table getDTthreads setDTthreads
+#' @keywords internal
+#' @return an environment in the parent frame named "dt_settings"
+#' @examples 
+#' \donttest{
+#' data.table::setDTthreads(2)
+#' test_function <- function(){
+#'   set_dt_single_thread()
+#'   
+#'   print(data.table::getDTthreads())
+#' 
+#' }
+#' test_function()
+#' data.table::getDTthreads()
+#' }
+#' @export
+
+set_dt_single_thread <- function() {
+  
+  a <- list2env(x = list(dt_previous_threads = data.table::getDTthreads()))
+  
+  assign(deparse(substitute(dt_settings)), a, envir = parent.frame())
+  
+  data.table::setDTthreads(1)
+  
+  do.call("on.exit", 
+          list(quote(data.table::setDTthreads(dt_settings$dt_previous_threads))), 
+          envir = parent.frame()) 
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
 globalVariables(
   c(

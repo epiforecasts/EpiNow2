@@ -51,6 +51,8 @@ discretised
 dist
 doi
 dplyr
+dt_settings
+data.table
 ECDC
 ecuyer
 edu
