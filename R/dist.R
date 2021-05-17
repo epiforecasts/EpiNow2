@@ -399,7 +399,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' @importFrom purrr transpose
 #' @importFrom future.apply future_lapply
 #' @importFrom rstan extract
-#' @importFrom data.table data.table rbindlist setDTthreads
+#' @importFrom data.table data.table rbindlist
 #' @export
 #' @examples
 #' \donttest{
@@ -430,7 +430,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
   values <- values[values >= 0]
 
   get_single_dist <- function(values, samples = 1) {
-    data.table::setDTthreads(1)
+    set_dt_single_thread()
 
     fit <- EpiNow2::dist_fit(values, samples = samples, dist = dist)
 
