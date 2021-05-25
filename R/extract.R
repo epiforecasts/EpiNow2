@@ -193,7 +193,7 @@ extract_stan_param <- function(fit, params = NULL,
   sym_CrIs <- c(0.5, 0.5 - CrIs / 2, 0.5 + CrIs / 2)
   sym_CrIs <- sym_CrIs[order(sym_CrIs)]
   CrIs <- round(100 * CrIs, 0)
-  CrIs <- c(paste0("lower_", CrIs), "median", paste0("upper_", CrIs))
+  CrIs <- c(paste0("lower_", rev(CrIs)), "median", paste0("upper_", CrIs))
   args <- list(object = fit, probs = sym_CrIs)
   if (!is.null(params)) {
     if (length(params) > 1) {
