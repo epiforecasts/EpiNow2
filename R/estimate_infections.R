@@ -52,7 +52,7 @@
 #'
 #' # default setting
 #' # here we assume that the observed data is truncated by the same delay as
-# ' def <- estimate_infections(reported_cases,
+#' def <- estimate_infections(reported_cases,
 #'   generation_time = generation_time,
 #'   delays = delay_opts(incubation_period, reporting_delay),
 #'   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
