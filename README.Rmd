@@ -41,6 +41,7 @@ A simple example of using the package to estimate a national Rt for Covid-19 can
 
 
 `EpiNow2` also supports adjustment for truncated data via `estimate_truncation()` and for estimating dependent observations (i.e deaths based on hospital admissions) using `estimate_secondary()`.
+
 ## Installation
 
 Install the stable version of the package:
