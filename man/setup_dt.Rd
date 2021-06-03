@@ -14,5 +14,7 @@ in date format.}
 A data table
 }
 \description{
-Convert to Data Table
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Convenience function that sets the number of \code{data.table} cores to 1 and
+maps input to be a \code{data.table}
 }

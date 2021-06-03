@@ -13,14 +13,14 @@ knitr::opts_chunk$set(
 
 # EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters 
 
-[![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions) [![Codecov test coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master) [![metacran downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) [![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions) [![Codecov test coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master) [![metacran downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
 
-[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)   [![GitHub contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](https://github.com/epiforecasts/EpiNow2/graphs/contributors)  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](http://makeapullrequest.com) [![GitHub commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.2.1.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/master/) [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211) 
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epiforecasts/EpiNow2/blob/master/LICENSE.md/)   [![GitHub contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](https://github.com/epiforecasts/EpiNow2/graphs/contributors)  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](https://makeapullrequest.com/) [![GitHub commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.3.2.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/master/) [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211) 
 
 
-This package estimates the time-varying reproduction number, rate of spread, and doubling time using a range of open-source tools ([Abbott et al.](https://doi.org/10.12688/wellcomeopenres.16006.1)), and current best practices ([Gostic et al.](https://doi.org/10.1101/2020.06.18.20134858)). It aims to help users avoid some of the limitations of naive implementations in a framework that is informed by community feedback and is under active development. 
+This package estimates the time-varying reproduction number, rate of spread, and doubling time using a range of open-source tools ([Abbott et al.](https://doi.org/10.12688/wellcomeopenres.16006.1)), and current best practices ([Gostic et al.](https://doi.org/10.1371/journal.pcbi.1008409)). It aims to help users avoid some of the limitations of naive implementations in a framework that is informed by community feedback and is under active development. 
 
-It estimates the time-varying reproduction number on cases by date of infection (using a similar approach to that implemented in the [`{EpiEstim}`](https://github.com/mrc-ide/EpiEstim)). Imputed infections are then mapped to observed data (for example cases by date of report) via a series of uncertain delay distributions (in the examples in the package documentation these are an incubation period and a reporting delay) and a reporting model that can include weekly periodicity. 
+It estimates the time-varying reproduction number on cases by date of infection (using a similar approach to that implemented in [`{EpiEstim}`](https://github.com/mrc-ide/EpiEstim)). Imputed infections are then mapped to observed data (for example cases by date of report) via a series of uncertain delay distributions (in the examples in the package documentation these are an incubation period and a reporting delay) and a reporting model that can include weekly periodicity. 
 
 Uncertainty is propagated from all inputs into the final parameter estimates, helping to mitigate spurious findings. This is handled internally. The time-varying reproduction estimates and the uncertain generation time also give time-varying estimates of the rate of growth.
 
@@ -31,11 +31,13 @@ The default model uses a non-stationary Gaussian process to estimate the time-va
 * A fixed reproduction number.
 * As piecewise constant by combining a fixed reproduction number with breakpoints.
 * As a random walk (by combining a fixed reproduction number with regularly spaced breakpoints (i.e weekly)).
-* Inferring infections using back-calculation and then calculating the time-varing reproduction number.
+* Inferring infections using back-calculation and then calculating the time-varying reproduction number.
 
 The documentation for [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) provides examples of the different options available. 
 
-Forecasting is also supported for the time-varying reproduction number, infections and reported cases. The time-varying reproduction number can be forecast forwards in time using an integration with the [`{EpiSoon}`](https://epiforecasts.io/EpiSoon/) package, and converted to a case forecast using the renewal equation. Alternatively, the time-varying reproduction number and cases can be forecast using a Gaussian process. 
+Forecasting is also supported for the time-varying reproduction number, infections and reported cases. The time-varying reproduction number can be forecast forwards in time using an integration with the [`{EpiSoon}`](https://epiforecasts.io/EpiSoon/) package, and converted to a case forecast using the renewal equation. Alternatively, the time-varying reproduction number and cases can be forecast using a Gaussian process.
+
+A simple example of using the package to estimate a national Rt for Covid-19 can be found [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867).
 
 ## Installation
 
@@ -79,11 +81,11 @@ library(EpiNow2)
 Distributions can either be fitted using package functionality or determined elsewhere and then defined with uncertainty for use in `{EpiNow2}`. When data is supplied a subsampled bootstrapped lognormal will be fit (to account for uncertainty in the observed data without being biased by changes in incidence). An arbitrary number of delay distributions are supported with the most common use case likely to be a incubation period followed by a reporting delay.
 
 ```{r}
-reporting_delay <- bootstrapped_dist_fit(rlnorm(1000, log(3), 1), max_value = 15,
-                                         bootstraps = 1)
+reporting_delay <- estimate_delay(rlnorm(1000, log(3), 1),
+                                  max_value = 15, bootstraps = 1)
 ```
 
-Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow/tree/master/data-raw) for the code that generates these estimates).
+Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/master/data-raw) for the code that generates these estimates).
 
 ```{r}
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
@@ -97,7 +99,7 @@ This function represents the core functionality of the package and includes resu
 Load example case data from `{EpiNow2}`. 
 
 ```{r}
-reported_cases <- example_confirmed[1:80]
+reported_cases <- example_confirmed[1:90]
 head(reported_cases)
 ```
 
@@ -106,29 +108,31 @@ Estimate cases by date of infection, the time-varying reproduction number, the r
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(reported_cases = reported_cases, 
                     generation_time = generation_time,
-                    delays = list(incubation_period, reporting_delay))
+                    delays = delay_opts(incubation_period, reporting_delay),
+                    rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
+                    stan = stan_opts(cores = 4))
 names(estimates)
 ```
 
-Both summary measures and posterior samples are returned for all parameters in an easily explored format. Summarised measures can be accessed using `summary` for ease.
-
-```{r}
-head(summary(estimates, type = "estimates"))
-```
-
-Reported cases are returned separately in order to ease reporting of forecasts and model evaluation.
-
-```{r}
-head(summary(estimates, type = "estimated_reported_cases"))
-```
-
-A summary table is returned for rapidly understanding the results and for reporting purposes.
+Both summary measures and posterior samples are returned for all parameters in an easily explored format which can be accessed using `summary`. The default is to return a summary table of estimates for key parameters at the latest date partially supported by data. 
 
 ```{r}
 knitr::kable(summary(estimates))
 ```
 
-A range of plots are returned (with the single summary plot shown below). These plots can also be generated using a `plot` method.
+Summarised parameter estimates can also easily be returned, either filtered for a single parameter or for all parameters.
+
+```{r}
+head(summary(estimates, type = "parameters", params = "R"))
+```
+
+Reported cases are returned in a separate data frame in order to streamline the reporting of forecasts and for model evaluation.
+
+```{r}
+head(summary(estimates, output = "estimated_reported_cases"))
+```
+
+A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
 
 ```{r, dpi = 330, fig.width = 12, fig.height = 12, message = FALSE, warning = FALSE}
 plot(estimates)
@@ -154,12 +158,14 @@ Calling `regional_epinow` runs the `epinow` on each region in turn (or in parall
 ```{r, message = FALSE, warning = FALSE}
 estimates <- regional_epinow(reported_cases = reported_cases, 
                              generation_time = generation_time,
-                             delays = list(incubation_period, reporting_delay))
+                             delays = delay_opts(incubation_period, reporting_delay),
+                             rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
+                             stan = stan_opts(cores = 4))
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = TRUE) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the `{future}` package for details on nested futures.
 
-Summary measures that are returned include a table formatted for reporting (along with raw results for further processing).
+Summary measures that are returned include a table formatted for reporting (along with raw results for further processing). Futures updated will extend the S3 methods used above to smooth access to this output.
 
 ```{r}
 knitr::kable(estimates$summary$summarised_results$table)

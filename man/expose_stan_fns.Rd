@@ -14,8 +14,10 @@ expose_stan_fns(files, target_dir, ...)
 \item{...}{Additional arguments passed to \code{rstan::expose_stan_functions}.}
 }
 \description{
-This function exposes internal stan functions in R from a user
-supplid list of target files.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+his function exposes internal stan functions in R from a user
+supplied list of target files. Allows for testing of stan functions in R and potentially
+user use in R code.
 }
 \examples{
 \donttest{

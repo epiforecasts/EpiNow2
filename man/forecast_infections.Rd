@@ -45,44 +45,49 @@ A list of \code{data.tables}. The first entry ("samples") contains raw forecast 
 summarised forecasts.
 }
 \description{
-This function provides optional tools for forecasting cases and Rt estimates using the timeseries methods
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+Provides optional tools for forecasting cases and Rt estimates using the timeseries methods
 (via the \code{EpiSoon} package). It requires the \code{Episoon} package. Installation instructions for the EpiSoon package are
 available \href{https://epiforecasts.io/EpiSoon/}{here}.
 }
 \examples{
 \donttest{
-if(requireNamespace("EpiSoon")){
-   if(requireNamespace("forecastHybrid")){
-# example case data
-reported_cases <- EpiNow2::example_confirmed[1:40]
- 
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- EpiNow2::bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 15)
+if (requireNamespace("EpiSoon")) {
+  if (requireNamespace("forecastHybrid")) {
+    # example case data
+    reported_cases <- example_confirmed[1:40]
 
-# estimate Rt and infections from data
-out <- estimate_infections(reported_cases, generation_time = generation_time,
-                           delays = list(incubation_period, reporting_delay),
-                           gp = list(), samples = 100,
-                           stan_args = list(cores = ifelse(interactive(), 4, 1), 
-                                            warmup = 100, chains = 4))
+    generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+    incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+    reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 15)
 
-# forecast Rt and infections from estimates
-forecast <- forecast_infections(
-    infections = out$summarised[variable == "infections"],
-    rts = out$summarised[variable == "R"],
-     gt_mean = out$summarised[variable == "gt_mean"]$mean,
-     gt_sd = out$summarised[variable == "gt_sd"]$mean,
-     gt_max = 30,
-     forecast_model = function(y, ...){
-       EpiSoon::forecastHybrid_model(y = y[max(1, length(y) - 21):length(y)],
-       model_params = list(models = "aefz", weights = "equal"),
-       forecast_params = list(PI.combination = "mean"), ...)},
-     horizon = 14, 
-     samples = 1000)
-                                
-forecast$summarised
+    # estimate Rt and infections from data
+    out <- estimate_infections(reported_cases,
+      generation_time = generation_time,
+      delays = delay_opts(incubation_period, reporting_delay),
+      rt = rt_opts(prior = list(mean = 2, sd = 0.1))
+    )
+
+    # forecast Rt and infections from estimates
+    forecast <- forecast_infections(
+      infections = out$summarised[variable == "infections"],
+      rts = out$summarised[variable == "R"],
+      gt_mean = out$summarised[variable == "gt_mean"]$mean,
+      gt_sd = out$summarised[variable == "gt_sd"]$mean,
+      gt_max = 30,
+      forecast_model = function(y, ...) {
+        EpiSoon::forecastHybrid_model(
+          y = y[max(1, length(y) - 21):length(y)],
+          model_params = list(models = "aefz", weights = "equal"),
+          forecast_params = list(PI.combination = "mean"), ...
+        )
+      },
+      horizon = 14,
+      samples = 1000
+    )
+
+    forecast$summarised
   }
- }
-}                              
+}
+}
 }

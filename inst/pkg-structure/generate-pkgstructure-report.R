@@ -6,6 +6,5 @@ report_path <- file.path("inst/pkg-structure", "EpiNow2_report.html")
 
 ## Generate pkg report
 report <- CreatePackageReport("EpiNow2",
-                              report_path = report_path)
-
-
+  report_path = report_path
+)

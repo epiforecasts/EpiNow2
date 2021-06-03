@@ -13,5 +13,6 @@ in date format.}
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 }
 \description{
-Save Observed Data
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Saves observed data to a target location if given.
 }

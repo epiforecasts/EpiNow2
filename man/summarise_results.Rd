@@ -30,5 +30,7 @@ for this date.}
 A list of summary data
 }
 \description{
-Summarise Real-time Results
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+Used internally by \code{regional_summary} to produce a summary table of results. May be streamlined in later
+releases.
 }

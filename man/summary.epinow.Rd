@@ -3,24 +3,29 @@
 \name{summary.epinow}
 \alias{summary.epinow}
 \alias{summary}
-\title{Summarised output from epinow}
+\title{Summary output from epinow}
 \usage{
-\method{summary}{epinow}(object, type = "summary", ...)
+\method{summary}{epinow}(object, output = "estimates", date = NULL, params = NULL, ...)
 }
 \arguments{
 \item{object}{A list of output as produced by "epinow".}
 
-\item{type}{A character vector of data types to return. Defaults to "summary"
-but also supports "estimates", "forecast", "estimated_reported_cases", and "all".}
+\item{output}{A character string of output to summarise. Defaults to "estimates"
+but also supports "forecast", and "estimated_reported_cases".}
 
-\item{...}{Pass additional summary arguments}
+\item{date}{A date in the form "yyyy-mm-dd" to inspect estimates for.}
+
+\item{params}{A character vector of parameters to filter for.}
+
+\item{...}{Pass additional summary arguments to lower level methods}
 }
 \value{
-Returns a list of summary output
+Returns a data frame of summary output
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 \code{summary} method for class "epinow".
 }
 \seealso{
-summary epinow report_summary
+summary.estimate_infections epinow
 }

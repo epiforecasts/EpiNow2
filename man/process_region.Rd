@@ -32,5 +32,10 @@ the completion of estimation to.}
 A list of processed output
 }
 \description{
-Process regional estimate
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
+Internal function that removes output that is not required, and returns logging
+information.
+}
+\seealso{
+regional_epinow
 }

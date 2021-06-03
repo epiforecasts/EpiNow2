@@ -7,17 +7,16 @@ vector reverse_pmf(vector pmf, int max_pmf) {
   return rev_pmf;
 }
 
-// convolve a pmf and case vector 
-vector convolve(vector cases, vector pmf) {
+// convolve a pdf and case vector
+vector convolve(vector cases, vector rev_pmf) {
     int t = num_elements(cases);
-    int max_pmf = num_elements(pmf);
-    vector[max_pmf] rev_pmf = reverse_pmf(pmf, max_pmf);
-    vector[t] convolved_cases = rep_vector(1e-5, t);
+    int max_pmf = num_elements(rev_pmf);
+    vector[t] conv_cases = rep_vector(1e-5, t);
     for (s in 1:t) {
-        convolved_cases[s] += dot_product(cases[max(1, (s - max_pmf + 1)):s],
-                                          tail(rev_pmf, min(max_pmf, s)));
+        conv_cases[s] += dot_product(cases[max(1, (s - max_pmf + 1)):s],
+                                     tail(rev_pmf, min(max_pmf, s)));
     }
-   return(convolved_cases);
+   return(conv_cases);
   }
 
 // convolve multiple pmfs
@@ -43,15 +42,16 @@ vector convolve_pmfs(real[,] delay_pmfs, int[] max_delay, int delays) {
   return(conv_pmf);
 }
 
+
 // convolve latent infections to reported (but still unobserved) cases
-vector convolve_to_report(vector infections, 
-                          real[] delay_mean, 
+vector convolve_to_report(vector infections,
+                          real[] delay_mean,
                           real[] delay_sd,
                           int[] max_delay,
                           int seeding_time) {
   int t = num_elements(infections);
-  vector[t - seeding_time] reports;
-  vector[t] unobserved_reports;
+  vector[t] unobs_reports;
+  vector[t - seeding_time] reports = infections[(seeding_time + 1):t];
   int delays = num_elements(delay_mean);
   if (delays) {
     real delay_pmfs[delays, max(max_delay)];
@@ -68,15 +68,13 @@ vector convolve_to_report(vector infections,
     }else{
       conv_pmf = convolve_pmfs(delay_pmfs, max_delay, delays);
     }
-    unobserved_reports = convolve(infections, conv_pmf);
-    reports = unobserved_reports[(seeding_time + 1):t];
-  }else{
-    reports = infections[(seeding_time + 1):t];
+    unobs_reports = convolve(infections, conv_pmf);
+    reports = unobs_reports[(seeding_time + 1):t];
   }
   return(reports);
 }
 
-void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd, 
+void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,
                real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd, int weight){
     int delays = num_elements(delay_mean);
     if (delays) {

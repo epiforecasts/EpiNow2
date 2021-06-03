@@ -19,5 +19,5 @@ get_raw_result(file, region, date, result_dir)
 An R object read in from the targeted .rds file
 }
 \description{
-Get a Single Raw Result
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 }

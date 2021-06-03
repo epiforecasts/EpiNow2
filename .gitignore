@@ -13,3 +13,4 @@ CRAN-RELEASE
 *.log
 test
 tests/testthat/test
+synthetic.rds

@@ -22,3 +22,7 @@
 ^logs$
 ^test$
 ^inst/dev$
+^codecov\.yml$
+^\.lintr$
+^\.pre-commit-config\.yaml$
+^CODE_OF_CONDUCT\.md$

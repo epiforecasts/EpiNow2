@@ -4,7 +4,12 @@
 \alias{report_summary}
 \title{Provide Summary Statistics for Estimated Infections and Rt}
 \usage{
-report_summary(summarised_estimates, rt_samples, target_folder = NULL)
+report_summary(
+  summarised_estimates,
+  rt_samples,
+  target_folder = NULL,
+  return_numeric = FALSE
+)
 }
 \arguments{
 \item{summarised_estimates}{A data.table of summarised estimates containing the following variables:
@@ -14,10 +19,14 @@ variable, median, bottom, and top. It should contain the following estimates: R,
 \item{rt_samples}{A data.table containing Rt samples with the following variables: sample and value.}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
+
+\item{return_numeric}{Should numeric summary information be returned.}
 }
 \value{
 A data.table containing formatted and numeric summary measures
 }
 \description{
-Provide Summary Statistics for Estimated Infections and Rt
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+Creates a snapshot summary of estimates. May be removed in later releases as S3 methods are
+enhanced.
 }
