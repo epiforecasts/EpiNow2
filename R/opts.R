@@ -248,6 +248,10 @@ gp_opts <- function(basis_prop = 0.2,
 #'  to map latent infections (convolved to date of report). If none empty a mean
 #'  (`mean`) and standard deviation (`sd`) needs to be supplied defining the normally
 #'  distributed scaling factor.
+#' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
+#'  included in the model
+#' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
+#'  be returned by the model.
 #' @return A list of observation model settings.
 #' @export
 #' @examples
@@ -263,13 +267,17 @@ obs_opts <- function(family = "negbin",
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
-                     scale = list()) {
+                     scale = list(),
+                     likelihood = TRUE,
+                     return_likelihood = FALSE) {
   obs <- list(
     family = match.arg(family, choices = c("poisson", "negbin")),
     weight = weight,
     week_effect = week_effect,
     week_length = week_length,
-    scale = scale
+    scale = scale,
+    likelihood = likelihood,
+    return_likelihood = return_likelihood
   )
 
   if (length(obs$scale) != 0) {

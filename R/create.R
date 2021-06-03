@@ -345,7 +345,9 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     model_type = ifelse(obs$family %in% "poisson", 0, 1),
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
-    obs_scale = ifelse(length(obs$scale) != 0, 1, 0)
+    obs_scale = ifelse(length(obs$scale) != 0, 1, 0),
+    likelihood = as.numeric(obs$likelihood),
+    return_likelihood = as.numeric(obs$return_likelihood)
   )
 
   data$day_of_week <- add_day_of_week(dates, data$week_effect)
