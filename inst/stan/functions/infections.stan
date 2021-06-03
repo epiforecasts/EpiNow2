@@ -81,7 +81,7 @@ vector deconvolve_infections(vector shifted_cases, vector noise, int fixed,
 // Update the log density for the generation time distribution mean and sd
 void generation_time_lp(real[] gt_mean, real gt_mean_mean, real gt_mean_sd,
                         real[] gt_sd, real gt_sd_mean, real gt_sd_sd, int weight) {
-    gt_mean ~ normal(gt_mean_mean, gt_mean_sd);
-    gt_sd ~ normal(gt_sd_mean, gt_sd_sd);
+    target += normal_lpdf(gt_mean[1] | gt_mean_mean, gt_mean_sd) * weight;
+    target += normal_lpdf(gt_sd[1] | gt_sd_mean, gt_sd_sd) * weight;
 }
 

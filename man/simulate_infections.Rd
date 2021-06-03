@@ -28,7 +28,7 @@ at least \code{date} and \code{value} (integer) variables and optionally \code{s
 \item{samples}{Numeric, number of posterior samples to simulate from. The default is to use all
 samples in the \code{estimates} input.}
 
-\item{batch_size}{Numeric, defaults to 100. Size of batches in which to simulate. May decrease
+\item{batch_size}{Numeric, defaults to 10. Size of batches in which to simulate. May decrease
 run times due to reduced IO costs but this is still being evaluated. If set to NULL then all
 simulations are done at once.}
 

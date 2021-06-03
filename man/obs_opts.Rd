@@ -9,7 +9,9 @@ obs_opts(
   weight = 1,
   week_effect = TRUE,
   week_length = 7,
-  scale = list()
+  scale = list(),
+  likelihood = TRUE,
+  return_likelihood = FALSE
 )
 }
 \arguments{
@@ -30,6 +32,12 @@ or if data has a non-weekly periodicity.}
 to map latent infections (convolved to date of report). If none empty a mean
 (\code{mean}) and standard deviation (\code{sd}) needs to be supplied defining the normally
 distributed scaling factor.}
+
+\item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be
+included in the model}
+
+\item{return_likelihood}{Logical, defaults to \code{FALSE}. Should the likelihood
+be returned by the model.}
 }
 \value{
 A list of observation model settings.

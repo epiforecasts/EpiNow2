@@ -10,6 +10,11 @@ This release is under development and the features outlined below may change bef
 * Exposed `zero_threshold` to users allowing for control over when zeros or NAs in count data are treated as true zeros versus as reporting errors that require some smoothing.
 * Added support for varying the length of the day of the week effect (see `obs_opts`). This allows, for example, fitting to data with cases only reported every 3 days. 
 
+## Model change
+
+* Added support for varying the length of the day of the week effect (see `obs_opts`). This allows, for example, fitting to data with cases only reported every 3 days. 
+* Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.
+
 ## Package changes
 
 * Added a `contributing.md` to guide contributors and added `pre-commit` support to check new contributions styling. 
