@@ -114,9 +114,9 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- list(
-  mean = convert_to_logmean(3, 1),
+  mean = convert_to_logmean(2, 1),
   mean_sd = 0.1,
-  sd = convert_to_logsd(3, 1),
+  sd = convert_to_logsd(2, 1),
   sd_sd = 0.1,
   max = 10
 )

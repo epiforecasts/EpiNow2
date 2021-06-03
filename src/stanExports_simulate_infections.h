@@ -502,9 +502,9 @@ delays_lp(const std::vector<T0__>& delay_mean,
             current_statement_begin__ = 101;
             for (int s = 1; s <= delays; ++s) {
                 current_statement_begin__ = 102;
-                lp_accum__.add(normal_log<propto__>(delay_mean, delay_mean_mean, delay_mean_sd));
+                lp_accum__.add((normal_log(get_base1(delay_mean, s, "delay_mean", 1), get_base1(delay_mean_mean, s, "delay_mean_mean", 1), get_base1(delay_mean_sd, s, "delay_mean_sd", 1)) * weight));
                 current_statement_begin__ = 103;
-                lp_accum__.add(normal_log<propto__>(delay_sd, delay_sd_mean, delay_sd_sd));
+                lp_accum__.add((normal_log(get_base1(delay_sd, s, "delay_sd", 1), get_base1(delay_sd_mean, s, "delay_sd_mean", 1), get_base1(delay_sd_sd, s, "delay_sd_sd", 1)) * weight));
             }
         }
         }
@@ -1440,9 +1440,9 @@ generation_time_lp(const std::vector<T0__>& gt_mean,
     int current_statement_begin__ = -1;
     try {
         current_statement_begin__ = 324;
-        lp_accum__.add(normal_log<propto__>(gt_mean, gt_mean_mean, gt_mean_sd));
+        lp_accum__.add((normal_log(get_base1(gt_mean, 1, "gt_mean", 1), gt_mean_mean, gt_mean_sd) * weight));
         current_statement_begin__ = 325;
-        lp_accum__.add(normal_log<propto__>(gt_sd, gt_sd_mean, gt_sd_sd));
+        lp_accum__.add((normal_log(get_base1(gt_sd, 1, "gt_sd", 1), gt_sd_mean, gt_sd_sd) * weight));
     } catch (const std::exception& e) {
         stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
         // Next line prevents compiler griping about no return
@@ -1800,7 +1800,7 @@ report_lp(const std::vector<int>& cases,
         current_statement_begin__ = 406;
         if (as_bool(logical_gt(sqrt_phi, 1e4))) {
             current_statement_begin__ = 407;
-            if (as_bool(logical_neq(weight, 1))) {
+            if (as_bool(logical_eq(weight, 1))) {
                 current_statement_begin__ = 408;
                 lp_accum__.add(poisson_log<propto__>(cases, reports));
             } else {
@@ -1809,7 +1809,7 @@ report_lp(const std::vector<int>& cases,
             }
         } else {
             current_statement_begin__ = 413;
-            if (as_bool(logical_neq(weight, 1))) {
+            if (as_bool(logical_eq(weight, 1))) {
                 current_statement_begin__ = 414;
                 lp_accum__.add(neg_binomial_2_log<propto__>(cases, reports, sqrt_phi));
             } else {

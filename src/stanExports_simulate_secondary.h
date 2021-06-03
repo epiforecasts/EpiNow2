@@ -490,9 +490,9 @@ delays_lp(const std::vector<T0__>& delay_mean,
             current_statement_begin__ = 101;
             for (int s = 1; s <= delays; ++s) {
                 current_statement_begin__ = 102;
-                lp_accum__.add(normal_log<propto__>(delay_mean, delay_mean_mean, delay_mean_sd));
+                lp_accum__.add((normal_log(get_base1(delay_mean, s, "delay_mean", 1), get_base1(delay_mean_mean, s, "delay_mean_mean", 1), get_base1(delay_mean_sd, s, "delay_mean_sd", 1)) * weight));
                 current_statement_begin__ = 103;
-                lp_accum__.add(normal_log<propto__>(delay_sd, delay_sd_mean, delay_sd_sd));
+                lp_accum__.add((normal_log(get_base1(delay_sd, s, "delay_sd", 1), get_base1(delay_sd_mean, s, "delay_sd_mean", 1), get_base1(delay_sd_sd, s, "delay_sd_sd", 1)) * weight));
             }
         }
         }
@@ -853,7 +853,7 @@ report_lp(const std::vector<int>& cases,
         current_statement_begin__ = 185;
         if (as_bool(logical_gt(sqrt_phi, 1e4))) {
             current_statement_begin__ = 186;
-            if (as_bool(logical_neq(weight, 1))) {
+            if (as_bool(logical_eq(weight, 1))) {
                 current_statement_begin__ = 187;
                 lp_accum__.add(poisson_log<propto__>(cases, reports));
             } else {
@@ -862,7 +862,7 @@ report_lp(const std::vector<int>& cases,
             }
         } else {
             current_statement_begin__ = 192;
-            if (as_bool(logical_neq(weight, 1))) {
+            if (as_bool(logical_eq(weight, 1))) {
                 current_statement_begin__ = 193;
                 lp_accum__.add(neg_binomial_2_log<propto__>(cases, reports, sqrt_phi));
             } else {

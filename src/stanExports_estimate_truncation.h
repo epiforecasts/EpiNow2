@@ -41,7 +41,7 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(55, 0, "start", "functions/observation_model.stan");
     reader.add_event(190, 135, "end", "functions/observation_model.stan");
     reader.add_event(190, 3, "restart", "model_estimate_truncation");
-    reader.add_event(245, 56, "end", "model_estimate_truncation");
+    reader.add_event(246, 57, "end", "model_estimate_truncation");
     return reader;
 }
 template <typename T1__, typename T2__>
@@ -634,7 +634,7 @@ report_lp(const std::vector<int>& cases,
         current_statement_begin__ = 134;
         if (as_bool(logical_gt(sqrt_phi, 1e4))) {
             current_statement_begin__ = 135;
-            if (as_bool(logical_neq(weight, 1))) {
+            if (as_bool(logical_eq(weight, 1))) {
                 current_statement_begin__ = 136;
                 lp_accum__.add(poisson_log<propto__>(cases, reports));
             } else {
@@ -643,7 +643,7 @@ report_lp(const std::vector<int>& cases,
             }
         } else {
             current_statement_begin__ = 141;
-            if (as_bool(logical_neq(weight, 1))) {
+            if (as_bool(logical_eq(weight, 1))) {
                 current_statement_begin__ = 142;
                 lp_accum__.add(neg_binomial_2_log<propto__>(cases, reports, sqrt_phi));
             } else {
@@ -1102,27 +1102,27 @@ public:
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error initializing variable sqrt_phi: ") + msg__.str()), current_statement_begin__, prog_reader__());
             }
             // model body
-            current_statement_begin__ = 221;
-            lp_accum__.add(normal_log<propto__>(logmean, 0, 1));
             current_statement_begin__ = 222;
+            lp_accum__.add(normal_log<propto__>(logmean, 0, 1));
+            current_statement_begin__ = 223;
             lp_accum__.add(normal_log<propto__>(get_base1(logsd, 1, "logsd", 1), 0, 1));
             if (get_base1(logsd, 1, "logsd", 1) < 0) lp_accum__.add(-std::numeric_limits<double>::infinity());
             else lp_accum__.add(-normal_ccdf_log(0, 0, 1));
-            current_statement_begin__ = 223;
+            current_statement_begin__ = 224;
             lp_accum__.add(normal_log<propto__>(phi, 0, 1));
             if (phi < 0) lp_accum__.add(-std::numeric_limits<double>::infinity());
             else lp_accum__.add(-normal_ccdf_log(0, 0, 1));
-            current_statement_begin__ = 225;
+            current_statement_begin__ = 226;
             for (int i = 1; i <= (obs_sets - 1); ++i) {
                 {
-                current_statement_begin__ = 226;
+                current_statement_begin__ = 227;
                 int start_t(0);
                 (void) start_t;  // dummy to suppress unused var warning
                 stan::math::fill(start_t, std::numeric_limits<int>::min());
                 stan::math::assign(start_t,((t - get_base1(obs_dist, i, "obs_dist", 1)) - get_base1(trunc_max, 1, "trunc_max", 1)));
-                current_statement_begin__ = 227;
+                current_statement_begin__ = 228;
                 for (int j = 1; j <= get_base1(trunc_max, 1, "trunc_max", 1); ++j) {
-                    current_statement_begin__ = 228;
+                    current_statement_begin__ = 229;
                     lp_accum__.add(neg_binomial_2_log<propto__>(get_base1(get_base1(obs, (start_t + j), "obs", 1), i, "obs", 2), get_base1(trunc_obs, j, i, "trunc_obs", 1), sqrt_phi));
                 }
                 }
@@ -1283,42 +1283,42 @@ public:
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 233;
+            current_statement_begin__ = 234;
             validate_non_negative_index("recon_obs", "get_base1(trunc_max, 1, \"trunc_max\", 1)", get_base1(trunc_max, 1, "trunc_max", 1));
             validate_non_negative_index("recon_obs", "obs_sets", obs_sets);
             Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> recon_obs(get_base1(trunc_max, 1, "trunc_max", 1), obs_sets);
             stan::math::initialize(recon_obs, DUMMY_VAR__);
             stan::math::fill(recon_obs, DUMMY_VAR__);
-            current_statement_begin__ = 234;
+            current_statement_begin__ = 235;
             validate_non_negative_index("cmf", "get_base1(trunc_max, 1, \"trunc_max\", 1)", get_base1(trunc_max, 1, "trunc_max", 1));
             Eigen::Matrix<double, Eigen::Dynamic, 1> cmf(get_base1(trunc_max, 1, "trunc_max", 1));
             stan::math::initialize(cmf, DUMMY_VAR__);
             stan::math::fill(cmf, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 236;
+            current_statement_begin__ = 237;
             for (int i = 1; i <= obs_sets; ++i) {
                 {
-                current_statement_begin__ = 237;
+                current_statement_begin__ = 238;
                 int end_t(0);
                 (void) end_t;  // dummy to suppress unused var warning
                 stan::math::fill(end_t, std::numeric_limits<int>::min());
                 stan::math::assign(end_t,(t - get_base1(obs_dist, i, "obs_dist", 1)));
-                current_statement_begin__ = 238;
+                current_statement_begin__ = 239;
                 int start_t(0);
                 (void) start_t;  // dummy to suppress unused var warning
                 stan::math::fill(start_t, std::numeric_limits<int>::min());
                 stan::math::assign(start_t,((end_t - get_base1(trunc_max, 1, "trunc_max", 1)) + 1));
-                current_statement_begin__ = 239;
+                current_statement_begin__ = 240;
                 stan::model::assign(recon_obs, 
                             stan::model::cons_list(stan::model::index_omni(), stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list())), 
                             truncate(to_vector(stan::model::rvalue(obs, stan::model::cons_list(stan::model::index_min_max(start_t, end_t), stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list())), "obs")), logmean, logsd, trunc_max, 1, pstream__), 
                             "assigning variable recon_obs");
                 }
             }
-            current_statement_begin__ = 242;
+            current_statement_begin__ = 243;
             stan::math::assign(cmf, truncation_cmf(get_base1(logmean, 1, "logmean", 1), get_base1(logsd, 1, "logsd", 1), get_base1(trunc_max, 1, "trunc_max", 1), pstream__));
             // validate, write generated quantities
-            current_statement_begin__ = 233;
+            current_statement_begin__ = 234;
             size_t recon_obs_j_2_max__ = obs_sets;
             size_t recon_obs_j_1_max__ = get_base1(trunc_max, 1, "trunc_max", 1);
             for (size_t j_2__ = 0; j_2__ < recon_obs_j_2_max__; ++j_2__) {
@@ -1326,7 +1326,7 @@ public:
                     vars__.push_back(recon_obs(j_1__, j_2__));
                 }
             }
-            current_statement_begin__ = 234;
+            current_statement_begin__ = 235;
             size_t cmf_j_1_max__ = get_base1(trunc_max, 1, "trunc_max", 1);
             for (size_t j_1__ = 0; j_1__ < cmf_j_1_max__; ++j_1__) {
                 vars__.push_back(cmf(j_1__));

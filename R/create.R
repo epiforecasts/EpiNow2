@@ -57,7 +57,7 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
 #' This functions creates a data frame of reported cases that has been smoothed using
 #' a centred partial rolling average (with a period set by `smoothing_window`) and shifted back in time
 #' by some delay. It is used by `estimate_infections` to generate the mean shifted prior
-#' on which the back calculation method (see `backcalc_opts`) is based.
+#' on which the back calculation method (see `backcalc_opts()`) is based.
 #' @param smoothing_window Numeric, the rolling average smoothing window
 #' to apply. Must be odd in order to be defined as a centred average.
 #' @param shift Numeric, mean delay shift to apply.
