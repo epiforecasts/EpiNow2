@@ -17,7 +17,9 @@ plot.png
 inst/include/*.o
 src/*.o
 src/*.cc
+src/*.cpp
 src/*.dll
+src/*.h
 *.so
 
 # docs
