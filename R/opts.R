@@ -249,6 +249,10 @@ gp_opts <- function(basis_prop = 0.2,
 #'  to map latent infections (convolved to date of report). If none empty a mean
 #'  (`mean`) and standard deviation (`sd`) needs to be supplied defining the normally
 #'  distributed scaling factor.
+#' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
+#'  included in the model
+#' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
+#'  be returned by the model.
 #' @return A list of observation model settings.
 #' @export
 #' @examples
@@ -264,13 +268,17 @@ obs_opts <- function(family = "negbin",
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
-                     scale = list()) {
+                     scale = list(),
+                     likelihood = TRUE,
+                     return_likelihood = FALSE) {
   obs <- list(
     family = match.arg(family, choices = c("poisson", "negbin")),
     weight = weight,
     week_effect = week_effect,
     week_length = week_length,
-    scale = scale
+    scale = scale,
+    likelihood = likelihood,
+    return_likelihood = return_likelihood
   )
 
   if (length(obs$scale) != 0) {
@@ -296,7 +304,7 @@ obs_opts <- function(family = "negbin",
 #' When using multiple chains iterations per chain is samples / chains.
 #' @param chains Numeric, defaults to 4. Number of MCMC chains to use.
 #' @param control List, defaults to empty. control parameters to pass to underlying
-#' `rstan` function. By default `adapt_delta = 0.98` and `max_treedepth = 15`
+#' `rstan` function. By default `adapt_delta = 0.95` and `max_treedepth = 15`
 #' though these settings can be overwritten.
 #' @param save_warmup Logical, defaults to FALSE. Should warmup progress be saved.
 #' @param seed Numeric, defaults uniform random number between 1 and 1e8. Seed of
@@ -332,7 +340,7 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
     future = future,
     max_execution_time = max_execution_time
   )
-  control_def <- list(adapt_delta = 0.98, max_treedepth = 15)
+  control_def <- list(adapt_delta = 0.95, max_treedepth = 15)
   opts$control <- update_list(control_def, control)
   opts$iter <- ceiling(samples / opts$chains) + opts$warmup
   opts <- c(opts, ...)
@@ -371,7 +379,7 @@ rstan_vb_opts <- function(samples = 2000,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the arguments passed to underlying `rstan`
-#' functions via `rstan_sampling_opts` and `rstan_vb_opts`.Custom settings can be supplied
+#' functions via `rstan_sampling_opts()` and `rstan_vb_opts()`.Custom settings can be supplied
 #'  which override the defaults.
 #' @param object Stan model object. By default uses the compiled package default.
 #' @param method A character string, defaulting to sampling. Currently supports
@@ -410,7 +418,7 @@ rstan_opts <- function(object = NULL,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the arguments passed to underlying stan
-#' backend functions via `rstan_sampling_opts` and `rstan_vb_opts`. Custom settings
+#' backend functions via `rstan_sampling_opts()` and `rstan_vb_opts()`. Custom settings
 #' can be supplied which override the defaults.
 #' @param backend Character string indicating the backend to use for fitting stan models.
 #' Currently only "rstan" is supported.
@@ -459,12 +467,12 @@ stan_opts <- function(samples = 2000,
 #' Return an _opts List per Region
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' Define a list of `_opts` to pass to `regional_epinow` `_opts` accepting arguments.
+#' Define a list of `_opts()` to pass to `regional_epinow` `_opts()` accepting arguments.
 #' This is useful when different settings are needed between regions within a single
 #' `regional_epinow` call. Using `opts_list` the defaults can be applied to all regions
 #' present with an override passed to regions as necessary (either within `opts_list` or
 #' externally).
-#' @param opts An `_opts` function call such as `rt_opts()`
+#' @param opts An `_opts()` function call such as `rt_opts()`
 #' @param reported_cases A data frame containing a `region` variable
 #' indicating the target regions
 #' @param ... Optional override for region defaults. See the examples
@@ -504,8 +512,8 @@ opts_list <- function(opts, reported_cases, ...) {
 #' @description `r lifecycle::badge("maturing")`
 #' A helper function that allows the selection of region specific settings if
 #' present and otherwise applies the overarching settings
-#' @param opts Either a list of calls to an `_opts` function or a single
-#' call to an `_opts` function.
+#' @param opts Either a list of calls to an `_opts()` function or a single
+#' call to an `_opts()` function.
 #' @param region A character string indicating a region of interest.
 #' @return A list of options
 #' @examples

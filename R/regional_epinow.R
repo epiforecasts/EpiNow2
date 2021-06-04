@@ -5,9 +5,9 @@
 #' cleaning such as removing regions with fewer than `non_zero_points` as these are unlikely to produce reasonable
 #' results whilst consuming significant resources. See the documentation for `epinow` for further information.
 #'
-#' By default all arguments supporting input from `_opts` functions are shared across regions (including delays,
+#' By default all arguments supporting input from `_opts()` functions are shared across regions (including delays,
 #' truncation, Rt settings, stan settings, and gaussian process settings). Region specific settings are supported
-#' by passing a named list of `_opts` calls (with an entry per region) to the relevant argument. A helper function
+#' by passing a named list of `_opts()` calls (with an entry per region) to the relevant argument. A helper function
 #' (`opts_list`) is available to facilitate building this list.
 #'
 #' Regions can be estimated in parallel using the `{future}` package (see `setup_future`). The progress of producing
@@ -46,9 +46,9 @@
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- list(
-#'   mean = convert_to_logmean(3, 1),
+#'   mean = convert_to_logmean(2, 1),
 #'   mean_sd = 0.1,
-#'   sd = convert_to_logsd(3, 1),
+#'   sd = convert_to_logsd(2, 1),
 #'   sd_sd = 0.1, max = 15
 #' )
 #'

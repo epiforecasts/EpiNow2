@@ -28,7 +28,7 @@ at least \code{date} and \code{value} (integer) variables and optionally \code{s
 \item{samples}{Numeric, number of posterior samples to simulate from. The default is to use all
 samples in the \code{estimates} input.}
 
-\item{batch_size}{Numeric, defaults to 100. Size of batches in which to simulate. May decrease
+\item{batch_size}{Numeric, defaults to 10. Size of batches in which to simulate. May decrease
 run times due to reduced IO costs but this is still being evaluated. If set to NULL then all
 simulations are done at once.}
 
@@ -53,8 +53,8 @@ generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani
 # set delays between infection and case report
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 reporting_delay <- list(
-  mean = convert_to_logmean(3, 1), mean_sd = 0.1,
-  sd = convert_to_logsd(3, 1), sd_sd = 0.1, max = 15
+  mean = convert_to_logmean(2, 1), mean_sd = 0.1,
+  sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 15
 )
 
 # fit model to data to recover Rt estimates

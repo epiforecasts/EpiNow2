@@ -86,7 +86,8 @@ transformed parameters {
    reports = scale_obs(reports, frac_obs[1]);
  }
  // truncate near time cases to observed reports
- obs_reports = truncate(reports[1:ot], truncation_mean, truncation_sd, max_truncation, 0);
+ obs_reports = truncate(reports[1:ot], truncation_mean, truncation_sd,
+                        max_truncation, 0);
 }
 
 model {
@@ -112,14 +113,16 @@ model {
     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
   }
   // observed reports from mean of reports (update likelihood)
-  report_lp(cases, obs_reports, rep_phi, 1, model_type, obs_weight);
+  if (likelihood) {
+    report_lp(cases, obs_reports, rep_phi, 1, model_type, obs_weight);
+  }
 }
 
 generated quantities {
   int imputed_reports[ot_h];
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
   real r[ot_h];
-  vector[ot] log_lik;
+  vector[return_likelihood > 1 ? ot : 0] log_lik;
   if (estimate_r){
     // estimate growth from estimated Rt
     r = R_to_growth(R, gt_mean[1], gt_sd[1]);
@@ -136,5 +139,8 @@ generated quantities {
   // simulate reported cases
   imputed_reports = report_rng(reports, rep_phi, model_type);
   // log likelihood of model
-  log_lik = report_log_lik(cases, obs_reports, rep_phi, model_type, obs_weight);
+  if (return_likelihood) {
+    log_lik = report_log_lik(cases, obs_reports, rep_phi, model_type,
+                             obs_weight);
+  }
 }

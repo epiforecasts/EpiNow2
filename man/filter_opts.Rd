@@ -7,8 +7,8 @@
 filter_opts(opts, region)
 }
 \arguments{
-\item{opts}{Either a list of calls to an \verb{_opts} function or a single
-call to an \verb{_opts} function.}
+\item{opts}{Either a list of calls to an \verb{_opts()} function or a single
+call to an \verb{_opts()} function.}
 
 \item{region}{A character string indicating a region of interest.}
 }

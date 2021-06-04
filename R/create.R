@@ -57,7 +57,7 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
 #' This functions creates a data frame of reported cases that has been smoothed using
 #' a centred partial rolling average (with a period set by `smoothing_window`) and shifted back in time
 #' by some delay. It is used by `estimate_infections` to generate the mean shifted prior
-#' on which the back calculation method (see `backcalc_opts`) is based.
+#' on which the back calculation method (see `backcalc_opts()`) is based.
 #' @param smoothing_window Numeric, the rolling average smoothing window
 #' to apply. Must be odd in order to be defined as a centred average.
 #' @param shift Numeric, mean delay shift to apply.
@@ -345,7 +345,9 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     model_type = ifelse(obs$family %in% "poisson", 0, 1),
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
-    obs_scale = ifelse(length(obs$scale) != 0, 1, 0)
+    obs_scale = ifelse(length(obs$scale) != 0, 1, 0),
+    likelihood = as.numeric(obs$likelihood),
+    return_likelihood = as.numeric(obs$return_likelihood)
   )
 
   data$day_of_week <- add_day_of_week(dates, data$week_effect)
