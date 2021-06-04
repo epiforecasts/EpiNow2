@@ -18,7 +18,6 @@ inst/include/*.o
 src/*.o
 src/*.cc
 src/*.dll
-src/stanExports*.h
 *.so
 
 # docs
