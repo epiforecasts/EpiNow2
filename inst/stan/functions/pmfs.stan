@@ -6,15 +6,15 @@ vector discretised_gamma_pmf(int[] y, real mu, real sigma, int max_val) {
   // calculate alpha and beta for gamma distribution
   real small = 1e-5;
   real large = 1e8;
-  real c_sigma = sigma < small ? small : sigma;
-  real c_mu = mu < small ? small : mu;
+  real c_sigma = fmax(small, sigma);
+  real c_mu = fmax(small, mu);
   real alpha = ((c_mu) / c_sigma)^2;
   real beta = (c_mu) / (c_sigma^2);
   // account for numerical issues
-  alpha = alpha < small ? small : alpha;
-  alpha = alpha > large ? large : alpha;
-  beta = beta < small ? small : beta;
-  beta = beta > large ? large : beta;
+  alpha = fmax(small, alpha);
+  alpha = fmin(large, alpha);
+  beta = fmax(small, beta);
+  beta = fmin(large, beta);
   // calculate pmf
   trunc_pmf = gamma_cdf(max_val + 1, alpha, beta) - gamma_cdf(1, alpha, beta);
   for (i in 1:n){
@@ -29,8 +29,8 @@ vector discretised_lognormal_pmf(int[] y, real mu, real sigma, int max_val) {
   int n = num_elements(y);
   vector[n] pmf;
   real small = 1e-5;
-  real c_sigma = sigma < small ? small : sigma;
-  real c_mu = mu < small ? small : mu;
+  real c_sigma = fmax(small, sigma);
+  real c_mu = fmax(small, mu);
   vector[n] adj_y = to_vector(y) + small;
   vector[n] upper_y = (log(adj_y + 1) - c_mu) / c_sigma;
   vector[n] lower_y = (log(adj_y) - c_mu) / c_sigma;

@@ -134,7 +134,7 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 #' Allocate Delays into Required Stan Format
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Allocate delays for stan. Used in `delay_opts`.
+#' Allocate delays for stan. Used in `delay_opts()`.
 #' @param delay_var List of numeric delays
 #' @param no_delays Numeric, number of delays
 #' @return A numeric array
