@@ -86,7 +86,7 @@ void report_lp(int[] cases, vector reports,
     if (weight == 1) {
       cases ~ neg_binomial_2(reports, sqrt_phi);
     }else{
-      target += poisson_lpmf(cases | reports) * weight;
+      target += neg_binomial_2_lpmf(cases | reports, sqrt_phi);
     }
   }
   
