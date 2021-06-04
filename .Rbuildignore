@@ -26,5 +26,3 @@
 ^\.lintr$
 ^\.pre-commit-config\.yaml$
 ^CODE_OF_CONDUCT\.md$
-^rcppExports.cpp$
-^stanExports_*$
