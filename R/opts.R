@@ -176,7 +176,8 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #'  process. Custom settings can be supplied which override the defaults.
 #' @param ls_mean Numeric, defaults to 21 days. The mean of the lognormal length scale.
 #' @param ls_sd Numeric, defaults to 7 days. The standard deviation of the log normal length
-#' scale with..
+#' scale. If \code{ls_sd = 0}, inverse-gamma prior on Gaussian process length scale will
+#' be used with recommended parameters \code{inv_gamma(1.499007, 0.057277 * ls_max)}.
 #' @param ls_max Numeric, defaults to 60. The maximum value of the length scale. Updated in
 #' `create_gp_data` to be the length of the input data if this is smaller.
 #' @param ls_min Numeric, defaults to 7. The minimum value of the length scale.
