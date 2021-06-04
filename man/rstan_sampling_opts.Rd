@@ -30,7 +30,7 @@ When using multiple chains iterations per chain is samples / chains.}
 \item{chains}{Numeric, defaults to 4. Number of MCMC chains to use.}
 
 \item{control}{List, defaults to empty. control parameters to pass to underlying
-\code{rstan} function. By default \code{adapt_delta = 0.98} and \code{max_treedepth = 15}
+\code{rstan} function. By default \code{adapt_delta = 0.95} and \code{max_treedepth = 15}
 though these settings can be overwritten.}
 
 \item{save_warmup}{Logical, defaults to FALSE. Should warmup progress be saved.}

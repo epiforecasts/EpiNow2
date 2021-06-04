@@ -11,3 +11,5 @@
   real obs_scale_mean;               // mean scaling factor for observations
   real obs_scale_sd;                 // standard deviation of observation scaling
   real obs_weight;                   // weight given to observation in log density
+  int likelihood;                    // Should the likelihood be included in the model
+  int return_likelihood; // Should the likehood be returned by the model
