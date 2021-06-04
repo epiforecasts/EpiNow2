@@ -17,8 +17,7 @@ plot.png
 inst/include/*.o
 src/*.o
 src/*.cc
-src/*.dll
-src/*.h
+src/stanExports*.h
 *.so
 
 # docs
