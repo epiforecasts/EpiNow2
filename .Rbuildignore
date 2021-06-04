@@ -9,8 +9,6 @@
 ^_pkgdown.yml$
 ^\.github$
 ^docs$
-^configure$
-^configure\.win$
 ^README\.Rmd$
 ^README\.html$
 ^cran-comments\.md$
