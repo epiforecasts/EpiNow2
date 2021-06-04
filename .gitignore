@@ -1,16 +1,29 @@
+# R files and developer folders
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
 .cache
 .idea
-src/*.so
-src/*.dll
-src/*.o
-inst/doc
-docs
-CRAN-RELEASE
-*.log
+
+# test data and logs
+.log
 test
 tests/testthat/test
 synthetic.rds
+plot.png
+
+# C++ object files + rstantools
+inst/include/*.o
+src/*.o
+src/*.cc
+src/*.dll
+src/stanExports*.h
+*.so
+
+# docs
+inst/doc
+docs
+
+# CRAN
+CRAN-RELEASE
