@@ -11,7 +11,7 @@ gp_opts(
   ls_sd = 7,
   ls_min = 0,
   ls_max = 60,
-  alpha_sd = 0.1,
+  alpha_sd = 0.05,
   kernel = "matern",
   matern_type = 3/2
 )
@@ -37,7 +37,7 @@ scale with..}
 \item{ls_max}{Numeric, defaults to 60. The maximum value of the length scale. Updated in
 \code{create_gp_data} to be the length of the input data if this is smaller.}
 
-\item{alpha_sd}{Numeric, defaults to 0.2. The standard deviation of the magnitude parameter of
+\item{alpha_sd}{Numeric, defaults to 0.05. The standard deviation of the magnitude parameter of
 the Gaussian process kernel. Should be approximately the expected standard deviation of the logged Rt.}
 
 \item{kernel}{Character string, the type of kernel required. Currently supporting the squared exponential
