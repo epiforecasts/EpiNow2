@@ -20,6 +20,7 @@ This release is under development and the features outlined below may change bef
 - Updates to all synthetic delays to reduce runtime of examples. 
 - Additional statements to make it clear to users examples should be used for real world analysis.
 - Additional context in the README on package functionality.
+
 ## Package changes
 
 * Added a `contributing.md` to guide contributors and added `pre-commit` support to check new contributions styling. 
@@ -33,6 +34,7 @@ This release is under development and the features outlined below may change bef
 * Fixed a bug in the deconvolution Rt estimation method where the mean of the generation time was being used as the standard deviation. For the default package generation time these are close and so the impact will be limited but in cases where the standard deviation is << than the mean this should result in more accurate Rt estimates. 
 * Fixed a bug where the number of threads used by the data.table package were set to one in the global environment. 
 Now the number of threads used by data.table are set to whatever the used specified on exit (@medewitt).
+* Fixed a bug in `simulate_infections` and `forecast_secondary` which meant that a Poisson observation model used for estimation would lead to a error.
 
 # EpiNow2 1.3.2
 
