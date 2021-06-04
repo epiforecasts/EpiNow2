@@ -30,7 +30,8 @@ default.}
 \item{ls_mean}{Numeric, defaults to 21 days. The mean of the lognormal length scale.}
 
 \item{ls_sd}{Numeric, defaults to 7 days. The standard deviation of the log normal length
-scale with..}
+scale. If \code{ls_sd = 0}, inverse-gamma prior on Gaussian process length scale will
+be used with recommended parameters \code{inv_gamma(1.499007, 0.057277 * ls_max)}.}
 
 \item{ls_min}{Numeric, defaults to 0. The minimum value of the length scale.}
 
