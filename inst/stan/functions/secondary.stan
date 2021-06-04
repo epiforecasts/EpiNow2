@@ -48,7 +48,7 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
         secondary_reports[i] -= scaled_reports[i];
       }
     }
-    secondary_reports[i] = secondary_reports[i] <= 0 ? 1e-5 : secondary_reports[i];
+    secondary_reports[i] = fmax(1e-5, secondary_reports[i]);
   }
   return(secondary_reports);
 }

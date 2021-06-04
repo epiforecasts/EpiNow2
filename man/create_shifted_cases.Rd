@@ -25,7 +25,7 @@ A data frame for shifted reported cases
 This functions creates a data frame of reported cases that has been smoothed using
 a centred partial rolling average (with a period set by \code{smoothing_window}) and shifted back in time
 by some delay. It is used by \code{estimate_infections} to generate the mean shifted prior
-on which the back calculation method (see \code{backcalc_opts}) is based.
+on which the back calculation method (see \code{backcalc_opts()}) is based.
 }
 \examples{
 create_shifted_cases(example_confirmed, 7, 14, 7)
