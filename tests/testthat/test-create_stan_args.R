@@ -1,5 +1,3 @@
-context("create_stan_args")
-
 test_that("create_stan_args returns the expected defaults when the exact method is used", {
   expect_equal(names(create_stan_args()), c(
     "data", "init", "refresh", "object", "method",

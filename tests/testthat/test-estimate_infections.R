@@ -1,6 +1,3 @@
-context("estimate_infections")
-
-
 # Setup for testing -------------------------------------------------------
 
 futile.logger::flog.threshold("FATAL")
