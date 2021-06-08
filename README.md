@@ -84,16 +84,14 @@ Install the stable version of the package:
 install.packages("EpiNow2")
 ```
 
-Install the stable development version of the package using
-[`{drat}`](https://epiforecasts.io/drat/):
+Install the stable development version of the package with:
 
 ``` r
-install.packages("drat")
-drat:::add("epiforecasts")
-install.packages("EpiNow2")
+install.packages("EpiNow2", repos = "https://epiforecasts.r-universe.dev")
 ```
 
-Install the unstable development version of the package with:
+
+Install the unstable development version of the package with (few users should need to do this):
 
 ``` r
 remotes::install_github("epiforecasts/EpiNow2")
