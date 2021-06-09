@@ -24,6 +24,7 @@ This release is under development and the features outlined below may change bef
 ## Package changes
 
 * Added a `contributing.md` to guide contributors and added `pre-commit` support to check new contributions styling. 
+* Better test skipping thanks to @Bisaloo.
 
 ## Other changes
 

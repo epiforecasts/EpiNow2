@@ -1,5 +1,3 @@
-context("set_dt_single_thread")
-
 # This function calls set_dt_single_thread within a test function
 # and returns the number of threads used during and after function call
 

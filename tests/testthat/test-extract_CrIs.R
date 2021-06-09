@@ -1,5 +1,3 @@
-context("extract_CrIs")
-
 test_that("extract_CrIs return the expected credible intervals", {
   samples <- data.frame(value = 1:10, type = "car")
   summarised <- calc_CrIs(samples,

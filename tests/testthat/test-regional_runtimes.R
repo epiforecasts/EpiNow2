@@ -1,5 +1,3 @@
-context("regional_epinow")
-
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 5)
 reporting_delay <- list(
   mean = log(3), mean_sd = 0.1,

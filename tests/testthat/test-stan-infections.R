@@ -1,13 +1,10 @@
-context("estimate_infections")
-if (!testthat:::on_cran()) {
-  files <- c("pmfs.stan", "infections.stan")
-  suppressMessages(expose_stan_fns(files, target_dir = system.file("stan/functions", package = "EpiNow2")))
-}
+skip_on_cran()
+files <- c("pmfs.stan", "infections.stan")
+suppressMessages(expose_stan_fns(files, target_dir = system.file("stan/functions", package = "EpiNow2")))
 
 
 # test update_infectiousness
 test_that("update_infectiousness works as expected with default settings", {
-  skip_on_cran()
   expect_equal(
     update_infectiousness(rep(1, 20), rep(0.1, 10), 5, 10, 10),
     1
@@ -22,7 +19,6 @@ test_that("update_infectiousness works as expected with default settings", {
 
 # test generate infections
 test_that("generate_infections works as expected", {
-  skip_on_cran()
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 10, 3, 2, 15, log(1000), 0, 0, 0), 0),
     c(rep(1000, 10), 996, rep(997, 3), rep(998, 6))
