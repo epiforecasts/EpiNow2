@@ -1,5 +1,3 @@
-context("calc_summary_stats")
-
 samples <- data.frame(value = 1:10, type = "car")
 
 test_that("calc_summary_stats works as expected with default arguments", {

@@ -1,6 +1,3 @@
-context("calc_CrIs")
-
-
 samples <- data.frame(value = 1:10, type = "car")
 
 test_that("calc_CrI works as expected with default arguments", {

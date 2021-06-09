@@ -1,5 +1,3 @@
-context("create_future_rt")
-
 test_that("create_future_rt works as expected", {
   test_frt <- function(test, true) {
     expect_equal(test$from, true$from)

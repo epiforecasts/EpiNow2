@@ -1,11 +1,11 @@
-context("regional_epinow")
+
+skip_on_cran()
 
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 5)
 reporting_delay <- list(
   mean = log(3), mean_sd = 0.1,
   sd = log(2), sd_sd = 0.1, max = 5
 )
-
 
 futile.logger::flog.threshold("FATAL")
 
@@ -21,7 +21,6 @@ df_non_zero <- function(df) {
 }
 
 test_that("regional_epinow produces expected output when run with default settings", {
-  skip_on_cran()
   out <- suppressWarnings(
     regional_epinow(
       reported_cases = cases, generation_time = generation_time,
@@ -51,7 +50,6 @@ test_that("regional_epinow produces expected output when run with default settin
 })
 
 test_that("regional_epinow runs without error when given a very short timeout", {
-  skip_on_cran()
   expect_error(
     regional_epinow(
       reported_cases = cases, generation_time = generation_time,
@@ -82,7 +80,6 @@ test_that("regional_epinow runs without error when given a very short timeout", 
 
 
 test_that("regional_epinow produces expected output when run with region specific settings", {
-  skip_on_cran()
   gp <- opts_list(gp_opts(), cases)
   gp <- update_list(gp, list(realland = NULL))
   rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
