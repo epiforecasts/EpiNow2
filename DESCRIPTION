@@ -132,7 +132,7 @@ LinkingTo:
     RcppParallel (>= 5.0.1),
     rstan (>= 2.21.1),
     StanHeaders (>= 2.21.0-5)
-Additional_repositories: https://epiforecasts.io/drat/
+Additional_repositories: https://epiforecasts.r-universe.dev
 Biarch: true
 Encoding: UTF-8
 Language: en-GB
