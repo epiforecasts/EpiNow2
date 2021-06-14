@@ -343,6 +343,8 @@ create_gp_data <- function(gp = gp_opts(), data) {
 create_obs_model <- function(obs = obs_opts(), dates) {
   data <- list(
     model_type = ifelse(obs$family %in% "poisson", 0, 1),
+    phi_mean = obs$phi[1],
+    phi_sd = obs$phi[2],
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
     obs_scale = ifelse(length(obs$scale) != 0, 1, 0),
@@ -438,7 +440,9 @@ create_stan_data <- function(reported_cases, generation_time,
   # observation model data
   data <- c(
     data,
-    create_obs_model(obs, dates = reported_cases[(data$seeding_time + 1):.N]$date)
+    create_obs_model(
+      obs, dates = reported_cases[(data$seeding_time + 1):.N]$date
+    )
   )
 
   # rescale mean shifted prior for back calculation if observation scaling is used
@@ -497,7 +501,11 @@ create_initial_conditions <- function(data) {
       out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd))
     }
     if (data$model_type == 1) {
-      out$rep_phi <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
+      out$rep_phi <- array(
+        truncnorm::rtruncnorm(
+          1, a = 0, mean = data$phi_mean, sd = data$phi_sd / 10
+        )
+      )
     }
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1, data$prior_infections, 0.02))

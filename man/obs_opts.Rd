@@ -6,6 +6,7 @@
 \usage{
 obs_opts(
   family = "negbin",
+  phi = c(0, 1),
   weight = 1,
   week_effect = TRUE,
   week_length = 7,
@@ -17,6 +18,10 @@ obs_opts(
 \arguments{
 \item{family}{Character string defining the observation model. Options are
 Negative binomial ("negbin"), the default, and Poisson.}
+
+\item{phi}{A numeric vector of length 2, defaults to 0, 1. Indicates the
+mean and standard deviation of the normal prior used for the observation
+process.}
 
 \item{weight}{Numeric, defaults to 1. Weight to give the observed data in
 the log density.}

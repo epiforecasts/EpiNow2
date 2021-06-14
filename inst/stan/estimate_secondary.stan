@@ -53,8 +53,8 @@ model {
    }
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
-    report_lp(obs[(burn_in + 1):t], secondary[(burn_in + 1):t], rep_phi, 1,
-              model_type, 1);
+    report_lp(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
+              rep_phi, phi_mean, phi_sd, model_type, 1);
   }
 }
 
