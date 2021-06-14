@@ -66,12 +66,12 @@ void truncation_lp(real[] truncation_mean, real[] truncation_sd,
 }
 // update log density for reported cases
 void report_lp(int[] cases, vector reports,
-               real[] rep_phi, int phi_prior,
+               real[] rep_phi, int phi_mean, int phi_sd,
                int model_type, real weight) {
   real sqrt_phi = 1e5;
   if (model_type) {
     // the reciprocal overdispersion parameter (phi)
-    rep_phi[model_type] ~ normal(0, phi_prior) T[0,];
+    rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
     sqrt_phi = 1 / sqrt(rep_phi[model_type]);
     // defer to poisson if phi is large, to avoid overflow or
     // if poisson specified

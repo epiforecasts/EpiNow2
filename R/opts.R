@@ -237,6 +237,9 @@ gp_opts <- function(basis_prop = 0.2,
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
 #' Negative binomial ("negbin"), the default, and Poisson.
+#' @param phi A numeric vector of length 2, defaults to 0, 1. Indicates the 
+#' mean and standard deviation of the normal prior used for the observation
+#' process.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in
 #'  the log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week effect
@@ -264,14 +267,19 @@ gp_opts <- function(basis_prop = 0.2,
 #' # Scale reported data
 #' obs_opts(scale = list(mean = 0.2, sd = 0.02))
 obs_opts <- function(family = "negbin",
+                     phi = c(0, 1),
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
                      scale = list(),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
+  if (length(phi) != 2 & !is.numeric(phi)) {
+    stop("phi be numeric and of length two")
+  }
   obs <- list(
     family = match.arg(family, choices = c("poisson", "negbin")),
+    phi = phi,
     weight = weight,
     week_effect = week_effect,
     week_length = week_length,

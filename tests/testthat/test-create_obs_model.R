@@ -3,9 +3,9 @@ dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
 
 test_that("create_obs_model works with default settings", {
   obs <- create_obs_model(dates = dates)
-  expect_equal(length(obs), 9)
+  expect_equal(length(obs), 11)
   expect_equal(names(obs), c(
-    "model_type", "week_effect", "obs_weight",
+    "model_type", "phi_mean", "phi_sd", "week_effect", "obs_weight",
     "obs_scale", "likelihood", "return_likelihood",
     "day_of_week", "obs_scale_mean",
     "obs_scale_sd"
@@ -43,4 +43,10 @@ test_that("create_obs_model can be used with no week effect", {
 test_that("create_obs_model can be used with a custom week length", {
   obs <- create_obs_model(dates = dates, obs = obs_opts(week_length = 3))
   expect_equal(obs$day_of_week, c(3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2))
+})
+
+test_that("create_obs_model can be used with a user set phi", {
+  obs <- create_obs_model(dates = dates, obs = obs_opts(phi = c(10, 0.1)))
+  expect_equal(obs$phi_mean, 10)
+  expect_equal(obs$phi_mean, 0.1)
 })
