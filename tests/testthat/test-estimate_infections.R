@@ -11,6 +11,8 @@ reporting_delay <- list(
 )
 
 default_estimate_infections <- function(..., add_stan = list(), delay = TRUE) {
+  futile.logger::flog.threshold("FATAL")
+
   def_stan <- stan_opts(
     chains = 2, warmup = 50, samples = 50,
     control = list(adapt_delta = 0.8)
