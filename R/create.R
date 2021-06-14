@@ -343,8 +343,8 @@ create_gp_data <- function(gp = gp_opts(), data) {
 create_obs_model <- function(obs = obs_opts(), dates) {
   data <- list(
     model_type = ifelse(obs$family %in% "poisson", 0, 1),
-    phi_mean = obs$phi,
-    phi_sd = obs$phi,
+    phi_mean = obs$phi[1],
+    phi_sd = obs$phi[2],
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
     obs_scale = ifelse(length(obs$scale) != 0, 1, 0),
