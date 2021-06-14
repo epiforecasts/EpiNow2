@@ -48,5 +48,5 @@ test_that("create_obs_model can be used with a custom week length", {
 test_that("create_obs_model can be used with a user set phi", {
   obs <- create_obs_model(dates = dates, obs = obs_opts(phi = c(10, 0.1)))
   expect_equal(obs$phi_mean, 10)
-  expect_equal(obs$phi_mean, 0.1)
+  expect_equal(obs$phi_sd, 0.1)
 })

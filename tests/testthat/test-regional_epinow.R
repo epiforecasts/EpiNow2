@@ -31,7 +31,7 @@ test_that("regional_epinow produces expected output when run with default settin
         cores = 1, chains = 2,
         control = list(adapt_delta = 0.8)
       ),
-      logs = NULL
+      logs = NULL, verbose = FALSE
     )
   )
   expect_equal(names(out$regional), c("testland", "realland"))
@@ -59,7 +59,7 @@ test_that("regional_epinow runs without error when given a very short timeout", 
         cores = 1, chains = 2,
         control = list(adapt_delta = 0.8),
         max_execution_time = 1
-      ), logs = NULL
+      ), logs = NULL, verbose = FALSE
     ),
     NA
   )
@@ -72,7 +72,7 @@ test_that("regional_epinow runs without error when given a very short timeout", 
         cores = 1, chains = 2,
         control = list(adapt_delta = 0.8),
         max_execution_time = 1, future = TRUE
-      ), logs = NULL
+      ), logs = NULL, verbose = FALSE
     ),
     NA
   )
@@ -93,7 +93,7 @@ test_that("regional_epinow produces expected output when run with region specifi
         cores = 1, chains = 2,
         control = list(adapt_delta = 0.8)
       ),
-      logs = NULL
+      logs = NULL, verbose = FALSE
     )
   )
   expect_equal(names(out$regional), c("testland", "realland"))

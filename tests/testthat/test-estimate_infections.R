@@ -21,7 +21,7 @@ default_estimate_infections <- function(..., add_stan = list(), delay = TRUE) {
   suppressWarnings(estimate_infections(...,
     generation_time = generation_time,
     delays = ifelse(delay, list(delay_opts(reporting_delay)), list(delay_opts()))[[1]],
-    stan = stan_args
+    stan = stan_args, verbose = FALSE
   ))
 }
 
