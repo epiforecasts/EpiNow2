@@ -66,7 +66,7 @@ void truncation_lp(real[] truncation_mean, real[] truncation_sd,
 }
 // update log density for reported cases
 void report_lp(int[] cases, vector reports,
-               real[] rep_phi, int phi_mean, int phi_sd,
+               real[] rep_phi, real phi_mean, real phi_sd,
                int model_type, real weight) {
   real sqrt_phi = 1e5;
   if (model_type) {

@@ -1,7 +1,7 @@
   int day_of_week[t - seeding_time]; // day of the week indicator (1 - 7)
   int model_type;                    // type of model: 0 = poisson otherwise negative binomial
-  int phi_mean;                      // Mean and sd of the normal prior for the
-  int phi_sd;                        // reporting process
+  real phi_mean;                      // Mean and sd of the normal prior for the
+  real phi_sd;                        // reporting process
   int week_effect;                   // length of week effect
   int truncation;                    // 1/0 indicating if truncation should be adjusted for
   real trunc_mean_mean[truncation];  // truncation mean of mean
