@@ -45,6 +45,7 @@ transformed parameters {
   vector<lower = 0>[t] frac_obs; 
   vector[t*delays] delay_mean;
   vector<lower = 0> [t*delays] delay_sd;
+  int gp_int = 0;
   if (gps) {
     gp = update_gps(gps, gp_dims, M, L, alpha, rho_raw, ls_min, ls_max);
   }
@@ -52,21 +53,27 @@ transformed parameters {
     frac_obs = rep_vector(frac_obs_init, t);
     if (obs_scale_gp) {
       frac_obs[2:t] = frac_obs[2:t] .* head(gp, gp_dims[1]);
+      gp_int += 1
     }
   }
   if (delays) {
     int pos = 1;
-    int gp_pos = obs_scale_gp ? gp_dims[1] + 1 : 1;
-    int dgp = obs_scale_gp;
+    int gp_pos = gp_int > 0 ? cumulative_sum(gp_dims[1:gp_int]) + 1 : 1;
     for (i in 1:delays) {
       segment(delay_mean, pos, t) = rep_vector(delay_mean_init, t);
       segment(delay_sd, pos, t) = rep_vector(delay_sd_init, t);
       if (delays_gp[i]) {
-        dgp += 1;
+        gp_int += 1;
         segment(delay_mean, pos + 1, t - 1) = 
           segment(delay_mean, pos + 1, t - 1) .* 
-            segment(gp, gp_pos, gp_dims[dgp])
-        gp_pos += gp_dims[dgp]; 
+            segment(gp, gp_pos, gp_dims[gp_int])
+        gp_pos += gp_dims[gp_int]; 
+        
+        gp_int += 1;
+        segment(delay_sd, pos + 1, t - 1) = 
+          segment(delay_sd, pos + 1, t - 1) .* 
+            segment(gp, gp_pos, gp_dims[gp_int])
+        gp_pos += gp_dims[gp_int]; 
       }
       pos += t;
     }
