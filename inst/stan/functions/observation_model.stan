@@ -13,10 +13,10 @@ vector day_of_week_effect(vector reports, int[] day_of_week, vector effect) {
 }
 // Scale observations by fraction reported and update log density of
 // fraction reported
-vector scale_obs(vector reports, real frac_obs) {
+vector scale_obs(vector reports, vector frac_obs) {
   int t = num_elements(reports);
   vector[t] scaled_reports;
-  scaled_reports = reports * frac_obs;
+  scaled_reports = reports .* frac_obs;
   return(scaled_reports);
 }
 // Calculate a truncation CMF

@@ -97,14 +97,15 @@ model {
                         ls_sdlog, ls_min, ls_max, alpha_sd);
   }
   // penalised priors for delay distributions
-  delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, t);
+  delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd,
+            delay_sd_mean, delay_sd_sd, t);
   // priors for truncation
   truncation_lp(truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd,
                 trunc_sd_mean, trunc_sd_sd);
   if (estimate_r) {
     // priors on Rt
-    rt_lp(log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n, seeding_time,
-          r_logmean, r_logsd, prior_infections, prior_growth);
+    rt_lp(log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n, 
+          seeding_time, r_logmean, r_logsd, prior_infections, prior_growth);
     // penalised_prior on generation interval
     generation_time_lp(gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot);
   }

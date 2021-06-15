@@ -7,7 +7,7 @@
 #' documentation for model defaults and options. See the examples for case studies
 #' using synthetic data and [here](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17)
 #' for an example of forecasting Covid-19 deaths from Covid-19 cases. See
-#' [here](https://gist.github.com/seabbs/4dad3958ca8d83daca8f02b143d152e6) for a prototype function that
+#' [here](https://github.com/seabbs/regional-secondary) for a prototype function that
 #' may be used to estimate and forecast a secondary observation from a primary across multiple regions and
 #' [here](https://github.com/epiforecasts/covid-german-forecasts/blob/master/rt-forecast/update-death-from-cases.R)
 #' for an application forecasting Covid-19 deaths in Germany and Poland.
