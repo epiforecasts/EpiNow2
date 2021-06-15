@@ -3,6 +3,7 @@ functions {
 #include functions/convolve.stan
 #include functions/observation_model.stan
 #include functions/secondary.stan
+#include functions/gaussian_process.stan
 }
 
 data {
@@ -13,30 +14,26 @@ data {
 #include data/secondary.stan
 #include data/delays.stan
 #include data/observation_model.stan
+#include data/gaussian_process.stan
 }
 
 transformed data {
-    matrix[t - 1, M] fobs_PHI = setup_gp(fobs_M, fobs_L, t - 1);
-    matrix[t - 1, delaym_M] delaym_PHI = setup_gp(delaym_M, delaym_L, t - 1);
-    matrix[t - 1, delaysd_M]  delaysd_PHI = setup_gp( delaysd_M,  delaysd_L, t - 1);
+  vector[sum(gp_dim .* M)]  PHI
+  if (gps) {  
+    PHI = setup_gps(gps, M, L, gp_dim);
+  }
 }
 
 parameters{
   // observation model
-  real delay_mean[delays];               // mean of delays
-  real<lower = 0> delay_sd[delays];      // sd of delays
+  real delay_mean_init[delays];               // mean of delays
+  real<lower = 0> delay_sd_init[delays];      // sd of delays
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   real<lower = 0> frac_obs_init[obs_scale > 0 ? 1 : 0];
   // gaussian process
-  real<lower = fobs_ls_min,upper = fobs_ls_max> fobs_rho[obs_scale == 2 ? 1 : 0];  
-  real<lower = 0> fobs_alpha[obs_scale == 2 ? 1 : 0];   
-  vector[obs_scale == 2 ? fobs_M : 0] fobs_eta; 
-  real<lower = delay_ls_min,upper = delay_ls_min> delaym_rho[delay_t];  
-  real<lower = delay_ls_min,upper = delay_ls_min> delaysd_rho[delay_t]; 
-  real<lower = 0> delaym_alpha[delay_t];  
-  real<lower = 0> delaysd_alpha[delay_t]; 
-  vector[delay_t? delay_M : 0] delaym_eta; 
-  vector[delay_t? delay_M : 0] delaysd_eta; 
+  real<lower = 0,upper = 1> rho_raw[gps];  
+  real<lower = 0> alpha[gps];   
+  vector[gps ? sum(M) : 0] eta; 
   real truncation_mean[truncation];      // mean of truncation
   real truncation_sd[truncation];        // sd of truncation
   real<lower = 0> rep_phi[model_type];   // overdispersion of the reporting process
@@ -44,21 +41,42 @@ parameters{
 
 transformed parameters {
   vector<lower=0>[t] secondary;
+  vector[sum(gp_dims)] gp;
   vector<lower = 0>[t] frac_obs; 
-  if (obs_scale > 0) {
+  vector[t*delays] delay_mean;
+  vector<lower = 0> [t*delays] delay_sd;
+  if (gps) {
+    gp = update_gps(gps, gp_dims, M, L, alpha, rho_raw, ls_min, ls_max);
+  }
+  if (obs_scale) {
     frac_obs = rep_vector(frac_obs_init, t);
-    if (obs_scale == 2) {
-      vector[t-1] gp = update_gp(fobs_PHI, fobs_M, fobs_L, fobs_alpha[1],
-                                 fobs_rho[1], fobs_eta, fobs_gp_type);
-      gp = cumulative_sum(gp);
-      frac_obs[2:t] = frac_obs[2:t] .* gp;
+    if (obs_scale_gp) {
+      frac_obs[2:t] = frac_obs[2:t] .* head(gp, gp_dims[1]);
     }
   }
+  if (delays) {
+    int pos = 1;
+    int gp_pos = obs_scale_gp ? gp_dims[1] + 1 : 1;
+    int dgp = obs_scale_gp;
+    for (i in 1:delays) {
+      segment(delay_mean, pos, t) = rep_vector(delay_mean_init, t);
+      segment(delay_sd, pos, t) = rep_vector(delay_sd_init, t);
+      if (delays_gp[i]) {
+        dgp += 1;
+        segment(delay_mean, pos + 1, t - 1) = 
+          segment(delay_mean, pos + 1, t - 1) .* 
+            segment(gp, gp_pos, gp_dims[dgp])
+        gp_pos += gp_dims[dgp]; 
+      }
+      pos += t;
+    }
+    pmfs = calculate_pmfs(delay_mean, delay_sd, max_delay);
+  }
+    
   // calculate secondary reports from primary
-  secondary = calculate_secondary(primary, obs, frac_obs, delay_mean,
-                                  delay_sd, max_delay, cumulative,
-                                  historic, primary_hist_additive,
-                                  current, primary_current_additive, t);
+  secondary = calculate_secondary(primary, obs, frac_obs, pmfs, delays,
+                                  max_delay, cumulative, historic, primary_hist_additive, current,
+                                  primary_current_additive, t);
  // weekly reporting effect
  if (week_effect > 1) {
    secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
@@ -70,18 +88,20 @@ transformed parameters {
 
 model {
   // penalised priors for delay distributions
-  delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, 1);
+  delays_lp(delay_mean_init, delay_mean_mean, delay_mean_sd, delay_sd_init,
+            delay_sd_mean, delay_sd_sd, 1);
+
   // priors for truncation
   truncation_lp(truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd,
                 trunc_sd_mean, trunc_sd_sd);
   // prior primary report scaling
   if (obs_scale > 0) {
     frac_obs_init[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
-    if (obs_scale > 1) {
-      gaussian_process_lp(fobs_rho[1], fobs_alpha[1], fobs_eta, fobs_ls_meanlog,
-                          fobs_ls_sdlog, fobs_ls_min, fobs_ls_max, fobs_alpha_sd);
-    }
-   }
+  }
+
+  if (gps){
+    gaussian_process_lp(rho_raw, alpha, eta, ls_meanlog, ls_sdlog, alpha_sd);
+  }
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
     report_lp(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],

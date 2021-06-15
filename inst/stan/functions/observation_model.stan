@@ -19,6 +19,7 @@ vector scale_obs(vector reports, vector frac_obs) {
   scaled_reports = reports .* frac_obs;
   return(scaled_reports);
 }
+
 // Calculate a truncation CMF
 vector truncation_cmf(real trunc_mean, real trunc_sd, int trunc_max) {
     int  trunc_indexes[trunc_max];
