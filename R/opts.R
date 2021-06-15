@@ -6,16 +6,27 @@
 #' @param ... Delay distributions as a list with the following parameters:
 #' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
 #' normal (with all parameters except for max defined in logged form).
+#' @param gp A list of lists as returned by `gp_opts()`. Specifies if, and if
+#' so how,a gaussian process, should be used to allow delay distribution
+#' parameters to vary over time
+#' non-parametrically over time
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input delay distributions.
 #' @export
 #' @examples
 #' # no delays
 #' delay_opts()
-delay_opts <- function(...) {
+#' 
+#' # a static delay
+#' delay_opts(list(mean = 1, mean_sd = 0.1, sd = 0.1, sd_sd = 0.01, max = 30))
+#' # a delay assumed to vary over time using as gaussian process
+#' delay_opts(list(mean = 1, mean_sd = 0.1, sd = 0.1, sd_sd = 0.01, max = 30),
+#'            gp = list(gp_opts()))
+delay_opts <- function(..., gp = NULL) {
   delays <- list(...)
   data <- list()
   data$delays <- length(delays)
+  data$delays_gp <- array(rep(0, data$delays))
   if (data$delays > 0) {
     delays <- purrr::transpose(delays)
   }
@@ -38,6 +49,15 @@ delay_opts <- function(...) {
   data$delay_sd_mean <- allocate_delays(delays$sd, data$delays)
   data$delay_sd_sd <- allocate_delays(delays$sd_sd, data$delays)
   data$max_delay <- allocate_delays(delays$max, data$delays)
+
+  if (!is.null(gp)) {
+    if(length(gp) != data$delays) {
+      stop("A Gaussian process or NULL must be specified for each delay")
+    }else{
+      data$delays_gp <- as.numeric(map_lgl(gp, ~!is.null(.)))
+      data$gp <- gp
+    }
+  }
   return(data)
 }
 
@@ -263,6 +283,9 @@ gp_opts <- function(basis_prop = 0.2,
 #'  included in the model
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #'  be returned by the model.
+#' @param gp A list as returned by `gp_opts`. Specifies if, and if so how,
+#' a gaussian process, should be used to allow `scale` to vary
+#' non-parametrically over time
 #' @return A list of observation model settings.
 #' @export
 #' @examples
@@ -280,6 +303,7 @@ obs_opts <- function(family = "negbin",
                      week_effect = TRUE,
                      week_length = 7,
                      scale = list(),
+                     gp = NULL,
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
   if (length(phi) != 2 | !is.numeric(phi)) {
@@ -293,7 +317,8 @@ obs_opts <- function(family = "negbin",
     week_length = week_length,
     scale = scale,
     likelihood = likelihood,
-    return_likelihood = return_likelihood
+    return_likelihood = return_likelihood,
+    gp = gp
   )
 
   if (length(obs$scale) != 0) {

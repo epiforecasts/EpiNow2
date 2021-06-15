@@ -274,12 +274,11 @@ create_backcalc_data <- function(backcalc = backcalc_opts) {
 #' # create settings with multiple GPs
 #' create_gp_data(list(gp_opts(), gp_opts(order = "0")), data)
 create_gp_data <- function(gp = list(), data) {
-  gp_data <- list(
-  )
   # Define if GP is on or off
   if (is.null(gp) | length(gp) == 0) {
-    gp_data$gps <- 1
-    gp <- list(gp_opts())
+    gps <- 0
+  }else{
+    gps <- length(gp)
   }
 
   single_gp <- function(gp, data) {
@@ -316,11 +315,17 @@ create_gp_data <- function(gp = list(), data) {
     return(gp_data)
   }
 
-  gp_data <- map(gp, single_gp, data)
-  gp_data <- transpose(gp_data)
-  gp_data <- map(gp_data, unlist)
-  gp_data$gps <- length(gp)
-  gp_data$gp_global_dim <- sum(gp_data$gp_dims)
+  if (!is.null(gp)) {
+    gp_data <- map(gp, single_gp, data)
+    gp_data <- transpose(gp_data)
+    gp_data <- map(gp_data, ~array(unlist(.)))
+    gp_data$gp_global_dim <- sum(gp_data$gp_dims)
+  }else{
+    gp_data <- single_gp(gp_opts(), data)
+    gp_data <- map(gp_data, ~ array(numeric(0)))
+    gp_data$gps <- 0
+    gp_data$gp_global_dim <- 0
+  }
   gp_data <- c(data, gp_data)
   return(gp_data)
 }
@@ -357,6 +362,7 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
     obs_scale = ifelse(length(obs$scale) != 0, 1, 0),
+    obs_scale_gp  = as.numeric(!is.null(obs$gp)),
     likelihood = as.numeric(obs$likelihood),
     return_likelihood = as.numeric(obs$return_likelihood)
   )
@@ -469,7 +475,7 @@ create_stan_data <- function(reported_cases, generation_time,
 #' in order to initialise each `stan` chain within a range of plausible values.
 #' @param data A list of data as produced by `create_stan_data.`
 #' @return An initial condition generating function
-#' @importFrom purrr map2_dbl
+#' @importFrom purrr map2_dbl map_dbl
 #' @importFrom truncnorm rtruncnorm
 #' @export
 create_initial_conditions <- function(data) {
@@ -497,17 +503,17 @@ create_initial_conditions <- function(data) {
       ))
     }
     if (data$fixed == 0) {
-      out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
-      out$rho <- array(rlnorm(1,
-        meanlog = data$ls_meanlog,
-        sdlog = data$ls_sdlog * 0.1
-      ))
-      out$rho <- ifelse(out$rho > data$ls_max, data$ls_max - 0.001,
-        ifelse(out$rho < data$ls_min, data$ls_min + 0.001,
+      out$eta <- array(rnorm(sum(data$M), mean = 0, sd = 0.1))
+      out$rho <- array(map2_dbl(data$ls_meanlog, data$ls_sdlog,
+        ~ rlnorm(1, meanlog = .x, sdlog = .y * 0.1
+      )))
+      out$rho <- ifelse(out$rho > 1, 0.99,
+        ifelse(out$rho < 0, 0.001,
           out$rho
         )
       )
-      out$alpha <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd))
+      out$alpha <- array(map_dbl(data$alpha_sd, 
+       ~ truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = .)))
     }
     if (data$model_type == 1) {
       out$rep_phi <- array(

@@ -5,4 +5,3 @@
   real delay_sd_sd[delays];    // prior sd of sd of incubation period
   int max_delay[delays];       // maximum incubation period
   int delays_gp[delays];
-  

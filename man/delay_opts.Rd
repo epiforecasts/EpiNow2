@@ -4,12 +4,17 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(...)
+delay_opts(..., gp = NULL)
 }
 \arguments{
 \item{...}{Delay distributions as a list with the following parameters:
 "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
 normal (with all parameters except for max defined in logged form).}
+
+\item{gp}{A list of lists as returned by \code{gp_opts()}. Specifies if, and if
+so how,a gaussian process, should be used to allow delay distribution
+parameters to vary over time
+non-parametrically over time}
 }
 \value{
 A list summarising the input delay distributions.

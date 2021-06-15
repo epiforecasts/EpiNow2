@@ -11,8 +11,7 @@ create_gp_data(gp = list(), data)
 Gaussian process. Defaults to \code{gp_opts()}.Set to NULL to disable the
 Gaussian process.}
 
-\item{data}{A list containing the following numeric values: \code{t}, \code{seeding_time},
-\code{horizon}.}
+\item{data}{A list containing the following numeric values: \code{t}}
 }
 \value{
 A list of settings defining the Gaussian process
@@ -23,11 +22,7 @@ Takes the output of \code{gp_opts()} and converts it into a list understood by \
 }
 \examples{
 # define input data required
-data <- list(
-  t = 30,
-  seeding_time = 7,
-  horizon = 7
-)
+data <- list(t = 30)
 
 # settings when no gaussian process is desired
 create_gp_data(data)
@@ -36,7 +31,7 @@ create_gp_data(data)
 create_gp_data(list(gp_opts(ls_mean = 14)), data)
 
 # create settings with multiple GPs
-create_gp_data(list(gp_opts(), gp_opts(order = "0")))
+create_gp_data(list(gp_opts(), gp_opts(order = "0")), data)
 }
 \seealso{
 gp_opts

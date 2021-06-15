@@ -39,6 +39,7 @@
 #' @importFrom rstan sampling
 #' @importFrom lubridate wday
 #' @importFrom data.table as.data.table merge.data.table
+#' @importFrom purrr compact
 #' @examples
 #' \donttest{
 #' # set number of cores to use
@@ -164,12 +165,16 @@ estimate_secondary <- function(reports,
   data <- c(data, secondary)
   # delay data
   data <- c(data, delays)
+  data$gp <- NULL
   data$seeding_time <- 0
   # truncation data
   data <- c(data, truncation)
   # observation model data
   data <- c(data, create_obs_model(obs, dates = reports$date))
 
+  # gaussian process data
+  data <- create_gp_data(gp = compact(c(obs$gp, delays$gp)), data)
+  
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(
     c(data, list(estimate_r = 0, fixed = 1, bp_n = 0))

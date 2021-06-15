@@ -11,6 +11,7 @@ obs_opts(
   week_effect = TRUE,
   week_length = 7,
   scale = list(),
+  gp = NULL,
   likelihood = TRUE,
   return_likelihood = FALSE
 )
@@ -37,6 +38,10 @@ or if data has a non-weekly periodicity.}
 to map latent infections (convolved to date of report). If none empty a mean
 (\code{mean}) and standard deviation (\code{sd}) needs to be supplied defining the normally
 distributed scaling factor.}
+
+\item{gp}{A list as returned by \code{gp_opts}. Specifies if, and if so how,
+a gaussian process, should be used to allow \code{scale} to vary
+non-parametrically over time}
 
 \item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be
 included in the model}
