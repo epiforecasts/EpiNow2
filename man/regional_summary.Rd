@@ -20,8 +20,6 @@ regional_summary(
 \item{regional_output}{A list of output as produced by \code{regional_epinow} and stored in the
 \code{regional} list.}
 
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
-
 \item{results_dir}{An optional character string indicating the location of the results directory to extract results
 from.}
 
@@ -35,9 +33,6 @@ in which to store summary of results.}
 
 \item{all_regions}{Logical, defaults to \code{TRUE}. Should summary plots for all regions be returned
 rather than just regions of interest.}
-
-\item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
-if no directory for saving is specified.}
 
 \item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
 on the maximum number of reported cases.}

@@ -11,8 +11,6 @@ setup_future(
 )
 }
 \arguments{
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
-
 \item{strategies}{A vector length 1 to 2 of strategies to pass to \code{future::plan}. Nesting
 of parallisation is from the top level down. The default is to set up nesting parallisation
 with both using \code{future::multiprocess}. For single level parallisation use a single strategy

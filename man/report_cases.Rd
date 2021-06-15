@@ -19,17 +19,12 @@ report_cases(
 \item{case_forecast}{A data.table of case forecasts with the following variables: date, sample, cases. If not supplied the
 default is not to incorporate forecasts.}
 
-\item{delays}{A call to \code{delay_opts()} defining delay distributions and options. See the documentation of \code{delay_opts()}
-and the examples below for details.}
-
 \item{type}{Character string indicating the method to use to transform counts. Supports either "sample"
 which approximates sampling or "median" would shift by the median of the distribution.}
 
 \item{reporting_effect}{A \code{data.table} giving the weekly reporting effect with the following variables:
 \code{sample} (must be the same as in \code{nowcast}), \code{effect} (numeric scaling factor for each weekday), \code{day}
 (numeric 1 - 7 (1 = Monday and 7 = Sunday)). If not supplied then no weekly reporting effect is assumed.}
-
-\item{CrIs}{Numeric vector of credible intervals to calculate.}
 }
 \value{
 A list of \code{data.table}s. The first entry contains the following variables \code{sample}, \code{date} and \code{cases} with the second
