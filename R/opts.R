@@ -193,8 +193,14 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #' See (Riutort-Mayol et al. 2020 <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
 #' This setting is an area of active research.
 #' @param boundary_scale Numeric, defaults to 1.5. Boundary scale of the approximate Gaussian process. See
-#' (Riutort-Mayol et al. 2020 <https://arxiv.org/abs/2004.11408>) for advice on updating this
-#' default.
+#' (Riutort-Mayol et al. 2020 <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
+#' @param order Numeric/Character defaults to 1. The order of the Gaussian
+#'  process (GP) with the default 0 implying the GP  is used directly and 1
+#' indicating it should be used on the first differences of the target. 0th 
+#' order GPs will be easier to compute but will revert to the underlying mean
+#' function when the support from data is sparse. 1st order GPs have a higher
+#' compute cost but revert to the most recent value with support which may be 
+#' desirable.
 #' @return A list of settings defining the Gaussian process
 #' @export
 #' @examples
@@ -211,7 +217,8 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_max = 60,
                     alpha_sd = 0.1,
                     kernel = "matern",
-                    matern_type = 3 / 2) {
+                    matern_type = 3 / 2,
+                    order = "1") {
   gp <- list(
     basis_prop = basis_prop,
     boundary_scale = boundary_scale,
@@ -221,7 +228,8 @@ gp_opts <- function(basis_prop = 0.2,
     ls_max = ls_max,
     alpha_sd = alpha_sd,
     kernel = match.arg(kernel, choices = c("se", "matern_3/2")),
-    matern_type = matern_type
+    matern_type = matern_type,
+    order = match.arg(as.character(order), choices = c("0", "1"))
   )
 
   if (gp$matern_type != 3 / 2) {

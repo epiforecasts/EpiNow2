@@ -13,7 +13,8 @@ gp_opts(
   ls_max = 60,
   alpha_sd = 0.1,
   kernel = "matern",
-  matern_type = 3/2
+  matern_type = 3/2,
+  order = "1"
 )
 }
 \arguments{
@@ -24,8 +25,7 @@ See (Riutort-Mayol et al. 2020 \url{https://arxiv.org/abs/2004.11408}) for advic
 This setting is an area of active research.}
 
 \item{boundary_scale}{Numeric, defaults to 1.5. Boundary scale of the approximate Gaussian process. See
-(Riutort-Mayol et al. 2020 \url{https://arxiv.org/abs/2004.11408}) for advice on updating this
-default.}
+(Riutort-Mayol et al. 2020 \url{https://arxiv.org/abs/2004.11408}) for advice on updating this default.}
 
 \item{ls_mean}{Numeric, defaults to 21 days. The mean of the lognormal length scale.}
 
@@ -46,6 +46,14 @@ in Rt and infections.}
 
 \item{matern_type}{Numeric, defaults to 3/2. Type of Matern Kernel to use. Currently only the Matern
 3/2 kernel is supported.}
+
+\item{order}{Numeric/Character defaults to 1. The order of the Gaussian
+process (GP) with the default 0 implying the GP  is used directly and 1
+indicating it should be used on the first differences of the target. 0th
+order GPs will be easier to compute but will revert to the underlying mean
+function when the support from data is sparse. 1st order GPs have a higher
+compute cost but revert to the most recent value with support which may be
+desirable.}
 }
 \value{
 A list of settings defining the Gaussian process
