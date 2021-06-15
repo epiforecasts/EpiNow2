@@ -45,15 +45,15 @@ matrix setup_gp(int M, real L, int dimension) {
   return(PHI);
 }
 
-vector setup_gps(int gps, int[] M, int[] L, int[] gp_dim) {
-  vector[sum(gp_dim .* M)]  PHI;
+vector setup_gps(int gps, int[] M, real[] L, int[] gp_dim, int gp_global_dim) {
+  vector[gp_global_dim]  PHI;
   int pos = 1;
   for (i in 1:gps) {
     int seg = gp_dim[i] * M[i];
-    segment(PHI, pos, seg) = to_vector(setup_gp(M[i], L[i], gp_dim[i]));
+    PHI[pos:(pos + seg - 1)] = to_vector(setup_gp(M[i], L[i], gp_dim[i]));
     pos = pos + seg;
   }
-  return(PHI)
+  return(PHI);
 }
 
 // update gaussian process using spectral densities
@@ -79,35 +79,37 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   return(noise);
 }
 
-vector update_gps(int gps, int[] gp_dims, int[] M, int[] L, 
-                  real[] alpha, real[] rho_raw, int[] ls_min,
-                  int[] ls_max, int[] stationary) {
-  real rho[gps] = ls_min + (ls_max - ls_min) .* rho_raw;
+vector update_gps(vector PHI, int gps, int[] gp_dims, int[] M, real[] L, 
+                  real[] alpha, real[] rho_raw, vector eta,
+                  real[] ls_min, real[] ls_max, int[] order, int[] gp_type) {
+  vector[sum(gp_dims)] gp;
   int pos = 1;
   int phi_pos = 1;
-  int eta_pos = 1
+  int eta_pos = 1;
   for (i in 1:gps) {
-    segment(gp, pos, gp_dims[i]) = update_gp(
-      to_matrix(segment(PHI, phi_pos, gp_dim[i] * M[i]),
-      gp_dims[i], M[i]), M[i], L[i], alpha[i], rho[i], 
-      segment(eta, eta_phi, M[i]), gp_type[i]
+    real rho = ls_min[gps] + (ls_max[gps] - ls_min[gps]) * rho_raw[gps];
+    vector[gp_dims[i]] gp_tmp;
+    gp_tmp = update_gp(
+      to_matrix(segment(PHI, phi_pos, gp_dims[i] * M[i]),
+      gp_dims[i], M[i]), M[i], L[i], alpha[i], rho,
+      segment(eta, eta_pos, M[i]), gp_type[i]
     );
-    if (stationary[i]) {
-      segment(gp, pos, gp_dims[i]) = cumulative_sum(
-        segment(gp, pos, gp_dims[i]));
+    if (order[i]) {
+      gp_tmp = cumulative_sum(gp_tmp);
     }
+    gp[pos:(pos + gp_dims[i] - 1)] = gp_tmp;
     pos = pos + gp_dims[i];
-    phi_pos = phi_pos + gp_dim[i] * M[i];
+    phi_pos = phi_pos + gp_dims[i] * M[i];
     eta_pos = eta_pos + M[i];
   }
-  return(gp)
+  return(gp);
 }
 
 
 // priors for gaussian process
 void gaussian_process_lp(real[] rho, real[] alpha, vector eta,
                          real[] ls_meanlog, real[] ls_sdlog,
-                         real alpha_sd[]) {
+                         real[] alpha_sd) {
   rho ~ lognormal(ls_meanlog, ls_sdlog);
   alpha ~ normal(0, alpha_sd);
   eta ~ std_normal();

@@ -12,7 +12,7 @@ vector convolve(vector cases, vector pmf, int[] length) {
    return(conv_cases);
   }
 
-vector calculate_pmfs(real[] delay_mean, real[] delay_sd, int[] max_delay) {
+vector calculate_pmfs(vector delay_mean, vector delay_sd, int[] max_delay) {
   int delays = num_elements(delay_mean);
   vector[sum(max_delay)] pmf;
   int pos = 1;
@@ -21,7 +21,7 @@ vector calculate_pmfs(real[] delay_mean, real[] delay_sd, int[] max_delay) {
     for (i in 1:max_delay[s]) {
       delay_indexes[i] = max_delay[s] - i;
     }
-    segement(pmf, pos, max_delay[s]) =
+    pmf[pos:(pos + max_delay[s] - 1)] =
         discretised_lognormal_pmf(delay_indexes, delay_mean[s],
                                    delay_sd[s], max_delay[s]);
     pos = pos + max_delay[s];
@@ -32,7 +32,7 @@ vector calculate_pmfs(real[] delay_mean, real[] delay_sd, int[] max_delay) {
 
 // convolve latent infections to reported (but still unobserved) cases
 vector convolve_to_report(vector infections, vector pmfs,
-                          int delays, int[] max_delay
+                          int delays, int[] max_delay,
                           int seeding_time) {
   int t = num_elements(infections);
   vector[t - seeding_time] reports;
@@ -40,12 +40,12 @@ vector convolve_to_report(vector infections, vector pmfs,
   int pos = 1;
   if (delays) {
     for (s in 1:delays) {
-      int[t] seg_max_delay = max_delay[((s - 1) * t + 1):(s*t)];
+      int seg_max_delay[t] = max_delay[((s - 1) * t + 1):(s*t)];
       unobs_reports = convolve(
         unobs_reports, 
         segment(pmfs, pos, sum(seg_max_delay)),
         seg_max_delay);
-      pos = pos + seg_max_delay;
+      pos = pos + sum(seg_max_delay);
     }
     reports = unobs_reports[(seeding_time + 1):t];
   }else{

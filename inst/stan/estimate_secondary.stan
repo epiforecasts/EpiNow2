@@ -18,9 +18,9 @@ data {
 }
 
 transformed data {
-  vector[sum(gp_dim .* M)]  PHI
+  vector[gp_global_dim]  PHI;
   if (gps) {  
-    PHI = setup_gps(gps, M, L, gp_dim);
+    PHI = setup_gps(gps, M, L, gp_dims, gp_global_dim);
   }
 }
 
@@ -45,36 +45,35 @@ transformed parameters {
   vector<lower = 0>[t] frac_obs; 
   vector[t*delays] delay_mean;
   vector<lower = 0> [t*delays] delay_sd;
-  int gp_int = 0;
+  vector[sum(max_delay)] pmfs;
   if (gps) {
-    gp = update_gps(gps, gp_dims, M, L, alpha, rho_raw, ls_min, ls_max);
+    gp = update_gps(PHI, gps, gp_dims, M, L, alpha, rho_raw, eta, ls_min,
+                    ls_max, order, gp_type);
   }
   if (obs_scale) {
-    frac_obs = rep_vector(frac_obs_init, t);
+    frac_obs = rep_vector(frac_obs_init[1], t);
     if (obs_scale_gp) {
       frac_obs[2:t] = frac_obs[2:t] .* head(gp, gp_dims[1]);
-      gp_int += 1
     }
   }
   if (delays) {
     int pos = 1;
-    int gp_pos = gp_int > 0 ? cumulative_sum(gp_dims[1:gp_int]) + 1 : 1;
+    int gp_int = obs_scale_gp;
+    int gp_pos = gp_int > 0 ? sum(gp_dims[1:gp_int]) + 1 : 1;
     for (i in 1:delays) {
-      segment(delay_mean, pos, t) = rep_vector(delay_mean_init, t);
-      segment(delay_sd, pos, t) = rep_vector(delay_sd_init, t);
+      vector[t] dmeant = rep_vector(delay_mean_init[i], t);
+      vector[t] dsdt = rep_vector(delay_sd_init[i], t);
       if (delays_gp[i]) {
         gp_int += 1;
-        segment(delay_mean, pos + 1, t - 1) = 
-          segment(delay_mean, pos + 1, t - 1) .* 
-            segment(gp, gp_pos, gp_dims[gp_int])
+        dmeant = dmeant .* segment(gp, gp_pos, gp_dims[gp_int]);
         gp_pos += gp_dims[gp_int]; 
         
         gp_int += 1;
-        segment(delay_sd, pos + 1, t - 1) = 
-          segment(delay_sd, pos + 1, t - 1) .* 
-            segment(gp, gp_pos, gp_dims[gp_int])
+        dsdt = dsdt .* segment(gp, gp_pos, gp_dims[gp_int]);
         gp_pos += gp_dims[gp_int]; 
       }
+      delay_mean[pos:(pos + t - 1)] = dmeant;
+      delay_sd[pos:(pos + t - 1)] = dsdt;
       pos += t;
     }
     pmfs = calculate_pmfs(delay_mean, delay_sd, max_delay);
