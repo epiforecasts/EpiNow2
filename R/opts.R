@@ -49,7 +49,8 @@ delay_opts <- function(..., gp = NULL) {
   data$delay_sd_mean <- allocate_delays(delays$sd, data$delays)
   data$delay_sd_sd <- allocate_delays(delays$sd_sd, data$delays)
   data$max_delay <- allocate_delays(delays$max, data$delays)
-
+  data$total_delay <- allocate_delays(sum(delays$max), data$delays)
+  
   if (!is.null(gp)) {
     if(length(gp) != data$delays) {
       stop("A Gaussian process or NULL must be specified for each delay")

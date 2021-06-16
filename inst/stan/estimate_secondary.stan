@@ -45,7 +45,7 @@ transformed parameters {
   vector<lower = 0>[t] frac_obs; 
   vector[t*delays] delay_mean;
   vector<lower = 0> [t*delays] delay_sd;
-  vector[sum(max_delay)] pmfs;
+  vector[t*total_delay] pmfs;
   if (gps) {
     gp = update_gps(PHI, gps, gp_dims, M, L, alpha, rho_raw, eta, ls_min,
                     ls_max, order, gp_type);
@@ -80,8 +80,8 @@ transformed parameters {
   }
     
   // calculate secondary reports from primary
-  secondary = calculate_secondary(primary, obs, frac_obs, pmfs, delays,
-                                  max_delay, cumulative, historic, primary_hist_additive, current,
+  secondary = calculate_secondary(primary, obs, frac_obs, pmfs,
+                                  total_delay, cumulative, historic, primary_hist_additive, current,
                                   primary_current_additive, t);
  // weekly reporting effect
  if (week_effect > 1) {

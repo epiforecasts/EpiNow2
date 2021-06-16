@@ -105,7 +105,6 @@ vector update_gps(vector PHI, int gps, int[] gp_dims, int[] M, real[] L,
   return(gp);
 }
 
-
 // priors for gaussian process
 void gaussian_process_lp(real[] rho, real[] alpha, vector eta,
                          real[] ls_meanlog, real[] ls_sdlog,
