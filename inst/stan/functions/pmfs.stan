@@ -52,3 +52,20 @@ vector reverse_mf(vector pmf, int max_pmf) {
   }
   return rev_pmf;
 }
+// Calculate pmfs
+vector calculate_pmfs(vector dmean, vector dsd, int mdelay) {
+  int delays = num_elements(dmean);
+  vector[sum(mdelay)] pmf;
+  int pos = 1;
+  for (s in 1:delays) {
+    int indexes[mdelay[s]];
+    for (i in 1:mdelay[s]) {
+      indexes[i] = i - 1;
+    }
+    pmf[pos:(pos + mdelay[s] - 1)] =
+        discretised_lognormal_pmf(indexes, dmean[s], dsd[s], mdelay[s]);
+    pos = pos + mdelay[s];
+  }
+  pmf = pmf + rep_vector(1e-8, sum(mdelay));
+  return(pmf);
+}
