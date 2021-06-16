@@ -53,7 +53,7 @@ transformed parameters {
   if (obs_scale) {
     frac_obs = rep_vector(frac_obs_init[1], t);
     if (obs_scale_gp) {
-      frac_obs[2:t] = frac_obs[2:t] .* head(gp, gp_dims[1]);
+      frac_obs[2:t] = frac_obs[2:t] .* exp(head(gp, gp_dims[1]));
     }
   }
   if (delays) {
@@ -65,11 +65,11 @@ transformed parameters {
       vector[t] dsdt = rep_vector(delay_sd_init[i], t);
       if (delays_gp[i]) {
         gp_int += 1;
-        dmeant = dmeant .* segment(gp, gp_pos, gp_dims[gp_int]);
+        dmeant = dmeant .* exp(segment(gp, gp_pos, gp_dims[gp_int]));
         gp_pos += gp_dims[gp_int]; 
         
         gp_int += 1;
-        dsdt = dsdt .* segment(gp, gp_pos, gp_dims[gp_int]);
+        dsdt = dsdt .* exp(segment(gp, gp_pos, gp_dims[gp_int]));
         gp_pos += gp_dims[gp_int]; 
       }
       delay_mean[pos:(pos + t - 1)] = dmeant;
