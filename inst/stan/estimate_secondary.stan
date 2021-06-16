@@ -26,8 +26,8 @@ transformed data {
 
 parameters{
   // observation model
-  real delay_mean_init[delays];               // mean of delays
-  real<lower = 0> delay_sd_init[delays];      // sd of delays
+  real dmean_init[delays];               // mean of delays
+  real<lower = 0> dsd_init[delays];      // sd of delays
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   real<lower = 0> frac_obs_init[obs_scale > 0 ? 1 : 0];
   // gaussian process
@@ -61,7 +61,7 @@ transformed parameters {
     int gp_int = obs_scale_gp;
     int gp_pos = gp_int > 0 ? sum(gp_dims[1:gp_int]) + 1 : 1;
     for (i in 1:delays) {
-      vector[t] dmeant = rep_vector(delay_mean_init[i], t);
+      vector[t] dmeant = rep_vector(dmean_init[i], t);
       vector[t] dsdt = rep_vector(delay_sd_init[i], t);
       if (delays_gp[i]) {
         gp_int += 1;
@@ -76,7 +76,18 @@ transformed parameters {
       delay_sd[pos:(pos + t - 1)] = dsdt;
       pos += t;
     }
-    pmfs = calculate_pmfs(delay_mean, delay_sd, max_delay);
+    if (delay_static) {
+      int broadcast[1] = t;
+      pmfs = vector_pmf(dmean_init, dsd_init, max_delay, delays, 1, broadcast,
+                        t, 1);
+    }else{
+      int broadcast[t];
+      for (s in 1:t) {
+        int broadcast[s] = 1;
+      }
+      pmfs = vector_pmf(delay_mean, delay_sd, max_delay, delays, t, broadcast,
+                        t, 1);
+    }
   }
     
   // calculate secondary reports from primary
@@ -94,7 +105,7 @@ transformed parameters {
 
 model {
   // penalised priors for delay distributions
-  delays_lp(delay_mean_init, delay_mean_mean, delay_mean_sd, delay_sd_init,
+  delays_lp(dmean_init, delay_mean_mean, delay_mean_sd, dsd_init,
             delay_sd_mean, delay_sd_sd, 1);
 
   // priors for truncation
