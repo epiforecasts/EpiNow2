@@ -1,4 +1,5 @@
 functions {
+#include functions/utils.stan
 #include functions/pmfs.stan
 #include functions/convolve.stan
 #include functions/observation_model.stan
@@ -18,9 +19,11 @@ data {
 }
 
 transformed data {
-  vector[gp_global_dim]  PHI;
+  vector[gp_mat_dim] PHI;
+  int t_dim[1] = t;
+  // Set up gassian process kernals
   if (gps) {  
-    PHI = setup_gps(gps, M, L, gp_dims, gp_global_dim);
+    PHI = setup_gps(gps, M, L, gp_dims, gp_order, gp_mat_dim);
   }
 }
 
@@ -41,52 +44,38 @@ parameters{
 
 transformed parameters {
   vector<lower=0>[t] secondary;
-  vector[sum(gp_dims)] gp;
+  vector[gp_dim] gp;
   vector<lower = 0>[t] frac_obs; 
   vector[t*delays] delay_mean;
   vector<lower = 0> [t*delays] delay_sd;
   vector[t*total_delay] pmfs;
+  // Update Gaussian processes
   if (gps) {
     gp = update_gps(PHI, gps, gp_dims, M, L, alpha, rho_raw, eta, ls_min,
-                    ls_max, order, gp_type);
+                    ls_max, gp_order, gp_type);
   }
+  // Cast observation scaling to all time points and scale with GP
   if (obs_scale) {
-    frac_obs = rep_vector(frac_obs_init[1], t);
-    if (obs_scale_gp) {
-      frac_obs[2:t] = frac_obs[2:t] .* exp(head(gp, gp_dims[1]));
-    }
+    int mod_index = sum(head(gp_dims, sum(obs_scale_gp)));
+    vector[mod_index] mod = head(gp, mod_index);
+    frac_obs = vector_param(frac_obs_init, mod, 1, 1, t_dim, obs_scale_gp, t);
   }
+  // Cast delays to all time points and scale with GP
   if (delays) {
-    int pos = 1;
-    int gp_int = obs_scale_gp;
-    int gp_pos = gp_int > 0 ? sum(gp_dims[1:gp_int]) + 1 : 1;
-    for (i in 1:delays) {
-      vector[t] dmeant = rep_vector(dmean_init[i], t);
-      vector[t] dsdt = rep_vector(delay_sd_init[i], t);
-      if (delays_gp[i]) {
-        gp_int += 1;
-        dmeant = dmeant .* exp(segment(gp, gp_pos, gp_dims[gp_int]));
-        gp_pos += gp_dims[gp_int]; 
-        
-        gp_int += 1;
-        dsdt = dsdt .* exp(segment(gp, gp_pos, gp_dims[gp_int]));
-        gp_pos += gp_dims[gp_int]; 
-      }
-      delay_mean[pos:(pos + t - 1)] = dmeant;
-      delay_sd[pos:(pos + t - 1)] = dsdt;
-      pos += t;
-    }
+    int delay_static = sum(delay_gps);
+    int mod_index = sum(tail(gp_dims, delay_static));
+    vector[mod_index] mod = tail(gp, mod_index);
+    delay_mean = vector_param(dmean_init, mod, delays, 1, t_dim, delays_gp, t);
+    delay_sd = vector_param(dsd_init, mod, delays, 1, t_dim, delays_gp, t);
+    // Calculate PMFs as needed for delay distribtions
+    // Steps: Calculate unique PMFs, convolve, cast to cover all time points
     if (delay_static) {
-      int broadcast[1] = t;
-      pmfs = vector_pmf(dmean_init, dsd_init, max_delay, delays, 1, broadcast,
-                        t, 1);
+      pmfs = 
+        vector_pmf(dmean_init, dsd_init, max_delay, delays, 1, t_dim, t, 1);
     }else{
-      int broadcast[t];
-      for (s in 1:t) {
-        int broadcast[s] = 1;
-      }
-      pmfs = vector_pmf(delay_mean, delay_sd, max_delay, delays, t, broadcast,
-                        t, 1);
+      int broadcast[t] = rep_int(1, t);
+      pmfs = 
+        vector_pmf(delay_mean, delay_sd, max_delay, delays, t, broadcast, t, 1);
     }
   }
     

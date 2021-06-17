@@ -309,7 +309,7 @@ create_gp_data <- function(gp = list(), data) {
       gp_type = ifelse(gp$kernel == "se", 0,
         ifelse(gp$kernel == "matern", 1, 0)
       ),
-      order = as.numeric(gp$order),
+      gp_order = as.numeric(gp$order),
       gp_dims = time
     )
     return(gp_data)
@@ -319,12 +319,14 @@ create_gp_data <- function(gp = list(), data) {
     gp_data <- map(gp, single_gp, data)
     gp_data <- transpose(gp_data)
     gp_data <- map(gp_data, ~array(unlist(.)))
-    gp_data$gp_global_dim <- sum(gp_data$gp_dims)
+    gp_data$gp_dim <- sum(gp_data$gp_dims)
+    gp_data$gp_mat_dim <- sum(gp_data$gp_dims) - sum(gp_data$gp_order)
   }else{
     gp_data <- single_gp(gp_opts(), data)
     gp_data <- map(gp_data, ~ array(numeric(0)))
     gp_data$gps <- 0
-    gp_data$gp_global_dim <- 0
+    gp_data$gp_dim <- 0
+    gp_data$gp_mat_dim <- 0
   }
   gp_data <- c(data, gp_data)
   return(gp_data)
@@ -362,7 +364,7 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
     obs_scale = ifelse(length(obs$scale) != 0, 1, 0),
-    obs_scale_gp  = as.numeric(!is.null(obs$gp)),
+    obs_scale_gp  = array(as.numeric(!is.null(obs$gp))),
     likelihood = as.numeric(obs$likelihood),
     return_likelihood = as.numeric(obs$return_likelihood)
   )

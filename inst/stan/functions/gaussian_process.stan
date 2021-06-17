@@ -45,8 +45,9 @@ matrix setup_gp(int M, real L, int dimension) {
   return(PHI);
 }
 
-vector setup_gps(int gps, int[] M, real[] L, int[] gp_dim, int gp_global_dim) {
-  vector[gp_global_dim]  PHI;
+vector setup_gps(int gps, int[] M, real[] L, int[] gp_dim, int[] order,
+                 int gp_mat_dim) {
+  vector[gp_mat_dim]  PHI;
   int pos = 1;
   for (i in 1:gps) {
     int seg = gp_dim[i] * M[i];
@@ -79,27 +80,32 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   return(noise);
 }
 
-vector update_gps(vector PHI, int gps, int[] gp_dims, int[] M, real[] L, 
-                  real[] alpha, real[] rho_raw, vector eta,
+// Update multiple GPs and apply order settings
+vector update_gps(vector PHI, int gps, int[] gp_dims, int gp_dim, int[] M,
+                  real[] L, real[] alpha, real[] rho_raw, vector eta,
                   real[] ls_min, real[] ls_max, int[] order, int[] gp_type) {
-  vector[sum(gp_dims)] gp;
+  vector[gp_dim] gp;
   int pos = 1;
   int phi_pos = 1;
   int eta_pos = 1;
+  real rho;
+  int length;
   for (i in 1:gps) {
-    real rho = ls_min[gps] + (ls_max[gps] - ls_min[gps]) * rho_raw[gps];
-    vector[gp_dims[i]] gp_tmp;
+    rho = ls_min[gps] + (ls_max[gps] - ls_min[gps]) * rho_raw[gps];
+    length = gp_dims[i] - gp_order[i];
+    vector[length] gp_tmp;
     gp_tmp = update_gp(
-      to_matrix(segment(PHI, phi_pos, gp_dims[i] * M[i]),
-      gp_dims[i], M[i]), M[i], L[i], alpha[i], rho,
+      to_matrix(segment(PHI, phi_pos, length * M[i]),
+      length, M[i]), M[i], L[i], alpha[i], rho,
       segment(eta, eta_pos, M[i]), gp_type[i]
     );
     if (order[i]) {
       gp_tmp = cumulative_sum(gp_tmp);
+      gp[pos] = 0;
     }
-    gp[pos:(pos + gp_dims[i] - 1)] = gp_tmp;
+    gp[(pos + order[i]):(pos + gp_dims[i] - 1)] = gp_tmp;
     pos = pos + gp_dims[i];
-    phi_pos = phi_pos + gp_dims[i] * M[i];
+    phi_pos = phi_pos + length * M[i];
     eta_pos = eta_pos + M[i];
   }
   return(gp);

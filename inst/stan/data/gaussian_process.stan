@@ -7,6 +7,7 @@
   real<lower=0> ls_max[gps];              // Upper bound for the lengthscale
   real alpha_sd[gps];                     // standard deviation of the alpha gp kernal parameter
   int gp_type[gps];                       // type of gp, 0 = squared exponential, 1 = 3/2 matern
-  int order[gps];                    // is underlying gaussian process first or second order
+  int gp_order[gps];                    // is underlying gaussian process first or second order
   int gp_dims[gps];
-  int gp_global_dim;
+  int gp_mat_dim;
+  int gp_dim;

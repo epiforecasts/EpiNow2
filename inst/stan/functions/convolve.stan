@@ -12,7 +12,7 @@ vector convolve(vector cases, vector pmf, int length) {
     }
    return(conv_cases);
   }
-
+// Convolve multiple pmfs
 vector convolve_pmfs(vector pmfs, int[] mdelay, int delays) {
   int cdelay = sum(mdelay);
   vector[cdelay] proc_pmf;
@@ -37,7 +37,7 @@ vector convolve_pmfs(vector pmfs, int[] mdelay, int delays) {
   }
   return(cpmf);
 }
-
+// Calculate and convolve multiple delays to produce a single pmf 
 vector static_pmf(vector dmean, vector dsd, int[] dmax, int dists, int reverse) {
   int dtotal = sum(dmax);
   vector[dtotal] pmf;
@@ -48,7 +48,7 @@ vector static_pmf(vector dmean, vector dsd, int[] dmax, int dists, int reverse) 
   }
   return(pmfs);
 }
-
+// Calculate and convolve multiple delays and then cast to required dimension
 vector vector_pmf(vector dmean, vector dsd, int[] dmax, int dists, int ddim,
                   int[] broadcast, int t, int reverse)
   int dtotal = sum(dmax);
@@ -72,6 +72,29 @@ vector vector_pmf(vector dmean, vector dsd, int[] dmax, int dists, int ddim,
   }
   return(pmfs);
 }
+// Cast a vector of parameters to the required dimension and modifier
+vector vector_param(vector param, vector mod, int no, int dim,
+                    int[] broadcast, int[] mod_pres, int t)
+  vector[t * no] params;
+  int pos = 1;
+  int mod_pos = 1;
+  int dim_pos;
+  int i;
+  for (s in 1:no) {
+    vector[t] paramt;
+    for (d in 1:dim) {
+      dim_pos = d + (s - 1) * no;
+      i = broadcast[s];
+      paramt[pos:(pos + i - 1)] = rep_vector(param[dist_pos], i);
+      pos += i;
+    }
+    if (mod_pres[s]) {
+      paramt = paramt .* exp(segment(mod, mod_pos, t));
+      mod_pos += t;
+    }
+  }
+  return(paramt);
+}
 
 // convolve count data by a pmf if required and otherwise trim
 // count data as requested
@@ -89,7 +112,7 @@ vector convolve_counts(vector infections, vector pmfs,
   }
   return(reports);
 }
-
+// Priors for distributional parameters
 void delays_lp(real[] dmean, real[] dmean_mean, real[] dmean_sd,
                real[] dsd, real[] dsd_mean, real[] dsd_sd, int weight){
     int delays = num_elements(dmean);
