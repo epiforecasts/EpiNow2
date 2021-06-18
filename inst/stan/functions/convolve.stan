@@ -116,8 +116,8 @@ vector convolve_counts(vector infections, vector pmfs,
   return(reports);
 }
 // Priors for distributional parameters
-void delays_lp(real[] dmean, real[] dmean_mean, real[] dmean_sd,
-               real[] dsd, real[] dsd_mean, real[] dsd_sd, int weight){
+void delays_lp(vector dmean, real[] dmean_mean, real[] dmean_sd,
+               vector dsd, real[] dsd_mean, real[] dsd_sd, int weight){
     int delays = num_elements(dmean);
     if (delays) {
       for (s in 1:delays) {

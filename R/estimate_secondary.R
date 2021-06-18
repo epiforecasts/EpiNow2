@@ -157,6 +157,7 @@ estimate_secondary <- function(reports,
   # observation and control data
   data <- list(
     t = nrow(reports),
+    t_dim = array(nrow(reports)),
     obs = reports$secondary,
     primary = reports$primary,
     burn_in = burn_in

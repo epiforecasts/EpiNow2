@@ -81,31 +81,30 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
 }
 
 // Update multiple GPs and apply order settings
-vector update_gps(vector PHI, int gps, int[] gp_dims, int gp_dim, int[] M,
+vector update_gps(vector PHI, int gps, int[] vdim, int dim, int[] M,
                   real[] L, real[] alpha, real[] rho_raw, vector eta,
-                  real[] ls_min, real[] ls_max, int[] order, int[] gp_type) {
-  vector[gp_dim] gp;
+                  real[] ls_min, real[] ls_max, int[] order, int[] type) {
+  vector[dim] gp;
   int pos = 1;
   int phi_pos = 1;
   int eta_pos = 1;
   real rho;
-  int length;
   for (i in 1:gps) {
+    int l = vdim[i] - order[i];
+    vector[l] tmp;
     rho = ls_min[gps] + (ls_max[gps] - ls_min[gps]) * rho_raw[gps];
-    length = gp_dims[i] - gp_order[i];
-    vector[length] gp_tmp;
-    gp_tmp = update_gp(
-      to_matrix(segment(PHI, phi_pos, length * M[i]),
-      length, M[i]), M[i], L[i], alpha[i], rho,
-      segment(eta, eta_pos, M[i]), gp_type[i]
+    tmp = update_gp(
+      to_matrix(segment(PHI, phi_pos, l* M[i]),
+      l, M[i]), M[i], L[i], alpha[i], rho,
+      segment(eta, eta_pos, M[i]), type[i]
     );
     if (order[i]) {
-      gp_tmp = cumulative_sum(gp_tmp);
+      tmp = cumulative_sum(tmp);
       gp[pos] = 0;
     }
-    gp[(pos + order[i]):(pos + gp_dims[i] - 1)] = gp_tmp;
-    pos = pos + gp_dims[i];
-    phi_pos = phi_pos + length * M[i];
+    gp[(pos + order[i]):(pos + vdim[i] - 1)] = tmp;
+    pos = pos + vdim[i];
+    phi_pos = phi_pos + l * M[i];
     eta_pos = eta_pos + M[i];
   }
   return(gp);

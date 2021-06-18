@@ -9,6 +9,7 @@ functions {
 
 data {
   int t;                             // time of observations
+  int t_dim[1];                      // time  as a integer vector
   int<lower = 0> obs[t];             // observed secondary data
   vector[t] primary;                 // observed primary data
   int burn_in;                       // time period to not use for fitting
@@ -20,7 +21,6 @@ data {
 
 transformed data {
   vector[gp_mat_dim] PHI;
-  int t_dim[1] = t;
   // Set up gassian process kernals
   if (gps) {  
     PHI = setup_gps(gps, M, L, gp_dims, gp_order, gp_mat_dim);
@@ -29,10 +29,10 @@ transformed data {
 
 parameters{
   // observation model
-  real dmean_init[delays];               // mean of delays
-  real<lower = 0> dsd_init[delays];      // sd of delays
+  vector[delays] dmean_init;               // mean of delays
+  vector<lower = 0>[delays] dsd_init;      // sd of delays
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
-  real<lower = 0> frac_obs_init[obs_scale > 0 ? 1 : 0];
+  vector<lower = 0>[obs_scale > 0 ? 1 : 0] frac_obs_init;
   // gaussian process
   real<lower = 0,upper = 1> rho_raw[gps];  
   real<lower = 0> alpha[gps];   
@@ -51,8 +51,8 @@ transformed parameters {
   vector[t*total_delay] pmfs;
   // Update Gaussian processes
   if (gps) {
-    gp = update_gps(PHI, gps, gp_dims, M, L, alpha, rho_raw, eta, ls_min,
-                    ls_max, gp_order, gp_type);
+    gp = update_gps(PHI, gps, gp_dims, gp_dim, M, L, alpha, rho_raw, eta,
+                    ls_min, ls_max, gp_order, gp_type);
   }
   // Cast observation scaling to all time points and scale with GP
   if (obs_scale) {
@@ -62,7 +62,7 @@ transformed parameters {
   }
   // Cast delays to all time points and scale with GP
   if (delays) {
-    int delay_static = sum(delay_gps);
+    int delay_static = sum(delays_gp);
     int mod_index = sum(tail(gp_dims, delay_static));
     vector[mod_index] mod = tail(gp, mod_index);
     delay_mean = vector_param(dmean_init, mod, delays, 1, t_dim, delays_gp, t);

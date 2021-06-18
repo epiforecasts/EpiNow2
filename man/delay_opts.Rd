@@ -27,6 +27,12 @@ functions.
 \examples{
 # no delays
 delay_opts()
+
+# a static delay
+delay_opts(list(mean = 1, mean_sd = 0.1, sd = 0.1, sd_sd = 0.01, max = 30))
+# a delay assumed to vary over time using as gaussian process
+delay_opts(list(mean = 1, mean_sd = 0.1, sd = 0.1, sd_sd = 0.01, max = 30),
+           gp = list(gp_opts()))
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit
