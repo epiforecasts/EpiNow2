@@ -49,7 +49,7 @@ delay_opts <- function(..., gp = NULL) {
   data$delay_sd_mean <- allocate_delays(delays$sd, data$delays)
   data$delay_sd_sd <- allocate_delays(delays$sd_sd, data$delays)
   data$max_delay <- allocate_delays(delays$max, data$delays)
-  data$total_delay <- sum(delays$max)
+  data$total_delay <- sum(unlist(delays$max))
   
   if (!is.null(gp)) {
     if(length(gp) != data$delays) {

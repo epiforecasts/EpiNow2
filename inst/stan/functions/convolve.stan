@@ -62,7 +62,7 @@ vector vector_pmf(vector dmean, vector dsd, int[] dmax, int dists, int ddim,
     for (d in 1:dists) {
       dist_pos = s + (d - 1) * ddim;
       sdmean[d] = dmean[dist_pos];
-      sdsd[d] = sdsd[dist_pos];
+      sdsd[d] = dsd[dist_pos];
     }
     spmf = static_pmf(sdmean, sdsd, dmax, dists, reverse);
     for (i in 1:broadcast[s]) {
@@ -97,7 +97,7 @@ vector vector_param(vector param, vector mod, int no, int dim,
     params[no_pos:(no_pos + t - 1)] = paramt;
     no_pos += t;
   }
-  return(param);
+  return(params);
 }
 
 // convolve count data by a pmf if required and otherwise trim
