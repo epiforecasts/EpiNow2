@@ -45,13 +45,16 @@ matrix setup_gp(int M, real L, int dimension) {
   return(PHI);
 }
 
-vector setup_gps(int gps, int[] M, real[] L, int[] gp_dim, int[] order,
+vector setup_gps(int gps, int[] M, real[] L, int[] dim, int[] order,
                  int gp_mat_dim) {
   vector[gp_mat_dim]  PHI;
+  int adj_dim;
+  int seg;
   int pos = 1;
   for (i in 1:gps) {
-    int seg = gp_dim[i] * M[i];
-    PHI[pos:(pos + seg - 1)] = to_vector(setup_gp(M[i], L[i], gp_dim[i]));
+    adj_dim = dim[i] - order[i];
+    seg = adj_dim * M[i];
+    PHI[pos:(pos + seg - 1)] = to_vector(setup_gp(M[i], L[i], adj_dim));
     pos = pos + seg;
   }
   return(PHI);

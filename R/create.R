@@ -320,7 +320,8 @@ create_gp_data <- function(gp = list(), data) {
     gp_data <- transpose(gp_data)
     gp_data <- map(gp_data, ~array(unlist(.)))
     gp_data$gp_dim <- sum(gp_data$gp_dims)
-    gp_data$gp_mat_dim <- sum(gp_data$gp_dims) - sum(gp_data$gp_order)
+    gp_data$gp_mat_dim <- sum(gp_data$M * (gp_data$gp_dims - gp_data$gp_order))
+    gp_data$gps <- length(gp_data$gp_dims)
   }else{
     gp_data <- single_gp(gp_opts(), data)
     gp_data <- map(gp_data, ~ array(numeric(0)))

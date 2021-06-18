@@ -89,6 +89,14 @@
 #' inc_preds <- forecast_secondary(inc, cases[61:.N][, value := primary])
 #' plot(inc_preds, new_obs = cases, from = "2020-05-01")
 #'
+#' # allow parameters to vary over time
+#' inc_vary <- estimate_secondary(cases[1:60], 
+#'  obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), 
+#'                 gp = gp_opts(order = "0", basis_prop = 0.05, ls_mean = 30,
+#'                              ls_sd = 1))
+#' ) 
+#' 
+#' plot(inc_vary, primary = TRUE)
 #' #### Prevalence data example ####
 #'
 #' # make some example prevalence data
@@ -174,7 +182,7 @@ estimate_secondary <- function(reports,
   data <- c(data, create_obs_model(obs, dates = reports$date))
 
   # gaussian process data
-  data <- create_gp_data(gp = compact(c(obs$gp, delays$gp)), data)
+  data <- create_gp_data(gp = compact(list(obs$gp, delays$gp)), data)
   
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(

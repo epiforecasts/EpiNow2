@@ -80,7 +80,7 @@ transformed parameters {
         pmfs = 
           vector_pmf(delay_mean, delay_sd, max_delay, delays, t, broadcast, t, 1);
       }
-    }  
+    }
       
     // calculate secondary reports from primary
     secondary = calculate_secondary(primary, obs, frac_obs, pmfs,
