@@ -53,7 +53,7 @@ vector reverse_mf(vector pmf, int max_pmf) {
   return rev_pmf;
 }
 // Calculate pmfs
-vector calculate_pmfs(vector dmean, vector dsd, int mdelay) {
+vector calculate_pmfs(vector dmean, vector dsd, int[] mdelay) {
   int delays = num_elements(dmean);
   vector[sum(mdelay)] pmf;
   int pos = 1;

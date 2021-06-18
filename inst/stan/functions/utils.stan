@@ -3,5 +3,5 @@ int[] rep_int(int variable, int n) {
   for (i in 1:n) {
     vector_int[i] = variable;
   }
-  return(vector_int)
+  return(vector_int);
 }
