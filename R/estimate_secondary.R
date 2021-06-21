@@ -174,7 +174,8 @@ estimate_secondary <- function(reports,
   data <- c(data, secondary)
   # delay data
   data <- c(data, delays)
-  data$gp <- NULL
+  data$mean_gp <- NULL
+  data$sd_gp <- NULL
   data$seeding_time <- 0
   
   # truncation data
@@ -183,7 +184,9 @@ estimate_secondary <- function(reports,
   data <- c(data, create_obs_model(obs, dates = reports$date))
 
   # gaussian process data
-  data <- create_gp_data(gp = compact(c(list(obs$gp), delays$gp)), data)
+  data <- create_gp_data(
+    gp = compact(c(list(obs$gp), delays$mean_gp, delays$sd_gp)), data
+  )
   
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(

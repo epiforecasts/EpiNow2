@@ -11,3 +11,5 @@
   int gp_dims[gps];
   int gp_mat_dim;
   int gp_dim;
+  int gp_start[gps];
+  int gp_end[gps];

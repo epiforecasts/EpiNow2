@@ -40,7 +40,8 @@ inc <- estimate_secondary(cases[1:60], model = model,
   delays = delay_opts(
     list(mean = 2.5, mean_sd = 0.5,
          sd = 0.5, sd_sd = 0.25, max = 15)),
-  obs = obs_opts(scale = list(mean = 0.2, sd = 0.2))
+  obs = obs_opts(scale = list(mean = 0.2, sd = 0.2),
+                 family = "poisson")
 )
 plot(inc, primary = TRUE)
 
@@ -50,11 +51,14 @@ inc_vary <- estimate_secondary(
   delays = delay_opts(
     list(mean = 2.5, mean_sd = 0.5,
          sd = 0.5, sd_sd = 0.25, max = 15),
-    gp =  list(gp_opts(order = "0", basis_prop = 0.05,
-                  ls_mean = 45, ls_sd = 7, alpha_sd = 1))),
-  obs = obs_opts(scale = list(mean = 0.2, sd = 0.2),
-                 gp = gp_opts(order = "1", basis_prop = 0.05,
-                              ls_mean = 45, ls_sd = 7, alpha_sd = 1))
+    mean =  list(gp_opts(order = "0", basis_prop = 0.025,
+                  ls_mean = 55, ls_sd = 2, alpha_sd = 0.1)),
+    sd =  list(gp_opts(order = "0", basis_prop = 0.025,
+                       ls_mean = 55, ls_sd = 2, alpha_sd = 0.1))),
+  obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), family = "poisson",
+                 gp = gp_opts(order = "1", basis_prop = 0.025,
+                              ls_mean = 44, ls_sd = 2, alpha_sd = 0.1)),
+  control = list(adapt_delta = 0.9)
 )
 
 plot(inc_vary, primary = TRUE)

@@ -114,6 +114,14 @@ plot(inc, primary = TRUE)
 inc_preds <- forecast_secondary(inc, cases[61:.N][, value := primary])
 plot(inc_preds, new_obs = cases, from = "2020-05-01")
 
+# allow parameters to vary over time
+inc_vary <- estimate_secondary(cases[1:60], 
+ obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), 
+                gp = gp_opts(order = "0", basis_prop = 0.05, ls_mean = 30,
+                             ls_sd = 1))
+) 
+
+plot(inc_vary, primary = TRUE)
 #### Prevalence data example ####
 
 # make some example prevalence data
@@ -128,10 +136,10 @@ cases$secondary[1] <- as.integer(cases$scaled_primary[1])
 for (i in 2:nrow(cases)) {
   meanlog <- rnorm(1, 1.6, 0.1)
   sdlog <- rnorm(1, 0.8, 0.05)
-  cmf <- cumsum(dlnorm(1:min(i - 1, 20), meanlog, sdlog)) -
+  cmf <- cumsum(dlnorm(1:min(i - 1, 30), meanlog, sdlog)) -
     cumsum(dlnorm(0:min(19, i - 2), meanlog, sdlog))
-  cmf <- cmf / plnorm(min(i - 1, 20), meanlog, sdlog)
-  reducing_cases <- sum(cases$scaled_primary[(i - 1):max(1, i - 20)] * cmf)
+  cmf <- cmf / plnorm(min(i - 1, 30), meanlog, sdlog)
+  reducing_cases <- sum(cases$scaled_primary[(i - 1):max(1, i - 30)] * cmf)
   reducing_cases <- ifelse(cases$secondary[i - 1] < reducing_cases,
     cases$secondary[i - 1], reducing_cases
   )

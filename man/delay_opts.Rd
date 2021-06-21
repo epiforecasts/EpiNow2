@@ -4,17 +4,24 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(..., gp = NULL)
+delay_opts(..., mean = NULL, sd = NULL, seed, type = "uncertain")
 }
 \arguments{
 \item{...}{Delay distributions as a list with the following parameters:
 "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
 normal (with all parameters except for max defined in logged form).}
 
-\item{gp}{A list of lists as returned by \code{gp_opts()}. Specifies if, and if
-so how,a gaussian process, should be used to allow delay distribution
-parameters to vary over time
-non-parametrically over time}
+\item{mean}{Options defining the variation in the mean of the distribution.
+Supply one per delay. Currently only supports \code{gp_opts()}.}
+
+\item{sd}{Options defining the variation in the sd of the distribution.
+Supply one per delay. Currently only supports \code{gp_opts()}.}
+
+\item{seed}{Integer, number of timepoints to use to seed the model.
+If not set estimated from the combined mean of the specified distributions.}
+
+\item{type}{A character string, defaulting to "uncertain". Defines the type
+of distributions to use. Supported options are "uncertain".}
 }
 \value{
 A list summarising the input delay distributions.
@@ -32,7 +39,7 @@ delay_opts()
 delay_opts(list(mean = 1, mean_sd = 0.1, sd = 0.1, sd_sd = 0.01, max = 30))
 # a delay assumed to vary over time using as gaussian process
 delay_opts(list(mean = 1, mean_sd = 0.1, sd = 0.1, sd_sd = 0.01, max = 30),
-           gp = list(gp_opts()))
+           mean = list(gp_opts()), sd = list(gp_opts()))
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit

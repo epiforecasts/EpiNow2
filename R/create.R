@@ -310,7 +310,9 @@ create_gp_data <- function(gp = list(), data) {
         ifelse(gp$kernel == "matern", 1, 0)
       ),
       gp_order = as.numeric(gp$order),
-      gp_dims = time
+      gp_dims = time,
+      gp_start = 1, 
+      gp_end = time
     )
     return(gp_data)
   }
@@ -322,6 +324,12 @@ create_gp_data <- function(gp = list(), data) {
     gp_data$gp_dim <- sum(gp_data$gp_dims)
     gp_data$gp_mat_dim <- sum(gp_data$M * (gp_data$gp_dims - gp_data$gp_order))
     gp_data$gps <- length(gp_data$gp_dims)
+    if (gps > 1) {
+      for (i in 2:gps) {
+        gp_data$gp_start[i] <- gp_data$gp_end[i -1] + 1
+        gp_data$gp_end[i] <- gp_data$gp_start[i] + gp_data$gp_end[i] - 1
+      }
+    }
   }else{
     gp_data <- single_gp(gp_opts(), data)
     gp_data <- map(gp_data, ~ array(numeric(0)))

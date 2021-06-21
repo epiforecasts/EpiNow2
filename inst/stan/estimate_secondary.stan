@@ -59,16 +59,16 @@ transformed parameters {
     }
     // Cast observation scaling to all time points and scale with GP
     if (obs_scale) {
-      int mod_index = sum(head(gp_dims, sum(obs_scale_gp)));
-      vector[mod_index] mod = head(gp, mod_index);
-      frac_obs = vector_param(frac_obs_init, mod, 1, 1, t_dim, obs_scale_gp, t);
+      frac_obs = vector_param(frac_obs_init, head(gp, obs_scale_gp[1] * t),
+                              1, 1, t_dim, obs_scale_gp, t);
     }
     // Cast delays to all time points and scale with GP
     if (delays) {
-      int mod_index = sum(tail(gp_dims, sum(delays_gp)));
-      vector[mod_index] mod = tail(gp, mod_index);
-      delay_mean = vector_param(dmean_init, mod, delays, 1, t_dim, delays_gp, t);
-      delay_sd = vector_param(dsd_init, mod, delays, 1, t_dim, delays_gp, t);
+      delay_mean = vector_param(dmean_init, 
+                                head(tail(gp, delay_gps * t), dmean_gps * t),
+                                delays, 1, t_dim, dmean_gp, t);
+      delay_sd = vector_param(dsd_init, tail(gp, dsd_gps * t), 
+                              delays, 1, t_dim, dsd_gp, t);
       // Calculate PMFs as needed for delay distribtions
       // Steps: Calculate unique PMFs, convolve, cast to cover all time points
       if (delay_type == 0) {
@@ -79,8 +79,7 @@ transformed parameters {
         pmfs = 
           vector_pmf(delay_mean, delay_sd, max_delay, delays, t, broadcast, t, 1);
       }
-    }
-      
+    } 
     // calculate secondary reports from primary
     secondary = calculate_secondary(primary, obs, frac_obs, pmfs,
                                     total_delay, cumulative, historic, primary_hist_additive, current,

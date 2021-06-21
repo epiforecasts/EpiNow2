@@ -6,10 +6,10 @@
 #' @param ... Delay distributions as a list with the following parameters:
 #' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
 #' normal (with all parameters except for max defined in logged form).
-#' @param gp A list of lists as returned by `gp_opts()`. Specifies if, and if
-#' so how,a gaussian process, should be used to allow delay distribution
-#' parameters to vary over time
-#' non-parametrically over time
+#' @param mean Options defining the variation in the mean of the distribution.
+#' Supply one per delay. Currently only supports `gp_opts()`.
+#' @param sd Options defining the variation in the sd of the distribution.
+#' Supply one per delay. Currently only supports `gp_opts()`.
 #' @param seed Integer, number of timepoints to use to seed the model. 
 #' If not set estimated from the combined mean of the specified distributions.
 #' @param type A character string, defaulting to "uncertain". Defines the type
@@ -26,13 +26,14 @@
 #' delay_opts(list(mean = 1, mean_sd = 0.1, sd = 0.1, sd_sd = 0.01, max = 30))
 #' # a delay assumed to vary over time using as gaussian process
 #' delay_opts(list(mean = 1, mean_sd = 0.1, sd = 0.1, sd_sd = 0.01, max = 30),
-#'            gp = list(gp_opts()))
-delay_opts <- function(..., gp = NULL, seed, type = "uncertain") {
+#'            mean = list(gp_opts()), sd = list(gp_opts()))
+delay_opts <- function(..., mean = NULL, sd = NULL, seed, type = "uncertain") {
   type <- match.arg(type, choices = c("uncertain"))
   delays <- list(...)
   data <- list()
   data$delays <- length(delays)
-  data$delays_gp <- array(rep(0, data$delays))
+  data$dmean_gp <- array(rep(0, data$delays))
+  data$dsd_gp <- array(rep(0, data$delays))
   data$delay_type <- fcase(
     type %in% "uncertain", 0
   )
@@ -61,15 +62,31 @@ delay_opts <- function(..., gp = NULL, seed, type = "uncertain") {
   data$max_delay <- allocate_delays(delays$max, data$delays)
   data$total_delay <- sum(unlist(delays$max))
   
-  if (!is.null(gp)) {
-    if(length(gp) != data$delays) {
-      stop("A Gaussian process or NULL must be specified for each delay")
+  if (!is.null(mean)) {
+    if(length(mean) != data$delays) {
+      stop("A Gaussian process or NULL must be specified for each delay or
+            overall")
     }else{
-      data$delays_gp <- array(as.numeric(map_lgl(gp, ~!is.null(.))))
-      data$gp <- gp
+      data$dmean_gp <- array(as.numeric(map_lgl(mean, ~!is.null(.))))
+      data$mean_gp <- mean
       data$delay_type <- 1
     }
   }
+
+  if (!is.null(sd)) {
+    if(length(sd) != data$delays) {
+      stop("A Gaussian process or NULL must be specified for each delay or
+            overall")
+    }else{
+      data$dsd_gp <- array(as.numeric(map_lgl(sd, ~!is.null(.))))
+      data$sd_gp <- sd
+      data$delay_type <- 1
+    }
+  }
+
+    data$dmean_gps <- sum(data$dmean_gp)
+    data$dsd_gps <- sum(data$dsd_gp)
+    data$delay_gps <- data$dmean_gps + data$dsd_gps
   return(data)
 }
 
