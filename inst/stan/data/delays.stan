@@ -6,3 +6,4 @@
   int max_delay[delays];       // maximum incubation period
   int total_delay;
   int delays_gp[delays];
+  int delay_type;

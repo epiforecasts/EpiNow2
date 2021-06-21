@@ -10,9 +10,14 @@
 #' so how,a gaussian process, should be used to allow delay distribution
 #' parameters to vary over time
 #' non-parametrically over time
+#' @param seed Integer, number of timepoints to use to seed the model. 
+#' If not set estimated from the combined mean of the specified distributions.
+#' @param type A character string, defaulting to "uncertain". Defines the type
+#' of distributions to use. Supported options are "uncertain".
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input delay distributions.
 #' @export
+#' @importFrom data.table fcase
 #' @examples
 #' # no delays
 #' delay_opts()
@@ -22,28 +27,33 @@
 #' # a delay assumed to vary over time using as gaussian process
 #' delay_opts(list(mean = 1, mean_sd = 0.1, sd = 0.1, sd_sd = 0.01, max = 30),
 #'            gp = list(gp_opts()))
-delay_opts <- function(..., gp = NULL) {
+delay_opts <- function(..., gp = NULL, seed, type = "uncertain") {
+  type <- match.arg(type, choices = c("uncertain"))
   delays <- list(...)
   data <- list()
   data$delays <- length(delays)
   data$delays_gp <- array(rep(0, data$delays))
+  data$delay_type <- fcase(
+    type %in% "uncertain", 0
+  )
   if (data$delays > 0) {
     delays <- purrr::transpose(delays)
   }
 
   # Estimate the mean delay -----------------------------------------------
-  if (data$delays > 0) {
-    data$seeding_time <- sum(
-      purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2 / 2))
-    )
-    if (data$seeding_time < 1) {
-      data$seeding_time <- 1
+  if (missing(seed)) {
+    if (data$delays > 0) {
+      data$seeding_time <- sum(
+        purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2 / 2))
+      )
+      data$seeding_time <- max(1, as.integer(data$seeding_time))
     } else {
-      data$seeding_time <- as.integer(data$seeding_time)
+      data$seeding_time <- 1
     }
-  } else {
-    data$seeding_time <- 1
+  }else {
+     data$seeding_time <- seed
   }
+
   data$delay_mean_mean <- allocate_delays(delays$mean, data$delays)
   data$delay_mean_sd <- allocate_delays(delays$mean_sd, data$delays)
   data$delay_sd_mean <- allocate_delays(delays$sd, data$delays)
@@ -55,8 +65,9 @@ delay_opts <- function(..., gp = NULL) {
     if(length(gp) != data$delays) {
       stop("A Gaussian process or NULL must be specified for each delay")
     }else{
-      data$delays_gp <- as.numeric(map_lgl(gp, ~!is.null(.)))
+      data$delays_gp <- array(as.numeric(map_lgl(gp, ~!is.null(.))))
       data$gp <- gp
+      data$delay_type <- 1
     }
   }
   return(data)

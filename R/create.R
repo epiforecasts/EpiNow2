@@ -315,7 +315,7 @@ create_gp_data <- function(gp = list(), data) {
     return(gp_data)
   }
 
-  if (!is.null(gp)) {
+  if (gps != 0) {
     gp_data <- map(gp, single_gp, data)
     gp_data <- transpose(gp_data)
     gp_data <- map(gp_data, ~array(unlist(.)))

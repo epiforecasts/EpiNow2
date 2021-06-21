@@ -111,10 +111,10 @@
 #' for (i in 2:nrow(cases)) {
 #'   meanlog <- rnorm(1, 1.6, 0.1)
 #'   sdlog <- rnorm(1, 0.8, 0.05)
-#'   cmf <- cumsum(dlnorm(1:min(i - 1, 20), meanlog, sdlog)) -
+#'   cmf <- cumsum(dlnorm(1:min(i - 1, 30), meanlog, sdlog)) -
 #'     cumsum(dlnorm(0:min(19, i - 2), meanlog, sdlog))
-#'   cmf <- cmf / plnorm(min(i - 1, 20), meanlog, sdlog)
-#'   reducing_cases <- sum(cases$scaled_primary[(i - 1):max(1, i - 20)] * cmf)
+#'   cmf <- cmf / plnorm(min(i - 1, 30), meanlog, sdlog)
+#'   reducing_cases <- sum(cases$scaled_primary[(i - 1):max(1, i - 30)] * cmf)
 #'   reducing_cases <- ifelse(cases$secondary[i - 1] < reducing_cases,
 #'     cases$secondary[i - 1], reducing_cases
 #'   )
@@ -176,13 +176,14 @@ estimate_secondary <- function(reports,
   data <- c(data, delays)
   data$gp <- NULL
   data$seeding_time <- 0
+  
   # truncation data
   data <- c(data, truncation)
   # observation model data
   data <- c(data, create_obs_model(obs, dates = reports$date))
 
   # gaussian process data
-  data <- create_gp_data(gp = compact(list(obs$gp, delays$gp)), data)
+  data <- create_gp_data(gp = compact(c(list(obs$gp), delays$gp)), data)
   
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(

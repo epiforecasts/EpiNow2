@@ -8,7 +8,7 @@ vector convolve(vector cases, vector pmf, int length) {
         seg_pmf = segment(pmf, pos, length);
         ccases[s] += dot_product(cases[max(1, (s - length + 1)):s],
                                  tail(seg_pmf, min(length, s)));
-        pos = pos + 1;
+        pos = pos + length;
     }
    return(ccases);
   }

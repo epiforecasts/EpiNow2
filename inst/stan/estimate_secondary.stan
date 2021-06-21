@@ -65,14 +65,13 @@ transformed parameters {
     }
     // Cast delays to all time points and scale with GP
     if (delays) {
-      int delay_static = sum(delays_gp);
-      int mod_index = sum(tail(gp_dims, delay_static));
+      int mod_index = sum(tail(gp_dims, sum(delays_gp)));
       vector[mod_index] mod = tail(gp, mod_index);
       delay_mean = vector_param(dmean_init, mod, delays, 1, t_dim, delays_gp, t);
       delay_sd = vector_param(dsd_init, mod, delays, 1, t_dim, delays_gp, t);
       // Calculate PMFs as needed for delay distribtions
       // Steps: Calculate unique PMFs, convolve, cast to cover all time points
-      if (delay_static) {
+      if (delay_type == 0) {
         pmfs = 
           vector_pmf(dmean_init, dsd_init, max_delay, delays, 1, t_dim, t, 1);
       }else{
