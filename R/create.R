@@ -260,7 +260,7 @@ create_backcalc_data <- function(backcalc = backcalc_opts) {
 #' @seealso gp_opts
 #' @return A list of settings defining the Gaussian process
 #' @export
-#' @importFrom purrr transpose map map2
+#' @importFrom purrr transpose map
 #' @examples
 #' # define input data required
 #' data <- list(t = 30)
@@ -351,13 +351,6 @@ create_gp_data <- function(gp = list(), data) {
     gp_data$gp_dim <- sum(gp_data$gp_dims)
     gp_data$gp_mat_dim <- sum(gp_data$M * gp_data$gp_adj_dims)
     gp_data$gps <- length(gp_data$gp_dims)
-    gp_data$gp_steps <- 
-     split(gp_data$gp_steps, rep(1:gp_data$gps, gp_data$gp_no_steps))
-    gp_data$gp_steps <- map2(gp_data$gp_steps, gp_data$gp_no_steps, 
-                             ~ c(.x, rep(0, max(gp_data$gp_no_steps) - .y)))
-    gp_data$gp_steps <- 
-      matrix(unlist(gp_data$gp_steps), byrow = TRUE, nrow = gps)
-
     if (gps > 1) {
       for (i in 2:gps) {
         gp_data$gp_start[i] <- gp_data$gp_end[i -1] + 1

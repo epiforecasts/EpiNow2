@@ -10,7 +10,8 @@
   int gp_order[gps];                    // is underlying gaussian process first or second order
   int gp_dims[gps];
   int gp_adj_dims[gps];
-  int gp_steps[gps, max(gp_adj_dims)];
+  int gp_no_steps[gps];
+  int gp_steps[sum(gp_no_steps)];
   int gp_mat_dim;
   int gp_dim;
   int gp_start[gps];

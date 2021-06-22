@@ -54,8 +54,9 @@ transformed parameters {
     vector[gp_dim] gp;
     // Update Gaussian processes
     if (gps) {
-      gp = update_gps(PHI, gps, gp_dims, gp_adj_dims, gp_dim, gp_steps, M, L,
-                      alpha, rho_raw, eta, ls_min, ls_max, gp_order, gp_type);
+      gp = update_gps(PHI, gps, gp_dims, gp_adj_dims, gp_dim, gp_steps,
+                      gp_no_steps, M, L, alpha, rho_raw, eta, ls_min,
+                      ls_max, gp_order, gp_type);
     }
     // Cast observation scaling to all time points and scale with GP
     if (obs_scale) {
@@ -79,7 +80,7 @@ transformed parameters {
         pmfs = 
           vector_pmf(delay_mean, delay_sd, max_delay, delays, t, broadcast, t, 1);
       }
-    } 
+    }
     // calculate secondary reports from primary
     secondary = calculate_secondary(primary, obs, frac_obs, pmfs,
                                     total_delay, cumulative, historic, primary_hist_additive, current,

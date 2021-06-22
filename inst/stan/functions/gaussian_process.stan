@@ -83,19 +83,22 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
 
 // Update multiple GPs and apply order settings
 vector update_gps(vector PHI, int gps, int[] vdim, int[] adj_vdim, int dim,
-                  int[,] steps, int[] M, real[] L, real[] alpha,
+                  int[] steps, int[] no_steps, int[] M, real[] L, real[] alpha,
                   real[] rho_raw, vector eta, real[] ls_min, real[] ls_max,
                   int[] order, int[] type) {
   vector[dim] gp;
   int pos = 1;
+  int spos = 1;
   int phi_pos = 1;
   int eta_pos = 1;
+  int lsteps[max(no_steps)];
   real rho;
   for (i in 1:gps) {
     //set up in loop parameters and scale lengthscale
     int l = adj_vdim[i];
     vector[l] sgp;
     vector[vdim[i]] bsgp;
+    int lpos = 1;
     rho = ls_min[gps] + (ls_max[gps] - ls_min[gps]) * rho_raw[gps];
     // update GP using spectral density
     sgp = update_gp(
@@ -108,12 +111,14 @@ vector update_gps(vector PHI, int gps, int[] vdim, int[] adj_vdim, int dim,
       gp[pos] = 0;
     }
     // project GP over timesteps held constant
+    lsteps[1:no_steps[i]] = steps[spos:(spos - 1 + no_steps[i])];
+    spos += no_steps[i];
     for (j in 1:l) {
-      bsgp[pos:(pos - 1 + steps[i, j])] = rep_vector(sgp[j], steps[i, j]);
-      pos += steps[i, j];
+      bsgp[lpos:(lpos - 1 + lsteps[j])] = rep_vector(sgp[j], lsteps[j]);
+      lpos += lsteps[j];
     }
 
-    gp[(pos + order[i]):(pos + vdim[i] - 1)] = bsgp;
+    gp[(pos):(pos + vdim[i] - 1)] = bsgp;
     pos = pos + vdim[i];
     phi_pos = phi_pos + l * M[i];
     eta_pos = eta_pos + M[i];
