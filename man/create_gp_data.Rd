@@ -32,6 +32,9 @@ create_gp_data(list(gp_opts(ls_mean = 14)), data)
 
 # create settings with multiple GPs
 create_gp_data(list(gp_opts(), gp_opts(order = "0")), data)
+
+# create a GP with a discrete time step
+create_gp_data(list(gp_opts(step = 7)))
 }
 \seealso{
 gp_opts

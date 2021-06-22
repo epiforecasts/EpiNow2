@@ -48,10 +48,12 @@ matrix setup_gp(int M, real L, int dimension) {
 vector setup_gps(int gps, int[] M, real[] L, int[] dim,
                  int gp_mat_dim) {
   vector[gp_mat_dim]  PHI;
+  int seg;
   int pos = 1;
   for (i in 1:gps) {
+    seg = dim[i] * M[i];
     PHI[pos:(pos + seg - 1)] = to_vector(setup_gp(M[i], L[i], dim[i]));
-    pos = pos + dim[i] * M[i];
+    pos = pos + seg;
   }
   return(PHI);
 }
@@ -107,11 +109,11 @@ vector update_gps(vector PHI, int gps, int[] vdim, int[] adj_vdim, int dim,
     }
     // project GP over timesteps held constant
     for (j in 1:l) {
-      bgp[pos:(pos - 1 + steps[i, j])] = rep_vector(sgp[j], steps[i, j]);
-      pos += steps[i, j]
+      bsgp[pos:(pos - 1 + steps[i, j])] = rep_vector(sgp[j], steps[i, j]);
+      pos += steps[i, j];
     }
 
-    gp[(pos + order[i]):(pos + vdim[i] - 1)] = bgp;
+    gp[(pos + order[i]):(pos + vdim[i] - 1)] = bsgp;
     pos = pos + vdim[i];
     phi_pos = phi_pos + l * M[i];
     eta_pos = eta_pos + M[i];

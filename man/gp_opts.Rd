@@ -14,7 +14,8 @@ gp_opts(
   alpha_sd = 0.1,
   kernel = "matern",
   matern_type = 3/2,
-  order = "1"
+  order = "1",
+  step = 1
 )
 }
 \arguments{
@@ -54,6 +55,10 @@ order GPs will be easier to compute but will revert to the underlying mean
 function when the support from data is sparse. 1st order GPs have a higher
 compute cost but revert to the most recent value with support which may be
 desirable.}
+
+\item{step}{Integer defaulting to 1. The discrete step size over which to
+approximate the Gaussian process. This can be increased to reduce the
+computational burden of the model and improve identifiability .}
 }
 \value{
 A list of settings defining the Gaussian process

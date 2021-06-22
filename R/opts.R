@@ -250,6 +250,9 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #' function when the support from data is sparse. 1st order GPs have a higher
 #' compute cost but revert to the most recent value with support which may be 
 #' desirable.
+#' @param step Integer defaulting to 1. The discrete step size over which to
+#' approximate the Gaussian process. This can be increased to reduce the 
+#' computational burden of the model and improve identifiability .
 #' @return A list of settings defining the Gaussian process
 #' @export
 #' @examples
@@ -267,7 +270,8 @@ gp_opts <- function(basis_prop = 0.2,
                     alpha_sd = 0.1,
                     kernel = "matern",
                     matern_type = 3 / 2,
-                    order = "1") {
+                    order = "1", 
+                    step = 1) {
   gp <- list(
     basis_prop = basis_prop,
     boundary_scale = boundary_scale,
@@ -278,7 +282,8 @@ gp_opts <- function(basis_prop = 0.2,
     alpha_sd = alpha_sd,
     kernel = match.arg(kernel, choices = c("se", "matern_3/2")),
     matern_type = matern_type,
-    order = match.arg(as.character(order), choices = c("0", "1"))
+    order = match.arg(as.character(order), choices = c("0", "1")),
+    step = step
   )
 
   if (gp$matern_type != 3 / 2) {

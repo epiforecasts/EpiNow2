@@ -260,7 +260,7 @@ create_backcalc_data <- function(backcalc = backcalc_opts) {
 #' @seealso gp_opts
 #' @return A list of settings defining the Gaussian process
 #' @export
-#' @importFrom purrr transpose map
+#' @importFrom purrr transpose map map2
 #' @examples
 #' # define input data required
 #' data <- list(t = 30)
@@ -273,6 +273,9 @@ create_backcalc_data <- function(backcalc = backcalc_opts) {
 #' 
 #' # create settings with multiple GPs
 #' create_gp_data(list(gp_opts(), gp_opts(order = "0")), data)
+#' 
+#' # create a GP with a discrete time step
+#' create_gp_data(list(gp_opts(step = 7)))
 create_gp_data <- function(gp = list(), data) {
   # Define if GP is on or off
   if (is.null(gp) | length(gp) == 0) {
@@ -282,10 +285,31 @@ create_gp_data <- function(gp = list(), data) {
   }
 
   single_gp <- function(gp, data) {
-    # reset ls_max if larger than observed time
+    # set dimension of gp
     time <- data$t
-    if (gp$ls_max > time) {
-      gp$ls_max <- time
+
+    # rescale for discrete steps
+    if (gp$step >= time) {
+      stop("Discrete step is greater or equal to the overall dimension.")
+    }
+    adj_time <- ceiling(time / gp$step)
+    complete_steps <- floor(time / gp$step)
+    incomplete_step <- time  - complete_steps * gp$step
+    gp_steps <- rep(gp$step, complete_steps)
+    if (incomplete_step > 0) {
+      gp_steps <- c(gp_steps, incomplete_step)
+    }
+    gp$ls_max <- ceiling(gp$ls_max / gp$step)
+    gp$ls_min <- ceiling(gp$ls_min / gp$step)
+    gp$ls_mean <- ceiling(gp$ls_mean / gp$step)
+    gp$ls_sd <- ceiling(gp$ls_sd / gp$step)
+
+    if (gp$ls_max > adj_time) {
+      gp$ls_max <- adj_time
+    }
+
+    if (gp$ls_mean > adj_time) {
+      stop("The mean of the lengthscale is larger than the overall dimension.")
     }
 
     # rescale lengthscale to be between 0 and 1
@@ -294,7 +318,7 @@ create_gp_data <- function(gp = list(), data) {
     gp$ls_mean <- (gp$ls_mean - gp$ls_min)/ scaling
 
     # basis functions
-    M <- data$t
+    M <- adj_time
     M <- ceiling(M * gp$basis_prop)
 
     # map settings to underlying gp stan requirements
@@ -311,6 +335,9 @@ create_gp_data <- function(gp = list(), data) {
       ),
       gp_order = as.numeric(gp$order),
       gp_dims = time,
+      gp_adj_dims = adj_time,
+      gp_steps = gp_steps,
+      gp_no_steps = length(gp_steps),
       gp_start = 1, 
       gp_end = time
     )
@@ -322,8 +349,15 @@ create_gp_data <- function(gp = list(), data) {
     gp_data <- transpose(gp_data)
     gp_data <- map(gp_data, ~array(unlist(.)))
     gp_data$gp_dim <- sum(gp_data$gp_dims)
-    gp_data$gp_mat_dim <- sum(gp_data$M * (gp_data$gp_dims - gp_data$gp_order))
+    gp_data$gp_mat_dim <- sum(gp_data$M * gp_data$gp_adj_dims)
     gp_data$gps <- length(gp_data$gp_dims)
+    gp_data$gp_steps <- 
+     split(gp_data$gp_steps, rep(1:gp_data$gps, gp_data$gp_no_steps))
+    gp_data$gp_steps <- map2(gp_data$gp_steps, gp_data$gp_no_steps, 
+                             ~ c(.x, rep(0, max(gp_data$gp_no_steps) - .y)))
+    gp_data$gp_steps <- 
+      matrix(unlist(gp_data$gp_steps), byrow = TRUE, nrow = gps)
+
     if (gps > 1) {
       for (i in 2:gps) {
         gp_data$gp_start[i] <- gp_data$gp_end[i -1] + 1
