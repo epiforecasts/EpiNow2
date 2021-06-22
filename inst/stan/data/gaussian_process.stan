@@ -9,6 +9,8 @@
   int gp_type[gps];                       // type of gp, 0 = squared exponential, 1 = 3/2 matern
   int gp_order[gps];                    // is underlying gaussian process first or second order
   int gp_dims[gps];
+  int gp_adj_dims[gps];
+  int gp_steps[gps, max(gp_adj_dims)];
   int gp_mat_dim;
   int gp_dim;
   int gp_start[gps];

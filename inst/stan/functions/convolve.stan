@@ -98,7 +98,7 @@ vector vector_pmf(vector dmean, vector dsd, int[] dmax, int dists, int ddim,
     }
   }
   // Check for repeated distributions
-  rep_dists = id_rep_dists(dist_params, 2, ddim, dists, 1e-3);
+  rep_dists = id_rep_dists(dist_params, 2, ddim, dists, 1e-4);
   // Update PMFs either using previous or newly calculated
   for (s in 1:ddim) {
     rep = sum(rep_dists[s, 1:s]);

@@ -23,7 +23,7 @@ transformed data {
   vector[gp_mat_dim] PHI;
   // Set up gassian process kernals
   if (gps) {  
-    PHI = setup_gps(gps, M, L, gp_dims, gp_order, gp_mat_dim);
+    PHI = setup_gps(gps, M, L, gp_adj_dims, gp_mat_dim);
   }
 }
 
@@ -54,8 +54,8 @@ transformed parameters {
     vector[gp_dim] gp;
     // Update Gaussian processes
     if (gps) {
-      gp = update_gps(PHI, gps, gp_dims, gp_dim, M, L, alpha, rho_raw, eta,
-                      ls_min, ls_max, gp_order, gp_type);
+      gp = update_gps(PHI, gps, gp_dims, gp_dim, gp_steps, M, L, alpha,
+                      rho_raw, eta, ls_min, ls_max, gp_order, gp_type);
     }
     // Cast observation scaling to all time points and scale with GP
     if (obs_scale) {
