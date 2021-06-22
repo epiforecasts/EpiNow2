@@ -16,6 +16,7 @@ vector convolve(vector cases, vector pmf, int length) {
 vector convolve_pmfs(vector pmfs, int[] mdelay, int delays) {
   int cdelay = sum(mdelay);
   vector[cdelay] ppmf;
+  int pmf_index;
   vector[cdelay] cpmf = rep_vector(0, cdelay); 
   cpmf[1:mdelay[1]] = head(pmfs, mdelay[1]);
   if (delays > 1) {
@@ -24,7 +25,7 @@ vector convolve_pmfs(vector pmfs, int[] mdelay, int delays) {
       // indexing tweaked to account for starting at 1 in stan
       // this makes z = x an allowed contribution
       ppmf = rep_vector(0, cdelay);
-      int pmf_index = sum(mdelay[1:(s - 1)]);
+      pmf_index = sum(mdelay[1:(s - 1)]);
       for (z in 1:cdelay) {
         for (x in 1:mdelay[s]){
           if (z - x >= 0) { 
@@ -38,7 +39,7 @@ vector convolve_pmfs(vector pmfs, int[] mdelay, int delays) {
   return(cpmf);
 }
 // Calculate and convolve multiple delays to produce a single pmf 
-vector static_pmf(vector dmean, vector dsd, int[]7 dmax, int dists,
+vector static_pmf(vector dmean, vector dsd, int[] dmax, int dists,
                   int reverse) {
   int dtotal = sum(dmax);
   vector[dtotal] pmf;
@@ -50,8 +51,9 @@ vector static_pmf(vector dmean, vector dsd, int[]7 dmax, int dists,
   return(pmf);
 }
 // Build a matrix that maps repeated distributions
+// id_rep_dists(list(matrix(c(1, 2, 1, 4, 1, 4), nrow = 3)), 1, 3, 2, 1e-3)
 int[,] id_rep_dists(matrix[] dists, int v, int r, int c, real thres) {
-  matrix[r, r] rdists;
+  matrix[r, r] rdists = rep_matrix(0, r, r);
   int idists[r, r];
   for (l in 1:v) {
     for (i in 1:r) {
@@ -74,12 +76,15 @@ int[,] id_rep_dists(matrix[] dists, int v, int r, int c, real thres) {
   return(idists);
 }
 // Calculate and convolve multiple delays and then cast to required dimension
+// vector_pmf(c(1, 1.5, 1), c(0.4, 0.6, 0.4), 15, 1, 3, rep(1, 3), 3, 1)
 vector vector_pmf(vector dmean, vector dsd, int[] dmax, int dists, int ddim,
                   int[] broadcast, int t, int reverse) {
   int dtotal = sum(dmax);
   vector[dtotal] spmf[ddim];
   vector[t * dtotal] pmfs;
   matrix[ddim, dists] dist_params[2];
+  vector[dists] sdmean;
+  vector[dists] sdsd;
   int rep_dists[ddim, ddim];
   int rep;
   int pos = 0;
@@ -103,41 +108,22 @@ vector vector_pmf(vector dmean, vector dsd, int[] dmax, int dists, int ddim,
       while (match < 1) {
         if (rep_dists[s, k] == 1) {
           spmf[s] = spmf[k];
+          match += 1;
         }
         k += 1;
       }
     }else{
+      sdmean = to_vector(dist_params[1, s]);
+      sdsd = to_vector(dist_params[2, s]);
       spmf[s] = static_pmf(sdmean, sdsd, dmax, dists, reverse);
     }
+    // Broadcast PMFs over a vector
     for (i in 1:broadcast[s]) {
       pmfs[(pos + 1):(pos + dtotal)] = spmf[s];
       pos += dtotal;
     }
   }
   return(pmfs);
-}
-vector[] calc_unique_pmfs(vector cmean, vector csd, int cmax) {
-  int n = num_elements(cmean);
-  vector[cmax] pmf[n];
-  int j;
-  
-  for (s in 1:n) {
-    j = 1;
-    while (j <= s) {
-      if (j == s) {
-        pmf[s] = calc_pmf(cmean[s], csd[s], cmax);
-      }else{
-        if (fabs(cmean[j] - cmean[s]) < 1e-3) {
-          if (fabs(csd[j] - csd[s]) < 1e-3) {
-            pmf[s] = pmf[j];
-            break;
-          }
-        }
-      }
-      j += 1;
-    }
-  }
-  return(pmf);
 }
 // Cast a vector of parameters to the required dimension and modifier
 vector vector_param(vector param, vector mod, int no, int dim,
