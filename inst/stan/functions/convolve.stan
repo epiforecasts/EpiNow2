@@ -104,13 +104,13 @@ vector vector_pmf(vector dmean, vector dsd, int[] dmax, int dists, int ddim,
     rep = sum(rep_dists[s, 1:s]);
     if (rep) {
       int match = 0;
-      int k = 1;
+      int k = s - 1;
       while (match < 1) {
         if (rep_dists[s, k] == 1) {
           spmf[s] = spmf[k];
           match += 1;
         }
-        k += 1;
+        k -= 1;
       }
     }else{
       sdmean = to_vector(dist_params[1, s]);

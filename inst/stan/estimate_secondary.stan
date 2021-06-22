@@ -92,8 +92,8 @@ transformed parameters {
   // truncate near time cases to observed reports
   secondary = truncate(secondary, truncation_mean, truncation_sd,
                         max_truncation, 0);
-  }
-}
+  } 
+} 
 
 model {
   // penalised priors for delay distributions
