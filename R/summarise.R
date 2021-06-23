@@ -639,10 +639,12 @@ calc_summary_stats <- function(samples, summarise_by = c()) {
 #' Calculate summary statistics and credible intervals from a data frame by group.
 #' @param order_by A character vector of parameters to order by, defaults to all `summarise_by`
 #' variables.
+#' @param digits Integer, defaults to 3. The number of significant figures to
+#' round to. Can be disabled by setting to NA.
 #' @return A data.table containing summary statistics by group.
 #' @export
 #' @inheritParams calc_CrIs
-#' @importFrom data.table setorderv
+#' @importFrom data.table setorderv :=
 #' @examples
 #' samples <- data.frame(value = 1:10, type = "car")
 #' # default
@@ -652,7 +654,8 @@ calc_summary_stats <- function(samples, summarise_by = c()) {
 calc_summary_measures <- function(samples,
                                   summarise_by = NULL,
                                   order_by = NULL,
-                                  CrIs = c(0.2, 0.5, 0.9)) {
+                                  CrIs = c(0.2, 0.5, 0.9),
+                                  digits = 3) {
   if (is.null(summarise_by)) {
     summarise_by <- setdiff(names(samples), "value")
   }
@@ -672,6 +675,12 @@ calc_summary_measures <- function(samples,
 
   summarised <- sum_stats[CrIs, on = summarise_by]
   data.table::setorderv(summarised, cols = order_by)
+
+  if (!is.null(digits)) {
+    num_col <- which(sapply(summarised_draws, is.numeric))
+    summarised_draws[, (num_col) := lapply(.SD, signif, digits = digits),
+                       .SDcols = num_col]
+  }
   return(summarised)
 }
 

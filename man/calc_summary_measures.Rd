@@ -8,7 +8,8 @@ calc_summary_measures(
   samples,
   summarise_by = NULL,
   order_by = NULL,
-  CrIs = c(0.2, 0.5, 0.9)
+  CrIs = c(0.2, 0.5, 0.9),
+  digits = 3
 )
 }
 \arguments{
@@ -20,6 +21,9 @@ calc_summary_measures(
 variables.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
+
+\item{digits}{Integer, defaults to 3. The number of significant figures to
+round to. Can be disabled by setting to NA.}
 }
 \value{
 A data.table containing summary statistics by group.
