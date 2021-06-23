@@ -14,6 +14,11 @@
 #' If not set estimated from the combined mean of the specified distributions.
 #' @param type A character string, defaulting to "uncertain". Defines the type
 #' of distributions to use. Supported options are "uncertain".
+#' @param cache Logical, defaults to `FALSE`. Should a cache be used to only
+#' evaluate PMFs when a new combination of distribution parameters is observed?
+#' This setting may be useful when distributions are time-varying but discrete
+#' in time (for example when a gaussian process is used with a step size
+#' greater than 1).
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input delay distributions.
 #' @export
@@ -27,7 +32,8 @@
 #' # a delay assumed to vary over time using as gaussian process
 #' delay_opts(list(mean = 1, mean_sd = 0.1, sd = 0.1, sd_sd = 0.01, max = 30),
 #'            mean = list(gp_opts()), sd = list(gp_opts()))
-delay_opts <- function(..., mean = NULL, sd = NULL, seed, type = "uncertain") {
+delay_opts <- function(..., mean = NULL, sd = NULL, seed, type = "uncertain", 
+                       cache = FALSE) {
   type <- match.arg(type, choices = c("uncertain"))
   delays <- list(...)
   data <- list()
@@ -37,6 +43,7 @@ delay_opts <- function(..., mean = NULL, sd = NULL, seed, type = "uncertain") {
   data$delay_type <- fcase(
     type %in% "uncertain", 0
   )
+  data$delay_cache <- as.numeric(cache)
   if (data$delays > 0) {
     delays <- purrr::transpose(delays)
   }

@@ -4,7 +4,14 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(..., mean = NULL, sd = NULL, seed, type = "uncertain")
+delay_opts(
+  ...,
+  mean = NULL,
+  sd = NULL,
+  seed,
+  type = "uncertain",
+  cache = FALSE
+)
 }
 \arguments{
 \item{...}{Delay distributions as a list with the following parameters:
@@ -22,6 +29,12 @@ If not set estimated from the combined mean of the specified distributions.}
 
 \item{type}{A character string, defaulting to "uncertain". Defines the type
 of distributions to use. Supported options are "uncertain".}
+
+\item{cache}{Logical, defaults to \code{FALSE}. Should a cache be used to only
+evaluate PMFs when a new combination of distribution parameters is observed?
+This setting may be useful when distributions are time-varying but discrete
+in time (for example when a gaussian process is used with a step size
+greater than 1).}
 }
 \value{
 A list summarising the input delay distributions.

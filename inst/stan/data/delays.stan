@@ -11,3 +11,4 @@
   int dsd_gps;
   int delay_gps;
   int delay_type;
+  int delay_cache;

@@ -9,7 +9,7 @@ functions {
 
 data {
   int t;                             // time of observations
-  int t_dim[1];                      // time  as a integer vector
+  int tdim[1];                      // time  as a integer vector
   int<lower = 0> obs[t];             // observed secondary data
   vector[t] primary;                 // observed primary data
   int burn_in;                       // time period to not use for fitting
@@ -61,24 +61,25 @@ transformed parameters {
     // Cast observation scaling to all time points and scale with GP
     if (obs_scale) {
       frac_obs = vector_param(frac_obs_init, head(gp, obs_scale_gp[1] * t),
-                              1, 1, t_dim, obs_scale_gp, t);
+                              1, 1, tdim, obs_scale_gp, t);
     }
     // Cast delays to all time points and scale with GP
     if (delays) {
       delay_mean = vector_param(dmean_init, 
                                 head(tail(gp, delay_gps * t), dmean_gps * t),
-                                delays, 1, t_dim, dmean_gp, t);
+                                delays, 1, tdim, dmean_gp, t);
       delay_sd = vector_param(dsd_init, tail(gp, dsd_gps * t), 
-                              delays, 1, t_dim, dsd_gp, t);
+                              delays, 1, tdim, dsd_gp, t);
       // Calculate PMFs as needed for delay distribtions
       // Steps: Calculate unique PMFs, convolve, cast to cover all time points
       if (delay_type == 0) {
         pmfs = 
-          vector_pmf(dmean_init, dsd_init, max_delay, delays, 1, t_dim, t, 1);
+          vector_pmf(dmean_init, dsd_init, max_delay, delays, 1, tdim, t, 1, 0);
       }else{
         int broadcast[t] = rep_int(1, t);
         pmfs = 
-          vector_pmf(delay_mean, delay_sd, max_delay, delays, t, broadcast, t, 1);
+          vector_pmf(delay_mean, delay_sd, max_delay, delays, t, broadcast, t, 
+                     1, delay_cache);
       }
     }
     // calculate secondary reports from primary

@@ -75,18 +75,34 @@ int[,] id_rep_dists(matrix[] dists, int v, int r, int c, real thres) {
   }
   return(idists);
 }
+// Compare two sets of distribution parameters to see if they are same
+// dists_same(c(1,2), c(1, 2), 1e-3)
+// dists_same(c(1,2), c(3, 2), 1e-3)
+int dists_same(vector dists1, vector dists2, real thres) {
+  int n = num_elements(dists1);
+  real diff = 0;
+  int same = 0;
+  for (i in 1:n) {
+    diff += fabs(dists1[i]- dists2[i]);
+  }
+  same = diff < thres ? 1 : 0;
+  return(same);
+}
 // Calculate and convolve multiple delays and then cast to required dimension
-// vector_pmf(c(1, 1.5, 1), c(0.4, 0.6, 0.4), 15, 1, 3, rep(1, 3), 3, 1)
+// vector_pmf(c(1, 1.5, 1), c(0.4, 0.6, 0.4), 15, 1, 3, rep(1, 3), 3, 1, 1)
+// vector_pmf(c(1, 1.5, 1), c(0.4, 0.6, 0.4), 15, 1, 3, rep(1, 3), 3, 1, 0)
 vector vector_pmf(vector dmean, vector dsd, int[] dmax, int dists, int ddim,
-                  int[] broadcast, int t, int reverse) {
+                  int[] broadcast, int t, int reverse, int cache) {
   int dtotal = sum(dmax);
   vector[dtotal] spmf[ddim];
   vector[t * dtotal] pmfs;
   matrix[ddim, dists] dist_params[2];
   vector[dists] sdmean;
   vector[dists] sdsd;
-  int rep_dists[ddim, ddim];
-  int rep;
+  int k;
+  int match;
+  vector[dists*2] current_dists;
+  vector[dists*2] archived_dists;
   int pos = 0;
   // allocate parameters into a matrix
   for (s in 1:ddim) {
@@ -97,25 +113,33 @@ vector vector_pmf(vector dmean, vector dsd, int[] dmax, int dists, int ddim,
       dist_params[2, s, d] = dsd[dist_pos];
     }
   }
-  // Check for repeated distributions
-  rep_dists = id_rep_dists(dist_params, 2, ddim, dists, 1e-4);
   // Update PMFs either using previous or newly calculated
   for (s in 1:ddim) {
-    rep = sum(rep_dists[s, 1:s]);
-    if (rep) {
-      int match = 0;
-      int k = s - 1;
-      while (match < 1) {
-        if (rep_dists[s, k] == 1) {
-          spmf[s] = spmf[k];
-          match += 1;
-        }
-        k -= 1;
-      }
+    match = 0;
+    if (cache) {
+      k = s - 1;
     }else{
-      sdmean = to_vector(dist_params[1, s]);
-      sdsd = to_vector(dist_params[2, s]);
-      spmf[s] = static_pmf(sdmean, sdsd, dmax, dists, reverse);
+      k = 0;
+    }
+    while (k >= 0) {
+      if (k) {
+        current_dists = append_row(to_vector(dist_params[1, s, 1:dists]),
+                                   to_vector(dist_params[2, s, 1:dists]));
+        archived_dists = append_row(to_vector(dist_params[1, k, 1:dists]),
+                                   to_vector(dist_params[2, k, 1:dists]));
+        match = dists_same(current_dists, archived_dists, 1e-3);
+      }
+      if (match) {
+        spmf[s] = spmf[k];
+        break;
+      }
+      if (k == 0) {
+        sdmean = to_vector(dist_params[1, s]);
+        sdsd = to_vector(dist_params[2, s]);
+        spmf[s] = static_pmf(sdmean, sdsd, dmax, dists, reverse);
+        break;
+      }
+        k -= 1;
     }
     // Broadcast PMFs over a vector
     for (i in 1:broadcast[s]) {

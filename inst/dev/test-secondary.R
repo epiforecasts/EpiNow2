@@ -49,7 +49,7 @@ inc_vary <- estimate_secondary(
   cases[1:60], model = model,
   delays = delay_opts(
     list(mean = 2.5, mean_sd = 0.5,
-         sd = 0.5, sd_sd = 0.25, max = 15),
+         sd = 0.5, sd_sd = 0.25, max = 15), cache = TRUE,
     mean =  list(gp_opts(order = "0", basis_prop = 0.2, step = 7,
                   ls_mean = 55, ls_sd = 2, alpha_sd = 0.01)),
     sd =  list(gp_opts(order = "0", basis_prop = 0.2, step = 7,
@@ -57,7 +57,7 @@ inc_vary <- estimate_secondary(
   obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), family = "poisson",
                  gp = gp_opts(order = "1", basis_prop = 0.2, step = 7,
                               ls_mean = 44, ls_sd = 2, alpha_sd = 0.01)),
-  control = list(adapt_delta = 0.95, max_treedepth = 12)
+  control = list(adapt_delta = 0.95, max_treedepth = 10)
 )
 
 plot(inc_vary, primary = TRUE)
