@@ -127,6 +127,7 @@ summarise_results <- function(regions,
 #' @seealso regional_epinow
 #' @inheritParams summarise_results
 #' @inheritParams plot_summary
+#' @inheritParams plot_estimates
 #' @inheritParams summarise_key_measures
 #' @inheritParams regional_epinow
 #' @inheritParams get_regional_results
