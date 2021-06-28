@@ -13,7 +13,8 @@ regional_summary(
   region_scale = "Region",
   all_regions = TRUE,
   return_output = FALSE,
-  max_plot = 10
+  max_plot = 10,
+  ...
 )
 }
 \arguments{
@@ -28,26 +29,27 @@ from.}
 \item{summary_dir}{A character string giving the directory
 in which to store summary of results.}
 
-\item{target_date}{A character string giving the target date for which to extract results
+\item{target_date}{A character string giving the target date for which to
+extract results
 (in the format "yyyy-mm-dd"). Defaults to latest available estimates.}
 
 \item{region_scale}{A character string indicating the name to give the regions being summarised.}
 
-\item{all_regions}{Logical, defaults to \code{TRUE}. Should summary plots for all regions be returned
-rather than just regions of interest.}
+\item{all_regions}{Logical, defaults to \code{TRUE}. Should summary plots for all
+regions be returned rather than just regions of interest.}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
 if no directory for saving is specified.}
 
-\item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
-on the maximum number of reported cases.}
+\item{...}{Additional arguments passed to \code{report_plots}.}
 }
 \value{
 A list of summary measures and plots
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
-Used to produce summary output either internally in \code{regional_epinow} or externally.
+Used to produce summary output either internally in \code{regional_epinow} or
+externally.
 }
 \examples{
 \donttest{

@@ -21,3 +21,4 @@
 ^\.lintr$
 ^\.pre-commit-config\.yaml$
 ^CODE_OF_CONDUCT\.md$
+^\.devcontainer$

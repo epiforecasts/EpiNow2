@@ -112,13 +112,16 @@ summarise_results <- function(regions,
 #' Regional Summary Output
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' Used to produce summary output either internally in `regional_epinow` or externally.
+#' Used to produce summary output either internally in `regional_epinow` or
+#'  externally.
 #' @param summary_dir A character string giving the directory
 #'  in which to store summary of results.
-#' @param target_date A character string giving the target date for which to extract results
+#' @param target_date A character string giving the target date for which to
+#'  extract results
 #' (in the format "yyyy-mm-dd"). Defaults to latest available estimates.
-#' @param all_regions Logical, defaults to `TRUE`. Should summary plots for all regions be returned
-#' rather than just regions of interest.
+#' @param all_regions Logical, defaults to `TRUE`. Should summary plots for all
+#'  regions be returned rather than just regions of interest.
+#' @param ... Additional arguments passed to `report_plots`. 
 #' @return A list of summary measures and plots
 #' @export
 #' @seealso regional_epinow
@@ -170,9 +173,9 @@ regional_summary <- function(regional_output = NULL,
                              region_scale = "Region",
                              all_regions = TRUE,
                              return_output = FALSE,
-                             max_plot = 10) {
+                             max_plot = 10,
+                             ...) {
   reported_cases <- data.table::setDT(reported_cases)
-
   if (is.null(summary_dir)) {
     futile.logger::flog.info("No summary directory specified so returning summary output")
     return_output <- TRUE
@@ -305,12 +308,13 @@ regional_summary <- function(regional_output = NULL,
   high_plots <- report_plots(
     summarised_estimates = results$estimates$summarised[region %in% most_reports],
     reported = reported_cases[region %in% most_reports],
-    max_plot = max_plot
+    max_plot = max_plot, ...
   )
 
   high_plots$summary <- NULL
   high_plots <-
-    purrr::map(high_plots, ~ . + ggplot2::facet_wrap(~region, scales = "free_y", ncol = 2))
+    purrr::map(high_plots,
+               ~ . + ggplot2::facet_wrap(~region, scales = "free_y", ncol = 2))
 
   if (!is.null(summary_dir)) {
     save_ggplot(high_plots$R, "high_rt_plot.png")
@@ -326,14 +330,15 @@ regional_summary <- function(regional_output = NULL,
     plots <- report_plots(
       summarised_estimates = results$estimates$summarised,
       reported = reported_cases,
-      max_plot = max_plot
+      max_plot = max_plot, ...
     )
 
     plots$summary <- NULL
-    plots <- purrr::map(plots, ~ . + ggplot2::facet_wrap(~region,
-      scales = "free_y",
-      ncol = plots_per_row
-    ))
+    plots <- purrr::map(
+      plots, 
+      ~ . + ggplot2::facet_wrap(~region, scales = "free_y",
+                                ncol = plots_per_row)
+    )
 
     if (!is.null(summary_dir)) {
       save_big_ggplot <- function(plot, name) {

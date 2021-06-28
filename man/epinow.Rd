@@ -19,6 +19,7 @@ epinow(
   zero_threshold = 50,
   return_output = FALSE,
   output = c("samples", "plots", "latest", "fit", "timing"),
+  plot_args = list(),
   target_folder = NULL,
   target_date,
   forecast_args = NULL,
@@ -75,6 +76,8 @@ if no directory for saving is specified.}
 plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if \code{target_folder} is not null,
 set using "latest"), and the stan fit ("fit"). The default is to return all options. This argument uses partial matching
 so for example passing "sam" will lead to samples being reported.}
+
+\item{plot_args}{A list of optional arguments passed to \code{plot.epinow()}.}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
