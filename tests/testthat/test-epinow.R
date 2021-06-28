@@ -86,7 +86,7 @@ test_that("epinow fails as expected when given a short timeout", {
       samples = 100, warmup = 100,
       cores = 1, chains = 2,
       control = list(adapt_delta = 0.8),
-      max_execution_time = 10
+      max_execution_time = 1
     ),
     logs = NULL, verbose = FALSE
   )))
