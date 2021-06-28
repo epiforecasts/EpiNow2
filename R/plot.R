@@ -47,12 +47,15 @@ plot_CrIs <- function(plot, CrIs, alpha, size) {
 #' as points (linked using a line).
 #' @param max_plot Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
 #' on the maximum number of reported cases.
+#' @param estimate_type Character vector indicating the type of data to plot.
+#' Default to all types with supported options being: "Estimate", "Estimate
+#' based on partial data", and "Forecast".
 #' @return A `ggplot2` object
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon scale_y_continuous
 #' @importFrom scales comma
 #' @importFrom cowplot theme_cowplot
-#' @importFrom data.table setDT fifelse
+#' @importFrom data.table setDT fifelse copy as.data.table
 #' @importFrom purrr map
 #' @examples
 #' \donttest{
@@ -89,14 +92,22 @@ plot_CrIs <- function(plot, CrIs, alpha, size) {
 #'   ylab = "Effective Reproduction No.",
 #'   hline = 1
 #' )
+#' 
+#' #' # plot Rt estimates without forecasts
+#' plot_estimates(
+#'   estimate = out$summarised[variable == "R"],
+#'   ylab = "Effective Reproduction No.",
+#'   hline = 1, estimate_type = "Estimate"
+#' )
 #' }
 plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
-                           obs_as_col = TRUE, max_plot = 10) {
+                           obs_as_col = TRUE, max_plot = 10, 
+                           estimate_type = NULL) {
 
   # convert input to data.table
-  estimate <- data.table::setDT(estimate)
+  estimate <- data.table::as.data.table(estimate)
   if (!missing(reported)) {
-    reported <- data.table::setDT(reported)
+    reported <- data.table::as.data.table(reported)
   }
 
   # map type to presentation form
@@ -106,6 +117,15 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   }
   estimate <- estimate[, type := to_sentence(type)]
 
+  orig_estimate <- copy(estimate)
+  if (!is.null(estimate_type)) {
+    estimate_type <- match.arg(
+      estimate_type, 
+      choices = c("Estimate", "Estimate based on partial data", "Forecast"),
+      several.ok = TRUE
+    )
+    estimate <- estimate[type %in% estimate_type]
+  }
   # scale plot values based on reported cases
   if (!missing(reported) & !is.na(max_plot)) {
     sd_cols <- c(
@@ -166,7 +186,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   # plot estimates
   plot <- plot +
     ggplot2::geom_vline(
-      xintercept = estimate[type == "Estimate based on partial data"][date == max(date)]$date,
+      xintercept = orig_estimate[type == "Estimate based on partial data"][date == max(date)]$date,
       linetype = 2
     )
 

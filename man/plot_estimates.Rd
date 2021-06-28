@@ -10,7 +10,8 @@ plot_estimates(
   ylab = "Cases",
   hline,
   obs_as_col = TRUE,
-  max_plot = 10
+  max_plot = 10,
+  forecast = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ as points (linked using a line).}
 
 \item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
 on the maximum number of reported cases.}
+
+\item{forecast}{Logical, should forecasts be plot. Defaults to \code{FALSE}.}
 }
 \value{
 A \code{ggplot2} object

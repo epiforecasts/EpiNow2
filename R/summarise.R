@@ -266,7 +266,9 @@ regional_summary <- function(regional_output = NULL,
   log_cases <- (max(current_inf[, ..uppers], na.rm = TRUE) /
     min(current_inf[, ..lowers], na.rm = TRUE)) > 1000
 
-  max_reported_cases <- round(max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0)
+  max_reported_cases <- round(
+    max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0
+  )
 
   # summarise cases and Rts
   summary_plot <- plot_summary(summarised_results$data,

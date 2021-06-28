@@ -260,7 +260,8 @@ report_summary <- function(summarised_estimates,
 #' plots
 #' }
 report_plots <- function(summarised_estimates, reported,
-                         target_folder = NULL, max_plot = 10) {
+                         target_folder = NULL, max_plot = 10, 
+                         estimate_type = NULL) {
   # set input to data.table
   summarised_estimates <- data.table::setDT(summarised_estimates)
   reported <- data.table::setDT(reported)
@@ -270,26 +271,27 @@ report_plots <- function(summarised_estimates, reported,
     estimate = summarised_estimates[variable == "infections"],
     reported = reported,
     ylab = "Cases by \n date of infection",
-    max_plot = max_plot
+    max_plot = max_plot, estimate_type = estimate_type
   )
 
   # cases by report ---------------------------------------------------------
   reports <- plot_estimates(
     estimate = summarised_estimates[variable == "reported_cases"],
     reported = reported, ylab = "Cases by \n date of report",
-    max_plot = max_plot
+    max_plot = max_plot, estimate_type = estimate_type,
   )
 
   # Rt plot ------------------------------------------------------------------
   R <- plot_estimates(
     estimate = summarised_estimates[variable == "R"],
-    ylab = "Effective \n reproduction no.", hline = 1
+    ylab = "Effective \n reproduction no.", hline = 1,
+    estimate_type = estimate_type,
   )
 
   # r plot ------------------------------------------------------------------
   growth_rate <- plot_estimates(
     estimate = summarised_estimates[variable == "growth_rate"],
-    ylab = "Growth rate", hline = 0
+    ylab = "Growth rate", hline = 0, estimate_type = estimate_type
   )
 
   # summary plot ------------------------------------------------------------
@@ -349,6 +351,5 @@ report_plots <- function(summarised_estimates, reported,
       mapply(ggplot2::ggsave, filename = pths, plot = plots, width = wd, height = ht, dpi = dpi)
     }))
   }
-
   return(plots)
 }
