@@ -14,6 +14,7 @@
 #' if no directory for saving is specified.
 #' @param forecast_args A list of arguments to pass to `forecast_infections()`. Unless at a minimum a `forecast_model` is passed
 #' then `forecast_infections` will be bypassed.
+#' @param plot_args A list of optional arguments passed to `plot.epinow()`.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @seealso estimate_infections simulate_infections forecast_infections regional_epinow
@@ -71,6 +72,7 @@ epinow <- function(reported_cases,
                    zero_threshold = 50,
                    return_output = FALSE,
                    output = c("samples", "plots", "latest", "fit", "timing"),
+                   plot_args = list(),
                    target_folder = NULL, target_date,
                    forecast_args = NULL, logs = tempdir(),
                    id = "epinow", verbose = interactive()) {
@@ -204,9 +206,14 @@ epinow <- function(reported_cases,
 
     # plot --------------------------------------------------------------------
     if (output["plots"]) {
-      plots <- plot.estimate_infections(estimates,
-        type = "all",
-        target_folder = target_folder
+      plots <- do.call(plot.estimate_infections, c(
+        list(
+          x = estimates,
+          type = "all",
+          target_folder = target_folder
+        ),
+        plot_args
+        )
       )
     } else {
       plots <- NULL

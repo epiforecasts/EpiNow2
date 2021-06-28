@@ -2,7 +2,7 @@ Type: Package
 Package: EpiNow2
 Title: Estimate Real-Time Case Counts and Time-Varying
     Epidemiological Parameters
-Version: 1.3.3.7
+Version: 1.3.3.8
 Authors@R: 
     c(person(given = "Sam",
              family = "Abbott",
@@ -120,7 +120,6 @@ Suggests:
     precommit,
     rmarkdown,
     rnaturalearth,
-    rstantools,
     spelling,
     styler,
     testthat,

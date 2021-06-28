@@ -8,6 +8,7 @@ This release is under development and the features outlined below may change bef
 * Added extraction of posterior samples to the summary method for `estimate_infections`.
 * Exposed `zero_threshold` to users allowing for control over when zeros or NAs in count data are treated as true zeros versus as reporting errors that require some smoothing.
 * Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. 
+* Adds option to `plot_estimates()` and higher level functions to choose which estimate type to plot.
 
 ## Model changes
 

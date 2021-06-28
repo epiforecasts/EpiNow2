@@ -17,7 +17,8 @@ regional_runtimes(
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
-\item{target_date}{A character string giving the target date for which to extract results
+\item{target_date}{A character string giving the target date for which to
+extract results
 (in the format "yyyy-mm-dd"). Defaults to latest available estimates.}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
