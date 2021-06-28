@@ -228,7 +228,6 @@ report_summary <- function(summarised_estimates,
 #' @importFrom cowplot theme_cowplot
 #' @importFrom patchwork plot_layout
 #' @importFrom data.table setDT
-#' @importFrom lifecycle deprecate_warn
 #' @inheritParams setup_target_folder
 #' @inheritParams epinow
 #' @inheritParams plot_estimates
