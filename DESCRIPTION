@@ -120,7 +120,6 @@ Suggests:
     precommit,
     rmarkdown,
     rnaturalearth,
-    rstantools,
     spelling,
     styler,
     testthat,
