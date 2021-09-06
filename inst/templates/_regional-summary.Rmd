@@ -43,7 +43,7 @@ knitr::include_graphics(here::here(file.path(summary_path, "summary_plot.png")))
 ```
 
 <br>
-`r paste0("*Figure ", fig_start, ": Confirmed ", case_def, "s with date of infection on the ", latest_date, " and the time-varying estimate of the effective reproduction number (lightest ribbon = 90% credible interval; darker ribbon = the 50% credible interval, darkest ribbon = 20% credible interval). Regions are ordered by the number of expected daily confirmed ",  case_def, "s and shaded based on the expected change in daily confirmed" , case_def,  "s. The horizontal dotted line indicates the target value of 1 for the effective reproduction no. required for control and a single case required for elimination. Uncertainty has been curtailed to a maximum of ten times the maximum number of reported cases for plotting purposes.*")`
+`r paste0("*Figure ", fig_start, ": Confirmed ", case_def, "s with date of infection on the ", latest_date, " and the time-varying estimate of the effective reproduction number (lightest ribbon = 90% credible interval; darker ribbon = the 50% credible interval, darkest ribbon = 20% credible interval). Regions are ordered by the number of expected daily confirmed ",  case_def, "s and shaded based on the expected change in daily confirmed " , case_def,  "s. The horizontal dotted line indicates the target value of 1 for the effective reproduction no. required for control and a single case required for elimination. Uncertainty has been curtailed to a maximum of ten times the maximum number of reported cases for plotting purposes.*")`
 
 `r paste0("### Reproduction numbers over time in the six regions expected to have the most new confirmed ",  case_def, "s")`
 
