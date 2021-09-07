@@ -1,5 +1,3 @@
-context("match_output_arguments")
-
 test_that("match_output_arguments works as expected", {
   out <- rep(FALSE, 3)
   names(out) <- c("fit", "plots", "samples")

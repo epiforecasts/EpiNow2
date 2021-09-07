@@ -169,7 +169,7 @@ get_regional_results <- function(regional_output,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Search a data frame for a distribution and return it in the format expected
-#' by `delay_opts` and the `generation_time` argument of `epinow` and `estimate_infections`.
+#' by `delay_opts()` and the `generation_time` argument of `epinow` and `estimate_infections`.
 #' @param data A `data.table` in the format of `generation_times`.
 #' @param disease A character string indicating the disease of interest.
 #' @param source A character string indicating the source of interest.

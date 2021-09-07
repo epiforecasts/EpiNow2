@@ -44,7 +44,7 @@ observations in the forecast horizon when uncertainty is present the median is u
 summary of the forecast secondary observation posterior.
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#experimental'><img src='figures/lifecycle-experimental.svg' alt='Experimental lifecycle'></a>}}{\strong{Experimental}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This function forecasts secondary observations using the output of \code{estimate_secondary()} and either
 observed primary data or a forecast of primary observations. See the examples of \code{estimate_secondary()}
 for one use case. It can also be combined with \code{estimate_infections()} to produce a forecast for a secondary

@@ -47,7 +47,8 @@
 #' library(data.table)
 #' # load lubridate for dates
 #' library(lubridate)
-#'
+#' library(purrr)
+#' 
 #' #### Incidence data example ####
 #'
 #' # make some example secondary incidence data
@@ -61,6 +62,7 @@
 #'   sdlog <- rnorm(1, 0.8, 0.1)
 #'   cmf <- cumsum(dlnorm(1:length(x), meanlog, sdlog)) -
 #'     cumsum(dlnorm(0:(length(x) - 1), meanlog, sdlog))
+#'   cmf <- cmf / plnorm(length(x), meanlog, sdlog)
 #'   conv <- sum(x * rev(cmf), na.rm = TRUE)
 #'   conv <- round(conv, 0)
 #'   return(conv)
@@ -73,7 +75,8 @@
 #' cases <- cases[lubridate::wday(date) == 1, secondary := round(0.5 * secondary, 0)]
 #' cases <- cases[, secondary := round(secondary * rnorm(.N, 0.4, 0.025), 0)]
 #' cases <- cases[secondary < 0, secondary := 0]
-#'
+#' cases <- cases[, secondary := map_dbl(secondary, ~ rpois(1, .))]
+#' 
 #' # fit model to example data assuming only a given fraction of primary observations
 #' # become secondary observations
 #' inc <- estimate_secondary(cases[1:60],
@@ -99,8 +102,9 @@
 #' for (i in 2:nrow(cases)) {
 #'   meanlog <- rnorm(1, 1.6, 0.1)
 #'   sdlog <- rnorm(1, 0.8, 0.05)
-#'   cmf <- cumsum(dlnorm(1:min(i - 1, 40), meanlog, sdlog)) -
-#'     cumsum(dlnorm(0:min(39, i - 2), meanlog, sdlog))
+#'   cmf <- cumsum(dlnorm(1:min(i - 1, 20), meanlog, sdlog)) -
+#'     cumsum(dlnorm(0:min(19, i - 2), meanlog, sdlog))
+#'   cmf <- cmf / plnorm(min(i - 1, 20), meanlog, sdlog)
 #'   reducing_cases <- sum(cases$scaled_primary[(i - 1):max(1, i - 20)] * cmf)
 #'   reducing_cases <- ifelse(cases$secondary[i - 1] < reducing_cases,
 #'     cases$secondary[i - 1], reducing_cases
@@ -112,6 +116,8 @@
 #'     cases$secondary[i]
 #'   )
 #' }
+#' cases <- cases[, secondary := map_dbl(secondary, ~ rpois(1, .))]
+#' 
 #' # fit model to example prevalence data
 #' prev <- estimate_secondary(cases[1:100],
 #'   secondary = secondary_opts(type = "prevalence"),
@@ -152,8 +158,7 @@ estimate_secondary <- function(reports,
     t = nrow(reports),
     obs = reports$secondary,
     primary = reports$primary,
-    burn_in = burn_in,
-    day_of_week = lubridate::wday(reports$date, week_start = 1)
+    burn_in = burn_in
   )
   # secondary model options
   data <- c(data, secondary)
@@ -163,7 +168,7 @@ estimate_secondary <- function(reports,
   # truncation data
   data <- c(data, truncation)
   # observation model data
-  data <- c(data, create_obs_model(obs))
+  data <- c(data, create_obs_model(obs, dates = reports$date))
 
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(
@@ -404,7 +409,7 @@ forecast_secondary <- function(estimate,
   data$primary <- t(
     matrix(primary_fit$value, ncol = length(unique(primary_fit$sample)))
   )
-  data$day_of_week <- lubridate::wday(unique(primary_fit$date), week_start = 1)
+  data$day_of_week <- add_day_of_week(unique(primary_fit$date), data$week_effect)
   data$n <- nrow(data$primary)
   data$t <- ncol(data$primary)
   data$h <- nrow(primary[sample == min(sample)])
@@ -421,7 +426,8 @@ forecast_secondary <- function(estimate,
   }
 
   # allocate empty parameters
-  data <- allocate_empty(data, c("frac_obs", "delay_mean", "delay_sd"),
+  data <- allocate_empty(
+    data, c("frac_obs", "delay_mean", "delay_sd", "rep_phi"),
     n = data$n
   )
   data$all_dates <- as.integer(all_dates)

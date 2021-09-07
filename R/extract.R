@@ -121,31 +121,14 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
     samples,
     reported_dates
   )
-  if (data$week_effect == 1) {
+  if (data$week_effect > 1) {
     out$day_of_week <- extract_parameter(
       "day_of_week_simplex",
       samples,
-      1:7
+      1:data$week_effect
     )
-
-    char_day_of_week <- data.table::data.table(
-      wday = c(
-        "Monday", "Tuesday", "Wednesday",
-        "Thursday", "Friday", "Saturday",
-        "Sunday"
-      ),
-      time = 1:7
-    )
-    out$day_of_week <- out$day_of_week[char_day_of_week, on = "time"][
-      ,
-      strat := as.character(wday)
-    ][
-      ,
-      `:=`(time = NULL, date = NULL, wday = NULL)
-    ][
-      ,
-      value := value * 7
-    ]
+    out$day_of_week <- out$day_of_week[, value := value * data$week_effect]
+    out$day_of_week <- out$day_of_week[, strat := date][, c("time", "date") := NULL]
   }
   if (data$delays > 0) {
     out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
@@ -210,7 +193,7 @@ extract_stan_param <- function(fit, params = NULL,
   sym_CrIs <- c(0.5, 0.5 - CrIs / 2, 0.5 + CrIs / 2)
   sym_CrIs <- sym_CrIs[order(sym_CrIs)]
   CrIs <- round(100 * CrIs, 0)
-  CrIs <- c(paste0("lower_", CrIs), "median", paste0("upper_", CrIs))
+  CrIs <- c(paste0("lower_", rev(CrIs)), "median", paste0("upper_", CrIs))
   args <- list(object = fit, probs = sym_CrIs)
   if (!is.null(params)) {
     if (length(params) > 1) {

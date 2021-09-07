@@ -16,8 +16,8 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
     scaled_reports = reports;
   }
   // convolve from reports to contributions from these reports
-  conv_reports =
-    conv_reports + convolve_to_report(scaled_reports, delay_mean, delay_sd, max_delay, 0);
+  conv_reports = conv_reports +
+    convolve_to_report(scaled_reports, delay_mean, delay_sd, max_delay, 0);
   // if predicting and using a cumulative target
   // combine reports with previous secondary data
   for (i in 1:t) {
@@ -32,12 +32,12 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
     // update based on previous primary reports
     if (historic) {
       if (primary_hist_additive) {
-      secondary_reports[i] += conv_reports[i];
+        secondary_reports[i] += conv_reports[i];
       }else{
         if (conv_reports[i] > secondary_reports[i]) {
           conv_reports[i] = secondary_reports[i];
         }
-      secondary_reports[i] -= conv_reports[i];
+        secondary_reports[i] -= conv_reports[i];
       }
     }
     // update based on current primary reports
@@ -48,7 +48,7 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
         secondary_reports[i] -= scaled_reports[i];
       }
     }
-    secondary_reports[i] = secondary_reports[i] <= 0 ? 1e-5 : secondary_reports[i];
+    secondary_reports[i] = fmax(1e-5, secondary_reports[i]);
   }
   return(secondary_reports);
 }

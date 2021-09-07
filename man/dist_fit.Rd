@@ -23,7 +23,7 @@ dist_fit(
 \item{chains}{Numeric, defaults to 2. Number of MCMC chains to use. More is better with the minimum being two.}
 
 \item{dist}{Character string, which distribution to fit. Defaults to exponential (\code{"exp"}) but
-gamma (\code{"gamma"}) and lognormal (\code{"lognorma"}) are also supported.}
+gamma (\code{"gamma"}) and lognormal (\code{"lognormal"}) are also supported.}
 
 \item{verbose}{Logical, defaults to FALSE. Should verbose progress messages be printed.}
 }
@@ -31,7 +31,7 @@ gamma (\code{"gamma"}) and lognormal (\code{"lognorma"}) are also supported.}
 A \code{stan} fit of an interval censored distribution
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Fits an integer adjusted exponential, gamma or lognormal distribution using
 \code{stan}.
 }

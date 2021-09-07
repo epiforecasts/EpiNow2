@@ -4,24 +4,20 @@
 \alias{report_plots}
 \title{Report plots}
 \usage{
-report_plots(
-  summarised_estimates,
-  reported,
-  target_folder = NULL,
-  max_plot = 10
-)
+report_plots(summarised_estimates, reported, target_folder = NULL, ...)
 }
 \arguments{
-\item{summarised_estimates}{A data.table of summarised estimates containing the following variables:
-variable, median, bottom, and top. It should contain the following estimates: R, infections, reported_cases_rt,
-and r (rate of growth).}
+\item{summarised_estimates}{A data.table of summarised estimates containing
+the following variables: variable, median, bottom, and top.
+
+It should also contain the following estimates: R, infections,
+reported_cases_rt, and r (rate of growth).}
 
 \item{reported}{A data.table of reported cases with the following variables: date, confirm.}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
-\item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
-on the maximum number of reported cases.}
+\item{...}{Additional arguments passed to \code{plot_estimates()}.}
 }
 \value{
 A named list of \code{ggplot2} objects, \code{list(infections, reports, R, growth_rate, summary)},
@@ -31,7 +27,7 @@ which correspond to a summary combination (last item) and for the leading items
 and \code{summarised_estimates[variable == "growth_rate"]}, respectively.
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 Returns key summary plots for estimates. May be depreciated in later releases as current S3 methods
 are enhanced.
 }

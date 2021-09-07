@@ -112,18 +112,22 @@ summarise_results <- function(regions,
 #' Regional Summary Output
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' Used to produce summary output either internally in `regional_epinow` or externally.
+#' Used to produce summary output either internally in `regional_epinow` or
+#'  externally.
 #' @param summary_dir A character string giving the directory
 #'  in which to store summary of results.
-#' @param target_date A character string giving the target date for which to extract results
+#' @param target_date A character string giving the target date for which to
+#'  extract results
 #' (in the format "yyyy-mm-dd"). Defaults to latest available estimates.
-#' @param all_regions Logical, defaults to `TRUE`. Should summary plots for all regions be returned
-#' rather than just regions of interest.
+#' @param all_regions Logical, defaults to `TRUE`. Should summary plots for all
+#'  regions be returned rather than just regions of interest.
+#' @param ... Additional arguments passed to `report_plots`. 
 #' @return A list of summary measures and plots
 #' @export
 #' @seealso regional_epinow
 #' @inheritParams summarise_results
 #' @inheritParams plot_summary
+#' @inheritParams plot_estimates
 #' @inheritParams summarise_key_measures
 #' @inheritParams regional_epinow
 #' @inheritParams get_regional_results
@@ -170,9 +174,9 @@ regional_summary <- function(regional_output = NULL,
                              region_scale = "Region",
                              all_regions = TRUE,
                              return_output = FALSE,
-                             max_plot = 10) {
+                             max_plot = 10,
+                             ...) {
   reported_cases <- data.table::setDT(reported_cases)
-
   if (is.null(summary_dir)) {
     futile.logger::flog.info("No summary directory specified so returning summary output")
     return_output <- TRUE
@@ -266,7 +270,9 @@ regional_summary <- function(regional_output = NULL,
   log_cases <- (max(current_inf[, ..uppers], na.rm = TRUE) /
     min(current_inf[, ..lowers], na.rm = TRUE)) > 1000
 
-  max_reported_cases <- round(max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0)
+  max_reported_cases <- round(
+    max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0
+  )
 
   # summarise cases and Rts
   summary_plot <- plot_summary(summarised_results$data,
@@ -303,12 +309,13 @@ regional_summary <- function(regional_output = NULL,
   high_plots <- report_plots(
     summarised_estimates = results$estimates$summarised[region %in% most_reports],
     reported = reported_cases[region %in% most_reports],
-    max_plot = max_plot
+    max_plot = max_plot, ...
   )
 
   high_plots$summary <- NULL
   high_plots <-
-    purrr::map(high_plots, ~ . + ggplot2::facet_wrap(~region, scales = "free_y", ncol = 2))
+    purrr::map(high_plots,
+               ~ . + ggplot2::facet_wrap(~region, scales = "free_y", ncol = 2))
 
   if (!is.null(summary_dir)) {
     save_ggplot(high_plots$R, "high_rt_plot.png")
@@ -324,14 +331,15 @@ regional_summary <- function(regional_output = NULL,
     plots <- report_plots(
       summarised_estimates = results$estimates$summarised,
       reported = reported_cases,
-      max_plot = max_plot
+      max_plot = max_plot, ...
     )
 
     plots$summary <- NULL
-    plots <- purrr::map(plots, ~ . + ggplot2::facet_wrap(~region,
-      scales = "free_y",
-      ncol = plots_per_row
-    ))
+    plots <- purrr::map(
+      plots, 
+      ~ . + ggplot2::facet_wrap(~region, scales = "free_y",
+                                ncol = plots_per_row)
+    )
 
     if (!is.null(summary_dir)) {
       save_big_ggplot <- function(plot, name) {
@@ -393,9 +401,11 @@ summarise_key_measures <- function(regional_results = NULL,
   } else {
     timeseries <- regional_results
   }
-  summarise_variable <- function(df, dof = 2) {
+  summarise_variable <- function(df, dof = Inf) {
     cols <- setdiff(names(df), c("region", "date", "type", "strat"))
-    df[, (cols) := round(.SD, dof), .SDcols = cols]
+    if (!is.null(dof)) {
+      df[, (cols) := round(.SD, dof), .SDcols = cols]
+    }
     data.table::setorderv(df, cols = c("region", "date", "type", "strat"))
     data.table::setnames(df, "region", type)
     return(df)
@@ -409,33 +419,31 @@ summarise_key_measures <- function(regional_results = NULL,
   out <- list()
   sum_est <- timeseries$estimates$summarised
   # clean and save Rt estimates
-  out$rt <- summarise_variable(sum_est[variable == "R"][, variable := NULL], 2)
+  out$rt <- summarise_variable(sum_est[variable == "R"][, variable := NULL])
   save_variable(out$rt, "rt")
 
   # clean and save growth rate estimates
   out$growth_rate <- summarise_variable(sum_est[variable == "growth_rate"][
     ,
     variable := NULL
-  ], 3)
+  ])
   save_variable(out$growth_rate, "growth_rate")
 
   # clean and save case estimates
   out$cases_by_infection <- summarise_variable(sum_est[variable == "infections"][
     ,
     variable := NULL
-  ], 0)
+  ], 1)
   save_variable(out$cases_by_infection, "cases_by_infection")
 
   # clean and save case estimates
   out$cases_by_report <- summarise_variable(sum_est[variable == "reported_cases"][
     ,
     variable := NULL
-  ], 0)
+  ], 1)
   save_variable(out$cases_by_report, "cases_by_report")
   return(out)
 }
-
-
 #' Summarise Regional Runtimes
 #'
 #' @description `r lifecycle::badge("maturing")`
@@ -719,10 +727,11 @@ summary.epinow <- function(object, output = "estimates",
 #' \code{summary} method for class "estimate_infections".
 #' @param object A list of output as produced by "estimate_infections".
 #' @param type A character vector of data types to return. Defaults to "snapshot"
-#' but also supports "parameters". "snapshot" returns a summary at a given date
-#' (by default the latest date informed by data). "parameters" returns summarised
-#' parameter estimates that can be further filtered using `params` to show just the
-#' parameters of interest and date.
+#' but also supports "parameters", and "samples". "snapshot" returns a summary at
+#' a given date (by default the latest date informed by data). "parameters" returns 
+#' summarised parameter estimates that can be further filtered using `params` to 
+#' show just the parameters of interest and date. "samples" similarly returns posterior
+#' samples.
 #' @param date A date in the form "yyyy-mm-dd" to inspect estimates for.
 #' @param params A character vector of parameters to filter for.
 #' @param ... Pass additional arguments to `report_summary`
@@ -732,7 +741,7 @@ summary.epinow <- function(object, output = "estimates",
 #' @export
 summary.estimate_infections <- function(object, type = "snapshot",
                                         date = NULL, params = NULL, ...) {
-  choices <- c("snapshot", "parameters")
+  choices <- c("snapshot", "parameters", "samples")
   type <- match.arg(type, choices, several.ok = FALSE)
   if (is.null(date)) {
     target_date <- unique(object$summarised[type != "forecast"][date == max(date)]$date)
@@ -746,8 +755,11 @@ summary.estimate_infections <- function(object, type = "snapshot",
       rt_samples = object$samples[variable == "R"][date == target_date, .(sample, value)],
       ...
     )
-  } else if (type %in% "parameters") {
-    out <- object$summarised
+  } else if (type %in% c("parameters", "samples")) {
+    if (type %in% "parameters") {
+      type <- "summarised"
+    }
+    out <- object[[type]]
     if (!is.null(date)) {
       out <- out[date == target_date]
     }

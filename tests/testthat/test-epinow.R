@@ -1,26 +1,24 @@
-context("epinow")
+skip_on_cran()
 
-if (!testthat:::on_cran()) {
-  generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 15)
-  incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 15)
-  reporting_delay <- list(
-    mean = convert_to_logmean(3, 1), mean_sd = 0.1,
-    sd = convert_to_logsd(3, 1), sd_sd = 0.1,
+
+generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 15)
+incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 15)
+reporting_delay <- list(
+    mean = convert_to_logmean(2, 1), mean_sd = 0.1,
+    sd = convert_to_logsd(2, 1), sd_sd = 0.1,
     max = 10
   )
 
-  reported_cases <- EpiNow2::example_confirmed[1:30]
+reported_cases <- EpiNow2::example_confirmed[1:30]
 
-  futile.logger::flog.threshold("FATAL")
+futile.logger::flog.threshold("FATAL")
 
-  df_non_zero <- function(df) {
-    expect_true(nrow(df) > 0)
-  }
-  expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "timing")
+df_non_zero <- function(df) {
+  expect_true(nrow(df) > 0)
 }
+expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "timing")
 
 test_that("epinow produces expected output when run with default settings", {
-  skip_on_cran()
   out <- suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time,
@@ -30,7 +28,7 @@ test_that("epinow produces expected output when run with default settings", {
       cores = 1, chains = 2,
       control = list(adapt_delta = 0.8)
     ),
-    logs = NULL
+    logs = NULL, verbose = FALSE
   ))
 
   expect_equal(names(out), expected_out)
@@ -43,7 +41,6 @@ test_that("epinow produces expected output when run with default settings", {
 })
 
 test_that("epinow runs without error when saving to disk", {
-  skip_on_cran()
   expect_null(suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time,
@@ -53,12 +50,11 @@ test_that("epinow runs without error when saving to disk", {
       control = list(adapt_delta = 0.8)
     ),
     target_folder = tempdir(check = TRUE),
-    logs = NULL,
+    logs = NULL, verbose = FALSE
   )))
 })
 
 test_that("epinow can produce partial output as specified", {
-  skip_on_cran()
   out <- suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time,
@@ -69,7 +65,7 @@ test_that("epinow can produce partial output as specified", {
       control = list(adapt_delta = 0.8)
     ),
     output = c(),
-    logs = NULL
+    logs = NULL, verbose = FALSE
   ))
   expect_equal(names(out), c("estimates", "estimated_reported_cases", "summary"))
   expect_null(out$estimates$samples)
@@ -82,7 +78,6 @@ test_that("epinow can produce partial output as specified", {
 
 
 test_that("epinow fails as expected when given a short timeout", {
-  skip_on_cran()
   expect_error(suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time,
@@ -91,15 +86,14 @@ test_that("epinow fails as expected when given a short timeout", {
       samples = 100, warmup = 100,
       cores = 1, chains = 2,
       control = list(adapt_delta = 0.8),
-      max_execution_time = 10
+      max_execution_time = 1
     ),
-    logs = NULL
+    logs = NULL, verbose = FALSE
   )))
 })
 
 
 test_that("epinow fails if given NUTs arguments when using variational inference", {
-  skip_on_cran()
   expect_error(suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time,
@@ -109,18 +103,17 @@ test_that("epinow fails if given NUTs arguments when using variational inference
       cores = 1, chains = 2,
       method = "vb"
     ),
-    logs = NULL
+    logs = NULL, verbose = FALSE
   )))
 })
 
 
 test_that("epinow fails if given variational inference arguments when using NUTs", {
-  skip_on_cran()
   expect_error(suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time,
     delays = delay_opts(incubation_period, reporting_delay),
     stan = stan_opts(method = "sampling", tol_rel_obj = 1),
-    logs = NULL
+    logs = NULL, verbose = FALSE
   )))
 })

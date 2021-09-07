@@ -1,14 +1,14 @@
 FROM  rocker/geospatial:latest
 
-
 RUN apt-get update -y && \
     apt-get install -y \
     libudunits2-dev \
     libgdal-dev \
     libqpdf-dev \
     libmagick++-dev \
+    xdg-utils \
     && apt-get clean
-
+    
 ## Copy files to working directory of server
 ADD . /home/rstudio/EpiNow2
 

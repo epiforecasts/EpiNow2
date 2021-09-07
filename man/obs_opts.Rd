@@ -4,11 +4,24 @@
 \alias{obs_opts}
 \title{Observation Model Options}
 \usage{
-obs_opts(family = "negbin", weight = 1, week_effect = TRUE, scale = list())
+obs_opts(
+  family = "negbin",
+  phi = c(0, 1),
+  weight = 1,
+  week_effect = TRUE,
+  week_length = 7,
+  scale = list(),
+  likelihood = TRUE,
+  return_likelihood = FALSE
+)
 }
 \arguments{
 \item{family}{Character string defining the observation model. Options are
 Negative binomial ("negbin"), the default, and Poisson.}
+
+\item{phi}{A numeric vector of length 2, defaults to 0, 1. Indicates the
+mean and standard deviation of the normal prior used for the observation
+process.}
 
 \item{weight}{Numeric, defaults to 1. Weight to give the observed data in
 the log density.}
@@ -16,16 +29,26 @@ the log density.}
 \item{week_effect}{Logical defaulting to \code{TRUE}. Should a day of the week effect
 be used in the observation model.}
 
+\item{week_length}{Numeric assumed length of the week in days, defaulting to
+7 days. This can be modified if data aggregated over a period other than a week
+or if data has a non-weekly periodicity.}
+
 \item{scale}{List, defaulting to an empty list. Should an scaling factor be applied
 to map latent infections (convolved to date of report). If none empty a mean
 (\code{mean}) and standard deviation (\code{sd}) needs to be supplied defining the normally
 distributed scaling factor.}
+
+\item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be
+included in the model}
+
+\item{return_likelihood}{Logical, defaults to \code{FALSE}. Should the likelihood
+be returned by the model.}
 }
 \value{
 A list of observation model settings.
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the structure of the observation
 model. Custom settings can be supplied which override the defaults.
 }

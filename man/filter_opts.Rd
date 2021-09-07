@@ -7,8 +7,8 @@
 filter_opts(opts, region)
 }
 \arguments{
-\item{opts}{Either a list of calls to an \verb{_opts} function or a single
-call to an \verb{_opts} function.}
+\item{opts}{Either a list of calls to an \verb{_opts()} function or a single
+call to an \verb{_opts()} function.}
 
 \item{region}{A character string indicating a region of interest.}
 }
@@ -16,7 +16,7 @@ call to an \verb{_opts} function.}
 A list of options
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#maturing'><img src='figures/lifecycle-maturing.svg' alt='Maturing lifecycle'></a>}}{\strong{Maturing}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 A helper function that allows the selection of region specific settings if
 present and otherwise applies the overarching settings
 }

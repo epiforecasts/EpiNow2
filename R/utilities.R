@@ -134,7 +134,7 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 #' Allocate Delays into Required Stan Format
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Allocate delays for stan. Used in `delay_opts`.
+#' Allocate delays for stan. Used in `delay_opts()`.
 #' @param delay_var List of numeric delays
 #' @param no_delays Numeric, number of delays
 #' @return A numeric array
@@ -329,6 +329,68 @@ update_list <- function(defaults = list(), optional = list()) {
     updated <- defaults
   }
   return(updated)
+}
+
+#' Adds a day of the week vector
+#'
+#' @param dates Vector of dates
+#' @param week_effect Numeric from 1 to 7 defaults to 7
+#'
+#' @return A numeric vector containing the period day of the week index
+#' @export
+#' @importFrom lubridate wday
+#' @examples
+#' dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
+#' # Add date based day of week
+#' add_day_of_week(dates, 7)
+#'
+#' # Add shorter week
+#' add_day_of_week(dates, 4)
+add_day_of_week <- function(dates, week_effect = 7) {
+  if (week_effect == 7) {
+    day_of_week <- lubridate::wday(dates, week_start = 1)
+  } else {
+    day_of_week <- as.numeric(dates - min(dates)) %% week_effect
+    day_of_week <- ifelse(day_of_week == 0, week_effect, day_of_week)
+  }
+  return(day_of_week)
+}
+
+#' Set to Single Threading
+#' 
+#' This function sets the threads used by data.table to 1 in the parent function
+#' and then restores the initial data.table threads when the function exits.
+#' This is primarily used as an internal function inside of other functions
+#' and will generally not be used on its own.
+#' 
+#' @importFrom data.table getDTthreads setDTthreads
+#' @keywords internal
+#' @return an environment in the parent frame named "dt_settings"
+#' @examples 
+#' \donttest{
+#' data.table::setDTthreads(2)
+#' test_function <- function(){
+#'   set_dt_single_thread()
+#'   
+#'   print(data.table::getDTthreads())
+#' 
+#' }
+#' test_function()
+#' data.table::getDTthreads()
+#' }
+#' @export
+
+set_dt_single_thread <- function() {
+  
+  a <- list2env(x = list(dt_previous_threads = data.table::getDTthreads()))
+  
+  assign(deparse(substitute(dt_settings)), a, envir = parent.frame())
+  
+  data.table::setDTthreads(1)
+  
+  do.call("on.exit", 
+          list(quote(data.table::setDTthreads(dt_settings$dt_previous_threads))), 
+          envir = parent.frame()) 
 }
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var

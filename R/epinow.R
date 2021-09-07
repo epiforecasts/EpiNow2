@@ -14,6 +14,7 @@
 #' if no directory for saving is specified.
 #' @param forecast_args A list of arguments to pass to `forecast_infections()`. Unless at a minimum a `forecast_model` is passed
 #' then `forecast_infections` will be bypassed.
+#' @param plot_args A list of optional arguments passed to `plot.epinow()`.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @seealso estimate_infections simulate_infections forecast_infections regional_epinow
@@ -33,9 +34,9 @@
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- list(
-#'   mean = convert_to_logmean(3, 1),
+#'   mean = convert_to_logmean(2, 1),
 #'   mean_sd = 0.1,
-#'   sd = convert_to_logsd(3, 1),
+#'   sd = convert_to_logsd(2, 1),
 #'   sd_sd = 0.1,
 #'   max = 10
 #' )
@@ -68,8 +69,10 @@ epinow <- function(reported_cases,
                    stan = stan_opts(),
                    horizon = 7,
                    CrIs = c(0.2, 0.5, 0.9),
+                   zero_threshold = 50,
                    return_output = FALSE,
                    output = c("samples", "plots", "latest", "fit", "timing"),
+                   plot_args = list(),
                    target_folder = NULL, target_date,
                    forecast_args = NULL, logs = tempdir(),
                    id = "epinow", verbose = interactive()) {
@@ -148,6 +151,7 @@ epinow <- function(reported_cases,
       obs = obs,
       stan = stan,
       CrIs = CrIs,
+      zero_threshold = zero_threshold,
       horizon = horizon,
       verbose = verbose,
       id = id
@@ -202,9 +206,14 @@ epinow <- function(reported_cases,
 
     # plot --------------------------------------------------------------------
     if (output["plots"]) {
-      plots <- plot.estimate_infections(estimates,
-        type = "all",
-        target_folder = target_folder
+      plots <- do.call(plot.estimate_infections, c(
+        list(
+          x = estimates,
+          type = "all",
+          target_folder = target_folder
+        ),
+        plot_args
+        )
       )
     } else {
       plots <- NULL

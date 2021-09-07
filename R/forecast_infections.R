@@ -19,7 +19,7 @@
 #' summarised forecasts.
 #' @export
 #' @inheritParams calc_summary_measures
-#' @importFrom data.table setDT := setorder setDTthreads
+#' @importFrom data.table setDT := setorder
 #' @importFrom purrr safely map_dbl
 #' @importFrom truncnorm rtruncnorm
 #' @examples
@@ -73,7 +73,8 @@ forecast_infections <- function(infections, rts,
   }
 
   # set to data.table if not ------------------------------------------------
-  data.table::setDTthreads(1)
+  set_dt_single_thread()
+  
   infections <- data.table::setDT(infections)
   rts <- data.table::setDT(rts)
 

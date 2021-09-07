@@ -9,11 +9,6 @@
 ^_pkgdown.yml$
 ^\.github$
 ^docs$
-^configure$
-^configure\.win$
-^src/.*\.so$
-^src/.*\.dll$
-^src/.*\.o$
 ^README\.Rmd$
 ^README\.html$
 ^cran-comments\.md$
@@ -24,3 +19,6 @@
 ^inst/dev$
 ^codecov\.yml$
 ^\.lintr$
+^\.pre-commit-config\.yaml$
+^CODE_OF_CONDUCT\.md$
+^\.devcontainer$

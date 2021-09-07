@@ -30,7 +30,7 @@ When using multiple chains iterations per chain is samples / chains.}
 \item{chains}{Numeric, defaults to 4. Number of MCMC chains to use.}
 
 \item{control}{List, defaults to empty. control parameters to pass to underlying
-\code{rstan} function. By default \code{adapt_delta = 0.98} and \code{max_treedepth = 15}
+\code{rstan} function. By default \code{adapt_delta = 0.95} and \code{max_treedepth = 15}
 though these settings can be overwritten.}
 
 \item{save_warmup}{Logical, defaults to FALSE. Should warmup progress be saved.}
@@ -53,7 +53,7 @@ allowed time then estimation will fail with an informative error.}
 A list of arguments to pass to \code{rstan::sampling}
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#stable'><img src='figures/lifecycle-stable.svg' alt='Stable lifecycle'></a>}}{\strong{Stable}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to
 \code{rstan::sampling}. Custom settings can be supplied which override the defaults.
 }

@@ -151,7 +151,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @param values Numeric vector of values
 #' @param samples Numeric, number of samples to take
 #' @param dist Character string, which distribution to fit. Defaults to exponential (`"exp"`) but
-#' gamma (`"gamma"`) and lognormal (`"lognorma"`) are also supported.
+#' gamma (`"gamma"`) and lognormal (`"lognormal"`) are also supported.
 #' @param cores Numeric, defaults to 1. Number of CPU cores to use (no effect if greater than the number of chains).
 #' @param chains Numeric, defaults to 2. Number of MCMC chains to use. More is better with the minimum being two.
 #' @param verbose Logical, defaults to FALSE. Should verbose progress messages be printed.
@@ -399,7 +399,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' @importFrom purrr transpose
 #' @importFrom future.apply future_lapply
 #' @importFrom rstan extract
-#' @importFrom data.table data.table rbindlist setDTthreads
+#' @importFrom data.table data.table rbindlist
 #' @export
 #' @examples
 #' \donttest{
@@ -430,7 +430,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
   values <- values[values >= 0]
 
   get_single_dist <- function(values, samples = 1) {
-    data.table::setDTthreads(1)
+    set_dt_single_thread()
 
     fit <- EpiNow2::dist_fit(values, samples = samples, dist = dist)
 

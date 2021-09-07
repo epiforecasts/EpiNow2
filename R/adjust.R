@@ -14,7 +14,7 @@
 #' a third variable `reference` which indicates what the date variable refers to.
 #' @export
 #' @inheritParams sample_approx_dist
-#' @importFrom data.table setorder data.table setDTthreads
+#' @importFrom data.table setorder data.table data.table 
 #' @importFrom lubridate wday
 #' @examples
 #' # define example cases
@@ -69,7 +69,9 @@ adjust_infection_to_report <- function(infections, delay_defs,
                                        reporting_model, reporting_effect,
                                        type = "sample",
                                        truncate_future = TRUE) {
-  data.table::setDTthreads(1)
+  
+  # Reset DT Defaults on Exit
+  set_dt_single_thread()
 
   sample_single_dist <- function(input, delay_def) {
     ## Define sample delay fn

@@ -99,11 +99,26 @@ if (!interactive) {
    knitr::kable(booktabs = TRUE, longtable = TRUE) %>% 
    kableExtra::landscape()
 }else{
-  data.table::fread(here::here(summary_path, "summary_table.csv")) %>% 
+  summary_table <- data.table::fread(here::here(summary_path, "summary_table.csv")) 
+  numeric_cols <-
+    unname(which(apply(summary_table, 2,
+                       function(x) all(grepl("^[0-9e.() -]+$", x)))))
+  sort_table <- apply(summary_table[, numeric_cols, with = FALSE], 2,
+                      function(x) as.numeric(sub(" \\(.*\\)$", "", x)))
+  sort_cols <- ncol(summary_table) + seq_len(ncol(sort_table))
+  columnDefs <-
+    c(lapply(seq_along(sort_cols), function(x) {
+      list(orderData = sort_cols[x] - 1L,
+           targets = numeric_cols[x] - 1L)
+    }),
+    list(list(visible = FALSE, targets = sort_cols - 1L)))
+  summary_table %>%
+    cbind(sort_table) %>%
     DT::datatable(rownames = FALSE,
-                  extensions = c("Buttons"), 
-                  options = list(dom = "Bfrtip", buttons = c("csv")))
-} 
+                  extensions = c("Buttons"),
+                  options = list(dom = "Bfrtip", buttons = c("csv"),
+                                 columnDefs = columnDefs))
+}
 ```
 
 ```{r}

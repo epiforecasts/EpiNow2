@@ -1,5 +1,3 @@
-context("setup_future")
-
 reported_cases <- data.frame(region = c("test", "boo"))
 futile.logger::flog.threshold("FATAL")
 

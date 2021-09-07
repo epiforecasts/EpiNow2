@@ -10,7 +10,8 @@ plot_estimates(
   ylab = "Cases",
   hline,
   obs_as_col = TRUE,
-  max_plot = 10
+  max_plot = 10,
+  estimate_type = NULL
 )
 }
 \arguments{
@@ -28,12 +29,16 @@ as points (linked using a line).}
 
 \item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
 on the maximum number of reported cases.}
+
+\item{estimate_type}{Character vector indicating the type of data to plot.
+Default to all types with supported options being: "Estimate", "Estimate
+based on partial data", and "Forecast".}
 }
 \value{
 A \code{ggplot2} object
 }
 \description{
-\ifelse{html}{\out{<a href='https://www.tidyverse.org/lifecycle/#questioning'><img src='figures/lifecycle-questioning.svg' alt='Questioning lifecycle'></a>}}{\strong{Questioning}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 Allows users to plot the output from \code{estimate_infections} easily. In future releases it
 may be depreciated in favour of increasing the functionality of the S3 plot methods.
 }
@@ -71,6 +76,13 @@ plot_estimates(
   estimate = out$summarised[variable == "R"],
   ylab = "Effective Reproduction No.",
   hline = 1
+)
+
+#' # plot Rt estimates without forecasts
+plot_estimates(
+  estimate = out$summarised[variable == "R"],
+  ylab = "Effective Reproduction No.",
+  hline = 1, estimate_type = "Estimate"
 )
 }
 }

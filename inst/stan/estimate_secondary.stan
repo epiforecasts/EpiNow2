@@ -19,7 +19,7 @@ parameters{
   // observation model
   real delay_mean[delays];               // mean of delays
   real<lower = 0> delay_sd[delays];      // sd of delays
-  simplex[week_effect ? 7 : 1] day_of_week_simplex;   // day of week reporting effect
+  simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   real<lower = 0> frac_obs[obs_scale];   // fraction of cases that are ultimately observed
   real truncation_mean[truncation];      // mean of truncation
   real truncation_sd[truncation];        // sd of truncation
@@ -34,7 +34,7 @@ transformed parameters {
                                   historic, primary_hist_additive,
                                   current, primary_current_additive, t);
  // weekly reporting effect
- if (week_effect) {
+ if (week_effect > 1) {
    secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
   }
  // truncate near time cases to observed reports
@@ -52,14 +52,20 @@ model {
     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
    }
   // observed secondary reports from mean of secondary reports (update likelihood)
-  report_lp(obs[(burn_in + 1):t], secondary[(burn_in + 1):t], rep_phi, 1, model_type, 1);
+  if (likelihood) {
+    report_lp(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
+              rep_phi, phi_mean, phi_sd, model_type, 1);
+  }
 }
 
 generated quantities {
   int sim_secondary[t - burn_in];
-  vector[t - burn_in] log_lik;
+  vector[return_likelihood > 1 ? t - burn_in : 0] log_lik;
   // simulate secondary reports
   sim_secondary = report_rng(secondary[(burn_in + 1):t], rep_phi, model_type);
   // log likelihood of model
-  log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t], rep_phi, model_type, obs_weight);
+  if (return_likelihood) {
+    log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
+                             rep_phi, model_type, obs_weight);
+  }
 }
