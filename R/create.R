@@ -517,7 +517,7 @@ create_initial_conditions <- function(data) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
       out$rho <- array(rlnorm(1,
         meanlog = data$ls_meanlog,
-        sdlog = data$ls_sdlog * 0.1
+        sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog * 0.1, 0.01)
       ))
       out$rho <- ifelse(out$rho > data$ls_max, data$ls_max - 0.001,
         ifelse(out$rho < data$ls_min, data$ls_min + 0.001,
