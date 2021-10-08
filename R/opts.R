@@ -176,11 +176,12 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #'  process. Custom settings can be supplied which override the defaults.
 #' @param ls_mean Numeric, defaults to 21 days. The mean of the lognormal length scale.
 #' @param ls_sd Numeric, defaults to 7 days. The standard deviation of the log normal length
-#' scale with..
+#' scale. If \code{ls_sd = 0}, inverse-gamma prior on Gaussian process length scale will
+#' be used with recommended parameters \code{inv_gamma(1.499007, 0.057277 * ls_max)}.
 #' @param ls_max Numeric, defaults to 60. The maximum value of the length scale. Updated in
 #' `create_gp_data` to be the length of the input data if this is smaller.
-#' @param ls_min Numeric, defaults to 7. The minimum value of the length scale.
-#' @param alpha_sd Numeric, defaults to 0.2. The standard deviation of the magnitude parameter of
+#' @param ls_min Numeric, defaults to 0. The minimum value of the length scale.
+#' @param alpha_sd Numeric, defaults to 0.05. The standard deviation of the magnitude parameter of
 #' the Gaussian process kernel. Should be approximately the expected standard deviation of the logged Rt.
 #' @param kernel Character string, the type of kernel required. Currently supporting the squared exponential
 #' kernel ("se") and the 3 over 2 Matern kernel ("matern", with `matern_type = 3/2`). Defaulting to the Matern 3 over 2 kernel as discontinuities are expected
@@ -207,9 +208,9 @@ gp_opts <- function(basis_prop = 0.2,
                     boundary_scale = 1.5,
                     ls_mean = 21,
                     ls_sd = 7,
-                    ls_min = 3,
+                    ls_min = 0,
                     ls_max = 60,
-                    alpha_sd = 0.1,
+                    alpha_sd = 0.05,
                     kernel = "matern",
                     matern_type = 3 / 2) {
   gp <- list(
