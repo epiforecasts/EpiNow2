@@ -387,8 +387,35 @@ create_stan_data <- function(reported_cases, generation_time,
                              rt, gp, obs, delays, horizon,
                              backcalc, shifted_cases,
                              truncation) {
+
   ## make sure we have at least max_gt seeding time
   delays$seeding_time <- max(delays$seeding_time, generation_time$max)
+
+  ## complete generation time parameters if not all are given
+  if (is.null(generation_time)) {
+    generation_time <- list(mean = 1)
+  }
+  for (param in c("mean_sd", "sd", "sd_sd")) {
+    if (!(param %in% names(generation_time))) generation_time[[param]] <- 0
+  }
+  ## check if generation time is fixed
+  if (generation_time$sd == 0 && generation_time$sd_sd == 0) {
+    if ("max_gt" %in% names(generation_time)) {
+      if (generation_time$max_gt != generation_time$mean) {
+        stop("Error in generation time defintion: if max_gt(",
+             generation_time$max_gt,
+             ") is given it must be equal to the mean (",
+             generation_time$mean,
+             ")")
+      }
+    } else {
+      generation_time$max_gt <- generation_time$mean
+    }
+    if (any(generation_time$mean_sd > 0, generation_time$sd_sd > 0)) {
+      stop("Error in generation time definition: if sd_mean is 0 and ",
+           "sd_sd is 0 then mean_sd must be 0, too.")
+    }
+  }
 
   cases <- reported_cases[(delays$seeding_time + 1):(.N - horizon)]$confirm
 
@@ -519,14 +546,19 @@ create_initial_conditions <- function(data) {
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
         sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
       ))
-      out$gt_mean <- array(truncnorm::rtruncnorm(1,
-        a = 0, mean = data$gt_mean_mean,
-        sd = data$gt_mean_sd * 0.1
-      ))
-      out$gt_sd <- array(truncnorm::rtruncnorm(1,
-        a = 0, mean = data$gt_sd_mean,
-        sd = data$gt_sd_sd * 0.1
-      ))
+      if (data$gt_mean_sd > 0) {
+        out$gt_mean <- array(truncnorm::rtruncnorm(1,
+                                                   a = 0, mean = data$gt_mean_mean,
+                                                   sd = data$gt_mean_sd * 0.1
+                                                   ))
+      }
+      if (data$gt_sd_sd > 0) {
+        out$gt_sd <- array(truncnorm::rtruncnorm(1,
+                                                 a = 0, mean = data$gt_sd_mean,
+                                                 sd = data$gt_sd_sd * 0.1
+                                                 ))
+      }
+
       if (data$bp_n > 0) {
         out$bp_sd <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
         out$bp_effects <- array(rnorm(data$bp_n, 0, 0.1))
