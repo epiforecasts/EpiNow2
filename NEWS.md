@@ -10,6 +10,8 @@ This release is under development and the features outlined below may change bef
 * Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. 
 * Adds option to `plot_estimates()` and higher level functions to choose which estimate type to plot.
 * Adds support for fixed generation times (either mean only or fixed gamma distributed). By @sbfnk.
+* Adds support for optionally using an inverse gamma prior for the lengthscale of the gaussian process. This scaled prior has been tested for both short and long simulations where the default prior may make the model unstable. The new prior is more stable for long simulations and adaptively change the distribution based on the simulation length (total number of days) without relying on the user inputs or the fixed defaults. It can be tested by setting ls_sd = 0 in gp_opts(). By @hsbadr.
+* Updated the prior on the magnitude of the gaussian process to be 0.05 vs 0.1 leading to slightly more stable estimates. By @hsbadr.
 
 ## Model changes
 
