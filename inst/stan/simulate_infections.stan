@@ -31,7 +31,7 @@ generated quantities {
   for (i in 1:n) {
     // generate infections from Rt trace
     infections[i] = to_row_vector(generate_infections(to_vector(R[i]), seeding_time,
-                                                      gt_mean[i], gt_sd[i], max_gt,
+                                                      gt_mean[i, 1], gt_sd[i, 1], max_gt,
                                                       initial_infections[i], initial_growth[i],
                                                       pop, future_time));
     // convolve from latent infections to mean of observations
