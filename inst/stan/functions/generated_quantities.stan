@@ -13,7 +13,11 @@ vector calculate_Rt(vector infections, int seeding_time,
   for (i in 1:(max_gt)) {
     gt_indexes[i] = max_gt - i + 1;
   }
-  gt_pmf = discretised_gamma_pmf(gt_indexes, gt_mean, gt_sd, max_gt);
+  if (gt_sd > 0) {
+    gt_pmf = discretised_gamma_pmf(gt_indexes, gt_mean, gt_sd, max_gt);
+  } else {
+    gt_pmf = discretised_delta_pmf(gt_indexes);
+  }
   // calculate Rt using Cori et al. approach
   for (s in 1:ot) {
     infectiousness[s] += update_infectiousness(infections, gt_pmf, seeding_time, max_gt, s);
@@ -36,11 +40,18 @@ vector calculate_Rt(vector infections, int seeding_time,
 }
 // Convert an estimate of Rt to growth
 real[] R_to_growth(vector R, real gt_mean, real gt_sd) {
-  real k = pow(gt_sd / gt_mean, 2);
   int t = num_elements(R);
   real r[t];
-  for (s in 1:t) {
-    r[s] = (pow(R[s], k) - 1) / (k * gt_mean);
+  if (gt_sd > 0) {
+    real k = pow(gt_sd / gt_mean, 2);
+    for (s in 1:t) {
+      r[s] = (pow(R[s], k) - 1) / (k * gt_mean);
+    }
+  } else {
+    // limit as gt_sd -> 0
+    for (s in 1:t) {
+      r[s] = log(R[s]) / gt_mean;
+    }
   }
   return(r);
 }
