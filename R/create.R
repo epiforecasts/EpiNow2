@@ -387,6 +387,9 @@ create_stan_data <- function(reported_cases, generation_time,
                              rt, gp, obs, delays, horizon,
                              backcalc, shifted_cases,
                              truncation) {
+  ## make sure we have at least max_gt seeding time
+  delays$seeding_time <- max(delays$seeding_time, generation_time$max)
+
   cases <- reported_cases[(delays$seeding_time + 1):(.N - horizon)]$confirm
 
   data <- list(
