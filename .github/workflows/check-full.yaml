@@ -9,7 +9,7 @@ name: R-CMD-check
     branches:
       - master
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * 1'
   pull_request:
     branches:
       - '*'
