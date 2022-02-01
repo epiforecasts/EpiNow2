@@ -238,7 +238,8 @@ secondary_opts <- function(type = "incidence", ...) {
       historic = 1,
       primary_hist_additive = 1,
       current = 0,
-      primary_current_additive = 0
+      primary_current_additive = 0,
+      estimate_baseline = 0
     )
   } else if (type %in% "prevalence") {
     data <- list(
@@ -246,7 +247,8 @@ secondary_opts <- function(type = "incidence", ...) {
       historic = 1,
       primary_hist_additive = 0,
       current = 1,
-      primary_current_additive = 1
+      primary_current_additive = 1,
+      estimate_baseline = 0
     )
   }
   data <- update_list(data, list(...))
@@ -427,7 +429,8 @@ forecast_secondary <- function(estimate,
 
   # allocate empty parameters
   data <- allocate_empty(
-    data, c("frac_obs", "delay_mean", "delay_sd", "rep_phi"),
+    data, c("frac_obs", "delay_mean", "delay_sd", "rep_phi",
+            "secondary_baseline"),
     n = data$n
   )
   data$all_dates <- as.integer(all_dates)

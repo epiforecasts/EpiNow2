@@ -4,3 +4,4 @@
   int primary_hist_additive;         // Should historic primary reports be additive
   int current;                       // Should current primary reports be considered
   int primary_current_additive;      // Should current primary reports be additive
+  int estimate_baseline;             // Should a baseline be estimated

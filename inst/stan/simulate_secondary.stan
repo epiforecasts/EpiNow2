@@ -14,11 +14,14 @@ data {
   // secondary model specific data
   int<lower = 0> obs[t - h];         // observed secondary data
   matrix[n, t] primary;              // observed primary data
+
 #include data/secondary.stan
   // delay from infection to report
 #include data/simulation_delays.stan
   // observation model
 #include data/simulation_observation_model.stan
+
+  real secondary_baseline[n,estimate_baseline];
 }
 
 generated quantities {
@@ -27,9 +30,10 @@ generated quantities {
     vector[t] secondary;
     // calculate secondary reports from primary
     secondary =
-       calculate_secondary(to_vector(primary[i]), obs, frac_obs[i], delay_mean[i],
-                           delay_sd[i], max_delay, cumulative,
-                           historic, primary_hist_additive,
+       calculate_secondary(to_vector(primary[i]), obs, frac_obs[i],
+                           secondary_baseline[i],
+                           delay_mean[i], delay_sd[i], max_delay,
+                           cumulative, historic, primary_hist_additive,
                            current, primary_current_additive, t - h + 1);
     // weekly reporting effect
     if (week_effect > 1) {

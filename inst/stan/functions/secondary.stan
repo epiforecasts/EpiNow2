@@ -1,8 +1,8 @@
 // Calculate secondary reports condition only on primary reports
 vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
-                           real[] delay_mean, real[] delay_sd,
-                           int[] max_delay, int cumulative, int historic,
-                           int primary_hist_additive, int current,
+                           real[] secondary_baseline, real[] delay_mean,
+                           real[] delay_sd, int[] max_delay, int cumulative,
+                           int historic, int primary_hist_additive, int current,
                            int primary_current_additive, int predict) {
   int t = num_elements(reports);
   int obs_scale = num_elements(frac_obs);
@@ -47,6 +47,9 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
       }else{
         secondary_reports[i] -= scaled_reports[i];
       }
+    }
+    if (num_elements(secondary_baseline) > 0) {
+      secondary_reports[i] += secondary_baseline[1];
     }
     secondary_reports[i] = fmax(1e-5, secondary_reports[i]);
   }

@@ -24,14 +24,15 @@ parameters{
   real truncation_mean[truncation];      // mean of truncation
   real truncation_sd[truncation];        // sd of truncation
   real<lower = 0> rep_phi[model_type];   // overdispersion of the reporting process
+  real<lower = 0> secondary_baseline[estimate_baseline]; // baseline for secondary component
 }
 
 transformed parameters {
   vector<lower=0>[t] secondary;
   // calculate secondary reports from primary
-  secondary = calculate_secondary(primary, obs, frac_obs, delay_mean,
-                                  delay_sd, max_delay, cumulative,
-                                  historic, primary_hist_additive,
+  secondary = calculate_secondary(primary, obs, frac_obs, secondary_baseline,
+                                  delay_mean, delay_sd, max_delay,
+                                  cumulative, historic, primary_hist_additive,
                                   current, primary_current_additive, t);
  // weekly reporting effect
  if (week_effect > 1) {
@@ -42,6 +43,9 @@ transformed parameters {
 }
 
 model {
+  if (estimate_baseline) {
+    secondary_baseline[1] ~ normal(0, min(obs)) T[0, ];
+  }
   // penalised priors for delay distributions
   delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, 1);
   // priors for truncation
