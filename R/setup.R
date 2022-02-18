@@ -102,7 +102,8 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 #' available resources.
 #' @param strategies A vector length 1 to 2 of strategies to pass to `future::plan`. Nesting
 #' of parallisation is from the top level down. The default is to set up nesting parallisation
-#' with both using `future::multicore`. For single level parallisation use a single strategy
+#' with both using `future::multisession` (`future::multicore` will likely be a faster option on
+#' supported platforms). For single level parallisation use a single strategy
 #' or `future::plan` directly. See `?future::plan` for options.
 #' @param min_cores_per_worker Numeric, the minimum number of cores per worker.
 #' Defaults to 4 which assumes 4 MCMC chains are in use per region.
@@ -113,7 +114,7 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 #' @return Numeric number of cores to use per worker. If greater than 1 pass to
 #' `stan_args = list(cores = "output from setup future")` or use `future = TRUE`. If only a single strategy is
 #' used then nothing is returned.
-setup_future <- function(reported_cases, strategies = c("multicore", "multicore"),
+setup_future <- function(reported_cases, strategies = c("multisession", "multisession"),
                          min_cores_per_worker = 4) {
   if (length(strategies) > 2 | length(strategies) == 0) {
     futile.logger::flog.error("1 or 2 strategies should be used")
