@@ -6,7 +6,7 @@
 \usage{
 setup_future(
   reported_cases,
-  strategies = c("multiprocess", "multiprocess"),
+  strategies = c("multisession", "multisession"),
   min_cores_per_worker = 4
 )
 }
@@ -15,7 +15,8 @@ setup_future(
 
 \item{strategies}{A vector length 1 to 2 of strategies to pass to \code{future::plan}. Nesting
 of parallisation is from the top level down. The default is to set up nesting parallisation
-with both using \code{future::multiprocess}. For single level parallisation use a single strategy
+with both using \code{future::multisession} (\code{future::multicore} will likely be a faster option on
+supported platforms). For single level parallisation use a single strategy
 or \code{future::plan} directly. See \code{?future::plan} for options.}
 
 \item{min_cores_per_worker}{Numeric, the minimum number of cores per worker.
