@@ -7,7 +7,7 @@ test_that("setup_future runs without error", {
 })
 
 test_that("setup_future runs when only using a single level of parallisation", {
-  expect_null(suppressWarnings(setup_future(reported_cases, strategies = "multiprocess")))
+  expect_null(suppressWarnings(setup_future(reported_cases, strategies = "multicore")))
 })
 
 test_that("setup_future runs with an error when strategies are incorrectly defined", {
@@ -16,8 +16,8 @@ test_that("setup_future runs with an error when strategies are incorrectly defin
   )))
   expect_error(suppressWarnings(setup_future(reported_cases,
     strategies = c(
-      "multiprocess", "multiprocess",
-      "multiprocess"
+      "multicore", "multicore",
+      "multicore"
     )
   )))
 })
