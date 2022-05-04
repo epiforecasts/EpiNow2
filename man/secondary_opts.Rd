@@ -31,7 +31,7 @@ contribute to current secondary reported cases), \code{primary_current_additive}
 primary reported cases be additive or subtractive).
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Returns a list of options defining the secondary model used in \code{estimate_secondary()}.
 This model is a combination of a convolution of previously observed primary reports
 combined with current primary reports (either additive or subtractive). This model

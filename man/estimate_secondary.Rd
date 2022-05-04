@@ -13,6 +13,7 @@ estimate_secondary(
   obs = obs_opts(),
   burn_in = 14,
   CrIs = c(0.2, 0.5, 0.9),
+  priors = NULL,
   model = NULL,
   verbose = interactive(),
   ...
@@ -46,6 +47,11 @@ than the number of observations.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
+\item{priors}{A \code{data.frame} of named priors to be used in model fitting
+rather than the defaults supplied from other arguments. This is typically
+useful if wanting to inform a estimate from the posterior of another model
+fit.}
+
 \item{model}{A compiled stan model to override the default model. May be
 useful for package developers or those developing extensions.}
 
@@ -55,12 +61,14 @@ useful for package developers or those developing extensions.}
 \item{...}{Additional parameters to pass to \code{rstan::sampling}.}
 }
 \value{
-A list containing: \code{predictions} (a data frame ordered by date with the primary,
-and secondary observations, and a summary of the model estimated secondary observations),
-\code{data} (a list of data used to fit the model), and \code{fit} (the \code{stanfit} object).
+A list containing: \code{predictions} (a data frame ordered by date with
+the primary, and secondary observations, and a summary of the model
+estimated secondary observations), \code{posterior} which contains a summary of
+the entire model posterior, \code{data} (a list of data used to fit the
+model), and \code{fit} (the \code{stanfit} object).
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Estimates the relationship between a primary and secondary observation, for
 example hospital admissions and deaths or hospital admissions and bed
 occupancy. See \code{secondary_opts()} for model structure options. See parameter

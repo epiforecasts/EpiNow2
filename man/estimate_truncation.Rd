@@ -40,11 +40,13 @@ observed data (\code{last_obs}, useful for plotting and validation), the data us
 (\code{data}) and the fit object (\code{fit}).
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Estimates a truncation distribution from multiple snapshots of the same
 data source over time. This distribution can then be used in \code{regional_epinow},
 \code{epinow}, and \code{estimate_infections} to adjust for truncated data. See \href{https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a}{here}
-for an example of using this approach on Covid-19 data in England.
+for an example of using this approach on Covid-19 data in England. The
+functionality offered by this function is now deprecated and it has been
+superseded by the \href{https://epiforecasts.io/epinowcast/}{\code{epinowcast} R package}.
 
 The model of truncation is as follows:
 \enumerate{

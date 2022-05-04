@@ -1,6 +1,6 @@
 #' Estimate a Secondary Observation from a Primary Observation
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' Estimates the relationship between a primary and secondary observation, for
 #' example hospital admissions and deaths or hospital admissions and bed
 #' occupancy. See `secondary_opts()` for model structure options. See parameter
@@ -41,6 +41,7 @@
 #' model), and `fit` (the `stanfit` object).
 #' @export
 #' @inheritParams estimate_infections
+#' @inheritParams update_secondary_args
 #' @inheritParams calc_CrIs
 #' @importFrom rstan sampling
 #' @importFrom lubridate wday
@@ -214,7 +215,7 @@ estimate_secondary <- function(reports,
 
 #' Secondary Reports Options
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' Returns a list of options defining the secondary model used in `estimate_secondary()`.
 #' This model is a combination of a convolution of previously observed primary reports
 #' combined with current primary reports (either additive or subtractive). This model
@@ -269,9 +270,32 @@ secondary_opts <- function(type = "incidence", ...) {
   return(data)
 }
 
-update_secondary_args <- function(data, priors, verbose = verbose) {
+#' Update estimate_secondary default priors
+#'
+#' @description `r lifecycle::badge("stable")`
+#' This functions allows the user to more easily specify data driven or model
+#' based priors for `estimate_secondary()` from example from previous model fits
+#' using a `data.frame` to overwrite other default settings. Note that default
+#' settings are still required.
+#' @param data A list of data and arguments as returned by `create_stan_data()`.
+#' @param priors A `data.frame` of named priors to be used in model fitting
+#' rather than the defaults supplied from other arguments. This is typically
+#' useful if wanting to inform a estimate from the posterior of another model
+#' fit. Priors that are currently use to update the defaults are the scaling
+#' fraction ("frac_obs"), the mean delay ("delay_mean"), and standard deviation
+#' of the delay ("delay_sd"). The `data.frame` should have the following 
+#' variables: `variable`, `mean`, and `sd`.
+#' @return A list as produced by `create_stan_data()`.
+#' @inheritParams create_stan_args
+#' @importFrom data.table as.data.table
+#' @examples 
+#' priors <- data.frame(variable = "frac_obs", mean = 3, sd = 1)
+#' data <- list(obs_scale_mean = 4, obs_scale_sd = 3)
+#' update_secondary_args(data, priors)
+update_secondary_args <- function(data, priors, verbose = TRUE) {
+  priors <- data.table::as.data.table(priors)
   if (!missing(priors)) {
-    if (!is.null(priors) & nrow(prirors) > 0) {
+    if (!is.null(priors) & nrow(priors) > 0) {
       if (verbose) {
         message(
           "Replacing specified priors with those from the passed in prior dataframe" # nolint
@@ -284,8 +308,8 @@ update_secondary_args <- function(data, priors, verbose = verbose) {
         data$obs_scale_sd <- as.array(signif(scale$sd, 3))
       }
       # replace delay parameters if present
-      delay_mean <- prior[grepl("delay_mean", variable)]
-      delay_sd <- prior[grepl("delay_sd", variable)]
+      delay_mean <- priors[grepl("delay_mean", variable)]
+      delay_sd <- priors[grepl("delay_sd", variable)]
       if (nrow(delay_mean) > 0) {
         if (is.null(data$delay_mean_mean)) {
          warning(
@@ -293,11 +317,11 @@ update_secondary_args <- function(data, priors, verbose = verbose) {
           )
         }
         data$delay_mean_mean <- as.array(signif(delay_mean$mean, 3))
-        data$$delay_mean_sd <- as.array(signif(delay_mean$sd, 3))
-        data$$delay_sd_mean <- as.array(signif(delay_sd$mean, 3))
-        data$$delay_sd_sd <- as.array(signif(delay_sd$sd, 3))
+        data$delay_mean_sd <- as.array(signif(delay_mean$sd, 3))
+        data$delay_sd_mean <- as.array(signif(delay_sd$mean, 3))
+        data$delay_sd_sd <- as.array(signif(delay_sd$sd, 3))
       }
-      phi <- prior[grepl("rep_phi", variable)]
+      phi <- priors[grepl("rep_phi", variable)]
       if (nrow(phi) > 0) {
         data$phi_mean <- signif(phi$mean, 3)
         data$phi_sd <- signif(phi$sd, 3)
