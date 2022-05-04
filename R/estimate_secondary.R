@@ -50,44 +50,26 @@
 #' \donttest{
 #' # set number of cores to use
 #' options(mc.cores = ifelse(interactive(), 4, 1))
-#' #' # load data.table for manipulation
+#' # load data.table for manipulation
 #' library(data.table)
-#' # load lubridate for dates
-#' library(lubridate)
-#' library(purrr)
 #' 
 #' #### Incidence data example ####
 #'
 #' # make some example secondary incidence data
 #' cases <- example_confirmed
-#' cases <- as.data.table(cases)
-#'
-#' # apply a convolution of a log normal to a vector of observations
-#' weight_cmf <- function(x, ...) {
-#'   set.seed(x[1])
-#'   meanlog <- rnorm(1, 1.6, 0.2)
-#'   sdlog <- rnorm(1, 0.8, 0.1)
-#'   cmf <- cumsum(dlnorm(1:length(x), meanlog, sdlog)) -
-#'     cumsum(dlnorm(0:(length(x) - 1), meanlog, sdlog))
-#'   cmf <- cmf / plnorm(length(x), meanlog, sdlog)
-#'   conv <- sum(x * rev(cmf), na.rm = TRUE)
-#'   conv <- round(conv, 0)
-#'   return(conv)
-#' }
-#' # roll over observed cases to produce a convolution
-#' cases <- cases[, .(date, primary = confirm, secondary = confirm)]
-#' cases <- cases[, secondary := frollapply(secondary, 15, weight_cmf, align = "right")]
-#' cases <- cases[!is.na(secondary)]
-#' # add a day of the week effect and scale secondary observations at 40\% of primary
-#' cases <- cases[lubridate::wday(date) == 1, secondary := round(0.5 * secondary, 0)]
-#' cases <- cases[, secondary := round(secondary * rnorm(.N, 0.4, 0.025), 0)]
-#' cases <- cases[secondary < 0, secondary := 0]
-#' cases <- cases[, secondary := map_dbl(secondary, ~ rpois(1, .))]
+#' cases <- as.data.table(cases)[, primary := confirm]
+#' # Assume that only 40 percent of cases are reported
+#' cases[, scaling := 0.4]
+#' # Parameters of the assumed log normal delay distribution
+#' cases[, logmean := 1.8][, logsd := 0.5]
 #' 
-#' # fit model to example data assuming only a given fraction of primary observations
-#' # become secondary observations
+#' # Simulate secondary cases
+#' cases <- simulate_secondary(cases, type = "incidence")
+#' 
+#' # fit model to example data specifying a weak prior for fraction reported
+#' with a secondary case
 #' inc <- estimate_secondary(cases[1:60],
-#'   obs = obs_opts(scale = list(mean = 0.2, sd = 0.2))
+#'   obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE)
 #' )
 #' plot(inc, primary = TRUE)
 #'
@@ -99,38 +81,21 @@
 #'
 #' # make some example prevalence data
 #' cases <- example_confirmed
-#' cases <- as.data.table(cases)
-#' cases <- cases[, .(date,
-#'   primary = confirm,
-#'   scaled_primary = confirm * rnorm(.N, 0.4, 0.05)
-#' )]
-#' cases$secondary <- 0
-#' cases$secondary[1] <- as.integer(cases$scaled_primary[1])
-#' for (i in 2:nrow(cases)) {
-#'   meanlog <- rnorm(1, 1.6, 0.1)
-#'   sdlog <- rnorm(1, 0.8, 0.05)
-#'   cmf <- cumsum(dlnorm(1:min(i - 1, 20), meanlog, sdlog)) -
-#'     cumsum(dlnorm(0:min(19, i - 2), meanlog, sdlog))
-#'   cmf <- cmf / plnorm(min(i - 1, 20), meanlog, sdlog)
-#'   reducing_cases <- sum(cases$scaled_primary[(i - 1):max(1, i - 20)] * cmf)
-#'   reducing_cases <- ifelse(cases$secondary[i - 1] < reducing_cases,
-#'     cases$secondary[i - 1], reducing_cases
-#'   )
-#'   cases$secondary[i] <- as.integer(
-#'     cases$secondary[i - 1] + cases$scaled_primary[i] - reducing_cases
-#'   )
-#'   cases$secondary[i] <- ifelse(cases$secondary[i] < 0, 0,
-#'     cases$secondary[i]
-#'   )
-#' }
-#' cases <- cases[, secondary := map_dbl(secondary, ~ rpois(1, .))]
+#' cases <- as.data.table(cases)[, primary := confirm]
+#' # Assume that only 30 percent of cases are reported
+#' cases[, scaling := 0.3]
+#' # Parameters of the assumed log normal delay distribution
+#' cases[, meanlog := 1.6][, sdlog := 0.8]
+#' 
+#' # Simulate secondary cases
+#' cases <- simulate_secondary(cases, type = "prevalence")
 #' 
 #' # fit model to example prevalence data
 #' prev <- estimate_secondary(cases[1:100],
 #'   secondary = secondary_opts(type = "prevalence"),
 #'   obs = obs_opts(
 #'     week_effect = FALSE,
-#'     scale = list(mean = 0.3, sd = 0.1)
+#'     scale = list(mean = 0.4, sd = 0.1)
 #'   )
 #' )
 #' plot(prev, primary = TRUE)
@@ -397,6 +362,107 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
   return(plot)
+}
+
+# simulate data according to a convolution model
+ discretised_lognormal_pmf <- function(x, meanlog, sdlog) {
+  pmf <- cumsum(dlnorm(1:length(x), meanlog, sdlog)) -
+    cumsum(dlnorm(0:(length(x) - 1), meanlog, sdlog))
+  pmf <- pmf / plnorm(length(x), meanlog, sdlog)
+  conv <- sum(x * rev(pmf), na.rm = TRUE)
+  return(conv)
+}
+
+#' Secondary Reports Options
+#'
+#' @param family Character string defining the observation model. Options are
+#' Negative binomial ("negbin"), the default, Poisson ("poisson"), and "none" 
+#' meaning the expectation is returned.
+#' @param delay_max Integer, defaulting to 30 days. The maximum delay used in
+#' the convolution model.
+#' @param ...
+#' @seealso estimate_secondary
+#' @return 
+#' @inheritParams secondary_opts
+#' @importFrom data.table as.data.table copy shift
+#' @importFrom purrr pmap_dbl
+#' @export
+#' @examples
+#' # load data.table for manipulation
+#' library(data.table)
+#' 
+#' #### Incidence data example ####
+#'
+#' # make some example secondary incidence data
+#' cases <- example_confirmed
+#' cases <- as.data.table(cases)[, primary := confirm]
+#' 
+#' # Assume that only 40 percent of cases are reported
+#' cases[, scaling := 0.4]
+#' 
+#' # Parameters of the assumed log normal delay distribution
+#' cases[, meanlog := 1.8][, sdlog := 0.5]
+#' 
+#' # Simulate secondary cases
+#' cases <- simulate_secondary(cases, type = "incidence")
+#' cases
+#' #### Prevalence data example ####
+#'
+#' # make some example prevalence data
+#' cases <- example_confirmed
+#' cases <- as.data.table(cases)[, primary := confirm]
+#' 
+#' # Assume that only 30 percent of cases are reported
+#' cases[, scaling := 0.3]
+#' 
+#' # Parameters of the assumed log normal delay distribution
+#' cases[, meanlog := 1.6][, sdlog := 0.8]
+#' 
+#' # Simulate secondary cases
+#' cases <- simulate_secondary(cases, type = "prevalence")
+#' cases
+simulate_secondary <- function(data, type = "incidence", family = "poisson",
+                               delay_max = 30, ...) {
+  type <- match.arg(type, choices = c("incidence", "prevalence"))
+  family <- match.arg(family, choices = c("none", "poisson", "negbin"))
+  data <- data.table::as.data.table(data)
+  data <- data.table::copy(data)
+  data <- data[, index := 1:.N]
+  # apply scaling
+  data <- data[, scaled := scaling * primary]
+  # add convolution
+  data <- data[,
+    conv := purrr::pmap_dbl(list(i = index, m = meanlog, s = sdlog),
+     function(i, m, s) {
+       discretised_lognormal_pmf(
+         scaled[max(1, i - delay_max):i], meanlog = m, sdlog = s
+        )
+     })]
+  # build model
+  if (type == "incidence") {
+    data <- data[, secondary := conv]
+  }else if (type == "prevalence") {
+    data <- data[1, secondary := scaled]
+    for (i in 2:nrow(data)) {
+      index <-
+        data[c(i - 1, i)][, secondary := shift(secondary, 1) - conv]
+      index <- index[secondary < 0, secondary := 0]
+      data[i, ] <- index[2][, secondary := secondary + scaled]
+    }
+  }
+  # check secondary is greater that zero
+  data <- data[secondary < 0, secondary := 0]
+  data <- data[!is.na(secondary)]
+  # apply observation model
+  if (family == "poisson") {
+    data <- data[, secondary := purrr::map_dbl(secondary, ~ rpois(1, .))]
+  }else if (family == "negbin") {
+    data <- data[, secondary := purrr::map_dbl(
+      secondary, ~ rnbinom(1, mu = .), ...)
+    ]
+  }
+  data <- data[, secondary := as.integer(secondary)]
+  return(data[])
 }
 
 #' Forecast Secondary Observations Given a Fit from estimate_secondary
