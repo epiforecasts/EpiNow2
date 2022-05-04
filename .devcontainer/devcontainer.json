@@ -13,7 +13,15 @@
 	"settings": {},
 	
 	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": []
+	"extensions": [
+		"ikuyadeu.r",
+		"tomoki1207.pdf",
+		"ivan-bocharov.stan-vscode",
+		"github.vscode-pull-request-github",
+		"formulahendry.code-runner",
+		"mutantdino.resourcemonitor",
+		"searking.preview-vscode"
+	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],

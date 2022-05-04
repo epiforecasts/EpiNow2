@@ -30,9 +30,11 @@
 #' @param verbose Logical, should model fitting progress be returned. Defaults to
 #' `interactive()`.
 #' @param ... Additional parameters to pass to `rstan::sampling`.
-#' @return A list containing: `predictions` (a data frame ordered by date with the primary,
-#' and secondary observations, and a summary of the model estimated secondary observations),
-#' `data` (a list of data used to fit the model), and `fit` (the `stanfit` object).
+#' @return A list containing: `predictions` (a data frame ordered by date with
+#' the primary, and secondary observations, and a summary of the model
+#' estimated secondary observations), `posterior` which contains a summary of
+#' the entire model posterior, `data` (a list of data used to fit the 
+#' model), and `fit` (the `stanfit` object).
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams calc_CrIs
@@ -189,7 +191,13 @@ estimate_secondary <- function(reports,
   out$predictions <- extract_stan_param(fit, "sim_secondary", CrIs = CrIs)
   out$predictions <- out$predictions[, lapply(.SD, round, 1)]
   out$predictions <- out$predictions[, date := reports[(burn_in + 1):.N]$date]
-  out$predictions <- data.table::merge.data.table(reports, out$predictions, all = TRUE, by = "date")
+  out$predictions <- data.table::merge.data.table(
+    reports, out$predictions, all = TRUE, by = "date"
+  )
+  out$posterior <- extract_stan_param(
+    fit,
+    CrIs = CrIs
+  )
   out$data <- data
   out$fit <- fit
   class(out) <- c("estimate_secondary", class(out))
