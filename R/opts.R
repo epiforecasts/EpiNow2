@@ -1,3 +1,72 @@
+#' Generation Time Distribution Options
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Returns delay distributions formatted for usage by downstream
+#' functions.
+#' @param ... Delay distributions as a list with the following parameters:
+#' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
+#' normal (with all parameters except for max defined in logged form).
+#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+#' @return A list summarising the input delay distributions.
+#' @export
+#' @examples
+#' # no delays
+#' delay_opts()
+#' 
+#' # A single delay that has uncertainty
+#' delay <- list(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
+#' delay_opts(delay)
+#' 
+#' # A single delay where we override the uncertainty assumption
+#' delay_opts(delay, fixed = TRUE)
+#' 
+#' # A delay where uncertainty is implict
+#' delay_opts(list(mean = 1, mean_sd = 0, sd = 0.5, sd_sd = 0, max = 15))
+gt_opts <- function(mean, mean_sd, sd, sd_sd, max, fixed = FALSE) {
+  ## complete generation time parameters if not all are given
+  if (is.null(generation_time)) {
+    generation_time <- list(mean = 1)
+  }
+  for (param in c("mean_sd", "sd", "sd_sd")) {
+    if (!(param %in% names(generation_time))) generation_time[[param]] <- 0
+  }
+  ## check if generation time is fixed
+  if (generation_time$sd == 0 && generation_time$sd_sd == 0) {
+    if ("max_gt" %in% names(generation_time)) {
+      if (generation_time$max_gt != generation_time$mean) {
+        stop("Error in generation time defintion: if max_gt(",
+             generation_time$max_gt,
+             ") is given it must be equal to the mean (",
+             generation_time$mean,
+             ")")
+      }
+    } else {
+      generation_time$max_gt <- generation_time$mean
+    }
+    if (any(generation_time$mean_sd > 0, generation_time$sd_sd > 0)) {
+      stop("Error in generation time definition: if sd_mean is 0 and ",
+           "sd_sd is 0 then mean_sd must be 0, too.")
+    }
+  }
+  data$delay_fixed <- fixed 
+  if (length(data$delay_mean_sd) > 0 & !fixed) {
+    data$delay_fixed <- (sum(data$delay_mean_sd) + data$delay_sd_sd) == 0
+  }
+  
+  if (length(data$delay_mean_mean) > 0) {
+    pmf <- c()
+    for (i in seq_along(data$delay_mean_mean)) {
+     pmf <- c(pmf, discretised_lognormal_pmf(
+       data$delay_mean_mean[i], data$delay_sd_mean[i], data$max_delay,
+       reverse = TRUE
+      ))
+      data$delay_pmf <- pmf
+    }
+  }
+  return(data)
+}
+
+
 #' Delay Distribution Options
 #'
 #' @description `r lifecycle::badge("stable")`
