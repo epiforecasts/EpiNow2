@@ -39,7 +39,8 @@ extract results
 regions be returned rather than just regions of interest.}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
-if no directory for saving is specified.}
+if no directory for saving is specified.
+then \code{forecast_infections} will be bypassed.}
 
 \item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
 on the maximum number of reported cases.}

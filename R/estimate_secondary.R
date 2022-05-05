@@ -61,7 +61,7 @@
 #' # Assume that only 40 percent of cases are reported
 #' cases[, scaling := 0.4]
 #' # Parameters of the assumed log normal delay distribution
-#' cases[, logmean := 1.8][, logsd := 0.5]
+#' cases[, meanlog := 1.8][, sdlog := 0.5]
 #' 
 #' # Simulate secondary cases
 #' cases <- simulate_secondary(cases, type = "incidence")
@@ -311,8 +311,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #' @seealso plot estimate_secondary
 #' @method plot estimate_secondary
 #' @return `ggplot2` object
-#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme
-#' @importFrom cowplot theme_cowplot
+#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme theme_bw
 #' @importFrom data.table as.data.table merge.data.table
 #' @export
 plot.estimate_secondary <- function(x, primary = FALSE,
@@ -356,7 +355,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     alpha = 0.6, size = 1
   )
   plot <- plot +
-    cowplot::theme_cowplot() +
+    ggplot2::theme_bw() +
     ggplot2::labs(y = "Confirmed Cases", x = "Date") +
     ggplot2::scale_x_date(date_breaks = "week", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +
