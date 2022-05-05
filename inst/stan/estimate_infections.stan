@@ -78,7 +78,9 @@ transformed parameters {
     infections = deconvolve_infections(shifted_cases, noise, fixed, backcalc_prior);
   }
   // convolve from latent infections to mean of observations
-  reports = convolve_to_report(infections, delay_mean, delay_sd, max_delay, seeding_time);
+  reports = convolve_to_report(
+    infections, delay_mean, delay_sd, max_delay, seeding_time
+  );
  // weekly reporting effect
  if (week_effect > 1) {
    reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);

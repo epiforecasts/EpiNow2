@@ -2,6 +2,11 @@
 
 ## New features
 
+## Model changes
+
+* Switched to using optimised versions of the discretised distributions supported for the
+reporting delay and the generation time. These are based on an implementation in [`epinowcast`](https://epiforecasts.io/epinowcast/) by Adrian Lison and Sam Abbott.
+
 ## Documentation
 
 ## Deprecated features
