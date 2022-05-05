@@ -12,7 +12,17 @@
 #' @examples
 #' # no delays
 #' delay_opts()
-delay_opts <- function(...) {
+#' 
+#' # A single delay that has uncertainty
+#' delay <- list(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
+#' delay_opts(delay)
+#' 
+#' # A single delay where we override the uncertainty assumption
+#' delay_opts(delay, fixed = TRUE)
+#' 
+#' # A delay where uncertainty is implict
+#' delay_opts(list(mean = 1, mean_sd = 0, sd = 0.5, sd_sd = 0, max = 15))
+delay_opts <- function(..., fixed = FALSE) {
   delays <- list(...)
   data <- list()
   data$delays <- length(delays)
@@ -38,6 +48,22 @@ delay_opts <- function(...) {
   data$delay_sd_mean <- allocate_delays(delays$sd, data$delays)
   data$delay_sd_sd <- allocate_delays(delays$sd_sd, data$delays)
   data$max_delay <- allocate_delays(delays$max, data$delays)
+  data$total_delay <- sum(data$max_delay)
+  data$delay_fixed <- fixed 
+  if (length(data$delay_mean_sd) > 0 & !fixed) {
+    data$delay_fixed <- (sum(data$delay_mean_sd) + data$delay_sd_sd) == 0
+  }
+  
+  if (length(data$delay_mean_mean) > 0) {
+    pmf <- c()
+    for (i in seq_along(data$delay_mean_mean)) {
+     pmf <- c(pmf, discretised_lognormal_pmf(
+       data$delay_mean_mean[i], data$delay_sd_mean[i], data$max_delay,
+       reverse = TRUE
+      ))
+      data$delay_pmf <- pmf
+    }
+  }
   return(data)
 }
 

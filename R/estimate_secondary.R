@@ -363,15 +363,6 @@ plot.estimate_secondary <- function(x, primary = FALSE,
   return(plot)
 }
 
-# simulate data according to a convolution model
- discretised_lognormal_pmf <- function(x, meanlog, sdlog) {
-  pmf <- cumsum(dlnorm(1:length(x), meanlog, sdlog)) -
-    cumsum(dlnorm(0:(length(x) - 1), meanlog, sdlog))
-  pmf <- pmf / plnorm(length(x), meanlog, sdlog)
-  conv <- sum(x * rev(pmf), na.rm = TRUE)
-  return(conv)
-}
-
 #' Secondary Reports Options
 #'
 #' @param family Character string defining the observation model. Options are
@@ -433,7 +424,7 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
   data <- data[,
     conv := purrr::pmap_dbl(list(i = index, m = meanlog, s = sdlog),
      function(i, m, s) {
-       discretised_lognormal_pmf(
+       discretised_lognormal_pmf_conv(
          scaled[max(1, i - delay_max):i], meanlog = m, sdlog = s
         )
      })]
