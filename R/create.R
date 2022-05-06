@@ -391,31 +391,8 @@ create_stan_data <- function(reported_cases, generation_time,
   ## make sure we have at least max_gt seeding time
   delays$seeding_time <- max(delays$seeding_time, generation_time$max)
 
-  ## complete generation time parameters if not all are given
-  if (is.null(generation_time)) {
-    generation_time <- list(mean = 1)
-  }
-  for (param in c("mean_sd", "sd", "sd_sd")) {
-    if (!(param %in% names(generation_time))) generation_time[[param]] <- 0
-  }
-  ## check if generation time is fixed
-  if (generation_time$sd == 0 && generation_time$sd_sd == 0) {
-    if ("max_gt" %in% names(generation_time)) {
-      if (generation_time$max_gt != generation_time$mean) {
-        stop("Error in generation time defintion: if max_gt(",
-             generation_time$max_gt,
-             ") is given it must be equal to the mean (",
-             generation_time$mean,
-             ")")
-      }
-    } else {
-      generation_time$max_gt <- generation_time$mean
-    }
-    if (any(generation_time$mean_sd > 0, generation_time$sd_sd > 0)) {
-      stop("Error in generation time definition: if sd_mean is 0 and ",
-           "sd_sd is 0 then mean_sd must be 0, too.")
-    }
-  }
+  ## for backwards compatibility call generation_time_opts internally
+  generation_time <- do.call(generation_time_opts, generation_time)
 
   cases <- reported_cases[(delays$seeding_time + 1):(.N - horizon)]$confirm
 
