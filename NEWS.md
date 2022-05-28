@@ -33,7 +33,8 @@ This release is under development and the features outlined below may change bef
 ## Other changes
 
 * Updated the classification of growth to use stable rather than unsure when Rt is approximately 1.
-
+* The default parallisation has been changed to `future::multisession()` from `future::multiprocess()` as the latter is being depreciated in the `future` package. 
+ 
 ## Bug fixes
 
 * Fixed a bug in the deconvolution Rt estimation method where the mean of the generation time was being used as the standard deviation. For the default package generation time these are close and so the impact will be limited but in cases where the standard deviation is << than the mean this should result in more accurate Rt estimates. 
