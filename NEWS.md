@@ -18,6 +18,7 @@ This release is under development and the features outlined below may change bef
 * Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. 
 * Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.
 * Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged. 
+* Added additive noise term to the `estimate_truncation` model to deal with zeroes
 
 ## Documentation
 
@@ -41,6 +42,7 @@ This release is under development and the features outlined below may change bef
 * Fixed a bug where the number of threads used by the data.table package were set to one in the global environment. 
 Now the number of threads used by data.table are set to whatever the used specified on exit (@medewitt).
 * Fixed a bug in `simulate_infections` and `forecast_secondary` which meant that a Poisson observation model used for estimation would lead to a error.
+* Fixed a bug in `esitmate_truncation` where phi was not initialised
 
 # EpiNow2 1.3.2
 
