@@ -22,12 +22,13 @@ transformed parameters{
   vector[t] last_obs;
   // reconstruct latest data without truncation
   last_obs = truncate(to_vector(obs[, obs_sets]), logmean, logsd, trunc_max, 1);
-  // apply truncation to latest dataset to map back to previous data sets
+  // apply truncation to latest dataset to map back to previous data sets and
+  // add noise term
   for (i in 1:(obs_sets - 1)) {
    int end_t = t - obs_dist[i];
    int start_t = end_t - trunc_max[1] + 1;
    trunc_obs[, i] = truncate(last_obs[start_t:end_t], logmean, logsd,
-                             trunc_max, 0);
+                             trunc_max, 0) + sigma;
    }
   }
 }
@@ -41,7 +42,7 @@ model {
   for (i in 1:(obs_sets - 1)) {
     int start_t = t - obs_dist[i] - trunc_max[1];
     for (j in 1:trunc_max[1]) {
-      obs[start_t + j, i] ~ neg_binomial_2(trunc_obs[j, i] + sigma, sqrt_phi);
+      obs[start_t + j, i] ~ neg_binomial_2(trunc_obs[j, i], sqrt_phi);
     }
   }
 }
