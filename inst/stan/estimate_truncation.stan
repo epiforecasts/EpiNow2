@@ -13,6 +13,7 @@ parameters {
   real logmean[1];
   real<lower=0> logsd[1];
   real<lower=0> phi;
+  real<lower=0> sigma;
 }
 transformed parameters{
   matrix[trunc_max[1], obs_sets - 1] trunc_obs;
@@ -35,11 +36,12 @@ model {
   logmean ~ normal(0, 1);
   logsd[1] ~ normal(0, 1) T[0,];
   phi ~ normal(0, 1) T[0,];
+  sigma ~ normal(0, 1) T[0,];
   // log density of truncated latest data vs that observed
   for (i in 1:(obs_sets - 1)) {
     int start_t = t - obs_dist[i] - trunc_max[1];
     for (j in 1:trunc_max[1]) {
-      obs[start_t + j, i] ~ neg_binomial_2(trunc_obs[j, i], sqrt_phi);
+      obs[start_t + j, i] ~ neg_binomial_2(trunc_obs[j, i] + sigma, sqrt_phi);
     }
   }
 }
