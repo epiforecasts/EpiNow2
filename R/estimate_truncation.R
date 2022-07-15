@@ -129,7 +129,8 @@ estimate_truncation <- function(obs, max_truncation = 10,
   init_fn <- function() {
     data <- list(
       logmean = array(rnorm(1, 0, 1)),
-      logsd = array(abs(rnorm(1, 0, 1)))
+      logsd = array(abs(rnorm(1, 0, 1))),
+      phi = abs(rnorm(1, 0, 1))
     )
     return(data)
   }
