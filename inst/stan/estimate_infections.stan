@@ -88,8 +88,12 @@ transformed parameters {
    reports = scale_obs(reports, frac_obs[1]);
  }
  // truncate near time cases to observed reports
- obs_reports = truncate(reports[1:ot], truncation_mean, truncation_sd,
-                        max_truncation, 0);
+ if (truncation) {
+   obs_reports = truncate(reports[1:ot], truncation_mean[1], truncation_sd[1],
+                          max_truncation[1], 0);
+ } else {
+   obs_reports = reports[1:ot];
+ }
 }
 
 model {
