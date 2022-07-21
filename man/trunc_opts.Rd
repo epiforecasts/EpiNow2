@@ -11,9 +11,9 @@ trunc_opts(dist = NULL)
 discretised (upper-)truncated lognormal density distribution; defaults to
 \code{NULL} in which case no truncation is used. Otherwise it defines the
 truncation distributions as a list with the following parameters:
-"mean", the \mu parameter or mean of the natural logarithm of the truncation;
+"mean", the mu parameter or mean of the natural logarithm of the truncation;
 "mean_sd", the standard deviation in the estimate of "mean" parameter
-(assumed normally distributed); "sd", the \sigma parameter or standard
+(assumed normally distributed); "sd", the sigma parameter or standard
 deviation of the natural logarithm of the truncation; "sd_sd", the standard
 deviation of the estimate of the "sd" parameter (assumed normally
 distributed) sd_sd"; and "max", the maximum truncation.
