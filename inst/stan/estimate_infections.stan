@@ -45,12 +45,12 @@ parameters{
   real<lower = 0> bp_sd[bp_n > 0 ? 1 : 0]; // standard deviation of breakpoint effect
   real bp_effects[bp_n];                   // Rt breakpoint effects
   // observation model
-  real delay_mean[delays];                 // mean of delays
-  real<lower = 0> delay_sd[delays];        // sd of delays
+  real delay_mean[uncertain_mean_delays];         // mean of delays
+  real<lower = 0> delay_sd[uncertain_sd_delays];  // sd of delays
   simplex[week_effect] day_of_week_simplex;// day of week reporting effect
   real<lower = 0> frac_obs[obs_scale];     // fraction of cases that are ultimately observed
-  real truncation_mean[truncation];        // mean of truncation
-  real<lower = 0> truncation_sd[truncation]; // sd of truncation
+  real truncation_mean[truncation && trunc_mean_sd[1] > 0];        // mean of truncation
+  real<lower = 0> truncation_sd[truncation && trunc_sd_sd[1] > 0]; // sd of truncation
   real<lower = 0> rep_phi[model_type];     // overdispersion of the reporting process
 }
 
@@ -78,7 +78,13 @@ transformed parameters {
     infections = deconvolve_infections(shifted_cases, noise, fixed, backcalc_prior);
   }
   // convolve from latent infections to mean of observations
-  reports = convolve_to_report(infections, delay_mean, delay_sd, max_delay, seeding_time);
+  {
+    real set_delay_mean[delays] = delay_mean_mean;
+    real set_delay_sd[delays] = delay_sd_mean;
+    set_delay_mean[uncertain_mean_delay_indices] = delay_mean;
+    set_delay_sd[uncertain_sd_delay_indices] = delay_sd;
+    reports = convolve_to_report(infections, set_delay_mean, set_delay_sd, max_delay, seeding_time);
+  }
  // weekly reporting effect
  if (week_effect > 1) {
    reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);
@@ -89,6 +95,8 @@ transformed parameters {
  }
  // truncate near time cases to observed reports
  if (truncation) {
+   real set_truncation_mean = (trunc_mean_sd[1] > 0 ? truncation_mean[1] : trunc_mean_mean[1]);
+   real set_truncation_sd = (trunc_sd_sd[1] > 0 ? truncation_sd[1] : trunc_sd_mean[1]);
    obs_reports = truncate(
     reports[1:ot], truncation_mean[1], truncation_sd[1], max_truncation[1], 0
   );
@@ -106,8 +114,10 @@ model {
   }
   // penalised priors for delay distributions
   delays_lp(
-    delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean,
-    delay_sd_sd, t
+    delay_mean, delay_mean_mean[uncertain_mean_delay_indices]
+    delay_mean_sd[uncertain_mean_delay_indices],
+    delay_sd, delay_sd_mean[uncertain_sd_delay_indices],
+    delay_sd_sd[uncertain_sd_delay_indices], t
   );
   // priors for truncation
   truncation_lp(

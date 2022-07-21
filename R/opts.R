@@ -3,9 +3,20 @@
 #' @description `r lifecycle::badge("stable")`
 #' Returns delay distributions formatted for usage by downstream
 #' functions.
-#' @param ... Delay distributions as a list with the following parameters:
-#' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
-#' normal (with all parameters except for max defined in logged form).
+#' @param ... Parameters of discretised (upper-)truncated lognormal delay
+#' distributions as a list with the following parameters:
+#' "mean", the mu parameter or mean of the natural logarithm of the delay;
+#' "mean_sd", the standard deviation in the estimate of "mean" parameter
+#' (assumed normally distributed); "sd", the sigma parameter or standard
+#' deviation of the natural logarithm of the delay; "sd_sd", the standard
+#' deviation of the estimate of the "sd" parameter (assumed normally
+#' distributed) sd_sd"; and "max", the maximum delay.
+#' The "mean" parameter is mandatory; if it is the only one given it represents
+#' a fixed delay and must be integer-valued; if "sd" is also given and
+#' greater than 0 this represents a delay distribution and "mean" can be
+#' real-valued. In that case, "max" also needs to be given.
+#' The "mean_sd" and "sd_sd" parameters should be provided to represent
+#' uncertainty in the parameter values of the delay but are optional.
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input delay distributions.
 #' @export
@@ -16,7 +27,18 @@ delay_opts <- function(...) {
   delays <- list(...)
   data <- list()
   data$delays <- length(delays)
-  if (data$delays > 0) {
+  for (i in seq_along(delays)) {
+    for (param in c("mean_sd", "sd", "sd_sd")) {
+      if (!(param %in% names(delays[[i]]))) delays[[i]][[param]] <- 0
+    }
+    if (!("max" %in% names(delays[[i]])) &&
+          delays[[i]]$mean_sd == 0 &&
+          delays[[i]]$sd == 0 &&
+          delays[[i]]$sd_sd == 0) {
+      delays[[i]]$max <- delays[[i]]$mean
+    }
+  }
+   if (data$delays > 0) {
     delays <- purrr::transpose(delays)
   }
 
@@ -38,6 +60,11 @@ delay_opts <- function(...) {
   data$delay_sd_mean <- allocate_delays(delays$sd, data$delays)
   data$delay_sd_sd <- allocate_delays(delays$sd_sd, data$delays)
   data$max_delay <- allocate_delays(delays$max, data$delays)
+
+  data$uncertain_mean_delay_indices <- array(which(data$delay_mean_sd > 0))
+  data$uncertain_sd_delay_indices <- array(which(data$delay_sd_sd > 0))
+  data$uncertain_mean_delays <- length(data$uncertain_mean_delay_indices)
+  data$uncertain_sd_delays <- length(data$uncertain_sd_delay_indices)
   return(data)
 }
 
@@ -46,10 +73,20 @@ delay_opts <- function(...) {
 #' @description `r lifecycle::badge("stable")`
 #' Returns a truncation distribution formatted for usage by downstream functions. See
 #' `estimate_truncation` for an approach to estimate this distribution.
-#' @param dist A list defining the truncation distribution, defaults to `NULL` in which
-#' case no truncation is used. Must have the following elements if defined: "mean", "mean_sd",
-#' "sd_mean", "sd_sd", and "max" defining a truncated log normal (with all parameters except
-#' for max defined in logged form).
+#' @param dist A list defining the truncation distribution as parameters of a
+#' discretised (upper-)truncated lognormal density distribution; defaults to
+#' `NULL` in which case no truncation is used. Otherwise it defines the
+#' truncation distributions as a list with the following parameters:
+#' "mean", the mu parameter or mean of the natural logarithm of the truncation;
+#' "mean_sd", the standard deviation in the estimate of "mean" parameter
+#' (assumed normally distributed); "sd", the sigma parameter or standard
+#' deviation of the natural logarithm of the truncation; "sd_sd", the standard
+#' deviation of the estimate of the "sd" parameter (assumed normally
+#' distributed) sd_sd"; and "max", the maximum truncation.
+#' The "mean" and "sd" and "max" parameters are mandatory;
+#' the "mean_sd" and "sd_sd"
+#' parameters should be provided to represent
+#' uncertainty in the parameter values of the delay but are optional.
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input truncation distribution.
 #' @export
@@ -59,6 +96,11 @@ delay_opts <- function(...) {
 trunc_opts <- function(dist = NULL) {
   data <- list()
   data$truncation <- ifelse(is.null(dist), 0, 1)
+  if (data$truncation) {
+    for (param in c("mean_sd", "sd_sd")) {
+      if (!(param %in% names(dist))) dist[[param]] <- 0
+    }
+  }
   data$trunc_mean_mean <- allocate_delays(dist$mean, data$truncation)
   data$trunc_mean_sd <- allocate_delays(dist$mean_sd, data$truncation)
   data$trunc_sd_mean <- allocate_delays(dist$sd, data$truncation)
