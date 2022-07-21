@@ -400,20 +400,43 @@ create_stan_data <- function(reported_cases, generation_time,
   }
   ## check if generation time is fixed
   if (generation_time$sd == 0 && generation_time$sd_sd == 0) {
-    if ("max_gt" %in% names(generation_time)) {
-      if (generation_time$max_gt != generation_time$mean) {
+    if (generation_time$mean_sd > 0) {
+      stop("Error in generation time definition: if sd_mean is 0 and ",
+           "sd_sd is 0 then mean_sd must be 0, too.")
+    }
+    if ("max" %in% names(generation_time)) {
+      if (generation_time$max != generation_time$mean) {
         stop("Error in generation time defintion: if max_gt(",
              generation_time$max_gt,
-             ") is given it must be equal to the mean (",
+             ") is given it must be equal to the mean if it is fixed (",
              generation_time$mean,
              ")")
       }
     } else {
       generation_time$max_gt <- generation_time$mean
     }
-    if (any(generation_time$mean_sd > 0, generation_time$sd_sd > 0)) {
-      stop("Error in generation time definition: if sd_mean is 0 and ",
-           "sd_sd is 0 then mean_sd must be 0, too.")
+    if (round(generation_time$mean) != generation_time$mean) {
+      stop(("Error: if using a fixed generation time it must be integer"))
+    }
+  }
+
+  ## check if delay is fixed
+  for (i in seq_len(delays$delays)) {
+    if (delays$delay_sd_mean[i] == 0 && delays$delay_sd_sd[i] == 0) {
+      if (delays$delay_mean_sd[i] > 0) {
+        stop("Error in delay distribution definition: if sd_mean is 0 and ",
+             "sd_sd is 0 then mean_sd must be 0, too.")
+      }
+      if (delays$max_delay[i] != delays$delay_mean_mean[i]) {
+        stop("Error in delay defintion: if max_delay(",
+             delays$max_delay[i],
+             ") is given it must be equal to the mean if it is fixed (",
+             delays$delay_mean_mean[i],
+             ")")
+      }
+      if (round(delays$delay_mean_mean[i]) != delays$delay_mean_mean[i]) {
+        stop(("Error: if using a fixed delay it must be integer"))
+      }
     }
   }
 
@@ -496,26 +519,32 @@ create_stan_data <- function(reported_cases, generation_time,
 create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- list()
-    if (data$delays > 0) {
+    if (data$uncertain_mean_delays > 0) {
       out$delay_mean <- array(purrr::map2_dbl(
-        data$delay_mean_mean, data$delay_mean_sd * 0.1,
+        data$delay_mean_mean[data$uncertain_mean_delay_indices],
+        data$delay_mean_sd[data$uncertain_mean_delay_indices] * 0.1,
         ~ rnorm(1, mean = .x, sd = .y)
       ))
+    }
+    if (data$uncertain_sd_delays > 0) {
       out$delay_sd <- array(purrr::map2_dbl(
-        data$delay_sd_mean, data$delay_sd_sd * 0.1,
+        data$delay_sd_mean[data$uncertain_sd_delay_indices],
+        data$delay_sd_sd[data$uncertain_sd_delay_indices] * 0.1,
         ~ rnorm(1, mean = .x, sd = .y)
       ))
     }
     if (data$truncation > 0) {
-      out$truncation_mean <- array(rnorm(1,
-        mean = data$trunc_mean_mean,
-        sd = data$trunc_mean_sd * 0.1
-      ))
-      out$truncation_sd <- array(truncnorm::rtruncnorm(1,
-        a = 0,
-        mean = data$trunc_sd_mean,
-        sd = data$trunc_sd_sd * 0.1
-      ))
+      out$truncation_mean <- array(
+        rnorm(1, mean = data$trunc_mean_mean, sd = data$trunc_mean_sd * 0.1)
+      )
+      if (data$trunc_sd_sd > 0) {
+        out$truncation_sd <- array(
+          truncnorm::rtruncnorm(
+            1, a = 0, mean = data$trunc_sd_mean,
+            sd = data$trunc_sd_sd * 0.1
+          )
+        )
+      }
     }
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))

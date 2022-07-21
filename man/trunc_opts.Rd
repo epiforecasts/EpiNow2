@@ -7,10 +7,20 @@
 trunc_opts(dist = NULL)
 }
 \arguments{
-\item{dist}{A list defining the truncation distribution, defaults to \code{NULL} in which
-case no truncation is used. Must have the following elements if defined: "mean", "mean_sd",
-"sd_mean", "sd_sd", and "max" defining a truncated log normal (with all parameters except
-for max defined in logged form).}
+\item{dist}{A list defining the truncation distribution as parameters of a
+discretised (upper-)truncated lognormal density distribution; defaults to
+\code{NULL} in which case no truncation is used. Otherwise it defines the
+truncation distributions as a list with the following parameters:
+"mean", the \mu parameter or mean of the natural logarithm of the truncation;
+"mean_sd", the standard deviation in the estimate of "mean" parameter
+(assumed normally distributed); "sd", the \sigma parameter or standard
+deviation of the natural logarithm of the truncation; "sd_sd", the standard
+deviation of the estimate of the "sd" parameter (assumed normally
+distributed) sd_sd"; and "max", the maximum truncation.
+The "mean" and "sd" and "max" parameters are mandatory;
+the "mean_sd" and "sd_sd"
+parameters should be provided to represent
+uncertainty in the parameter values of the delay but are optional.}
 }
 \value{
 A list summarising the input truncation distribution.

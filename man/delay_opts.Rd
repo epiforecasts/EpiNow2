@@ -7,9 +7,20 @@
 delay_opts(...)
 }
 \arguments{
-\item{...}{Delay distributions as a list with the following parameters:
-"mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
-normal (with all parameters except for max defined in logged form).}
+\item{...}{Parameters of discretised (upper-)truncated lognormal delay
+distributions as a list with the following parameters:
+"mean", the \mu parameter or mean of the natural logarithm of the delay;
+"mean_sd", the standard deviation in the estimate of "mean" parameter
+(assumed normally distributed); "sd", the \sigma parameter or standard
+deviation of the natural logarithm of the delay; "sd_sd", the standard
+deviation of the estimate of the "sd" parameter (assumed normally
+distributed) sd_sd"; and "max", the maximum delay.
+The "mean" parameter is mandatory; if it is the only one given it represents
+a fixed delay and must be integer-valued; if "sd" is also given and
+greater than 0 this represents a delay distribution and "mean" can be
+real-valued. In that case, "max" also needs to be given.
+The "mean_sd" and "sd_sd" parameters should be provided to represent
+uncertainty in the parameter values of the delay but are optional.}
 }
 \value{
 A list summarising the input delay distributions.

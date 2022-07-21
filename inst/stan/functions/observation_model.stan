@@ -56,8 +56,14 @@ void truncation_lp(real[] truncation_mean, real[] truncation_sd,
                    real[] trunc_sd_mean, real[] trunc_sd_sd) {
   int truncation = num_elements(truncation_mean);
   if (truncation) {
-    truncation_mean ~ normal(trunc_mean_mean, trunc_mean_sd);
-    truncation_sd ~ normal(trunc_sd_mean, trunc_sd_sd);
+    if (trunc_mean_sd[1] > 0) {
+      // uncertain mean
+      truncation_mean ~ normal(trunc_mean_mean, trunc_mean_sd);
+    }
+    if (trunc_sd_sd[1] > 0) {
+      // uncertain sd
+      truncation_sd ~ normal(trunc_sd_mean, trunc_sd_sd);
+    }
   }
 }
 // update log density for reported cases
