@@ -541,16 +541,19 @@ create_initial_conditions <- function(data) {
       ))
     }
     if (data$truncation > 0) {
-      out$truncation_mean <- array(
-        rnorm(1, mean = data$trunc_mean_mean, sd = data$trunc_mean_sd * 0.1)
-      )
-      if (data$trunc_sd_sd > 0) {
-        out$truncation_sd <- array(
-          truncnorm::rtruncnorm(
-            1, a = 0, mean = data$trunc_sd_mean,
-            sd = data$trunc_sd_sd * 0.1
-          )
-        )
+     if (data$trunc_mean_sd > 0) {
+       out$truncation_mean <- array(rnorm(1,
+         mean = data$trunc_mean_mean,
+         sd = data$trunc_mean_sd * 0.1
+       ))
+     }
+     if (data$trunc_sd_sd > 0) {
+       out$truncation_sd <- array(
+         truncnorm::rtruncnorm(1,
+           a = 0,
+           mean = data$trunc_sd_mean,
+           sd = data$trunc_sd_sd * 0.1
+         ))
       }
     }
     if (data$fixed == 0) {
