@@ -79,8 +79,6 @@ generated quantities {
     }
 
     // simulate secondary reports
-    sim_secondary[i] = report_rng(
-      tail(secondary, all_dates ? t : h), rep_phi[i], model_type
-    );
+    sim_secondary[i] = report_rng(tail(secondary, all_dates ? t : h), rep_phi[i], obs_dist);
   }
 }

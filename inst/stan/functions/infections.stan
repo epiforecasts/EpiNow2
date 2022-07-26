@@ -26,14 +26,14 @@ vector generate_seed(real[] initial_infections, real[] initial_growth, int uot) 
       seed_infs[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));
     }
   }
-  return(seed_infs)
+  return(seed_infs);
 }
 // generate infections using infectiousness
 vector renewal_model(vector oR, vector uobs_infs, vector gt_rev_pmf,
                      int pop, int ht) {
   // time indices and storage
   int ot = num_elements(oR);
-  int uot = num_elements(uobs_infs);
+  int uot = num_elements(uobs_inf);
   int nht = ot - ht;
   int t = ot + uot;
   vector[ot] R = oR;
@@ -42,7 +42,7 @@ vector renewal_model(vector oR, vector uobs_infs, vector gt_rev_pmf,
   vector[ot] cum_infections;
   vector[ot] infectiousness;
   // Initialise infections
-  infections[1:uot] = uobs_infs;
+  infections[1:uot] = uobs_inf;
   // calculate cumulative infections
   if (pop) {
     cum_infections[1] = sum(infections[1:uot]);
@@ -65,37 +65,45 @@ vector renewal_model(vector oR, vector uobs_infs, vector gt_rev_pmf,
 }
 
 // update infections using a growth model (linear,log, or non-parametric growth)
-vector growth_model(vector r, int ht, vector uobs_infs,
-                    int prior, vector constant) {
+vector growth_model(vector r, vector uobs_inf, int ht) {
   // time indices and storage
   int ot = num_elements(r);
-  int uot = num_elements(seed_infections);
+  int uot = num_elements(uobs_inf);
   int nht = ot - ht;
   int t = ot + uot;
   vector[t] infections = rep_vector(1e-5, t);
+  vector[ot] exp_r = exp(r);
   vector[ot] obs_inf;
   // Update observed infections
-  if (link == 0) {
-   if (prior == 1) {
-    obs_inf = constant .* r;
-   }else if (prior == 2) {
-     obs_inf[1] = uobs_inf[uot] * r[1];
-     for (i in 2:t) {
-       obs_inf[i] = obs_inf[i - 1] * r[i];
-     }
-   }
-  }else if (link == 1) {
-   if (prior == 1) {
-    obs_inf = constant + r;
-   }else if (prior == 2) {
-     obs_inf[1] = log(uobs_inf[uot]) + r[1];
-     for (i in 2:t) {
-       obs_inf[i] = obs_inf[i - 1] + r[i];
-     }
-   }
-   obs_inf = exp(obs_inf);
+  obs_inf[1] = uobs_inf[uot] * exp_r[1];
+  for (i in 2:t) {
+    obs_inf[i] = obs_inf[i - 1] * exp_r[i];
   }
-   infections[1:uot] = infections[1:uot] + uobs_inf;
-   infections[(uot + 1):t] = infections[(uot + 1):t] + obs_inf;
+  infections[1:uot] = infections[1:uot] + uobs_inf;
+  infections[(uot + 1):t] = infections[(uot + 1):t] + obs_inf;
   return(infections);
+}
+
+// update infections using a growth model (linear,log, or non-parametric growth)
+vector infection_model(vector cov, vector uobs_inf, int ht) {
+  // time indices and storage
+  int ot = num_elements(cov);
+  int uot = num_elements(uobs_inf);
+  int nht = ot - ht;
+  int t = ot + uot;
+  vector[t] infections = rep_vector(1e-5, t);
+  vector[ot] obs_inf = cov;
+  infections[1:uot] = infections[1:uot] + uobs_inf;
+  infections[(uot + 1):t] = infections[(uot + 1):t] + obs_inf;
+  return(infections);
+}
+
+void infections_lp(real[] initial_infections, real[] initial_growth,
+                   real prior_infections, real prior_growth,
+                   int seeding_time) {
+  // initial infections
+  initial_infections ~ normal(prior_infections, 0.2);
+  if (seeding_time > 1) {
+    initial_growth ~ normal(prior_growth, 0.2);
+  }
 }

@@ -211,7 +211,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
   out$growth_rate <- extract_parameter(
     "r",
     samples,
-    reported_dates[-1]
+    reported_dates
   )
   if (data$week_effect > 1) {
     out$day_of_week <- extract_parameter(
@@ -233,7 +233,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
         date := NULL
       ]
   }
-  if (data$model_type == 1) {
+  if (data$obs_dist == 1) {
     out$reporting_overdispersion <- extract_static_parameter("rep_phi", samples)
     out$reporting_overdispersion <- out$reporting_overdispersion[,
      value := value.V1][,

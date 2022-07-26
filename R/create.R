@@ -483,7 +483,8 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' }
 create_stan_data <- function(data, seeding_time,
                              rt, gp, obs, horizon,
-                             backcalc, shifted_cases) {
+                             backcalc, shifted_cases,
+                             process_model) {
 
   cases <- data[(seeding_time + 1):(.N - horizon)]
   complete_cases <- create_complete_cases(cases)
@@ -497,7 +498,8 @@ create_stan_data <- function(data, seeding_time,
     t = length(data$date),
     horizon = horizon,
     burn_in = 0,
-    seeding_time = seeding_time
+    seeding_time = seeding_time,
+    process_model = process_model
   )
   # add Rt data
   stan_data <- c(
@@ -610,7 +612,7 @@ create_initial_conditions <- function(data) {
       out$rho <- array(numeric(0))
       out$alpha <- array(numeric(0))
     }
-    if (data$model_type == 1) {
+    if (data$obs_dist == 1) {
       out$rep_phi <- array(
         truncnorm::rtruncnorm(
           1,
@@ -623,7 +625,7 @@ create_initial_conditions <- function(data) {
       if (data$seeding_time > 1) {
         out$initial_growth <- array(rnorm(1, data$prior_growth, 0.01))
       }
-      out$log_R <- array(rnorm(
+      out$base_cov <- rnorm(
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
         sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
       ))

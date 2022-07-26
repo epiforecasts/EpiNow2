@@ -1,6 +1,7 @@
-// update a vector of Rts
-vector update_Rt(int t, real log_R, vector noise, array[] int bps,
-                 array[] real bp_effects, int stationary) {
+// update combined covariates
+vector update_covariate(array[] real log_cov_mean, vector cov_t,
+                        vector noise, array[] int bps,
+                        array[] real bp_effects, int stationary, int t) {
   // define control parameters
   int bp_n = num_elements(bp_effects);
   int bp_c = 0;
@@ -8,7 +9,7 @@ vector update_Rt(int t, real log_R, vector noise, array[] int bps,
   // define result vectors
   vector[t] bp = rep_vector(0, t);
   vector[t] gp = rep_vector(0, t);
-  vector[t] R;
+  vector[t] cov;
   // initialise breakpoints
   if (bp_n) {
     for (s in 1:t) {
@@ -32,26 +33,26 @@ vector update_Rt(int t, real log_R, vector noise, array[] int bps,
       gp = cumulative_sum(gp);
     }
   }
-  // Calculate Rt
-  R = rep_vector(log_R, t) + bp + gp;
-  R = exp(R);
-  return(R);
+  if (num_elements(log_cov_mean) > 0) {
+    cov = rep_vector(log_cov_mean[1], t);
+  } else {
+    cov = log(cov_t);
+  }
+  // Calculate combined covariates
+  cov = cov + bp + gp;
+  cov = exp(cov);
+  return(cov);
 }
-// Rt priors
-void rt_lp(vector log_R, array[] real initial_infections, array[] real initial_growth,
-           array[] real bp_effects, array[] real bp_sd, int bp_n, int seeding_time,
-           real r_logmean, real r_logsd, real prior_infections,
-           real prior_growth) {
-  // prior on R
-  log_R ~ normal(r_logmean, r_logsd);
-  //breakpoint effects on Rt
+void covariate_lp(real[] log_cov_mean,
+                  real[] bp_effects, real[] bp_sd, int bp_n,
+                  real[] cov_mean_logmean, real[] cov_mean_logsd) {
+  // initial prior
+  if (num_elements(log_cov_mean) > 0) {
+    log_cov_mean ~ normal(cov_mean_logmean[1], cov_mean_logsd[1]);
+  }
+  // breakpoint effects
   if (bp_n > 0) {
     bp_sd[1] ~ normal(0, 0.1) T[0,];
     bp_effects ~ normal(0, bp_sd[1]);
-  }
-  // initial infections
-  initial_infections ~ normal(prior_infections, 0.2);
-  if (seeding_time > 1) {
-    initial_growth ~ normal(prior_growth, 0.2);
   }
 }
