@@ -383,7 +383,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #' create_obs_model(obs_opts(week_length = 3), dates = dates)
 create_obs_model <- function(obs = obs_opts(), dates) {
   data <- list(
-    model_type = as.numeric(obs$family %in% "negbin"),
+    obs_dist = as.integer(obs$family %in% "negbin"),
     phi_mean = obs$phi[1],
     phi_sd = obs$phi[2],
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
@@ -430,7 +430,8 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @export
 create_stan_data <- function(reported_cases, seeding_time,
                              rt, gp, obs, horizon,
-                             backcalc, shifted_cases) {
+                             backcalc, shifted_cases,
+                             process_model) {
 
   cases <- reported_cases[(seeding_time + 1):(.N - horizon)]$confirm
 
@@ -440,7 +441,8 @@ create_stan_data <- function(reported_cases, seeding_time,
     t = length(reported_cases$date),
     horizon = horizon,
     burn_in = 0,
-    seeding_time = seeding_time
+    seeding_time = seeding_time,
+    process_model = process_model
   )
   # add Rt data
   data <- c(
@@ -547,7 +549,7 @@ create_initial_conditions <- function(data) {
       out$rho <- array(numeric(0))
       out$alpha <- array(numeric(0))
     }
-    if (data$model_type == 1) {
+    if (data$obs_dist == 1) {
       out$rep_phi <- array(
         truncnorm::rtruncnorm(
           1,
@@ -560,7 +562,7 @@ create_initial_conditions <- function(data) {
       if (data$seeding_time > 1) {
         out$initial_growth <- array(rnorm(1, data$prior_growth, 0.01))
       }
-      out$log_R <- array(rnorm(
+      out$base_cov <- rnorm(
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
         sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
       ))

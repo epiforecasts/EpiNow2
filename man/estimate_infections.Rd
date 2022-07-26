@@ -7,6 +7,7 @@ Growth}
 \usage{
 estimate_infections(
   reported_cases,
+  model = "R",
   generation_time = generation_time_opts(),
   delays = delay_opts(),
   truncation = trunc_opts(),

@@ -53,12 +53,12 @@ void truncation_lp(real[] truncation_mean, real[] truncation_sd,
 // update log density for reported cases
 void report_lp(int[] cases, vector reports,
                real[] rep_phi, real phi_mean, real phi_sd,
-               int model_type, real weight) {
+               int obs_dist, real weight) {
   real sqrt_phi = 1e5;
-  if (model_type) {
+  if (obs_dist) {
     // the reciprocal overdispersion parameter (phi)
-    rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
-    sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+    rep_phi[obs_dist] ~ normal(phi_mean, phi_sd) T[0,];
+    sqrt_phi = 1 / sqrt(rep_phi[obs_dist]);
     // defer to poisson if phi is large, to avoid overflow or
     // if poisson specified
   }
@@ -79,13 +79,13 @@ void report_lp(int[] cases, vector reports,
 }
 // update log likelihood (as above but not vectorised and returning log likelihood)
 vector report_log_lik(int[] cases, vector reports,
-                      real[] rep_phi, int model_type, real weight) {
+                      real[] rep_phi, int obs_dist, real weight) {
   int t = num_elements(reports);
   vector[t] log_lik;
   real sqrt_phi = 1e5;
-  if (model_type) {
+  if (obs_dist) {
   // the reciprocal overdispersion parameter (phi)
-  sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+  sqrt_phi = 1 / sqrt(rep_phi[obs_dist]);
   }
 
   // defer to poisson if phi is large, to avoid overflow
@@ -101,12 +101,12 @@ vector report_log_lik(int[] cases, vector reports,
   return(log_lik);
 }
 // sample reported cases from the observation model
-int[] report_rng(vector reports, real[] rep_phi, int model_type) {
+int[] report_rng(vector reports, real[] rep_phi, int obs_dist) {
   int t = num_elements(reports);
   int sampled_reports[t];
   real sqrt_phi = 1e5;
-  if (model_type) {
-    sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+  if (obs_dist) {
+    sqrt_phi = 1 / sqrt(rep_phi[obs_dist]);
   }
     
   for (s in 1:t) {

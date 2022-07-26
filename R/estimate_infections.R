@@ -20,6 +20,11 @@
 #' @param reported_cases A data frame of confirmed cases (confirm) by date
 #' (date). confirm must be integer and date must be in date format.
 #'
+#' @param process_model A character string that defines what is being
+#' modelled: "infections", "growth" or "R" (default). If ' set to "R",
+#' a generation time distribution needs to be defined via the `generation_time`
+#' argument.
+#'
 #' @param generation_time A call to `generation_time_opts()` defining the
 #' generation time distribution used. For backwards compatibility a list of
 #' summary parameters can also be passed.
@@ -233,6 +238,7 @@
 #' options(old_opts)
 #' }
 estimate_infections <- function(reported_cases,
+                                process_opts = process_opts(),
                                 generation_time = generation_time_opts(),
                                 delays = delay_opts(),
                                 truncation = trunc_opts(),
@@ -295,10 +301,15 @@ estimate_infections <- function(reported_cases,
   )
   reported_cases <- reported_cases[-(1:backcalc$prior_window)]
 
+  model_choices <- c("infections", "growth", "R")
+  model <- match.arg(model, choices = model_choices)
+  process_model <- which(model == model_choices) - 1
+
   # Define stan model parameters
   data <- create_stan_data(
     reported_cases = reported_cases,
     seeding_time = seeding_time,
+    process_opts = process_opts,
     rt = rt,
     gp = gp,
     obs = obs,
