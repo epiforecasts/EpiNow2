@@ -5,17 +5,23 @@
 #' @param mean Numeric, defaults to 1. If the only non-zero summary parameter
 #' then  this is the fixed interval of the generation time. If the `sd` is
 #' non-zero then this is the mean of a gamma distribution.
+#' 
 #' @param sd Numeric, defaults to 0. Sets the standard deviation for a gamma
 #' distribution generation time.
+#' 
 #' @param mean_sd Numeric, defaults to 0. The prior uncertainty for the mean
 #' of the generation time.
+#' 
 #' @param sd_sd Numeric, defaults to 0. The prior uncertainty for the standard
 #' deviation of the generation time.
+#' 
 #' @param ... Delay distributions as a list with the following parameters:
 #' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
 #' normal (with all parameters except for max defined in logged form).
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input delay distributions.
+#' @inheritParams get_generation_time
+#' @inheritParams delay_opts
 #' @export
 #' @examples
 #' # default settings with a fixed generation time

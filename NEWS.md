@@ -54,7 +54,7 @@ Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
 
 * Added a `contributing.md` to guide contributors and added `pre-commit` support to check new contributions styling.  By @seabbs.
 * Better test skipping thanks to @Bisaloo.
-* Switched from `cowplot::theme_cowplot()` to `ggplot2::theme_bw()`. This allows the removal of `cowplot` as a dependency as well making plots visuable for users saving as pngs and using a dark theme. By @seabbs.
+* Switched from `cowplot::theme_cowplot()` to `ggplot2::theme_bw()`. This allows the removal of `cowplot` as a dependency as well making plots visible for users saving as pngs and using a dark theme. By @seabbs.
 
 ## Other changes
 

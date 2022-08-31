@@ -101,7 +101,7 @@
 #' trunc <- estimate_infections(reported_cases,
 #'   generation_time = generation_time,
 #'   delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
-#'   truncation = trunc_dist
+#'   truncation = trunc_dist,
 #'   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
 #'   gp = gp_opts(ls_min = 10, basis_prop = 0.1),
 #'   stan = stan_opts(control = list(adapt_delta = 0.95))
