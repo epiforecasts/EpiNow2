@@ -38,7 +38,9 @@ transformed parameters {
    secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
   }
  // truncate near time cases to observed reports
- secondary = truncate(secondary, truncation_mean, truncation_sd, max_truncation, 0);
+ if (truncation) {
+   secondary = truncate(secondary, truncation_mean[1], truncation_sd[1], max_truncation[1], 0);
+ }
 }
 
 model {

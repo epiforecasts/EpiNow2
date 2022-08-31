@@ -38,8 +38,14 @@ Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
 ## Model changes
 
 * Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. 
+<<<<<<< HEAD
 * Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.  By @seabbs.
 * Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged.  By @seabbs.
+=======
+* Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.
+* Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged. 
+* Added additive noise term to the `estimate_truncation` model to deal with zeroes
+>>>>>>> master
 
 ## Documentation
 
@@ -63,9 +69,15 @@ Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
 
 * Fixed a bug in the deconvolution Rt estimation method where the mean of the generation time was being used as the standard deviation. For the default package generation time these are close and so the impact will be limited but in cases where the standard deviation is << than the mean this should result in more accurate Rt estimates.  By @seabbs. 
 * Fixed a bug where the number of threads used by the data.table package were set to one in the global environment. 
+<<<<<<< HEAD
 Now the number of threads used by data.table are set to whatever the used specified on exit (by @medewitt).
 * Fixed a bug in `simulate_infections` and `forecast_secondary` which meant that a Poisson observation model used for estimation would lead to a error. By @seabbs.
 * Fixed a bug where `use_rt = FALSE` did not properly cancel user settings (@sbfnk).
+=======
+Now the number of threads used by data.table are set to whatever the used specified on exit (@medewitt).
+* Fixed a bug in `simulate_infections` and `forecast_secondary` which meant that a Poisson observation model used for estimation would lead to a error.
+* Fixed a bug in `esitmate_truncation` where phi was not initialised
+>>>>>>> master
 
 # EpiNow2 1.3.2
 

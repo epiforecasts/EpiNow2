@@ -50,18 +50,19 @@ manner in the \href{https://epiforecasts.io/epinowcast/}{\code{epinowcast} R pac
 
 The model of truncation is as follows:
 \enumerate{
-\item The truncation distribution is assumed to be log normal with a mean and
+\item The truncation distribution is assumed to be discretised log normal with a mean and
 standard deviation that is informed by the data.
 \item The data set with the latest observations is adjusted for truncation using
 the truncation distribution.
 \item Earlier data sets are recreated by applying the truncation distribution to
 the adjusted latest observations in the time period of the earlier data set. These
 data sets are then compared to the earlier observations assuming a negative binomial
-observation model.
+observation model with an additive noise term to deal with zero observations.
 }
 
 This model is then fit using \code{stan} with standard normal, or half normal,
-prior for the mean, standard deviation and 1 over the square root of the over dispersion.
+prior for the mean, standard deviation, 1 over the square root of the over dispersion
+and additive noise term.
 
 This approach assumes that:
 \itemize{

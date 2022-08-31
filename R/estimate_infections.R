@@ -211,11 +211,9 @@ estimate_infections <- function(reported_cases,
   
   # store dirty reported case data
   dirty_reported_cases <- data.table::copy(reported_cases)
-  
-  if (!is.null(rt)) {
-    if (!rt$use_rt) {
-      rt <- NULL
-    }
+
+  if (!is.null(rt) && !rt$use_rt) {
+    rt <- NULL
   }
 
   # Check verbose settings and set logger to match
