@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimate_secondary.R
 \name{simulate_secondary}
 \alias{simulate_secondary}
-\title{Secondary Reports Options}
+\title{Simulate a secondary observation}
 \usage{
 simulate_secondary(
   data,
@@ -13,6 +13,9 @@ simulate_secondary(
 )
 }
 \arguments{
+\item{data}{A data frame containing the \code{date} of report and \code{primary}
+cases as a numeric vector.}
+
 \item{type}{A character string indicating the type of observation the secondary reports
 are. Options include:
 \itemize{
@@ -31,14 +34,15 @@ meaning the expectation is returned.}
 \item{delay_max}{Integer, defaulting to 30 days. The maximum delay used in
 the convolution model.}
 
-\item{...}{Overwrite options defined by type. See the returned values for all
-options that can be passed.}
+\item{...}{Additional parameters to pass to the observation model (i.e
+\code{rnbinom} or \code{rpois}).}
 }
 \value{
-
+A data frame containing simulated data in the format required by
+\code{\link[=estimate_secondary]{estimate_secondary()}}.
 }
 \description{
-Secondary Reports Options
+Simulate a secondary observation
 }
 \examples{
 # load data.table for manipulation

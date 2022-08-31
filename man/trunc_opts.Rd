@@ -8,16 +8,18 @@ trunc_opts(mean = 0, sd = 0, mean_sd = 0, sd_sd = 0, max = 0)
 }
 \arguments{
 \item{mean}{Numeric, defaults to 0. Mean on the log scale of the truncation
-distribution}
+distribution.}
 
 \item{sd}{Numeric, defaults to 0. Sets the standard deviation for the log
-normal truncation distribution}
+normal truncation distribution.}
 
 \item{mean_sd}{Numeric, defaults to 0. The prior uncertainty for the log
 normal truncation distribution.}
 
 \item{sd_sd}{Numeric, defaults to 0. The prior uncertainty for the standard
 deviation of the  log normal truncation distribution.}
+
+\item{max}{Numeric, maximum value to allow. Defaults to 0.}
 }
 \value{
 A list summarising the input truncation distribution.

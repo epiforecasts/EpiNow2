@@ -363,16 +363,25 @@ plot.estimate_secondary <- function(x, primary = FALSE,
   return(plot)
 }
 
-#' Secondary Reports Options
+#' Simulate a secondary observation
 #'
+#' @param data A data frame containing the `date` of report and `primary`
+#' cases as a numeric vector.
+#' 
 #' @param family Character string defining the observation model. Options are
 #' Negative binomial ("negbin"), the default, Poisson ("poisson"), and "none" 
 #' meaning the expectation is returned.
+#' 
 #' @param delay_max Integer, defaulting to 30 days. The maximum delay used in
 #' the convolution model.
-#' @param ...
+#' 
+#' @param ... Additional parameters to pass to the observation model (i.e
+#'  `rnbinom` or `rpois`).
+#' 
+#' @return A data frame containing simulated data in the format required by
+#' [estimate_secondary()].
+#' 
 #' @seealso estimate_secondary
-#' @return 
 #' @inheritParams secondary_opts
 #' @importFrom data.table as.data.table copy shift
 #' @importFrom purrr pmap_dbl
