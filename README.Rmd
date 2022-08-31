@@ -100,8 +100,12 @@ reporting_delay <- list(
 Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/master/data-raw) for the code that generates these estimates). Note that these distributions may not be applicable for your use case. 
 
 ```{r}
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+generation_time <- generation_time_opts(
+  disease = "SARS-CoV-2", source = "ganyani", fixed = TRUE
+)
+incubation_period <- get_incubation_period(
+  disease = "SARS-CoV-2", source = "lauer"
+)
 ```
 
 ### [epinow()](https://epiforecasts.io/EpiNow2/reference/epinow.html) 
@@ -120,7 +124,9 @@ Estimate cases by date of infection, the time-varying reproduction number, the r
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(reported_cases = reported_cases,
                     generation_time = generation_time,
-                    delays = delay_opts(incubation_period, reporting_delay),
+                    delays = delay_opts(
+                      incubation_period, reporting_delay, fixed = FALSE
+                    ),
                     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
                     stan = stan_opts(cores = 4))
 names(estimates)

@@ -389,11 +389,13 @@ create_stan_data <- function(reported_cases, generation_time,
                              truncation) {
 
   ## make sure we have at least max_gt seeding time
-  delays$seeding_time <- max(delays$seeding_time, generation_time$max)
+  delays$seeding_time <- max(delays$seeding_time, generation_time$gt_max)
 
   ## for backwards compatibility call generation_time_opts internally
-  generation_time <- do.call(generation_time_opts, generation_time)
-
+  if (is.null(generation_time[["gt_mean"]])) {
+    generation_time <- do.call(generation_time_opts, generation_time)
+  }
+  
   cases <- reported_cases[(delays$seeding_time + 1):(.N - horizon)]$confirm
 
   data <- list(
@@ -401,11 +403,13 @@ create_stan_data <- function(reported_cases, generation_time,
     shifted_cases = shifted_cases,
     t = length(reported_cases$date),
     horizon = horizon,
-    gt_mean_mean = generation_time$mean,
-    gt_mean_sd = generation_time$mean_sd,
-    gt_sd_mean = generation_time$sd,
-    gt_sd_sd = generation_time$sd_sd,
-    max_gt = generation_time$max,
+    gt_mean_mean = generation_time$gt_mean,
+    gt_mean_sd = generation_time$gt_mean_sd,
+    gt_sd_mean = generation_time$gt_sd,
+    gt_sd_sd = generation_time$gt_sd_sd,
+    max_gt = generation_time$gt_max,
+    gt_fixed = generation_time$gt_fixed,
+    gt_pmf = generation_time$gt_pmf,
     burn_in = 0
   )
   # add delay data

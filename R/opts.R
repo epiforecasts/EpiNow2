@@ -47,9 +47,14 @@ generation_time_opts <- function(mean = 1, mean_sd = 0, sd = 0, sd_sd = 0,
     gt <- get_generation_time(
       disease = disease, source = source, max_value = max
     )
+    names(gt) <- paste0("gt_", names(gt))
     gt$gt_fixed <- fixed
   }
 
+  if (fixed) {
+    gt$gt_mean_sd <- 0
+    gt$gt_sd_sd <- 0
+  }
 
   ## check if generation time is fixed
   if (gt$gt_sd == 0 && gt$gt_sd_sd == 0) {
@@ -138,14 +143,19 @@ delay_opts <- function(..., fixed = FALSE) {
   }
   
   if (length(data$delay_mean_mean) > 0) {
-    pmf <- c()
+    pmf <- list()
     for (i in seq_along(data$delay_mean_mean)) {
-     pmf <- c(pmf, discretised_lognormal_pmf(
-       data$delay_mean_mean[i], data$delay_sd_mean[i], data$max_delay,
+     pmf[[i]] <- discretised_lognormal_pmf(
+       data$delay_mean_mean[i], data$delay_sd_mean[i], data$max_delay[i],
        reverse = TRUE
-      ))
+      )
       data$delay_pmf <- pmf
     }
+  }
+
+  if (fixed) {
+    data$delay_mean_sd <- rep(0, length(data$delay_sd_mean))
+    data$delay_sd_sd <- rep(0, length(data$delay_sd_sd)) 
   }
   return(data)
 }
@@ -180,13 +190,21 @@ delay_opts <- function(..., fixed = FALSE) {
 #' trunc_opts(mean = 3, sd = 2)
 trunc_opts <- function(mean = 0 , sd = 0, mean_sd = 0, sd_sd = 0, max = 0) {
   present <- !(mean == 0 & sd == 0 & max == 0)
-  data <- list()
-  data$truncation <- as.numeric(present)
-  data$trunc_mean_mean <- ifelse(present, mean, numeric())
-  data$trunc_mean_sd <- ifelse(present, mean_sd, numeric())
-  data$trunc_sd_mean <- ifelse(present, sd, numeric())
-  data$trunc_sd_sd <- ifelse(present, sd_sd, numeric())
-  data$max_truncation <- ifelse(present, max, numeric())
+  data <- list(
+    truncation = as.numeric(present),
+    trunc_mean_mean = numeric(0),
+    trunc_mean_sd = numeric(0),
+    trunc_sd_mean = numeric(0),
+    trunc_sd_sd = numeric(0),
+    max_truncation = numeric(0)
+  )
+  if (present) {
+    data$trunc_mean_mean <- mean
+    data$trunc_mean_sd <- mean_sd
+    data$trunc_sd_mean <- sd
+    data$trunc_sd_sd <- sd_sd
+    data$max_truncation <- max
+  }
   return(data)
 }
 
