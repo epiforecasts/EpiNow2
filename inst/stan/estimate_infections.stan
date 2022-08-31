@@ -69,7 +69,7 @@ transformed parameters {
     // via Rt
     real set_gt_mean = (gt_mean_sd > 0 ? gt_mean[1] : gt_mean_mean);
     real set_gt_sd = (gt_sd_sd > 0 ? gt_sd[1] : gt_sd_mean);
-    R = update_Rt(R, log_R[estimate_r], noise, breakpoints, bp_effects, stationary);
+    R = update_Rt(ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary);
     infections = generate_infections(R, seeding_time, set_gt_mean, set_gt_sd, max_gt,
                                      initial_infections, initial_growth,
                                      pop, future_time);
