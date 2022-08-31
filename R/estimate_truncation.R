@@ -8,17 +8,18 @@
 #'
 #' The model of truncation is as follows:
 #'
-#' 1. The truncation distribution is assumed to be log normal with a mean and
+#' 1. The truncation distribution is assumed to be discretised log normal with a mean and
 #' standard deviation that is informed by the data.
 #' 2. The data set with the latest observations is adjusted for truncation using
 #' the truncation distribution.
 #' 3. Earlier data sets are recreated by applying the truncation distribution to
 #' the adjusted latest observations in the time period of the earlier data set. These
 #' data sets are then compared to the earlier observations assuming a negative binomial
-#' observation model.
+#' observation model with an additive noise term to deal with zero observations.
 #'
 #' This model is then fit using `stan` with standard normal, or half normal,
-#' prior for the mean, standard deviation and 1 over the square root of the over dispersion.
+#' prior for the mean, standard deviation, 1 over the square root of the over dispersion
+#' and additive noise term.
 #'
 #' This approach assumes that:
 #'  - Current truncation is related to past truncation.
@@ -130,7 +131,8 @@ estimate_truncation <- function(obs, max_truncation = 10,
     data <- list(
       logmean = rnorm(1, 0, 1),
       logsd = abs(rnorm(1, 0, 1)),
-      phi = abs(rnorm(1, 0, 1))
+      phi = abs(rnorm(1, 0, 1)),
+      sigma =  abs(rnorm(1, 0, 1 ))
     )
     return(data)
   }
