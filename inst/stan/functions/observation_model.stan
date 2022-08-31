@@ -33,24 +33,20 @@ vector truncation_cmf(real trunc_mean, real trunc_sd, int trunc_max) {
     return(cmf);
 }
 // Truncate observed data by some truncation distribution
-vector truncate(vector reports, real[] truncation_mean, real[] truncation_sd,
-                int[] truncation_max, int reconstruct) {
+vector truncate(vector reports, real truncation_mean, real truncation_sd,
+                int truncation_max, int reconstruct) {
   int t = num_elements(reports);
-  int truncation = num_elements(truncation_mean);
   vector[t] trunc_reports = reports;
-  if (truncation) {
-    // Calculate cmf of truncation delay
-    int trunc_max = truncation_max[1] > t ? t : truncation_max[1];
-    int  trunc_indexes[trunc_max];
-    vector[trunc_max] cmf;
-    int first_t = t - trunc_max + 1;
-    cmf = truncation_cmf(truncation_mean[1], truncation_sd[1], trunc_max);
-    // Apply cdf of truncation delay to truncation max last entries in reports
-    if (reconstruct) {
-      trunc_reports[first_t:t] = trunc_reports[first_t:t] ./ cmf;
-    }else{
-      trunc_reports[first_t:t] = trunc_reports[first_t:t] .* cmf;
-    }
+  // Calculate cmf of truncation delay
+  int trunc_max = truncation_max > t ? t : truncation_max;
+  vector[trunc_max] cmf;
+  int first_t = t - trunc_max + 1;
+  cmf = truncation_cmf(truncation_mean, truncation_sd, trunc_max);
+  // Apply cdf of truncation delay to truncation max last entries in reports
+  if (reconstruct) {
+    trunc_reports[first_t:t] = trunc_reports[first_t:t] ./ cmf;
+  }else{
+    trunc_reports[first_t:t] = trunc_reports[first_t:t] .* cmf;
   }
   return(trunc_reports);
 }
