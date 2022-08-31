@@ -25,9 +25,29 @@ estimate_infections(
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
 
+<<<<<<< HEAD
 \item{generation_time}{A call to \code{generation_time_opts()} defining the
 generation time distribution used. For backwards compatibility a list of
 summary parameters can also be passed.}
+=======
+\item{generation_time}{The generation time distribution as parameters
+of a discretised (upper-)truncated gamma delay
+distributions, given as a list with the following parameters:
+"mean", the mean generation time;
+"mean_sd", the standard deviation in the estimate of "mean" parameter
+(assumed normally distributed); "sd", the standard
+deviation of the generation time; "sd_sd", the standard
+deviation of the estimate of the "sd" parameter (assumed normally
+distributed) sd_sd"; and "max", the maximum generation time.
+The "mean" parameter is mandatory; if it is the only one given it represents
+a fixed generation time and must be integer-valued; if "sd" is also
+given and greater than 0 this represents a generation time distribution and
+"mean" can be real-valued. In that case, "max" also needs to be given.
+The "mean_sd" and "sd_sd" parameters should be provided to represent
+uncertainty in the parameter values of the delay but are optional.
+If this is set to NULL, a fixed generation time of 1 will be used, modelling
+infections as an AR(1) process.}
+>>>>>>> flexible-delays
 
 \item{delays}{A call to \code{delay_opts()} defining delay distributions and options. See the documentation of \code{delay_opts()}
 and the examples below for details.}

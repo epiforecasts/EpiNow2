@@ -29,12 +29,21 @@ Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
 
 ## New features
 
+<<<<<<< HEAD
 * Added supported to `simulate_infections` so that a `data.frame` of R samples can be passed in instead of a vector of R values. By @seabbs.
 * Added extraction of posterior samples to the summary method for `estimate_infections`.  By @seabbs.
 * Exposed `zero_threshold` to users allowing for control over when zeros or NAs in count data are treated as true zeros versus as reporting errors that require some smoothing.  By @seabbs.
 * Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. By @seabbs.
 * Adds option to `plot_estimates()` and higher level functions to choose which estimate type to plot. By @seabbs.
 * Adds support for fixed generation times (either mean only or fixed gamma distributed). By @sbfnk.
+=======
+* Added supported to `simulate_infections` so that a `data.frame` of R samples can be passed in instead of a vector of R values.
+* Added extraction of posterior samples to the summary method for `estimate_infections`.
+* Exposed `zero_threshold` to users allowing for control over when zeros or NAs in count data are treated as true zeros versus as reporting errors that require some smoothing.
+* Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. 
+* Adds option to `plot_estimates()` and higher level functions to choose which estimate type to plot.
+* Adds support for fixed generation times (either mean only or fixed gamma distributed), as well as fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed). By @sbfnk.
+>>>>>>> flexible-delays
 * Adds support for optionally using an inverse gamma prior for the lengthscale of the gaussian process. This scaled prior has been tested for both short and long simulations where the default prior may make the model unstable. The new prior is more stable for long simulations and adaptively change the distribution based on the simulation length (total number of days) without relying on the user inputs or the fixed defaults. It can be tested by setting ls_sd = 0 in gp_opts(). By @hsbadr.
 * Updated the prior on the magnitude of the gaussian process to be 0.05 vs 0.1 leading to slightly more stable estimates. By @hsbadr.
 
