@@ -29,34 +29,43 @@ parameters{
 transformed parameters {
   vector<lower=0>[t] secondary;
   // calculate secondary reports from primary
-  secondary = calculate_secondary(primary, obs, frac_obs, delay_mean,
-                                  delay_sd, max_delay, cumulative,
-                                  historic, primary_hist_additive,
-                                  current, primary_current_additive, t);
+  secondary = calculate_secondary(
+    primary, obs, frac_obs, delay_mean, delay_sd, max_delay, cumulative,
+    historic, primary_hist_additive, current, primary_current_additive, t
+  );
  // weekly reporting effect
  if (week_effect > 1) {
    secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
   }
  // truncate near time cases to observed reports
  if (truncation) {
-   secondary = truncate(secondary, truncation_mean[1], truncation_sd[1], max_truncation[1], 0);
+   secondary = truncate(
+    secondary, truncation_mean[1], truncation_sd[1], max_truncation[1], 0
+  );
  }
 }
 
 model {
   // penalised priors for delay distributions
-  delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, 1);
+  delays_lp(
+    delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean,
+    delay_sd_sd, 1
+  );
   // priors for truncation
-  truncation_lp(truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd,
-                trunc_sd_mean, trunc_sd_sd);
+  truncation_lp(
+    truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd, 
+    trunc_sd_mean, trunc_sd_sd
+  );
   // prior primary report scaling
   if (obs_scale) {
     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
    }
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
-    report_lp(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-              rep_phi, phi_mean, phi_sd, model_type, 1);
+    report_lp(
+      obs[(burn_in + 1):t], secondary[(burn_in + 1):t], rep_phi, phi_mean,
+      phi_sd, model_type, 1
+    );
   }
 }
 
@@ -67,7 +76,9 @@ generated quantities {
   sim_secondary = report_rng(secondary[(burn_in + 1):t], rep_phi, model_type);
   // log likelihood of model
   if (return_likelihood) {
-    log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-                             rep_phi, model_type, obs_weight);
+    log_lik = report_log_lik(
+      obs[(burn_in + 1):t], secondary[(burn_in + 1):t], rep_phi, model_type,
+      obs_weight
+    );
   }
 }

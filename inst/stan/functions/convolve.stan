@@ -22,23 +22,13 @@ vector convolve_to_report(vector infections,
   int delays = num_elements(delay_mean);
   if (delays) {
     for (s in 1:delays) {
-<<<<<<< HEAD
       vector[max_delay[s]] pmf;
-      pmf = discretised_pmf(delay_mean[s], delay_sd[s], max_delay[s], 0);
-      pmf = reverse_mf(pmf);
-=======
-      vector[max_delay[s]] pmf = rep_vector(1e-5, max_delay[s]);
-      int delay_indexes[max_delay[s]];
-      for (i in 1:max_delay[s]) {
-        delay_indexes[i] = max_delay[s] - i;
-      }
-      if (delay_sd[s] > 0) {
-        pmf = pmf + discretised_lognormal_pmf(delay_indexes, delay_mean[s],
-                                              delay_sd[s], max_delay[s]);
-      } else {
-        pmf = pmf + discretised_delta_pmf(delay_indexes);
-      }
->>>>>>> flexible-delays
+       if (delay_sd[s] > 0) {
+          pmf = discretised_pmf(delay_mean[s], delay_sd[s], max_delay[s], 0);
+          pmf = reverse_mf(pmf);
+       }else{
+          pmf = discretised_delta_pmf(delay_indexes);
+       }
       unobs_reports = convolve(unobs_reports, pmf);
     }
     reports = unobs_reports[(seeding_time + 1):t];

@@ -1,6 +1,12 @@
 # EpiNow2 1.3.4
 
+This release includes some breaking changes and new features designed for those wishing reduced run-times.
+
+Thanks to @seabbs, and @sbfnk.
+
 ## New features
+
+* Adds support for fixed generation times (either mean only or fixed gamma distributed), as well as fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed). By @sbfnk and @seabbs.
 
 ## Model changes
 
@@ -29,21 +35,12 @@ Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
 
 ## New features
 
-<<<<<<< HEAD
-* Added supported to `simulate_infections` so that a `data.frame` of R samples can be passed in instead of a vector of R values. By @seabbs.
-* Added extraction of posterior samples to the summary method for `estimate_infections`.  By @seabbs.
-* Exposed `zero_threshold` to users allowing for control over when zeros or NAs in count data are treated as true zeros versus as reporting errors that require some smoothing.  By @seabbs.
-* Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. By @seabbs.
-* Adds option to `plot_estimates()` and higher level functions to choose which estimate type to plot. By @seabbs.
-* Adds support for fixed generation times (either mean only or fixed gamma distributed). By @sbfnk.
-=======
+
 * Added supported to `simulate_infections` so that a `data.frame` of R samples can be passed in instead of a vector of R values.
 * Added extraction of posterior samples to the summary method for `estimate_infections`.
 * Exposed `zero_threshold` to users allowing for control over when zeros or NAs in count data are treated as true zeros versus as reporting errors that require some smoothing.
 * Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. 
 * Adds option to `plot_estimates()` and higher level functions to choose which estimate type to plot.
-* Adds support for fixed generation times (either mean only or fixed gamma distributed), as well as fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed). By @sbfnk.
->>>>>>> flexible-delays
 * Adds support for optionally using an inverse gamma prior for the lengthscale of the gaussian process. This scaled prior has been tested for both short and long simulations where the default prior may make the model unstable. The new prior is more stable for long simulations and adaptively change the distribution based on the simulation length (total number of days) without relying on the user inputs or the fixed defaults. It can be tested by setting ls_sd = 0 in gp_opts(). By @hsbadr.
 * Updated the prior on the magnitude of the gaussian process to be 0.05 vs 0.1 leading to slightly more stable estimates. By @hsbadr.
 
@@ -74,16 +71,10 @@ Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
 ## Bug fixes
 
 * Fixed a bug in the deconvolution Rt estimation method where the mean of the generation time was being used as the standard deviation. For the default package generation time these are close and so the impact will be limited but in cases where the standard deviation is << than the mean this should result in more accurate Rt estimates.  By @seabbs. 
-* Fixed a bug where the number of threads used by the data.table package were set to one in the global environment. 
-<<<<<<< HEAD
-Now the number of threads used by data.table are set to whatever the used specified on exit (by @medewitt).
+* Fixed a bug where the number of threads used by the data.table package were set to one in the global environment. Now the number of threads used by data.table are set to whatever the used specified on exit (by @medewitt).
 * Fixed a bug in `simulate_infections` and `forecast_secondary` which meant that a Poisson observation model used for estimation would lead to a error. By @seabbs.
 * Fixed a bug where `use_rt = FALSE` did not properly cancel user settings (@sbfnk).
-=======
-Now the number of threads used by data.table are set to whatever the used specified on exit (@medewitt).
-* Fixed a bug in `simulate_infections` and `forecast_secondary` which meant that a Poisson observation model used for estimation would lead to a error.
 * Fixed a bug in `esitmate_truncation` where phi was not initialised
->>>>>>> master
 
 # EpiNow2 1.3.2
 
