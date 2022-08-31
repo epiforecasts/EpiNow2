@@ -6,6 +6,9 @@
 
 * Switched to using optimised versions of the discretised distributions supported for the
 reporting delay and the generation time. These are based on an implementation in [`epinowcast`](https://epiforecasts.io/epinowcast/) by Adrian Lison and Sam Abbott.
+* Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.
+* Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged.
+* Added additive noise term to the `estimate_truncation` model to deal with zeros.
 
 ## Documentation
 
@@ -38,14 +41,8 @@ Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
 ## Model changes
 
 * Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. 
-<<<<<<< HEAD
 * Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.  By @seabbs.
 * Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged.  By @seabbs.
-=======
-* Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.
-* Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged. 
-* Added additive noise term to the `estimate_truncation` model to deal with zeroes
->>>>>>> master
 
 ## Documentation
 
