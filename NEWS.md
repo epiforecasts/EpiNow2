@@ -1,12 +1,13 @@
 # EpiNow2 1.3.4
 
-This release includes some breaking changes and new features designed for those wishing reduced run-times.
+This release includes some new features designed for those wishing reduced run-times as well as some breaking changes of rarely used features. See the detailed release notes for details.
 
-Thanks to @seabbs, and @sbfnk.
+Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @seabbs whilst some of the development work on this release was being done.
 
 ## New features
 
 * Adds support for fixed generation times (either mean only or fixed gamma distributed), as well as fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed). By @sbfnk and @seabbs.
+* Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
 
 ## Model changes
 
@@ -14,9 +15,11 @@ Thanks to @seabbs, and @sbfnk.
 reporting delay and the generation time. These are based on an implementation in [`epinowcast`](https://epiforecasts.io/epinowcast/) by Adrian Lison and Sam Abbott.
 * Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.
 * Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged.
-* Added additive noise term to the `estimate_truncation` model to deal with zeros.
+* Added additive noise term to the `estimate_truncation` model to deal with zeros. By @sbfnk.
 
 ## Documentation
+
+* Updated examples to make use of fixed distributions to improve run-times where appropriate.
 
 ## Deprecated features
 

@@ -15,9 +15,9 @@
 #' @param sd_sd Numeric, defaults to 0. The prior uncertainty for the standard
 #' deviation of the generation time.
 #' 
-#' @param ... Delay distributions as a list with the following parameters:
-#' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
-#' normal (with all parameters except for max defined in logged form).
+#' @param max Numeric, defaults to 15. The maximum number of days to include in
+#' in the generation time.
+#' 
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the discretised (upper-)truncated gamma delay
 #' distribution with the following parameters:
