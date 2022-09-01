@@ -27,7 +27,7 @@ vector convolve_to_report(vector infections,
           pmf = discretised_pmf(delay_mean[s], delay_sd[s], max_delay[s], 0);
           pmf = reverse_mf(pmf);
        }else{
-          pmf = discretised_delta_pmf(delay_indexes);
+          pmf = discretised_delta_pmf(max_delay[s]);
        }
       unobs_reports = convolve(unobs_reports, pmf);
     }

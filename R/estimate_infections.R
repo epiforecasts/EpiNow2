@@ -9,38 +9,24 @@
 #' be increased as may the overall number of samples. Follow the links provided by any warnings messages to diagnose
 #' issues with the MCMC fit. It is recommended to explore several of the Rt estimation approaches supported as not all
 #' of them may be suited to users own use cases. See [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867)
-#' for an example of using `estimate_infections` within the `epinow` wrapper to estimate Rt for Covid-19 in a country from
-#' the ECDC data source.
+#' for an example of using `estimate_infections` within the `epinow` wrapper to
+#'  estimate Rt for Covid-19 in a country from the ECDC data source.
+#' 
 #' @param reported_cases A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 #' in date format.
-<<<<<<< HEAD
 #' @param generation_time A call to `generation_time_opts()` defining the
 #' generation time distribution used. For backwards compatibility a list of
 #' summary parameters can also be passed.
-=======
-#' @param generation_time The generation time distribution as parameters
-#' of a discretised (upper-)truncated gamma delay
-#' distributions, given as a list with the following parameters:
-#' "mean", the mean generation time;
-#' "mean_sd", the standard deviation in the estimate of "mean" parameter
-#' (assumed normally distributed); "sd", the standard
-#' deviation of the generation time; "sd_sd", the standard
-#' deviation of the estimate of the "sd" parameter (assumed normally
-#' distributed) sd_sd"; and "max", the maximum generation time.
-#' The "mean" parameter is mandatory; if it is the only one given it represents
-#' a fixed generation time and must be integer-valued; if "sd" is also
-#' given and greater than 0 this represents a generation time distribution and
-#' "mean" can be real-valued. In that case, "max" also needs to be given.
-#' The "mean_sd" and "sd_sd" parameters should be provided to represent
-#' uncertainty in the parameter values of the delay but are optional.
-#' If this is set to NULL, a fixed generation time of 1 will be used, modelling
-#' infections as an AR(1) process.
->>>>>>> flexible-delays
+#' 
 #' @param delays A call to `delay_opts()` defining delay distributions and options. See the documentation of `delay_opts()`
 #' and the examples below for details.
+#' 
 #' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
-#' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
-#' `futile.logger`. See `setup_logging` for more detailed logging options.
+#' 
+#' @param verbose Logical, defaults to `TRUE` when used interactively and
+#'  otherwise `FALSE`. Should verbose debug progress messages be printed.
+#'  Corresponds to the "DEBUG" level from `futile.logger`. See `setup_logging`
+#'  for more detailed logging options.
 #' @export
 #' @seealso epinow regional_epinow forecast_infections simulate_infections
 #' @inheritParams create_stan_args

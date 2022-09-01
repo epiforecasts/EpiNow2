@@ -102,8 +102,12 @@ transformed parameters {
  }
  // truncate near time cases to observed reports
  if (truncation) {
-   real set_truncation_mean = (trunc_mean_sd[1] > 0 ? truncation_mean[1] : trunc_mean_mean[1]);
-   real set_truncation_sd = (trunc_sd_sd[1] > 0 ? truncation_sd[1] : trunc_sd_mean[1]);
+   real set_truncation_mean = (
+    trunc_mean_sd[1] > 0 ? truncation_mean[1] : trunc_mean_mean[1]
+   );
+   real set_truncation_sd = (
+    trunc_sd_sd[1] > 0 ? truncation_sd[1] : trunc_sd_mean[1]
+   );
    obs_reports = truncate(
     reports[1:ot], set_truncation_mean, set_truncation_sd, 
     max_truncation[1], 0

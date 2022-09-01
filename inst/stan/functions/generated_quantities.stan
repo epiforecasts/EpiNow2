@@ -3,7 +3,6 @@ vector calculate_Rt(vector infections, int seeding_time,
                     real gt_mean, real gt_sd, int max_gt,
                     int smooth) {
   vector[max_gt] gt_pmf;
-  int gt_indexes[max_gt];
   int t = num_elements(infections);
   int ot = t - seeding_time;
   vector[ot] R;
@@ -14,11 +13,7 @@ vector calculate_Rt(vector infections, int seeding_time,
     gt_pmf[2:max_gt] = discretised_pmf(gt_mean, gt_sd, max_gt - 1, 1);
     gt_pmf = reverse_mf(gt_pmf);
   } else {
-    // calculate PMF of the generation time
-    for (i in 1:(max_gt)) {
-      gt_indexes[i] = max_gt - i + 1;
-    }
-    gt_pmf = discretised_delta_pmf(gt_indexes);
+    gt_pmf = discretised_delta_pmf(max_gt);
   }
   // calculate Rt using Cori et al. approach
   for (s in 1:ot) {

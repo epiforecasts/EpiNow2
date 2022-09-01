@@ -42,21 +42,24 @@ drastically reduces compute requirements.}
 normal (with all parameters except for max defined in logged form).}
 }
 \value{
-A list summarising the input delay distributions.
+A list summarising the discretised (upper-)truncated gamma delay
+distribution with the following parameters:
+\itemize{
+\item "gt_mean", the mean generation time.
+\item "gt_mean_sd", the standard deviation in the estimate of "gt_mean" parameter
+(assumed normally distributed).
+\item "gt_sd", the standard deviation of the generation time.
+\item "gt_sd_sd", the standard deviation of the estimate of the "gt_sd"
+parameter (assumed normally distributed).
+\item "gt_max", the maximum generation time.
+\item "gt_fixed", Binary value indicating if the generation time has uncertainty.
+\item "gt_pmf" A vector describing the PMF of the distribution implied by the
+mean of the summary parameters.
+}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Returns generation time parameters in a format for lower level model use.
-}
-\examples{
-# default settings with a fixed generation time
-generation_time_opts()
-
-# A fixed gamma distributed generation time
-generation_time_opts(mean = 3, sd = 2)
-
-# An uncertain gamma distributed generation time
-generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit

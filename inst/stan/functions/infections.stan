@@ -38,12 +38,7 @@ vector generate_infections(vector oR, int uot,
     gt_pmf[2:max_gt] = discretised_pmf(gt_mean, gt_sd, max_gt - 1, 1);
     gt_pmf = reverse_mf(gt_pmf);
   } else {
-    int gt_indexes[max_gt];
-    for (i in 1:(max_gt)) {
-      gt_indexes[i] = max_gt - i + 1;
-    }
-    // SD == 0: use discretised delta
-    gt_pmf = gt_pmf + discretised_delta_pmf(gt_indexes);
+    gt_pmf = discretised_delta_pmf(max_gt);
   }
   // Initialise infections using daily growth
   infections[1] = exp(initial_infections[1]);

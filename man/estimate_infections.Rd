@@ -25,29 +25,9 @@ estimate_infections(
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
 in date format.}
 
-<<<<<<< HEAD
 \item{generation_time}{A call to \code{generation_time_opts()} defining the
 generation time distribution used. For backwards compatibility a list of
 summary parameters can also be passed.}
-=======
-\item{generation_time}{The generation time distribution as parameters
-of a discretised (upper-)truncated gamma delay
-distributions, given as a list with the following parameters:
-"mean", the mean generation time;
-"mean_sd", the standard deviation in the estimate of "mean" parameter
-(assumed normally distributed); "sd", the standard
-deviation of the generation time; "sd_sd", the standard
-deviation of the estimate of the "sd" parameter (assumed normally
-distributed) sd_sd"; and "max", the maximum generation time.
-The "mean" parameter is mandatory; if it is the only one given it represents
-a fixed generation time and must be integer-valued; if "sd" is also
-given and greater than 0 this represents a generation time distribution and
-"mean" can be real-valued. In that case, "max" also needs to be given.
-The "mean_sd" and "sd_sd" parameters should be provided to represent
-uncertainty in the parameter values of the delay but are optional.
-If this is set to NULL, a fixed generation time of 1 will be used, modelling
-infections as an AR(1) process.}
->>>>>>> flexible-delays
 
 \item{delays}{A call to \code{delay_opts()} defining delay distributions and options. See the documentation of \code{delay_opts()}
 and the examples below for details.}
@@ -85,8 +65,10 @@ then no changes are made.}
 \item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
 to assign errors to regions. Alter the default to run with error catching.}
 
-\item{verbose}{Logical, defaults to \code{TRUE} when used interactively and otherwise \code{FALSE}. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
-\code{futile.logger}. See \code{setup_logging} for more detailed logging options.}
+\item{verbose}{Logical, defaults to \code{TRUE} when used interactively and
+otherwise \code{FALSE}. Should verbose debug progress messages be printed.
+Corresponds to the "DEBUG" level from \code{futile.logger}. See \code{setup_logging}
+for more detailed logging options.}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
@@ -98,8 +80,8 @@ may not be sufficient for your use case so the number of warmup samples (\code{s
 be increased as may the overall number of samples. Follow the links provided by any warnings messages to diagnose
 issues with the MCMC fit. It is recommended to explore several of the Rt estimation approaches supported as not all
 of them may be suited to users own use cases. See \href{https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867}{here}
-for an example of using \code{estimate_infections} within the \code{epinow} wrapper to estimate Rt for Covid-19 in a country from
-the ECDC data source.
+for an example of using \code{estimate_infections} within the \code{epinow} wrapper to
+estimate Rt for Covid-19 in a country from the ECDC data source.
 }
 \examples{
 \donttest{

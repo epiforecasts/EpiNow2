@@ -6,6 +6,7 @@
 vector discretised_pmf(real mu, real sigma, int n, int dist) {
   vector[n] pmf; 
   vector[n] upper_cdf;
+  if (dist )
   if (dist == 0) {
     for (i in 1:n) {
       upper_cdf[i] = lognormal_cdf(i , mu, sigma);
@@ -38,14 +39,8 @@ vector reverse_mf(vector pmf) {
 }
 
 // discretised delta pmf
-vector discretised_delta_pmf(int[] y) {
-  int n = num_elements(y);
-  vector[n] pmf;
-  pmf[y[1]] = 1;
-  if (n > 1) {
-    for (i in 2:n) {
-      pmf[y[i]] = 0;
-    }
-  }
+vector discretised_delta_pmf(int n) {
+  vector[n] pmf = rep_vector(0, n);
+  pmf[n] = 1;
   return(pmf);
 }

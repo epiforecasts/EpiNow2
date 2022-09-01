@@ -19,7 +19,18 @@
 #' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
 #' normal (with all parameters except for max defined in logged form).
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
-#' @return A list summarising the input delay distributions.
+#' @return A list summarising the discretised (upper-)truncated gamma delay
+#' distribution with the following parameters:
+#' - "gt_mean", the mean generation time.
+#' - "gt_mean_sd", the standard deviation in the estimate of "gt_mean" parameter
+#' (assumed normally distributed).
+#' - "gt_sd", the standard deviation of the generation time.
+#' - "gt_sd_sd", the standard deviation of the estimate of the "gt_sd"
+#'  parameter (assumed normally distributed).
+#' - "gt_max", the maximum generation time.
+#' - "gt_fixed", Binary value indicating if the generation time has uncertainty.
+#' - "gt_pmf" A vector describing the PMF of the distribution implied by the
+#' mean of the summary parameters.
 #' @inheritParams get_generation_time
 #' @inheritParams delay_opts
 #' @export
@@ -32,6 +43,25 @@
 #' 
 #' # An uncertain gamma distributed generation time
 #' generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
+#' 
+#' The generation time distribution as parameters
+#' of a discretised (upper-)truncated gamma delay
+#' distributions, given as a list with the following parameters:
+#' "mean", the mean generation time;
+#' "mean_sd", the standard deviation in the estimate of "mean" parameter
+#' (assumed normally distributed); "sd", the standard
+#' deviation of the generation time; "sd_sd", the standard
+#' deviation of the estimate of the "sd" parameter (assumed normally
+#' distributed) sd_sd"; and "max", the maximum generation time.
+#' The "mean" parameter is mandatory; if it is the only one given it represents
+#' a fixed generation time and must be integer-valued; if "sd" is also
+#' given and greater than 0 this represents a generation time distribution and
+#' "mean" can be real-valued. In that case, "max" also needs to be given.
+#' The "mean_sd" and "sd_sd" parameters should be provided to represent
+#' uncertainty in the parameter values of the delay but are optional.
+#' If this is set to NULL, a fixed generation time of 1 will be used, modelling
+#' infections as an AR(1) process.
+#' 
 generation_time_opts <- function(mean = 1, mean_sd = 0, sd = 0, sd_sd = 0,
                                  max = 15, fixed = FALSE, disease, source) {
   if (missing(disease) & missing(source)) {
@@ -88,14 +118,14 @@ generation_time_opts <- function(mean = 1, mean_sd = 0, sd = 0, sd_sd = 0,
 #' @description `r lifecycle::badge("stable")`
 #' Returns delay distributions formatted for usage by downstream
 #' functions.
-<<<<<<< HEAD
+#' 
 #' @param fixed Logical, defaults to `FALSE`. Should reporting delays be treated
 #' as coming from fixed (vs uncertain) distributions. Making this simplification
 #' drastically reduces compute requirements.
 #' @param ... Delay distributions as a list with the following parameters:
 #' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
 #' normal (with all parameters except for max defined in logged form).
-=======
+#' 
 #' @param ... Parameters of discretised (upper-)truncated lognormal delay
 #' distributions as a list with the following parameters:
 #' "mean", the mu parameter or mean of the natural logarithm of the delay;
@@ -110,7 +140,7 @@ generation_time_opts <- function(mean = 1, mean_sd = 0, sd = 0, sd_sd = 0,
 #' real-valued. In that case, "max" also needs to be given.
 #' The "mean_sd" and "sd_sd" parameters should be provided to represent
 #' uncertainty in the parameter values of the delay but are optional.
->>>>>>> flexible-delays
+#' 
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input delay distributions.
 #' @export
@@ -164,7 +194,6 @@ delay_opts <- function(..., fixed = FALSE) {
   data$delay_sd_mean <- allocate_delays(delays$sd, data$delays)
   data$delay_sd_sd <- allocate_delays(delays$sd_sd, data$delays)
   data$max_delay <- allocate_delays(delays$max, data$delays)
-<<<<<<< HEAD
   data$total_delay <- sum(data$max_delay)
   data$delay_fixed <- fixed 
   if (length(data$delay_mean_sd) > 0 & !fixed) {
@@ -186,23 +215,41 @@ delay_opts <- function(..., fixed = FALSE) {
     data$delay_mean_sd <- rep(0, length(data$delay_sd_mean))
     data$delay_sd_sd <- rep(0, length(data$delay_sd_sd)) 
   }
-=======
 
   data$uncertain_mean_delay_indices <- array(which(data$delay_mean_sd > 0))
   data$uncertain_sd_delay_indices <- array(which(data$delay_sd_sd > 0))
   data$uncertain_mean_delays <- length(data$uncertain_mean_delay_indices)
   data$uncertain_sd_delays <- length(data$uncertain_sd_delay_indices)
->>>>>>> flexible-delays
+
+    ## check if delay is fixed
+  for (i in seq_len(data$delays)) {
+    if (data$delay_sd_mean[i] == 0 && data$delay_sd_sd[i] == 0) {
+      if (data$delay_mean_sd[i] > 0) {
+        stop("Error in delay distribution definition: if sd_mean is 0 and ",
+             "sd_sd is 0 then mean_sd must be 0, too.")
+      }
+      if (data$max_delay[i] != data$delay_mean_mean[i]) {
+        stop("Error in delay defintion: if max_delay(",
+             data$max_delay[i],
+             ") is given it must be equal to the mean if it is fixed (",
+             data$delay_mean_mean[i],
+             ")")
+      }
+      if (round(data$delay_mean_mean[i]) != data$delay_mean_mean[i]) {
+        stop(("Error: if using a fixed delay it must be integer"))
+      }
+    }
+  }
   return(data)
 }
 
 #' Truncation Distribution Options
 #'
 #' @description `r lifecycle::badge("stable")`
-<<<<<<< HEAD
-#' Returns a log-normal truncation distribution formatted for usage by
-#'  downstream functions. See `estimate_truncation()` for an approach to
-#'  estimate this distribution.
+#' Returns a truncation distribution formatted for usage by downstream
+#'  functions. See `estimate_truncation` for an approach to estimate this
+#'  distribution.
+#' 
 #' @param mean Numeric, defaults to 0. Mean on the log scale of the truncation
 #' distribution.
 #' 
@@ -210,37 +257,21 @@ delay_opts <- function(..., fixed = FALSE) {
 #' normal truncation distribution.
 #' 
 #' @param mean_sd Numeric, defaults to 0. The prior uncertainty for the log
-#' normal truncation distribution.
+#' normal truncation distribution. Optional if `sd_sd` is also set to zero
+#' then a fixed distribution is used.
 #' 
 #' @param sd_sd Numeric, defaults to 0. The prior uncertainty for the standard
-#' deviation of the  log normal truncation distribution.
+#' deviation of the  log normal truncation distribution. Optional if `mean_sd`
+#' is also set to zero then a fixed distribution is used.
 #' 
 #' @param max Numeric, maximum value to allow. Defaults to 0.
-=======
-#' Returns a truncation distribution formatted for usage by downstream functions. See
-#' `estimate_truncation` for an approach to estimate this distribution.
-#' @param dist A list defining the truncation distribution as parameters of a
-#' discretised (upper-)truncated lognormal density distribution; defaults to
-#' `NULL` in which case no truncation is used. Otherwise it defines the
-#' truncation distributions as a list with the following parameters:
-#' "mean", the mu parameter or mean of the natural logarithm of the truncation;
-#' "mean_sd", the standard deviation in the estimate of "mean" parameter
-#' (assumed normally distributed); "sd", the sigma parameter or standard
-#' deviation of the natural logarithm of the truncation; "sd_sd", the standard
-#' deviation of the estimate of the "sd" parameter (assumed normally
-#' distributed) sd_sd"; and "max", the maximum truncation.
-#' The "mean" and "sd" and "max" parameters are mandatory;
-#' the "mean_sd" and "sd_sd"
-#' parameters should be provided to represent
-#' uncertainty in the parameter values of the delay but are optional.
->>>>>>> flexible-delays
+#' 
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input truncation distribution.
 #' @export
 #' @examples
 #' # no truncation
 #' trunc_opts()
-<<<<<<< HEAD
 #' 
 #' # truncation dist
 #' trunc_opts(mean = 3, sd = 2)
@@ -261,21 +292,6 @@ trunc_opts <- function(mean = 0 , sd = 0, mean_sd = 0, sd_sd = 0, max = 0) {
     data$trunc_sd_sd <- sd_sd
     data$max_truncation <- max
   }
-=======
-trunc_opts <- function(dist = NULL) {
-  data <- list()
-  data$truncation <- ifelse(is.null(dist), 0, 1)
-  if (data$truncation) {
-    for (param in c("mean_sd", "sd_sd")) {
-      if (!(param %in% names(dist))) dist[[param]] <- 0
-    }
-  }
-  data$trunc_mean_mean <- allocate_delays(dist$mean, data$truncation)
-  data$trunc_mean_sd <- allocate_delays(dist$mean_sd, data$truncation)
-  data$trunc_sd_mean <- allocate_delays(dist$sd, data$truncation)
-  data$trunc_sd_sd <- allocate_delays(dist$sd_sd, data$truncation)
-  data$max_truncation <- allocate_delays(dist$max, data$truncation)
->>>>>>> flexible-delays
   return(data)
 }
 
