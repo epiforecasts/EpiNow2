@@ -69,7 +69,7 @@ using synthetic data and \href{https://gist.github.com/seabbs/4f09d7609df298db7a
 for an example of forecasting Covid-19 deaths from Covid-19 cases. See
 \href{https://gist.github.com/seabbs/4dad3958ca8d83daca8f02b143d152e6}{here} for a prototype function that
 may be used to estimate and forecast a secondary observation from a primary across multiple regions and
-\href{https://github.com/epiforecasts/covid-german-forecasts/blob/master/rt-forecast/update-death-from-cases.R}{here}
+\href{https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R}{here}
 for an application forecasting Covid-19 deaths in Germany and Poland.
 }
 \examples{

@@ -9,7 +9,7 @@
 #' for an example of forecasting Covid-19 deaths from Covid-19 cases. See
 #' [here](https://gist.github.com/seabbs/4dad3958ca8d83daca8f02b143d152e6) for a prototype function that
 #' may be used to estimate and forecast a secondary observation from a primary across multiple regions and
-#' [here](https://github.com/epiforecasts/covid-german-forecasts/blob/master/rt-forecast/update-death-from-cases.R)
+#' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R)
 #' for an application forecasting Covid-19 deaths in Germany and Poland.
 #' @param secondary A call to `secondary_opts()` or a list containing the following
 #' binary variables: cumulative, historic, primary_hist_additive, current,
