@@ -46,7 +46,7 @@ data source over time. This distribution can then be used in \code{regional_epin
 \code{epinow}, and \code{estimate_infections} to adjust for truncated data. See \href{https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a}{here}
 for an example of using this approach on Covid-19 data in England. The
 functionality offered by this function is now available in a more principled
-manner in the \href{https://epiforecasts.io/epinowcast/}{\code{epinowcast} R package}.
+manner in the \href{https://package.epinowcast.org/}{\code{epinowcast} R package}.
 
 The model of truncation is as follows:
 \enumerate{

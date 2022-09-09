@@ -6,7 +6,7 @@
 #' `epinow`, and `estimate_infections` to adjust for truncated data. See [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)
 #' for an example of using this approach on Covid-19 data in England. The
 #' functionality offered by this function is now available in a more principled
-#' manner in the [`epinowcast` R package](https://epiforecasts.io/epinowcast/).
+#' manner in the [`epinowcast` R package](https://package.epinowcast.org/).
 #'
 #' The model of truncation is as follows:
 #'
