@@ -82,7 +82,7 @@ URL: https://epiforecasts.io/EpiNow2/,
     https://github.com/epiforecasts/EpiNow2
 BugReports: https://github.com/epiforecasts/EpiNow2/issues
 Depends: 
-    R (>= 3.4.0)
+    R (>= 3.5.0)
 Imports:
     data.table,
     futile.logger (>= 1.4),
