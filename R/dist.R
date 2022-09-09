@@ -555,7 +555,7 @@ estimate_delay <- function(delays, ...) {
 #' # check that sum is equal to reported cases
 #' total_onsets <- median(
 #'   purrr::map_dbl(
-#'     1:100,
+#'     1:10,
 #'     ~ sum(sample_approx_dist(
 #'       cases = cases,
 #'       dist_fn = delay_fn
