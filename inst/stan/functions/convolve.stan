@@ -10,7 +10,6 @@ vector convolve(vector cases, vector rev_pmf) {
    return(conv_cases);
   }
 
-
 // convolve latent infections to reported (but still unobserved) cases
 vector convolve_to_report(vector infections,
                           real[] delay_mean,
@@ -24,9 +23,8 @@ vector convolve_to_report(vector infections,
   if (delays) {
     for (s in 1:delays) {
       vector[max_delay[s]] pmf;
-      pmf = discretised_lognormal_pmf(
-        delay_mean[s], delay_sd[s], max_delay[s], 1
-      );
+      pmf = discretised_pmf(delay_mean[s], delay_sd[s], max_delay[s], 0);
+      pmf = reverse_mf(pmf);
       unobs_reports = convolve(unobs_reports, pmf);
     }
     reports = unobs_reports[(seeding_time + 1):t];
