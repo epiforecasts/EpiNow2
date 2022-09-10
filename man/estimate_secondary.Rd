@@ -7,8 +7,7 @@
 estimate_secondary(
   reports,
   secondary = secondary_opts(),
-  delays = delay_opts(list(mean = 2.5, mean_sd = 0.5, sd = 0.47, sd_sd = 0.25, max =
-    30)),
+  delays = delay_opts(list(mean = 2.5, mean_sd = 0.5, sd = 0.47, sd_sd = 0.25, max = 30)),
   truncation = trunc_opts(),
   obs = obs_opts(),
   burn_in = 14,
@@ -76,8 +75,11 @@ for an application forecasting Covid-19 deaths in Germany and Poland.
 \donttest{
 # set number of cores to use
 options(mc.cores = ifelse(interactive(), 4, 1))
-# load data.table for manipulation
+#' # load data.table for manipulation
 library(data.table)
+# load lubridate for dates
+library(lubridate)
+library(purrr)
 
 #### Incidence data example ####
 
@@ -89,13 +91,10 @@ cases[, scaling := 0.4]
 # Parameters of the assumed log normal delay distribution
 cases[, meanlog := 1.8][, sdlog := 0.5]
 
-# Simulate secondary cases
-cases <- simulate_secondary(cases, type = "incidence")
-
-# fit model to example data specifying a weak prior for fraction reported
-with a secondary case
+# fit model to example data assuming only a given fraction of primary observations
+# become secondary observations
 inc <- estimate_secondary(cases[1:60],
-  obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE)
+  obs = obs_opts(scale = list(mean = 0.2, sd = 0.2))
 )
 plot(inc, primary = TRUE)
 
@@ -107,21 +106,38 @@ plot(inc_preds, new_obs = cases, from = "2020-05-01")
 
 # make some example prevalence data
 cases <- example_confirmed
-cases <- as.data.table(cases)[, primary := confirm]
-# Assume that only 30 percent of cases are reported
-cases[, scaling := 0.3]
-# Parameters of the assumed log normal delay distribution
-cases[, meanlog := 1.6][, sdlog := 0.8]
-
-# Simulate secondary cases
-cases <- simulate_secondary(cases, type = "prevalence")
+cases <- as.data.table(cases)
+cases <- cases[, .(date,
+  primary = confirm,
+  scaled_primary = confirm * rnorm(.N, 0.4, 0.05)
+)]
+cases$secondary <- 0
+cases$secondary[1] <- as.integer(cases$scaled_primary[1])
+for (i in 2:nrow(cases)) {
+  meanlog <- rnorm(1, 1.6, 0.1)
+  sdlog <- rnorm(1, 0.8, 0.05)
+  cmf <- cumsum(dlnorm(1:min(i - 1, 20), meanlog, sdlog)) -
+    cumsum(dlnorm(0:min(19, i - 2), meanlog, sdlog))
+  cmf <- cmf / plnorm(min(i - 1, 20), meanlog, sdlog)
+  reducing_cases <- sum(cases$scaled_primary[(i - 1):max(1, i - 20)] * cmf)
+  reducing_cases <- ifelse(cases$secondary[i - 1] < reducing_cases,
+    cases$secondary[i - 1], reducing_cases
+  )
+  cases$secondary[i] <- as.integer(
+    cases$secondary[i - 1] + cases$scaled_primary[i] - reducing_cases
+  )
+  cases$secondary[i] <- ifelse(cases$secondary[i] < 0, 0,
+    cases$secondary[i]
+  )
+}
+cases <- cases[, secondary := map_dbl(secondary, ~ rpois(1, .))]
 
 # fit model to example prevalence data
 prev <- estimate_secondary(cases[1:100],
   secondary = secondary_opts(type = "prevalence"),
   obs = obs_opts(
     week_effect = FALSE,
-    scale = list(mean = 0.4, sd = 0.1)
+    scale = list(mean = 0.3, sd = 0.1)
   )
 )
 plot(prev, primary = TRUE)
