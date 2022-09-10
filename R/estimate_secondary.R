@@ -24,6 +24,10 @@
 #' and `secondary` reports.
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
+#' @param priors A `data.frame` of named priors to be used in model fitting
+#' rather than the defaults supplied from other arguments. This is typically
+#' useful if wanting to inform an estimate from the posterior of another model
+#' fit.
 #' @param burn_in Integer, defaults to 14 days. The number of data points to use for
 #' estimation but not to fit to at the beginning of the time series. This must be less
 #' than the number of observations.
@@ -146,6 +150,7 @@ estimate_secondary <- function(reports,
                                obs = obs_opts(),
                                burn_in = 14,
                                CrIs = c(0.2, 0.5, 0.9),
+                               priors = NULL,
                                model = NULL,
                                verbose = interactive(),
                                ...) {
@@ -171,6 +176,9 @@ estimate_secondary <- function(reports,
   data <- c(data, truncation)
   # observation model data
   data <- c(data, create_obs_model(obs, dates = reports$date))
+
+  # update data to use specified priors rather than defaults
+  data <- update_secondary_args(data, priors = priors, verbose = verbose)
 
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(
@@ -258,6 +266,44 @@ secondary_opts <- function(type = "incidence", ...) {
     )
   }
   data <- update_list(data, list(...))
+  return(data)
+}
+
+update_secondary_args <- function(data, priors = NULL, verbose = verbose) {
+  if (!missing(priors)) {
+    if (!is.null(priors) && nrow(priors) > 0) {
+      if (verbose) {
+        message(
+          "Replacing specified priors with those from the passed in prior dataframe" # nolint
+        )
+      }
+      # replace scaling if present in the prior
+      scale <- priors[grepl("frac_obs", variable)]
+      if (nrow(scale) > 0) {
+        data$obs_scale_mean <- as.array(signif(scale$mean, 3))
+        data$obs_scale_sd <- as.array(signif(scale$sd, 3))
+      }
+      # replace delay parameters if present
+      delay_mean <- priors[grepl("delay_mean", variable)]
+      delay_sd <- priors[grepl("delay_sd", variable)]
+      if (nrow(delay_mean) > 0) {
+        if (is.null(data$delay_mean_mean)) {
+         warning(
+           "Cannot replace delay distribution parameters as no default has been set" # nolint
+          )
+        }
+        data$delay_mean_mean <- as.array(signif(delay_mean$mean, 3))
+        data$$delay_mean_sd <- as.array(signif(delay_mean$sd, 3))
+        data$$delay_sd_mean <- as.array(signif(delay_sd$mean, 3))
+        data$$delay_sd_sd <- as.array(signif(delay_sd$sd, 3))
+      }
+      phi <- priors[grepl("rep_phi", variable)]
+      if (nrow(phi) > 0) {
+        data$phi_mean <- signif(phi$mean, 3)
+        data$phi_sd <- signif(phi$sd, 3)
+      }
+    }
+  }
   return(data)
 }
 
