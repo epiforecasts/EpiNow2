@@ -46,15 +46,16 @@ reference:
     desc: Functions that faciliate end-to-end analysis including imputing cases by infection, estimating Rt and reporting results.
     contents:
       - contains("epinow")
-  - title: Estimate Parameters
-    desc: Function to estimate parameters of interest.
+  - title: Estimate, Simulate, and Forecast Parameters
+    desc: Function to estimate, simulate and forecast parameters of interest.
     contents:
       - estimate_infections
-      - forecast_infections
-      - estimate_delay
-      - estimate_truncation
+      - simulate_infections
       - estimate_secondary
       - forecast_secondary
+      - simulate_secondary
+      - estimate_delay
+      - estimate_truncation
   - title: Internal epinow Functions
     desc: Functions used internally by epinow
     contents:
@@ -109,8 +110,6 @@ reference:
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases
     contents:
-      - simulate_infections
-      - simulate_cases
       - adjust_infection_to_report
   - title: Data
     desc: Package datasets that may be used to parameterise other functions or in examples
@@ -127,12 +126,6 @@ reference:
     desc: Functions for cleaning data
     contents:
       - contains("clean")
-  - title: Map results
-    desc: Optional mapping functions (requires additional dependencies)
-    contents:
-      - global_map
-      - country_map
-      - theme_map
   - title: Setup Utilities
     desc: Function used for setting up functionality
     contents:

@@ -1,6 +1,6 @@
 #' Adjust from Case Counts by Infection Date to Date of Report
 #'
-#' @description  `r lifecycle::badge("soft-deprecated")`
+#' @description  `r lifecycle::badge("stable")`
 #' Maps from cases by date of infection to date of report via date of
 #' onset.
 #' @param infections `data.table` containing a `date` variable and a numeric `cases` variable.

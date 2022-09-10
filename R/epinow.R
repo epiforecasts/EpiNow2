@@ -12,15 +12,12 @@
 #' so for example passing "sam" will lead to samples being reported.
 #' @param return_output Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
 #' if no directory for saving is specified.
-#' @param forecast_args A list of arguments to pass to `forecast_infections()`. Unless at a minimum a `forecast_model` is passed
-#' then `forecast_infections` will be bypassed.
 #' @param plot_args A list of optional arguments passed to `plot.epinow()`.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @seealso estimate_infections simulate_infections forecast_infections regional_epinow
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
-#' @inheritParams forecast_infections
 #' @inheritParams setup_default_logging
 #' @importFrom data.table setDT
 #' @importFrom lubridate days
@@ -74,8 +71,7 @@ epinow <- function(reported_cases,
                    output = c("samples", "plots", "latest", "fit", "timing"),
                    plot_args = list(),
                    target_folder = NULL, target_date,
-                   forecast_args = NULL, logs = tempdir(),
-                   id = "epinow", verbose = interactive()) {
+                   logs = tempdir(), id = "epinow", verbose = interactive()) {
   if (is.null(target_folder)) {
     return_output <- TRUE
   }
@@ -167,32 +163,8 @@ epinow <- function(reported_cases,
       return_fit = output["fit"]
     )
 
-    # forecast infections and reproduction number -----------------------------
-    if (!is.null(forecast_args)) {
-      forecast <- do.call(
-        forecast_infections,
-        c(
-          list(
-            infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
-            rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
-            gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
-            gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
-            gt_max = generation_time$max,
-            horizon = horizon,
-            CrIs = CrIs
-          ),
-          forecast_args
-        )
-      )
-
-      save_forecast_infections(forecast, target_folder, samples = output["samples"])
-    } else {
-      forecast <- NULL
-    }
     # report forecasts ---------------------------------------------------------
     estimated_reported_cases <- estimates_by_report_date(estimates,
-      forecast,
-      delays = delays,
       target_folder = target_folder,
       samples = output["samples"],
       CrIs = CrIs
@@ -221,7 +193,6 @@ epinow <- function(reported_cases,
 
     if (return_output) {
       out <- construct_output(estimates,
-        forecast,
         estimated_reported_cases,
         plots = plots,
         summary,

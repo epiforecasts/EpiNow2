@@ -1,14 +1,17 @@
 # EpiNow2 1.3.3
 
-This release is under development and the features outlined below may change before release.
+This maintenance release adds a range of new minor features, squashes bugs, 
+and removes some obsolete features.
+
+Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
 
 ## New features
 
-* Added supported to `simulate_infections` so that a `data.frame` of R samples can be passed in instead of a vector of R values.
-* Added extraction of posterior samples to the summary method for `estimate_infections`.
-* Exposed `zero_threshold` to users allowing for control over when zeros or NAs in count data are treated as true zeros versus as reporting errors that require some smoothing.
-* Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. 
-* Adds option to `plot_estimates()` and higher level functions to choose which estimate type to plot.
+* Added supported to `simulate_infections` so that a `data.frame` of R samples can be passed in instead of a vector of R values. By @seabbs.
+* Added extraction of posterior samples to the summary method for `estimate_infections`.  By @seabbs.
+* Exposed `zero_threshold` to users allowing for control over when zeros or NAs in count data are treated as true zeros versus as reporting errors that require some smoothing.  By @seabbs.
+* Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. By @seabbs.
+* Adds option to `plot_estimates()` and higher level functions to choose which estimate type to plot. By @seabbs.
 * Adds support for fixed generation times (either mean only or fixed gamma distributed). By @sbfnk.
 * Adds support for optionally using an inverse gamma prior for the lengthscale of the gaussian process. This scaled prior has been tested for both short and long simulations where the default prior may make the model unstable. The new prior is more stable for long simulations and adaptively change the distribution based on the simulation length (total number of days) without relying on the user inputs or the fixed defaults. It can be tested by setting ls_sd = 0 in gp_opts(). By @hsbadr.
 * Updated the prior on the magnitude of the gaussian process to be 0.05 vs 0.1 leading to slightly more stable estimates. By @hsbadr.
@@ -16,33 +19,45 @@ This release is under development and the features outlined below may change bef
 ## Model changes
 
 * Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days. 
-* Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.
-* Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged. 
-* Added additive noise term to the `estimate_truncation` model to deal with zeroes
+* Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.  By @seabbs.
+* Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged.  By @seabbs.
+* Added additive noise term to the `estimate_truncation` model to deal with zeroes. By @sbfnk.
 
 ## Documentation
 
-- Updates to all synthetic delays to reduce runtime of examples. 
-- Additional statements to make it clear to users examples should be used for real world analysis.
-- Additional context in the README on package functionality.
+- Updates to all synthetic delays to reduce runtime of examples.  By @seabbs.
+- Additional statements to make it clear to users examples should be used for real world analysis. By @seabbs.
+- Additional context in the README on package functionality.  By @seabbs.
 
 ## Package changes
 
-* Added a `contributing.md` to guide contributors and added `pre-commit` support to check new contributions styling. 
+* Added a `contributing.md` to guide contributors and added `pre-commit` support to check new contributions styling.  By @seabbs.
 * Better test skipping thanks to @Bisaloo.
+* Switched from `cowplot::theme_cowplot()` to `ggplot2::theme_bw()`. This allows the removal of `cowplot` as a dependency as well making plots visuable for users saving as pngs and using a dark theme. By @seabbs.
 
 ## Other changes
 
-* Updated the classification of growth to use stable rather than unsure when Rt is approximately 1.
-* The default parallisation has been changed to `future::multisession()` from `future::multiprocess()` as the latter is being depreciated in the `future` package. 
+* Updated the classification of growth to use stable rather than unsure when Rt is approximately 1.  By @seabbs.
+* The default parallisation has been changed to `future::multisession()` from `future::multiprocess()` as the latter is being depreciated in the `future` package.  By @seabbs and @snfnk.
+* Ensure the seeding time is at least the maximum generation time (@sbfnk).
  
+## Deprecated features
+
+* `simulate_cases()` and `forecast_infections()` have been deprecated and have been removed. These functions depend on `EpiSoon` which itself is archived and near equivalent functionality is available within `EpiNow2` and in other packages (@seabbs).
+* Functions supporting secondary forecasting using `forecast_infections()` (i.e in `epinow())
+have been removed along with the arguments that supported them (@seabbs).
+* `global_map()`, `country_map()`, and `theme_map()` have all been deprecated and have been removed. These functions were used to support reporting of reproduction number
+estimates and are considered out of scope for `EpiNow2`. If finding useful contacting the
+`EpiNow2` developers (@seabbs).
+
 ## Bug fixes
 
-* Fixed a bug in the deconvolution Rt estimation method where the mean of the generation time was being used as the standard deviation. For the default package generation time these are close and so the impact will be limited but in cases where the standard deviation is << than the mean this should result in more accurate Rt estimates. 
+* Fixed a bug in the deconvolution Rt estimation method where the mean of the generation time was being used as the standard deviation. For the default package generation time these are close and so the impact will be limited but in cases where the standard deviation is << than the mean this should result in more accurate Rt estimates.  By @seabbs. 
 * Fixed a bug where the number of threads used by the data.table package were set to one in the global environment. 
-Now the number of threads used by data.table are set to whatever the used specified on exit (@medewitt).
-* Fixed a bug in `simulate_infections` and `forecast_secondary` which meant that a Poisson observation model used for estimation would lead to a error.
-* Fixed a bug in `esitmate_truncation` where phi was not initialised
+Now the number of threads used by data.table are set to whatever the used specified on exit (by @medewitt).
+* Fixed a bug in `simulate_infections` and `forecast_secondary` which meant that a Poisson observation model used for estimation would lead to a error. By @seabbs.
+* Fixed a bug where `use_rt = FALSE` did not properly cancel user settings. By @sbfnk.
+* Fixed a bug in `esitmate_truncation` where phi was not initialised. By @sbfnk.
 
 # EpiNow2 1.3.2
 

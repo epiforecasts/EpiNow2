@@ -271,8 +271,6 @@ expose_stan_fns <- function(files, target_dir, ...) {
   return(invisible(NULL))
 }
 
-
-
 #' Convert mean and sd to log mean for a log normal distribution
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -394,6 +392,7 @@ set_dt_single_thread <- function() {
 }
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
+#' @importFrom lifecycle deprecate_warn
 globalVariables(
   c(
     "bottom", "cases", "confidence", "confirm", "country_code", "crps",

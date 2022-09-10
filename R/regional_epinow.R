@@ -389,9 +389,6 @@ process_region <- function(out, target_region, timing,
   if (!is.null(out[["estimates"]]) & !return_output) {
     out$estimates$samples <- NULL
   }
-  if (!is.null(out[["forecast"]]) & !return_output) {
-    out$forecast$samples <- NULL
-  }
   if (!is.null(out[["estimated_reported_cases"]]) & !return_output) {
     out$estimated_reported_cases$samples <- NULL
   }

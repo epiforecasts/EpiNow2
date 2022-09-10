@@ -135,7 +135,6 @@ summarise_results <- function(regions,
 #' @inheritParams epinow
 #' @importFrom purrr map_chr compact
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
-#' @importFrom cowplot get_legend
 #' @importFrom data.table setDT
 #' @importFrom futile.logger flog.info
 #' @examples
@@ -462,7 +461,6 @@ summarise_key_measures <- function(regional_results = NULL,
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- example_delay(rlnorm(100, log(6), 1), max_value = 15)
 #'
-#' # example case vector from EpiSoon
 #' cases <- example_confirmed[1:30]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],

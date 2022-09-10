@@ -1,6 +1,4 @@
 skip_on_cran()
-suppressMessages(expose_stan_fns("rt.stan", target_dir = system.file("stan/functions", package = "EpiNow2")))
-
 
 # Test update_Rt
 test_that("update_Rt works to produce multiple Rt estimates with a static gaussian process", {

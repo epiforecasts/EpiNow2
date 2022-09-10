@@ -52,9 +52,8 @@ plot_CrIs <- function(plot, CrIs, alpha, size) {
 #' based on partial data", and "Forecast".
 #' @return A `ggplot2` object
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon scale_y_continuous
+#' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon scale_y_continuous theme_bw
 #' @importFrom scales comma
-#' @importFrom cowplot theme_cowplot
 #' @importFrom data.table setDT fifelse copy as.data.table
 #' @importFrom purrr map
 #' @examples
@@ -197,7 +196,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 
   # add plot theming
   plot <- plot +
-    cowplot::theme_cowplot() +
+    ggplot2::theme_bw() +
     ggplot2::theme(legend.position = "bottom") +
     ggplot2::scale_color_brewer(palette = "Dark2") +
     ggplot2::scale_fill_brewer(palette = "Dark2") +
@@ -227,9 +226,8 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 #' @param max_cases Numeric, no default. The maximum number of cases to plot.
 #' @return A `ggplot2` object
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap theme guides labs expand_limits guide_legend element_blank scale_color_manual .data coord_cartesian scale_y_continuous
+#' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap theme guides labs expand_limits guide_legend element_blank scale_color_manual .data coord_cartesian scale_y_continuous theme_bw
 #' @importFrom scales comma
-#' @importFrom cowplot theme_cowplot panel_border
 #' @importFrom patchwork plot_layout
 #' @importFrom data.table setDT
 plot_summary <- function(summary_results,
@@ -267,8 +265,7 @@ plot_summary <- function(summary_results,
     plot <- plot +
       ggplot2::geom_hline(yintercept = 1, linetype = 2) +
       ggplot2::facet_wrap(~metric, ncol = 1, scales = "free_y") +
-      cowplot::theme_cowplot() +
-      cowplot::panel_border() +
+      ggplot2::theme_bw() +
       ggplot2::scale_color_manual(values = c(
       "Increasing" = "#e75f00",
       "Likely increasing" = "#fd9e49",
