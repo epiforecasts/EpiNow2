@@ -106,7 +106,7 @@ incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lau
 
 ### [epinow()](https://epiforecasts.io/EpiNow2/reference/epinow.html) 
 
-This function represents the core functionality of the package and includes results reporting, plotting and optional saving. It requires a data frame of cases by date of report and the distributions defined above. An additional forecasting module is supported via `EpiSoon` and companion packages (see documentation for an example).
+This function represents the core functionality of the package and includes results reporting, plotting and optional saving. It requires a data frame of cases by date of report and the distributions defined above. 
 
 Load example case data from `{EpiNow2}`. 
 
