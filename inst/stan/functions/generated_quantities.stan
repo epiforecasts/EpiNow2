@@ -9,6 +9,7 @@ vector calculate_Rt(vector infections, int seeding_time,
   vector[ot] sR;
   vector[ot] infectiousness = rep_vector(1e-5, ot);
   if (gt_sd > 0) {
+    gt_pmf[1] = 0;
     gt_pmf[2:max_gt] = discretised_pmf(gt_mean, gt_sd, max_gt - 1, 1);
     gt_pmf = reverse_mf(gt_pmf);
   } else {
