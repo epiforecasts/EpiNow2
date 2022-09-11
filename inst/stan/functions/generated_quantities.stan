@@ -11,7 +11,6 @@ vector calculate_Rt(vector infections, int seeding_time,
   if (gt_sd > 0) {
     gt_pmf[1] = 0;
     gt_pmf[2:max_gt] = discretised_pmf(gt_mean, gt_sd, max_gt - 1, 1);
-    gt_pmf = reverse_mf(gt_pmf);
   } else {
     // calculate PMF of the generation time
     for (i in 1:(max_gt)) {
