@@ -1,3 +1,19 @@
+# EpiNow2 1.3.3.9000
+
+This release includes some breaking changes and new features designed for those wishing reduced run-times.
+
+Thanks to @seabbs, and @sbfnk.
+
+## New features
+
+* Adds support for fixed generation times (either mean only or fixed gamma distributed), as well as fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed). By @sbfnk and @seabbs.
+
+## Model changes
+
+## Documentation
+
+## Deprecated features
+
 # EpiNow2 1.3.3
 
 This release is under development and the features outlined below may change before release.
