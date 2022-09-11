@@ -1,3 +1,17 @@
+# EpiNow2 1.3.3.9000
+
+Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @seabbs whilst some of the development work on this release was being done.
+
+## New features
+
+* Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
+
+## Model changes
+
+## Documentation
+
+## Deprecated features
+
 # EpiNow2 1.3.3
 
 This release is under development and the features outlined below may change before release.
