@@ -4,12 +4,16 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(...)
+delay_opts(..., fixed = FALSE)
 }
 \arguments{
 \item{...}{Delay distributions as a list with the following parameters:
 "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
 normal (with all parameters except for max defined in logged form).}
+
+\item{fixed}{Logical, defaults to \code{FALSE}. Should reporting delays be treated
+as coming from fixed (vs uncertain) distributions. Making this simplification
+drastically reduces compute requirements.}
 }
 \value{
 A list summarising the input delay distributions.
@@ -22,6 +26,16 @@ functions.
 \examples{
 # no delays
 delay_opts()
+
+# A single delay that has uncertainty
+delay <- list(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
+delay_opts(delay)
+
+# A single delay where we override the uncertainty assumption
+delay_opts(delay, fixed = TRUE)
+
+# A delay where uncertainty is implict
+delay_opts(list(mean = 1, mean_sd = 0, sd = 0.5, sd_sd = 0, max = 15))
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit
