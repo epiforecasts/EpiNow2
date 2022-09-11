@@ -30,11 +30,10 @@ vector generate_infections(vector oR, int uot,
   vector[ot] infectiousness = rep_vector(1e-5, ot);
   // generation time pmf
   vector[max_gt] gt_pmf = rep_vector(1e-6, max_gt);
-  // revert indices (this is for later doing the convolution with recent cases)
   if (gt_sd > 0) {
     // SD > 0: use discretised gamma
+    gt_pmf[1] = 0;
     gt_pmf[2:max_gt] = discretised_pmf(gt_mean, gt_sd, max_gt - 1, 1);
-    gt_pmf = reverse_mf(gt_pmf);
   } else {
     int gt_indexes[max_gt];
     for (i in 1:(max_gt)) {
@@ -43,6 +42,7 @@ vector generate_infections(vector oR, int uot,
     // SD == 0: use discretised delta
     gt_pmf = gt_pmf + discretised_delta_pmf(gt_indexes);
   }
+  gt_pmf = reverse_mf(gt_pmf);
   // Initialise infections using daily growth
   infections[1] = exp(initial_infections[1]);
   if (uot > 1) {
