@@ -37,7 +37,7 @@ vector reverse_mf(vector pmf) {
   return rev_pmf;
 }
 
-// discretised truncated gamma pmf
+// discretised delta pmf
 vector discretised_delta_pmf(int n) {
   vector[n] pmf = rep_vector(0, n);
   pmf[n] = 1;
