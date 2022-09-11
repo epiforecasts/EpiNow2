@@ -163,13 +163,18 @@ delay_opts <- function(..., fixed = FALSE) {
 #'  downstream functions. See `estimate_truncation()` for an approach to
 #'  estimate this distribution.
 #' @param mean Numeric, defaults to 0. Mean on the log scale of the truncation
-#' distribution
+#' distribution.
+#'
 #' @param sd Numeric, defaults to 0. Sets the standard deviation for the log
-#' normal truncation distribution
+#' normal truncation distribution.
+#'
 #' @param mean_sd Numeric, defaults to 0. The prior uncertainty for the log
 #' normal truncation distribution.
+#'
 #' @param sd_sd Numeric, defaults to 0. The prior uncertainty for the standard
 #' deviation of the  log normal truncation distribution.
+#'
+#' @param max Numeric, maximum value to allow. Defaults to 0.
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input truncation distribution.
 #' @export
