@@ -67,7 +67,7 @@
 #' cases <- simulate_secondary(cases, type = "incidence")
 #' 
 #' # fit model to example data specifying a weak prior for fraction reported
-#' with a secondary case
+#' # with a secondary case
 #' inc <- estimate_secondary(cases[1:60],
 #'   obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE)
 #' )
