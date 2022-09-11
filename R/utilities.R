@@ -311,6 +311,22 @@ convert_to_logsd <- function(mean, sd) {
   sqrt(log(1 + (sd^2 / mean^2)))
 }
 
+ discretised_lognormal_pmf <- function(meanlog, sdlog, max_d, reverse = FALSE) {
+  pmf <- plnorm(1:max_d, meanlog, sdlog) -
+    plnorm(0:(max_d - 1), meanlog, sdlog)
+  pmf <- as.vector(pmf) / as.vector(plnorm(max_d, meanlog, sdlog))
+  if (reverse) {
+    pmf <- rev(pmf)
+  }
+  return(pmf)
+}
+
+ discretised_lognormal_pmf_conv <- function(x, meanlog, sdlog) {
+  pmf <- discretised_lognormal_pmf(meanlog, sdlog, length(x), reverse = TRUE)
+  conv <- sum(x * pmf, na.rm = TRUE)
+  return(conv)
+}
+
 
 #' Update a List
 #'
