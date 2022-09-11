@@ -398,54 +398,8 @@ create_stan_data <- function(reported_cases, generation_time,
   ## make sure we have at least max_gt seeding time
   delays$seeding_time <- max(delays$seeding_time, generation_time$max)
 
-  ## complete generation time parameters if not all are given
-  if (is.null(generation_time)) {
-    generation_time <- list(mean = 1)
-  }
-  for (param in c("mean_sd", "sd", "sd_sd")) {
-    if (!(param %in% names(generation_time))) generation_time[[param]] <- 0
-  }
-  ## check if generation time is fixed
-  if (generation_time$sd == 0 && generation_time$sd_sd == 0) {
-    if (generation_time$mean_sd > 0) {
-      stop("Error in generation time definition: if sd_mean is 0 and ",
-           "sd_sd is 0 then mean_sd must be 0, too.")
-    }
-    if ("max" %in% names(generation_time)) {
-      if (generation_time$max != generation_time$mean) {
-        stop("Error in generation time defintion: if max_gt(",
-             generation_time$max_gt,
-             ") is given it must be equal to the mean if it is fixed (",
-             generation_time$mean,
-             ")")
-      }
-    } else {
-      generation_time$max_gt <- generation_time$mean
-    }
-    if (round(generation_time$mean) != generation_time$mean) {
-      stop(("Error: if using a fixed generation time it must be integer"))
-    }
-  }
-
-  ## check if delay is fixed
-  for (i in seq_len(delays$delays)) {
-    if (delays$delay_sd_mean[i] == 0 && delays$delay_sd_sd[i] == 0) {
-      if (delays$delay_mean_sd[i] > 0) {
-        stop("Error in delay distribution definition: if sd_mean is 0 and ",
-             "sd_sd is 0 then mean_sd must be 0, too.")
-      }
-      if (delays$max_delay[i] != delays$delay_mean_mean[i]) {
-        stop("Error in delay defintion: if max_delay(",
-             delays$max_delay[i],
-             ") is given it must be equal to the mean if it is fixed (",
-             delays$delay_mean_mean[i],
-             ")")
-      }
-      if (round(delays$delay_mean_mean[i]) != delays$delay_mean_mean[i]) {
-        stop(("Error: if using a fixed delay it must be integer"))
-      }
-    }
-  }
+  ## for backwards compatibility call generation_time_opts internally
+  generation_time <- do.call(generation_time_opts, generation_time)
 
   cases <- reported_cases[(delays$seeding_time + 1):(.N - horizon)]$confirm
 

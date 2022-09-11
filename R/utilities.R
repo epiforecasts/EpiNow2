@@ -299,16 +299,20 @@ convert_to_logsd <- function(mean, sd) {
   return(conv)
 }
 
- discretised_gamma_pmf <- function(mean, sd, max_d, reverse = FALSE) {
-    alpha <- exp(2 * (log(mu) - log(sigma)));
-    beta <- exp(log(mu) - 2 * log(sigma));
-  pmf <- pgamma(1:max_d, alpha, beta) -
-    pgamma(0:(max_d - 1), alpha, beta)
-  pmf <- as.vector(pmf) / as.vector(pgamma(max_d, alpha, beta))
-  if (reverse) {
-    pmf <- rev(pmf)
-  }
-  return(pmf)
+ discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
+                                   reverse = FALSE) {
+   alpha <- exp(2 * (log(mean) - log(sd)))
+   beta <- exp(log(mean) - 2 * log(sd))
+   pmf <- pgamma(1:max_d, shape = alpha, scale = beta) -
+     pgamma(0:(max_d - 1), shape = alpha, scale = beta)
+   pmf <- as.vector(pmf) / as.vector(pgamma(max_d, shape = alpha, scale = beta))
+   if (zero_pad > 0) {
+     pmf <- c(rep(0, zero_pad), pmf)
+   }
+   if (reverse) {
+     pmf <- rev(pmf)
+   }
+   return(pmf)
 }
 
 
