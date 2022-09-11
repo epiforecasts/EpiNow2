@@ -23,7 +23,17 @@
 #' @examples
 #' # no delays
 #' delay_opts()
-delay_opts <- function(...) {
+#'
+#' # A single delay that has uncertainty
+#' delay <- list(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
+#' delay_opts(delay)
+#'
+#' # A single delay where we override the uncertainty assumption
+#' delay_opts(delay, fixed = TRUE)
+#'
+#' # A delay where uncertainty is implict
+#' delay_opts(list(mean = 1, mean_sd = 0, sd = 0.5, sd_sd = 0, max = 15))
+delay_opts <- function(..., fixed = FALSE) {
   delays <- list(...)
   data <- list()
   data$delays <- length(delays)
@@ -65,6 +75,7 @@ delay_opts <- function(...) {
   data$uncertain_sd_delay_indices <- array(which(data$delay_sd_sd > 0))
   data$uncertain_mean_delays <- length(data$uncertain_mean_delay_indices)
   data$uncertain_sd_delays <- length(data$uncertain_sd_delay_indices)
+
   return(data)
 }
 
