@@ -12,6 +12,8 @@ Thanks to @seabbs, and @sbfnk.
 
 ## Documentation
 
+* Updated examples to make use of fixed distributions to improve run-times where appropriate.
+
 ## Deprecated features
 
 # EpiNow2 1.3.3
