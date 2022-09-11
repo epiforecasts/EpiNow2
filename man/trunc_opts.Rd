@@ -4,35 +4,38 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(dist = NULL)
+trunc_opts(mean = 0, sd = 0, mean_sd = 0, sd_sd = 0, max = 0)
 }
 \arguments{
-\item{dist}{A list defining the truncation distribution as parameters of a
-discretised (upper-)truncated lognormal density distribution; defaults to
-\code{NULL} in which case no truncation is used. Otherwise it defines the
-truncation distributions as a list with the following parameters:
-"mean", the mu parameter or mean of the natural logarithm of the truncation;
-"mean_sd", the standard deviation in the estimate of "mean" parameter
-(assumed normally distributed); "sd", the sigma parameter or standard
-deviation of the natural logarithm of the truncation; "sd_sd", the standard
-deviation of the estimate of the "sd" parameter (assumed normally
-distributed) sd_sd"; and "max", the maximum truncation.
-The "mean" and "sd" and "max" parameters are mandatory;
-the "mean_sd" and "sd_sd"
-parameters should be provided to represent
-uncertainty in the parameter values of the delay but are optional.}
+\item{mean}{Numeric, defaults to 0. Mean on the log scale of the truncation
+distribution.}
+
+\item{sd}{Numeric, defaults to 0. Sets the standard deviation for the log
+normal truncation distribution.}
+
+\item{mean_sd}{Numeric, defaults to 0. The prior uncertainty for the log
+normal truncation distribution.}
+
+\item{sd_sd}{Numeric, defaults to 0. The prior uncertainty for the standard
+deviation of the  log normal truncation distribution.}
+
+\item{max}{Numeric, maximum value to allow. Defaults to 0.}
 }
 \value{
 A list summarising the input truncation distribution.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Returns a truncation distribution formatted for usage by downstream functions. See
-\code{estimate_truncation} for an approach to estimate this distribution.
+Returns a log-normal truncation distribution formatted for usage by
+downstream functions. See \code{estimate_truncation()} for an approach to
+estimate this distribution.
 }
 \examples{
 # no truncation
 trunc_opts()
+
+# truncation dist
+trunc_opts(mean = 3, sd = 2)
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit
