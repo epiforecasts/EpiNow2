@@ -1,32 +1,3 @@
-// discretised truncated gamma pmf
-vector discretised_gamma_pmf(real mu, real sigma, int max_val) {
-  int n = max_val;
-  vector[n+1] upper_cdf;
-  vector[n] pmf;
-  // calculate alpha and beta for gamma distribution
-  real small = 1e-5;
-  real large = 1e8;
-  real c_sigma = fmax(small, sigma);
-  real c_mu = fmax(small, mu);
-  real alpha = ((c_mu) / c_sigma)^2;
-  real beta = (c_mu) / (c_sigma^2);
-  // account for numerical issues
-  alpha = fmax(small, alpha);
-  alpha = fmin(large, alpha);
-  beta = fmax(small, beta);
-  beta = fmin(large, beta);
-  // calculate pmf
-  for (i in 1:(n+1)) {
-    upper_cdf[i] = gamma_cdf(i,  alpha, beta);
-  }
-  // discretise
-  for (i in 1:n) {
-    pmf[n+1-i] = upper_cdf[i+1] - upper_cdf[i];
-  }
-  pmf = pmf / (upper_cdf[n+1] - upper_cdf[1]);
-  return(pmf);
-}
-
 // Calculate the daily probability of reporting using parametric
 // distributions up to the maximum observed delay
 // Adapted from https://github.com/epiforecasts/epinowcast
