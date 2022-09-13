@@ -29,6 +29,33 @@ transformed data{
   // Rt
   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
+
+  int max_fixed_delay =
+    sum(max_delay[fixed_delays]) - num_elements(fixed_delays) + 1;
+  int max_total_delay =
+    sum(max_delay) - num_elements(max_delay) + 1;
+  vector[gt_fixed ? max_gt[1] : 0] gt_fixed_pmf;
+  vector[truncation ? max_truncation[1] : 0] trunc_fixed_pmf;
+  vector[n_fixed_delays ? max_fixed_delay : 0] fixed_delays_pmf;
+
+  if (gt_fixed) {
+    gt_fixed_pmf = discretised_pmf(gt_mean_mean, gt_mean_sd, max_gt[1], 1);
+  }
+  if (truncation && trunc_fixed[1]) {
+    trunc_fixed_pmf = discretised_pmf(
+      trunc_mean_mean[1], trunc_mean_sd[1], max_truncation[1], 0
+    );
+  }
+  if (n_fixed_delays) {
+    fixed_delays_pmf = combine_pmfs(
+      to_vector([ 1 ]),
+      delay_mean_mean[fixed_delays],
+      delay_sd_mean[fixed_delays],
+      max_delay[fixed_delays],
+      max_fixed_delay,
+      0
+    );
+  }
 }
 
 parameters{
@@ -40,17 +67,17 @@ parameters{
   vector[estimate_r] log_R;                // baseline reproduction number estimate (log)
   real initial_infections[estimate_r] ;    // seed infections
   real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
-  real<lower = 0, upper = max_gt> gt_mean[estimate_r && gt_mean_sd > 0]; // mean of generation time (if uncertain)
-  real<lower = 0> gt_sd[estimate_r && gt_sd_sd > 0];       // sd of generation time (if uncertain)
+  real<lower = 0, upper = max_gt[1]> gt_mean[estimate_r && !gt_fixed]; // mean of generation time (if uncertain)
+  real<lower = 0> gt_sd[estimate_r && !gt_fixed];       // sd of generation time (if uncertain)
   real<lower = 0> bp_sd[bp_n > 0 ? 1 : 0]; // standard deviation of breakpoint effect
   real bp_effects[bp_n];                   // Rt breakpoint effects
   // observation model
-  real delay_mean[uncertain_mean_delays];         // mean of delays
-  real<lower = 0> delay_sd[uncertain_sd_delays];  // sd of delays
+  real delay_mean[n_uncertain_mean_delays];         // mean of delays
+  real<lower = 0> delay_sd[n_uncertain_sd_delays];  // sd of delays
   simplex[week_effect] day_of_week_simplex;// day of week reporting effect
   real<lower = 0> frac_obs[obs_scale];     // fraction of cases that are ultimately observed
-  real truncation_mean[truncation && trunc_mean_sd[1] > 0];        // mean of truncation
-  real<lower = 0> truncation_sd[truncation && trunc_sd_sd[1] > 0]; // sd of truncation
+  real trunc_mean[truncation && !trunc_fixed[1]];        // mean of truncation
+  real<lower = 0> trunc_sd[truncation && !trunc_fixed[1]]; // sd of truncation
   real<lower = 0> rep_phi[model_type];     // overdispersion of the reporting process
 }
 
@@ -67,23 +94,21 @@ transformed parameters {
   // Estimate latent infections
   if (estimate_r) {
     // via Rt
-    real set_gt_mean = (gt_mean_sd > 0 ? gt_mean[1] : gt_mean_mean);
-    real set_gt_sd = (gt_sd_sd > 0 ? gt_sd[1] : gt_sd_mean);
+    vector[max_gt[1]] gt_pmf;
+    gt_pmf = combine_pmfs(gt_fixed_pmf, gt_mean, gt_sd, max_gt, max_gt[1], 1);
     R = update_Rt(ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary);
-    infections = generate_infections(R, seeding_time, set_gt_mean, set_gt_sd, max_gt,
-                                     initial_infections, initial_growth,
-                                     pop, future_time);
+    infections = generate_infections(R, seeding_time, gt_pmf, initial_infections, initial_growth, pop, future_time);
   } else {
     // via deconvolution
     infections = deconvolve_infections(shifted_cases, noise, fixed, backcalc_prior);
   }
   // convolve from latent infections to mean of observations
   {
-    real set_delay_mean[delays] = delay_mean_mean;
-    real set_delay_sd[delays] = delay_sd_mean;
-    set_delay_mean[uncertain_mean_delay_indices] = delay_mean;
-    set_delay_sd[uncertain_sd_delay_indices] = delay_sd;
-    reports = convolve_to_report(infections, set_delay_mean, set_delay_sd, max_delay, seeding_time);
+    vector[max_total_delay] delay_pmf;
+    delay_pmf = combine_pmfs(
+      fixed_delays_pmf, delay_mean, delay_sd, max_delay, max_total_delay, 0
+    );
+    reports = convolve_to_report(infections, delay_pmf, seeding_time);
   }
  // weekly reporting effect
  if (week_effect > 1) {
@@ -95,11 +120,11 @@ transformed parameters {
  }
  // truncate near time cases to observed reports
  if (truncation) {
-   real set_truncation_mean = (trunc_mean_sd[1] > 0 ? truncation_mean[1] : trunc_mean_mean[1]);
-   real set_truncation_sd = (trunc_sd_sd[1] > 0 ? truncation_sd[1] : trunc_sd_mean[1]);
-   obs_reports = truncate(
-    reports[1:ot], truncation_mean[1], truncation_sd[1], max_truncation[1], 0
-  );
+   vector[max_truncation[1]] trunc_cmf;
+   trunc_cmf = cumulative_sum(combine_pmfs(
+     trunc_fixed_pmf, trunc_mean, trunc_sd, max_truncation, max_truncation[1], 0
+   ));
+   obs_reports = truncate(reports[1:ot], trunc_cmf, 0);
  } else {
    obs_reports = reports[1:ot];
  }
@@ -156,18 +181,24 @@ generated quantities {
     // estimate growth from estimated Rt
     real set_gt_mean = (gt_mean_sd > 0 ? gt_mean[1] : gt_mean_mean);
     real set_gt_sd = (gt_sd_sd > 0 ? gt_sd[1] : gt_sd_mean);
+    vector[max_gt[1]] gt_pmf = combine_pmfs(gt_fixed_pmf, gt_mean, gt_sd, max_gt, max_gt[1], 1);
     r = R_to_growth(R, set_gt_mean, set_gt_sd);
-  }else{
+  } else {
     // sample generation time
-    real gt_mean_sample = (gt_mean_sd > 0 ? normal_rng(gt_mean_mean, gt_mean_sd) : gt_mean_mean);
-    real gt_sd_sample = (gt_sd_sd > 0 ? normal_rng(gt_sd_mean, gt_sd_sd) : gt_sd_mean);
+    real gt_mean_sample[1];
+    real gt_sd_sample[1];
+    vector[max_gt[1]] gt_pmf;
+
+    gt_mean_sample[1] = (gt_mean_sd > 0 ? normal_rng(gt_mean_mean, gt_mean_sd) : gt_mean_mean);
+    gt_sd_sample[1] = (gt_sd_sd > 0 ? normal_rng(gt_sd_mean, gt_sd_sd) : gt_sd_mean);
+    gt_pmf = combine_pmfs(gt_fixed_pmf, gt_mean_sample, gt_sd_sample, max_gt, max_gt[1], 1);
+
     // calculate Rt using infections and generation time
     gen_R = calculate_Rt(
-      infections, seeding_time, gt_mean_sample, gt_sd_sample, max_gt,
-      rt_half_window
+      infections, seeding_time, gt_pmf, rt_half_window
     );
     // estimate growth from calculated Rt
-    r = R_to_growth(gen_R, gt_mean_sample, gt_sd_sample);
+    r = R_to_growth(gen_R, gt_mean_sample[1], gt_sd_sample[1]);
   }
   // simulate reported cases
   imputed_reports = report_rng(reports, rep_phi, model_type);

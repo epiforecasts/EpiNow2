@@ -1,7 +1,6 @@
 // Calculate secondary reports condition only on primary reports
 vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
-                           real[] delay_mean, real[] delay_sd,
-                           int[] max_delay, int cumulative, int historic,
+                           vector delay_pmf, int cumulative, int historic,
                            int primary_hist_additive, int current,
                            int primary_current_additive, int predict) {
   int t = num_elements(reports);
@@ -17,7 +16,7 @@ vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
   }
   // convolve from reports to contributions from these reports
   conv_reports = conv_reports +
-    convolve_to_report(scaled_reports, delay_mean, delay_sd, max_delay, 0);
+    convolve_to_report(scaled_reports, delay_pmf, 0);
   // if predicting and using a cumulative target
   // combine reports with previous secondary data
   for (i in 1:t) {

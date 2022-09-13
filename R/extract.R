@@ -130,13 +130,13 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
     out$day_of_week <- out$day_of_week[, value := value * data$week_effect]
     out$day_of_week <- out$day_of_week[, strat := date][, c("time", "date") := NULL]
   }
-  if (data$uncertain_mean_delays > 0) {
-    out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$uncertain_mean_delays)
+  if (data$n_uncertain_mean_delays > 0) {
+    out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$n_uncertain_mean_delays)
     out$delay_mean <-
       out$delay_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
   }
-  if (data$uncertain_sd_delays > 0) {
-    out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$uncertain_sd_delays)
+  if (data$n_uncertain_sd_delays > 0) {
+    out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$n_uncertain_sd_delays)
     out$delay_sd <-
       out$delay_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
   }

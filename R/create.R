@@ -412,7 +412,8 @@ create_stan_data <- function(reported_cases, generation_time,
     gt_mean_sd = generation_time$mean_sd,
     gt_sd_mean = generation_time$sd,
     gt_sd_sd = generation_time$sd_sd,
-    max_gt = generation_time$max,
+    max_gt = array(generation_time$max),
+    gt_fixed = generation_time$fixed,
     burn_in = 0
   )
   # add delay data
@@ -480,17 +481,17 @@ create_stan_data <- function(reported_cases, generation_time,
 create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- list()
-    if (data$uncertain_mean_delays > 0) {
+    if (data$n_uncertain_mean_delays > 0) {
       out$delay_mean <- array(purrr::map2_dbl(
-        data$delay_mean_mean[data$uncertain_mean_delay_indices],
-        data$delay_mean_sd[data$uncertain_mean_delay_indices] * 0.1,
+        data$delay_mean_mean[data$uncertain_mean_delays],
+        data$delay_mean_sd[data$uncertain_mean_delays] * 0.1,
         ~ rnorm(1, mean = .x, sd = .y)
       ))
     }
-    if (data$uncertain_sd_delays > 0) {
+    if (data$n_uncertain_sd_delays > 0) {
       out$delay_sd <- array(purrr::map2_dbl(
-        data$delay_sd_mean[data$uncertain_sd_delay_indices],
-        data$delay_sd_sd[data$uncertain_sd_delay_indices] * 0.1,
+        data$delay_sd_mean[data$uncertain_sd_delays],
+        data$delay_sd_sd[data$uncertain_sd_delays] * 0.1,
         ~ rnorm(1, mean = .x, sd = .y)
       ))
     }
@@ -539,13 +540,13 @@ create_initial_conditions <- function(data) {
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
         sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
       ))
-      if (data$gt_mean_sd > 0) {
+      if (!data$gt_fixed) {
         out$gt_mean <- array(truncnorm::rtruncnorm(1,
                                                    a = 0, mean = data$gt_mean_mean,
                                                    sd = data$gt_mean_sd * 0.1
                                                    ))
       }
-      if (data$gt_sd_sd > 0) {
+      if (!data$fixed) {
         out$gt_sd <- array(truncnorm::rtruncnorm(1,
                                                  a = 0, mean = data$gt_sd_mean,
                                                  sd = data$gt_sd_sd * 0.1

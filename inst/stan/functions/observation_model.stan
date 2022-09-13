@@ -19,31 +19,18 @@ vector scale_obs(vector reports, real frac_obs) {
   scaled_reports = reports * frac_obs;
   return(scaled_reports);
 }
-// Calculate a truncation CMF
-vector truncation_cmf(real trunc_mean, real trunc_sd, int trunc_max) {
-    int  trunc_indexes[trunc_max];
-    vector[trunc_max] cmf;
-    cmf = discretised_pmf(trunc_mean, trunc_sd, trunc_max, 0);
-    cmf[1] = cmf[1] + 1e-8;
-    cmf = cumulative_sum(cmf);
-    cmf = reverse_mf(cmf);
-    return(cmf);
-}
 // Truncate observed data by some truncation distribution
-vector truncate(vector reports, real truncation_mean, real truncation_sd,
-                int truncation_max, int reconstruct) {
+vector truncate(vector reports, vector trunc_cmf, int reconstruct) {
   int t = num_elements(reports);
   vector[t] trunc_reports = reports;
   // Calculate cmf of truncation delay
-  int trunc_max = truncation_max > t ? t : truncation_max;
-  vector[trunc_max] cmf;
+  int trunc_max = num_elements(trunc_cmf);
   int first_t = t - trunc_max + 1;
-  cmf = truncation_cmf(truncation_mean, truncation_sd, trunc_max);
   // Apply cdf of truncation delay to truncation max last entries in reports
   if (reconstruct) {
-    trunc_reports[first_t:t] = trunc_reports[first_t:t] ./ cmf;
+    trunc_reports[first_t:t] = trunc_reports[first_t:t] ./ reverse_mf(trunc_cmf);
   }else{
-    trunc_reports[first_t:t] = trunc_reports[first_t:t] .* cmf;
+    trunc_reports[first_t:t] = trunc_reports[first_t:t] .* reverse_mf(trunc_cmf);
   }
   return(trunc_reports);
 }

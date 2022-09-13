@@ -30,12 +30,11 @@ generation_time_opts <- function(mean = 1, mean_sd = 0, sd = 0, sd_sd = 0,
                                  max = 15, fixed = FALSE, disease, source) {
   if (missing(disease) & missing(source)) {
     gt <- list(
-      gt_mean = mean,
-      gt_mean_sd = mean_sd,
-      gt_sd = sd,
-      gt_sd_sd = sd_sd,
-      gt_max = max,
-      gt_fixed = fixed
+      mean = mean,
+      mean_sd = mean_sd,
+      sd = sd,
+      sd_sd = sd_sd,
+      max = max
     )
   }else{
     gt <- get_generation_time(
@@ -44,18 +43,23 @@ generation_time_opts <- function(mean = 1, mean_sd = 0, sd = 0, sd_sd = 0,
     gt$gt_fixed <- fixed
   }
 
+  if (fixed) {
+    gt$mean_sd <- 0
+    gt$sd_sd <- 0
+  }
+  gt$fixed <- gt$mean_sd == 0 && gt$mean_sd == 0
 
   ## check if generation time is fixed
-  if (gt$gt_sd == 0 && gt$gt_sd_sd == 0) {
-    if (gt$gt_mean %% 1 != 0) {
+  if (gt$sd == 0 && gt$sd_sd == 0) {
+    if (gt$mean %% 1 != 0) {
       stop(
         "When the generation time is set to a constant it must be an integer"
       )
     }
-    if (gt$gt_max != gt$gt_mean) {
-      gt$gt_max <- gt$gt_mean
+    if (gt$max != gt$mean) {
+      gt$max <- gt$mean
     }
-    if (any(gt$gt_mean_sd > 0, gt$gt_sd_sd > 0)) {
+    if (gt$mean_sd > 0) {
       stop("Error in generation time definition: if sd_mean is 0 and ",
            "sd_sd is 0 then mean_sd must be 0, too.")
     }
@@ -118,10 +122,18 @@ delay_opts <- function(..., fixed = FALSE) {
     for (param in c("mean_sd", "sd", "sd_sd")) {
       if (!(param %in% names(delays[[i]]))) delays[[i]][[param]] <- 0
     }
-    if (!("max" %in% names(delays[[i]])) &&
-          delays[[i]]$mean_sd == 0 &&
-          delays[[i]]$sd == 0 &&
-          delays[[i]]$sd_sd == 0) {
+    if (delays[[i]]$sd == 0 && delays[[i]]$sd_sd == 0) {
+      if (delays[[i]]$mean_sd > 0) {
+        stop("Error in delay distribution definition: if sd_mean is 0 and ",
+             "sd_sd is 0 then mean_sd must be 0, too.")
+      }
+      if (delays[[i]]$mean %% 1 != 0) {
+        stop("Error: if using a fixed delay it must be integer")
+      }
+    }
+    if (delays[[i]]$mean_sd == 0 &&
+        delays[[i]]$sd == 0 &&
+        delays[[i]]$sd_sd == 0) {
       delays[[i]]$max <- delays[[i]]$mean
     }
   }
@@ -148,11 +160,15 @@ delay_opts <- function(..., fixed = FALSE) {
   data$delay_sd_sd <- allocate_delays(delays$sd_sd, data$delays)
   data$max_delay <- allocate_delays(delays$max, data$delays)
 
-  data$uncertain_mean_delay_indices <- array(which(data$delay_mean_sd > 0))
-  data$uncertain_sd_delay_indices <- array(which(data$delay_sd_sd > 0))
-  data$uncertain_mean_delays <- length(data$uncertain_mean_delay_indices)
-  data$uncertain_sd_delays <- length(data$uncertain_sd_delay_indices)
+  data$uncertain_mean_delays <- array(which(data$delay_mean_sd > 0))
+  data$uncertain_sd_delays <- array(which(data$delay_sd_sd > 0))
+  data$fixed_delays <- array(
+    which(data$delay_mean_sd == 0  & data$delay_sd_sd == 0)
+  )
 
+  data$n_uncertain_mean_delays <- length(data$uncertain_mean_delays)
+  data$n_uncertain_sd_delays <- length(data$uncertain_sd_delays)
+  data$n_fixed_delays <- length(data$fixed_delays)
   return(data)
 }
 
@@ -184,15 +200,30 @@ delay_opts <- function(..., fixed = FALSE) {
 #'
 #' # truncation dist
 #' trunc_opts(mean = 3, sd = 2)
-trunc_opts <- function(mean = 0 , sd = 0, mean_sd = 0, sd_sd = 0, max = 0) {
-  present <- !(mean == 0 && sd == 0 && max == 0)
+trunc_opts <- function(mean = 0, sd = 0, mean_sd = 0, sd_sd = 0, max = 0,
+                       fixed = FALSE) {
+  present <- !(max == 0)
   data <- list()
+  if (fixed) {
+    mean_sd <- 0
+    sd_sd <- 0
+  }
   data$truncation <- as.numeric(present)
-  data$trunc_mean_mean <- ifelse(present, mean, numeric())
-  data$trunc_mean_sd <- ifelse(present, mean_sd, numeric())
-  data$trunc_sd_mean <- ifelse(present, sd, numeric())
-  data$trunc_sd_sd <- ifelse(present, sd_sd, numeric())
-  data$max_truncation <- ifelse(present, max, numeric())
+  if (present) {
+    data$trunc_mean_mean <- mean
+    data$trunc_mean_sd <- mean_sd
+    data$trunc_sd_mean <- sd
+    data$trunc_sd_sd <- sd_sd
+    data$max_truncation <- max
+    data$trunc_fixed <- as.integer(mean_sd == 0 && sd_sd == 0)
+  } else {
+    data$trunc_mean_mean <- numeric()
+    data$trunc_mean_sd <- numeric()
+    data$trunc_sd_mean <- numeric()
+    data$trunc_sd_sd <- numeric()
+    data$max_truncation <- integer()
+    data$trunc_fixed <- integer()
+  }
   return(data)
 }
 
