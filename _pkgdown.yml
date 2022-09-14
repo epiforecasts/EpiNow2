@@ -53,7 +53,6 @@ reference:
       - simulate_infections
       - estimate_secondary
       - forecast_secondary
-      - simulate_secondary
       - estimate_delay
       - estimate_truncation
   - title: Internal epinow Functions
