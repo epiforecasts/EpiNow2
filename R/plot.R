@@ -171,12 +171,12 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
         ggplot2::geom_line(
           data = reported,
           ggplot2::aes(y = confirm, fill = NULL),
-          size = 1.1, alpha = 0.5, col = "black", na.rm = TRUE
+          linewidth = 1.1, alpha = 0.5, col = "black", na.rm = TRUE
         ) +
         ggplot2::geom_point(
           data = reported,
           ggplot2::aes(y = confirm, fill = NULL),
-          size = 1.1, alpha = 1, col = "black",
+          linewidth = 1.1, alpha = 1, col = "black",
           show.legend = FALSE, na.rm = TRUE
         )
     }
