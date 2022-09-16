@@ -540,13 +540,13 @@ create_initial_conditions <- function(data) {
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
         sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
       ))
-      if (!data$gt_fixed) {
+      if (data$gt_mean_sd > 0) {
         out$gt_mean <- array(truncnorm::rtruncnorm(1,
                                                    a = 0, mean = data$gt_mean_mean,
                                                    sd = data$gt_mean_sd * 0.1
                                                    ))
       }
-      if (!data$fixed) {
+      if (data$gt_sd_sd > 0) {
         out$gt_sd <- array(truncnorm::rtruncnorm(1,
                                                  a = 0, mean = data$gt_sd_mean,
                                                  sd = data$gt_sd_sd * 0.1

@@ -67,8 +67,8 @@ parameters{
   vector[estimate_r] log_R;                // baseline reproduction number estimate (log)
   real initial_infections[estimate_r] ;    // seed infections
   real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
-  real<lower = 0, upper = max_gt[1]> gt_mean[estimate_r && !gt_fixed]; // mean of generation time (if uncertain)
-  real<lower = 0> gt_sd[estimate_r && !gt_fixed];       // sd of generation time (if uncertain)
+  real<lower = 0, upper = max_gt[1]> gt_mean[estimate_r && gt_mean_sd > 0]; // mean of generation time (if uncertain)
+  real<lower = 0> gt_sd[estimate_r && gt_sd_sd > 0];       // sd of generation time (if uncertain)
   real<lower = 0> bp_sd[bp_n > 0 ? 1 : 0]; // standard deviation of breakpoint effect
   real bp_effects[bp_n];                   // Rt breakpoint effects
   // observation model

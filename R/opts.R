@@ -120,7 +120,13 @@ delay_opts <- function(..., fixed = FALSE) {
   data$delays <- length(delays)
   for (i in seq_along(delays)) {
     for (param in c("mean_sd", "sd", "sd_sd")) {
-      if (!(param %in% names(delays[[i]]))) delays[[i]][[param]] <- 0
+      if (!(param %in% names(delays[[i]]))) {
+        delays[[i]][[param]] <- 0
+      }
+    }
+    if (fixed) {
+      delays[[i]][["mean_sd"]] <- 0
+      delays[[i]][["sd_sd"]] <- 0
     }
     if (delays[[i]]$sd == 0 && delays[[i]]$sd_sd == 0) {
       if (delays[[i]]$mean_sd > 0) {
