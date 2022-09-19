@@ -30,13 +30,12 @@ transformed data{
   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
 
-  int max_fixed_delay =
-    sum(max_delay[fixed_delays]) - num_elements(fixed_delays) + 1;
-  int max_total_delay =
-    sum(max_delay) - num_elements(max_delay) + 1;
+  int max_fixed_delay = (n_fixed_delays == 0 ? 0 :
+    sum(max_delay[fixed_delays]) - num_elements(fixed_delays) + 1);
+  int max_total_delay = sum(max_delay) - num_elements(max_delay) + 1;
   vector[gt_fixed ? max_gt[1] : 0] gt_fixed_pmf;
   vector[truncation ? max_truncation[1] : 0] trunc_fixed_pmf;
-  vector[n_fixed_delays ? max_fixed_delay : 0] fixed_delays_pmf;
+  vector[max_fixed_delay] fixed_delays_pmf;
 
   if (gt_fixed) {
     gt_fixed_pmf = discretised_pmf(gt_mean_mean, gt_mean_sd, max_gt[1], 1);
