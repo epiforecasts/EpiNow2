@@ -34,10 +34,10 @@ generated quantities {
   real r[n, t - seeding_time];
   for (i in 1:n) {
     // generate infections from Rt trace
-    vector[max_gt] gt_pmf;
+    vector[max_gt[1]] gt_pmf;
     vector[max_total_delay] delay_pmf;
 
-    gt_pmf = discretised_pmf(gt_mean[i, 1], gt_sd[i, 1], max_gt, 1);
+    gt_pmf = discretised_pmf(gt_mean[i, 1], gt_sd[i, 1], max_gt[1], 1);
     delay_pmf = combine_pmfs(
       to_vector([ 1 ]),
       delay_mean[i],
