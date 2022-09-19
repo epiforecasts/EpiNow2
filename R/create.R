@@ -413,7 +413,7 @@ create_stan_data <- function(reported_cases, generation_time,
     gt_sd_mean = generation_time$sd,
     gt_sd_sd = generation_time$sd_sd,
     max_gt = array(generation_time$max),
-    gt_fixed = generation_time$fixed,
+    gt_fixed = as.integer(generation_time$fixed),
     burn_in = 0
   )
   # add delay data
