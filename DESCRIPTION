@@ -2,7 +2,7 @@ Type: Package
 Package: EpiNow2
 Title: Estimate Real-Time Case Counts and Time-Varying
     Epidemiological Parameters
-Version: 1.3.3.2000
+Version: 1.3.3
 Authors@R: 
     c(person(given = "Sam",
              family = "Abbott",
@@ -82,9 +82,8 @@ URL: https://epiforecasts.io/EpiNow2/,
     https://github.com/epiforecasts/EpiNow2
 BugReports: https://github.com/epiforecasts/EpiNow2/issues
 Depends: 
-    R (>= 3.4.0)
+    R (>= 3.5.0)
 Imports:
-    cowplot,
     data.table,
     futile.logger (>= 1.4),
     future,
@@ -108,18 +107,14 @@ Imports:
     truncnorm,
     utils
 Suggests:
-    countrycode,
     covr,
     dplyr,
-    EpiSoon,
-    forecastHybrid,
     here,
     kableExtra,
     knitr,
     magrittr,
     precommit,
     rmarkdown,
-    rnaturalearth,
     spelling,
     styler,
     testthat,
@@ -131,11 +126,10 @@ LinkingTo:
     RcppParallel (>= 5.0.1),
     rstan (>= 2.21.1),
     StanHeaders (>= 2.21.0-5)
-Additional_repositories: https://epiforecasts.r-universe.dev
 Biarch: true
 Encoding: UTF-8
 Language: en-GB
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.1
 SystemRequirements: GNU make

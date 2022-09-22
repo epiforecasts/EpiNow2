@@ -6,8 +6,6 @@
 \usage{
 estimates_by_report_date(
   estimates,
-  forecast,
-  delays,
   CrIs = c(0.2, 0.5, 0.9),
   target_folder = NULL,
   samples = TRUE
@@ -15,11 +13,6 @@ estimates_by_report_date(
 }
 \arguments{
 \item{estimates}{List of data frames as output by \code{estimate_infections}}
-
-\item{forecast}{A list of data frames as output by \code{forecast_infections}}
-
-\item{delays}{A call to \code{delay_opts()} defining delay distributions and options. See the documentation of \code{delay_opts()}
-and the examples below for details.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
@@ -32,8 +25,6 @@ A list of samples and summarised estimates of estimated cases by date of report
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
-Either extracts or converts reported cases from an input data table. For output from
-\code{estimate_infections} this is a simple filtering step but for output from \code{forecast_infection}
-this is currently an approximate convolution. This step is likely to be updated/deprecated
-in new releases as \code{forecast_infections} evolves to be based on \code{stan} functionality.
+Either extracts or converts reported cases from an input data table. For
+output from \code{estimate_infections} this is a simple filtering step.
 }

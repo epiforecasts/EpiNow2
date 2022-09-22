@@ -1,7 +1,4 @@
 skip_on_cran()
-files <- c("pmfs.stan", "infections.stan")
-suppressMessages(expose_stan_fns(files, target_dir = system.file("stan/functions", package = "EpiNow2")))
-
 
 # test update_infectiousness
 test_that("update_infectiousness works as expected with default settings", {
