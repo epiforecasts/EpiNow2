@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 
 # EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters 
 
-[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) [![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions) [![Codecov test coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master) [![metacran downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#maturing) [![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions) [![Codecov test coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://app.codecov.io/gh/epiforecasts/EpiNow2?branch=master) [![metacran downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
 
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epiforecasts/EpiNow2/blob/master/LICENSE.md/)   [![GitHub contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](https://github.com/epiforecasts/EpiNow2/graphs/contributors)  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](https://makeapullrequest.com/) [![GitHub commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.3.2.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/master/) [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211) 
 
@@ -35,12 +35,12 @@ The default model uses a non-stationary Gaussian process to estimate the time-va
 
 The documentation for [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) provides examples of the different options available. 
 
-Forecasting is also supported for the time-varying reproduction number, infections and reported cases. The time-varying reproduction number can be forecast forwards in time using an integration with the [`{EpiSoon}`](https://epiforecasts.io/EpiSoon/) package, and converted to a case forecast using the renewal equation. Alternatively, the time-varying reproduction number and cases can be forecast using a Gaussian process.
+Forecasting is also supported for the time-varying reproduction number, infections and reported cases using the same Gaussian process approach as used for estimation.
 
 A simple example of using the package to estimate a national Rt for Covid-19 can be found [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867).
 
 
-`EpiNow2` also supports adjustment for truncated data via `estimate_truncation()` and for estimating dependent observations (i.e deaths based on hospital admissions) using `estimate_secondary()`.
+`EpiNow2` also supports adjustment for truncated data via `estimate_truncation()` (though users may be interested in more flexibility and if so should check out the [`epinowcast`](https://epiforecasts.io/epinowcast/) package), and for estimating dependent observations (i.e deaths based on hospital admissions) using `estimate_secondary()`.
 
 ## Installation
 
@@ -106,7 +106,7 @@ incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lau
 
 ### [epinow()](https://epiforecasts.io/EpiNow2/reference/epinow.html) 
 
-This function represents the core functionality of the package and includes results reporting, plotting and optional saving. It requires a data frame of cases by date of report and the distributions defined above. An additional forecasting module is supported via `EpiSoon` and companion packages (see documentation for an example).
+This function represents the core functionality of the package and includes results reporting, plotting and optional saving. It requires a data frame of cases by date of report and the distributions defined above. 
 
 Load example case data from `{EpiNow2}`. 
 
