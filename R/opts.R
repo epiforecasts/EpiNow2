@@ -216,12 +216,14 @@ trunc_opts <- function(mean = 0, sd = 0, mean_sd = 0, sd_sd = 0, max = 0,
   }
   data$truncation <- as.numeric(present)
   if (present) {
-    data$trunc_mean_mean <- mean
-    data$trunc_mean_sd <- mean_sd
-    data$trunc_sd_mean <- sd
-    data$trunc_sd_sd <- sd_sd
-    data$max_truncation <- max
-    data$trunc_fixed <- as.integer(mean_sd == 0 && sd_sd == 0)
+    data$trunc_mean_mean <- allocate_delays(mean, data$truncation)
+    data$trunc_mean_sd <- allocate_delays(mean_sd, data$truncation)
+    data$trunc_sd_mean <- allocate_delays(sd, data$truncation)
+    data$trunc_sd_sd <- allocate_delays(sd_sd, data$truncation)
+    data$max_truncation <- allocate_delays(max, data$truncation)
+    data$trunc_fixed <- allocate_delays(
+      as.integer(mean_sd == 0 && sd_sd == 0), data$truncation
+    )
   } else {
     data$trunc_mean_mean <- numeric()
     data$trunc_mean_sd <- numeric()

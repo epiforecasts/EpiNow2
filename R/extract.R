@@ -141,12 +141,16 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
       out$delay_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
   }
   if (data$truncation > 0) {
-    out$truncation_mean <- extract_parameter("truncation_mean", samples, 1)
-    out$truncation_mean <-
-      out$truncation_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
-    out$truncation_sd <- extract_parameter("truncation_sd", samples, 1)
-    out$truncation_sd <-
-      out$truncation_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
+    if (data$trunc_mean_sd > 0) {
+      out$truncation_mean <- extract_parameter("trunc_mean", samples, 1)
+      out$truncation_mean <-
+        out$truncation_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
+    }
+    if (data$trunc_sd_sd > 0) {
+      out$truncation_sd <- extract_parameter("trunc_sd", samples, 1)
+      out$truncation_sd <-
+        out$truncation_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
+    }
   }
   if (data$estimate_r && data$gt_mean_sd > 0) {
     out$gt_mean <- extract_static_parameter("gt_mean", samples)
