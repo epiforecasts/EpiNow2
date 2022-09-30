@@ -38,7 +38,7 @@ transformed data{
   vector[max_fixed_delay] fixed_delays_pmf;
 
   if (gt_fixed) {
-    gt_fixed_pmf = discretised_pmf(gt_mean_mean, gt_mean_sd, max_gt[1], 1);
+    gt_fixed_pmf = discretised_pmf(gt_mean_mean, gt_sd_mean, max_gt[1], 1);
   }
   if (truncation && trunc_fixed[1]) {
     trunc_fixed_pmf = discretised_pmf(
