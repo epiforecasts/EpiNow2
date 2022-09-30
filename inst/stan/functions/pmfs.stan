@@ -9,14 +9,16 @@ vector discretised_pmf(real mu, real sigma, int n, int dist) {
   if (sigma > 0) {
     vector[n] upper_cdf;
     if (dist == 0) {
+      real lsigma2 = log(sigma^2 / mu^2 + 1);
+      real lmu = log(mu) - lsigma2 / 2;
       for (i in 1:n) {
-        upper_cdf[i] = lognormal_cdf(i , mu, sigma);
+        upper_cdf[i] = lognormal_cdf(i, lmu, sqrt(lsigma2));
       }
     } else if (dist == 1) {
-      real emu = exp(2 * (log(mu) - log(sigma)));
-      real esigma = exp(log(mu) - 2 * log(sigma));
+      real alpha = mu^2 / sigma^2;
+      real beta = mu / sigma^2;
       for (i in 1:n) {
-        upper_cdf[i] = gamma_cdf(i, emu, esigma);
+        upper_cdf[i] = gamma_cdf(i, alpha, beta);
       }
     } else {
       reject("Unknown distribution function provided.");
