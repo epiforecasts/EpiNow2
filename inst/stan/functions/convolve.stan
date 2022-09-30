@@ -21,7 +21,7 @@ vector convolve_to_report(vector infections,
   vector[t] unobs_reports = infections;
   int delays = num_elements(delay_pmf);
   if (delays) {
-    unobs_reports = convolve(unobs_reports, reverse_mf(delay_pmf), t);
+    unobs_reports = convolve(unobs_reports, delay_pmf, t);
     reports = unobs_reports[(seeding_time + 1):t];
   } else {
     reports = infections[(seeding_time + 1):t];
