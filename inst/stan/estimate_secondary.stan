@@ -18,14 +18,14 @@ data {
 transformed data {
   int max_fixed_delay =
     sum(max_delay[fixed_delays]) - num_elements(fixed_delays) + 1;
-  int max_total_delay =
-    sum(max_delay) - num_elements(max_delay) + 1;
-  vector[truncation ? max_truncation[1] : 0] trunc_fixed_pmf;
-  vector[n_fixed_delays ? max_fixed_delay : 0] fixed_delays_pmf;
+  int max_total_delay = (delays == 0 ? 0 :
+    sum(max_delay) - num_elements(max_delay) + 1);
+  vector[truncation && trunc_fixed[1] ? max_truncation[1] : 0] trunc_fixed_pmf;
+  vector[max_fixed_delay] fixed_delays_pmf;
 
   if (truncation && trunc_fixed[1]) {
     trunc_fixed_pmf = discretised_pmf(
-      trunc_mean_mean[1], trunc_mean_sd[1], max_truncation[1], 0
+      trunc_mean_mean[1], trunc_sd_mean[1], max_truncation[1], 0
     );
   }
   if (n_fixed_delays) {
@@ -34,7 +34,7 @@ transformed data {
       delay_mean_mean[fixed_delays],
       delay_sd_mean[fixed_delays],
       max_delay[fixed_delays],
-      max_total_delay,
+      max_fixed_delay,
       0
     );
   }

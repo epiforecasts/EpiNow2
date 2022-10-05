@@ -32,7 +32,8 @@ transformed data{
 
   int max_fixed_delay = (n_fixed_delays == 0 ? 0 :
     sum(max_delay[fixed_delays]) - num_elements(fixed_delays) + 1);
-  int max_total_delay = sum(max_delay) - num_elements(max_delay) + 1;
+  int max_total_delay = (delays == 0 ? 0 :
+    sum(max_delay) - num_elements(max_delay) + 1);
   vector[gt_fixed ? max_gt[1] : 0] gt_fixed_pmf;
   vector[truncation && trunc_fixed[1] ? max_truncation[1] : 0] trunc_fixed_pmf;
   vector[max_fixed_delay] fixed_delays_pmf;
