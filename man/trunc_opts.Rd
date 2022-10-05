@@ -20,6 +20,10 @@ normal truncation distribution.}
 deviation of the  log normal truncation distribution.}
 
 \item{max}{Numeric, maximum value to allow. Defaults to 0.}
+
+\item{fixed}{Logical, defaults to \code{FALSE}. Should reporting delays be treated
+as coming from fixed (vs uncertain) distributions. Making this simplification
+drastically reduces compute requirements.}
 }
 \value{
 A list summarising the input truncation distribution.

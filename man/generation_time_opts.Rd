@@ -29,9 +29,15 @@ distribution generation time.}
 \item{sd_sd}{Numeric, defaults to 0. The prior uncertainty for the standard
 deviation of the generation time.}
 
-\item{...}{Delay distributions as a list with the following parameters:
-"mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
-normal (with all parameters except for max defined in logged form).}
+\item{max}{Numeric, maximum value to allow. Defaults to 15.}
+
+\item{fixed}{Logical, defaults to \code{FALSE}. Should reporting delays be treated
+as coming from fixed (vs uncertain) distributions. Making this simplification
+drastically reduces compute requirements.}
+
+\item{disease}{A character string indicating the disease of interest.}
+
+\item{source}{A character string indicating the source of interest.}
 }
 \value{
 A list summarising the input delay distributions.

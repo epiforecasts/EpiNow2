@@ -11,9 +11,11 @@
 #' of the generation time.
 #' @param sd_sd Numeric, defaults to 0. The prior uncertainty for the standard
 #' deviation of the generation time.
-#' @param ... Delay distributions as a list with the following parameters:
-#' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
-#' normal (with all parameters except for max defined in logged form).
+#' @param max Numeric, maximum value to allow. Defaults to 15.
+#' @param fixed Logical, defaults to `FALSE`. Should reporting delays be treated
+#' as coming from fixed (vs uncertain) distributions. Making this simplification
+#' drastically reduces compute requirements.
+#' @inheritParams get_generation_time
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input delay distributions.
 #' @export
@@ -197,6 +199,9 @@ delay_opts <- function(..., fixed = FALSE) {
 #' deviation of the  log normal truncation distribution.
 #'
 #' @param max Numeric, maximum value to allow. Defaults to 0.
+#' @param fixed Logical, defaults to `FALSE`. Should reporting delays be treated
+#' as coming from fixed (vs uncertain) distributions. Making this simplification
+#' drastically reduces compute requirements.
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input truncation distribution.
 #' @export
