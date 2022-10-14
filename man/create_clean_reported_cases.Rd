@@ -7,8 +7,8 @@
 create_clean_reported_cases(
   reported_cases,
   horizon,
-  filter = TRUE,
-  zero_threshold = 50
+  filter_leading_zeros = TRUE,
+  zero_threshold = Inf
 )
 }
 \arguments{
@@ -17,13 +17,14 @@ in date format.}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
 
-\item{filter}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Logical, defaults to TRUE. Should zeros at the start of the
-time series be filtered out.}
+\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
+to Inf. Indicates if detected zero cases are meaningful by using a threshold
+number of cases based on the 7 day average. If the average is above this
+threshold then the zero is replaced with the backwards looking rolling
+average. If set to infinity then no changes are made.}
 
-\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults to 50. Indicates if detected zero
-cases are meaningful by using a threshold of 50 cases on average over the last 7 days. If the average is
-above this threshold then the zero is replaced with the backwards looking rolling average. If set to infinity
-then no changes are made.}
+\item{filter}{Logical, defaults to TRUE. Should zeros at the start of the
+time series be filtered out.}
 }
 \value{
 A cleaned data frame of reported cases
