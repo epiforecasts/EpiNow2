@@ -1,7 +1,6 @@
 # EpiNow2 1.3.3
 
-This maintenance release adds a range of new minor features, squashes bugs, 
-and removes some obsolete features.
+This maintenance release adds a range of new minor features, squashes bugs, slightly expands unit testing, and removes some obsolete features.
 
 Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
 
@@ -35,6 +34,7 @@ Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
 * Better test skipping thanks to @Bisaloo.
 * Switched from `cowplot::theme_cowplot()` to `ggplot2::theme_bw()`. This allows the removal of `cowplot` as a dependency as well making plots visuable for users saving as pngs and using a dark theme. By @seabbs.
 * By default `epinow` and downstream functions remove leading zeros. Now this is optional with the new `filter_leading_zeros` option. Thanks to @LloydChapman in #285.
+* Basic tests have been added to cover `estimate_secondary()`, `forecast_secondary()`, and `estimate_truncation()`. By @seabbs in 
 
 ## Other changes
 

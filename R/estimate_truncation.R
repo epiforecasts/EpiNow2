@@ -184,7 +184,13 @@ estimate_truncation <- function(obs, max_truncation = 10,
     estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
     estimates <- estimates[, lapply(.SD, as.integer)]
     estimates <- estimates[, index := .N - 0:(.N - 1)]
-    estimates[, c("n_eff", "Rhat") := NULL]
+    if (!is.null(estimates$n_eff)) {
+      estimates[, c("n_eff") := NULL]
+    }
+    if (!is.null(estimates$Rhat)) {
+      estimates[, c("Rhat") := NULL]
+    }
+    
     target_obs <-
       data.table::merge.data.table(
         target_obs, last_obs,
