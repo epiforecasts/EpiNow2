@@ -3,7 +3,7 @@
 This maintenance release adds a range of new minor features, squashes bugs, 
 and removes some obsolete features.
 
-Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
+Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
 
 ## New features
 
@@ -34,6 +34,7 @@ Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
 * Added a `contributing.md` to guide contributors and added `pre-commit` support to check new contributions styling.  By @seabbs.
 * Better test skipping thanks to @Bisaloo.
 * Switched from `cowplot::theme_cowplot()` to `ggplot2::theme_bw()`. This allows the removal of `cowplot` as a dependency as well making plots visuable for users saving as pngs and using a dark theme. By @seabbs.
+* By default `epinow` and downstream functions remove leading zeros. Now this is optional with the new `filter_leading_zeros` option. Thanks to @LloydChapman in #285.
 
 ## Other changes
 
@@ -57,6 +58,7 @@ estimates and are considered out of scope for `EpiNow2`. If finding useful conta
 * Fixed a bug in `simulate_infections` and `forecast_secondary` which meant that a Poisson observation model used for estimation would lead to a error. By @seabbs.
 * Fixed a bug where `use_rt = FALSE` did not properly cancel user settings. By @sbfnk.
 * Fixed a bug in `estimate_truncation` where phi was not initialised. By @sbfnk.
+* Fixed a bug where `zero_threshold` was being ignored and so no post-processing was happening. To maintain backwards compatibility the default has been changed to `Inf` (i.e. no zero threshold). By @LloydChapman in #285.
 
 # EpiNow2 1.3.2
 
