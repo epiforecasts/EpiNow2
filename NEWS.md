@@ -14,6 +14,7 @@ Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
 * Adds support for fixed generation times (either mean only or fixed gamma distributed). By @sbfnk.
 * Adds support for optionally using an inverse gamma prior for the lengthscale of the gaussian process. This scaled prior has been tested for both short and long simulations where the default prior may make the model unstable. The new prior is more stable for long simulations and adaptively change the distribution based on the simulation length (total number of days) without relying on the user inputs or the fixed defaults. It can be tested by setting ls_sd = 0 in gp_opts(). By @hsbadr.
 * Updated the prior on the magnitude of the gaussian process to be 0.05 vs 0.1 leading to slightly more stable estimates. By @hsbadr.
+* Added an argument (`plot`) to `regional_summary` to allow plotting to be optional. Closes #250. By @seabbs in #317
 
 ## Model changes
 
