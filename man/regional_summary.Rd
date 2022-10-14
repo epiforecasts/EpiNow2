@@ -13,6 +13,7 @@ regional_summary(
   region_scale = "Region",
   all_regions = TRUE,
   return_output = FALSE,
+  plot = TRUE,
   max_plot = 10,
   ...
 )
@@ -40,6 +41,9 @@ regions be returned rather than just regions of interest.}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
 if no directory for saving is specified.}
+
+\item{plot}{Logical, defaults to \code{TRUE}. Should regional summary plots be
+produced.}
 
 \item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
 on the maximum number of reported cases.}

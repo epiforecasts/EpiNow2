@@ -15,3 +15,16 @@ test_that("regional_summary works with default settings", {
   )
   expect_true(all(purrr::map_lgl(out, ~ !is.null(.))))
 })
+
+test_that("regional_summary works when no plots are requested", {
+  out <- regional_summary(
+    regional_output = fit$regional,
+    reported_cases = cases,
+    plot = FALSE
+  )
+  expect_equal(names(out),
+               c("latest_date", "results", "summarised_results",
+                 "summarised_measures", "reported_cases")
+  )
+  expect_true(all(purrr::map_lgl(out, ~ !is.null(.))))
+})
