@@ -131,6 +131,7 @@ LinkingTo:
     rstan (>= 2.21.1),
     StanHeaders (>= 2.21.0-5)
 Biarch: true
+Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-GB
 LazyData: true
