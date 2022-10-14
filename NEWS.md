@@ -3,7 +3,7 @@
 This maintenance release adds a range of new minor features, squashes bugs, 
 and removes some obsolete features.
 
-Thanks to @Bisaloo, @hsbadr, @LloydChapman,  @medewitt, and @sbfnk.
+Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
 
 ## New features
 

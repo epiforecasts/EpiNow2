@@ -3,8 +3,8 @@
 #' Cleans a data frame of reported cases by replacing missing dates with 0 cases and applies an optional
 #' threshold at which point 0 cases are replaced with a moving average of observed cases. See `zero_threshold`
 #' for details.
-#' @param filter Logical, defaults to TRUE. Should zeros at the start of the
-#' time series be filtered out.
+#' @param filter_leading_zeros Logical, defaults to TRUE. Should zeros at the
+#' start of the time series be filtered out.
 #' @param zero_threshold `r lifecycle::badge("experimental")` Numeric defaults
 #' to Inf. Indicates if detected zero cases are meaningful by using a threshold
 #' number of cases based on the 7 day average. If the average is above this

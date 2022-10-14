@@ -58,6 +58,9 @@ observation model. Defaults to \code{obs_opts()}.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
+\item{filter_leading_zeros}{Logical, defaults to TRUE. Should zeros at the
+start of the time series be filtered out.}
+
 \item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
 to Inf. Indicates if detected zero cases are meaningful by using a threshold
 number of cases based on the 7 day average. If the average is above this
