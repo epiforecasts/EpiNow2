@@ -121,6 +121,8 @@ summarise_results <- function(regions,
 #' (in the format "yyyy-mm-dd"). Defaults to latest available estimates.
 #' @param all_regions Logical, defaults to `TRUE`. Should summary plots for all
 #'  regions be returned rather than just regions of interest.
+#' @param plot Logical, defaults to `TRUE`. Should regional summary plots be
+#' produced.
 #' @param ... Additional arguments passed to `report_plots`. 
 #' @return A list of summary measures and plots
 #' @export
@@ -173,6 +175,7 @@ regional_summary <- function(regional_output = NULL,
                              region_scale = "Region",
                              all_regions = TRUE,
                              return_output = FALSE,
+                             plot = TRUE,
                              max_plot = 10,
                              ...) {
   reported_cases <- data.table::setDT(reported_cases)
@@ -273,86 +276,92 @@ regional_summary <- function(regional_output = NULL,
     max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0
   )
 
-  # summarise cases and Rts
-  summary_plot <- plot_summary(summarised_results$data,
-    x_lab = region_scale,
-    log_cases = log_cases,
-    max_cases = max_reported_cases
-  )
-
-  if (!is.null(summary_dir)) {
-    save_ggplot <- function(plot, name, height = 12, width = 12, ...) {
-      suppressWarnings(
-        suppressMessages(
-          ggplot2::ggsave(file.path(summary_dir, name),
-            plot,
-            dpi = 300, width = width,
-            height = height, ...
-          )
-        )
-      )
-    }
-    save_ggplot(summary_plot, "summary_plot.png",
-      width = ifelse(length(regions) > 60,
-        ifelse(length(regions) > 120, 36, 24),
-        12
-      )
-    )
-  }
-  # extract regions with highest number of reported cases in the last week
-  most_reports <- get_regions_with_most_reports(reported_cases,
-    time_window = 7,
-    no_regions = 6
-  )
-
-  high_plots <- report_plots(
-    summarised_estimates = results$estimates$summarised[region %in% most_reports],
-    reported = reported_cases[region %in% most_reports],
-    max_plot = max_plot, ...
-  )
-
-  high_plots$summary <- NULL
-  high_plots <-
-    purrr::map(high_plots,
-               ~ . + ggplot2::facet_wrap(~region, scales = "free_y", ncol = 2))
-
-  if (!is.null(summary_dir)) {
-    save_ggplot(high_plots$R, "high_rt_plot.png")
-    save_ggplot(high_plots$infections, "high_infections_plot.png")
-    save_ggplot(high_plots$reports, "high_reported_cases_plot.png")
-  }
-
-  if (all_regions) {
-    plots_per_row <- ifelse(length(regions) > 60,
-      ifelse(length(regions) > 120, 8, 5), 3
-    )
-
-    plots <- report_plots(
-      summarised_estimates = results$estimates$summarised,
-      reported = reported_cases,
-      max_plot = max_plot, ...
-    )
-
-    plots$summary <- NULL
-    plots <- purrr::map(
-      plots, 
-      ~ . + ggplot2::facet_wrap(~region, scales = "free_y",
-                                ncol = plots_per_row)
+  if (plot) {
+    # summarise cases and Rts
+    summary_plot <- plot_summary(summarised_results$data,
+      x_lab = region_scale,
+      log_cases = log_cases,
+      max_cases = max_reported_cases
     )
 
     if (!is.null(summary_dir)) {
-      save_big_ggplot <- function(plot, name) {
-        save_ggplot(plot, name,
-          height = 3 * round(length(regions) / plots_per_row, 0),
-          width = 24,
-          limitsize = FALSE
+      save_ggplot <- function(plot, name, height = 12, width = 12, ...) {
+        suppressWarnings(
+          suppressMessages(
+            ggplot2::ggsave(file.path(summary_dir, name),
+              plot,
+              dpi = 300, width = width,
+              height = height, ...
+            )
+          )
         )
       }
-      save_big_ggplot(plots$R, "rt_plot.png")
-      save_big_ggplot(plots$infections, "infections_plot.png")
-      save_big_ggplot(plots$reports, "reported_cases_plot.png")
+      save_ggplot(summary_plot, "summary_plot.png",
+        width = ifelse(length(regions) > 60,
+          ifelse(length(regions) > 120, 36, 24),
+          12
+        )
+      )
     }
+    # extract regions with highest number of reported cases in the last week
+    most_reports <- get_regions_with_most_reports(reported_cases,
+      time_window = 7,
+      no_regions = 6
+    )
+
+    high_plots <- report_plots(
+      summarised_estimates = results$estimates$summarised[region %in% most_reports],
+      reported = reported_cases[region %in% most_reports],
+      max_plot = max_plot, ...
+    )
+
+    high_plots$summary <- NULL
+    high_plots <-
+      purrr::map(high_plots,
+                ~ . + ggplot2::facet_wrap(~region, scales = "free_y", ncol = 2))
+
+    if (!is.null(summary_dir)) {
+      save_ggplot(high_plots$R, "high_rt_plot.png")
+      save_ggplot(high_plots$infections, "high_infections_plot.png")
+      save_ggplot(high_plots$reports, "high_reported_cases_plot.png")
+    }
+
+    if (all_regions) {
+      plots_per_row <- ifelse(length(regions) > 60,
+        ifelse(length(regions) > 120, 8, 5), 3
+      )
+
+      plots <- report_plots(
+        summarised_estimates = results$estimates$summarised,
+        reported = reported_cases,
+        max_plot = max_plot, ...
+      )
+
+      plots$summary <- NULL
+      plots <- purrr::map(
+        plots, 
+        ~ . + ggplot2::facet_wrap(~region, scales = "free_y",
+                                  ncol = plots_per_row)
+      )
+
+      if (!is.null(summary_dir)) {
+        save_big_ggplot <- function(plot, name) {
+          save_ggplot(plot, name,
+            height = 3 * round(length(regions) / plots_per_row, 0),
+            width = 24,
+            limitsize = FALSE
+          )
+        }
+        save_big_ggplot(plots$R, "rt_plot.png")
+        save_big_ggplot(plots$infections, "infections_plot.png")
+        save_big_ggplot(plots$reports, "reported_cases_plot.png")
+      }
+    }
+  }else{
+    summary_plot <- NULL
+    high_plots <- NULL
   }
+
   if (return_output) {
     out <- list()
     out$latest_date <- latest_date
@@ -363,7 +372,7 @@ regional_summary <- function(regional_output = NULL,
     out$reported_cases <- reported_cases
     out$high_plots <- high_plots
 
-    if (all_regions) {
+    if (all_regions & plot) {
       out$plots <- plots
     }
     return(out)
