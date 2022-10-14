@@ -7,7 +7,7 @@ name: R-CMD-check
 'on':
   push:
     branches:
-      - master
+      - main
   schedule:
     - cron: '0 0 * * 1'
   pull_request:
@@ -314,7 +314,7 @@ jobs:
         shell: Rscript {0}
 
   pkgdown:
-    if: github.ref == 'refs/heads/master' && github.repository == 'epiforecasts/EpiNow2'
+    if: github.ref == 'refs/heads/main' && github.repository == 'epiforecasts/EpiNow2'
     runs-on: macOS-latest
 
     needs: [R-CMD-check, Lint, Format, test-coverage]
@@ -366,7 +366,7 @@ jobs:
         shell: bash
 
   push_to_registry:
-    if: github.ref == 'refs/heads/master' && github.repository == 'epiforecasts/EpiNow2'
+    if: github.ref == 'refs/heads/main' && github.repository == 'epiforecasts/EpiNow2'
     name: Push Docker image to GitHub Packages
     runs-on: ubuntu-latest
 

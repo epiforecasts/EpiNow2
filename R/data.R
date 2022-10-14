@@ -2,7 +2,7 @@
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Generation time estimates. See here for details:
-#' https://github.com/epiforecasts/EpiNow2/blob/master/data-raw/generation-time.R
+#' https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/generation-time.R
 #' @format A `data.table` of summarising the distribution
 "generation_times"
 
@@ -10,7 +10,7 @@
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Incubation period estimates. See here for details:
-#'  https://github.com/epiforecasts/EpiNow2/blob/master/data-raw/incubation-period.R
+#'  https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/incubation-period.R
 #' @format A `data.table` of summarising the distribution
 "incubation_periods"
 

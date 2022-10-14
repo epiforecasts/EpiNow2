@@ -5,18 +5,18 @@
 maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#maturing)
 [![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions)
 [![Codecov test
-coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://app.codecov.io/gh/epiforecasts/EpiNow2?branch=master)
+coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/main/graph/badge.svg)](https://app.codecov.io/gh/epiforecasts/EpiNow2?branch=main)
 [![metacran
 downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
 
 [![MIT
-license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epiforecasts/EpiNow2/blob/master/LICENSE.md/)
+license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epiforecasts/EpiNow2/blob/main/LICENSE.md/)
 [![GitHub
 contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](https://github.com/epiforecasts/EpiNow2/graphs/contributors)
 [![PRs
 Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](https://makeapullrequest.com/)
 [![GitHub
-commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.3.2.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/master/)
+commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.3.2.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/main/)
 [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211)
 
 This package estimates the time-varying reproduction number, growth
@@ -169,7 +169,7 @@ reporting_delay <- list(
 
 Here we define the incubation period and generation time based on
 literature estimates for Covid-19 (see
-[here](https://github.com/epiforecasts/EpiNow2/tree/master/data-raw) for
+[here](https://github.com/epiforecasts/EpiNow2/tree/main/data-raw) for
 the code that generates these estimates). Note that these distributions
 may not be applicable for your use case.
 
@@ -378,7 +378,7 @@ estimates$summary$summary_plot
 Rmarkdown templates are provided in the package (`templates`) for
 semi-automated reporting of estimates. These are currently undocumented
 but an example integration can be seen
-[here](https://github.com/epiforecasts/covid/blob/master/_posts/national/united-kingdom/united-kingdom.Rmd).
+[here](https://github.com/epiforecasts/covid/blob/main/_posts/national/united-kingdom/united-kingdom.Rmd).
 If using these templates to report your results please highlight our
 [limitations](https://doi.org/10.12688/wellcomeopenres.16006.1) as these
 are key to understanding the results from `{EpiNow2}` .
