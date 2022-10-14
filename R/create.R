@@ -5,15 +5,16 @@
 #' for details.
 #' @param filter `r lifecycle::badge("experimental")` Logical, defaults to TRUE. Should zeros at the start of the
 #' time series be filtered out.
-#' @param zero_threshold `r lifecycle::badge("experimental")` Numeric defaults to 50. Indicates if detected zero
-#' cases are meaningful by using a threshold of 50 cases on average over the last 7 days. If the average is
-#' above this threshold then the zero is replaced with the backwards looking rolling average. If set to infinity
-#' then no changes are made.
+#' @param zero_threshold `r lifecycle::badge("experimental")` Numeric defaults
+#' to Inf. Indicates if detected zero cases are meaningful by using a threshold
+#' number of cases based on the 7 day average. If the average is above this
+#' threshold then the zero is replaced with the backwards looking rolling
+#' average. If set to infinity then no changes are made.
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases
 #' @export
-create_clean_reported_cases <- function(reported_cases, horizon, filter = TRUE, zero_threshold = 50) {
+create_clean_reported_cases <- function(reported_cases, horizon, filter = TRUE, zero_threshold = Inf) {
   reported_cases <- data.table::setDT(reported_cases)
   reported_cases_grid <- data.table::copy(reported_cases)[, .(date = seq(min(date), max(date) + horizon, by = "days"))]
 
@@ -42,7 +43,7 @@ create_clean_reported_cases <- function(reported_cases, horizon, filter = TRUE, 
     reported_cases <-
       reported_cases[
         ,
-        `:=`(average_7 = (data.table::frollsum(confirm, n = 8) - confirm) / 7)
+        `:=`(average_7 = (data.table::frollsum(confirm, n = 8)) / 7)
       ]
     reported_cases <- reported_cases[
       confirm == 0 & average_7 > zero_threshold,

@@ -197,7 +197,7 @@ estimate_infections <- function(reported_cases,
                                 horizon = 7,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 filter = TRUE,
-                                zero_threshold = 50,
+                                zero_threshold = Inf,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
   
