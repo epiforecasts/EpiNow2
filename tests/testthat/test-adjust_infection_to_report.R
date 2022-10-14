@@ -17,16 +17,24 @@
  )
 
 test_that("adjust_infection_to_report can correctly handle a simple mapping", {
-  expect_snapshot(adjust_infection_to_report(
+  skip_on_cran()
+  reports <- adjust_infection_to_report(
     cases, delay_defs = list(incubation_def, delay_def)
-  ))
+  )
+  expect_true(nrow(reports) > 80)
+  expect_true(all(!is.infinite(reports$cases)))
+  expect_true(all(!is.na(reports$cases)))
 })
 
 test_that("adjust_infection_to_report can correctly handle a mapping with a day
            of the week effect", {
-  expect_snapshot(adjust_infection_to_report(
+  skip_on_cran()
+  reports <- adjust_infection_to_report(
     cases,
     delay_defs = list(incubation_def, delay_def),
     reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95)
-  ))
+  )
+  expect_true(nrow(reports) > 80)
+  expect_true(all(!is.infinite(reports$cases)))
+  expect_true(all(!is.na(reports$cases)))
 })
