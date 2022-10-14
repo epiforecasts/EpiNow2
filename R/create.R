@@ -3,7 +3,7 @@
 #' Cleans a data frame of reported cases by replacing missing dates with 0 cases and applies an optional
 #' threshold at which point 0 cases are replaced with a moving average of observed cases. See `zero_threshold`
 #' for details.
-#' @param filter `r lifecycle::badge("experimental")` Logical, defaults to TRUE. Should zeros at the start of the
+#' @param filter Logical, defaults to TRUE. Should zeros at the start of the
 #' time series be filtered out.
 #' @param zero_threshold `r lifecycle::badge("experimental")` Numeric defaults
 #' to Inf. Indicates if detected zero cases are meaningful by using a threshold
@@ -14,7 +14,9 @@
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases
 #' @export
-create_clean_reported_cases <- function(reported_cases, horizon, filter = TRUE, zero_threshold = Inf) {
+create_clean_reported_cases <- function(reported_cases, horizon,
+                                        filter_leading_zeros = TRUE,
+                                        zero_threshold = Inf) {
   reported_cases <- data.table::setDT(reported_cases)
   reported_cases_grid <- data.table::copy(reported_cases)[, .(date = seq(min(date), max(date) + horizon, by = "days"))]
 
@@ -30,15 +32,15 @@ create_clean_reported_cases <- function(reported_cases, horizon, filter = TRUE, 
   reported_cases <- reported_cases[is.na(breakpoint), breakpoint := 0]
   reported_cases <- data.table::setorder(reported_cases, date)
   ## Filter out 0 reported cases from the beginning of the data
-  if (filter){
+  if (filter_leading_zeros){
     reported_cases <- reported_cases[order(date)][
       ,
       cum_cases := cumsum(confirm)
     ][cum_cases > 0][, cum_cases := NULL]    
   }
 
-  # Check case counts preceding zero case counts and set to 7 day average if average 
-  # over last 7 days is greater than a threshold
+  # Check case counts preceding zero case counts and set to 7 day average if
+  # average over last 7 days is greater than a threshold
   if (!is.infinite(zero_threshold)) {
     reported_cases <-
       reported_cases[

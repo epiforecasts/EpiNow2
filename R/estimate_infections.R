@@ -196,7 +196,7 @@ estimate_infections <- function(reported_cases,
                                 stan = stan_opts(),
                                 horizon = 7,
                                 CrIs = c(0.2, 0.5, 0.9),
-                                filter = TRUE,
+                                filter_leading_zeros = TRUE,
                                 zero_threshold = Inf,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
@@ -221,7 +221,8 @@ estimate_infections <- function(reported_cases,
   }
   # Make sure there are no missing dates and order cases
   reported_cases <- create_clean_reported_cases(
-    reported_cases, horizon, filter = filter,
+    reported_cases, horizon, 
+    filter_leading_zeros = filter_leading_zeros,
     zero_threshold = zero_threshold
   )
 
