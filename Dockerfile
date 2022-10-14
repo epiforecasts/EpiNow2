@@ -17,9 +17,6 @@ WORKDIR /home/rstudio/EpiNow2
 
 ## Install missing packages
 RUN Rscript -e "devtools::install_dev_deps()"
-RUN Rscript -e "install.packages(c('rnaturalearthhires', 'rnaturalearthdata'), \
-                                 repos = 'http://packages.ropensci.org', \
-                                 type = 'source')"
 
 WORKDIR ..
 

@@ -224,8 +224,7 @@ report_summary <- function(summarised_estimates,
 #'  It should also contain the following estimates: R, infections,
 #'  reported_cases_rt, and r (rate of growth).
 #' @param ... Additional arguments passed to `plot_estimates()`.
-#' @importFrom ggplot2 ggsave theme labs scale_x_date
-#' @importFrom cowplot theme_cowplot
+#' @importFrom ggplot2 ggsave theme labs scale_x_date theme_bw
 #' @importFrom patchwork plot_layout
 #' @importFrom data.table setDT
 #' @inheritParams setup_target_folder

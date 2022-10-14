@@ -9,7 +9,7 @@
 #' for an example of forecasting Covid-19 deaths from Covid-19 cases. See
 #' [here](https://gist.github.com/seabbs/4dad3958ca8d83daca8f02b143d152e6) for a prototype function that
 #' may be used to estimate and forecast a secondary observation from a primary across multiple regions and
-#' [here](https://github.com/epiforecasts/covid-german-forecasts/blob/master/rt-forecast/update-death-from-cases.R)
+#' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R)
 #' for an application forecasting Covid-19 deaths in Germany and Poland.
 #' @param secondary A call to `secondary_opts()` or a list containing the following
 #' binary variables: cumulative, historic, primary_hist_additive, current,
@@ -53,7 +53,11 @@
 #'
 #' # make some example secondary incidence data
 #' cases <- example_confirmed
-#' cases <- as.data.table(cases)
+#' cases <- as.data.table(cases)[, primary := confirm]
+#' # Assume that only 40 percent of cases are reported
+#' cases[, scaling := 0.4]
+#' # Parameters of the assumed log normal delay distribution
+#' cases[, meanlog := 1.8][, sdlog := 0.5]
 #'
 #' # apply a convolution of a log normal to a vector of observations
 #' weight_cmf <- function(x, ...) {
@@ -76,7 +80,7 @@
 #' cases <- cases[, secondary := round(secondary * rnorm(.N, 0.4, 0.025), 0)]
 #' cases <- cases[secondary < 0, secondary := 0]
 #' cases <- cases[, secondary := map_dbl(secondary, ~ rpois(1, .))]
-#' 
+#'
 #' # fit model to example data assuming only a given fraction of primary observations
 #' # become secondary observations
 #' inc <- estimate_secondary(cases[1:60],
@@ -268,8 +272,7 @@ secondary_opts <- function(type = "incidence", ...) {
 #' @seealso plot estimate_secondary
 #' @method plot estimate_secondary
 #' @return `ggplot2` object
-#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme
-#' @importFrom cowplot theme_cowplot
+#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme theme_bw
 #' @importFrom data.table as.data.table merge.data.table
 #' @export
 plot.estimate_secondary <- function(x, primary = FALSE,
@@ -313,7 +316,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     alpha = 0.6, size = 1
   )
   plot <- plot +
-    cowplot::theme_cowplot() +
+    ggplot2::theme_bw() +
     ggplot2::labs(y = "Confirmed Cases", x = "Date") +
     ggplot2::scale_x_date(date_breaks = "week", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +

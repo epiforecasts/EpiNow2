@@ -1,10 +1,12 @@
 #' Estimate Truncation of Observed Data
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' Estimates a truncation distribution from multiple snapshots of the same
 #' data source over time. This distribution can then be used in `regional_epinow`,
 #' `epinow`, and `estimate_infections` to adjust for truncated data. See [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)
-#' for an example of using this approach on Covid-19 data in England.
+#' for an example of using this approach on Covid-19 data in England. The
+#' functionality offered by this function is now available in a more principled
+#' manner in the [`epinowcast` R package](https://package.epinowcast.org/).
 #'
 #' The model of truncation is as follows:
 #'
@@ -123,14 +125,14 @@ estimate_truncation <- function(obs, max_truncation = 10,
     obs_dist = obs_dist,
     t = nrow(obs_data),
     obs_sets = ncol(obs_data),
-    trunc_max = array(max_truncation)
+    trunc_max = max_truncation
   )
 
   # initial conditions
   init_fn <- function() {
     data <- list(
-      logmean = array(rnorm(1, 0, 1)),
-      logsd = array(abs(rnorm(1, 0, 1))),
+      logmean = rnorm(1, 0, 1),
+      logsd = abs(rnorm(1, 0, 1)),
       phi = abs(rnorm(1, 0, 1)),
       sigma =  abs(rnorm(1, 0, 1 ))
     )
@@ -221,8 +223,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
 #' @seealso plot estimate_truncation
 #' @method plot estimate_truncation
 #' @return `ggplot2` object
-#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme
-#' @importFrom cowplot theme_cowplot
+#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme theme_bw
 #' @export
 plot.estimate_truncation <- function(x, ...) {
   plot <- ggplot2::ggplot(x$obs, ggplot2::aes(x = date, y = last_confirm)) +
@@ -241,7 +242,7 @@ plot.estimate_truncation <- function(x, ...) {
   )
 
   plot <- plot +
-    cowplot::theme_cowplot() +
+    ggplot2::theme_bw() +
     ggplot2::labs(y = "Confirmed Cases", x = "Date", col = "Type", fill = "Type") +
     ggplot2::scale_x_date(date_breaks = "day", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +

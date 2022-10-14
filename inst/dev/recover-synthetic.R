@@ -213,7 +213,7 @@ p <- ggplot(rdf, aes(x = time, y = value, colour = model)) +
   facet_wrap(~metric, ncol = 1, scale = "free_y") +
   xlab("Time") +
   ylab("Score") +
-  cowplot::theme_cowplot() +
+  ggplot2::theme_bw() +
   ggtitle("Reconstructing R")
 
 save_ggplot(p, "rscores")
@@ -242,7 +242,7 @@ p <- ggplot(idf, aes(x = time, y = value, colour = model)) +
   facet_wrap(~metric, ncol = 1, scale = "free_y") +
   xlab("Time") +
   ylab("Score") +
-  cowplot::theme_cowplot() +
+  ggplot2::theme_bw() +
   ggtitle("Reconstructing infections")
 
 save_ggplot(p, "iscores")
