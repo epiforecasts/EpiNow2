@@ -1,8 +1,7 @@
 // update a vector of Rts
-vector update_Rt(vector input_R, real log_R, vector noise, int[] bps,
+vector update_Rt(int t, real log_R, vector noise, int[] bps,
                  real[] bp_effects, int stationary) {
   // define control parameters
-  int t = num_elements(input_R);
   int bp_n = num_elements(bp_effects);
   int bp_c = 0;
   int gp_n = num_elements(noise);

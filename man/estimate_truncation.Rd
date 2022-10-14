@@ -40,26 +40,29 @@ observed data (\code{last_obs}, useful for plotting and validation), the data us
 (\code{data}) and the fit object (\code{fit}).
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Estimates a truncation distribution from multiple snapshots of the same
 data source over time. This distribution can then be used in \code{regional_epinow},
 \code{epinow}, and \code{estimate_infections} to adjust for truncated data. See \href{https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a}{here}
-for an example of using this approach on Covid-19 data in England.
+for an example of using this approach on Covid-19 data in England. The
+functionality offered by this function is now available in a more principled
+manner in the \href{https://package.epinowcast.org/}{\code{epinowcast} R package}.
 
 The model of truncation is as follows:
 \enumerate{
-\item The truncation distribution is assumed to be log normal with a mean and
+\item The truncation distribution is assumed to be discretised log normal with a mean and
 standard deviation that is informed by the data.
 \item The data set with the latest observations is adjusted for truncation using
 the truncation distribution.
 \item Earlier data sets are recreated by applying the truncation distribution to
 the adjusted latest observations in the time period of the earlier data set. These
 data sets are then compared to the earlier observations assuming a negative binomial
-observation model.
+observation model with an additive noise term to deal with zero observations.
 }
 
 This model is then fit using \code{stan} with standard normal, or half normal,
-prior for the mean, standard deviation and 1 over the square root of the over dispersion.
+prior for the mean, standard deviation, 1 over the square root of the over dispersion
+and additive noise term.
 
 This approach assumes that:
 \itemize{

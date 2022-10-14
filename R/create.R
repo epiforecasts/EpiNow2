@@ -392,6 +392,10 @@ create_stan_data <- function(reported_cases, generation_time,
                              rt, gp, obs, delays, horizon,
                              backcalc, shifted_cases,
                              truncation) {
+
+  ## make sure we have at least max_gt seeding time
+  delays$seeding_time <- max(delays$seeding_time, generation_time$max)
+
   ## complete generation time parameters if not all are given
   if (is.null(generation_time)) {
     generation_time <- list(mean = 1)

@@ -23,7 +23,6 @@ epinow(
   plot_args = list(),
   target_folder = NULL,
   target_date,
-  forecast_args = NULL,
   logs = tempdir(),
   id = "epinow",
   verbose = interactive()
@@ -86,9 +85,6 @@ so for example passing "sam" will lead to samples being reported.}
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
-
-\item{forecast_args}{A list of arguments to pass to \code{forecast_infections()}. Unless at a minimum a \code{forecast_model} is passed
-then \code{forecast_infections} will be bypassed.}
 
 \item{logs}{Character path indicating the target folder in which to store log
 information. Defaults to the temporary directory if not specified. Default logging
