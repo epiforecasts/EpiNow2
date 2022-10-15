@@ -23,13 +23,9 @@ vector convolve_to_report(vector infections,
   int delays = num_elements(delay_mean);
   if (delays) {
     for (s in 1:delays) {
-      vector[max_delay[s]] pmf = rep_vector(1e-5, max_delay[s]);
-      int delay_indexes[max_delay[s]];
-      for (i in 1:max_delay[s]) {
-        delay_indexes[i] = max_delay[s] - i;
-      }
-      pmf = pmf + discretised_lognormal_pmf(delay_indexes, delay_mean[s],
-                                            delay_sd[s], max_delay[s]);
+      vector[max_delay[s]] pmf;
+      pmf = discretised_lognormal_pmf(delay_mean[s], delay_sd[s], max_delay[s]);
+      pmf = reverse_mf(pmf);
       unobs_reports = convolve(unobs_reports, pmf);
     }
     reports = unobs_reports[(seeding_time + 1):t];

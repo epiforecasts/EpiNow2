@@ -157,10 +157,6 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @param verbose Logical, defaults to FALSE. Should verbose progress messages be printed.
 #' @return A `stan` fit of an interval censored distribution
 #' @export
-#' @import Rcpp
-#' @import methods
-#' @importFrom rstan sampling extract
-#' @useDynLib EpiNow2, .registration=TRUE
 #' @examples
 #' \donttest{
 #' # integer adjusted exponential model
