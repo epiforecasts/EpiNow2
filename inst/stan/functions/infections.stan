@@ -32,7 +32,7 @@ vector generate_infections(vector oR, int uot,
   vector[max_gt] gt_pmf;
   if (gt_sd > 0) {
     // SD > 0: use discretised gamma
-    gt_pmf = discretised_lognormal_pmf(gt_mean, gt_sd, max_gt);
+    gt_pmf = discretised_gamma_pmf(gt_mean, gt_sd, max_gt);
   } else {
     // SD == 0: use discretised delta
     gt_pmf = discretised_delta_pmf(max_gt);
