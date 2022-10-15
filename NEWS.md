@@ -1,6 +1,6 @@
 # EpiNow2 1.3.3
 
-This maintenance release adds a range of new minor features, squashes bugs, enhances documentation, expands unit testing, minor run-time optimisations, and removes some obsolete features.
+This release adds a range of new minor features, squashes bugs, enhances documentation, expands unit testing, implements some minor run-time optimisations, and removes some obsolete features.
 
 Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
 
@@ -22,11 +22,12 @@ Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
 * Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.  By @seabbs.
 * Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged.  By @seabbs.
 * Added additive noise term to the `estimate_truncation` model to deal with zeroes. By @sbfnk.
-* Optimise the discrete probability distributions based on the implementations in the `epinowcast` package. By @seabbs.
+* Switched to using optimised versions of the discretised distributions supported for the
+reporting delay and the generation time. These are based on an implementation in [`epinowcast`](https://package.epinowcast.org/) by Adrian Lison and Sam Abbott. By @seabbs in #320.
 
 ## Documentation
 
-- Updates to all synthetic delays to reduce runtime of examples.  By @seabbs.
+- Updates to all synthetic delays to reduce runtime of examples. By @seabbs.
 - Additional statements to make it clear to users examples should be used for real world analysis. By @seabbs.
 - Additional context in the README on package functionality.  By @seabbs.
 
