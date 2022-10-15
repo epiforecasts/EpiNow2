@@ -10,7 +10,7 @@ vector calculate_Rt(vector infections, int seeding_time,
   vector[ot] infectiousness = rep_vector(1e-5, ot);
   // calculate PMF of the generation time
   if (gt_sd > 0) {
-    gt_pmf = discretised_gamma_pmf(gt_mean, gt_sd, max_gt);
+    gt_pmf = discretised_gamma_pmf(gt_mean, gt_sd, max_gt) + 1e-5;
   } else {
     gt_pmf = discretised_delta_pmf(max_gt);
   }
