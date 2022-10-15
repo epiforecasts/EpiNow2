@@ -123,15 +123,15 @@ reported_cases <- example_confirmed[1:60]
 head(reported_cases)
 ```
 
-Estimate cases by date of infection, the time-varying reproduction number, the rate of growth and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). *Note: For real use cases more samples and a longer warm up may be needed*.
+Estimate cases by date of infection, the time-varying reproduction number, the rate of growth and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). *Note: Here we use a weekly random walk rather than the full daily Gaussian process model to reduce run-times.*.
 
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(
   reported_cases = reported_cases,
   generation_time = generation_time,
   delays = delay_opts(incubation_period, reporting_delay),
-  rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-  stan = stan_opts(cores = 4, warmup = 250, samples = 1000),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.2), , rw = 7),
+  stan = stan_opts(cores = 4), gp = NULL,
   verbose = interactive()
 )
 names(estimates)

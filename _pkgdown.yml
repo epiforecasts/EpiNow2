@@ -3,7 +3,7 @@ template:
   bootstrap: 5
   opengraph:
     image:
-      src: man/figures/unnamed-chunk-13-1.png
+      src: man/figures/unnamed-chunk-14-1.png
       alt: "Example estimates produced by EpiNow2 of the reproduction number, cases by date of infection and cases by date of report"
     twitter:
       creator: "@seabbs"
