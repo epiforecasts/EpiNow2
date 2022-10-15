@@ -1,13 +1,9 @@
 samples <- data.frame(value = 1:10, type = "car")
 
 test_that("calc_summary_stats works as expected with default arguments", {
-  expect_snapshot_output(calc_summary_stats(samples),
-    file = testthat::test_path("test-data/calc_summary_stats_default.rds")
-  )
+  expect_snapshot_output(calc_summary_stats(samples))
 })
 
 test_that("calc_summary_stats works as expected when grouping", {
-  expect_snapshot_output(calc_summary_stats(samples, summarise_by = "type"),
-    file = testthat::test_path("test-data/calc_summary_stats_grouping.rds")
-  )
+  expect_snapshot_output(calc_summary_stats(samples, summarise_by = "type"))
 })
