@@ -1,6 +1,6 @@
 # EpiNow2 1.3.3
 
-This maintenance release adds a range of new minor features, squashes bugs, slightly expands unit testing, and removes some obsolete features.
+This maintenance release adds a range of new minor features, squashes bugs, enhances documentation, expands unit testing, minor run-time optimisations, and removes some obsolete features.
 
 Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
 
@@ -22,6 +22,7 @@ Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
 * Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.  By @seabbs.
 * Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged.  By @seabbs.
 * Added additive noise term to the `estimate_truncation` model to deal with zeroes. By @sbfnk.
+* Optimise the discrete probability distributions based on the implementations in the `epinowcast` package. By @seabbs.
 
 ## Documentation
 
@@ -37,6 +38,7 @@ Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
 * By default `epinow` and downstream functions remove leading zeros. Now this is optional with the new `filter_leading_zeros` option. Thanks to @LloydChapman in #285.
 * Basic tests have been added to cover `estimate_secondary()`, `forecast_secondary()`, and `estimate_truncation()`. By @seabbs in #315.
 * Add basic snapshot tests for `adjust_infection_to_report`. By @seabbs in #316.
+* Update to use `rstantools` to manage compiler flags.
 
 ## Other changes
 

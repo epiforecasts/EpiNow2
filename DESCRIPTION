@@ -104,7 +104,7 @@ Imports:
     RcppParallel (>= 5.0.1),
     rlang (>= 0.4.7),
     rstan (>= 2.21.1),
-    rstantools (>= 2.1.1),
+    rstantools (>= 2.2.0),
     runner,
     scales,
     stats,
