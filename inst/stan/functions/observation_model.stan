@@ -23,13 +23,10 @@ vector scale_obs(vector reports, real frac_obs) {
 vector truncation_cmf(real trunc_mean, real trunc_sd, int trunc_max) {
     int  trunc_indexes[trunc_max];
     vector[trunc_max] cmf;
-    for (i in 1:(trunc_max)) {
-      trunc_indexes[i] = i - 1;
-    }
-    cmf = discretised_lognormal_pmf(trunc_indexes, trunc_mean, trunc_sd, trunc_max);
+    cmf = discretised_lognormal_pmf(trunc_mean, trunc_sd, trunc_max);
     cmf[1] = cmf[1] + 1e-8;
     cmf = cumulative_sum(cmf);
-    cmf = reverse_mf(cmf, trunc_max);
+    cmf = reverse_mf(cmf);
     return(cmf);
 }
 // Truncate observed data by some truncation distribution

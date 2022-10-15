@@ -89,8 +89,9 @@ transformed parameters {
  }
  // truncate near time cases to observed reports
  if (truncation) {
-   obs_reports = truncate(reports[1:ot], truncation_mean[1], truncation_sd[1],
-                          max_truncation[1], 0);
+   obs_reports = truncate(
+    reports[1:ot], truncation_mean[1], truncation_sd[1], max_truncation[1], 0
+  );
  } else {
    obs_reports = reports[1:ot];
  }
@@ -99,20 +100,30 @@ transformed parameters {
 model {
   // priors for noise GP
   if (!fixed) {
-    gaussian_process_lp(rho[1], alpha[1], eta, ls_meanlog,
-                        ls_sdlog, ls_min, ls_max, alpha_sd);
+    gaussian_process_lp(
+      rho[1], alpha[1], eta, ls_meanlog, ls_sdlog, ls_min, ls_max, alpha_sd
+    );
   }
   // penalised priors for delay distributions
-  delays_lp(delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd, t);
+  delays_lp(
+    delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean,
+    delay_sd_sd, t
+  );
   // priors for truncation
-  truncation_lp(truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd,
-                trunc_sd_mean, trunc_sd_sd);
+  truncation_lp(
+    truncation_mean, truncation_sd, trunc_mean_mean, trunc_mean_sd, 
+    trunc_sd_mean, trunc_sd_sd
+  );
   if (estimate_r) {
     // priors on Rt
-    rt_lp(log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n, seeding_time,
-          r_logmean, r_logsd, prior_infections, prior_growth);
+    rt_lp(
+      log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n,
+      seeding_time, r_logmean, r_logsd, prior_infections, prior_growth
+    );
     // penalised_prior on generation interval
-    generation_time_lp(gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot);
+    generation_time_lp(
+      gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot
+    );
   }
   // prior observation scaling
   if (obs_scale) {
@@ -120,8 +131,9 @@ model {
   }
   // observed reports from mean of reports (update likelihood)
   if (likelihood) {
-    report_lp(cases, obs_reports, rep_phi, phi_mean, phi_sd,
-              model_type, obs_weight);
+    report_lp(
+      cases, obs_reports, rep_phi, phi_mean, phi_sd, model_type, obs_weight
+    );
   }
 }
 
@@ -140,8 +152,10 @@ generated quantities {
     real gt_mean_sample = (gt_mean_sd > 0 ? normal_rng(gt_mean_mean, gt_mean_sd) : gt_mean_mean);
     real gt_sd_sample = (gt_sd_sd > 0 ? normal_rng(gt_sd_mean, gt_sd_sd) : gt_sd_mean);
     // calculate Rt using infections and generation time
-    gen_R = calculate_Rt(infections, seeding_time, gt_mean_sample, gt_sd_sample,
-                         max_gt, rt_half_window);
+    gen_R = calculate_Rt(
+      infections, seeding_time, gt_mean_sample, gt_sd_sample, max_gt,
+      rt_half_window
+    );
     // estimate growth from calculated Rt
     r = R_to_growth(gen_R, gt_mean_sample, gt_sd_sample);
   }
@@ -149,7 +163,8 @@ generated quantities {
   imputed_reports = report_rng(reports, rep_phi, model_type);
   // log likelihood of model
   if (return_likelihood) {
-    log_lik = report_log_lik(cases, obs_reports, rep_phi, model_type,
-                             obs_weight);
+    log_lik = report_log_lik(
+      cases, obs_reports, rep_phi, model_type, obs_weight
+    );
   }
 }
