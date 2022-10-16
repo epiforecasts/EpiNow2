@@ -33,16 +33,16 @@ navbar:
       text: Model definitions
       menu:
       - text: estimate_infections()
-        href: vignettes/estimate_infections.html
+        href: articles/estimate_infections.html
       - text: estimate_secondary()
-        href: vignettes/estimate_secondary.html
+        href: articles/estimate_secondary.html
       - text: estimate_truncation()
-        href: vignettes/estimate_truncation.html
+        href: articles/estimate_truncation.html
     casestudies:
       text: Case studies
       menu:
       - text: External case studies and use in the literature
-        href: vignettes/case-studies.html
+        href: articles/case-studies.html
 
 figures:
   fig.width: 9
