@@ -1,0 +1,40 @@
+---
+title: "Model definition: estimate_secondary()"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Model definition: estimate_secondary()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+* This documentation is a work in progress.*
+
+This model is based on a discrete convolution of primary cases, scaled based on the fraction (here described as the secondary fraction but depending on application potentially being the case fatality ratio, case hospitalisation ratio, or the hospitalisation fatality ratio), and a delay distribution that is assumed to follow a discretised daily log normal distribution.
+This model can be thought of as a disrete time ordinary differential equation approximation generalised to log normal, rather than exponential, delay distributions.
+
+We generalise this simple model beyond the incidence cases to also include prevalence indicators (for example hospital admissions and occupancy) where the secondary notifications can be thought of as depending on secondary notifications from the previous timestep, scaled current primary notications, and minus scaled historic primary notifications weighted by some delay distribution. 
+
+This model can be defined as follows,
+
+\begin{equation} 
+    \hat{S}_{t} = \delta_p S_{t} + \alpha \left( \delta_p P_{t} + \delta_c \sum_{\tau = 0}^{D} \xi(\tau | \mu, \sigma) P_{t-\tau} \right)
+\end{equation}
+
+where $S_t$ and $P_t$ are observed primary and secondary notifications, $\hat{S}_t$ are expected secondary notifications, $\delta_p = 1$ and $\delta_c = -1$ when $S_t$ is a prevalence measure, $delta_p = 0$ and $\delta_c = 1$ when it is an incidence based measure.
+$\alpha$ and $\xi$ are defined as the secondary fraction and delay from primary to secondary notification (or delay from secondary notification to recovery etc in the prevalence case) with $\alpha$ typically being of most interest to those interpreting the models posterior estimates.
+We further assume that $\xi$ follows a discretised log normal distibution described by its mean $\mu$ and standard deviation $\sigma$ on the log scale (where we take the cumulative mass function for time $t$ minus the cumlative mass function for $t-1$) normalised by the maximum allowed delay $D$ such that $\sum^D_{\tau=0}{ \xi(\tau | \mu, \sigma)}  = 1$.
+
+The above definition captures our mechanistic assumptions for the expectation of secondary notifications but does not account for potential observation noise or reporting patterns.
+Here we assume a negative binomial observation model (though our implementation also supports a Poisson observation model) in order to capture potential reporting overdispersion $\phi$ and adjust expected counts using an optional day of the week effect based on a simplex $\omega_{(t \mod 7)}$ (such that $\sum^6_{t=0}{w_t} = 7$ so the total effect over a week is balanced).
+This gives the following observation process,
+
+\begin{equation} 
+    S_{t} \sim \mathrm{NB}\left(\omega_{t \mod 7} \hat{S}_t,  \phi \right).
+\end{equation}
