@@ -20,13 +20,13 @@ vector discretised_gamma_pmf(real mu, real sigma, int max_val) {
     upper_cdf[i] = gamma_cdf(i,  alpha, beta);
   }
   // discretise
-  pmf[1:n] = upper_cdf[2:(n+1)] - upper_cdf[1:n];
+  pmf[n:1] = upper_cdf[2:(n+1)] - upper_cdf[1:n];
   pmf = pmf / (upper_cdf[n+1] - upper_cdf[1]);
   return(pmf);
 }
 
 // discretised truncated lognormal pmf
-vector discretised_lognormal_pmf(real mu, real sigma, int max_val) {
+vector discretised_lognormal_pmf(real mu, real sigma, int max_val, int rev) {
   int n = max_val;
   vector[n] upper_cdf;
   vector[n] pmf;
@@ -34,8 +34,13 @@ vector discretised_lognormal_pmf(real mu, real sigma, int max_val) {
     upper_cdf[i] = lognormal_cdf(i,  mu, sigma);
   }
   // discretise
-  pmf[1] = upper_cdf[1];
-  pmf[2:n] = upper_cdf[2:n] - upper_cdf[1:(n-1)];
+  if (rev) {
+    pmf[n] = upper_cdf[1];
+    pmf[(n-1):1] = upper_cdf[2:n] - upper_cdf[1:(n-1)];
+  }else{
+    pmf[1] = upper_cdf[1];
+    pmf[2:n] = upper_cdf[2:n] - upper_cdf[1:(n-1)];
+  }
   // normalize
   pmf = pmf / upper_cdf[n];
   return(pmf);
@@ -54,6 +59,6 @@ vector reverse_mf(vector pmf) {
 // discretised truncated gamma pmf
 vector discretised_delta_pmf(int n) {
   vector[n] pmf = rep_vector(0, n);
-  pmf[1] = 1;
+  pmf[n] = 1;
   return(pmf);
 }

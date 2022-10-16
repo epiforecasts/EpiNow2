@@ -43,7 +43,7 @@ Forecasting is also supported for the time-varying reproduction number, infectio
 A simple example of using the package to estimate a national Rt for Covid-19 can be found [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867).
 
 
-`EpiNow2` also supports adjustment for truncated data via `estimate_truncation()` (though users may be interested in more flexibility and if so should check out the [`epinowcast`](https://epiforecasts.io/epinowcast/) package), and for estimating dependent observations (i.e deaths based on hospital admissions) using `estimate_secondary()`.
+`EpiNow2` also supports adjustment for truncated data via `estimate_truncation()` (though users may be interested in more flexibility and if so should check out the [`epinowcast`](https://www.epinowcast.org/epinowcast/) package), and for estimating dependent observations (i.e deaths based on hospital admissions) using `estimate_secondary()`.
 
 ## Installation
 
@@ -123,15 +123,15 @@ reported_cases <- example_confirmed[1:60]
 head(reported_cases)
 ```
 
-Estimate cases by date of infection, the time-varying reproduction number, the rate of growth and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). *Note: Here we use a weekly random walk rather than the full daily Gaussian process model to reduce run-times.*.
+Estimate cases by date of infection, the time-varying reproduction number, the rate of growth and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results).
 
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(
   reported_cases = reported_cases,
   generation_time = generation_time,
   delays = delay_opts(incubation_period, reporting_delay),
-  rt = rt_opts(prior = list(mean = 2, sd = 0.2), , rw = 7),
-  stan = stan_opts(cores = 4), gp = NULL,
+  rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
+  stan = stan_opts(cores = 4),
   verbose = interactive()
 )
 names(estimates)
@@ -176,7 +176,7 @@ reported_cases <- data.table::rbindlist(list(
 head(reported_cases)
 ```
 
-Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we also switch to using a weekly random walk rather than the full Gaussian process model.
+Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week.
 
 ```{r, message = FALSE, warning = FALSE}
 estimates <- regional_epinow(
