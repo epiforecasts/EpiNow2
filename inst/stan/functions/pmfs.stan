@@ -20,7 +20,9 @@ vector discretised_gamma_pmf(real mu, real sigma, int max_val) {
     upper_cdf[i] = gamma_cdf(i,  alpha, beta);
   }
   // discretise
-  pmf[n:1] = upper_cdf[2:(n+1)] - upper_cdf[1:n];
+  for (i in 1:n) {
+    pmf[n+1-i] = upper_cdf[i+1] - upper_cdf[i];
+  }
   pmf = pmf / (upper_cdf[n+1] - upper_cdf[1]);
   return(pmf);
 }
@@ -36,7 +38,9 @@ vector discretised_lognormal_pmf(real mu, real sigma, int max_val, int rev) {
   // discretise
   if (rev) {
     pmf[n] = upper_cdf[1];
-    pmf[(n-1):1] = upper_cdf[2:n] - upper_cdf[1:(n-1)];
+    for (i in 2:n) {
+      pmf[n+1-i] = upper_cdf[i] - upper_cdf[i-1];
+    }
   }else{
     pmf[1] = upper_cdf[1];
     pmf[2:n] = upper_cdf[2:n] - upper_cdf[1:(n-1)];
