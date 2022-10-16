@@ -30,6 +30,7 @@ reporting delay and the generation time. These are based on an implementation in
 - Updates to all synthetic delays to reduce runtime of examples. By @seabbs.
 - Additional statements to make it clear to users examples should be used for real world analysis. By @seabbs.
 - Additional context in the README on package functionality.  By @seabbs.
+- Added some work in progress model definitions and a resource list for case studies using the package. By @seabbs.
 
 ## Package changes
 
