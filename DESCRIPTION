@@ -79,7 +79,7 @@ Description: Estimates the time-varying reproduction number,
     current best practices (Gostic et al. (2020)
     <doi:10.1101/2020.06.18.20134858>).  It aims to help users avoid some
     of the limitations of naive implementations in a framework that is
-    informed by community feedback and is under active development.
+    informed by community feedback and is actively supported.
 License: MIT + file LICENSE
 URL: https://epiforecasts.io/EpiNow2/,
     https://epiforecasts.io/EpiNow2/dev/,
@@ -138,3 +138,4 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 SystemRequirements: GNU make
+VignetteBuilder: knitr

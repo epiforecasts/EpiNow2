@@ -1,0 +1,19 @@
+---
+title: "Model definition: estimate_infections()"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Model definition: estimate_infections()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(EpiNow2)
+```
