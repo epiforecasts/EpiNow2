@@ -35,11 +35,11 @@ navbar:
       text: "Functions"
       href: reference/index.html
     - text: Model definitions
-        - text: estimate_infections
+        - text: estimate_infections()
           href: vignettes/estimate_infections.html
-        - text: estimate_secondary
+        - text: estimate_secondary()
           href: vignettes/estimate_secondary.html
-        - text: estimate_truncation
+        - text: estimate_truncation()
           href: vignettes/estimate_truncation.html
     - text: Case studies
         - text: External case studies and use in the literature
