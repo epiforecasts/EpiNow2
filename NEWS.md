@@ -1,9 +1,8 @@
 # EpiNow2 1.3.3
 
-This maintenance release adds a range of new minor features, squashes bugs, 
-and removes some obsolete features.
+This release adds a range of new minor features, squashes bugs, enhances documentation, expands unit testing, implements some minor run-time optimisations, and removes some obsolete features.
 
-Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
+Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
 
 ## New features
 
@@ -15,6 +14,7 @@ Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
 * Adds support for fixed generation times (either mean only or fixed gamma distributed). By @sbfnk.
 * Adds support for optionally using an inverse gamma prior for the lengthscale of the gaussian process. This scaled prior has been tested for both short and long simulations where the default prior may make the model unstable. The new prior is more stable for long simulations and adaptively change the distribution based on the simulation length (total number of days) without relying on the user inputs or the fixed defaults. It can be tested by setting ls_sd = 0 in gp_opts(). By @hsbadr.
 * Updated the prior on the magnitude of the gaussian process to be 0.05 vs 0.1 leading to slightly more stable estimates. By @hsbadr.
+* Added an argument (`plot`) to `regional_summary` to allow plotting to be optional. Closes #250. By @seabbs in #317
 
 ## Model changes
 
@@ -22,18 +22,26 @@ Thanks to @Bisaloo, @hsbadr, @medewitt, and @sbfnk.
 * Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.  By @seabbs.
 * Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged.  By @seabbs.
 * Added additive noise term to the `estimate_truncation` model to deal with zeroes. By @sbfnk.
+* Switched to using optimised versions of the discretised distributions supported for the
+reporting delay and the generation time. These are based on an implementation in [`epinowcast`](https://package.epinowcast.org/) by Adrian Lison and Sam Abbott. By @seabbs in #320.
 
 ## Documentation
 
-- Updates to all synthetic delays to reduce runtime of examples.  By @seabbs.
+- Updates to all synthetic delays to reduce runtime of examples. By @seabbs.
 - Additional statements to make it clear to users examples should be used for real world analysis. By @seabbs.
 - Additional context in the README on package functionality.  By @seabbs.
+- Added some work in progress model definitions and a resource list for case studies using the package. By @seabbs.
 
 ## Package changes
 
 * Added a `contributing.md` to guide contributors and added `pre-commit` support to check new contributions styling.  By @seabbs.
 * Better test skipping thanks to @Bisaloo.
-* Switched from `cowplot::theme_cowplot()` to `ggplot2::theme_bw()`. This allows the removal of `cowplot` as a dependency as well making plots visuable for users saving as pngs and using a dark theme. By @seabbs.
+* Switched from `cowplot::theme_cowplot()` to `ggplot2::theme_bw()`. This allows the removal of `cowplot` as a dependency as well making plots visible for users saving as pngs and using a dark theme. By @seabbs.
+* By default `epinow` and downstream functions remove leading zeros. Now this is optional with the new `filter_leading_zeros` option. Thanks to @LloydChapman in #285.
+* Basic tests have been added to cover `estimate_secondary()`, `forecast_secondary()`, and `estimate_truncation()`. By @seabbs in #315.
+* Add basic snapshot tests for `adjust_infection_to_report`. By @seabbs in #316.
+* Update to use `rstantools` to manage compiler flags.
+* Update the Dockerfile to work better with vscode.
 
 ## Other changes
 
@@ -57,6 +65,7 @@ estimates and are considered out of scope for `EpiNow2`. If finding useful conta
 * Fixed a bug in `simulate_infections` and `forecast_secondary` which meant that a Poisson observation model used for estimation would lead to a error. By @seabbs.
 * Fixed a bug where `use_rt = FALSE` did not properly cancel user settings. By @sbfnk.
 * Fixed a bug in `estimate_truncation` where phi was not initialised. By @sbfnk.
+* Fixed a bug where `zero_threshold` was being ignored and so no post-processing was happening. To maintain backwards compatibility the default has been changed to `Inf` (i.e. no zero threshold). By @LloydChapman in #285.
 
 # EpiNow2 1.3.2
 

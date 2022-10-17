@@ -14,6 +14,6 @@ test_that("create_stan_args returns the expected defaults when the approximate m
   ))
 })
 
-test_that("create_stan_args can modify arugments", {
+test_that("create_stan_args can modify arguments", {
   expect_equal(create_stan_args(stan = stan_opts(warmup = 1000))$warmup, 1000)
 })
