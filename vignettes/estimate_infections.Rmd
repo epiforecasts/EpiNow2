@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-*This is a work in progress.* 
+**This is a work in progress. Please consider submitting a PR to improve it.** 
 
 `estimate_infections()` supports a range of model formulation. Here we describe the most commonly used and highlight other options.
 
