@@ -13,4 +13,4 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
- *This documentation is a work in progress.*
+**This is a work in progress. Please consider submitting a PR to improve it.** 
