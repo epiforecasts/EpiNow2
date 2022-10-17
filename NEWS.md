@@ -41,6 +41,7 @@ reporting delay and the generation time. These are based on an implementation in
 * Basic tests have been added to cover `estimate_secondary()`, `forecast_secondary()`, and `estimate_truncation()`. By @seabbs in #315.
 * Add basic snapshot tests for `adjust_infection_to_report`. By @seabbs in #316.
 * Update to use `rstantools` to manage compiler flags.
+* Update the Dockerfile to work better with vscode.
 
 ## Other changes
 
