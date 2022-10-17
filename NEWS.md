@@ -46,7 +46,7 @@ reporting delay and the generation time. These are based on an implementation in
 ## Other changes
 
 * Updated the classification of growth to use stable rather than unsure when Rt is approximately 1.  By @seabbs.
-* The default parallisation has been changed to `future::multisession()` from `future::multiprocess()` as the latter is being depreciated in the `future` package.  By @seabbs and @snfnk.
+* The default parallisation has been changed to `future::multisession()` from `future::multiprocess()` as the latter is being depreciated in the `future` package.  By @seabbs and @sbfnk.
 * Ensure the seeding time is at least the maximum generation time (@sbfnk).
  
 ## Deprecated features
