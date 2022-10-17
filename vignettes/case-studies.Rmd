@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-*If aware of other examples please open a PR adding them or open an issue flagging this omission.*
+**This is a work in progress. Please consider submitting a PR to improve it.** 
 
 # Case studies 
 

@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-* This documentation is a work in progress.*
+**This is a work in progress. Please consider submitting a PR to improve it.** 
 
 This model is based on a discrete convolution of primary cases, scaled based on the fraction (here described as the secondary fraction but depending on application potentially being the case fatality ratio, case hospitalisation ratio, or the hospitalisation fatality ratio), and a delay distribution that is assumed to follow a discretised daily log normal distribution.
 This model can be thought of as a disrete time ordinary differential equation approximation generalised to log normal, rather than exponential, delay distributions.
