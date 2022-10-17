@@ -29,7 +29,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
         libglpk-dev \
         libv8-dev \
         pandoc-citeproc \
-        libpng-dev
+        libpng-dev \
     && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/library-scripts \
     && python3 -m pip --no-cache-dir install radian pre-commit \
     && install2.r --error --skipinstalled --repos ${CRAN} --ncpus -1 \
