@@ -1,0 +1,46 @@
+---
+title: "External case studies and use in the literature"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Case studies and use in the literature}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+*If aware of other examples please open a PR adding them or open an issue flagging this omission.*
+
+# Case studies 
+
+- [Estimating reporting delays and nowcasting/forecasting infections with EpiNow2](https://github.com/epiforecasts/nowcasting.example/blob/main/inst/reports/epinow2.md) by Sebastian Funk and Sam Abbott.
+- [Forecast Covid-19 reported deaths from Covid-19 reported cases (both observed and forecast) for a country in the ECDC](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17) by Sam Abbott.
+- [Explore Covid-19 data truncation in England](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a) by Sam Abbott.
+- [Estimate the effective reproduction number of Covid-19 in last 3 months for a country](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867) By Sam Abbott.
+
+# Public health surveillance
+
+- CDC. 2022. “Technical Report 3: Multi-National Monkeypox Outbreak, United States, 2022.” Centers for Disease Control and Prevention. October 3, 2022. https://www.cdc.gov/poxvirus/monkeypox/cases-data/technical-report/report-3.html.
+
+# Literature
+
+## By package authors
+
+- Abbott, Sam, Joel Hellewell, Robin N. Thompson, Katharine Sherratt, Hamish P. Gibbs, Nikos I. Bosse, James D. Munday, et al. 2020. “Estimating the Time-Varying Reproduction Number of SARS-CoV-2 Using National and Subnational Case Counts.” Wellcome Open Research 5 (December): 112. http://dx.doi.org/10.12688/wellcomeopenres.16006.2
+
+- Sherratt, Katharine, Sam Abbott, Sophie R. Meakin, Joel Hellewell, James D. Munday, Nikos Bosse, Null Null, Mark Jit, and Sebastian Funk. 2021. “Exploring Surveillance Data Biases When Estimating the Reproduction Number: With Insights into Subpopulation Transmission of COVID-19 in England.” Philosophical Transactions of the Royal Society of London. Series B, Biological Sciences 376 (1829): 20200283. http://dx.doi.org/10.1098/rstb.2020.0283
+
+- Bosse, Nikos I., Sam Abbott, Johannes Bracher, Habakuk Hain, Billy J. Quilty, Mark Jit, Centre for the Mathematical Modelling of Infectious Diseases COVID-19 Working Group, Edwin van Leeuwen, Anne Cori, and Sebastian Funk. 2022. “Comparing Human and Model-Based Forecasts of COVID-19 in Germany and Poland.” PLoS Computational Biology 18 (9): e1010405. http://dx.doi.org/10.1371/journal.pcbi.1010405
+
+- Davies, Nicholas G., Sam Abbott, Rosanna C. Barnard, Christopher I. Jarvis, Adam J. Kucharski, James D. Munday, Carl A. B. Pearson, et al. 2021. “Estimated Transmissibility and Impact of SARS-CoV-2 Lineage B.1.1.7 in England.” Science 372 (6538). https://doi.org/10.1126/science.abg3055.
+
+- Meakin, Sophie, Sam Abbott, Nikos Bosse, James Munday, Hugo Gruson, Joel Hellewell, Katharine Sherratt, CMMID COVID-19 Working Group, and Sebastian Funk. 2022. “Comparative Assessment of Methods for Short-Term Forecasts of COVID-19 Hospital Admissions in England at the Local Level.” BMC Medicine 20 (1): 86. http://dx.doi.org/10.1186/s12916-022-02271-x
+
+## By others
+
+- Hay, James A., Lee Kennedy-Shaffer, Sanjat Kanjilal, Niall J. Lennon, Stacey B. Gabriel, Marc Lipsitch, and Michael J. Mina. 2021. “Estimating Epidemiologic Dynamics from Cross-Sectional Viral Load Distributions.” Science 373 (6552). https://doi.org/10.1126/science.abh0635.

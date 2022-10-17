@@ -317,7 +317,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.repository == 'epiforecasts/EpiNow2'
     runs-on: macOS-latest
 
-    needs: [R-CMD-check, Lint, Format, test-coverage]
+    needs: [R-CMD-check, Lint, Format]
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -364,26 +364,43 @@ jobs:
           git config --local user.name "GitHub Actions"
           Rscript -e "pkgdown::deploy_to_branch(new_process = FALSE)"
         shell: bash
-
   push_to_registry:
     if: github.ref == 'refs/heads/main' && github.repository == 'epiforecasts/EpiNow2'
     name: Push Docker image to GitHub Packages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
-    needs: [R-CMD-check, pkgdown, test-coverage]
-
+    needs: [R-CMD-check, Lint, Format]
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Login to GitHub Packages
-        uses: docker/login-action@v1 
+
+      - name: Cancel previous builds if present
+        uses: n1hility/cancel-previous-runs@v2
         with:
-          registry: docker.pkg.github.com
+          token: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push to GitHub Packages
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v2
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
           context: .
+          file: ./.devcontainer/Dockerfile
           push: true
-          tags: docker.pkg.github.com/epiforecasts/epinow2/epinow2:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

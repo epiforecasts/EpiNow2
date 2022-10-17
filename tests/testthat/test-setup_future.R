@@ -6,7 +6,7 @@ test_that("setup_future runs without error", {
   expect_type(no_cores, "double")
 })
 
-test_that("setup_future runs when only using a single level of parallisation", {
+test_that("setup_future runs when only using a single level of parallelisation", {
   expect_null(suppressWarnings(setup_future(reported_cases, strategies = "multisession")))
 })
 

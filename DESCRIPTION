@@ -2,7 +2,7 @@ Type: Package
 Package: EpiNow2
 Title: Estimate Real-Time Case Counts and Time-Varying
     Epidemiological Parameters
-Version: 1.3.3
+Version: 1.3.3.9000
 Authors@R: 
     c(person(given = "Sam",
              family = "Abbott",
@@ -63,6 +63,10 @@ Authors@R:
              family = "Monticone",
              role = "ctb",
              email = "pietro.monticone@edu.unito.it"),
+      person(given = "Lloyd",
+             family = "Chapman",
+             role = "ctb",
+             email = "lloyd.chapman1@lshtm.ac.uk "),
       person(given = "EpiForecasts",
              role = "aut"),
       person(given = "Sebastian",
@@ -75,7 +79,7 @@ Description: Estimates the time-varying reproduction number,
     current best practices (Gostic et al. (2020)
     <doi:10.1101/2020.06.18.20134858>).  It aims to help users avoid some
     of the limitations of naive implementations in a framework that is
-    informed by community feedback and is under active development.
+    informed by community feedback and is actively supported.
 License: MIT + file LICENSE
 URL: https://epiforecasts.io/EpiNow2/,
     https://epiforecasts.io/EpiNow2/dev/,
@@ -100,7 +104,7 @@ Imports:
     RcppParallel (>= 5.0.1),
     rlang (>= 0.4.7),
     rstan (>= 2.21.1),
-    rstantools (>= 2.1.1),
+    rstantools (>= 2.2.0),
     runner,
     scales,
     stats,
@@ -127,9 +131,11 @@ LinkingTo:
     rstan (>= 2.21.1),
     StanHeaders (>= 2.21.0-5)
 Biarch: true
+Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-GB
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 SystemRequirements: GNU make
+VignetteBuilder: knitr

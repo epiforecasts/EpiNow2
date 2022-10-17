@@ -16,7 +16,8 @@ epinow(
   stan = stan_opts(),
   horizon = 7,
   CrIs = c(0.2, 0.5, 0.9),
-  zero_threshold = 50,
+  filter_leading_zeros = TRUE,
+  zero_threshold = Inf,
   return_output = FALSE,
   output = c("samples", "plots", "latest", "fit", "timing"),
   plot_args = list(),
@@ -63,10 +64,14 @@ observation model. Defaults to \code{obs_opts()}.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults to 50. Indicates if detected zero
-cases are meaningful by using a threshold of 50 cases on average over the last 7 days. If the average is
-above this threshold then the zero is replaced with the backwards looking rolling average. If set to infinity
-then no changes are made.}
+\item{filter_leading_zeros}{Logical, defaults to TRUE. Should zeros at the
+start of the time series be filtered out.}
+
+\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
+to Inf. Indicates if detected zero cases are meaningful by using a threshold
+number of cases based on the 7 day average. If the average is above this
+threshold then the zero is replaced with the backwards looking rolling
+average. If set to infinity then no changes are made.}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
 if no directory for saving is specified.}
