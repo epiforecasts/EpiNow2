@@ -49,7 +49,7 @@ RUN Rscript -e 'devtools::install_github("milesmcbain/datapasta")'
 
 # install dependencies
 COPY DESCRIPTION /tmp/package/DESCRIPTION
-RUN Rscript -e "devtools::install_deps('/tmp/package', dependencies = c( 'Depends', 'Imports', 'LinkingTo', 'Suggests'))"
+RUN Rscript -e "devtools::install_dev_deps('/tmp/package')"
 
 ## Install the local version of EpiNow2
 Run R CMD INSTALL --no-multiarch --with-keep.source EpiNow2
