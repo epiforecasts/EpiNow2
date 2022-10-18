@@ -105,5 +105,5 @@ test_that("estimate_infections works as expected with failing chains", {
       stuck_chains = 3,
       future = TRUE
     )
-  )
+  ))
 })
