@@ -45,6 +45,7 @@ Convolves cases by a PMF function. This function will soon be removed or replace
 more robust \code{stan} implementation.
 }
 \examples{
+\donttest{
 cases <- example_confirmed
 cases <- cases[, cases := as.integer(confirm)]
 print(cases)
@@ -96,4 +97,5 @@ reports <- sample_approx_dist(
   direction = "forwards",
   type = "median"
 )
+}
 }

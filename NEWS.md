@@ -2,7 +2,9 @@
 
 This release adds a range of new minor features, squashes bugs, enhances documentation, expands unit testing, implements some minor run-time optimisations, and removes some obsolete features.
 
-Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk.
+Thanks to @Bisaloo, @hsbadr, @LloydChapman, @medewitt, and @sbfnk for contributing to this release.
+
+Thanks to @sbfnk, @pearsonca, and @icholasdavies for regression testing this release against `1.3.2`.
 
 ## New features
 
