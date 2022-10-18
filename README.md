@@ -77,7 +77,7 @@ Covid-19 can be found
 `EpiNow2` also supports adjustment for truncated data via
 `estimate_truncation()` (though users may be interested in more
 flexibility and if so should check out the
-[`epinowcast`](https://www.epinowcast.org/epinowcast/) package), and for
+[`epinowcast`](https://package.epinowcast.org/) package), and for
 estimating dependent observations (i.e deaths based on hospital
 admissions) using `estimate_secondary()`.
 
