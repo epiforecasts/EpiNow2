@@ -9,3 +9,5 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
     )
   )
 }
+
+withr::defer(future::plan("sequential"), teardown_env())
