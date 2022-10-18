@@ -1,3 +1,5 @@
+ skip_on_cran()
+ 
  # define example cases
  cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
 
