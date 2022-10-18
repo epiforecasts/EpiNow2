@@ -525,6 +525,7 @@ estimate_delay <- function(delays, ...) {
 #' @importFrom data.table data.table setorder
 #' @importFrom lubridate days
 #' @examples
+#' \donttest{
 #' cases <- example_confirmed
 #' cases <- cases[, cases := as.integer(confirm)]
 #' print(cases)
@@ -576,6 +577,7 @@ estimate_delay <- function(delays, ...) {
 #'   direction = "forwards",
 #'   type = "median"
 #' )
+#'}
 sample_approx_dist <- function(cases = NULL,
                                dist_fn = NULL,
                                max_value = 120,

@@ -41,6 +41,7 @@ Maps from cases by date of infection to date of report via date of
 onset.
 }
 \examples{
+\donttest{
 # define example cases
 cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
 
@@ -89,4 +90,5 @@ report_stochastic <- adjust_infection_to_report(
   }
 )
 print(report_stochastic)
+}
 }

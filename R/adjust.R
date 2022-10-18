@@ -17,6 +17,7 @@
 #' @importFrom data.table setorder data.table data.table 
 #' @importFrom lubridate wday
 #' @examples
+#' \donttest{
 #' # define example cases
 #' cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
 #'
@@ -65,6 +66,7 @@
 #'   }
 #' )
 #' print(report_stochastic)
+#'}
 adjust_infection_to_report <- function(infections, delay_defs,
                                        reporting_model, reporting_effect,
                                        type = "sample",
