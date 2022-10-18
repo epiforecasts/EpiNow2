@@ -83,7 +83,6 @@ test_that("estimate_infections fails as expected when given a very short timeout
   skip_on_cran()
   expect_error(default_estimate_infections(reported_cases, add_stan = list(future = TRUE, max_execution_time = 1)))
   expect_error(default_estimate_infections(reported_cases, add_stan = list(future = FALSE, max_execution_time = 1)))
-  future::plan(sequential)
 })
 
 
@@ -106,6 +105,5 @@ test_that("estimate_infections works as expected with failing chains", {
       stuck_chains = 3,
       future = TRUE
     )
-  ))
-  future::plan(sequential)
+  )
 })
