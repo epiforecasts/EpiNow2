@@ -3,7 +3,7 @@ skip_on_cran()
 futile.logger::flog.threshold("FATAL")
 
  # set number of cores to use
- options(old_opts)
+ old_opts <- options()
  options(mc.cores = ifelse(interactive(), 4, 1))
 
  # get example case counts
