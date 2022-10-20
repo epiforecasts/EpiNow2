@@ -14,8 +14,9 @@ simulate_infections(
 )
 }
 \arguments{
-\item{estimates}{The \code{estimates} element of an \code{epinow} run that has been done with
-output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.}
+\item{estimates}{The \code{estimates} element of an \code{epinow} run that
+has been done with output = "fit", or the result of
+\code{estimate_infections} with \code{return_fit} set to TRUE.}
 
 \item{R}{A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
 contained in \code{estimates}, except elements set to NA. If it is longer than the time series
@@ -34,6 +35,10 @@ simulations are done at once.}
 
 \item{verbose}{Logical defaults to \code{interactive()}. Should a progress bar (from \code{progressr}) be
 shown.}
+}
+\value{
+A list of output as returned by \code{\link[=estimate_infections]{estimate_infections()}} but based on
+results from the specified scenario rather than fitting.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

@@ -22,7 +22,3 @@ A list of parameters some allocated to be empty
 Allocate missing parameters to be empty two dimensional arrays. Used
 internally by \code{simulate_infections.}
 }
-\examples{
-data <- list(x = 1, y = 2, z = 30)
-EpiNow2:::allocate_empty(data, params = c("x", "t"))
-}
