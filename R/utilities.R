@@ -249,13 +249,6 @@ match_output_arguments <- function(input_args = c(),
 #' @export
 #' @importFrom rstan expose_stan_functions stanc
 #' @importFrom purrr map_chr
-#' @examples
-#' \donttest{
-#' expose_stan_fns("rt.stan", target_dir = system.file("stan/functions", package = "EpiNow2"))
-#'
-#' # test by updating Rt
-#' update_Rt(rep(1, 10), log(1.2), rep(0.1, 9), rep(10, 0), numeric(0), 0)
-#' }
 expose_stan_fns <- function(files, target_dir, ...) {
   functions <- paste0(
     "\n functions{ \n",
