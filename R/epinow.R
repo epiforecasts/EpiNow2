@@ -26,6 +26,7 @@
 #' @examples
 #' \donttest{
 #' # set number of cores to use
+#' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # construct example distributions
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
@@ -54,6 +55,8 @@
 #'
 #' # summary of R estimates
 #' summary(out, type = "parameters", params = "R")
+#' 
+#' options(old_opts)
 #' }
 epinow <- function(reported_cases,
                    generation_time = NULL,

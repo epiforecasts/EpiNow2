@@ -74,7 +74,9 @@ for an application forecasting Covid-19 deaths in Germany and Poland.
 \examples{
 \donttest{
 # set number of cores to use
+old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
+
 #' # load data.table for manipulation
 library(data.table)
 # load lubridate for dates
@@ -167,5 +169,7 @@ plot(prev, primary = TRUE)
 # forecast future secondary cases from primary
 prev_preds <- forecast_secondary(prev, cases[101:.N][, value := primary])
 plot(prev_preds, new_obs = cases, from = "2020-06-01")
+
+options(old_opts)
 }
 }

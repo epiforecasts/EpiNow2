@@ -117,6 +117,7 @@ example of using \code{epinow} to estimate Rt for Covid-19 in a country from the
 \examples{
 \donttest{
 # set number of cores to use
+old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 # construct example distributions
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
@@ -145,6 +146,8 @@ plot(out)
 
 # summary of R estimates
 summary(out, type = "parameters", params = "R")
+
+options(old_opts)
 }
 }
 \seealso{

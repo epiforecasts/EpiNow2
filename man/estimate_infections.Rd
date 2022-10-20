@@ -102,7 +102,9 @@ estimate Rt for Covid-19 in a country from the ECDC data source.
 \examples{
 \donttest{
 # set number of cores to use
+old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
+
 # get example case counts
 reported_cases <- example_confirmed[1:60]
 
@@ -249,6 +251,8 @@ rw <- estimate_infections(reported_cases,
 # random walk effects
 summary(rw, type = "parameters", params = "breakpoints")
 plot(rw)
+
+options(old_opts)
 }
 }
 \seealso{
