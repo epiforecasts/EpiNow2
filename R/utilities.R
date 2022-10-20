@@ -8,7 +8,7 @@
 #' to the current directory.
 #' @importFrom purrr walk
 #' @importFrom futile.logger flog.info
-#' @return NULL
+#' @return No return value, called for side effects
 #' @export
 clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
   if (is.null(date)) {
@@ -157,9 +157,6 @@ allocate_delays <- function(delay_var, no_delays) {
 #' empty if missing.
 #' @param n Numeric, number of samples to assign an empty array
 #' @return A list of parameters some allocated to be empty
-#' @examples
-#' data <- list(x = 1, y = 2, z = 30)
-#' EpiNow2:::allocate_empty(data, params = c("x", "t"))
 allocate_empty <- function(data, params, n = 0) {
   for (param in params) {
     if (!exists(param, data)) {
@@ -181,22 +178,6 @@ allocate_empty <- function(data, params, n = 0) {
 #' of futile.logger for details. Supported options are "info" and "debug"
 #' @return A logical vector of named output arguments
 #' @importFrom  futile.logger flog.info flog.debug
-#' @examples
-#' # select nothing
-#' EpiNow2:::match_output_arguments(supported_args = c("fit", "plots", "samples"))
-#'
-#' # select just plots
-#' EpiNow2:::match_output_arguments("plots", supported_args = c("fit", "plots", "samples"))
-#'
-#' # select plots and samples
-#' EpiNow2:::match_output_arguments(c("plots", "samples"),
-#'   supported_args = c("fit", "plots", "samples")
-#' )
-#'
-#' # lazily select arguments
-#' EpiNow2:::match_output_arguments("p",
-#'   supported_args = c("fit", "plots", "samples")
-#' )
 match_output_arguments <- function(input_args = c(),
                                    supported_args = c(),
                                    logger = NULL,
@@ -245,7 +226,7 @@ match_output_arguments <- function(input_args = c(),
 #' @param files A character vector indicating the target files
 #' @param target_dir A character string indicating the target directory for the file
 #' @param ... Additional arguments passed to `rstan::expose_stan_functions`.
-#' @return NULL
+#' @return No return value, called for side effects
 #' @export
 #' @importFrom rstan expose_stan_functions stanc
 #' @importFrom purrr map_chr

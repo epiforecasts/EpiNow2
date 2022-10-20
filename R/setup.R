@@ -57,7 +57,7 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' @param mirror_epinow Logical, defaults to FALSE. Should internal logging be
 #' returned from `epinow` to the console.
 #' @inheritParams setup_target_folder
-#' @return NULL
+#' @return No return value, called for side effects
 #' @export
 #' @importFrom purrr walk
 #' @examples

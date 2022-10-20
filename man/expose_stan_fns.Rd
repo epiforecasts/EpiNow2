@@ -13,6 +13,9 @@ expose_stan_fns(files, target_dir, ...)
 
 \item{...}{Additional arguments passed to \code{rstan::expose_stan_functions}.}
 }
+\value{
+No return value, called for side effects
+}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 his function exposes internal stan functions in R from a user

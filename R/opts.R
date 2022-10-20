@@ -524,22 +524,6 @@ opts_list <- function(opts, reported_cases, ...) {
 #' call to an `_opts()` function.
 #' @param region A character string indicating a region of interest.
 #' @return A list of options
-#' @examples
-#' # uses example case vector
-#' cases <- example_confirmed[1:40]
-#' cases <- data.table::rbindlist(list(
-#'   data.table::copy(cases)[, region := "testland"],
-#'   cases[, region := "realland"]
-#' ))
-#'
-#' # regional options
-#' regional_opts <- opts_list(rt_opts(), cases)
-#' EpiNow2:::filter_opts(regional_opts, "realland")
-#' # default only
-#' EpiNow2:::filter_opts(rt_opts(), "realland")
-#' # settings are NULL in one regions
-#' regional_opts <- update_list(regional_opts, list(realland = NULL))
-#' EpiNow2:::filter_opts(regional_opts, "realland")
 filter_opts <- function(opts, region) {
   if (region %in% names(opts)) {
     out <- opts[[region]]

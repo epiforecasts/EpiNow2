@@ -20,7 +20,7 @@ update_horizon <- function(horizon, target_date, reported_cases) {
 #' Saves observed data to a target location if given.
 #' @inheritParams setup_target_folder
 #' @inheritParams epinow
-#' @return NULL
+#' @return No return value, called for side effects
 #' @export
 save_input <- function(reported_cases, target_folder) {
   if (!is.null(target_folder)) {
@@ -45,7 +45,7 @@ save_input <- function(reported_cases, target_folder) {
 #' @seealso estimate_infections
 #' @inheritParams setup_target_folder
 #' @inheritParams  estimate_infections
-#' @return NULL
+#' @return No return value, called for side effects
 #' @export
 save_estimate_infections <- function(estimates, target_folder = NULL,
                                      samples = TRUE, return_fit = TRUE) {
@@ -105,7 +105,7 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
 #' @param latest_folder Character string containing the path to the latest target folder.
 #' As produced by `setup_target_folder`.
 #' @inheritParams setup_target_folder
-#' @return NULL
+#' @return No return value, called for side effects
 #' @export
 copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
   if (!is.null(target_folder)) {

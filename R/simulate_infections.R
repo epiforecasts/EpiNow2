@@ -4,8 +4,9 @@
 #' This function simulates infections using an existing fit to observed cases but with a modified
 #' time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
 #' Simulations can be run in parallel using `future::plan`.
-#' @param estimates The \code{estimates} element of an \code{epinow} run that has been done with
-#' output = "fit", or the result of \code{estimate_infections} with \code{return_fit} set to TRUE.
+#' @param estimates The \code{estimates} element of an \code{epinow} run that
+#' has been done with output = "fit", or the result of
+#' \code{estimate_infections} with \code{return_fit} set to TRUE.
 #' @param model A compiled stan model as returned by `rstan::stan_model`.
 #' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
 #'  contained in \code{estimates}, except elements set to NA. If it is longer than the time series
@@ -25,6 +26,8 @@
 #' @importFrom progressr with_progress progressor
 #' @importFrom data.table rbindlist as.data.table
 #' @importFrom lubridate days
+#' @return A list of output as returned by [estimate_infections()] but based on
+#' results from the specified scenario rather than fitting.
 #' @export
 #' @examples
 #' \donttest{
