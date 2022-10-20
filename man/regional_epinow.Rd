@@ -115,6 +115,7 @@ progressr::handlers and enable it in batch by setting \code{R_PROGRESSR_ENABLE=T
 
 \donttest{
 # set number of cores to use
+old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
 # construct example distributions
@@ -164,6 +165,8 @@ region_rt <- regional_epinow(
   ),
   verbose = interactive()
 )
+
+options(old_opts)
 }
 }
 \seealso{

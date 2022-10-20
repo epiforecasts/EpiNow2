@@ -40,6 +40,7 @@
 #'
 #' \donttest{
 #' # set number of cores to use
+#' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #'
 #' # construct example distributions
@@ -89,6 +90,8 @@
 #'   ),
 #'   verbose = interactive()
 #' )
+#' 
+#' options(old_opts)
 #' }
 regional_epinow <- function(reported_cases,
                             generation_time,

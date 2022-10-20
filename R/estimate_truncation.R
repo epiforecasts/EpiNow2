@@ -50,7 +50,9 @@
 #' @importFrom data.table copy .N as.data.table merge.data.table setDT setcolorder
 #' @examples
 #' # set number of cores to use
+#' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
+#' 
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:60]
 #'
@@ -99,6 +101,8 @@
 #' print(est$obs)
 #' # validation plot of observations vs estimates
 #' plot(est)
+#' 
+#' options(old_opts)
 estimate_truncation <- function(obs, max_truncation = 10,
                                 model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),

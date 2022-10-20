@@ -2,6 +2,7 @@ library(EpiNow2)
 library(data.table)
 library(ggplot2)
 
+old_opts <- options()
 options(mc.cores = 4)
 
 # set up example generation time
@@ -253,3 +254,5 @@ idf %>%
   summarise_all(mean) %>%
   pivot_wider(names_from = "metric") %>%
   arrange(CRPS)
+
+options(old_opts)

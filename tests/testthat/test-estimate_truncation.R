@@ -3,7 +3,9 @@ skip_on_cran()
 futile.logger::flog.threshold("FATAL")
 
  # set number of cores to use
+ options(old_opts)
  options(mc.cores = ifelse(interactive(), 4, 1))
+
  # get example case counts
  reported_cases <- example_confirmed[1:60]
 
@@ -55,3 +57,5 @@ test_that("estimate_truncation can return values from simulated data and plot
   )
   expect_error(plot(est), NA)
 })
+
+options(old_opts)
