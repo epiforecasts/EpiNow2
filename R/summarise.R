@@ -8,7 +8,8 @@
 #' @param summaries A list of summary data frames as output by `epinow`
 #' @param results_dir An optional character string indicating the location of the results directory to extract results
 #' from.
-#' @param target_date A character string indicating the target date to extract results for. All regions must have results
+#' @param target_date A character string indicating the target date to extract
+#' results for. All regions must have results
 #' for this date.
 #' @param region_scale A character string indicating the name to give the regions being summarised.
 #' @importFrom purrr safely map_chr map_dbl map_chr
@@ -386,8 +387,10 @@ regional_summary <- function(regional_output = NULL,
 #' @description `r lifecycle::badge("maturing")`
 #' Produces summarised data frames of output across regions. Used internally by `regional_summary`.
 #' @param regional_results A list of dataframes as produced by `get_regional_results`
-#' @param results_dir Character string indicating the directory from which to extract results.
-#' @param summary_dir Character string the directory into which to save results as a csv.
+#' @param results_dir Character string indicating the directory from which to
+#' extract results.
+#' @param summary_dir Character string the directory into which to save results
+#' as a csv.
 #' @param type Character string, the region identifier to apply (defaults to region).
 #' @inheritParams get_regional_results
 #' @seealso regional_summary
