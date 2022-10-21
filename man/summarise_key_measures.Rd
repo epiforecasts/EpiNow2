@@ -15,9 +15,11 @@ summarise_key_measures(
 \arguments{
 \item{regional_results}{A list of dataframes as produced by \code{get_regional_results}}
 
-\item{results_dir}{Character string indicating the directory from which to extract results.}
+\item{results_dir}{Character string indicating the directory from which to
+extract results.}
 
-\item{summary_dir}{Character string the directory into which to save results as a csv.}
+\item{summary_dir}{Character string the directory into which to save results
+as a csv.}
 
 \item{type}{Character string, the region identifier to apply (defaults to region).}
 
