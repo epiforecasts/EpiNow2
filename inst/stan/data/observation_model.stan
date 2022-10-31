@@ -8,8 +8,9 @@
   real trunc_mean_sd[truncation];    // truncation sd of mean
   real trunc_sd_mean[truncation];    // truncation mean of sd
   real trunc_sd_sd[truncation];      // truncation sd of sd
-  int<lower = 1> max_truncation[truncation];    // maximum truncation supported
-  int trunc_fixed[truncation];    // maximum truncation supported
+  int<lower = 1> trunc_max[truncation];    // maximum truncation supported
+  int trunc_fixed[truncation];    // whether the truncation distribution is fixed
+  int trunc_dist[truncation];    // 0 = lognormal; 1 = gamma
   int obs_scale;                     // logical controlling scaling of observations
   real obs_scale_mean;               // mean scaling factor for observations
   real obs_scale_sd;                 // standard deviation of observation scaling

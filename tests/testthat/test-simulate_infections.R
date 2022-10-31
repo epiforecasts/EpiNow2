@@ -52,7 +52,7 @@ test_that("simulate infections fails as expected", {
 })
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object with an adjusted Rt in data frame", {
-  R <- c(rep(NA_real_, 32), rep(0.5, 17))
+  R <- c(rep(NA_real_, 31), rep(0.5, 17))
   R_dt <- data.frame(date = summary(out, type = "parameters", param = "R")$date, value = R)
   sims_dt <- simulate_infections(out, R_dt)
   expect_equal(names(sims_dt), c("samples", "summarised", "observations"))

@@ -31,7 +31,7 @@
 #' and a confirm (integer) variable. Each data set should be a snapshot
 #' of the reported data over time. All data sets must contain a complete vector
 #' of dates.
-#' @param max_truncation Integer, defaults to 10. Maximum number of
+#' @param trunc_max Integer, defaults to 10. Maximum number of
 #' days to include in the truncation distribution.
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
@@ -101,9 +101,9 @@
 #' print(est$obs)
 #' # validation plot of observations vs estimates
 #' plot(est)
-#' 
+#'
 #' options(old_opts)
-estimate_truncation <- function(obs, max_truncation = 10,
+estimate_truncation <- function(obs, trunc_max = 10,
                                 model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 verbose = TRUE,
@@ -118,7 +118,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
     confirm := NULL
   ])
   obs <- purrr::reduce(obs, merge, all = TRUE)
-  obs_start <- nrow(obs) - max_truncation - sum(is.na(obs$`1`)) + 1
+  obs_start <- nrow(obs) - trunc_max - sum(is.na(obs$`1`)) + 1
   obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
   obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
   obs_data <- obs_data[obs_start:.N]
@@ -129,7 +129,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
     obs_dist = obs_dist,
     t = nrow(obs_data),
     obs_sets = ncol(obs_data),
-    trunc_max = max_truncation
+    trunc_max = trunc_max
   )
 
   # initial conditions
@@ -161,7 +161,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
     mean_sd = round(rstan::summary(fit, pars = "logmean")$summary[3], 3),
     sd = round(rstan::summary(fit, pars = "logsd")$summary[1], 3),
     sd_sd = round(rstan::summary(fit, pars = "logsd")$summary[3], 3),
-    max = max_truncation
+    max = trunc_max
   )
 
   # summarise reconstructed observations
@@ -184,7 +184,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
     ]
   link_obs <- function(index) {
     target_obs <- dirty_obs[[index]][, index := .N - 0:(.N - 1)]
-    target_obs <- target_obs[index < max_truncation]
+    target_obs <- target_obs[index < trunc_max]
     estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
     estimates <- estimates[, lapply(.SD, as.integer)]
     estimates <- estimates[, index := .N - 0:(.N - 1)]
@@ -194,7 +194,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
     if (!is.null(estimates$Rhat)) {
       estimates[, c("Rhat") := NULL]
     }
-    
+
     target_obs <-
       data.table::merge.data.table(
         target_obs, last_obs,

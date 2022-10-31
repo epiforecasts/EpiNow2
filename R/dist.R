@@ -710,3 +710,79 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
   )
   return(out)
 }
+
+##' Delay distribution.
+##'
+##' @description `r lifecycle::badge("stable")`
+##' Defines the parameters of a delay distribution
+##' @param mean Numeric. If the only non-zero summary parameter
+##' then this is the fixed interval of the delay distribugion. If the `sd` is
+##' non-zero then this is the mean of the distribution given by \code{dist}.
+##' If this is not given a vector of empty vectors is returned.
+##' @param sd Numeric, defaults to 0. Sets the standard deviation of the delay
+##' distribution.
+##' @param mean_sd Numeric, defaults to 0. Sets the standard deviation of the
+##' uncertainty around the mean of the delay distribution.
+##' @param sd_sd Numeric, defaults to 0. Sets the standard deviation of the
+##' uncertainty around the sd of the delay distribution.
+##' @param dist Character, defaults to "lognormal". The (discretised) distribution
+##' to be used. If sd == 0 then the delay is fixed and a delta function will be
+##' used whatever the choice here.
+##' @param max Numeric, maximum value of the delay distribution
+##' @param fixed Logical, defaults to `FALSE`. Should delays be treated
+##' as coming from fixed (vs uncertain) distributions. Making this simplification
+##' drastically reduces compute requirements.
+##' @return A list of delay distribution options to be used downstream
+##' @author Sebastian Funk
+##' @export
+delay_dist <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
+                       dist = c("lognormal", "gamma"), max,
+                       fixed = FALSE) {
+  dist <- match.arg(dist)
+
+  if (missing(mean)) {
+    ret <- list(
+      mean_mean = numeric(0),
+      mean_sd = numeric(0),
+      sd_mean = numeric(0),
+      sd_sd = numeric(0),
+      fixed = integer(0),
+      max = integer(0),
+      dist = integer(0)
+    )
+  } else {
+    ret <- list(
+      mean_mean = mean,
+      mean_sd = mean_sd,
+      sd_mean = sd,
+      sd_sd = sd_sd
+    )
+    if (fixed) {
+      ret$mean_sd <- 0
+      ret$sd_sd <- 0
+    }
+    ret$fixed <- as.integer(ret$mean_sd == 0 && ret$mean_sd == 0)
+
+    ## check if it's a fixed value
+    if (ret$sd_mean == 0 && ret$sd_sd == 0) {
+      if (ret$mean_mean %% 1 != 0) {
+        stop(
+          "When a delay distribution is set to a constant ",
+          "(sd == 0 and sd_sd == 0) then the mean parameter ",
+          "must be an integer."
+        )
+      }
+      ret$max <- ret$mean_mean
+      if (ret$mean_sd > 0) {
+        stop(
+          "When a delay distribution has sd == 0 and ",
+          "sd_sd == 0 then mean_sd must be 0, too."
+        )
+      }
+    } else {
+      ret$max <- max
+    }
+    ret$dist <- which(eval(formals()[["dist"]]) == dist) - 1
+  }
+  return(lapply(ret, array))
+}

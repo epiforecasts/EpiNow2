@@ -52,7 +52,7 @@ void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,
 }
 
 // combined fixed/variable pmfs
-vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf_n, int len, int dist) {
+vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf_n, int[] dist, int len, int truncate) {
   int n_fixed = num_elements(fixed_pmf);
   int n_variable = num_elements(pmf_mu);
   vector[len] pmf = rep_vector(0, len);
@@ -63,7 +63,7 @@ vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf
   }
   for (s in 1:n_variable) {
     vector[pmf_n[s]] variable_pmf;
-    variable_pmf = discretised_pmf(pmf_mu[s], pmf_sigma[s], pmf_n[s], dist);
+    variable_pmf = discretised_pmf(pmf_mu[s], pmf_sigma[s], pmf_n[s], dist[s], truncate);
     pmf = convolve(pmf, variable_pmf, len);
   }
   return(pmf);

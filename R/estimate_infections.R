@@ -6,7 +6,7 @@
 #' from reported cases. It uses either a generative Rt model or non-parametric
 #' back calculation to estimate underlying latent infections and then maps
 #' these infections to observed cases via uncertain reporting delays and a
-#' flexible observation model. See the examples and function arguments for th
+#' flexible observation model. See the examples and function arguments for the
 #' details of all options. The default settings may not be sufficient for your
 #' use case so the number of warmup samples (`stan_args = list(warmup)`) may
 #' need to be increased as may the overall number of samples. Follow the links
@@ -16,7 +16,7 @@
 #' [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867)
 #' for an example of using `estimate_infections` within the `epinow` wrapper to
 #' estimate Rt for Covid-19 in a country from the ECDC data source.
-#' 
+#'
 #' @param reported_cases A data frame of confirmed cases (confirm) by date
 #' (date). confirm must be integer and date must be in date format.
 #' @param generation_time A call to `generation_time_opts()` defining the
@@ -28,12 +28,12 @@
 #' @param horizon Numeric, defaults to 7. Number of days into the future to
 #' forecast.
 #' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed.
-#' Corresponds to the "DEBUG" level from `futile.logger`. See `setup_logging` 
+#' Corresponds to the "DEBUG" level from `futile.logger`. See `setup_logging`
 #' for more detailed logging options.
 #' @export
 #' @return A list of output including: posterior samples, summarised posterior
 #' samples, data used to fit the model, and the fit object itself.
-#' 
+#'
 #' @seealso epinow regional_epinow forecast_infections simulate_infections
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
@@ -51,7 +51,7 @@
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
-#' 
+#'
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:60]
 #'
@@ -205,7 +205,7 @@
 #' # random walk effects
 #' summary(rw, type = "parameters", params = "breakpoints")
 #' plot(rw)
-#' 
+#'
 #' options(old_opts)
 #' }
 estimate_infections <- function(reported_cases,
@@ -244,7 +244,7 @@ estimate_infections <- function(reported_cases,
   }
   # Make sure there are no missing dates and order cases
   reported_cases <- create_clean_reported_cases(
-    reported_cases, horizon, 
+    reported_cases, horizon,
     filter_leading_zeros = filter_leading_zeros,
     zero_threshold = zero_threshold
   )

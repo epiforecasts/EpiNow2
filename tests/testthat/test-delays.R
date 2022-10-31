@@ -1,4 +1,4 @@
-test_stan_data <- function(generation_time = generation_time_opts(),
+test_stan_data <- function(generation_time = list(),
                            delays = delay_opts(),
                            truncation = trunc_opts(),
                            params = c()) {
@@ -19,7 +19,7 @@ test_stan_data <- function(generation_time = generation_time_opts(),
 
 test_that("generation times can be specified in different ways", {
   gt_params <-
-    c("gt_mean_mean", "gt_mean_sd", "gt_sd_mean", "gt_sd_sd", "max_gt")
+    c("gt_mean_mean", "gt_mean_sd", "gt_sd_mean", "gt_sd_sd", "gt_max")
   expect_equal(
     test_stan_data(params = gt_params),
     c(1, 0, 0, 0, 1)
@@ -39,7 +39,7 @@ test_that("generation times can be specified in different ways", {
 test_that("delay parameters can be specified in different ways", {
   delay_params <-
     c("delay_mean_mean", "delay_mean_sd", "delay_sd_mean", "delay_sd_sd",
-      "max_delay")
+      "delay_max")
   expect_equal(
     test_stan_data(delays = delay_opts(list(mean = 3)),
                    params = delay_params),
@@ -55,7 +55,7 @@ test_that("delay parameters can be specified in different ways", {
 test_that("truncation parameters can be specified in different ways", {
   trunc_params <-
     c("trunc_mean_mean", "trunc_mean_sd", "trunc_sd_mean", "trunc_sd_sd",
-      "max_truncation")
+      "trunc_max")
   expect_equal(
     test_stan_data(truncation = trunc_opts(mean = 3, sd = 1, max = 5),
                    params = trunc_params),
@@ -71,7 +71,7 @@ test_that("contradictory generation times are caught", {
 
 test_that("contradictory delays are caught", {
   expect_error(test_stan_data(delays = delay_opts(list(mean = 3.5))),
-               "must be integer")
+               "must be an integer")
   expect_error(test_stan_data(delays = delay_opts(list(mean = 3, mean_sd = 1))),
                "must be 0")
 })

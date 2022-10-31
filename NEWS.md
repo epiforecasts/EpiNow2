@@ -2,23 +2,6 @@
 
 ## New features
 
-## Model changes
-
-* Switched to using optimised versions of the discretised distributions supported for the
-reporting delay and the generation time. These are based on an implementation in [`epinowcast`](https://package.epinowcast.org/) by Adrian Lison and Sam Abbott.
-
-## Documentation
-
-## Deprecated features
-
-# EpiNow2 1.3.3
-
-This release includes some breaking changes and new features designed for those wishing reduced run-times.
-
-Thanks to @seabbs, and @sbfnk.
-
-## New features
-
 * Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for precomputing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
 
 ## Model changes

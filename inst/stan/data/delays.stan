@@ -10,4 +10,5 @@
   real delay_mean_mean[delays];// prior mean of mean incubation period
   real delay_sd_mean[delays];  // prior sd of sd of incubation period
   real delay_sd_sd[delays];    // prior sd of sd of incubation period
-  int<lower = 1> max_delay[delays];       // maximum incubation period
+  int<lower = 1> delay_max[delays];       // maximum incubation period
+  int delay_dist[delays];       // 0 = lognormal; 1 = gamma

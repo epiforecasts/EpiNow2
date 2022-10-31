@@ -1,22 +1,18 @@
 #' Generation Time Distribution Options
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Returns generation time parameters in a format for lower level model use.
-#' @param mean Numeric, defaults to 1. If the only non-zero summary parameter
-#' then  this is the fixed interval of the generation time. If the `sd` is
-#' non-zero then this is the mean of a gamma distribution.
-#' @param sd Numeric, defaults to 0. Sets the standard deviation for a gamma
-#' distribution generation time.
-#' @param mean_sd Numeric, defaults to 0. The prior uncertainty for the mean
-#' of the generation time.
-#' @param sd_sd Numeric, defaults to 0. The prior uncertainty for the standard
-#' deviation of the generation time.
-#' @param max Numeric, maximum value to allow. Defaults to 15.
-#' @param fixed Logical, defaults to `FALSE`. Should reporting delays be treated
-#' as coming from fixed (vs uncertain) distributions. Making this simplification
-#' drastically reduces compute requirements.
+#' Returns generation time parameters in a format for lower level model use. The
+#' generation time can either be given as a \code{disease} and \code{source} to
+#' be passed to [get_generation_time], or as parameters of a distribution to be
+#' passed to [delay_dist].
+#' @param ... Any parameters to be passed to [delay_dist], if the generation time
+#' is given as parameters of a distribution rather than a \code{disease} and
+#' \code{source}. In this case if the \code{mean} parameter is not set a mean of
+#' 1 will be assumed, if the \code{max} parameter not set then the \code{max} will
+#' be set to 15 to ensure backwards compatibility, and if no \code{dist} parameter
+#' is given then a gamma distribution will be used for backwards compatibility.
 #' @inheritParams get_generation_time
-#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
 #' @return A list summarising the input delay distributions.
 #' @export
 #' @examples
@@ -28,53 +24,37 @@
 #'
 #' # An uncertain gamma distributed generation time
 #' generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
-generation_time_opts <- function(mean = 1, mean_sd = 0, sd = 0, sd_sd = 0,
-                                 max = 15, fixed = FALSE, disease, source) {
-  if (missing(disease) & missing(source)) {
-    gt <- list(
-      mean = mean,
-      mean_sd = mean_sd,
-      sd = sd,
-      sd_sd = sd_sd,
-      max = max
-    )
-  }else{
-    gt <- get_generation_time(
+generation_time_opts <- function(..., disease, source) {
+  dot_options <- list(...) ## options for delay_dist
+  ## check consistent options are given
+  type_options <- (length(dot_options) > 0) + ## distributional parameters
+    (!missing(disease) && !missing(source)) ## from included distributions
+  if (type_options > 1)  {
+    stop("Generation time should be given either as distributional options  ",
+         "or as disease/source, but not both.")
+  }
+
+  if (!missing(disease) && !missing(source)) { ## generation time provided as disease/source
+    dist <- get_generation_time(
       disease = disease, source = source, max_value = max
     )
-    gt$gt_fixed <- fixed
+  } else { ## generation time provided as distributional parameters or not at all
+    ## make gamma default for backwards compatibility
+    if (!("dist" %in% names(dot_options))) {
+      dot_options$dist <- "gamma"
+    }
+    ## set default of max=15 for backwards compatibility
+    if (!("max" %in% names(dot_options))) {
+      dot_options$max <- 15
+    }
+    ## set default of mean=1 for backwards compatibility
+    if (!("mean" %in% names(dot_options))) {
+      dot_options$mean <- 1
+    }
+     gt <- do.call(delay_dist, dot_options)
   }
+  names(gt) <- paste0("gt_", names(gt))
 
-  if (fixed) {
-    gt$mean_sd <- 0
-    gt$sd_sd <- 0
-  }
-  gt$fixed <- gt$mean_sd == 0 && gt$mean_sd == 0
-
-  ## check if generation time is fixed
-  if (gt$sd == 0 && gt$sd_sd == 0) {
-    if (gt$mean %% 1 != 0) {
-      stop(
-        "When the generation time is set to a constant it must be an integer"
-      )
-    }
-    if (gt$max != gt$mean) {
-      gt$max <- gt$mean
-    }
-    if (gt$mean_sd > 0) {
-      stop("Error in generation time definition: if sd_mean is 0 and ",
-           "sd_sd is 0 then mean_sd must be 0, too.")
-    }
-    gt$gt_pmf <- c(1, rep(0, gt$gt_max - 1))
-  }else{
-    gt$pmf <- discretised_gamma_pmf(
-      mean = gt$gt_mean, sd = gt$gt_sd, max_d = gt$gt_max, zero_pad = 1,
-      reverse = TRUE
-    )
-  }
-  if (gt$gt_sd_sd == 0 & gt$gt_mean_sd == 0) {
-    gt$fixed <- TRUE
-  }
   return(gt)
 }
 
@@ -97,9 +77,11 @@ generation_time_opts <- function(mean = 1, mean_sd = 0, sd = 0, sd_sd = 0,
 #' real-valued. In that case, "max" also needs to be given.
 #' The "mean_sd" and "sd_sd" parameters should be provided to represent
 #' uncertainty in the parameter values of the delay but are optional.
-#' @param fixed Logical, defaults to `FALSE`. Should reporting delays be treated
-#' as coming from fixed (vs uncertain) distributions. Making this simplification
-#' drastically reduces compute requirements.
+#' @param fixed Logical, defaults to `FALSE`. Should all reporting delays be
+#' treated as coming from fixed (vs uncertain) distributions. Making this
+#' simplification drastically reduces compute requirements. Setting this here
+#' overrides any of the constituent delay distributions being set to be fixed
+#' or not.
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input delay distributions.
 #' @export
@@ -118,91 +100,62 @@ generation_time_opts <- function(mean = 1, mean_sd = 0, sd = 0, sd_sd = 0,
 #' delay_opts(list(mean = 1, mean_sd = 0, sd = 0.5, sd_sd = 0, max = 15))
 delay_opts <- function(..., fixed = FALSE) {
   delays <- list(...)
-  data <- list()
-  data$delays <- length(delays)
-  for (i in seq_along(delays)) {
-    for (param in c("mean_sd", "sd", "sd_sd")) {
-      if (!(param %in% names(delays[[i]]))) {
-        delays[[i]][[param]] <- 0
-      }
-    }
-    if (fixed) {
-      delays[[i]][["mean_sd"]] <- 0
-      delays[[i]][["sd_sd"]] <- 0
-    }
-    if (delays[[i]]$sd == 0 && delays[[i]]$sd_sd == 0) {
-      if (delays[[i]]$mean_sd > 0) {
-        stop("Error in delay distribution definition: if sd_mean is 0 and ",
-             "sd_sd is 0 then mean_sd must be 0, too.")
-      }
-      if (delays[[i]]$mean %% 1 != 0) {
-        stop("Error: if using a fixed delay it must be integer")
-      }
-    }
-    if (delays[[i]]$mean_sd == 0 &&
-        delays[[i]]$sd == 0 &&
-        delays[[i]]$sd_sd == 0) {
-      delays[[i]]$max <- delays[[i]]$mean
-    }
-  }
-   if (data$delays > 0) {
-    delays <- purrr::transpose(delays)
+  data <- lapply(delays, do.call, what = delay_dist)
+
+  if (fixed) { ## set all to fixed
+    data <- lapply(data, function(x) {
+      x$fixed <- 1
+      x$mean_sd <- 0
+      x$sd_sd <- 0
+      return(x)
+    })
   }
 
-  # Estimate the mean delay -----------------------------------------------
-  if (data$delays > 0) {
-    data$seeding_time <- sum(
-      purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2 / 2))
-    )
-    if (data$seeding_time < 1) {
-      data$seeding_time <- 1
-    } else {
-      data$seeding_time <- as.integer(data$seeding_time)
-    }
+  if (length(data) > 0) {
+    data <- purrr::transpose(data)
+    ## convert back to arrays
+    data <- lapply(data, function(x) array(unlist(x)))
   } else {
-    data$seeding_time <- 1
+    data <- delay_dist()
   }
-  data$delay_mean_mean <- allocate_delays(delays$mean, data$delays)
-  data$delay_mean_sd <- allocate_delays(delays$mean_sd, data$delays)
-  data$delay_sd_mean <- allocate_delays(delays$sd, data$delays)
-  data$delay_sd_sd <- allocate_delays(delays$sd_sd, data$delays)
-  data$max_delay <- allocate_delays(delays$max, data$delays)
+
+  names(data) <- paste0("delay_", names(data))
+  # Estimate the mean delay -----------------------------------------------
+  data$seeding_time <- sum(
+    purrr::map2_dbl(data$mean_mean, data$sd_mean, ~ exp(.x + .y^2 / 2))
+  )
+  if (data$seeding_time < 1) {
+    data$seeding_time <- 1
+  } else {
+    data$seeding_time <- as.integer(data$seeding_time)
+  }
+
+  data$delays <- length(delays)
 
   data$uncertain_mean_delays <- array(which(data$delay_mean_sd > 0))
   data$uncertain_sd_delays <- array(which(data$delay_sd_sd > 0))
   data$fixed_delays <- array(
-    which(data$delay_mean_sd == 0  & data$delay_sd_sd == 0)
+    which(data$delay_mean_sd == 0 & data$delay_sd_sd == 0)
   )
 
   data$n_uncertain_mean_delays <- length(data$uncertain_mean_delays)
   data$n_uncertain_sd_delays <- length(data$uncertain_sd_delays)
   data$n_fixed_delays <- length(data$fixed_delays)
+
   return(data)
 }
 
 #' Truncation Distribution Options
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Returns a log-normal truncation distribution formatted for usage by
+#' Returns a truncation distribution formatted for usage by
 #'  downstream functions. See `estimate_truncation()` for an approach to
 #'  estimate this distribution.
-#' @param mean Numeric, defaults to 0. Mean on the log scale of the truncation
-#' distribution.
-#'
-#' @param sd Numeric, defaults to 0. Sets the standard deviation for the log
-#' normal truncation distribution.
-#'
-#' @param mean_sd Numeric, defaults to 0. The prior uncertainty for the log
-#' normal truncation distribution.
-#'
-#' @param sd_sd Numeric, defaults to 0. The prior uncertainty for the standard
-#' deviation of the  log normal truncation distribution.
-#'
-#' @param max Numeric, maximum value to allow. Defaults to 0.
-#' @param fixed Logical, defaults to `FALSE`. Should reporting delays be treated
-#' as coming from fixed (vs uncertain) distributions. Making this simplification
-#' drastically reduces compute requirements.
-#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+#' @param ... Any parameters to be passed to [delay_dist]. If the `max` parameter
+#' is not set but other distributional parameters given then the `max` will be
+#' set to 15 to ensure backwards compatibility. Also if no `dist` parameter is given
+#' then a gamma distribution will be used for backwards compatibility.
+#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
 #' @return A list summarising the input truncation distribution.
 #' @export
 #' @examples
@@ -211,32 +164,13 @@ delay_opts <- function(..., fixed = FALSE) {
 #'
 #' # truncation dist
 #' trunc_opts(mean = 3, sd = 2)
-trunc_opts <- function(mean = 0, sd = 0, mean_sd = 0, sd_sd = 0, max = 0,
-                       fixed = FALSE) {
-  present <- !(max == 0)
-  data <- list()
-  if (fixed) {
-    mean_sd <- 0
-    sd_sd <- 0
-  }
-  data$truncation <- as.numeric(present)
-  if (present) {
-    data$trunc_mean_mean <- allocate_delays(mean, data$truncation)
-    data$trunc_mean_sd <- allocate_delays(mean_sd, data$truncation)
-    data$trunc_sd_mean <- allocate_delays(sd, data$truncation)
-    data$trunc_sd_sd <- allocate_delays(sd_sd, data$truncation)
-    data$max_truncation <- allocate_delays(max, data$truncation)
-    data$trunc_fixed <- allocate_delays(
-      as.integer(mean_sd == 0 && sd_sd == 0), data$truncation
-    )
-  } else {
-    data$trunc_mean_mean <- numeric()
-    data$trunc_mean_sd <- numeric()
-    data$trunc_sd_mean <- numeric()
-    data$trunc_sd_sd <- numeric()
-    data$max_truncation <- integer()
-    data$trunc_fixed <- integer()
-  }
+trunc_opts <- function(...) {
+  dot_options <- list(...) ## options for delay_dist
+  present <- (length(dot_options) > 0)
+  data <- do.call(delay_dist, dot_options)
+  names(data) <- paste0("trunc_", names(data))
+  data$truncation <- as.integer(present)
+
   return(data)
 }
 

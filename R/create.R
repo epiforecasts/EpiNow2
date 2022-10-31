@@ -395,7 +395,7 @@ create_stan_data <- function(reported_cases, generation_time,
                              backcalc, shifted_cases,
                              truncation) {
 
-  ## make sure we have at least max_gt seeding time
+  ## make sure we have at least gt_max seeding time
   delays$seeding_time <- max(delays$seeding_time, generation_time$max)
 
   ## for backwards compatibility call generation_time_opts internally
@@ -408,14 +408,10 @@ create_stan_data <- function(reported_cases, generation_time,
     shifted_cases = shifted_cases,
     t = length(reported_cases$date),
     horizon = horizon,
-    gt_mean_mean = generation_time$mean,
-    gt_mean_sd = generation_time$mean_sd,
-    gt_sd_mean = generation_time$sd,
-    gt_sd_sd = generation_time$sd_sd,
-    max_gt = array(generation_time$max),
-    gt_fixed = as.integer(generation_time$fixed),
     burn_in = 0
   )
+  # add gt data
+  data <- c(data, generation_time)
   # add delay data
   data <- c(data, delays)
   # add truncation data
@@ -564,6 +560,9 @@ create_initial_conditions <- function(data) {
         mean = data$obs_scale_mean,
         sd = data$obs_scale_sd * 0.1
       ))
+    }
+    if (data$week_effect > 0) {
+      out$day_of_week_simplex = rep(1 / data$week_effect, data$week_effect)
     }
     return(out)
   }

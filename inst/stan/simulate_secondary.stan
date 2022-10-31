@@ -22,20 +22,21 @@ data {
 }
 
 transformed data {
-  int max_total_delay = sum(max_delay) - num_elements(max_delay) + 1;
+  int delay_max_total = sum(delay_max) - num_elements(delay_max) + 1;
 }
 
 generated quantities {
   int sim_secondary[n, all_dates ? t : h];
   for (i in 1:n) {
     vector[t] secondary;
-    vector[max_total_delay] delay_pmf;
+    vector[delay_max_total] delay_pmf;
     delay_pmf = combine_pmfs(
       to_vector([ 1 ]),
       delay_mean[i],
       delay_sd[i],
-      max_delay,
-      max_total_delay,
+      delay_max,
+      delay_dist,
+      delay_max_total,
       0
     );
 

@@ -16,16 +16,16 @@ data {
 }
 
 transformed data {
-  int max_fixed_delay =
-    sum(max_delay[fixed_delays]) - num_elements(fixed_delays) + 1;
-  int max_total_delay = (delays == 0 ? 0 :
-    sum(max_delay) - num_elements(max_delay) + 1);
-  vector[truncation && trunc_fixed[1] ? max_truncation[1] : 0] trunc_fixed_pmf;
-  vector[max_fixed_delay] fixed_delays_pmf;
+  int delay_max_fixed =
+    sum(delay_max[fixed_delays]) - num_elements(fixed_delays) + 1;
+  int delay_max_total = (delays == 0 ? 0 :
+    sum(delay_max) - num_elements(delay_max) + 1);
+  vector[truncation && trunc_fixed[1] ? trunc_max[1] : 0] trunc_fixed_pmf;
+  vector[delay_max_fixed] fixed_delays_pmf;
 
   if (truncation && trunc_fixed[1]) {
     trunc_fixed_pmf = discretised_pmf(
-      trunc_mean_mean[1], trunc_sd_mean[1], max_truncation[1], 0
+      trunc_mean_mean[1], trunc_sd_mean[1], trunc_max[1], trunc_dist[1], 0
     );
   }
   if (n_fixed_delays) {
@@ -33,8 +33,9 @@ transformed data {
       to_vector([ 1 ]),
       delay_mean_mean[fixed_delays],
       delay_sd_mean[fixed_delays],
-      max_delay[fixed_delays],
-      max_fixed_delay,
+      delay_max[fixed_delays],
+      delay_dist[fixed_delays],
+      delay_max_fixed,
       0
     );
   }
@@ -55,9 +56,9 @@ transformed parameters {
   vector<lower=0>[t] secondary;
   // calculate secondary reports from primary
   {
-    vector[max_total_delay] delay_pmf;
+    vector[delay_max_total] delay_pmf;
     delay_pmf = combine_pmfs(
-      fixed_delays_pmf, delay_mean, delay_sd, max_delay, max_total_delay, 0
+      fixed_delays_pmf, delay_mean, delay_sd, delay_max, delay_dist, delay_max_total, 0
     );
     secondary = calculate_secondary(primary, obs, frac_obs, delay_pmf, cumulative,
                                     historic, primary_hist_additive,
@@ -69,9 +70,9 @@ transformed parameters {
  }
  // truncate near time cases to observed reports
  if (truncation) {
-   vector[max_truncation[1]] trunc_cmf;
+   vector[trunc_max[1]] trunc_cmf;
    trunc_cmf = cumulative_sum(combine_pmfs(
-     trunc_fixed_pmf, trunc_mean, trunc_sd, max_truncation, max_truncation[1], 0
+     trunc_fixed_pmf, trunc_mean, trunc_sd, trunc_max, trunc_dist, trunc_max[1], 0
    ));
    secondary = truncate(secondary, trunc_cmf, 0);
  }

@@ -4,33 +4,20 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(mean = 0, sd = 0, mean_sd = 0, sd_sd = 0, max = 0)
+trunc_opts(...)
 }
 \arguments{
-\item{mean}{Numeric, defaults to 0. Mean on the log scale of the truncation
-distribution.}
-
-\item{sd}{Numeric, defaults to 0. Sets the standard deviation for the log
-normal truncation distribution.}
-
-\item{mean_sd}{Numeric, defaults to 0. The prior uncertainty for the log
-normal truncation distribution.}
-
-\item{sd_sd}{Numeric, defaults to 0. The prior uncertainty for the standard
-deviation of the  log normal truncation distribution.}
-
-\item{max}{Numeric, maximum value to allow. Defaults to 0.}
-
-\item{fixed}{Logical, defaults to \code{FALSE}. Should reporting delays be treated
-as coming from fixed (vs uncertain) distributions. Making this simplification
-drastically reduces compute requirements.}
+\item{...}{Any parameters to be passed to \link{delay_dist}. If the \code{max} parameter
+is not set but other distributional parameters given then the \code{max} will be
+set to 15 to ensure backwards compatibility. Also if no \code{dist} parameter is given
+then a gamma distribution will be used for backwards compatibility.}
 }
 \value{
 A list summarising the input truncation distribution.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Returns a log-normal truncation distribution formatted for usage by
+Returns a truncation distribution formatted for usage by
 downstream functions. See \code{estimate_truncation()} for an approach to
 estimate this distribution.
 }
@@ -42,5 +29,5 @@ trunc_opts()
 trunc_opts(mean = 3, sd = 2)
 }
 \seealso{
-convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
 }

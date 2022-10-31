@@ -87,7 +87,7 @@ Uses a non-parametric approach to reconstruct cases by date of infection
 from reported cases. It uses either a generative Rt model or non-parametric
 back calculation to estimate underlying latent infections and then maps
 these infections to observed cases via uncertain reporting delays and a
-flexible observation model. See the examples and function arguments for th
+flexible observation model. See the examples and function arguments for the
 details of all options. The default settings may not be sufficient for your
 use case so the number of warmup samples (\code{stan_args = list(warmup)}) may
 need to be increased as may the overall number of samples. Follow the links

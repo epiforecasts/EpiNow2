@@ -23,7 +23,7 @@ data {
 }
 
 transformed data {
-  int max_total_delay = sum(max_delay) - num_elements(max_delay) + 1;
+  int delay_max_total = sum(delay_max) - num_elements(delay_max) + 1;
 }
 
 generated quantities {
@@ -34,16 +34,17 @@ generated quantities {
   real r[n, t - seeding_time];
   for (i in 1:n) {
     // generate infections from Rt trace
-    vector[max_gt[1]] gt_pmf;
-    vector[max_total_delay] delay_pmf;
+    vector[gt_max[1]] gt_pmf;
+    vector[delay_max_total] delay_pmf;
 
-    gt_pmf = discretised_pmf(gt_mean[i, 1], gt_sd[i, 1], max_gt[1], 1);
+    gt_pmf = discretised_pmf(gt_mean[i, 1], gt_sd[i, 1], gt_max[1], gt_dist[1], 1);
     delay_pmf = combine_pmfs(
       to_vector([ 1 ]),
       delay_mean[i],
       delay_sd[i],
-      max_delay,
-      max_total_delay,
+      delay_max,
+      delay_dist,
+      delay_max_total,
       0
     );
 

@@ -21,9 +21,12 @@ greater than 0 this represents a delay distribution and "mean" can be
 real-valued. In that case, "max" also needs to be given.
 The "mean_sd" and "sd_sd" parameters should be provided to represent
 uncertainty in the parameter values of the delay but are optional.}
-\item{fixed}{Logical, defaults to \code{FALSE}. Should reporting delays be treated
-as coming from fixed (vs uncertain) distributions. Making this simplification
-drastically reduces compute requirements.}
+
+\item{fixed}{Logical, defaults to \code{FALSE}. Should all reporting delays be
+treated as coming from fixed (vs uncertain) distributions. Making this
+simplification drastically reduces compute requirements. Setting this here
+overrides any of the constituent delay distributions being set to be fixed
+or not.}
 }
 \value{
 A list summarising the input delay distributions.

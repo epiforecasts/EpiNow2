@@ -55,7 +55,7 @@
 #'
 #' # summary of R estimates
 #' summary(out, type = "parameters", params = "R")
-#' 
+#'
 #' options(old_opts)
 #' }
 epinow <- function(reported_cases,

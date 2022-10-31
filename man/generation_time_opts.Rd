@@ -4,36 +4,15 @@
 \alias{generation_time_opts}
 \title{Generation Time Distribution Options}
 \usage{
-generation_time_opts(
-  mean = 1,
-  mean_sd = 0,
-  sd = 0,
-  sd_sd = 0,
-  max = 15,
-  fixed = FALSE,
-  disease,
-  source
-)
+generation_time_opts(..., disease, source)
 }
 \arguments{
-\item{mean}{Numeric, defaults to 1. If the only non-zero summary parameter
-then  this is the fixed interval of the generation time. If the \code{sd} is
-non-zero then this is the mean of a gamma distribution.}
-
-\item{mean_sd}{Numeric, defaults to 0. The prior uncertainty for the mean
-of the generation time.}
-
-\item{sd}{Numeric, defaults to 0. Sets the standard deviation for a gamma
-distribution generation time.}
-
-\item{sd_sd}{Numeric, defaults to 0. The prior uncertainty for the standard
-deviation of the generation time.}
-
-\item{max}{Numeric, maximum value to allow. Defaults to 15.}
-
-\item{fixed}{Logical, defaults to \code{FALSE}. Should reporting delays be treated
-as coming from fixed (vs uncertain) distributions. Making this simplification
-drastically reduces compute requirements.}
+\item{...}{Any parameters to be passed to \link{delay_dist}, if the generation time
+is given as parameters of a distribution rather than a \code{disease} and
+\code{source}. In this case if the \code{mean} parameter is not set a mean of
+1 will be assumed, if the \code{max} parameter not set then the \code{max} will
+be set to 15 to ensure backwards compatibility, and if no \code{dist} parameter
+is given then a gamma distribution will be used for backwards compatibility.}
 
 \item{disease}{A character string indicating the disease of interest.}
 
@@ -44,7 +23,10 @@ A list summarising the input delay distributions.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Returns generation time parameters in a format for lower level model use.
+Returns generation time parameters in a format for lower level model use. The
+generation time can either be given as a \code{disease} and \code{source} to
+be passed to \link{get_generation_time}, or as parameters of a distribution to be
+passed to \link{delay_dist}.
 }
 \examples{
 # default settings with a fixed generation time
@@ -57,5 +39,5 @@ generation_time_opts(mean = 3, sd = 2)
 generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
 }
 \seealso{
-convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
 }

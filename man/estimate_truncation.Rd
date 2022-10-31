@@ -6,7 +6,7 @@
 \usage{
 estimate_truncation(
   obs,
-  max_truncation = 10,
+  trunc_max = 10,
   model = NULL,
   CrIs = c(0.2, 0.5, 0.9),
   verbose = TRUE,
@@ -19,7 +19,7 @@ and a confirm (integer) variable. Each data set should be a snapshot
 of the reported data over time. All data sets must contain a complete vector
 of dates.}
 
-\item{max_truncation}{Integer, defaults to 10. Maximum number of
+\item{trunc_max}{Integer, defaults to 10. Maximum number of
 days to include in the truncation distribution.}
 
 \item{model}{A compiled stan model to override the default model. May be

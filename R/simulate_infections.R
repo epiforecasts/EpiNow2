@@ -34,7 +34,7 @@
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
-#' 
+#'
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:50]
 #'
@@ -78,7 +78,7 @@
 #' R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
 #' sims <- simulate_infections(est, R_samples)
 #' plot(sims)
-#' 
+#'
 #' options(old_opts)
 #' }
 simulate_infections <- function(estimates,

@@ -3,7 +3,7 @@ skip_on_cran()
 # test primary reports and observations
 reports <- rep(10, 20)
 obs <- rep(4, 20)
-delay_pmf <- discretised_pmf(log(3), 0.1, 5, 0)
+delay_pmf <- discretised_pmf(log(3), 0.1, 5, 0, 0)
 
 check_equal <- function(args, target, dof = 0, dev = FALSE) {
   out <- do.call(calculate_secondary, args)
