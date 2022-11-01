@@ -11,6 +11,8 @@
 #' 1 will be assumed, if the \code{max} parameter not set then the \code{max} will
 #' be set to 15 to ensure backwards compatibility, and if no \code{dist} parameter
 #' is given then a gamma distribution will be used for backwards compatibility.
+#' @param fixed Logical, defaults to `FALSE`. Should the generation time be
+#' treated as coming from fixed (vs uncertain) distributions.
 #' @inheritParams get_generation_time
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
 #' @return A list summarising the input delay distributions.
@@ -24,7 +26,7 @@
 #'
 #' # An uncertain gamma distributed generation time
 #' generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
-generation_time_opts <- function(..., disease, source) {
+generation_time_opts <- function(..., disease, source, max = 15, fixed = FALSE) {
   dot_options <- list(...) ## options for delay_dist
   ## check consistent options are given
   type_options <- (length(dot_options) > 0) + ## distributional parameters
@@ -38,20 +40,21 @@ generation_time_opts <- function(..., disease, source) {
     dist <- get_generation_time(
       disease = disease, source = source, max_value = max
     )
+    dist$fixed <- fixed
+    gt <- do.call(delay_dist, dist)
   } else { ## generation time provided as distributional parameters or not at all
     ## make gamma default for backwards compatibility
     if (!("dist" %in% names(dot_options))) {
       dot_options$dist <- "gamma"
     }
-    ## set default of max=15 for backwards compatibility
-    if (!("max" %in% names(dot_options))) {
-      dot_options$max <- 15
-    }
+    ## set max
+    dot_options$max <- max
     ## set default of mean=1 for backwards compatibility
     if (!("mean" %in% names(dot_options))) {
       dot_options$mean <- 1
     }
-     gt <- do.call(delay_dist, dot_options)
+    dot_options$fixed <- fixed
+    gt <- do.call(delay_dist, dot_options)
   }
   names(gt) <- paste0("gt_", names(gt))
 
@@ -104,7 +107,7 @@ delay_opts <- function(..., fixed = FALSE) {
 
   if (fixed) { ## set all to fixed
     data <- lapply(data, function(x) {
-      x$fixed <- 1
+      x$fixed <- 1L
       x$mean_sd <- 0
       x$sd_sd <- 0
       return(x)

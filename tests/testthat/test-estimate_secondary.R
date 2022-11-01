@@ -1,5 +1,6 @@
  skip_on_cran()
  library(data.table)
+ library(purrr)
 
  # make some example secondary incidence data
  cases <- example_confirmed

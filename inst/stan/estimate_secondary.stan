@@ -16,12 +16,12 @@ data {
 }
 
 transformed data {
-  int delay_max_fixed =
-    sum(delay_max[fixed_delays]) - num_elements(fixed_delays) + 1;
+  int delay_max_fixed = (n_fixed_delays == 0 ? 0 :
+    sum(delay_max[fixed_delays]) - num_elements(fixed_delays) + 1);
   int delay_max_total = (delays == 0 ? 0 :
     sum(delay_max) - num_elements(delay_max) + 1);
   vector[truncation && trunc_fixed[1] ? trunc_max[1] : 0] trunc_fixed_pmf;
-  vector[delay_max_fixed] fixed_delays_pmf;
+  vector[delay_max_fixed] delays_fixed_pmf;
 
   if (truncation && trunc_fixed[1]) {
     trunc_fixed_pmf = discretised_pmf(
@@ -29,7 +29,7 @@ transformed data {
     );
   }
   if (n_fixed_delays) {
-    fixed_delays_pmf = combine_pmfs(
+    delays_fixed_pmf = combine_pmfs(
       to_vector([ 1 ]),
       delay_mean_mean[fixed_delays],
       delay_sd_mean[fixed_delays],
@@ -55,15 +55,17 @@ parameters{
 transformed parameters {
   vector<lower=0>[t] secondary;
   // calculate secondary reports from primary
+
   {
     vector[delay_max_total] delay_pmf;
     delay_pmf = combine_pmfs(
-      fixed_delays_pmf, delay_mean, delay_sd, delay_max, delay_dist, delay_max_total, 0
+      delays_fixed_pmf, delay_mean, delay_sd, delay_max, delay_dist, delay_max_total, 0
     );
     secondary = calculate_secondary(primary, obs, frac_obs, delay_pmf, cumulative,
                                     historic, primary_hist_additive,
                                     current, primary_current_additive, t);
   }
+
  // weekly reporting effect
  if (week_effect > 1) {
    secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);

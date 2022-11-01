@@ -104,10 +104,13 @@
 #'
 #' options(old_opts)
 estimate_truncation <- function(obs, trunc_max = 10,
+                                trunc_dist = c("lognormal", "gamma"),
                                 model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 verbose = TRUE,
                                 ...) {
+  trunc_dist <- match.arg(trunc_dist)
+
   # combine into ordered matrix
   dirty_obs <- purrr::map(obs, data.table::as.data.table)
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
@@ -129,8 +132,13 @@ estimate_truncation <- function(obs, trunc_max = 10,
     obs_dist = obs_dist,
     t = nrow(obs_data),
     obs_sets = ncol(obs_data),
-    trunc_max = trunc_max
+    trunc_max = trunc_max,
+    trunc_dist = trunc_dist
   )
+
+  ## convert to integer
+  data$trunc_dist <-
+    which(eval(formals()[["trunc_dist"]]) == trunc_dist) - 1
 
   # initial conditions
   init_fn <- function() {

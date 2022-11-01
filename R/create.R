@@ -399,7 +399,10 @@ create_stan_data <- function(reported_cases, generation_time,
   delays$seeding_time <- max(delays$seeding_time, generation_time$max)
 
   ## for backwards compatibility call generation_time_opts internally
-  generation_time <- do.call(generation_time_opts, generation_time)
+  if (is.list(generation_time) &&
+      all(c("mean", "mean_sd", "sd", "sd_sd") %in% names(generation_time))) {
+    generation_time <- do.call(generation_time_opts, generation_time)
+  }
 
   cases <- reported_cases[(delays$seeding_time + 1):(.N - horizon)]$confirm
 
