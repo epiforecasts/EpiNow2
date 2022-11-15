@@ -6,9 +6,9 @@
 #' @param CrIs Numeric list of credible intervals present in the data. As produced
 #' by `extract_CrIs`
 #' @param alpha Numeric, overall alpha of the target line range
-#' @param size Numeric, size of the default line range.
+#' @param size linewidth, linewidth of the default line range.
 #' @return A `ggplot2` plot.
-plot_CrIs <- function(plot, CrIs, alpha, size) {
+plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
   index <- 1
   alpha_per_CrI <- alpha / (length(CrIs) - 1)
   for (CrI in CrIs) {
@@ -17,7 +17,7 @@ plot_CrIs <- function(plot, CrIs, alpha, size) {
     if (index == 1) {
       plot <- plot +
         ggplot2::geom_ribbon(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
-          alpha = 0.2, size = size
+          alpha = 0.2, linewidth = linewidth
         )
     } else {
       plot <- plot +
@@ -191,7 +191,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 
   # plot CrIs
   plot <- plot_CrIs(plot, extract_CrIs(estimate),
-    alpha = 0.6, size = 0.05
+    alpha = 0.6, linewidth = 0.05
   )
 
   # add plot theming
@@ -257,7 +257,7 @@ plot_summary <- function(summary_results,
       plot <- plot +
         ggplot2::geom_linerange(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
           alpha = ifelse(index == 1, 0.4, alpha_per_CrI),
-          size = 4
+          linewidth = 4
         )
       index <- index + 1
     }

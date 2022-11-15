@@ -309,7 +309,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
       ggplot2::geom_point(
         data = predictions,
         ggplot2::aes(y = primary),
-        alpha = 0.4, size = 0.8
+        alpha = 0.4, linewidth = 0.8
       ) +
       ggplot2::geom_line(
         data = predictions,
@@ -317,7 +317,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
       )
   }
   plot <- plot_CrIs(plot, extract_CrIs(predictions),
-    alpha = 0.6, size = 1
+    alpha = 0.6, linewidth = 1
   )
   plot <- plot +
     ggplot2::theme_bw() +

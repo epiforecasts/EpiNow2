@@ -256,7 +256,7 @@ plot.estimate_truncation <- function(x, ...) {
     ggplot2::facet_wrap(~report_date, scales = "free")
 
   plot <- plot_CrIs(plot, extract_CrIs(x$obs),
-    alpha = 0.8, size = 1
+    alpha = 0.8, linewidth = 1
   )
 
   plot <- plot +
