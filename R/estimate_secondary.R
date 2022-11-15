@@ -309,7 +309,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
       ggplot2::geom_point(
         data = predictions,
         ggplot2::aes(y = primary),
-        alpha = 0.4, linewidth = 0.8
+        alpha = 0.4, size = 0.8
       ) +
       ggplot2::geom_line(
         data = predictions,
