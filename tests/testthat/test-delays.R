@@ -1,4 +1,4 @@
-test_stan_data <- function(generation_time = list(),
+test_stan_data <- function(generation_time = generation_time_opts(),
                            delays = delay_opts(),
                            truncation = trunc_opts(),
                            params = c()) {
@@ -25,12 +25,12 @@ test_that("generation times can be specified in different ways", {
     c(1, 0, 0, 0, 1)
   )
   expect_equal(
-    test_stan_data(generation_time = list(mean = 3),
+    test_stan_data(generation_time = generation_time_opts(mean = 3),
                    params = gt_params),
     c(3, 0, 0, 0, 3)
   )
   expect_equal(
-    test_stan_data(generation_time = list(mean = 3, sd = 1, max = 5),
+    test_stan_data(generation_time = generation_time_opts(mean = 3, sd = 1, max = 5),
                    params = gt_params),
     c(3, 0, 1, 0, 5)
   )
