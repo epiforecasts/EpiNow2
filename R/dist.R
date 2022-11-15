@@ -736,7 +736,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 ##' @author Sebastian Funk
 ##' @export
 delay_dist <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
-                       dist = c("lognormal", "gamma"), max,
+                       dist = c("lognormal", "gamma"), max = NULL,
                        fixed = FALSE) {
   dist <- match.arg(dist)
 
@@ -747,9 +747,13 @@ delay_dist <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       sd_mean = numeric(0),
       sd_sd = numeric(0),
       fixed = integer(0),
-      max = integer(0),
       dist = integer(0)
     )
+    if (is.null(max)) {
+      ret$max <- integer(0)
+    } else {
+      ret$max <- max
+    }
   } else {
     ret <- list(
       mean_mean = mean,
