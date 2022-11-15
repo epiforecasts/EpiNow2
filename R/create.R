@@ -436,6 +436,10 @@ create_stan_data <- function(reported_cases, generation_time,
   data$prior_infections <- ifelse(is.na(data$prior_infections) | is.null(data$prior_infections),
     0, data$prior_infections
   )
+  if (is.null(data$gt_weight)) {
+    ## default: weigh by number of data points
+    data$gt_weight <- data$t - data$seeding_time - data$horizon
+  }
   if (data$seeding_time > 1) {
     safe_lm <- purrr::safely(stats::lm)
     data$prior_growth <- safe_lm(log(confirm) ~ t, data = first_week)[[1]]

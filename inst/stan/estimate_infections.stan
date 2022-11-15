@@ -159,7 +159,7 @@ model {
     );
     // penalised_prior on generation interval
     generation_time_lp(
-      gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, ot
+      gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, gt_weight
     );
   }
   // prior observation scaling
