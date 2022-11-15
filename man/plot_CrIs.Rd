@@ -14,7 +14,7 @@ by \code{extract_CrIs}}
 
 \item{alpha}{Numeric, overall alpha of the target line range}
 
-\item{size}{linewidth, linewidth of the default line range.}
+\item{linewidth}{Numeric, line width of the default line range.}
 }
 \value{
 A \code{ggplot2} plot.

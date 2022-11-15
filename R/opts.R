@@ -11,6 +11,7 @@
 #' 1 will be assumed, if the \code{max} parameter not set then the \code{max} will
 #' be set to 15 to ensure backwards compatibility, and if no \code{dist} parameter
 #' is given then a gamma distribution will be used for backwards compatibility.
+#' @param max Integer, defaults to 15. Maximum generation time.
 #' @param fixed Logical, defaults to `FALSE`. Should the generation time be
 #' treated as coming from fixed (vs uncertain) distributions.
 #' @param prior_weight numeric, weight given to the generation time prior.
@@ -31,7 +32,7 @@
 #'
 #' # An uncertain gamma distributed generation time
 #' generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
-generation_time_opts <- function(..., disease, source, max = 15, fixed = FALSE, prior_weight = NULL) {
+generation_time_opts <- function(..., disease, source, max = 15L, fixed = FALSE, prior_weight = NULL) {
   dot_options <- list(...) ## options for delay_dist
   ## check consistent options are given
   type_options <- (length(dot_options) > 0) + ## distributional parameters

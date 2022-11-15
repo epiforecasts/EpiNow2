@@ -16,7 +16,7 @@ delay_dist(
 }
 \arguments{
 \item{mean}{Numeric. If the only non-zero summary parameter
-then this is the fixed interval of the delay distribugion. If the \code{sd} is
+then this is the fixed interval of the delay distribution. If the \code{sd} is
 non-zero then this is the mean of the distribution given by \code{dist}.
 If this is not given a vector of empty vectors is returned.}
 

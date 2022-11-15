@@ -8,7 +8,7 @@ generation_time_opts(
   ...,
   disease,
   source,
-  max = 15,
+  max = 15L,
   fixed = FALSE,
   prior_weight = NULL
 )
@@ -24,6 +24,8 @@ is given then a gamma distribution will be used for backwards compatibility.}
 \item{disease}{A character string indicating the disease of interest.}
 
 \item{source}{A character string indicating the source of interest.}
+
+\item{max}{Integer, defaults to 15. Maximum generation time.}
 
 \item{fixed}{Logical, defaults to \code{FALSE}. Should the generation time be
 treated as coming from fixed (vs uncertain) distributions.}

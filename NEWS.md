@@ -2,7 +2,7 @@
 
 ## New features
 
-* Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for precomputing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
+* Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for pre-computing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
 
 ## Model changes
 

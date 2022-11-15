@@ -6,7 +6,7 @@
 #' @param CrIs Numeric list of credible intervals present in the data. As produced
 #' by `extract_CrIs`
 #' @param alpha Numeric, overall alpha of the target line range
-#' @param size linewidth, linewidth of the default line range.
+#' @param linewidth Numeric, line width of the default line range.
 #' @return A `ggplot2` plot.
 plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
   index <- 1

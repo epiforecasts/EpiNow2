@@ -33,6 +33,9 @@
 #' of dates.
 #' @param trunc_max Integer, defaults to 10. Maximum number of
 #' days to include in the truncation distribution.
+#' @param trunc_dist Character, defaults to "lognormal". The parametric
+#' distribution to be used for truncation.
+#' days to include in the truncation distribution.
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
 #' @param verbose Logical, should model fitting progress be returned.
@@ -57,7 +60,7 @@
 #' reported_cases <- example_confirmed[1:60]
 #'
 #' # define example truncation distribution (note not integer adjusted)
-#' trunc_dist <- list(
+#' trunc <- list(
 #'   mean = convert_to_logmean(3, 2),
 #'   mean_sd = 0.1,
 #'   sd = convert_to_logsd(3, 2),
@@ -84,7 +87,7 @@
 #' example_data <- purrr::map(c(20, 15, 10, 0),
 #'   construct_truncation,
 #'   cases = reported_cases,
-#'   dist = trunc_dist
+#'   dist = trunc
 #' )
 #'
 #' # fit model to example data

@@ -716,7 +716,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 ##' @description `r lifecycle::badge("stable")`
 ##' Defines the parameters of a delay distribution
 ##' @param mean Numeric. If the only non-zero summary parameter
-##' then this is the fixed interval of the delay distribugion. If the `sd` is
+##' then this is the fixed interval of the delay distribution. If the `sd` is
 ##' non-zero then this is the mean of the distribution given by \code{dist}.
 ##' If this is not given a vector of empty vectors is returned.
 ##' @param sd Numeric, defaults to 0. Sets the standard deviation of the delay
