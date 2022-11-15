@@ -4,7 +4,7 @@
 \alias{plot_CrIs}
 \title{Plot EpiNow2 Credible Intervals}
 \usage{
-plot_CrIs(plot, CrIs, alpha, size)
+plot_CrIs(plot, CrIs, alpha, linewidth)
 }
 \arguments{
 \item{plot}{A \code{ggplot2} plot}
@@ -14,7 +14,7 @@ by \code{extract_CrIs}}
 
 \item{alpha}{Numeric, overall alpha of the target line range}
 
-\item{size}{Numeric, size of the default line range.}
+\item{size}{linewidth, linewidth of the default line range.}
 }
 \value{
 A \code{ggplot2} plot.

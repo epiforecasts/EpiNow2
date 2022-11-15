@@ -10,7 +10,7 @@ delay_dist(
   mean_sd = 0,
   sd_sd = 0,
   dist = c("lognormal", "gamma"),
-  max,
+  max = NULL,
   fixed = FALSE
 )
 }

@@ -4,7 +4,14 @@
 \alias{generation_time_opts}
 \title{Generation Time Distribution Options}
 \usage{
-generation_time_opts(..., disease, source)
+generation_time_opts(
+  ...,
+  disease,
+  source,
+  max = 15,
+  fixed = FALSE,
+  prior_weight = NULL
+)
 }
 \arguments{
 \item{...}{Any parameters to be passed to \link{delay_dist}, if the generation time
@@ -17,6 +24,15 @@ is given then a gamma distribution will be used for backwards compatibility.}
 \item{disease}{A character string indicating the disease of interest.}
 
 \item{source}{A character string indicating the source of interest.}
+
+\item{fixed}{Logical, defaults to \code{FALSE}. Should the generation time be
+treated as coming from fixed (vs uncertain) distributions.}
+
+\item{prior_weight}{numeric, weight given to the generation time prior.
+By default the generation time prior will be weighted by the number of
+observation data points, usually preventing the posteriors from shifting
+much from the given distribution. Another sensible option would be 1,
+i.e. treating the generation time distribution as a single parameter.}
 }
 \value{
 A list summarising the input delay distributions.

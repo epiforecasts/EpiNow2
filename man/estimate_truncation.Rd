@@ -7,6 +7,7 @@
 estimate_truncation(
   obs,
   trunc_max = 10,
+  trunc_dist = c("lognormal", "gamma"),
   model = NULL,
   CrIs = c(0.2, 0.5, 0.9),
   verbose = TRUE,
