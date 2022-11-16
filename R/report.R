@@ -28,7 +28,7 @@
 #'
 #' # run model
 #' out <- estimate_infections(cases,
-#'   samples = 100,
+#'   stan = stan_opts(samples = 100),
 #'   generation_time = generation_time,
 #'   delays = delay_opts(incubation_period, reporting_delay),
 #'   rt = NULL
@@ -55,13 +55,13 @@ report_cases <- function(case_estimates,
 
   # define delay distributions
   delay_defs <- purrr::map(
-    delays,
+    seq_along(delays$delays),
     ~ EpiNow2::lognorm_dist_def(
-      mean = .$mean,
-      mean_sd = .$mean_sd,
-      sd = .$sd,
-      sd_sd = .$sd_sd,
-      max_value = .$max,
+      mean = delays$delay_mean_mean[.x],
+      mean_sd = delays$delay_mean_sd[.x],
+      sd = delays$delay_sd_mean[.x],
+      sd_sd = delays$delay_sd_sd[.x],
+      max_value = delays$delay_max[.x],
       samples = samples
     )
   )
@@ -248,7 +248,7 @@ report_summary <- function(summarised_estimates,
 #'
 #' # run model
 #' out <- estimate_infections(cases,
-#'   samples = 100,
+#'   stan = stan_opts(samples = 100),
 #'   generation_time = generation_time,
 #'   delays = delay_opts(incubation_period, reporting_delay),
 #'   rt = NULL

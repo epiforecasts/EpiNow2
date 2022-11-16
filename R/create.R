@@ -569,7 +569,7 @@ create_initial_conditions <- function(data) {
       ))
     }
     if (data$week_effect > 0) {
-      out$day_of_week_simplex = rep(1 / data$week_effect, data$week_effect)
+      out$day_of_week_simplex = array(rep(1 / data$week_effect, data$week_effect))
     }
     return(out)
   }
