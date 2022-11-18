@@ -21,14 +21,28 @@ data {
 #include data/simulation_observation_model.stan
 }
 
+transformed data {
+  int delay_max_total = sum(delay_max) - num_elements(delay_max) + 1;
+}
+
 generated quantities {
   int sim_secondary[n, all_dates ? t : h];
   for (i in 1:n) {
     vector[t] secondary;
+    vector[delay_max_total] delay_pmf;
+    delay_pmf = combine_pmfs(
+      to_vector([ 1 ]),
+      delay_mean[i],
+      delay_sd[i],
+      delay_max,
+      delay_dist,
+      delay_max_total,
+      0
+    );
+
     // calculate secondary reports from primary
     secondary =
-       calculate_secondary(to_vector(primary[i]), obs, frac_obs[i], delay_mean[i],
-                           delay_sd[i], max_delay, cumulative,
+       calculate_secondary(to_vector(primary[i]), obs, frac_obs[i], delay_pmf, cumulative,
                            historic, primary_hist_additive,
                            current, primary_current_additive, t - h + 1);
     // weekly reporting effect

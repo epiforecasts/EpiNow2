@@ -34,7 +34,7 @@
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
-#' 
+#'
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:50]
 #'
@@ -60,7 +60,7 @@
 #' )
 #'
 #' # update Rt trajectory and simulate new infections using it
-#' R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
+#' R <- c(rep(NA_real_, 26), rep(0.5, 10), rep(0.8, 7))
 #' sims <- simulate_infections(est, R)
 #' plot(sims)
 #'
@@ -78,7 +78,7 @@
 #' R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
 #' sims <- simulate_infections(est, R_samples)
 #' plot(sims)
-#' 
+#'
 #' options(old_opts)
 #' }
 simulate_infections <- function(estimates,

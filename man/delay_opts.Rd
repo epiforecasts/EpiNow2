@@ -4,12 +4,29 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(...)
+delay_opts(..., fixed = FALSE)
 }
 \arguments{
-\item{...}{Delay distributions as a list with the following parameters:
-"mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
-normal (with all parameters except for max defined in logged form).}
+\item{...}{Parameters of discretised (upper-)truncated lognormal delay
+distributions as a list with the following parameters:
+"mean", the mu parameter or mean of the natural logarithm of the delay;
+"mean_sd", the standard deviation in the estimate of "mean" parameter
+(assumed normally distributed); "sd", the sigma parameter or standard
+deviation of the natural logarithm of the delay; "sd_sd", the standard
+deviation of the estimate of the "sd" parameter (assumed normally
+distributed) sd_sd"; and "max", the maximum delay.
+The "mean" parameter is mandatory; if it is the only one given it represents
+a fixed delay and must be integer-valued; if "sd" is also given and
+greater than 0 this represents a delay distribution and "mean" can be
+real-valued. In that case, "max" also needs to be given.
+The "mean_sd" and "sd_sd" parameters should be provided to represent
+uncertainty in the parameter values of the delay but are optional.}
+
+\item{fixed}{Logical, defaults to \code{FALSE}. Should all reporting delays be
+treated as coming from fixed (vs uncertain) distributions. Making this
+simplification drastically reduces compute requirements. Setting this here
+overrides any of the constituent delay distributions being set to be fixed
+or not.}
 }
 \value{
 A list summarising the input delay distributions.
@@ -22,6 +39,16 @@ functions.
 \examples{
 # no delays
 delay_opts()
+
+# A single delay that has uncertainty
+delay <- list(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
+delay_opts(delay)
+
+# A single delay where we override the uncertainty assumption
+delay_opts(delay, fixed = TRUE)
+
+# A delay where uncertainty is implict
+delay_opts(list(mean = 1, mean_sd = 0, sd = 0.5, sd_sd = 0, max = 15))
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit

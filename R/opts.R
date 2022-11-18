@@ -1,69 +1,187 @@
+#' Generation Time Distribution Options
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Returns generation time parameters in a format for lower level model use. The
+#' generation time can either be given as a \code{disease} and \code{source} to
+#' be passed to [get_generation_time], or as parameters of a distribution to be
+#' passed to [delay_dist].
+#' @param ... Any parameters to be passed to [delay_dist], if the generation time
+#' is given as parameters of a distribution rather than a \code{disease} and
+#' \code{source}. In this case if the \code{mean} parameter is not set a mean of
+#' 1 will be assumed, if the \code{max} parameter not set then the \code{max} will
+#' be set to 15 to ensure backwards compatibility, and if no \code{dist} parameter
+#' is given then a gamma distribution will be used for backwards compatibility.
+#' @param max Integer, defaults to 15. Maximum generation time.
+#' @param fixed Logical, defaults to `FALSE`. Should the generation time be
+#' treated as coming from fixed (vs uncertain) distributions.
+#' @param prior_weight numeric, weight given to the generation time prior.
+#' By default the generation time prior will be weighted by the number of
+#' observation data points, usually preventing the posteriors from shifting
+#' much from the given distribution. Another sensible option would be 1,
+#' i.e. treating the generation time distribution as a single parameter.
+#' @inheritParams get_generation_time
+#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
+#' @return A list summarising the input delay distributions.
+#' @export
+#' @examples
+#' # default settings with a fixed generation time
+#' generation_time_opts()
+#'
+#' # A fixed gamma distributed generation time
+#' generation_time_opts(mean = 3, sd = 2)
+#'
+#' # An uncertain gamma distributed generation time
+#' generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
+generation_time_opts <- function(..., disease, source, max = 15L, fixed = FALSE, prior_weight = NULL) {
+  dot_options <- list(...) ## options for delay_dist
+  ## check consistent options are given
+  type_options <- (length(dot_options) > 0) + ## distributional parameters
+    (!missing(disease) && !missing(source)) ## from included distributions
+  if (type_options > 1)  {
+    stop("Generation time should be given either as distributional options  ",
+         "or as disease/source, but not both.")
+  }
+
+  if (!missing(disease) && !missing(source)) { ## generation time provided as disease/source
+    dist <- get_generation_time(
+      disease = disease, source = source, max_value = max
+    )
+    dist$fixed <- fixed
+    gt <- do.call(delay_dist, dist)
+  } else { ## generation time provided as distributional parameters or not at all
+    ## make gamma default for backwards compatibility
+    if (!("dist" %in% names(dot_options))) {
+      dot_options$dist <- "gamma"
+    }
+    ## set max
+    dot_options$max <- max
+    ## set default of mean=1 for backwards compatibility
+    if (!("mean" %in% names(dot_options))) {
+      dot_options$mean <- 1
+    }
+    dot_options$fixed <- fixed
+    gt <- do.call(delay_dist, dot_options)
+  }
+  gt$weight <- prior_weight
+
+  names(gt) <- paste0("gt_", names(gt))
+
+  return(gt)
+}
+
 #' Delay Distribution Options
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Returns delay distributions formatted for usage by downstream
 #' functions.
-#' @param ... Delay distributions as a list with the following parameters:
-#' "mean", "mean_sd", "sd_mean", "sd_sd", and "max" defining a truncated log
-#' normal (with all parameters except for max defined in logged form).
+#' @param ... Parameters of discretised (upper-)truncated lognormal delay
+#' distributions as a list with the following parameters:
+#' "mean", the mu parameter or mean of the natural logarithm of the delay;
+#' "mean_sd", the standard deviation in the estimate of "mean" parameter
+#' (assumed normally distributed); "sd", the sigma parameter or standard
+#' deviation of the natural logarithm of the delay; "sd_sd", the standard
+#' deviation of the estimate of the "sd" parameter (assumed normally
+#' distributed) sd_sd"; and "max", the maximum delay.
+#' The "mean" parameter is mandatory; if it is the only one given it represents
+#' a fixed delay and must be integer-valued; if "sd" is also given and
+#' greater than 0 this represents a delay distribution and "mean" can be
+#' real-valued. In that case, "max" also needs to be given.
+#' The "mean_sd" and "sd_sd" parameters should be provided to represent
+#' uncertainty in the parameter values of the delay but are optional.
+#' @param fixed Logical, defaults to `FALSE`. Should all reporting delays be
+#' treated as coming from fixed (vs uncertain) distributions. Making this
+#' simplification drastically reduces compute requirements. Setting this here
+#' overrides any of the constituent delay distributions being set to be fixed
+#' or not.
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
 #' @return A list summarising the input delay distributions.
 #' @export
 #' @examples
 #' # no delays
 #' delay_opts()
-delay_opts <- function(...) {
+#'
+#' # A single delay that has uncertainty
+#' delay <- list(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
+#' delay_opts(delay)
+#'
+#' # A single delay where we override the uncertainty assumption
+#' delay_opts(delay, fixed = TRUE)
+#'
+#' # A delay where uncertainty is implict
+#' delay_opts(list(mean = 1, mean_sd = 0, sd = 0.5, sd_sd = 0, max = 15))
+delay_opts <- function(..., fixed = FALSE) {
   delays <- list(...)
-  data <- list()
-  data$delays <- length(delays)
-  if (data$delays > 0) {
-    delays <- purrr::transpose(delays)
+  data <- lapply(delays, do.call, what = delay_dist)
+
+  if (fixed) { ## set all to fixed
+    data <- lapply(data, function(x) {
+      x$fixed <- 1L
+      x$mean_sd <- 0
+      x$sd_sd <- 0
+      return(x)
+    })
   }
 
-  # Estimate the mean delay -----------------------------------------------
-  if (data$delays > 0) {
-    data$seeding_time <- sum(
-      purrr::map2_dbl(delays$mean, delays$sd, ~ exp(.x + .y^2 / 2))
-    )
-    if (data$seeding_time < 1) {
-      data$seeding_time <- 1
-    } else {
-      data$seeding_time <- as.integer(data$seeding_time)
-    }
+  if (length(data) > 0) {
+    data <- purrr::transpose(data)
+    ## convert back to arrays
+    data <- lapply(data, function(x) array(unlist(x)))
   } else {
-    data$seeding_time <- 1
+    data <- delay_dist()
   }
-  data$delay_mean_mean <- allocate_delays(delays$mean, data$delays)
-  data$delay_mean_sd <- allocate_delays(delays$mean_sd, data$delays)
-  data$delay_sd_mean <- allocate_delays(delays$sd, data$delays)
-  data$delay_sd_sd <- allocate_delays(delays$sd_sd, data$delays)
-  data$max_delay <- allocate_delays(delays$max, data$delays)
+
+  names(data) <- paste0("delay_", names(data))
+  # Estimate the mean delay -----------------------------------------------
+  data$seeding_time <- sum(
+    purrr::map2_dbl(data$mean_mean, data$sd_mean, ~ exp(.x + .y^2 / 2))
+  )
+  if (data$seeding_time < 1) {
+    data$seeding_time <- 1
+  } else {
+    data$seeding_time <- as.integer(data$seeding_time)
+  }
+
+  data$delays <- length(delays)
+
+  data$uncertain_mean_delays <- array(which(data$delay_mean_sd > 0))
+  data$uncertain_sd_delays <- array(which(data$delay_sd_sd > 0))
+  data$fixed_delays <- array(
+    which(data$delay_mean_sd == 0 & data$delay_sd_sd == 0)
+  )
+
+  data$n_uncertain_mean_delays <- length(data$uncertain_mean_delays)
+  data$n_uncertain_sd_delays <- length(data$uncertain_sd_delays)
+  data$n_fixed_delays <- length(data$fixed_delays)
+
   return(data)
 }
 
 #' Truncation Distribution Options
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Returns a truncation distribution formatted for usage by downstream functions. See
-#' `estimate_truncation` for an approach to estimate this distribution.
-#' @param dist A list defining the truncation distribution, defaults to `NULL` in which
-#' case no truncation is used. Must have the following elements if defined: "mean", "mean_sd",
-#' "sd_mean", "sd_sd", and "max" defining a truncated log normal (with all parameters except
-#' for max defined in logged form).
-#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+#' Returns a truncation distribution formatted for usage by
+#'  downstream functions. See `estimate_truncation()` for an approach to
+#'  estimate this distribution.
+#' @param ... Any parameters to be passed to [delay_dist]. If the `max` parameter
+#' is not set but other distributional parameters given then the `max` will be
+#' set to 15 to ensure backwards compatibility. Also if no `dist` parameter is given
+#' then a gamma distribution will be used for backwards compatibility.
+#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
 #' @return A list summarising the input truncation distribution.
 #' @export
 #' @examples
 #' # no truncation
 #' trunc_opts()
-trunc_opts <- function(dist = NULL) {
-  data <- list()
-  data$truncation <- ifelse(is.null(dist), 0, 1)
-  data$trunc_mean_mean <- allocate_delays(dist$mean, data$truncation)
-  data$trunc_mean_sd <- allocate_delays(dist$mean_sd, data$truncation)
-  data$trunc_sd_mean <- allocate_delays(dist$sd, data$truncation)
-  data$trunc_sd_sd <- allocate_delays(dist$sd_sd, data$truncation)
-  data$max_truncation <- allocate_delays(dist$max, data$truncation)
+#'
+#' # truncation dist
+#' trunc_opts(mean = 3, sd = 2)
+trunc_opts <- function(...) {
+  dot_options <- list(...) ## options for delay_dist
+  present <- (length(dot_options) > 0)
+  data <- do.call(delay_dist, dot_options)
+  names(data) <- paste0("trunc_", names(data))
+  data$truncation <- as.integer(present)
+
   return(data)
 }
 
@@ -238,7 +356,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
 #' Negative binomial ("negbin"), the default, and Poisson.
-#' @param phi A numeric vector of length 2, defaults to 0, 1. Indicates the 
+#' @param phi A numeric vector of length 2, defaults to 0, 1. Indicates the
 #' mean and standard deviation of the normal prior used for the observation
 #' process.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in

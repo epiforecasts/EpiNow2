@@ -4,26 +4,30 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(dist = NULL)
+trunc_opts(...)
 }
 \arguments{
-\item{dist}{A list defining the truncation distribution, defaults to \code{NULL} in which
-case no truncation is used. Must have the following elements if defined: "mean", "mean_sd",
-"sd_mean", "sd_sd", and "max" defining a truncated log normal (with all parameters except
-for max defined in logged form).}
+\item{...}{Any parameters to be passed to \link{delay_dist}. If the \code{max} parameter
+is not set but other distributional parameters given then the \code{max} will be
+set to 15 to ensure backwards compatibility. Also if no \code{dist} parameter is given
+then a gamma distribution will be used for backwards compatibility.}
 }
 \value{
 A list summarising the input truncation distribution.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Returns a truncation distribution formatted for usage by downstream functions. See
-\code{estimate_truncation} for an approach to estimate this distribution.
+Returns a truncation distribution formatted for usage by
+downstream functions. See \code{estimate_truncation()} for an approach to
+estimate this distribution.
 }
 \examples{
 # no truncation
 trunc_opts()
+
+# truncation dist
+trunc_opts(mean = 3, sd = 2)
 }
 \seealso{
-convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
 }
