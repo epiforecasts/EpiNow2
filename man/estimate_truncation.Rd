@@ -6,7 +6,8 @@
 \usage{
 estimate_truncation(
   obs,
-  max_truncation = 10,
+  trunc_max = 10,
+  trunc_dist = c("lognormal", "gamma"),
   model = NULL,
   CrIs = c(0.2, 0.5, 0.9),
   verbose = TRUE,
@@ -19,7 +20,11 @@ and a confirm (integer) variable. Each data set should be a snapshot
 of the reported data over time. All data sets must contain a complete vector
 of dates.}
 
-\item{max_truncation}{Integer, defaults to 10. Maximum number of
+\item{trunc_max}{Integer, defaults to 10. Maximum number of
+days to include in the truncation distribution.}
+
+\item{trunc_dist}{Character, defaults to "lognormal". The parametric
+distribution to be used for truncation.
 days to include in the truncation distribution.}
 
 \item{model}{A compiled stan model to override the default model. May be
@@ -80,7 +85,7 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 reported_cases <- example_confirmed[1:60]
 
 # define example truncation distribution (note not integer adjusted)
-trunc_dist <- list(
+trunc <- list(
   mean = convert_to_logmean(3, 2),
   mean_sd = 0.1,
   sd = convert_to_logsd(3, 2),
@@ -107,7 +112,7 @@ construct_truncation <- function(index, cases, dist) {
 example_data <- purrr::map(c(20, 15, 10, 0),
   construct_truncation,
   cases = reported_cases,
-  dist = trunc_dist
+  dist = trunc
 )
 
 # fit model to example data

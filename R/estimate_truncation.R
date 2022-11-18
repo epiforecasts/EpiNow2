@@ -31,7 +31,10 @@
 #' and a confirm (integer) variable. Each data set should be a snapshot
 #' of the reported data over time. All data sets must contain a complete vector
 #' of dates.
-#' @param max_truncation Integer, defaults to 10. Maximum number of
+#' @param trunc_max Integer, defaults to 10. Maximum number of
+#' days to include in the truncation distribution.
+#' @param trunc_dist Character, defaults to "lognormal". The parametric
+#' distribution to be used for truncation.
 #' days to include in the truncation distribution.
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
@@ -57,7 +60,7 @@
 #' reported_cases <- example_confirmed[1:60]
 #'
 #' # define example truncation distribution (note not integer adjusted)
-#' trunc_dist <- list(
+#' trunc <- list(
 #'   mean = convert_to_logmean(3, 2),
 #'   mean_sd = 0.1,
 #'   sd = convert_to_logsd(3, 2),
@@ -84,7 +87,7 @@
 #' example_data <- purrr::map(c(20, 15, 10, 0),
 #'   construct_truncation,
 #'   cases = reported_cases,
-#'   dist = trunc_dist
+#'   dist = trunc
 #' )
 #'
 #' # fit model to example data
@@ -101,13 +104,16 @@
 #' print(est$obs)
 #' # validation plot of observations vs estimates
 #' plot(est)
-#' 
+#'
 #' options(old_opts)
-estimate_truncation <- function(obs, max_truncation = 10,
+estimate_truncation <- function(obs, trunc_max = 10,
+                                trunc_dist = c("lognormal", "gamma"),
                                 model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 verbose = TRUE,
                                 ...) {
+  trunc_dist <- match.arg(trunc_dist)
+
   # combine into ordered matrix
   dirty_obs <- purrr::map(obs, data.table::as.data.table)
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
@@ -118,7 +124,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
     confirm := NULL
   ])
   obs <- purrr::reduce(obs, merge, all = TRUE)
-  obs_start <- nrow(obs) - max_truncation - sum(is.na(obs$`1`)) + 1
+  obs_start <- nrow(obs) - trunc_max - sum(is.na(obs$`1`)) + 1
   obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
   obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
   obs_data <- obs_data[obs_start:.N]
@@ -129,8 +135,13 @@ estimate_truncation <- function(obs, max_truncation = 10,
     obs_dist = obs_dist,
     t = nrow(obs_data),
     obs_sets = ncol(obs_data),
-    trunc_max = max_truncation
+    trunc_max = trunc_max,
+    trunc_dist = trunc_dist
   )
+
+  ## convert to integer
+  data$trunc_dist <-
+    which(eval(formals()[["trunc_dist"]]) == trunc_dist) - 1
 
   # initial conditions
   init_fn <- function() {
@@ -161,7 +172,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
     mean_sd = round(rstan::summary(fit, pars = "logmean")$summary[3], 3),
     sd = round(rstan::summary(fit, pars = "logsd")$summary[1], 3),
     sd_sd = round(rstan::summary(fit, pars = "logsd")$summary[3], 3),
-    max = max_truncation
+    max = trunc_max
   )
 
   # summarise reconstructed observations
@@ -184,7 +195,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
     ]
   link_obs <- function(index) {
     target_obs <- dirty_obs[[index]][, index := .N - 0:(.N - 1)]
-    target_obs <- target_obs[index < max_truncation]
+    target_obs <- target_obs[index < trunc_max]
     estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
     estimates <- estimates[, lapply(.SD, as.integer)]
     estimates <- estimates[, index := .N - 0:(.N - 1)]
@@ -194,7 +205,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
     if (!is.null(estimates$Rhat)) {
       estimates[, c("Rhat") := NULL]
     }
-    
+
     target_obs <-
       data.table::merge.data.table(
         target_obs, last_obs,
@@ -248,7 +259,7 @@ plot.estimate_truncation <- function(x, ...) {
     ggplot2::facet_wrap(~report_date, scales = "free")
 
   plot <- plot_CrIs(plot, extract_CrIs(x$obs),
-    alpha = 0.8, size = 1
+    alpha = 0.8, linewidth = 1
   )
 
   plot <- plot +

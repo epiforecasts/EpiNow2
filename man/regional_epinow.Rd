@@ -30,10 +30,9 @@ regional_epinow(
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
-\item{generation_time}{A list containing the mean, standard deviation of the
-mean (mean_sd), standard deviation (sd), standard deviation of the standard
-deviation and the maximum allowed value for the generation time (assuming a
-gamma distribution).}
+\item{generation_time}{A call to \code{generation_time_opts()} defining the
+generation time distribution used. For backwards compatibility a list of
+summary parameters can also be passed.}
 
 \item{delays}{A call to \code{delay_opts()} defining delay distributions and
 options. See the documentation of \code{delay_opts()} and the examples below for

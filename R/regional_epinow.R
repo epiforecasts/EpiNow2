@@ -90,7 +90,7 @@
 #'   ),
 #'   verbose = interactive()
 #' )
-#' 
+#'
 #' options(old_opts)
 #' }
 regional_epinow <- function(reported_cases,

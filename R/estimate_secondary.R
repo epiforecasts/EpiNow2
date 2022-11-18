@@ -317,7 +317,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
       )
   }
   plot <- plot_CrIs(plot, extract_CrIs(predictions),
-    alpha = 0.6, size = 1
+    alpha = 0.6, linewidth = 1
   )
   plot <- plot +
     ggplot2::theme_bw() +
@@ -476,7 +476,7 @@ forecast_secondary <- function(estimate,
   # add in predictions in estimate_secondary format
   out$predictions <- data.table::merge.data.table(summarised,
     forecast_obs,
-    on = "date", all = TRUE
+    by = "date", all = TRUE
   )
   data.table::setcolorder(out$predictions, c("date", "primary", "secondary", "mean", "sd"))
   class(out) <- c("estimate_secondary", class(out))

@@ -395,33 +395,13 @@ create_stan_data <- function(reported_cases, generation_time,
                              backcalc, shifted_cases,
                              truncation) {
 
-  ## make sure we have at least max_gt seeding time
+  ## make sure we have at least gt_max seeding time
   delays$seeding_time <- max(delays$seeding_time, generation_time$max)
 
-  ## complete generation time parameters if not all are given
-  if (is.null(generation_time)) {
-    generation_time <- list(mean = 1)
-  }
-  for (param in c("mean_sd", "sd", "sd_sd")) {
-    if (!(param %in% names(generation_time))) generation_time[[param]] <- 0
-  }
-  ## check if generation time is fixed
-  if (generation_time$sd == 0 && generation_time$sd_sd == 0) {
-    if ("max_gt" %in% names(generation_time)) {
-      if (generation_time$max_gt != generation_time$mean) {
-        stop("Error in generation time defintion: if max_gt(",
-             generation_time$max_gt,
-             ") is given it must be equal to the mean (",
-             generation_time$mean,
-             ")")
-      }
-    } else {
-      generation_time$max_gt <- generation_time$mean
-    }
-    if (any(generation_time$mean_sd > 0, generation_time$sd_sd > 0)) {
-      stop("Error in generation time definition: if sd_mean is 0 and ",
-           "sd_sd is 0 then mean_sd must be 0, too.")
-    }
+  ## for backwards compatibility call generation_time_opts internally
+  if (is.list(generation_time) &&
+      all(c("mean", "mean_sd", "sd", "sd_sd") %in% names(generation_time))) {
+    generation_time <- do.call(generation_time_opts, generation_time)
   }
 
   cases <- reported_cases[(delays$seeding_time + 1):(.N - horizon)]$confirm
@@ -431,13 +411,10 @@ create_stan_data <- function(reported_cases, generation_time,
     shifted_cases = shifted_cases,
     t = length(reported_cases$date),
     horizon = horizon,
-    gt_mean_mean = generation_time$mean,
-    gt_mean_sd = generation_time$mean_sd,
-    gt_sd_mean = generation_time$sd,
-    gt_sd_sd = generation_time$sd_sd,
-    max_gt = generation_time$max,
     burn_in = 0
   )
+  # add gt data
+  data <- c(data, generation_time)
   # add delay data
   data <- c(data, delays)
   # add truncation data
@@ -459,6 +436,10 @@ create_stan_data <- function(reported_cases, generation_time,
   data$prior_infections <- ifelse(is.na(data$prior_infections) | is.null(data$prior_infections),
     0, data$prior_infections
   )
+  if (is.null(data$gt_weight)) {
+    ## default: weigh by number of data points
+    data$gt_weight <- data$t - data$seeding_time - data$horizon
+  }
   if (data$seeding_time > 1) {
     safe_lm <- purrr::safely(stats::lm)
     data$prior_growth <- safe_lm(log(confirm) ~ t, data = first_week)[[1]]
@@ -503,26 +484,35 @@ create_stan_data <- function(reported_cases, generation_time,
 create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- list()
-    if (data$delays > 0) {
+    if (data$n_uncertain_mean_delays > 0) {
       out$delay_mean <- array(purrr::map2_dbl(
-        data$delay_mean_mean, data$delay_mean_sd * 0.1,
+        data$delay_mean_mean[data$uncertain_mean_delays],
+        data$delay_mean_sd[data$uncertain_mean_delays] * 0.1,
         ~ rnorm(1, mean = .x, sd = .y)
       ))
+    }
+    if (data$n_uncertain_sd_delays > 0) {
       out$delay_sd <- array(purrr::map2_dbl(
-        data$delay_sd_mean, data$delay_sd_sd * 0.1,
+        data$delay_sd_mean[data$uncertain_sd_delays],
+        data$delay_sd_sd[data$uncertain_sd_delays] * 0.1,
         ~ rnorm(1, mean = .x, sd = .y)
       ))
     }
     if (data$truncation > 0) {
-      out$truncation_mean <- array(rnorm(1,
-        mean = data$trunc_mean_mean,
-        sd = data$trunc_mean_sd * 0.1
-      ))
-      out$truncation_sd <- array(truncnorm::rtruncnorm(1,
-        a = 0,
-        mean = data$trunc_sd_mean,
-        sd = data$trunc_sd_sd * 0.1
-      ))
+     if (data$trunc_mean_sd > 0) {
+       out$truncation_mean <- array(rnorm(1,
+         mean = data$trunc_mean_mean,
+         sd = data$trunc_mean_sd * 0.1
+       ))
+     }
+     if (data$trunc_sd_sd > 0) {
+       out$truncation_sd <- array(
+         truncnorm::rtruncnorm(1,
+           a = 0,
+           mean = data$trunc_sd_mean,
+           sd = data$trunc_sd_sd * 0.1
+         ))
+      }
     }
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
@@ -577,6 +567,9 @@ create_initial_conditions <- function(data) {
         mean = data$obs_scale_mean,
         sd = data$obs_scale_sd * 0.1
       ))
+    }
+    if (data$week_effect > 0) {
+      out$day_of_week_simplex = array(rep(1 / data$week_effect, data$week_effect))
     }
     return(out)
   }

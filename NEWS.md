@@ -1,3 +1,17 @@
+# EpiNow2 1.3.3.9000
+
+## New features
+
+* Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for pre-computing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
+
+## Model changes
+
+## Documentation
+
+* Updated examples to make use of fixed distributions to improve run-times where appropriate.
+
+## Deprecated features
+
 # EpiNow2 1.3.3
 
 This release adds a range of new minor features, squashes bugs, enhances documentation, expands unit testing, implements some minor run-time optimisations, and removes some obsolete features.

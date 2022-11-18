@@ -130,21 +130,27 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
     out$day_of_week <- out$day_of_week[, value := value * data$week_effect]
     out$day_of_week <- out$day_of_week[, strat := date][, c("time", "date") := NULL]
   }
-  if (data$delays > 0) {
-    out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
+  if (data$n_uncertain_mean_delays > 0) {
+    out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$n_uncertain_mean_delays)
     out$delay_mean <-
       out$delay_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
-    out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$delays)
+  }
+  if (data$n_uncertain_sd_delays > 0) {
+    out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$n_uncertain_sd_delays)
     out$delay_sd <-
       out$delay_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
   }
   if (data$truncation > 0) {
-    out$truncation_mean <- extract_parameter("truncation_mean", samples, 1)
-    out$truncation_mean <-
-      out$truncation_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
-    out$truncation_sd <- extract_parameter("truncation_sd", samples, 1)
-    out$truncation_sd <-
-      out$truncation_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
+    if (data$trunc_mean_sd > 0) {
+      out$truncation_mean <- extract_parameter("trunc_mean", samples, 1)
+      out$truncation_mean <-
+        out$truncation_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
+    }
+    if (data$trunc_sd_sd > 0) {
+      out$truncation_sd <- extract_parameter("trunc_sd", samples, 1)
+      out$truncation_sd <-
+        out$truncation_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
+    }
   }
   if (data$estimate_r && data$gt_mean_sd > 0) {
     out$gt_mean <- extract_static_parameter("gt_mean", samples)

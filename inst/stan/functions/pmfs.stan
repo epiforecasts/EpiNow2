@@ -1,52 +1,35 @@
-// discretised truncated gamma pmf
-vector discretised_gamma_pmf(real mu, real sigma, int max_val) {
-  int n = max_val;
-  vector[n+1] upper_cdf;
+// Calculate the daily probability of reporting using parametric
+// distributions up to the maximum observed delay.
+// If sigma is 0 all the probability mass is put on n.
+// Adapted from https://github.com/epiforecasts/epinowcast
+// @author Sam Abbott
+// @author Adrian Lison
+vector discretised_pmf(real mu, real sigma, int n, int dist, int truncate) {
   vector[n] pmf;
-  // calculate alpha and beta for gamma distribution
-  real small = 1e-5;
-  real large = 1e8;
-  real c_sigma = fmax(small, sigma);
-  real c_mu = fmax(small, mu);
-  real alpha = ((c_mu) / c_sigma)^2;
-  real beta = (c_mu) / (c_sigma^2);
-  // account for numerical issues
-  alpha = fmax(small, alpha);
-  alpha = fmin(large, alpha);
-  beta = fmax(small, beta);
-  beta = fmin(large, beta);
-  // calculate pmf
-  for (i in 1:(n+1)) {
-    upper_cdf[i] = gamma_cdf(i,  alpha, beta);
-  }
-  // discretise
-  for (i in 1:n) {
-    pmf[n+1-i] = upper_cdf[i+1] - upper_cdf[i];
-  }
-  pmf = pmf / (upper_cdf[n+1] - upper_cdf[1]);
-  return(pmf);
-}
-
-// discretised truncated lognormal pmf
-vector discretised_lognormal_pmf(real mu, real sigma, int max_val, int rev) {
-  int n = max_val;
-  vector[n] upper_cdf;
-  vector[n] pmf;
-  for (i in 1:n) {
-    upper_cdf[i] = lognormal_cdf(i,  mu, sigma);
-  }
-  // discretise
-  if (rev) {
-    pmf[n] = upper_cdf[1];
-    for (i in 2:n) {
-      pmf[n+1-i] = upper_cdf[i] - upper_cdf[i-1];
+  if (sigma > 0) {
+    vector[n + 1] upper_cdf;
+    if (dist == 0) {
+      for (i in 1:(n + 1)) {
+        upper_cdf[i] = lognormal_cdf(i - 1 + truncate, mu, sigma);
+      }
+    } else if (dist == 1) {
+      real alpha = mu^2 / sigma^2;
+      real beta = mu / sigma^2;
+      for (i in 1:(n + 1)) {
+        upper_cdf[i] = gamma_cdf(i - 1 + truncate, alpha, beta);
+      }
+    } else {
+      reject("Unknown distribution function provided.");
     }
-  }else{
-    pmf[1] = upper_cdf[1];
-    pmf[2:n] = upper_cdf[2:n] - upper_cdf[1:(n-1)];
+    // discretise
+    pmf = upper_cdf[2:(n + 1)] - upper_cdf[1:n];
+    // normalize
+    pmf = pmf / (upper_cdf[n + 1] - upper_cdf[1]);
+  } else {
+    // delta function
+    pmf = rep_vector(0, n);
+    pmf[n] = 1;
   }
-  // normalize
-  pmf = pmf / upper_cdf[n];
   return(pmf);
 }
 
@@ -60,9 +43,3 @@ vector reverse_mf(vector pmf) {
   return rev_pmf;
 }
 
-// discretised truncated gamma pmf
-vector discretised_delta_pmf(int n) {
-  vector[n] pmf = rep_vector(0, n);
-  pmf[n] = 1;
-  return(pmf);
-}
