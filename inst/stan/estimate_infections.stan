@@ -34,11 +34,11 @@ transformed data{
     sum(delay_max[fixed_delays]) - num_elements(fixed_delays) + 1);
   int delay_max_total = (delays == 0 ? 0 :
     sum(delay_max) - num_elements(delay_max) + 1);
-  vector[gt_fixed[1] ? gt_max[1] : 0] gt_fixed_pmf;
+  vector[gt_param && gt_fixed[1] ? gt_max[1] : 0] gt_fixed_pmf;
   vector[truncation && trunc_fixed[1] ? trunc_max[1] : 0] trunc_fixed_pmf;
   vector[delay_max_fixed] delays_fixed_pmf;
 
-  if (gt_fixed[1]) {
+  if (gt_param && gt_fixed[1]) {
     gt_fixed_pmf = discretised_pmf(gt_mean_mean[1], gt_sd_mean[1], gt_max[1], gt_dist[1], 1);
   }
   if (truncation && trunc_fixed[1]) {
@@ -68,8 +68,9 @@ parameters{
   vector[estimate_r] log_R;                // baseline reproduction number estimate (log)
   real initial_infections[estimate_r] ;    // seed infections
   real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
-  real<lower = 0, upper = gt_max[1]> gt_mean[estimate_r && gt_mean_sd[1] > 0]; // mean of generation time (if uncertain)
-  real<lower = 0> gt_sd[estimate_r && gt_sd_sd[1] > 0];       // sd of generation time (if uncertain)
+  real<lower = 0, upper = gt_max[1]> gt_mean[estimate_r && gt_param && gt_mean_sd[1] > 0]; // mean of generation time (if uncertain)
+  real<lower = 0> gt_sd[estimate_r && gt_param && gt_sd_sd[1] > 0];       // sd of generation time (if uncertain)
+  simplex[!estimate_r || gt_param ? 1 : gt_max[1]] gt_est_pmf;
   real<lower = 0> bp_sd[bp_n > 0 ? 1 : 0]; // standard deviation of breakpoint effect
   real bp_effects[bp_n];                   // Rt breakpoint effects
   // observation model
@@ -96,7 +97,9 @@ transformed parameters {
   if (estimate_r) {
     // via Rt
     vector[gt_max[1]] gt_pmf;
-    gt_pmf = combine_pmfs(gt_fixed_pmf, gt_mean, gt_sd, gt_max, gt_dist, gt_max[1], 1);
+    gt_pmf = gt_param ?
+      combine_pmfs(gt_fixed_pmf, gt_mean, gt_sd, gt_max, gt_dist, gt_max[1], 1) :
+      gt_est_pmf;
     R = update_Rt(ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary);
     infections = generate_infections(R, seeding_time, gt_pmf, initial_infections, initial_growth, pop, future_time);
   } else {
@@ -157,10 +160,12 @@ model {
       log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n,
       seeding_time, r_logmean, r_logsd, prior_infections, prior_growth
     );
-    // penalised_prior on generation interval
-    generation_time_lp(
-      gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, gt_weight
-    );
+    if (gt_param) {
+      // penalised_prior on generation interval
+      generation_time_lp(
+        gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, gt_weight
+      );
+    }
   }
   // prior observation scaling
   if (obs_scale) {
@@ -179,12 +184,26 @@ generated quantities {
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
   real r[ot_h];
   vector[return_likelihood > 1 ? ot : 0] log_lik;
+  real gt_est_mean[1 - gt_param && estimate_r];
+  real gt_est_sd[1 - gt_param && estimate_r];
   if (estimate_r){
     // estimate growth from estimated Rt
-    real set_gt_mean = (gt_mean_sd[1] > 0 ? gt_mean[1] : gt_mean_mean[1]);
-    real set_gt_sd = (gt_sd_sd [1]> 0 ? gt_sd[1] : gt_sd_mean[1]);
-    vector[gt_max[1]] gt_pmf = combine_pmfs(gt_fixed_pmf, gt_mean, gt_sd, gt_max, gt_dist, gt_max[1], 1);
-    r = R_to_growth(R, set_gt_mean, set_gt_sd);
+    if (gt_param) {
+      real set_gt_mean = (gt_mean_sd[1] > 0 ? gt_mean[1] : gt_mean_mean[1]);
+      real set_gt_sd = (gt_sd_sd [1]> 0 ? gt_sd[1] : gt_sd_mean[1]);
+      r = R_to_growth(R, set_gt_mean, set_gt_sd);
+    } else {
+      gt_est_mean[1] = 0;
+      gt_est_sd[1] = 0;
+      for (i in 1:gt_max[1]) {
+        gt_est_mean[1] += i * gt_est_pmf[i];
+      }
+      for (i in 1:gt_max[1]) {
+        gt_est_sd[1] += i * i * gt_est_pmf[i];
+      }
+      gt_est_sd[1] -= pow(gt_est_mean[1], 2);
+      r = R_to_growth(R, gt_est_mean[1], gt_est_sd[1]);
+    }
   } else {
     // sample generation time
     real gt_mean_sample[1];

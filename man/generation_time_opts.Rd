@@ -10,7 +10,8 @@ generation_time_opts(
   source,
   max = 15L,
   fixed = FALSE,
-  prior_weight = NULL
+  prior_weight = NULL,
+  param = TRUE
 )
 }
 \arguments{

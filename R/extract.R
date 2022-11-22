@@ -152,12 +152,18 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
         out$truncation_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
     }
   }
-  if (data$estimate_r && data$gt_mean_sd > 0) {
+  if (data$estimate_r && data$gt_param && data$gt_mean_sd > 0) {
     out$gt_mean <- extract_static_parameter("gt_mean", samples)
     out$gt_mean <- out$gt_mean[, value := value.V1][, value.V1 := NULL]
   }
-  if (data$estimate_r && data$gt_sd_sd > 0) {
+  if (data$estimate_r && data$gt_param && data$gt_sd_sd > 0) {
     out$gt_sd <- extract_static_parameter("gt_sd", samples)
+    out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
+  }
+  if (data$estimate_r && !data$gt_param) {
+    out$gt_mean <- extract_static_parameter("gt_est_mean", samples)
+    out$gt_mean <- out$gt_mean[, value := value.V1][, value.V1 := NULL]
+    out$gt_sd <- extract_static_parameter("gt_est_sd", samples)
     out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
   }
   if (data$model_type == 1) {
