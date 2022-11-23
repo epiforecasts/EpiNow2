@@ -6,6 +6,7 @@
 \usage{
 estimate_truncation(
   obs,
+  max_truncation,
   trunc_max = 10,
   trunc_dist = c("lognormal", "gamma"),
   model = NULL,
@@ -20,12 +21,13 @@ and a confirm (integer) variable. Each data set should be a snapshot
 of the reported data over time. All data sets must contain a complete vector
 of dates.}
 
+\item{max_truncation}{Deprecated; use \code{trunc_max} instead}
+
 \item{trunc_max}{Integer, defaults to 10. Maximum number of
 days to include in the truncation distribution.}
 
 \item{trunc_dist}{Character, defaults to "lognormal". The parametric
-distribution to be used for truncation.
-days to include in the truncation distribution.}
+distribution to be used for truncation.}
 
 \item{model}{A compiled stan model to override the default model. May be
 useful for package developers or those developing extensions.}
