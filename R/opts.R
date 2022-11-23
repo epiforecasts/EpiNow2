@@ -162,10 +162,9 @@ delay_opts <- function(..., fixed = FALSE) {
 #' Returns a truncation distribution formatted for usage by
 #'  downstream functions. See `estimate_truncation()` for an approach to
 #'  estimate this distribution.
-#' @param ... Any parameters to be passed to [delay_dist]. If the `max` parameter
-#' is not set but other distributional parameters given then the `max` will be
-#' set to 15 to ensure backwards compatibility. Also if no `dist` parameter is given
-#' then a gamma distribution will be used for backwards compatibility.
+#' @param dist Parameters of a discretised (upper-)truncated lognormal
+#' truncation distribution as a list with parameters that are all passed to
+#' [delay_dist].
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
 #' @return A list summarising the input truncation distribution.
 #' @export
@@ -174,14 +173,11 @@ delay_opts <- function(..., fixed = FALSE) {
 #' trunc_opts()
 #'
 #' # truncation dist
-#' trunc_opts(mean = 3, sd = 2)
-trunc_opts <- function(...) {
-  dot_options <- list(...) ## options for delay_dist
-  present <- (length(dot_options) > 0)
-  data <- do.call(delay_dist, dot_options)
+#' trunc_opts(dist = list(mean = 3, sd = 2))
+trunc_opts <- function(dist = list()) {
+  data <- do.call(delay_dist, dist)
   names(data) <- paste0("trunc_", names(data))
-  data$truncation <- as.integer(present)
-
+  data$truncation <- as.integer(length(data$trunc_max) > 0)
   return(data)
 }
 
