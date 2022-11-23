@@ -31,11 +31,11 @@
 #' and a confirm (integer) variable. Each data set should be a snapshot
 #' of the reported data over time. All data sets must contain a complete vector
 #' of dates.
+#' @param max_truncation Deprecated; use `trunc_max` instead
 #' @param trunc_max Integer, defaults to 10. Maximum number of
 #' days to include in the truncation distribution.
 #' @param trunc_dist Character, defaults to "lognormal". The parametric
 #' distribution to be used for truncation.
-#' days to include in the truncation distribution.
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
 #' @param verbose Logical, should model fitting progress be returned.
@@ -106,13 +106,19 @@
 #' plot(est)
 #'
 #' options(old_opts)
-estimate_truncation <- function(obs, trunc_max = 10,
+estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 trunc_dist = c("lognormal", "gamma"),
                                 model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 verbose = TRUE,
                                 ...) {
   trunc_dist <- match.arg(trunc_dist)
+
+  if (!missing(max_truncation) && missing(trunc_max)) {
+    warning("The `max_truncation` argument is deprecated. ",
+            "Use `trunc_max` instead.")
+    trunc_max <- max_truncation
+  }
 
   # combine into ordered matrix
   dirty_obs <- purrr::map(obs, data.table::as.data.table)
