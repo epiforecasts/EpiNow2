@@ -229,7 +229,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   out$last_obs <- last_obs
   # summarise estimated cmf of the truncation distribution
   out$cmf <- extract_stan_param(fit, "cmf", CrIs = CrIs)
-  out$cmf <- data.table::as.data.table(out$cmf)[, index := .N:1]
+  out$cmf <- data.table::as.data.table(out$cmf)[, index := seq_len(.N)]
   data.table::setcolorder(out$cmf, "index")
   out$data <- data
   out$fit <- fit
