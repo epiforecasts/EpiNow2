@@ -57,8 +57,10 @@ test_that("truncation parameters can be specified in different ways", {
     c("trunc_mean_mean", "trunc_mean_sd", "trunc_sd_mean", "trunc_sd_sd",
       "trunc_max")
   expect_equal(
-    test_stan_data(truncation = trunc_opts(mean = 3, sd = 1, max = 5),
-                   params = trunc_params),
+    test_stan_data(
+      truncation = trunc_opts(dist =  list(mean = 3, sd = 1, max = 5)),
+      params = trunc_params
+    ),
     c(3, 0, 1, 0, 5)
   )
 })

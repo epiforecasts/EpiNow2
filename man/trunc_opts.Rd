@@ -4,13 +4,12 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(...)
+trunc_opts(dist = list())
 }
 \arguments{
-\item{...}{Any parameters to be passed to \link{delay_dist}. If the \code{max} parameter
-is not set but other distributional parameters given then the \code{max} will be
-set to 15 to ensure backwards compatibility. Also if no \code{dist} parameter is given
-then a gamma distribution will be used for backwards compatibility.}
+\item{dist}{Parameters of a discretised (upper-)truncated lognormal
+truncation distribution as a list with parameters that are all passed to
+\link{delay_dist}.}
 }
 \value{
 A list summarising the input truncation distribution.
@@ -26,7 +25,7 @@ estimate this distribution.
 trunc_opts()
 
 # truncation dist
-trunc_opts(mean = 3, sd = 2)
+trunc_opts(dist = list(mean = 3, sd = 2))
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
