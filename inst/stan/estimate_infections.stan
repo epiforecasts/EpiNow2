@@ -141,7 +141,7 @@ generated quantities {
   int imputed_reports[ot_h];
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
   real r[ot_h];
-  vector[return_likelihood > 1 ? ot : 0] log_lik;
+  vector[return_likelihood ? ot : 0] log_lik;
   if (estimate_r){
     // estimate growth from estimated Rt
     real set_gt_mean = (gt_mean_sd > 0 ? gt_mean[1] : gt_mean_mean);
