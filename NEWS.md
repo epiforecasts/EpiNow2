@@ -68,6 +68,7 @@ estimates and are considered out of scope for `EpiNow2`. If finding useful conta
 * Fixed a bug where `use_rt = FALSE` did not properly cancel user settings. By @sbfnk.
 * Fixed a bug in `estimate_truncation` where phi was not initialised. By @sbfnk.
 * Fixed a bug where `zero_threshold` was being ignored and so no post-processing was happening. To maintain backwards compatibility the default has been changed to `Inf` (i.e. no zero threshold). By @LloydChapman in #285.
+* Fixed a bug where setting `obs_opts(return_likelihood = TRUE)` fails. By @sbfnk in #333.
 
 # EpiNow2 1.3.2
 
