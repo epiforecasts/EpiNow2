@@ -563,7 +563,7 @@ create_initial_conditions <- function(data) {
     }
     if (data$obs_scale == 1) {
       out$frac_obs <- array(truncnorm::rtruncnorm(1,
-        a = 0,
+        a = 0, b = 1,
         mean = data$obs_scale_mean,
         sd = data$obs_scale_sd * 0.1
       ))

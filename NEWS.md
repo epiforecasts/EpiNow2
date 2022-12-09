@@ -6,6 +6,8 @@
 
 ## Model changes
 
+* The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. By @sbfnk in #340.
+
 ## Documentation
 
 * Updated examples to make use of fixed distributions to improve run-times where appropriate.
