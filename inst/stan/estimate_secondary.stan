@@ -46,7 +46,7 @@ parameters{
   real delay_mean[n_uncertain_mean_delays];               // mean of delays
   real<lower = 0> delay_sd[n_uncertain_sd_delays];      // sd of delays
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
-  real<lower = 0> frac_obs[obs_scale];   // fraction of cases that are ultimately observed
+  real<lower = 0, upper = 1> frac_obs[obs_scale];   // fraction of cases that are ultimately observed
   real trunc_mean[truncation];      // mean of truncation
   real trunc_sd[truncation];        // sd of truncation
   real<lower = 0> rep_phi[model_type];   // overdispersion of the reporting process
@@ -93,7 +93,7 @@ model {
                 trunc_sd_mean, trunc_sd_sd);
   // prior primary report scaling
   if (obs_scale) {
-    frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0,];
+    frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];
    }
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
