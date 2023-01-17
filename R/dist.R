@@ -445,11 +445,12 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
     ## Fit each sub sample
     dist_samples <- future.apply::future_lapply(1:bootstraps,
       function(boot) {
-        get_single_dist(sample(values,
-          min(length(values), bootstrap_samples),
-          replace = TRUE
-        ),
-        samples = ceiling(samples / bootstraps)
+        get_single_dist(
+          sample(values,
+            min(length(values), bootstrap_samples),
+            replace = TRUE
+          ),
+          samples = ceiling(samples / bootstraps)
         )
       },
       future.scheduling = Inf,
@@ -577,7 +578,7 @@ estimate_delay <- function(delays, ...) {
 #'   direction = "forwards",
 #'   type = "median"
 #' )
-#'}
+#' }
 sample_approx_dist <- function(cases = NULL,
                                dist_fn = NULL,
                                max_value = 120,

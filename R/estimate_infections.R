@@ -218,9 +218,8 @@ estimate_infections <- function(reported_cases,
                                 zero_threshold = Inf,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
-  
   set_dt_single_thread()
-  
+
   # store dirty reported case data
   dirty_reported_cases <- data.table::copy(reported_cases)
 
@@ -239,7 +238,7 @@ estimate_infections <- function(reported_cases,
   }
   # Make sure there are no missing dates and order cases
   reported_cases <- create_clean_reported_cases(
-    reported_cases, horizon, 
+    reported_cases, horizon,
     filter_leading_zeros = filter_leading_zeros,
     zero_threshold = zero_threshold
   )
@@ -436,13 +435,14 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   args$max_execution_time <- NULL
   args$future <- NULL
 
-  futile.logger::flog.debug(paste0(
-    "%s: Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains, " samples (across ", args$chains,
-    " chains each with a warm up of ", args$warmup, " iterations each) and ",
-    args$data$t, " time steps of which ", args$data$horizon, " are a forecast"
-  ),
-  id,
-  name = "EpiNow2.epinow.estimate_infections.fit"
+  futile.logger::flog.debug(
+    paste0(
+      "%s: Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains, " samples (across ", args$chains,
+      " chains each with a warm up of ", args$warmup, " iterations each) and ",
+      args$data$t, " time steps of which ", args$data$horizon, " are a forecast"
+    ),
+    id,
+    name = "EpiNow2.epinow.estimate_infections.fit"
   )
 
   if (exists("stuck_chains", args)) {
@@ -455,25 +455,26 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   fit_chain <- function(chain, stan_args, max_time, catch = FALSE) {
     stan_args$chain_id <- chain
     if (catch) {
-      fit <- tryCatch(withCallingHandlers(
-        R.utils::withTimeout(do.call(rstan::sampling, stan_args),
-          timeout = max_time,
-          onTimeout = "silent"
+      fit <- tryCatch(
+        withCallingHandlers(
+          R.utils::withTimeout(do.call(rstan::sampling, stan_args),
+            timeout = max_time,
+            onTimeout = "silent"
+          ),
+          warning = function(w) {
+            futile.logger::flog.warn("%s (chain: %s): %s - %s", id, chain, w$message, toString(w$call),
+              name = "EpiNow2.epinow.estimate_infections.fit"
+            )
+            rlang::cnd_muffle(w)
+          }
         ),
-        warning = function(w) {
-          futile.logger::flog.warn("%s (chain: %s): %s - %s", id, chain, w$message, toString(w$call),
+        error = function(e) {
+          error_text <- sprintf("%s (chain: %s): %s - %s", id, chain, e$message, toString(e$call))
+          futile.logger::flog.error(error_text,
             name = "EpiNow2.epinow.estimate_infections.fit"
           )
-          rlang::cnd_muffle(w)
+          return(NULL)
         }
-      ),
-      error = function(e) {
-        error_text <- sprintf("%s (chain: %s): %s - %s", id, chain, e$message, toString(e$call))
-        futile.logger::flog.error(error_text,
-          name = "EpiNow2.epinow.estimate_infections.fit"
-        )
-        return(NULL)
-      }
       )
     } else {
       fit <- R.utils::withTimeout(do.call(rstan::sampling, stan_args),
@@ -547,13 +548,14 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
 #' @return A stan model object
 fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
   args$method <- NULL
-  futile.logger::flog.debug(paste0(
-    "%s: Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
-    args$output_samples, " approximate posterior samples for ", args$data$t, " time steps of which ",
-    args$data$horizon, " are a forecast"
-  ),
-  id,
-  name = "EpiNow2.epinow.estimate_infections.fit"
+  futile.logger::flog.debug(
+    paste0(
+      "%s: Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
+      args$output_samples, " approximate posterior samples for ", args$data$t, " time steps of which ",
+      args$data$horizon, " are a forecast"
+    ),
+    id,
+    name = "EpiNow2.epinow.estimate_infections.fit"
   )
 
   if (exists("trials", args)) {

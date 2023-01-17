@@ -192,8 +192,7 @@ epinow <- function(reported_cases,
           target_folder = target_folder
         ),
         plot_args
-        )
-      )
+      ))
     } else {
       plots <- NULL
     }
@@ -213,27 +212,28 @@ epinow <- function(reported_cases,
 
   # start processing with system timing and error catching
   start_time <- Sys.time()
-  out <- tryCatch(withCallingHandlers(
-    epinow_internal(),
-    warning = function(w) {
-      futile.logger::flog.warn("%s: %s - %s", id, w$message, toString(w$call),
-        name = "EpiNow2.epinow"
-      )
-      rlang::cnd_muffle(w)
+  out <- tryCatch(
+    withCallingHandlers(
+      epinow_internal(),
+      warning = function(w) {
+        futile.logger::flog.warn("%s: %s - %s", id, w$message, toString(w$call),
+          name = "EpiNow2.epinow"
+        )
+        rlang::cnd_muffle(w)
+      }
+    ),
+    error = function(e) {
+      if (id %in% "epinow") {
+        stop(e)
+      } else {
+        error_text <- sprintf("%s: %s - %s", id, e$message, toString(e$call))
+        futile.logger::flog.error(error_text,
+          name = "EpiNow2.epinow"
+        )
+        rlang::cnd_muffle(e)
+        return(list(error = error_text))
+      }
     }
-  ),
-  error = function(e) {
-    if (id %in% "epinow") {
-      stop(e)
-    } else {
-      error_text <- sprintf("%s: %s - %s", id, e$message, toString(e$call))
-      futile.logger::flog.error(error_text,
-        name = "EpiNow2.epinow"
-      )
-      rlang::cnd_muffle(e)
-      return(list(error = error_text))
-    }
-  }
   )
   end_time <- Sys.time()
   if (!is.null(out$error)) {

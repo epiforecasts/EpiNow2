@@ -112,7 +112,6 @@ estimates across multiple regions is tracked using the \code{progressr} package.
 progressr::handlers and enable it in batch by setting \code{R_PROGRESSR_ENABLE=TRUE} as an environment variable.
 }
 \examples{
-
 \donttest{
 # set number of cores to use
 old_opts <- options()

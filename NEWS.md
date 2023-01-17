@@ -10,7 +10,7 @@ This is a maintenance release focussing on bug fixes and package infrastructure 
 * Add compatibility changes for the latest version of `rstan` and `rstantools`.
 * Remove legacy use of `pkgnet` for package dependency visualisation.
 * Slight edits to the model outline for `estimate_infections()`.
-
+* Restyled all code using `styler`.
 # EpiNow2 1.3.3
 
 This release adds a range of new minor features, squashes bugs, enhances documentation, expands unit testing, implements some minor run-time optimisations, and removes some obsolete features.
