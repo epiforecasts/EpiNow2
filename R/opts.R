@@ -238,7 +238,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
 #' Negative binomial ("negbin"), the default, and Poisson.
-#' @param phi A numeric vector of length 2, defaults to 0, 1. Indicates the 
+#' @param phi A numeric vector of length 2, defaults to 0, 1. Indicates the
 #' mean and standard deviation of the normal prior used for the observation
 #' process.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in

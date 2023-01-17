@@ -63,7 +63,6 @@ extract_static_parameter <- function(param, samples) {
 #' @return A list of dataframes each containing the posterior of a parameter
 extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_inf_dates,
                                       drop_length_1 = FALSE, merge = FALSE) {
-
   # extract sample from stan object
   samples <- rstan::extract(stan_fit)
 
@@ -251,8 +250,7 @@ extract_inits <- function(fit, current_inits,
       function(x) {
         if (length(dim(x)) == 1) {
           as.array(x[i])
-        }
-        else if (length(dim(x)) == 2) {
+        } else if (length(dim(x)) == 2) {
           x[i, ]
         } else {
           x[i, , ]

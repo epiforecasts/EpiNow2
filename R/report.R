@@ -220,7 +220,7 @@ report_summary <- function(summarised_estimates,
 #' are enhanced.
 #' @param summarised_estimates A data.table of summarised estimates containing
 #' the following variables: variable, median, bottom, and top.
-#' 
+#'
 #'  It should also contain the following estimates: R, infections,
 #'  reported_cases_rt, and r (rate of growth).
 #' @param ... Additional arguments passed to `plot_estimates()`.

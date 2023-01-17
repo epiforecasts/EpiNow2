@@ -52,7 +52,7 @@
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
-#' 
+#'
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:60]
 #'
@@ -101,7 +101,7 @@
 #' print(est$obs)
 #' # validation plot of observations vs estimates
 #' plot(est)
-#' 
+#'
 #' options(old_opts)
 estimate_truncation <- function(obs, max_truncation = 10,
                                 model = NULL,
@@ -138,7 +138,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
       logmean = rnorm(1, 0, 1),
       logsd = abs(rnorm(1, 0, 1)),
       phi = abs(rnorm(1, 0, 1)),
-      sigma =  abs(rnorm(1, 0, 1 ))
+      sigma = abs(rnorm(1, 0, 1))
     )
     return(data)
   }
@@ -194,7 +194,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
     if (!is.null(estimates$Rhat)) {
       estimates[, c("Rhat") := NULL]
     }
-    
+
     target_obs <-
       data.table::merge.data.table(
         target_obs, last_obs,

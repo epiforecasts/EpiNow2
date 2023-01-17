@@ -32,11 +32,11 @@ create_clean_reported_cases <- function(reported_cases, horizon,
   reported_cases <- reported_cases[is.na(breakpoint), breakpoint := 0]
   reported_cases <- data.table::setorder(reported_cases, date)
   ## Filter out 0 reported cases from the beginning of the data
-  if (filter_leading_zeros){
+  if (filter_leading_zeros) {
     reported_cases <- reported_cases[order(date)][
       ,
       cum_cases := cumsum(confirm)
-    ][cum_cases > 0][, cum_cases := NULL]    
+    ][cum_cases > 0][, cum_cases := NULL]
   }
 
   # Check case counts preceding zero case counts and set to 7 day average if
@@ -394,7 +394,6 @@ create_stan_data <- function(reported_cases, generation_time,
                              rt, gp, obs, delays, horizon,
                              backcalc, shifted_cases,
                              truncation) {
-
   ## make sure we have at least max_gt seeding time
   delays$seeding_time <- max(delays$seeding_time, generation_time$max)
 
@@ -409,18 +408,22 @@ create_stan_data <- function(reported_cases, generation_time,
   if (generation_time$sd == 0 && generation_time$sd_sd == 0) {
     if ("max_gt" %in% names(generation_time)) {
       if (generation_time$max_gt != generation_time$mean) {
-        stop("Error in generation time defintion: if max_gt(",
-             generation_time$max_gt,
-             ") is given it must be equal to the mean (",
-             generation_time$mean,
-             ")")
+        stop(
+          "Error in generation time defintion: if max_gt(",
+          generation_time$max_gt,
+          ") is given it must be equal to the mean (",
+          generation_time$mean,
+          ")"
+        )
       }
     } else {
       generation_time$max_gt <- generation_time$mean
     }
     if (any(generation_time$mean_sd > 0, generation_time$sd_sd > 0)) {
-      stop("Error in generation time definition: if sd_mean is 0 and ",
-           "sd_sd is 0 then mean_sd must be 0, too.")
+      stop(
+        "Error in generation time definition: if sd_mean is 0 and ",
+        "sd_sd is 0 then mean_sd must be 0, too."
+      )
     }
   }
 
@@ -478,7 +481,8 @@ create_stan_data <- function(reported_cases, generation_time,
   data <- c(
     data,
     create_obs_model(
-      obs, dates = reported_cases[(data$seeding_time + 1):.N]$date
+      obs,
+      dates = reported_cases[(data$seeding_time + 1):.N]$date
     )
   )
 
@@ -540,7 +544,8 @@ create_initial_conditions <- function(data) {
     if (data$model_type == 1) {
       out$rep_phi <- array(
         truncnorm::rtruncnorm(
-          1, a = 0, mean = data$phi_mean, sd = data$phi_sd / 10
+          1,
+          a = 0, mean = data$phi_mean, sd = data$phi_sd / 10
         )
       )
     }
@@ -555,15 +560,15 @@ create_initial_conditions <- function(data) {
       ))
       if (data$gt_mean_sd > 0) {
         out$gt_mean <- array(truncnorm::rtruncnorm(1,
-                                                   a = 0, mean = data$gt_mean_mean,
-                                                   sd = data$gt_mean_sd * 0.1
-                                                   ))
+          a = 0, mean = data$gt_mean_mean,
+          sd = data$gt_mean_sd * 0.1
+        ))
       }
       if (data$gt_sd_sd > 0) {
         out$gt_sd <- array(truncnorm::rtruncnorm(1,
-                                                 a = 0, mean = data$gt_sd_mean,
-                                                 sd = data$gt_sd_sd * 0.1
-                                                 ))
+          a = 0, mean = data$gt_sd_mean,
+          sd = data$gt_sd_sd * 0.1
+        ))
       }
 
       if (data$bp_n > 0) {

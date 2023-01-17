@@ -4,7 +4,7 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
     "rt.stan", "infections.stan"
   )
   suppressMessages(
-  expose_stan_fns(files,
+    expose_stan_fns(files,
       target_dir = system.file("stan/functions", package = "EpiNow2")
     )
   )

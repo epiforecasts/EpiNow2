@@ -11,14 +11,14 @@ reporting_delay <- list(
 
 library(data.table)
 out <- suppressWarnings(estimate_infections(reported_cases,
-    generation_time = generation_time,
-    delays = delay_opts(reporting_delay),
-    gp = NULL, rt = rt_opts(rw = 14),
-    stan = stan_opts(
-      chains = 2, warmup = 100, samples = 100,
-      control = list(adapt_delta = 0.9)
-    ), 
-    verbose = FALSE
+  generation_time = generation_time,
+  delays = delay_opts(reporting_delay),
+  gp = NULL, rt = rt_opts(rw = 14),
+  stan = stan_opts(
+    chains = 2, warmup = 100, samples = 100,
+    control = list(adapt_delta = 0.9)
+  ),
+  verbose = FALSE
 ))
 
 
@@ -60,7 +60,7 @@ test_that("simulate_infections works to simulate a passed in estimate_infections
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object with samples of Rt in a data frame", {
   R_samples <- summary(out, type = "samples", param = "R")
-  R_samples <- R_samples[,.(date, sample, value)][sample <= 1000]
+  R_samples <- R_samples[, .(date, sample, value)][sample <= 1000]
   R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
   sims_sample <- simulate_infections(out, R_samples)
   expect_equal(names(sims_sample), c("samples", "summarised", "observations"))

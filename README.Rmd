@@ -87,7 +87,8 @@ Distributions can either be fitted using package functionality or determined els
 For example if data on the delay between onset and infection was available we could fit a distribution to it with appropriate uncertainty as follows (note this is a synthetic example),
 ```{r, eval = FALSE}
 reporting_delay <- estimate_delay(
-  rlnorm(1000, log(2), 1), max_value = 15, bootstraps = 1
+  rlnorm(1000, log(2), 1),
+  max_value = 15, bootstraps = 1
 )
 ```
 
@@ -171,8 +172,9 @@ Define cases in multiple regions delineated by the region variable.
 
 ```{r}
 reported_cases <- data.table::rbindlist(list(
-   data.table::copy(reported_cases)[, region := "testland"],
-   reported_cases[, region := "realland"]))
+  data.table::copy(reported_cases)[, region := "testland"],
+  reported_cases[, region := "realland"]
+))
 head(reported_cases)
 ```
 

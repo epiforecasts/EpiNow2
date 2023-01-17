@@ -44,13 +44,13 @@
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
-#' 
+#'
 #' #' # load data.table for manipulation
 #' library(data.table)
 #' # load lubridate for dates
 #' library(lubridate)
 #' library(purrr)
-#' 
+#'
 #' #### Incidence data example ####
 #'
 #' # make some example secondary incidence data
@@ -123,7 +123,7 @@
 #'   )
 #' }
 #' cases <- cases[, secondary := map_dbl(secondary, ~ rpois(1, .))]
-#' 
+#'
 #' # fit model to example prevalence data
 #' prev <- estimate_secondary(cases[1:100],
 #'   secondary = secondary_opts(type = "prevalence"),
@@ -137,7 +137,7 @@
 #' # forecast future secondary cases from primary
 #' prev_preds <- forecast_secondary(prev, cases[101:.N][, value := primary])
 #' plot(prev_preds, new_obs = cases, from = "2020-06-01")
-#' 
+#'
 #' options(old_opts)
 #' }
 estimate_secondary <- function(reports,
@@ -370,7 +370,6 @@ forecast_secondary <- function(estimate,
                                samples = NULL,
                                all_dates = FALSE,
                                CrIs = c(0.2, 0.5, 0.9)) {
-
   ## deal with input if data frame
   if (any(class(primary) %in% "data.frame")) {
     primary <- data.table::as.data.table(primary)
@@ -466,11 +465,12 @@ forecast_secondary <- function(estimate,
   out$samples <- samples
   out$forecast <- summarised
   # link previous prediction observations with forecast observations
-  forecast_obs <- data.table::rbindlist(list(
-    estimate$predictions[, .(date, primary, secondary)],
-    data.table::copy(primary)[, .(primary = median(value)), by = "date"]
-  ),
-  use.names = TRUE, fill = TRUE
+  forecast_obs <- data.table::rbindlist(
+    list(
+      estimate$predictions[, .(date, primary, secondary)],
+      data.table::copy(primary)[, .(primary = median(value)), by = "date"]
+    ),
+    use.names = TRUE, fill = TRUE
   )
   data.table::setorderv(forecast_obs, "date")
   # add in predictions in estimate_secondary format
