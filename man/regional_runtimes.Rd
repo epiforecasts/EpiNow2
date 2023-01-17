@@ -31,37 +31,6 @@ A data.table of region run times
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Used internally by \code{regional_epinow} to summarise region run times.
 }
-\examples{
-\donttest{
-# example delays
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- list(
-  mean = convert_to_logmean(2, 1),
-  mean_sd = 0.1,
-  sd = convert_to_logsd(2, 1),
-  sd_sd = 0.1,
-  max = 10
-)
-
-cases <- example_confirmed[1:30]
-cases <- data.table::rbindlist(list(
-  data.table::copy(cases)[, region := "testland"],
-  cases[, region := "realland"]
-))
-
-# run basic nowcasting pipeline
-regional_out <- regional_epinow(
-  reported_cases = cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay),
-  samples = 100, stan_args = list(warmup = 100),
-  output = c("region", "timing")
-)
-
-regional_runtimes(regional_output = regional_out$regional)
-}
-}
 \seealso{
 regional_summary regional_epinow
 }
