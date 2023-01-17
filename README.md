@@ -16,7 +16,7 @@ contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](
 [![PRs
 Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](https://makeapullrequest.com/)
 [![GitHub
-commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.3.3.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/main/)
+commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.3.4.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/main/)
 [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211)
 
 This package estimates the time-varying reproduction number, growth
