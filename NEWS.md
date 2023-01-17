@@ -9,6 +9,7 @@ This is a maintenance release focussing on bug fixes and package infrastructure 
 * Fixed a broken example in the documentation for `regional_runtimes()`.
 * Add compatibility changes for the latest version of `rstan` and `rstantools`.
 * Remove legacy use of `pkgnet` for package dependency visualisation.
+* Slight edits to the model outline for `estimate_infections()`.
 
 # EpiNow2 1.3.3
 
