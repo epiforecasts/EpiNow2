@@ -66,7 +66,7 @@
 #'   set.seed(x[1])
 #'   meanlog <- rnorm(1, 1.6, 0.2)
 #'   sdlog <- rnorm(1, 0.8, 0.1)
-#'   cmf <- cumsum(dlnorm(1:length(x), meanlog, sdlog)) -
+#'   cmf <- cumsum(dlnorm(seq_along(x), meanlog, sdlog)) -
 #'     cumsum(dlnorm(0:(length(x) - 1), meanlog, sdlog))
 #'   cmf <- cmf / plnorm(length(x), meanlog, sdlog)
 #'   conv <- sum(x * rev(cmf), na.rm = TRUE)

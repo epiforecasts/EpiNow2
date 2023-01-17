@@ -113,7 +113,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
   obs <- purrr::map(dirty_obs, data.table::copy)
-  obs <- purrr::map(1:length(obs), ~ obs[[.]][, (as.character(.)) := confirm][
+  obs <- purrr::map(seq_along(obs), ~ obs[[.]][, (as.character(.)) := confirm][
     ,
     confirm := NULL
   ])

@@ -5,6 +5,7 @@ This is a maintenance release focussing on bug fixes and package infrastructure 
 ## Package
 
 * Update the GitHub Action files to new versions.
+* Switched to using `seq_along()` rather than `1:length()`.
 
 # EpiNow2 1.3.3
 

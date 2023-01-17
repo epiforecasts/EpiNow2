@@ -6,7 +6,7 @@ regions <- EpiNow2::get_regions(here::here(region_path))
 show_title <- TRUE
 title_depth <- 4
 
-region_summaries <- 1:length(regions) %>% 
+region_summaries <- seq_along(regions) %>% 
   purrr::map(function(region_index) {
     index <- region_index
     region <- regions[region_index]

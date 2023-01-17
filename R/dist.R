@@ -601,7 +601,7 @@ sample_approx_dist <- function(cases = NULL,
 
     # approximate cases
     mapped_cases <- suppressMessages(purrr::map_dfc(
-      1:length(reversed_cases),
+      seq_along(reversed_cases),
       ~ c(
         rep(0, . - 1),
         stats::rbinom(
@@ -632,7 +632,7 @@ sample_approx_dist <- function(cases = NULL,
     floor_case_sum <- floor(case_sum)
     sample_cases <- floor_case_sum +
       data.table::fifelse(
-        (runif(1:length(case_sum)) < (case_sum - floor_case_sum)),
+        (runif(seq_along(case_sum)) < (case_sum - floor_case_sum)),
         1, 0
       )
 

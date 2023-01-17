@@ -193,7 +193,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   )
   # apply random walk
   if (rt$rw != 0) {
-    breakpoints <- as.integer(1:length(breakpoints) %% rt$rw == 0)
+    breakpoints <- as.integer(seq_along(breakpoints) %% rt$rw == 0)
     if (!(rt$future %in% "project")) {
       max_bps <- length(breakpoints) - horizon + future_rt$from
       if (max_bps < length(breakpoints)) {

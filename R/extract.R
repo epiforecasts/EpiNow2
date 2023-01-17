@@ -39,7 +39,7 @@ extract_parameter <- function(param, samples, dates) {
 extract_static_parameter <- function(param, samples) {
   data.table::data.table(
     parameter = param,
-    sample = 1:length(samples[[param]]),
+    sample = seq_along(samples[[param]]),
     value = samples[[param]]
   )
 }
@@ -281,7 +281,7 @@ extract_inits <- function(fit, current_inits,
   inits_sample <- function(inits_list = fit_inits,
                            old_inits = old_init_fn,
                            exclude = exclude_vars) {
-    i <- sample(1:length(inits_list), 1)
+    i <- sample(seq_along(inits_list), 1)
     fit_inits <- inits_list[[i]]
     if (!is.null(exclude_list)) {
       old_inits_sample <- old_inits()
