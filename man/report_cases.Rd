@@ -56,7 +56,7 @@ reporting_delay <- list(
 
 # run model
 out <- estimate_infections(cases,
-  stan = stan_opts(samples = 100)
+  stan = stan_opts(samples = 100),
   generation_time = generation_time,
   delays = delay_opts(incubation_period, reporting_delay),
   rt = NULL
