@@ -1,4 +1,3 @@
- skip_on_cran()
 
  # define example cases
  cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
@@ -19,7 +18,6 @@
  )
 
 test_that("adjust_infection_to_report can correctly handle a simple mapping", {
-  skip_on_cran()
   reports <- adjust_infection_to_report(
     cases, delay_defs = list(incubation_def, delay_def)
   )
@@ -30,7 +28,6 @@ test_that("adjust_infection_to_report can correctly handle a simple mapping", {
 
 test_that("adjust_infection_to_report can correctly handle a mapping with a day
            of the week effect", {
-  skip_on_cran()
   reports <- adjust_infection_to_report(
     cases,
     delay_defs = list(incubation_def, delay_def),

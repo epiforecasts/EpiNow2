@@ -80,9 +80,11 @@ average. If set to infinity then no changes are made.}
 if no directory for saving is specified.}
 
 \item{output}{A character vector of optional output to return. Supported options are samples ("samples"),
-plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if \code{target_folder} is not null,
-set using "latest"), and the stan fit ("fit"). The default is to return all options. This argument uses partial matching
-so for example passing "sam" will lead to samples being reported.}
+plots ("plots"), the run time ("timing"), copying the dated folder into a
+latest folder (if \code{target_folder} is not null,
+set using "latest"), and the stan fit ("fit"). The default is to return all
+options. This argument uses partial matching so for example passing "sam"
+will lead to samples being reported.}
 
 \item{plot_args}{A list of optional arguments passed to \code{plot.epinow()}.}
 
