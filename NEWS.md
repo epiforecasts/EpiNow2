@@ -1,3 +1,11 @@
+# EpiNow2 1.3.4
+
+This is a maintenance release focussing on bug fixes and package infrastructure updates.
+
+## Package
+
+* Update the GitHub Action files to new versions.
+
 # EpiNow2 1.3.3
 
 This release adds a range of new minor features, squashes bugs, enhances documentation, expands unit testing, implements some minor run-time optimisations, and removes some obsolete features.
