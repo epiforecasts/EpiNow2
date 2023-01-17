@@ -6,6 +6,8 @@ This is a maintenance release focussing on bug fixes and package infrastructure 
 
 * Update the GitHub Action files to new versions.
 * Switched to using `seq_along()` rather than `1:length()`.
+* Fixed a broken example in the documentation for `regional_runtimes()`.
+* Add compatibility changes for the latest version of `rstan` and `rstantools`.
 
 # EpiNow2 1.3.3
 
