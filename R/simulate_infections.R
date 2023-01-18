@@ -7,19 +7,24 @@
 #' @param estimates The \code{estimates} element of an \code{epinow} run that
 #' has been done with output = "fit", or the result of
 #' \code{estimate_infections} with \code{return_fit} set to TRUE.
+#'
 #' @param model A compiled stan model as returned by `rstan::stan_model`.
+#'
 #' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
 #'  contained in \code{estimates}, except elements set to NA. If it is longer than the time series
 #'  of reproduction numbers contained in \code{estimates}, the values going beyond the length of
 #'  estimated reproduction numbers are taken as forecast. Alternatively accepts a data.frame containing
 #'  at least `date` and `value` (integer) variables and optionally `sample`.
-#' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
-#' samples in the `estimates` input.
-#' @param batch_size Numeric, defaults to 10. Size of batches in which to simulate. May decrease
-#' run times due to reduced IO costs but this is still being evaluated. If set to NULL then all
-#' simulations are done at once.
-#' @param verbose Logical defaults to `interactive()`. Should a progress bar (from `progressr`) be
-#' shown.
+#'
+#' @param samples Numeric, number of posterior samples to simulate from. The
+#' default is to use all samples in the `estimates` input.
+#'
+#' @param batch_size Numeric, defaults to 10. Size of batches in which to
+#' simulate. May decrease run times due to reduced IO costs but this is still
+#' being evaluated. If set to NULL then al simulations are done at once.
+#' 
+#' @param verbose Logical defaults to `interactive()`. Should a progress bar
+#' (from `progressr`) be shown.
 #' @importFrom rstan extract sampling
 #' @importFrom purrr transpose map safely compact
 #' @importFrom future.apply future_lapply
@@ -51,12 +56,10 @@
 #' est <- estimate_infections(reported_cases,
 #'   generation_time = generation_time,
 #'   delays = delay_opts(incubation_period, reporting_delay),
-#'   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-#'   gp = gp_opts(
-#'     ls_min = 10, boundary_scale = 1.5, ,
-#'     basis_prop = 0.1
-#'   ),
-#'   obs = obs_opts(scale = list(mean = 0.1, sd = 0.01))
+#'   rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7),
+#'   stan = stan_opts(control = list(adapt_delta = 0.9)),
+#'   obs = obs_opts(scale = list(mean = 0.1, sd = 0.01)),
+#'   gp = NULL, horizon = 0
 #' )
 #'
 #' # update Rt trajectory and simulate new infections using it
@@ -66,7 +69,10 @@
 #'
 #' # with a data.frame input of samples
 #' R_dt <- data.frame(
-#'   date = summary(est, type = "parameters", param = "R")$date,
+#'   date = seq(
+#'      min(summary(est, type = "parameters", param = "R")$date),
+#'      by = "day", length.out = length(R)
+#'    ),
 #'   value = R
 #' )
 #' sims <- simulate_infections(est, R_dt)
