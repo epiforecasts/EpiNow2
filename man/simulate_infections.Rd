@@ -26,15 +26,15 @@ at least \code{date} and \code{value} (integer) variables and optionally \code{s
 
 \item{model}{A compiled stan model as returned by \code{rstan::stan_model}.}
 
-\item{samples}{Numeric, number of posterior samples to simulate from. The default is to use all
-samples in the \code{estimates} input.}
+\item{samples}{Numeric, number of posterior samples to simulate from. The
+default is to use all samples in the \code{estimates} input.}
 
-\item{batch_size}{Numeric, defaults to 10. Size of batches in which to simulate. May decrease
-run times due to reduced IO costs but this is still being evaluated. If set to NULL then all
-simulations are done at once.}
+\item{batch_size}{Numeric, defaults to 10. Size of batches in which to
+simulate. May decrease run times due to reduced IO costs but this is still
+being evaluated. If set to NULL then al simulations are done at once.}
 
-\item{verbose}{Logical defaults to \code{interactive()}. Should a progress bar (from \code{progressr}) be
-shown.}
+\item{verbose}{Logical defaults to \code{interactive()}. Should a progress bar
+(from \code{progressr}) be shown.}
 }
 \value{
 A list of output as returned by \code{\link[=estimate_infections]{estimate_infections()}} but based on
@@ -68,12 +68,10 @@ reporting_delay <- list(
 est <- estimate_infections(reported_cases,
   generation_time = generation_time,
   delays = delay_opts(incubation_period, reporting_delay),
-  rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-  gp = gp_opts(
-    ls_min = 10, boundary_scale = 1.5, ,
-    basis_prop = 0.1
-  ),
-  obs = obs_opts(scale = list(mean = 0.1, sd = 0.01))
+  rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7),
+  stan = stan_opts(control = list(adapt_delta = 0.9)),
+  obs = obs_opts(scale = list(mean = 0.1, sd = 0.01)),
+  gp = NULL, horizon = 0
 )
 
 # update Rt trajectory and simulate new infections using it
@@ -83,7 +81,10 @@ plot(sims)
 
 # with a data.frame input of samples
 R_dt <- data.frame(
-  date = summary(est, type = "parameters", param = "R")$date,
+  date = seq(
+     min(summary(est, type = "parameters", param = "R")$date),
+     by = "day", length.out = length(R)
+   ),
   value = R
 )
 sims <- simulate_infections(est, R_dt)
