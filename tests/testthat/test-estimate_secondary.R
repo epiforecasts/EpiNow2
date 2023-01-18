@@ -43,7 +43,7 @@ inc <- estimate_secondary(cases[1:60],
 
 test_that("estimate_secondary can return values from simulated data and plot
            them", {
-  expect_equal(names(inc), c("predictions", "data", "fit"))
+  expect_equal(names(inc), c("predictions", "posterior", "data", "fit"))
   expect_equal(
     names(inc$predictions),
     c(

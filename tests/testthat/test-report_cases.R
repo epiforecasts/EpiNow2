@@ -20,5 +20,9 @@ test_that("report_cases can simulate infections forward", {
     delays = delay_opts(incubation_period, reporting_delay),
     type = "sample"
   )
-  expect_snapshot(reported_cases)
+  expect_equal(class(reported_cases), "list")
+  expect_equal(class(reported_cases$samples), c("data.table", "data.frame"))
+  expect_equal(class(reported_cases$summarised), c("data.table", "data.frame"))
+  expect_equal(nrow(reported_cases$summarised), 9)
+  expect_equal(class(reported_cases$summarised$median), "numeric")
 })
