@@ -18,11 +18,10 @@ and will generally not be used on its own.
 \examples{
 \donttest{
 data.table::setDTthreads(2)
-test_function <- function(){
+test_function <- function() {
   set_dt_single_thread()
-  
-  print(data.table::getDTthreads())
 
+  print(data.table::getDTthreads())
 }
 test_function()
 data.table::getDTthreads()

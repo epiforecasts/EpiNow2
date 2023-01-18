@@ -7,7 +7,8 @@ test_that("report_plots works with  default settings", {
   expect_error(
     report_plots(
       summarised_estimates = fit$summarised,
-      reported = cases),
+      reported = cases
+    ),
     NA
   )
 })

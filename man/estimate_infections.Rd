@@ -73,7 +73,8 @@ average. If set to infinity then no changes are made.}
 \item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
 to assign errors to regions. Alter the default to run with error catching.}
 
-\item{verbose}{Logical, defaults to \code{TRUE} when used interactively and otherwise \code{FALSE}. Should verbose debug progress messages be printed.
+\item{verbose}{Logical, defaults to \code{TRUE} when used interactively and
+otherwise \code{FALSE}. Should verbose debug progress messages be printed.
 Corresponds to the "DEBUG" level from \code{futile.logger}. See \code{setup_logging}
 for more detailed logging options.}
 }

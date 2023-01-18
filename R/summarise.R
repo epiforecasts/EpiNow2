@@ -124,7 +124,7 @@ summarise_results <- function(regions,
 #'  regions be returned rather than just regions of interest.
 #' @param plot Logical, defaults to `TRUE`. Should regional summary plots be
 #' produced.
-#' @param ... Additional arguments passed to `report_plots`. 
+#' @param ... Additional arguments passed to `report_plots`.
 #' @return A list of summary measures and plots
 #' @export
 #' @seealso regional_epinow
@@ -318,8 +318,10 @@ regional_summary <- function(regional_output = NULL,
 
     high_plots$summary <- NULL
     high_plots <-
-      purrr::map(high_plots,
-                ~ . + ggplot2::facet_wrap(~region, scales = "free_y", ncol = 2))
+      purrr::map(
+        high_plots,
+        ~ . + ggplot2::facet_wrap(~region, scales = "free_y", ncol = 2)
+      )
 
     if (!is.null(summary_dir)) {
       save_ggplot(high_plots$R, "high_rt_plot.png")
@@ -340,9 +342,11 @@ regional_summary <- function(regional_output = NULL,
 
       plots$summary <- NULL
       plots <- purrr::map(
-        plots, 
-        ~ . + ggplot2::facet_wrap(~region, scales = "free_y",
-                                  ncol = plots_per_row)
+        plots,
+        ~ . + ggplot2::facet_wrap(~region,
+          scales = "free_y",
+          ncol = plots_per_row
+        )
       )
 
       if (!is.null(summary_dir)) {
@@ -358,7 +362,7 @@ regional_summary <- function(regional_output = NULL,
         save_big_ggplot(plots$reports, "reported_cases_plot.png")
       }
     }
-  }else{
+  } else {
     summary_plot <- NULL
     high_plots <- NULL
   }
@@ -738,8 +742,8 @@ summary.epinow <- function(object, output = "estimates",
 #' @param object A list of output as produced by "estimate_infections".
 #' @param type A character vector of data types to return. Defaults to "snapshot"
 #' but also supports "parameters", and "samples". "snapshot" returns a summary at
-#' a given date (by default the latest date informed by data). "parameters" returns 
-#' summarised parameter estimates that can be further filtered using `params` to 
+#' a given date (by default the latest date informed by data). "parameters" returns
+#' summarised parameter estimates that can be further filtered using `params` to
 #' show just the parameters of interest and date. "samples" similarly returns posterior
 #' samples.
 #' @param date A date in the form "yyyy-mm-dd" to inspect estimates for.

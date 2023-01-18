@@ -6,7 +6,6 @@
 #' @return A named character vector containing the results to plot.
 #' @export
 get_regions <- function(results_dir) {
-
   # regions to include - based on folder names
   regions <- list.dirs(results_dir,
     recursive = FALSE,

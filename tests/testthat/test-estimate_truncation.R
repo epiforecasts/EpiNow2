@@ -2,43 +2,43 @@
 skip_on_cran()
 futile.logger::flog.threshold("FATAL")
 
- # set number of cores to use
- old_opts <- options()
- options(mc.cores = ifelse(interactive(), 4, 1))
+# set number of cores to use
+old_opts <- options()
+options(mc.cores = ifelse(interactive(), 4, 1))
 
- # get example case counts
- reported_cases <- example_confirmed[1:60]
+# get example case counts
+reported_cases <- example_confirmed[1:60]
 
- # define example truncation distribution (note not integer adjusted)
- trunc_dist <- list(
-   mean = convert_to_logmean(3, 2),
-   mean_sd = 0.1,
-   sd = convert_to_logsd(3, 2),
-   sd_sd = 0.1,
-   max = 10
- )
+# define example truncation distribution (note not integer adjusted)
+trunc_dist <- list(
+  mean = convert_to_logmean(3, 2),
+  mean_sd = 0.1,
+  sd = convert_to_logsd(3, 2),
+  sd_sd = 0.1,
+  max = 10
+)
 
- # apply truncation to example data
- construct_truncation <- function(index, cases, dist) {
-   set.seed(index)
-   cmf <- cumsum(
-     dlnorm(
-       1:(dist$max + 1),
-       rnorm(1, dist$mean, dist$mean_sd),
-       rnorm(1, dist$sd, dist$sd_sd)
-     )
-   )
-   cmf <- cmf / cmf[dist$max + 1]
-   cmf <- rev(cmf)[-1]
-   trunc_cases <- data.table::copy(cases)[1:(.N - index)]
-   trunc_cases[(.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)]
-   return(trunc_cases)
- }
- example_data <- purrr::map(c(20, 15, 10, 0),
-   construct_truncation,
-   cases = reported_cases,
-   dist = trunc_dist
- )
+# apply truncation to example data
+construct_truncation <- function(index, cases, dist) {
+  set.seed(index)
+  cmf <- cumsum(
+    dlnorm(
+      1:(dist$max + 1),
+      rnorm(1, dist$mean, dist$mean_sd),
+      rnorm(1, dist$sd, dist$sd_sd)
+    )
+  )
+  cmf <- cmf / cmf[dist$max + 1]
+  cmf <- rev(cmf)[-1]
+  trunc_cases <- data.table::copy(cases)[1:(.N - index)]
+  trunc_cases[(.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)]
+  return(trunc_cases)
+}
+example_data <- purrr::map(c(20, 15, 10, 0),
+  construct_truncation,
+  cases = reported_cases,
+  dist = trunc_dist
+)
 
 test_that("estimate_truncation can return values from simulated data and plot
            them", {

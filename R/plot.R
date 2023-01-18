@@ -21,11 +21,12 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
         )
     } else {
       plot <- plot +
-        ggplot2::geom_ribbon(ggplot2::aes(
-          ymin = .data[[bottom]], ymax = .data[[top]],
-          col = NULL
-        ),
-        alpha = alpha_per_CrI
+        ggplot2::geom_ribbon(
+          ggplot2::aes(
+            ymin = .data[[bottom]], ymax = .data[[top]],
+            col = NULL
+          ),
+          alpha = alpha_per_CrI
         )
     }
     index <- index + 1
@@ -91,7 +92,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #'   ylab = "Effective Reproduction No.",
 #'   hline = 1
 #' )
-#' 
+#'
 #' #' # plot Rt estimates without forecasts
 #' plot_estimates(
 #'   estimate = out$summarised[variable == "R"],
@@ -100,9 +101,8 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' )
 #' }
 plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
-                           obs_as_col = TRUE, max_plot = 10, 
+                           obs_as_col = TRUE, max_plot = 10,
                            estimate_type = NULL) {
-
   # convert input to data.table
   estimate <- data.table::as.data.table(estimate)
   if (!missing(reported)) {
@@ -119,7 +119,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   orig_estimate <- copy(estimate)
   if (!is.null(estimate_type)) {
     estimate_type <- match.arg(
-      estimate_type, 
+      estimate_type,
       choices = c("Estimate", "Estimate based on partial data", "Forecast"),
       several.ok = TRUE
     )
@@ -234,7 +234,6 @@ plot_summary <- function(summary_results,
                          x_lab = "Region",
                          log_cases = FALSE,
                          max_cases) {
-
   # set input to data.table
   summary_results <- data.table::setDT(summary_results)
 
@@ -267,11 +266,11 @@ plot_summary <- function(summary_results,
       ggplot2::facet_wrap(~metric, ncol = 1, scales = "free_y") +
       ggplot2::theme_bw() +
       ggplot2::scale_color_manual(values = c(
-      "Increasing" = "#e75f00",
-      "Likely increasing" = "#fd9e49",
-      "Likely decreasing" = "#5fa2ce",
-      "Decreasing" = "#1170aa",
-      "Stable" = "#7b848f"
+        "Increasing" = "#e75f00",
+        "Likely increasing" = "#fd9e49",
+        "Likely decreasing" = "#5fa2ce",
+        "Decreasing" = "#1170aa",
+        "Stable" = "#7b848f"
       ), drop = FALSE)
   }
 
@@ -280,11 +279,12 @@ plot_summary <- function(summary_results,
   max_upper <- max(summary_results[metric %in% "New confirmed cases by infection date"][, ..upper_CrI],
     na.rm = TRUE
   )
-  max_cases <- min(c(
-    max_cases,
-    max_upper + 1
-  ),
-  na.rm = TRUE
+  max_cases <- min(
+    c(
+      max_cases,
+      max_upper + 1
+    ),
+    na.rm = TRUE
   )
   # cases plot
   cases_plot <-
