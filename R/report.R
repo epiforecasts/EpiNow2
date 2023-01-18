@@ -67,7 +67,7 @@ report_cases <- function(case_estimates,
       mean_sd = delays$delay_mean_sd[.],
       sd = delays$delay_sd_mean[.],
       sd_sd = delays$delay_sd_sd[.],
-      max_value = delays$max_delay[.],
+      max_value = delays$delay_max[.],
       samples = samples
     )
   )
