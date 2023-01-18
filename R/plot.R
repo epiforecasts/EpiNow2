@@ -17,7 +17,7 @@ plot_CrIs <- function(plot, CrIs, alpha, size) {
     if (index == 1) {
       plot <- plot +
         ggplot2::geom_ribbon(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
-          alpha = 0.2, size = size
+          alpha = 0.2, linewidth = size
         )
     } else {
       plot <- plot +
