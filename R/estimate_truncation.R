@@ -55,7 +55,7 @@
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
-#' 
+#'
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:60]
 #'
@@ -125,7 +125,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
   obs <- purrr::map(dirty_obs, data.table::copy)
-  obs <- purrr::map(1:length(obs), ~ obs[[.]][, (as.character(.)) := confirm][
+  obs <- purrr::map(seq_along(obs), ~ obs[[.]][, (as.character(.)) := confirm][
     ,
     confirm := NULL
   ])
@@ -155,7 +155,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
       logmean = rnorm(1, 0, 1),
       logsd = abs(rnorm(1, 0, 1)),
       phi = abs(rnorm(1, 0, 1)),
-      sigma =  abs(rnorm(1, 0, 1 ))
+      sigma = abs(rnorm(1, 0, 1))
     )
     return(data)
   }

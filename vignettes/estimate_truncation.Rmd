@@ -1,6 +1,8 @@
 ---
 title: "Model definition: estimate_truncation()"
 output: rmarkdown::html_vignette
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
 vignette: >
   %\VignetteIndexEntry{Model definition: estimate_truncation()}
   %\VignetteEngine{knitr::rmarkdown}

@@ -116,6 +116,8 @@ reference:
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases
     contents:
+      - simulate_infections
+      - simulate_secondary
       - adjust_infection_to_report
   - title: Data
     desc: Package datasets that may be used to parameterise other functions or in examples
@@ -148,3 +150,4 @@ reference:
       - R_to_growth
       - update_list
       - add_day_of_week
+      - update_secondary_args

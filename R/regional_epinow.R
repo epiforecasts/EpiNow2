@@ -37,7 +37,6 @@
 #' @importFrom rlang cnd_muffle
 #' @importFrom progressr with_progress progressor
 #' @examples
-#'
 #' \donttest{
 #' # set number of cores to use
 #' old_opts <- options()

@@ -445,11 +445,12 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
     ## Fit each sub sample
     dist_samples <- future.apply::future_lapply(1:bootstraps,
       function(boot) {
-        get_single_dist(sample(values,
-          min(length(values), bootstrap_samples),
-          replace = TRUE
-        ),
-        samples = ceiling(samples / bootstraps)
+        get_single_dist(
+          sample(values,
+            min(length(values), bootstrap_samples),
+            replace = TRUE
+          ),
+          samples = ceiling(samples / bootstraps)
         )
       },
       future.scheduling = Inf,
@@ -577,7 +578,7 @@ estimate_delay <- function(delays, ...) {
 #'   direction = "forwards",
 #'   type = "median"
 #' )
-#'}
+#' }
 sample_approx_dist <- function(cases = NULL,
                                dist_fn = NULL,
                                max_value = 120,
@@ -601,7 +602,7 @@ sample_approx_dist <- function(cases = NULL,
 
     # approximate cases
     mapped_cases <- suppressMessages(purrr::map_dfc(
-      1:length(reversed_cases),
+      seq_along(reversed_cases),
       ~ c(
         rep(0, . - 1),
         stats::rbinom(
@@ -632,7 +633,7 @@ sample_approx_dist <- function(cases = NULL,
     floor_case_sum <- floor(case_sum)
     sample_cases <- floor_case_sum +
       data.table::fifelse(
-        (runif(1:length(case_sum)) < (case_sum - floor_case_sum)),
+        (runif(seq_along(case_sum)) < (case_sum - floor_case_sum)),
         1, 0
       )
 

@@ -14,7 +14,7 @@
 #' a third variable `reference` which indicates what the date variable refers to.
 #' @export
 #' @inheritParams sample_approx_dist
-#' @importFrom data.table setorder data.table data.table 
+#' @importFrom data.table setorder data.table data.table
 #' @importFrom lubridate wday
 #' @examples
 #' \donttest{
@@ -66,12 +66,11 @@
 #'   }
 #' )
 #' print(report_stochastic)
-#'}
+#' }
 adjust_infection_to_report <- function(infections, delay_defs,
                                        reporting_model, reporting_effect,
                                        type = "sample",
                                        truncate_future = TRUE) {
-  
   # Reset DT Defaults on Exit
   set_dt_single_thread()
 
@@ -131,7 +130,7 @@ adjust_infection_to_report <- function(infections, delay_defs,
   }
 
   ## Truncate reported cases by maximum infection date
-  if (type %in% "sample" & truncate_future) {
+  if (type %in% "sample" && truncate_future) {
     report <- report[date <= max(infections$date)]
   }
   return(report)

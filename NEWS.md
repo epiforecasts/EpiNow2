@@ -1,18 +1,25 @@
-# EpiNow2 1.3.3.9000
+# EpiNow2 1.3.4
 
-## New features
+This is a small release focussing on bug fixes and package infrastructure updates along with some quality of life features.
 
+Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @seabbs whilst some of the development work on this release was being done.
+
+## Package
+
+* Update the GitHub Action files to new versions.
+* Switched to using `seq_along()` rather than `1:length()`.
+* Fixed a broken example in the documentation for `regional_runtimes()`.
+* Add compatibility changes for the latest version of `rstan` and `rstantools`.
+* Remove legacy use of `pkgnet` for package dependency visualisation.
+* Slight edits to the model outline for `estimate_infections()`.
+* Restyled all code using `styler`.
+* Dropped dependency on `RcppParallel`.
+* Updated `report_cases` to work with the new `delay_opts` helper function.
+* Added test coverage for `report_cases` though note this function will likely be deprecated in future releases.
+* Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
 * Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for pre-computing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
-
-## Model changes
-
-* The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. By @sbfnk in #340.
-
-## Documentation
-
 * Updated examples to make use of fixed distributions to improve run-times where appropriate.
-
-## Deprecated features
+* The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. By @sbfnk in #340.
 
 # EpiNow2 1.3.3
 
@@ -84,6 +91,7 @@ estimates and are considered out of scope for `EpiNow2`. If finding useful conta
 * Fixed a bug where `use_rt = FALSE` did not properly cancel user settings. By @sbfnk.
 * Fixed a bug in `estimate_truncation` where phi was not initialised. By @sbfnk.
 * Fixed a bug where `zero_threshold` was being ignored and so no post-processing was happening. To maintain backwards compatibility the default has been changed to `Inf` (i.e. no zero threshold). By @LloydChapman in #285.
+* Fixed a bug where setting `obs_opts(return_likelihood = TRUE)` fails. By @sbfnk in #333.
 
 # EpiNow2 1.3.2
 

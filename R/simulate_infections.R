@@ -165,9 +165,10 @@ simulate_infections <- function(estimates,
 
   # define dates of interest
   dates <-
-    seq(min(na.omit(unique(estimates$summarised[variable == "R"]$date)))
-    - days(shift),
-    by = "day", length.out = dim(draws$R)[2] + shift
+    seq(
+      min(na.omit(unique(estimates$summarised[variable == "R"]$date)))
+      - days(shift),
+      by = "day", length.out = dim(draws$R)[2] + shift
     )
 
   # Load model
