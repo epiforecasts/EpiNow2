@@ -43,7 +43,7 @@
 #' # data for speed in this example.
 #' cases <- cases[, cases := as.integer(confirm)]
 #' cases <- cases[, confirm := NULL][, sample := 1]
-#' 
+#'
 #' reported_cases <- report_cases(
 #'   case_estimates = cases,
 #'   delays = delay_opts(incubation_period, reporting_delay),

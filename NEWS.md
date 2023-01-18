@@ -13,6 +13,8 @@ This is a maintenance release focussing on bug fixes and package infrastructure 
 * Restyled all code using `styler`.
 * Dropped dependency on `RcppParallel`.
 * Updated `report_cases` to work with the new `delay_opts` helper function.
+* Added test coverage for `report_cases` though note this function will likely be
+deprecated in future releases.
 
 # EpiNow2 1.3.3
 
