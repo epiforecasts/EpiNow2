@@ -2,6 +2,8 @@
 
 This is a maintenance release focussing on bug fixes and package infrastructure updates.
 
+Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @seabbs whilst some of the development work on this release was being done.
+
 ## Package
 
 * Update the GitHub Action files to new versions.
@@ -13,8 +15,8 @@ This is a maintenance release focussing on bug fixes and package infrastructure 
 * Restyled all code using `styler`.
 * Dropped dependency on `RcppParallel`.
 * Updated `report_cases` to work with the new `delay_opts` helper function.
-* Added test coverage for `report_cases` though note this function will likely be
-deprecated in future releases.
+* Added test coverage for `report_cases` though note this function will likely be deprecated in future releases.
+* Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
 
 # EpiNow2 1.3.3
 
