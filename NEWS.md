@@ -1,6 +1,6 @@
 # EpiNow2 1.3.4
 
-This is a small release focussing on bug fixes and package infrastructure updates along with some quality of life features.
+This is mainly a maintenance release focussing on bug fixes and package infrastructure updates along with a few quality of life improvements.
 
 Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @seabbs whilst some of the development work on this release was being done.
 
@@ -20,6 +20,7 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 * Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for pre-computing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
 * Updated examples to make use of fixed distributions to improve run-times where appropriate.
 * The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. By @sbfnk in #340.
+* Switched to `linewidth` in `plot_CrIs` rather than `size` to avoid issues with `ggplot2` 3.4.0.
 
 # EpiNow2 1.3.3
 
