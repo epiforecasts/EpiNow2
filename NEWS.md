@@ -17,6 +17,7 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 * Updated `report_cases` to work with the new `delay_opts` helper function.
 * Added test coverage for `report_cases` though note this function will likely be deprecated in future releases.
 * Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
+* Switched to `linewidth` in `plot_CrIs` rather than `size` to avoid issues with `ggplot2` 3.4.0.
 
 # EpiNow2 1.3.3
 
