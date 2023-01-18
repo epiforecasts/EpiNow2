@@ -7,20 +7,19 @@
 #' results and interpreting them. See [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867) for an
 #' example of using `epinow` to estimate Rt for Covid-19 in a country from the ECDC data source.
 #' @param output A character vector of optional output to return. Supported options are samples ("samples"),
-#' plots ("plots"), the run time ("timing"), copying the dated folder into a latest folder (if `target_folder` is not null,
-#' set using "latest"), and the stan fit ("fit"). The default is to return all options. This argument uses partial matching
-#' so for example passing "sam" will lead to samples being reported.
+#' plots ("plots"), the run time ("timing"), copying the dated folder into a
+#' latest folder (if `target_folder` is not null,
+#' set using "latest"), and the stan fit ("fit"). The default is to return all
+#' options. This argument uses partial matching so for example passing "sam"
+#' will lead to samples being reported.
 #' @param return_output Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
 #' if no directory for saving is specified.
-#' @param forecast_args A list of arguments to pass to `forecast_infections()`. Unless at a minimum a `forecast_model` is passed
-#' then `forecast_infections` will be bypassed.
 #' @param plot_args A list of optional arguments passed to `plot.epinow()`.
 #' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
 #' @export
 #' @seealso estimate_infections simulate_infections forecast_infections regional_epinow
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
-#' @inheritParams forecast_infections
 #' @inheritParams setup_default_logging
 #' @importFrom data.table setDT
 #' @importFrom lubridate days
@@ -29,6 +28,7 @@
 #' @examples
 #' \donttest{
 #' # set number of cores to use
+#' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # construct example distributions
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
@@ -57,6 +57,8 @@
 #'
 #' # summary of R estimates
 #' summary(out, type = "parameters", params = "R")
+#'
+#' options(old_opts)
 #' }
 epinow <- function(reported_cases,
                    generation_time = NULL,
@@ -69,13 +71,13 @@ epinow <- function(reported_cases,
                    stan = stan_opts(),
                    horizon = 7,
                    CrIs = c(0.2, 0.5, 0.9),
-                   zero_threshold = 50,
+                   filter_leading_zeros = TRUE,
+                   zero_threshold = Inf,
                    return_output = FALSE,
                    output = c("samples", "plots", "latest", "fit", "timing"),
                    plot_args = list(),
                    target_folder = NULL, target_date,
-                   forecast_args = NULL, logs = tempdir(),
-                   id = "epinow", verbose = interactive()) {
+                   logs = tempdir(), id = "epinow", verbose = interactive()) {
   if (is.null(target_folder)) {
     return_output <- TRUE
   }
@@ -151,6 +153,7 @@ epinow <- function(reported_cases,
       obs = obs,
       stan = stan,
       CrIs = CrIs,
+      filter_leading_zeros = filter_leading_zeros,
       zero_threshold = zero_threshold,
       horizon = horizon,
       verbose = verbose,
@@ -167,32 +170,8 @@ epinow <- function(reported_cases,
       return_fit = output["fit"]
     )
 
-    # forecast infections and reproduction number -----------------------------
-    if (!is.null(forecast_args)) {
-      forecast <- do.call(
-        forecast_infections,
-        c(
-          list(
-            infections = estimates$summarised[variable == "infections"][type != "forecast"][, type := NULL],
-            rts = estimates$summarised[variable == "R"][type != "forecast"][, type := NULL],
-            gt_mean = estimates$summarised[variable == "gt_mean"]$mean,
-            gt_sd = estimates$summarised[variable == "gt_sd"]$mean,
-            gt_max = generation_time$max,
-            horizon = horizon,
-            CrIs = CrIs
-          ),
-          forecast_args
-        )
-      )
-
-      save_forecast_infections(forecast, target_folder, samples = output["samples"])
-    } else {
-      forecast <- NULL
-    }
     # report forecasts ---------------------------------------------------------
     estimated_reported_cases <- estimates_by_report_date(estimates,
-      forecast,
-      delays = delays,
       target_folder = target_folder,
       samples = output["samples"],
       CrIs = CrIs
@@ -213,15 +192,13 @@ epinow <- function(reported_cases,
           target_folder = target_folder
         ),
         plot_args
-        )
-      )
+      ))
     } else {
       plots <- NULL
     }
 
     if (return_output) {
       out <- construct_output(estimates,
-        forecast,
         estimated_reported_cases,
         plots = plots,
         summary,
@@ -235,27 +212,28 @@ epinow <- function(reported_cases,
 
   # start processing with system timing and error catching
   start_time <- Sys.time()
-  out <- tryCatch(withCallingHandlers(
-    epinow_internal(),
-    warning = function(w) {
-      futile.logger::flog.warn("%s: %s - %s", id, w$message, toString(w$call),
-        name = "EpiNow2.epinow"
-      )
-      rlang::cnd_muffle(w)
+  out <- tryCatch(
+    withCallingHandlers(
+      epinow_internal(),
+      warning = function(w) {
+        futile.logger::flog.warn("%s: %s - %s", id, w$message, toString(w$call),
+          name = "EpiNow2.epinow"
+        )
+        rlang::cnd_muffle(w)
+      }
+    ),
+    error = function(e) {
+      if (id %in% "epinow") {
+        stop(e)
+      } else {
+        error_text <- sprintf("%s: %s - %s", id, e$message, toString(e$call))
+        futile.logger::flog.error(error_text,
+          name = "EpiNow2.epinow"
+        )
+        rlang::cnd_muffle(e)
+        return(list(error = error_text))
+      }
     }
-  ),
-  error = function(e) {
-    if (id %in% "epinow") {
-      stop(e)
-    } else {
-      error_text <- sprintf("%s: %s - %s", id, e$message, toString(e$call))
-      futile.logger::flog.error(error_text,
-        name = "EpiNow2.epinow"
-      )
-      rlang::cnd_muffle(e)
-      return(list(error = error_text))
-    }
-  }
   )
   end_time <- Sys.time()
   if (!is.null(out$error)) {

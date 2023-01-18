@@ -8,7 +8,7 @@
 #' to the current directory.
 #' @importFrom purrr walk
 #' @importFrom futile.logger flog.info
-#' @return NULL
+#' @return No return value, called for side effects
 #' @export
 clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
   if (is.null(date)) {
@@ -157,9 +157,6 @@ allocate_delays <- function(delay_var, no_delays) {
 #' empty if missing.
 #' @param n Numeric, number of samples to assign an empty array
 #' @return A list of parameters some allocated to be empty
-#' @examples
-#' data <- list(x = 1, y = 2, z = 30)
-#' EpiNow2:::allocate_empty(data, params = c("x", "t"))
 allocate_empty <- function(data, params, n = 0) {
   for (param in params) {
     if (!exists(param, data)) {
@@ -181,22 +178,6 @@ allocate_empty <- function(data, params, n = 0) {
 #' of futile.logger for details. Supported options are "info" and "debug"
 #' @return A logical vector of named output arguments
 #' @importFrom  futile.logger flog.info flog.debug
-#' @examples
-#' # select nothing
-#' EpiNow2:::match_output_arguments(supported_args = c("fit", "plots", "samples"))
-#'
-#' # select just plots
-#' EpiNow2:::match_output_arguments("plots", supported_args = c("fit", "plots", "samples"))
-#'
-#' # select plots and samples
-#' EpiNow2:::match_output_arguments(c("plots", "samples"),
-#'   supported_args = c("fit", "plots", "samples")
-#' )
-#'
-#' # lazily select arguments
-#' EpiNow2:::match_output_arguments("p",
-#'   supported_args = c("fit", "plots", "samples")
-#' )
 match_output_arguments <- function(input_args = c(),
                                    supported_args = c(),
                                    logger = NULL,
@@ -245,33 +226,25 @@ match_output_arguments <- function(input_args = c(),
 #' @param files A character vector indicating the target files
 #' @param target_dir A character string indicating the target directory for the file
 #' @param ... Additional arguments passed to `rstan::expose_stan_functions`.
-#' @return NULL
+#' @return No return value, called for side effects
 #' @export
 #' @importFrom rstan expose_stan_functions stanc
 #' @importFrom purrr map_chr
-#' @examples
-#' \donttest{
-#' expose_stan_fns("rt.stan", target_dir = system.file("stan/functions", package = "EpiNow2"))
-#'
-#' # test by updating Rt
-#' update_Rt(rep(1, 10), log(1.2), rep(0.1, 9), rep(10, 0), numeric(0), 0)
-#' }
 expose_stan_fns <- function(files, target_dir, ...) {
   functions <- paste0(
     "\n functions{ \n",
-    paste(purrr::map_chr(
-      files,
-      ~ paste(readLines(file.path(target_dir, .)), collapse = "\n")
-    ),
-    collapse = "\n"
+    paste(
+      purrr::map_chr(
+        files,
+        ~ paste(readLines(file.path(target_dir, .)), collapse = "\n")
+      ),
+      collapse = "\n"
     ),
     "\n }"
   )
   rstan::expose_stan_functions(rstan::stanc(model_code = functions), ...)
   return(invisible(NULL))
 }
-
-
 
 #' Convert mean and sd to log mean for a log normal distribution
 #'
@@ -373,23 +346,22 @@ add_day_of_week <- function(dates, week_effect = 7) {
 }
 
 #' Set to Single Threading
-#' 
+#'
 #' This function sets the threads used by data.table to 1 in the parent function
 #' and then restores the initial data.table threads when the function exits.
 #' This is primarily used as an internal function inside of other functions
 #' and will generally not be used on its own.
-#' 
+#'
 #' @importFrom data.table getDTthreads setDTthreads
 #' @keywords internal
 #' @return an environment in the parent frame named "dt_settings"
-#' @examples 
+#' @examples
 #' \donttest{
 #' data.table::setDTthreads(2)
-#' test_function <- function(){
+#' test_function <- function() {
 #'   set_dt_single_thread()
-#'   
+#'
 #'   print(data.table::getDTthreads())
-#' 
 #' }
 #' test_function()
 #' data.table::getDTthreads()
@@ -397,19 +369,20 @@ add_day_of_week <- function(dates, week_effect = 7) {
 #' @export
 
 set_dt_single_thread <- function() {
-  
   a <- list2env(x = list(dt_previous_threads = data.table::getDTthreads()))
-  
+
   assign(deparse(substitute(dt_settings)), a, envir = parent.frame())
-  
+
   data.table::setDTthreads(1)
-  
-  do.call("on.exit", 
-          list(quote(data.table::setDTthreads(dt_settings$dt_previous_threads))), 
-          envir = parent.frame()) 
+
+  do.call("on.exit",
+    list(quote(data.table::setDTthreads(dt_settings$dt_previous_threads))),
+    envir = parent.frame()
+  )
 }
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
+#' @importFrom lifecycle deprecate_warn
 globalVariables(
   c(
     "bottom", "cases", "confidence", "confirm", "country_code", "crps",

@@ -7,15 +7,16 @@
 create_shifted_cases(reported_cases, shift, smoothing_window, horizon)
 }
 \arguments{
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
-in date format.}
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date
+(date). confirm must be integer and date must be in date format.}
 
 \item{shift}{Numeric, mean delay shift to apply.}
 
 \item{smoothing_window}{Numeric, the rolling average smoothing window
 to apply. Must be odd in order to be defined as a centred average.}
 
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to forecast.}
+\item{horizon}{Numeric, defaults to 7. Number of days into the future to
+forecast.}
 }
 \value{
 A data frame for shifted reported cases

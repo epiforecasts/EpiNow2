@@ -30,20 +30,3 @@ A logical vector of named output arguments
 Match user supplied arguments with supported options and return a logical list for
 internal usage
 }
-\examples{
-# select nothing
-EpiNow2:::match_output_arguments(supported_args = c("fit", "plots", "samples"))
-
-# select just plots
-EpiNow2:::match_output_arguments("plots", supported_args = c("fit", "plots", "samples"))
-
-# select plots and samples
-EpiNow2:::match_output_arguments(c("plots", "samples"),
-  supported_args = c("fit", "plots", "samples")
-)
-
-# lazily select arguments
-EpiNow2:::match_output_arguments("p",
-  supported_args = c("fit", "plots", "samples")
-)
-}

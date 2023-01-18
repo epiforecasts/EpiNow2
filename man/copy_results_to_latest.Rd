@@ -12,6 +12,9 @@ copy_results_to_latest(target_folder = NULL, latest_folder = NULL)
 \item{latest_folder}{Character string containing the path to the latest target folder.
 As produced by \code{setup_target_folder}.}
 }
+\value{
+No return value, called for side effects
+}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 Copies output from the dated folder to a latest folder. May be undergo changes in later releases.

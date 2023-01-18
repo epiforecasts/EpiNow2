@@ -31,7 +31,7 @@ create_obs_model(obs_opts(family = "poisson"), dates = dates)
 # Applying a observation scaling to the data
 create_obs_model(obs_opts(scale = list(mean = 0.4, sd = 0.01)), dates = dates)
 
-# Apply a custom week week lenght
+# Apply a custom week week length
 create_obs_model(obs_opts(week_length = 3), dates = dates)
 }
 \seealso{

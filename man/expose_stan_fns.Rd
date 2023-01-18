@@ -13,17 +13,12 @@ expose_stan_fns(files, target_dir, ...)
 
 \item{...}{Additional arguments passed to \code{rstan::expose_stan_functions}.}
 }
+\value{
+No return value, called for side effects
+}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 his function exposes internal stan functions in R from a user
 supplied list of target files. Allows for testing of stan functions in R and potentially
 user use in R code.
-}
-\examples{
-\donttest{
-expose_stan_fns("rt.stan", target_dir = system.file("stan/functions", package = "EpiNow2"))
-
-# test by updating Rt
-update_Rt(rep(1, 10), log(1.2), rep(0.1, 9), rep(10, 0), numeric(0), 0)
-}
 }

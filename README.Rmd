@@ -11,14 +11,14 @@ knitr::opts_chunk$set(
 )
 ```
 
-# EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters 
+# EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters
 
-[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) [![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions) [![Codecov test coverage](https://codecov.io/gh/epiforecasts/EpiNow2/branch/master/graph/badge.svg)](https://codecov.io/gh/epiforecasts/EpiNow2?branch=master) [![metacran downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#maturing) [![R-CMD-check](https://github.com/epiforecasts/EpiNow2/workflows/R-CMD-check/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions) [![codecov](https://codecov.io/gh/epiforecasts/EpiNow2/branch/main/graph/badge.svg?token=FZWwEMdpq6)](https://codecov.io/gh/epiforecasts/EpiNow2) [![metacran downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](https://cran.r-project.org/package=EpiNow2)
 
-[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epiforecasts/EpiNow2/blob/master/LICENSE.md/)   [![GitHub contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](https://github.com/epiforecasts/EpiNow2/graphs/contributors)  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](https://makeapullrequest.com/) [![GitHub commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.3.2.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/master/) [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211) 
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epiforecasts/EpiNow2/blob/main/LICENSE.md/)   [![GitHub contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](https://github.com/epiforecasts/EpiNow2/graphs/contributors)  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](https://makeapullrequest.com/) [![GitHub commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.34.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/main/) [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211)
 
 
-This package estimates the time-varying reproduction number, growth rate, and doubling time using a range of open-source tools ([Abbott et al.](https://doi.org/10.12688/wellcomeopenres.16006.1)), and current best practices ([Gostic et al.](https://doi.org/10.1371/journal.pcbi.1008409)). It aims to help users avoid some of the limitations of naive implementations in a framework that is informed by community feedback and is under active development. 
+This package estimates the time-varying reproduction number, growth rate, and doubling time using a range of open-source tools ([Abbott et al.](https://doi.org/10.12688/wellcomeopenres.16006.1)), and current best practices ([Gostic et al.](https://doi.org/10.1371/journal.pcbi.1008409)). It aims to help users avoid some of the limitations of naive implementations in a framework that is informed by community feedback and is actively supported. 
 
 It estimates the time-varying reproduction number on cases by date of infection (using a similar approach to that implemented in [`{EpiEstim}`](https://github.com/mrc-ide/EpiEstim)). Imputed infections are then mapped to observed data (for example cases by date of report) via a series of uncertain delay distributions (in the examples in the package documentation these are an incubation period and a reporting delay) and a reporting model that can include weekly periodicity. 
 
@@ -32,15 +32,18 @@ The default model uses a non-stationary Gaussian process to estimate the time-va
 * As piecewise constant by combining a fixed reproduction number with breakpoints.
 * As a random walk (by combining a fixed reproduction number with regularly spaced breakpoints (i.e weekly)).
 * Inferring infections using back-calculation and then calculating the time-varying reproduction number.
+* Adjustment for the remaining susceptible population beyond the forecast horizon.
 
-The documentation for [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) provides examples of the different options available. 
+These options generally reduce runtimes at the cost of the granularity of estimates or at the cost of real-time performance.
 
-Forecasting is also supported for the time-varying reproduction number, infections and reported cases. The time-varying reproduction number can be forecast forwards in time using an integration with the [`{EpiSoon}`](https://epiforecasts.io/EpiSoon/) package, and converted to a case forecast using the renewal equation. Alternatively, the time-varying reproduction number and cases can be forecast using a Gaussian process.
+The documentation for [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) provides examples of the implementation of the different options available. 
+
+Forecasting is also supported for the time-varying reproduction number, infections and reported cases using the same generative process approach as used for estimation.
 
 A simple example of using the package to estimate a national Rt for Covid-19 can be found [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867).
 
 
-`EpiNow2` also supports adjustment for truncated data via `estimate_truncation()` and for estimating dependent observations (i.e deaths based on hospital admissions) using `estimate_secondary()`.
+`EpiNow2` also supports adjustment for truncated data via `estimate_truncation()` (though users may be interested in more flexibility and if so should check out the [`epinowcast`](https://package.epinowcast.org/) package), and for estimating dependent observations (i.e deaths based on hospital admissions) using `estimate_secondary()`.
 
 ## Installation
 
@@ -69,7 +72,7 @@ Windows users will need a working installation of Rtools in order to build the p
 
 `{EpiNow2}` is designed to be used with a single function call or to be
 used in an ad-hoc fashion via individual function calls. The core functions of `{EpiNow2}` are the two single-call functions [`epinow()`](https://epiforecasts.io/EpiNow2/reference/epinow.html), [`regional_epinow()`](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html), plus functions
-[`estimate_infections()`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), [`forecast_infections()`](https://epiforecasts.io/EpiNow2/reference/forecast_infections.html), [`estimate_secondary()`](https://epiforecasts.io/EpiNow2/reference/estimate_secondary.html) and [`estimate_truncation()`](https://epiforecasts.io/EpiNow2/reference/estimate_truncation.html). In the following section we give an overview of the simple use case for `epinow` and `regional_epinow`. [`estimate_infections()`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) can be used on its own to infer the underlying infection case curve from reported cases and estimate Rt. Estimating the underlying infection case curve via back-calculation (and then calculating Rt) is substantially less computationally demanding than generating using default settings but may result in less reliable estimates of Rt. For more details on using each function see the [function documentation](https://epiforecasts.io/EpiNow2/reference/index.html).
+[`estimate_infections()`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), [`estimate_secondary()`](https://epiforecasts.io/EpiNow2/reference/estimate_secondary.html) and [`estimate_truncation()`](https://epiforecasts.io/EpiNow2/reference/estimate_truncation.html). In the following section we give an overview of the simple use case for `epinow` and `regional_epinow`. [`estimate_infections()`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) can be used on its own to infer the underlying infection case curve from reported cases and estimate Rt. Estimating the underlying infection case curve via back-calculation (and then calculating Rt) is substantially less computationally demanding than generating using default settings but may result in less reliable estimates of Rt. For more details on using each function see the [function documentation](https://epiforecasts.io/EpiNow2/reference/index.html).
 
 The first step to using the package is to load it as follows.
  
@@ -83,8 +86,10 @@ Distributions can either be fitted using package functionality or determined els
 
 For example if data on the delay between onset and infection was available we could fit a distribution to it with appropriate uncertainty as follows (note this is a synthetic example),
 ```{r, eval = FALSE}
-reporting_delay <- estimate_delay(rlnorm(1000, log(2), 1),
-                                  max_value = 15, bootstraps = 1)
+reporting_delay <- estimate_delay(
+  rlnorm(1000, log(2), 1),
+  max_value = 15, bootstraps = 1
+)
 ```
 
 If data was not available we could instead make an informed estimate of the likely delay (note this is a synthetic example and not applicable to real world use cases),
@@ -97,32 +102,39 @@ reporting_delay <- list(
 )
 ```
 
-Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/master/data-raw) for the code that generates these estimates). Note that these distributions may not be applicable for your use case. 
+Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/main/data-raw) for the code that generates these estimates). Note that these distributions may not be applicable for your use case. 
 
 ```{r}
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+generation_time <- get_generation_time(
+  disease = "SARS-CoV-2", source = "ganyani"
+)
+incubation_period <- get_incubation_period(
+  disease = "SARS-CoV-2", source = "lauer"
+)
 ```
 
 ### [epinow()](https://epiforecasts.io/EpiNow2/reference/epinow.html) 
 
-This function represents the core functionality of the package and includes results reporting, plotting and optional saving. It requires a data frame of cases by date of report and the distributions defined above. An additional forecasting module is supported via `EpiSoon` and companion packages (see documentation for an example).
+This function represents the core functionality of the package and includes results reporting, plotting and optional saving. It requires a data frame of cases by date of report and the distributions defined above. 
 
 Load example case data from `{EpiNow2}`. 
 
 ```{r}
-reported_cases <- example_confirmed[1:90]
+reported_cases <- example_confirmed[1:60]
 head(reported_cases)
 ```
 
-Estimate cases by date of infection, the time-varying reproduction number, the rate of growth and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). *Note: For real use cases more samples and a longer warm up may be needed*. See fitting progress by setting `verbose = TRUE`.
+Estimate cases by date of infection, the time-varying reproduction number, the rate of growth and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). Here we use the default model parameterisation that prioritises real-time performance over run-time or other considerations. For other formulations see the documentation for `estimate_infections()`.
 
 ```{r, message = FALSE, warning = FALSE}
-estimates <- epinow(reported_cases = reported_cases,
-                    generation_time = generation_time,
-                    delays = delay_opts(incubation_period, reporting_delay),
-                    rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-                    stan = stan_opts(cores = 4))
+estimates <- epinow(
+  reported_cases = reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
+  stan = stan_opts(cores = 4),
+  verbose = interactive()
+)
 names(estimates)
 ```
 
@@ -160,19 +172,23 @@ Define cases in multiple regions delineated by the region variable.
 
 ```{r}
 reported_cases <- data.table::rbindlist(list(
-   data.table::copy(reported_cases)[, region := "testland"],
-   reported_cases[, region := "realland"]))
+  data.table::copy(reported_cases)[, region := "testland"],
+  reported_cases[, region := "realland"]
+))
 head(reported_cases)
 ```
 
-Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used).
+Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week.
 
 ```{r, message = FALSE, warning = FALSE}
-estimates <- regional_epinow(reported_cases = reported_cases,
-                             generation_time = generation_time,
-                             delays = delay_opts(incubation_period, reporting_delay),
-                             rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-                             stan = stan_opts(cores = 4))
+estimates <- regional_epinow(
+  reported_cases = reported_cases,
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
+  gp = NULL,
+  stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
+)
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = TRUE) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the `{future}` package for details on nested futures.
@@ -191,7 +207,7 @@ estimates$summary$summary_plot
 
 ### Reporting templates
 
-Rmarkdown templates are provided in the package (`templates`) for semi-automated reporting of estimates. These are currently undocumented but an example integration can be seen [here](https://github.com/epiforecasts/covid/blob/master/_posts/national/united-kingdom/united-kingdom.Rmd). If using these templates to report your results please highlight our [limitations](https://doi.org/10.12688/wellcomeopenres.16006.1) as these are key to understanding the results from `{EpiNow2}` .
+Rmarkdown templates are provided in the package (`templates`) for semi-automated reporting of estimates. If using these templates to report your results please highlight our [limitations](https://doi.org/10.12688/wellcomeopenres.16006.1) as these are key to understanding the results from `{EpiNow2}` .
 
 ## Contributing
 

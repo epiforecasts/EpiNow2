@@ -1,0 +1,18 @@
+---
+title: "Model definition: estimate_truncation()"
+output: rmarkdown::html_vignette
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Model definition: estimate_truncation()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+**This is a work in progress. Please consider submitting a PR to improve it.** 

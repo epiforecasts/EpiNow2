@@ -36,11 +36,12 @@ A \code{data.table} containing a \code{date} variable (date of report) and a \co
 a third variable \code{reference} which indicates what the date variable refers to.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Maps from cases by date of infection to date of report via date of
 onset.
 }
 \examples{
+\donttest{
 # define example cases
 cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
 
@@ -89,4 +90,5 @@ report_stochastic <- adjust_infection_to_report(
   }
 )
 print(report_stochastic)
+}
 }

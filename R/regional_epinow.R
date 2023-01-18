@@ -37,9 +37,9 @@
 #' @importFrom rlang cnd_muffle
 #' @importFrom progressr with_progress progressor
 #' @examples
-#'
 #' \donttest{
 #' # set number of cores to use
+#' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #'
 #' # construct example distributions
@@ -89,6 +89,8 @@
 #'   ),
 #'   verbose = interactive()
 #' )
+#'
+#' options(old_opts)
 #' }
 regional_epinow <- function(reported_cases,
                             generation_time,
@@ -388,9 +390,6 @@ process_region <- function(out, target_region, timing,
                            complete_logger = "EpiNow2.epinow") {
   if (!is.null(out[["estimates"]]) & !return_output) {
     out$estimates$samples <- NULL
-  }
-  if (!is.null(out[["forecast"]]) & !return_output) {
-    out$forecast$samples <- NULL
   }
   if (!is.null(out[["estimated_reported_cases"]]) & !return_output) {
     out$estimated_reported_cases$samples <- NULL

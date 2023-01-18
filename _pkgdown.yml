@@ -1,8 +1,9 @@
 url: epiforecasts.io/EpiNow2/
 template:
+  bootstrap: 5
   opengraph:
     image:
-      src: man/figures/unnamed-chunk-13-1.png
+      src: man/figures/unnamed-chunk-14-1.png
       alt: "Example estimates produced by EpiNow2 of the reproduction number, cases by date of infection and cases by date of report"
     twitter:
       creator: "@seabbs"
@@ -15,7 +16,7 @@ template:
       index_name: epinow2
 
 development:
-  mode: release
+  mode: auto
 
 authors:
   Sam Abbott:
@@ -24,18 +25,24 @@ authors:
     href: "https://www.lshtm.ac.uk/aboutus/people/funk.sebastian"
     
 navbar:
-  type: inverse
-  left:
-    - text: "Home"
-      href: index.html
-    - text: News
-      href: news/index.html
-    - icon: fa-file-code-o
-      text: "Functions"
-      href: reference/index.html
-  right:
-    - icon: fa-github
-      href: https://github.com/epiforecasts/EpiNow2
+  structure:
+    left: [reference, modeldefs, casestudies, news]
+    right: [search, github]
+  components:
+    modeldefs:
+      text: Model definitions
+      menu:
+      - text: estimate_infections()
+        href: articles/estimate_infections.html
+      - text: estimate_secondary()
+        href: articles/estimate_secondary.html
+      - text: estimate_truncation()
+        href: articles/estimate_truncation.html
+    casestudies:
+      text: Case studies
+      menu:
+      - text: External case studies and use in the literature
+        href: articles/case-studies.html
 
 figures:
   fig.width: 9
@@ -46,15 +53,15 @@ reference:
     desc: Functions that faciliate end-to-end analysis including imputing cases by infection, estimating Rt and reporting results.
     contents:
       - contains("epinow")
-  - title: Estimate Parameters
-    desc: Function to estimate parameters of interest.
+  - title: Estimate, Simulate, and Forecast Parameters
+    desc: Function to estimate, simulate and forecast parameters of interest.
     contents:
       - estimate_infections
-      - forecast_infections
-      - estimate_delay
-      - estimate_truncation
+      - simulate_infections
       - estimate_secondary
       - forecast_secondary
+      - estimate_delay
+      - estimate_truncation
   - title: Internal epinow Functions
     desc: Functions used internally by epinow
     contents:
@@ -110,7 +117,6 @@ reference:
     desc: Functions to help with simulating data or mapping to reported cases
     contents:
       - simulate_infections
-      - simulate_cases
       - simulate_secondary
       - adjust_infection_to_report
   - title: Data
@@ -128,12 +134,6 @@ reference:
     desc: Functions for cleaning data
     contents:
       - contains("clean")
-  - title: Map results
-    desc: Optional mapping functions (requires additional dependencies)
-    contents:
-      - global_map
-      - country_map
-      - theme_map
   - title: Setup Utilities
     desc: Function used for setting up functionality
     contents:

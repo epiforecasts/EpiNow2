@@ -8,7 +8,8 @@
 #' @param summaries A list of summary data frames as output by `epinow`
 #' @param results_dir An optional character string indicating the location of the results directory to extract results
 #' from.
-#' @param target_date A character string indicating the target date to extract results for. All regions must have results
+#' @param target_date A character string indicating the target date to extract
+#' results for. All regions must have results
 #' for this date.
 #' @param region_scale A character string indicating the name to give the regions being summarised.
 #' @importFrom purrr safely map_chr map_dbl map_chr
@@ -121,7 +122,9 @@ summarise_results <- function(regions,
 #' (in the format "yyyy-mm-dd"). Defaults to latest available estimates.
 #' @param all_regions Logical, defaults to `TRUE`. Should summary plots for all
 #'  regions be returned rather than just regions of interest.
-#' @param ... Additional arguments passed to `report_plots`. 
+#' @param plot Logical, defaults to `TRUE`. Should regional summary plots be
+#' produced.
+#' @param ... Additional arguments passed to `report_plots`.
 #' @return A list of summary measures and plots
 #' @export
 #' @seealso regional_epinow
@@ -135,7 +138,6 @@ summarise_results <- function(regions,
 #' @inheritParams epinow
 #' @importFrom purrr map_chr compact
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
-#' @importFrom cowplot get_legend
 #' @importFrom data.table setDT
 #' @importFrom futile.logger flog.info
 #' @examples
@@ -174,6 +176,7 @@ regional_summary <- function(regional_output = NULL,
                              region_scale = "Region",
                              all_regions = TRUE,
                              return_output = FALSE,
+                             plot = TRUE,
                              max_plot = 10,
                              ...) {
   reported_cases <- data.table::setDT(reported_cases)
@@ -274,86 +277,96 @@ regional_summary <- function(regional_output = NULL,
     max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0
   )
 
-  # summarise cases and Rts
-  summary_plot <- plot_summary(summarised_results$data,
-    x_lab = region_scale,
-    log_cases = log_cases,
-    max_cases = max_reported_cases
-  )
-
-  if (!is.null(summary_dir)) {
-    save_ggplot <- function(plot, name, height = 12, width = 12, ...) {
-      suppressWarnings(
-        suppressMessages(
-          ggplot2::ggsave(file.path(summary_dir, name),
-            plot,
-            dpi = 300, width = width,
-            height = height, ...
-          )
-        )
-      )
-    }
-    save_ggplot(summary_plot, "summary_plot.png",
-      width = ifelse(length(regions) > 60,
-        ifelse(length(regions) > 120, 36, 24),
-        12
-      )
-    )
-  }
-  # extract regions with highest number of reported cases in the last week
-  most_reports <- get_regions_with_most_reports(reported_cases,
-    time_window = 7,
-    no_regions = 6
-  )
-
-  high_plots <- report_plots(
-    summarised_estimates = results$estimates$summarised[region %in% most_reports],
-    reported = reported_cases[region %in% most_reports],
-    max_plot = max_plot, ...
-  )
-
-  high_plots$summary <- NULL
-  high_plots <-
-    purrr::map(high_plots,
-               ~ . + ggplot2::facet_wrap(~region, scales = "free_y", ncol = 2))
-
-  if (!is.null(summary_dir)) {
-    save_ggplot(high_plots$R, "high_rt_plot.png")
-    save_ggplot(high_plots$infections, "high_infections_plot.png")
-    save_ggplot(high_plots$reports, "high_reported_cases_plot.png")
-  }
-
-  if (all_regions) {
-    plots_per_row <- ifelse(length(regions) > 60,
-      ifelse(length(regions) > 120, 8, 5), 3
-    )
-
-    plots <- report_plots(
-      summarised_estimates = results$estimates$summarised,
-      reported = reported_cases,
-      max_plot = max_plot, ...
-    )
-
-    plots$summary <- NULL
-    plots <- purrr::map(
-      plots, 
-      ~ . + ggplot2::facet_wrap(~region, scales = "free_y",
-                                ncol = plots_per_row)
+  if (plot) {
+    # summarise cases and Rts
+    summary_plot <- plot_summary(summarised_results$data,
+      x_lab = region_scale,
+      log_cases = log_cases,
+      max_cases = max_reported_cases
     )
 
     if (!is.null(summary_dir)) {
-      save_big_ggplot <- function(plot, name) {
-        save_ggplot(plot, name,
-          height = 3 * round(length(regions) / plots_per_row, 0),
-          width = 24,
-          limitsize = FALSE
+      save_ggplot <- function(plot, name, height = 12, width = 12, ...) {
+        suppressWarnings(
+          suppressMessages(
+            ggplot2::ggsave(file.path(summary_dir, name),
+              plot,
+              dpi = 300, width = width,
+              height = height, ...
+            )
+          )
         )
       }
-      save_big_ggplot(plots$R, "rt_plot.png")
-      save_big_ggplot(plots$infections, "infections_plot.png")
-      save_big_ggplot(plots$reports, "reported_cases_plot.png")
+      save_ggplot(summary_plot, "summary_plot.png",
+        width = ifelse(length(regions) > 60,
+          ifelse(length(regions) > 120, 36, 24),
+          12
+        )
+      )
     }
+    # extract regions with highest number of reported cases in the last week
+    most_reports <- get_regions_with_most_reports(reported_cases,
+      time_window = 7,
+      no_regions = 6
+    )
+
+    high_plots <- report_plots(
+      summarised_estimates = results$estimates$summarised[region %in% most_reports],
+      reported = reported_cases[region %in% most_reports],
+      max_plot = max_plot, ...
+    )
+
+    high_plots$summary <- NULL
+    high_plots <-
+      purrr::map(
+        high_plots,
+        ~ . + ggplot2::facet_wrap(~region, scales = "free_y", ncol = 2)
+      )
+
+    if (!is.null(summary_dir)) {
+      save_ggplot(high_plots$R, "high_rt_plot.png")
+      save_ggplot(high_plots$infections, "high_infections_plot.png")
+      save_ggplot(high_plots$reports, "high_reported_cases_plot.png")
+    }
+
+    if (all_regions) {
+      plots_per_row <- ifelse(length(regions) > 60,
+        ifelse(length(regions) > 120, 8, 5), 3
+      )
+
+      plots <- report_plots(
+        summarised_estimates = results$estimates$summarised,
+        reported = reported_cases,
+        max_plot = max_plot, ...
+      )
+
+      plots$summary <- NULL
+      plots <- purrr::map(
+        plots,
+        ~ . + ggplot2::facet_wrap(~region,
+          scales = "free_y",
+          ncol = plots_per_row
+        )
+      )
+
+      if (!is.null(summary_dir)) {
+        save_big_ggplot <- function(plot, name) {
+          save_ggplot(plot, name,
+            height = 3 * round(length(regions) / plots_per_row, 0),
+            width = 24,
+            limitsize = FALSE
+          )
+        }
+        save_big_ggplot(plots$R, "rt_plot.png")
+        save_big_ggplot(plots$infections, "infections_plot.png")
+        save_big_ggplot(plots$reports, "reported_cases_plot.png")
+      }
+    }
+  } else {
+    summary_plot <- NULL
+    high_plots <- NULL
   }
+
   if (return_output) {
     out <- list()
     out$latest_date <- latest_date
@@ -364,7 +377,7 @@ regional_summary <- function(regional_output = NULL,
     out$reported_cases <- reported_cases
     out$high_plots <- high_plots
 
-    if (all_regions) {
+    if (all_regions & plot) {
       out$plots <- plots
     }
     return(out)
@@ -378,8 +391,10 @@ regional_summary <- function(regional_output = NULL,
 #' @description `r lifecycle::badge("maturing")`
 #' Produces summarised data frames of output across regions. Used internally by `regional_summary`.
 #' @param regional_results A list of dataframes as produced by `get_regional_results`
-#' @param results_dir Character string indicating the directory from which to extract results.
-#' @param summary_dir Character string the directory into which to save results as a csv.
+#' @param results_dir Character string indicating the directory from which to
+#' extract results.
+#' @param summary_dir Character string the directory into which to save results
+#' as a csv.
 #' @param type Character string, the region identifier to apply (defaults to region).
 #' @inheritParams get_regional_results
 #' @seealso regional_summary
@@ -455,31 +470,6 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @export
 #' @importFrom data.table data.table fwrite
 #' @importFrom purrr map safely
-#' @examples
-#' \donttest{
-#' # example delays
-#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-#' reporting_delay <- example_delay(rlnorm(100, log(6), 1), max_value = 15)
-#'
-#' # example case vector from EpiSoon
-#' cases <- example_confirmed[1:30]
-#' cases <- data.table::rbindlist(list(
-#'   data.table::copy(cases)[, region := "testland"],
-#'   cases[, region := "realland"]
-#' ))
-#'
-#' # run basic nowcasting pipeline
-#' regional_out <- regional_epinow(
-#'   reported_cases = cases,
-#'   generation_time = generation_time,
-#'   delays = delay_opts(incubation_period, reporting_delay),
-#'   samples = 100, stan_args = list(warmup = 100),
-#'   output = c("region", "timing")
-#' )
-#'
-#' regional_runtimes(regional_output = regional_out$regional)
-#' }
 regional_runtimes <- function(regional_output = NULL,
                               target_folder = NULL,
                               target_date = NULL,
@@ -728,8 +718,8 @@ summary.epinow <- function(object, output = "estimates",
 #' @param object A list of output as produced by "estimate_infections".
 #' @param type A character vector of data types to return. Defaults to "snapshot"
 #' but also supports "parameters", and "samples". "snapshot" returns a summary at
-#' a given date (by default the latest date informed by data). "parameters" returns 
-#' summarised parameter estimates that can be further filtered using `params` to 
+#' a given date (by default the latest date informed by data). "parameters" returns
+#' summarised parameter estimates that can be further filtered using `params` to
 #' show just the parameters of interest and date. "samples" similarly returns posterior
 #' samples.
 #' @param date A date in the form "yyyy-mm-dd" to inspect estimates for.

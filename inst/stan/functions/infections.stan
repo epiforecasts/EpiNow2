@@ -29,18 +29,13 @@ vector generate_infections(vector oR, int uot,
   vector[ot] cum_infections = rep_vector(0, ot);
   vector[ot] infectiousness = rep_vector(1e-5, ot);
   // generation time pmf
-  vector[max_gt] gt_pmf = rep_vector(1e-5, max_gt);
-  // revert indices (this is for later doing the convolution with recent cases)
-  int gt_indexes[max_gt];
-  for (i in 1:(max_gt)) {
-    gt_indexes[i] = max_gt - i + 1;
-  }
+  vector[max_gt] gt_pmf;
   if (gt_sd > 0) {
     // SD > 0: use discretised gamma
-    gt_pmf = gt_pmf + discretised_gamma_pmf(gt_indexes, gt_mean, gt_sd, max_gt);
+    gt_pmf = discretised_gamma_pmf(gt_mean, gt_sd, max_gt) + 1e-5;
   } else {
     // SD == 0: use discretised delta
-    gt_pmf = gt_pmf + discretised_delta_pmf(gt_indexes);
+    gt_pmf = discretised_delta_pmf(max_gt);
   }
   // Initialise infections using daily growth
   infections[1] = exp(initial_infections[1]);

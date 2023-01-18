@@ -9,7 +9,7 @@
 #' for an example of forecasting Covid-19 deaths from Covid-19 cases. See
 #' [here](https://gist.github.com/seabbs/4dad3958ca8d83daca8f02b143d152e6) for a prototype function that
 #' may be used to estimate and forecast a secondary observation from a primary across multiple regions and
-#' [here](https://github.com/epiforecasts/covid-german-forecasts/blob/master/rt-forecast/update-death-from-cases.R)
+#' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R)
 #' for an application forecasting Covid-19 deaths in Germany and Poland.
 #' @param secondary A call to `secondary_opts()` or a list containing the following
 #' binary variables: cumulative, historic, primary_hist_additive, current,
@@ -49,7 +49,9 @@
 #' @examples
 #' \donttest{
 #' # set number of cores to use
+#' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
+#' 
 #' # load data.table for manipulation
 #' library(data.table)
 #' 
@@ -89,7 +91,7 @@
 #'
 #' # Simulate secondary cases
 #' cases <- simulate_secondary(cases, type = "prevalence")
-#' 
+#'
 #' # fit model to example prevalence data
 #' prev <- estimate_secondary(cases[1:100],
 #'   secondary = secondary_opts(type = "prevalence"),
@@ -103,6 +105,8 @@
 #' # forecast future secondary cases from primary
 #' prev_preds <- forecast_secondary(prev, cases[101:.N][, value := primary])
 #' plot(prev_preds, new_obs = cases, from = "2020-06-01")
+#'
+#' options(old_opts)
 #' }
 estimate_secondary <- function(reports,
                                secondary = secondary_opts(),
@@ -311,8 +315,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #' @seealso plot estimate_secondary
 #' @method plot estimate_secondary
 #' @return `ggplot2` object
-#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme
-#' @importFrom cowplot theme_cowplot
+#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme theme_bw
 #' @importFrom data.table as.data.table merge.data.table
 #' @export
 plot.estimate_secondary <- function(x, primary = FALSE,
@@ -356,7 +359,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     alpha = 0.6, size = 1
   )
   plot <- plot +
-    cowplot::theme_cowplot() +
+    ggplot2::theme_bw() +
     ggplot2::labs(y = "Confirmed Cases", x = "Date") +
     ggplot2::scale_x_date(date_breaks = "week", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +
@@ -507,7 +510,6 @@ forecast_secondary <- function(estimate,
                                samples = NULL,
                                all_dates = FALSE,
                                CrIs = c(0.2, 0.5, 0.9)) {
-
   ## deal with input if data frame
   if (any(class(primary) %in% "data.frame")) {
     primary <- data.table::as.data.table(primary)
@@ -603,11 +605,12 @@ forecast_secondary <- function(estimate,
   out$samples <- samples
   out$forecast <- summarised
   # link previous prediction observations with forecast observations
-  forecast_obs <- data.table::rbindlist(list(
-    estimate$predictions[, .(date, primary, secondary)],
-    data.table::copy(primary)[, .(primary = median(value)), by = "date"]
-  ),
-  use.names = TRUE, fill = TRUE
+  forecast_obs <- data.table::rbindlist(
+    list(
+      estimate$predictions[, .(date, primary, secondary)],
+      data.table::copy(primary)[, .(primary = median(value)), by = "date"]
+    ),
+    use.names = TRUE, fill = TRUE
   )
   data.table::setorderv(forecast_obs, "date")
   # add in predictions in estimate_secondary format

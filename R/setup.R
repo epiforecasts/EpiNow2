@@ -57,7 +57,7 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' @param mirror_epinow Logical, defaults to FALSE. Should internal logging be
 #' returned from `epinow` to the console.
 #' @inheritParams setup_target_folder
-#' @return NULL
+#' @return No return value, called for side effects
 #' @export
 #' @importFrom purrr walk
 #' @examples
@@ -101,9 +101,9 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 #' More advanced users are recommended to setup their own `future` backend based on their
 #' available resources.
 #' @param strategies A vector length 1 to 2 of strategies to pass to `future::plan`. Nesting
-#' of parallisation is from the top level down. The default is to set up nesting parallisation
+#' of parallelisation is from the top level down. The default is to set up nesting parallelisation
 #' with both using `future::multisession` (`future::multicore` will likely be a faster option on
-#' supported platforms). For single level parallisation use a single strategy
+#' supported platforms). For single level parallelisation use a single strategy
 #' or `future::plan` directly. See `?future::plan` for options.
 #' @param min_cores_per_worker Numeric, the minimum number of cores per worker.
 #' Defaults to 4 which assumes 4 MCMC chains are in use per region.

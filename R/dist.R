@@ -157,10 +157,6 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @param verbose Logical, defaults to FALSE. Should verbose progress messages be printed.
 #' @return A `stan` fit of an interval censored distribution
 #' @export
-#' @import Rcpp
-#' @import methods
-#' @importFrom rstan sampling extract
-#' @useDynLib EpiNow2, .registration=TRUE
 #' @examples
 #' \donttest{
 #' # integer adjusted exponential model
@@ -449,11 +445,12 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
     ## Fit each sub sample
     dist_samples <- future.apply::future_lapply(1:bootstraps,
       function(boot) {
-        get_single_dist(sample(values,
-          min(length(values), bootstrap_samples),
-          replace = TRUE
-        ),
-        samples = ceiling(samples / bootstraps)
+        get_single_dist(
+          sample(values,
+            min(length(values), bootstrap_samples),
+            replace = TRUE
+          ),
+          samples = ceiling(samples / bootstraps)
         )
       },
       future.scheduling = Inf,
@@ -529,6 +526,7 @@ estimate_delay <- function(delays, ...) {
 #' @importFrom data.table data.table setorder
 #' @importFrom lubridate days
 #' @examples
+#' \donttest{
 #' cases <- example_confirmed
 #' cases <- cases[, cases := as.integer(confirm)]
 #' print(cases)
@@ -555,7 +553,7 @@ estimate_delay <- function(delays, ...) {
 #' # check that sum is equal to reported cases
 #' total_onsets <- median(
 #'   purrr::map_dbl(
-#'     1:100,
+#'     1:10,
 #'     ~ sum(sample_approx_dist(
 #'       cases = cases,
 #'       dist_fn = delay_fn
@@ -580,6 +578,7 @@ estimate_delay <- function(delays, ...) {
 #'   direction = "forwards",
 #'   type = "median"
 #' )
+#' }
 sample_approx_dist <- function(cases = NULL,
                                dist_fn = NULL,
                                max_value = 120,
@@ -603,7 +602,7 @@ sample_approx_dist <- function(cases = NULL,
 
     # approximate cases
     mapped_cases <- suppressMessages(purrr::map_dfc(
-      1:length(reversed_cases),
+      seq_along(reversed_cases),
       ~ c(
         rep(0, . - 1),
         stats::rbinom(
@@ -634,7 +633,7 @@ sample_approx_dist <- function(cases = NULL,
     floor_case_sum <- floor(case_sum)
     sample_cases <- floor_case_sum +
       data.table::fifelse(
-        (runif(1:length(case_sum)) < (case_sum - floor_case_sum)),
+        (runif(seq_along(case_sum)) < (case_sum - floor_case_sum)),
         1, 0
       )
 

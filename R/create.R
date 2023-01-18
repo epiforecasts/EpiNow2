@@ -3,15 +3,20 @@
 #' Cleans a data frame of reported cases by replacing missing dates with 0 cases and applies an optional
 #' threshold at which point 0 cases are replaced with a moving average of observed cases. See `zero_threshold`
 #' for details.
-#' @param zero_threshold `r lifecycle::badge("experimental")` Numeric defaults to 50. Indicates if detected zero
-#' cases are meaningful by using a threshold of 50 cases on average over the last 7 days. If the average is
-#' above this threshold then the zero is replaced with the backwards looking rolling average. If set to infinity
-#' then no changes are made.
+#' @param filter_leading_zeros Logical, defaults to TRUE. Should zeros at the
+#' start of the time series be filtered out.
+#' @param zero_threshold `r lifecycle::badge("experimental")` Numeric defaults
+#' to Inf. Indicates if detected zero cases are meaningful by using a threshold
+#' number of cases based on the 7 day average. If the average is above this
+#' threshold then the zero is replaced with the backwards looking rolling
+#' average. If set to infinity then no changes are made.
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases
 #' @export
-create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold = 50) {
+create_clean_reported_cases <- function(reported_cases, horizon,
+                                        filter_leading_zeros = TRUE,
+                                        zero_threshold = Inf) {
   reported_cases <- data.table::setDT(reported_cases)
   reported_cases_grid <- data.table::copy(reported_cases)[, .(date = seq(min(date), max(date) + horizon, by = "days"))]
 
@@ -27,18 +32,20 @@ create_clean_reported_cases <- function(reported_cases, horizon, zero_threshold 
   reported_cases <- reported_cases[is.na(breakpoint), breakpoint := 0]
   reported_cases <- data.table::setorder(reported_cases, date)
   ## Filter out 0 reported cases from the beginning of the data
-  reported_cases <- reported_cases[order(date)][
-    ,
-    cum_cases := cumsum(confirm)
-  ][cum_cases > 0][, cum_cases := NULL]
+  if (filter_leading_zeros) {
+    reported_cases <- reported_cases[order(date)][
+      ,
+      cum_cases := cumsum(confirm)
+    ][cum_cases > 0][, cum_cases := NULL]
+  }
 
-  # Check case counts surrounding zero cases and set to 7 day average if average is over 7 days
-  # is greater than a threshold
-  if (is.infinite(zero_threshold)) {
+  # Check case counts preceding zero case counts and set to 7 day average if
+  # average over last 7 days is greater than a threshold
+  if (!is.infinite(zero_threshold)) {
     reported_cases <-
       reported_cases[
         ,
-        `:=`(average_7 = data.table::frollsum(confirm, n = 8) / 7)
+        `:=`(average_7 = (data.table::frollsum(confirm, n = 8)) / 7)
       ]
     reported_cases <- reported_cases[
       confirm == 0 & average_7 > zero_threshold,
@@ -186,7 +193,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   )
   # apply random walk
   if (rt$rw != 0) {
-    breakpoints <- as.integer(1:length(breakpoints) %% rt$rw == 0)
+    breakpoints <- as.integer(seq_along(breakpoints) %% rt$rw == 0)
     if (!(rt$future %in% "project")) {
       max_bps <- length(breakpoints) - horizon + future_rt$from
       if (max_bps < length(breakpoints)) {
@@ -338,7 +345,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #' # Applying a observation scaling to the data
 #' create_obs_model(obs_opts(scale = list(mean = 0.4, sd = 0.01)), dates = dates)
 #'
-#' # Apply a custom week week lenght
+#' # Apply a custom week week length
 #' create_obs_model(obs_opts(week_length = 3), dates = dates)
 create_obs_model <- function(obs = obs_opts(), dates) {
   data <- list(
@@ -387,7 +394,6 @@ create_stan_data <- function(reported_cases, generation_time,
                              rt, gp, obs, delays, horizon,
                              backcalc, shifted_cases,
                              truncation) {
-
   ## make sure we have at least max_gt seeding time
   delays$seeding_time <- max(delays$seeding_time, generation_time$max)
 
@@ -402,18 +408,22 @@ create_stan_data <- function(reported_cases, generation_time,
   if (generation_time$sd == 0 && generation_time$sd_sd == 0) {
     if ("max_gt" %in% names(generation_time)) {
       if (generation_time$max_gt != generation_time$mean) {
-        stop("Error in generation time defintion: if max_gt(",
-             generation_time$max_gt,
-             ") is given it must be equal to the mean (",
-             generation_time$mean,
-             ")")
+        stop(
+          "Error in generation time defintion: if max_gt(",
+          generation_time$max_gt,
+          ") is given it must be equal to the mean (",
+          generation_time$mean,
+          ")"
+        )
       }
     } else {
       generation_time$max_gt <- generation_time$mean
     }
     if (any(generation_time$mean_sd > 0, generation_time$sd_sd > 0)) {
-      stop("Error in generation time definition: if sd_mean is 0 and ",
-           "sd_sd is 0 then mean_sd must be 0, too.")
+      stop(
+        "Error in generation time definition: if sd_mean is 0 and ",
+        "sd_sd is 0 then mean_sd must be 0, too."
+      )
     }
   }
 
@@ -471,7 +481,8 @@ create_stan_data <- function(reported_cases, generation_time,
   data <- c(
     data,
     create_obs_model(
-      obs, dates = reported_cases[(data$seeding_time + 1):.N]$date
+      obs,
+      dates = reported_cases[(data$seeding_time + 1):.N]$date
     )
   )
 
@@ -533,7 +544,8 @@ create_initial_conditions <- function(data) {
     if (data$model_type == 1) {
       out$rep_phi <- array(
         truncnorm::rtruncnorm(
-          1, a = 0, mean = data$phi_mean, sd = data$phi_sd / 10
+          1,
+          a = 0, mean = data$phi_mean, sd = data$phi_sd / 10
         )
       )
     }
@@ -548,15 +560,15 @@ create_initial_conditions <- function(data) {
       ))
       if (data$gt_mean_sd > 0) {
         out$gt_mean <- array(truncnorm::rtruncnorm(1,
-                                                   a = 0, mean = data$gt_mean_mean,
-                                                   sd = data$gt_mean_sd * 0.1
-                                                   ))
+          a = 0, mean = data$gt_mean_mean,
+          sd = data$gt_mean_sd * 0.1
+        ))
       }
       if (data$gt_sd_sd > 0) {
         out$gt_sd <- array(truncnorm::rtruncnorm(1,
-                                                 a = 0, mean = data$gt_sd_mean,
-                                                 sd = data$gt_sd_sd * 0.1
-                                                 ))
+          a = 0, mean = data$gt_sd_mean,
+          sd = data$gt_sd_sd * 0.1
+        ))
       }
 
       if (data$bp_n > 0) {

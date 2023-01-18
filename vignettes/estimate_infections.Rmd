@@ -1,0 +1,80 @@
+---
+title: "Model definition: estimate_infections()"
+output: rmarkdown::html_vignette
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Model definition: estimate_infections()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+**This is a work in progress. Please consider submitting a PR to improve it.** 
+
+`estimate_infections()` supports a range of model formulation. Here we describe the most commonly used and highlight other options.
+
+## Renewal equation model
+
+This is the default model and is used when `rt != NULL`.
+
+### Initialisation
+
+The model is initialised prior to the first observed data point by assuming constant exponential growth for the mean of assumed delays from infection to case report.
+
+\begin{align}
+  I_{t} &= I_0 \exp  \left(r t \right)  \\
+  I_0 &\sim \mathcal{LN}(\log I_{obs}, 0.2) \\
+  r &\sim \mathcal{LN}(r_{obs}, 0.2)
+\end{align}
+
+### Within the range of observations
+
+Where $I_{obs}$ and $r_{obs}$ are estimated from the first week of observed data. For the time window of the observed data infections are then modelled by weighting previous infections by the generation time and scaling by the instantaneous reproduction number. These infections are then convolved to cases by of onset date ($O_t$) and cases by date of report ($D_t$) using log-normal delay distributions (though arbitrary delay distributions can be used this is the most common formulation). This model can be defined mathematically as follows,
+
+\begin{align}
+  \log R_{t} &= \log R_{t-1} + \mathrm{GP}_t \\
+  I_t &= R_t \sum_{\tau = 1}^{T_I} w(\tau | \mu_{w}, \sigma_{w}) I_{t - \tau} \\
+  O_t &= \sum_{\tau = 0}^{T_O} \xi_{O}(\tau | \mu_{\xi_{O}}, \sigma_{\xi_{O}}) I_{t-\tau} \\
+  D_t &= \alpha \sum_{\tau = 0}^{T_D} \xi_{D}(\tau | \mu_{\xi_{D}}, \sigma_{\xi_{D}}) O_{t-\tau} \\
+  C_t &\sim \mathrm{NB}\left(\omega_{(t \mod 7)}D_t, \phi\right)
+\end{align}
+
+Where $T_I$ is the maximum generation time, $T_O$ is the maximum delay from infection to case onset, $T_D$ is the maximum delay from case onset to report, and $\alpha$ is the proportion of cases that are ultimately reported (again note these are all optional and arbitrary).
+
+The delay distributions are then defined as follows,
+
+\begin{align}
+     w &\sim \mathcal{Gamma}(\mu_{w}, \sigma_{w}) \\
+    \xi_{O} &\sim \mathcal{LogNormal}(\mu_{\xi_{O}}, \sigma_{\xi_{O}}) \\
+    \xi_{D} &\sim \mathcal{LogNormal}(\mu_{\xi_{D}}, \sigma_{\xi_{D}})
+\end{align}
+
+This model used the following priors for the observation model
+
+\begin{align}
+    \frac{\omega}{7} &\sim \mathrm{Dirichlet}(1, 1, 1, 1, 1, 1, 1) \\
+    \phi &\sim \frac{1}{\sqrt{\mathcal{N}(0, 1)}}
+\end{align}
+
+$\phi$ is truncated to be greater than 0 and with $\xi$, and $w$ normalised to sum to 1. Other priors are set by the user.
+
+$GP_t$ is an approximate Hilbert space Gaussian process as defined in [@approxGP] using a Matern 3/2 kernel with a default boundary factor of 1.5 and basis functions scaled to be 20% of the number of days fitted. The length scale of the Gaussian process was given a log-normal prior with a mean of 21 days, and a standard deviation of 7 days truncated to be greater than 3 days and less than the length of the time-series. The standard deviation of magnitude of the Gaussian process was assumed to be 0.1. These settings are all changeable by the user. In addition the user can opt to make use of a different generative process or to instead remove the dependency on the previous value of $R_t$ each of these options impacts run-time and may alter the best use-case for the model.
+
+### Beyond the forecast horizon
+
+Beyond the forecast horizon ($T$), by default, the Gaussian process is assumed to continue. However, here again there are a range of options. These included fixing transmission dynamics, and scaling $R_t$ based on the proportion of the population that remain susceptible. This is defined as followed,
+
+\begin{equation}
+    I_t = (N - I^c_{t-1}) \left(1 - \exp \left(\frac{-I'_t}{N - I^c_{T}}\right)\right),
+\end{equation}
+
+where $I^c_t = \sum_{s< t} I_s$ are cumulative infections by $t-1$ and $I'_t$ are the unadjusted infections defined above. This adjustment is based on the one implemented in the `epidemia` R package [@bhattSemiMechanisticBayesianModeling].
+
+## References 

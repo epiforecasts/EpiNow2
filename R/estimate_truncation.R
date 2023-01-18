@@ -1,10 +1,12 @@
 #' Estimate Truncation of Observed Data
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' Estimates a truncation distribution from multiple snapshots of the same
 #' data source over time. This distribution can then be used in `regional_epinow`,
 #' `epinow`, and `estimate_infections` to adjust for truncated data. See [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)
-#' for an example of using this approach on Covid-19 data in England.
+#' for an example of using this approach on Covid-19 data in England. The
+#' functionality offered by this function is now available in a more principled
+#' manner in the [`epinowcast` R package](https://package.epinowcast.org/).
 #'
 #' The model of truncation is as follows:
 #'
@@ -48,7 +50,9 @@
 #' @importFrom data.table copy .N as.data.table merge.data.table setDT setcolorder
 #' @examples
 #' # set number of cores to use
+#' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
+#'
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:60]
 #'
@@ -97,6 +101,8 @@
 #' print(est$obs)
 #' # validation plot of observations vs estimates
 #' plot(est)
+#'
+#' options(old_opts)
 estimate_truncation <- function(obs, max_truncation = 10,
                                 model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),
@@ -107,7 +113,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
   obs <- purrr::map(dirty_obs, data.table::copy)
-  obs <- purrr::map(1:length(obs), ~ obs[[.]][, (as.character(.)) := confirm][
+  obs <- purrr::map(seq_along(obs), ~ obs[[.]][, (as.character(.)) := confirm][
     ,
     confirm := NULL
   ])
@@ -132,7 +138,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
       logmean = rnorm(1, 0, 1),
       logsd = abs(rnorm(1, 0, 1)),
       phi = abs(rnorm(1, 0, 1)),
-      sigma =  abs(rnorm(1, 0, 1 ))
+      sigma = abs(rnorm(1, 0, 1))
     )
     return(data)
   }
@@ -182,7 +188,13 @@ estimate_truncation <- function(obs, max_truncation = 10,
     estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
     estimates <- estimates[, lapply(.SD, as.integer)]
     estimates <- estimates[, index := .N - 0:(.N - 1)]
-    estimates[, c("n_eff", "Rhat") := NULL]
+    if (!is.null(estimates$n_eff)) {
+      estimates[, c("n_eff") := NULL]
+    }
+    if (!is.null(estimates$Rhat)) {
+      estimates[, c("Rhat") := NULL]
+    }
+
     target_obs <-
       data.table::merge.data.table(
         target_obs, last_obs,
@@ -221,8 +233,7 @@ estimate_truncation <- function(obs, max_truncation = 10,
 #' @seealso plot estimate_truncation
 #' @method plot estimate_truncation
 #' @return `ggplot2` object
-#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme
-#' @importFrom cowplot theme_cowplot
+#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme theme_bw
 #' @export
 plot.estimate_truncation <- function(x, ...) {
   plot <- ggplot2::ggplot(x$obs, ggplot2::aes(x = date, y = last_confirm)) +
@@ -241,7 +252,7 @@ plot.estimate_truncation <- function(x, ...) {
   )
 
   plot <- plot +
-    cowplot::theme_cowplot() +
+    ggplot2::theme_bw() +
     ggplot2::labs(y = "Confirmed Cases", x = "Date", col = "Type", fill = "Type") +
     ggplot2::scale_x_date(date_breaks = "day", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +

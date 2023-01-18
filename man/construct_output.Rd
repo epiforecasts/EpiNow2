@@ -6,7 +6,6 @@
 \usage{
 construct_output(
   estimates,
-  forecast = NULL,
   estimated_reported_cases,
   plots = NULL,
   summary = NULL,
@@ -15,8 +14,6 @@ construct_output(
 }
 \arguments{
 \item{estimates}{List of data frames as output by \code{estimate_infections}}
-
-\item{forecast}{A list of data frames as output by \code{forecast_infections}}
 
 \item{estimated_reported_cases}{A list of dataframes as produced by
 \code{estimates_by_report_date}.}

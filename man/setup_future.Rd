@@ -14,9 +14,9 @@ setup_future(
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
 \item{strategies}{A vector length 1 to 2 of strategies to pass to \code{future::plan}. Nesting
-of parallisation is from the top level down. The default is to set up nesting parallisation
+of parallelisation is from the top level down. The default is to set up nesting parallelisation
 with both using \code{future::multisession} (\code{future::multicore} will likely be a faster option on
-supported platforms). For single level parallisation use a single strategy
+supported platforms). For single level parallelisation use a single strategy
 or \code{future::plan} directly. See \code{?future::plan} for options.}
 
 \item{min_cores_per_worker}{Numeric, the minimum number of cores per worker.

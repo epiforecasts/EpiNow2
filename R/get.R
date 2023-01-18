@@ -6,7 +6,6 @@
 #' @return A named character vector containing the results to plot.
 #' @export
 get_regions <- function(results_dir) {
-
   # regions to include - based on folder names
   regions <- list.dirs(results_dir,
     recursive = FALSE,
@@ -58,7 +57,7 @@ get_raw_result <- function(file, region, date,
 #' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
 #' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 #'
-#' # example case vector from EpiSoon
+#' # example case vector
 #' cases <- example_confirmed[1:30]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
@@ -131,11 +130,6 @@ get_regional_results <- function(regional_output,
     )
 
     if (forecast) {
-      out$forecast <- get_estimates_file(
-        samples_path = "forecast_samples.rds",
-        summarised_path = "summarised_forecast.rds"
-      )
-
       out$estimated_reported_cases <- get_estimates_file(
         samples_path = "estimated_reported_cases_samples.rds",
         summarised_path = "summarised_estimated_reported_cases.rds"
@@ -158,7 +152,6 @@ get_regional_results <- function(regional_output,
     out <- list()
     out$estimates <- get_estimates_data("estimates")
     if (forecast) {
-      out$forecast <- get_estimates_data("forecasts")
       out$estimated_reported_cases <- get_estimates_data("estimated_reported_cases")
     }
   }

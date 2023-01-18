@@ -1,27 +1,41 @@
-#' Estimate Infections, the Time-Varying Reproduction Number and the Rate of Growth
+#' Estimate Infections, the Time-Varying Reproduction Number and the Rate of
+#' Growth
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' Uses a non-parametric approach to reconstruct cases by date of infection from reported
-#' cases. It uses either a generative Rt model or non-parametric back calculation to estimate underlying
-#' latent infections and then maps these infections to observed cases via uncertain reporting delays and a flexible
-#' observation model. See the examples and function arguments for the details of all options. The default settings
-#' may not be sufficient for your use case so the number of warmup samples (`stan_args = list(warmup)`) may need to
-#' be increased as may the overall number of samples. Follow the links provided by any warnings messages to diagnose
-#' issues with the MCMC fit. It is recommended to explore several of the Rt estimation approaches supported as not all
-#' of them may be suited to users own use cases. See [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867)
-#' for an example of using `estimate_infections` within the `epinow` wrapper to estimate Rt for Covid-19 in a country from
-#' the ECDC data source.
-#' @param reported_cases A data frame of confirmed cases (confirm) by date (date). confirm must be integer and date must be
-#' in date format.
-#' @param generation_time A list containing the mean, standard deviation of the mean (mean_sd),
-#' standard deviation (sd), standard deviation of the standard deviation and the maximum allowed value for the
-#' generation time (assuming a gamma distribution).
-#' @param delays A call to `delay_opts()` defining delay distributions and options. See the documentation of `delay_opts()`
-#' and the examples below for details.
-#' @param horizon Numeric, defaults to 7. Number of days into the future to forecast.
-#' @param verbose Logical, defaults to `TRUE` when used interactively and otherwise `FALSE`. Should verbose debug progress messages be printed. Corresponds to the "DEBUG" level from
-#' `futile.logger`. See `setup_logging` for more detailed logging options.
+#' Uses a non-parametric approach to reconstruct cases by date of infection
+#' from reported cases. It uses either a generative Rt model or non-parametric
+#' back calculation to estimate underlying latent infections and then maps
+#' these infections to observed cases via uncertain reporting delays and a
+#' flexible observation model. See the examples and function arguments for th
+#' details of all options. The default settings may not be sufficient for your
+#' use case so the number of warmup samples (`stan_args = list(warmup)`) may
+#' need to be increased as may the overall number of samples. Follow the links
+#' provided by any warnings messages to diagnose issues with the MCMC fit. It
+#' is recommended to explore several of the Rt estimation approaches supported
+#' as not all of them may be suited to users own use cases. See
+#' [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867)
+#' for an example of using `estimate_infections` within the `epinow` wrapper to
+#' estimate Rt for Covid-19 in a country from the ECDC data source.
+#'
+#' @param reported_cases A data frame of confirmed cases (confirm) by date
+#' (date). confirm must be integer and date must be in date format.
+#' @param generation_time A list containing the mean, standard deviation of the
+#' mean (mean_sd), standard deviation (sd), standard deviation of the standard
+#' deviation and the maximum allowed value for the generation time (assuming a
+#' gamma distribution).
+#' @param delays A call to `delay_opts()` defining delay distributions and
+#' options. See the documentation of `delay_opts()` and the examples below for
+#' details.
+#' @param horizon Numeric, defaults to 7. Number of days into the future to
+#' forecast.
+#' @param verbose Logical, defaults to `TRUE` when used interactively and
+#' otherwise `FALSE`. Should verbose debug progress messages be printed.
+#' Corresponds to the "DEBUG" level from `futile.logger`. See `setup_logging`
+#' for more detailed logging options.
 #' @export
+#' @return A list of output including: posterior samples, summarised posterior
+#' samples, data used to fit the model, and the fit object itself.
+#'
 #' @seealso epinow regional_epinow forecast_infections simulate_infections
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
@@ -29,7 +43,7 @@
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams create_clean_reported_cases
 #' @inheritParams calc_CrIs
-#' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist melt .N setDT 
+#' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist melt .N setDT
 #' @importFrom purrr transpose
 #' @importFrom lubridate days
 #' @importFrom purrr transpose
@@ -37,7 +51,9 @@
 #' @examples
 #' \donttest{
 #' # set number of cores to use
+#' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
+#'
 #' # get example case counts
 #' reported_cases <- example_confirmed[1:60]
 #'
@@ -184,6 +200,8 @@
 #' # random walk effects
 #' summary(rw, type = "parameters", params = "breakpoints")
 #' plot(rw)
+#'
+#' options(old_opts)
 #' }
 estimate_infections <- function(reported_cases,
                                 generation_time,
@@ -196,12 +214,12 @@ estimate_infections <- function(reported_cases,
                                 stan = stan_opts(),
                                 horizon = 7,
                                 CrIs = c(0.2, 0.5, 0.9),
-                                zero_threshold = 50,
+                                filter_leading_zeros = TRUE,
+                                zero_threshold = Inf,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
-  
   set_dt_single_thread()
-  
+
   # store dirty reported case data
   dirty_reported_cases <- data.table::copy(reported_cases)
 
@@ -221,6 +239,7 @@ estimate_infections <- function(reported_cases,
   # Make sure there are no missing dates and order cases
   reported_cases <- create_clean_reported_cases(
     reported_cases, horizon,
+    filter_leading_zeros = filter_leading_zeros,
     zero_threshold = zero_threshold
   )
 
@@ -416,13 +435,14 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   args$max_execution_time <- NULL
   args$future <- NULL
 
-  futile.logger::flog.debug(paste0(
-    "%s: Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains, " samples (across ", args$chains,
-    " chains each with a warm up of ", args$warmup, " iterations each) and ",
-    args$data$t, " time steps of which ", args$data$horizon, " are a forecast"
-  ),
-  id,
-  name = "EpiNow2.epinow.estimate_infections.fit"
+  futile.logger::flog.debug(
+    paste0(
+      "%s: Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains, " samples (across ", args$chains,
+      " chains each with a warm up of ", args$warmup, " iterations each) and ",
+      args$data$t, " time steps of which ", args$data$horizon, " are a forecast"
+    ),
+    id,
+    name = "EpiNow2.epinow.estimate_infections.fit"
   )
 
   if (exists("stuck_chains", args)) {
@@ -435,25 +455,26 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   fit_chain <- function(chain, stan_args, max_time, catch = FALSE) {
     stan_args$chain_id <- chain
     if (catch) {
-      fit <- tryCatch(withCallingHandlers(
-        R.utils::withTimeout(do.call(rstan::sampling, stan_args),
-          timeout = max_time,
-          onTimeout = "silent"
+      fit <- tryCatch(
+        withCallingHandlers(
+          R.utils::withTimeout(do.call(rstan::sampling, stan_args),
+            timeout = max_time,
+            onTimeout = "silent"
+          ),
+          warning = function(w) {
+            futile.logger::flog.warn("%s (chain: %s): %s - %s", id, chain, w$message, toString(w$call),
+              name = "EpiNow2.epinow.estimate_infections.fit"
+            )
+            rlang::cnd_muffle(w)
+          }
         ),
-        warning = function(w) {
-          futile.logger::flog.warn("%s (chain: %s): %s - %s", id, chain, w$message, toString(w$call),
+        error = function(e) {
+          error_text <- sprintf("%s (chain: %s): %s - %s", id, chain, e$message, toString(e$call))
+          futile.logger::flog.error(error_text,
             name = "EpiNow2.epinow.estimate_infections.fit"
           )
-          rlang::cnd_muffle(w)
+          return(NULL)
         }
-      ),
-      error = function(e) {
-        error_text <- sprintf("%s (chain: %s): %s - %s", id, chain, e$message, toString(e$call))
-        futile.logger::flog.error(error_text,
-          name = "EpiNow2.epinow.estimate_infections.fit"
-        )
-        return(NULL)
-      }
       )
     } else {
       fit <- R.utils::withTimeout(do.call(rstan::sampling, stan_args),
@@ -527,13 +548,14 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
 #' @return A stan model object
 fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
   args$method <- NULL
-  futile.logger::flog.debug(paste0(
-    "%s: Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
-    args$output_samples, " approximate posterior samples for ", args$data$t, " time steps of which ",
-    args$data$horizon, " are a forecast"
-  ),
-  id,
-  name = "EpiNow2.epinow.estimate_infections.fit"
+  futile.logger::flog.debug(
+    paste0(
+      "%s: Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
+      args$output_samples, " approximate posterior samples for ", args$data$t, " time steps of which ",
+      args$data$horizon, " are a forecast"
+    ),
+    id,
+    name = "EpiNow2.epinow.estimate_infections.fit"
   )
 
   if (exists("trials", args)) {

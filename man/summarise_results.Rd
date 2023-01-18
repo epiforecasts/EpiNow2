@@ -21,7 +21,8 @@ summarise_results(
 \item{results_dir}{An optional character string indicating the location of the results directory to extract results
 from.}
 
-\item{target_date}{A character string indicating the target date to extract results for. All regions must have results
+\item{target_date}{A character string indicating the target date to extract
+results for. All regions must have results
 for this date.}
 
 \item{region_scale}{A character string indicating the name to give the regions being summarised.}

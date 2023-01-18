@@ -3,24 +3,23 @@ vector calculate_Rt(vector infections, int seeding_time,
                     real gt_mean, real gt_sd, int max_gt,
                     int smooth) {
   vector[max_gt] gt_pmf;
-  int gt_indexes[max_gt];
   int t = num_elements(infections);
   int ot = t - seeding_time;
   vector[ot] R;
   vector[ot] sR;
   vector[ot] infectiousness = rep_vector(1e-5, ot);
   // calculate PMF of the generation time
-  for (i in 1:(max_gt)) {
-    gt_indexes[i] = max_gt - i + 1;
-  }
   if (gt_sd > 0) {
-    gt_pmf = discretised_gamma_pmf(gt_indexes, gt_mean, gt_sd, max_gt);
+    gt_pmf = discretised_gamma_pmf(gt_mean, gt_sd, max_gt) + 1e-5;
   } else {
-    gt_pmf = discretised_delta_pmf(gt_indexes);
+    gt_pmf = discretised_delta_pmf(max_gt);
   }
+  gt_pmf = reverse_mf(gt_pmf);
   // calculate Rt using Cori et al. approach
   for (s in 1:ot) {
-    infectiousness[s] += update_infectiousness(infections, gt_pmf, seeding_time, max_gt, s);
+    infectiousness[s] += update_infectiousness(
+      infections, gt_pmf, seeding_time, max_gt, s
+    );
     R[s] = infections[s + seeding_time] / infectiousness[s];
   }
   if (smooth) {

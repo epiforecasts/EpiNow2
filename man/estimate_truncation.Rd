@@ -40,11 +40,13 @@ observed data (\code{last_obs}, useful for plotting and validation), the data us
 (\code{data}) and the fit object (\code{fit}).
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Estimates a truncation distribution from multiple snapshots of the same
 data source over time. This distribution can then be used in \code{regional_epinow},
 \code{epinow}, and \code{estimate_infections} to adjust for truncated data. See \href{https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a}{here}
-for an example of using this approach on Covid-19 data in England.
+for an example of using this approach on Covid-19 data in England. The
+functionality offered by this function is now available in a more principled
+manner in the \href{https://package.epinowcast.org/}{\code{epinowcast} R package}.
 
 The model of truncation is as follows:
 \enumerate{
@@ -71,7 +73,9 @@ This approach assumes that:
 }
 \examples{
 # set number of cores to use
+old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
+
 # get example case counts
 reported_cases <- example_confirmed[1:60]
 
@@ -120,4 +124,6 @@ print(est$cmf)
 print(est$obs)
 # validation plot of observations vs estimates
 plot(est)
+
+options(old_opts)
 }
