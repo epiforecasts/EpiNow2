@@ -1,6 +1,6 @@
 #' Estimate a Secondary Observation from a Primary Observation
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' Estimates the relationship between a primary and secondary observation, for
 #' example hospital admissions and deaths or hospital admissions and bed
 #' occupancy. See `secondary_opts()` for model structure options. See parameter
@@ -24,17 +24,24 @@
 #' and `secondary` reports.
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
+#' @param priors A `data.frame` of named priors to be used in model fitting
+#' rather than the defaults supplied from other arguments. This is typically
+#' useful if wanting to inform an estimate from the posterior of another model
+#' fit.
 #' @param burn_in Integer, defaults to 14 days. The number of data points to use for
 #' estimation but not to fit to at the beginning of the time series. This must be less
 #' than the number of observations.
 #' @param verbose Logical, should model fitting progress be returned. Defaults to
 #' `interactive()`.
 #' @param ... Additional parameters to pass to `rstan::sampling`.
-#' @return A list containing: `predictions` (a data frame ordered by date with the primary,
-#' and secondary observations, and a summary of the model estimated secondary observations),
-#' `data` (a list of data used to fit the model), and `fit` (the `stanfit` object).
+#' @return A list containing: `predictions` (a data frame ordered by date with
+#' the primary, and secondary observations, and a summary of the model
+#' estimated secondary observations), `posterior` which contains a summary of
+#' the entire model posterior, `data` (a list of data used to fit the
+#' model), and `fit` (the `stanfit` object).
 #' @export
 #' @inheritParams estimate_infections
+#' @inheritParams update_secondary_args
 #' @inheritParams calc_CrIs
 #' @importFrom rstan sampling
 #' @importFrom lubridate wday
@@ -44,13 +51,10 @@
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
-#'
-#' #' # load data.table for manipulation
+#' 
+#' # load data.table for manipulation
 #' library(data.table)
-#' # load lubridate for dates
-#' library(lubridate)
-#' library(purrr)
-#'
+#' 
 #' #### Incidence data example ####
 #'
 #' # make some example secondary incidence data
@@ -59,34 +63,15 @@
 #' # Assume that only 40 percent of cases are reported
 #' cases[, scaling := 0.4]
 #' # Parameters of the assumed log normal delay distribution
-#' cases[, meanlog := 1.8][, sdlog := 0.5]
+#' cases[, logmean := 1.8][, logsd := 0.5]
 #'
-#' # apply a convolution of a log normal to a vector of observations
-#' weight_cmf <- function(x, ...) {
-#'   set.seed(x[1])
-#'   meanlog <- rnorm(1, 1.6, 0.2)
-#'   sdlog <- rnorm(1, 0.8, 0.1)
-#'   cmf <- cumsum(dlnorm(seq_along(x), meanlog, sdlog)) -
-#'     cumsum(dlnorm(0:(length(x) - 1), meanlog, sdlog))
-#'   cmf <- cmf / plnorm(length(x), meanlog, sdlog)
-#'   conv <- sum(x * rev(cmf), na.rm = TRUE)
-#'   conv <- round(conv, 0)
-#'   return(conv)
-#' }
-#' # roll over observed cases to produce a convolution
-#' cases <- cases[, .(date, primary = confirm, secondary = confirm)]
-#' cases <- cases[, secondary := frollapply(secondary, 15, weight_cmf, align = "right")]
-#' cases <- cases[!is.na(secondary)]
-#' # add a day of the week effect and scale secondary observations at 40\% of primary
-#' cases <- cases[lubridate::wday(date) == 1, secondary := round(0.5 * secondary, 0)]
-#' cases <- cases[, secondary := round(secondary * rnorm(.N, 0.4, 0.025), 0)]
-#' cases <- cases[secondary < 0, secondary := 0]
-#' cases <- cases[, secondary := map_dbl(secondary, ~ rpois(1, .))]
-#'
-#' # fit model to example data assuming only a given fraction of primary observations
-#' # become secondary observations
+#' # Simulate secondary cases
+#' cases <- simulate_secondary(cases, type = "incidence")
+#' 
+#' # fit model to example data specifying a weak prior for fraction reported
+#' # with a secondary case
 #' inc <- estimate_secondary(cases[1:60],
-#'   obs = obs_opts(scale = list(mean = 0.2, sd = 0.2))
+#'   obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE)
 #' )
 #' plot(inc, primary = TRUE)
 #'
@@ -98,38 +83,21 @@
 #'
 #' # make some example prevalence data
 #' cases <- example_confirmed
-#' cases <- as.data.table(cases)
-#' cases <- cases[, .(date,
-#'   primary = confirm,
-#'   scaled_primary = confirm * rnorm(.N, 0.4, 0.05)
-#' )]
-#' cases$secondary <- 0
-#' cases$secondary[1] <- as.integer(cases$scaled_primary[1])
-#' for (i in 2:nrow(cases)) {
-#'   meanlog <- rnorm(1, 1.6, 0.1)
-#'   sdlog <- rnorm(1, 0.8, 0.05)
-#'   cmf <- cumsum(dlnorm(1:min(i - 1, 20), meanlog, sdlog)) -
-#'     cumsum(dlnorm(0:min(19, i - 2), meanlog, sdlog))
-#'   cmf <- cmf / plnorm(min(i - 1, 20), meanlog, sdlog)
-#'   reducing_cases <- sum(cases$scaled_primary[(i - 1):max(1, i - 20)] * cmf)
-#'   reducing_cases <- ifelse(cases$secondary[i - 1] < reducing_cases,
-#'     cases$secondary[i - 1], reducing_cases
-#'   )
-#'   cases$secondary[i] <- as.integer(
-#'     cases$secondary[i - 1] + cases$scaled_primary[i] - reducing_cases
-#'   )
-#'   cases$secondary[i] <- ifelse(cases$secondary[i] < 0, 0,
-#'     cases$secondary[i]
-#'   )
-#' }
-#' cases <- cases[, secondary := map_dbl(secondary, ~ rpois(1, .))]
+#' cases <- as.data.table(cases)[, primary := confirm]
+#' # Assume that only 30 percent of cases are reported
+#' cases[, scaling := 0.3]
+#' # Parameters of the assumed log normal delay distribution
+#' cases[, meanlog := 1.6][, sdlog := 0.8]
+#'
+#' # Simulate secondary cases
+#' cases <- simulate_secondary(cases, type = "prevalence")
 #'
 #' # fit model to example prevalence data
 #' prev <- estimate_secondary(cases[1:100],
 #'   secondary = secondary_opts(type = "prevalence"),
 #'   obs = obs_opts(
 #'     week_effect = FALSE,
-#'     scale = list(mean = 0.3, sd = 0.1)
+#'     scale = list(mean = 0.4, sd = 0.1)
 #'   )
 #' )
 #' plot(prev, primary = TRUE)
@@ -152,6 +120,7 @@ estimate_secondary <- function(reports,
                                obs = obs_opts(),
                                burn_in = 14,
                                CrIs = c(0.2, 0.5, 0.9),
+                               priors = NULL,
                                model = NULL,
                                verbose = interactive(),
                                ...) {
@@ -178,6 +147,9 @@ estimate_secondary <- function(reports,
   # observation model data
   data <- c(data, create_obs_model(obs, dates = reports$date))
 
+  # update data to use specified priors rather than defaults
+  data <- update_secondary_args(data, priors = priors, verbose = verbose)
+
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(
     c(data, list(estimate_r = 0, fixed = 1, bp_n = 0))
@@ -197,7 +169,13 @@ estimate_secondary <- function(reports,
   out$predictions <- extract_stan_param(fit, "sim_secondary", CrIs = CrIs)
   out$predictions <- out$predictions[, lapply(.SD, round, 1)]
   out$predictions <- out$predictions[, date := reports[(burn_in + 1):.N]$date]
-  out$predictions <- data.table::merge.data.table(reports, out$predictions, all = TRUE, by = "date")
+  out$predictions <- data.table::merge.data.table(
+    reports, out$predictions, all = TRUE, by = "date"
+  )
+  out$posterior <- extract_stan_param(
+    fit,
+    CrIs = CrIs
+  )
   out$data <- data
   out$fit <- fit
   class(out) <- c("estimate_secondary", class(out))
@@ -206,7 +184,7 @@ estimate_secondary <- function(reports,
 
 #' Secondary Reports Options
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' Returns a list of options defining the secondary model used in `estimate_secondary()`.
 #' This model is a combination of a convolution of previously observed primary reports
 #' combined with current primary reports (either additive or subtractive). This model
@@ -258,6 +236,67 @@ secondary_opts <- function(type = "incidence", ...) {
     )
   }
   data <- update_list(data, list(...))
+  return(data)
+}
+
+#' Update estimate_secondary default priors
+#'
+#' @description `r lifecycle::badge("stable")`
+#' This functions allows the user to more easily specify data driven or model
+#' based priors for `estimate_secondary()` from example from previous model fits
+#' using a `data.frame` to overwrite other default settings. Note that default
+#' settings are still required.
+#' @param data A list of data and arguments as returned by `create_stan_data()`.
+#' @param priors A `data.frame` of named priors to be used in model fitting
+#' rather than the defaults supplied from other arguments. This is typically
+#' useful if wanting to inform a estimate from the posterior of another model
+#' fit. Priors that are currently use to update the defaults are the scaling
+#' fraction ("frac_obs"), the mean delay ("delay_mean"), and standard deviation
+#' of the delay ("delay_sd"). The `data.frame` should have the following
+#' variables: `variable`, `mean`, and `sd`.
+#' @return A list as produced by `create_stan_data()`.
+#' @inheritParams create_stan_args
+#' @importFrom data.table as.data.table
+#' @examples
+#' priors <- data.frame(variable = "frac_obs", mean = 3, sd = 1)
+#' data <- list(obs_scale_mean = 4, obs_scale_sd = 3)
+#' update_secondary_args(data, priors)
+update_secondary_args <- function(data, priors, verbose = TRUE) {
+  priors <- data.table::as.data.table(priors)
+  if (!missing(priors)) {
+    if (!is.null(priors) && nrow(priors) > 0) {
+      if (verbose) {
+        message(
+          "Replacing specified priors with those from the passed in prior dataframe" # nolint
+        )
+      }
+      # replace scaling if present in the prior
+      scale <- priors[grepl("frac_obs", variable)]
+      if (nrow(scale) > 0) {
+        data$obs_scale_mean <- as.array(signif(scale$mean, 3))
+        data$obs_scale_sd <- as.array(signif(scale$sd, 3))
+      }
+      # replace delay parameters if present
+      delay_mean <- priors[grepl("delay_mean", variable)]
+      delay_sd <- priors[grepl("delay_sd", variable)]
+      if (nrow(delay_mean) > 0) {
+        if (is.null(data$delay_mean_mean)) {
+         warning(
+           "Cannot replace delay distribution parameters as no default has been set" # nolint
+          )
+        }
+        data$delay_mean_mean <- as.array(signif(delay_mean$mean, 3))
+        data$delay_mean_sd <- as.array(signif(delay_mean$sd, 3))
+        data$delay_sd_mean <- as.array(signif(delay_sd$mean, 3))
+        data$delay_sd_sd <- as.array(signif(delay_sd$sd, 3))
+      }
+      phi <- priors[grepl("rep_phi", variable)]
+      if (nrow(phi) > 0) {
+        data$phi_mean <- signif(phi$mean, 3)
+        data$phi_sd <- signif(phi$sd, 3)
+      }
+    }
+  }
   return(data)
 }
 
@@ -326,6 +365,107 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
   return(plot)
+}
+
+#' Simulate a secondary observation
+#'
+#' @param data A data frame containing the `date` of report and `primary`
+#' cases as a numeric vector.
+#'
+#' @param family Character string defining the observation model. Options are
+#' Negative binomial ("negbin"), the default, Poisson ("poisson"), and "none"
+#' meaning the expectation is returned.
+#'
+#' @param delay_max Integer, defaulting to 30 days. The maximum delay used in
+#' the convolution model.
+#'
+#' @param ... Additional parameters to pass to the observation model (i.e
+#'  `rnbinom` or `rpois`).
+#'
+#' @return A data frame containing simulated data in the format required by
+#' [estimate_secondary()].
+#'
+#' @seealso estimate_secondary
+#' @inheritParams secondary_opts
+#' @importFrom data.table as.data.table copy shift
+#' @importFrom purrr pmap_dbl
+#' @export
+#' @examples
+#' # load data.table for manipulation
+#' library(data.table)
+#'
+#' #### Incidence data example ####
+#'
+#' # make some example secondary incidence data
+#' cases <- example_confirmed
+#' cases <- as.data.table(cases)[, primary := confirm]
+#'
+#' # Assume that only 40 percent of cases are reported
+#' cases[, scaling := 0.4]
+#'
+#' # Parameters of the assumed log normal delay distribution
+#' cases[, meanlog := 1.8][, sdlog := 0.5]
+#'
+#' # Simulate secondary cases
+#' cases <- simulate_secondary(cases, type = "incidence")
+#' cases
+#' #### Prevalence data example ####
+#'
+#' # make some example prevalence data
+#' cases <- example_confirmed
+#' cases <- as.data.table(cases)[, primary := confirm]
+#'
+#' # Assume that only 30 percent of cases are reported
+#' cases[, scaling := 0.3]
+#'
+#' # Parameters of the assumed log normal delay distribution
+#' cases[, meanlog := 1.6][, sdlog := 0.8]
+#'
+#' # Simulate secondary cases
+#' cases <- simulate_secondary(cases, type = "prevalence")
+#' cases
+simulate_secondary <- function(data, type = "incidence", family = "poisson",
+                               delay_max = 30, ...) {
+  type <- match.arg(type, choices = c("incidence", "prevalence"))
+  family <- match.arg(family, choices = c("none", "poisson", "negbin"))
+  data <- data.table::as.data.table(data)
+  data <- data.table::copy(data)
+  data <- data[, index := 1:.N]
+  # apply scaling
+  data <- data[, scaled := scaling * primary]
+  # add convolution
+  data <- data[,
+    conv := purrr::pmap_dbl(list(i = index, m = meanlog, s = sdlog),
+     function(i, m, s) {
+       discretised_lognormal_pmf_conv(
+         scaled[max(1, i - delay_max):i], meanlog = m, sdlog = s
+        )
+     })]
+  # build model
+  if (type == "incidence") {
+    data <- data[, secondary := conv]
+  } else if (type == "prevalence") {
+    data <- data[1, secondary := scaled]
+    for (i in 2:nrow(data)) {
+      index <-
+        data[c(i - 1, i)][, secondary := shift(secondary, 1) - conv]
+      index <- index[secondary < 0, secondary := 0]
+      data[i, ] <- index[2][, secondary := secondary + scaled]
+    }
+  }
+  # check secondary is greater that zero
+  data <- data[secondary < 0, secondary := 0]
+  data <- data[!is.na(secondary)]
+  # apply observation model
+  if (family == "poisson") {
+    data <- data[, secondary := purrr::map_dbl(secondary, ~ rpois(1, .))]
+  } else if (family == "negbin") {
+    data <- data[, secondary := purrr::map_dbl(
+      secondary, ~ rnbinom(1, mu = .), ...)
+    ]
+  }
+  data <- data[, secondary := as.integer(secondary)]
+  return(data[])
 }
 
 #' Forecast Secondary Observations Given a Fit from estimate_secondary
