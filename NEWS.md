@@ -11,7 +11,8 @@ This is a maintenance release focussing on bug fixes and package infrastructure 
 * Remove legacy use of `pkgnet` for package dependency visualisation.
 * Slight edits to the model outline for `estimate_infections()`.
 * Restyled all code using `styler`.
-* Dropped dependency on `RcppParallel`. 
+* Dropped dependency on `RcppParallel`.
+* Updated `report_cases` to work with the new `delay_opts` helper function.
 
 # EpiNow2 1.3.3
 
