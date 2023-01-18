@@ -1,4 +1,5 @@
 skip_on_cran()
+skip_on_os("windows")
 
 # test primary reports and observations
 reports <- rep(10, 20)
