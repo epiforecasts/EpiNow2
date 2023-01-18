@@ -1,8 +1,10 @@
 #' Report case counts by date of report
 #'
 #' @description `r lifecycle::badge("soft-deprecated")`
-#' Convolves latent infections to reported cases via an observation model. Likely to be removed/replaced
-#' in later releases by functionality drawing on the `stan` implementation.
+#' Convolves latent infections to reported cases via an observation model.
+#' Likely to be removed/replaced in later releases by functionality drawing on
+#' the `stan` implementation.
+#' 
 #' @param case_estimates A data.table of case estimates with the following variables: date, sample, cases
 #'
 #' @param case_forecast A data.table of case forecasts with the following
@@ -14,11 +16,11 @@
 #'  `effect` (numeric scaling factor for each weekday),`day` (numeric 1 - 7
 #'  (1 = Monday and 7 = Sunday)). If not supplied then no weekly reporting
 #'  effect is assumed.
-#' 
+#'
 #' @return A list of `data.table`s. The first entry contains the following
 #' variables `sample`, `date` and `cases` with the second being summarised
 #' across samples.
-#' 
+#'
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams adjust_infection_to_report
@@ -37,20 +39,13 @@
 #'   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10
 #' )
 #'
-#' # run model
-#' out <- estimate_infections(cases,
-#'   stan = stan_opts(samples = 100),
-#'   generation_time = generation_time,
-#'   delays = delay_opts(incubation_period, reporting_delay),
-#'   rt = NULL
-#' )
-#'
+#' # Instead of running them model we use example 
+#' # data for speed in this example.
+#' cases <- cases[, cases := as.integer(confirm)]
+#' cases <- cases[, confirm := NULL][, sample := 1]
+#' 
 #' reported_cases <- report_cases(
-#'   case_estimates =
-#'     out$samples[variable == "infections"][
-#'       ,
-#'       cases := as.integer(value)
-#'     ][, value := NULL],
+#'   case_estimates = cases,
 #'   delays = delay_opts(incubation_period, reporting_delay),
 #'   type = "sample"
 #' )
@@ -66,13 +61,13 @@ report_cases <- function(case_estimates,
 
   # define delay distributions
   delay_defs <- purrr::map(
-    delays,
+    seq_along(delays$delay_mean_mean),
     ~ EpiNow2::lognorm_dist_def(
-      mean = .$mean,
-      mean_sd = .$mean_sd,
-      sd = .$sd,
-      sd_sd = .$sd_sd,
-      max_value = .$max,
+      mean = delays$delay_mean_mean[.],
+      mean_sd = delays$delay_mean_sd[.],
+      sd = delays$delay_sd_mean[.],
+      sd_sd = delays$delay_sd_sd[.],
+      max_value = delays$max_delay[.],
       samples = samples
     )
   )
