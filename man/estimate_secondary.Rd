@@ -96,11 +96,10 @@ cases <- as.data.table(cases)[, primary := confirm]
 # Assume that only 40 percent of cases are reported
 cases[, scaling := 0.4]
 # Parameters of the assumed log normal delay distribution
-cases[, logmean := 1.8][, logsd := 0.5]
+cases[, meanlog := 1.8][, sdlog := 0.5]
 
 # Simulate secondary cases
 cases <- simulate_secondary(cases, type = "incidence")
-
 # fit model to example data specifying a weak prior for fraction reported
 # with a secondary case
 inc <- estimate_secondary(cases[1:60],
