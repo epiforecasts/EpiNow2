@@ -63,11 +63,11 @@
 #' # Assume that only 40 percent of cases are reported
 #' cases[, scaling := 0.4]
 #' # Parameters of the assumed log normal delay distribution
-#' cases[, logmean := 1.8][, logsd := 0.5]
+#' cases[, meanlog := 1.8][, sdlog := 0.5]
 #'
 #' # Simulate secondary cases
 #' cases <- simulate_secondary(cases, type = "incidence")
-#' 
+#
 #' # fit model to example data specifying a weak prior for fraction reported
 #' # with a secondary case
 #' inc <- estimate_secondary(cases[1:60],
@@ -246,7 +246,9 @@ secondary_opts <- function(type = "incidence", ...) {
 #' based priors for `estimate_secondary()` from example from previous model fits
 #' using a `data.frame` to overwrite other default settings. Note that default
 #' settings are still required.
+#'
 #' @param data A list of data and arguments as returned by `create_stan_data()`.
+#'
 #' @param priors A `data.frame` of named priors to be used in model fitting
 #' rather than the defaults supplied from other arguments. This is typically
 #' useful if wanting to inform a estimate from the posterior of another model
@@ -254,7 +256,10 @@ secondary_opts <- function(type = "incidence", ...) {
 #' fraction ("frac_obs"), the mean delay ("delay_mean"), and standard deviation
 #' of the delay ("delay_sd"). The `data.frame` should have the following
 #' variables: `variable`, `mean`, and `sd`.
+#'
 #' @return A list as produced by `create_stan_data()`.
+#'
+#' @export
 #' @inheritParams create_stan_args
 #' @importFrom data.table as.data.table
 #' @examples
