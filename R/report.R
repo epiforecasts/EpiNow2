@@ -4,14 +4,22 @@
 #' Convolves latent infections to reported cases via an observation model. Likely to be removed/replaced
 #' in later releases by functionality drawing on the `stan` implementation.
 #' @param case_estimates A data.table of case estimates with the following variables: date, sample, cases
-#' @param case_forecast A data.table of case forecasts with the following variables: date, sample, cases. If not supplied the
-#' default is not to incorporate forecasts.
-#' @param reporting_effect A `data.table` giving the weekly reporting effect with the following variables:
-#' `sample` (must be the same as in `nowcast`), `effect` (numeric scaling factor for each weekday), `day`
-#' (numeric 1 - 7 (1 = Monday and 7 = Sunday)). If not supplied then no weekly reporting effect is assumed.
+#'
+#' @param case_forecast A data.table of case forecasts with the following
+#' variables: date, sample, cases. If not supplied the default is not to
+#' incorporate forecasts.
+#'
+#' @param reporting_effect A `data.table` giving the weekly reporting effect
+#'  with the following variables: `sample` (must be the same as in `nowcast`),
+#'  `effect` (numeric scaling factor for each weekday),`day` (numeric 1 - 7
+#'  (1 = Monday and 7 = Sunday)). If not supplied then no weekly reporting
+#'  effect is assumed.
+#' 
+#' @return A list of `data.table`s. The first entry contains the following
+#' variables `sample`, `date` and `cases` with the second being summarised
+#' across samples.
+#' 
 #' @export
-#' @return A list of `data.table`s. The first entry contains the following variables `sample`, `date` and `cases` with the second
-#' being summarised across samples.
 #' @inheritParams estimate_infections
 #' @inheritParams adjust_infection_to_report
 #' @importFrom data.table data.table rbindlist
@@ -28,10 +36,10 @@
 #'   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
 #'   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10
 #' )
-#' 
+#'
 #' # run model
 #' out <- estimate_infections(cases,
-#'   stan = stan_opts(samples = 100)
+#'   stan = stan_opts(samples = 100),
 #'   generation_time = generation_time,
 #'   delays = delay_opts(incubation_period, reporting_delay),
 #'   rt = NULL
