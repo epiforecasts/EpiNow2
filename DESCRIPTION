@@ -100,7 +100,7 @@ Imports:
     progressr,
     purrr,
     R.utils (>= 2.0.0),
-    Rcpp (>= 0.12.0),
+    Rcpp (>= 0.12.0), 
     rlang (>= 0.4.7),
     rstan (>= 2.21.1),
     rstantools (>= 2.2.0),

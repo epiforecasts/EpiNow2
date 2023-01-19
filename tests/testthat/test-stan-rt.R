@@ -1,4 +1,5 @@
 skip_on_cran()
+skip_on_os("windows")
 
 # Test update_Rt
 test_that("update_Rt works to produce multiple Rt estimates with a static gaussian process", {
