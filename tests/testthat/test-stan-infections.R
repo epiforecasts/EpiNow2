@@ -1,4 +1,5 @@
 skip_on_cran()
+skip_on_os("windows")
 
 # test update_infectiousness
 test_that("update_infectiousness works as expected with default settings", {

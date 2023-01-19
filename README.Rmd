@@ -59,7 +59,7 @@ Install the stable development version of the package with:
 install.packages("EpiNow2", repos = "https://epiforecasts.r-universe.dev")
 ```
 
-Install the unstable development version of the package with (few users should need to do this): 
+Install the unstable development version of the package with (few users should need to do this):
 
 ```{r, eval = FALSE}
 remotes::install_github("epiforecasts/EpiNow2")
@@ -96,28 +96,28 @@ If data was not available we could instead make an informed estimate of the like
 
 ```{r}
 reporting_delay <- list(
-  mean = convert_to_logmean(2, 1), mean_sd = 0.1,
-  sd = convert_to_logsd(2, 1), sd_sd = 0.1,
+  mean = convert_to_logmean(2, 1), mean_sd = 0.05,
+  sd = convert_to_logsd(2, 1), sd_sd = 0.05,
   max = 10
 )
 ```
 
-Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/main/data-raw) for the code that generates these estimates). Note that these distributions may not be applicable for your use case. 
+Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/main/data-raw) for the code that generates these estimates). Note that these distributions may not be applicable for your use case.
 
 ```{r}
 generation_time <- get_generation_time(
-  disease = "SARS-CoV-2", source = "ganyani"
+  disease = "SARS-CoV-2", source = "ganyani", max = 10
 )
 incubation_period <- get_incubation_period(
-  disease = "SARS-CoV-2", source = "lauer"
+  disease = "SARS-CoV-2", source = "lauer", max = 10
 )
 ```
 
 ### [epinow()](https://epiforecasts.io/EpiNow2/reference/epinow.html) 
 
-This function represents the core functionality of the package and includes results reporting, plotting and optional saving. It requires a data frame of cases by date of report and the distributions defined above. 
+This function represents the core functionality of the package and includes results reporting, plotting and optional saving. It requires a data frame of cases by date of report and the distributions defined above.
 
-Load example case data from `{EpiNow2}`. 
+Load example case data from `{EpiNow2}`.
 
 ```{r}
 reported_cases <- example_confirmed[1:60]
@@ -132,7 +132,7 @@ estimates <- epinow(
   generation_time = generation_time,
   delays = delay_opts(incubation_period, reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-  stan = stan_opts(cores = 4),
+  stan = stan_opts(cores = 4, control = list(adapt_delta = 0.99)),
   verbose = interactive()
 )
 names(estimates)
