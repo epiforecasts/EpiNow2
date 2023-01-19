@@ -6,6 +6,13 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 
 ## Package
 
+## Breaking changes
+
+* To enable enhance functionality `trunc_opts()` now takes a single argument (`dist`) which defines the truncation delay rather than a arbitary list of arguments (which was previously used to define the distribution.
+
+## Other changes
+
+
 * Update the GitHub Action files to new versions.
 * Switched to using `seq_along()` rather than `1:length()`.
 * Fixed a broken example in the documentation for `regional_runtimes()`.
