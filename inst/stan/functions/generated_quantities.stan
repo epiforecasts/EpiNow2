@@ -14,7 +14,6 @@ vector calculate_Rt(vector infections, int seeding_time,
   } else {
     gt_pmf = discretised_delta_pmf(max_gt);
   }
-  gt_pmf = reverse_mf(gt_pmf);
   // calculate Rt using Cori et al. approach
   for (s in 1:ot) {
     infectiousness[s] += update_infectiousness(
