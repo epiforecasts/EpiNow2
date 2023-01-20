@@ -10,11 +10,11 @@
 #'
 #' @param model A compiled stan model as returned by `rstan::stan_model`.
 #'
-#' @param R A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
-#'  contained in \code{estimates}, except elements set to NA. If it is longer than the time series
-#'  of reproduction numbers contained in \code{estimates}, the values going beyond the length of
-#'  estimated reproduction numbers are taken as forecast. Alternatively accepts a data.frame containing
-#'  at least `date` and `value` (integer) variables and optionally `sample`.
+#' @param R A numeric vector of reproduction numbers; these will overwrite the
+#' reproduction numbers contained in \code{estimates}, except elements set to
+#' NA. Alternatively accepts a data.frame containing at least `date` and `value`
+#' (integer) variables and optionally `sample`. More (or fewer) days than in
+#' the original fit can be simulated.
 #'
 #' @param samples Numeric, number of posterior samples to simulate from. The
 #' default is to use all samples in the `estimates` input.
@@ -22,7 +22,7 @@
 #' @param batch_size Numeric, defaults to 10. Size of batches in which to
 #' simulate. May decrease run times due to reduced IO costs but this is still
 #' being evaluated. If set to NULL then al simulations are done at once.
-#' 
+#'
 #' @param verbose Logical defaults to `interactive()`. Should a progress bar
 #' (from `progressr`) be shown.
 #' @importFrom rstan extract sampling
@@ -133,7 +133,9 @@ simulate_infections <- function(estimates,
       R_mat <- matrix(rep(R, each = samples),
         ncol = length(R), byrow = FALSE
       )
-      draws$R[!is.na(R_mat)] <- R_mat[!is.na(R_mat)]
+      orig_R <- draws$R[1:samples, ]
+      draws$R <- R_mat
+      draws$R[is.na(R_mat)] <- orig_R[is.na(R_mat)]
       draws$R <- matrix(draws$R, ncol = length(R))
     }
   }

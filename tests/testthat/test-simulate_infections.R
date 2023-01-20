@@ -28,31 +28,42 @@ test_that("simulate_infections works to simulate a passed in estimate_infections
 })
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object with an adjusted Rt", {
-  R <- c(rep(NA_real_, 40), rep(0.5, 17))
+  R <- c(rep(NA_real_, 40), rep(0.5, 9))
   sims <- simulate_infections(out, R)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
+  expect_equal(tail(sims$summarised[variable == "R"]$median, 9), rep(0.5, 9))
 })
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object with a short adjusted Rt", {
   R <- c(rep(NA_real_, 40), rep(0.5, 10))
   sims <- simulate_infections(out, R)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
+  expect_equal(tail(sims$summarised[variable == "R"]$median, 9), rep(0.5, 9))
 })
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object with a long adjusted Rt", {
   R <- c(rep(NA_real_, 40), rep(1.2, 15), rep(0.8, 15))
   sims <- simulate_infections(out, R)
+  sims10 <- simulate_infections(out, R, samples = 10)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
+  expect_equal(tail(sims$summarised[variable == "R"]$median, 30), R[41:70])
+})
+
+test_that("simulate infections can be run with a limited number of samples", {
+  R <- c(rep(NA_real_, 40), rep(1.2, 15), rep(0.8, 15))
+  sims <- simulate_infections(out, R, samples = 10)
+  expect_equal(names(sims), c("samples", "summarised", "observations"))
+  expect_equal(tail(sims$summarised[variable == "R"]$median, 30), R[41:70])
+  expect_equal(max(sims$samples$sample), 10)
 })
 
 test_that("simulate infections fails as expected", {
   expect_error(simulate_infections())
-  expect_error(simualate_infections(out, R = rep(1, 10)))
   expect_error(simulate_infections(out[-"fit"]))
 })
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object with an adjusted Rt in data frame", {
-  R <- c(rep(NA_real_, 32), rep(0.5, 17))
+  R <- c(rep(1.4, 32), rep(0.5, 17))
   R_dt <- data.frame(date = summary(out, type = "parameters", param = "R")$date, value = R)
   sims_dt <- simulate_infections(out, R_dt)
   expect_equal(names(sims_dt), c("samples", "summarised", "observations"))
