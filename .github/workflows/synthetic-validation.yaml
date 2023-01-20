@@ -16,7 +16,6 @@ jobs:
   synthetic-valiation:
     runs-on: ubuntu-latest
     env:
-      RSPM: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@master
