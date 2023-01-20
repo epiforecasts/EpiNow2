@@ -12,8 +12,7 @@ downloads](http://cranlogs.r-pkg.org/badges/grand-total/EpiNow2?color=ff69b4)](h
 license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epiforecasts/EpiNow2/blob/main/LICENSE.md/)
 [![GitHub
 contributors](https://img.shields.io/github/contributors/epiforecasts/EpiNow2)](https://github.com/epiforecasts/EpiNow2/graphs/contributors)
-[![PRs
-Welcome](https://img.shields.io/badge/PRs-welcome-yellow.svg)](https://makeapullrequest.com/)
+[![universe](https://epiforecasts.r-universe.dev/badges/EpiNow2)](https://epiforecasts.r-universe.dev/ui#package:EpiNow2)
 [![GitHub
 commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.34.svg?color=orange)](https://GitHub.com/epiforecasts/EpiNow2/commit/main/)
 [![DOI](https://zenodo.org/badge/272995211.svg)](https://zenodo.org/badge/latestdoi/272995211)
