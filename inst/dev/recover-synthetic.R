@@ -27,10 +27,10 @@ init <- estimate_infections(example_confirmed[1:100],
 
 # Rt scenario
 R <- c(
-  rep(2, 20), rep(0.5, 10), rep(1, 10), 1 + 0.04 * 1:10, rep(1.4, 5),
-  1.4 - 0.02 * 1:20, rep(1.4, 10), rep(0.8, 5), 0.8 + 0.02 * 1:10
+  rep(2, 40), rep(0.5, 10), rep(1, 10), 1 + 0.04 * 1:20, rep(1.4, 5),
+  1.4 - 0.02 * 1:20, rep(1.4, 10), rep(0.8, 5), 0.8 + 0.02 * 1:20
 )
-noisy_R <- R * rnorm(100, 1, 0.05)
+noisy_R <- R * rnorm(140, 1, 0.05)
 # update Rt trajectory and simulate new infections using it
 sims <- simulate_infections(init, R = noisy_R, samples = 10)
 plot(sims)
@@ -47,7 +47,7 @@ plot_rt <- function(est, R) {
   plot_estimates(
     estimate = est$summarised[variable == "R"],
     reported = data.table::data.table(
-      date = est$summarised[variable == "R"]$date,
+      date = sims$summarised[variable == "R"]$date,
       confirm = R
     ),
     obs_as_col = FALSE,
@@ -92,8 +92,8 @@ for (method in c("nuts")) {
       obs = obs_opts(scale = list(mean = 0.1, sd = 0.025)),
       horizon = 0
     )
-  # runtime ~ 5 minutes
-  make_plot(gp[[method]], sim_R[8:100], paste("gp", method, sep = "_"))
+  # runtime ~ 10 minutes
+  make_plot(gp[[method]], R, paste("gp", method, sep = "_"))
 
   # Backcalculation
   backcalc[[method]] <-
@@ -102,10 +102,9 @@ for (method in c("nuts")) {
       delays = delay_opts(incubation_period, reporting_delay),
       rt = NULL,
       stan = stanopts,
-      obs = obs_opts(scale = list(mean = 0.1, sd = 0.025)),
       horizon = 0
     )
-  # runtime ~ 9 seconds
+  # runtime ~ 15 seconds
   make_plot(backcalc[[method]], R, paste("backcalc", method, sep = "_"))
 
   # RW (weekly)
@@ -132,7 +131,7 @@ for (method in c("nuts")) {
         generation_time = generation_time,
         delays = delay_opts(incubation_period, reporting_delay),
         rt = rt_opts(
-          prior = list(mean = 2.5, sd = 0.25),
+          prior = list(mean = 2, sd = 0.25),
           rw = 1
         ),
         gp = NULL,
