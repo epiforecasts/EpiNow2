@@ -28,6 +28,9 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 * Updated examples to make use of fixed distributions to improve run-times where appropriate.
 * The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. By @sbfnk in #340.
 * Switched to `linewidth` in `plot_CrIs` rather than `size` to avoid issues with `ggplot2` 3.4.0.
+* Fixed a bug in `simulate_infections()` where passing a custom number of samples would cause the input vector of R values to be replicated in a column-wise fashion meaning that the intended R trajectory was not simulated.
+* Fixed a bug in the `estimate_infections()` deconvolution model where the generation time was not correctly being reversed.
+* Added a new CI check to perform validation against simulated data.
 
 # EpiNow2 1.3.3
 
