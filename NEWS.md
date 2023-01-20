@@ -18,6 +18,7 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 * Added test coverage for `report_cases` though note this function will likely be deprecated in future releases.
 * Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
 * Switched to `linewidth` in `plot_CrIs` rather than `size` to avoid issues with `ggplot2` 3.4.0.
+* Fixed a bug in `simulate_infections()` where passing a custom number of samples would cause the input vector of R values to be replicated in a column-wise fashion meaning that the intended R trajectory was not simulated.
 
 # EpiNow2 1.3.3
 
