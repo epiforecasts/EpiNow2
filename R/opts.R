@@ -5,12 +5,16 @@
 #' generation time can either be given as a \code{disease} and \code{source} to
 #' be passed to [get_generation_time], or as parameters of a distribution to be
 #' passed to [delay_dist].
-#' @param ... Any parameters to be passed to [delay_dist], if the generation time
-#' is given as parameters of a distribution rather than a \code{disease} and
-#' \code{source}. In this case if the \code{mean} parameter is not set a mean of
-#' 1 will be assumed, if the \code{max} parameter not set then the \code{max} will
-#' be set to 15 to ensure backwards compatibility, and if no \code{dist} parameter
-#' is given then a gamma distribution will be used for backwards compatibility.
+#' @param ... Any parameters to be passed to [delay_dist], if the generation
+#' time is given as parameters of a distribution rather than a \code{disease}
+#' and \code{source}. In this case if the \code{mean} parameter is not set a
+#' mean of 1 will be assumed, if the \code{max} parameter not set then the
+#' \code{max} will be set to 15 to ensure backwards compatibility, and if no
+#' \code{dist} parameter is given then a gamma distribution will be used for
+#' backwards compatibility. As for [delay_opts()] a list of parameters can
+#' also be supplied that describe a distribution (but unlike [delay_opts()]
+#' multiple distributions may be used (for example as output by
+#' get_generation_time()).
 #' @param max Integer, defaults to 15. Maximum generation time.
 #' @param fixed Logical, defaults to `FALSE`. Should the generation time be
 #' treated as coming from fixed (vs uncertain) distributions.
@@ -42,6 +46,11 @@ generation_time_opts <- function(..., disease, source, max = 15L,
   if (type_options > 1)  {
     stop("Generation time should be given either as distributional options  ",
          "or as disease/source, but not both.")
+  }
+
+  ## check to see if options have been passed in as a list
+  if (length(dot_options) == 1 && is.list(dot_options[[1]])) {
+    dot_options <- dot_options[[1]]
   }
 
   if (!missing(disease) && !missing(source)) { ## generation time provided as disease/source
