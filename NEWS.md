@@ -7,13 +7,12 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 ## Breaking changes
 
 * To enable enhance functionality `trunc_opts()` now takes a single argument (`dist`) which defines the truncation delay rather than a arbitary list of arguments (which was previously used to define the distribution.
-
+* Updated the handling of generation times in the renewal equation to be left truncation adjusted for the zeroth day. This more accurately the typical approach taken to estimate generation times but may slightly impact estimates vs those produced using previous versions.
 ## Features
 
 * Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
 * Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for pre-computing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
 * The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. By @sbfnk in #340.
-
 ## Package
 
 * Update the GitHub Action files to new versions.
