@@ -34,24 +34,24 @@ generated quantities {
   real r[n, t - seeding_time];
   for (i in 1:n) {
     // generate infections from Rt trace
-    vector[gt_max[1]] gt_pmf;
-    vector[delay_max_total] delay_pmf;
+    vector[gt_max[1]] gt_rev_pmf;
+    vector[delay_max_total] delay_rev_pmf;
 
-    gt_pmf = reverse_mf(discretised_pmf(
+    gt_rev_pmf = reverse_mf(discretised_pmf(
       gt_mean[i, 1], gt_sd[i, 1], gt_max[1], gt_dist[1], 1
     ));
-    delay_pmf = combine_pmfs(
+    delay_rev_pmf = combine_pmfs(
       to_vector([ 1 ]), delay_mean[i], delay_sd[i], delay_max, delay_dist,
       delay_max_total, 0, 1
     );
 
     infections[i] = to_row_vector(generate_infections(
-      to_vector(R[i]), seeding_time, gt_pmf, initial_infections[i],
+      to_vector(R[i]), seeding_time, gt_rev_pmf, initial_infections[i],
       initial_growth[i], pop, future_time
     ));
     // convolve from latent infections to mean of observations
     reports[i] = to_row_vector(convolve_to_report(
-      to_vector(infections[i]), delay_pmf, seeding_time)
+      to_vector(infections[i]), delay_rev_pmf, seeding_time)
     );
     // weekly reporting effect
     if (week_effect > 1) {

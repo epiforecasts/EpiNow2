@@ -1,8 +1,8 @@
 // calculate infectiousness (weighted sum of the generation time and infections)
 // for a single time point
-real update_infectiousness(vector infections, vector gt_pmf,
+real update_infectiousness(vector infections, vector gt_rev_pmf,
                            int seeding_time, int index){
-  int gt_max = num_elements(gt_pmf);
+  int gt_max = num_elements(gt_rev_pmf);
   // work out where to start the convolution of past infections with the
   // generation time distribution: (current_time - maximal generation time) if
   // that is >= 1, otherwise 1
@@ -13,12 +13,12 @@ real update_infectiousness(vector infections, vector gt_pmf,
   int pmf_accessed = min(gt_max, index + seeding_time - 1);
   // calculate the elements of the convolution
   real new_inf = dot_product(
-    infections[inf_start:inf_end], gt_pmf[1:pmf_accessed]
+    infections[inf_start:inf_end], tail(gt_rev_pmf, pmf_accessed)
   );
   return(new_inf);
 }
 // generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
-vector generate_infections(vector oR, int uot, vector gt_pmf,
+vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
                            real[] initial_infections, real[] initial_growth,
                            int pop, int ht) {
   // time indices and storage
@@ -43,7 +43,7 @@ vector generate_infections(vector oR, int uot, vector gt_pmf,
   }
   // iteratively update infections
   for (s in 1:ot) {
-    infectiousness[s] += update_infectiousness(infections, gt_pmf, uot, s);
+    infectiousness[s] += update_infectiousness(infections, gt_rev_pmf, uot, s);
     if (pop && s > nht) {
       exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[nht]));
       exp_adj_Rt = exp_adj_Rt > 1 ? 1 : exp_adj_Rt;

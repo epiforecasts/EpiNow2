@@ -1,6 +1,6 @@
 // calculate Rt directly from inferred infections
 vector calculate_Rt(vector infections, int seeding_time,
-                    vector gt_pmf, int smooth) {
+                    vector gt_rev_pmf, int smooth) {
   int t = num_elements(infections);
   int ot = t - seeding_time;
   vector[ot] R;
@@ -9,7 +9,7 @@ vector calculate_Rt(vector infections, int seeding_time,
   // calculate Rt using Cori et al. approach
   for (s in 1:ot) {
     infectiousness[s] += update_infectiousness(
-      infections, gt_pmf, seeding_time, s
+      infections, gt_rev_pmf, seeding_time, s
     );
     R[s] = infections[s + seeding_time] / infectiousness[s];
   }
