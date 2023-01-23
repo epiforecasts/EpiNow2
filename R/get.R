@@ -215,7 +215,8 @@ get_generation_time <- function(disease, source, max_value = 15,
 #' @export
 #' @examples
 #' get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-get_incubation_period <- function(disease, source, max_value = 15) {
+get_incubation_period <- function(disease, source, max_value = 15,
+                                  fixed = FALSE) {
   dist <- get_dist(EpiNow2::incubation_periods,
     disease = disease, source = source,
     max_value = max_value, fixed = fixed
