@@ -72,6 +72,7 @@ gp <- list()
 backcalc <- list()
 weekly_rw <- list()
 daily_rw <- list()
+gp_rw <- list()
 
 fit_daily <- FALSE
 
@@ -124,7 +125,23 @@ for (method in c("nuts")) {
   # runtime ~ 5 minutes
   make_plot(weekly_rw[[method]], R, paste("weekly_rw", method, sep = "_"))
 
-  # RW
+  # RW (every month) + stationary Guassian process
+  gp_rw[[method]] <-
+    estimate_infections(sim_cases,
+      generation_time = generation_time,
+      delays = delay_opts(incubation_period, reporting_delay),
+      rt = rt_opts(
+        prior = list(mean = 2, sd = 0.25), rw = 28, gp_on = "R0"
+      ),
+      stan = stanopts,
+      obs = obs_opts(scale = list(mean = 0.1, sd = 0.025)),
+      horizon = 0
+    )
+
+  # runtime ~ 10 minutes
+  make_plot(gp_rw[[method]], R, paste("gp_rw", method, sep = "_"))
+
+  # Daily RW
   if (fit_daily) {
     daily_rw[[method]] <-
       estimate_infections(sim_cases,
@@ -144,12 +161,13 @@ for (method in c("nuts")) {
   }
 }
 
-models <- c(gp, backcalc, weekly_rw)
+models <- c(gp, backcalc, weekly_rw, gp_rw)
 model_names <-
   c(
     sapply(seq_along(gp), function(x) paste0("gp_", names(gp)[x])),
     sapply(seq_along(backcalc), function(x) paste0("backcalc_", names(backcalc)[x])),
-    sapply(seq_along(weekly_rw), function(x) paste0("weekly_rw_", names(weekly_rw)[x]))
+    sapply(seq_along(weekly_rw), function(x) paste0("weekly_rw_", names(weekly_rw)[x])),
+    sapply(seq_along(gp_rw), function(x) paste0("gp_rw_", names(gp_rw)[x])),
   )
 
 if (fit_daily) {
