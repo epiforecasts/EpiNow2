@@ -1,6 +1,6 @@
 functions {
-#include functions/pmfs.stan
 #include functions/convolve.stan
+#include functions/pmfs.stan
 #include functions/observation_model.stan
 #include functions/secondary.stan
 }
@@ -30,13 +30,9 @@ transformed data {
   }
   if (n_fixed_delays) {
     delays_fixed_pmf = combine_pmfs(
-      to_vector([ 1 ]),
-      delay_mean_mean[fixed_delays],
-      delay_sd_mean[fixed_delays],
-      delay_max[fixed_delays],
-      delay_dist[fixed_delays],
-      delay_max_fixed,
-      0
+      to_vector([ 1 ]), delay_mean_mean[fixed_delays], 
+      delay_sd_mean[fixed_delays], delay_max[fixed_delays],
+      delay_dist[fixed_delays], delay_max_fixed, 0, 0
     );
   }
 }

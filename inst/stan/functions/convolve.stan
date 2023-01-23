@@ -46,25 +46,3 @@ vector convolve_to_report(vector infections,
   }
   return(reports);
 }
-
-void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,
-               real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd, int weight){
-    int mean_delays = num_elements(delay_mean);
-    int sd_delays = num_elements(delay_sd);
-    if (mean_delays) {
-      for (s in 1:mean_delays) {
-        if (delay_mean_sd[s] > 0) {
-          // uncertain mean
-          target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight;
-        }
-      }
-    }
-    if (sd_delays) {
-      for (s in 1:sd_delays) {
-        if (delay_sd_sd[s] > 0) {
-          // uncertain sd
-          target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight;
-        }
-     }
-  }
-}

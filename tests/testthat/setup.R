@@ -1,6 +1,6 @@
 if (identical(Sys.getenv("NOT_CRAN"), "true")) {
   files <- c(
-    "pmfs.stan", "convolve.stan", "observation_model.stan", "secondary.stan",
+    "convolve.stan", "pmfs.stan", "observation_model.stan", "secondary.stan",
     "rt.stan", "infections.stan"
   )
   if (!(tolower(Sys.info()[["sysname"]]) %in% "windows")) {
