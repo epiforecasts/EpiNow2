@@ -31,25 +31,24 @@ generated quantities {
     vector[t] secondary;
     vector[delay_max_total] delay_pmf;
     delay_pmf = combine_pmfs(
-      to_vector([ 1 ]),
-      delay_mean[i],
-      delay_sd[i],
-      delay_max,
-      delay_dist,
-      delay_max_total,
-      0
+      to_vector([ 1 ]), delay_mean[i], delay_sd[i], delay_max, delay_dist, 
+      delay_max_total, 0, 1
     );
 
     // calculate secondary reports from primary
     secondary =
-       calculate_secondary(to_vector(primary[i]), obs, frac_obs[i], delay_pmf, cumulative,
-                           historic, primary_hist_additive,
-                           current, primary_current_additive, t - h + 1);
+       calculate_secondary(
+        to_vector(primary[i]), obs, frac_obs[i], delay_pmf, cumulative,
+        historic, primary_hist_additive, current, primary_current_additive,
+        t - h + 1
+      );
     // weekly reporting effect
     if (week_effect > 1) {
       secondary = day_of_week_effect(secondary, day_of_week, to_vector(day_of_week_simplex[i]));
     }
     // simulate secondary reports
-    sim_secondary[i] = report_rng(tail(secondary, all_dates ? t : h), rep_phi[i], model_type);
+    sim_secondary[i] = report_rng(
+      tail(secondary, all_dates ? t : h), rep_phi[i], model_type
+    );
   }
 }

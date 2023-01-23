@@ -28,9 +28,9 @@ vector truncate(vector reports, vector trunc_cmf, int reconstruct) {
   int first_t = t - trunc_max + 1;
   // Apply cdf of truncation delay to truncation max last entries in reports
   if (reconstruct) {
-    trunc_reports[first_t:t] = trunc_reports[first_t:t] ./ reverse_mf(trunc_cmf);
+    trunc_reports[first_t:t] = trunc_reports[first_t:t] ./ trunc_cmf;
   }else{
-    trunc_reports[first_t:t] = trunc_reports[first_t:t] .* reverse_mf(trunc_cmf);
+    trunc_reports[first_t:t] = trunc_reports[first_t:t] .* trunc_cmf;
   }
   return(trunc_reports);
 }

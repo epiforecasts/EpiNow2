@@ -96,18 +96,27 @@ transformed parameters {
   if (estimate_r) {
     // via Rt
     vector[gt_max[1]] gt_pmf;
-    gt_pmf = combine_pmfs(gt_fixed_pmf, gt_mean, gt_sd, gt_max, gt_dist, gt_max[1], 1);
-    R = update_Rt(ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary);
-    infections = generate_infections(R, seeding_time, gt_pmf, initial_infections, initial_growth, pop, future_time);
+    gt_pmf = combine_pmfs(
+      gt_fixed_pmf, gt_mean, gt_sd, gt_max, gt_dist, gt_max[1], 1, 1
+    );
+    R = update_Rt(
+      ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary
+    );
+    infections = generate_infections(
+      R, seeding_time, gt_pmf, initial_infections, initial_growth, pop,
+      future_time
+    );
   } else {
     // via deconvolution
-    infections = deconvolve_infections(shifted_cases, noise, fixed, backcalc_prior);
+    infections = deconvolve_infections(
+      shifted_cases, noise, fixed, backcalc_prior
+    );
   }
   // convolve from latent infections to mean of observations
   {
     vector[delay_max_total] delay_pmf;
     delay_pmf = combine_pmfs(
-      delays_fixed_pmf, delay_mean, delay_sd, delay_max, delay_dist, delay_max_total, 0
+      delays_fixed_pmf, delay_mean, delay_sd, delay_max, delay_dist, delay_max_total, 0, 1
     );
     reports = convolve_to_report(infections, delay_pmf, seeding_time);
   }
@@ -122,9 +131,9 @@ transformed parameters {
  // truncate near time cases to observed reports
  if (truncation) {
    vector[trunc_max[1]] trunc_cmf;
-   trunc_cmf = cumulative_sum(combine_pmfs(
-     trunc_fixed_pmf, trunc_mean, trunc_sd, trunc_max, trunc_dist, trunc_max[1], 0
-   ));
+   trunc_cmf = reverse_mf(cumulative_sum(combine_pmfs(
+     trunc_fixed_pmf, trunc_mean, trunc_sd, trunc_max, trunc_dist, trunc_max[1], 0, 0
+   )));
    obs_reports = truncate(reports[1:ot], trunc_cmf, 0);
  } else {
    obs_reports = reports[1:ot];
@@ -183,7 +192,6 @@ generated quantities {
     // estimate growth from estimated Rt
     real set_gt_mean = (gt_mean_sd[1] > 0 ? gt_mean[1] : gt_mean_mean[1]);
     real set_gt_sd = (gt_sd_sd [1]> 0 ? gt_sd[1] : gt_sd_mean[1]);
-    vector[gt_max[1]] gt_pmf = combine_pmfs(gt_fixed_pmf, gt_mean, gt_sd, gt_max, gt_dist, gt_max[1], 1);
     r = R_to_growth(R, set_gt_mean, set_gt_sd);
   } else {
     // sample generation time
@@ -193,7 +201,10 @@ generated quantities {
 
     gt_mean_sample[1] = (gt_mean_sd[1] > 0 ? normal_rng(gt_mean_mean[1], gt_mean_sd[1]) : gt_mean_mean[1]);
     gt_sd_sample[1] = (gt_sd_sd[1] > 0 ? normal_rng(gt_sd_mean[1], gt_sd_sd[1]) : gt_sd_mean[1]);
-    gt_pmf = combine_pmfs(gt_fixed_pmf, gt_mean_sample, gt_sd_sample, gt_max, gt_dist, gt_max[1], 1);
+    gt_pmf = combine_pmfs(
+      gt_fixed_pmf, gt_mean_sample, gt_sd_sample, gt_max, gt_dist, gt_max[1],
+      1, 1
+    );
 
     // calculate Rt using infections and generation time
     gen_R = calculate_Rt(
