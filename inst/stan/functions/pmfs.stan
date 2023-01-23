@@ -4,19 +4,20 @@
 // Adapted from https://github.com/epiforecasts/epinowcast
 // @author Sam Abbott
 // @author Adrian Lison
-vector discretised_pmf(real mu, real sigma, int n, int dist, int truncate) {
+vector discretised_pmf(real mu, real sigma, int n, int dist,
+                       int left_truncate) {
   vector[n] pmf;
   if (sigma > 0) {
     vector[n + 1] upper_cdf;
     if (dist == 0) {
       for (i in 1:(n + 1)) {
-        upper_cdf[i] = lognormal_cdf(i - 1 + truncate, mu, sigma);
+        upper_cdf[i] = lognormal_cdf(i - 1 + left_truncate, mu, sigma);
       }
     } else if (dist == 1) {
       real alpha = mu^2 / sigma^2;
       real beta = mu / sigma^2;
       for (i in 1:(n + 1)) {
-        upper_cdf[i] = gamma_cdf(i - 1 + truncate, alpha, beta);
+        upper_cdf[i] = gamma_cdf(i - 1 + left_truncate, alpha, beta);
       }
     } else {
       reject("Unknown distribution function provided.");
