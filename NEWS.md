@@ -27,6 +27,7 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 * Added test coverage for `report_cases` though note this function will likely be deprecated in future releases.
 * Switched to `linewidth` in `plot_CrIs` rather than `size` to avoid issues with `ggplot2` 3.4.0.
 * Set up validation against synthetic data to run as a CI check.
+* Added tests for internal stan convolution functions.
 
 ## Documentation
 
