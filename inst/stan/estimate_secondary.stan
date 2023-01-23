@@ -53,12 +53,12 @@ transformed parameters {
   // calculate secondary reports from primary
 
   {
-    vector[delay_max_total] delay_pmf;
-    delay_pmf = combine_pmfs(
+    vector[delay_max_total] delay_rev_pmf;
+    delay_rev_pmf = combine_pmfs(
       delays_fixed_pmf, delay_mean, delay_sd, delay_max, delay_dist, delay_max_total, 0, 1
     );
     secondary = calculate_secondary(
-      primary, obs, frac_obs, delay_pmf, cumulative, historic,
+      primary, obs, frac_obs, delay_rev_pmf, cumulative, historic,
       primary_hist_additive, current, primary_current_additive, t
     );
   }
@@ -69,11 +69,11 @@ transformed parameters {
  }
  // truncate near time cases to observed reports
  if (truncation) {
-   vector[trunc_max[1]] trunc_cmf;
-   trunc_cmf = reverse_mf(cumulative_sum(combine_pmfs(
+   vector[trunc_max[1]] trunc_rev_cmf;
+   trunc_rev_cmf = reverse_mf(cumulative_sum(combine_pmfs(
      trunc_fixed_pmf, trunc_mean, trunc_sd, trunc_max, trunc_dist, trunc_max[1], 0, 0
    )));
-   secondary = truncate(secondary, trunc_cmf, 0);
+   secondary = truncate(secondary, trunc_rev_cmf, 0);
  }
 }
 

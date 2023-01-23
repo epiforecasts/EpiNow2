@@ -32,14 +32,14 @@ vector convolve_dot_product(vector x, vector y, int len) {
 
 // convolve latent infections to reported (but still unobserved) cases
 vector convolve_to_report(vector infections,
-                          vector delay_pmf,
+                          vector delay_rev_pmf,
                           int seeding_time) {
   int t = num_elements(infections);
   vector[t - seeding_time] reports;
   vector[t] unobs_reports = infections;
-  int delays = num_elements(delay_pmf);
+  int delays = num_elements(delay_rev_pmf);
   if (delays) {
-    unobs_reports = convolve_dot_product(unobs_reports, delay_pmf, t);
+    unobs_reports = convolve_dot_product(unobs_reports, delay_rev_pmf, t);
     reports = unobs_reports[(seeding_time + 1):t];
   } else {
     reports = infections[(seeding_time + 1):t];

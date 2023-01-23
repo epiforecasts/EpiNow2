@@ -20,20 +20,20 @@ parameters {
 transformed parameters{
   matrix[trunc_max, obs_sets - 1] trunc_obs;
   real sqrt_phi = 1 / sqrt(phi);
-  vector[trunc_max] cmf = reverse_mf(cumulative_sum(
+  vector[trunc_max] rev_cmf = reverse_mf(cumulative_sum(
     discretised_pmf(logmean, logsd, trunc_max, trunc_dist, 0)
   ));
   {
   vector[t] last_obs;
   // reconstruct latest data without truncation
 
-  last_obs = truncate(to_vector(obs[, obs_sets]), cmf, 1);
+  last_obs = truncate(to_vector(obs[, obs_sets]), rev_cmf, 1);
   // apply truncation to latest dataset to map back to previous data sets and
   // add noise term
   for (i in 1:(obs_sets - 1)) {
    int end_t = t - obs_dist[i];
    int start_t = end_t - trunc_max + 1;
-   trunc_obs[, i] = truncate(last_obs[start_t:end_t], cmf, 0) + sigma;
+   trunc_obs[, i] = truncate(last_obs[start_t:end_t], rev_cmf, 0) + sigma;
    }
   }
 }
@@ -58,7 +58,7 @@ generated quantities {
   for (i in 1:obs_sets) {
     int end_t = t - obs_dist[i];
     int start_t = end_t - trunc_max + 1;
-    recon_obs[, i] = truncate(to_vector(obs[start_t:end_t, i]), cmf, 1);
+    recon_obs[, i] = truncate(to_vector(obs[start_t:end_t, i]), rev_cmf, 1);
   }
  // generate observations for comparing
   for (i in 1:(obs_sets - 1)) {
