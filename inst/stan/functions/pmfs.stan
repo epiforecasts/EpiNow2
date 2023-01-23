@@ -45,7 +45,7 @@ vector reverse_mf(vector pmf) {
 }
 
 // combined fixed/variable pmfs
-vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf_n, int[] dist, int len, int left_truncate, int reverse) {
+vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf_n, int[] dist, int len, int left_truncate, int reverse_pmf) {
   int n_fixed = num_elements(fixed_pmf);
   int n_variable = num_elements(pmf_mu);
   vector[len] pmf = rep_vector(0, len);
@@ -59,8 +59,31 @@ vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf
     variable_pmf = discretised_pmf(pmf_mu[s], pmf_sigma[s], pmf_n[s], dist[s], left_truncate);
     pmf = convolve(pmf, variable_pmf, len);
   }
-  if (reverse) {
+  if (reverse_pmf) {
     pmf = reverse_mf(pmf);
   }
   return(pmf);
 }
+
+void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,
+               real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd, int weight){
+    int mean_delays = num_elements(delay_mean);
+    int sd_delays = num_elements(delay_sd);
+    if (mean_delays) {
+      for (s in 1:mean_delays) {
+        if (delay_mean_sd[s] > 0) {
+          // uncertain mean
+          target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight;
+        }
+      }
+    }
+    if (sd_delays) {
+      for (s in 1:sd_delays) {
+        if (delay_sd_sd[s] > 0) {
+          // uncertain sd
+          target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight;
+        }
+     }
+  }
+}
+

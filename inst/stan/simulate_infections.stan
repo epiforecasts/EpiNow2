@@ -1,6 +1,6 @@
 functions {
-#include functions/pmfs.stan
 #include functions/convolve.stan
+#include functions/pmfs.stan
 #include functions/gaussian_process.stan
 #include functions/rt.stan
 #include functions/infections.stan
