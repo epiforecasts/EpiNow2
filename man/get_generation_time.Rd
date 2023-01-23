@@ -4,7 +4,7 @@
 \alias{get_generation_time}
 \title{Get a Literature Distribution for the Generation Time}
 \usage{
-get_generation_time(disease, source, max_value = 15)
+get_generation_time(disease, source, max_value = 15, fixed = FALSE)
 }
 \arguments{
 \item{disease}{A character string indicating the disease of interest.}
@@ -12,6 +12,9 @@ get_generation_time(disease, source, max_value = 15)
 \item{source}{A character string indicating the source of interest.}
 
 \item{max_value}{Numeric, the maximum value to allow. Defaults to 15 days.}
+
+\item{fixed}{Logical, defaults to \code{FALSE}. Should distributions be supplied
+as fixed values (vs with uncertainty)?}
 }
 \value{
 A list defining a distribution
