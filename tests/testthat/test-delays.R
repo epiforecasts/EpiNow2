@@ -30,9 +30,29 @@ test_that("generation times can be specified in different ways", {
     c(3, 0, 0, 0, 3)
   )
   expect_equal(
-    test_stan_data(generation_time = generation_time_opts(mean = 3, sd = 1, max = 5),
-                   params = gt_params),
+    test_stan_data(
+      generation_time = generation_time_opts(mean = 3, sd = 1, max = 5),
+      params = gt_params
+    ),
     c(3, 0, 1, 0, 5)
+  )
+  expect_equal(
+    round(test_stan_data(
+      generation_time = generation_time_opts(
+        get_generation_time(disease = "SARS-CoV-2", source = "ganyani",
+                            max = 10, fixed = TRUE)
+      ),
+      params = gt_params
+    ), digits = 2),
+    c(3.64, 0, 3.08, 0, 10)
+  )
+  expect_equal(
+    round(test_stan_data(
+      generation_time = generation_time_opts(
+        disease = "SARS-CoV-2", source = "ganyani", max = 10),
+      params = gt_params
+    ), digits = 2),
+    c(3.64, 0.71, 3.08, 0.77, 10)
   )
 })
 
