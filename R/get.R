@@ -164,18 +164,28 @@ get_regional_results <- function(regional_output,
 #' Search a data frame for a distribution and return it in the format expected
 #' by `delay_opts()` and the `generation_time` argument of `epinow` and `estimate_infections`.
 #' @param data A `data.table` in the format of `generation_times`.
+#' 
 #' @param disease A character string indicating the disease of interest.
+#' 
 #' @param source A character string indicating the source of interest.
+#' 
 #' @param max_value Numeric, the maximum value to allow. Defaults to 15 days.
+#' 
+#' @param fixed Logical, defaults to `FALSE`. Should distributions be supplied 
+#' as fixed values (vs with uncertainty)?
 #' @return A list defining a distribution
 #' @export
 #' @examples
 #' get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani")
-get_dist <- function(data, disease, source, max_value = 15) {
+get_dist <- function(data, disease, source, max_value = 15, fixed = FALSE) {
   target_disease <- disease
   target_source <- source
   data <- data[disease == target_disease][source == target_source]
   dist <- as.list(data[, .(mean, mean_sd, sd, sd_sd, max = max_value)])
+  if (fixed) {
+    dist$mean_sd <- 0
+    dist$sd_sd <- 0
+  }
   return(dist)
 }
 #'  Get a Literature Distribution for the Generation Time
@@ -187,10 +197,11 @@ get_dist <- function(data, disease, source, max_value = 15) {
 #' @export
 #' @examples
 #' get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-get_generation_time <- function(disease, source, max_value = 15) {
+get_generation_time <- function(disease, source, max_value = 15,
+                                fixed = FALSE) {
   dist <- get_dist(EpiNow2::generation_times,
     disease = disease, source = source,
-    max_value = max_value
+    max_value = max_value, fixed = fixed
   )
 
   return(dist)
@@ -207,7 +218,7 @@ get_generation_time <- function(disease, source, max_value = 15) {
 get_incubation_period <- function(disease, source, max_value = 15) {
   dist <- get_dist(EpiNow2::incubation_periods,
     disease = disease, source = source,
-    max_value = max_value
+    max_value = max_value, fixed = fixed
   )
 
   return(dist)

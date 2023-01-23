@@ -18,11 +18,11 @@ simulate_infections(
 has been done with output = "fit", or the result of
 \code{estimate_infections} with \code{return_fit} set to TRUE.}
 
-\item{R}{A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
-contained in \code{estimates}, except elements set to NA. If it is longer than the time series
-of reproduction numbers contained in \code{estimates}, the values going beyond the length of
-estimated reproduction numbers are taken as forecast. Alternatively accepts a data.frame containing
-at least \code{date} and \code{value} (integer) variables and optionally \code{sample}.}
+\item{R}{A numeric vector of reproduction numbers; these will overwrite the
+reproduction numbers contained in \code{estimates}, except elements set to
+NA. Alternatively accepts a data.frame containing at least \code{date} and \code{value}
+(integer) variables and optionally \code{sample}. More (or fewer) days than in
+the original fit can be simulated.}
 
 \item{model}{A compiled stan model as returned by \code{rstan::stan_model}.}
 
