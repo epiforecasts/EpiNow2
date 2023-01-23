@@ -51,10 +51,10 @@
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
-#' 
+#'
 #' # load data.table for manipulation
 #' library(data.table)
-#' 
+#'
 #' #### Incidence data example ####
 #'
 #' # make some example secondary incidence data

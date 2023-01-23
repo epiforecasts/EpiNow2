@@ -37,9 +37,9 @@ generated quantities {
     vector[gt_max[1]] gt_pmf;
     vector[delay_max_total] delay_pmf;
 
-    gt_pmf = discretised_pmf(
+    gt_pmf = reverse_mf(discretised_pmf(
       gt_mean[i, 1], gt_sd[i, 1], gt_max[1], gt_dist[1], 1
-    );
+    ));
     delay_pmf = combine_pmfs(
       to_vector([ 1 ]), delay_mean[i], delay_sd[i], delay_max, delay_dist,
       delay_max_total, 0, 1

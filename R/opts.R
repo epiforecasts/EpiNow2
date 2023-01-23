@@ -32,7 +32,9 @@
 #'
 #' # An uncertain gamma distributed generation time
 #' generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
-generation_time_opts <- function(..., disease, source, max = 15L, fixed = FALSE, prior_weight = NULL) {
+
+generation_time_opts <- function(..., disease, source, max = 15L,
+                                 fixed = FALSE, prior_weight = NULL) {
   dot_options <- list(...) ## options for delay_dist
   ## check consistent options are given
   type_options <- (length(dot_options) > 0) + ## distributional parameters
