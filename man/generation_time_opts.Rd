@@ -14,12 +14,16 @@ generation_time_opts(
 )
 }
 \arguments{
-\item{...}{Any parameters to be passed to \link{delay_dist}, if the generation time
-is given as parameters of a distribution rather than a \code{disease} and
-\code{source}. In this case if the \code{mean} parameter is not set a mean of
-1 will be assumed, if the \code{max} parameter not set then the \code{max} will
-be set to 15 to ensure backwards compatibility, and if no \code{dist} parameter
-is given then a gamma distribution will be used for backwards compatibility.}
+\item{...}{Any parameters to be passed to \link{delay_dist}, if the generation
+time is given as parameters of a distribution rather than a \code{disease}
+and \code{source}. In this case if the \code{mean} parameter is not set a
+mean of 1 will be assumed, if the \code{max} parameter not set then the
+\code{max} will be set to 15 to ensure backwards compatibility, and if no
+\code{dist} parameter is given then a gamma distribution will be used for
+backwards compatibility. As for \code{\link[=delay_opts]{delay_opts()}} a list of parameters can
+also be supplied that describe a distribution (but unlike \code{\link[=delay_opts]{delay_opts()}}
+multiple distributions may be used (for example as output by
+get_generation_time()).}
 
 \item{disease}{A character string indicating the disease of interest.}
 
