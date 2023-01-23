@@ -1,6 +1,6 @@
 # EpiNow2 1.3.4
 
-This is mainly a maintenance release focussing on bug fixes and package infrastructure updates along with a few quality of life improvements.
+This release focusses on bug fixes and package infrastructure updates along with a few quality of life improvements such as enabling the use of fixed delays and generation times.
 
 Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @seabbs whilst some of the development work on this release was being done.
 
