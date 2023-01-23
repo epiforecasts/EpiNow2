@@ -37,23 +37,22 @@ generated quantities {
     vector[gt_max[1]] gt_pmf;
     vector[delay_max_total] delay_pmf;
 
-    gt_pmf = discretised_pmf(gt_mean[i, 1], gt_sd[i, 1], gt_max[1], gt_dist[1], 1);
+    gt_pmf = discretised_pmf(
+      gt_mean[i, 1], gt_sd[i, 1], gt_max[1], gt_dist[1], 1
+    );
     delay_pmf = combine_pmfs(
-      to_vector([ 1 ]),
-      delay_mean[i],
-      delay_sd[i],
-      delay_max,
-      delay_dist,
-      delay_max_total,
-      0
+      to_vector([ 1 ]), delay_mean[i], delay_sd[i], delay_max, delay_dist,
+      delay_max_total, 0, 1
     );
 
-    infections[i] = to_row_vector(generate_infections(to_vector(R[i]), seeding_time,
-                                                      gt_pmf,
-                                                      initial_infections[i], initial_growth[i],
-                                                      pop, future_time));
+    infections[i] = to_row_vector(generate_infections(
+      to_vector(R[i]), seeding_time, gt_pmf, initial_infections[i],
+      initial_growth[i], pop, future_time
+    ));
     // convolve from latent infections to mean of observations
-    reports[i] = to_row_vector(convolve_to_report(to_vector(infections[i]), delay_pmf, seeding_time));
+    reports[i] = to_row_vector(convolve_to_report(
+      to_vector(infections[i]), delay_pmf, seeding_time)
+    );
     // weekly reporting effect
     if (week_effect > 1) {
       reports[i] = to_row_vector(
@@ -65,7 +64,9 @@ generated quantities {
       reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i, 1]));
     }
    // simulate reported cases
-   imputed_reports[i] = report_rng(to_vector(reports[i]), rep_phi[i], model_type);
+   imputed_reports[i] = report_rng(
+      to_vector(reports[i]), rep_phi[i], model_type
+    );
    r[i] = R_to_growth(to_vector(R[i]), gt_mean[i, 1], gt_sd[i, 1]);
   }
 }

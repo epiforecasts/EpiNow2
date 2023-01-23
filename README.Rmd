@@ -91,24 +91,22 @@ reporting_delay <- estimate_delay(
 )
 ```
 
-If data was not available we could instead make an informed estimate of the likely delay (note this is a synthetic example and not applicable to real world use cases),
+If data was not available we could instead make an informed estimate of the likely delay (*this is a synthetic example and not applicable to real world use cases and we have not included uncertainty to decreased runtimes*),
 
 ```{r}
 reporting_delay <- list(
-  mean = convert_to_logmean(2, 1), mean_sd = 0.05,
-  sd = convert_to_logsd(2, 1), sd_sd = 0.05,
-  max = 10
+  mean = convert_to_logmean(2, 1), sd = convert_to_logsd(2, 1), max = 10
 )
 ```
 
-Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/main/data-raw) for the code that generates these estimates). Note that these distributions may not be applicable for your use case.
+Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/main/data-raw) for the code that generates these estimates). *Note that these distributions may not be applicable for your use case and that we have not included uncertainty here to reduce the runtime of this example but in most settings this is not recommended.*
 
 ```{r}
 generation_time <- get_generation_time(
-  disease = "SARS-CoV-2", source = "ganyani", max = 10
+  disease = "SARS-CoV-2", source = "ganyani", max = 10, fixed = TRUE
 )
 incubation_period <- get_incubation_period(
-  disease = "SARS-CoV-2", source = "lauer", max = 10
+  disease = "SARS-CoV-2", source = "lauer", max = 10, fixed = TRUE
 )
 ```
 
@@ -128,7 +126,7 @@ Estimate cases by date of infection, the time-varying reproduction number, the r
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(
   reported_cases = reported_cases,
-  generation_time = generation_time,
+  generation_time = generation_time_opts(generation_time),
   delays = delay_opts(incubation_period, reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
   stan = stan_opts(cores = 4, control = list(adapt_delta = 0.99)),

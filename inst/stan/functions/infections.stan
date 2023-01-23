@@ -12,7 +12,9 @@ real update_infectiousness(vector infections, vector gt_pmf,
   // number of indices of the generation time to sum over (inf_end - inf_start + 1)
   int pmf_accessed = min(gt_max, index + seeding_time - 1);
   // calculate the elements of the convolution
-  real new_inf = dot_product(infections[inf_start:inf_end], reverse_mf(gt_pmf[1:pmf_accessed]));
+  real new_inf = dot_product(
+    infections[inf_start:inf_end], gt_pmf[1:pmf_accessed]
+  );
   return(new_inf);
 }
 // generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
