@@ -4,33 +4,39 @@ This is mainly a maintenance release focussing on bug fixes and package infrastr
 
 Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @seabbs whilst some of the development work on this release was being done.
 
-## Package
-
 ## Breaking changes
 
 * To enable enhance functionality `trunc_opts()` now takes a single argument (`dist`) which defines the truncation delay rather than a arbitary list of arguments (which was previously used to define the distribution.
 
-## Other changes
+## Features
 
+* Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
+* Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for pre-computing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
+* The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. By @sbfnk in #340.
+
+## Package
 
 * Update the GitHub Action files to new versions.
-* Switched to using `seq_along()` rather than `1:length()`.
+* Switched to using `seq_along()` rather than `1:length()` in all package code.
 * Fixed a broken example in the documentation for `regional_runtimes()`.
 * Add compatibility changes for the latest version of `rstan` and `rstantools`.
 * Remove legacy use of `pkgnet` for package dependency visualisation.
-* Slight edits to the model outline for `estimate_infections()`.
 * Restyled all code using `styler`.
 * Dropped dependency on `RcppParallel`.
 * Updated `report_cases` to work with the new `delay_opts` helper function.
 * Added test coverage for `report_cases` though note this function will likely be deprecated in future releases.
-* Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
-* Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for pre-computing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
-* Updated examples to make use of fixed distributions to improve run-times where appropriate.
-* The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. By @sbfnk in #340.
 * Switched to `linewidth` in `plot_CrIs` rather than `size` to avoid issues with `ggplot2` 3.4.0.
+* Set up validation against synthetic data to run as a CI check.
+
+## Documentation
+
+* Slight edits to the model outline for `estimate_infections()`.
+* Updated examples to make use of fixed distributions to improve run-times where appropriate.
+
+## Bugs
+
 * Fixed a bug in `simulate_infections()` where passing a custom number of samples would cause the input vector of R values to be replicated in a column-wise fashion meaning that the intended R trajectory was not simulated.
 * Fixed a bug in the `estimate_infections()` deconvolution model where the generation time was not correctly being reversed.
-* Added a new CI check to perform validation against simulated data.
 
 # EpiNow2 1.3.3
 
