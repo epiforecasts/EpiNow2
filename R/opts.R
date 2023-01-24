@@ -74,7 +74,9 @@ generation_time_opts <- function(..., disease, source, max = 15L,
       dot_options$dist <- "gamma"
     }
     ## set max
-    dot_options$max <- max
+    if (!("dist" %in% names(dot_options))) {
+      dot_options$max <- max
+    }
     ## set default of mean=1 for backwards compatibility
     if (!("mean" %in% names(dot_options))) {
       dot_options$mean <- 1
