@@ -13,6 +13,8 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 * Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
 * Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for pre-computing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
 * The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. By @sbfnk in #340.
+* Support for gamma distributed delays and log-normal distributed generation times. 
+
 ## Package
 
 * Update the GitHub Action files to new versions.
