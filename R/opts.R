@@ -150,8 +150,11 @@ delay_opts <- function(..., fixed = FALSE) {
 
   names(data) <- paste0("delay_", names(data))
   # Estimate the mean delay -----------------------------------------------
-  data$seeding_time <- sum(purrr::map2_dbl(
-    data$delay_mean_mean, data$delay_sd_mean, ~ exp(.x + .y^2 / 2)
+  data$seeding_time <- sum(purrr::pmap_dbl(
+    list(data$delay_mean_mean, data$delay_sd_mean, data$delay_dist),
+    function(.x, .y, .z) {
+      ifelse(.z == 0, exp(.x + .y^2 / 2), .x)
+    }
   ))
   if (data$seeding_time < 1) {
     data$seeding_time <- 1
