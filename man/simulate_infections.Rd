@@ -82,9 +82,9 @@ plot(sims)
 # with a data.frame input of samples
 R_dt <- data.frame(
   date = seq(
-     min(summary(est, type = "parameters", param = "R")$date),
-     by = "day", length.out = length(R)
-   ),
+    min(summary(est, type = "parameters", param = "R")$date),
+    by = "day", length.out = length(R)
+  ),
   value = R
 )
 sims <- simulate_infections(est, R_dt)

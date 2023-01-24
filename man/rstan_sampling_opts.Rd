@@ -19,8 +19,9 @@ rstan_sampling_opts(
 }
 \arguments{
 \item{cores}{Number of cores to use when executing the chains in parallel,
-which defaults to 1 but it is recommended to set the mc.cores option to be as
-many processors as the hardware and RAM allow (up to the number of chains).}
+which defaults to 1 but it is recommended to set the mc.cores option to be
+as many processors as the hardware and RAM allow (up to the number of
+chains).}
 
 \item{warmup}{Numeric, defaults to 250. Number of warmup samples per chain.}
 
@@ -29,34 +30,41 @@ When using multiple chains iterations per chain is samples / chains.}
 
 \item{chains}{Numeric, defaults to 4. Number of MCMC chains to use.}
 
-\item{control}{List, defaults to empty. control parameters to pass to underlying
-\code{rstan} function. By default \code{adapt_delta = 0.95} and \code{max_treedepth = 15}
-though these settings can be overwritten.}
+\item{control}{List, defaults to empty. control parameters to pass to
+underlying \code{rstan} function. By default \code{adapt_delta = 0.95} and
+\code{max_treedepth = 15} though these settings can be overwritten.}
 
-\item{save_warmup}{Logical, defaults to FALSE. Should warmup progress be saved.}
+\item{save_warmup}{Logical, defaults to FALSE. Should warmup progress be
+saved.}
 
-\item{seed}{Numeric, defaults uniform random number between 1 and 1e8. Seed of
-sampling process.}
+\item{seed}{Numeric, defaults uniform random number between 1 and 1e8. Seed
+of sampling process.}
 
-\item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in parallel
-using \code{future}. This allows users to have chains fail gracefully (i.e when combined with
-\code{max_execution_time}). Should be combined with a call to \code{future::plan}}
+\item{future}{Logical, defaults to \code{FALSE}. Should stan chains be run in
+parallel using \code{future}. This allows users to have chains fail gracefully
+(i.e when combined with \code{max_execution_time}). Should be combined with a
+call to \code{future::plan}.}
 
-\item{max_execution_time}{Numeric, defaults to Inf (seconds). If set will kill off
-processing of each chain if not finished within the specified timeout. When more than 2 chains
-finish successfully estimates will still be returned. If less than 2 chains return within the
-allowed time then estimation will fail with an informative error.}
+\item{max_execution_time}{Numeric, defaults to Inf (seconds). If set wil
+kill off processing of each chain if not finished within the specified
+timeout. When more than 2 chains finish successfully estimates will still be
+returned. If less than 2 chains return within the allowed time then
+estimation will fail with an informative error.}
 
 \item{...}{Additional parameters to pass to \code{rstan::sampling}.}
 }
 \value{
-A list of arguments to pass to \code{rstan::sampling}
+A list of arguments to pass to \code{rstan::sampling}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to
-\code{rstan::sampling}. Custom settings can be supplied which override the defaults.
+\code{rstan::sampling}. Custom settings can be supplied which override the
+defaults.
 }
 \examples{
 rstan_sampling_opts(samples = 2000)
+}
+\author{
+Sam Abbott
 }

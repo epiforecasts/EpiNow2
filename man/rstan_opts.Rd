@@ -7,7 +7,8 @@
 rstan_opts(object = NULL, samples = 2000, method = "sampling", ...)
 }
 \arguments{
-\item{object}{Stan model object. By default uses the compiled package default.}
+\item{object}{Stan model object. By default uses the compiled package
+default.}
 
 \item{samples}{Numeric, default 2000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}
@@ -23,8 +24,8 @@ A list of arguments to pass to the appropriate rstan functions.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to underlying \code{rstan}
-functions via \code{rstan_sampling_opts()} and \code{rstan_vb_opts()}.Custom settings can be supplied
-which override the defaults.
+functions via \code{rstan_sampling_opts()} and \code{rstan_vb_opts()}.Custom settings
+can be supplied which override the defaults.
 }
 \examples{
 rstan_opts(samples = 1000)
@@ -34,4 +35,7 @@ rstan_opts(method = "vb")
 }
 \seealso{
 rstan_sampling_opts rstan_vb_opts
+}
+\author{
+Sam Abbott
 }

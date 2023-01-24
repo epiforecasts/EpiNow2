@@ -8,7 +8,7 @@ delay_opts(..., fixed = FALSE)
 }
 \arguments{
 \item{...}{A list of lists specifying distributions of reporting delays.
-Each list is passed to \link{dist_spec} and so should contain parameters linked
+Each list is passed to \code{\link[=dist_spec]{dist_spec()}} and so should contain parameters linked
 to tha functions arguments. If a list is not given then it is assumed that
 no delay is present. If multiple lists are given then they are assumed to
 be independent.}
@@ -49,4 +49,6 @@ convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
 }
 \author{
 Sam Abbott
+
+Sebastian Funk
 }
