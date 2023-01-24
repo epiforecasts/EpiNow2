@@ -8,11 +8,12 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 
 * To enable enhance functionality `trunc_opts()` now takes a single argument (`dist`) which defines the truncation delay rather than a arbitary list of arguments (which was previously used to define the distribution.
 * Updated the handling of generation times in the renewal equation to be left truncation adjusted for the zeroth day. This more accurately the typical approach taken to estimate generation times but may slightly impact estimates vs those produced using previous versions.
+* The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. This may impact a small number of edge case uses with the majority being models fit using `estimate_secondary()`. By @sbfnk in #340.
+
 ## Features
 
 * Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
 * Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for pre-computing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
-* The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. By @sbfnk in #340.
 * Support for gamma distributed delays and log-normal distributed generation times.
 
 ## Package
@@ -31,7 +32,7 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 * Added tests for internal stan convolution functions.
 * Update all `get_` distribution functions to return the distribution as well as summary
  parameters.
- 
+
 ## Documentation
 
 * Slight edits to the model outline for `estimate_infections()`.
