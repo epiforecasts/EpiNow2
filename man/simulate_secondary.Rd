@@ -16,15 +16,17 @@ simulate_secondary(
 \item{data}{A data frame containing the \code{date} of report and \code{primary}
 cases as a numeric vector.}
 
-\item{type}{A character string indicating the type of observation the secondary reports
-are. Options include:
+\item{type}{A character string indicating the type of observation the
+secondary reports are. Options include:
 \itemize{
-\item "incidence": Assumes that secondary reports equal a convolution of previously
-observed primary reported cases. An example application is deaths from an infectious
-disease predicted by reported cases of that disease (or estimated infections).
-\item "prevalence": Assumes that secondary reports are cumulative and are defined by
-currently observed primary reports minus a convolution of secondary reports. An example
-application is hospital bed usage predicted by hospital admissions.
+\item "incidence": Assumes that secondary reports equal a convolution of
+previously observed primary reported cases. An example application is deaths
+from an infectious disease predicted by reported cases of that disease (or
+estimated infections).
+\item "prevalence": Assumes that secondary reports are cumulative and are
+defined by currently observed primary reports minus a convolution of
+secondary reports. An example application is hospital bed usage predicted by
+hospital admissions.
 }}
 
 \item{family}{Character string defining the observation model. Options are
@@ -81,4 +83,9 @@ cases
 }
 \seealso{
 estimate_secondary
+}
+\author{
+Sam Abbott
+
+Sebastian Funk
 }

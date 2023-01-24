@@ -13,26 +13,28 @@ get_regional_results(
 )
 }
 \arguments{
-\item{regional_output}{A list of output as produced by \code{regional_epinow} and stored in the
-\code{regional} list.}
+\item{regional_output}{A list of output as produced by \code{regional_epinow} and
+stored in the \code{regional} list.}
 
-\item{results_dir}{A character string indicating the folder containing the \code{EpiNow2}
-results to extract.}
+\item{results_dir}{A character string indicating the folder containing the
+\code{EpiNow2} results to extract.}
 
-\item{date}{A Character string (in the format "yyyy-mm-dd") indicating the date to extract
-data for. Defaults to "latest" which finds the latest results available.}
+\item{date}{A Character string (in the format "yyyy-mm-dd") indicating the
+date to extract data for. Defaults to "latest" which finds the latest
+results available.}
 
 \item{samples}{Logical, defaults to \code{TRUE}. Should samples be returned.}
 
-\item{forecast}{Logical, defaults to \code{FALSE}. Should forecast results be returned.}
+\item{forecast}{Logical, defaults to \code{FALSE}. Should forecast results be
+returned.}
 }
 \value{
 A list of estimates, forecasts and estimated cases by date of report.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Summarises results across regions either from input or from disk. See the examples for
-details.
+Summarises results across regions either from input or from disk. See the
+examples for details.
 }
 \examples{
 \donttest{
@@ -68,4 +70,7 @@ names(results)
 folder_results <- get_regional_results(results_dir = dir, samples = FALSE)
 names(folder_results)
 }
+}
+\author{
+Sam Abbott
 }

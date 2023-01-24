@@ -13,28 +13,35 @@ init_cumulative_fit(
 )
 }
 \arguments{
-\item{args}{List of stan arguments}
+\item{args}{List of stan arguments.}
 
 \item{samples}{Numeric, defaults to 50. Number of posterior samples.}
 
 \item{warmup}{Numeric, defaults to 50. Number of warmup samples.}
 
-\item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
-to assign errors to regions. Alter the default to run with error catching.}
+\item{id}{A character string used to assign logging information on error.
+Used by \code{regional_epinow} to assign errors to regions. Alter the default to
+run with error catching.}
 
-\item{verbose}{Logical, should fitting progress be returned. Defaults to \code{FALSE}.}
+\item{verbose}{Logical, should fitting progress be returned. Defaults to
+\code{FALSE}.}
 }
 \value{
 A stanfit object
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-Fits a model to cumulative cases. This may be a useful approach to initialising
-a full model fit for certain data sets where the sampler gets stuck or cannot easily
-be initialised as fitting to cumulative cases changes the shape of the posterior
-distribution. In \code{estimate_infections()}, \code{epinow()} and \code{regional_epinow()} this option can be
-engaged by setting \code{stan_opts(init_fit = "cumulative")}.
+Fits a model to cumulative cases. This may be a useful approach to
+initialising a full model fit for certain data sets where the sampler gets
+stuck or cannot easily be initialised as fitting to cumulative cases changes
+the shape of the posterior distribution. In \code{estimate_infections()},
+\code{epinow()} and \code{regional_epinow()} this option can be engaged by setting
+\code{stan_opts(init_fit = "cumulative")}.
 
-This implementation is based on the approach taken in \href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia}
-authored by James Scott.
+This implementation is based on the approach taken in
+\href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia} authored by
+James Scott.
+}
+\author{
+Sam Abbott
 }

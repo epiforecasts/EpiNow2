@@ -42,8 +42,9 @@ be used with recommended parameters \code{inv_gamma(1.499007, 0.057277 * ls_max)
 the Gaussian process kernel. Should be approximately the expected standard deviation of the logged Rt.}
 
 \item{kernel}{Character string, the type of kernel required. Currently supporting the squared exponential
-kernel ("se") and the 3 over 2 Matern kernel ("matern", with \code{matern_type = 3/2}). Defaulting to the Matern 3 over 2 kernel as discontinuities are expected
-in Rt and infections.}
+kernel ("se") and the 3 over 2 Matern kernel ("matern", with
+\code{matern_type = 3/2}). Defaulting to the Matern 3 over 2 kernel as
+discontinuities are expected  in Rt and infections.}
 
 \item{matern_type}{Numeric, defaults to 3/2. Type of Matern Kernel to use. Currently only the Matern
 3/2 kernel is supported.}

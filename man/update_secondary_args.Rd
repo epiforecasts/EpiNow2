@@ -34,3 +34,6 @@ priors <- data.frame(variable = "frac_obs", mean = 3, sd = 1)
 data <- list(obs_scale_mean = 4, obs_scale_sd = 3)
 update_secondary_args(data, priors)
 }
+\author{
+Sam Abbott
+}

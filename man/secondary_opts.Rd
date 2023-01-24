@@ -7,37 +7,41 @@
 secondary_opts(type = "incidence", ...)
 }
 \arguments{
-\item{type}{A character string indicating the type of observation the secondary reports
-are. Options include:
+\item{type}{A character string indicating the type of observation the
+secondary reports are. Options include:
 \itemize{
-\item "incidence": Assumes that secondary reports equal a convolution of previously
-observed primary reported cases. An example application is deaths from an infectious
-disease predicted by reported cases of that disease (or estimated infections).
-\item "prevalence": Assumes that secondary reports are cumulative and are defined by
-currently observed primary reports minus a convolution of secondary reports. An example
-application is hospital bed usage predicted by hospital admissions.
+\item "incidence": Assumes that secondary reports equal a convolution of
+previously observed primary reported cases. An example application is deaths
+from an infectious disease predicted by reported cases of that disease (or
+estimated infections).
+\item "prevalence": Assumes that secondary reports are cumulative and are
+defined by currently observed primary reports minus a convolution of
+secondary reports. An example application is hospital bed usage predicted by
+hospital admissions.
 }}
 
 \item{...}{Overwrite options defined by type. See the returned values for all
 options that can be passed.}
 }
 \value{
-A list of binary options summarising secondary model used in \code{estimate_secondary()}.
-Options returned are \code{cumulative} (should the secondary report be cumulative), \code{historic}
-(should a convolution of primary reported cases be used to predict secondary reported
-cases), \code{primary_hist_additive} (should the historic convolution of primary reported cases
-be additive or subtractive), \code{current} (should currently observed primary reported cases
-contribute to current secondary reported cases), \code{primary_current_additive} (should current
-primary reported cases be additive or subtractive).
+A list of binary options summarising secondary model used in
+\code{estimate_secondary()}. Options returned are \code{cumulative} (should the
+secondary report be cumulative), \code{historic} (should a convolution of primary
+reported cases be used to predict secondary reported cases),
+\code{primary_hist_additive} (should the historic convolution of primary reported
+cases be additive or subtractive), \code{current} (should currently observed
+primary reported cases contribute to current secondary reported cases),
+\code{primary_current_additive} (should current primary reported cases be
+additive or subtractive).
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Returns a list of options defining the secondary model used in \code{estimate_secondary()}.
-This model is a combination of a convolution of previously observed primary reports
-combined with current primary reports (either additive or subtractive). This model
-can optionally be cumulative. See the documentation of \code{type} for sensible options
-to cover most use cases and the returned values of \code{secondary_opts()} for all
-currently supported options.
+Returns a list of options defining the secondary model used in
+\code{estimate_secondary()}. This model is a combination of a convolution of
+previously observed primary reports combined with current primary reports
+(either additive or subtractive). It can optionally be cumulative. See the
+documentation of \code{type} for sensible options to cover most use cases and the
+returned values of \code{\link[=secondary_opts]{secondary_opts()}} for all currently supported options.
 }
 \examples{
 # incidence model
@@ -48,4 +52,7 @@ secondary_opts("prevalence")
 }
 \seealso{
 estimate_secondary
+}
+\author{
+Sam Abbott
 }

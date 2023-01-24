@@ -37,3 +37,6 @@ create_obs_model(obs_opts(week_length = 3), dates = dates)
 \seealso{
 obs_opts
 }
+\author{
+Sam Abbott
+}
