@@ -79,10 +79,15 @@ transformed parameters {
 
 model {
   // penalised priors for delay distributions
-
+  delays_lp(
+    delay_mean, delay_mean_mean[uncertain_mean_delays], 
+    delay_mean_sd[uncertain_mean_delays], delay_sd, 
+    delay_sd_mean[uncertain_sd_delays] delay_sd_sd[uncertain_sd_delays],
+    delay_dist[uncertain_mean_delays], t
+  );
   // priors for truncation
-  truncation_lp(trunc_mean, trunc_sd, trunc_mean_mean, trunc_mean_sd,
-                trunc_sd_mean, trunc_sd_sd);
+  delays_lp(trunc_mean, trunc_sd, trunc_mean_mean, trunc_mean_sd,
+            trunc_sd_mean, trunc_sd_sd, trunc_dist, 1);
   // prior primary report scaling
   if (obs_scale) {
     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];
