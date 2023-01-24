@@ -9,7 +9,7 @@ trunc_opts(dist = list())
 \arguments{
 \item{dist}{Parameters of a discretised (upper-)truncated lognormal
 truncation distribution as a list with parameters that are all passed to
-\link{delay_dist}.}
+\link{dist_spec}.}
 }
 \value{
 A list summarising the input truncation distribution.
@@ -28,5 +28,5 @@ trunc_opts()
 trunc_opts(dist = list(mean = 3, sd = 2))
 }
 \seealso{
-convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
+convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
 }

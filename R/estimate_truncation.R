@@ -2,50 +2,66 @@
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Estimates a truncation distribution from multiple snapshots of the same
-#' data source over time. This distribution can then be used in `regional_epinow`,
-#' `epinow`, and `estimate_infections` to adjust for truncated data. See [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)
+#' data source over time. This distribution can then be used in
+#' `regional_epinow`, `epinow`, and `estimate_infections` to adjust for
+#' truncated data. See
+#' [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)
 #' for an example of using this approach on Covid-19 data in England. The
 #' functionality offered by this function is now available in a more principled
 #' manner in the [`epinowcast` R package](https://package.epinowcast.org/).
 #'
 #' The model of truncation is as follows:
 #'
-#' 1. The truncation distribution is assumed to be discretised log normal with a mean and
-#' standard deviation that is informed by the data.
+#' 1. The truncation distribution is assumed to be discretised log normal wit
+#' a mean and standard deviation that is informed by the data.
+#'
 #' 2. The data set with the latest observations is adjusted for truncation using
 #' the truncation distribution.
+#'
 #' 3. Earlier data sets are recreated by applying the truncation distribution to
-#' the adjusted latest observations in the time period of the earlier data set. These
-#' data sets are then compared to the earlier observations assuming a negative binomial
-#' observation model with an additive noise term to deal with zero observations.
+#' the adjusted latest observations in the time period of the earlier data set.
+#' These data sets are then compared to the earlier observations assuming a
+#' negative binomial observation model with an additive noise term to deal with
+#' zero observations.
 #'
 #' This model is then fit using `stan` with standard normal, or half normal,
-#' prior for the mean, standard deviation, 1 over the square root of the over dispersion
-#' and additive noise term.
+#' prior for the mean, standard deviation, 1 over the square root of the over
+#' dispersionn and additive noise term.
 #'
 #' This approach assumes that:
 #'  - Current truncation is related to past truncation.
 #'  - Truncation is a multiplicative scaling of underlying reported cases.
 #'  - Truncation is log normally distributed.
+#'
 #' @param obs A list of data frames each containing a date variable
 #' and a confirm (integer) variable. Each data set should be a snapshot
 #' of the reported data over time. All data sets must contain a complete vector
 #' of dates.
-#' @param max_truncation Deprecated; use `trunc_max` instead
+#'
+#' @param max_truncation Deprecated; use `trunc_max` instead.
+#'
 #' @param trunc_max Integer, defaults to 10. Maximum number of
 #' days to include in the truncation distribution.
+#'
 #' @param trunc_dist Character, defaults to "lognormal". The parametric
 #' distribution to be used for truncation.
+#'
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
+#'
 #' @param verbose Logical, should model fitting progress be returned.
+#'
 #' @param ... Additional parameters to pass to `rstan::sampling`.
-#' @return A list containing: the summary parameters of the truncation distribution
-#'  (`dist`), the estimated CMF of the truncation distribution (`cmf`, can be used to adjusted
-#'  new data), a data frame containing the observed truncated data, latest observed data
-#'  and the adjusted for truncation observations (`obs`), a data frame containing the last
-#'  observed data (`last_obs`, useful for plotting and validation), the data used for fitting
-#'  (`data`) and the fit object (`fit`).
+#'
+#' @return A list containing: the summary parameters of the truncation
+#'  distribution (`dist`), the estimated CMF of the truncation distribution
+#' (`cmf`, can be used to adjusted new data), a data frame containing the
+#' observed truncated data, latest observed data and the adjusted for
+#' truncation observations (`obs`), a data frame containing the last
+#' observed data (`last_obs`, useful for plotting and validation), the data
+#' used for fitting (`data`) and the fit object (`fit`).
+#'
+#' @author Sam Abbott
 #' @export
 #' @inheritParams calc_CrIs
 #' @importFrom purrr map reduce map_dbl
@@ -107,7 +123,7 @@
 #'
 #' options(old_opts)
 estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
-                                trunc_dist = c("lognormal", "gamma"),
+                                trunc_dist = c("lognormal"),
                                 model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 verbose = TRUE,
@@ -245,11 +261,15 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 #' a plot faceted over each dataset used in fitting with the latest
 #' observations as columns, the data observed at the time (and so truncated)
 #' as dots and the truncation adjusted estimates as a ribbon.
+#' 
 #' @param x A list of output as produced by `estimate_truncation`
+#' 
 #' @param ... Pass additional arguments to plot function. Not currently in use.
+#' 
+#' @return `ggplot2` object
+#' @author Sam Abbott
 #' @seealso plot estimate_truncation
 #' @method plot estimate_truncation
-#' @return `ggplot2` object
 #' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme theme_bw
 #' @export
 plot.estimate_truncation <- function(x, ...) {

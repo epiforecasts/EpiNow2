@@ -17,31 +17,36 @@ bootstrapped_dist_fit(
 \arguments{
 \item{values}{Integer vector of values.}
 
-\item{dist}{Character string, which distribution to fit. Defaults to lognormal (\code{"lognormal"}) but
-gamma (\code{"gamma"}) is also supported.}
+\item{dist}{Character string, which distribution to fit. Defaults to
+lognormal (\code{"lognormal"}) but gamma (\code{"gamma"}) is also supported.}
 
-\item{samples}{Numeric, number of samples to take overall from the bootstrapped posteriors.}
+\item{samples}{Numeric, number of samples to take overall from the
+bootstrapped posteriors.}
 
-\item{bootstraps}{Numeric, defaults to 1. The number of bootstrap samples (with replacement)
-of the delay distribution to take.}
+\item{bootstraps}{Numeric, defaults to 1. The number of bootstrap samples
+(with replacement) of the delay distribution to take.}
 
-\item{bootstrap_samples}{Numeric, defaults to 100. The number of samples to take in each bootstrap.
-When the sample size of the supplied delay distribution is less than 100 this is used instead.}
+\item{bootstrap_samples}{Numeric, defaults to 100. The number of samples to
+take in each bootstrap. When the sample size of the supplied delay
+distribution is less than 100 this is used instead.}
 
-\item{max_value}{Numeric, defaults to  the maximum value in the observed data. Maximum delay to
-allow (added to output but does impact fitting).}
+\item{max_value}{Numeric, defaults to  the maximum value in the observed
+data. Maximum delay to  allow (added to output but does impact fitting).}
 
-\item{verbose}{Logical, defaults to \code{FALSE}. Should progress messages be printed}
+\item{verbose}{Logical, defaults to \code{FALSE}. Should progress messages be
+printed.}
 }
 \value{
 A list summarising the bootstrapped distribution
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Fits an integer adjusted distribution to a subsampled bootstrap of data and then integrates
-the posterior samples into a single set of summary statistics. Can be used to generate a robust
-reporting delay that accounts for the fact the underlying delay likely varies over time or that
-the size of the available reporting delay sample may not be representative of the current case load.
+Fits an integer adjusted distribution to a subsampled bootstrap of data and
+then integrates the posterior samples into a single set of summary
+statistics. Can be used to generate a robust reporting delay that accounts
+for the fact the underlying delay likely varies over time or that the size
+of the available reporting delay sample may not be representative of the
+current case load.
 }
 \examples{
 \donttest{
@@ -53,4 +58,7 @@ out <- bootstrapped_dist_fit(delays,
 )
 out
 }
+}
+\author{
+Sam Abbott
 }

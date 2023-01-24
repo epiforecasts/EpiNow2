@@ -61,3 +61,6 @@ Takes the output of \code{stan_opts()} and converts it into a list understood by
 \code{stan}. Internally calls the other \code{create_} family of functions to
 construct a single list for input into stan with all data required present.
 }
+\author{
+Sam Abbott
+}

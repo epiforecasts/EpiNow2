@@ -12,8 +12,12 @@ extract_static_parameter(param, samples)
 \item{samples}{Extracted stan model (using \code{rstan::extract})}
 }
 \value{
-A data frame containing the parameter name, sample id and sample value
+A data frame containing the parameter name, sample id and sample
+value
 }
 \description{
 Extract Samples from a Parameter with a Single Dimension
+}
+\author{
+Sam Abbott
 }

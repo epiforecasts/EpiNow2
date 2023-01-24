@@ -4,41 +4,53 @@
 #' Estimates the relationship between a primary and secondary observation, for
 #' example hospital admissions and deaths or hospital admissions and bed
 #' occupancy. See `secondary_opts()` for model structure options. See parameter
-#' documentation for model defaults and options. See the examples for case studies
-#' using synthetic data and [here](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17)
+#' documentation for model defaults and options. See the examples for case
+#' studies using synthetic data and
+#' [here](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17)
 #' for an example of forecasting Covid-19 deaths from Covid-19 cases. See
-#' [here](https://gist.github.com/seabbs/4dad3958ca8d83daca8f02b143d152e6) for a prototype function that
-#' may be used to estimate and forecast a secondary observation from a primary across multiple regions and
+#' [here](https://gist.github.com/seabbs/4dad3958ca8d83daca8f02b143d152e6) for
+#' a prototype function that may be used to estimate and forecast a secondary
+#' observation from a primary across multiple regions and
 #' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R)
 #' for an application forecasting Covid-19 deaths in Germany and Poland.
-#' @param secondary A call to `secondary_opts()` or a list containing the following
-#' binary variables: cumulative, historic, primary_hist_additive, current,
-#' primary_current_additive. These parameters control the structure of the
-#' secondary model, see `secondary_opts()` for details.
-#' @param delays A call to `delay_opts()` defining delay distributions between
-#' primary and secondary observations See the documentation of `delay_opts()` for
-#' details. BY default a diffuse prior  is assumed with a mean of 14 days and
-#' standard deviation of 7 days (with a standard deviation of 0.5 and 0.25 respectively
-#' on the log scale).
-#' @param reports A data frame containing the `date` of report and both `primary`
-#' and `secondary` reports.
+#' 
+#' @param secondary A call to `secondary_opts()` or a list containing the
+#' following  binary variables: cumulative, historic, primary_hist_additive,
+#' current, primary_current_additive. These parameters control the structure of
+#' the secondary model, see `secondary_opts()` for details.
+#' 
+#' @param delays A call to [delay_opts()] defining delay distributions between
+#' primary and secondary observations See the documentation of `delay_opts()`
+#' for details. By default a diffuse prior  is assumed with a mean of 14 days
+#' and standard deviation of 7 days (with a standard deviation of 0.5 and 0.25
+#' respectively on the log scale).
+#' 
+#' @param reports A data frame containing the `date` of report and both
+#' `primary` and `secondary` reports.
+#' 
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
+#' 
 #' @param priors A `data.frame` of named priors to be used in model fitting
 #' rather than the defaults supplied from other arguments. This is typically
 #' useful if wanting to inform an estimate from the posterior of another model
 #' fit.
-#' @param burn_in Integer, defaults to 14 days. The number of data points to use for
-#' estimation but not to fit to at the beginning of the time series. This must be less
-#' than the number of observations.
-#' @param verbose Logical, should model fitting progress be returned. Defaults to
-#' `interactive()`.
+#' 
+#' @param burn_in Integer, defaults to 14 days. The number of data points to
+#' use for estimation but not to fit to at the beginning of the time series.
+#' This must be less than the number of observations.
+#' 
+#' @param verbose Logical, should model fitting progress be returned. Defaults
+#' to `interactive()`.
+#'
 #' @param ... Additional parameters to pass to `rstan::sampling`.
+#' 
 #' @return A list containing: `predictions` (a data frame ordered by date with
 #' the primary, and secondary observations, and a summary of the model
 #' estimated secondary observations), `posterior` which contains a summary of
 #' the entire model posterior, `data` (a list of data used to fit the
 #' model), and `fit` (the `stanfit` object).
+#' @author Sam Abbott
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams update_secondary_args
@@ -185,31 +197,42 @@ estimate_secondary <- function(reports,
 #' Secondary Reports Options
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Returns a list of options defining the secondary model used in `estimate_secondary()`.
-#' This model is a combination of a convolution of previously observed primary reports
-#' combined with current primary reports (either additive or subtractive). This model
-#' can optionally be cumulative. See the documentation of `type` for sensible options
-#' to cover most use cases and the returned values of `secondary_opts()` for all
-#' currently supported options.
-#' @param type A character string indicating the type of observation the secondary reports
-#' are. Options include:
-#' - "incidence": Assumes that secondary reports equal a convolution of previously
-#' observed primary reported cases. An example application is deaths from an infectious
-#' disease predicted by reported cases of that disease (or estimated infections).
-#' - "prevalence": Assumes that secondary reports are cumulative and are defined by
-#' currently observed primary reports minus a convolution of secondary reports. An example
-#' application is hospital bed usage predicted by hospital admissions.
+#' Returns a list of options defining the secondary model used in
+#' `estimate_secondary()`. This model is a combination of a convolution of
+#' previously observed primary reports combined with current primary reports
+#' (either additive or subtractive). It can optionally be cumulative. See the
+#' documentation of `type` for sensible options to cover most use cases and the
+#' returned values of [secondary_opts()] for all currently supported options.
+#' 
+#' @param type A character string indicating the type of observation the
+#' secondary reports are. Options include:
+#' 
+#' - "incidence": Assumes that secondary reports equal a convolution of
+#' previously observed primary reported cases. An example application is deaths
+#' from an infectious disease predicted by reported cases of that disease (or
+#' estimated infections).
+#' 
+#' - "prevalence": Assumes that secondary reports are cumulative and are
+#' defined by currently observed primary reports minus a convolution of
+#' secondary reports. An example application is hospital bed usage predicted by
+#' hospital admissions.
+#' 
 #' @param ... Overwrite options defined by type. See the returned values for all
 #' options that can be passed.
+#' 
 #' @seealso estimate_secondary
-#' @return A list of binary options summarising secondary model used in `estimate_secondary()`.
-#' Options returned are `cumulative` (should the secondary report be cumulative), `historic`
-#' (should a convolution of primary reported cases be used to predict secondary reported
-#' cases), `primary_hist_additive` (should the historic convolution of primary reported cases
-#' be additive or subtractive), `current` (should currently observed primary reported cases
-#' contribute to current secondary reported cases), `primary_current_additive` (should current
-#' primary reported cases be additive or subtractive).
+#' @return A list of binary options summarising secondary model used in
+#' `estimate_secondary()`. Options returned are `cumulative` (should the
+#' secondary report be cumulative), `historic` (should a convolution of primary
+#' reported cases be used to predict secondary reported cases),
+#' `primary_hist_additive` (should the historic convolution of primary reported
+#' cases be additive or subtractive), `current` (should currently observed
+#' primary reported cases contribute to current secondary reported cases),
+#' `primary_current_additive` (should current primary reported cases be
+#' additive or subtractive).
+#' 
 #' @export
+#' @author Sam Abbott
 #' @examples
 #' # incidence model
 #' secondary_opts("incidence")
@@ -258,7 +281,7 @@ secondary_opts <- function(type = "incidence", ...) {
 #' variables: `variable`, `mean`, and `sd`.
 #'
 #' @return A list as produced by `create_stan_data()`.
-#'
+#' @author Sam Abbott
 #' @export
 #' @inheritParams create_stan_args
 #' @importFrom data.table as.data.table
@@ -309,17 +332,27 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' `plot` method for class "estimate_secondary".
+#'
 #' @param x A list of output as produced by `estimate_secondary`
+#'
 #' @param primary Logical, defaults to `FALSE`. Should `primary` reports also
 #' be plot?
+#'
 #' @param from Date object indicating when to plot from.
+#'
 #' @param to Date object indicating when to plot up to.
-#' @param new_obs A data.frame containing the columns `date` and `secondary` which replace
-#' the secondary observations stored in the `estimate_secondary` output.
+#'
+#' @param new_obs A data.frame containing the columns `date` and `secondary`
+#' which replace the secondary observations stored in the `estimate_secondary`
+#' output.
+#'
 #' @param ... Pass additional arguments to plot function. Not currently in use.
+#' 
+#' @return A `ggplot` object.
+#' 
+#' @author Sam Abbott
 #' @seealso plot estimate_secondary
 #' @method plot estimate_secondary
-#' @return `ggplot2` object
 #' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme theme_bw
 #' @importFrom data.table as.data.table merge.data.table
 #' @export
@@ -390,6 +423,8 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' @return A data frame containing simulated data in the format required by
 #' [estimate_secondary()].
 #'
+#' @author Sam Abbott
+#' @author Sebastian Funk
 #' @seealso estimate_secondary
 #' @inheritParams secondary_opts
 #' @importFrom data.table as.data.table copy shift
@@ -476,30 +511,48 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
 #' Forecast Secondary Observations Given a Fit from estimate_secondary
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' This function forecasts secondary observations using the output of `estimate_secondary()` and either
-#' observed primary data or a forecast of primary observations. See the examples of `estimate_secondary()`
-#' for one use case. It can also be combined with `estimate_infections()` to produce a forecast for a secondary
-#' observation from a forecast of a primary observation. See the examples of `estimate_secondary()` for
-#' example use cases on synthetic data. See [here](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17)
+#' This function forecasts secondary observations using the output of
+#' `estimate_secondary()` and either observed primary data or a forecast of
+#' primary observations. See the examples of `estimate_secondary()`
+#' for one use case. It can also be combined with `estimate_infections()` t
+#' produce a forecast for a secondary observation from a forecast of a primary
+#' observation. See the examples of `estimate_secondary()` for
+#' example use cases on synthetic data. See
+#' [here](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17)
 #' for an example of forecasting Covid-19 deaths from Covid-19 cases.
-#' @param estimate An object of class "estimate_secondary" as produced by `estimate_secondary()`.
-#' @param primary A data.frame containing at least `date` and `value` (integer) variables and optionally
-#' `sample`. Used as the primary observation used to forecast the secondary observations. Alternatively,
-#' this may be an object of class "estimate_infections" as produced by `estimate_infections()`. If `primary`
-#' is of class "estimate_infections" then the internal samples will be filtered to have a minimum date ahead of
-#' those observed in the `estimate` object.
-#' @param primary_variable A character string indicating the primary variable, defaulting to "reported_cases".
-#' Only used when primary is of class "estimate_infections".
+#'
+#' @param estimate An object of class "estimate_secondary" as produced by
+#' `estimate_secondary()`.
+#'
+#' @param primary A data.frame containing at least `date` and `value` (integer)
+#' variables and optionally `sample`. Used as the primary observation used to
+#' forecast the secondary observations. Alternatively, this may be an object of
+#' class "estimate_infections" as produced by `estimate_infections()`. If
+#' `primary` is of class "estimate_infections" then the internal samples will
+#' be filtered to have a minimum date ahead of those observed in the `estimate`
+#' object.
+#' 
+#' @param primary_variable A character string indicating the primary variable,
+#' defaulting to "reported_cases". Only used when primary is of class
+#' "estimate_infections".
+#'
 #' @param model A compiled stan model as returned by `rstan::stan_model`.
-#' @param samples Numeric, number of posterior samples to simulate from. The default is to use all
-#' samples in the `primary` input when present. If not present the default is to use 1000 samples.
-#' @param all_dates Logical, defaults to FALSE. Should a forecast for all dates and not just those in
-#' the forecast horizon be returned.
-#' @return A list containing: `predictions` (a data frame ordered by date with the primary,
-#' and secondary observations, and a summary of the forecast secondary observations. For primary
-#'  observations in the forecast horizon when uncertainty is present the median is used),
-#' `samples` a data frame of forecast secondary observation posterior samples, and `forecast` a
-#' summary of the forecast secondary observation posterior.
+#'
+#' @param samples Numeric, number of posterior samples to simulate from. The
+#' default is to use all samples in the `primary` input when present. If not
+#' present the default is to use 1000 samples.
+#'
+#' @param all_dates Logical, defaults to FALSE. Should a forecast for all dates
+#' and not just those in the forecast horizon be returned.
+#'
+#' @return A list containing: `predictions` (a data frame ordered by date with
+#' the primary, and secondary observations, and a summary of the forecast
+#' secondary observations. For primary observations in the forecast horizon
+#' when uncertainty is present the median is used), `samples` a data frame of
+#' forecast secondary observation posterior samples, and `forecast` a summary
+#' of the forecast secondary observation posterior.
+#'
+#' @author Sam Abbott
 #' @importFrom rstan extract sampling
 #' @importFrom data.table rbindlist merge.data.table as.data.table setorderv setcolorder copy
 #' @importFrom lubridate days wday

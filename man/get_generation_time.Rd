@@ -21,8 +21,11 @@ A list defining a distribution
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Extracts a literature distribution from \code{generation_times}
+Extracts a literature distribution from \code{generation_times}.
 }
 \examples{
 get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+}
+\author{
+Sam Abbott
 }

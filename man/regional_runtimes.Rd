@@ -12,8 +12,8 @@ regional_runtimes(
 )
 }
 \arguments{
-\item{regional_output}{A list of output as produced by \code{regional_epinow} and stored in the
-\code{regional} list.}
+\item{regional_output}{A list of output as produced by \code{regional_epinow} and
+stored in the \code{regional} list.}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
@@ -21,8 +21,8 @@ regional_runtimes(
 extract results
 (in the format "yyyy-mm-dd"). Defaults to latest available estimates.}
 
-\item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
-if no directory for saving is specified.}
+\item{return_output}{Logical, defaults to FALSE. Should output be returned,
+this automatically updates to TRUE if no directory for saving is specified.}
 }
 \value{
 A data.table of region run times

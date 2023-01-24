@@ -19,22 +19,28 @@
 #'
 #' @param reported_cases A data frame of confirmed cases (confirm) by date
 #' (date). confirm must be integer and date must be in date format.
+#'
 #' @param generation_time A call to `generation_time_opts()` defining the
 #' generation time distribution used. For backwards compatibility a list of
 #' summary parameters can also be passed.
+#'
 #' @param delays A call to `delay_opts()` defining delay distributions and
 #' options. See the documentation of `delay_opts()` and the examples below for
 #' details.
+#'
 #' @param horizon Numeric, defaults to 7. Number of days into the future to
 #' forecast.
+#'
 #' @param verbose Logical, defaults to `TRUE` when used interactively and
 #' otherwise `FALSE`. Should verbose debug progress messages be printed.
 #' Corresponds to the "DEBUG" level from `futile.logger`. See `setup_logging`
 #' for more detailed logging options.
+#'
 #' @export
 #' @return A list of output including: posterior samples, summarised posterior
 #' samples, data used to fit the model, and the fit object itself.
 #'
+#' @author Sam Abbott
 #' @seealso epinow regional_epinow forecast_infections simulate_infections
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
@@ -125,11 +131,13 @@
 #' plot(trunc)
 #'
 #' # using back calculation (combined here with under reporting)
-#' # this model is in the order of 10 ~ 100 faster than the gaussian process method
-#' # it is likely robust for retrospective Rt but less reliable for real time estimates
-#' # the width of the prior window controls the reliance on observed data and can be
-#' # optionally switched off using backcalc_opts(prior = "none"), see ?backcalc_opts for
-#' # other options
+#' # this model is in the order of 10 ~ 100 faster than the gaussian process
+#' # method
+#' # it is likely robust for retrospective Rt but less reliable for real time
+#' # estimates
+#' # the width of the prior window controls the reliance on observed data and
+#' # can be optionally switched off using backcalc_opts(prior = "none"),
+#' # see ?backcalc_opts for other options
 #' backcalc <- estimate_infections(reported_cases,
 #'   generation_time = generation_time,
 #'   delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
@@ -361,23 +369,31 @@ estimate_infections <- function(reported_cases,
 #' Generate initial conditions by fitting to cumulative cases
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' Fits a model to cumulative cases. This may be a useful approach to initialising
-#' a full model fit for certain data sets where the sampler gets stuck or cannot easily
-#' be initialised as fitting to cumulative cases changes the shape of the posterior
-#' distribution. In `estimate_infections()`, `epinow()` and `regional_epinow()` this option can be
-#' engaged by setting `stan_opts(init_fit = "cumulative")`.
+#' Fits a model to cumulative cases. This may be a useful approach to
+#' initialising a full model fit for certain data sets where the sampler gets
+#' stuck or cannot easily be initialised as fitting to cumulative cases changes
+#' the shape of the posterior distribution. In `estimate_infections()`,
+#' `epinow()` and `regional_epinow()` this option can be engaged by setting
+#' `stan_opts(init_fit = "cumulative")`.
 #'
-#' This implementation is based on the approach taken in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/)
-#' authored by James Scott.
+#' This implementation is based on the approach taken in
+#' [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) authored by
+#' James Scott.
+#'
 #' @param samples Numeric, defaults to 50. Number of posterior samples.
+#'
 #' @param warmup Numeric, defaults to 50. Number of warmup samples.
-#' @param verbose Logical, should fitting progress be returned. Defaults to `FALSE`.
+#'
+#' @param verbose Logical, should fitting progress be returned. Defaults to
+#' `FALSE`.
+#' 
 #' @inheritParams create_initial_conditions
 #' @importFrom rstan sampling
 #' @importFrom futile.logger flog.debug
 #' @importFrom utils capture.output
 #' @inheritParams fit_model_with_nuts
 #' @return A stanfit object
+#' @author Sam Abbott 
 init_cumulative_fit <- function(args, samples = 50, warmup = 50,
                                 id = "init", verbose = FALSE) {
   futile.logger::flog.debug("%s: Fitting to cumulative data to initialise chains", id,
@@ -422,14 +438,23 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 #' Fit a Stan Model using the NUTs sampler
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' Fits a stan model using `rstan::sampling`. Provides the optional ability to run chains using
-#' `future` with error catching, timeouts and merging of completed chains.
-#' @param args List of stan arguments
-#' @param future Logical, defaults to `FALSE`. Should `future` be used to run stan chains in parallel.
-#' @param max_execution_time Numeric, defaults to Inf. What is the maximum execution time per chain in seconds.
-#'     Results will still be returned as long as at least 2 chains complete successfully within the timelimit.
-#' @param id A character string used to assign logging information on error. Used by `regional_epinow`
-#' to assign errors to regions. Alter the default to run with error catching.
+#' Fits a stan model using `rstan::sampling`. Provides the optional ability to
+#' run chains using `future` with error catching, timeouts and merging of
+#' completed chains.
+#' 
+#' @param args List of stan arguments.
+#' 
+#' @param future Logical, defaults to `FALSE`. Should `future` be used to run
+#' stan chains in parallel.
+#' 
+#' @param max_execution_time Numeric, defaults to Inf. What is the maximum
+#' execution time per chain in seconds. Results will still be returned as long
+#' as at least 2 chains complete successfully within the timelimit.
+#' 
+#' @param id A character string used to assign logging information on error.
+#' Used by `regional_epinow` to assign errors to regions. Alter the default to
+#' run with error catching.
+#' 
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom R.utils withTimeout
 #' @importFrom future.apply future_lapply
@@ -437,6 +462,7 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 #' @importFrom rstan sflist2stanfit sampling
 #' @importFrom rlang abort cnd_muffle
 #' @return A stan model object
+#' @author Sam Abbott
 fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, id = "stan") {
   args$method <- NULL
   args$max_execution_time <- NULL
@@ -444,7 +470,9 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
 
   futile.logger::flog.debug(
     paste0(
-      "%s: Running in exact mode for ", ceiling(args$iter - args$warmup) * args$chains, " samples (across ", args$chains,
+      "%s: Running in exact mode for ",
+      ceiling(args$iter - args$warmup) * args$chains,
+      " samples (across ", args$chains,
       " chains each with a warm up of ", args$warmup, " iterations each) and ",
       args$data$t, " time steps of which ", args$data$horizon, " are a forecast"
     ),
@@ -534,7 +562,9 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
           name = "EpiNow2.epinow.estimate_infections.fit"
         )
         if ((chains - failed_chains) < 2) {
-          rlang::abort("model fitting failed as too few chains were returned to assess convergence (2 or more required)")
+          rlang::abort(
+            "model fitting failed as too few chains were returned to assess convergence (2 or more required)"
+          )
         }
       }
       fit <- rstan::sflist2stanfit(fit)
@@ -547,12 +577,14 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
 #'
 #' @description `r lifecycle::badge("maturing")`
 #' Fits a stan model using variational inference.
+#' 
 #' @inheritParams fit_model_with_nuts
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom purrr safely
 #' @importFrom rstan vb
 #' @importFrom rlang abort
 #' @return A stan model object
+#' @author Sam Abbott
 fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
   args$method <- NULL
   futile.logger::flog.debug(
@@ -611,16 +643,24 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Summaries posterior samples and adds additional custom variables.
-#' @param posterior_samples A list of posterior samples as returned by `extract_parameter_samples`
-#' @param horizon Numeric, forecast horizon
-#' @param shift Numeric, the shift to apply to estimates
-#' @param burn_in Numeric, number of days to discard estimates for
-#' @param start_date Date, earliest date with data
+#' 
+#' @param posterior_samples A list of posterior samples as returned by
+#' `extract_parameter_samples`.
+#' 
+#' @param horizon Numeric, forecast horizon.
+#' 
+#' @param shift Numeric, the shift to apply to estimates.
+#' 
+#' @param burn_in Numeric, number of days to discard estimates for.
+#' 
+#' @param start_date Date, earliest date with data.
+#' 
 #' @inheritParams calc_summary_measures
 #' @importFrom data.table fifelse rbindlist
 #' @importFrom lubridate days
 #' @importFrom futile.logger flog.info
-#' @return A list of samples and summarised posterior parameter estimates
+#' @return A list of samples and summarised posterior parameter estimates.
+#' @author Sam Abbott
 format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
                        CrIs) {
   format_out <- list()

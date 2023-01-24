@@ -14,7 +14,7 @@ generation_time_opts(
 )
 }
 \arguments{
-\item{...}{Any parameters to be passed to \link{delay_dist}, if the generation
+\item{...}{Any parameters to be passed to \code{\link[=dist_spec]{dist_spec()}}, if the generation
 time is given as parameters of a distribution rather than a \code{disease}
 and \code{source}. In this case if the \code{mean} parameter is not set a
 mean of 1 will be assumed, if the \code{max} parameter not set then the
@@ -22,7 +22,7 @@ mean of 1 will be assumed, if the \code{max} parameter not set then the
 \code{dist} parameter is given then a gamma distribution will be used for
 backwards compatibility. As for \code{\link[=delay_opts]{delay_opts()}} a list of parameters can
 also be supplied that describe a distribution (but unlike \code{\link[=delay_opts]{delay_opts()}}
-multiple distributions may be used (for example as output by
+multiple distributions may not currently be used (for example as output by
 get_generation_time()).}
 
 \item{disease}{A character string indicating the disease of interest.}
@@ -48,7 +48,7 @@ A list summarising the input delay distributions.
 Returns generation time parameters in a format for lower level model use. The
 generation time can either be given as a \code{disease} and \code{source} to
 be passed to \link{get_generation_time}, or as parameters of a distribution to be
-passed to \link{delay_dist}.
+passed to \link{dist_spec}.
 }
 \examples{
 # default settings with a fixed generation time
@@ -61,5 +61,10 @@ generation_time_opts(mean = 3, sd = 2)
 generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
 }
 \seealso{
-convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
+convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
+}
+\author{
+Sebastian Funk
+
+Sam Abbott
 }

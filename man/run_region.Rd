@@ -71,8 +71,8 @@ forecast.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
-if no directory for saving is specified.}
+\item{return_output}{Logical, defaults to FALSE. Should output be returned,
+this automatically updates to TRUE if no directory for saving is specified.}
 
 \item{output}{A character vector of optional output to return. Supported options are the individual regional estimates
 ("regions"),  samples ("samples"), plots ("plots"), copying the individual region dated folder into

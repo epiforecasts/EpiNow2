@@ -19,8 +19,8 @@ regional_summary(
 )
 }
 \arguments{
-\item{regional_output}{A list of output as produced by \code{regional_epinow} and stored in the
-\code{regional} list.}
+\item{regional_output}{A list of output as produced by \code{regional_epinow} and
+stored in the \code{regional} list.}
 
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
@@ -39,8 +39,8 @@ extract results
 \item{all_regions}{Logical, defaults to \code{TRUE}. Should summary plots for all
 regions be returned rather than just regions of interest.}
 
-\item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
-if no directory for saving is specified.}
+\item{return_output}{Logical, defaults to FALSE. Should output be returned,
+this automatically updates to TRUE if no directory for saving is specified.}
 
 \item{plot}{Logical, defaults to \code{TRUE}. Should regional summary plots be
 produced.}

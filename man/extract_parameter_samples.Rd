@@ -14,25 +14,29 @@ extract_parameter_samples(
 )
 }
 \arguments{
-\item{stan_fit}{A fit Stan model as returned by \code{rstan:sampling}}
+\item{stan_fit}{A fit Stan model as returned by \code{rstan:sampling}.}
 
 \item{data}{A list of the data supplied to the \code{rstan::sampling} call.}
 
 \item{reported_dates}{A vector of dates to report estimates for.}
 
-\item{reported_inf_dates}{A vector of dates to report infection estimates for.}
+\item{reported_inf_dates}{A vector of dates to report infection estimates
+for.}
 
-\item{drop_length_1}{Logical; whether the first dimension should be dropped if it
-is if length 1; this is necessary when processing simulation results}
+\item{drop_length_1}{Logical; whether the first dimension should be dropped
+if it is off length 1; this is necessary when processing simulation results.}
 
 \item{merge}{if TRUE, merge samples and data so that parameters can be
-extracted from data}
+extracted from data.}
 }
 \value{
 A list of dataframes each containing the posterior of a parameter
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Extracts a custom set of parameters from a stan object and adds stratification and
-dates where appropriate.
+Extracts a custom set of parameters from a stan object and adds
+stratification and dates where appropriate.
+}
+\author{
+Sam Abbott
 }

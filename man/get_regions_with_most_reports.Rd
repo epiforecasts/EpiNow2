@@ -9,8 +9,8 @@ get_regions_with_most_reports(reported_cases, time_window = 7, no_regions = 6)
 \arguments{
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
 
-\item{time_window}{Numeric, number of days to include from latest date in data.
-Defaults to 7 days.}
+\item{time_window}{Numeric, number of days to include from latest date in
+data. Defaults to 7 days.}
 
 \item{no_regions}{Numeric, number of regions to return. Defaults to 6.}
 }
@@ -19,5 +19,9 @@ A character vector of regions with the highest reported cases
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Extract a vector of regions with the most reported cases in a set time window.
+Extract a vector of regions with the most reported cases in a set time
+window.
+}
+\author{
+Sam Abbott
 }

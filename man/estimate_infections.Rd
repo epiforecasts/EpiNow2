@@ -71,8 +71,9 @@ number of cases based on the 7 day average. If the average is above this
 threshold then the zero is replaced with the backwards looking rolling
 average. If set to infinity then no changes are made.}
 
-\item{id}{A character string used to assign logging information on error. Used by \code{regional_epinow}
-to assign errors to regions. Alter the default to run with error catching.}
+\item{id}{A character string used to assign logging information on error.
+Used by \code{regional_epinow} to assign errors to regions. Alter the default to
+run with error catching.}
 
 \item{verbose}{Logical, defaults to \code{TRUE} when used interactively and
 otherwise \code{FALSE}. Should verbose debug progress messages be printed.
@@ -178,11 +179,13 @@ trunc <- estimate_infections(reported_cases,
 plot(trunc)
 
 # using back calculation (combined here with under reporting)
-# this model is in the order of 10 ~ 100 faster than the gaussian process method
-# it is likely robust for retrospective Rt but less reliable for real time estimates
-# the width of the prior window controls the reliance on observed data and can be
-# optionally switched off using backcalc_opts(prior = "none"), see ?backcalc_opts for
-# other options
+# this model is in the order of 10 ~ 100 faster than the gaussian process
+# method
+# it is likely robust for retrospective Rt but less reliable for real time
+# estimates
+# the width of the prior window controls the reliance on observed data and
+# can be optionally switched off using backcalc_opts(prior = "none"),
+# see ?backcalc_opts for other options
 backcalc <- estimate_infections(reported_cases,
   generation_time = generation_time,
   delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
@@ -266,4 +269,7 @@ options(old_opts)
 }
 \seealso{
 epinow regional_epinow forecast_infections simulate_infections
+}
+\author{
+Sam Abbott
 }

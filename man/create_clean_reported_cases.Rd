@@ -36,3 +36,6 @@ Cleans a data frame of reported cases by replacing missing dates with 0 cases an
 threshold at which point 0 cases are replaced with a moving average of observed cases. See \code{zero_threshold}
 for details.
 }
+\author{
+Sam Abbott
+}

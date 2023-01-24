@@ -78,8 +78,8 @@ a latest folder (if \code{target_folder} is not null, set using "latest"), the s
 overall summary across regions ("summary"). The default is to return samples and plots alongside summarised estimates and
 summary statistics. If \code{target_folder} is not NULL then the default is also to copy all results into a latest folder.}
 
-\item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
-if no directory for saving is specified.}
+\item{return_output}{Logical, defaults to FALSE. Should output be returned,
+this automatically updates to TRUE if no directory for saving is specified.}
 
 \item{summary_args}{A list of arguments passed to \code{regional_summary}. See the \code{regional_summary} documentation for details.}
 

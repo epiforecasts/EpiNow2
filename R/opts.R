@@ -4,8 +4,9 @@
 #' Returns generation time parameters in a format for lower level model use. The
 #' generation time can either be given as a \code{disease} and \code{source} to
 #' be passed to [get_generation_time], or as parameters of a distribution to be
-#' passed to [delay_dist].
-#' @param ... Any parameters to be passed to [delay_dist], if the generation
+#' passed to [dist_spec].
+#'
+#' @param ... Any parameters to be passed to [dist_spec()], if the generation
 #' time is given as parameters of a distribution rather than a \code{disease}
 #' and \code{source}. In this case if the \code{mean} parameter is not set a
 #' mean of 1 will be assumed, if the \code{max} parameter not set then the
@@ -13,19 +14,25 @@
 #' \code{dist} parameter is given then a gamma distribution will be used for
 #' backwards compatibility. As for [delay_opts()] a list of parameters can
 #' also be supplied that describe a distribution (but unlike [delay_opts()]
-#' multiple distributions may be used (for example as output by
+#' multiple distributions may not currently be used (for example as output by
 #' get_generation_time()).
+#'
 #' @param max Integer, defaults to 15. Maximum generation time.
+#'
 #' @param fixed Logical, defaults to `FALSE`. Should the generation time be
 #' treated as coming from fixed (vs uncertain) distributions.
+#'
 #' @param prior_weight numeric, weight given to the generation time prior.
 #' By default the generation time prior will be weighted by the number of
 #' observation data points, usually preventing the posteriors from shifting
 #' much from the given distribution. Another sensible option would be 1,
 #' i.e. treating the generation time distribution as a single parameter.
-#' @inheritParams get_generation_time
-#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
+#'
 #' @return A list summarising the input delay distributions.
+#' @author Sebastian Funk
+#' @author Sam Abbott
+#' @inheritParams get_generation_time
+#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
 #' @export
 #' @examples
 #' # default settings with a fixed generation time
@@ -39,7 +46,7 @@
 
 generation_time_opts <- function(..., disease, source, max = 15L,
                                  fixed = FALSE, prior_weight = NULL) {
-  dot_options <- list(...) ## options for delay_dist
+  dot_options <- list(...) ## options for dist_spec
   ## check consistent options are given
   type_options <- (length(dot_options) > 0) + ## distributional parameters
     (!missing(disease) && !missing(source)) ## from included distributions
@@ -58,7 +65,7 @@ generation_time_opts <- function(..., disease, source, max = 15L,
       disease = disease, source = source, max_value = max
     )
     dist$fixed <- fixed
-    gt <- do.call(delay_dist, dist)
+    gt <- do.call(dist_spec, dist)
   } else { ## generation time provided as distributional parameters or not at all
     ## make gamma default for backwards compatibility
     if (!("dist" %in% names(dot_options))) {
@@ -71,7 +78,7 @@ generation_time_opts <- function(..., disease, source, max = 15L,
       dot_options$mean <- 1
     }
     dot_options$fixed <- fixed
-    gt <- do.call(delay_dist, dot_options)
+    gt <- do.call(dist_spec, dot_options)
   }
   gt$weight <- prior_weight
 
@@ -85,27 +92,21 @@ generation_time_opts <- function(..., disease, source, max = 15L,
 #' @description `r lifecycle::badge("stable")`
 #' Returns delay distributions formatted for usage by downstream
 #' functions.
-#' @param ... Parameters of discretised (upper-)truncated lognormal delay
-#' distributions as a list with the following parameters:
-#' "mean", the mu parameter or mean of the natural logarithm of the delay;
-#' "mean_sd", the standard deviation in the estimate of "mean" parameter
-#' (assumed normally distributed); "sd", the sigma parameter or standard
-#' deviation of the natural logarithm of the delay; "sd_sd", the standard
-#' deviation of the estimate of the "sd" parameter (assumed normally
-#' distributed) sd_sd"; and "max", the maximum delay.
-#' The "mean" parameter is mandatory; if it is the only one given it represents
-#' a fixed delay and must be integer-valued; if "sd" is also given and
-#' greater than 0 this represents a delay distribution and "mean" can be
-#' real-valued. In that case, "max" also needs to be given.
-#' The "mean_sd" and "sd_sd" parameters should be provided to represent
-#' uncertainty in the parameter values of the delay but are optional.
+#' @param ... A list of lists specifying distributions of reporting delays.
+#' Each list is passed to [dist_spec] and so should contain parameters linked
+#' to tha functions arguments. If a list is not given then it is assumed that
+#' no delay is present. If multiple lists are given then they are assumed to
+#' be independent.
+#'
 #' @param fixed Logical, defaults to `FALSE`. Should all reporting delays be
 #' treated as coming from fixed (vs uncertain) distributions. Making this
 #' simplification drastically reduces compute requirements. Setting this here
 #' overrides any of the constituent delay distributions being set to be fixed
 #' or not.
-#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+#'
 #' @return A list summarising the input delay distributions.
+#' @author Sam Abbott
+#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
 #' @export
 #' @examples
 #' # no delays
@@ -120,9 +121,12 @@ generation_time_opts <- function(..., disease, source, max = 15L,
 #'
 #' # A delay where uncertainty is implict
 #' delay_opts(list(mean = 1, mean_sd = 0, sd = 0.5, sd_sd = 0, max = 15))
+#'
+#' # Multiple delays
+#' delay_opts(delay, delay)
 delay_opts <- function(..., fixed = FALSE) {
   delays <- list(...)
-  data <- lapply(delays, do.call, what = delay_dist)
+  data <- lapply(delays, do.call, what = dist_spec)
 
   if (fixed) { ## set all to fixed
     data <- lapply(data, function(x) {
@@ -138,7 +142,7 @@ delay_opts <- function(..., fixed = FALSE) {
     ## convert back to arrays
     data <- lapply(data, function(x) array(unlist(x)))
   } else {
-    data <- delay_dist()
+    data <- dist_spec()
   }
 
   names(data) <- paste0("delay_", names(data))
@@ -175,8 +179,8 @@ delay_opts <- function(..., fixed = FALSE) {
 #'  estimate this distribution.
 #' @param dist Parameters of a discretised (upper-)truncated lognormal
 #' truncation distribution as a list with parameters that are all passed to
-#' [delay_dist].
-#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit delay_dist
+#' [dist_spec].
+#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
 #' @return A list summarising the input truncation distribution.
 #' @export
 #' @examples
@@ -186,7 +190,7 @@ delay_opts <- function(..., fixed = FALSE) {
 #' # truncation dist
 #' trunc_opts(dist = list(mean = 3, sd = 2))
 trunc_opts <- function(dist = list()) {
-  data <- do.call(delay_dist, dist)
+  data <- do.call(dist_spec, dist)
   names(data) <- paste0("trunc_", names(data))
   data$truncation <- as.integer(length(data$trunc_max) > 0)
   return(data)
@@ -309,8 +313,9 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #' @param alpha_sd Numeric, defaults to 0.05. The standard deviation of the magnitude parameter of
 #' the Gaussian process kernel. Should be approximately the expected standard deviation of the logged Rt.
 #' @param kernel Character string, the type of kernel required. Currently supporting the squared exponential
-#' kernel ("se") and the 3 over 2 Matern kernel ("matern", with `matern_type = 3/2`). Defaulting to the Matern 3 over 2 kernel as discontinuities are expected
-#' in Rt and infections.
+#' kernel ("se") and the 3 over 2 Matern kernel ("matern", with
+#' `matern_type = 3/2`). Defaulting to the Matern 3 over 2 kernel as
+#' discontinuities are expected  in Rt and infections.
 #' @param matern_type Numeric, defaults to 3/2. Type of Matern Kernel to use. Currently only the Matern
 #' 3/2 kernel is supported.
 #' @param basis_prop Numeric, proportion of time points to use as basis functions. Defaults to 0.1. Decreasing
