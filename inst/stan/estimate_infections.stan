@@ -151,10 +151,11 @@ model {
     delay_sd_sd[uncertain_sd_delays], delay_dist[uncertain_mean_delays], t
   );
   // priors for truncation
-  truncation_lp(
+  delays_lp(
     trunc_mean, trunc_sd,
     trunc_mean_mean, trunc_mean_sd,
-    trunc_sd_mean, trunc_sd_sd
+    trunc_sd_mean, trunc_sd_sd,
+    trunc_dist, 1
   );
   if (estimate_r) {
     // priors on Rt
