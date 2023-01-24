@@ -66,7 +66,8 @@ vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf
 }
 
 void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,
-               real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd, int weight){
+               real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd,
+               int[] delay_dist, int weight) {
     int mean_delays = num_elements(delay_mean);
     int sd_delays = num_elements(delay_sd);
     if (mean_delays) {
@@ -74,6 +75,10 @@ void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,
         if (delay_mean_sd[s] > 0) {
           // uncertain mean
           target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight;
+          // if a distribution with postive support only truncate the prior
+          if (delay_dist[s]) {
+            target += -normal_lccdf(0 | delay_mean_mean[s], delay_mean_sd[s]) * weight;
+          }
         }
       }
     }
@@ -82,8 +87,8 @@ void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,
         if (delay_sd_sd[s] > 0) {
           // uncertain sd
           target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight;
+          target += -normal_lccdf(0 | delay_sd_mean[s], delay_sd_sd[s]) * weight;
         }
      }
   }
 }
-

@@ -5,5 +5,4 @@
   int<lower = 1> gt_max[1];                        // maximum generation time
   int gt_fixed[1];                      // 0 = variable gt; 1 = fixed gt
   int gt_dist[1];                    // distribution (0 = lognormal, 1 = gamma)
-  int gt_weight;                    // distribution (0 = lognormal, 1 = gamma)
-  real gt_mean_lower[1];                  // lower bound on generation time
+  int gt_weight;                   
