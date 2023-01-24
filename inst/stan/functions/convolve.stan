@@ -21,8 +21,7 @@ vector convolve_dot_product(vector x, vector y, int len) {
     int ylen = num_elements(y);
     vector[len] z;
     for (s in 1:len) {
-        z[s] = 1e-5 + // add a small value to ensure numerical stability
-          dot_product(
+        z[s] = dot_product(
             x[max(1, (s - ylen + 1)):s], tail(y, min(ylen, s))
           );
     }
