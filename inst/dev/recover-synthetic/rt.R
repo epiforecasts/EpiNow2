@@ -131,7 +131,7 @@ for (method in c("nuts")) {
       generation_time = generation_time,
       delays = delay_opts(incubation_period, reporting_delay),
       rt = rt_opts(
-        prior = list(mean = 2, sd = 0.25), rw = 28, gp_on = "R0"
+        prior = list(mean = 2, sd = 0.25), rw = 14, gp_on = "R0"
       ),
       stan = stanopts,
       obs = obs_opts(scale = list(mean = 0.1, sd = 0.025)),
@@ -167,7 +167,7 @@ model_names <-
     sapply(seq_along(gp), function(x) paste0("gp_", names(gp)[x])),
     sapply(seq_along(backcalc), function(x) paste0("backcalc_", names(backcalc)[x])),
     sapply(seq_along(weekly_rw), function(x) paste0("weekly_rw_", names(weekly_rw)[x])),
-    sapply(seq_along(gp_rw), function(x) paste0("gp_rw_", names(gp_rw)[x])),
+    sapply(seq_along(gp_rw), function(x) paste0("gp_rw_", names(gp_rw)[x]))
   )
 
 if (fit_daily) {
