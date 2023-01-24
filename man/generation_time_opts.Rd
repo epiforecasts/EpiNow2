@@ -29,7 +29,8 @@ get_generation_time()).}
 
 \item{source}{A character string indicating the source of interest.}
 
-\item{max}{Integer, defaults to 15. Maximum generation time.}
+\item{max}{Integer, defaults to 15. Maximum generation time. This will
+not be used if a maximum is set in the distribution parameters.}
 
 \item{fixed}{Logical, defaults to \code{FALSE}. Should the generation time be
 treated as coming from fixed (vs uncertain) distributions.}
@@ -59,6 +60,7 @@ generation_time_opts(mean = 3, sd = 2)
 
 # An uncertain gamma distributed generation time
 generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
+
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec

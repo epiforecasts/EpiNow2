@@ -17,7 +17,8 @@
 #' multiple distributions may not currently be used (for example as output by
 #' get_generation_time()).
 #'
-#' @param max Integer, defaults to 15. Maximum generation time.
+#' @param max Integer, defaults to 15. Maximum generation time. This will
+#' not be used if a maximum is set in the distribution parameters.
 #'
 #' @param fixed Logical, defaults to `FALSE`. Should the generation time be
 #' treated as coming from fixed (vs uncertain) distributions.

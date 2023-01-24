@@ -7,9 +7,8 @@
 trunc_opts(dist = list())
 }
 \arguments{
-\item{dist}{Parameters of a discretised (upper-)truncated lognormal
-truncation distribution as a list with parameters that are all passed to
-\link{dist_spec}.}
+\item{dist}{Parameters of a distribution as supported by
+\code{\link[=dist_spec]{dist_spec()}}.}
 }
 \value{
 A list summarising the input truncation distribution.
@@ -18,7 +17,7 @@ A list summarising the input truncation distribution.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Returns a truncation distribution formatted for usage by
 downstream functions. See \code{estimate_truncation()} for an approach to
-estimate this distribution.
+estimate these distributions.
 }
 \examples{
 # no truncation
@@ -29,4 +28,9 @@ trunc_opts(dist = list(mean = 3, sd = 2))
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
+}
+\author{
+Sam Abbott
+
+Sebastian Funk
 }

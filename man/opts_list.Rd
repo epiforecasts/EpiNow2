@@ -7,25 +7,25 @@
 opts_list(opts, reported_cases, ...)
 }
 \arguments{
-\item{opts}{An \verb{_opts()} function call such as \code{rt_opts()}}
+\item{opts}{An \verb{_opts()} function call such as \code{rt_opts()}.}
 
 \item{reported_cases}{A data frame containing a \code{region} variable
-indicating the target regions}
+indicating the target regions.}
 
 \item{...}{Optional override for region defaults. See the examples
 for use case.}
 }
 \value{
 A named list of options per region which can be passed to the \verb{_opt}
-accepting arguments of \code{regional_epinow}
+accepting arguments of \code{regional_epinow}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
-Define a list of \verb{_opts()} to pass to \code{regional_epinow} \verb{_opts()} accepting arguments.
-This is useful when different settings are needed between regions within a single
-\code{regional_epinow} call. Using \code{opts_list} the defaults can be applied to all regions
-present with an override passed to regions as necessary (either within \code{opts_list} or
-externally).
+Define a list of \verb{_opts()} to pass to \code{regional_epinow} \verb{_opts()} accepting
+arguments. This is useful when different settings are needed between regions
+within a single \code{regional_epinow} call. Using \code{opts_list} the defaults can
+be applied to all regions present with an override passed to regions as
+necessary (either within \code{opts_list} or externally).
 }
 \examples{
 # uses example case vector
@@ -48,4 +48,7 @@ rt
 }
 \seealso{
 regional_epinow rt_opts
+}
+\author{
+Sam Abbott
 }

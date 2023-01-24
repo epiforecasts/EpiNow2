@@ -59,7 +59,7 @@ reporting_delay <- list(
   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10
 )
 
-# Instead of running them model we use example 
+# Instead of running them model we use example
 # data for speed in this example.
 cases <- cases[, cases := as.integer(confirm)]
 cases <- cases[, confirm := NULL][, sample := 1]

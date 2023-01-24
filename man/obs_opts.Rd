@@ -26,20 +26,19 @@ process.}
 \item{weight}{Numeric, defaults to 1. Weight to give the observed data in
 the log density.}
 
-\item{week_effect}{Logical defaulting to \code{TRUE}. Should a day of the week effect
-be used in the observation model.}
+\item{week_effect}{Logical defaulting to \code{TRUE}. Should a day of the week
+effect be used in the observation model.}
 
 \item{week_length}{Numeric assumed length of the week in days, defaulting to
-7 days. This can be modified if data aggregated over a period other than a week
-or if data has a non-weekly periodicity.}
+7 days. This can be modified if data aggregated over a period other than a
+week or if data has a non-weekly periodicity.}
 
-\item{scale}{List, defaulting to an empty list. Should an scaling factor be applied
-to map latent infections (convolved to date of report). If none empty a mean
-(\code{mean}) and standard deviation (\code{sd}) needs to be supplied defining the normally
-distributed scaling factor.}
+\item{scale}{List, defaulting to an empty list. Should an scaling factor be
+applied to map latent infections (convolved to date of report). If none empty a mea (\code{mean}) and standard deviation (\code{sd}) needs to be supplied
+defining the normally distributed scaling factor.}
 
 \item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be
-included in the model}
+included in the model.}
 
 \item{return_likelihood}{Logical, defaults to \code{FALSE}. Should the likelihood
 be returned by the model.}
@@ -61,4 +60,7 @@ obs_opts(week_effect = TRUE)
 
 # Scale reported data
 obs_opts(scale = list(mean = 0.2, sd = 0.02))
+}
+\author{
+Sam Abbott
 }

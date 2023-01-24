@@ -112,11 +112,11 @@ reported_cases <- example_confirmed[1:60]
 
 # set up example generation time
 generation_time <- generation_time_opts(
- disease = "SARS-CoV-2", source = "ganyani", fixed = TRUE
+  disease = "SARS-CoV-2", source = "ganyani", fixed = TRUE
 )
 # set delays between infection and case report
 incubation_period <- get_incubation_period(
- disease = "SARS-CoV-2", source = "lauer"
+  disease = "SARS-CoV-2", source = "lauer"
 )
 reporting_delay <- list(
   mean = convert_to_logmean(2, 1), mean_sd = 0,
@@ -163,11 +163,10 @@ plot(dep)
 # Adjusting for truncation of the most recent data
 # See estimate_truncation for an approach to estimating this from data
 trunc_dist <- trunc_opts(dist = list(
-   mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
-   sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1,
-   max = 3
- )
-)
+  mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
+  sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1,
+  max = 3
+))
 trunc <- estimate_infections(reported_cases,
   generation_time = generation_time,
   delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
