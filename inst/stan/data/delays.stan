@@ -13,4 +13,4 @@
   int<lower = 1> delay_max[delays];       // maximum incubation period
   int delay_dist[delays];       // 0 = lognormal; 1 = gamma
   // lower bound on each uncertain delay distribution
-  int delay_mean_lower[delays];     
+  real delay_mean_lower[delays];     
