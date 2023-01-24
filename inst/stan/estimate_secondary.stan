@@ -43,8 +43,8 @@ parameters{
   real<lower = 0> delay_sd[n_uncertain_sd_delays];      // sd of delays
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   real<lower = 0, upper = 1> frac_obs[obs_scale];   // fraction of cases that are ultimately observed
-  real trunc_mean[truncation];      // mean of truncation
-  real trunc_sd[truncation];        // sd of truncation
+  real trunc_mean[truncation && !trunc_fixed[1]];      // mean of truncation
+  real trunc_sd[truncation && !trunc_fixed[1]];        // sd of truncation
   real<lower = 0> rep_phi[model_type];   // overdispersion of the reporting process
 }
 
@@ -80,11 +80,12 @@ transformed parameters {
 model {
   // penalised priors for delay distributions
   delays_lp(
-    delay_mean, delay_mean_mean[uncertain_mean_delays], 
-    delay_mean_sd[uncertain_mean_delays], delay_sd, 
-    delay_sd_mean[uncertain_sd_delays] delay_sd_sd[uncertain_sd_delays],
-    delay_dist[uncertain_mean_delays], t
+    delay_mean, delay_mean_mean[uncertain_mean_delays],
+    delay_mean_sd[uncertain_mean_delays],
+    delay_sd, delay_sd_mean[uncertain_sd_delays],
+    delay_sd_sd[uncertain_sd_delays], delay_dist[uncertain_mean_delays], t
   );
+  
   // priors for truncation
   delays_lp(trunc_mean, trunc_sd, trunc_mean_mean, trunc_mean_sd,
             trunc_sd_mean, trunc_sd_sd, trunc_dist, 1);
