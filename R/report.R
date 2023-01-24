@@ -4,7 +4,7 @@
 #' Convolves latent infections to reported cases via an observation model.
 #' Likely to be removed/replaced in later releases by functionality drawing on
 #' the `stan` implementation.
-#' 
+#'
 #' @param case_estimates A data.table of case estimates with the following variables: date, sample, cases
 #'
 #' @param case_forecast A data.table of case forecasts with the following
@@ -39,7 +39,7 @@
 #'   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10
 #' )
 #'
-#' # Instead of running them model we use example 
+#' # Instead of running them model we use example
 #' # data for speed in this example.
 #' cases <- cases[, cases := as.integer(confirm)]
 #' cases <- cases[, confirm := NULL][, sample := 1]
