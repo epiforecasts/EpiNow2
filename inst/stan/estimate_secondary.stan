@@ -39,7 +39,7 @@ transformed data {
 
 parameters{
   // observation model
-  real delay_mean[n_uncertain_mean_delays];               // mean of delays
+  real<lower = delay_mean_lower[uncertain_mean_delays]> delay_mean[n_uncertain_mean_delays];
   real<lower = 0> delay_sd[n_uncertain_sd_delays];      // sd of delays
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   real<lower = 0, upper = 1> frac_obs[obs_scale];   // fraction of cases that are ultimately observed
