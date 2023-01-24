@@ -148,7 +148,7 @@ model {
     delay_mean, delay_mean_mean[uncertain_mean_delays],
     delay_mean_sd[uncertain_mean_delays],
     delay_sd, delay_sd_mean[uncertain_sd_delays],
-    delay_sd_sd[uncertain_sd_delays], t
+    delay_sd_sd[uncertain_sd_delays], delay_dist[uncertain_mean_delays], t
   );
   // priors for truncation
   truncation_lp(
@@ -163,8 +163,8 @@ model {
       seeding_time, r_logmean, r_logsd, prior_infections, prior_growth
     );
     // penalised_prior on generation interval
-    generation_time_lp(
-      gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, gt_weight
+    delays_lp(
+      gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, gt_dist, gt_weight
     );
   }
   // prior observation scaling

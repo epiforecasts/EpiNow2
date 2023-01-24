@@ -79,12 +79,7 @@ transformed parameters {
 
 model {
   // penalised priors for delay distributions
-  delays_lp(delay_mean,
-            delay_mean_mean[uncertain_mean_delays],
-            delay_mean_sd[uncertain_mean_delays],
-            delay_sd,
-            delay_sd_mean[uncertain_sd_delays],
-            delay_sd_sd[uncertain_sd_delays], t);
+
   // priors for truncation
   truncation_lp(trunc_mean, trunc_sd, trunc_mean_mean, trunc_mean_sd,
                 trunc_sd_mean, trunc_sd_sd);
