@@ -64,12 +64,12 @@ parameters{
   vector[estimate_r] log_R;                // baseline reproduction number estimate (log)
   real initial_infections[estimate_r] ;    // seed infections
   real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
-  real<lower = gt_mean_lower[1], upper = gt_max[1]> gt_mean[estimate_r && gt_mean_sd[1] > 0]; // mean of generation time (if uncertain)
+  real<upper = gt_max[1]> gt_mean[estimate_r && gt_mean_sd[1] > 0]; // mean of generation time (if uncertain)
   real<lower = 0> gt_sd[estimate_r && gt_sd_sd[1] > 0];       // sd of generation time (if uncertain)
   real<lower = 0> bp_sd[bp_n > 0 ? 1 : 0]; // standard deviation of breakpoint effect
   real bp_effects[bp_n];                   // Rt breakpoint effects
   // observation model
-  real<lower = delay_mean_lower[uncertain_mean_delays]> delay_mean[n_uncertain_mean_delays];         // mean of delays
+  real delay_mean[n_uncertain_mean_delays];         // mean of delays
   real<lower = 0> delay_sd[n_uncertain_sd_delays];  // sd of delays
   simplex[week_effect] day_of_week_simplex;// day of week reporting effect
   real<lower = 0, upper = 1> frac_obs[obs_scale];     // fraction of cases that are ultimately observed
