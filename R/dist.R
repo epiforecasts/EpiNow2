@@ -748,7 +748,8 @@ delay_dist <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       sd_mean = numeric(0),
       sd_sd = numeric(0),
       fixed = integer(0),
-      dist = integer(0)
+      dist = integer(0),
+      mean_lower = -Inf
     )
     if (is.null(max)) {
       ret$max <- integer(0)
@@ -788,6 +789,7 @@ delay_dist <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       ret$max <- max
     }
     ret$dist <- which(eval(formals()[["dist"]]) == dist) - 1
+    ret$mean_lower <- ifelse(ret$dist == 1, 0, -Inf)
   }
   return(lapply(ret, array))
 }
