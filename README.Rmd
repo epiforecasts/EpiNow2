@@ -30,7 +30,7 @@ The default model uses a non-stationary Gaussian process to estimate the time-va
 * A fixed reproduction number.
 * As piecewise constant by combining a fixed reproduction number with breakpoints.
 * As a random walk (by combining a fixed reproduction number with regularly spaced breakpoints (i.e weekly)).
-* Inferring infections using back-calculation and then calculating the time-varying reproduction number.
+* Inferring infections using deconvolution/back-calculation and then calculating the time-varying reproduction number.
 * Adjustment for the remaining susceptible population beyond the forecast horizon.
 
 These options generally reduce runtimes at the cost of the granularity of estimates or at the cost of real-time performance.
@@ -95,7 +95,8 @@ If data was not available we could instead make an informed estimate of the like
 
 ```{r}
 reporting_delay <- list(
-  mean = convert_to_logmean(2, 1), sd = convert_to_logsd(2, 1), max = 10
+  mean = convert_to_logmean(2, 1), sd = convert_to_logsd(2, 1), max = 10,
+  dist = "lognormal"
 )
 ```
 
