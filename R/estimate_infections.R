@@ -64,11 +64,11 @@
 #'
 #' # set up example generation time
 #' generation_time <- generation_time_opts(
-#'  disease = "SARS-CoV-2", source = "ganyani", fixed = TRUE
+#'   disease = "SARS-CoV-2", source = "ganyani", fixed = TRUE
 #' )
 #' # set delays between infection and case report
 #' incubation_period <- get_incubation_period(
-#'  disease = "SARS-CoV-2", source = "lauer"
+#'   disease = "SARS-CoV-2", source = "lauer"
 #' )
 #' reporting_delay <- list(
 #'   mean = convert_to_logmean(2, 1), mean_sd = 0,
@@ -115,11 +115,10 @@
 #' # Adjusting for truncation of the most recent data
 #' # See estimate_truncation for an approach to estimating this from data
 #' trunc_dist <- trunc_opts(dist = list(
-#'    mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
-#'    sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1,
-#'    max = 3
-#'  )
-#' )
+#'   mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
+#'   sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1,
+#'   max = 3
+#' ))
 #' trunc <- estimate_infections(reported_cases,
 #'   generation_time = generation_time,
 #'   delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
@@ -386,14 +385,14 @@ estimate_infections <- function(reported_cases,
 #'
 #' @param verbose Logical, should fitting progress be returned. Defaults to
 #' `FALSE`.
-#' 
+#'
 #' @inheritParams create_initial_conditions
 #' @importFrom rstan sampling
 #' @importFrom futile.logger flog.debug
 #' @importFrom utils capture.output
 #' @inheritParams fit_model_with_nuts
 #' @return A stanfit object
-#' @author Sam Abbott 
+#' @author Sam Abbott
 init_cumulative_fit <- function(args, samples = 50, warmup = 50,
                                 id = "init", verbose = FALSE) {
   futile.logger::flog.debug("%s: Fitting to cumulative data to initialise chains", id,
@@ -441,20 +440,20 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 #' Fits a stan model using `rstan::sampling`. Provides the optional ability to
 #' run chains using `future` with error catching, timeouts and merging of
 #' completed chains.
-#' 
+#'
 #' @param args List of stan arguments.
-#' 
+#'
 #' @param future Logical, defaults to `FALSE`. Should `future` be used to run
 #' stan chains in parallel.
-#' 
+#'
 #' @param max_execution_time Numeric, defaults to Inf. What is the maximum
 #' execution time per chain in seconds. Results will still be returned as long
 #' as at least 2 chains complete successfully within the timelimit.
-#' 
+#'
 #' @param id A character string used to assign logging information on error.
 #' Used by `regional_epinow` to assign errors to regions. Alter the default to
 #' run with error catching.
-#' 
+#'
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom R.utils withTimeout
 #' @importFrom future.apply future_lapply
@@ -577,7 +576,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
 #'
 #' @description `r lifecycle::badge("maturing")`
 #' Fits a stan model using variational inference.
-#' 
+#'
 #' @inheritParams fit_model_with_nuts
 #' @importFrom futile.logger flog.debug flog.info flog.error
 #' @importFrom purrr safely
@@ -643,18 +642,18 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Summaries posterior samples and adds additional custom variables.
-#' 
+#'
 #' @param posterior_samples A list of posterior samples as returned by
 #' `extract_parameter_samples`.
-#' 
+#'
 #' @param horizon Numeric, forecast horizon.
-#' 
+#'
 #' @param shift Numeric, the shift to apply to estimates.
-#' 
+#'
 #' @param burn_in Numeric, number of days to discard estimates for.
-#' 
+#'
 #' @param start_date Date, earliest date with data.
-#' 
+#'
 #' @inheritParams calc_summary_measures
 #' @importFrom data.table fifelse rbindlist
 #' @importFrom lubridate days

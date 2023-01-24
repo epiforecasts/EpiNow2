@@ -19,7 +19,7 @@ update_horizon <- function(horizon, target_date, reported_cases) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Saves observed data to a target location if given.
-#' 
+#'
 #' @inheritParams setup_target_folder
 #' @inheritParams epinow
 #' @return No return value, called for side effects
@@ -47,7 +47,7 @@ save_input <- function(reported_cases, target_folder) {
 #'
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan object
 #' be returned.
-#' 
+#'
 #' @seealso estimate_infections
 #' @author Sam Abbott
 #' @inheritParams setup_target_folder
@@ -74,11 +74,11 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
 #' @description `r lifecycle::badge("questioning")`
 #' Either extracts or converts reported cases from an input data table. For
 #' output from `estimate_infections` this is a simple filtering step.
-#' 
+#'
 #' @inheritParams setup_target_folder
 #' @inheritParams save_estimate_infections
 #' @inheritParams estimate_infections
-#' 
+#'
 #' @return A list of samples and summarised estimates of estimated cases by
 #' date of report.
 #' @author Sam Abbott
@@ -119,7 +119,7 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
 #' target folder. As produced by `setup_target_folder`.
 #'
 #' @inheritParams setup_target_folder
-#' 
+#'
 #' @return No return value, called for side effects
 #' @author Sam Abbott
 #' @export
@@ -151,14 +151,14 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Combines the output produced internally by `epinow` into a single list.
-#' 
+#'
 #' @param estimated_reported_cases A list of dataframes as produced by
 #' `estimates_by_report_date`.
-#' 
+#'
 #' @param plots A list of plots as produced by `report_plots`.
-#' 
+#'
 #' @param summary A list of summary output as produced by `report_summary`.
-#' 
+#'
 #' @inheritParams save_estimate_infections
 #'
 #' @return A list of output as returned by `epinow`

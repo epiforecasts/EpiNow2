@@ -10,7 +10,7 @@
 #'
 #' @param dates A vector identifying the dimensionality of the parameter to
 #' extract. Generally this will be a date.
-#' 
+#'
 #' @return A data frame containing the parameter name, date, sample id and
 #' sample value.
 #' @author Sam Abbott
@@ -74,7 +74,7 @@ extract_static_parameter <- function(param, samples) {
 #'
 #' @param merge if TRUE, merge samples and data so that parameters can be
 #' extracted from data.
-#' 
+#'
 #' @return A list of dataframes each containing the posterior of a parameter
 #' @author Sam Abbott
 #' @importFrom rstan extract
@@ -213,7 +213,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
 #' following variables: `variable`, `mean`, `mean_se`, `sd`, `median`, and
 #' `lower_`, `upper_` followed by credible interval labels indicating the
 #' credible intervals present.
-#' 
+#'
 #' @author Sam Abbott
 #' @inheritParams calc_summary_measures
 #' @export
@@ -278,7 +278,7 @@ extract_stan_param <- function(fit, params = NULL,
 #'
 #' @return A function that when called returns a set of initial conditions as a
 #' named list.
-#' 
+#'
 #' @author Sam Abbott
 #' @importFrom purrr map
 #' @importFrom rstan extract

@@ -48,22 +48,22 @@ get_raw_result <- function(file, region, date,
 #' @description `r lifecycle::badge("stable")`
 #' Summarises results across regions either from input or from disk. See the
 #' examples for details.
-#' 
-#' @param regional_output A list of output as produced by `regional_epinow` and 
+#'
+#' @param regional_output A list of output as produced by `regional_epinow` and
 #' stored in the `regional` list.
 #'
 #' @param results_dir A character string indicating the folder containing the
 #' `EpiNow2` results to extract.
-#' 
+#'
 #' @param date A Character string (in the format "yyyy-mm-dd") indicating the
 #' date to extract data for. Defaults to "latest" which finds the latest
 #' results available.
-#' 
+#'
 #' @param samples Logical, defaults to `TRUE`. Should samples be returned.
-#' 
+#'
 #' @param forecast Logical, defaults to `FALSE`. Should forecast results be
 #' returned.
-#' 
+#'
 #' @return A list of estimates, forecasts and estimated cases by date of report.
 #' @author Sam Abbott
 #' @export
@@ -183,7 +183,7 @@ get_regional_results <- function(regional_output,
 #' Search a data frame for a distribution and return it in the format expected
 #' by `delay_opts()` and the `generation_time` argument of `epinow` and
 #' `estimate_infections`.
-#' 
+#'
 #' @param data A `data.table` in the format of `generation_times`.
 #'
 #' @param disease A character string indicating the disease of interest.
@@ -194,9 +194,9 @@ get_regional_results <- function(regional_output,
 #'
 #' @param fixed Logical, defaults to `FALSE`. Should distributions be supplied
 #' as fixed values (vs with uncertainty)?
-#' 
+#'
 #' @return A list defining a distribution
-#' 
+#'
 #' @author Sam Abbott
 #' @export
 #' @examples
@@ -216,7 +216,7 @@ get_dist <- function(data, disease, source, max_value = 15, fixed = FALSE) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Extracts a literature distribution from `generation_times`.
-#' 
+#'
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @export
@@ -236,7 +236,7 @@ get_generation_time <- function(disease, source, max_value = 15,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Extracts a literature distribution from `incubation_periods`.
-#' 
+#'
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @author Sam Abbott
@@ -257,16 +257,16 @@ get_incubation_period <- function(disease, source, max_value = 15,
 #' @description `r lifecycle::badge("stable")`
 #' Extract a vector of regions with the most reported cases in a set time
 #' window.
-#' 
+#'
 #' @param time_window Numeric, number of days to include from latest date in
 #' data. Defaults to 7 days.
-#' 
+#'
 #' @param no_regions Numeric, number of regions to return. Defaults to 6.
-#' 
+#'
 #' @inheritParams regional_epinow
-#' 
+#'
 #' @return A character vector of regions with the highest reported cases
-#' 
+#'
 #' @author Sam Abbott
 #' @importFrom data.table copy setorderv
 #' @importFrom lubridate days

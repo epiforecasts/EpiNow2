@@ -13,38 +13,38 @@
 #' observation from a primary across multiple regions and
 #' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R)
 #' for an application forecasting Covid-19 deaths in Germany and Poland.
-#' 
+#'
 #' @param secondary A call to `secondary_opts()` or a list containing the
 #' following  binary variables: cumulative, historic, primary_hist_additive,
 #' current, primary_current_additive. These parameters control the structure of
 #' the secondary model, see `secondary_opts()` for details.
-#' 
+#'
 #' @param delays A call to [delay_opts()] defining delay distributions between
 #' primary and secondary observations See the documentation of `delay_opts()`
 #' for details. By default a diffuse prior  is assumed with a mean of 14 days
 #' and standard deviation of 7 days (with a standard deviation of 0.5 and 0.25
 #' respectively on the log scale).
-#' 
+#'
 #' @param reports A data frame containing the `date` of report and both
 #' `primary` and `secondary` reports.
-#' 
+#'
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
-#' 
+#'
 #' @param priors A `data.frame` of named priors to be used in model fitting
 #' rather than the defaults supplied from other arguments. This is typically
 #' useful if wanting to inform an estimate from the posterior of another model
 #' fit.
-#' 
+#'
 #' @param burn_in Integer, defaults to 14 days. The number of data points to
 #' use for estimation but not to fit to at the beginning of the time series.
 #' This must be less than the number of observations.
-#' 
+#'
 #' @param verbose Logical, should model fitting progress be returned. Defaults
 #' to `interactive()`.
 #'
 #' @param ... Additional parameters to pass to `rstan::sampling`.
-#' 
+#'
 #' @return A list containing: `predictions` (a data frame ordered by date with
 #' the primary, and secondary observations, and a summary of the model
 #' estimated secondary observations), `posterior` which contains a summary of
@@ -79,7 +79,7 @@
 #'
 #' # Simulate secondary cases
 #' cases <- simulate_secondary(cases, type = "incidence")
-#
+#' #
 #' # fit model to example data specifying a weak prior for fraction reported
 #' # with a secondary case
 #' inc <- estimate_secondary(cases[1:60],
@@ -182,7 +182,8 @@ estimate_secondary <- function(reports,
   out$predictions <- out$predictions[, lapply(.SD, round, 1)]
   out$predictions <- out$predictions[, date := reports[(burn_in + 1):.N]$date]
   out$predictions <- data.table::merge.data.table(
-    reports, out$predictions, all = TRUE, by = "date"
+    reports, out$predictions,
+    all = TRUE, by = "date"
   )
   out$posterior <- extract_stan_param(
     fit,
@@ -203,23 +204,23 @@ estimate_secondary <- function(reports,
 #' (either additive or subtractive). It can optionally be cumulative. See the
 #' documentation of `type` for sensible options to cover most use cases and the
 #' returned values of [secondary_opts()] for all currently supported options.
-#' 
+#'
 #' @param type A character string indicating the type of observation the
 #' secondary reports are. Options include:
-#' 
+#'
 #' - "incidence": Assumes that secondary reports equal a convolution of
 #' previously observed primary reported cases. An example application is deaths
 #' from an infectious disease predicted by reported cases of that disease (or
 #' estimated infections).
-#' 
+#'
 #' - "prevalence": Assumes that secondary reports are cumulative and are
 #' defined by currently observed primary reports minus a convolution of
 #' secondary reports. An example application is hospital bed usage predicted by
 #' hospital admissions.
-#' 
+#'
 #' @param ... Overwrite options defined by type. See the returned values for all
 #' options that can be passed.
-#' 
+#'
 #' @seealso estimate_secondary
 #' @return A list of binary options summarising secondary model used in
 #' `estimate_secondary()`. Options returned are `cumulative` (should the
@@ -230,7 +231,7 @@ estimate_secondary <- function(reports,
 #' primary reported cases contribute to current secondary reported cases),
 #' `primary_current_additive` (should current primary reported cases be
 #' additive or subtractive).
-#' 
+#'
 #' @export
 #' @author Sam Abbott
 #' @examples
@@ -309,8 +310,8 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       delay_sd <- priors[grepl("delay_sd", variable)]
       if (nrow(delay_mean) > 0) {
         if (is.null(data$delay_mean_mean)) {
-         warning(
-           "Cannot replace delay distribution parameters as no default has been set" # nolint
+          warning(
+            "Cannot replace delay distribution parameters as no default has been set" # nolint
           )
         }
         data$delay_mean_mean <- as.array(signif(delay_mean$mean, 3))
@@ -347,9 +348,9 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #' output.
 #'
 #' @param ... Pass additional arguments to plot function. Not currently in use.
-#' 
+#'
 #' @return A `ggplot` object.
-#' 
+#'
 #' @author Sam Abbott
 #' @seealso plot estimate_secondary
 #' @method plot estimate_secondary
@@ -474,13 +475,18 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
   # apply scaling
   data <- data[, scaled := scaling * primary]
   # add convolution
-  data <- data[,
-    conv := purrr::pmap_dbl(list(i = index, m = meanlog, s = sdlog),
-     function(i, m, s) {
-       discretised_lognormal_pmf_conv(
-         scaled[max(1, i - delay_max):i], meanlog = m, sdlog = s
+  data <- data[
+    ,
+    conv := purrr::pmap_dbl(
+      list(i = index, m = meanlog, s = sdlog),
+      function(i, m, s) {
+        discretised_lognormal_pmf_conv(
+          scaled[max(1, i - delay_max):i],
+          meanlog = m, sdlog = s
         )
-     })]
+      }
+    )
+  ]
   # build model
   if (type == "incidence") {
     data <- data[, secondary := conv]
@@ -501,8 +507,8 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
     data <- data[, secondary := purrr::map_dbl(secondary, ~ rpois(1, .))]
   } else if (family == "negbin") {
     data <- data[, secondary := purrr::map_dbl(
-      secondary, ~ rnbinom(1, mu = .), ...)
-    ]
+      secondary, ~ rnbinom(1, mu = .), ...
+    )]
   }
   data <- data[, secondary := as.integer(secondary)]
   return(data[])
@@ -531,7 +537,7 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
 #' `primary` is of class "estimate_infections" then the internal samples will
 #' be filtered to have a minimum date ahead of those observed in the `estimate`
 #' object.
-#' 
+#'
 #' @param primary_variable A character string indicating the primary variable,
 #' defaulting to "reported_cases". Only used when primary is of class
 #' "estimate_infections".
