@@ -13,7 +13,7 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 * Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
 * Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for pre-computing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
 * The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. By @sbfnk in #340.
-* Support for gamma distributed delays and log-normal distributed generation times. 
+* Support for gamma distributed delays and log-normal distributed generation times.
 
 ## Package
 
@@ -29,7 +29,9 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @
 * Switched to `linewidth` in `plot_CrIs` rather than `size` to avoid issues with `ggplot2` 3.4.0.
 * Set up validation against synthetic data to run as a CI check.
 * Added tests for internal stan convolution functions.
-
+* Update all `get_` distribution functions to return the distribution as well as summary
+ parameters.
+ 
 ## Documentation
 
 * Slight edits to the model outline for `estimate_infections()`.
