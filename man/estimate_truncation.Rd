@@ -73,7 +73,7 @@ zero observations.
 
 This model is then fit using \code{stan} with standard normal, or half normal,
 prior for the mean, standard deviation, 1 over the square root of the over
-dispersionn and additive noise term.
+dispersion and additive noise term.
 
 This approach assumes that:
 \itemize{

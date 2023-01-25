@@ -19,7 +19,7 @@ increasing the \code{prior_window} wit a sensible second step being to no longer
 use reported cases as a prior (i.e set \code{prior = "none"}).}
 
 \item{prior_window}{Integer, defaults to 14 days. The mean centred smoothing
-windo to apply to mean shifted reports (used as a prior during back
+window to apply to mean shifted reports (used as a prior during back
 calculation). 7 days is minimum recommended settings as this smooths day of
 the week effects but depending on the quality of the data and the amount of
 information users wish to use as a prior (higher values equalling a less

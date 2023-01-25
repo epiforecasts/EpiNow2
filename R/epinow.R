@@ -2,7 +2,7 @@
 #'
 #' @description `r lifecycle::badge("maturing")`
 #' This function wraps the functionality of `estimate_infections()` and
-#' `forecast_infections()` in orde to estimate Rt and cases by date of
+#' `forecast_infections()` in order to estimate Rt and cases by date of
 #' infection, forecast into these infections into the future. It also contains
 #' additional functionality to convert forecasts to date of report and produc
 #' summary output useful for reporting results and interpreting them. See

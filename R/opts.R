@@ -99,7 +99,7 @@ generation_time_opts <- function(..., disease, source, max = 15L,
 #' functions.
 #' @param ... A list of lists specifying distributions of reporting delays.
 #' Each list is passed to [dist_spec()] and so should contain parameters linked
-#' to tha functions arguments. If a list is not given then it is assumed that
+#' to the functions arguments. If a list is not given then it is assumed that
 #' no delay is present. If multiple lists are given then they are assumed to
 #' be independent.
 #'
@@ -306,7 +306,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' use reported cases as a prior (i.e set `prior = "none"`).
 #'
 #' @param prior_window Integer, defaults to 14 days. The mean centred smoothing
-#' windo to apply to mean shifted reports (used as a prior during back
+#' window to apply to mean shifted reports (used as a prior during back
 #' calculation). 7 days is minimum recommended settings as this smooths day of
 #' the week effects but depending on the quality of the data and the amount of
 #' information users wish to use as a prior (higher values equalling a less
@@ -436,7 +436,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' week or if data has a non-weekly periodicity.
 #'
 #' @param scale List, defaulting to an empty list. Should an scaling factor be
-#' applied to map latent infections (convolved to date of report). If none empty a mea (`mean`) and standard deviation (`sd`) needs to be supplied
+#' applied to map latent infections (convolved to date of report). If none empty a mean (`mean`) and standard deviation (`sd`) needs to be supplied
 #' defining the normally distributed scaling factor.
 #'
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
