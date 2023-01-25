@@ -25,7 +25,7 @@ if greater than the number of chains).}
 better with the minimum being two.}
 
 \item{dist}{Character string, which distribution to fit. Defaults to
-exponential (\code{"exp"}) bu gamma (\code{"gamma"}) and lognormal (\code{"lognormal"}) are
+exponential (\code{"exp"}) but gamma (\code{"gamma"}) and lognormal (\code{"lognormal"}) are
 also supported.}
 
 \item{verbose}{Logical, defaults to FALSE. Should verbose progress messages

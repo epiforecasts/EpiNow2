@@ -9,7 +9,7 @@ delay_opts(..., fixed = FALSE)
 \arguments{
 \item{...}{A list of lists specifying distributions of reporting delays.
 Each list is passed to \code{\link[=dist_spec]{dist_spec()}} and so should contain parameters linked
-to tha functions arguments. If a list is not given then it is assumed that
+to the functions arguments. If a list is not given then it is assumed that
 no delay is present. If multiple lists are given then they are assumed to
 be independent.}
 

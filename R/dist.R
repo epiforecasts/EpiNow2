@@ -159,7 +159,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @param samples Numeric, number of samples to take
 #'
 #' @param dist Character string, which distribution to fit. Defaults to
-#' exponential (`"exp"`) bu gamma (`"gamma"`) and lognormal (`"lognormal"`) are
+#' exponential (`"exp"`) but gamma (`"gamma"`) and lognormal (`"lognormal"`) are
 #' also supported.
 #'
 #' @param cores Numeric, defaults to 1. Number of CPU cores to use (no effect
@@ -765,7 +765,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' Specify a distribution.
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Defines the parameters of a suported distribution for use in onward
+#' Defines the parameters of a supported distribution for use in onward
 #' modelling. Multiple distribution families are supported - see the
 #' documentation for `family` for details. This function provides distribution
 #' functionality in [delay_opts()], [generation_time_opts()], and

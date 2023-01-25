@@ -2,11 +2,11 @@
 
 This release focusses on bug fixes and package infrastructure updates along with a few quality of life improvements such as enabling the use of fixed delays and generation times.
 
-Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @seabbs whilst some of the development work on this release was being done.
+Thanks to @seabbs, and @sbfnk and for [SACEMA](https://www.sacema.org/) for hosting @seabbs whilst some of the development work on this release was being done.
 
 ## Breaking changes
 
-* To enable enhance functionality `trunc_opts()` now takes a single argument (`dist`) which defines the truncation delay rather than a arbitary list of arguments (which was previously used to define the distribution.
+* To enable enhance functionality `trunc_opts()` now takes a single argument (`dist`) which defines the truncation delay rather than a arbitrary list of arguments (which was previously used to define the distribution.
 * Updated the handling of generation times in the renewal equation to be left truncation adjusted for the zeroth day. This more accurately the typical approach taken to estimate generation times but may slightly impact estimates vs those produced using previous versions.
 * The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. This may impact a small number of edge case uses with the majority being models fit using `estimate_secondary()`. By @sbfnk in #340.
 

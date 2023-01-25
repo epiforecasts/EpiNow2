@@ -113,7 +113,7 @@ report_cases, and report_summary.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 This function wraps the functionality of \code{estimate_infections()} and
-\code{forecast_infections()} in orde to estimate Rt and cases by date of
+\code{forecast_infections()} in order to estimate Rt and cases by date of
 infection, forecast into these infections into the future. It also contains
 additional functionality to convert forecasts to date of report and produc
 summary output useful for reporting results and interpreting them. See

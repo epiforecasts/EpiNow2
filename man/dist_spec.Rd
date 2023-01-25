@@ -66,7 +66,7 @@ A list of distribution options.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Defines the parameters of a suported distribution for use in onward
+Defines the parameters of a supported distribution for use in onward
 modelling. Multiple distribution families are supported - see the
 documentation for \code{family} for details. This function provides distribution
 functionality in \code{\link[=delay_opts]{delay_opts()}}, \code{\link[=generation_time_opts]{generation_time_opts()}}, and
