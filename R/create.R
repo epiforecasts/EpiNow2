@@ -402,6 +402,7 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @importFrom purrr safely
 #' @return A list of stan data
 #' @author Sam Abbott
+#' @author Sebastian Funk
 #' @export
 create_stan_data <- function(reported_cases, generation_time,
                              rt, gp, obs, delays, horizon,
