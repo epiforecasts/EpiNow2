@@ -32,13 +32,13 @@ vector generate_seed(real[] initial_infections, real[] initial_growth, int uot) 
 vector renewal_model(vector oR, vector uobs_infs, vector gt_rev_pmf,
                      int pop, int ht) {
   // time indices and storage
-  int ot = num_elements(oR);
+  int ot = num_elements(R);
   int uot = num_elements(uobs_inf);
   int nht = ot - ht;
   int t = ot + uot;
-  vector[ot] R = oR;
+  vector[ot] R = exp(r);
   real exp_adj_Rt;
-  vector[t] infections = rep_vector(0, t);
+  vector[t] infections;
   vector[ot] cum_infections;
   vector[ot] infectiousness;
   // Initialise infections
@@ -71,16 +71,10 @@ vector growth_model(vector r, vector uobs_inf, int ht) {
   int uot = num_elements(uobs_inf);
   int nht = ot - ht;
   int t = ot + uot;
-  vector[t] infections = rep_vector(1e-5, t);
-  vector[ot] exp_r = exp(r);
-  vector[ot] obs_inf;
+  vector[t] infections;
   // Update observed infections
-  obs_inf[1] = uobs_inf[uot] * exp_r[1];
-  for (i in 2:t) {
-    obs_inf[i] = obs_inf[i - 1] * exp_r[i];
-  }
-  infections[1:uot] = infections[1:uot] + uobs_inf;
-  infections[(uot + 1):t] = infections[(uot + 1):t] + obs_inf;
+  infections[1:uot] = uobs_inf;
+  infections[(uot + 1):t] = exp(log(uobs_inf[uot]) + cumulative_sum(r));
   return(infections);
 }
 
@@ -91,10 +85,9 @@ vector infection_model(vector cov, vector uobs_inf, int ht) {
   int uot = num_elements(uobs_inf);
   int nht = ot - ht;
   int t = ot + uot;
-  vector[t] infections = rep_vector(1e-5, t);
-  vector[ot] obs_inf = cov;
-  infections[1:uot] = infections[1:uot] + uobs_inf;
-  infections[(uot + 1):t] = infections[(uot + 1):t] + obs_inf;
+  vector[t] infections;
+  infections[1:uot] = uobs_inf;
+  infections[(uot + 1):t] = exp(cov);
   return(infections);
 }
 

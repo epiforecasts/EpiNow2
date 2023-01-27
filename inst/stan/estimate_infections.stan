@@ -221,9 +221,7 @@ generated quantities {
         delay_dist, 1, 1, 0
       );
       // calculate Rt using infections and generation time
-      R = calculate_Rt(
-        infections, seeding_time, sampled_gt_rev_pmf,
-      );
+      R = calculate_Rt(infections, seeding_time, sampled_gt_rev_pmf);
     } else {
       R = cov;
     }

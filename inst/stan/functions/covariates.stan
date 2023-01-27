@@ -40,7 +40,6 @@ vector update_covariate(array[] real log_cov_mean, vector cov_t,
   }
   // Calculate combined covariates
   cov = cov + bp + gp;
-  cov = exp(cov);
   return(cov);
 }
 void covariate_lp(real[] log_cov_mean,
