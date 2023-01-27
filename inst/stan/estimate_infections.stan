@@ -191,7 +191,7 @@ generated quantities {
     // calculate Rt using infections and generation time
     R = calculate_Rt(infections, seeding_time, sampled_gt_rev_pmf);
   } else {
-    R = cov;
+    R = exp(cov);
   }
   if (process_model != 1) {
     r = calculate_growth(infections, seeding_time);

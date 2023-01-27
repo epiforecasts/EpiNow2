@@ -29,18 +29,18 @@ vector generate_seed(real[] initial_infections, real[] initial_growth, int uot) 
   return(seed_infs);
 }
 // generate infections using infectiousness
-vector renewal_model(vector oR, vector uobs_inf, vector gt_rev_pmf,
+vector renewal_model(vector r, vector uobs_inf, vector gt_rev_pmf,
                       int pop, int ht) {
   // time indices and storage
-  int ot = num_elements(oR);
+  int ot = num_elements(R);
   int uot = num_elements(uobs_inf);
   int nht = ot - ht;
   int t = ot + uot;
-  vector[ot] R = oR;
+  vector[ot] R = exp(r);
   real exp_adj_Rt;
-  vector[t] infections = rep_vector(1e-5, t);
-  vector[ot] cum_infections = rep_vector(0, ot);
-  vector[ot] infectiousness = rep_vector(1e-5, ot);
+  vector[t] infections;
+  vector[ot] cum_infections;
+  vector[ot] infectiousness;
   // Initialise infections
   infections[1:uot] = uobs_inf;
   // calculate cumulative infections
@@ -49,13 +49,13 @@ vector renewal_model(vector oR, vector uobs_inf, vector gt_rev_pmf,
   }
   // iteratively update infections
   for (s in 1:ot) {
-    infectiousness[s] += update_infectiousness(infections, gt_rev_pmf, uot, s);
+    infectiousness[s] = update_infectiousness(infections, gt_rev_pmf, uot, s);
     if (pop && s > nht) {
       exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[nht]));
       exp_adj_Rt = exp_adj_Rt > 1 ? 1 : exp_adj_Rt;
       infections[s + uot] = (pop - cum_infections[s]) * (1 - exp_adj_Rt);
     }else{
-      infections[s + uot] += R[s] * infectiousness[s];
+      infections[s + uot] = R[s] * infectiousness[s];
     }
     if (pop && s < ot) {
       cum_infections[s + 1] = cum_infections[s] + infections[s + uot];
@@ -71,16 +71,10 @@ vector growth_model(vector r, vector uobs_inf, int ht) {
   int uot = num_elements(uobs_inf);
   int nht = ot - ht;
   int t = ot + uot;
-  vector[t] infections = rep_vector(1e-5, t);
-  vector[ot] exp_r = exp(r);
-  vector[ot] obs_inf;
+  vector[t] infections;
   // Update observed infections
-  obs_inf[1] = uobs_inf[uot] * exp_r[1];
-  for (i in 2:t) {
-    obs_inf[i] = obs_inf[i - 1] * exp_r[i];
-  }
-  infections[1:uot] = infections[1:uot] + uobs_inf;
-  infections[(uot + 1):t] = infections[(uot + 1):t] + obs_inf;
+  infections[1:uot] = uobs_inf;
+  infections[(uot + 1):t] = exp(log(uobs_inf[uot]) + cumulative_sum(r));
   return(infections);
 }
 
@@ -91,10 +85,9 @@ vector infection_model(vector cov, vector uobs_inf, int ht) {
   int uot = num_elements(uobs_inf);
   int nht = ot - ht;
   int t = ot + uot;
-  vector[t] infections = rep_vector(1e-5, t);
-  vector[ot] obs_inf = cov;
-  infections[1:uot] = infections[1:uot] + uobs_inf;
-  infections[(uot + 1):t] = infections[(uot + 1):t] + obs_inf;
+  vector[t] infections;
+  infections[1:uot] = uobs_inf;
+  infections[(uot + 1):t] = exp(cov);
   return(infections);
 }
 
