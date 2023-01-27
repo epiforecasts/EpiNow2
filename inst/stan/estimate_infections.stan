@@ -87,8 +87,7 @@ transformed parameters {
     infections = growth_model(cov, uobs_inf, future_time);
   } else if (process_model == 2) {
     // via Rt
-    vector[gt_max[1]] gt_pmf;
-    gt_rev_pmf = get_delay_rev_pmf(
+    vector[gt_max[1]] gt_rev_pmf = get_delay_rev_pmf(
       gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
@@ -174,7 +173,7 @@ model {
 generated quantities {
   int imputed_reports[ot_h];
   vector[estimate_r > 0 ? 0: ot_h] R;
-  real r[ot_h - 1];
+  vector[ot_h - 1] r;
   vector[return_likelihood  ? ot : 0] log_lik;
   if (estimate_r == 0 && process_model != 2) {
     // sample generation time
