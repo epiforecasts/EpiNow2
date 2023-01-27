@@ -32,7 +32,7 @@ vector generate_seed(real[] initial_infections, real[] initial_growth, int uot) 
 vector renewal_model(vector oR, vector uobs_infs, vector gt_rev_pmf,
                      int pop, int ht) {
   // time indices and storage
-  int ot = num_elements(R);
+  int ot = num_elements(r);
   int uot = num_elements(uobs_inf);
   int nht = ot - ht;
   int t = ot + uot;
