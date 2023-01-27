@@ -494,6 +494,7 @@ create_stan_data <- function(reported_cases, generation_time,
 #' @importFrom truncnorm rtruncnorm
 #' @export
 #  @author Sam Abbott
+#  @author Sebastian Funk
 create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- list()
