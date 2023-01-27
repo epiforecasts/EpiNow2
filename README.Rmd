@@ -91,7 +91,7 @@ reporting_delay <- estimate_delay(
 )
 ```
 
-If data was not available we could instead make an informed estimate of the likely delay (*this is a synthetic example and not applicable to real world use cases and we have not included uncertainty to decreased runtimes*),
+If data was not available we could instead make an informed estimate of the likely delay (*this is a synthetic example and not applicable to real world use cases and we have not included uncertainty to decrease runtimes*),
 
 ```{r}
 reporting_delay <- list(
