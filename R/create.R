@@ -14,6 +14,7 @@
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases
 #' @author Sam Abbott
+#' @author Lloyd Chapman
 #' @export
 create_clean_reported_cases <- function(reported_cases, horizon,
                                         filter_leading_zeros = TRUE,
