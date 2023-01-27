@@ -431,7 +431,7 @@ process_opts <- function(model = "R",
                          rw = 0,
                          use_breakpoints = TRUE,
                          future = "latest",
-                         stationary = FALSE,
+                         stationary = FALSE
                          pop = 0) {
 
   ## check
@@ -450,7 +450,7 @@ process_opts <- function(model = "R",
     use_breakpoints = use_breakpoints,
     future = future,
     stationary = stationary,
-    pop = pop
+    pop = pop,
   )
 
   # replace default settings with those specified by user

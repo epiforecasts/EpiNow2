@@ -7,7 +7,7 @@ Growth}
 \usage{
 estimate_infections(
   data,
-  model = "R",
+  process_opts = process_opts(),
   generation_time = generation_time_opts(),
   delays = delay_opts(),
   truncation = trunc_opts(),
@@ -92,6 +92,10 @@ Corresponds to the "DEBUG" level from \code{futile.logger}. See \code{setup_logg
 for more detailed logging options.}
 
 \item{reported_cases}{Deprecated; use \code{data} instead.}
+\item{process_model}{A character string that defines what is being
+modelled: "infections", "growth" or "R" (default). If ' set to "R",
+a generation time distribution needs to be defined via the \code{generation_time}
+argument.}
 }
 \value{
 A list of output including: posterior samples, summarised posterior
