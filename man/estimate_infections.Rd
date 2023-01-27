@@ -7,7 +7,7 @@ Growth}
 \usage{
 estimate_infections(
   reported_cases,
-  model = "R",
+  process_opts = process_opts(),
   generation_time = generation_time_opts(),
   delays = delay_opts(),
   truncation = trunc_opts(),
@@ -80,6 +80,11 @@ run with error catching.}
 otherwise \code{FALSE}. Should verbose debug progress messages be printed.
 Corresponds to the "DEBUG" level from \code{futile.logger}. See \code{setup_logging}
 for more detailed logging options.}
+
+\item{process_model}{A character string that defines what is being
+modelled: "infections", "growth" or "R" (default). If ' set to "R",
+a generation time distribution needs to be defined via the \code{generation_time}
+argument.}
 }
 \value{
 A list of output including: posterior samples, summarised posterior
