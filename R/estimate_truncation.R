@@ -25,8 +25,8 @@
 #' zero observations.
 #'
 #' This model is then fit using `stan` with standard normal, or half normal,
-#' prior for the mean, standard deviation, 1 over the square root of the over
-#' dispersion and additive noise term.
+#' prior for the mean, standard deviation, 1 over the square root of the
+#' overdispersion and additive noise term.
 #'
 #' This approach assumes that:
 #'  - Current truncation is related to past truncation.
