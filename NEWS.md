@@ -36,7 +36,7 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://www.sacema.org/) for host
 ## Documentation
 
 * Slight edits to the model outline for `estimate_infections()`.
-* Updated examples to make use of fixed distributions to improve run-times where appropriate.
+* Updated examples to make use of fixed distributions.
 
 ## Bugs
 
