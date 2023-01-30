@@ -409,7 +409,8 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
     cores = 2,
     open_progress = FALSE,
     show_messages = FALSE,
-    control = list(adapt_delta = 0.9, max_treedepth = 13),
+    adapt_delta = 0.9,
+    max_treedepth = 13,
     refresh = ifelse(verbose, 50, -1)
   )
   # change observations to be cumulative in order to protect against noise and give
@@ -488,10 +489,12 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
 
   fit_chain <- function(chain, stan_args, max_time, catch = FALSE) {
     stan_args$chain_id <- chain
+    model <- stan_args$object
+    stan_args$object <- NULL
     if (catch) {
       fit <- tryCatch(
         withCallingHandlers(
-          R.utils::withTimeout(do.call(rstan::sampling, stan_args),
+          R.utils::withTimeout(do.call(model$sample, stan_args),
             timeout = max_time,
             onTimeout = "silent"
           ),
@@ -511,7 +514,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
         }
       )
     } else {
-      fit <- R.utils::withTimeout(do.call(rstan::sampling, stan_args),
+      fit <- R.utils::withTimeout(do.call(model$sample, stan_args),
         timeout = max_time,
         onTimeout = "silent"
       )
@@ -525,7 +528,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
   }
 
   if (!future) {
-    fit <- fit_chain(1,
+    fit <- fit_chain(seq_len(args$chains),
       stan_args = args, max_time = max_execution_time,
       catch = !id %in% c("estimate_infections", "epinow")
     )
@@ -566,6 +569,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
           )
         }
       }
+
       fit <- rstan::sflist2stanfit(fit)
     }
   }
@@ -604,7 +608,9 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
   }
 
   fit_vb <- function(stan_args) {
-    fit <- do.call(rstan::vb, stan_args)
+    model <- stan_args$object
+    stan_args$object <- NULL
+    fit <- do.call(model$variational, stan_args)
 
     if (length(names(fit)) == 0) {
       return(NULL)

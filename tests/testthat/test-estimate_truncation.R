@@ -44,8 +44,8 @@ test_that("estimate_truncation can return values from simulated data and plot
            them", {
   # fit model to example data
   est <- estimate_truncation(example_data,
-    verbose = interactive(), refresh = 0,
-    chains = 2, iter = 1000, warmup = 250
+    verbose = interactive(),
+    chains = 2, iter_sampling = 1000, iter_warmup = 250
   )
   expect_equal(
     names(est),

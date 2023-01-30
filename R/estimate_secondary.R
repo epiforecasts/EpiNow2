@@ -55,7 +55,6 @@
 #' @inheritParams estimate_infections
 #' @inheritParams update_secondary_args
 #' @inheritParams calc_CrIs
-#' @importFrom rstan sampling
 #' @importFrom lubridate wday
 #' @importFrom data.table as.data.table merge.data.table
 #' @examples
@@ -168,9 +167,9 @@ estimate_secondary <- function(reports,
   )
   # fit
   if (is.null(model)) {
-    model <- stanmodels$estimate_secondary
+    model <- epinow2_model("estimate_secondary")
   }
-  fit <- rstan::sampling(model,
+  fit <- model$sample(
     data = data,
     init = inits,
     refresh = ifelse(verbose, 50, 0),
@@ -598,12 +597,8 @@ forecast_secondary <- function(estimate,
   updated_primary <- primary
 
   ## extract samples from given stanfit object
-  draws <- rstan::extract(estimate$fit,
-    pars = c(
-      "sim_secondary", "log_lik",
-      "lp__", "secondary"
-    ),
-    include = FALSE
+  draws <- extract_samples(
+    estimate$fit
   )
   # extract data from stanfit
   data <- estimate$data
@@ -632,7 +627,7 @@ forecast_secondary <- function(estimate,
 
   # load model
   if (is.null(model)) {
-    model <- stanmodels$simulate_secondary
+    model <- epinow2_model("simulate_secondary")
   }
 
   # allocate empty parameters
@@ -642,16 +637,15 @@ forecast_secondary <- function(estimate,
   )
   data$all_dates <- as.integer(all_dates)
   ## simulate
-  sims <- rstan::sampling(
-    object = model,
-    data = data, chains = 1, iter = 1,
-    algorithm = "Fixed_param",
+  sims <- model$sample(
+    data = data, chains = 1,
+    iter_sampling = 1, fixed_param = TRUE,
     refresh = 0
   )
 
   # extract samples and organise
   dates <- unique(primary_fit$date)
-  samples <- rstan::extract(sims, "sim_secondary")$sim_secondary
+  samples <- extract_samples(sims, variables = "sim_secondary")$sim_secondary
   samples <- as.data.table(samples)
   colnames(samples) <- c("iterations", "sample", "time", "value")
   samples <- samples[, c("iterations", "time") := NULL]

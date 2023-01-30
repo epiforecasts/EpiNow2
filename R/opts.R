@@ -540,7 +540,8 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                 warmup = 250,
                                 samples = 2000,
                                 chains = 4,
-                                control = list(),
+                                adapt_delta = 0.95,
+                                max_treedepth = 15,
                                 save_warmup = FALSE,
                                 seed = as.integer(runif(1, 1, 1e8)),
                                 future = FALSE,
@@ -548,16 +549,16 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                 ...) {
   opts <- list(
     cores = cores,
-    warmup = warmup,
+    iter_warmup = warmup,
     chains = chains,
     save_warmup = save_warmup,
     seed = seed,
     future = future,
-    max_execution_time = max_execution_time
+    max_execution_time = max_execution_time,
+    adapt_delta = adapt_delta,
+    max_treedepth = max_treedepth
   )
-  control_def <- list(adapt_delta = 0.95, max_treedepth = 15)
-  opts$control <- update_list(control_def, control)
-  opts$iter <- ceiling(samples / opts$chains) + opts$warmup
+  opts$iter_sampling <- ceiling(samples / opts$chains)
   opts <- c(opts, ...)
   return(opts)
 }
@@ -623,11 +624,13 @@ rstan_vb_opts <- function(samples = 2000,
 #' rstan_opts(method = "vb")
 rstan_opts <- function(object = NULL,
                        samples = 2000,
-                       method = "sampling", ...) {
+                       method = "sampling",
+                       model_options = list(),
+                       ...) {
   method <- match.arg(method, choices = c("sampling", "vb"))
   # shared everywhere opts
   if (is.null(object)) {
-    object <- stanmodels$estimate_infections
+    object <- do.call(epinow2_model, model_options)
   }
   opts <- list(
     object = object,

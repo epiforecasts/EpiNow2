@@ -100,10 +100,9 @@ Imports:
     progressr,
     purrr,
     R.utils (>= 2.0.0),
-    Rcpp (>= 0.12.0), 
     rlang (>= 0.4.7),
     rstan (>= 2.21.1),
-    rstantools (>= 2.2.0),
+    cmdstanr,
     runner,
     scales,
     stats,
@@ -123,13 +122,6 @@ Suggests:
     testthat,
     tidyr,
     withr
-LinkingTo: 
-    BH (>= 1.66.0),
-    Rcpp (>= 0.12.0),
-    RcppEigen (>= 0.3.3.3.0),
-    RcppParallel (>= 5.0.1),
-    rstan (>= 2.21.1),
-    StanHeaders (>= 2.21.0-5)
 Biarch: true
 Config/testthat/edition: 3
 Encoding: UTF-8
@@ -138,5 +130,5 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 NeedsCompilation: yes
-SystemRequirements: GNU make
+SystemRequirements: CmdStan (>= 2.29)
 VignetteBuilder: knitr

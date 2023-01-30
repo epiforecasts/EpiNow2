@@ -63,4 +63,6 @@ construct a single list for input into stan with all data required present.
 }
 \author{
 Sam Abbott
+
+Sebastian Funk
 }
