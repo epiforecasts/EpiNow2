@@ -16,11 +16,11 @@ touchstone::benchmark_run(
     delays = delay_opts(incubation_period, reporting_delay),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
-      cores = 2, samples = 1000, chains = 2,
+      cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
     verbose = interactive()
   )',
-  n = 5
+  n = 2
 )
 
 # benchmark readme example with uncertain delays and gt
@@ -32,26 +32,26 @@ touchstone::benchmark_run(
     delays = delay_opts(uincubation_period, reporting_delay),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
-      cores = 2, samples = 1000, chains = 2,
+      cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
     verbose = interactive()
   )',
-  n = 5
+  n = 2
 )
 
 # benchmark readme example without delays
 touchstone::benchmark_run(
   expr_before_benchmark = 'source("setup.R")',
-  no_delays = epinow(
+  no_delays = 'epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(generation_time),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
-      cores = 2, samples = 1000, chains = 2,
+      cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
     verbose = interactive()
-  ),
-  n = 5
+  )',
+  n = 2
 )
 
 # benchmark readme example with a stationary GP
@@ -62,11 +62,11 @@ touchstone::benchmark_run(
     generation_time = generation_time_opts(generation_time),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2), gp_on = "R0"),
     stan = stan_opts(
-      cores = 2, samples = 1000, chains = 2,
+      cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
     verbose = interactive()
   )',
-  n = 5
+  n = 2
 )
 
 # benchmark readme example with a weekly random walk
@@ -78,11 +78,11 @@ touchstone::benchmark_run(
     rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
     gp = NULL,
     stan = stan_opts(
-      cores = 2, samples = 1000, chains = 2,
+      cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
     verbose = interactive()
   )',
-  n = 5
+  n = 2
 )
 
 # create artifacts used downstream in the GitHub Action
