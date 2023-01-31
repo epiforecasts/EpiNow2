@@ -1,52 +1,36 @@
-// discretised truncated gamma pmf
-vector discretised_gamma_pmf(real mu, real sigma, int max_val) {
-  int n = max_val;
-  vector[n+1] upper_cdf;
+// Calculate the daily probability of reporting using parametric
+// distributions up to the maximum observed delay.
+// If sigma is 0 all the probability mass is put on n.
+// Adapted from https://github.com/epiforecasts/epinowcast
+// @author Sam Abbott
+// @author Adrian Lison
+vector discretised_pmf(real mu, real sigma, int n, int dist,
+                       int left_truncate) {
   vector[n] pmf;
-  // calculate alpha and beta for gamma distribution
-  real small = 1e-5;
-  real large = 1e8;
-  real c_sigma = fmax(small, sigma);
-  real c_mu = fmax(small, mu);
-  real alpha = ((c_mu) / c_sigma)^2;
-  real beta = (c_mu) / (c_sigma^2);
-  // account for numerical issues
-  alpha = fmax(small, alpha);
-  alpha = fmin(large, alpha);
-  beta = fmax(small, beta);
-  beta = fmin(large, beta);
-  // calculate pmf
-  for (i in 1:(n+1)) {
-    upper_cdf[i] = gamma_cdf(i,  alpha, beta);
-  }
-  // discretise
-  for (i in 1:n) {
-    pmf[n+1-i] = upper_cdf[i+1] - upper_cdf[i];
-  }
-  pmf = pmf / (upper_cdf[n+1] - upper_cdf[1]);
-  return(pmf);
-}
-
-// discretised truncated lognormal pmf
-vector discretised_lognormal_pmf(real mu, real sigma, int max_val, int rev) {
-  int n = max_val;
-  vector[n] upper_cdf;
-  vector[n] pmf;
-  for (i in 1:n) {
-    upper_cdf[i] = lognormal_cdf(i,  mu, sigma);
-  }
-  // discretise
-  if (rev) {
-    pmf[n] = upper_cdf[1];
-    for (i in 2:n) {
-      pmf[n+1-i] = upper_cdf[i] - upper_cdf[i-1];
+  if (sigma > 0) {
+    vector[n + 1] upper_cdf;
+    if (dist == 0) {
+      for (i in 1:(n + 1)) {
+        upper_cdf[i] = lognormal_cdf(i - 1 + left_truncate, mu, sigma);
+      }
+    } else if (dist == 1) {
+      real alpha = mu^2 / sigma^2;
+      real beta = mu / sigma^2;
+      for (i in 1:(n + 1)) {
+        upper_cdf[i] = gamma_cdf(i - 1 + left_truncate, alpha, beta);
+      }
+    } else {
+      reject("Unknown distribution function provided.");
     }
-  }else{
-    pmf[1] = upper_cdf[1];
-    pmf[2:n] = upper_cdf[2:n] - upper_cdf[1:(n-1)];
+    // discretise
+    pmf = upper_cdf[2:(n + 1)] - upper_cdf[1:n];
+    // normalize
+    pmf = pmf / (upper_cdf[n + 1] - upper_cdf[1]);
+  } else {
+    // delta function
+    pmf = rep_vector(0, n);
+    pmf[n] = 1;
   }
-  // normalize
-  pmf = pmf / upper_cdf[n];
   return(pmf);
 }
 
@@ -60,9 +44,51 @@ vector reverse_mf(vector pmf) {
   return rev_pmf;
 }
 
-// discretised truncated gamma pmf
-vector discretised_delta_pmf(int n) {
-  vector[n] pmf = rep_vector(0, n);
-  pmf[n] = 1;
+// combined fixed/variable pmfs
+vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf_n, int[] dist, int len, int left_truncate, int reverse_pmf) {
+  int n_fixed = num_elements(fixed_pmf);
+  int n_variable = num_elements(pmf_mu);
+  vector[len] pmf = rep_vector(0, len);
+  if (n_fixed > 0) {
+    pmf[1:n_fixed] = fixed_pmf;
+  } else if (n_variable > 0) {
+    pmf[1] = 1;
+  }
+  for (s in 1:n_variable) {
+    vector[pmf_n[s]] variable_pmf;
+    variable_pmf = discretised_pmf(pmf_mu[s], pmf_sigma[s], pmf_n[s], dist[s], left_truncate);
+    pmf = convolve(pmf, variable_pmf, len);
+  }
+  if (reverse_pmf) {
+    pmf = reverse_mf(pmf);
+  }
   return(pmf);
+}
+
+void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,
+               real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd,
+               int[] delay_dist, int weight) {
+    int mean_delays = num_elements(delay_mean);
+    int sd_delays = num_elements(delay_sd);
+    if (mean_delays) {
+      for (s in 1:mean_delays) {
+        if (delay_mean_sd[s] > 0) {
+          // uncertain mean
+          target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight;
+          // if a distribution with postive support only truncate the prior
+          if (delay_dist[s]) {
+            target += -normal_lccdf(0 | delay_mean_mean[s], delay_mean_sd[s]) * weight;
+          }
+        }
+      }
+    }
+    if (sd_delays) {
+      for (s in 1:sd_delays) {
+        if (delay_sd_sd[s] > 0) {
+          // uncertain sd
+          target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight;
+          target += -normal_lccdf(0 | delay_sd_mean[s], delay_sd_sd[s]) * weight;
+        }
+     }
+  }
 }

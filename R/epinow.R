@@ -1,21 +1,29 @@
 #' Real-time Rt Estimation, Forecasting and Reporting
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' This function wraps the functionality of `estimate_infections()` and `forecast_infections()` in order
-#' to estimate Rt and cases by date of infection, forecast into these infections into the future. It also contains
-#' additional functionality to convert forecasts to date of report and produce summary output useful for reporting
-#' results and interpreting them. See [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867) for an
-#' example of using `epinow` to estimate Rt for Covid-19 in a country from the ECDC data source.
-#' @param output A character vector of optional output to return. Supported options are samples ("samples"),
-#' plots ("plots"), the run time ("timing"), copying the dated folder into a
-#' latest folder (if `target_folder` is not null,
-#' set using "latest"), and the stan fit ("fit"). The default is to return all
-#' options. This argument uses partial matching so for example passing "sam"
-#' will lead to samples being reported.
-#' @param return_output Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
-#' if no directory for saving is specified.
+#' This function wraps the functionality of `estimate_infections()` and
+#' `forecast_infections()` in order to estimate Rt and cases by date of
+#' infection, forecast into these infections into the future. It also contains
+#' additional functionality to convert forecasts to date of report and produc
+#' summary output useful for reporting results and interpreting them. See
+#' [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867) for
+#' an example of using `epinow` to estimate Rt for Covid-19 in a country from
+#' the ECDC data source.
+#'
+#' @param output A character vector of optional output to return. Supported
+#' options are samples ("samples"), plots ("plots"), the run time ("timing"),
+#' copying the dated folder into a latest folder (if `target_folder` is not
+#' null, set using "latest"), and the stan fit ("fit"). The default is to
+#' return all options.
+#'
+#' @param return_output Logical, defaults to FALSE. Should output be returned,
+#' this automatically updates to TRUE if no directory for saving is specified.
+#'
 #' @param plot_args A list of optional arguments passed to `plot.epinow()`.
-#' @return A list of output from estimate_infections, forecast_infections,  report_cases, and report_summary.
+#'
+#' @return A list of output from estimate_infections, forecast_infections,
+#' report_cases, and report_summary.
+#' @author Sam Abbott
 #' @export
 #' @seealso estimate_infections simulate_infections forecast_infections regional_epinow
 #' @inheritParams setup_target_folder
@@ -25,6 +33,7 @@
 #' @importFrom lubridate days
 #' @importFrom futile.logger flog.fatal flog.warn flog.error flog.debug ftry
 #' @importFrom rlang cnd_muffle
+#' @author Sam Abbott
 #' @examples
 #' \donttest{
 #' # set number of cores to use

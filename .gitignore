@@ -23,6 +23,7 @@ src/stanExports*.h
 # docs
 inst/doc
 docs
+*.html
 
 # CRAN
 CRAN-RELEASE

@@ -11,13 +11,18 @@ extract_parameter(param, samples, dates)
 
 \item{samples}{Extracted stan model (using \code{rstan::extract})}
 
-\item{dates}{A vector identifying the dimensionality of the parameter to extract. Generally this will be
-a date}
+\item{dates}{A vector identifying the dimensionality of the parameter to
+extract. Generally this will be a date.}
 }
 \value{
-A data frame containing the parameter name, date, sample id and sample value
+A data frame containing the parameter name, date, sample id and
+sample value.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Extracts a single from a list of \code{stan} output and returns it as a \code{data.table}.
+Extracts a single from a list of \code{stan} output and returns it as a
+\code{data.table}.
+}
+\author{
+Sam Abbott
 }

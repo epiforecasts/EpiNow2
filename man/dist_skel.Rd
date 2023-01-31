@@ -9,20 +9,21 @@ dist_skel(n, dist = FALSE, cum = TRUE, model, params, max_value = 120)
 \arguments{
 \item{n}{Numeric vector, number of samples to take (or days for the probability density).}
 
-\item{dist}{Logical, defaults to \code{FALSE}. Should the probability density be returned rather
-than a number of samples.}
+\item{dist}{Logical, defaults to \code{FALSE}. Should the probability density be
+returned rather than a number of samples.}
 
-\item{cum}{Logical, defaults to \code{TRUE}. If \code{dist = TRUE} should the returned distribution be
-cumulative.}
+\item{cum}{Logical, defaults to \code{TRUE}. If \code{dist = TRUE} should the returned
+distribution be cumulative.}
 
-\item{model}{Character string, defining the model to be used. Supported options are exponential
-("exp"), gamma ("gamma"), and log normal ("lognorm")}
+\item{model}{Character string, defining the model to be used. Supported
+options are exponential ("exp"), gamma ("gamma"), and log normal ("lognorm")}
 
-\item{params}{A list of parameters values (by name) required for each model. For the exponential model
-this is a rate parameter and for the gamma model this is alpha and beta.}
+\item{params}{A list of parameters values (by name) required for each model.
+For the exponential model this is a rate parameter and for the gamma model
+this is alpha and beta.}
 
-\item{max_value}{Numeric, the maximum value to allow. Defaults to 120. Samples outside
-of this range are resampled.}
+\item{max_value}{Numeric, the maximum value to allow. Defaults to 120.
+Samples outside of this range are resampled.}
 }
 \value{
 A vector of samples or a probability distribution.
@@ -79,4 +80,7 @@ dist_skel(0:10,
   model = "lognorm", dist = TRUE, cum = FALSE,
   params = list(mean = log(5), sd = log(2))
 )
+}
+\author{
+Sam Abbott
 }

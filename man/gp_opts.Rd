@@ -17,36 +17,41 @@ gp_opts(
 )
 }
 \arguments{
-\item{basis_prop}{Numeric, proportion of time points to use as basis functions. Defaults to 0.1. Decreasing
-this value results in a decrease in accuracy but a faster compute time (with increasing it having the first
-effect). In general smaller posterior length scales require a higher proportion of basis functions.
-See (Riutort-Mayol et al. 2020 \url{https://arxiv.org/abs/2004.11408}) for advice on updating this default.
-This setting is an area of active research.}
+\item{basis_prop}{Numeric, proportion of time points to use as basis
+functions. Defaults to 0.1. Decreasing this value results in a decrease in
+accuracy but a faster compute time (with increasing it having the first
+effect). In general smaller posterior length scales require a higher
+proportion of basis functions. See (Riutort-Mayol et al. 2020
+\url{https://arxiv.org/abs/2004.11408}) for advice on updating this default.}
 
-\item{boundary_scale}{Numeric, defaults to 1.5. Boundary scale of the approximate Gaussian process. See
-(Riutort-Mayol et al. 2020 \url{https://arxiv.org/abs/2004.11408}) for advice on updating this
-default.}
+\item{boundary_scale}{Numeric, defaults to 1.5. Boundary scale of the approximate Gaussian process. See (Riutort-Mayol et al. 2020
+\url{https://arxiv.org/abs/2004.11408}) for advice on updating this default.}
 
-\item{ls_mean}{Numeric, defaults to 21 days. The mean of the lognormal length scale.}
+\item{ls_mean}{Numeric, defaults to 21 days. The mean of the lognormal
+length scale.}
 
-\item{ls_sd}{Numeric, defaults to 7 days. The standard deviation of the log normal length
-scale. If \code{ls_sd = 0}, inverse-gamma prior on Gaussian process length scale will
-be used with recommended parameters \code{inv_gamma(1.499007, 0.057277 * ls_max)}.}
+\item{ls_sd}{Numeric, defaults to 7 days. The standard deviation of the log
+normal length scale. If \code{ls_sd = 0}, inverse-gamma prior on Gaussian
+process length scale will be used with recommended parameters
+\code{inv_gamma(1.499007, 0.057277 * ls_max)}.}
 
 \item{ls_min}{Numeric, defaults to 0. The minimum value of the length scale.}
 
-\item{ls_max}{Numeric, defaults to 60. The maximum value of the length scale. Updated in
-\code{create_gp_data} to be the length of the input data if this is smaller.}
+\item{ls_max}{Numeric, defaults to 60. The maximum value of the length
+scale. Updated in \code{create_gp_data} to be the length of the input data if this
+is smaller.}
 
-\item{alpha_sd}{Numeric, defaults to 0.05. The standard deviation of the magnitude parameter of
-the Gaussian process kernel. Should be approximately the expected standard deviation of the logged Rt.}
+\item{alpha_sd}{Numeric, defaults to 0.05. The standard deviation of the
+magnitude parameter o  the Gaussian process kernel. Should be approximately
+the expected standard deviation of the logged Rt.}
 
-\item{kernel}{Character string, the type of kernel required. Currently supporting the squared exponential
-kernel ("se") and the 3 over 2 Matern kernel ("matern", with \code{matern_type = 3/2}). Defaulting to the Matern 3 over 2 kernel as discontinuities are expected
-in Rt and infections.}
+\item{kernel}{Character string, the type of kernel required. Currently
+supporting the squared exponential kernel ("se") and the 3 over 2 Matern
+kernel ("matern", with \code{matern_type = 3/2}). Defaulting to the Matern 3 over
+2 kernel as discontinuities are expected  in Rt and infections.}
 
-\item{matern_type}{Numeric, defaults to 3/2. Type of Matern Kernel to use. Currently only the Matern
-3/2 kernel is supported.}
+\item{matern_type}{Numeric, defaults to 3/2. Type of Matern Kernel to use.
+Currently only the Matern 3/2 kernel is supported.}
 }
 \value{
 A list of settings defining the Gaussian process
@@ -62,4 +67,7 @@ gp_opts()
 
 # add a custom length scale
 gp_opts(ls_mean = 4)
+}
+\author{
+Sam Abbott
 }

@@ -41,3 +41,6 @@ create_gp_data(gp_opts(ls_mean = 14), data)
 \seealso{
 gp_opts
 }
+\author{
+Sam Abbott
+}

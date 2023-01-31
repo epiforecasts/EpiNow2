@@ -1,13 +1,20 @@
 #' Extract Samples for a Parameter from a Stan model
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Extracts a single from a list of `stan` output and returns it as a `data.table`.
+#' Extracts a single from a list of `stan` output and returns it as a
+#' `data.table`.
+#
 #' @param param Character string indicating the parameter to extract
+#'
 #' @param samples Extracted stan model (using `rstan::extract`)
-#' @param dates A vector identifying the dimensionality of the parameter to extract. Generally this will be
-#' a date
+#'
+#' @param dates A vector identifying the dimensionality of the parameter to
+#' extract. Generally this will be a date.
+#'
+#' @return A data frame containing the parameter name, date, sample id and
+#' sample value.
+#' @author Sam Abbott
 #' @importFrom data.table melt as.data.table
-#' @return A data frame containing the parameter name, date, sample id and sample value
 extract_parameter <- function(param, samples, dates) {
   param_df <- data.table::as.data.table(
     t(
@@ -35,7 +42,9 @@ extract_parameter <- function(param, samples, dates) {
 #' Extract Samples from a Parameter with a Single Dimension
 #'
 #' @inheritParams extract_parameter
-#' @return A data frame containing the parameter name, sample id and sample value
+#' @return A data frame containing the parameter name, sample id and sample
+#' value
+#' @author Sam Abbott
 extract_static_parameter <- function(param, samples) {
   data.table::data.table(
     parameter = param,
@@ -48,19 +57,28 @@ extract_static_parameter <- function(param, samples) {
 #' Extract Parameter Samples from a Stan Model
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Extracts a custom set of parameters from a stan object and adds stratification and
-#' dates where appropriate.
-#' @param stan_fit A fit Stan model as returned by `rstan:sampling`
+#' Extracts a custom set of parameters from a stan object and adds
+#' stratification and dates where appropriate.
+#'
+#' @param stan_fit A fit Stan model as returned by `rstan:sampling`.
+#'
 #' @param data A list of the data supplied to the `rstan::sampling` call.
+#'
 #' @param reported_dates A vector of dates to report estimates for.
-#' @param reported_inf_dates A vector of dates to report infection estimates for.
-#' @param drop_length_1 Logical; whether the first dimension should be dropped if it
-#' is if length 1; this is necessary when processing simulation results
+#'
+#' @param reported_inf_dates A vector of dates to report infection estimates
+#' for.
+#'
+#' @param drop_length_1 Logical; whether the first dimension should be dropped
+#' if it is off length 1; this is necessary when processing simulation results.
+#'
 #' @param merge if TRUE, merge samples and data so that parameters can be
-#' extracted from data
+#' extracted from data.
+#'
+#' @return A list of dataframes each containing the posterior of a parameter
+#' @author Sam Abbott
 #' @importFrom rstan extract
 #' @importFrom data.table data.table
-#' @return A list of dataframes each containing the posterior of a parameter
 extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_inf_dates,
                                       drop_length_1 = FALSE, merge = FALSE) {
   # extract sample from stan object
@@ -129,21 +147,27 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
     out$day_of_week <- out$day_of_week[, value := value * data$week_effect]
     out$day_of_week <- out$day_of_week[, strat := date][, c("time", "date") := NULL]
   }
-  if (data$delays > 0) {
-    out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$delays)
+  if (data$n_uncertain_mean_delays > 0) {
+    out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$n_uncertain_mean_delays)
     out$delay_mean <-
       out$delay_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
-    out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$delays)
+  }
+  if (data$n_uncertain_sd_delays > 0) {
+    out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$n_uncertain_sd_delays)
     out$delay_sd <-
       out$delay_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
   }
   if (data$truncation > 0) {
-    out$truncation_mean <- extract_parameter("truncation_mean", samples, 1)
-    out$truncation_mean <-
-      out$truncation_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
-    out$truncation_sd <- extract_parameter("truncation_sd", samples, 1)
-    out$truncation_sd <-
-      out$truncation_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
+    if (data$trunc_mean_sd > 0) {
+      out$truncation_mean <- extract_parameter("trunc_mean", samples, 1)
+      out$truncation_mean <-
+        out$truncation_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
+    }
+    if (data$trunc_sd_sd > 0) {
+      out$truncation_sd <- extract_parameter("trunc_sd", samples, 1)
+      out$truncation_sd <-
+        out$truncation_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
+    }
   }
   if (data$estimate_r && data$gt_mean_sd > 0) {
     out$gt_mean <- extract_static_parameter("gt_mean", samples)
@@ -176,13 +200,21 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
 #' Extracts summarised parameter posteriors from a `stanfit` object using
 #' `rstan::summary` in a format consistent with other summary functions in
 #' `EpiNow2`.
-#' @param fit A `stanfit` object
-#' @param params A character vector of parameters to extract. Defaults to all parameters.
-#' @param var_names Logical defaults to `FALSE`. Should variables be named. Automatically set
-#' to TRUE if multiple parameters are to be extracted.
-#' @return A `data.table` summarising parameter posteriors. Contains a following variables:
-#' `variable`, `mean`, `mean_se`, `sd`, `median`, and `lower_`, `upper_` followed by
-#' credible interval labels indicating the credible intervals present.
+#'
+#' @param fit A `stanfit` objec.
+#
+#' @param params A character vector of parameters to extract. Defaults to all
+#' parameters.
+#'
+#' @param var_names Logical defaults to `FALSE`. Should variables be named.
+#' Automatically set to TRUE if multiple parameters are to be extracted.
+#'
+#' @return A `data.table` summarising parameter posteriors. Contains a
+#' following variables: `variable`, `mean`, `mean_se`, `sd`, `median`, and
+#' `lower_`, `upper_` followed by credible interval labels indicating the
+#' credible intervals present.
+#'
+#' @author Sam Abbott
 #' @inheritParams calc_summary_measures
 #' @export
 #' @importFrom data.table as.data.table :=
@@ -223,23 +255,35 @@ extract_stan_param <- function(fit, params = NULL,
 #' Generate initial conditions from a Stan fit
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' Extracts posterior samples to use to initialise a full model fit. This may be useful
-#' for certain data sets where the sampler gets stuck or cannot easily be initialised.
-#' In `estimate_infections()`, `epinow()` and `regional_epinow()` this option can be
-#' engaged by setting `stan_opts(init_fit = <stanfit>)`.
+#' Extracts posterior samples to use to initialise a full model fit. This may
+#' be useful for certain data sets where the sampler gets stuck or cannot
+#' easily be initialised. In `estimate_infections()`, `epinow()` and\
+#' `regional_epinow()` this option can be engaged by setting
+#' `stan_opts(init_fit = <stanfit>)`.
 #'
-#' This implementation is based on the approach taken in [epidemia](https://github.com/ImperialCollegeLondon/epidemia/)
-#' authored by James Scott.
-#' @param fit A stanfit object
-#' @param current_inits A function that returns a list of initial conditions (such as
-#' `create_initial_conditions()`). Only used in `exclude_list` is specified.
-#' @param exclude_list A character vector of parameters to not initialise from the fit
-#' object, defaulting to `NULL`.
+#' This implementation is based on the approach taken in
+#' [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) authored by
+#' James Scott.
+#'
+#' @param fit A stanfit object.
+#'
+#' @param current_inits A function that returns a list of initial conditions
+#' (such as `create_initial_conditions()`). Only used in `exclude_list` is
+#' specified.
+#'
+#' @param exclude_list A character vector of parameters to not initialise from
+#' the fit object, defaulting to `NULL`.
+#'
 #' @param samples Numeric, defaults to 50. Number of posterior samples.
+#'
+#' @return A function that when called returns a set of initial conditions as a
+#' named list.
+#'
+#' @author Sam Abbott
 #' @importFrom purrr map
 #' @importFrom rstan extract
 #' @export
-#' @return A function that when called returns a set of initial conditions as a named list.
+
 extract_inits <- function(fit, current_inits,
                           exclude_list = NULL,
                           samples = 50) {

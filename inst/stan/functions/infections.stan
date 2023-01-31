@@ -1,22 +1,24 @@
 // calculate infectiousness (weighted sum of the generation time and infections)
 // for a single time point
-real update_infectiousness(vector infections, vector gt_pmf,
-                           int seeding_time, int max_gt, int index){
+real update_infectiousness(vector infections, vector gt_rev_pmf,
+                           int seeding_time, int index){
+  int gt_max = num_elements(gt_rev_pmf);
   // work out where to start the convolution of past infections with the
   // generation time distribution: (current_time - maximal generation time) if
   // that is >= 1, otherwise 1
-  int inf_start = max(1, (index + seeding_time - max_gt));
+  int inf_start = max(1, (index + seeding_time - gt_max));
   // work out where to end the convolution: (current_time - 1)
   int inf_end = (index + seeding_time - 1);
   // number of indices of the generation time to sum over (inf_end - inf_start + 1)
-  int pmf_accessed = min(max_gt, index + seeding_time - 1);
+  int pmf_accessed = min(gt_max, index + seeding_time - 1);
   // calculate the elements of the convolution
-  real new_inf = dot_product(infections[inf_start:inf_end], tail(gt_pmf, pmf_accessed));
+  real new_inf = dot_product(
+    infections[inf_start:inf_end], tail(gt_rev_pmf, pmf_accessed)
+  );
   return(new_inf);
 }
 // generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
-vector generate_infections(vector oR, int uot,
-                           real gt_mean, real gt_sd, int max_gt,
+vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
                            real[] initial_infections, real[] initial_growth,
                            int pop, int ht) {
   // time indices and storage
@@ -28,15 +30,6 @@ vector generate_infections(vector oR, int uot,
   vector[t] infections = rep_vector(1e-5, t);
   vector[ot] cum_infections = rep_vector(0, ot);
   vector[ot] infectiousness = rep_vector(1e-5, ot);
-  // generation time pmf
-  vector[max_gt] gt_pmf;
-  if (gt_sd > 0) {
-    // SD > 0: use discretised gamma
-    gt_pmf = discretised_gamma_pmf(gt_mean, gt_sd, max_gt) + 1e-5;
-  } else {
-    // SD == 0: use discretised delta
-    gt_pmf = discretised_delta_pmf(max_gt);
-  }
   // Initialise infections using daily growth
   infections[1] = exp(initial_infections[1]);
   if (uot > 1) {
@@ -50,7 +43,7 @@ vector generate_infections(vector oR, int uot,
   }
   // iteratively update infections
   for (s in 1:ot) {
-    infectiousness[s] += update_infectiousness(infections, gt_pmf, uot, max_gt, s);
+    infectiousness[s] += update_infectiousness(infections, gt_rev_pmf, uot, s);
     if (pop && s > nht) {
       exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[nht]));
       exp_adj_Rt = exp_adj_Rt > 1 ? 1 : exp_adj_Rt;
@@ -86,14 +79,3 @@ vector deconvolve_infections(vector shifted_cases, vector noise, int fixed,
   }
   return(infections);
 }
-// Update the log density for the generation time distribution mean and sd
-void generation_time_lp(real[] gt_mean, real gt_mean_mean, real gt_mean_sd,
-                        real[] gt_sd, real gt_sd_mean, real gt_sd_sd, int weight) {
-  if (gt_mean_sd > 0) {
-    target += normal_lpdf(gt_mean[1] | gt_mean_mean, gt_mean_sd) * weight;
-  }
-  if (gt_sd_sd > 0) {
-    target += normal_lpdf(gt_sd[1] | gt_sd_mean, gt_sd_sd) * weight;
-  }
-}
-

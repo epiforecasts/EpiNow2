@@ -7,7 +7,7 @@ template:
       alt: "Example estimates produced by EpiNow2 of the reproduction number, cases by date of infection and cases by date of report"
     twitter:
       creator: "@seabbs"
-      site: "@cmmid_lshtm"
+      site: "@epiforecasts"
       card: summary_large_image
   params:
     bootswatch: lumen

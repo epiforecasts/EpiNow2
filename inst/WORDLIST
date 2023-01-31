@@ -6,7 +6,6 @@ CMMID
 COVID
 Centers
 CoV
-Codecov
 Cori
 Covid
 Dirichlet
@@ -38,7 +37,6 @@ Nowcasts
 ORCID
 PLoS
 PMF
-PRs
 Poisson
 Quilty
 Riutort
@@ -46,11 +44,13 @@ Rmarkdown
 Rstan
 Rtools
 Runtimes
+SACEMA
 SARS
 Sanjat
 Wellcome
 backcalc
 backcalculation
+codecov
 com
 csv
 dd
@@ -81,16 +81,18 @@ negbin
 nowcast
 nowcasting
 nowcasts
+objec
 obs
 parallisation
 parameterised
 pngs
+poisson
+produc
 progressr
 rds
 realland
 rstan
 runtimes
-sam
 sd
 se
 seealso
@@ -104,4 +106,5 @@ vb
 vscode
 warmup
 wellcomeopenres
+wil
 yyyy

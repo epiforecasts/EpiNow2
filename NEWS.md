@@ -1,26 +1,47 @@
 # EpiNow2 1.3.4
 
-This is mainly a maintenance release focussing on bug fixes and package infrastructure updates along with a few quality of life improvements.
+This release focusses on bug fixes and package infrastructure updates along with a few quality of life improvements such as enabling the use of fixed delays and generation times.
 
-Thanks to @seabbs, and @sbfnk and for [SACEMA](https://sacema.org) for hosting @seabbs whilst some of the development work on this release was being done.
+Thanks to @seabbs, and @sbfnk and for [SACEMA](https://www.sacema.org/) for hosting @seabbs whilst some of the development work on this release was being done.
+
+## Breaking changes
+
+* To streamline the interface with the definition of delay distributions `trunc_opts()` now takes a single argument (`dist`) which defines the truncation delay rather than a arbitrary list of arguments (which was previously used to define the distribution).
+* Updated the handling of generation times in the renewal equation to be left truncation adjusted for the zeroth day. This more better the approach taken to estimate generation times but may slightly impact estimates vs those produced using previous versions.
+* The range of the `frac_obs` parameter has restricted with an upper bound of 1 to reflect its name and description. This may impact a small number of edge case uses with the majority being models fit using `estimate_secondary()`. By @sbfnk in #340.
+
+## Features
+
+* Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`. Unlike `forecast_secondary()` which uses a `stan` model to simulate secondary cases (which shares code with the `estimate_secondary` model) this new function is implemented entirely in R and is therefore useful to sense check any results from the `stan` implementation.
+* Adds support for fixed delays (mean only or fixed lognormal distributed) or truncations (fixed lognormal distributed), and for pre-computing these delays as well as generation times if they are fixed. By @sbfnk and @seabbs.
+* Support for gamma distributed delays and log-normal distributed generation times.
 
 ## Package
 
 * Update the GitHub Action files to new versions.
-* Switched to using `seq_along()` rather than `1:length()`.
+* Switched to using `seq_along()` rather than `1:length()` in all package code.
 * Fixed a broken example in the documentation for `regional_runtimes()`.
 * Add compatibility changes for the latest version of `rstan` and `rstantools`.
 * Remove legacy use of `pkgnet` for package dependency visualisation.
-* Slight edits to the model outline for `estimate_infections()`.
 * Restyled all code using `styler`.
 * Dropped dependency on `RcppParallel`.
 * Updated `report_cases` to work with the new `delay_opts` helper function.
 * Added test coverage for `report_cases` though note this function will likely be deprecated in future releases.
-* Adds a new function `simulate_secondary()` for simulating secondary observations under the generative process model assumed by `estimate_secondary`.
 * Switched to `linewidth` in `plot_CrIs` rather than `size` to avoid issues with `ggplot2` 3.4.0.
+* Set up validation against synthetic data to run as a CI check.
+* Added tests for internal stan convolution functions.
+* Update all `get_` distribution functions to return the distribution as well as summary
+ parameters.
+
+## Documentation
+
+* Slight edits to the model outline for `estimate_infections()`.
+* Updated examples to make use of fixed distributions.
+
+## Bugs
+
 * Fixed a bug in `simulate_infections()` where passing a custom number of samples would cause the input vector of R values to be replicated in a column-wise fashion meaning that the intended R trajectory was not simulated.
 * Fixed a bug in the `estimate_infections()` deconvolution model where the generation time was not correctly being reversed.
-* Added a new CI check to perform validation against simulated data.
 
 # EpiNow2 1.3.3
 

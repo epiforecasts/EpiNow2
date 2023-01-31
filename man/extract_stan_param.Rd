@@ -12,23 +12,28 @@ extract_stan_param(
 )
 }
 \arguments{
-\item{fit}{A \code{stanfit} object}
+\item{fit}{A \code{stanfit} objec.}
 
-\item{params}{A character vector of parameters to extract. Defaults to all parameters.}
+\item{params}{A character vector of parameters to extract. Defaults to all
+parameters.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{var_names}{Logical defaults to \code{FALSE}. Should variables be named. Automatically set
-to TRUE if multiple parameters are to be extracted.}
+\item{var_names}{Logical defaults to \code{FALSE}. Should variables be named.
+Automatically set to TRUE if multiple parameters are to be extracted.}
 }
 \value{
-A \code{data.table} summarising parameter posteriors. Contains a following variables:
-\code{variable}, \code{mean}, \code{mean_se}, \code{sd}, \code{median}, and \code{lower_}, \code{upper_} followed by
-credible interval labels indicating the credible intervals present.
+A \code{data.table} summarising parameter posteriors. Contains a
+following variables: \code{variable}, \code{mean}, \code{mean_se}, \code{sd}, \code{median}, and
+\code{lower_}, \code{upper_} followed by credible interval labels indicating the
+credible intervals present.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Extracts summarised parameter posteriors from a \code{stanfit} object using
 \code{rstan::summary} in a format consistent with other summary functions in
 \code{EpiNow2}.
+}
+\author{
+Sam Abbott
 }
