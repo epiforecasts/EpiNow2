@@ -1,21 +1,10 @@
-citHeader("To cite EpiNow2 in publications use:")
-
-citEntry(entry = "Manual",
-  title        = "EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters",
-  author       = personList(as.person("Sam Abbott"), as.person("Joel Hellewell"),
-                            as.person("Katharine Sherratt"), as.person("Katelyn Gostic"), 
-                            as.person("Joe Hickson"), as.person("Hamada S. Badr"),
-                            as.person("Michael DeWitt"), as.person("Robin Thompson"),
-                            as.person("EpiForecasts"), as.person("Sebastian Funk")),
+bibentry(
+  bibtype = "Manual",
+  title = "EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters",
+  author       = c(person("Sam Abbott"), person("Joel Hellewell"),
+    person("Katharine Sherratt"), person("Katelyn Gostic"),
+    person("Joe Hickson"), person("Hamada S. Badr"), person("Michael DeWitt"),
+    person("Robin Thompson"), person("EpiForecasts"), person("Sebastian Funk")),
   year         = "2020",
-  doi          = "10.5281/zenodo.3957489",
-  textVersion  =
-  paste("Sam Abbott, Joel Hellewell, Katharine Sherratt, Katelyn Gostic, 
-         Joe Hickson, Hamada S. Badr, Michael DeWitt, Robin Thompson, EpiForecasts,
-         and Sebastian Funk (2020).",
-        "EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters, ",
-        "DOI: 10.5281/zenodo.3957489")
+  doi          = "10.5281/zenodo.3957489"
 )
-
-
- 
