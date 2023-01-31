@@ -1,9 +1,12 @@
 #' Get Folders with Results
 #'
 #' @description `r lifecycle::badge("stable")`
+#'
 #' @param results_dir A character string giving the directory in which results
 #'  are stored (as produced by `regional_rt_pipeline`).
+#'
 #' @return A named character vector containing the results to plot.
+#' @author Sam Abbott
 #' @export
 get_regions <- function(results_dir) {
   # regions to include - based on folder names
@@ -21,12 +24,19 @@ get_regions <- function(results_dir) {
 #' Get a Single Raw Result
 #'
 #' @description `r lifecycle::badge("stable")`
+#'
 #' @param file Character string giving the result files name.
+#'
 #' @param region Character string giving the region of interest.
+#'
 #' @param date Target date (in the format `"yyyy-mm-dd`).
-#' @param result_dir Character string giving the location of the target directory
-#' @export
+#'
+#' @param result_dir Character string giving the location of the target
+#' directory.
+#'
 #' @return An R object read in from the targeted .rds file
+#' @author Sam Abbott
+#' @export
 get_raw_result <- function(file, region, date,
                            result_dir) {
   file_path <- file.path(result_dir, region, date, file)
@@ -36,17 +46,26 @@ get_raw_result <- function(file, region, date,
 #' Get Combined Regional Results
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Summarises results across regions either from input or from disk. See the examples for
-#' details.
-#' @param regional_output A list of output as produced by `regional_epinow` and stored in the
-#' `regional` list.
-#' @param results_dir A character string indicating the folder containing the `EpiNow2`
-#' results to extract.
-#' @param date A Character string (in the format "yyyy-mm-dd") indicating the date to extract
-#' data for. Defaults to "latest" which finds the latest results available.
+#' Summarises results across regions either from input or from disk. See the
+#' examples for details.
+#'
+#' @param regional_output A list of output as produced by `regional_epinow` and
+#' stored in the `regional` list.
+#'
+#' @param results_dir A character string indicating the folder containing the
+#' `EpiNow2` results to extract.
+#'
+#' @param date A Character string (in the format "yyyy-mm-dd") indicating the
+#' date to extract data for. Defaults to "latest" which finds the latest
+#' results available.
+#'
 #' @param samples Logical, defaults to `TRUE`. Should samples be returned.
-#' @param forecast Logical, defaults to `FALSE`. Should forecast results be returned.
+#'
+#' @param forecast Logical, defaults to `FALSE`. Should forecast results be
+#' returned.
+#'
 #' @return A list of estimates, forecasts and estimated cases by date of report.
+#' @author Sam Abbott
 #' @export
 #' @importFrom purrr map safely
 #' @importFrom data.table rbindlist
@@ -162,35 +181,53 @@ get_regional_results <- function(regional_output,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Search a data frame for a distribution and return it in the format expected
-#' by `delay_opts()` and the `generation_time` argument of `epinow` and `estimate_infections`.
+#' by `delay_opts()` and the `generation_time` argument of `epinow` and
+#' `estimate_infections`.
+#'
 #' @param data A `data.table` in the format of `generation_times`.
+#'
 #' @param disease A character string indicating the disease of interest.
+#'
 #' @param source A character string indicating the source of interest.
+#'
 #' @param max_value Numeric, the maximum value to allow. Defaults to 15 days.
+#'
+#' @param fixed Logical, defaults to `FALSE`. Should distributions be supplied
+#' as fixed values (vs with uncertainty)?
+#'
 #' @return A list defining a distribution
+#'
+#' @author Sam Abbott
 #' @export
 #' @examples
 #' get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani")
-get_dist <- function(data, disease, source, max_value = 15) {
+get_dist <- function(data, disease, source, max_value = 15, fixed = FALSE) {
   target_disease <- disease
   target_source <- source
   data <- data[disease == target_disease][source == target_source]
-  dist <- as.list(data[, .(mean, mean_sd, sd, sd_sd, max = max_value)])
+  dist <- as.list(data[, .(mean, mean_sd, sd, sd_sd, max = max_value, dist)])
+  if (fixed) {
+    dist$mean_sd <- 0
+    dist$sd_sd <- 0
+  }
   return(dist)
 }
 #'  Get a Literature Distribution for the Generation Time
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Extracts a literature distribution from `generation_times`
+#' Extracts a literature distribution from `generation_times`.
+#'
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @export
+#' @author Sam Abbott
 #' @examples
 #' get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-get_generation_time <- function(disease, source, max_value = 15) {
+get_generation_time <- function(disease, source, max_value = 15,
+                                fixed = FALSE) {
   dist <- get_dist(EpiNow2::generation_times,
     disease = disease, source = source,
-    max_value = max_value
+    max_value = max_value, fixed = fixed
   )
 
   return(dist)
@@ -198,16 +235,19 @@ get_generation_time <- function(disease, source, max_value = 15) {
 #'  Get a Literature Distribution for the Incubation Period
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Extracts a literature distribution from `incubation_periods`
+#' Extracts a literature distribution from `incubation_periods`.
+#'
 #' @inheritParams get_dist
 #' @inherit get_dist
+#' @author Sam Abbott
 #' @export
 #' @examples
 #' get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-get_incubation_period <- function(disease, source, max_value = 15) {
+get_incubation_period <- function(disease, source, max_value = 15,
+                                  fixed = FALSE) {
   dist <- get_dist(EpiNow2::incubation_periods,
     disease = disease, source = source,
-    max_value = max_value
+    max_value = max_value, fixed = fixed
   )
 
   return(dist)
@@ -215,12 +255,19 @@ get_incubation_period <- function(disease, source, max_value = 15) {
 #' Get Regions with Most Reported Cases
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Extract a vector of regions with the most reported cases in a set time window.
-#' @param time_window Numeric, number of days to include from latest date in data.
-#' Defaults to 7 days.
+#' Extract a vector of regions with the most reported cases in a set time
+#' window.
+#'
+#' @param time_window Numeric, number of days to include from latest date in
+#' data. Defaults to 7 days.
+#'
 #' @param no_regions Numeric, number of regions to return. Defaults to 6.
+#'
 #' @inheritParams regional_epinow
+#'
 #' @return A character vector of regions with the highest reported cases
+#'
+#' @author Sam Abbott
 #' @importFrom data.table copy setorderv
 #' @importFrom lubridate days
 #' @export

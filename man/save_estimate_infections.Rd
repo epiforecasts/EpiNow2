@@ -31,3 +31,6 @@ Saves output from \code{estimate_infections} to a target directory.
 \seealso{
 estimate_infections
 }
+\author{
+Sam Abbott
+}

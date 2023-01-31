@@ -1,4 +1,5 @@
 functions {
+#include functions/convolve.stan
 #include functions/pmfs.stan
 #include functions/observation_model.stan
 }
@@ -8,6 +9,7 @@ data {
   int obs[t, obs_sets];
   int obs_dist[obs_sets];
   int trunc_max;
+  int trunc_dist;
 }
 parameters {
   real logmean;
@@ -18,17 +20,20 @@ parameters {
 transformed parameters{
   matrix[trunc_max, obs_sets - 1] trunc_obs;
   real sqrt_phi = 1 / sqrt(phi);
+  vector[trunc_max] rev_cmf = reverse_mf(cumulative_sum(
+    discretised_pmf(logmean, logsd, trunc_max, trunc_dist, 0)
+  ));
   {
   vector[t] last_obs;
   // reconstruct latest data without truncation
-  last_obs = truncate(to_vector(obs[, obs_sets]), logmean, logsd, trunc_max, 1);
+
+  last_obs = truncate(to_vector(obs[, obs_sets]), rev_cmf, 1);
   // apply truncation to latest dataset to map back to previous data sets and
   // add noise term
   for (i in 1:(obs_sets - 1)) {
    int end_t = t - obs_dist[i];
    int start_t = end_t - trunc_max + 1;
-   trunc_obs[, i] = truncate(last_obs[start_t:end_t], logmean, logsd,
-                             trunc_max, 0) + sigma;
+   trunc_obs[, i] = truncate(last_obs[start_t:end_t], rev_cmf, 0) + sigma;
    }
   }
 }
@@ -49,17 +54,14 @@ model {
 generated quantities {
   matrix[trunc_max, obs_sets] recon_obs;
   matrix[trunc_max, obs_sets - 1] gen_obs;
-  vector[trunc_max] cmf;
   // reconstruct all truncated datasets using posterior of the truncation distribution
   for (i in 1:obs_sets) {
     int end_t = t - obs_dist[i];
     int start_t = end_t - trunc_max + 1;
-    recon_obs[, i] = truncate(to_vector(obs[start_t:end_t, i]), logmean, logsd, trunc_max, 1);
+    recon_obs[, i] = truncate(to_vector(obs[start_t:end_t, i]), rev_cmf, 1);
   }
  // generate observations for comparing
   for (i in 1:(obs_sets - 1)) {
     gen_obs[, i] = to_vector(neg_binomial_2_rng(trunc_obs[, i], sqrt_phi));
   }
- // generate a posterior for the cmf of the truncation distribution
- cmf = truncation_cmf(logmean, logsd, trunc_max);
 }

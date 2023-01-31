@@ -16,19 +16,24 @@ stan_opts(
 \item{samples}{Numeric, default 2000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}
 
-\item{backend}{Character string indicating the backend to use for fitting stan models.
-Currently only "rstan" is supported.}
+\item{backend}{Character string indicating the backend to use for fitting
+stan models. Currently only "rstan" is supported.}
 
 \item{init_fit}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-Character string or \code{stanfit} object, defaults to NULL. Should an initial fit be used to
-initialise the full fit. An example scenario would be using a national level fit to parametrise
-regional level fits. Optionally a character string can be passed with the currently supported
-option being "cumulative". This fits the model to cumulative cases and may be useful for certain
-data sets where the sampler gets stuck or struggles to initialise. See \code{init_cumulative_fit()} for details.
-This implementation is based on the approach taken in \href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia}
-authored by James Scott.}
+Character string or \code{stanfit} object, defaults to NULL. Should an initial
+fit be used to initialise the full fit. An example scenario would be using a
+national level fit to parametrise regional level fits. Optionally a
+character string can be passed with the currently supported option being
+"cumulative". This fits the model to cumulative cases and may be useful for
+certain data sets where the sampler gets stuck or struggles to initialise.
+See \code{init_cumulative_fit()} for details.
 
-\item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be returned.}
+This implementation is based on the approach taken in
+\href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia} authored by
+James Scott.}
+
+\item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be
+returned.}
 
 \item{...}{Additional parameters to pass  underlying option functions.}
 }
@@ -38,8 +43,8 @@ A list of arguments to pass to the appropriate rstan functions.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to underlying stan
-backend functions via \code{rstan_sampling_opts()} and \code{rstan_vb_opts()}. Custom settings
-can be supplied which override the defaults.
+backend functions via \code{rstan_sampling_opts()} and \code{rstan_vb_opts()}. Custom
+settings can be supplied which override the defaults.
 }
 \examples{
 # using default of rstan::sampling
@@ -50,4 +55,7 @@ stan_opts(method = "vb")
 }
 \seealso{
 rstan_opts
+}
+\author{
+Sam Abbott
 }

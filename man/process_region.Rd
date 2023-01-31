@@ -20,8 +20,8 @@ process_region(
 
 \item{timing}{Output from \code{Sys.time}}
 
-\item{return_output}{Logical, defaults to FALSE. Should output be returned, this automatically updates to TRUE
-if no directory for saving is specified.}
+\item{return_output}{Logical, defaults to FALSE. Should output be returned,
+this automatically updates to TRUE if no directory for saving is specified.}
 
 \item{return_timing}{Logical, should runtime be returned}
 

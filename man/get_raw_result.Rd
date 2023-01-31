@@ -13,11 +13,15 @@ get_raw_result(file, region, date, result_dir)
 
 \item{date}{Target date (in the format \verb{"yyyy-mm-dd}).}
 
-\item{result_dir}{Character string giving the location of the target directory}
+\item{result_dir}{Character string giving the location of the target
+directory.}
 }
 \value{
 An R object read in from the targeted .rds file
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+}
+\author{
+Sam Abbott
 }

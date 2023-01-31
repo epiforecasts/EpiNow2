@@ -78,7 +78,7 @@ test_that("epinow can produce partial output as specified", {
 
 
 test_that("epinow fails as expected when given a short timeout", {
-  expect_error(suppressWarnings(epinow(
+  expect_error(suppressWarnings(x = epinow(
     reported_cases = reported_cases,
     generation_time = generation_time,
     delays = delay_opts(incubation_period, reporting_delay),

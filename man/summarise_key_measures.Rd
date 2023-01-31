@@ -23,8 +23,9 @@ as a csv.}
 
 \item{type}{Character string, the region identifier to apply (defaults to region).}
 
-\item{date}{A Character string (in the format "yyyy-mm-dd") indicating the date to extract
-data for. Defaults to "latest" which finds the latest results available.}
+\item{date}{A Character string (in the format "yyyy-mm-dd") indicating the
+date to extract data for. Defaults to "latest" which finds the latest
+results available.}
 }
 \value{
 A list of summarised Rt, cases by date of infection and cases by date of report

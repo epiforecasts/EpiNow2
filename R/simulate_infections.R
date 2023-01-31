@@ -63,16 +63,16 @@
 #' )
 #'
 #' # update Rt trajectory and simulate new infections using it
-#' R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
+#' R <- c(rep(NA_real_, 26), rep(0.5, 10), rep(0.8, 7))
 #' sims <- simulate_infections(est, R)
 #' plot(sims)
 #'
 #' # with a data.frame input of samples
 #' R_dt <- data.frame(
 #'   date = seq(
-#'      min(summary(est, type = "parameters", param = "R")$date),
-#'      by = "day", length.out = length(R)
-#'    ),
+#'     min(summary(est, type = "parameters", param = "R")$date),
+#'     by = "day", length.out = length(R)
+#'   ),
 #'   value = R
 #' )
 #' sims <- simulate_infections(est, R_dt)

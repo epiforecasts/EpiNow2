@@ -92,3 +92,6 @@ report_stochastic <- adjust_infection_to_report(
 print(report_stochastic)
 }
 }
+\author{
+Sam Abbott
+}

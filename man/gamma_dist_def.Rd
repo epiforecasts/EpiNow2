@@ -34,8 +34,8 @@ gamma_dist_def(
 
 \item{sd_sd}{Numeric, standard deviation of the log sd parameter.}
 
-\item{max_value}{Numeric, the maximum value to allow. Defaults to 120. Samples outside
-of this range are resampled.}
+\item{max_value}{Numeric, the maximum value to allow. Defaults to 120.
+Samples outside of this range are resampled.}
 
 \item{samples}{Numeric, number of sample distributions to generate.}
 }
@@ -45,7 +45,8 @@ A data.table defining the distribution as used by \code{dist_skel}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
 Generates a distribution definition when only parameter estimates
-are available for gamma distributed parameters. See \code{rgamma} for distribution information.
+are available for gamma distributed parameters. See \code{rgamma} for
+distribution information.
 }
 \examples{
 # using estimated shape and scale
@@ -65,4 +66,7 @@ def <- gamma_dist_def(
 )
 print(def)
 def$params[[1]]
+}
+\author{
+Sam Abbott
 }

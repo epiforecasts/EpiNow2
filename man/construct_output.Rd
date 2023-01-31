@@ -18,9 +18,9 @@ construct_output(
 \item{estimated_reported_cases}{A list of dataframes as produced by
 \code{estimates_by_report_date}.}
 
-\item{plots}{A list of plots as produced by \code{report_plots}}
+\item{plots}{A list of plots as produced by \code{report_plots}.}
 
-\item{summary}{A list of summary output as produced by \code{report_summary}}
+\item{summary}{A list of summary output as produced by \code{report_summary}.}
 
 \item{samples}{Logical, defaults to TRUE. Should samples be saved}
 }
@@ -30,4 +30,7 @@ A list of output as returned by \code{epinow}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Combines the output produced internally by \code{epinow} into a single list.
+}
+\author{
+Sam Abbott
 }

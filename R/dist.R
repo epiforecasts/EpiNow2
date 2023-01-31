@@ -5,20 +5,26 @@
 #' model type, maximum value and model parameters. It is designed to be used with the
 #' output from `get_dist`.
 #' @param n Numeric vector, number of samples to take (or days for the probability density).
-#' @param dist Logical, defaults to `FALSE`. Should the probability density be returned rather
-#' than a number of samples.
-#' @param cum Logical, defaults to `TRUE`. If `dist = TRUE` should the returned distribution be
-#' cumulative.
-#' @param model Character string, defining the model to be used. Supported options are exponential
-#' ("exp"), gamma ("gamma"), and log normal ("lognorm")
-#' @param params A list of parameters values (by name) required for each model. For the exponential model
-#' this is a rate parameter and for the gamma model this is alpha and beta.
-#' @param max_value Numeric, the maximum value to allow. Defaults to 120. Samples outside
-#' of this range are resampled.
+#'
+#' @param dist Logical, defaults to `FALSE`. Should the probability density be
+#' returned rather than a number of samples.
+#'
+#' @param cum Logical, defaults to `TRUE`. If `dist = TRUE` should the returned
+#' distribution be cumulative.
+#'
+#' @param model Character string, defining the model to be used. Supported
+#' options are exponential ("exp"), gamma ("gamma"), and log normal ("lognorm")
+#'
+#' @param params A list of parameters values (by name) required for each model.
+#' For the exponential model this is a rate parameter and for the gamma model
+#' this is alpha and beta.
+#'
+#' @param max_value Numeric, the maximum value to allow. Defaults to 120.
+#' Samples outside of this range are resampled.
 #'
 #' @return A vector of samples or a probability distribution.
 #' @export
-#'
+#' @author Sam Abbott
 #' @examples
 #'
 #' ## Exponential model
@@ -149,13 +155,24 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' Fits an integer adjusted exponential, gamma or lognormal distribution using
 #' `stan`.
 #' @param values Numeric vector of values
+#'
 #' @param samples Numeric, number of samples to take
-#' @param dist Character string, which distribution to fit. Defaults to exponential (`"exp"`) but
-#' gamma (`"gamma"`) and lognormal (`"lognormal"`) are also supported.
-#' @param cores Numeric, defaults to 1. Number of CPU cores to use (no effect if greater than the number of chains).
-#' @param chains Numeric, defaults to 2. Number of MCMC chains to use. More is better with the minimum being two.
-#' @param verbose Logical, defaults to FALSE. Should verbose progress messages be printed.
+#'
+#' @param dist Character string, which distribution to fit. Defaults to
+#' exponential (`"exp"`) but gamma (`"gamma"`) and lognormal (`"lognormal"`) are
+#' also supported.
+#'
+#' @param cores Numeric, defaults to 1. Number of CPU cores to use (no effect
+#' if greater than the number of chains).
+#'
+#' @param chains Numeric, defaults to 2. Number of MCMC chains to use. More is
+#' better with the minimum being two.
+#'
+#' @param verbose Logical, defaults to FALSE. Should verbose progress messages
+#' be printed.
+#'
 #' @return A `stan` fit of an interval censored distribution
+#' @author Sam Abbott
 #' @export
 #' @examples
 #' \donttest{
@@ -243,17 +260,25 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
 #'
 #' @description `r lifecycle::badge("soft-deprecated")`
 #' Generates a distribution definition when only parameter estimates
-#' are available for gamma distributed parameters. See `rgamma` for distribution information.
+#' are available for gamma distributed parameters. See `rgamma` for
+#' distribution information.
+#'
 #' @param shape Numeric, shape parameter of the gamma distribution.
+#'
 #' @param shape_sd Numeric, standard deviation of the shape parameter.
+#'
 #' @param scale Numeric, scale parameter of the gamma distribution.
+#'
 #' @param scale_sd  Numeric, standard deviation of the scale parameter.
+#'
 #' @param samples Numeric, number of sample distributions to generate.
+#'
 #' @importFrom truncnorm rtruncnorm
 #' @return A data.table defining the distribution as used by `dist_skel`
 #' @export
 #' @inheritParams dist_skel
 #' @inheritParams lognorm_dist_def
+#' @author Sam Abbott
 #' @examples
 #' # using estimated shape and scale
 #' def <- gamma_dist_def(
@@ -305,15 +330,23 @@ gamma_dist_def <- function(shape, shape_sd,
 #'
 #' @description `r lifecycle::badge("soft-deprecated")`
 #' Generates a distribution definition when only parameter estimates
-#' are available for log normal distributed parameters. See `rlnorm` for distribution information.
+#' are available for log normal distributed parameters. See `rlnorm` for
+#' distribution information.
+#'
 #' @param mean Numeric, log mean parameter of the gamma distribution.
+#'
 #' @param mean_sd Numeric, standard deviation of the log mean parameter.
+#'
 #' @param sd Numeric, log sd parameter of the gamma distribution.
+#'
 #' @param sd_sd  Numeric, standard deviation of the log sd parameter.
+#'
 #' @param samples Numeric, number of sample distributions to generate.
+#'
 #' @param to_log Logical, should parameters be logged before use.
 #'
 #' @return A data.table defining the distribution as used by `dist_skel`
+#' @author Sam Abbott
 #' @importFrom truncnorm rtruncnorm
 #' @export
 #' @inheritParams dist_skel
@@ -371,27 +404,39 @@ lognorm_dist_def <- function(mean, mean_sd,
   return(dist)
 }
 
-
-
 #' Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Fits an integer adjusted distribution to a subsampled bootstrap of data and then integrates
-#' the posterior samples into a single set of summary statistics. Can be used to generate a robust
-#' reporting delay that accounts for the fact the underlying delay likely varies over time or that
-#' the size of the available reporting delay sample may not be representative of the current case load.
+#' Fits an integer adjusted distribution to a subsampled bootstrap of data and
+#' then integrates the posterior samples into a single set of summary
+#' statistics. Can be used to generate a robust reporting delay that accounts
+#' for the fact the underlying delay likely varies over time or that the size
+#' of the available reporting delay sample may not be representative of the
+#' current case load.
+#'
 #' @param values Integer vector of values.
-#' @param dist Character string, which distribution to fit. Defaults to lognormal (`"lognormal"`) but
-#' gamma (`"gamma"`) is also supported.
-#' @param verbose Logical, defaults to `FALSE`. Should progress messages be printed
-#' @param samples Numeric, number of samples to take overall from the bootstrapped posteriors.
-#' @param bootstraps Numeric, defaults to 1. The number of bootstrap samples (with replacement)
-#'  of the delay distribution to take.
-#' @param bootstrap_samples Numeric, defaults to 100. The number of samples to take in each bootstrap.
-#' When the sample size of the supplied delay distribution is less than 100 this is used instead.
-#' @param max_value Numeric, defaults to  the maximum value in the observed data. Maximum delay to
-#'  allow (added to output but does impact fitting).
+#'
+#' @param dist Character string, which distribution to fit. Defaults to
+#' lognormal (`"lognormal"`) but gamma (`"gamma"`) is also supported.
+#'
+#' @param verbose Logical, defaults to `FALSE`. Should progress messages be
+#' printed.
+#'
+#' @param samples Numeric, number of samples to take overall from the
+#' bootstrapped posteriors.
+#'
+#' @param bootstraps Numeric, defaults to 1. The number of bootstrap samples
+#' (with replacement) of the delay distribution to take.
+#'
+#' @param bootstrap_samples Numeric, defaults to 100. The number of samples to
+#' take in each bootstrap. When the sample size of the supplied delay
+#' distribution is less than 100 this is used instead.
+#'
+#' @param max_value Numeric, defaults to  the maximum value in the observed
+#' data. Maximum delay to  allow (added to output but does impact fitting).
+#'
 #' @return A list summarising the bootstrapped distribution
+#' @author Sam Abbott
 #' @importFrom purrr transpose
 #' @importFrom future.apply future_lapply
 #' @importFrom rstan extract
@@ -484,9 +529,13 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #' @description `r lifecycle::badge("maturing")`
 #' Estimate a log normal delay distribution from a vector of integer delays.
 #' Currently this function is a simple wrapper for `bootstrapped_dist_fit`.
+#'
 #' @param delays Integer vector of delays
+#'
 #' @param ... Arguments to pass to internal methods.
+#'
 #' @return A list summarising the bootstrapped distribution
+#' @author Sam Abbott
 #' @export
 #' @seealso bootstrapped_dist_fit
 #' @examples
@@ -677,6 +726,7 @@ sample_approx_dist <- function(cases = NULL,
 #' Gaussian process. As no inverse gamma priors are currently in use and this function
 #' has some stability issues it may be deprecated at a later date.
 #' @param lower Numeric, defaults to 2. Lower truncation bound.
+#'
 #' @param upper Numeric, defaults to 21. Upper truncation bound.
 #'
 #' @return A list of alpha and beta values that describe a inverse gamma
@@ -710,4 +760,118 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
     beta = round(unlist(unname(beta)), 1)
   )
   return(out)
+}
+
+#' Specify a distribution.
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Defines the parameters of a supported distribution for use in onward
+#' modelling. Multiple distribution families are supported - see the
+#' documentation for `family` for details. This function provides distribution
+#' functionality in [delay_opts()], [generation_time_opts()], and
+#' [trunc_opts()].
+#'
+#' @param mean Numeric. If the only non-zero summary parameter
+#' then this is the fixed interval of the distribution. If the `sd` is
+#' non-zero then this is the mean of the distribution given by \code{dist}.
+#' If this is not given a vector of empty vectors is returned.
+#'
+#' @param sd Numeric, defaults to 0. Sets the standard deviation of the
+#' distribution.
+#'
+#' @param mean_sd Numeric, defaults to 0. Sets the standard deviation of the
+#' uncertainty around the mean of the  distribution assuming a normal
+#' prior.
+#'
+#' @param sd_sd Numeric, defaults to 0. Sets the standard deviation of the
+#' uncertainty around the sd of the  distribution assuming a normal prior.
+#'
+#' @param dist Character, defaults to "lognormal". The (discretised
+#' distribution to be used. If sd == 0 then the distribution  is fixed and a
+#' delta function is used. If sd > 0 then the distribution is discretised and
+#' truncated.
+#'
+#' The following distributions are currently supported:
+#'
+#'  - "lognormal" - a lognormal distribution. For this distribution `mean`
+#' is the mean of the natural logarithm of the delay (on the log scale) and
+#' `sd` is the standard deviation of the natural logarithm of the delay.
+#'
+#' - "gamma" - a gamma distribution. For this distribution `mean` is the
+#' mean of the delay and `sd` is the standard deviation of the delay. During
+#' model fitting these are then transformed to the shape and scale of the gamma
+#' distribution.
+#'
+#' When `dist` is the default lognormal distribution the other function
+#' arguments have the following definition:
+#'  - `mean` is the mean of the natural logarithm of the delay (on the
+#' log scale).
+#' - `sd` is the standard deviation of the natural logarithm of the delay.
+#'
+#' @param max Numeric, maximum value of the distribution. The distribution will
+#' be truncated at this value.
+#'
+#' @param fixed Logical, defaults to `FALSE`. Should delays be treated
+#' as coming from fixed (vs uncertain) distributions. Making this simplification
+#' reduces compute requirement but may produce spuriously precise estimates.
+#'
+#' @return A list of distribution options.
+#'
+#' @author Sebastian Funk
+#' @author Sam Abbott
+#' @export
+dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
+                      dist = c("lognormal", "gamma"), max = NULL,
+                      fixed = FALSE) {
+  dist <- match.arg(dist)
+
+  if (missing(mean)) {
+    ret <- list(
+      mean_mean = numeric(0),
+      mean_sd = numeric(0),
+      sd_mean = numeric(0),
+      sd_sd = numeric(0),
+      fixed = integer(0),
+      dist = integer(0)
+    )
+    if (is.null(max)) {
+      ret$max <- integer(0)
+    } else {
+      ret$max <- max
+    }
+  } else {
+    ret <- list(
+      mean_mean = mean,
+      mean_sd = mean_sd,
+      sd_mean = sd,
+      sd_sd = sd_sd
+    )
+    if (fixed) {
+      ret$mean_sd <- 0
+      ret$sd_sd <- 0
+    }
+    ret$fixed <- as.integer(ret$mean_sd == 0 && ret$mean_sd == 0)
+
+    ## check if it's a fixed value
+    if (ret$sd_mean == 0 && ret$sd_sd == 0) {
+      if (ret$mean_mean %% 1 != 0) {
+        stop(
+          "When a distribution is set to a constant ",
+          "(sd == 0 and sd_sd == 0) then the mean parameter ",
+          "must be an integer."
+        )
+      }
+      ret$max <- ret$mean_mean
+      if (ret$mean_sd > 0) {
+        stop(
+          "When a distribution has sd == 0 and ",
+          "sd_sd == 0 then mean_sd must be 0, too."
+        )
+      }
+    } else {
+      ret$max <- max
+    }
+    ret$dist <- which(eval(formals()[["dist"]]) == dist) - 1
+  }
+  return(lapply(ret, array))
 }

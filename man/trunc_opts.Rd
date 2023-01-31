@@ -4,26 +4,33 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(dist = NULL)
+trunc_opts(dist = list())
 }
 \arguments{
-\item{dist}{A list defining the truncation distribution, defaults to \code{NULL} in which
-case no truncation is used. Must have the following elements if defined: "mean", "mean_sd",
-"sd_mean", "sd_sd", and "max" defining a truncated log normal (with all parameters except
-for max defined in logged form).}
+\item{dist}{Parameters of a distribution as supported by
+\code{\link[=dist_spec]{dist_spec()}}.}
 }
 \value{
 A list summarising the input truncation distribution.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Returns a truncation distribution formatted for usage by downstream functions. See
-\code{estimate_truncation} for an approach to estimate this distribution.
+Returns a truncation distribution formatted for usage by
+downstream functions. See \code{estimate_truncation()} for an approach to
+estimate these distributions.
 }
 \examples{
 # no truncation
 trunc_opts()
+
+# truncation dist
+trunc_opts(dist = list(mean = 3, sd = 2))
 }
 \seealso{
-convert_to_logmean convert_to_logsd bootstrapped_dist_fit
+convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
+}
+\author{
+Sam Abbott
+
+Sebastian Funk
 }

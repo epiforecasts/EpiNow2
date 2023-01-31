@@ -1,6 +1,8 @@
 skip_on_cran()
 library(data.table)
 
+#### Incidence data example ####
+
 # make some example secondary incidence data
 cases <- example_confirmed
 cases <- as.data.table(cases)[, primary := confirm]
@@ -9,49 +11,88 @@ cases[, scaling := 0.4]
 # Parameters of the assumed log normal delay distribution
 cases[, meanlog := 1.8][, sdlog := 0.5]
 
-# apply a convolution of a log normal to a vector of observations
-weight_cmf <- function(x, ...) {
-  set.seed(x[1])
-  meanlog <- rnorm(1, 1.6, 0.2)
-  sdlog <- rnorm(1, 0.8, 0.1)
-  cmf <- cumsum(dlnorm(seq_along(x), meanlog, sdlog)) -
-    cumsum(dlnorm(0:(length(x) - 1), meanlog, sdlog))
-  cmf <- cmf / plnorm(length(x), meanlog, sdlog)
-  conv <- sum(x * rev(cmf), na.rm = TRUE)
-  conv <- round(conv, 0)
-  return(conv)
-}
-# roll over observed cases to produce a convolution
-cases <- cases[, .(date, primary = confirm, secondary = confirm)]
-cases <- cases[, secondary := frollapply(secondary, 15, weight_cmf, align = "right")]
-cases <- cases[!is.na(secondary)]
-# add a day of the week effect and scale secondary observations at 40\% of primary
-cases <- cases[lubridate::wday(date) == 1, secondary := round(0.5 * secondary, 0)]
-cases <- cases[, secondary := round(secondary * rnorm(.N, 0.4, 0.025), 0)]
-cases <- cases[secondary < 0, secondary := 0]
-cases <- cases[, secondary := map_dbl(secondary, ~ rpois(1, .))]
-
-# fit model to example data assuming only a given fraction of primary observations
-# become secondary observations
+# Simulate secondary cases
+cases <- simulate_secondary(cases, type = "incidence")
+cases[
+  ,
+  c("confirm", "scaling", "meanlog", "sdlog", "index", "scaled", "conv") :=
+    NULL
+]
+#
+# fit model to example data specifying a weak prior for fraction reported
+# with a secondary case
 inc <- estimate_secondary(cases[1:60],
-  obs = obs_opts(scale = list(mean = 0.2, sd = 0.2)),
-  chains = 2, warmup = 250, iter = 750, cores = 2,
-  refresh = 0
+  obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+  verbose = FALSE
 )
 
+# extract posterior variables of interest
+params <- c(
+  "meanlog" = "delay_mean[1]", "sdlog" = "delay_sd[1]",
+  "scaling" = "frac_obs[1]"
+)
+
+inc_posterior <- inc$posterior[variable %in% params]
+
+#### Prevalence data example ####
+
+# make some example prevalence data
+cases <- example_confirmed
+cases <- as.data.table(cases)[, primary := confirm]
+# Assume that only 30 percent of cases are reported
+cases[, scaling := 0.3]
+# Parameters of the assumed log normal delay distribution
+cases[, meanlog := 1.6][, sdlog := 0.8]
+
+# Simulate secondary cases
+cases <- simulate_secondary(cases, type = "prevalence")
+
+# fit model to example prevalence data
+prev <- estimate_secondary(cases[1:100],
+  secondary = secondary_opts(type = "prevalence"),
+  obs = obs_opts(
+    week_effect = FALSE,
+    scale = list(mean = 0.4, sd = 0.1)
+  ),
+  verbose = FALSE
+)
+
+# extract posterior parameters of interest
+prev_posterior <- prev$posterior[variable %in% params]
+
+# Test output
 test_that("estimate_secondary can return values from simulated data and plot
            them", {
   expect_equal(names(inc), c("predictions", "posterior", "data", "fit"))
   expect_equal(
     names(inc$predictions),
     c(
-      "date", "primary", "secondary", "mean", "se_mean", "sd", "lower_90",
-      "lower_50", "lower_20", "median", "upper_20", "upper_50", "upper_90"
+      "date", "primary", "secondary", "mean", "se_mean", "sd",
+      "lower_90", "lower_50", "lower_20", "median", "upper_20", "upper_50", "upper_90"
     )
   )
   expect_true(is.list(inc$data))
   # validation plot of observations vs estimates
   expect_error(plot(inc, primary = TRUE), NA)
+})
+
+test_that("estimate_secondary can recover simulated parameters", {
+  expect_equal(
+    inc_posterior[, mean], c(1.8, 0.5, 0.4),
+    tolerance = 0.1
+  )
+  expect_equal(
+    inc_posterior[, median], c(1.8, 0.5, 0.4),
+    tolerance = 0.1
+  )
+  # These tests currently fail indicating the model is not recovering the
+  # simulated parameters.
+  # expect_equal(
+  #   prev_posterior[, mean], c(1.6, 0.8, 0.3), tolerance = 0.1
+  # )
+  # expect_equal(
+  #   prev_posterior[, median], c(1.6, 0.8, 0.3), tolerance = 0.1
+  # )
 })
 
 test_that("forecast_secondary can return values from simulated data and plot

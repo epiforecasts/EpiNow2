@@ -18,11 +18,11 @@ simulate_infections(
 has been done with output = "fit", or the result of
 \code{estimate_infections} with \code{return_fit} set to TRUE.}
 
-\item{R}{A numeric vector of reproduction numbers; these will overwrite the reproduction numbers
-contained in \code{estimates}, except elements set to NA. If it is longer than the time series
-of reproduction numbers contained in \code{estimates}, the values going beyond the length of
-estimated reproduction numbers are taken as forecast. Alternatively accepts a data.frame containing
-at least \code{date} and \code{value} (integer) variables and optionally \code{sample}.}
+\item{R}{A numeric vector of reproduction numbers; these will overwrite the
+reproduction numbers contained in \code{estimates}, except elements set to
+NA. Alternatively accepts a data.frame containing at least \code{date} and \code{value}
+(integer) variables and optionally \code{sample}. More (or fewer) days than in
+the original fit can be simulated.}
 
 \item{model}{A compiled stan model as returned by \code{rstan::stan_model}.}
 
@@ -75,16 +75,16 @@ est <- estimate_infections(reported_cases,
 )
 
 # update Rt trajectory and simulate new infections using it
-R <- c(rep(NA_real_, 40), rep(0.5, 10), rep(0.8, 7))
+R <- c(rep(NA_real_, 26), rep(0.5, 10), rep(0.8, 7))
 sims <- simulate_infections(est, R)
 plot(sims)
 
 # with a data.frame input of samples
 R_dt <- data.frame(
   date = seq(
-     min(summary(est, type = "parameters", param = "R")$date),
-     by = "day", length.out = length(R)
-   ),
+    min(summary(est, type = "parameters", param = "R")$date),
+    by = "day", length.out = length(R)
+  ),
   value = R
 )
 sims <- simulate_infections(est, R_dt)

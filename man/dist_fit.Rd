@@ -18,14 +18,18 @@ dist_fit(
 
 \item{samples}{Numeric, number of samples to take}
 
-\item{cores}{Numeric, defaults to 1. Number of CPU cores to use (no effect if greater than the number of chains).}
+\item{cores}{Numeric, defaults to 1. Number of CPU cores to use (no effect
+if greater than the number of chains).}
 
-\item{chains}{Numeric, defaults to 2. Number of MCMC chains to use. More is better with the minimum being two.}
+\item{chains}{Numeric, defaults to 2. Number of MCMC chains to use. More is
+better with the minimum being two.}
 
-\item{dist}{Character string, which distribution to fit. Defaults to exponential (\code{"exp"}) but
-gamma (\code{"gamma"}) and lognormal (\code{"lognormal"}) are also supported.}
+\item{dist}{Character string, which distribution to fit. Defaults to
+exponential (\code{"exp"}) but gamma (\code{"gamma"}) and lognormal (\code{"lognormal"}) are
+also supported.}
 
-\item{verbose}{Logical, defaults to FALSE. Should verbose progress messages be printed.}
+\item{verbose}{Logical, defaults to FALSE. Should verbose progress messages
+be printed.}
 }
 \value{
 A \code{stan} fit of an interval censored distribution
@@ -56,4 +60,7 @@ dist_fit(rlnorm(1:100, log(5), 0.2),
   cores = ifelse(interactive(), 4, 1), verbose = TRUE
 )
 }
+}
+\author{
+Sam Abbott
 }
