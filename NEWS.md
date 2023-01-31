@@ -32,6 +32,7 @@ Thanks to @seabbs, and @sbfnk and for [SACEMA](https://www.sacema.org/) for host
 * Added tests for internal stan convolution functions.
 * Update all `get_` distribution functions to return the distribution as well as summary
  parameters.
+* Added support for model fitting benchmarking using `touchstone`.
 
 ## Documentation
 
