@@ -11,12 +11,7 @@ jobs:
   prepare:
     runs-on: ubuntu-latest 
     if:
-      true &&
-      (
-        github.event.comment.author_association == 'OWNER' ||
-        github.event.comment.author_association == 'MEMBER' ||
-        github.event.comment.author_association == 'COLLABORATOR' 
-      )
+      true
     outputs:
       config: ${{ steps.read_touchstone_config.outputs.config }}
     steps:
