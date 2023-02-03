@@ -30,5 +30,3 @@ CRAN-RELEASE
 
 # C++ object files
 inst/include/*.o
-# avoid rstantools generated files
-src
