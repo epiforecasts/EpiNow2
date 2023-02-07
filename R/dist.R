@@ -13,7 +13,7 @@
 #' distribution be cumulative.
 #'
 #' @param model Character string, defining the model to be used. Supported
-#' options are exponential ("exp"), gamma ("gamma"), and log normal ("lognorm")
+#' options are exponential ("exp"), gamma ("gamma"), and log normal ("lognormal")
 #'
 #' @param params A list of parameters values (by name) required for each model.
 #' For the exponential model this is a rate parameter and for the gamma model
@@ -25,6 +25,7 @@
 #' @return A vector of samples or a probability distribution.
 #' @export
 #' @author Sam Abbott
+#' @author Sebastian Funk
 #' @examples
 #'
 #' ## Exponential model
@@ -42,37 +43,37 @@
 #'
 #' ## Gamma model
 #' # sample
-#' dist_skel(10, model = "gamma", params = list(alpha = 1, beta = 2))
+#' dist_skel(10, model = "gamma", params = list(shape = 1, scale = 2))
 #'
 #' # cumulative prob density
 #' dist_skel(0:10,
 #'   model = "gamma", dist = TRUE,
-#'   params = list(alpha = 1, beta = 2)
+#'   params = list(shape = 1, scale = 2)
 #' )
 #'
 #' # probability density
 #' dist_skel(0:10,
 #'   model = "gamma", dist = TRUE,
-#'   cum = FALSE, params = list(alpha = 2, beta = 2)
+#'   cum = FALSE, params = list(shape = 2, scale = 2)
 #' )
 #'
 #' ## Log normal model
 #' # sample
-#' dist_skel(10, model = "lognorm", params = list(mean = log(5), sd = log(2)))
+#' dist_skel(10, model = "lognormal", params = list(mean = log(5), sd = log(2)))
 #'
 #' # cumulative prob density
 #' dist_skel(0:10,
-#'   model = "lognorm", dist = TRUE,
+#'   model = "lognormal", dist = TRUE,
 #'   params = list(mean = log(5), sd = log(2))
 #' )
 #'
 #' # probability density
 #' dist_skel(0:10,
-#'   model = "lognorm", dist = TRUE, cum = FALSE,
+#'   model = "lognormal", dist = TRUE, cum = FALSE,
 #'   params = list(mean = log(5), sd = log(2))
 #' )
 dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
-                      params, max_value = 120) {
+                      discrete = FALSE, params, max_value = 120) {
   if (model %in% "exp") {
     # define support functions for exponential dist
     rdist <- function(n) {
@@ -88,18 +89,18 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
     }
   } else if (model %in% "gamma") {
     rdist <- function(n) {
-      rgamma(n, params$alpha, params$beta)
+      rgamma(n, params$shape, params$scale)
     }
     pdist <- function(n) {
-      pgamma(n, params$alpha, params$beta) /
-        pgamma(max_value, params$alpha, params$beta)
+      pgamma(n, params$shape, params$scale) /
+        pgamma(max_value, params$shape, params$scale)
     }
     ddist <- function(n) {
-      (pgamma(n + 1, params$alpha, params$beta) -
-        pgamma(n, params$alpha, params$beta)) /
-        pgamma(max_value, params$alpha, params$beta)
+      (pgamma(n + 1, params$shape, params$scale) -
+        pgamma(n, params$shape, params$scale)) /
+        pgamma(max_value, params$shape, params$scale)
     }
-  } else if (model %in% "lognorm") {
+  } else if (model %in% "lognormal") {
     rdist <- function(n) {
       rlnorm(n, params$mean, params$sd)
     }
@@ -111,6 +112,20 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
       (plnorm(n + 1, params$mean, params$sd) -
         plnorm(n, params$mean, params$sd)) /
         plnorm(max_value, params$mean, params$sd)
+    }
+  }
+
+  if (discrete) {
+    cmf <- c(0, pdist(seq_len(max_value + 1)))
+    pmf <- diff(cmf)
+    rdist <- function(n) {
+      sample(x = seq_len(max_value) - 1, size = n, prob = pmf)
+    }
+    pdist <- function(n) {
+      cmf[n + 1]
+    }
+    ddist <- function(n) {
+      pmf[n + 1]
     }
   }
 
@@ -303,22 +318,30 @@ gamma_dist_def <- function(shape, shape_sd,
                            sd, sd_sd,
                            max_value, samples) {
   if (missing(shape) & missing(scale) & !missing(mean) & !missing(sd)) {
-    mean <- truncnorm::rtruncnorm(samples, a = 0, mean = mean, sd = mean_sd)
-    sd <- truncnorm::rtruncnorm(samples, a = 0, mean = sd, sd = sd_sd)
-    beta <- sd^2 / mean
-    alpha <- mean / beta
-    beta <- 1 / beta
+    if (!missing(mean_sd)) {
+      mean <- truncnorm::rtruncnorm(samples, a = 0, mean = mean, sd = mean_sd)
+    }
+    if (!missing(sd_sd)) {
+      sd <- truncnorm::rtruncnorm(samples, a = 0, mean = sd, sd = sd_sd)
+    }
+    scale <- sd^2 / mean
+    shape <- mean / scale
+    scale <- 1 / scale
   } else {
-    alpha <- truncnorm::rtruncnorm(samples, a = 0, mean = shape, sd = shape_sd)
-    beta <- 1 / truncnorm::rtruncnorm(samples, a = 0, mean = scale, sd = scale_sd)
+    if (!missing(shape_sd)) {
+      alpha <- truncnorm::rtruncnorm(samples, a = 0, mean = shape, sd = shape_sd)
+    }
+    if (!missing(scale_sd)) {
+      beta <- 1 / truncnorm::rtruncnorm(samples, a = 0, mean = scale, sd = scale_sd)
+    }
   }
 
   dist <- data.table::data.table(
     model = rep("gamma", samples),
     params = purrr::transpose(
       list(
-        alpha = alpha,
-        beta = beta
+        shape = shape,
+        scale = scale
       )
     ),
     max_value = rep(max_value, samples)
@@ -381,8 +404,17 @@ lognorm_dist_def <- function(mean, mean_sd,
     mean_shape
   }
 
-  sampled_means <- truncnorm::rtruncnorm(samples, a = 0, mean = mean, sd = mean_sd)
-  sampled_sds <- truncnorm::rtruncnorm(samples, a = 0, mean = sd, sd = sd_sd)
+  if (missing(mean_sd)) {
+    sample_means <- mean
+  } else {
+    sampled_means <- truncnorm::rtruncnorm(samples, a = 0, mean = mean, sd = mean_sd)
+  }
+
+  if (missing(sd_sd)) {
+    sampled_sds <- sd
+  } else {
+    sampled_sds <- truncnorm::rtruncnorm(samples, a = 0, mean = sd, sd = sd_sd)
+  }
   means <- sampled_means
   sds <- sampled_sds
 
@@ -392,7 +424,7 @@ lognorm_dist_def <- function(mean, mean_sd,
   }
 
   dist <- data.table::data.table(
-    model = rep("lognorm", samples),
+    model = rep("lognormal", samples),
     params = purrr::transpose(
       list(
         mean = means,
@@ -767,7 +799,9 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @description `r lifecycle::badge("stable")`
 #' Defines the parameters of a supported distribution for use in onward
 #' modelling. Multiple distribution families are supported - see the
-#' documentation for `family` for details. This function provides distribution
+#' documentation for `family` for details. Alternatively, a nonparametric
+#' distribution can be specified using the \code{pmf} argument.
+#' This function provides distribution
 #' functionality in [delay_opts()], [generation_time_opts()], and
 #' [trunc_opts()].
 #'
@@ -811,8 +845,13 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @param max Numeric, maximum value of the distribution. The distribution will
 #' be truncated at this value.
 #'
+#' @param pmf Numeric, defaults to an empty vector corresponding to a parametric
+#' specification of the distribution (using \code{mean}, \code{sd} and
+#' corresponding uncertainties)
+#'
 #' @param fixed Logical, defaults to `FALSE`. Should delays be treated
-#' as coming from fixed (vs uncertain) distributions. Making this simplification
+#' as coming from fixed (vs uncertain) distributions. Overrides any values
+#' assigned to \code{mean_sd} and \code{sd_sd} by setting them to zero.
 #' reduces compute requirement but may produce spuriously precise estimates.
 #'
 #' @return A list of distribution options.
@@ -821,57 +860,188 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @author Sam Abbott
 #' @export
 dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
-                      dist = c("lognormal", "gamma"), max = NULL,
-                      fixed = FALSE) {
-  dist <- match.arg(dist)
+                      dist = c("lognormal", "gamma"), max,
+                      pmf = numeric(0), fixed = FALSE) {
+  ## check if parametric or nonparametric
+  if (length(pmf) > 0 &&
+        !all(missing(mean), missing(sd), missing(mean_sd),
+          missing(sd_sd), missing(dist), missing(max))) {
+    stop("Distributional parameters or a pmf can be specified, but not both.")
+  }
 
-  if (missing(mean)) {
-    ret <- list(
-      mean_mean = numeric(0),
-      mean_sd = numeric(0),
-      sd_mean = numeric(0),
-      sd_sd = numeric(0),
-      fixed = integer(0),
-      dist = integer(0)
-    )
-    if (is.null(max)) {
-      ret$max <- integer(0)
-    } else {
-      ret$max <- max
-    }
-  } else {
-    ret <- list(
-      mean_mean = mean,
-      mean_sd = mean_sd,
-      sd_mean = sd,
-      sd_sd = sd_sd
-    )
-    if (fixed) {
-      ret$mean_sd <- 0
-      ret$sd_sd <- 0
-    }
-    ret$fixed <- as.integer(ret$mean_sd == 0 && ret$mean_sd == 0)
+  if (fixed) {
+    mean_sd <- 0
+    sd_sd <- 0
+  }
+  fixed <- mean_sd == 0 && mean_sd == 0
 
-    ## check if it's a fixed value
-    if (ret$sd_mean == 0 && ret$sd_sd == 0) {
-      if (ret$mean_mean %% 1 != 0) {
+  ## check parametric parameters make sense
+  if (!missing(mean)) {
+    if (sd == 0 && sd_sd == 0) { ## integer fixed
+      if (mean %% 1 != 0) {
         stop(
           "When a distribution is set to a constant ",
           "(sd == 0 and sd_sd == 0) then the mean parameter ",
           "must be an integer."
         )
       }
-      ret$max <- ret$mean_mean
-      if (ret$mean_sd > 0) {
+      max <- mean
+      if (mean_sd > 0) {
         stop(
           "When a distribution has sd == 0 and ",
           "sd_sd == 0 then mean_sd must be 0, too."
         )
       }
     } else {
-      ret$max <- max
+      if (missing(max)) {
+        stop("Maximum of parametric distributions must be specified.")
+      }
     }
-    ret$dist <- which(eval(formals()[["dist"]]) == dist) - 1
+  } else {
+    if (!all(missing(sd), missing(mean_sd),
+      missing(sd_sd), missing(dist), missing(max))) {
+        stop("If any distributional parameters are given then so must the mean.")
+    }
   }
-  return(lapply(ret, array))
+
+  dist <- match.arg(dist)
+  if (fixed) {
+    ret <- list(
+      mean_mean = numeric(0),
+      mean_sd = numeric(0),
+      sd_mean = numeric(0),
+      sd_sd = numeric(0),
+      dist = integer(0),
+      max = integer(0)
+    )
+    if (length(pmf) == 0) {
+      if (missing(mean)) { ## empty
+        ret <- c(ret, list(
+          n = 0,
+          n_p = 0,
+          n_np = 0,
+          np_pmf_max = 0,
+          np_pmf = numeric(0),
+          np_pmf_groups = integer(0)
+        ))
+      } else { ## parametric fixed
+        if (sd == 0) { ## delta
+          pmf <- c(rep(0, mean), 1)
+        } else {
+          if (dist == "lognormal") {
+            params <- lognorm_dist_def(mean = mean, mean_sd = mean_sd,
+              sd = sd, sd_sd = sd_sd, max_value = max, samples = 1)
+          } else if (dist == "gamma") {
+            params <- gamma_dist_def(mean = mean, mean_sd = mean_sd,
+              sd = sd, sd_sd = sd_sd, max_value = max, samples = 1)
+          }
+          pmf <- dist_skel(
+            n = seq_len(max) - 1, dist = TRUE, cum = FALSE, model = dist,
+            params = params$params[[1]], max_value = max,
+            discrete = TRUE
+          )
+        }
+      }
+    } else { ## nonparametric fixed
+      if (!missing(max) && max > length(pmf)) {
+        pmf <- pmf[1:(max + 1)]
+      }
+      pmf <- pmf / sum(pmf)
+    }
+    ret <- c(ret, list(
+      n = 1,
+      n_p = 0,
+      n_np = 1,
+      np_pmf_max = length(pmf),
+      np_pmf = pmf,
+      np_pmf_groups = length(pmf)
+    ))
+  } else {
+    ret <- list(
+      mean_mean = mean,
+      mean_sd = mean_sd,
+      sd_mean = sd,
+      sd_sd = sd_sd,
+      dist = which(eval(formals()[["dist"]]) == dist) - 1,
+      max = max,
+      n = 1,
+      n_p = 1,
+      n_np = 0,
+      np_pmf_max = 0,
+      np_pmf = numeric(0),
+      np_pmf_groups = integer(0)
+    )
+  }
+  ret$fixed <- as.integer(fixed)
+  ret <- purrr::map(ret, array)
+  sum_args <- grep("(^n$|^n_|_max$)", names(ret))
+  ret[sum_args] <- purrr::map(ret[sum_args], sum)
+  attr(ret, "class") <- c("list", "dist_spec")
+  return(ret)
+}
+
+##' Combines multiple delay distributions into a new delay distribution
+##'
+##' This combines the parameters so that they can
+##' be fed as multiple delay distributions to [epinow()] or [estimate_infections()].
+##'
+##' @param ... The delay distributions (from calls to [dist_spec()]) to combine
+##' @return Combined delay distributions (with class [dist_spec()]`)
+##' @author Sebastian Funk
+##' @method c dist_spec
+##' @importFrom purrr transpose map
+##' @export
+`c.dist_spec` <- function(...) {
+  ## process delay distributions
+  delays <- list(...)
+  if (any(!vapply(delays, is, FALSE, "dist_spec"))) {
+    stop(
+      "Delay distribution can only be concatenated with other delay ",
+      "distributions."
+    )
+  }
+  c_names <- names(delays)
+  ## transpose delays
+  delays <- purrr::transpose(delays)
+  ## convert back to arrays
+  delays <- purrr::map(delays, function(x) array(unlist(x)))
+  sum_args <- grep("(^n$|^n_|_max$)", names(delays))
+  delays[sum_args] <- purrr::map(delays[sum_args], sum)
+  delays$names <- c_names
+  attr(delays, "class") <- c("list", "dist_spec")
+  return(delays)
+}
+
+##' Returns the mean of one or more delay distribution
+##'
+##' This works out the mean of all the (parametric / nonparametric) delay distributions
+##' combined in the passed [dist_spec()].
+##'
+##' @param x The [dist_spec()] to use
+##' @param ... Not used
+##' @return A vector of means.
+##' @author Sebastian Funk
+##' @method mean dist_spec
+##' @export
+`mean.dist_spec` <- function(x, ...) {
+  ret <- rep(0, x$n)
+  ## nonparametric
+  if (x$n_np > 0) {
+    init_id <- c(1, head(cumsum(x$np_pmf_groups) + 1, n = -1))
+    ret[x$fixed == 1L] <- vapply(seq_along(init_id), function(id) {
+      pmf <- x$np_pmf[seq(init_id[id], cumsum(x$np_pmf_groups)[id])]
+      return(sum((seq_len(x$np_pmf_groups[id]) - 1) * pmf))
+    }, .0)
+  }
+  ## parametric
+  if (x$n_p > 0) {
+    ret[x$fixed == 0L] <- vapply(seq_along(which(x$fixed == 0L)), function(id) {
+      if (x$dist[id] == 0) { ## lognormal
+        return(exp(x$mean_mean[id] + x$sd_mean[id] / 2))
+      } else if (x$dist[id] == 1) { ## gamma
+        return(x$mean_mean[id])
+      }
+    }, .0)
+  }
+  return(ret)
 }

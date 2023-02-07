@@ -10,7 +10,8 @@ dist_spec(
   mean_sd = 0,
   sd_sd = 0,
   dist = c("lognormal", "gamma"),
-  max = NULL,
+  max,
+  pmf = numeric(0),
   fixed = FALSE
 )
 }
@@ -57,8 +58,13 @@ log scale).
 \item{max}{Numeric, maximum value of the distribution. The distribution will
 be truncated at this value.}
 
+\item{pmf}{Numeric, defaults to an empty vector corresponding to a parametric
+specification of the distribution (using \code{mean}, \code{sd} and
+corresponding uncertainties)}
+
 \item{fixed}{Logical, defaults to \code{FALSE}. Should delays be treated
-as coming from fixed (vs uncertain) distributions. Making this simplification
+as coming from fixed (vs uncertain) distributions. Overrides any values
+assigned to \code{mean_sd} and \code{sd_sd} by setting them to zero.
 reduces compute requirement but may produce spuriously precise estimates.}
 }
 \value{
@@ -68,7 +74,9 @@ A list of distribution options.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines the parameters of a supported distribution for use in onward
 modelling. Multiple distribution families are supported - see the
-documentation for \code{family} for details. This function provides distribution
+documentation for \code{family} for details. Alternatively, a nonparametric
+distribution can be specified using the \code{pmf} argument.
+This function provides distribution
 functionality in \code{\link[=delay_opts]{delay_opts()}}, \code{\link[=generation_time_opts]{generation_time_opts()}}, and
 \code{\link[=trunc_opts]{trunc_opts()}}.
 }

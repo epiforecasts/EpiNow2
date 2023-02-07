@@ -14,13 +14,14 @@ test_that("update_infectiousness works as expected with default settings", {
   expect_error(update_infectiousness(rep(1, 20), rep(0.1, 5), 5, 10, 10))
 })
 
-gt_rev_pmf <- rev(discretised_pmf(3, 2, 15, 1, 1))
+pmf <- discretised_pmf(3, 2, 15, 1)
+gt_rev_pmf <- combine_pmfs(pmf, numeric(0), numeric(0), integer(0), integer(0), 15, 1, 1)
 
 # test generate infections
 test_that("generate_infections works as expected", {
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 0), 0),
-    c(rep(1000, 10), 996, rep(997, 9))
+    c(rep(1000, 10), 996, rep(997, 3), rep(998, 6))
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(20), 0.03, 0, 0), 0),
@@ -32,11 +33,11 @@ test_that("generate_infections works as expected", {
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 4, gt_rev_pmf, log(500), -0.02, 0, 0), 0),
-    c(500, 490, 480, 471, 402, 413, 416, 417, rep(418, 6))
+    c(500, 490, 480, 471, 402, 413, 417, 417, rep(418, 6))
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 0), 0),
-    c(rep(500, 4), 416, 472, 490, 507, 524, 543, 561, 581, 601, 622)
+    c(rep(500, 4), 417, 473, 490, 507, 525, 543, 562, 581, 601, 622)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 1, gt_rev_pmf, log(40), numeric(0), 0, 0), 0),
@@ -48,6 +49,6 @@ test_that("generate_infections works as expected", {
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 0, 100000, 4), 0),
-    c(rep(1000, 10), 996, rep(997, 5), 980, 964, 944, 921)
+    c(rep(1000, 10), 996, rep(997, 3), rep(998, 2), 980, 964, 944, 921)
   )
 })

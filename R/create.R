@@ -409,13 +409,7 @@ create_stan_data <- function(reported_cases, generation_time,
                              backcalc, shifted_cases,
                              truncation) {
   ## make sure we have at least gt_max seeding time
-  delays$seeding_time <- max(delays$seeding_time, generation_time$max)
-
-  ## for backwards compatibility call generation_time_opts internally
-  if (is.list(generation_time) &&
-    all(c("mean", "mean_sd", "sd", "sd_sd") %in% names(generation_time))) {
-    generation_time <- do.call(generation_time_opts, generation_time)
-  }
+  delays$seeding_time <- max(delays$seeding_time, generation_time$gt_max)
 
   cases <- reported_cases[(delays$seeding_time + 1):(.N - horizon)]$confirm
 
@@ -452,6 +446,10 @@ create_stan_data <- function(reported_cases, generation_time,
   if (is.null(data$gt_weight)) {
     ## default: weigh by number of data points
     data$gt_weight <- data$t - data$seeding_time - data$horizon
+  }
+  if (is.null(data$delay_weight)) {
+    ## default: weigh by number of time points
+    data$delay_weight <- data$t
   }
   if (data$seeding_time > 1) {
     safe_lm <- purrr::safely(stats::lm)
@@ -500,37 +498,23 @@ create_stan_data <- function(reported_cases, generation_time,
 create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- list()
-    if (data$n_uncertain_mean_delays > 0) {
-      out$delay_mean <- array(purrr::map2_dbl(
-        data$delay_mean_mean[data$uncertain_mean_delays],
-        data$delay_mean_sd[data$uncertain_mean_delays] * 0.1,
-        ~ rnorm(1, mean = .x, sd = .y)
-      ))
-    }
-    if (data$n_uncertain_sd_delays > 0) {
-      out$delay_sd <- array(purrr::map2_dbl(
-        data$delay_sd_mean[data$uncertain_sd_delays],
-        data$delay_sd_sd[data$uncertain_sd_delays] * 0.1,
-        ~ rnorm(1, mean = .x, sd = .y)
-      ))
-    }
-    if (data$truncation > 0) {
-      if (data$trunc_mean_sd > 0) {
-        out$truncation_mean <- array(rnorm(1,
-          mean = data$trunc_mean_mean,
-          sd = data$trunc_mean_sd * 0.1
-        ))
-      }
-      if (data$trunc_sd_sd > 0) {
-        out$truncation_sd <- array(
-          truncnorm::rtruncnorm(1,
-            a = 0,
-            mean = data$trunc_sd_mean,
-            sd = data$trunc_sd_sd * 0.1
-          )
-        )
-      }
-    }
+    out$delay_mean <- array(purrr::map2_dbl(
+      data$delay_mean_mean, data$delay_mean_sd * 0.1,
+      ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
+    ))
+    out$delay_sd <- array(purrr::map2_dbl(
+      data$delay_sd_mean, data$delay_sd_sd * 0.1,
+      ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
+    ))
+    out$trunc_mean <- array(purrr::map2_dbl(
+      data$trunc_mean_mean, data$trunc_mean_sd * 0.1,
+      ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
+    ))
+    out$trunc_sd <- array(purrr::map2_dbl(
+      data$trunc_sd_mean, data$trunc_sd_sd * 0.1,
+      ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
+    ))
+
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
       out$rho <- array(rlnorm(1,
@@ -561,23 +545,19 @@ create_initial_conditions <- function(data) {
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
         sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
       ))
-      if (data$gt_mean_sd > 0) {
-        out$gt_mean <- array(truncnorm::rtruncnorm(1,
-          a = 0, mean = data$gt_mean_mean,
-          sd = data$gt_mean_sd * 0.1
-        ))
-      }
-      if (data$gt_sd_sd > 0) {
-        out$gt_sd <- array(truncnorm::rtruncnorm(1,
-          a = 0, mean = data$gt_sd_mean,
-          sd = data$gt_sd_sd * 0.1
-        ))
-      }
+      out$gt_mean <- array(purrr::map2_dbl(
+        data$gt_mean_mean, data$gt_mean_sd * 0.1,
+        ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
+      ))
+      out$gt_sd <- array(purrr::map2_dbl(
+        data$gt_sd_mean, data$gt_sd_sd * 0.1,
+        ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
+      ))
+    }
 
-      if (data$bp_n > 0) {
-        out$bp_sd <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
-        out$bp_effects <- array(rnorm(data$bp_n, 0, 0.1))
-      }
+    if (data$bp_n > 0) {
+      out$bp_sd <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
+      out$bp_effects <- array(rnorm(data$bp_n, 0, 0.1))
     }
     if (data$obs_scale == 1) {
       out$frac_obs <- array(truncnorm::rtruncnorm(1,

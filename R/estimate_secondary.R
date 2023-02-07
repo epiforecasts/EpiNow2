@@ -123,7 +123,7 @@
 estimate_secondary <- function(reports,
                                secondary = secondary_opts(),
                                delays = delay_opts(
-                                 list(
+                                 dist_spec(
                                    mean = 2.5, mean_sd = 0.5,
                                    sd = 0.47, sd_sd = 0.25, max = 30
                                  )
@@ -153,7 +153,9 @@ estimate_secondary <- function(reports,
   data <- c(data, secondary)
   # delay data
   data <- c(data, delays)
+  data$delay_weight <- 1
   data$seeding_time <- 0
+
   # truncation data
   data <- c(data, truncation)
   # observation model data

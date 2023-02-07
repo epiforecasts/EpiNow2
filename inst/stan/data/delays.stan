@@ -1,14 +1,13 @@
-  int delays;                  // no. of delay distributions
-  int n_uncertain_mean_delays;   // no. of delay distributions with uncertain mean
-  int n_uncertain_sd_delays;     // no. of delay distributions with uncertain sd
-  int n_fixed_delays;     // no. of delay distributions with uncertain sd
-  // indices of delay distributions with uncertainty
-  int<lower = 1, upper = delays> uncertain_mean_delays[n_uncertain_mean_delays];
-  int<lower = 1, upper = delays> uncertain_sd_delays[n_uncertain_sd_delays];
-  int<lower = 1, upper = delays> fixed_delays[n_fixed_delays];
-  real delay_mean_sd[delays];  // prior sd of mean incubation period
-  real delay_mean_mean[delays];// prior mean of mean incubation period
-  real delay_sd_mean[delays];  // prior sd of sd of incubation period
-  real delay_sd_sd[delays];    // prior sd of sd of incubation period
-  int<lower = 1> delay_max[delays];       // maximum incubation period
-  int delay_dist[delays];       // 0 = lognormal; 1 = gamma
+  int<lower = 0> delay_n;                  // number of delay distribution distributions
+  int<lower = 0> delay_n_p;                // number of parametric delay distributions
+  int<lower = 0> delay_n_np;                // number of nonparametric delay distributions
+  real<lower = 0> delay_mean_mean[delay_n_p]; // prior mean of mean delay distribution
+  real<lower = 0> delay_mean_sd[delay_n_p];   // prior sd of mean delay distribution
+  real<lower = 0> delay_sd_mean[delay_n_p];   // prior sd of sd of delay distribution
+  real<lower = 0> delay_sd_sd[delay_n_p];     // prior sd of sd of delay distribution
+  int<lower = 1> delay_max[delay_n_p];          // maximum delay distribution
+  int<lower = 0> delay_dist[delay_n_p];       // 0 = lognormal; 1 = gamma
+  int<lower = 0> delay_np_pmf_max;          // number of nonparametric pmf elements
+  vector<lower = 0, upper = 1>[delay_np_pmf_max] delay_np_pmf; // ragged array of fixed PMFs
+  int<lower = 1> delay_np_pmf_groups[delay_n_np];      // links to ragged array
+  int delay_weight;

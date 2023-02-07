@@ -7,7 +7,8 @@
 estimate_secondary(
   reports,
   secondary = secondary_opts(),
-  delays = delay_opts(list(mean = 2.5, mean_sd = 0.5, sd = 0.47, sd_sd = 0.25, max = 30)),
+  delays = delay_opts(dist_spec(mean = 2.5, mean_sd = 0.5, sd = 0.47, sd_sd = 0.25, max =
+    30)),
   truncation = trunc_opts(),
   obs = obs_opts(),
   burn_in = 14,
