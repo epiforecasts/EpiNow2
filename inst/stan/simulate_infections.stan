@@ -54,7 +54,7 @@ generated quantities {
     vector[delay_max_total] delay_rev_pmf;
 
     gt_rev_pmf = combine_pmfs(
-      gt_fixed_pmf, gt_mean[i], gt_sd[i], gt_max, gt_dist, gt_max_total, 1, 1
+      gt_fixed_pmf, gt_mean[i], gt_sd[i], gt_max, gt_dist, gt_max_total, gt_zeroes, 1
     );
     delay_rev_pmf = combine_pmfs(
       delay_fixed_pmf, delay_mean[i], delay_sd[i], delay_max, delay_dist, delay_max_total, 0, 1

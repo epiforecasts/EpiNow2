@@ -44,7 +44,7 @@ vector reverse_mf(vector pmf) {
 }
 
 // combined fixed/variable pmfs
-vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf_n, int[] dist, int len, int left_truncate, int reverse_pmf) {
+vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf_n, int[] dist, int len, int zeroes, int reverse_pmf) {
   int n_fixed = num_elements(fixed_pmf);
   int n_variable = num_elements(pmf_mu);
   vector[len] pmf = rep_vector(0, len);
@@ -60,18 +60,23 @@ vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf
       pmf = convolve(pmf, variable_pmf, len);
     }
   }
-  if (left_truncate) {
+  if (zeroes == 1 || zeroes == 2) { // truncate or shift
     real norm;
-    for (i in 1:left_truncate) {
-      pmf[i] = 0;
-    }
-    norm = sum(pmf);
-    if (left_truncate < len) {
-      for (i in left_truncate:len) {
-        pmf[i] /= norm;
+    if (zeroes == 2) { // shift
+      for (i in 2:len) {
+        pmf[len - i + 2] = pmf[len - i + 1];
       }
     }
+    pmf[1] = 0;
+    norm = sum(pmf);
+    for (i in 2:len) {
+      pmf[i] /= norm;
+    }
+  } else if (zeroes == 3) { // add to 1
+    pmf[2] += pmf[1];
+    pmf[1] = 0;
   }
+
   if (reverse_pmf) {
     pmf = reverse_mf(pmf);
   }

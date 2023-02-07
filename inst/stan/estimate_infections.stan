@@ -96,7 +96,7 @@ transformed parameters {
   if (estimate_r) {
     // via Rt
     gt_rev_pmf = combine_pmfs(
-      gt_fixed_pmf, gt_mean, gt_sd, gt_max, gt_dist, gt_max_total, 1, 1
+      gt_fixed_pmf, gt_mean, gt_sd, gt_max, gt_dist, gt_max_total, gt_zeroes, 1
     );
     R = update_Rt(
       ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary
@@ -203,7 +203,7 @@ generated quantities {
     gt_sd_sample = normal_rng(gt_sd_mean, gt_sd_sd);
     gen_rev_pmf = combine_pmfs(
       gt_fixed_pmf, gt_mean_sample, gt_sd_sample, gt_max, gt_dist, gt_max_total,
-      1, 1
+      gt_zeroes, 1
     );
 
     gen_gt_mean = pmf_mean(gt_rev_pmf, 1, 1);

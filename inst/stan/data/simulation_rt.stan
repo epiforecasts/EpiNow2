@@ -11,6 +11,7 @@
   int<lower = 0> gt_np_pmf_max;          // number of nonparametric pmf elements
   vector<lower = 0, upper = 1>[gt_np_pmf_max] gt_np_pmf; // ragged array of fixed PMFs
   int<lower = 1> gt_np_pmf_groups[gt_n_np];      // links to ragged array
+  int gt_zeroes;                     // 1 = truncate, 2 = shift; 3 = add to 1
 
   matrix[n, t - seeding_time] R; // reproduction number
   int pop;                       // susceptible population

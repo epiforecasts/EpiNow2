@@ -16,6 +16,14 @@
 #' much from the given distribution. Another sensible option would be 1,
 #' i.e. treating the generation time distribution as a single parameter.
 #'
+#' @param zeroes character, how to deal with the first element of the
+#' generation time distribution, corresponding to generation time 0 which
+#' is not allowed in the renewal equation framework used here.
+#' One of "truncate" (default; truncate the distribution at 0), "shift" i
+#' (shift the generation time by 1, so that the first entry corresponds to
+#' generation time 1) or "add_to_1" ' (add the probability mass to the
+#' existing probability mass for generation time 1).
+#'
 #' @return A list summarising the input delay distributions.
 #' @author Sebastian Funk
 #' @author Sam Abbott
@@ -33,7 +41,8 @@
 #' # A generation time sourced from the ligerature
 #' dist <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' generation_time_opts(dist)
-generation_time_opts <- function(dist, prior_weight = NULL) {
+generation_time_opts <- function(dist, prior_weight = NULL,
+                                 zeroes = c("truncate", "shift", "add_to_1")) {
 
   if (missing(dist)) {
     dist <- dist_spec(mean = 1)
@@ -46,10 +55,13 @@ generation_time_opts <- function(dist, prior_weight = NULL) {
          "information, see the relevant documentation pages using ",
          "`?generation_time_opts`")
   }
+  zeroes <- match.arg(zeroes)
+
   data <- unclass(dist)
   data$fixed <- NULL ## not used in stan model
   data$names <- NULL ## not used in stan model
   data$weight <- prior_weight
+  data$zeroes <- which(eval(formals()[["zeroes"]]) == zeroes)
   names(data) <- paste0("gt_", names(data))
 
   return(data)
