@@ -6,11 +6,11 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
   // work out where to start the convolution of past infections with the
   // generation time distribution: (current_time - maximal generation time) if
   // that is >= 1, otherwise 1
-  int inf_start = max(1, (index + seeding_time - gt_max));
-  // work out where to end the convolution: (current_time - 1)
-  int inf_end = (index + seeding_time - 1);
+  int inf_start = max(1, (index + seeding_time - gt_max + 1));
+  // work out where to end the convolution: current_time
+  int inf_end = (index + seeding_time);
   // number of indices of the generation time to sum over (inf_end - inf_start + 1)
-  int pmf_accessed = min(gt_max, index + seeding_time - 1);
+  int pmf_accessed = min(gt_max, index + seeding_time);
   // calculate the elements of the convolution
   real new_inf = dot_product(
     infections[inf_start:inf_end], tail(gt_rev_pmf, pmf_accessed)

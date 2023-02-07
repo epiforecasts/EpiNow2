@@ -4,36 +4,12 @@
 \alias{generation_time_opts}
 \title{Generation Time Distribution Options}
 \usage{
-generation_time_opts(
-  ...,
-  disease,
-  source,
-  max = 15L,
-  fixed = FALSE,
-  prior_weight = NULL
-)
+generation_time_opts(dist, prior_weight = NULL)
 }
 \arguments{
-\item{...}{Any parameters to be passed to \code{\link[=dist_spec]{dist_spec()}}, if the generation
-time is given as parameters of a distribution rather than a \code{disease}
-and \code{source}. In this case if the \code{mean} parameter is not set a
-mean of 1 will be assumed, if the \code{max} parameter not set then the
-\code{max} will be set to 15 to ensure backwards compatibility, and if no
-\code{dist} parameter is given then a gamma distribution will be used for
-backwards compatibility. As for \code{\link[=delay_opts]{delay_opts()}} a list of parameters can
-also be supplied that describe a distribution (but unlike \code{\link[=delay_opts]{delay_opts()}}
-multiple distributions may not currently be used (for example as output by
-get_generation_time()).}
-
-\item{disease}{A character string indicating the disease of interest.}
-
-\item{source}{A character string indicating the source of interest.}
-
-\item{max}{Integer, defaults to 15. Maximum generation time. This will
-not be used if a maximum is set in the distribution parameters.}
-
-\item{fixed}{Logical, defaults to \code{FALSE}. Should the generation time be
-treated as coming from fixed (vs uncertain) distributions.}
+\item{dist}{A delay distribution or series of delay distributions generated
+using \code{\link[=dist_spec]{dist_spec()}} or \code{\link[=get_generation_time]{get_generation_time()}}. If no distribution is given
+a fixed generation time of 1 will be assumed.}
 
 \item{prior_weight}{numeric, weight given to the generation time prior.
 By default the generation time prior will be weighted by the number of
@@ -52,15 +28,16 @@ be passed to \link{get_generation_time}, or as parameters of a distribution to b
 passed to \link{dist_spec}.
 }
 \examples{
-# default settings with a fixed generation time
+# default settings with a fixed generation time of 1
 generation_time_opts()
 
 # A fixed gamma distributed generation time
-generation_time_opts(mean = 3, sd = 2)
+generation_time_opts(dist_spec(mean = 3, sd = 2, max = 15))
 
 # An uncertain gamma distributed generation time
-generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
-
+generation_time_opts(dist_spec(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5, max = 15))
+# A generation time sourced from the ligerature
+get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec

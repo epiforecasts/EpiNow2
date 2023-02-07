@@ -221,7 +221,7 @@ get_dist <- function(data, disease, source, max_value = 15, fixed = FALSE) {
     dist$mean_sd <- 0
     dist$sd_sd <- 0
   }
-  return(dist)
+  return(do.call(dist_spec, dist))
 }
 #'  Get a Literature Distribution for the Generation Time
 #'

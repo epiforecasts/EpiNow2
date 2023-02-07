@@ -13,6 +13,27 @@ vector convolve(vector x, vector y, int len) {
   return(convolution);
 }
 
+vector convolve_ragged_pmf(vector pmf, int[] pmf_groups, int len) {
+  int n_groups = num_elements(pmf_groups);
+  int cur_len = 1;
+  int id = 1;
+  int pos = 1;
+  vector[len] out_pmf;
+
+  out_pmf[1] = 1;
+  out_pmf[2:len] = rep_vector(0, len - 1);
+
+  for (i in 1:n_groups) {
+    int new_len = cur_len + pmf_groups[i] - 1;
+    out_pmf[1:new_len] = convolve(segment(out_pmf, 1, cur_len),
+                                  segment(pmf, pos, pmf_groups[i]),
+                                  new_len);
+    pos += pmf_groups[i];
+  }
+
+  return(out_pmf);
+}
+
 // convolve two vectors as a backwards dot product
 // y vector shoud be reversed
 // limited to the length of x and backwards looking for x indexes

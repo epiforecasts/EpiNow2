@@ -107,7 +107,7 @@ reporting_delay <- estimate_delay(
 If data was not available we could instead make an informed estimate of the likely delay (*this is a synthetic example and not applicable to real world use cases and we have not included uncertainty to decrease runtimes*),
 
 ```{r}
-reporting_delay <- list(
+reporting_delay <- dist_spec(
   mean = convert_to_logmean(2, 1), sd = convert_to_logsd(2, 1), max = 10,
   dist = "lognormal"
 )
@@ -141,7 +141,7 @@ Estimate cases by date of infection, the time-varying reproduction number, the r
 estimates <- epinow(
   reported_cases = reported_cases,
   generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period, reporting_delay),
+  delays = delay_opts(c(incubation_period, reporting_delay)),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
   stan = stan_opts(cores = 4, control = list(adapt_delta = 0.99)),
   verbose = interactive()

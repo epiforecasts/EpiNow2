@@ -2,7 +2,7 @@
 skip_on_cran()
 
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 5)
-reporting_delay <- list(
+reporting_delay <- dist_spec(
   mean = log(3), mean_sd = 0.1,
   sd = log(2), sd_sd = 0.1, max = 5
 )
@@ -23,7 +23,8 @@ df_non_zero <- function(df) {
 test_that("regional_epinow produces expected output when run with default settings", {
   out <- suppressWarnings(
     regional_epinow(
-      reported_cases = cases, generation_time = generation_time,
+      reported_cases = cases,
+      generation_time = generation_time_opts(generation_time),
       delays = delay_opts(reporting_delay),
       rt = rt_opts(rw = 10), gp = NULL,
       stan = stan_opts(
@@ -52,7 +53,8 @@ test_that("regional_epinow produces expected output when run with default settin
 test_that("regional_epinow runs without error when given a very short timeout", {
   expect_error(
     regional_epinow(
-      reported_cases = cases, generation_time = generation_time,
+      reported_cases = cases,
+      generation_time = generation_time_opts(generation_time),
       delays = delay_opts(reporting_delay),
       stan = stan_opts(
         samples = 1000, warmup = 100,
@@ -65,7 +67,8 @@ test_that("regional_epinow runs without error when given a very short timeout", 
   )
   expect_error(
     regional_epinow(
-      reported_cases = cases, generation_time = generation_time,
+      reported_cases = cases,
+      generation_time = generation_time_opts(generation_time),
       delays = delay_opts(reporting_delay),
       stan = stan_opts(
         samples = 1000, warmup = 100,
@@ -85,7 +88,8 @@ test_that("regional_epinow produces expected output when run with region specifi
   rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
   out <- suppressWarnings(
     regional_epinow(
-      reported_cases = cases, generation_time = generation_time,
+      reported_cases = cases,
+      generation_time = generation_time_opts(generation_time),
       delays = delay_opts(reporting_delay),
       rt = rt, gp = gp,
       stan = stan_opts(

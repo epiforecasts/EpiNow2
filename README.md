@@ -180,7 +180,7 @@ real world use cases and we have not included uncertainty to decrease
 runtimes*),
 
 ``` r
-reporting_delay <- list(
+reporting_delay <- dist_spec(
   mean = convert_to_logmean(2, 1), sd = convert_to_logsd(2, 1), max = 10,
   dist = "lognormal"
 )
