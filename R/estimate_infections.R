@@ -192,7 +192,8 @@
 #'
 #' # no delays
 #' no_delay <- estimate_infections(
-#'  reported_cases, generation_time = generation_time_opts(generation_time)
+#'   reported_cases,
+#'   generation_time = generation_time_opts(generation_time)
 #' )
 #' plot(no_delay)
 #'
