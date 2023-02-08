@@ -63,7 +63,7 @@
 #' reported_cases <- example_confirmed[1:60]
 #'
 #' # set up example generation time
-#' generation_time <- generation_time_opts(
+#' generation_time <- get_generation_time(
 #'   disease = "SARS-CoV-2", source = "ganyani", fixed = TRUE
 #' )
 #' # set delays between infection and case report
@@ -189,7 +189,9 @@
 #' plot(fixed)
 #'
 #' # no delays
-#' no_delay <- estimate_infections(reported_cases, generation_time = generation_time_opts(generation_time))
+#' no_delay <- estimate_infections(
+#'  reported_cases, generation_time = generation_time_opts(generation_time)
+#' )
 #' plot(no_delay)
 #'
 #' # break point but otherwise static Rt
