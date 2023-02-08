@@ -47,7 +47,7 @@
 #' incubation_period <- get_incubation_period(
 #'  disease = "SARS-CoV-2", source = "lauer"
 #' )
-#' reporting_delay <- list(
+#' reporting_delay <- dist_spec(
 #'   mean = convert_to_logmean(2, 1),
 #'   mean_sd = 0.1,
 #'   sd = convert_to_logsd(2, 1),
@@ -60,7 +60,8 @@
 #'
 #' # estimate Rt and nowcast/forecast cases by date of infection
 #' out <- epinow(
-#'   reported_cases = reported_cases, generation_time = generation_time,
+#'   reported_cases = reported_cases,
+#'   generation_time = generation_time_opts(generation_time),
 #'   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
 #'   delays = delay_opts(incubation_period, reporting_delay)
 #' )

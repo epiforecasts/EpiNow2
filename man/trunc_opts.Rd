@@ -25,7 +25,7 @@ estimate these distributions.
 trunc_opts()
 
 # truncation dist
-trunc_opts(dist = dist_spec(mean = 3, sd = 2))
+trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec

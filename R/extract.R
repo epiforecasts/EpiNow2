@@ -174,13 +174,13 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
     )
     out$truncation_mean <- out$truncation_mean[,
         strat := as.character(time)][, time := NULL][, date := NULL
-      ]
+    ]
     out$truncation_sd <- extract_parameter(
       "trunc_sd", samples, seq_len(trunc_n_p)
     )
     out$truncation_sd <- out$truncation_sd[,
       strat := as.character(time)][, time := NULL][, date := NULL
-      ]
+    ]
   }
   if (data$estimate_r && data$gt_n_p > 0) {
     out$gt_mean <- extract_parameter("gt_mean", samples, seq_len(data$gt_n_p))
