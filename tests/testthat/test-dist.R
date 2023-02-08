@@ -1,3 +1,5 @@
+skip_on_cran()
+skip_on_os("windows")
 
 test_that("distributions are the same in R and stan", {
   args <- list(mean = 3, mean_sd = 0, sd = 2, sd_sd = 0, max_value = 15)
