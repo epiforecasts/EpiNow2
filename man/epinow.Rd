@@ -145,7 +145,7 @@ out <- epinow(
   reported_cases = reported_cases,
   generation_time = generation_time_opts(generation_time),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-  delays = delay_opts(incubation_period, reporting_delay)
+  delays = delay_opts(c(incubation_period, reporting_delay))
 )
 # summary of the latest estimates
 summary(out)
