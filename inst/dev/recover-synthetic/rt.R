@@ -10,7 +10,7 @@ options(mc.cores = 4)
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 # set delays between infection and case report
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-reporting_delay <- list(
+reporting_delay <- dist_spec(
   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 15
 )
@@ -20,8 +20,8 @@ obs <- obs_opts(scale = list(mean = 0.1, sd = 0.025), return_likelihood = TRUE)
 # fit model to data to recover realistic parameter estimates and define settings
 # shared simulation settings
 init <- estimate_infections(example_confirmed[1:100],
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay)),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 14),
   gp = NULL, horizon = 0,
   obs = obs
@@ -63,8 +63,8 @@ for (method in c("nuts")) {
   # GP
   gp[[method]] <-
     estimate_infections(sim_cases,
-      generation_time = generation_time,
-      delays = delay_opts(incubation_period, reporting_delay),
+      generation_time = generation_time_opts(generation_time),
+      delays = delay_opts(c(incubation_period, reporting_delay)),
       rt = rt_opts(prior = list(mean = 2, sd = 0.25)),
       stan = stanopts,
       obs = obs,
@@ -78,8 +78,8 @@ for (method in c("nuts")) {
   # Backcalculation
   backcalc[[method]] <-
     estimate_infections(sim_cases,
-      generation_time = generation_time,
-      delays = delay_opts(incubation_period, reporting_delay),
+      generation_time = generation_time_opts(generation_time),
+      delays = delay_opts(c(incubation_period, reporting_delay)),
       rt = NULL,
       stan = stanopts,
       obs = obs,
@@ -93,8 +93,8 @@ for (method in c("nuts")) {
   # RW (weekly)
   weekly_rw[[method]] <-
     estimate_infections(sim_cases,
-      generation_time = generation_time,
-      delays = delay_opts(incubation_period, reporting_delay),
+      generation_time = generation_time_opts(generation_time),
+      delays = delay_opts(c(incubation_period, reporting_delay)),
       rt = rt_opts(
         prior = list(mean = 2, sd = 0.25),
         rw = 7
@@ -112,8 +112,8 @@ for (method in c("nuts")) {
   # RW (every month) + stationary Guassian process
   gp_rw[[method]] <-
     estimate_infections(sim_cases,
-      generation_time = generation_time,
-      delays = delay_opts(incubation_period, reporting_delay),
+      generation_time = generation_time_opts(generation_time),
+      delays = delay_opts(c(incubation_period, reporting_delay)),
       rt = rt_opts(
         prior = list(mean = 2, sd = 0.25), rw = 14, gp_on = "R0"
       ),
@@ -131,8 +131,8 @@ for (method in c("nuts")) {
   if (fit_daily) {
     daily_rw[[method]] <-
       estimate_infections(sim_cases,
-        generation_time = generation_time,
-        delays = delay_opts(incubation_period, reporting_delay),
+        generation_time = generation_time_opts(generation_time),
+        delays = delay_opts(c(incubation_period, reporting_delay)),
         rt = rt_opts(
           prior = list(mean = 2, sd = 0.25),
           rw = 1

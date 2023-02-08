@@ -44,8 +44,8 @@ reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 # run model
 out <- estimate_infections(cases,
   stan = stan_opts(samples = 500),
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay)),
   rt = NULL
 )
 

@@ -118,15 +118,15 @@ generation_time <- generation_time_opts(
 incubation_period <- get_incubation_period(
   disease = "SARS-CoV-2", source = "lauer"
 )
-reporting_delay <- list(
+reporting_delay <- dist_spec(
   mean = convert_to_logmean(2, 1), mean_sd = 0,
   sd = convert_to_logsd(2, 1), sd_sd = 0, max = 10
 )
 
 # default settings but assuming that delays are fixed rather than uncertain
 def <- estimate_infections(reported_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay, fixed = TRUE)),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
   stan = stan_opts(control = list(adapt_delta = 0.95))
 )
@@ -138,8 +138,8 @@ plot(def)
 # decreasing the accuracy of the approximate Gaussian to speed up computation.
 # These settings are an area of active research. See ?gp_opts for details.
 agp <- estimate_infections(reported_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay, fixed = TRUE)),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
   gp = gp_opts(ls_min = 10, basis_prop = 0.1),
   stan = stan_opts(control = list(adapt_delta = 0.95))
@@ -149,8 +149,8 @@ plot(agp)
 
 # Adjusting for future susceptible depletion
 dep <- estimate_infections(reported_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay, fixed = TRUE)),
   rt = rt_opts(
     prior = list(mean = 2, sd = 0.1),
     pop = 1000000, future = "latest"
@@ -168,8 +168,8 @@ trunc_dist <- trunc_opts(dist = list(
   max = 3
 ))
 trunc <- estimate_infections(reported_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay, fixed = TRUE)),
   truncation = trunc_dist,
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
   gp = gp_opts(ls_min = 10, basis_prop = 0.1),
@@ -186,8 +186,8 @@ plot(trunc)
 # can be optionally switched off using backcalc_opts(prior = "none"),
 # see ?backcalc_opts for other options
 backcalc <- estimate_infections(reported_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay, fixed = TRUE)),
   rt = NULL, backcalc = backcalc_opts(),
   obs = obs_opts(scale = list(mean = 0.4, sd = 0.05)),
   horizon = 0
@@ -196,8 +196,8 @@ plot(backcalc)
 
 # Rt projected into the future using the Gaussian process
 project_rt <- estimate_infections(reported_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay, fixed = TRUE)),
   rt = rt_opts(
     prior = list(mean = 2, sd = 0.1),
     future = "project"
@@ -208,8 +208,8 @@ plot(project_rt)
 # default settings on a later snapshot of data
 snapshot_cases <- example_confirmed[80:130]
 snapshot <- estimate_infections(snapshot_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay, fixed = TRUE),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay, fixed = TRUE)),
   rt = rt_opts(prior = list(mean = 1, sd = 0.1))
 )
 plot(snapshot)
@@ -217,8 +217,8 @@ plot(snapshot)
 # stationary Rt assumption (likely to provide biased real-time estimates)
 # with uncertain reporting delays
 stat <- estimate_infections(reported_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay)),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1), gp_on = "R0")
 )
 plot(stat)
@@ -226,14 +226,14 @@ plot(stat)
 # no gaussian process (i.e fixed Rt assuming no breakpoints)
 # with uncertain reporting delays
 fixed <- estimate_infections(reported_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay)),
   gp = NULL
 )
 plot(fixed)
 
 # no delays
-no_delay <- estimate_infections(reported_cases, generation_time = generation_time)
+no_delay <- estimate_infections(reported_cases, generation_time = generation_time_opts(generation_time))
 plot(no_delay)
 
 # break point but otherwise static Rt
@@ -241,8 +241,8 @@ plot(no_delay)
 bp_cases <- data.table::copy(reported_cases)
 bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
 bkp <- estimate_infections(bp_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay)),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
   gp = NULL
 )
@@ -253,8 +253,8 @@ plot(bkp)
 # weekly random walk
 # with uncertain reporting delays
 rw <- estimate_infections(reported_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay)),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7),
   gp = NULL
 )
