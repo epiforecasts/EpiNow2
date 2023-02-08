@@ -28,6 +28,7 @@ vector convolve_ragged_pmf(vector pmf, int[] pmf_groups, int len) {
     out_pmf[1:new_len] = convolve(segment(out_pmf, 1, cur_len),
                                   segment(pmf, pos, pmf_groups[i]),
                                   new_len);
+    cur_len = new_len;
     pos += pmf_groups[i];
   }
 
