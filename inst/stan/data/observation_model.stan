@@ -13,7 +13,7 @@
   int<lower = 0> trunc_n;                  // number of trunc distribution distributions
   int<lower = 0> trunc_n_p;                // number of parametric trunc distributions
   int<lower = 0> trunc_n_np;                // number of nonparametric trunc distributions
-  real<lower = 0> trunc_mean_mean[trunc_n_p]; // prior mean of mean trunc distribution
+  real trunc_mean_mean[trunc_n_p]; // prior mean of mean trunc distribution
   real<lower = 0> trunc_mean_sd[trunc_n_p];   // prior sd of mean trunc distribution
   real<lower = 0> trunc_sd_mean[trunc_n_p];   // prior sd of sd of trunc distribution
   real<lower = 0> trunc_sd_sd[trunc_n_p];     // prior sd of sd of trunc distribution

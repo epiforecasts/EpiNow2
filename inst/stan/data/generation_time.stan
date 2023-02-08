@@ -1,7 +1,7 @@
   int<lower = 0> gt_n;                  // number of generation time distributions
   int<lower = 0> gt_n_p;                // number of parametric generation times
   int<lower = 0> gt_n_np;                // number of nonparametric generation times
-  real<lower = 0> gt_mean_mean[gt_n_p]; // prior mean of mean generation time
+  real gt_mean_mean[gt_n_p]; // prior mean of mean generation time
   real<lower = 0> gt_mean_sd[gt_n_p];   // prior sd of mean generation time
   real<lower = 0> gt_sd_mean[gt_n_p];   // prior sd of sd of generation time
   real<lower = 0> gt_sd_sd[gt_n_p];     // prior sd of sd of generation time
