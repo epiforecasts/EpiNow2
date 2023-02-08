@@ -168,15 +168,15 @@ plot(dep)
 
 # Adjusting for truncation of the most recent data
 # See estimate_truncation for an approach to estimating this from data
-trunc_dist <- trunc_opts(dist = list(
+trunc_dist <- dist_spec(
   mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
   sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1,
   max = 3
-))
+)
 trunc <- estimate_infections(reported_cases,
   generation_time = generation_time_opts(generation_time),
   delays = delay_opts(c(incubation_period, reporting_delay)),
-  truncation = trunc_dist,
+  truncation = trunc_opts(trunc_dist),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
   gp = gp_opts(ls_min = 10, basis_prop = 0.1),
   stan = stan_opts(control = list(adapt_delta = 0.95))
