@@ -39,7 +39,7 @@
 #' incubation_period <- get_incubation_period(
 #'  disease = "SARS-CoV-2", source = "lauer"
 #' )
-#' reporting_delay <- list(
+#' reporting_delay <- dist_spec(
 #'   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
 #'   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10
 #' )
@@ -51,7 +51,7 @@
 #'
 #' reported_cases <- report_cases(
 #'   case_estimates = cases,
-#'   delays = delay_opts(incubation_period, reporting_delay),
+#'   delays = delay_opts(c(incubation_period, reporting_delay)),
 #'   type = "sample"
 #' )
 #' print(reported_cases)
@@ -283,8 +283,8 @@ report_summary <- function(summarised_estimates,
 #' # run model
 #' out <- estimate_infections(cases,
 #'   stan = stan_opts(samples = 500),
-#'   generation_time = generation_time,
-#'   delays = delay_opts(incubation_period, reporting_delay),
+#'   generation_time = generation_time_opts(generation_time),
+#'   delays = delay_opts(c(incubation_period, reporting_delay)),
 #'   rt = NULL
 #' )
 #'

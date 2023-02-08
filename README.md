@@ -238,7 +238,7 @@ For other formulations see the documentation for
 estimates <- epinow(
   reported_cases = reported_cases,
   generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period, reporting_delay),
+  delays = delay_opts(c(incubation_period, reporting_delay)),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
   stan = stan_opts(cores = 4, control = list(adapt_delta = 0.99)),
   verbose = interactive()
@@ -348,8 +348,8 @@ us piecewise constant estimates by week.
 ``` r
 estimates <- regional_epinow(
   reported_cases = reported_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(c(incubation_period, reporting_delay)),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)

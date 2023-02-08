@@ -37,7 +37,8 @@ generation_time_opts(dist_spec(mean = 3, sd = 2, max = 15))
 # An uncertain gamma distributed generation time
 generation_time_opts(dist_spec(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5, max = 15))
 # A generation time sourced from the ligerature
-get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+dist <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+generation_time_opts(dist)
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec

@@ -10,7 +10,7 @@ incubation_period <- get_incubation_period(
 # static model
 fit <- estimate_infections(
   reported_cases,
-  generation_time,
+  generation_time_opts(generation_time),
   delays = delay_opts(incubation_period),
   stan = stan_opts(chains = 2, warmup = 200, samples = 1000),
   gp = NULL

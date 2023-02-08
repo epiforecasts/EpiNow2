@@ -34,7 +34,8 @@
 #' )
 #'
 #' # A generation time sourced from the literature
-#' get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+#' dist <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+#' generation_time_opts(dist)
 generation_time_opts <- function(dist, prior_weight = NULL) {
 
   if (missing(dist)) {
