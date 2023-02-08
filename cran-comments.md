@@ -12,4 +12,4 @@ All issues flagged by CRAN have been resolved. In particular the roxygen2 docume
 
 Additional CRAN comments flagged post archiving (i.e temporary directory usage, no examples for internal functions, and no return values) have been updated as requested where action was required to comply with CRAN policies.
 
-C++17 has been made a system requirment as requested by CRAN. Whilst rstan (on which we depend) currently only supports C++14 the package compiles as expected and passes all tests on C++17.
+C++17 has been made a system requirement as requested by CRAN. Whilst rstan (on which we depend) currently only supports C++14 the package compiles as expected and passes all tests on C++17.
