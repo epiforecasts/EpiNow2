@@ -26,6 +26,12 @@ distribution be cumulative.}
 \item{model}{Character string, defining the model to be used. Supported
 options are exponential ("exp"), gamma ("gamma"), and log normal ("lognormal")}
 
+\item{discrete}{Logical,  defaults to \code{FALSE}. Should the probability distribution
+be disctetised. In this case each entry of the probability mass function corresponds
+to the 1-length interval ending at the entry, i.e. the probability mass function is a
+vector where the first entry corresponds to the integral over the (0,1] interval of
+the continuous distribution, the second entry corresponds to the (1,2] interval etc.}
+
 \item{params}{A list of parameters values (by name) required for each model.
 For the exponential model this is a rate parameter and for the gamma model
 this is alpha and beta.}

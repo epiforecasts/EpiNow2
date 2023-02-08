@@ -159,7 +159,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
     out$truncation_mean <- extract_parameter("trunc_mean", samples, seq_len(data$trunc_n_p))
     out$truncation_mean <-
       out$truncation_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
-    out$truncation_sd <- extract_parameter("trunc_sd", samples, seq_len(trunc_n_p))
+    out$truncation_sd <- extract_parameter("trunc_sd", samples, seq_len(data$trunc_n_p))
     out$truncation_sd <-
       out$truncation_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
   }

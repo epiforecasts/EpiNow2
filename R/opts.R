@@ -129,7 +129,7 @@ delay_opts <- function(dist = dist_spec(), prior_weight = NULL) {
 #' trunc_opts()
 #'
 #' # truncation dist
-#' trunc_opts(dist = dist_spec(mean = 3, sd = 2))
+#' trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
 trunc_opts <- function(dist = dist_spec()) {
   if (!"dist_spec" %in% class(dist)) {
     stop("Truncation distributions must be of given either using a call to `dist_spec` or ",
