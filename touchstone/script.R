@@ -29,7 +29,7 @@ touchstone::benchmark_run(
   uncertain = { epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(ugeneration_time),
-    delays = delay_opts(uincubation_period, reporting_delay),
+    delays = delay_opts(incubation_period, reporting_delay),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
