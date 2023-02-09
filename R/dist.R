@@ -1080,12 +1080,14 @@ print.dist_spec <- function(x, ...) {
     if (!is.null(x$names) && nchar(x$names[i]) > 0) {
       cat(x$names[i], ": ", sep = "")
     }
-    dist <- c("lognormal", "gamma")[x$dist + 1]
     if (x$fixed[i] == 0) {
+      dist <- c("lognormal", "gamma")[x$dist[variable_id] + 1]
       cat(
-        "Uncertain ", dist, " distribution with ",
+        "Uncertain ", dist, " distribution with (untruncated) ",
+        ifelse(dist == "lognormal", "log", ""),
         "mean ", signif(x$mean_mean[variable_id], digits = 2),
         " (SD ", signif(x$mean_sd[variable_id], digits = 2), ") and ",
+        ifelse(dist == "lognormal", "log", ""),
         "SD ", signif(x$sd_mean[variable_id], 2),
         " (SD ", signif(x$sd_sd[variable_id], 2), ")\n", sep = ""
       )
