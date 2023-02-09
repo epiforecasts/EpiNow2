@@ -1077,6 +1077,9 @@ print.dist_spec <- function(x, ...) {
   variable_id <- 1
   for (i in 1:x$n) {
     cat("  ")
+    if (!is.null(x$names) && nchar(x$names[i]) > 0) {
+      cat(x$names[i], ": ", sep = "")
+    }
     dist <- c("lognormal", "gamma")[x$dist + 1]
     if (x$fixed[i] == 0) {
       cat(
