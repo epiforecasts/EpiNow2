@@ -582,10 +582,11 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #' estimate_delay(delays, samples = 1000, bootstraps = 10)
 #' }
 estimate_delay <- function(delays, ...) {
-  bootstrapped_dist_fit(
+  fit <- bootstrapped_dist_fit(
     values = delays,
     dist = "lognormal", ...
   )
+  return(do.call(dist_spec, fit))
 }
 
 #' Approximate Sampling a Distribution using Counts
