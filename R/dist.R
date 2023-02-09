@@ -1016,7 +1016,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 ##' @method c dist_spec
 ##' @importFrom purrr transpose map
 ##' @export
-`c.dist_spec` <- function(...) {
+c.dist_spec <- function(...) {
   ## process delay distributions
   delays <- list(...)
   if (any(!vapply(delays, is, FALSE, "dist_spec"))) {
@@ -1049,7 +1049,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 ##' @method mean dist_spec
 ##' @importFrom utils head
 ##' @export
-`mean.dist_spec` <- function(x, ...) {
+mean.dist_spec <- function(x, ...) {
   ret <- rep(0, x$n)
   ## nonparametric
   if (x$n_np > 0) {
@@ -1070,4 +1070,52 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
     }, .0)
   }
   return(ret)
+}
+
+##' Prints the parameters of one or more delay distributions
+##'
+##' This displays the parameters of the uncertain and probability mass
+##' functions of fixed delay distributions combined in the passed [dist_spec()].
+##' @param x The [dist_spec()] to use
+##' @param ... Not used
+##' @return invisible
+##' @author Sebastian Funk
+##' @method print dist_spec
+##' @export
+print.dist_spec <- function(x, ...) {
+  cat("\n")
+  if (x$n == 0) {
+    cat("Empty `dist_spec` distribution.\n")
+    return(invisible(NULL))
+  } else if (x$n > 1) {
+    cat("Combination of delay distributions:\n")
+  }
+  fixed_id <- 1
+  fixed_pos <- 1
+  variable_id <- 1
+  for (i in 1:x$n) {
+    cat("  ")
+    dist <- c("lognormal", "gamma")[x$dist + 1]
+    if (x$fixed[i] == 0) {
+      cat(
+        "Uncertain ", dist, " distribution with ",
+        "mean ", signif(x$mean_mean[variable_id], digits = 2),
+        " (SD ", signif(x$mean_sd[variable_id], digits = 2), ") and ",
+        "SD ", signif(x$sd_mean[variable_id], 2),
+        " (SD ", signif(x$sd_sd[variable_id], 2), ")\n", sep = ""
+      )
+      variable_id <- variable_id + 1
+    } else {
+      cat(
+        "Fixed distribution with PMF [",
+        paste(signif(
+          x$np_pmf[seq(fixed_pos, fixed_pos + x$np_pmf_groups[i] - 1)],
+          digits = 2
+        ), collapse = " "),
+        "]\n", sep = "")
+      fixed_id <- fixed_id + 1
+      fixed_pos <- fixed_pos + x$np_pmf_groups[i]
+    }
+  }
+  cat("\n")
 }
