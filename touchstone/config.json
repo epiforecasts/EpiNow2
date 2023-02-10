@@ -2,6 +2,5 @@
 
     "os": "ubuntu-latest",
     "r": "release",
-    "rspm": "https://packagemanager.rstudio.com/cran/__linux__/focal/latest",
-    "benchmarking_ref": "main"
+    "rspm": "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"
 }
