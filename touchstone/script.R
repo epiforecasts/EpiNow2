@@ -57,6 +57,7 @@ touchstone::benchmark_run(
   stationary = { epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(generation_time),
+    delays = delay_opts(c(incubation_period, reporting_delay)),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2), gp_on = "R0"),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
@@ -72,6 +73,7 @@ touchstone::benchmark_run(
   random_walk = { epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(generation_time),
+    delays = delay_opts(c(incubation_period, reporting_delay)),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
     gp = NULL,
     stan = stan_opts(
