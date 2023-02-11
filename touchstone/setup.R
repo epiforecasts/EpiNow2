@@ -16,3 +16,6 @@ reporting_delay <- dist_spec(
   mean = convert_to_logmean(2, 1), mean_sd = 0,
   sd = convert_to_logsd(2, 1), sd_sd = 0, max = 10
 )
+
+generation_time <- generation_time_opts(generation_time)
+delays <- delay_opts(c(incubation_period, reporting_delay))
