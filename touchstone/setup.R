@@ -17,10 +17,4 @@ reporting_delay <- list(
   sd = convert_to_logsd(2, 1), sd_sd = 0, max = 10
 )
 
-if ("dist_spec" %in% class(generation_time)) {
-  generation_time <- generation_time_opts(generation_time)
-  reporting_delay <- do.call(dist_spec, reporting_delay)
-  delays <- delay_opts(c(incubation_period, reporting_delay))
-} else {
-  delays <- delay_opts(incubation_period, reporting_delay)
-}
+delays <- delay_opts(incubation_period, reporting_delay)
