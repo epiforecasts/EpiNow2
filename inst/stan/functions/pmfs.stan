@@ -61,16 +61,10 @@ vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf
     }
   }
   if (left_truncate) {
-    real norm;
-    for (i in 1:left_truncate) {
-      pmf[i] = 0;
-    }
-    norm = sum(pmf);
-    if (left_truncate < len) {
-      for (i in left_truncate:len) {
-        pmf[i] /= norm;
-      }
-    }
+    pmf = append_row(
+      rep_vector(0, left_truncate),
+      pmf[(left_truncate + 1):len] / sum(pmf[(left_truncate + 1):len])
+    );
   }
   if (reverse_pmf) {
     pmf = reverse_mf(pmf);
