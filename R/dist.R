@@ -962,7 +962,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
               sd = sd, sd_sd = sd_sd, max_value = max, samples = 1)
           }
           pmf <- dist_skel(
-            n = seq_len(max) - 1, dist = TRUE, cum = FALSE, model = dist,
+            n = seq_len(max) - 1, dist = TRUE, cum = FALSE, model = distribution,
             params = params$params[[1]], max_value = max,
             discrete = TRUE
           )
