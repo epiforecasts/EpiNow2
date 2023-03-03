@@ -969,7 +969,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
         }
       }
     } else { ## nonparametric fixed
-      if (!missing(max) && max > length(pmf)) {
+      if (!missing(max) && (max + 1) < length(pmf)) {
         pmf <- pmf[1:(max + 1)]
       }
       pmf <- pmf / sum(pmf)
