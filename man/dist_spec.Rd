@@ -9,7 +9,7 @@ dist_spec(
   sd = 0,
   mean_sd = 0,
   sd_sd = 0,
-  dist = c("lognormal", "gamma"),
+  distribution = c("lognormal", "gamma"),
   max,
   pmf = numeric(0),
   fixed = FALSE
@@ -31,7 +31,7 @@ prior.}
 \item{sd_sd}{Numeric, defaults to 0. Sets the standard deviation of the
 uncertainty around the sd of the  distribution assuming a normal prior.}
 
-\item{dist}{Character, defaults to "lognormal". The (discretised
+\item{distribution}{Character, defaults to "lognormal". The (discretised
 distribution to be used. If sd == 0 then the distribution  is fixed and a
 delta function is used. If sd > 0 then the distribution is discretised and
 truncated.
@@ -47,7 +47,7 @@ model fitting these are then transformed to the shape and scale of the gamma
 distribution.
 }
 
-When \code{dist} is the default lognormal distribution the other function
+When \code{distribution} is the default lognormal distribution the other function
 arguments have the following definition:
 \itemize{
 \item \code{mean} is the mean of the natural logarithm of the delay (on the

@@ -845,7 +845,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @param sd_sd Numeric, defaults to 0. Sets the standard deviation of the
 #' uncertainty around the sd of the  distribution assuming a normal prior.
 #'
-#' @param dist Character, defaults to "lognormal". The (discretised
+#' @param distribution Character, defaults to "lognormal". The (discretised
 #' distribution to be used. If sd == 0 then the distribution  is fixed and a
 #' delta function is used. If sd > 0 then the distribution is discretised and
 #' truncated.
@@ -861,7 +861,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' model fitting these are then transformed to the shape and scale of the gamma
 #' distribution.
 #'
-#' When `dist` is the default lognormal distribution the other function
+#' When `distribution` is the default lognormal distribution the other function
 #' arguments have the following definition:
 #'  - `mean` is the mean of the natural logarithm of the delay (on the
 #' log scale).
@@ -886,12 +886,12 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @author Sam Abbott
 #' @export
 dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
-                      dist = c("lognormal", "gamma"), max,
+                      distribution = c("lognormal", "gamma"), max,
                       pmf = numeric(0), fixed = FALSE) {
   ## check if parametric or nonparametric
   if (length(pmf) > 0 &&
         !all(missing(mean), missing(sd), missing(mean_sd),
-          missing(sd_sd), missing(dist), missing(max))) {
+          missing(sd_sd), missing(distribution), missing(max))) {
     stop("Distributional parameters or a pmf can be specified, but not both.")
   }
 
@@ -925,12 +925,12 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
     }
   } else {
     if (!all(missing(sd), missing(mean_sd),
-      missing(sd_sd), missing(dist), missing(max))) {
+      missing(sd_sd), missing(distribution), missing(max))) {
         stop("If any distributional parameters are given then so must the mean.")
     }
   }
 
-  dist <- match.arg(dist)
+  distribution <- match.arg(distribution)
   if (fixed) {
     ret <- list(
       mean_mean = numeric(0),
@@ -954,10 +954,10 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
         if (sd == 0) { ## delta
           pmf <- c(rep(0, mean), 1)
         } else {
-          if (dist == "lognormal") {
+          if (distribution == "lognormal") {
             params <- lognorm_dist_def(mean = mean, mean_sd = mean_sd,
               sd = sd, sd_sd = sd_sd, max_value = max, samples = 1)
-          } else if (dist == "gamma") {
+          } else if (distribution == "gamma") {
             params <- gamma_dist_def(mean = mean, mean_sd = mean_sd,
               sd = sd, sd_sd = sd_sd, max_value = max, samples = 1)
           }
@@ -988,7 +988,8 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       mean_sd = mean_sd,
       sd_mean = sd,
       sd_sd = sd_sd,
-      dist = which(eval(formals()[["dist"]]) == dist) - 1,
+      dist =
+        which(eval(formals()[["distribution"]]) == distribution) - 1,
       max = max,
       n = 1,
       n_p = 1,
