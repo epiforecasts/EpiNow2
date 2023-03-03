@@ -870,9 +870,10 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @param max Numeric, maximum value of the distribution. The distribution will
 #' be truncated at this value.
 #'
-#' @param pmf Numeric, defaults to an empty vector corresponding to a parametric
-#' specification of the distribution (using \code{mean}, \code{sd} and
-#' corresponding uncertainties)
+#' @param pmf Numeric, a vector of values that represent the (nonparametric)
+#' probability mass function of the delay (starting with 0); defaults to an
+#' empty vector corresponding to a parametric specification of the distribution
+#' (using \code{mean}, \code{sd} and corresponding uncertainties)
 #'
 #' @param fixed Logical, defaults to `FALSE`. Should delays be treated
 #' as coming from fixed (vs uncertain) distributions. Overrides any values

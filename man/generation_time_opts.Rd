@@ -4,7 +4,7 @@
 \alias{generation_time_opts}
 \title{Generation Time Distribution Options}
 \usage{
-generation_time_opts(dist, prior_weight = NULL)
+generation_time_opts(dist = dist_spec(mean = 1), prior_weight = NULL)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions generated
