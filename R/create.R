@@ -550,18 +550,6 @@ create_initial_conditions <- function(data) {
         mean = data$trunc_sd_mean, sd = data$trunc_sd_sd * 0.1
       ))
     }
-    out$delay_sd <- array(purrr::map2_dbl(
-      data$delay_sd_mean, data$delay_sd_sd * 0.1,
-      ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
-    ))
-    out$trunc_mean <- array(purrr::map2_dbl(
-      data$trunc_mean_mean, data$trunc_mean_sd * 0.1,
-      ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
-    ))
-    out$trunc_sd <- array(purrr::map2_dbl(
-      data$trunc_sd_mean, data$trunc_sd_sd * 0.1,
-      ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
-    ))
 
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
@@ -597,12 +585,14 @@ create_initial_conditions <- function(data) {
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
         sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
       ))
-      out$gt_mean <- array(truncnorm::rtruncnorm(
-        n = 1, a = 0, mean = data$gt_mean_mean, sd = data$gt_mean_sd * 0.1,
+      if (data$gt_n_p > 0) {
+        out$gt_mean <- array(truncnorm::rtruncnorm(
+          n = 1, a = 0, mean = data$gt_mean_mean, sd = data$gt_mean_sd * 0.1,
         ))
-      out$gt_sd <- array(truncnorm::rtruncnorm(
-        n = 1, a = 0, mean = data$gt_sd_mean, sd = data$gt_sd_sd * 0.1,
+        out$gt_sd <- array(truncnorm::rtruncnorm(
+          n = 1, a = 0, mean = data$gt_sd_mean, sd = data$gt_sd_sd * 0.1,
         ))
+      }
     }
 
     if (data$bp_n > 0) {
