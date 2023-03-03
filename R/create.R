@@ -546,7 +546,7 @@ create_initial_conditions <- function(data) {
         mean = data$trunc_mean_mean, sd = data$trunc_mean_sd * 0.1
       ))
       out$trunc_sd <- array(truncnorm::rtruncnorm(
-        n = data$trnuc_n_p, a = 0,
+        n = data$trunc_n_p, a = 0,
         mean = data$trunc_sd_mean, sd = data$trunc_sd_sd * 0.1
       ))
     }
