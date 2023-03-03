@@ -4,7 +4,7 @@
 \alias{to_stan.dist_spec}
 \title{Converts a \code{dist_spec} object for use in stan}
 \usage{
-\method{to_stan}{dist_spec}(x, name = NULL)
+\method{to_stan}{dist_spec}(x, name = NULL, ...)
 }
 \arguments{
 \item{x}{The \code{\link[=dist_spec]{dist_spec()}} to use}
@@ -12,6 +12,8 @@
 \item{name}{A name to give to the returned objects. IF given This will be
 prepended to any of the variable names in the returned list, separated
 by an underscore (default: NULL, in which case nothing will be prepended).}
+
+\item{...}{unused}
 }
 \value{
 A list to be used as stan data.

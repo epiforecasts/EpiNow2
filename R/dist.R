@@ -1127,7 +1127,10 @@ print.dist_spec <- function(x, ...) {
   cat("\n")
 }
 
+##' Converts R objects to ones that can be passed to stan as data.
 ##' @export
+##' @param x An R object
+##' @param ... further arguments passed to or from other methods.
 to_stan <- function(x, ...) UseMethod("to_stan", x)
 
 ##' Converts a `dist_spec` object for use in stan
@@ -1136,11 +1139,12 @@ to_stan <- function(x, ...) UseMethod("to_stan", x)
 ##' @param name A name to give to the returned objects. IF given This will be
 ##' prepended to any of the variable names in the returned list, separated
 ##' by an underscore (default: NULL, in which case nothing will be prepended).
+##' @param ... unused
 ##' @return A list to be used as stan data.
 ##' @method to_stan dist_spec
 ##' @author Sebastian Funk
 ##' @export
-to_stan.dist_spec <- function(x, name = NULL) {
+to_stan.dist_spec <- function(x, name = NULL, ...) {
   data <- unclass(x)
   data$fixed <- NULL ## not used in stan model
   data$names <- NULL ## not used in stan model
