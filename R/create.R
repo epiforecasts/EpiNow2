@@ -530,9 +530,17 @@ create_stan_data <- function(reported_cases, generation_time,
 create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- list()
-    out$delay_mean <- array(purrr::map2_dbl(
-      data$delay_mean_mean, data$delay_mean_sd * 0.1,
-      ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
+    out$delay_mean <- array(truncnorm::rtruncnorm(
+      n = 1, a = 0, mean = data$delay_mean_mean, sd = data$delay_mean_sd * 0.1,
+    ))
+    out$delay_sd <- array(truncnorm::rtruncnorm(
+      n = 1, a = 0, mean = data$delay_sd_mean, sd = data$delay_sd_sd * 0.1,
+    ))
+    out$trunc_mean <- array(truncnorm::rtruncnorm(
+      n = 1, a = 0, mean = data$trunc_mean_mean, sd = data$trunc_mean_sd * 0.1,
+    ))
+    out$trunc_sd <- array(truncnorm::rtruncnorm(
+      n = 1, a = 0, mean = data$trunc_sd_mean, sd = data$trunc_sd_sd * 0.1,
     ))
     out$delay_sd <- array(purrr::map2_dbl(
       data$delay_sd_mean, data$delay_sd_sd * 0.1,
@@ -581,14 +589,12 @@ create_initial_conditions <- function(data) {
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
         sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
       ))
-      out$gt_mean <- array(purrr::map2_dbl(
-        data$gt_mean_mean, data$gt_mean_sd * 0.1,
-        ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
-      ))
-      out$gt_sd <- array(purrr::map2_dbl(
-        data$gt_sd_mean, data$gt_sd_sd * 0.1,
-        ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
-      ))
+      out$gt_mean <- array(gtnorm::rgtnorm(
+        n = 1, a = 0, mean = data$gt_mean_mean, sd = data$gt_mean_sd * 0.1,
+        ))
+      out$gt_sd <- array(gtnorm::rgtnorm(
+        n = 1, a = 0, mean = data$gt_sd_mean, sd = data$gt_sd_sd * 0.1,
+        ))
     }
 
     if (data$bp_n > 0) {
