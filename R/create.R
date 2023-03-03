@@ -530,18 +530,26 @@ create_stan_data <- function(reported_cases, generation_time,
 create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- list()
-    out$delay_mean <- array(truncnorm::rtruncnorm(
-      n = 1, a = 0, mean = data$delay_mean_mean, sd = data$delay_mean_sd * 0.1,
-    ))
-    out$delay_sd <- array(truncnorm::rtruncnorm(
-      n = 1, a = 0, mean = data$delay_sd_mean, sd = data$delay_sd_sd * 0.1,
-    ))
-    out$trunc_mean <- array(truncnorm::rtruncnorm(
-      n = 1, a = 0, mean = data$trunc_mean_mean, sd = data$trunc_mean_sd * 0.1,
-    ))
-    out$trunc_sd <- array(truncnorm::rtruncnorm(
-      n = 1, a = 0, mean = data$trunc_sd_mean, sd = data$trunc_sd_sd * 0.1,
-    ))
+    if (data$delay_n_p > 0) {
+      out$delay_mean <- array(truncnorm::rtruncnorm(
+        n = data$delay_n_p, a = 0,
+        mean = data$delay_mean_mean, sd = data$delay_mean_sd * 0.1
+      ))
+      out$delay_sd <- array(truncnorm::rtruncnorm(
+        n = data$delay_n_p, a = 0,
+        mean = data$delay_sd_mean, sd = data$delay_sd_sd * 0.1
+      ))
+    }
+    if (data$trunc_n_p > 0) {
+      out$trunc_mean <- array(truncnorm::rtruncnorm(
+        n = data$trunc_n_p, a = 0,
+        mean = data$trunc_mean_mean, sd = data$trunc_mean_sd * 0.1
+      ))
+      out$trunc_sd <- array(truncnorm::rtruncnorm(
+        n = data$trnuc_n_p, a = 0,
+        mean = data$trunc_sd_mean, sd = data$trunc_sd_sd * 0.1
+      ))
+    }
     out$delay_sd <- array(purrr::map2_dbl(
       data$delay_sd_mean, data$delay_sd_sd * 0.1,
       ~ truncnorm::rtruncnorm(1, a = 0, mean = .x, sd = .y)
