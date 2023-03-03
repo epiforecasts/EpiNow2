@@ -589,10 +589,10 @@ create_initial_conditions <- function(data) {
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
         sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
       ))
-      out$gt_mean <- array(gtnorm::rgtnorm(
+      out$gt_mean <- array(truncnorm::rtruncnorm(
         n = 1, a = 0, mean = data$gt_mean_mean, sd = data$gt_mean_sd * 0.1,
         ))
-      out$gt_sd <- array(gtnorm::rgtnorm(
+      out$gt_sd <- array(truncnorm::rtruncnorm(
         n = 1, a = 0, mean = data$gt_sd_mean, sd = data$gt_sd_sd * 0.1,
         ))
     }
