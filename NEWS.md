@@ -1,7 +1,6 @@
-# EpiNow2 2.0.0
+# EpiNow2 1.3.5
 
-This is a major release that contains a significant number of breaking changes. For users who have been using the package for a while we recommend reading the [migration guide](https://epiforecasts.io/EpiNow2/articles/migration.html) to help with the transition.
-
+This is a minor release to resolve issues with the recent CRAN requirement to make use of a C++ 17 compiler which has been causing issues with the `rstantools` package].
 # EpiNow2 1.3.4
 
 This release focusses on bug fixes and package infrastructure updates along with a few quality of life improvements such as enabling the use of fixed delays and generation times.
