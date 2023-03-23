@@ -112,7 +112,7 @@ where $\omega_{t \mod n_\omega}$ is a daily reporting effect of cyclicity $n_{\o
 This model uses the following priors for the observation model,
 
 \begin{align}
-    \frac{\omega}{n_\omega} &\sim \mathrm{Dirichlet}(1, $\ldots$, 1) \\
+    \frac{\omega}{n_\omega} &\sim \mathrm{Dirichlet}(1, \ldots, 1) \\
     \phi &\sim \frac{1}{\sqrt{\mathcal{Normal}(0, 1)}}
 \end{align}
 
