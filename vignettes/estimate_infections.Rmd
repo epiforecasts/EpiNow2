@@ -131,7 +131,7 @@ where $I^c_t = \sum_{s< t} I_s$ are cumulative infections by $t-1$ and $I'_t$ ar
 
 ### Gaussian Process implementation details
 
-The mean-centered Gaussian Processes called labelled $\mathrm{GP}_t$ above can be written as
+The Gaussian Processes labelled $\mathrm{GP}_t$ above can be written as
 
 \begin{equation}
 \mathcal{GP}(\mu(t), k(t, t'))
