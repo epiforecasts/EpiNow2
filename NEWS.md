@@ -1,3 +1,9 @@
+# EpiNow2 1.3.5.9999
+
+## Features
+
+* Model description has been expanded to include more detail.
+
 # EpiNow2 1.3.5
 
 This is a minor release to resolve issues with the recent CRAN requirement to make use of a C++ 17 compiler which has been causing [issues with the `rstantools` package](https://github.com/stan-dev/rstantools/pull/100).
