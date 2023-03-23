@@ -101,10 +101,10 @@ The scaling factor $f$ represents the proportion of cases that are ultimately re
 ### Observation model
 
 The modelled cases $D_{t}$ are related to observations $C_{t}$.
-By default this is assumed to follow a negative binomial distribution with overdispersion $\phi$ (alternatively it can be modelled as a Poisson, in which case $\phi$ is not used):
+By default this is assumed to follow a negative binomial distribution with overdispersion $\varphi$ (alternatively it can be modelled as a Poisson, in which case $\varphi$ is not used):
 
 \begin{align}
-  C_t &\sim \mathrm{NB}\left(\omega_{(t \mod n_\omega)}D_t, \phi\right)
+  C_t &\sim \mathrm{NB}\left(\omega_{(t \mod n_\omega)}D_t, \varphi\right)
 \end{align}
 
 where $\omega_{t \mod n_\omega}$ is a daily reporting effect of cyclicity $n_{\omega}$. If $n_{\omega}=7$ this corresponds to a day-of-the-week reporting effect.
@@ -113,7 +113,7 @@ This model uses the following priors for the observation model,
 
 \begin{align}
     \frac{\omega}{n_\omega} &\sim \mathrm{Dirichlet}(1, \ldots, 1) \\
-    \frac{1}{\sqrt{\phi}} &\sim \mathcal{HalfNormal}(0, 1)
+    \frac{1}{\sqrt{\varphi}} &\sim \mathcal{HalfNormal}(0, 1)
 \end{align}
 
 ### Beyond the forecast horizon
