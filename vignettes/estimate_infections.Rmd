@@ -148,7 +148,7 @@ where by default $k$ is a Matern 3/2 covariance kernel,
 k(\Delta t) = \alpha \left( 1 + \frac{\sqrt{3} \Delta t}{l} \right) \exp \left( - \frac{\sqrt{3} \Delta t}{l}\right)
 \end{equation}
 
-where $l>0$ and $\alpha > 0$ are the length scale and magnitude, respectively of the kernel.
+with $l>0$ and $\alpha > 0$ the length scale and magnitude, respectively, of the kernel.
 Alternatively, a squared exponential kernel can be chosen,
 
 \begin{equation}
