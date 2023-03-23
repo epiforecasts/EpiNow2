@@ -188,7 +188,7 @@ The function $S_k(x)$ is the spectral density relating to a particular covarianc
 S_k(x) = 4 \alpha^2 \left( \frac{\sqrt{3}}{\rho}\right)^3 \left(\left( \frac{\sqrt{3}}{\rho} \right)^2 + w^2 \right)^{-2}
 \end{equation}
 
-and in the case of a square exponential kernel by
+and in the case of a squared exponential kernel by
 
 \begin{equation}
 S_k(x) = \alpha^2 \sqrt{2\pi} \rho \exp \left( -\frac{1}{2} \rho^2 w^2 \right)
