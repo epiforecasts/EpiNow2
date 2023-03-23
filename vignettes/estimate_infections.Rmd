@@ -113,11 +113,8 @@ This model uses the following priors for the observation model,
 
 \begin{align}
     \frac{\omega}{n_\omega} &\sim \mathrm{Dirichlet}(1, \ldots, 1) \\
-    \phi &\sim \frac{1}{\sqrt{\mathcal{Normal}(0, 1)}}
+    \frac{1}{\sqrt{\phi}} &\sim \mathcal{HalfNormal}(0, 1)
 \end{align}
-
-with $\phi$ truncated to be greater than 0.
-
 
 ### Beyond the forecast horizon
 
