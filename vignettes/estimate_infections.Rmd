@@ -57,7 +57,7 @@ For the time window of the observed data and beyond infections are then modelled
 \end{equation}
 
 where $g(\tau|\mu_{g}, \sigma_{g})$ is the distribution of generation times (with discretised gamma or discretised log normal distributions available as options) with mean (or log mean in the case of lognormal distributions) $\mu_g$, standard deviation (or log standard deviation in the case of lognormal distributions) $\sigma_g$ and maximum $g_\mathrm{max}$.
-Generation times can either be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors, weighted by default by the number of observations and truncated to be positive where relevant for the given distribution; or they can be specified as the parameters of a fixed distribution, or as fixed values.
+Generation times can either be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors, weighted by default by the number of observations (although this can be changed by the user) and truncated to be positive where relevant for the given distribution; or they can be specified as the parameters of a fixed distribution, or as fixed values.
 
 The distribution of generation times $g$ here represents the probability that somebody who became infectious on day 0 and who infects someone else during their course of infection does so on day $\tau > 0$, assuming that infection cannot happen on day 0.
 If not given this defaults to a fixed generation time of 1, in which case $R_{t}$ represents the exponential of the daily growth rate of infections.
@@ -93,9 +93,9 @@ The initial reproduction number $R_{0}$ has a log-normal prior with a given log 
   R_0 \sim \mathcal{LogNormal}(\mu_R, \sigma_R)
 \end{equation}
 
-### Beyond the forecast horizon
+### Beyond the end of the observation period
 
-Beyond the forecast horizon ($T$), by default, the Gaussian process is assumed to continue. However, here again there are a range of options. These included fixing transmission dynamics, and scaling $R_t$ based on the proportion of the population that remain susceptible. This is defined as followed,
+Beyond the end of the observation period ($T$), by default, the Gaussian process is assumed to continue. However, here again there are a range of options. These included fixing transmission dynamics, and scaling $R_t$ based on the proportion of the population that remain susceptible. This is defined as followed,
 
 \begin{equation}
     I_t = (N - I^c_{t-1}) \left(1 - \exp \left(\frac{-I'_t}{N - I^c_{T}}\right)\right),
@@ -114,13 +114,13 @@ By default, this uses a Gaussian Process prior for the number of new infections 
 In order to initialise this model, an initial estimate $I_\mathrm{est}$ of the infection trajectory is first created by first shifting observations back in time by $t_\mathrm{seed}$ and then smoothing the observation data with a moving average of window size $z$ (default: $z=14$), allocated to the centre of the window:
 
 \begin{align}
-  I_{\mathrm{est}, t \lt t_\mathrm{obs,max} - t_\mathrm{seed}} = \frac{1}{z} \sum_{\max(-t_\mathrm{seed}, t - z/2)}^{\min(t_\mathrm{obs}, t + z/2)} I_{\mathrm{obs}, t + t_\mathrm{seed}}
+  I_{\mathrm{est}, t \lt T - t_\mathrm{seed}} = \frac{1}{z} \sum_{\max(-t_\mathrm{seed}, t - z/2)}^{\min(t_\mathrm{obs}, t + z/2)} I_{\mathrm{obs}, t + t_\mathrm{seed}}
 \end{align}
 
-where $t_\mathrm{obs,max}$ is the day of the last observation, $z/2$ is rounded up to the nearest integer in the limits of the sum, and $I_\mathrm{obs, t \lt 0} = 0$.
+where $T$ is the day of the last observation, $z/2$ is rounded up to the nearest integer in the limits of the sum, and $I_\mathrm{obs, t \lt 0} = 0$.
 Any date with $I_{\mathrm{est}, t} = 0$ cases following this procedure is then allocated 1 case to facilitate further processing in the model.
 
-For any times $t > t_\mathrm{obs,max} - t_\mathrm{seed}$  the number of infections is then estimated by fitting an exponential curve to the final week of data and extrapolating this until the end of the forecast horizon.
+For any times $t > T - t_\mathrm{seed}$  the number of infections is then estimated by fitting an exponential curve to the final week of data and extrapolating this until the end of the forecast horizon.
 
 ### Infections
 
@@ -155,9 +155,9 @@ Instead, this is calculated from the renewal equation
 
 and optionally smoothed using a rolling mean with a window size that can be set by the user.
 
-### Beyond the forecast horizon
+### Beyond the end of the observation period
 
-Beyond the forecast horizon ($T$), by default, if using a Gaussian process it is assumed to continue. Alternatively, incidence can be fixed at ether the estimate at $t_\mathrm{obs,max} or a less recent, more certain estimate.
+Beyond the end of the observation period, by default, if using a Gaussian process it is assumed to continue. Alternatively, incidence can be fixed at ether the estimate at $T$ or a less recent, more certain estimate.
 
 # Delays and scaling
 
@@ -169,7 +169,7 @@ If infections are observed with a delay (for example, the incubation period if b
 
 where $\xi(\tau|\mu_{\xi}, \sigma_{\xi})$ is the combined discrete distribution of delays (with discretised gamma or discretised log normal distributions available as options) with mean (or log mean in the case of lognormal distributions) $\mu_\xi$, standard deviation (or log standard deviation in the case of lognormal distributions) $\sigma_\xi$ and maximum $\xi_\mathrm{max}$.
 
-Delays can either be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors, weighted by default by the number of observations and truncated to be positive where relevant for the given distribution; or they can be specified as the parameters of a fixed distribution, or as fixed values.
+Delays can either be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors, weighted by the number of observations and truncated to be positive where relevant for the given distribution; or they can be specified as the parameters of a fixed distribution, or as fixed values.
 
 The scaling factor $f$ represents the proportion of cases that are ultimately reported, which by default is set to 1 (i.e. no underreporting) but can instead be set to come from a normal prior with given mean and standard deviation, truncated to be between 0 and 1.
 
@@ -277,7 +277,7 @@ Relevant priors are
 \rho   &\sim \mathcal{LogNormal} (\mu_\rho, \sigma_\rho)\\
 \end{align}
 
-with $\rho$ additionally constrained to be between $\rho_\mathrm{min}$ and $\rho_\mathrm{max}$, $\mu_{\rho}$ and $$\sigma_\rho$ calculated from given mean $$m_{\rho}$ and standard deviation $s_\rho$, and default values (all of which can be changed by the user):
+with $\rho$ additionally constrained to be between $\rho_\mathrm{min}$ and $\rho_\mathrm{max}$, $\mu_{\rho}$ and $\sigma_\rho$ calculated from given mean $m_{\rho}$ and standard deviation $s_\rho$, and default values (all of which can be changed by the user):
 
 \begin{align}
 b &= 0.2 \\
