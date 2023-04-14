@@ -7,8 +7,4 @@
 			-e 'mv <- readLines("src/Makevars")' \
 			-e 'con <- file("src/Makevars", "wb")' \
 			-e 'writeLines(c(sub("^CXX_STD = CXX14$", "CXX_STD = CXX17", mv), "PKG_CPPFLAGS += -D_HAS_AUTO_PTR_ETC=0"), con=con, useBytes=TRUE)' \
-			-e 'close(con)' \
-			-e 'mv_win <- readLines("src/Makevars.win")' \
-			-e 'con_win <- file("src/Makevars.win", "wb")' \
-			-e 'writeLines(c(sub("^CXX_STD = CXX14$", "CXX_STD17 = CXX17", mv_win), "PKG_CPPFLAGS += -D_HAS_AUTO_PTR_ETC=0"), con=con_win, useBytes=TRUE)' \
-			-e 'close(con_win)'
+			-e 'close(con)'
