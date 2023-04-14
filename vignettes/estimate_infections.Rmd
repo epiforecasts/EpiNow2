@@ -41,12 +41,12 @@ The model is initialised before the first observed data point by assuming consta
   I_{0 < t \leq t_\mathrm{seed}} &= I_0 \exp  \left(r t \right)
 \end{align}
 
-where $I_{t}$ is the number of latent infections on day $t$, $r$ is the estimate of the initial growth rate, and $I_\mathrm{obs}$ and $r_\mathrm{obs}$ are estimated from the first week of observed data: $I_\mathrm{obs}$ as the mean of reported cases in the first 7 days (or the mean of all cases if fewer than 7 days of data are given), divided by the prior mean reporting fraction if less than 1 (see [Delays and scaling]); and $r_\mathrm{obs}$ as the point estimate from fitting a linear model to the first 7 days of data (or all data if fewer than 7 days of data are given),
+where $I_{t}$ is the number of latent infections on day $t$, $r$ is the estimate of the initial growth rate, and $I_\mathrm{obs}$ and $r_\mathrm{obs}$ are estimated from the first week of observed data: $I_\mathrm{obs}$ as the mean of reported cases in the first 7 days (or the mean of all cases if fewer than 7 days of data are given), divided by the prior mean reporting fraction if less than 1 (see [Delays and scaling]); and $r_\mathrm{obs}$ as the point estimate from fitting a linear regression model to the first 7 days of data (or all data if fewer than 7 days of data are given),
 
 \begin{equation}
-log(C_t) \sim r_\mathrm{obs} t
+log(C_t) = a + r_\mathrm{obs} t + \epsilon_t
 \end{equation}
-where $C_{t}$ is the number of reported cases on day $t$.
+where $C_{t}$ is the number of reported cases on day $t$, $a$ an estimated intercept, and $\epsilon_{t}$ the error term.
 
 ### Infections
 
