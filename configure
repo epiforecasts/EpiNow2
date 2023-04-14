@@ -2,3 +2,7 @@
 
 #! /bin/sh
 "${R_HOME}/bin/Rscript" -e "rstantools::rstan_config()"
+
+pwd 1>&2
+ls 1>&2
+ls src 1>&2
