@@ -69,9 +69,7 @@ transformed parameters {
   // GP in noise - spectral densities
   profile("update gp") {
     if (!fixed) {
-      noise = update_gp(
-        PHI, M, L, alpha[1], rho[1], eta, gp_type, noise_time, gp_spacing
-      );
+      noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type, noise_time);
     }
   }
   // Estimate latent infections
@@ -86,7 +84,8 @@ transformed parameters {
     }
     profile("R") {
       R = update_Rt(
-        ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary
+        ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary,
+        gp_spacing
       );
     }
     profile("infections") {
