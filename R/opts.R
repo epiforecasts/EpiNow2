@@ -379,7 +379,10 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #' @param boundary_scale Numeric, defaults to 1.5. Boundary scale of the approximate Gaussian process. See (Riutort-Mayol et al. 2020
 #' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
 #'
-#' @return A list of settings defining the Gaussian process
+#' @param spacing Integer, defaults to 1. Spacing of GP points; increase this number
+#' to update the GP at longer intervals, e.g. 7 for every week.
+#'
+##' @return A list of settings defining the Gaussian process
 #' @author Sam Abbott
 #' @export
 #' @examples
@@ -396,7 +399,8 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_max = 60,
                     alpha_sd = 0.05,
                     kernel = "matern",
-                    matern_type = 3 / 2) {
+                    matern_type = 3 / 2,
+                    spacing = 1L) {
   gp <- list(
     basis_prop = basis_prop,
     boundary_scale = boundary_scale,
@@ -406,6 +410,7 @@ gp_opts <- function(basis_prop = 0.2,
     ls_max = ls_max,
     alpha_sd = alpha_sd,
     kernel = match.arg(kernel, choices = c("se", "matern_3/2")),
+    spacing = spacing,
     matern_type = matern_type
   )
 

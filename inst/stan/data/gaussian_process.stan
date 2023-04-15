@@ -8,3 +8,4 @@
   int gp_type;                       // type of gp, 0 = squared exponential, 1 = 3/2 matern
   int stationary;                    // is underlying gaussian process first or second order
   int fixed;                         //  should a gaussian process be used
+  int gp_spacing;                    // spacing of GP points; default: 1

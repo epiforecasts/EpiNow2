@@ -323,7 +323,8 @@ create_gp_data <- function(gp = gp_opts(), data) {
     alpha_sd = gp$alpha_sd,
     gp_type = ifelse(gp$kernel == "se", 0,
       ifelse(gp$kernel == "matern", 1, 0)
-    )
+    ),
+    gp_spacing = gp$spacing
   )
 
   gp_data <- c(data, gp_data)
