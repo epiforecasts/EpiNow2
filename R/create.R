@@ -309,7 +309,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
   # basis functions
   M <- data$t - data$seeding_time
   M <- ifelse(data$future_fixed == 1, M - (data$horizon - data$fixed_from), M)
-  M <- ceiling(M * gp$basis_prop)
+  M <- ceiling(M * gp$basis_prop / gp$spacing)
 
   # map settings to underlying gp stan requirements
   gp_data <- list(

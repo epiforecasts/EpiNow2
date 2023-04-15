@@ -1,13 +1,33 @@
+// helper function to repeat each element of a vector `times` times,
+// up to a maximum of max_id`; if pad_zero is set to 1, a zero is
+// inserted at the beginning of vec
+vector rep_each(vector vec, int times, int max_id, int pad_zero) {
+  int vec_length = num_elements(vec);
+  vector[max_id] ret = rep_vector(0, max_id);
+  int remainder = max_id - (vec_length - 1) * times;
+  for (i in 1:(vec_length - 1)) {
+    for (j in 1:times) {
+      ret[j + (i - 1 + pad_zero) * times] = vec[i];
+    }
+  }
+  // fill remainder with last value
+  for (j in 1:remainder) {
+    ret[j + (vec_length - 1) * times] = vec[vec_length];
+  }
+  return(ret);
+}
+
 // update a vector of Rts
 vector update_Rt(int t, real log_R, vector noise, int[] bps,
-                 real[] bp_effects, int stationary) {
+                 real[] bp_effects, int stationary, int gp_spacing) {
   // define control parameters
   int bp_n = num_elements(bp_effects);
   int bp_c = 0;
   int gp_n = num_elements(noise);
   // define result vectors
   vector[t] bp = rep_vector(0, t);
-  vector[t] gp = rep_vector(0, t);
+  vector[gp_n] gp_noise = rep_vector(0, gp_n);
+  vector[t] gp;
   vector[t] R;
   // initialise breakpoints
   if (bp_n) {
@@ -21,16 +41,12 @@ vector update_Rt(int t, real log_R, vector noise, int[] bps,
   }
   //initialise gaussian process
   if (gp_n) {
-    if (stationary) {
-      gp[1:gp_n] = noise;
-      // fix future gp based on last estimated
-      if (t > gp_n) {
-        gp[(gp_n + 1):t] = rep_vector(noise[gp_n], t - gp_n);
-      }
-    }else{
-      gp[2:(gp_n + 1)] = noise;
-      gp = cumulative_sum(gp);
+    if (!stationary) {
+      gp_noise = cumulative_sum(noise);
+    } else {
+      gp_noise = noise;
     }
+    gp = rep_each(noise, gp_spacing, t, 1 - stationary);
   }
   // Calculate Rt
   R = rep_vector(log_R, t) + bp + gp;

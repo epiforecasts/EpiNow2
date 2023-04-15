@@ -60,31 +60,13 @@ matrix setup_gp(int M, real L, int dimension, int spacing) {
   return(PHI);
 }
 
-vector expand_vector(vector vec, int spacing, int max_id) {
-  int vec_length = num_elements(vec);
-  vector[max_id] ret;
-  int remainder;
-  for (i in 1:(vec_length - 1)) {
-    for (j in 1:spacing) {
-      ret[j + (i - 1) * spacing] = vec[i];
-    }
-  }
-  remainder = max_id - (vec_length - 1) * spacing;
-  for (j in 1:remainder) {
-    ret[j + (vec_length - 1) * spacing] = vec[vec_length];
-  }
-  return(ret);
-}
-
 // update gaussian process using spectral densities
 vector update_gp(matrix PHI, int M, real L, real alpha,
-                 real rho, vector eta, int type, int noise_time,
-                 int gp_spacing) {
+                 real rho, vector eta, int type, int noise_time) {
   vector[M] diagSPD;    // spectral density
   vector[M] SPD_eta;    // spectral density * noise
   int noise_terms = rows(PHI);
   vector[noise_terms] noise = rep_vector(1e-6, noise_terms);
-  vector[noise_time] spaced_noise;
   real unit_rho = rho / noise_time;
   // GP in noise - spectral densities
   if (type == 0) {
@@ -98,12 +80,7 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   }
   SPD_eta = diagSPD .* eta;
   noise = noise + PHI[,] * SPD_eta;
-  if (gp_spacing > 1) {
-    spaced_noise = expand_vector(noise, gp_spacing, noise_time);
-  } else {
-    spaced_noise = noise;
-  }
-  return(spaced_noise);
+  return(noise);
 }
 
 // priors for gaussian process
