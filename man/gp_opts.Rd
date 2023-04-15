@@ -13,7 +13,8 @@ gp_opts(
   ls_max = 60,
   alpha_sd = 0.05,
   kernel = c("matern_3/2", "se"),
-  matern_type = 3/2
+  matern_type = 3/2,
+  spacing = 1L
 )
 }
 \arguments{
@@ -53,6 +54,9 @@ kernel ("matern", with \code{matern_type = 3/2}). Defaulting to the Matern 3 ove
 
 \item{matern_type}{Numeric, defaults to 3/2. Type of Matern Kernel to use.
 Currently only the Matern 3/2 kernel is supported.}
+
+\item{spacing}{Integer, defaults to 1. Spacing of GP points; increase this number
+to update the GP at longer intervals, e.g. 7 for every week.}
 }
 \value{
 A \verb{<gp_opts>} object of settings defining the Gaussian process

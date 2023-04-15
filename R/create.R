@@ -394,10 +394,11 @@ create_gp_data <- function(gp = gp_opts(), data) {
     ls_max = data$t - data$seeding_time - data$horizon,
     alpha_sd = gp$alpha_sd,
     gp_type = data.table::fcase(
-    gp$kernel == "se", 0,
-    gp$kernel == "matern", 1,
-    default = 0
-    )
+      gp$kernel == "se", 0,
+      gp$kernel == "matern", 1,
+      default = 0
+    ),
+    gp_spacing = gp$spacing
   )
 
   gp_data <- c(data, gp_data)
