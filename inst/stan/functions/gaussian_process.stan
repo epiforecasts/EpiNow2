@@ -2,28 +2,31 @@
 // see here for details: https://arxiv.org/pdf/2004.11408.pdf
 real lambda(real L, int m) {
   real lam;
-  lam = ((m*pi())/(2*L))^2;
+  lam = ((m * pi())/(2 * L))^2;
   return lam;
 }
+
 // eigenfunction for approximate hilbert space gp
 // see here for details: https://arxiv.org/pdf/2004.11408.pdf
 vector phi(real L, int m, vector x) {
   vector[rows(x)] fi;
-  fi = 1/sqrt(L) * sin(m*pi()/(2*L) * (x+L));
+  fi = 1/sqrt(L) * sin(m * pi()/(2 * L) * (x + L));
   return fi;
 }
+
 // spectral density of the exponential quadratic kernal
 real spd_se(real alpha, real rho, real w) {
   real S;
-  S = (alpha^2) * sqrt(2*pi()) * rho * exp(-0.5*(rho^2)*(w^2));
+  S = (alpha^2) * sqrt(2 * pi()) * rho * exp(-0.5 * (rho^2) * (w^2));
   return S;
 }
 // spectral density of the Matern 3/2 kernel
 real spd_matern(real alpha, real rho, real w) {
   real S;
-  S = 4*alpha^2 * (sqrt(3)/rho)^3 * 1/((sqrt(3)/rho)^2 + w^2)^2;
+  S = 4 * alpha^2 * (sqrt(3) / rho)^3 * 1 / ((sqrt(3) / rho)^2 + w^2)^2;
   return S;
 }
+
 // setup gaussian process noise dimensions
 int setup_noise(int ot_h, int t, int horizon, int estimate_r,
                 int stationary, int future_fixed, int fixed_from) {
@@ -44,6 +47,7 @@ matrix setup_gp(int M, real L, int dimension) {
   }
   return(PHI);
 }
+
 // update gaussian process using spectral densities
 vector update_gp(matrix PHI, int M, real L, real alpha,
                  real rho, vector eta, int type) {
@@ -57,7 +61,7 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
     for(m in 1:M){
       diagSPD[m] =  sqrt(spd_se(alpha, unit_rho, sqrt(lambda(L, m))));
     }
-  }else if (type == 1) {
+  } else if (type == 1) {
     for(m in 1:M){
       diagSPD[m] =  sqrt(spd_matern(alpha, unit_rho, sqrt(lambda(L, m))));
     }
@@ -66,6 +70,7 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   noise = noise + PHI[,] * SPD_eta;
   return(noise);
 }
+
 // priors for gaussian process
 void gaussian_process_lp(real rho, real alpha, vector eta,
                          real ls_meanlog, real ls_sdlog,
