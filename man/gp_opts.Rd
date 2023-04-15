@@ -47,9 +47,11 @@ magnitude parameter o  the Gaussian process kernel. Should be approximately
 the expected standard deviation of the logged Rt.}
 
 \item{kernel}{Character string, the type of kernel required. Currently
-supporting the squared exponential kernel ("se") and the 3 over 2 Matern
-kernel ("matern", with \code{matern_type = 3/2}). Defaulting to the Matern 3 over
-2 kernel as discontinuities are expected  in Rt and infections.}
+supporting the squared exponential kernel ("se", or "matern" with
+'matern_type = Inf'), 3 over 2 Matern ' kernel ("matern", with
+\code{matern_type = 3/2} (default)), or Orstein-Uhlenbeck ("ou", or "matern"
+with 'matern_type = 1/2'). Defaulting to the Matern 3 over
+2 kernel for a balance of smoothness and discontinuities.}
 
 \item{matern_type}{Numeric, defaults to 3/2. Type of Matern Kernel to use.
 Currently only the Matern 3/2 kernel is supported.}

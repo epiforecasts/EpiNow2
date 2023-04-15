@@ -321,8 +321,9 @@ create_gp_data <- function(gp = gp_opts(), data) {
     ls_min = gp$ls_min,
     ls_max = data$t - data$seeding_time - data$horizon,
     alpha_sd = gp$alpha_sd,
-    gp_type = ifelse(gp$kernel == "se", 0,
-      ifelse(gp$kernel == "matern", 1, 0)
+    gp_type = ifelse(is.infinite(gp$matern_order), 0,
+      ifelse(gp$matern_order == 1/2, 1,
+        ifelse(gp$matern_order == 3/2, 2, 3))
     ),
     gp_spacing = gp$spacing
   )

@@ -41,12 +41,12 @@ vector update_Rt(int t, real log_R, vector noise, int[] bps,
   }
   //initialise gaussian process
   if (gp_n) {
-    if (!stationary) {
-      gp_noise = cumulative_sum(noise);
-    } else {
+    if (stationary) {
       gp_noise = noise;
+    } else {
+      gp_noise = cumulative_sum(noise);
     }
-    gp = rep_each(noise, gp_spacing, t, 1 - stationary);
+    gp = rep_each(gp_noise, gp_spacing, t, !stationary);
   }
   // Calculate Rt
   R = rep_vector(log_R, t) + bp + gp;
