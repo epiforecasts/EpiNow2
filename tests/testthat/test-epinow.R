@@ -26,7 +26,7 @@ test_that("epinow produces expected output when run with default settings", {
     stan = stan_opts(
       samples = 25, warmup = 25,
       cores = 1, chains = 2,
-      control = list(adapt_delta = 0.8)
+      adapt_delta = 0.8
     ),
     logs = NULL, verbose = FALSE
   ))
@@ -47,7 +47,7 @@ test_that("epinow runs without error when saving to disk", {
     delays = delay_opts(incubation_period + reporting_delay),
     stan = stan_opts(
       samples = 25, warmup = 25, cores = 1, chains = 2,
-      control = list(adapt_delta = 0.8)
+      adapt_delta = 0.8
     ),
     target_folder = tempdir(check = TRUE),
     logs = NULL, verbose = FALSE
@@ -62,7 +62,7 @@ test_that("epinow can produce partial output as specified", {
     stan = stan_opts(
       samples = 25, warmup = 25,
       cores = 1, chains = 2,
-      control = list(adapt_delta = 0.8)
+      adapt_delta = 0.8
     ),
     output = NULL,
     logs = NULL, verbose = FALSE
@@ -85,7 +85,7 @@ test_that("epinow fails as expected when given a short timeout", {
     stan = stan_opts(
       samples = 100, warmup = 100,
       cores = 1, chains = 2,
-      control = list(adapt_delta = 0.8),
+      adapt_delta = 0.8,
       max_execution_time = 1
     ),
     logs = NULL, verbose = FALSE

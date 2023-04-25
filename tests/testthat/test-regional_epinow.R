@@ -30,7 +30,7 @@ test_that("regional_epinow produces expected output when run with default settin
       stan = stan_opts(
         samples = 100, warmup = 100,
         cores = 1, chains = 2,
-        control = list(adapt_delta = 0.8)
+        adapt_delta = 0.8
       ),
       logs = NULL, verbose = FALSE
     )
@@ -59,7 +59,7 @@ test_that("regional_epinow runs without error when given a very short timeout", 
       stan = stan_opts(
         samples = 1000, warmup = 100,
         cores = 1, chains = 2,
-        control = list(adapt_delta = 0.8),
+        adapt_delta = 0.8,
         max_execution_time = 1
       ), logs = NULL, verbose = FALSE
     ),
@@ -73,7 +73,7 @@ test_that("regional_epinow runs without error when given a very short timeout", 
       stan = stan_opts(
         samples = 1000, warmup = 100,
         cores = 1, chains = 2,
-        control = list(adapt_delta = 0.8),
+        adapt_delta = 0.8,
         max_execution_time = 1, future = TRUE
       ), logs = NULL, verbose = FALSE
     ),
@@ -95,7 +95,7 @@ test_that("regional_epinow produces expected output when run with region specifi
       stan = stan_opts(
         samples = 100, warmup = 100,
         cores = 1, chains = 2,
-        control = list(adapt_delta = 0.8)
+        adapt_delta = 0.8
       ),
       logs = NULL, verbose = FALSE
     )

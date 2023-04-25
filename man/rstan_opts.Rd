@@ -4,7 +4,13 @@
 \alias{rstan_opts}
 \title{Rstan Options}
 \usage{
-rstan_opts(object = NULL, samples = 2000, method = "sampling", ...)
+rstan_opts(
+  object = NULL,
+  samples = 2000,
+  method = "sampling",
+  model_options = list(),
+  ...
+)
 }
 \arguments{
 \item{object}{Stan model object. By default uses the compiled package

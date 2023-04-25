@@ -132,7 +132,7 @@ def <- estimate_infections(reported_cases,
   generation_time = generation_time_opts(generation_time),
   delays = delay_opts(incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
-  stan = stan_opts(control = list(adapt_delta = 0.95))
+  stan = stan_opts(adapt_delta = 0.95)
 )
 # real time estimates
 summary(def)
@@ -147,7 +147,7 @@ agp <- estimate_infections(reported_cases,
   delays = delay_opts(incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
   gp = gp_opts(ls_min = 10, basis_prop = 0.1),
-  stan = stan_opts(control = list(adapt_delta = 0.95))
+  stan = stan_opts(adapt_delta = 0.95)
 )
 summary(agp)
 plot(agp)
@@ -161,7 +161,7 @@ dep <- estimate_infections(reported_cases,
     pop = 1000000, future = "latest"
   ),
   gp = gp_opts(ls_min = 10, basis_prop = 0.1), horizon = 21,
-  stan = stan_opts(control = list(adapt_delta = 0.95))
+  stan = stan_opts(adapt_delta = 0.95)
 )
 plot(dep)
 
@@ -178,7 +178,7 @@ trunc <- estimate_infections(reported_cases,
   truncation = trunc_opts(trunc_dist),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
   gp = gp_opts(ls_min = 10, basis_prop = 0.1),
-  stan = stan_opts(control = list(adapt_delta = 0.95))
+  stan = stan_opts(adapt_delta = 0.95)
 )
 plot(trunc)
 

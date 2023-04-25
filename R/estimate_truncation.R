@@ -154,7 +154,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   obs_start <- nrow(obs) - trunc_max - sum(is.na(obs$`1`)) + 1
   obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
   obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
-  obs_data <- obs_data[obs_start:.N]
+  obs_data <- as.matrix(obs_data[obs_start:.N])
 
   # convert to stan list
   data <- list(
@@ -183,9 +183,9 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   # fit
   if (is.null(model)) {
-    model <- stanmodels$estimate_truncation
+    model <- epinow2_model("estimate_truncation")
   }
-  fit <- rstan::sampling(model,
+  fit <- model$sample(
     data = data,
     init = init_fn,
     refresh = ifelse(verbose, 50, 0),
@@ -195,10 +195,10 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   out <- list()
   # Summarise fit truncation distribution for downstream usage
   out$dist <- list(
-    mean = round(rstan::summary(fit, pars = "logmean")$summary[1], 3),
-    mean_sd = round(rstan::summary(fit, pars = "logmean")$summary[3], 3),
-    sd = round(rstan::summary(fit, pars = "logsd")$summary[1], 3),
-    sd_sd = round(rstan::summary(fit, pars = "logsd")$summary[3], 3),
+    mean = round(fit$summary(variables = "logmean")[[2]], 3),
+    mean_sd = round(fit$summary(variables = "logmean")[[4]], 3),
+    sd = round(fit$summary(variables = "logsd")[[2]], 3),
+    sd_sd = round(fit$summary(variables = "logsd")[[4]], 3),
     max = trunc_max
   )
 

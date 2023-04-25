@@ -164,7 +164,7 @@ def <- regional_epinow(
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
   stan = stan_opts(
     samples = 100, warmup = 200,
-    control = list(adapt_delta = 0.95)
+    adapt_delta = 0.95
   ),
   verbose = interactive()
 )
@@ -181,7 +181,7 @@ region_rt <- regional_epinow(
   rt = rt, gp = gp,
   stan = stan_opts(
     samples = 100, warmup = 200,
-    control = list(adapt_delta = 0.95)
+    adapt_delta = 0.95
   ),
   verbose = interactive()
 )

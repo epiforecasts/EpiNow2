@@ -15,6 +15,7 @@
 #' sample value.
 #' @author Sam Abbott
 #' @importFrom data.table melt as.data.table
+#' @importFrom posterior mcse_mean rhat ess_tail ess_bulk
 extract_parameter <- function(param, samples, dates) {
   param_df <- data.table::as.data.table(
     t(
@@ -53,6 +54,63 @@ extract_static_parameter <- function(param, samples) {
   )
 }
 
+#' Extract all samples from a (cmdstan) stan model
+#'
+#' @param stan_fit A CmdStanMCMC object
+#' @param variables Any selection of variables to extract
+#' @param drop_length_1 Logical; whether the first dimension should be dropped
+#' if it is off length 1; this is necessary when processing simulation results.
+#' @return List of data.tables with samples
+#'
+#' @importFrom data.table data.table melt setkey
+extract_samples <- function(stan_fit, variables = NULL, drop_length_1 = FALSE) {
+  # extract sample from stan object
+  samples_df <- data.table::data.table(stan_fit$draws(
+    variables = variables, format = "df")
+  )
+  # convert to rstan format
+  samples_df <- suppressWarnings(data.table::melt(
+    samples_df, id.vars = c(".chain", ".iteration", ".draw")
+  ))
+  samples_df <- samples_df[,
+    index := sub("^.*\\[([0-9,]+)\\]$", "\\1", variable)
+  ][,
+    variable := sub("\\[.*$", "", variable)
+  ]
+  samples <- split(samples_df, by = "variable")
+  samples <- purrr::map(samples, \(df) {
+    permutation <- sample(
+      seq_len(max(df$.draw)), max(df$.draw), replace = FALSE
+    )
+    df <- df[, new_draw := permutation[.draw]]
+    setkey(df, new_draw)
+    max_indices <- strsplit(tail(df$index, 1), split = ",")[[1]]
+    if (any(grepl("[^0-9]", max_indices))) {
+      max_indices <- 1
+    } else {
+      max_indices <- as.integer(max_indices)
+    }
+    ret <- aperm(
+      a = array(df$value, dim = c(max_indices, length(permutation))),
+      perm = c(length(max_indices) + 1, seq_along(max_indices))
+    )
+    ## permute
+    dimnames(ret) <- c(
+      list(iterations = NULL), rep(list(NULL), length(max_indices))
+    )
+    return(ret)
+  })
+
+  ## drop initial length 1 dimensions if requested
+  if (drop_length_1) {
+    samples <- lapply(samples, function(x) {
+      if (length(dim(x)) > 1 && dim(x)[1] == 1) dim(x) <- dim(x)[-1]
+      return(x)
+    })
+  }
+
+  return(samples)
+}
 
 #' Extract Parameter Samples from a Stan Model
 #'
@@ -69,36 +127,24 @@ extract_static_parameter <- function(param, samples) {
 #' @param reported_inf_dates A vector of dates to report infection estimates
 #' for.
 #'
-#' @param drop_length_1 Logical; whether the first dimension should be dropped
-#' if it is off length 1; this is necessary when processing simulation results.
-#'
 #' @param merge if TRUE, merge samples and data so that parameters can be
 #' extracted from data.
 #'
 #' @return A list of dataframes each containing the posterior of a parameter
 #' @author Sam Abbott
 #' @importFrom rstan extract
+#' @importFrom rstan extract
 #' @importFrom data.table data.table
 extract_parameter_samples <- function(stan_fit, data, reported_dates,
                                       reported_inf_dates,
                                       drop_length_1 = FALSE, merge = FALSE) {
-  # extract sample from stan object
-  samples <- rstan::extract(stan_fit)
 
-  ## drop initial length 1 dimensions if requested
-  if (drop_length_1) {
-    samples <- lapply(samples, function(x) {
-      if (length(dim(x)) > 1 && dim(x)[1] == 1) dim(x) <- dim(x)[-1]
-      return(x)
-    })
-  }
-
+  samples <- extract_samples(stan_fit, drop_length_1 = drop_length_1)
   for (data_name in names(data)) {
     if (!(data_name %in% names(samples))) {
       samples[[data_name]] <- data[[data_name]]
     }
   }
-
   # construct reporting list
   out <- list()
   # report infections, and R
@@ -207,6 +253,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
 #' @author Sam Abbott
 #' @inheritParams calc_summary_measures
 #' @export
+#' @importFrom posterior mcse_mean
 #' @importFrom data.table as.data.table :=
 #' @importFrom rstan summary
 extract_stan_param <- function(fit, params = NULL,
@@ -217,28 +264,22 @@ extract_stan_param <- function(fit, params = NULL,
   sym_CrIs <- sym_CrIs[order(sym_CrIs)]
   CrIs <- round(100 * CrIs, 0)
   CrIs <- c(paste0("lower_", rev(CrIs)), "median", paste0("upper_", CrIs))
-  args <- list(object = fit, probs = sym_CrIs)
+  args <- list(mean, mcse_mean, sd, ~quantile(.x, probs = sym_CrIs))
   if (!is.null(params)) {
     if (length(params) > 1) {
       var_names <- TRUE
     }
-    args <- c(args, pars = params)
   } else {
     var_names <- TRUE
   }
-  summary <- do.call(rstan::summary, args)
-  summary <- data.table::as.data.table(summary$summary,
-    keep.rownames = ifelse(var_names,
-      "variable",
-      FALSE
-    )
-  )
-  cols <- c("mean", "se_mean", "sd", CrIs, "n_eff", "Rhat")
+  summary <- do.call(fit$summary, c(list(variables = params), args))
+  if (!var_names) summary$variable <- NULL
+  summary <- data.table::as.data.table(summary)
+  cols <- c("mean", "se_mean", "sd", CrIs)
   if (var_names) {
     cols <- c("variable", cols)
   }
   colnames(summary) <- cols
-  summary <- summary[, c("n_eff", "Rhat") := NULL]
   return(summary)
 }
 

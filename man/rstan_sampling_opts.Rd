@@ -9,7 +9,8 @@ rstan_sampling_opts(
   warmup = 250,
   samples = 2000,
   chains = 4,
-  control = list(),
+  adapt_delta = 0.95,
+  max_treedepth = 15,
   save_warmup = FALSE,
   seed = as.integer(runif(1, 1, 1e+08)),
   future = FALSE,
@@ -30,10 +31,6 @@ When using multiple chains iterations per chain is samples / chains.}
 
 \item{chains}{Numeric, defaults to 4. Number of MCMC chains to use.}
 
-\item{control}{List, defaults to empty. control parameters to pass to
-underlying \code{rstan} function. By default \code{adapt_delta = 0.95} and
-\code{max_treedepth = 15} though these settings can be overwritten.}
-
 \item{save_warmup}{Logical, defaults to FALSE. Should warmup progress be
 saved.}
 
@@ -52,6 +49,10 @@ returned. If less than 2 chains return within the allowed time then
 estimation will fail with an informative error.}
 
 \item{...}{Additional parameters to pass to \code{rstan::sampling}.}
+
+\item{control}{List, defaults to empty. control parameters to pass to
+underlying \code{rstan} function. By default \code{adapt_delta = 0.95} and
+\code{max_treedepth = 15} though these settings can be overwritten.}
 }
 \value{
 A list of arguments to pass to \code{rstan::sampling}.

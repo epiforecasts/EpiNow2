@@ -23,7 +23,7 @@ out <- suppressWarnings(regional_epinow(
   stan = stan_opts(
     samples = 25, warmup = 25,
     chains = 2,
-    control = list(adapt_delta = 0.8)
+    adapt_delta = 0.8
   ),
   logs = NULL
 ))

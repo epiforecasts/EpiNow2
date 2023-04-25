@@ -23,9 +23,6 @@ extract_parameter_samples(
 \item{reported_inf_dates}{A vector of dates to report infection estimates
 for.}
 
-\item{drop_length_1}{Logical; whether the first dimension should be dropped
-if it is off length 1; this is necessary when processing simulation results.}
-
 \item{merge}{if TRUE, merge samples and data so that parameters can be
 extracted from data.}
 }

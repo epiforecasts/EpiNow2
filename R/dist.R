@@ -272,9 +272,9 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
   fit <- rstan::sampling(
     model,
     data = data,
-    iter = samples + 1000,
-    warmup = 1000,
-    control = list(adapt_delta = adapt_delta),
+    iter_sampling = samples,
+    iter_warmup = 1000,
+    adapt_delta = adapt_delta,
     chains = chains,
     cores = cores,
     refresh = ifelse(verbose, 50, 0)
