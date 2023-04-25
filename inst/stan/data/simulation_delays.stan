@@ -7,5 +7,15 @@
   int<lower = 0> delay_dist[delay_n_p];       // 0 = lognormal; 1 = gamma
   int<lower = 0> delay_np_pmf_max;          // number of nonparametric pmf elements
   vector<lower = 0, upper = 1>[delay_np_pmf_max] delay_np_pmf; // ragged array of fixed PMFs
-  int<lower = 1> delay_np_pmf_groups[delay_n_np];      // links to ragged array
-  int delay_weight;
+  int<lower = 1> delay_np_pmf_groups[delay_n_np + 1];      // links to ragged array
+  int delay_weight[delay_n_p];
+
+  int<lower = 0> delay_types;                     // number of delay types
+  int<lower = 0> delay_types_p[delay_n];          // whether delay types are parametric
+  int<lower = 0> delay_types_id[delay_n];          // whether delay types are parametric
+  int<lower = 0> delay_types_groups[delay_types + 1]; // index of each delay (parametric or non)
+
+  int<lower = 0> gt_id; // id of generation time
+  int<lower = 0> delay_id; // id of generation time
+  int<lower = 0> trunc_id; // id of truncation
+

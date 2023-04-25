@@ -72,34 +72,6 @@ vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf
   return(pmf);
 }
 
-void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,
-               real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd,
-               int[] delay_dist, int weight) {
-    int mean_delays = num_elements(delay_mean);
-    int sd_delays = num_elements(delay_sd);
-    if (mean_delays) {
-      for (s in 1:mean_delays) {
-        if (delay_mean_sd[s] > 0) {
-          // uncertain mean
-          target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight;
-          // if a distribution with postive support only truncate the prior
-          if (delay_dist[s]) {
-            target += -normal_lccdf(0 | delay_mean_mean[s], delay_mean_sd[s]) * weight;
-          }
-        }
-      }
-    }
-    if (sd_delays) {
-      for (s in 1:sd_delays) {
-        if (delay_sd_sd[s] > 0) {
-          // uncertain sd
-          target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight;
-          target += -normal_lccdf(0 | delay_sd_mean[s], delay_sd_sd[s]) * weight;
-        }
-     }
-  }
-}
-
 vector seq(int base, int len, int rev) {
   vector[len] seq;
   for (i in 1:len) {

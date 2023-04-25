@@ -1,6 +1,7 @@
 functions {
 #include functions/convolve.stan
 #include functions/pmfs.stan
+#include functions/delays.stan
 #include functions/gaussian_process.stan
 #include functions/rt.stan
 #include functions/infections.stan
@@ -13,7 +14,6 @@ data {
 #include data/observations.stan
 #include data/delays.stan
 #include data/gaussian_process.stan
-#include data/generation_time.stan
 #include data/rt.stan
 #include data/backcalc.stan
 #include data/observation_model.stan
@@ -30,30 +30,9 @@ transformed data{
   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
 
-  int gt_max_fixed =
-    num_elements(gt_np_pmf) - num_elements(gt_np_pmf_groups) + 1;
-  int gt_max_total = gt_max_fixed + sum(gt_max) - num_elements(gt_max);
-  int delay_max_fixed =
-    num_elements(delay_np_pmf) - num_elements(delay_np_pmf_groups) + 1;
-  int delay_max_total = delay_max_fixed + sum(delay_max) - num_elements(delay_max);
-  int trunc_max_fixed =
-    num_elements(trunc_np_pmf) - num_elements(trunc_np_pmf_groups) + 1;
-  int trunc_max_total = trunc_max_fixed + sum(trunc_max) - num_elements(trunc_max);
-
-  vector[gt_max_fixed] gt_fixed_pmf;
-  vector[trunc_max_fixed] trunc_fixed_pmf;
-  vector[delay_max_fixed] delay_fixed_pmf;
-
-  gt_fixed_pmf = convolve_ragged_pmf(
-    gt_np_pmf, gt_np_pmf_groups, gt_max_fixed
-  );
-
-  trunc_fixed_pmf = convolve_ragged_pmf(
-    trunc_np_pmf, trunc_np_pmf_groups, trunc_max_fixed
-  );
-
-  delay_fixed_pmf = convolve_ragged_pmf(
-    delay_np_pmf, delay_np_pmf_groups, delay_max_fixed
+  int delay_type_max[delay_types] = get_delay_type_max(
+    delay_types, delay_types_p, delay_types_id,
+    delay_types_groups, delay_max, delay_np_pmf_groups
   );
 }
 
@@ -66,8 +45,6 @@ parameters{
   vector[estimate_r] log_R;                // baseline reproduction number estimate (log)
   real initial_infections[estimate_r] ;    // seed infections
   real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
-  real<lower = 0> gt_mean[gt_n_p]; // parametric generation time means
-  real<lower = 0> gt_sd[gt_n_p];     // parametric generation time sds
   real<lower = 0> bp_sd[bp_n > 0 ? 1 : 0]; // standard deviation of breakpoint effect
   real bp_effects[bp_n];                   // Rt breakpoint effects
   // observation model
@@ -75,8 +52,6 @@ parameters{
   real<lower = 0> delay_sd[delay_n_p];  // sd of delays
   simplex[week_effect] day_of_week_simplex;// day of week reporting effect
   real<lower = 0, upper = 1> frac_obs[obs_scale];     // fraction of cases that are ultimately observed
-  real trunc_mean[trunc_n_p];        // mean of truncation
-  real<lower = 0> trunc_sd[trunc_n_p]; // sd of truncation
   real<lower = 0> rep_phi[model_type];     // overdispersion of the reporting process
 }
 
@@ -86,17 +61,18 @@ transformed parameters {
   vector[t] infections;                                     // latent infections
   vector[ot_h] reports;                                     // estimated reported cases
   vector[ot] obs_reports;                                   // observed estimated reported cases
-  vector[gt_max_total] gt_rev_pmf;
-
+  vector[delay_type_max[gt_id]] gt_rev_pmf;
   // GP in noise - spectral densities
   if (!fixed) {
     noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);
   }
   // Estimate latent infections
   if (estimate_r) {
-    // via Rt
-    gt_rev_pmf = combine_pmfs(
-      gt_fixed_pmf, gt_mean, gt_sd, gt_max, gt_dist, gt_max_total, 1, 1
+    gt_rev_pmf = get_delay_rev_pmf(
+      gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,
+      delay_types_groups, delay_max, delay_np_pmf,
+      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
+      1, 1, 0
     );
     R = update_Rt(
       ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary
@@ -112,15 +88,19 @@ transformed parameters {
     );
   }
   // convolve from latent infections to mean of observations
-  {
-    vector[delay_max_total] delay_rev_pmf;
-    delay_rev_pmf = combine_pmfs(
-      delay_fixed_pmf, delay_mean, delay_sd, delay_max, delay_dist, delay_max_total, 0, 1
+  if (delay_id) {
+    vector[delay_type_max[delay_id]] delay_rev_pmf = get_delay_rev_pmf(
+      delay_id, delay_type_max[delay_id], delay_types_p, delay_types_id,
+      delay_types_groups, delay_max, delay_np_pmf,
+      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
+      0, 1, 0
     );
     reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);
+  } else {
+    reports = infections[(seeding_time + 1):t];
   }
- // weekly reporting effect
- if (week_effect > 1) {
+  // weekly reporting effect
+  if (week_effect > 1) {
    reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);
   }
   // scaling of reported cases by fraction observed
@@ -128,12 +108,16 @@ transformed parameters {
    reports = scale_obs(reports, frac_obs[1]);
  }
  // truncate near time cases to observed reports
- {
-   vector[trunc_max_total] trunc_rev_cmf;
-   trunc_rev_cmf = reverse_mf(cumulative_sum(combine_pmfs(
-     trunc_fixed_pmf, trunc_mean, trunc_sd, trunc_max, trunc_dist, trunc_max_total, 0, 0
-   )));
-   obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);
+ if (trunc_id) {
+    vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(
+      trunc_id, delay_type_max[trunc_id], delay_types_p, delay_types_id,
+      delay_types_groups, delay_max, delay_np_pmf,
+      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
+      0, 1, 1
+    );
+    obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);
+ } else {
+   obs_reports = reports[1:ot];
  }
 }
 
@@ -150,23 +134,11 @@ model {
     delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd,
     delay_dist, delay_weight
   );
-  // priors for truncation
-  delays_lp(
-    trunc_mean, trunc_sd,
-    trunc_mean_mean, trunc_mean_sd,
-    trunc_sd_mean, trunc_sd_sd,
-    trunc_dist, 1
-  );
   if (estimate_r) {
     // priors on Rt
     rt_lp(
       log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n,
       seeding_time, r_logmean, r_logsd, prior_infections, prior_growth
-    );
-    // penalised_prior on generation interval
-    delays_lp(
-      gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, gt_dist,
-      gt_weight
     );
   }
   // prior observation scaling
@@ -193,17 +165,19 @@ generated quantities {
     r = R_to_growth(R, gen_gt_mean, gen_gt_var);
   } else {
     // sample generation time
-    real gt_mean_sample[gt_n_p];
-    real gt_sd_sample[gt_n_p];
-    vector[gt_max_total] gen_rev_pmf;
+    real delay_mean_sample[delay_n_p];
+    real delay_sd_sample[delay_n_p];
     real gen_gt_mean;
     real gen_gt_var;
+    vector[delay_type_max[gt_id]] gen_rev_pmf;
 
-    gt_mean_sample = normal_rng(gt_mean_mean, gt_mean_sd);
-    gt_sd_sample = normal_rng(gt_sd_mean, gt_sd_sd);
-    gen_rev_pmf = combine_pmfs(
-      gt_fixed_pmf, gt_mean_sample, gt_sd_sample, gt_max, gt_dist, gt_max_total,
-      1, 1
+    delay_mean_sample = normal_rng(delay_mean_mean, delay_mean_sd);
+    delay_sd_sample = normal_rng(delay_sd_mean, delay_sd_sd);
+    gen_rev_pmf = get_delay_rev_pmf(
+      gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,
+      delay_types_groups, delay_max, delay_np_pmf,
+      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
+      1, 1, 0
     );
 
     gen_gt_mean = pmf_mean(gt_rev_pmf, 1, 1);
