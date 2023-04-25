@@ -9,7 +9,7 @@ out <- suppressWarnings(estimate_infections(reported_cases,
   gp = NULL, rt = rt_opts(rw = 14),
   stan = stan_opts(
     chains = 2, warmup = 100, samples = 100,
-    control = list(adapt_delta = 0.9)
+    adapt_delta = 0.9
   ),
   verbose = FALSE
 ))

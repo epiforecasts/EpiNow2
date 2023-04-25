@@ -14,7 +14,7 @@ touchstone::benchmark_run(
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
-      control = list(adapt_delta = 0.95)),
+      adapt_delta = 0.95,
     verbose = interactive()
   ) },
   n = 5
@@ -30,7 +30,7 @@ touchstone::benchmark_run(
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
-      control = list(adapt_delta = 0.95)),
+      adapt_delta = 0.95,
     verbose = interactive()
   ) },
   n = 5
@@ -45,7 +45,7 @@ touchstone::benchmark_run(
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
-      control = list(adapt_delta = 0.95)),
+      adapt_delta = 0.95,
     verbose = interactive()
   ) },
   n = 5
@@ -61,7 +61,7 @@ touchstone::benchmark_run(
     rt = rt_opts(prior = list(mean = 2, sd = 0.2), gp_on = "R0"),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
-      control = list(adapt_delta = 0.95)),
+      adapt_delta = 0.95,
     verbose = interactive()
   ) },
   n = 5
@@ -78,7 +78,7 @@ touchstone::benchmark_run(
     gp = NULL,
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
-      control = list(adapt_delta = 0.95)),
+      adapt_delta = 0.95,
     verbose = interactive()
   ) },
   n = 5

@@ -220,7 +220,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   obs_start <- max(nrow(obs) - trunc_max - sum(is.na(obs$`1`)) + 1, 1)
   obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
   obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
-  obs_data <- obs_data[obs_start:.N]
+  obs_data <- as.matrix(obs_data[obs_start:.N])
 
   # convert to stan list
   data <- list(
@@ -252,9 +252,9 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   # fit
   if (is.null(model)) {
-    model <- stanmodels$estimate_truncation
+    model <- epinow2_model("estimate_truncation")
   }
-  fit <- rstan::sampling(model,
+  fit <- model$sample(
     data = data,
     init = init_fn,
     refresh = ifelse(verbose, 50, 0),
@@ -264,10 +264,10 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   out <- list()
   # Summarise fit truncation distribution for downstream usage
   out$dist <- dist_spec(
-    mean = round(rstan::summary(fit, pars = "delay_mean")$summary[1], 3),
-    mean_sd = round(rstan::summary(fit, pars = "delay_mean")$summary[3], 3),
-    sd = round(rstan::summary(fit, pars = "delay_sd")$summary[1], 3),
-    sd_sd = round(rstan::summary(fit, pars = "delay_sd")$summary[3], 3),
+    mean = round(fit$summary(variables = "delay_mean")[[2]], 3),
+    mean_sd = round(fit$summary(variables = "delay_mean")[[4]], 3),
+    sd = round(fit$summary(variables = "delay_sd")[[2]], 3),
+    sd_sd = round(fit$summary(variables = "delay_sd")[[4]], 3),
     max = truncation$max
   )
   out$dist$dist <- truncation$dist

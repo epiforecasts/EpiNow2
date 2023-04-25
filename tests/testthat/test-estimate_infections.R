@@ -9,7 +9,7 @@ default_estimate_infections <- function(..., add_stan = list(), delay = TRUE) {
 
   def_stan <- stan_opts(
     chains = 2, warmup = 50, samples = 50,
-    control = list(adapt_delta = 0.8)
+    adapt_delta = 0.8
   )
   stan_args <- def_stan[setdiff(names(def_stan), names(add_stan))]
   stan_args <- c(stan_args, add_stan)
@@ -85,27 +85,4 @@ test_that("estimate_infections fails as expected when given a very short timeout
       reported_cases,
       add_stan = list(future = FALSE, max_execution_time = 1)
   ))), "timed out")
-})
-
-
-test_that("estimate_infections works as expected with failing chains", {
-  skip_on_cran()
-  test_estimate_infections(reported_cases,
-    add_stan = list(
-      chains = 4,
-      stuck_chains = 2, future = TRUE,
-      control = list(adapt_delta = 0.8)
-    )
-  )
-
-  expect_error(default_estimate_infections(reported_cases,
-    add_stan = list(chains = 4, stuck_chains = 1)
-  ))
-  expect_error(default_estimate_infections(reported_cases,
-    add_stan = list(
-      chains = 4,
-      stuck_chains = 3,
-      future = TRUE
-    )
-  ))
 })

@@ -51,7 +51,7 @@ for (method in c("nuts")) {
   if (method == "vb") {
     stanopts <- stan_opts(method = "vb", trials = 5, iter = 50000)
   } else {
-    stanopts <- stan_opts(control = list(adapt_delta = 0.9))
+    stanopts <- stan_opts(adapt_delta = 0.9)
   }
 
   # GP

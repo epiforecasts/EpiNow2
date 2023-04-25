@@ -51,7 +51,7 @@
 #'   generation_time = generation_time_opts(example_generation_time),
 #'   delays = delay_opts(example_incubation_period + example_reporting_delay),
 #'   rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7),
-#'   stan = stan_opts(control = list(adapt_delta = 0.9)),
+#'   stan = stan_opts(adapt_delta = 0.9),
 #'   obs = obs_opts(scale = list(mean = 0.1, sd = 0.01)),
 #'   gp = NULL, horizon = 0
 #' )
@@ -94,14 +94,12 @@ simulate_infections <- function(estimates,
     stop("batch_size must be greater than 1")
   }
   ## extract samples from given stanfit object
-  draws <- extract(estimates$fit,
-    pars = c(
-      "noise", "eta", "lp__", "infections",
-      "reports", "imputed_reports", "r",
-      "gt_mean", "gt_var"
-    ),
-    include = FALSE
-  )
+  draws <- extract_samples(estimates$fit)
+  draws <- draws[!names(draws) %in% c(
+    "noise", "eta", "lp__", "infections",
+    "reports", "imputed_reports", "r",
+    "gt_mean", "gt_var"
+  )]
 
   # set samples if missing
   R_samples <- dim(draws$R)[1]
@@ -178,7 +176,7 @@ simulate_infections <- function(estimates,
 
   # Load model
   if (is.null(model)) {
-    model <- stanmodels$simulate_infections
+    model <- epinow2_model(model = "simulate_infections")
   }
 
   ## set up batch simulation
@@ -197,10 +195,9 @@ simulate_infections <- function(estimates,
     )
 
     ## simulate
-    sims <- sampling(
-      object = model,
-      data = data, chains = 1, iter = 1,
-      algorithm = "Fixed_param",
+    sims <- model$sample(
+      data = data, chains = 1, iter_sampling = 1,
+      fixed_param = TRUE,
       refresh = 0
     )
 
