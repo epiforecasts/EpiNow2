@@ -116,7 +116,7 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 #' of the required future backend with sensible defaults for most users of
 #' `regional_epinow`. More advanced users are recommended to setup their own
 #' `future` backend based on their available resources.
-#' 
+#'
 #' @param strategies A vector length 1 to 2 of strategies to pass to
 #' `future::plan`. Nesting of parallelisation is from the top level down.
 #' The default is to set up nesting parallelisation with both using
@@ -197,8 +197,12 @@ setup_dt <- function(reported_cases) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Sets up a folders for saving results
-#' @param target_date Date, defaults to maximum found in the data if not specified.
-#' @param target_folder Character string specifying where to save results (will create if not present).
+#' @param target_date Date, defaults to maximum found in the data if not
+#' specified.
+#'
+#' @param target_folder Character string specifying where to save results (will
+#' create if not present).
+#'
 #' @return A list containing the path to the dated folder and the latest folder
 #' @export
 setup_target_folder <- function(target_folder = NULL, target_date) {

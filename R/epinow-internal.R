@@ -10,7 +10,9 @@
 #' @export
 update_horizon <- function(horizon, target_date, reported_cases) {
   if (horizon != 0) {
-    horizon <- horizon + as.numeric(as.Date(target_date) - max(reported_cases$date))
+    horizon <- horizon + as.numeric(
+      as.Date(target_date) - max(reported_cases$date)
+    )
   }
   return(horizon)
 }
@@ -58,12 +60,17 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
                                      samples = TRUE, return_fit = TRUE) {
   if (!is.null(target_folder)) {
     if (samples) {
-      saveRDS(estimates$samples, paste0(target_folder, "/estimate_samples.rds"))
+      saveRDS(
+        estimates$samples, file.path(target_folder, "estimate_samples.rds")
+      )
     }
-    saveRDS(estimates$summarised, paste0(target_folder, "/summarised_estimates.rds"))
+    saveRDS(
+      estimates$summarised,
+      file.path(target_folder, "summarised_estimates.rds")
+    )
     if (return_fit) {
-      saveRDS(estimates$fit, paste0(target_folder, "/model_fit.rds"))
-      saveRDS(estimates$args, paste0(target_folder, "/model_args.rds"))
+      saveRDS(estimates$fit, file.path(target_folder, "model_fit.rds"))
+      saveRDS(estimates$args, file.path(target_folder, "model_args.rds"))
     }
   }
   return(invisible(NULL))
@@ -88,21 +95,27 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
                                      target_folder = NULL, samples = TRUE) {
   estimated_reported_cases <- list()
   if (samples) {
-    estimated_reported_cases$samples <- estimates$samples[variable == "reported_cases"][
-      ,
+    estimated_reported_cases$samples <- estimates$samples[
+      variable == "reported_cases"][,
       .(date, sample, cases = value, type = "gp_rt")
     ]
   }
-  estimated_reported_cases$summarised <- estimates$summarised[variable == "reported_cases"][
-    ,
+  estimated_reported_cases$summarised <- estimates$summarised[
+    variable == "reported_cases"][,
     type := "gp_rt"
   ][, variable := NULL][, strat := NULL]
 
   if (!is.null(target_folder)) {
     if (samples) {
-      saveRDS(estimated_reported_cases$samples, paste0(target_folder, "/estimated_reported_cases_samples.rds"))
+      saveRDS(
+        estimated_reported_cases$samples,
+        file.path(target_folder, "estimated_reported_cases_samples.rds")
+      )
     }
-    saveRDS(estimated_reported_cases$summarised, paste0(target_folder, "/summarised_estimated_reported_cases.rds"))
+    saveRDS(
+      estimated_reported_cases$summarised,
+      file.path(target_folder, "summarised_estimated_reported_cases.rds")
+    )
   }
   return(estimated_reported_cases)
 }

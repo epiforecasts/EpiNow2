@@ -7,9 +7,11 @@
 setup_target_folder(target_folder = NULL, target_date)
 }
 \arguments{
-\item{target_folder}{Character string specifying where to save results (will create if not present).}
+\item{target_folder}{Character string specifying where to save results (will
+create if not present).}
 
-\item{target_date}{Date, defaults to maximum found in the data if not specified.}
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 }
 \value{
 A list containing the path to the dated folder and the latest folder

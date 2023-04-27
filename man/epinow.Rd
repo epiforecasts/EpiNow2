@@ -88,9 +88,11 @@ return all options.}
 
 \item{plot_args}{A list of optional arguments passed to \code{plot.epinow()}.}
 
-\item{target_folder}{Character string specifying where to save results (will create if not present).}
+\item{target_folder}{Character string specifying where to save results (will
+create if not present).}
 
-\item{target_date}{Date, defaults to maximum found in the data if not specified.}
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 
 \item{logs}{Character path indicating the target folder in which to store log
 information. Defaults to the temporary directory if not specified. Default
