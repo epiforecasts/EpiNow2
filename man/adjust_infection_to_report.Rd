@@ -61,7 +61,9 @@ incubation_def <- lognorm_dist_def(
 )
 
 # simple mapping
-report <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def))
+report <- adjust_infection_to_report(
+ cases, delay_defs = list(incubation_def, delay_def)
+)
 print(report)
 
 # mapping with a weekly reporting effect

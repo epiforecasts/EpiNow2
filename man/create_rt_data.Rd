@@ -11,7 +11,8 @@ create_rt_data(rt = rt_opts(), breakpoints = NULL, delay = 0, horizon = 0)
 Defaults to \code{rt_opts()}. Set to \code{NULL} to switch to using  back calculation
 rather than generating infections using Rt.}
 
-\item{breakpoints}{An integer vector (binary) indicating the location of breakpoints.}
+\item{breakpoints}{An integer vector (binary) indicating the location of
+breakpoints.}
 
 \item{delay}{Numeric mean delay}
 
