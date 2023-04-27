@@ -9,8 +9,8 @@ plot_CrIs(plot, CrIs, alpha, linewidth)
 \arguments{
 \item{plot}{A \code{ggplot2} plot}
 
-\item{CrIs}{Numeric list of credible intervals present in the data. As produced
-by \code{extract_CrIs}}
+\item{CrIs}{Numeric list of credible intervals present in the data. As
+produced by \code{extract_CrIs}}
 
 \item{alpha}{Numeric, overall alpha of the target line range}
 

@@ -15,20 +15,25 @@ plot_estimates(
 )
 }
 \arguments{
-\item{estimate}{A data.table of estimates containing the following variables: date, type
-(must contain "estimate", "estimate based on partial data" and optionally "forecast"),}
+\item{estimate}{A data.table of estimates containing the following
+variables: date, type (must contain "estimate", "estimate based on partial
+data" and optionally "forecast").}
 
-\item{reported}{A data.table of reported cases with the following variables: date, confirm.}
+\item{reported}{A data.table of reported cases with the following variables:
+date, confirm.}
 
-\item{ylab}{Character string, defaulting to "Cases". Title for the plot y axis.}
+\item{ylab}{Character string, defaulting to "Cases". Title for the plot y
+axis.}
 
-\item{hline}{Numeric, if supplied gives the horizontal intercept for a indicator line.}
+\item{hline}{Numeric, if supplied gives the horizontal intercept for a
+indicator line.}
 
-\item{obs_as_col}{Logical, defaults to \code{TRUE}. Should observed data, if supplied, be plotted using columns or
-as points (linked using a line).}
+\item{obs_as_col}{Logical, defaults to \code{TRUE}. Should observed data, if
+supplied, be plotted using columns or as points (linked using a line).}
 
-\item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
-on the maximum number of reported cases.}
+\item{max_plot}{Numeric, defaults to 10. A multiplicative upper bound on the\
+number of cases shown on the plot. Based on the maximum number of reported
+cases.}
 
 \item{estimate_type}{Character vector indicating the type of data to plot.
 Default to all types with supported options being: "Estimate", "Estimate
@@ -39,8 +44,9 @@ A \code{ggplot2} object
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
-Allows users to plot the output from \code{estimate_infections} easily. In future releases it
-may be depreciated in favour of increasing the functionality of the S3 plot methods.
+Allows users to plot the output from \code{estimate_infections} easily. In future
+releases it  may be depreciated in favour of increasing the functionality of
+the S3 plot methods.
 }
 \examples{
 \donttest{
@@ -48,7 +54,9 @@ may be depreciated in favour of increasing the functionality of the S3 plot meth
 cases <- example_confirmed[1:40]
 
 # set up example delays
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+generation_time <- get_generation_time(
+ disease = "SARS-CoV-2", source = "ganyani"
+)
 incubation_period <- get_incubation_period(
  disease = "SARS-CoV-2", source = "lauer"
 )

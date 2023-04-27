@@ -300,14 +300,14 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
         )
       }
       # replace scaling if present in the prior
-      scale <- priors[grepl("frac_obs", variable)]
+      scale <- priors[grepl("frac_obs", variable, fixed = TRUE)]
       if (nrow(scale) > 0) {
         data$obs_scale_mean <- as.array(signif(scale$mean, 3))
         data$obs_scale_sd <- as.array(signif(scale$sd, 3))
       }
       # replace delay parameters if present
-      delay_mean <- priors[grepl("delay_mean", variable)]
-      delay_sd <- priors[grepl("delay_sd", variable)]
+      delay_mean <- priors[grepl("delay_mean", variable, fixed = TRUE)]
+      delay_sd <- priors[grepl("delay_sd", variable, fixed = TRUE)]
       if (nrow(delay_mean) > 0) {
         if (is.null(data$delay_mean_mean)) {
           warning(
@@ -319,7 +319,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
         data$delay_sd_mean <- as.array(signif(delay_sd$mean, 3))
         data$delay_sd_sd <- as.array(signif(delay_sd$sd, 3))
       }
-      phi <- priors[grepl("rep_phi", variable)]
+      phi <- priors[grepl("rep_phi", variable, fixed = TRUE)]
       if (nrow(phi) > 0) {
         data$phi_mean <- signif(phi$mean, 3)
         data$phi_sd <- signif(phi$sd, 3)
@@ -575,7 +575,7 @@ forecast_secondary <- function(estimate,
                                all_dates = FALSE,
                                CrIs = c(0.2, 0.5, 0.9)) {
   ## deal with input if data frame
-  if (any(class(primary) %in% "data.frame")) {
+  if (inherits(primary, "data.frame")) {
     primary <- data.table::as.data.table(primary)
     if (is.null(primary$sample)) {
       if (is.null(samples)) {
@@ -586,7 +586,7 @@ forecast_secondary <- function(estimate,
     }
     primary <- primary[, .(date, sample, value)]
   }
-  if (any(class(primary) %in% "estimate_infections")) {
+  if (inherits(primary, "estimate_infections")) {
     primary <- data.table::as.data.table(primary$samples[variable == primary_variable])
     primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
     primary <- primary[, .(date, sample, value)]
