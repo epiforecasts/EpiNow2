@@ -33,8 +33,8 @@ A list of processed output
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
-Internal function that removes output that is not required, and returns logging
-information.
+Internal function that removes output that is not required, and returns
+logging information.
 }
 \seealso{
 regional_epinow

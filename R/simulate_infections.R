@@ -1,9 +1,12 @@
-#' Simulate infections using a given trajectory of the time-varying reproduction number
+#' Simulate infections using a given trajectory of the time-varying
+#' reproduction number
 #'
 #' @description `r lifecycle::badge("stable")`
-#' This function simulates infections using an existing fit to observed cases but with a modified
-#' time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
-#' Simulations can be run in parallel using `future::plan`.
+#' This function simulates infections using an existing fit to observed cases
+#' but with a modified time-varying reproduction number. This can be used to
+#' explore forecast models or past counterfactuals. Simulations can be run in
+#' parallel using `future::plan`.
+#'
 #' @param estimates The \code{estimates} element of an \code{epinow} run that
 #' has been done with output = "fit", or the result of
 #' \code{estimate_infections} with \code{return_fit} set to TRUE.
@@ -145,7 +148,9 @@ simulate_infections <- function(estimates,
   # sample from posterior if samples != posterior
   posterior_sample <- dim(draws$obs_reports)[1]
   if (posterior_sample < samples) {
-    posterior_samples <- sample(1:posterior_sample, samples, replace = TRUE)
+    posterior_samples <- sample(
+      1:posterior_sample, samples, replace = TRUE
+    ) # nolint
     R_draws <- draws$R
     draws <- map(draws, ~ as.matrix(.[posterior_samples, ]))
     draws$R <- R_draws
@@ -158,7 +163,7 @@ simulate_infections <- function(estimates,
 
   if (obs_time != dim(draws$R)[2]) {
     horizon <- dim(draws$R)[2] - time + horizon + shift
-    horizon <- ifelse(horizon < 0, 0, horizon)
+    horizon <- ifelse(horizon < 0, 0, horizon) # nolint
     time <- dim(draws$R)[2] + shift
     obs_time <- time - shift
     starting_day <- estimates$args$day_of_week[1]

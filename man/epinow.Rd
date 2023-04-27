@@ -93,10 +93,10 @@ return all options.}
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
 \item{logs}{Character path indicating the target folder in which to store log
-information. Defaults to the temporary directory if not specified. Default logging
-can be disabled if \code{logs} is set to NULL. If specifying a custom logging setup then
-the code for \code{setup_default_logging} and the \code{setup_logging} function are a sensible
-place to start.}
+information. Defaults to the temporary directory if not specified. Default
+logging can be disabled if \code{logs} is set to NULL. If specifying a custom
+logging setup then the code for \code{setup_default_logging} and the
+\code{setup_logging} function are a sensible place to start.}
 
 \item{id}{A character string used to assign logging information on error.
 Used by \code{regional_epinow} to assign errors to regions. Alter the default to

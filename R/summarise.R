@@ -1,17 +1,24 @@
 #' Summarise Real-time Results
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' Used internally by `regional_summary` to produce a summary table of results. May be streamlined in later
-#' releases.
-#' @param regions An character string containing the list of regions to extract results for
-#' (must all have results for the same target date).
+#' Used internally by `regional_summary` to produce a summary table of results.
+#' May be streamlined in later releases.
+#'
+#' @param regions An character string containing the list of regions to extract
+#' results for (must all have results for the same target date).
+#'
 #' @param summaries A list of summary data frames as output by `epinow`
-#' @param results_dir An optional character string indicating the location of the results directory to extract results
-#' from.
+#'
+#' @param results_dir An optional character string indicating the location of
+#' the results directory to extract results from.
+#'
 #' @param target_date A character string indicating the target date to extract
 #' results for. All regions must have results
 #' for this date.
-#' @param region_scale A character string indicating the name to give the regions being summarised.
+#'
+#' @param region_scale A character string indicating the name to give the
+#' regions being summarised.
+#'
 #' @importFrom purrr safely map_chr map_dbl map_chr
 #' @importFrom data.table setorderv melt merge.data.table dcast
 #' @return A list of summary data
@@ -52,9 +59,11 @@ summarise_results <- function(regions,
       )
     }
 
-    load_data <- purrr::safely(get_result)
+    load_data <- purrr::safely(get_result) # nolint
 
-    estimates <- purrr::map(regions, ~ load_data(file = "summary.rds", region = .)[[1]])
+    estimates <- purrr::map(
+      regions, ~ load_data(file = "summary.rds", region = .)[[1]]
+    )
     names(estimates) <- regions
   } else {
     estimates <- summaries
@@ -107,7 +116,7 @@ summarise_results <- function(regions,
       "Expected change in daily cases",
       "Effective reproduction no.",
       "Rate of growth",
-      "Doubling/halving time (days)"
+      "Doubling/halving time (days)" # nolint
     ))
   ]
 
@@ -208,7 +217,7 @@ regional_summary <- function(regional_output = NULL,
     futile.logger::flog.info("Saving summary to : %s", summary_dir)
   }
 
-  if (!is.null(results_dir) & !is.null(regional_output)) {
+  if (!is.null(results_dir) && !is.null(regional_output)) {
     stop("Only one of results_dir and regional_output should be specified")
   }
 
@@ -243,7 +252,9 @@ regional_summary <- function(regional_output = NULL,
       dir.create(summary_dir, recursive = TRUE)
     }
     saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
-    data.table::fwrite(reported_cases, file.path(summary_dir, "reported_cases.csv"))
+    data.table::fwrite(
+      reported_cases, file.path(summary_dir, "reported_cases.csv")
+    )
   }
 
   if (!is.null(regional_output)) {
@@ -324,7 +335,7 @@ regional_summary <- function(regional_output = NULL,
       }
       save_ggplot(summary_plot, "summary_plot.png",
         width = ifelse(length(regions) > 60,
-          ifelse(length(regions) > 120, 36, 24),
+          ifelse(length(regions) > 120, 36, 24), # nolint
           12
         )
       )
@@ -359,7 +370,7 @@ regional_summary <- function(regional_output = NULL,
     if (all_regions) {
       plots_per_row <- ifelse(length(regions) > 60,
         ifelse(length(regions) > 120, 8, 5), 3
-      )
+      ) # nolint
 
       plots <- report_plots(
         summarised_estimates = results$estimates$summarised,
@@ -541,7 +552,7 @@ regional_runtimes <- function(regional_output = NULL,
                               target_folder = NULL,
                               target_date = NULL,
                               return_output = FALSE) {
-  if (is.null(target_folder) & is.null(regional_output)) {
+  if (is.null(target_folder) && is.null(regional_output)) {
     stop("Either an output should be passed in or a target folder specified")
   }
   if (is.null(target_folder)) {

@@ -28,7 +28,8 @@ regional_epinow(
 )
 }
 \arguments{
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date
+(date), and region (\code{region}).}
 
 \item{generation_time}{A call to \code{generation_time_opts()} defining the
 generation time distribution used. For backwards compatibility a list of
@@ -70,47 +71,60 @@ forecast.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not specified.}
 
-\item{non_zero_points}{Numeric, the minimum number of time points with non-zero cases in a region required for
-that region to be evaluated. Defaults to 7.}
+\item{non_zero_points}{Numeric, the minimum number of time points with
+non-zero cases in a region required for that region to be evaluated.
+Defaults to 7.}
 
-\item{output}{A character vector of optional output to return. Supported options are the individual regional estimates
-("regions"),  samples ("samples"), plots ("plots"), copying the individual region dated folder into
-a latest folder (if \code{target_folder} is not null, set using "latest"), the stan fit of the underlying model ("fit"), and an
-overall summary across regions ("summary"). The default is to return samples and plots alongside summarised estimates and
-summary statistics. If \code{target_folder} is not NULL then the default is also to copy all results into a latest folder.}
+\item{output}{A character vector of optional output to return. Supported
+options are the individual regional estimates ("regions"),  samples
+("samples"), plots ("plots"), copying the individual region dated folder into
+a latest folder (if \code{target_folder} is not null, set using "latest"), the
+stan fit of the underlying model ("fit"), and an overall summary across
+regions ("summary"). The default is to return samples and plots alongside
+summarised estimates and summary statistics. If \code{target_folder} is not NULL
+then the default is also to copy all results into a latest folder.}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned,
 this automatically updates to TRUE if no directory for saving is specified.}
 
-\item{summary_args}{A list of arguments passed to \code{regional_summary}. See the \code{regional_summary} documentation for details.}
+\item{summary_args}{A list of arguments passed to \code{regional_summary}. See
+the \code{regional_summary} documentation for details.}
 
-\item{verbose}{Logical defaults to FALSE. Outputs verbose progress messages to the console from \code{epinow}.}
+\item{verbose}{Logical defaults to FALSE. Outputs verbose progress messages
+to the console from \code{epinow}.}
 
 \item{logs}{Character path indicating the target folder in which to store log
-information. Defaults to the temporary directory if not specified. Default logging
-can be disabled if \code{logs} is set to NULL. If specifying a custom logging setup then
-the code for \code{setup_default_logging} and the \code{setup_logging} function are a sensible
-place to start.}
+information. Defaults to the temporary directory if not specified. Default
+logging can be disabled if \code{logs} is set to NULL. If specifying a custom
+logging setup then the code for \code{setup_default_logging} and the
+\code{setup_logging} function are a sensible place to start.}
 
-\item{...}{Pass additional arguments to \code{epinow}. See the documentation for \code{epinow} for details.}
+\item{...}{Pass additional arguments to \code{epinow}. See the documentation for
+\code{epinow} for details.}
 }
 \value{
 A list of output stratified at the top level into regional output and across region output summary output
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
-Efficiently runs \code{epinow()} across multiple regions in an efficient manner and conducts basic data checks and
-cleaning such as removing regions with fewer than \code{non_zero_points} as these are unlikely to produce reasonable
-results whilst consuming significant resources. See the documentation for \code{epinow} for further information.
+Efficiently runs \code{epinow()} across multiple regions in an efficient manner
+and conducts basic data checks and cleaning such as removing regions with
+fewer than \code{non_zero_points} as these are unlikely to produce reasonable
+results whilst consuming significant resources. See the documentation for
+\code{epinow} for further information.
 
-By default all arguments supporting input from \verb{_opts()} functions are shared across regions (including delays,
-truncation, Rt settings, stan settings, and gaussian process settings). Region specific settings are supported
-by passing a named list of \verb{_opts()} calls (with an entry per region) to the relevant argument. A helper function
-(\code{opts_list}) is available to facilitate building this list.
+By default all arguments supporting input from \verb{_opts()} functions are
+shared across regions (including delays, truncation, Rt settings, stan
+settings, and gaussian process settings). Region specific settings are
+supported by passing a named list of \verb{_opts()} calls (with an entry per
+region) to the relevant argument. A helper function (\code{opts_list}) is
+available to facilitate building this list.
 
-Regions can be estimated in parallel using the \code{{future}} package (see \code{setup_future}). The progress of producing
-estimates across multiple regions is tracked using the \code{progressr} package. Modify this behaviour using
-progressr::handlers and enable it in batch by setting \code{R_PROGRESSR_ENABLE=TRUE} as an environment variable.
+Regions can be estimated in parallel using the \code{{future}} package (see
+\code{setup_future}). The progress of producing estimates across multiple regions
+is tracked using the \code{progressr} package. Modify this behaviour using
+progressr::handlers and enable it in batch by setting
+\code{R_PROGRESSR_ENABLE=TRUE} as an environment variable.
 }
 \examples{
 \donttest{
@@ -119,7 +133,9 @@ old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
 # construct example distributions
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+generation_time <- get_generation_time(
+ disease = "SARS-CoV-2", source = "ganyani"
+)
 incubation_period <- get_incubation_period(
  disease = "SARS-CoV-2", source = "lauer"
 )
@@ -172,5 +188,7 @@ options(old_opts)
 }
 }
 \seealso{
-epinow estimate_infections forecast_infections setup_future regional_summary
+epinow estimate_infections forecast_infections
+
+setup_future regional_summary
 }

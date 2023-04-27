@@ -13,25 +13,26 @@ summarise_results(
 )
 }
 \arguments{
-\item{regions}{An character string containing the list of regions to extract results for
-(must all have results for the same target date).}
+\item{regions}{An character string containing the list of regions to extract
+results for (must all have results for the same target date).}
 
 \item{summaries}{A list of summary data frames as output by \code{epinow}}
 
-\item{results_dir}{An optional character string indicating the location of the results directory to extract results
-from.}
+\item{results_dir}{An optional character string indicating the location of
+the results directory to extract results from.}
 
 \item{target_date}{A character string indicating the target date to extract
 results for. All regions must have results
 for this date.}
 
-\item{region_scale}{A character string indicating the name to give the regions being summarised.}
+\item{region_scale}{A character string indicating the name to give the
+regions being summarised.}
 }
 \value{
 A list of summary data
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
-Used internally by \code{regional_summary} to produce a summary table of results. May be streamlined in later
-releases.
+Used internally by \code{regional_summary} to produce a summary table of results.
+May be streamlined in later releases.
 }
