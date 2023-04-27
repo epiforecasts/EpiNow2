@@ -2,9 +2,11 @@
 #'
 #' @description `r lifecycle::badge("questioning")`
 #' This function acts as a skeleton for a truncated distribution defined by
-#' model type, maximum value and model parameters. It is designed to be used with the
-#' output from `get_dist`.
-#' @param n Numeric vector, number of samples to take (or days for the probability density).
+#' model type, maximum value and model parameters. It is designed to be used
+#' with the output from `get_dist`.
+#'
+#' @param n Numeric vector, number of samples to take (or days for the
+#' probability density).
 #'
 #' @param dist Logical, defaults to `FALSE`. Should the probability density be
 #' returned rather than a number of samples.
@@ -696,10 +698,7 @@ sample_approx_dist <- function(cases = NULL,
     case_sum <- direction_fn(rowSums(mapped_cases))
     floor_case_sum <- floor(case_sum)
     sample_cases <- floor_case_sum +
-      data.table::fifelse(
-        (runif(seq_along(case_sum)) < (case_sum - floor_case_sum)),
-        1, 0
-      )
+      as.numeric((runif(seq_along(case_sum)) < (case_sum - floor_case_sum)))
 
     # summarise imputed onsets and build output data.table
     mapped_cases <- data.table::data.table(
