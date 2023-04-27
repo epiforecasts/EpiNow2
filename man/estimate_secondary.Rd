@@ -112,7 +112,7 @@ inc <- estimate_secondary(cases[1:60],
 plot(inc, primary = TRUE)
 
 # forecast future secondary cases from primary
-inc_preds <- forecast_secondary(inc, cases[6seq_len(.N)][, value := primary])
+inc_preds <- forecast_secondary(inc, cases[seq_len(.N)][, value := primary])
 plot(inc_preds, new_obs = cases, from = "2020-05-01")
 
 #### Prevalence data example ####
