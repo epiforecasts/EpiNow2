@@ -560,7 +560,8 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
 #'
 #' @author Sam Abbott
 #' @importFrom rstan extract sampling
-#' @importFrom data.table rbindlist merge.data.table as.data.table setorderv setcolorder copy
+#' @importFrom data.table rbindlist merge.data.table as.data.table setorderv
+#' @importFrom data.table setcolorder copy
 #' @importFrom lubridate days wday
 #' @importFrom utils tail
 #' @importFrom purrr map
@@ -582,7 +583,9 @@ forecast_secondary <- function(estimate,
         samples <- 1000
       }
       primary <- primary[, .(date, sample = list(1:samples), value)]
-      primary <- primary[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
+      primary <- primary[,
+       .(sample = as.numeric(unlist(sample))), by = c("date", "value")
+      ]
     }
     primary <- primary[, .(date, sample, value)]
   }
@@ -609,23 +612,31 @@ forecast_secondary <- function(estimate,
   data <- estimate$data
 
   # combined primary from data and input primary
-  primary_fit <- estimate$predictions[, .(date, value = primary, sample = list(unique(updated_primary$sample)))]
+  primary_fit <- estimate$predictions[,
+   .(date, value = primary, sample = list(unique(updated_primary$sample)))
+  ]
   primary_fit <- primary_fit[date <= min(primary$date, na.rm = TRUE)]
-  primary_fit <- primary_fit[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
-  primary_fit <- data.table::rbindlist(list(primary_fit, updated_primary), use.names = TRUE)
+  primary_fit <- primary_fit[,
+   .(sample = as.numeric(unlist(sample))), by = c("date", "value")
+  ]
+  primary_fit <- data.table::rbindlist(
+    list(primary_fit, updated_primary), use.names = TRUE
+  )
   data.table::setorderv(primary_fit, c("sample", "date"))
 
   # update data with primary samples and day of week
   data$primary <- t(
     matrix(primary_fit$value, ncol = length(unique(primary_fit$sample)))
   )
-  data$day_of_week <- add_day_of_week(unique(primary_fit$date), data$week_effect)
+  data$day_of_week <- add_day_of_week(
+    unique(primary_fit$date), data$week_effect
+  )
   data$n <- nrow(data$primary)
   data$t <- ncol(data$primary)
   data$h <- nrow(primary[sample == min(sample)])
 
   # extract samples for posterior of estimates
-  posterior_samples <- sample(1:data$n, data$n, replace = TRUE)
+  posterior_samples <- sample(seq_len(data$n), data$n, replace = TRUE) # nolint
   draws <- purrr::map(draws, ~ as.matrix(.[posterior_samples, ]))
   # combine with data
   data <- c(data, draws)
@@ -655,7 +666,9 @@ forecast_secondary <- function(estimate,
   samples <- as.data.table(samples)
   colnames(samples) <- c("iterations", "sample", "time", "value")
   samples <- samples[, c("iterations", "time") := NULL]
-  samples <- samples[, date := rep(tail(dates, ifelse(all_dates, data$t, data$h)), data$n)]
+  samples <- samples[,
+    date := rep(tail(dates, ifelse(all_dates, data$t, data$h)), data$n)
+  ]
 
   # summarise samples
   summarised <- calc_summary_measures(samples,
@@ -679,8 +692,7 @@ forecast_secondary <- function(estimate,
   data.table::setorderv(forecast_obs, "date")
   # add in predictions in estimate_secondary format
   out$predictions <- data.table::merge.data.table(summarised,
-    forecast_obs,
-    by = "date", all = TRUE
+    forecast_obs, by = "date", all = TRUE
   )
   data.table::setcolorder(out$predictions, c("date", "primary", "secondary", "mean", "sd"))
   class(out) <- c("estimate_secondary", class(out))
