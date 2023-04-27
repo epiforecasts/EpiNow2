@@ -37,15 +37,13 @@
 #' dist <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' generation_time_opts(dist)
 generation_time_opts <- function(dist = dist_spec(mean = 1), prior_weight = NULL) {
-  if (!"dist_spec" %in% class(dist)) {
-    stop(
-      "The generation time distribution must be of given either using a call ",
-      "to `dist_spec` or `get_generation_time`. ",
-      "This behaviour has changed from previous versions of `EpiNow2` and ",
-      "any code using it may need to be updated. For examples and more ",
-      "information, see the relevant documentation pages using ",
-      "`?generation_time_opts`"
-    )
+  if (!is(dist, "dist_spec")) {
+    stop("The generation time distribution must be given either using a call ",
+         "to `dist_spec` or `get_generation_time`. ",
+         "This behaviour has changed from previous versions of `EpiNow2` and ",
+         "any code using it may need to be updated. For examples and more ",
+         "information, see the relevant documentation pages using ",
+         "`?generation_time_opts`")
   }
   data <- unclass(dist)
   data$fixed <- NULL ## not used in stan model
@@ -84,14 +82,13 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), prior_weight = NULL
 #' # Multiple delays
 #' delay_opts(c(delay, delay))
 delay_opts <- function(dist = dist_spec(), prior_weight = NULL) {
-
-  if (!"dist_spec" %in% class(dist)) {
+  if (!is(dist, "dist_spec")) {
     stop("Delay distributions must be of given either using a call to `dist_spec` ",
          "or one of the `get_...` functions such as `get_incubation_period`. ",
          "This behaviour has changed from previous versions of `EpiNow2` and ",
          "any code using it may need to be updated. For examples and more ",
          "information, see the relevant documentation pages using ",
-         "`?delay_time_opts`")
+         "`?delay_opts`")
   }
   data <- unclass(dist)
   data$fixed <- NULL ## not used in stan model
@@ -133,7 +130,7 @@ delay_opts <- function(dist = dist_spec(), prior_weight = NULL) {
 #' # truncation dist
 #' trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
 trunc_opts <- function(dist = dist_spec()) {
-  if (!"dist_spec" %in% class(dist)) {
+  if (!is(dist, "dist_spec")) {
     stop("Truncation distributions must be of given either using a call to `dist_spec` or ",
          "one of the `get_...` functions. ",
          "This behaviour has changed from previous versions of `EpiNow2` and ",
