@@ -693,7 +693,7 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
       name = "EpiNow2.epinow.estimate_infections"
     )
     format_out$samples <-
-      format_out$samples[is.na(date) | 
+      format_out$samples[is.na(date) ||
         date >= (start_date + lubridate::days(burn_in))]
   }
 

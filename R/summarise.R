@@ -668,7 +668,7 @@ calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
   order_CrIs <- c(
     paste0("lower_", rev(scale_CrIs)), paste0("upper_", scale_CrIs)
   ) 
-  # nolint emd
+  # nolint end
   with_CrIs <- data.table::dcast(
     with_CrIs, ... ~ factor(CrI, levels = order_CrIs),
     value.var = "value"
