@@ -39,7 +39,7 @@ navbar:
       - text: estimate_truncation()
         href: articles/estimate_truncation.html
       - text: Gaussian Process implementation details
-        href: articles/gaussian_process_details.html
+        href: articles/gaussian_process_implementation_details.html
     casestudies:
       text: Case studies
       menu:
