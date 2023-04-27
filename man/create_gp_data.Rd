@@ -11,15 +11,16 @@ create_gp_data(gp = gp_opts(), data)
 Gaussian process. Defaults to \code{gp_opts()}.Set to NULL to disable the
 Gaussian process.}
 
-\item{data}{A list containing the following numeric values: \code{t}, \code{seeding_time},
-\code{horizon}.}
+\item{data}{A list containing the following numeric values:
+\code{t}, \code{seeding_time}, \code{horizon}.}
 }
 \value{
 A list of settings defining the Gaussian process
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Takes the output of \code{gp_opts()} and converts it into a list understood by \code{stan}.
+Takes the output of \code{gp_opts()} and converts it into a list understood by
+\code{stan}.
 }
 \examples{
 # define input data required

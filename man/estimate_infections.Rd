@@ -235,13 +235,17 @@ fixed <- estimate_infections(reported_cases,
 plot(fixed)
 
 # no delays
-no_delay <- estimate_infections(reported_cases, generation_time = generation_time)
+no_delay <- estimate_infections(
+ reported_cases, generation_time = generation_time
+)
 plot(no_delay)
 
 # break point but otherwise static Rt
 # with uncertain reporting delays
 bp_cases <- data.table::copy(reported_cases)
-bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
+bp_cases <- bp_cases[,
+ breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)
+]
 bkp <- estimate_infections(bp_cases,
   generation_time = generation_time,
   delays = delay_opts(incubation_period, reporting_delay),
