@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 # Infection model
 
 `estimate_infections()` supports a range of model formulations. Here we describe the most commonly used and highlight other options.
-The two main models for how new infections arise in the model are a *renewal equation model* and a *nonparametric infection model*.
+The two main models for how new infections arise in the model are a *renewal equation model* and a *non-mechanistic infection model*.
 The initialisation of both of these models involves estimating an initial infection trajectory during a `seeding_time` $t_\mathrm{seed}$ (set to the mean of modelled delays from infection to observation) that precedes the first observation at time $t=0$.
 
 ## Renewal equation model
