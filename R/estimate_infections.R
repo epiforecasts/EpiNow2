@@ -269,7 +269,9 @@ estimate_infections <- function(reported_cases,
   # Create mean shifted reported cases as prior
   reported_cases <- data.table::rbindlist(list(
     data.table::data.table(
-      date = seq(min(reported_cases$date) - delays$seeding_time - backcalc$prior_window,
+      date =
+        seq(min(reported_cases$date) - delays$seeding_time -
+          backcalc$prior_window,
         min(reported_cases$date) - 1,
         by = "days"
       ),
@@ -420,7 +422,7 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
     control = list(adapt_delta = 0.9, max_treedepth = 13),
     refresh = ifelse(verbose, 50, -1)
   )
-  # change observations to be cumulative in order to protect against noise and 
+  # change observations to be cumulative in order to protect against noise and
   # give an approximate fit (though for Rt constrained to be > 1)
   initial_args$data$cases <- cumsum(initial_args$data$cases)
   initial_args$data$shifted_cases <- cumsum(initial_args$data$shifted_cases)
