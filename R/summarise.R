@@ -368,9 +368,11 @@ regional_summary <- function(regional_output = NULL,
     }
 
     if (all_regions) {
+      # nolint start
       plots_per_row <- ifelse(length(regions) > 60,
         ifelse(length(regions) > 120, 8, 5), 3
-      ) # nolint
+      ) 
+      # nolint end
 
       plots <- report_plots(
         summarised_estimates = results$estimates$summarised,
@@ -662,9 +664,11 @@ calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
 
   with_CrIs <- data.table::rbindlist(with_CrIs)
   scale_CrIs <- round(CrIs * 100, 1)
+  # nolint start
   order_CrIs <- c(
     paste0("lower_", rev(scale_CrIs)), paste0("upper_", scale_CrIs)
-  ) # nolint
+  ) 
+  # nolint emd
   with_CrIs <- data.table::dcast(
     with_CrIs, ... ~ factor(CrI, levels = order_CrIs),
     value.var = "value"

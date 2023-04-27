@@ -85,6 +85,7 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 #'
 #' map_prob_change(var)
 map_prob_change <- function(var) {
+  # nolint start
   var <- ifelse(var < 0.05, "Increasing",
     ifelse(var < 0.4, "Likely increasing",
       ifelse(var < 0.6, "Stable",
@@ -93,7 +94,8 @@ map_prob_change <- function(var) {
         )
       )
     )
-  ) # nolint
+  ) 
+  # nolint end
   var <- factor(var, levels = c(
     "Increasing", "Likely increasing", "Stable",
     "Likely decreasing", "Decreasing"

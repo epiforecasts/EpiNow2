@@ -32,9 +32,9 @@ A cleaned data frame of reported cases
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Cleans a data frame of reported cases by replacing missing dates with 0 cases and applies an optional
-threshold at which point 0 cases are replaced with a moving average of observed cases. See \code{zero_threshold}
-for details.
+Cleans a data frame of reported cases by replacing missing dates with 0
+cases and applies an optional threshold at which point 0 cases are replaced
+with a moving average of observed cases. See \code{zero_threshold} for details.
 }
 \author{
 Sam Abbott
