@@ -7,20 +7,21 @@
 growth_to_R(r, gamma_mean, gamma_sd)
 }
 \arguments{
-\item{r}{Numeric, rate of growth estimates}
+\item{r}{Numeric, rate of growth estimates.}
 
 \item{gamma_mean}{Numeric, mean of the gamma distribution}
 
-\item{gamma_sd}{Numeric, standard deviation of the gamma distribution}
+\item{gamma_sd}{Numeric, standard deviation of the gamma distribution
+.}
 }
 \value{
 Numeric vector of reproduction number estimates
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
-See \href{https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf}{here}
-for justification. Now handled internally by stan so may be removed in future updates if
-no user demand.
+See \href{https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf}{here} # nolint
+for justification. Now handled internally by stan so may be removed in
+future updates if no user demand.
 }
 \examples{
 growth_to_R(0.2, 4, 1)

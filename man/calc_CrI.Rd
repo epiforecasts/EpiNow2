@@ -4,18 +4,19 @@
 \alias{calc_CrI}
 \title{Calculate Credible Interval}
 \usage{
-calc_CrI(samples, summarise_by = c(), CrI = 0.9)
+calc_CrI(samples, summarise_by = NULL, CrI = 0.9)
 }
 \arguments{
 \item{samples}{A data.table containing at least a value variable}
 
 \item{summarise_by}{A character vector of variables to group by.}
 
-\item{CrI}{Numeric between 0 and 1. The credible interval for which to return values.
-Defaults to 0.9.}
+\item{CrI}{Numeric between 0 and 1. The credible interval for which to
+return values. Defaults to 0.9.}
 }
 \value{
-A data.table containing the upper and lower bounds for the specified credible interval
+A data.table containing the upper and lower bounds for the specified
+credible interval.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

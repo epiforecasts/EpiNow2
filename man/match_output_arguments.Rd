@@ -5,8 +5,8 @@
 \title{Match User Supplied Arguments with Supported Options}
 \usage{
 match_output_arguments(
-  input_args = c(),
-  supported_args = c(),
+  input_args = NULL,
+  supported_args = NULL,
   logger = NULL,
   level = "info"
 )

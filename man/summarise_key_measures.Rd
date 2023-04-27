@@ -13,7 +13,8 @@ summarise_key_measures(
 )
 }
 \arguments{
-\item{regional_results}{A list of dataframes as produced by \code{get_regional_results}}
+\item{regional_results}{A list of dataframes as produced by
+\code{get_regional_results}}
 
 \item{results_dir}{Character string indicating the directory from which to
 extract results.}
@@ -21,18 +22,21 @@ extract results.}
 \item{summary_dir}{Character string the directory into which to save results
 as a csv.}
 
-\item{type}{Character string, the region identifier to apply (defaults to region).}
+\item{type}{Character string, the region identifier to apply (defaults to
+region).}
 
 \item{date}{A Character string (in the format "yyyy-mm-dd") indicating the
 date to extract data for. Defaults to "latest" which finds the latest
 results available.}
 }
 \value{
-A list of summarised Rt, cases by date of infection and cases by date of report
+A list of summarised Rt, cases by date of infection and cases by
+date of report
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
-Produces summarised data frames of output across regions. Used internally by \code{regional_summary}.
+Produces summarised data frames of output across regions. Used internally by
+\code{regional_summary}.
 }
 \seealso{
 regional_summary

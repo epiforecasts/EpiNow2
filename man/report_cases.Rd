@@ -14,7 +14,8 @@ report_cases(
 )
 }
 \arguments{
-\item{case_estimates}{A data.table of case estimates with the following variables: date, sample, cases}
+\item{case_estimates}{A data.table of case estimates with the following
+variables: date, sample, cases}
 
 \item{case_forecast}{A data.table of case forecasts with the following
 variables: date, sample, cases. If not supplied the default is not to
@@ -52,8 +53,12 @@ the \code{stan} implementation.
 cases <- example_confirmed[1:40]
 
 # set up example delays
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+generation_time <- get_generation_time(
+ disease = "SARS-CoV-2", source = "ganyani"
+)
+incubation_period <- get_incubation_period(
+ disease = "SARS-CoV-2", source = "lauer"
+)
 reporting_delay <- list(
   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10

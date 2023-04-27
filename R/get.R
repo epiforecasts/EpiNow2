@@ -72,8 +72,12 @@ get_raw_result <- function(file, region, date,
 #' @examples
 #' \donttest{
 #' # construct example distributions
-#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' generation_time <- get_generation_time(
+#'  disease = "SARS-CoV-2", source = "ganyani"
+#' )
+#' incubation_period <- get_incubation_period(
+#'  disease = "SARS-CoV-2", source = "lauer"
+#' )
 #' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 #'
 #' # example case vector
@@ -138,7 +142,9 @@ get_regional_results <- function(regional_output,
         result_dir = results_dir,
         date = date
       )[[1]])
-      summarised <- data.table::rbindlist(summarised, idcol = "region", fill = TRUE)
+      summarised <- data.table::rbindlist(
+        summarised, idcol = "region", fill = TRUE
+      )
       out$summarised <- summarised
       return(out)
     }

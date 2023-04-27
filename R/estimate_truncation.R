@@ -205,7 +205,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     var_names = TRUE
   )
   recon_obs <- recon_obs[, id := variable][, variable := NULL]
-  recon_obs <- recon_obs[, dataset := 1:.N][
+  recon_obs <- recon_obs[, dataset := seq_len(.N)][
     ,
     dataset := dataset %% data$obs_sets
   ][
