@@ -97,7 +97,7 @@ test_that("estimate_secondary can recover simulated parameters", {
 
 test_that("forecast_secondary can return values from simulated data and plot
            them", {
-  inc_preds <- forecast_secondary(inc, cases[seq_len(.N)][, value := primary])
+  inc_preds <- forecast_secondary(inc, cases[seq(61, .N)][, value := primary])
   expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
   # validation plot of observations vs estimates
   expect_error(plot(inc_preds, new_obs = cases, from = "2020-05-01"), NA)
