@@ -12,19 +12,21 @@ setup_logging(
 )
 }
 \arguments{
-\item{threshold}{Character string indicating the logging level see (?futile.logger
-for details of the available options). Defaults to "INFO".}
+\item{threshold}{Character string indicating the logging level see
+(?futile.logger for details of the available options). Defaults to "INFO".}
 
-\item{file}{Character string indicating the path to save logs to. By default logs will be
-written to the console.}
+\item{file}{Character string indicating the path to save logs to. By default
+logs will be written to the console.}
 
-\item{mirror_to_console}{Logical, defaults to \code{FALSE}. If saving logs to a file should they
-also be duplicated in the console.}
+\item{mirror_to_console}{Logical, defaults to \code{FALSE}. If saving logs to a
+file should they also be duplicated in the console.}
 
-\item{name}{Character string defaulting to EpiNow2. This indicates the name of the logger to setup.
-The default logger for EpiNow2 is called EpiNow2. Nested options include: Epinow2.epinow which controls
-all logging for \code{epinow} and nested functions, EpiNow2.epinow.estimate_infections (logging in
-\code{estimate_infections}), and EpiNow2.epinow.estimate_infections.fit (logging in fitting functions).}
+\item{name}{Character string defaulting to EpiNow2. This indicates the name
+of the logger to setup. The default logger for EpiNow2 is called EpiNow2.
+Nested options include: Epinow2.epinow which controls all logging for
+\code{epinow} and nested functions, EpiNow2.epinow.estimate_infections (logging in
+\code{estimate_infections}), and EpiNow2.epinow.estimate_infections.fit (logging
+in fitting functions).}
 }
 \value{
 Nothing
@@ -32,7 +34,8 @@ Nothing
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 Sets up \code{futile.logger} logging, which is integrated into \code{EpiNow2}. See the
-documentation for \code{futile.logger} for full details. By default \code{EpiNow2} prints all logs at
-the "INFO" level and returns them to the console. Usage of logging is currently being explored
-as the current setup cannot log stan errors or progress.
+documentation for \code{futile.logger} for full details. By default \code{EpiNow2}
+prints all logs at the "INFO" level and returns them to the console. Usage
+of logging is currently being explored as the current setup cannot log stan
+errors or progress.
 }

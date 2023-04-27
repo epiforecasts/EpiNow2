@@ -14,7 +14,8 @@ report_cases(
 )
 }
 \arguments{
-\item{case_estimates}{A data.table of case estimates with the following variables: date, sample, cases}
+\item{case_estimates}{A data.table of case estimates with the following
+variables: date, sample, cases}
 
 \item{case_forecast}{A data.table of case forecasts with the following
 variables: date, sample, cases. If not supplied the default is not to
@@ -24,8 +25,9 @@ incorporate forecasts.}
 options. See the documentation of \code{delay_opts()} and the examples below for
 details.}
 
-\item{type}{Character string indicating the method to use to transform counts. Supports either "sample"
-which approximates sampling or "median" would shift by the median of the distribution.}
+\item{type}{Character string indicating the method to use to transform
+counts. Supports either "sample"  which approximates sampling or "median"
+would shift by the median of the distribution.}
 
 \item{reporting_effect}{A \code{data.table} giving the weekly reporting effect
 with the following variables: \code{sample} (must be the same as in \code{nowcast}),
@@ -52,8 +54,12 @@ the \code{stan} implementation.
 cases <- example_confirmed[1:40]
 
 # set up example delays
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+generation_time <- get_generation_time(
+ disease = "SARS-CoV-2", source = "ganyani"
+)
+incubation_period <- get_incubation_period(
+ disease = "SARS-CoV-2", source = "lauer"
+)
 reporting_delay <- list(
   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10

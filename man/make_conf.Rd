@@ -10,7 +10,7 @@ make_conf(value, CrI = 90, reverse = FALSE)
 \item{value}{List of value to map into a string. Requires,
 \code{point}, \code{lower}, and \code{upper.}}
 
-\item{CrI}{Numeric, credible interval to report. Defaults to 90}
+\item{CrI}{Numeric, credible interval to report. Defaults to 90.}
 
 \item{reverse}{Logical, defaults to FALSE. Should the reported
 credible interval be switched.}

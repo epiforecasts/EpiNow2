@@ -39,8 +39,12 @@ examples for details.
 \examples{
 \donttest{
 # construct example distributions
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+generation_time <- get_generation_time(
+ disease = "SARS-CoV-2", source = "ganyani"
+)
+incubation_period <- get_incubation_period(
+ disease = "SARS-CoV-2", source = "lauer"
+)
 reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 
 # example case vector

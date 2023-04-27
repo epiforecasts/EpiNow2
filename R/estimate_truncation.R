@@ -66,7 +66,8 @@
 #' @inheritParams calc_CrIs
 #' @importFrom purrr map reduce map_dbl
 #' @importFrom rstan sampling
-#' @importFrom data.table copy .N as.data.table merge.data.table setDT setcolorder
+#' @importFrom data.table copy .N as.data.table merge.data.table setDT
+#' @importFrom data.table setcolorder
 #' @examples
 #' # set number of cores to use
 #' old_opts <- options()
@@ -97,7 +98,9 @@
 #'   cmf <- cmf / cmf[dist$max + 1]
 #'   cmf <- rev(cmf)[-1]
 #'   trunc_cases <- data.table::copy(cases)[1:(.N - index)]
-#'   trunc_cases[(.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)]
+#'   trunc_cases[
+#'     (.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)
+#'   ]
 #'   return(trunc_cases)
 #' }
 #' example_data <- purrr::map(c(20, 15, 10, 0),
@@ -123,7 +126,7 @@
 #'
 #' options(old_opts)
 estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
-                                trunc_dist = c("lognormal"),
+                                trunc_dist = "lognormal",
                                 model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 verbose = TRUE,
@@ -205,7 +208,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     var_names = TRUE
   )
   recon_obs <- recon_obs[, id := variable][, variable := NULL]
-  recon_obs <- recon_obs[, dataset := 1:.N][
+  recon_obs <- recon_obs[, dataset := seq_len(.N)][
     ,
     dataset := dataset %% data$obs_sets
   ][
@@ -224,10 +227,10 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     estimates <- estimates[, lapply(.SD, as.integer)]
     estimates <- estimates[, index := .N - 0:(.N - 1)]
     if (!is.null(estimates$n_eff)) {
-      estimates[, c("n_eff") := NULL]
+      estimates[, "n_eff" := NULL]
     }
     if (!is.null(estimates$Rhat)) {
-      estimates[, c("Rhat") := NULL]
+      estimates[, "Rhat" := NULL]
     }
 
     target_obs <-
@@ -272,7 +275,8 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 #' @author Sam Abbott
 #' @seealso plot estimate_truncation
 #' @method plot estimate_truncation
-#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme theme_bw
+#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date
+#' @importFrom ggplot2 scale_y_continuous theme theme_bw
 #' @export
 plot.estimate_truncation <- function(x, ...) {
   plot <- ggplot2::ggplot(x$obs, ggplot2::aes(x = date, y = last_confirm)) +
@@ -292,7 +296,9 @@ plot.estimate_truncation <- function(x, ...) {
 
   plot <- plot +
     ggplot2::theme_bw() +
-    ggplot2::labs(y = "Confirmed Cases", x = "Date", col = "Type", fill = "Type") +
+    ggplot2::labs(
+      y = "Confirmed Cases", x = "Date", col = "Type", fill = "Type"
+    ) +
     ggplot2::scale_x_date(date_breaks = "day", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))

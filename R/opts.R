@@ -53,8 +53,8 @@ generation_time_opts <- function(..., disease, source, max = 15L,
     (!missing(disease) && !missing(source)) ## from included distributions
   if (type_options > 1) {
     stop(
-      "Generation time should be given either as distributional options  ",
-      "or as disease/source, but not both."
+      "Generation time should be given either as distributional options",
+      " or as disease/source, but not both." # nolint
     )
   }
 
@@ -63,13 +63,13 @@ generation_time_opts <- function(..., disease, source, max = 15L,
     dot_options <- dot_options[[1]]
   }
 
-  if (!missing(disease) && !missing(source)) { ## generation time provided as disease/source
+  if (!missing(disease) && !missing(source)) {
     dist <- get_generation_time(
       disease = disease, source = source, max_value = max
     )
     dist$fixed <- fixed
     gt <- do.call(dist_spec, dist)
-  } else { ## generation time provided as distributional parameters or not at all
+  } else {
     ## make gamma default for backwards compatibility
     if (!("dist" %in% names(dot_options))) {
       dot_options$dist <- "gamma"
@@ -282,7 +282,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
     rt$use_breakpoints <- TRUE
   }
 
-  if (!("mean" %in% names(rt$prior) & "sd" %in% names(rt$prior))) {
+  if (!("mean" %in% names(rt$prior) && "sd" %in% names(rt$prior))) {
     stop("prior must have both a mean and sd specified")
   }
   return(rt)
@@ -376,7 +376,8 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #' proportion of basis functions. See (Riutort-Mayol et al. 2020
 #' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
 #'
-#' @param boundary_scale Numeric, defaults to 1.5. Boundary scale of the approximate Gaussian process. See (Riutort-Mayol et al. 2020
+#' @param boundary_scale Numeric, defaults to 1.5. Boundary scale of the
+#' approximate Gaussian process. See (Riutort-Mayol et al. 2020
 #' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
 #'
 #' @return A list of settings defining the Gaussian process
@@ -410,7 +411,7 @@ gp_opts <- function(basis_prop = 0.2,
   )
 
   if (gp$matern_type != 3 / 2) {
-    stop("only the Matern 3/2 kernel is currently supported")
+    stop("only the Matern 3/2 kernel is currently supported") # nolint
   }
   return(gp)
 }
@@ -436,7 +437,8 @@ gp_opts <- function(basis_prop = 0.2,
 #' week or if data has a non-weekly periodicity.
 #'
 #' @param scale List, defaulting to an empty list. Should an scaling factor be
-#' applied to map latent infections (convolved to date of report). If none empty a mean (`mean`) and standard deviation (`sd`) needs to be supplied
+#' applied to map latent infections (convolved to date of report). If none
+#' empty a mean (`mean`) and standard deviation (`sd`) needs to be supplied
 #' defining the normally distributed scaling factor.
 #'
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
@@ -465,7 +467,7 @@ obs_opts <- function(family = "negbin",
                      scale = list(),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
-  if (length(phi) != 2 | !is.numeric(phi)) {
+  if (length(phi) != 2 || !is.numeric(phi)) {
     stop("phi be numeric and of length two")
   }
   obs <- list(
@@ -685,7 +687,7 @@ stan_opts <- function(samples = 2000,
                       init_fit = NULL,
                       return_fit = TRUE,
                       ...) {
-  backend <- match.arg(backend, choices = c("rstan"))
+  backend <- match.arg(backend, choices = "rstan")
   if (backend %in% "rstan") {
     opts <- rstan_opts(
       samples = samples,

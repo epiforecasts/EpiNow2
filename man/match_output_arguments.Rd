@@ -5,8 +5,8 @@
 \title{Match User Supplied Arguments with Supported Options}
 \usage{
 match_output_arguments(
-  input_args = c(),
-  supported_args = c(),
+  input_args = NULL,
+  supported_args = NULL,
   logger = NULL,
   level = "info"
 )
@@ -16,17 +16,18 @@ match_output_arguments(
 
 \item{supported_args}{A character vector of supported output arguments.}
 
-\item{logger}{A character vector indicating the logger to target messages at. Defaults
-to no logging.}
+\item{logger}{A character vector indicating the logger to target messages
+at. Defaults to no logging.}
 
-\item{level}{Character string defaulting to "info". Logging level see documentation
-of futile.logger for details. Supported options are "info" and "debug"}
+\item{level}{Character string defaulting to "info". Logging level see
+documentation of futile.logger for details. Supported options are "info" and
+"debug".}
 }
 \value{
 A logical vector of named output arguments
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Match user supplied arguments with supported options and return a logical list for
-internal usage
+Match user supplied arguments with supported options and return a logical
+list for internal usage.
 }

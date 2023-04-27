@@ -3,19 +3,24 @@
 #' @description  `r lifecycle::badge("stable")`
 #' Maps from cases by date of infection to date of report via date of
 #' onset.
-#' @param infections `data.table` containing a `date` variable and a numeric `cases` variable.
+#' @param infections `data.table` containing a `date` variable and a numeric
+#' `cases` variable.
 #'
-#' @param delay_defs A list of single row data.tables that each  defines a delay distribution (model, parameters and maximum delay for each model).
+#' @param delay_defs A list of single row data.tables that each  defines a
+#' delay distribution (model, parameters and maximum delay for each model).
 #' See `lognorm_dist_def` for an example of the structure.
 #'
-#' @param reporting_effect A numeric vector of length 7 that allows the scaling of reported cases
-#' by the day on which they report (1 = Monday, 7 = Sunday). By default no scaling occurs.
+#' @param reporting_effect A numeric vector of length 7 that allows the scaling
+#' of reported cases by the day on which they report (1 = Monday, 7 = Sunday).
+#' By default no scaling occurs.
 #'
-#' @param reporting_model A function that takes a single numeric vector as an argument and returns a
-#' single numeric vector. Can be used to apply stochastic reporting effects. See the examples for details.
+#' @param reporting_model A function that takes a single numeric vector as an
+#' argument and returns a single numeric vector. Can be used to apply stochastic
+#' reporting effects. See the examples for details.
 #'
-#' @return A `data.table` containing a `date` variable (date of report) and a `cases` variable. If `return_onset = TRUE` there will be
-#' a third variable `reference` which indicates what the date variable refers to.
+#' @return A `data.table` containing a `date` variable (date of report) and a
+#' `cases` variable. If `return_onset = TRUE` there will be a third variable
+#' `reference` which indicates what the date variable refers to.
 #' @export
 #' @inheritParams sample_approx_dist
 #' @importFrom data.table setorder data.table data.table
@@ -42,7 +47,9 @@
 #' )
 #'
 #' # simple mapping
-#' report <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def))
+#' report <- adjust_infection_to_report(
+#'  cases, delay_defs = list(incubation_def, delay_def)
+#' )
 #' print(report)
 #'
 #' # mapping with a weekly reporting effect

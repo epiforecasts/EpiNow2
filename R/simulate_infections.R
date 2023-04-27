@@ -1,9 +1,12 @@
-#' Simulate infections using a given trajectory of the time-varying reproduction number
+#' Simulate infections using a given trajectory of the time-varying
+#' reproduction number
 #'
 #' @description `r lifecycle::badge("stable")`
-#' This function simulates infections using an existing fit to observed cases but with a modified
-#' time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
-#' Simulations can be run in parallel using `future::plan`.
+#' This function simulates infections using an existing fit to observed cases
+#' but with a modified time-varying reproduction number. This can be used to
+#' explore forecast models or past counterfactuals. Simulations can be run in
+#' parallel using `future::plan`.
+#'
 #' @param estimates The \code{estimates} element of an \code{epinow} run that
 #' has been done with output = "fit", or the result of
 #' \code{estimate_infections} with \code{return_fit} set to TRUE.
@@ -44,9 +47,13 @@
 #' reported_cases <- example_confirmed[1:50]
 #'
 #' # set up example generation time
-#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+#' generation_time <- get_generation_time(
+#'  disease = "SARS-CoV-2", source = "ganyani"
+#' )
 #' # set delays between infection and case report
-#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' incubation_period <- get_incubation_period(
+#'  disease = "SARS-CoV-2", source = "lauer"
+#' )
 #' reporting_delay <- list(
 #'   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
 #'   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 15
@@ -80,7 +87,9 @@
 #'
 #' #' # with a data.frame input of samples
 #' R_samples <- summary(est, type = "samples", param = "R")
-#' R_samples <- R_samples[, .(date, sample, value)][sample <= 1000][date <= "2020-04-10"]
+#' R_samples <- R_samples[,
+#'  .(date, sample, value)][sample <= 1000][date <= "2020-04-10"
+#' ]
 #' R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
 #' sims <- simulate_infections(est, R_samples)
 #' plot(sims)
@@ -118,12 +127,12 @@ simulate_infections <- function(estimates,
 
   # if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
-    if (any(class(R) %in% "data.frame")) {
+    if (inherits(R, "data.frame")) {
       if (is.null(R$sample)) {
         R <- R$value
       }
     }
-    if (any(class(R) %in% "data.frame")) {
+    if (inherits(R, "data.frame")) {
       R <- as.data.table(R)
       R <- R[, .(date, sample, value)]
       draws$R <- t(matrix(R$value, ncol = length(unique(R$sample))))
@@ -143,9 +152,13 @@ simulate_infections <- function(estimates,
   # sample from posterior if samples != posterior
   posterior_sample <- dim(draws$obs_reports)[1]
   if (posterior_sample < samples) {
-    posterior_samples <- sample(1:posterior_sample, samples, replace = TRUE)
+    # nolint start
+    posterior_samples <- sample(
+      seq_len(posterior_sample), samples, replace = TRUE
+    )
     R_draws <- draws$R
     draws <- map(draws, ~ as.matrix(.[posterior_samples, ]))
+    # nolint end
     draws$R <- R_draws
   }
 
@@ -156,7 +169,7 @@ simulate_infections <- function(estimates,
 
   if (obs_time != dim(draws$R)[2]) {
     horizon <- dim(draws$R)[2] - time + horizon + shift
-    horizon <- ifelse(horizon < 0, 0, horizon)
+    horizon <- ifelse(horizon < 0, 0, horizon) # nolint
     time <- dim(draws$R)[2] + shift
     obs_time <- time - shift
     starting_day <- estimates$args$day_of_week[1]
@@ -219,7 +232,9 @@ simulate_infections <- function(estimates,
   if (!is.null(batch_size)) {
     batch_no <- ceiling(samples / batch_size)
     nstarts <- seq(1, by = batch_size, length.out = batch_no)
-    nends <- c(seq(batch_size, by = batch_size, length.out = batch_no - 1), samples)
+    nends <- c(
+      seq(batch_size, by = batch_size, length.out = batch_no - 1), samples
+    )
     batches <- transpose(list(nstarts, nends))
   } else {
     batches <- list(list(1, samples))
@@ -261,7 +276,7 @@ simulate_infections <- function(estimates,
     start_date = min(estimates$observations$date),
     CrIs = extract_CrIs(estimates$summarised) / 100
   )
-  format_out$samples <- format_out$samples[, sample := 1:.N,
+  format_out$samples <- format_out$samples[, sample := seq_len(.N),
     by = c("variable", "time", "date", "strat")
   ]
 

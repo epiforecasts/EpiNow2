@@ -10,9 +10,9 @@
 \arguments{
 \item{x}{A list of output as produced by \code{estimate_infections}}
 
-\item{type}{A character vector indicating the name of plots to return. Defaults
-to  "summary" with supported options being "infections", "reports", "R", "growth_rate",
-"summary", "all".}
+\item{type}{A character vector indicating the name of plots to return.
+Defaults to  "summary" with supported options being "infections", "reports",
+"R", "growth_rate", "summary", "all".}
 
 \item{...}{Pass additional arguments to report_plots}
 }

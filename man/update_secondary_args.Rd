@@ -17,7 +17,8 @@ fraction ("frac_obs"), the mean delay ("delay_mean"), and standard deviation
 of the delay ("delay_sd"). The \code{data.frame} should have the following
 variables: \code{variable}, \code{mean}, and \code{sd}.}
 
-\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress messages be returned.}
+\item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress
+messages be returned.}
 }
 \value{
 A list as produced by \code{create_stan_data()}.

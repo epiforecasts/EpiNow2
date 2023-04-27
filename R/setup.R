@@ -2,20 +2,29 @@
 #'
 #' @description `r lifecycle::badge("questioning")`
 #' Sets up `futile.logger` logging, which is integrated into `EpiNow2`. See the
-#' documentation for `futile.logger` for full details. By default `EpiNow2` prints all logs at
-#' the "INFO" level and returns them to the console. Usage of logging is currently being explored
-#' as the current setup cannot log stan errors or progress.
-#' @param threshold Character string indicating the logging level see (?futile.logger
-#' for details of the available options). Defaults to "INFO".
-#' @param file Character string indicating the path to save logs to. By default logs will be
-#' written to the console.
-#' @param mirror_to_console Logical, defaults to `FALSE`. If saving logs to a file should they
-#' also be duplicated in the console.
-#' @param name Character string defaulting to EpiNow2. This indicates the name of the logger to setup.
-#' The default logger for EpiNow2 is called EpiNow2. Nested options include: Epinow2.epinow which controls
-#' all logging for `epinow` and nested functions, EpiNow2.epinow.estimate_infections (logging in
-#'  `estimate_infections`), and EpiNow2.epinow.estimate_infections.fit (logging in fitting functions).
-#' @importFrom futile.logger flog.threshold flog.appender appender.tee appender.file flog.info
+#' documentation for `futile.logger` for full details. By default `EpiNow2`
+#' prints all logs at the "INFO" level and returns them to the console. Usage
+#' of logging is currently being explored as the current setup cannot log stan
+#' errors or progress.
+#'
+#' @param threshold Character string indicating the logging level see
+#' (?futile.logger for details of the available options). Defaults to "INFO".
+#'
+#' @param file Character string indicating the path to save logs to. By default
+#' logs will be written to the console.
+#'
+#' @param mirror_to_console Logical, defaults to `FALSE`. If saving logs to a
+#' file should they also be duplicated in the console.
+#'
+#' @param name Character string defaulting to EpiNow2. This indicates the name
+#' of the logger to setup. The default logger for EpiNow2 is called EpiNow2.
+#' Nested options include: Epinow2.epinow which controls all logging for
+#' `epinow` and nested functions, EpiNow2.epinow.estimate_infections (logging in
+#'  `estimate_infections`), and EpiNow2.epinow.estimate_infections.fit (logging
+#' in fitting functions).
+#'
+#' @importFrom futile.logger flog.threshold flog.appender appender.tee
+#' @importFrom futile.logger appender.file flog.info
 #' @return Nothing
 #' @export
 setup_logging <- function(threshold = "INFO", file = NULL,
@@ -32,10 +41,14 @@ setup_logging <- function(threshold = "INFO", file = NULL,
   if (!is.null(file)) {
     if (mirror_to_console) {
       message(sprintf("Writing %s logs to the console and: %s", name, file))
-      futile.logger::flog.appender(futile.logger::appender.tee(file), name = name)
+      futile.logger::flog.appender(
+        futile.logger::appender.tee(file), name = name
+      )
     } else {
       message(sprintf("Writing %s logs to: %s", name, file))
-      futile.logger::flog.appender(futile.logger::appender.file(file), name = name)
+      futile.logger::flog.appender(
+        futile.logger::appender.file(file), name = name
+      )
     }
   } else {
     message(sprintf("Writing %s logs to the console", name))
@@ -47,15 +60,18 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' Setup Default Logging
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' Sets up default logging. Usage of logging is currently being explored as the current setup
-#' cannot log stan errors or progress.
+#' Sets up default logging. Usage of logging is currently being explored as the
+#' current setup cannot log stan errors or progress.
+#'
 #' @param logs Character path indicating the target folder in which to store log
-#' information. Defaults to the temporary directory if not specified. Default logging
-#' can be disabled if `logs` is set to NULL. If specifying a custom logging setup then
-#' the code for `setup_default_logging` and the `setup_logging` function are a sensible
-#' place to start.
+#' information. Defaults to the temporary directory if not specified. Default
+#' logging can be disabled if `logs` is set to NULL. If specifying a custom
+#' logging setup then the code for `setup_default_logging` and the
+#' `setup_logging` function are a sensible place to start.
+#'
 #' @param mirror_epinow Logical, defaults to FALSE. Should internal logging be
 #' returned from `epinow` to the console.
+#'
 #' @inheritParams setup_target_folder
 #' @return No return value, called for side effects
 #' @export
@@ -97,26 +113,31 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 #' Set up Future Backend
 #' @description `r lifecycle::badge("stable")`
 #' A utility function that aims to streamline the set up
-#' of the required future backend with sensible defaults for most users of `regional_epinow`.
-#' More advanced users are recommended to setup their own `future` backend based on their
-#' available resources.
-#' @param strategies A vector length 1 to 2 of strategies to pass to `future::plan`. Nesting
-#' of parallelisation is from the top level down. The default is to set up nesting parallelisation
-#' with both using `future::multisession` (`future::multicore` will likely be a faster option on
+#' of the required future backend with sensible defaults for most users of
+#' `regional_epinow`. More advanced users are recommended to setup their own
+#' `future` backend based on their available resources.
+#'
+#' @param strategies A vector length 1 to 2 of strategies to pass to
+#' `future::plan`. Nesting of parallelisation is from the top level down.
+#' The default is to set up nesting parallelisation with both using
+#' `future::multisession` (`future::multicore` will likely be a faster option on
 #' supported platforms). For single level parallelisation use a single strategy
 #' or `future::plan` directly. See `?future::plan` for options.
+#'
 #' @param min_cores_per_worker Numeric, the minimum number of cores per worker.
 #' Defaults to 4 which assumes 4 MCMC chains are in use per region.
+#'
 #' @inheritParams regional_epinow
 #' @importFrom futile.logger flog.error flog.info flog.debug
 #' @importFrom future availableCores plan tweak
 #' @export
 #' @return Numeric number of cores to use per worker. If greater than 1 pass to
-#' `stan_args = list(cores = "output from setup future")` or use `future = TRUE`. If only a single strategy is
-#' used then nothing is returned.
-setup_future <- function(reported_cases, strategies = c("multisession", "multisession"),
+#' `stan_args = list(cores = "output from setup future")` or use
+#' `future = TRUE`. If only a single strategy is used then nothing is returned.
+setup_future <- function(reported_cases,
+                         strategies = c("multisession", "multisession"),
                          min_cores_per_worker = 4) {
-  if (length(strategies) > 2 | length(strategies) == 0) {
+  if (length(strategies) > 2 || length(strategies) == 0) {
     futile.logger::flog.error("1 or 2 strategies should be used")
     stop("1 or 2 strategies should be used")
   }
@@ -138,7 +159,9 @@ setup_future <- function(reported_cases, strategies = c("multisession", "multise
     return(invisible(NULL))
   } else {
     jobs <- length(unique(reported_cases$region))
-    workers <- min(ceiling(future::availableCores() / min_cores_per_worker), jobs)
+    workers <- min(
+      ceiling(future::availableCores() / min_cores_per_worker), jobs
+    )
     cores_per_worker <- max(1, round(future::availableCores() / workers, 0))
 
     futile.logger::flog.info(
@@ -170,13 +193,16 @@ setup_dt <- function(reported_cases) {
   return(reported_cases)
 }
 
-
 #' Setup Target Folder for Saving
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Sets up a folders for saving results
-#' @param target_date Date, defaults to maximum found in the data if not specified.
-#' @param target_folder Character string specifying where to save results (will create if not present).
+#' @param target_date Date, defaults to maximum found in the data if not
+#' specified.
+#'
+#' @param target_folder Character string specifying where to save results (will
+#' create if not present).
+#'
 #' @return A list containing the path to the dated folder and the latest folder
 #' @export
 setup_target_folder <- function(target_folder = NULL, target_date) {

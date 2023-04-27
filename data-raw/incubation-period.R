@@ -7,7 +7,7 @@ incubation_periods <- data.table(
   dist = "lognormal",
   disease = "SARS-CoV-2",
   source = "lauer",
-  url = "doi.org/10.7326/M20-0504"
+  url = "doi.org/10.7326/M20-0504" # nolint
 )
 
 usethis::use_data(incubation_periods, overwrite = TRUE)

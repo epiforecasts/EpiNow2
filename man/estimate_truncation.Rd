@@ -8,7 +8,7 @@ estimate_truncation(
   obs,
   max_truncation,
   trunc_max = 10,
-  trunc_dist = c("lognormal"),
+  trunc_dist = "lognormal",
   model = NULL,
   CrIs = c(0.2, 0.5, 0.9),
   verbose = TRUE,
@@ -112,7 +112,9 @@ construct_truncation <- function(index, cases, dist) {
   cmf <- cmf / cmf[dist$max + 1]
   cmf <- rev(cmf)[-1]
   trunc_cases <- data.table::copy(cases)[1:(.N - index)]
-  trunc_cases[(.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)]
+  trunc_cases[
+    (.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)
+  ]
   return(trunc_cases)
 }
 example_data <- purrr::map(c(20, 15, 10, 0),

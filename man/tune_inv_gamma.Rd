@@ -17,10 +17,10 @@ distribution that achieves the target truncation.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
-Allows an inverse gamma distribution to be. tuned so that less than 0.01 of its
-probability mass function falls outside of the specified
-bounds. This is required when using an inverse gamma prior, for example for a
-Gaussian process. As no inverse gamma priors are currently in use and this function
+Allows an inverse gamma distribution to be. tuned so that less than 0.01 of
+its probability mass function falls outside of the specified bounds. This is
+required when using an inverse gamma prior, for example for a Gaussian
+process. As no inverse gamma priors are currently in use and this function
 has some stability issues it may be deprecated at a later date.
 }
 \examples{

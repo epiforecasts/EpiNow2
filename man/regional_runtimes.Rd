@@ -15,7 +15,8 @@ regional_runtimes(
 \item{regional_output}{A list of output as produced by \code{regional_epinow} and
 stored in the \code{regional} list.}
 
-\item{target_folder}{Character string specifying where to save results (will create if not present).}
+\item{target_folder}{Character string specifying where to save results (will
+create if not present).}
 
 \item{target_date}{A character string giving the target date for which to
 extract results
@@ -34,8 +35,12 @@ Used internally by \code{regional_epinow} to summarise region run times.
 \examples{
 \donttest{
 # example delays
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+generation_time <- get_generation_time(
+ disease = "SARS-CoV-2", source = "ganyani"
+)
+incubation_period <- get_incubation_period(
+ disease = "SARS-CoV-2", source = "lauer"
+)
 reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 15)
 
 cases <- example_confirmed[1:30]

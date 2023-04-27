@@ -11,7 +11,7 @@
 #' [here](https://gist.github.com/seabbs/4dad3958ca8d83daca8f02b143d152e6) for
 #' a prototype function that may be used to estimate and forecast a secondary
 #' observation from a primary across multiple regions and
-#' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R)
+#' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R) # nolint
 #' for an application forecasting Covid-19 deaths in Germany and Poland.
 #'
 #' @param secondary A call to `secondary_opts()` or a list containing the
@@ -88,7 +88,7 @@
 #' plot(inc, primary = TRUE)
 #'
 #' # forecast future secondary cases from primary
-#' inc_preds <- forecast_secondary(inc, cases[61:.N][, value := primary])
+#' inc_preds <- forecast_secondary(inc, cases[6seq_len(.N)][, value := primary])
 #' plot(inc_preds, new_obs = cases, from = "2020-05-01")
 #'
 #' #### Prevalence data example ####
@@ -115,7 +115,9 @@
 #' plot(prev, primary = TRUE)
 #'
 #' # forecast future secondary cases from primary
-#' prev_preds <- forecast_secondary(prev, cases[101:.N][, value := primary])
+#' prev_preds <- forecast_secondary(
+#'  prev, cases[10seq_len(.N)][, value := primary]
+#' )
 #' plot(prev_preds, new_obs = cases, from = "2020-06-01")
 #'
 #' options(old_opts)
@@ -300,14 +302,14 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
         )
       }
       # replace scaling if present in the prior
-      scale <- priors[grepl("frac_obs", variable)]
+      scale <- priors[grepl("frac_obs", variable, fixed = TRUE)]
       if (nrow(scale) > 0) {
         data$obs_scale_mean <- as.array(signif(scale$mean, 3))
         data$obs_scale_sd <- as.array(signif(scale$sd, 3))
       }
       # replace delay parameters if present
-      delay_mean <- priors[grepl("delay_mean", variable)]
-      delay_sd <- priors[grepl("delay_sd", variable)]
+      delay_mean <- priors[grepl("delay_mean", variable, fixed = TRUE)]
+      delay_sd <- priors[grepl("delay_sd", variable, fixed = TRUE)]
       if (nrow(delay_mean) > 0) {
         if (is.null(data$delay_mean_mean)) {
           warning(
@@ -319,7 +321,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
         data$delay_sd_mean <- as.array(signif(delay_sd$mean, 3))
         data$delay_sd_sd <- as.array(signif(delay_sd$sd, 3))
       }
-      phi <- priors[grepl("rep_phi", variable)]
+      phi <- priors[grepl("rep_phi", variable, fixed = TRUE)]
       if (nrow(phi) > 0) {
         data$phi_mean <- signif(phi$mean, 3)
         data$phi_sd <- signif(phi$sd, 3)
@@ -354,7 +356,8 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #' @author Sam Abbott
 #' @seealso plot estimate_secondary
 #' @method plot estimate_secondary
-#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme theme_bw
+#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date
+#' @importFrom ggplot2 scale_y_continuous theme theme_bw
 #' @importFrom data.table as.data.table merge.data.table
 #' @export
 plot.estimate_secondary <- function(x, primary = FALSE,
@@ -367,7 +370,9 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     new_obs <- data.table::as.data.table(new_obs)
     new_obs <- new_obs[, .(date, secondary)]
     predictions <- predictions[, secondary := NULL]
-    predictions <- data.table::merge.data.table(predictions, new_obs, all = TRUE, by = "date")
+    predictions <- data.table::merge.data.table(
+      predictions, new_obs, all = TRUE, by = "date"
+    )
   }
   if (!is.null(from)) {
     predictions <- predictions[date >= from]
@@ -471,7 +476,7 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
   family <- match.arg(family, choices = c("none", "poisson", "negbin"))
   data <- data.table::as.data.table(data)
   data <- data.table::copy(data)
-  data <- data[, index := 1:.N]
+  data <- data[, index := seq_len(.N)]
   # apply scaling
   data <- data[, scaled := scaling * primary]
   # add convolution
@@ -560,7 +565,8 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
 #'
 #' @author Sam Abbott
 #' @importFrom rstan extract sampling
-#' @importFrom data.table rbindlist merge.data.table as.data.table setorderv setcolorder copy
+#' @importFrom data.table rbindlist merge.data.table as.data.table setorderv
+#' @importFrom data.table setcolorder copy
 #' @importFrom lubridate days wday
 #' @importFrom utils tail
 #' @importFrom purrr map
@@ -575,23 +581,27 @@ forecast_secondary <- function(estimate,
                                all_dates = FALSE,
                                CrIs = c(0.2, 0.5, 0.9)) {
   ## deal with input if data frame
-  if (any(class(primary) %in% "data.frame")) {
+  if (inherits(primary, "data.frame")) {
     primary <- data.table::as.data.table(primary)
     if (is.null(primary$sample)) {
       if (is.null(samples)) {
         samples <- 1000
       }
       primary <- primary[, .(date, sample = list(1:samples), value)]
-      primary <- primary[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
+      primary <- primary[,
+       .(sample = as.numeric(unlist(sample))), by = c("date", "value")
+      ]
     }
     primary <- primary[, .(date, sample, value)]
   }
-  if (any(class(primary) %in% "estimate_infections")) {
-    primary <- data.table::as.data.table(primary$samples[variable == primary_variable])
+  if (inherits(primary, "estimate_infections")) {
+    primary <- data.table::as.data.table(
+      primary$samples[variable == primary_variable]
+    )
     primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
     primary <- primary[, .(date, sample, value)]
     if (!is.null(samples)) {
-      primary <- primary[sample(1:.N, samples, replace = TRUE)]
+      primary <- primary[sample(seq_len(.N), samples, replace = TRUE)]
     }
   }
   ## rename to avoid conflict with estimate
@@ -609,23 +619,31 @@ forecast_secondary <- function(estimate,
   data <- estimate$data
 
   # combined primary from data and input primary
-  primary_fit <- estimate$predictions[, .(date, value = primary, sample = list(unique(updated_primary$sample)))]
+  primary_fit <- estimate$predictions[,
+   .(date, value = primary, sample = list(unique(updated_primary$sample)))
+  ]
   primary_fit <- primary_fit[date <= min(primary$date, na.rm = TRUE)]
-  primary_fit <- primary_fit[, .(sample = as.numeric(unlist(sample))), by = c("date", "value")]
-  primary_fit <- data.table::rbindlist(list(primary_fit, updated_primary), use.names = TRUE)
+  primary_fit <- primary_fit[,
+   .(sample = as.numeric(unlist(sample))), by = c("date", "value")
+  ]
+  primary_fit <- data.table::rbindlist(
+    list(primary_fit, updated_primary), use.names = TRUE
+  )
   data.table::setorderv(primary_fit, c("sample", "date"))
 
   # update data with primary samples and day of week
   data$primary <- t(
     matrix(primary_fit$value, ncol = length(unique(primary_fit$sample)))
   )
-  data$day_of_week <- add_day_of_week(unique(primary_fit$date), data$week_effect)
+  data$day_of_week <- add_day_of_week(
+    unique(primary_fit$date), data$week_effect
+  )
   data$n <- nrow(data$primary)
   data$t <- ncol(data$primary)
   data$h <- nrow(primary[sample == min(sample)])
 
   # extract samples for posterior of estimates
-  posterior_samples <- sample(1:data$n, data$n, replace = TRUE)
+  posterior_samples <- sample(seq_len(data$n), data$n, replace = TRUE) # nolint
   draws <- purrr::map(draws, ~ as.matrix(.[posterior_samples, ]))
   # combine with data
   data <- c(data, draws)
@@ -655,7 +673,9 @@ forecast_secondary <- function(estimate,
   samples <- as.data.table(samples)
   colnames(samples) <- c("iterations", "sample", "time", "value")
   samples <- samples[, c("iterations", "time") := NULL]
-  samples <- samples[, date := rep(tail(dates, ifelse(all_dates, data$t, data$h)), data$n)]
+  samples <- samples[,
+    date := rep(tail(dates, ifelse(all_dates, data$t, data$h)), data$n)
+  ]
 
   # summarise samples
   summarised <- calc_summary_measures(samples,
@@ -679,10 +699,11 @@ forecast_secondary <- function(estimate,
   data.table::setorderv(forecast_obs, "date")
   # add in predictions in estimate_secondary format
   out$predictions <- data.table::merge.data.table(summarised,
-    forecast_obs,
-    by = "date", all = TRUE
+    forecast_obs, by = "date", all = TRUE
   )
-  data.table::setcolorder(out$predictions, c("date", "primary", "secondary", "mean", "sd"))
+  data.table::setcolorder(
+    out$predictions, c("date", "primary", "secondary", "mean", "sd")
+  )
   class(out) <- c("estimate_secondary", class(out))
   return(out)
 }

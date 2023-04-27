@@ -72,8 +72,12 @@ get_raw_result <- function(file, region, date,
 #' @examples
 #' \donttest{
 #' # construct example distributions
-#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' generation_time <- get_generation_time(
+#'  disease = "SARS-CoV-2", source = "ganyani"
+#' )
+#' incubation_period <- get_incubation_period(
+#'  disease = "SARS-CoV-2", source = "lauer"
+#' )
 #' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 #'
 #' # example case vector
@@ -119,7 +123,7 @@ get_regional_results <- function(regional_output,
     # find all regions
     regions <- get_regions(results_dir)
 
-    load_data <- purrr::safely(EpiNow2::get_raw_result)
+    load_data <- purrr::safely(EpiNow2::get_raw_result) # nolint
 
     # get estimates
     get_estimates_file <- function(samples_path, summarised_path) {
@@ -138,7 +142,9 @@ get_regional_results <- function(regional_output,
         result_dir = results_dir,
         date = date
       )[[1]])
-      summarised <- data.table::rbindlist(summarised, idcol = "region", fill = TRUE)
+      summarised <- data.table::rbindlist(
+        summarised, idcol = "region", fill = TRUE
+      )
       out$summarised <- summarised
       return(out)
     }
@@ -164,14 +170,17 @@ get_regional_results <- function(regional_output,
       }
       # get incidence values and combine
       summarised <- purrr::map(regional_output, ~ .[[data]]$summarised)
-      summarised <- data.table::rbindlist(summarised, idcol = "region", fill = TRUE)
+      summarised <- data.table::rbindlist(
+        summarised, idcol = "region", fill = TRUE
+      )
       out$summarised <- summarised
       return(out)
     }
     out <- list()
     out$estimates <- get_estimates_data("estimates")
     if (forecast) {
-      out$estimated_reported_cases <- get_estimates_data("estimated_reported_cases")
+      out$estimated_reported_cases <-
+        get_estimates_data("estimated_reported_cases")
     }
   }
   return(out)
@@ -200,7 +209,9 @@ get_regional_results <- function(regional_output,
 #' @author Sam Abbott
 #' @export
 #' @examples
-#' get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani")
+#' get_dist(
+#'  EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani"
+#' )
 get_dist <- function(data, disease, source, max_value = 15, fixed = FALSE) {
   target_disease <- disease
   target_source <- source
@@ -276,11 +287,17 @@ get_regions_with_most_reports <- function(reported_cases,
                                           no_regions = 6) {
   most_reports <- data.table::copy(reported_cases)
   most_reports <-
-    most_reports[, .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(time_window))],
+    most_reports[,
+      .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(time_window))
+    ],
       by = "region"
     ]
-  most_reports <- most_reports[, .(confirm = sum(confirm, na.rm = TRUE)), by = "region"]
-  most_reports <- data.table::setorderv(most_reports, cols = "confirm", order = -1)
+  most_reports <- most_reports[,
+   .(confirm = sum(confirm, na.rm = TRUE)), by = "region"
+  ]
+  most_reports <- data.table::setorderv(
+    most_reports, cols = "confirm", order = -1
+  )
   most_reports <- most_reports[1:no_regions][!is.na(region)]$region
   return(most_reports)
 }

@@ -12,23 +12,24 @@ setup_default_logging(
 }
 \arguments{
 \item{logs}{Character path indicating the target folder in which to store log
-information. Defaults to the temporary directory if not specified. Default logging
-can be disabled if \code{logs} is set to NULL. If specifying a custom logging setup then
-the code for \code{setup_default_logging} and the \code{setup_logging} function are a sensible
-place to start.}
+information. Defaults to the temporary directory if not specified. Default
+logging can be disabled if \code{logs} is set to NULL. If specifying a custom
+logging setup then the code for \code{setup_default_logging} and the
+\code{setup_logging} function are a sensible place to start.}
 
 \item{mirror_epinow}{Logical, defaults to FALSE. Should internal logging be
 returned from \code{epinow} to the console.}
 
-\item{target_date}{Date, defaults to maximum found in the data if not specified.}
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 }
 \value{
 No return value, called for side effects
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
-Sets up default logging. Usage of logging is currently being explored as the current setup
-cannot log stan errors or progress.
+Sets up default logging. Usage of logging is currently being explored as the
+current setup cannot log stan errors or progress.
 }
 \examples{
 setup_default_logging()

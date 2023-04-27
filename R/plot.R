@@ -3,10 +3,14 @@
 #' @description `r lifecycle::badge("stable")`
 #' Adds lineranges for user specified credible intervals
 #' @param plot A `ggplot2` plot
-#' @param CrIs Numeric list of credible intervals present in the data. As produced
-#' by `extract_CrIs`
+#'
+#' @param CrIs Numeric list of credible intervals present in the data. As
+#' produced by `extract_CrIs`
+#'
 #' @param alpha Numeric, overall alpha of the target line range
+#'
 #' @param linewidth Numeric, line width of the default line range.
+#'
 #' @return A `ggplot2` plot.
 plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
   index <- 1
@@ -16,7 +20,9 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
     top <- paste0("upper_", CrI)
     if (index == 1) {
       plot <- plot +
-        ggplot2::geom_ribbon(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
+        ggplot2::geom_ribbon(
+          ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]
+        ),
           alpha = 0.2, linewidth = linewidth
         )
     } else {
@@ -37,23 +43,38 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' Plot Estimates
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' Allows users to plot the output from `estimate_infections` easily. In future releases it
-#' may be depreciated in favour of increasing the functionality of the S3 plot methods.
-#' @param estimate A data.table of estimates containing the following variables: date, type
-#' (must contain "estimate", "estimate based on partial data" and optionally "forecast"),
-#' @param reported A data.table of reported cases with the following variables: date, confirm.
-#' @param ylab Character string, defaulting to "Cases". Title for the plot y axis.
-#' @param hline Numeric, if supplied gives the horizontal intercept for a indicator line.
-#' @param obs_as_col Logical, defaults to `TRUE`. Should observed data, if supplied, be plotted using columns or
-#' as points (linked using a line).
-#' @param max_plot Numeric, defaults to 10. A multiplicative upper bound on the number of cases shown on the plot. Based
-#' on the maximum number of reported cases.
+#' Allows users to plot the output from `estimate_infections` easily. In future
+#' releases it  may be depreciated in favour of increasing the functionality of
+#' the S3 plot methods.
+#'
+#' @param estimate A data.table of estimates containing the following
+#' variables: date, type (must contain "estimate", "estimate based on partial
+#' data" and optionally "forecast").
+#'
+#' @param reported A data.table of reported cases with the following variables:
+#' date, confirm.
+#'
+#' @param ylab Character string, defaulting to "Cases". Title for the plot y
+#' axis.
+#'
+#' @param hline Numeric, if supplied gives the horizontal intercept for a
+#' indicator line.
+#'
+#' @param obs_as_col Logical, defaults to `TRUE`. Should observed data, if
+#' supplied, be plotted using columns or as points (linked using a line).
+#'
+#' @param max_plot Numeric, defaults to 10. A multiplicative upper bound on the\
+#' number of cases shown on the plot. Based on the maximum number of reported
+#' cases.
+#'
 #' @param estimate_type Character vector indicating the type of data to plot.
 #' Default to all types with supported options being: "Estimate", "Estimate
 #' based on partial data", and "Forecast".
+#'
 #' @return A `ggplot2` object
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline geom_hline geom_ribbon scale_y_continuous theme_bw
+#' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline
+#' @importFrom ggplot2 geom_hline geom_ribbon scale_y_continuous theme_bw
 #' @importFrom scales comma
 #' @importFrom data.table setDT fifelse copy as.data.table
 #' @importFrom purrr map
@@ -63,8 +84,12 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' cases <- example_confirmed[1:40]
 #'
 #' # set up example delays
-#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' generation_time <- get_generation_time(
+#'  disease = "SARS-CoV-2", source = "ganyani"
+#' )
+#' incubation_period <- get_incubation_period(
+#'  disease = "SARS-CoV-2", source = "lauer"
+#' )
 #' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 #'
 #' # run model
@@ -126,10 +151,10 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
     estimate <- estimate[type %in% estimate_type]
   }
   # scale plot values based on reported cases
-  if (!missing(reported) & !is.na(max_plot)) {
+  if (!missing(reported) && !is.na(max_plot)) {
     sd_cols <- c(
-      grep("lower_", colnames(estimate), value = TRUE),
-      grep("upper_", colnames(estimate), value = TRUE)
+      grep("lower_", colnames(estimate), value = TRUE, fixed = TRUE),
+      grep("upper_", colnames(estimate), value = TRUE, fixed = TRUE)
     )
     cols <- setdiff(colnames(reported), c("date", "confirm", "breakpoint"))
 
@@ -140,21 +165,22 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
       ]
       estimate <- estimate[max_cases_to_plot, on = cols]
     } else {
-      max_cases_to_plot <- round(max(reported$confirm, na.rm = TRUE) * max_plot, 0)
+      max_cases_to_plot <- round(
+        max(reported$confirm, na.rm = TRUE) * max_plot, 0
+      )
       estimate <- estimate[, max := max_cases_to_plot]
     }
     estimate <- estimate[, lapply(.SD, function(var) {
-      data.table::fifelse(
-        var > max,
-        max, var
-      )
+      pmin(var, max)
     }),
     by = setdiff(colnames(estimate), sd_cols), .SDcols = sd_cols
     ]
   }
 
   # initialise plot
-  plot <- ggplot2::ggplot(estimate, ggplot2::aes(x = date, col = type, fill = type))
+  plot <- ggplot2::ggplot(
+    estimate, ggplot2::aes(x = date, col = type, fill = type)
+  )
 
   # add in reported data if present (either as column or as a line)
   if (!missing(reported)) {
@@ -185,7 +211,9 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   # plot estimates
   plot <- plot +
     ggplot2::geom_vline(
-      xintercept = orig_estimate[type == "Estimate based on partial data"][date == max(date)]$date,
+      xintercept = orig_estimate[
+        type == "Estimate based on partial data"][date == max(date)
+      ]$date,
       linetype = 2
     )
 
@@ -218,15 +246,28 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 #' Plot a Summary of the Latest Results
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' Used to return a summary plot across regions (using results generated by `summarise_results`).
+#' Used to return a summary plot across regions (using results generated by
+#' `summarise_results`).
+#'
 #' May be depreciated in later releases in favour of enhanced S3 methods.
-#' @param summary_results A data.table as returned by `summarise_results` (the `data` object).
-#' @param x_lab A character string giving the label for the x axis, defaults to region.
-#' @param log_cases Logical, should cases be shown on a logged scale. Defaults to `FALSE`
+#'
+#' @param summary_results A data.table as returned by `summarise_results` (the
+#' `data` object).
+#'
+#' @param x_lab A character string giving the label for the x axis, defaults to
+#' region.
+#'
+#' @param log_cases Logical, should cases be shown on a logged scale. Defaults
+#' to `FALSE`.
+#'
 #' @param max_cases Numeric, no default. The maximum number of cases to plot.
+#'
 #' @return A `ggplot2` object
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap theme guides labs expand_limits guide_legend element_blank scale_color_manual .data coord_cartesian scale_y_continuous theme_bw
+#' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap
+#' @importFrom ggplot2 theme guides labs expand_limits guide_legend
+#' @importFrom ggplot2 scale_color_manual .data coord_cartesian
+#' @importFrom ggplot2 theme_bw element_blank scale_y_continuous
 #' @importFrom scales comma
 #' @importFrom patchwork plot_layout
 #' @importFrom data.table setDT
@@ -254,7 +295,9 @@ plot_summary <- function(summary_results,
       bottom <- paste0("lower_", CrI)
       top <- paste0("upper_", CrI)
       plot <- plot +
-        ggplot2::geom_linerange(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
+        ggplot2::geom_linerange(
+            ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]
+          ),
           alpha = ifelse(index == 1, 0.4, alpha_per_CrI),
           linewidth = 4
         )
@@ -275,9 +318,11 @@ plot_summary <- function(summary_results,
   }
 
   # check max_cases
-  upper_CrI <- paste0("upper_", max_CrI)
-  max_upper <- max(summary_results[metric %in% "New confirmed cases by infection date"][, ..upper_CrI],
-    na.rm = TRUE
+  upper_CrI <- paste0("upper_", max_CrI) # nolint
+  max_upper <- max(
+    summary_results[
+      metric %in% "New confirmed cases by infection date"][, ..upper_CrI],
+      na.rm = TRUE
   )
   max_cases <- min(
     c(
@@ -288,7 +333,9 @@ plot_summary <- function(summary_results,
   )
   # cases plot
   cases_plot <-
-    inner_plot(summary_results[metric %in% "New confirmed cases by infection date"]) +
+    inner_plot(
+      summary_results[metric %in% "New confirmed cases by infection date"]
+    ) +
     ggplot2::labs(x = x_lab, y = "") +
     ggplot2::expand_limits(y = 0) +
     ggplot2::theme(
@@ -315,7 +362,7 @@ plot_summary <- function(summary_results,
 
   # rt plot
   rt_data <- summary_results[metric %in% "Effective reproduction no."]
-  uppers <- grepl("upper_", colnames(rt_data))
+  uppers <- grepl("upper_", colnames(rt_data), fixed = TRUE) # nolint
   max_rt <- max(data.table::copy(rt_data)[, ..uppers], na.rm = TRUE)
   rt_plot <-
     inner_plot(rt_data) +
@@ -335,11 +382,15 @@ plot_summary <- function(summary_results,
 #'
 #' @description `r lifecycle::badge("maturing")`
 #' `plot` method for class "estimate_infections".
+#'
 #' @param x A list of output as produced by `estimate_infections`
-#' @param type A character vector indicating the name of plots to return. Defaults
-#' to  "summary" with supported options being "infections", "reports", "R", "growth_rate",
-#'  "summary", "all".
+#'
+#' @param type A character vector indicating the name of plots to return.
+#' Defaults to  "summary" with supported options being "infections", "reports",
+#' "R", "growth_rate", "summary", "all".
+#'
 #' @param ... Pass additional arguments to report_plots
+#'
 #' @seealso plot report_plots estimate_infections
 #' @aliases plot
 #' @method plot estimate_infections
