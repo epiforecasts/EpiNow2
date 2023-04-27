@@ -88,7 +88,9 @@
 #' plot(inc, primary = TRUE)
 #'
 #' # forecast future secondary cases from primary
-#' inc_preds <- forecast_secondary(inc, cases[seq_len(.N)][, value := primary])
+#' inc_preds <- forecast_secondary(
+#'   inc, cases[seq(61, .N)][, value := primary]
+#' )
 #' plot(inc_preds, new_obs = cases, from = "2020-05-01")
 #'
 #' #### Prevalence data example ####
@@ -116,7 +118,7 @@
 #'
 #' # forecast future secondary cases from primary
 #' prev_preds <- forecast_secondary(
-#'  prev, cases[10seq_len(.N)][, value := primary]
+#'  prev, cases[seq(101, .N)][, value := primary]
 #' )
 #' plot(prev_preds, new_obs = cases, from = "2020-06-01")
 #'

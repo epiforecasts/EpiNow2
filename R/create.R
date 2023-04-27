@@ -396,7 +396,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #' create_obs_model(obs_opts(week_length = 3), dates = dates)
 create_obs_model <- function(obs = obs_opts(), dates) {
   data <- list(
-    model_type = as.numeric(obs$family %in% "poisson"),
+    model_type = as.numeric(obs$family %in% "negbin"),
     phi_mean = obs$phi[1],
     phi_sd = obs$phi[2],
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
