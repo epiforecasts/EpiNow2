@@ -1,11 +1,12 @@
 # EpiNow2 1.3.5
 
 This is a minor release to resolve issues with the recent CRAN requirement to make use of a C++ 17 compiler which has been causing [issues with the `rstantools` package](https://github.com/stan-dev/rstantools/pull/100).
+
 # EpiNow2 1.3.4
 
 This release focusses on bug fixes and package infrastructure updates along with a few quality of life improvements such as enabling the use of fixed delays and generation times.
 
-Thanks to @seabbs, and @sbfnk and for [SACEMA](https://www.sacema.org/) for hosting @seabbs whilst some of the development work on this release was being done.
+Thanks to @seabbs, and @sbfnk and for the South African Centre for Epidemiological Modelling and Analysis (SACEMA) for hosting @seabbs whilst some of the development work on this release was being done.
 
 ## Breaking changes
 
