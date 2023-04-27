@@ -468,7 +468,8 @@ create_stan_data <- function(reported_cases, generation_time,
     t = 1:min(7, length(cases))
   )
   data$prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
-  data$prior_infections <- ifelse(is.na(data$prior_infections) | is.null(data$prior_infections),
+  data$prior_infections <- ifelse(
+    is.na(data$prior_infections) || is.null(data$prior_infections),
     0, data$prior_infections
   )
   if (is.null(data$gt_weight)) {
