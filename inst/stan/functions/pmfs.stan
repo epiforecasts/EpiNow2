@@ -72,25 +72,25 @@ vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf
   return(pmf);
 }
 
-vector seq(int base, int len, int rev) {
+vector rev_seq(int base, int len) {
   vector[len] seq;
   for (i in 1:len) {
-    seq[i] = rev ? len + base - i : base + i - 1;
+    seq[i] = len + base - i;
   }
   return(seq);
 }
 
-real pmf_mean(vector pmf, int base, int rev) {
-  int len = num_elements(pmf);
-  vector[len] pmf_seq = seq(base, len, rev);
-  return(dot_product(pmf_seq, pmf));
+real rev_pmf_mean(vector rev_pmf, int base) {
+  int len = num_elements(rev_pmf);
+  vector[len] rev_pmf_seq = rev_seq(base, len);
+  return(dot_product(rev_pmf_seq, rev_pmf));
 }
 
-real pmf_var(vector pmf, int base, int rev, real mean) {
-  int len = num_elements(pmf);
-  vector[len] pmf_seq = seq(base, len, rev);
+real rev_pmf_var(vector rev_pmf, int base, real mean) {
+  int len = num_elements(rev_pmf);
+  vector[len] rev_pmf_seq = rev_seq(base, len);
   for (i in 1:len) {
-    pmf_seq[i] = pow(pmf_seq[i], 2);
+    rev_pmf_seq[i] = pow(rev_pmf_seq[i], 2);
   }
-  return(dot_product(pmf_seq, pmf) - pow(mean, 2));
+  return(dot_product(rev_pmf_seq, rev_pmf) - pow(mean, 2));
 }

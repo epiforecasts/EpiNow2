@@ -160,8 +160,8 @@ generated quantities {
   vector[return_likelihood ? ot : 0] log_lik;
   if (estimate_r){
     // estimate growth from estimated Rt
-    real gen_gt_mean = pmf_mean(gt_rev_pmf, 1, 1);
-    real gen_gt_var = pmf_var(gt_rev_pmf, 1, 1, gen_gt_mean);
+    real gen_gt_mean = rev_pmf_mean(gt_rev_pmf, 1);
+    real gen_gt_var = rev_pmf_var(gt_rev_pmf, 1, gen_gt_mean);
     r = R_to_growth(R, gen_gt_mean, gen_gt_var);
   } else {
     // sample generation time
@@ -180,8 +180,8 @@ generated quantities {
       1, 1, 0
     );
 
-    gen_gt_mean = pmf_mean(gt_rev_pmf, 1, 1);
-    gen_gt_var = pmf_var(gt_rev_pmf, 1, 1, gen_gt_mean);
+    gen_gt_mean = rev_pmf_mean(gt_rev_pmf, 1);
+    gen_gt_var = rev_pmf_var(gt_rev_pmf, 1, gen_gt_mean);
     // calculate Rt using infections and generation time
     gen_R = calculate_Rt(
       infections, seeding_time, gen_rev_pmf, rt_half_window
