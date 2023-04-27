@@ -21,7 +21,7 @@ test_that("report_cases can simulate infections forward", {
   set.seed(123)
   reported_cases <- report_cases(
     case_estimates = cases,
-    delays = delay_opts(c(incubation_period, reporting_delay)),
+    delays = delay_opts(incubation_period + reporting_delay),
     type = "sample"
   )
   expect_equal(class(reported_cases), "list")
