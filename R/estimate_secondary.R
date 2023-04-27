@@ -11,7 +11,7 @@
 #' [here](https://gist.github.com/seabbs/4dad3958ca8d83daca8f02b143d152e6) for
 #' a prototype function that may be used to estimate and forecast a secondary
 #' observation from a primary across multiple regions and
-#' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R)
+#' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R) # nolint
 #' for an application forecasting Covid-19 deaths in Germany and Poland.
 #'
 #' @param secondary A call to `secondary_opts()` or a list containing the
@@ -115,7 +115,9 @@
 #' plot(prev, primary = TRUE)
 #'
 #' # forecast future secondary cases from primary
-#' prev_preds <- forecast_secondary(prev, cases[10seq_len(.N)][, value := primary])
+#' prev_preds <- forecast_secondary(
+#'  prev, cases[10seq_len(.N)][, value := primary]
+#' )
 #' plot(prev_preds, new_obs = cases, from = "2020-06-01")
 #'
 #' options(old_opts)
@@ -354,7 +356,8 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #' @author Sam Abbott
 #' @seealso plot estimate_secondary
 #' @method plot estimate_secondary
-#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date scale_y_continuous theme theme_bw
+#' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date
+#' @importFrom ggplot2 scale_y_continuous theme theme_bw
 #' @importFrom data.table as.data.table merge.data.table
 #' @export
 plot.estimate_secondary <- function(x, primary = FALSE,
@@ -367,7 +370,9 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     new_obs <- data.table::as.data.table(new_obs)
     new_obs <- new_obs[, .(date, secondary)]
     predictions <- predictions[, secondary := NULL]
-    predictions <- data.table::merge.data.table(predictions, new_obs, all = TRUE, by = "date")
+    predictions <- data.table::merge.data.table(
+      predictions, new_obs, all = TRUE, by = "date"
+    )
   }
   if (!is.null(from)) {
     predictions <- predictions[date >= from]
@@ -590,7 +595,9 @@ forecast_secondary <- function(estimate,
     primary <- primary[, .(date, sample, value)]
   }
   if (inherits(primary, "estimate_infections")) {
-    primary <- data.table::as.data.table(primary$samples[variable == primary_variable])
+    primary <- data.table::as.data.table(
+      primary$samples[variable == primary_variable]
+    )
     primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
     primary <- primary[, .(date, sample, value)]
     if (!is.null(samples)) {
@@ -694,7 +701,9 @@ forecast_secondary <- function(estimate,
   out$predictions <- data.table::merge.data.table(summarised,
     forecast_obs, by = "date", all = TRUE
   )
-  data.table::setcolorder(out$predictions, c("date", "primary", "secondary", "mean", "sd"))
+  data.table::setcolorder(
+    out$predictions, c("date", "primary", "secondary", "mean", "sd")
+  )
   class(out) <- c("estimate_secondary", class(out))
   return(out)
 }

@@ -7,7 +7,8 @@
 dist_skel(n, dist = FALSE, cum = TRUE, model, params, max_value = 120)
 }
 \arguments{
-\item{n}{Numeric vector, number of samples to take (or days for the probability density).}
+\item{n}{Numeric vector, number of samples to take (or days for the
+probability density).}
 
 \item{dist}{Logical, defaults to \code{FALSE}. Should the probability density be
 returned rather than a number of samples.}
@@ -31,8 +32,8 @@ A vector of samples or a probability distribution.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 This function acts as a skeleton for a truncated distribution defined by
-model type, maximum value and model parameters. It is designed to be used with the
-output from \code{get_dist}.
+model type, maximum value and model parameters. It is designed to be used
+with the output from \code{get_dist}.
 }
 \examples{
 

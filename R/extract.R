@@ -163,7 +163,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
   }
   if (data$n_uncertain_sd_delays > 0) {
     out$delay_sd <- extract_parameter(
-      "delay_sd", samples,seq_len(data$n_uncertain_sd_delays)
+      "delay_sd", samples, seq_len(data$n_uncertain_sd_delays)
     )
     out$delay_sd <-
       out$delay_sd[, strat := as.character(time)][, time := NULL][,

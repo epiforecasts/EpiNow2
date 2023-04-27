@@ -405,7 +405,8 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
     "%s: Fitting to cumulative data to initialise chains", id,
     name = "EpiNow2.epinow.estimate_infections.fit"
   )
-  # copy main run settings and override to use only 100 iterations and a single chain
+  # copy main run settings and override to use only 100 iterations and a single
+  # chain
   initial_args <- list(
     object = args$object,
     data = args$data,
@@ -419,8 +420,8 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
     control = list(adapt_delta = 0.9, max_treedepth = 13),
     refresh = ifelse(verbose, 50, -1)
   )
-  # change observations to be cumulative in order to protect against noise and give
-  # an approximate fit (though for Rt constrained to be > 1)
+  # change observations to be cumulative in order to protect against noise and 
+  # give an approximate fit (though for Rt constrained to be > 1)
   initial_args$data$cases <- cumsum(initial_args$data$cases)
   initial_args$data$shifted_cases <- cumsum(initial_args$data$shifted_cases)
 
@@ -469,7 +470,8 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 #' @importFrom rlang abort cnd_muffle
 #' @return A stan model object
 #' @author Sam Abbott
-fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, id = "stan") {
+fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
+                                id = "stan") {
   args$method <- NULL
   args$max_execution_time <- NULL
   args$future <- NULL
@@ -503,14 +505,17 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
             onTimeout = "silent"
           ),
           warning = function(w) {
-            futile.logger::flog.warn("%s (chain: %s): %s - %s", id, chain, w$message, toString(w$call),
+            futile.logger::flog.warn(
+              "%s (chain: %s): %s - %s", id, chain, w$message, toString(w$call),
               name = "EpiNow2.epinow.estimate_infections.fit"
             )
             rlang::cnd_muffle(w)
           }
         ),
         error = function(e) {
-          error_text <- sprintf("%s (chain: %s): %s - %s", id, chain, e$message, toString(e$call))
+          error_text <- sprintf(
+            "%s (chain: %s): %s - %s", id, chain, e$message, toString(e$call)
+          )
           futile.logger::flog.error(error_text,
             name = "EpiNow2.epinow.estimate_infections.fit"
           )
@@ -567,12 +572,14 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
     } else {
       failed_chains <- chains - length(fit)
       if (failed_chains > 0) {
-        futile.logger::flog.warn("%s: %s chains failed or were timed out.", id, failed_chains,
+        futile.logger::flog.warn(
+          "%s: %s chains failed or were timed out.", id, failed_chains,
           name = "EpiNow2.epinow.estimate_infections.fit"
         )
         if ((chains - failed_chains) < 2) {
           rlang::abort(
-            "model fitting failed as too few chains were returned to assess convergence (2 or more required)"
+            "model fitting failed as too few chains were returned to assess",
+             " convergence (2 or more required)"
           )
         }
       }
@@ -629,7 +636,7 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
   fit <- NULL
   current_trials <- 0
 
-  while (current_trials <= trials & is.null(fit)) {
+  while (current_trials <= trials && is.null(fit)) {
     fit <- safe_vb(args)
 
     error <- fit[[2]]
