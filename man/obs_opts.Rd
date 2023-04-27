@@ -34,7 +34,8 @@ effect be used in the observation model.}
 week or if data has a non-weekly periodicity.}
 
 \item{scale}{List, defaulting to an empty list. Should an scaling factor be
-applied to map latent infections (convolved to date of report). If none empty a mean (\code{mean}) and standard deviation (\code{sd}) needs to be supplied
+applied to map latent infections (convolved to date of report). If none
+empty a mean (\code{mean}) and standard deviation (\code{sd}) needs to be supplied
 defining the normally distributed scaling factor.}
 
 \item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be

@@ -58,7 +58,9 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 reported_cases <- example_confirmed[1:50]
 
 # set up example generation time
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+generation_time <- get_generation_time(
+ disease = "SARS-CoV-2", source = "ganyani"
+)
 # set delays between infection and case report
 incubation_period <- get_incubation_period(
  disease = "SARS-CoV-2", source = "lauer"
@@ -96,7 +98,9 @@ plot(sims)
 
 #' # with a data.frame input of samples
 R_samples <- summary(est, type = "samples", param = "R")
-R_samples <- R_samples[, .(date, sample, value)][sample <= 1000][date <= "2020-04-10"]
+R_samples <- R_samples[,
+ .(date, sample, value)][sample <= 1000][date <= "2020-04-10"
+]
 R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
 sims <- simulate_infections(est, R_samples)
 plot(sims)

@@ -205,7 +205,7 @@ report_summary <- function(summarised_estimates,
       "Expected change in daily cases",
       "Effective reproduction no.",
       "Rate of growth",
-      "Doubling/halving time (days)"
+      "Doubling/halving time (days)" # nolint
     ),
     estimate = c(
       make_conf(current_cases, max_CrI),
@@ -276,7 +276,9 @@ report_summary <- function(summarised_estimates,
 #' incubation_period <- get_incubation_period(
 #'  disease = "SARS-CoV-2", source = "lauer"
 #' )
-#' reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+#' reporting_delay <- bootstrapped_dist_fit(
+#'  rlnorm(100, log(6), 1), max_value = 30
+#' )
 #'
 #' # run model
 #' out <- estimate_infections(cases,

@@ -303,7 +303,9 @@ regional_summary <- function(regional_output = NULL,
   }
 
   # adaptive add a logscale to the summary plot based on range of observed cases
-  current_inf <- summarised_results$data[metric %in% "New confirmed cases by infection date"]
+  current_inf <- summarised_results$data[
+    metric %in% "New confirmed cases by infection date"
+  ]
   uppers <- grepl("upper_", colnames(current_inf), fixed = TRUE) # nolint
   lowers <- grepl("lower_", colnames(current_inf), fixed = TRUE) # nolint
   log_cases <- (max(current_inf[, ..uppers], na.rm = TRUE) /

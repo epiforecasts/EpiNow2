@@ -69,9 +69,11 @@ forecast.}
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date
 (date), and region (\code{region}).}
 
-\item{target_folder}{Character string specifying where to save results (will create if not present).}
+\item{target_folder}{Character string specifying where to save results (will
+create if not present).}
 
-\item{target_date}{Date, defaults to maximum found in the data if not specified.}
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned,
 this automatically updates to TRUE if no directory for saving is specified.}

@@ -67,9 +67,11 @@ forecast.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{target_folder}{Character string specifying where to save results (will create if not present).}
+\item{target_folder}{Character string specifying where to save results (will
+create if not present).}
 
-\item{target_date}{Date, defaults to maximum found in the data if not specified.}
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 
 \item{non_zero_points}{Numeric, the minimum number of time points with
 non-zero cases in a region required for that region to be evaluated.
@@ -103,7 +105,8 @@ logging setup then the code for \code{setup_default_logging} and the
 \code{epinow} for details.}
 }
 \value{
-A list of output stratified at the top level into regional output and across region output summary output
+A list of output stratified at the top level into regional output
+and across region output summary output
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}

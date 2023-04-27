@@ -16,7 +16,8 @@ reported_cases_rt, and r (rate of growth).}
 \item{reported}{A data.table of reported cases with the following variables:
 date, confirm.}
 
-\item{target_folder}{Character string specifying where to save results (will create if not present).}
+\item{target_folder}{Character string specifying where to save results (will
+create if not present).}
 
 \item{...}{Additional arguments passed to \code{plot_estimates()}.}
 }
@@ -41,7 +42,9 @@ generation_time <- get_generation_time(
 incubation_period <- get_incubation_period(
  disease = "SARS-CoV-2", source = "lauer"
 )
-reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
+reporting_delay <- bootstrapped_dist_fit(
+ rlnorm(100, log(6), 1), max_value = 30
+)
 
 # run model
 out <- estimate_infections(cases,

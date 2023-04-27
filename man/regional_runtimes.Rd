@@ -15,7 +15,8 @@ regional_runtimes(
 \item{regional_output}{A list of output as produced by \code{regional_epinow} and
 stored in the \code{regional} list.}
 
-\item{target_folder}{Character string specifying where to save results (will create if not present).}
+\item{target_folder}{Character string specifying where to save results (will
+create if not present).}
 
 \item{target_date}{A character string giving the target date for which to
 extract results

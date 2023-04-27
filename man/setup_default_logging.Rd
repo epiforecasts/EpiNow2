@@ -20,7 +20,8 @@ logging setup then the code for \code{setup_default_logging} and the
 \item{mirror_epinow}{Logical, defaults to FALSE. Should internal logging be
 returned from \code{epinow} to the console.}
 
-\item{target_date}{Date, defaults to maximum found in the data if not specified.}
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 }
 \value{
 No return value, called for side effects
