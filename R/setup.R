@@ -65,8 +65,8 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #'
 #' @param logs Character path indicating the target folder in which to store log
 #' information. Defaults to the temporary directory if not specified. Default
-#' logging can be disabled if `logs` is set to NULL. If specifying a custom 
-#' logging setup then the code for `setup_default_logging` and the 
+#' logging can be disabled if `logs` is set to NULL. If specifying a custom
+#' logging setup then the code for `setup_default_logging` and the
 #' `setup_logging` function are a sensible place to start.
 #'
 #' @param mirror_epinow Logical, defaults to FALSE. Should internal logging be

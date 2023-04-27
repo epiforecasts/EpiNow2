@@ -200,7 +200,7 @@ regional_epinow <- function(reported_cases,
       target_folder = target_folder,
       target_date = target_date,
       output = output,
-      return_output = output["summary"] | return_output,
+      return_output = output["summary"]|| return_output,
       complete_logger = ifelse(length(regions) > 10,
         "EpiNow2.epinow",
         "EpiNow2"
@@ -432,13 +432,13 @@ run_region <- function(target_region,
 process_region <- function(out, target_region, timing,
                            return_output = TRUE, return_timing = TRUE,
                            complete_logger = "EpiNow2.epinow") {
-  if (!is.null(out[["estimates"]]) & !return_output) {
+  if (!is.null(out[["estimates"]]) && !return_output) {
     out$estimates$samples <- NULL
   }
   if (!is.null(out[["estimated_reported_cases"]]) & !return_output) {
     out$estimated_reported_cases$samples <- NULL
   }
-  if (!is.null(out[["plots"]]) & !return_output) {
+  if (!is.null(out[["plots"]]) && !return_output) {
     out$estimated_reported_cases$plots <- NULL
   }
 

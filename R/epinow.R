@@ -25,7 +25,8 @@
 #' report_cases, and report_summary.
 #' @author Sam Abbott
 #' @export
-#' @seealso estimate_infections simulate_infections forecast_infections regional_epinow
+#' @seealso estimate_infections simulate_infections forecast_infections
+#' @seealso regional_epinow
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
 #' @inheritParams setup_default_logging
@@ -40,7 +41,9 @@
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # construct example distributions
-#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+#' generation_time <- get_generation_time(
+#'  disease = "SARS-CoV-2", source = "ganyani"
+#' )
 #' incubation_period <- get_incubation_period(
 #'  disease = "SARS-CoV-2", source = "lauer"
 #' )
@@ -252,7 +255,7 @@ epinow <- function(reported_cases,
     out$trace <- rlang::trace_back()
   }
 
-  if (!is.null(target_folder) & !is.null(out$error)) {
+  if (!is.null(target_folder) && !is.null(out$error)) {
     saveRDS(out$error, paste0(target_folder, "/error.rds"))
     saveRDS(out$trace, paste0(target_folder, "/trace.rds"))
   }
