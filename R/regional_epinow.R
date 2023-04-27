@@ -19,7 +19,7 @@
 #' is tracked using the `progressr` package. Modify this behaviour using
 #' progressr::handlers and enable it in batch by setting
 #' `R_PROGRESSR_ENABLE=TRUE` as an environment variable.
-#' 
+#'
 #' @param reported_cases A data frame of confirmed cases (confirm) by date
 #' (date), and region (`region`).
 #'
@@ -38,7 +38,7 @@
 #'
 #' @param summary_args A list of arguments passed to `regional_summary`. See
 #' the `regional_summary` documentation for details.
-#' 
+#'
 #' @param verbose Logical defaults to FALSE. Outputs verbose progress messages
 #' to the console from `epinow`.
 #'
@@ -47,7 +47,8 @@
 #'
 #' @inheritParams epinow
 #' @inheritParams regional_summary
-#' @return A list of output stratified at the top level into regional output and across region output summary output
+#' @return A list of output stratified at the top level into regional output
+#' and across region output summary output
 #' @export
 #' @seealso epinow estimate_infections forecast_infections
 #' @seealso setup_future regional_summary
@@ -200,7 +201,7 @@ regional_epinow <- function(reported_cases,
       target_folder = target_folder,
       target_date = target_date,
       output = output,
-      return_output = output["summary"]|| return_output,
+      return_output = output["summary"] || return_output,
       complete_logger = ifelse(length(regions) > 10,
         "EpiNow2.epinow",
         "EpiNow2"
@@ -435,7 +436,7 @@ process_region <- function(out, target_region, timing,
   if (!is.null(out[["estimates"]]) && !return_output) {
     out$estimates$samples <- NULL
   }
-  if (!is.null(out[["estimated_reported_cases"]]) & !return_output) {
+  if (!is.null(out[["estimated_reported_cases"]]) && !return_output) {
     out$estimated_reported_cases$samples <- NULL
   }
   if (!is.null(out[["plots"]]) && !return_output) {

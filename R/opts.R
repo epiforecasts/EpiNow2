@@ -437,7 +437,8 @@ gp_opts <- function(basis_prop = 0.2,
 #' week or if data has a non-weekly periodicity.
 #'
 #' @param scale List, defaulting to an empty list. Should an scaling factor be
-#' applied to map latent infections (convolved to date of report). If none empty a mean (`mean`) and standard deviation (`sd`) needs to be supplied
+#' applied to map latent infections (convolved to date of report). If none
+#' empty a mean (`mean`) and standard deviation (`sd`) needs to be supplied
 #' defining the normally distributed scaling factor.
 #'
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
@@ -686,7 +687,7 @@ stan_opts <- function(samples = 2000,
                       init_fit = NULL,
                       return_fit = TRUE,
                       ...) {
-  backend <- match.arg(backend, choices = c("rstan"))
+  backend <- match.arg(backend, choices = "rstan")
   if (backend %in% "rstan") {
     opts <- rstan_opts(
       samples = samples,

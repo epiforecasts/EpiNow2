@@ -264,7 +264,10 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 #'
 #' @return A `ggplot2` object
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap theme guides labs expand_limits guide_legend element_blank scale_color_manual .data coord_cartesian scale_y_continuous theme_bw
+#' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap
+#' @importFrom ggplot2 theme guides labs expand_limits guide_legend
+#' @importFrom ggplot2 scale_color_manual .data coord_cartesian
+#' @importFrom gggplot2 theme_bw element_blank scale_y_continuous
 #' @importFrom scales comma
 #' @importFrom patchwork plot_layout
 #' @importFrom data.table setDT
@@ -292,7 +295,9 @@ plot_summary <- function(summary_results,
       bottom <- paste0("lower_", CrI)
       top <- paste0("upper_", CrI)
       plot <- plot +
-        ggplot2::geom_linerange(ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
+        ggplot2::geom_linerange(
+            ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]
+          ),
           alpha = ifelse(index == 1, 0.4, alpha_per_CrI),
           linewidth = 4
         )
