@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 
 # Public health surveillance
 
-- CDC. 2022. “Technical Report 3: Multi-National Monkeypox Outbreak, United States, 2022.” Centers for Disease Control and Prevention. October 3, 2022. https://www.cdc.gov/poxvirus/monkeypox/cases-data/technical-report/report-3.html.
+- CDC. 2022. “Technical Report 3: Multi-National Monkeypox Outbreak, United States, 2022.” Centers for Disease Control and Prevention. October 3, 2022. https://www.cdc.gov/poxvirus/mpox/cases-data/technical-report/report-3.html.
 
 # Literature
 
