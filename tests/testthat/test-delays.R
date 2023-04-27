@@ -1,7 +1,7 @@
 test_stan_data <- function(generation_time = generation_time_opts(),
                            delays = delay_opts(),
                            truncation = trunc_opts(),
-                           params = c()) {
+                           params = NULL) {
   data <- create_stan_data(
     reported_cases = example_confirmed,
     generation_time = generation_time,

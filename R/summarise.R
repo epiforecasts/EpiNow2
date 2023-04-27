@@ -555,7 +555,7 @@ regional_runtimes <- function(regional_output = NULL,
 #' calc_CrI(samples)
 #' # add 90% credible interval grouped by type
 #' calc_CrI(samples, summarise_by = "type")
-calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
+calc_CrI <- function(samples, summarise_by = NULL, CrI = 0.9) {
   samples <- data.table::setDT(samples)
   CrI_half <- CrI / 2
   lower_CrI <- 0.5 - CrI_half
@@ -589,7 +589,7 @@ calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
 #' calc_CrIs(samples)
 #' # add 90% credible interval grouped by type
 #' calc_CrIs(samples, summarise_by = "type")
-calc_CrIs <- function(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9)) {
+calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
   CrIs <- CrIs[order(CrIs)]
   with_CrIs <- purrr::map(CrIs, ~ calc_CrI(
     samples = samples,
@@ -642,7 +642,7 @@ extract_CrIs <- function(summarised) {
 #' calc_summary_stats(samples)
 #' #  by type
 #' calc_summary_stats(samples, summarise_by = "type")
-calc_summary_stats <- function(samples, summarise_by = c()) {
+calc_summary_stats <- function(samples, summarise_by = NULL) {
   samples <- data.table::setDT(samples)
   sum_stats <-
     data.table::copy(samples)[, .(

@@ -64,7 +64,7 @@ test_that("epinow can produce partial output as specified", {
       cores = 1, chains = 2,
       control = list(adapt_delta = 0.8)
     ),
-    output = c(),
+    output = NULL,
     logs = NULL, verbose = FALSE
   ))
   expect_equal(names(out), c("estimates", "estimated_reported_cases", "summary"))

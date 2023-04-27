@@ -178,8 +178,8 @@ allocate_empty <- function(data, params, n = 0) {
 #' of futile.logger for details. Supported options are "info" and "debug"
 #' @return A logical vector of named output arguments
 #' @importFrom  futile.logger flog.info flog.debug
-match_output_arguments <- function(input_args = c(),
-                                   supported_args = c(),
+match_output_arguments <- function(input_args = NULL,
+                                   supported_args = NULL,
                                    logger = NULL,
                                    level = "info") {
   if (level %in% "info") {
@@ -403,13 +403,15 @@ globalVariables(
     "bottom", "cases", "confidence", "confirm", "country_code", "crps",
     "cum_cases", "Date", "date_confirm", "date_confirmation", "date_onset",
     "date_onset_sample", "date_onset_symptoms", "date_onset.x", "date_onset.y",
-    "date_report", "day", "doubling_time", "effect", "Effective reproduction no.",
-    "estimates", "Expected change in daily cases", "fit_meas", "goodness_of_fit",
+    "date_report", "day", "doubling_time", "effect",
+    "Effective reproduction no.", "estimates",
+    "Expected change in daily cases", "fit_meas", "goodness_of_fit",
     "gt_sample", "import_status", "imported", "index", "latest", "little_r",
-    "lower", "max_time", "mean_R", "Mean(R)", "metric", "mid_lower", "mid_upper",
-    "min_time", "model", "modifier", "n", "New", "confirmed cases by infection date",
-    "overall_little_r", "params", "prob_control", "provnum_ne", "R0_range",
-    "region", "region_code", "report_delay", "results_dir", "rt", "rt_type",
+    "lower", "max_time", "mean_R", "Mean(R)", "metric", "mid_lower",
+    "mid_upper", "min_time", "model", "modifier", "n", "New",
+    "confirmed cases by infection date", "overall_little_r", "params",
+    "prob_control", "provnum_ne", "R0_range", "region", "region_code",
+    "report_delay", "results_dir", "rt", "rt_type",
     "sample_R", "sampled_r", "sd_R", "sd_rt", "Std(R)", "t_end", "t_start",
     "target_date", "time", "time_varying_r", "top", "total", "type", "upper",
     "value", "var", "vars", "viridis_palette", "window", ".", "%>%",
