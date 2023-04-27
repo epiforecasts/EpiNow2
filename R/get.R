@@ -179,7 +179,8 @@ get_regional_results <- function(regional_output,
     out <- list()
     out$estimates <- get_estimates_data("estimates")
     if (forecast) {
-      out$estimated_reported_cases <- get_estimates_data("estimated_reported_cases")
+      out$estimated_reported_cases <-
+        get_estimates_data("estimated_reported_cases")
     }
   }
   return(out)
@@ -208,7 +209,9 @@ get_regional_results <- function(regional_output,
 #' @author Sam Abbott
 #' @export
 #' @examples
-#' get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani")
+#' get_dist(
+#'  EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani"
+#' )
 get_dist <- function(data, disease, source, max_value = 15, fixed = FALSE) {
   target_disease <- disease
   target_source <- source
@@ -289,7 +292,9 @@ get_regions_with_most_reports <- function(reported_cases,
     ],
       by = "region"
     ]
-  most_reports <- most_reports[, .(confirm = sum(confirm, na.rm = TRUE)), by = "region"]
+  most_reports <- most_reports[,
+   .(confirm = sum(confirm, na.rm = TRUE)), by = "region"
+  ]
   most_reports <- data.table::setorderv(
     most_reports, cols = "confirm", order = -1
   )

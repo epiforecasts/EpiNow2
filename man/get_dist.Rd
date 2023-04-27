@@ -28,7 +28,9 @@ by \code{delay_opts()} and the \code{generation_time} argument of \code{epinow} 
 \code{estimate_infections}.
 }
 \examples{
-get_dist(EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani")
+get_dist(
+ EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani"
+)
 }
 \author{
 Sam Abbott

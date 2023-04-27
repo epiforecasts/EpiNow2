@@ -329,7 +329,7 @@ clean_regions <- function(reported_cases, non_zero_points) {
 #' Internal function that handles calling `epinow`. Future work will extend this
 #' function to better handle `stan` logs and allow the user to modify settings
 #' between regions.
-#' 
+#'
 #' @param target_region Character string indicating the region being evaluated
 #' @param progress_fn Function as returned by `progressr::progressor`. Allows
 #' the use of a  progress bar.
@@ -376,7 +376,8 @@ run_region <- function(target_region,
   )
   regional_cases <- reported_cases[region %in% target_region][, region := NULL]
 
-  futile.logger::flog.trace("calling epinow2::epinow to process data for %s", target_region,
+  futile.logger::flog.trace(
+    "calling epinow2::epinow to process data for %s", target_region,
     name = "EpiNow2.epinow"
   )
 
@@ -417,7 +418,7 @@ run_region <- function(target_region,
 #' Process regional estimate
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' Internal function that removes output that is not required, and returns 
+#' Internal function that removes output that is not required, and returns
 #' logging information.
 #' @param out List of output returned by `epinow`
 #'
