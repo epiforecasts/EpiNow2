@@ -25,8 +25,9 @@ incorporate forecasts.}
 options. See the documentation of \code{delay_opts()} and the examples below for
 details.}
 
-\item{type}{Character string indicating the method to use to transform counts. Supports either "sample"
-which approximates sampling or "median" would shift by the median of the distribution.}
+\item{type}{Character string indicating the method to use to transform
+counts. Supports either "sample"  which approximates sampling or "median"
+would shift by the median of the distribution.}
 
 \item{reporting_effect}{A \code{data.table} giving the weekly reporting effect
 with the following variables: \code{sample} (must be the same as in \code{nowcast}),

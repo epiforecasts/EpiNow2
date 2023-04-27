@@ -267,7 +267,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 #' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap
 #' @importFrom ggplot2 theme guides labs expand_limits guide_legend
 #' @importFrom ggplot2 scale_color_manual .data coord_cartesian
-#' @importFrom gggplot2 theme_bw element_blank scale_y_continuous
+#' @importFrom ggplot2 theme_bw element_blank scale_y_continuous
 #' @importFrom scales comma
 #' @importFrom patchwork plot_layout
 #' @importFrom data.table setDT

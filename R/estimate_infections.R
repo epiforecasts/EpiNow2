@@ -48,7 +48,8 @@
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams create_clean_reported_cases
 #' @inheritParams calc_CrIs
-#' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist melt .N setDT
+#' @importFrom data.table data.table copy merge.data.table as.data.table
+#' @importFrom data.table setorder rbindlist melt .N setDT
 #' @importFrom purrr transpose
 #' @importFrom lubridate days
 #' @importFrom purrr transpose
@@ -186,13 +187,17 @@
 #' plot(fixed)
 #'
 #' # no delays
-#' no_delay <- estimate_infections(reported_cases, generation_time = generation_time)
+#' no_delay <- estimate_infections(
+#'  reported_cases, generation_time = generation_time
+#' )
 #' plot(no_delay)
 #'
 #' # break point but otherwise static Rt
 #' # with uncertain reporting delays
 #' bp_cases <- data.table::copy(reported_cases)
-#' bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
+#' bp_cases <- bp_cases[,
+#'  breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)
+#' ]
 #' bkp <- estimate_infections(bp_cases,
 #'   generation_time = generation_time,
 #'   delays = delay_opts(incubation_period, reporting_delay),
@@ -305,7 +310,7 @@ estimate_infections <- function(reported_cases,
 
   # Initialise fitting by using a previous fit or fitting to cumulative cases
   if (!is.null(args$init_fit)) {
-    if (!("stanfit" %in% class(args$init_fit))) {
+    if (!inherits(args$init_fit, "stanfit")) {
       if (args$init_fit %in% "cumulative") {
         args$init_fit <- init_cumulative_fit(args,
           warmup = 50, samples = 50,
@@ -396,7 +401,8 @@ estimate_infections <- function(reported_cases,
 #' @author Sam Abbott
 init_cumulative_fit <- function(args, samples = 50, warmup = 50,
                                 id = "init", verbose = FALSE) {
-  futile.logger::flog.debug("%s: Fitting to cumulative data to initialise chains", id,
+  futile.logger::flog.debug(
+    "%s: Fitting to cumulative data to initialise chains", id,
     name = "EpiNow2.epinow.estimate_infections.fit"
   )
   # copy main run settings and override to use only 100 iterations and a single chain
@@ -672,6 +678,7 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
     format_out$samples <- format_out$samples[, strat := NA]
   }
   # add type based on horizon
+  # nolint start
   format_out$samples <- format_out$samples[
     ,
     type := data.table::fifelse(
@@ -684,6 +691,7 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
       )
     )
   ]
+  # nolint end
 
   # remove burn in period if specified
   if (burn_in > 0) {

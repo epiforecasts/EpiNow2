@@ -2,7 +2,8 @@
 % Please edit documentation in R/dist.R
 \name{bootstrapped_dist_fit}
 \alias{bootstrapped_dist_fit}
-\title{Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters}
+\title{Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution
+Parameters}
 \usage{
 bootstrapped_dist_fit(
   values,
