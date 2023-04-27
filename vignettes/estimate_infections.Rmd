@@ -1,6 +1,9 @@
 ---
 title: "Model definition: estimate_infections()"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
 bibliography: library.bib
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
 vignette: >
@@ -16,60 +19,85 @@ knitr::opts_chunk$set(
 )
 ```
 
-**This is a work in progress. Please consider submitting a PR to improve it.** 
+# Infection model
 
-`estimate_infections()` supports a range of model formulation. Here we describe the most commonly used and highlight other options.
+`estimate_infections()` supports a range of model formulations. Here we describe the most commonly used and highlight other options.
+The two main models for how new infections arise in the model are a *renewal equation model* and a *non-mechanistic infection model*.
+The initialisation of both of these models involves estimating an initial infection trajectory during a `seeding_time` $t_\mathrm{seed}$ (set to the mean of modelled delays from infection to observation) that precedes the first observation at time $t=0$.
 
 ## Renewal equation model
 
 This is the default model and is used when `rt != NULL`.
+New infections are generated at discrete time steps of one day via the renewal equation[@renewal].
+These infections are then mapped to observations via discrete convolutions with delay distributions.
 
 ### Initialisation
 
-The model is initialised prior to the first observed data point by assuming constant exponential growth for the mean of assumed delays from infection to case report.
+The model is initialised before the first observed data point by assuming constant exponential growth for the mean of modelled delays from infection to case report (called `seeding_time` $t_\mathrm{seed}$ in the model):
 
 \begin{align}
-  I_{t} &= I_0 \exp  \left(r t \right)  \\
-  I_0 &\sim \mathcal{LN}(\log I_{obs}, 0.2) \\
-  r &\sim \mathcal{LN}(r_{obs}, 0.2)
+  I_0  &\sim \mathcal{LogNormal}(I_\mathrm{obs}, 0.2) \\
+  r &\sim \mathcal{Normal}(r_\mathrm{obs}, 0.2)\\
+  I_{0 < t \leq t_\mathrm{seed}} &= I_0 \exp  \left(r t \right)
 \end{align}
 
-### Within the range of observations
+where $I_{t}$ is the number of latent infections on day $t$, $r$ is the estimate of the initial growth rate, and $I_\mathrm{obs}$ and $r_\mathrm{obs}$ are estimated from the first week of observed data: $I_\mathrm{obs}$ as the mean of reported cases in the first 7 days (or the mean of all cases if fewer than 7 days of data are given), divided by the prior mean reporting fraction if less than 1 (see [Delays and scaling]); and $r_\mathrm{obs}$ as the point estimate from fitting a linear regression model to the first 7 days of data (or all data if fewer than 7 days of data are given),
 
-Where $I_{obs}$ and $r_{obs}$ are estimated from the first week of observed data. For the time window of the observed data infections are then modelled by weighting previous infections by the generation time and scaling by the instantaneous reproduction number. These infections are then convolved to cases by of onset date ($O_t$) and cases by date of report ($D_t$) using log-normal delay distributions (though arbitrary delay distributions can be used this is the most common formulation). This model can be defined mathematically as follows,
+\begin{equation}
+log(C_t) = a + r_\mathrm{obs} t + \epsilon_t
+\end{equation}
+where $C_{t}$ is the number of reported cases on day $t$, $a$ an estimated intercept, and $\epsilon_{t}$ the error term.
+
+### Infections
+
+For the time window of the observed data and beyond infections are then modelled by weighting previous infections with the generation time and scaling by the instantaneous reproduction number:
+
+\begin{equation}
+  I_t = R_t \sum_{\tau = 1}^{g_\mathrm{max}} g(\tau | \mu_{g}, \sigma_{g}) I_{t - \tau}
+\end{equation}
+
+where $g(\tau|\mu_{g}, \sigma_{g})$ is the distribution of generation times (with discretised gamma or discretised log normal distributions available as options) with mean (or log mean in the case of lognormal distributions) $\mu_g$, standard deviation (or log standard deviation in the case of lognormal distributions) $\sigma_g$ and maximum $g_\mathrm{max}$.
+Generation times can either be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors, weighted by default by the number of observations (although this can be changed by the user) and truncated to be positive where relevant for the given distribution; or they can be specified as the parameters of a fixed distribution, or as fixed values.
+
+The distribution of generation times $g$ here represents the probability that somebody who became infectious on day 0 and who infects someone else during their course of infection does so on day $\tau > 0$, assuming that infection cannot happen on day 0.
+If not given this defaults to a fixed generation time of 1, in which case $R_{t}$ represents the exponential of the daily growth rate of infections.
+
+### Time-varying reproduction number
+
+Different options are available for setting a prior for $R_t$, the instantaneous reproduction number at time $t$. The default prior is an approximate zero-mean Gaussian Process (GP) for the first differences in time on the log scale,
+
+\begin{equation}
+  \log R_{t} - \log R_{t-1} \sim \mathrm{GP}_t
+\end{equation}
+
+More details on the mathematical form of the GP approximation and implementation are given in the [Gaussian Process implementation details](https://epiforecasts.io/EpiNow2/articles/gaussian_process_details.html) vignette. Other choices for the prior of $R_t$ are available such as a GP prior for the difference between $R_t$ and its mean value (implying that in the absence of data $R_t$ will revert to its prior mean rather than the last value with robust support from the data).
+
+\begin{equation}
+  \log R_{t} - \log R_0 \sim \mathrm{GP}_t
+\end{equation}
+
+or, as a specific case of a Gaussian Process, a random walk of arbitrary length $w$.
 
 \begin{align}
-  \log R_{t} &= \log R_{t-1} + \mathrm{GP}_t \\
-  I_t &= R_t \sum_{\tau = 1}^{T_I} w(\tau | \mu_{w}, \sigma_{w}) I_{t - \tau} \\
-  O_t &= \sum_{\tau = 0}^{T_O} \xi_{O}(\tau | \mu_{\xi_{O}}, \sigma_{\xi_{O}}) I_{t-\tau} \\
-  D_t &= \alpha \sum_{\tau = 0}^{T_D} \xi_{D}(\tau | \mu_{\xi_{D}}, \sigma_{\xi_{D}}) O_{t-\tau} \\
-  C_t &\sim \mathrm{NB}\left(\omega_{(t \mod 7)}D_t, \phi\right)
+  \log R_{t \div w} &\sim \mathcal{Normal} (R_{t \div (w - 1)}, \sigma_R)\\
+  \sigma_R &\sim \mathcal{HalfNormal}(0, 0.1)
 \end{align}
 
-Where $T_I$ is the maximum generation time, $T_O$ is the maximum delay from infection to case onset, $T_D$ is the maximum delay from case onset to report, and $\alpha$ is the proportion of cases that are ultimately reported (again note these are all optional and arbitrary).
+where $\div$ indicates interval-valued division (i.e. the floor of the division), such that for example $w=1$ indicates a daily and $w=7$ a weekly random walk.
 
-The delay distributions are then defined as follows,
+The choice of prior for the time-varying reproduction number impact run-time, smoothness of the estimates and real-time behaviour and may alter the best use-case for the model.
 
-\begin{align}
-     w &\sim \mathcal{Gamma}(\mu_{w}, \sigma_{w}) \\
-    \xi_{O} &\sim \mathcal{LogNormal}(\mu_{\xi_{O}}, \sigma_{\xi_{O}}) \\
-    \xi_{D} &\sim \mathcal{LogNormal}(\mu_{\xi_{D}}, \sigma_{\xi_{D}})
-\end{align}
+The initial reproduction number $R_{0}$ has a log-normal prior with a given log mean $\mu_{R}$ and log standard deviation $\sigma_{R}$, calculated from a given mean (default: 1) and standard deviation (default: 1).
 
-This model used the following priors for the observation model
+\begin{equation}
+  R_0 \sim \mathcal{LogNormal}(\mu_R, \sigma_R)
+\end{equation}
 
-\begin{align}
-    \frac{\omega}{7} &\sim \mathrm{Dirichlet}(1, 1, 1, 1, 1, 1, 1) \\
-    \phi &\sim \frac{1}{\sqrt{\mathcal{N}(0, 1)}}
-\end{align}
+The simplest possible process model option is to use no time-varying prior and rely on just the intial fixed reproduction number $R_0$.
 
-$\phi$ is truncated to be greater than 0 and with $\xi$, and $w$ normalised to sum to 1. Other priors are set by the user.
+### Beyond the end of the observation period
 
-$GP_t$ is an approximate Hilbert space Gaussian process as defined in [@approxGP] using a Matern 3/2 kernel with a default boundary factor of 1.5 and basis functions scaled to be 20% of the number of days fitted. The length scale of the Gaussian process was given a log-normal prior with a mean of 21 days, and a standard deviation of 7 days truncated to be greater than 3 days and less than the length of the time-series. The standard deviation of magnitude of the Gaussian process was assumed to be 0.1. These settings are all changeable by the user. In addition the user can opt to make use of a different generative process or to instead remove the dependency on the previous value of $R_t$ each of these options impacts run-time and may alter the best use-case for the model.
-
-### Beyond the forecast horizon
-
-Beyond the forecast horizon ($T$), by default, the Gaussian process is assumed to continue. However, here again there are a range of options. These included fixing transmission dynamics, and scaling $R_t$ based on the proportion of the population that remain susceptible. This is defined as followed,
+Beyond the end of the observation period ($T$), by default, the Gaussian process is assumed to continue. However, here again there are a range of options. These included fixing transmission dynamics (optionally this can also be done before the end of the observation period), and scaling $R_t$ based on the proportion of the population that remain susceptible. This is defined as followed,
 
 \begin{equation}
     I_t = (N - I^c_{t-1}) \left(1 - \exp \left(\frac{-I'_t}{N - I^c_{T}}\right)\right),
@@ -77,4 +105,96 @@ Beyond the forecast horizon ($T$), by default, the Gaussian process is assumed t
 
 where $I^c_t = \sum_{s< t} I_s$ are cumulative infections by $t-1$ and $I'_t$ are the unadjusted infections defined above. This adjustment is based on the one implemented in the `epidemia` R package [@bhattSemiMechanisticBayesianModeling].
 
-## References 
+
+## Non-Mechanistic infection model
+
+This is an alternative model that can be used by setting `rt = NULL` that assumes less epidemiological mechanism by directly modelling infections on a log scale with a range of process models.
+By default, this uses a Gaussian Process prior for the number of new infections each day (on the log scale) although alternatively infections can be estimated using a prior based on a fixed backwards mapping of observed cases.
+In general, these model options will be more computationally efficient than the renewal process model but may be less robust due to the lack of an epidemiological process model (i.e. more dependence is placed on the assumptions of the Gaussian process prior).
+
+### Initialisation
+
+In order to initialise this model, an initial estimate $I_\mathrm{est}$ of the infection trajectory is first created by first shifting observations back in time by $t_\mathrm{seed}$ and then smoothing the observation data with a moving average of window size $z$ (default: $z=14$), allocated to the centre of the window:
+
+\begin{align}
+  I_{\mathrm{est}, t \lt T - t_\mathrm{seed}} = \frac{1}{z} \sum_{\max(-t_\mathrm{seed}, t - z/2)}^{\min(t_\mathrm{obs}, t + z/2)} I_{\mathrm{obs}, t + t_\mathrm{seed}}
+\end{align}
+
+where $T$ is the day of the last observation, $z/2$ is rounded up to the nearest integer in the limits of the sum, and $I_\mathrm{obs, t \lt 0} = 0$.
+Any date with $I_{\mathrm{est}, t} = 0$ cases following this procedure is then allocated 1 case to facilitate further processing in the model.
+
+For any times $t > T - t_\mathrm{seed}$  the number of infections is then estimated by fitting an exponential curve to the final week of data and extrapolating this until the end of the forecast horizon.
+
+### Infections
+
+By default, a Gaussian Process prior is used for the number of infections, resulting in smoother estimates of the infection curve.
+In this case, as in the renewal equation model there are two alternative formulations available. 
+The default uses an approximate zero-mean GP for the differences between modelled infections and the initial estimate,
+
+\begin{equation}
+  \log I_{t} - \log I_{\mathrm{est}, t} \sim \mathrm{GP}_t
+\end{equation}
+
+Alternatively, one can use is an approximate zero-mean Gaussian Process (GP) for the first differences in time on the log scale,
+
+\begin{equation}
+  \log I_{t} - \log I_{t-1} \sim \mathrm{GP}_t
+\end{equation}
+
+with $\log I_{0} - \log I_{\mathrm{est}, 0} \sim \mathrm{GP}_{0}$
+
+More details on the mathematical form of the Gaussian process approximation are given in the [Gaussian Process implementation details](https://epiforecasts.io/EpiNow2/articles/gaussian_process_details.html) vignette. 
+
+As for the renewal equation model, the Gaussian process can be replaced by a random walk of arbitrary length $w$.
+
+When using a fixed shift from infections to reported cases there is no process model and so $I_\mathrm{est}$ is used as the estimated infection curve (potentially scaled to take into account underreporting, see section [Delays and scaling]).
+
+### Time-varying reproduction number
+
+In this model there is no prior on the time-varying reproduction number.
+Instead, this is calculated from the renewal equation as a post-processing step
+
+\begin{equation}
+  R_t = \frac{I_{t}}{\sum_{\tau = 1}^{g_\mathrm{max}} g(\tau | \mu_{g}, \sigma_{g}) I_{t - \tau}}
+\end{equation}
+
+and optionally smoothed using a centred rolling mean with a window size that can be set by the user.
+
+### Beyond the end of the observation period
+
+Beyond the end of the observation period, by default, if using a Gaussian process it is assumed to continue. Alternatively, incidence can be fixed at ether the estimate at $T$ or a less recent, more certain estimate.
+
+# Delays and scaling
+
+If infections are observed with a delay (for example, the incubation period if based on symptomatic cases, and any delay from onset to report), they are convolved in the model to infections at the time scale of observations $D_{t}$ using delay distributions (with lognormal and gamma parameterisations available) $\xi$, scaled by an underreporting factor $\alpha$ (which is 1 if all infections are observed). This model can be defined mathematically as follows,
+
+\begin{equation}
+  D_t = \alpha \sum_{\tau = 0}^{\xi_\mathrm{max}} \xi (\tau | \mu_{\xi}, \sigma_{\xi}) I_{t-\tau}
+\end{equation}
+
+where $\xi(\tau|\mu_{\xi}, \sigma_{\xi})$ is the combined discrete distribution of delays (with discretised gamma or discretised log normal distributions available as options) with mean (or log mean in the case of lognormal distributions) $\mu_\xi$, standard deviation (or log standard deviation in the case of lognormal distributions) $\sigma_\xi$ and maximum $\xi_\mathrm{max}$.
+
+Delays can either be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors, weighted by the number of observations and truncated to be positive where relevant for the given distribution; or they can be specified as the parameters of a fixed distribution, or as fixed values.
+
+The scaling factor $\alpha$ represents the proportion of cases that are ultimately reported, which by default is set to 1 (i.e. no underreporting) but can instead be set to come from a normal prior with given mean and standard deviation, truncated to be between 0 and 1.
+
+
+# Observation model
+
+The modelled cases $D_{t}$ are related to observations $C_{t}$.
+By default this is assumed to follow a negative binomial distribution with overdispersion $\varphi$ (alternatively it can be modelled as a Poisson, in which case $\varphi$ is not used):
+
+\begin{align}
+  C_t &\sim \mathcal{NegBinom}\left(\omega_{(t \mod n_\omega)}D_t, \varphi\right)
+\end{align}
+
+where $\omega_{t \mod n_\omega}$ is a daily reporting effect of cyclicity $n_{\omega}$. If $n_{\omega}=7$ this corresponds to a day-of-the-week reporting effect.
+
+This model uses the following priors for the observation model,
+
+\begin{align}
+    \frac{\omega}{n_\omega} &\sim \mathcal{Dirichlet}(1, \ldots, 1) \\
+    \frac{1}{\sqrt{\varphi}} &\sim \mathcal{HalfNormal}(0, 1)
+\end{align}
+
+# References

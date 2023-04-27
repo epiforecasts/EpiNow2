@@ -1,0 +1,124 @@
+---
+title: "Gaussian Process implementation details"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Gaussian Process implementation details}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Overview
+
+We make use of Gaussian Processes in several places in `EpiNow2`. For example, the default model for `estimate_infections()` uses a Gaussian Process to model the 1st order difference on the log scale of the reproduction number. This vignette describes the implementation details of the approximate Gaussian Process used in `EpiNow2`.
+
+# Definition
+
+The single dimension Gaussian Processes ($\mathrm{GP}_t$) we use can be written as
+
+\begin{equation}
+\mathcal{GP}(\mu(t), k(t, t'))
+\end{equation}
+
+where $\mu(t)$ and $k(t,t')$ are the mean and covariance functions, respectively.
+In our case as set out above, we have
+
+\begin{equation}
+\mu(t) \equiv 0 \\
+k(t,t') = k(|t - t'|) = k(\Delta t)
+\end{equation}
+
+where by default $k$ is a Matern 3/2 covariance kernel,
+
+\begin{equation}
+k(\Delta t) = \alpha \left( 1 + \frac{\sqrt{3} \Delta t}{l} \right) \exp \left( - \frac{\sqrt{3} \Delta t}{l}\right)
+\end{equation}
+
+with $l>0$ and $\alpha > 0$ the length scale and magnitude, respectively, of the kernel.
+Alternatively, a squared exponential kernel can be chosen to constrain the GP to be smoother.
+
+\begin{equation}
+k(\Delta t) = \alpha \exp \left( - \frac{1}{2} \frac{(\Delta t^2)}{l^2} \right)
+\end{equation}
+
+# Hilbert space approximation
+
+In order to make our models computationally tractable, we approximate the Gaussian Process using a Hilbert space approximation to the Gaussian Process [@approxGP], centered around mean zero.
+
+\begin{equation}
+\mathcal{GP}(0, k(\Delta t)) \approx \sum_{j=1}^m \left(S_k(\sqrt{\lambda_j}) \right)^\frac{1}{2} \phi_j(t) \beta_j
+\end{equation}
+
+with $m$ the number of basis functions to use in the approximation, which we calculate from the number of time points $t_\mathrm{GP}$ to which the Gaussian Process is being applied (rounded up to give an integer value), as is recommended [@approxGP].
+
+\begin{equation}
+m = b t_\mathrm{GP}
+\end{equation}
+
+and values of $\lambda_j$ given by
+
+\begin{equation}
+\lambda_j = \left( \frac{j \pi}{2 L} \right)^2
+\end{equation}
+
+where $L$ is a positive number termed boundary condition, and $\beta_{j}$ are regression weights with standard normal prior
+
+\begin{equation}
+\beta_j \sim \mathcal{Normal}(0, 1)
+\end{equation}
+
+The function $S_k(x)$ is the spectral density relating to a particular covariance function $k$. In the case of the Matern 3/2 kernel (the default in `EpiNow2`) this is given by
+
+\begin{equation}
+S_k(x) = 4 \alpha^2 \left( \frac{\sqrt{3}}{\rho}\right)^3 \left(\left( \frac{\sqrt{3}}{\rho} \right)^2 + w^2 \right)^{-2}
+\end{equation}
+
+and in the case of a squared exponential kernel by
+
+\begin{equation}
+S_k(x) = \alpha^2 \sqrt{2\pi} \rho \exp \left( -\frac{1}{2} \rho^2 w^2 \right)
+\end{equation}
+
+The functions $\phi_{j}(x)$ are the eigenfunctions of the Laplace operator,
+
+\begin{equation}
+\phi_j(t) = \frac{1}{\sqrt{L}} \sin\left(\sqrt{\lambda_j} (t^* + L)\right)
+\end{equation}
+
+with time rescaled linearly to be between -1 and 1,
+
+\begin{equation}
+t^* = \frac{t - \frac{1}{2}t_\mathrm{GP}}{\frac{1}{2}t_\mathrm{GP}}
+\end{equation}
+
+Relevant priors are
+
+\begin{align}
+\alpha &\sim \mathcal{Normal}(0, \sigma_{\alpha}) \\
+\rho   &\sim \mathcal{LogNormal} (\mu_\rho, \sigma_\rho)\\
+\end{align}
+
+with $\rho$ additionally constrained to be between $\rho_\mathrm{min}$ and $\rho_\mathrm{max}$, $\mu_{\rho}$ and $\sigma_\rho$ calculated from given mean $m_{\rho}$ and standard deviation $s_\rho$, and default values (all of which can be changed by the user):
+
+\begin{align}
+b &= 0.2 \\
+L &= 1.5 \\
+m_\rho &= 21 \\
+s_\rho &= 7 \\
+\rho_\mathrm{min} &= 0\\
+\rho_\mathrm{max} &= 60\\
+\sigma_\alpha &= 0.05\\
+\end{align}
+
+# References
