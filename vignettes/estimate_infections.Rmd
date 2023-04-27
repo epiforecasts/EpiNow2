@@ -95,7 +95,7 @@ The initial reproduction number $R_{0}$ has a log-normal prior with a given log 
 
 ### Beyond the end of the observation period
 
-Beyond the end of the observation period ($T$), by default, the Gaussian process is assumed to continue. However, here again there are a range of options. These included fixing transmission dynamics, and scaling $R_t$ based on the proportion of the population that remain susceptible. This is defined as followed,
+Beyond the end of the observation period ($T$), by default, the Gaussian process is assumed to continue. However, here again there are a range of options. These included fixing transmission dynamics (optionally this can also be done before the end of the observation period), and scaling $R_t$ based on the proportion of the population that remain susceptible. This is defined as followed,
 
 \begin{equation}
     I_t = (N - I^c_{t-1}) \left(1 - \exp \left(\frac{-I'_t}{N - I^c_{T}}\right)\right),
@@ -104,10 +104,11 @@ Beyond the end of the observation period ($T$), by default, the Gaussian process
 where $I^c_t = \sum_{s< t} I_s$ are cumulative infections by $t-1$ and $I'_t$ are the unadjusted infections defined above. This adjustment is based on the one implemented in the `epidemia` R package [@bhattSemiMechanisticBayesianModeling].
 
 
-## Nonparametric infection model
+## Non-Mechanistic infection model
 
-This is an alternative model that can be used by setting `rt = NULL`.
-By default, this uses a Gaussian Process prior for the number of new infections each day although alternatively infections can be estimated using a fixed shift from observed cases.
+This is an alternative model that can be used by setting `rt = NULL` that assumes less epidemiological mechanism by directly modelling infections on a log scale with a range of process models.
+By default, this uses a Gaussian Process prior for the number of new infections each day (on the log scale) although alternatively infections can be estimated using a prior based on a fixed backwards mapping of observed cases.
+In general, these model options will be more computationally efficient than the renewal process model but may be less robust due to the lack of an epidemiological process model (i.e. more dependence is placed on the assumptions of the Gaussian process prior).
 
 ### Initialisation
 
@@ -124,7 +125,7 @@ For any times $t > T - t_\mathrm{seed}$  the number of infections is then estima
 
 ### Infections
 
-When using a fixed from infections to reported cases, $I_\mathrm{est}$ is used as the estimated infection curve (potentially scaled to take into account underreporting, see section [Delays and scaling]).
+When using a fixed shift from infections to reported cases, $I_\mathrm{est}$ is used as the estimated infection curve (potentially scaled to take into account underreporting, see section [Delays and scaling]).
 
 By default, however, a Gaussian Process prior is used for the number of infections, resulting in smoother estimates of the infection curve.
 In that case, as in the renewal equation model there are two alternative formulations available. 
@@ -142,18 +143,18 @@ Alternatively, one can use is an approximate zero-mean Gaussian Process (GP) for
 
 with $\log I_{0} - \log I_{\mathrm{est}, 0} \sim \mathrm{GP}_{0}$
 
-More details on the mathematical form of the GP approximation and implementation are given below (see [Gaussian Process implementation details]). 
+More details on the mathematical form of the Gaussian process approximation are given in the [Gaussian Process implementation details](https://epiforecasts.io/EpiNow2/articles/gaussian_process_details.html) vignette. 
 
 ### Time-varying reproduction number
 
 In this model there is no prior on the time-varying reproduction number.
-Instead, this is calculated from the renewal equation 
+Instead, this is calculated from the renewal equation as a post-processing step
 
 \begin{equation}
   R_t = \frac{I_{t}}{\sum_{\tau = 1}^{g_\mathrm{max}} g(\tau | \mu_{g}, \sigma_{g}) I_{t - \tau}}
 \end{equation}
 
-and optionally smoothed using a rolling mean with a window size that can be set by the user.
+and optionally smoothed using a centred rolling mean with a window size that can be set by the user.
 
 ### Beyond the end of the observation period
 
@@ -161,17 +162,17 @@ Beyond the end of the observation period, by default, if using a Gaussian proces
 
 # Delays and scaling
 
-If infections are observed with a delay (for example, the incubation period if based on symptomatic cases, and any delay from onset to report), they are convolved in the model to infections at the time scale of observations $D_{t}$ using delay distributions (with lognormal and gamma parameterisations available) $\xi$, scaled by an underreporting factor $f$ (which is 1 if all infections are observed). This model can be defined mathematically as follows,
+If infections are observed with a delay (for example, the incubation period if based on symptomatic cases, and any delay from onset to report), they are convolved in the model to infections at the time scale of observations $D_{t}$ using delay distributions (with lognormal and gamma parameterisations available) $\xi$, scaled by an underreporting factor $\alpha$ (which is 1 if all infections are observed). This model can be defined mathematically as follows,
 
 \begin{equation}
-  D_t = f \sum_{\tau = 0}^{\xi_\mathrm{max}} \xi (\tau | \mu_{\xi}, \sigma_{\xi}) I_{t-\tau}
+  D_t = \alpha \sum_{\tau = 0}^{\xi_\mathrm{max}} \xi (\tau | \mu_{\xi}, \sigma_{\xi}) I_{t-\tau}
 \end{equation}
 
 where $\xi(\tau|\mu_{\xi}, \sigma_{\xi})$ is the combined discrete distribution of delays (with discretised gamma or discretised log normal distributions available as options) with mean (or log mean in the case of lognormal distributions) $\mu_\xi$, standard deviation (or log standard deviation in the case of lognormal distributions) $\sigma_\xi$ and maximum $\xi_\mathrm{max}$.
 
 Delays can either be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors, weighted by the number of observations and truncated to be positive where relevant for the given distribution; or they can be specified as the parameters of a fixed distribution, or as fixed values.
 
-The scaling factor $f$ represents the proportion of cases that are ultimately reported, which by default is set to 1 (i.e. no underreporting) but can instead be set to come from a normal prior with given mean and standard deviation, truncated to be between 0 and 1.
+The scaling factor $\alpha$ represents the proportion of cases that are ultimately reported, which by default is set to 1 (i.e. no underreporting) but can instead be set to come from a normal prior with given mean and standard deviation, truncated to be between 0 and 1.
 
 
 # Observation model
