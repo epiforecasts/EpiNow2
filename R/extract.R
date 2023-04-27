@@ -79,7 +79,8 @@ extract_static_parameter <- function(param, samples) {
 #' @author Sam Abbott
 #' @importFrom rstan extract
 #' @importFrom data.table data.table
-extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_inf_dates,
+extract_parameter_samples <- function(stan_fit, data, reported_dates,
+                                      reported_inf_dates,
                                       drop_length_1 = FALSE, merge = FALSE) {
   # extract sample from stan object
   samples <- rstan::extract(stan_fit)
@@ -145,17 +146,25 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
       1:data$week_effect
     )
     out$day_of_week <- out$day_of_week[, value := value * data$week_effect]
-    out$day_of_week <- out$day_of_week[, strat := date][, c("time", "date") := NULL]
+    out$day_of_week <- out$day_of_week[, strat := date][,
+     c("time", "date") := NULL
+    ]
   }
   if (data$n_uncertain_mean_delays > 0) {
-    out$delay_mean <- extract_parameter("delay_mean", samples, 1:data$n_uncertain_mean_delays)
+    out$delay_mean <- extract_parameter(
+      "delay_mean", samples, 1:data$n_uncertain_mean_delays
+    )
     out$delay_mean <-
-      out$delay_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
+      out$delay_mean[, strat := as.character(time)][, time := NULL][,
+       date := NULL
+      ]
   }
   if (data$n_uncertain_sd_delays > 0) {
     out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$n_uncertain_sd_delays)
     out$delay_sd <-
-      out$delay_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
+      out$delay_sd[, strat := as.character(time)][, time := NULL][,
+       date := NULL
+      ]
   }
   if (data$truncation > 0) {
     if (data$trunc_mean_sd > 0) {
@@ -179,15 +188,14 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates, reported_i
   }
   if (data$model_type == 1) {
     out$reporting_overdispersion <- extract_static_parameter("rep_phi", samples)
-    out$reporting_overdispersion <- out$reporting_overdispersion[, value := value.V1][
-      ,
+    out$reporting_overdispersion <- out$reporting_overdispersion[,
+     value := value.V1][,
       value.V1 := NULL
     ]
   }
   if (data$obs_scale == 1) {
     out$fraction_observed <- extract_static_parameter("frac_obs", samples)
-    out$fraction_observed <- out$fraction_observed[, value := value.V1][
-      ,
+    out$fraction_observed <- out$fraction_observed[, value := value.V1][,
       value.V1 := NULL
     ]
   }
@@ -316,7 +324,7 @@ extract_inits <- function(fit, current_inits,
     return(res)
   }
   # extract samples
-  fit_inits <- purrr::map(1:samples, init_fun)
+  fit_inits <- purrr::map(1:samples, init_fun) # nolint
   # set up sampling function
   exclude_vars <- exclude_list
   old_init_fn <- current_inits

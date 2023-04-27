@@ -53,8 +53,8 @@ generation_time_opts <- function(..., disease, source, max = 15L,
     (!missing(disease) && !missing(source)) ## from included distributions
   if (type_options > 1) {
     stop(
-      "Generation time should be given either as distributional options  ",
-      "or as disease/source, but not both."
+      "Generation time should be given either as distributional options",
+      " or as disease/source, but not both." # nolint
     )
   }
 
@@ -63,13 +63,13 @@ generation_time_opts <- function(..., disease, source, max = 15L,
     dot_options <- dot_options[[1]]
   }
 
-  if (!missing(disease) && !missing(source)) { ## generation time provided as disease/source
+  if (!missing(disease) && !missing(source)) {
     dist <- get_generation_time(
       disease = disease, source = source, max_value = max
     )
     dist$fixed <- fixed
     gt <- do.call(dist_spec, dist)
-  } else { ## generation time provided as distributional parameters or not at all
+  } else {
     ## make gamma default for backwards compatibility
     if (!("dist" %in% names(dot_options))) {
       dot_options$dist <- "gamma"
@@ -282,7 +282,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
     rt$use_breakpoints <- TRUE
   }
 
-  if (!("mean" %in% names(rt$prior) & "sd" %in% names(rt$prior))) {
+  if (!("mean" %in% names(rt$prior) && "sd" %in% names(rt$prior))) {
     stop("prior must have both a mean and sd specified")
   }
   return(rt)
@@ -376,7 +376,8 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #' proportion of basis functions. See (Riutort-Mayol et al. 2020
 #' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
 #'
-#' @param boundary_scale Numeric, defaults to 1.5. Boundary scale of the approximate Gaussian process. See (Riutort-Mayol et al. 2020
+#' @param boundary_scale Numeric, defaults to 1.5. Boundary scale of the
+#' approximate Gaussian process. See (Riutort-Mayol et al. 2020
 #' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
 #'
 #' @return A list of settings defining the Gaussian process
@@ -410,7 +411,7 @@ gp_opts <- function(basis_prop = 0.2,
   )
 
   if (gp$matern_type != 3 / 2) {
-    stop("only the Matern 3/2 kernel is currently supported")
+    stop("only the Matern 3/2 kernel is currently supported") # nolint
   }
   return(gp)
 }

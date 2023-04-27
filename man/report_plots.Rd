@@ -13,7 +13,8 @@ the following variables: variable, median, bottom, and top.
 It should also contain the following estimates: R, infections,
 reported_cases_rt, and r (rate of growth).}
 
-\item{reported}{A data.table of reported cases with the following variables: date, confirm.}
+\item{reported}{A data.table of reported cases with the following variables:
+date, confirm.}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
