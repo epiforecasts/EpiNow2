@@ -1,7 +1,7 @@
 #' Clean Nowcasts for a Supplied Date
 #'
 #' @description `r lifecycle::badge("stable")`
-#' This function removes nowcasts in the format produced by `EpiNow2` from a 
+#' This function removes nowcasts in the format produced by `EpiNow2` from a
 #' target directory for the date supplied.
 #'
 #' @param date Date object. Defaults to today's date
@@ -93,7 +93,7 @@ map_prob_change <- function(var) {
         )
       )
     )
-  )
+  ) # nolint
   var <- factor(var, levels = c(
     "Increasing", "Likely increasing", "Stable",
     "Likely decreasing", "Decreasing"
@@ -179,14 +179,20 @@ allocate_empty <- function(data, params, n = 0) {
 #' Match User Supplied Arguments with Supported Options
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Match user supplied arguments with supported options and return a logical list for
-#' internal usage
+#' Match user supplied arguments with supported options and return a logical
+#' list for internal usage.
+#'
 #' @param input_args A character vector of input arguments (can be partial).
+#'
 #' @param supported_args A character vector of supported output arguments.
-#' @param logger A character vector indicating the logger to target messages at. Defaults
-#' to no logging.
-#' @param level Character string defaulting to "info". Logging level see documentation
-#' of futile.logger for details. Supported options are "info" and "debug"
+#'
+#' @param logger A character vector indicating the logger to target messages
+#' at. Defaults to no logging.
+#'
+#' @param level Character string defaulting to "info". Logging level see
+#' documentation of futile.logger for details. Supported options are "info" and
+#' "debug".
+#'
 #' @return A logical vector of named output arguments
 #' @importFrom  futile.logger flog.info flog.debug
 match_output_arguments <- function(input_args = NULL,
@@ -204,7 +210,7 @@ match_output_arguments <- function(input_args = NULL,
 
   # get arguments supplied and linked to supported args
   found_args <- lapply(input_args, function(arg) {
-    supported_args[grepl(arg, supported_args)]
+    grep(arg, supported_args, value = TRUE)
   })
   found_args <- unlist(found_args)
   found_args <- unique(found_args)
@@ -213,7 +219,7 @@ match_output_arguments <- function(input_args = NULL,
   if (!is.null(logger)) {
     if (length(found_args) > 0) {
       flog_fn("Producing following optional outputs: %s",
-        paste(found_args, collapse = ", "),
+        toString(found_args),
         name = logger
       )
     } else {
@@ -412,8 +418,9 @@ set_dt_single_thread <- function() {
   )
 }
 
-#' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp 
-#' @importFrom lifecycle deprecate_warn rlnorm rnorm rpois runif sd var rgamma 
+#' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
+#' @importFrom lifecycle deprecate_warn
+#' @importFrom stats rlnorm rnorm rpois runif sd var rgamma
 globalVariables(
   c(
     "bottom", "cases", "confidence", "confirm", "country_code", "crps",
@@ -433,9 +440,10 @@ globalVariables(
     "value", "var", "vars", "viridis_palette", "window", ".", "%>%",
     "New confirmed cases by infection date", "Data", "R", "reference",
     ".SD", "day_of_week", "forecast_type", "measure", "numeric_estimate",
-    "point", "strat", "estimate", "breakpoint", "variable", "value.V1", "central_lower", "central_upper",
-    "mean_sd", "sd_sd", "average_7", "..lowers", "..upper_CrI", "..uppers", "timing",
-    "dataset", "last_confirm", "report_date", "secondary", "id",
-    "conv", "meanlog", "primary", "scaled", "scaling", "sdlog"
+    "point", "strat", "estimate", "breakpoint", "variable", "value.V1",
+    "central_lower", "central_upper", "mean_sd", "sd_sd", "average_7",
+    "..lowers", "..upper_CrI", "..uppers", "timing", "dataset", "last_confirm",
+    "report_date", "secondary", "id", "conv", "meanlog", "primary", "scaled",
+    "scaling", "sdlog"
   )
 )

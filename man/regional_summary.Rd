@@ -22,10 +22,11 @@ regional_summary(
 \item{regional_output}{A list of output as produced by \code{regional_epinow} and
 stored in the \code{regional} list.}
 
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date
+(date), and region (\code{region}).}
 
-\item{results_dir}{An optional character string indicating the location of the results directory to extract results
-from.}
+\item{results_dir}{An optional character string indicating the location of
+the results directory to extract results from.}
 
 \item{summary_dir}{A character string giving the directory
 in which to store summary of results.}
@@ -34,7 +35,8 @@ in which to store summary of results.}
 extract results
 (in the format "yyyy-mm-dd"). Defaults to latest available estimates.}
 
-\item{region_scale}{A character string indicating the name to give the regions being summarised.}
+\item{region_scale}{A character string indicating the name to give the
+regions being summarised.}
 
 \item{all_regions}{Logical, defaults to \code{TRUE}. Should summary plots for all
 regions be returned rather than just regions of interest.}

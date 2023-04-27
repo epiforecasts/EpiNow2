@@ -87,7 +87,8 @@
 #' # summary plot
 #' plot(def)
 #'
-#' # decreasing the accuracy of the approximate Gaussian to speed up computation.
+#' # decreasing the accuracy of the approximate Gaussian to speed up
+#' #computation.
 #' # These settings are an area of active research. See ?gp_opts for details.
 #' agp <- estimate_infections(reported_cases,
 #'   generation_time = generation_time,
@@ -588,7 +589,8 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
   args$method <- NULL
   futile.logger::flog.debug(
     paste0(
-      "%s: Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
+      "%s: Running in approximate mode for ", args$iter,
+      " iterations (with ", args$trials, " attempts). Extracting ",
       args$output_samples, " approximate posterior samples for ", args$data$t, " time steps of which ",
       args$data$horizon, " are a forecast"
     ),
@@ -685,11 +687,12 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
 
   # remove burn in period if specified
   if (burn_in > 0) {
-    futile.logger::flog.info("burn_in is depreciated as of EpiNow2 1.3.0 - if using
-                             this feature please contact the developers",
+    futile.logger::flog.info(
+      "burn_in is depreciated as of EpiNow2 1.3.0 - if using this feature",
+      " please contact the developers",
       name = "EpiNow2.epinow.estimate_infections"
     )
-    format_out$samples <- 
+    format_out$samples <-
       format_out$samples[is.na(date) | 
         date >= (start_date + lubridate::days(burn_in))]
   }

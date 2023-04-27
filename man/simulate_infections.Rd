@@ -2,7 +2,8 @@
 % Please edit documentation in R/simulate_infections.R
 \name{simulate_infections}
 \alias{simulate_infections}
-\title{Simulate infections using a given trajectory of the time-varying reproduction number}
+\title{Simulate infections using a given trajectory of the time-varying
+reproduction number}
 \usage{
 simulate_infections(
   estimates,
@@ -42,9 +43,10 @@ results from the specified scenario rather than fitting.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-This function simulates infections using an existing fit to observed cases but with a modified
-time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
-Simulations can be run in parallel using \code{future::plan}.
+This function simulates infections using an existing fit to observed cases
+but with a modified time-varying reproduction number. This can be used to
+explore forecast models or past counterfactuals. Simulations can be run in
+parallel using \code{future::plan}.
 }
 \examples{
 \donttest{

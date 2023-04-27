@@ -66,7 +66,8 @@ forecast.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date
+(date), and region (\code{region}).}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
@@ -75,21 +76,26 @@ forecast.}
 \item{return_output}{Logical, defaults to FALSE. Should output be returned,
 this automatically updates to TRUE if no directory for saving is specified.}
 
-\item{output}{A character vector of optional output to return. Supported options are the individual regional estimates
-("regions"),  samples ("samples"), plots ("plots"), copying the individual region dated folder into
-a latest folder (if \code{target_folder} is not null, set using "latest"), the stan fit of the underlying model ("fit"), and an
-overall summary across regions ("summary"). The default is to return samples and plots alongside summarised estimates and
-summary statistics. If \code{target_folder} is not NULL then the default is also to copy all results into a latest folder.}
+\item{output}{A character vector of optional output to return. Supported
+options are the individual regional estimates ("regions"),  samples
+("samples"), plots ("plots"), copying the individual region dated folder into
+a latest folder (if \code{target_folder} is not null, set using "latest"), the
+stan fit of the underlying model ("fit"), and an overall summary across
+regions ("summary"). The default is to return samples and plots alongside
+summarised estimates and summary statistics. If \code{target_folder} is not NULL
+then the default is also to copy all results into a latest folder.}
 
 \item{complete_logger}{Character string indicating the logger to output
 the completion of estimation to.}
 
-\item{verbose}{Logical defaults to FALSE. Outputs verbose progress messages to the console from \code{epinow}.}
+\item{verbose}{Logical defaults to FALSE. Outputs verbose progress messages
+to the console from \code{epinow}.}
 
-\item{progress_fn}{Function as returned by \code{progressr::progressor}. Allows the use of a
-progress bar.}
+\item{progress_fn}{Function as returned by \code{progressr::progressor}. Allows
+the use of a  progress bar.}
 
-\item{...}{Pass additional arguments to \code{epinow}. See the documentation for \code{epinow} for details.}
+\item{...}{Pass additional arguments to \code{epinow}. See the documentation for
+\code{epinow} for details.}
 }
 \value{
 A list of processed output as produced by \code{process_region}
@@ -97,8 +103,8 @@ A list of processed output as produced by \code{process_region}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Internal function that handles calling \code{epinow}. Future work will extend this
-function to better handle \code{stan} logs and allow the user to modify settings between
-regions.
+function to better handle \code{stan} logs and allow the user to modify settings
+between regions.
 }
 \seealso{
 regional_epinow

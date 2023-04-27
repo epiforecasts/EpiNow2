@@ -118,8 +118,8 @@ report_cases <- function(case_estimates,
   # summarise samples
   out$summarised <- calc_summary_measures(
     report[, value := cases][, cases := NULL],
-    summarise_by = c("date"),
-    order_by = c("date"),
+    summarise_by = "date",
+    order_by = "date",
     CrIs = CrIs
   )
   return(out)
@@ -129,12 +129,13 @@ report_cases <- function(case_estimates,
 #' @description `r lifecycle::badge("questioning")`
 #' Creates a snapshot summary of estimates. May be removed in later releases as
 #' S3 methods are enhanced.
-#' 
+#'
 #' @param summarised_estimates A data.table of summarised estimates containing
 #' the following variables: variable, median, bottom, and top. It should
 #' contain the following estimates: R, infections, and r (rate of growth).
 #'
-#' @param rt_samples A data.table containing Rt samples with the following variables: sample and value.
+#' @param rt_samples A data.table containing Rt samples with the following
+#' variables: sample and value.
 #'
 #' @param return_numeric Should numeric summary information be returned.
 #'

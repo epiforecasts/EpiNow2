@@ -16,7 +16,8 @@ report_summary(
 the following variables: variable, median, bottom, and top. It should
 contain the following estimates: R, infections, and r (rate of growth).}
 
-\item{rt_samples}{A data.table containing Rt samples with the following variables: sample and value.}
+\item{rt_samples}{A data.table containing Rt samples with the following
+variables: sample and value.}
 
 \item{target_folder}{Character string specifying where to save results (will create if not present).}
 
