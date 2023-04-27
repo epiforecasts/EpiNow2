@@ -1,6 +1,8 @@
-# EpiNow2 1.3.5.9999
+# EpiNow2 1.3.6.1000
 
-## Features
+This release is in development. For a stable release install 1.3.5 from CRAN.
+
+## Package
 
 * Model description has been expanded to include more detail.
 
