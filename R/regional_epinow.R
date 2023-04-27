@@ -44,7 +44,9 @@
 #'
 #' # construct example distributions
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' incubation_period <- get_incubation_period(
+#'  disease = "SARS-CoV-2", source = "lauer"
+#' )
 #' reporting_delay <- list(
 #'   mean = convert_to_logmean(2, 1),
 #'   mean_sd = 0.1,

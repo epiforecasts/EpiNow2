@@ -46,7 +46,9 @@
 #' # set up example generation time
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' # set delays between infection and case report
-#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' incubation_period <- get_incubation_period(
+#'  disease = "SARS-CoV-2", source = "lauer"
+#' )
 #' reporting_delay <- list(
 #'   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
 #'   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 15
@@ -219,7 +221,9 @@ simulate_infections <- function(estimates,
   if (!is.null(batch_size)) {
     batch_no <- ceiling(samples / batch_size)
     nstarts <- seq(1, by = batch_size, length.out = batch_no)
-    nends <- c(seq(batch_size, by = batch_size, length.out = batch_no - 1), samples)
+    nends <- c(
+      seq(batch_size, by = batch_size, length.out = batch_no - 1), samples
+    )
     batches <- transpose(list(nstarts, nends))
   } else {
     batches <- list(list(1, samples))
@@ -261,7 +265,7 @@ simulate_infections <- function(estimates,
     start_date = min(estimates$observations$date),
     CrIs = extract_CrIs(estimates$summarised) / 100
   )
-  format_out$samples <- format_out$samples[, sample := 1:.N,
+  format_out$samples <- format_out$samples[, sample := seq_len(.N),
     by = c("variable", "time", "date", "strat")
   ]
 

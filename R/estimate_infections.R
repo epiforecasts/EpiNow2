@@ -339,7 +339,7 @@ estimate_infections <- function(reported_cases,
     out$prior_infections <- shifted_cases[
       ,
       .(
-        parameter = "prior_infections", time = 1:.N,
+        parameter = "prior_infections", time = seq_len(.N),
         date, value = confirm, sample = 1
       )
     ]

@@ -12,9 +12,9 @@ report_summary(
 )
 }
 \arguments{
-\item{summarised_estimates}{A data.table of summarised estimates containing the following variables:
-variable, median, bottom, and top. It should contain the following estimates: R, infections, and r
-(rate of growth).}
+\item{summarised_estimates}{A data.table of summarised estimates containing
+the following variables: variable, median, bottom, and top. It should
+contain the following estimates: R, infections, and r (rate of growth).}
 
 \item{rt_samples}{A data.table containing Rt samples with the following variables: sample and value.}
 
@@ -27,6 +27,6 @@ A data.table containing formatted and numeric summary measures
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
-Creates a snapshot summary of estimates. May be removed in later releases as S3 methods are
-enhanced.
+Creates a snapshot summary of estimates. May be removed in later releases as
+S3 methods are enhanced.
 }

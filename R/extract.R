@@ -23,13 +23,13 @@ extract_parameter <- function(param, samples, dates) {
       )
     )
   )
-  param_df <- param_df[, time := 1:.N]
+  param_df <- param_df[, time := seq_len(.N)]
   param_df <- data.table::melt(param_df,
     id.vars = "time",
     variable.name = "var"
   )
 
-  param_df <- param_df[, var := NULL][, sample := 1:.N, by = .(time)]
+  param_df <- param_df[, var := NULL][, sample := seq_len(.N), by = .(time)]
   param_df <- param_df[, date := dates, by = .(sample)]
   param_df <- param_df[, .(
     parameter = param, time, date,

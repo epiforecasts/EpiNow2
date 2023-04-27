@@ -88,7 +88,7 @@
 #' plot(inc, primary = TRUE)
 #'
 #' # forecast future secondary cases from primary
-#' inc_preds <- forecast_secondary(inc, cases[61:.N][, value := primary])
+#' inc_preds <- forecast_secondary(inc, cases[6seq_len(.N)][, value := primary])
 #' plot(inc_preds, new_obs = cases, from = "2020-05-01")
 #'
 #' #### Prevalence data example ####
@@ -115,7 +115,7 @@
 #' plot(prev, primary = TRUE)
 #'
 #' # forecast future secondary cases from primary
-#' prev_preds <- forecast_secondary(prev, cases[101:.N][, value := primary])
+#' prev_preds <- forecast_secondary(prev, cases[10seq_len(.N)][, value := primary])
 #' plot(prev_preds, new_obs = cases, from = "2020-06-01")
 #'
 #' options(old_opts)
@@ -471,7 +471,7 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
   family <- match.arg(family, choices = c("none", "poisson", "negbin"))
   data <- data.table::as.data.table(data)
   data <- data.table::copy(data)
-  data <- data[, index := 1:.N]
+  data <- data[, index := seq_len(.N)]
   # apply scaling
   data <- data[, scaled := scaling * primary]
   # add convolution
@@ -591,7 +591,7 @@ forecast_secondary <- function(estimate,
     primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
     primary <- primary[, .(date, sample, value)]
     if (!is.null(samples)) {
-      primary <- primary[sample(1:.N, samples, replace = TRUE)]
+      primary <- primary[sample(seq_len(.N), samples, replace = TRUE)]
     }
   }
   ## rename to avoid conflict with estimate

@@ -16,8 +16,8 @@ calc_summary_measures(
 
 \item{summarise_by}{A character vector of variables to group by.}
 
-\item{order_by}{A character vector of parameters to order by, defaults to all \code{summarise_by}
-variables.}
+\item{order_by}{A character vector of parameters to order by, defaults to
+all \code{summarise_by} variables.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 }
@@ -26,7 +26,8 @@ A data.table containing summary statistics by group.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Calculate summary statistics and credible intervals from a data frame by group.
+Calculate summary statistics and credible intervals from a data frame by
+group.
 }
 \examples{
 samples <- data.frame(value = 1:10, type = "car")

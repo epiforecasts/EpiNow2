@@ -15,7 +15,8 @@ A character variable.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Categorises a numeric variable into "Increasing" (< 0.05),
-"Likely increasing" (<0.4), "Stable" (< 0.6), "Likely decreasing" (< 0.95), "Decreasing" (<= 1)
+"Likely increasing" (<0.4), "Stable" (< 0.6),
+"Likely decreasing" (< 0.95), "Decreasing" (<= 1)
 }
 \examples{
 var <- seq(0.01, 1, 0.01)

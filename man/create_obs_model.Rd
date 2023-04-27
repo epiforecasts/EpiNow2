@@ -18,7 +18,8 @@ the Observation Model
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Takes the output of \code{obs_opts()} and converts it into a list understood by \code{stan}.
+Takes the output of \code{obs_opts()} and converts it into a list understood
+by \code{stan}.
 }
 \examples{
 dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
@@ -29,7 +30,9 @@ create_obs_model(dates = dates)
 create_obs_model(obs_opts(family = "poisson"), dates = dates)
 
 # Applying a observation scaling to the data
-create_obs_model(obs_opts(scale = list(mean = 0.4, sd = 0.01)), dates = dates)
+create_obs_model(
+ obs_opts(scale = list(mean = 0.4, sd = 0.01)), dates = dates
+)
 
 # Apply a custom week week length
 create_obs_model(obs_opts(week_length = 3), dates = dates)

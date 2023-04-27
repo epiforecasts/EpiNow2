@@ -20,16 +20,13 @@ reported_cases_rt, and r (rate of growth).}
 \item{...}{Additional arguments passed to \code{plot_estimates()}.}
 }
 \value{
-A named list of \code{ggplot2} objects, \code{list(infections, reports, R, growth_rate, summary)},
-which correspond to a summary combination (last item) and for the leading items
-@seealso \code{\link[=plot_estimates]{plot_estimates()}} of \code{summarised_estimates[variable == "infections"]},
-\code{summarised_estimates[variable == "reported_cases"]}, \code{summarised_estimates[variable == "R"]},
-and \code{summarised_estimates[variable == "growth_rate"]}, respectively.
+A named list of \code{ggplot2} objects, \code{list(infections, reports, R, growth_rate, summary)}, which correspond to a summary combination (last
+item) and for the leading items.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
-Returns key summary plots for estimates. May be depreciated in later releases as current S3 methods
-are enhanced.
+Returns key summary plots for estimates. May be depreciated in later
+releases as current S3 methods are enhanced.
 }
 \examples{
 \donttest{
@@ -37,8 +34,12 @@ are enhanced.
 cases <- example_confirmed[1:40]
 
 # set up example delays
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+generation_time <- get_generation_time(
+ disease = "SARS-CoV-2", source = "ganyani"
+)
+incubation_period <- get_incubation_period(
+ disease = "SARS-CoV-2", source = "lauer"
+)
 reporting_delay <- bootstrapped_dist_fit(rlnorm(100, log(6), 1), max_value = 30)
 
 # run model
@@ -56,4 +57,11 @@ plots <- report_plots(
 )
 plots
 }
+}
+\seealso{
+\code{\link[=plot_estimates]{plot_estimates()}} of
+\code{summarised_estimates[variable == "infections"]},
+\code{summarised_estimates[variable == "reported_cases"]},
+\code{summarised_estimates[variable == "R"]}, and
+\code{summarised_estimates[variable == "growth_rate"]}, respectively.
 }

@@ -4,7 +4,7 @@
 \alias{calc_CrIs}
 \title{Calculate Credible Intervals}
 \usage{
-calc_CrIs(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9))
+calc_CrIs(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9))
 }
 \arguments{
 \item{samples}{A data.table containing at least a value variable}
@@ -14,8 +14,8 @@ calc_CrIs(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9))
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 }
 \value{
-A data.table containing the \code{summarise_by} variables and the specified lower and upper
-credible intervals
+A data.table containing the \code{summarise_by} variables and the
+specified lower and upper credible intervals.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

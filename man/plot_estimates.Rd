@@ -49,7 +49,9 @@ cases <- example_confirmed[1:40]
 
 # set up example delays
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+incubation_period <- get_incubation_period(
+ disease = "SARS-CoV-2", source = "lauer"
+)
 reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
 
 # run model

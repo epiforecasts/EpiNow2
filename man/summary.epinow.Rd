@@ -10,8 +10,8 @@
 \arguments{
 \item{object}{A list of output as produced by "epinow".}
 
-\item{output}{A character string of output to summarise. Defaults to "estimates"
-but also supports "forecast", and "estimated_reported_cases".}
+\item{output}{A character string of output to summarise. Defaults to
+"estimates" but also supports "forecast", and "estimated_reported_cases".}
 
 \item{date}{A date in the form "yyyy-mm-dd" to inspect estimates for.}
 

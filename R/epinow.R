@@ -4,7 +4,7 @@
 #' This function wraps the functionality of `estimate_infections()` and
 #' `forecast_infections()` in order to estimate Rt and cases by date of
 #' infection, forecast into these infections into the future. It also contains
-#' additional functionality to convert forecasts to date of report and produc
+#' additional functionality to convert forecasts to date of report and produce
 #' summary output useful for reporting results and interpreting them. See
 #' [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867) for
 #' an example of using `epinow` to estimate Rt for Covid-19 in a country from
@@ -41,7 +41,9 @@
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #' # construct example distributions
 #' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' incubation_period <- get_incubation_period(
+#'  disease = "SARS-CoV-2", source = "lauer"
+#' )
 #' reporting_delay <- list(
 #'   mean = convert_to_logmean(2, 1),
 #'   mean_sd = 0.1,
@@ -91,8 +93,9 @@ epinow <- function(reported_cases,
     return_output <- TRUE
   }
 
-  if (is.null(CrIs) | length(CrIs) == 0 | !is.numeric(CrIs)) {
-    futile.logger::flog.fatal("At least one credible interval must be specified",
+  if (is.null(CrIs) || length(CrIs) == 0 || !is.numeric(CrIs)) {
+    futile.logger::flog.fatal(
+      "At least one credible interval must be specified",
       name = "EpiNow2.epinow"
     )
     stop("At least one credible interval must be specified")
