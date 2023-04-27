@@ -10,12 +10,6 @@
 #' using [dist_spec()] or [get_generation_time()]. If no distribution is given
 #' a fixed generation time of 1 will be assumed.
 #'
-#' @param prior_weight numeric, weight given to the generation time prior.
-#' By default the generation time prior will be weighted by the number of
-#' observation data points, usually preventing the posteriors from shifting
-#' much from the given distribution. Another sensible option would be 1,
-#' i.e. treating the generation time distribution as a single parameter.
-#'
 #' @return A list summarising the input delay distributions.
 #' @author Sebastian Funk
 #' @author Sam Abbott
@@ -36,7 +30,7 @@
 #' # A generation time sourced from the literature
 #' dist <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' generation_time_opts(dist)
-generation_time_opts <- function(dist = dist_spec(mean = 1), prior_weight = NULL) {
+generation_time_opts <- function(dist = dist_spec(mean = 1)) {
   if (!is(dist, "dist_spec")) {
     stop("The generation time distribution must be given either using a call ",
          "to `dist_spec` or `get_generation_time`. ",
@@ -45,9 +39,7 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), prior_weight = NULL
          "information, see the relevant documentation pages using ",
          "`?generation_time_opts`")
   }
-  data <- to_stan(dist, "gt")
-  data$weight <- prior_weight
-  return(data)
+  return(dist)
 }
 
 #' Delay Distribution Options
@@ -60,7 +52,6 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), prior_weight = NULL
 #' @return A list summarising the input delay distributions.
 #' @author Sam Abbott
 #' @author Sebastian Funk
-#' @inheritParams generation_time_opts
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
 #' @export
 #' @examples
@@ -77,7 +68,7 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), prior_weight = NULL
 #'
 #' # Multiple delays
 #' delay_opts(c(delay, delay))
-delay_opts <- function(dist = dist_spec(), prior_weight = NULL) {
+delay_opts <- function(dist = dist_spec()) {
   if (!is(dist, "dist_spec")) {
     stop("Delay distributions must be of given either using a call to `dist_spec` ",
          "or one of the `get_...` functions such as `get_incubation_period`. ",
@@ -86,18 +77,7 @@ delay_opts <- function(dist = dist_spec(), prior_weight = NULL) {
          "information, see the relevant documentation pages using ",
          "`?delay_opts`")
   }
-  data <- to_stan(dist, "delay")
-  data$weight <- prior_weight
-
-  # Estimate the mean delay -----------------------------------------------
-  data$seeding_time <- sum(mean(dist))
-  if (data$seeding_time < 1) {
-    data$seeding_time <- 1
-  } else {
-    data$seeding_time <- as.integer(data$seeding_time)
-  }
-
-  return(data)
+  return(dist)
 }
 
 #' Truncation Distribution Options
@@ -131,8 +111,7 @@ trunc_opts <- function(dist = dist_spec()) {
          "information, see the relevant documentation pages using ",
          "`?trunc_opts`")
   }
-  data <- to_stan(dist, "trunc")
-  return(data)
+  return(dist)
 }
 
 #' Time-Varying Reproduction Number Options

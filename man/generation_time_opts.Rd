@@ -4,18 +4,12 @@
 \alias{generation_time_opts}
 \title{Generation Time Distribution Options}
 \usage{
-generation_time_opts(dist = dist_spec(mean = 1), prior_weight = NULL)
+generation_time_opts(dist = dist_spec(mean = 1))
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions generated
 using \code{\link[=dist_spec]{dist_spec()}} or \code{\link[=get_generation_time]{get_generation_time()}}. If no distribution is given
 a fixed generation time of 1 will be assumed.}
-
-\item{prior_weight}{numeric, weight given to the generation time prior.
-By default the generation time prior will be weighted by the number of
-observation data points, usually preventing the posteriors from shifting
-much from the given distribution. Another sensible option would be 1,
-i.e. treating the generation time distribution as a single parameter.}
 }
 \value{
 A list summarising the input delay distributions.

@@ -879,7 +879,11 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' as coming from fixed (vs uncertain) distributions. Overrides any values
 #' assigned to \code{mean_sd} and \code{sd_sd} by setting them to zero.
 #' reduces compute requirement but may produce spuriously precise estimates.
-#'
+#' @param prior_weight Integer, weight given to the generation time prior.
+#' By default (prior_weight = 00) the priors will be weighted by the number of
+#' observation data points, usually preventing the posteriors from shifting
+#' much from the given distribution. Another sensible option would be 1,
+#' i.e. treating the generation time distribution as a single parameter.
 #' @return A list of distribution options.
 #'
 #' @author Sebastian Funk
@@ -887,7 +891,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @export
 dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
                       distribution = c("lognormal", "gamma"), max,
-                      pmf = numeric(0), fixed = FALSE) {
+                      pmf = numeric(0), fixed = FALSE, prior_weight = 0L) {
   ## check if parametric or nonparametric
   if (length(pmf) > 0 &&
         !all(missing(mean), missing(sd), missing(mean_sd),
@@ -948,7 +952,9 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
           n_np = 0,
           np_pmf_max = 0,
           np_pmf = numeric(0),
-          np_pmf_groups = integer(0)
+          np_pmf_length = integer(0),
+          weight = numeric(0),
+          fixed = integer(0)
         ))
       } else { ## parametric fixed
         if (sd == 0) { ## delta
@@ -974,14 +980,18 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       }
       pmf <- pmf / sum(pmf)
     }
-    ret <- c(ret, list(
-      n = 1,
-      n_p = 0,
-      n_np = 1,
-      np_pmf_max = length(pmf),
-      np_pmf = pmf,
-      np_pmf_groups = length(pmf)
-    ))
+    if (length(pmf) > 0) {
+      ret <- c(ret, list(
+        n = 1,
+        n_p = 0,
+        n_np = 1,
+        np_pmf_max = length(pmf),
+        np_pmf = pmf,
+        np_pmf_length = length(pmf),
+        weight = numeric(0),
+        fixed = 1L
+      ))
+    }
   } else {
     ret <- list(
       mean_mean = mean,
@@ -996,10 +1006,11 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       n_np = 0,
       np_pmf_max = 0,
       np_pmf = numeric(0),
-      np_pmf_groups = integer(0)
+      np_pmf_length = integer(0),
+      weight = prior_weight,
+      fixed = 0L
     )
   }
-  ret$fixed <- as.integer(fixed)
   ret <- purrr::map(ret, array)
   sum_args <- grep("(^n$|^n_|_max$)", names(ret))
   ret[sum_args] <- purrr::map(ret[sum_args], sum)
@@ -1015,9 +1026,44 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 ##' @param ... The delay distributions (from calls to [dist_spec()]) to combine
 ##' @return Combined delay distributions (with class [dist_spec()]`)
 ##' @author Sebastian Funk
+##' @method `+` dist_spec
+##' @importFrom purrr transpose map
+##' @importFrom stats convolve
+##' @export
+`+.dist_spec` <- function(e1, e2) {
+  ## process delay distributions
+  delays <- c(e1, e2)
+  ## combine any nonparametric delays that can be combined
+  if (sum(delays$fixed) > 1) {
+    new_pmf <- c(1)
+    group_starts <- c(1, cumsum(delays$np_pmf_length) + 1)
+    for (i in seq_len(length(group_starts) - 1)) {
+      new_pmf <- stats::convolve(
+        new_pmf,
+        rev(delays$np_pmf[seq(group_starts[i], group_starts[i + 1] - 1)]),
+        type = "open"
+      )
+    }
+    delays$np_pmf <- new_pmf
+    delays$fixed <- c(1, rep(0, delays$n_p))
+    delays$n_np <- 1
+    delays$n <- delays$n_p + 1
+    delays$np_pmf_max <- length(delays$np_pmf)
+    delays$np_pmf_length <- length(delays$np_pmf)
+  }
+  return(delays)
+}
+
+##' Combines multiple delay distributions for further processing
+##'
+##' This combines the parameters so that they can
+##' be fed as multiple delay distributions to [epinow()] or [estimate_infections()].
+##'
+##' @param ... The delay distributions (from calls to [dist_spec()]) to combine
+##' @return Combined delay distributions (with class [dist_spec()]`)
+##' @author Sebastian Funk
 ##' @method c dist_spec
 ##' @importFrom purrr transpose map
-##' @export
 c.dist_spec <- function(...) {
   ## process delay distributions
   delays <- list(...)
@@ -1027,14 +1073,12 @@ c.dist_spec <- function(...) {
       "distributions."
     )
   }
-  c_names <- names(delays)
   ## transpose delays
   delays <- purrr::transpose(delays)
   ## convert back to arrays
   delays <- purrr::map(delays, function(x) array(unlist(x)))
   sum_args <- grep("(^n$|^n_|_max$)", names(delays))
   delays[sum_args] <- purrr::map(delays[sum_args], sum)
-  delays$names <- c_names
   attr(delays, "class") <- c("list", "dist_spec")
   return(delays)
 }
@@ -1055,10 +1099,10 @@ mean.dist_spec <- function(x, ...) {
   ret <- rep(0, x$n)
   ## nonparametric
   if (x$n_np > 0) {
-    init_id <- c(1, head(cumsum(x$np_pmf_groups) + 1, n = -1))
+    init_id <- c(1, head(cumsum(x$np_pmf_length) + 1, n = -1))
     ret[x$fixed == 1L] <- vapply(seq_along(init_id), function(id) {
-      pmf <- x$np_pmf[seq(init_id[id], cumsum(x$np_pmf_groups)[id])]
-      return(sum((seq_len(x$np_pmf_groups[id]) - 1) * pmf))
+      pmf <- x$np_pmf[seq(init_id[id], cumsum(x$np_pmf_length)[id])]
+      return(sum((seq_len(x$np_pmf_length[id]) - 1) * pmf))
     }, .0)
   }
   ## parametric
@@ -1116,40 +1160,13 @@ print.dist_spec <- function(x, ...) {
       cat(
         "Fixed distribution with PMF [",
         paste(signif(
-          x$np_pmf[seq(fixed_pos, fixed_pos + x$np_pmf_groups[i] - 1)],
+          x$np_pmf[seq(fixed_pos, fixed_pos + x$np_pmf_length[i] - 1)],
           digits = 2
         ), collapse = " "),
         "]\n", sep = "")
       fixed_id <- fixed_id + 1
-      fixed_pos <- fixed_pos + x$np_pmf_groups[i]
+      fixed_pos <- fixed_pos + x$np_pmf_length[i]
     }
   }
   cat("\n")
-}
-
-##' Converts R objects to ones that can be passed to stan as data.
-##' @export
-##' @param x An R object
-##' @param ... further arguments passed to or from other methods.
-to_stan <- function(x, ...) UseMethod("to_stan", x)
-
-##' Converts a `dist_spec` object for use in stan
-##'
-##' @param x The [dist_spec()] to use
-##' @param name A name to give to the returned objects. IF given This will be
-##' prepended to any of the variable names in the returned list, separated
-##' by an underscore (default: NULL, in which case nothing will be prepended).
-##' @param ... unused
-##' @return A list to be used as stan data.
-##' @method to_stan dist_spec
-##' @author Sebastian Funk
-##' @export
-to_stan.dist_spec <- function(x, name = NULL, ...) {
-  data <- unclass(x)
-  data$fixed <- NULL ## not used in stan model
-  data$names <- NULL ## not used in stan model
-  if (!is.null(name)) {
-    names(data) <- paste0(name, "_", names(data))
-  }
-  return(data)
 }

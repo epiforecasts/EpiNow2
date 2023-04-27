@@ -66,13 +66,13 @@ report_cases <- function(case_estimates,
 
   # define delay distributions
   delay_defs <- purrr::map(
-    seq_along(delays$delay_mean_mean),
+    seq_along(delays$mean_mean),
     ~ EpiNow2::lognorm_dist_def(
-      mean = delays$delay_mean_mean[.],
-      mean_sd = delays$delay_mean_sd[.],
-      sd = delays$delay_sd_mean[.],
-      sd_sd = delays$delay_sd_sd[.],
-      max_value = delays$delay_max[.],
+      mean = delays$mean_mean[.],
+      mean_sd = delays$mean_sd[.],
+      sd = delays$mean_mean[.],
+      sd_sd = delays$mean_sd[.],
+      max_value = delays$max[.],
       samples = samples
     )
   )

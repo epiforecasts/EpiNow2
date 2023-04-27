@@ -268,12 +268,13 @@ estimate_infections <- function(reported_cases,
   # Record earliest date with data
   start_date <- min(reported_cases$date, na.rm = TRUE)
 
+  seeding_time <- get_seeding_time(delays, generation_time)
+
   # Create mean shifted reported cases as prior
   reported_cases <- data.table::rbindlist(list(
     data.table::data.table(
-      date =
-        seq(min(reported_cases$date) - delays$seeding_time -
-          backcalc$prior_window,
+      date = seq(
+        min(reported_cases$date) - seeding_time - backcalc$prior_window,
         min(reported_cases$date) - 1,
         by = "days"
       ),
@@ -284,7 +285,7 @@ estimate_infections <- function(reported_cases,
 
   shifted_cases <- create_shifted_cases(
     reported_cases,
-    delays$seeding_time,
+    seeding_time,
     backcalc$prior_window,
     horizon
   )
@@ -293,9 +294,7 @@ estimate_infections <- function(reported_cases,
   # Define stan model parameters
   data <- create_stan_data(
     reported_cases = reported_cases,
-    generation_time = generation_time,
-    delays = delays,
-    truncation = truncation,
+    seeding_time = seeding_time,
     rt = rt,
     gp = gp,
     obs = obs,
@@ -303,6 +302,13 @@ estimate_infections <- function(reported_cases,
     shifted_cases = shifted_cases$confirm,
     horizon = horizon
   )
+
+  data <- c(data, create_stan_delays(
+    gt = generation_time,
+    delay = delays,
+    trunc = truncation,
+    ot = data$t - data$seeding_time - data$horizon
+  ))
 
   # Set up default settings
   args <- create_stan_args(
@@ -345,7 +351,7 @@ estimate_infections <- function(reported_cases,
   )
 
   ## Add prior infections
-  if (delays$delay_n > 0) {
+  if (delays$n > 0) {
     out$prior_infections <- shifted_cases[
       ,
       .(

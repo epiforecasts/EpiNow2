@@ -430,28 +430,20 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @author Sam Abbott
 #' @author Sebastian Funk
 #' @export
-create_stan_data <- function(reported_cases, generation_time,
-                             rt, gp, obs, delays, horizon,
-                             backcalc, shifted_cases,
-                             truncation) {
-  ## make sure we have at least gt_max seeding time
-  delays$seeding_time <- max(delays$seeding_time, generation_time$gt_max)
+create_stan_data <- function(reported_cases, seeding_time,
+                             rt, gp, obs, horizon,
+                             backcalc, shifted_cases) {
 
-  cases <- reported_cases[(delays$seeding_time + 1):(.N - horizon)]$confirm
+  cases <- reported_cases[(seeding_time + 1):(.N - horizon)]$confirm
 
   data <- list(
     cases = cases,
     shifted_cases = shifted_cases,
     t = length(reported_cases$date),
     horizon = horizon,
-    burn_in = 0
+    burn_in = 0,
+    seeding_time = seeding_time
   )
-  # add gt data
-  data <- c(data, generation_time)
-  # add delay data
-  data <- c(data, delays)
-  # add truncation data
-  data <- c(data, truncation)
   # add Rt data
   data <- c(
     data,
@@ -470,14 +462,6 @@ create_stan_data <- function(reported_cases, generation_time,
     is.na(data$prior_infections) || is.null(data$prior_infections),
     0, data$prior_infections
   )
-  if (is.null(data$gt_weight)) {
-    ## default: weigh by number of data points
-    data$gt_weight <- data$t - data$seeding_time - data$horizon
-  }
-  if (is.null(data$delay_weight)) {
-    ## default: weigh by number of time points
-    data$delay_weight <- data$t
-  }
   if (data$seeding_time > 1) {
     safe_lm <- purrr::safely(stats::lm)
     data$prior_growth <- safe_lm(log(confirm) ~ t, data = first_week)[[1]]
@@ -539,16 +523,9 @@ create_initial_conditions <- function(data) {
         n = data$delay_n_p, a = 0,
         mean = data$delay_sd_mean, sd = data$delay_sd_sd * 0.1
       ))
-    }
-    if (data$trunc_n_p > 0) {
-      out$trunc_mean <- array(truncnorm::rtruncnorm(
-        n = data$trunc_n_p, a = 0,
-        mean = data$trunc_mean_mean, sd = data$trunc_mean_sd * 0.1
-      ))
-      out$trunc_sd <- array(truncnorm::rtruncnorm(
-        n = data$trunc_n_p, a = 0,
-        mean = data$trunc_sd_mean, sd = data$trunc_sd_sd * 0.1
-      ))
+    } else {
+      out$delay_mean <- array(numeric(0))
+      out$delay_sd <- array(numeric(0))
     }
 
     if (data$fixed == 0) {
@@ -567,6 +544,10 @@ create_initial_conditions <- function(data) {
       out$alpha <- array(
         truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd)
       )
+    } else {
+      out$eta <- array(numeric(0))
+      out$rho <- array(numeric(0))
+      out$alpha <- array(numeric(0))
     }
     if (data$model_type == 1) {
       out$rep_phi <- array(
@@ -585,19 +566,14 @@ create_initial_conditions <- function(data) {
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
         sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
       ))
-      if (data$gt_n_p > 0) {
-        out$gt_mean <- array(truncnorm::rtruncnorm(
-          n = 1, a = 0, mean = data$gt_mean_mean, sd = data$gt_mean_sd * 0.1,
-        ))
-        out$gt_sd <- array(truncnorm::rtruncnorm(
-          n = 1, a = 0, mean = data$gt_sd_mean, sd = data$gt_sd_sd * 0.1,
-        ))
-      }
     }
 
     if (data$bp_n > 0) {
       out$bp_sd <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
       out$bp_effects <- array(rnorm(data$bp_n, 0, 0.1))
+    } else {
+      out$bp_sd <- array(numeric(0))
+      out$bp_effects <- array(numeric(0))
     }
     if (data$obs_scale == 1) {
       out$frac_obs <- array(truncnorm::rtruncnorm(1,
@@ -605,6 +581,8 @@ create_initial_conditions <- function(data) {
         mean = data$obs_scale_mean,
         sd = data$obs_scale_sd * 0.1
       ))
+    } else {
+      out$frac_obs <- array(numeric(0))
     }
     if (data$week_effect > 0) {
       out$day_of_week_simplex <- array(
@@ -658,4 +636,53 @@ create_stan_args <- function(stan = stan_opts(),
   args <- update_list(args, stan)
   args$return_fit <- NULL
   return(args)
+}
+
+##' Create delay variables for stan
+##'
+##' @param ... Named delay distributions specified using `dist_spec()`.
+##' The names are assigned to IDs
+##' @param ot Integer, number of observations (needed if weighing any priors)
+##' with the number of observations
+##' @return A list of variables as expected by the stan model
+##' @importFrom purrr transpose map
+##' @author Sebastian Funk
+create_stan_delays <- function(..., ot) {
+  dot_args <- list(...)
+  ## combine delays
+  combined_delays <- unclass(c(...))
+  ## number of different non-empty types
+  type_n <- unlist(purrr::transpose(dot_args)$n)
+  ## assign ID values to each type
+  ids <- rep(0L, length(type_n))
+  ids[type_n > 0] <- seq_len(sum(type_n > 0))
+  names(ids) <- paste(names(type_n), "id", sep = "_")
+
+  ## start consructing stan object
+  ret <- unclass(combined_delays)
+  ## construct additional variables
+  ret <- c(ret, list(
+    types = sum(type_n > 0),
+    types_p = 1L - combined_delays$fixed
+  ))
+  ## delay identifiers
+  ret$types_id <- c()
+  ret$types_id[ret$types_p == 1] <- seq_len(ret$n_p)
+  ret$types_id[ret$types_p == 0] <- seq_len(ret$n_np)
+  ## map delays to identifiers
+  ret$types_groups <- c(0, cumsum(unname(type_n[type_n > 0]))) + 1
+  ## map pmfs
+  ret$np_pmf_groups <- c(0, cumsum(combined_delays$np_pmf_length)) + 1
+  ## assign prior weights
+  if (any(ret$weight == 0)) {
+    ret$weight[ret$weight == 0] <- ot
+  }
+  ## remove auxiliary variables
+  ret$fixed <- NULL
+  ret$np_pmf_length <- NULL
+
+  names(ret) <- paste("delay", names(ret), sep = "_")
+  ret <- c(ret, ids)
+
+  return(ret)
 }

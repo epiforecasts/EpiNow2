@@ -301,3 +301,27 @@ get_regions_with_most_reports <- function(reported_cases,
   most_reports <- most_reports[1:no_regions][!is.na(region)]$region
   return(most_reports)
 }
+
+##' Estimate seeding time from delays and generation time
+##'
+##' The seeding time is set to the mean of the specified delays, constrained
+##' to be at least the maximum generation time
+##' @param delays Delays as specified using `dist_spec`
+##' @param generation_time Generation time as specified using `dist_spec`
+##' @return An integer seeding time
+##' @author Sebastian Funk
+get_seeding_time <- function(delays, generation_time) {
+  # Estimate the mean delay -----------------------------------------------
+  seeding_time <- sum(mean(delays))
+  if (seeding_time < 1) {
+    seeding_time <- 1
+  } else {
+    seeding_time <- as.integer(seeding_time)
+  }
+  ## make sure we have at least gt_max seeding time
+  seeding_time <- max(
+    seeding_time,
+    sum(generation_time$max) + sum(generation_time$np_pmf_max)
+  )
+  return(seeding_time)
+}

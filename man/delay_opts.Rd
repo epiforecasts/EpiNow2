@@ -4,17 +4,11 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(dist = dist_spec(), prior_weight = NULL)
+delay_opts(dist = dist_spec())
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions generated
 using \code{\link[=dist_spec]{dist_spec()}}. Default is an empty call to \code{\link[=dist_spec]{dist_spec()}}, i.e. no delay}
-
-\item{prior_weight}{numeric, weight given to the generation time prior.
-By default the generation time prior will be weighted by the number of
-observation data points, usually preventing the posteriors from shifting
-much from the given distribution. Another sensible option would be 1,
-i.e. treating the generation time distribution as a single parameter.}
 }
 \value{
 A list summarising the input delay distributions.
