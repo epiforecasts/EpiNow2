@@ -465,7 +465,7 @@ obs_opts <- function(family = "negbin",
                      scale = list(),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
-  if (length(phi) != 2 | !is.numeric(phi)) {
+  if (length(phi) != 2 || !is.numeric(phi)) {
     stop("phi be numeric and of length two")
   }
   obs <- list(
