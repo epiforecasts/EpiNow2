@@ -559,7 +559,10 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
     if (length(fit) == 0) {
       fit <- NULL
       if (is.null(fit)) {
-        rlang::abort("all chains failed - try inspecting the output for errors or increasing the max_execution_time")
+        rlang::abort(
+          "all chains failed - try inspecting the output for errors or",
+          " increasing the max_execution_time"
+        )
       }
     } else {
       failed_chains <- chains - length(fit)
@@ -597,7 +600,8 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
     paste0(
       "%s: Running in approximate mode for ", args$iter,
       " iterations (with ", args$trials, " attempts). Extracting ",
-      args$output_samples, " approximate posterior samples for ", args$data$t, " time steps of which ",
+      args$output_samples, " approximate posterior samples for ",
+      args$data$t, " time steps of which ",
       args$data$horizon, " are a forecast"
     ),
     id,
@@ -621,7 +625,7 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
     }
     return(fit)
   }
-  safe_vb <- purrr::safely(fit_vb)
+  safe_vb <- purrr::safely(fit_vb) # nolint
   fit <- NULL
   current_trials <- 0
 
@@ -635,7 +639,9 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
 
   if (is.null(fit)) {
     if (is.null(fit)) {
-      futile.logger::flog.error("%s: Fitting failed - try increasing stan_args$trials or inspecting the model input",
+      futile.logger::flog.error(
+        "%s: Fitting failed - try increasing stan_args$trials or inspecting",
+        " the model input",
         id,
         name = "EpiNow2.epinow.estimate_infections.fit"
       )
@@ -672,7 +678,9 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
                        CrIs) {
   format_out <- list()
   # bind all samples together
-  format_out$samples <- data.table::rbindlist(posterior_samples, fill = TRUE, idcol = "variable")
+  format_out$samples <- data.table::rbindlist(
+    posterior_samples, fill = TRUE, idcol = "variable"
+  )
 
   if (is.null(format_out$samples$strat)) {
     format_out$samples <- format_out$samples[, strat := NA]

@@ -125,7 +125,9 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
         samples,
         1:data$bp_n
       )
-      out$breakpoints <- out$breakpoints[, strat := date][, c("time", "date") := NULL]
+      out$breakpoints <- out$breakpoints[,
+        strat := date][, c("time", "date") := NULL
+      ]
     }
   } else {
     out$R <- extract_parameter(
@@ -160,7 +162,9 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
       ]
   }
   if (data$n_uncertain_sd_delays > 0) {
-    out$delay_sd <- extract_parameter("delay_sd", samples, 1:data$n_uncertain_sd_delays)
+    out$delay_sd <- extract_parameter(
+      "delay_sd", samples,seq_len(data$n_uncertain_sd_delays)
+    )
     out$delay_sd <-
       out$delay_sd[, strat := as.character(time)][, time := NULL][,
        date := NULL
@@ -170,12 +174,15 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
     if (data$trunc_mean_sd > 0) {
       out$truncation_mean <- extract_parameter("trunc_mean", samples, 1)
       out$truncation_mean <-
-        out$truncation_mean[, strat := as.character(time)][, time := NULL][, date := NULL]
+        out$truncation_mean[,
+         strat := as.character(time)][, time := NULL][, date := NULL
+        ]
     }
     if (data$trunc_sd_sd > 0) {
       out$truncation_sd <- extract_parameter("trunc_sd", samples, 1)
-      out$truncation_sd <-
-        out$truncation_sd[, strat := as.character(time)][, time := NULL][, date := NULL]
+      out$truncation_sd <- out$truncation_sd[,
+        strat := as.character(time)][, time := NULL][, date := NULL
+      ]
     }
   }
   if (data$estimate_r && data$gt_mean_sd > 0) {

@@ -107,7 +107,7 @@ create_shifted_cases <- function(reported_cases, shift,
     )
   ][
     ,
-    confirm := data.table::fifelse(confirm == 0, 1, confirm)
+    confirm := data.table::fifelse(confirm == 0, 1, confirm) # nolint
   ]
 
   ## Forecast trend on reported cases using the last week of data
@@ -521,7 +521,9 @@ create_stan_data <- function(reported_cases, generation_time,
   # used
   if (data$obs_scale == 1) {
     data$shifted_cases <- data$shifted_cases / data$obs_scale_mean
-    data$prior_infections <- log(exp(data$prior_infections) / data$obs_scale_mean)
+    data$prior_infections <- log(
+      exp(data$prior_infections) / data$obs_scale_mean
+    )
   }
   return(data)
 }
