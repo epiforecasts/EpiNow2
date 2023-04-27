@@ -10,7 +10,8 @@ update_horizon(horizon, target_date, reported_cases)
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to
 forecast.}
 
-\item{target_date}{Date, defaults to maximum found in the data if not specified.}
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 
 \item{reported_cases}{A data frame of confirmed cases (confirm) by date
 (date). confirm must be integer and date must be in date format.}

@@ -2,9 +2,11 @@
 #'
 #' @description `r lifecycle::badge("questioning")`
 #' This function acts as a skeleton for a truncated distribution defined by
-#' model type, maximum value and model parameters. It is designed to be used with the
-#' output from `get_dist`.
-#' @param n Numeric vector, number of samples to take (or days for the probability density).
+#' model type, maximum value and model parameters. It is designed to be used
+#' with the output from `get_dist`.
+#'
+#' @param n Numeric vector, number of samples to take (or days for the
+#' probability density).
 #'
 #' @param dist Logical, defaults to `FALSE`. Should the probability density be
 #' returned rather than a number of samples.
@@ -302,7 +304,7 @@ gamma_dist_def <- function(shape, shape_sd,
                            mean, mean_sd,
                            sd, sd_sd,
                            max_value, samples) {
-  if (missing(shape) & missing(scale) & !missing(mean) & !missing(sd)) {
+  if (missing(shape) && missing(scale) && !missing(mean) && !missing(sd)) {
     mean <- truncnorm::rtruncnorm(samples, a = 0, mean = mean, sd = mean_sd)
     sd <- truncnorm::rtruncnorm(samples, a = 0, mean = sd, sd = sd_sd)
     beta <- sd^2 / mean
@@ -310,7 +312,9 @@ gamma_dist_def <- function(shape, shape_sd,
     beta <- 1 / beta
   } else {
     alpha <- truncnorm::rtruncnorm(samples, a = 0, mean = shape, sd = shape_sd)
-    beta <- 1 / truncnorm::rtruncnorm(samples, a = 0, mean = scale, sd = scale_sd)
+    beta <- 1 / truncnorm::rtruncnorm(
+      samples, a = 0, mean = scale, sd = scale_sd
+    )
   }
 
   dist <- data.table::data.table(
@@ -381,7 +385,9 @@ lognorm_dist_def <- function(mean, mean_sd,
     mean_shape
   }
 
-  sampled_means <- truncnorm::rtruncnorm(samples, a = 0, mean = mean, sd = mean_sd)
+  sampled_means <- truncnorm::rtruncnorm(
+    samples, a = 0, mean = mean, sd = mean_sd
+  )
   sampled_sds <- truncnorm::rtruncnorm(samples, a = 0, mean = sd, sd = sd_sd)
   means <- sampled_means
   sds <- sampled_sds
@@ -404,7 +410,8 @@ lognorm_dist_def <- function(mean, mean_sd,
   return(dist)
 }
 
-#' Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters
+#' Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution
+#' Parameters
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Fits an integer adjusted distribution to a subsampled bootstrap of data and
@@ -553,22 +560,32 @@ estimate_delay <- function(delays, ...) {
 #' Approximate Sampling a Distribution using Counts
 #'
 #' @description `r lifecycle::badge("soft-deprecated")`
-#' Convolves cases by a PMF function. This function will soon be removed or replaced with a
-#' more robust `stan` implementation.
-#' @param cases A dataframe of cases (in date order) with the following variables:
-#' `date` and `cases`.
+#' Convolves cases by a PMF function. This function will soon be removed or
+#' replaced with a more robust `stan` implementation.
+#'
+#' @param cases A dataframe of cases (in date order) with the following
+#' variables: `date` and `cases`.
+#'
 #' @param max_value Numeric, maximum value to allow. Defaults to 120 days
-#' @param direction Character string, defato "backwards". Direction in which to map cases. Supports
-#' either "backwards" or "forwards".
-#' @param dist_fn Function that takes two arguments with the first being numeric and the second being logical (and
-#' defined as `dist`). Should return the probability density or a sample from the defined distribution. See
+#'
+#' @param direction Character string, defato "backwards". Direction in which to
+#' map cases. Supports either "backwards" or "forwards".
+#'
+#' @param dist_fn Function that takes two arguments with the first being
+#' numeric and the second being logical (and defined as `dist`). Should return
+#' the probability density or a sample from the defined distribution. See
 #' the examples for more.
-#' @param earliest_allowed_mapped A character string representing a date ("2020-01-01"). Indicates
-#' the earliest allowed mapped value.
-#' @param type Character string indicating the method to use to transform counts. Supports either "sample"
-#' which approximates sampling or "median" would shift by the median of the distribution.
-#' @param truncate_future Logical, should cases be truncated if they occur after the first date reported in the data.
-#' Defaults to `TRUE`.
+#'
+#' @param earliest_allowed_mapped A character string representing a date
+#' ("2020-01-01"). Indicates the earliest allowed mapped value.
+#'
+#' @param type Character string indicating the method to use to transform
+#' counts. Supports either "sample"  which approximates sampling or "median"
+#' would shift by the median of the distribution.
+#'
+#' @param truncate_future Logical, should cases be truncated if they occur
+#' after the first date reported in the data. Defaults to `TRUE`.
+#'
 #' @return A `data.table` of cases by date of onset
 #' @export
 #' @importFrom purrr map_dfc
@@ -681,10 +698,7 @@ sample_approx_dist <- function(cases = NULL,
     case_sum <- direction_fn(rowSums(mapped_cases))
     floor_case_sum <- floor(case_sum)
     sample_cases <- floor_case_sum +
-      data.table::fifelse(
-        (runif(seq_along(case_sum)) < (case_sum - floor_case_sum)),
-        1, 0
-      )
+      as.numeric((runif(seq_along(case_sum)) < (case_sum - floor_case_sum)))
 
     # summarise imputed onsets and build output data.table
     mapped_cases <- data.table::data.table(
@@ -694,14 +708,22 @@ sample_approx_dist <- function(cases = NULL,
 
     # filter out all zero cases until first recorded case
     mapped_cases <- data.table::setorder(mapped_cases, date)
-    mapped_cases <- mapped_cases[, cum_cases := cumsum(cases)][cum_cases != 0][, cum_cases := NULL]
+    mapped_cases <- mapped_cases[,
+      cum_cases := cumsum(cases)][cum_cases != 0][, cum_cases := NULL
+    ]
   } else if (type %in% "median") {
-    shift <- as.integer(median(as.integer(dist_fn(1000, dist = FALSE)), na.rm = TRUE))
+    shift <- as.integer(
+      median(as.integer(dist_fn(1000, dist = FALSE)), na.rm = TRUE)
+    )
 
     if (direction %in% "backwards") {
-      mapped_cases <- data.table::copy(cases)[, date := date - lubridate::days(shift)]
+      mapped_cases <- data.table::copy(cases)[,
+        date := date - lubridate::days(shift)
+      ]
     } else if (direction %in% "forwards") {
-      mapped_cases <- data.table::copy(cases)[, date := date + lubridate::days(shift)]
+      mapped_cases <- data.table::copy(cases)[,
+        date := date + lubridate::days(shift)
+      ]
     }
   }
 
@@ -710,7 +732,7 @@ sample_approx_dist <- function(cases = NULL,
   }
 
   # filter out future cases
-  if (direction %in% "forwards" & truncate_future) {
+  if (direction %in% "forwards" && truncate_future) {
     max_date <- max(cases$date)
     mapped_cases <- mapped_cases[date <= max_date]
   }
@@ -720,11 +742,12 @@ sample_approx_dist <- function(cases = NULL,
 #' Tune an Inverse Gamma to Achieve the Target Truncation
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' Allows an inverse gamma distribution to be. tuned so that less than 0.01 of its
-#' probability mass function falls outside of the specified
-#' bounds. This is required when using an inverse gamma prior, for example for a
-#' Gaussian process. As no inverse gamma priors are currently in use and this function
+#' Allows an inverse gamma distribution to be. tuned so that less than 0.01 of
+#' its probability mass function falls outside of the specified bounds. This is
+#' required when using an inverse gamma prior, for example for a Gaussian
+#' process. As no inverse gamma priors are currently in use and this function
 #' has some stability issues it may be deprecated at a later date.
+#'
 #' @param lower Numeric, defaults to 2. Lower truncation bound.
 #'
 #' @param upper Numeric, defaults to 21. Upper truncation bound.
@@ -750,7 +773,6 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
     algorithm = "Fixed_param",
     refresh = 0
   )
-
 
   alpha <- rstan::extract(fit, "alpha")
   beta <- rstan::extract(fit, "beta")

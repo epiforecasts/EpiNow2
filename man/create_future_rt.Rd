@@ -7,10 +7,13 @@
 create_future_rt(future = "latest", delay = 0)
 }
 \arguments{
-\item{future}{A character string or integer. This argument indicates how to set future Rt values. Supported
-options are to project using the Rt model ("project"), to use the latest estimate based on partial data ("latest"),
-to use the latest estimate based on data that is over 50\% complete ("estimate"). If an integer is supplied then the Rt estimate
-from this many days into the future (or past if negative) past will be used forwards in time.}
+\item{future}{A character string or integer. This argument indicates how to
+set future Rt values. Supported options are to project using the Rt model
+("project"), to use the latest estimate based on partial data ("latest"),
+to use the latest estimate based on data that is over 50\% complete
+("estimate"). If an integer is supplied then the Rt estimate from this many
+days into the future (or past if negative) past will be used forwards in
+time.}
 
 \item{delay}{Numeric mean delay}
 }
@@ -19,7 +22,8 @@ A list containing a logical called fixed and an integer called from
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Converts the \code{future} argument from \code{rt_opts()} into arguments that can be passed to \code{stan}.
+Converts the \code{future} argument from \code{rt_opts()} into arguments that can be
+passed to \code{stan}.
 }
 \author{
 Sam Abbott

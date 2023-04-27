@@ -4,7 +4,7 @@
 \alias{calc_summary_stats}
 \title{Calculate Summary Statistics}
 \usage{
-calc_summary_stats(samples, summarise_by = c())
+calc_summary_stats(samples, summarise_by = NULL)
 }
 \arguments{
 \item{samples}{A data.table containing at least a value variable}
@@ -12,12 +12,13 @@ calc_summary_stats(samples, summarise_by = c())
 \item{summarise_by}{A character vector of variables to group by.}
 }
 \value{
-A data.table containing the upper and lower bounds for the specified credible interval
+A data.table containing the upper and lower bounds for the specified
+credible interval
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Calculate summary statistics from a data frame by group. Currently supports the
-mean, median and standard deviation.
+Calculate summary statistics from a data frame by group. Currently supports
+the mean, median and standard deviation.
 }
 \examples{
 samples <- data.frame(value = 1:10, type = "car")

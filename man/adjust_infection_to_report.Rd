@@ -14,26 +14,32 @@ adjust_infection_to_report(
 )
 }
 \arguments{
-\item{infections}{\code{data.table} containing a \code{date} variable and a numeric \code{cases} variable.}
+\item{infections}{\code{data.table} containing a \code{date} variable and a numeric
+\code{cases} variable.}
 
-\item{delay_defs}{A list of single row data.tables that each  defines a delay distribution (model, parameters and maximum delay for each model).
+\item{delay_defs}{A list of single row data.tables that each  defines a
+delay distribution (model, parameters and maximum delay for each model).
 See \code{lognorm_dist_def} for an example of the structure.}
 
-\item{reporting_model}{A function that takes a single numeric vector as an argument and returns a
-single numeric vector. Can be used to apply stochastic reporting effects. See the examples for details.}
+\item{reporting_model}{A function that takes a single numeric vector as an
+argument and returns a single numeric vector. Can be used to apply stochastic
+reporting effects. See the examples for details.}
 
-\item{reporting_effect}{A numeric vector of length 7 that allows the scaling of reported cases
-by the day on which they report (1 = Monday, 7 = Sunday). By default no scaling occurs.}
+\item{reporting_effect}{A numeric vector of length 7 that allows the scaling
+of reported cases by the day on which they report (1 = Monday, 7 = Sunday).
+By default no scaling occurs.}
 
-\item{type}{Character string indicating the method to use to transform counts. Supports either "sample"
-which approximates sampling or "median" would shift by the median of the distribution.}
+\item{type}{Character string indicating the method to use to transform
+counts. Supports either "sample"  which approximates sampling or "median"
+would shift by the median of the distribution.}
 
-\item{truncate_future}{Logical, should cases be truncated if they occur after the first date reported in the data.
-Defaults to \code{TRUE}.}
+\item{truncate_future}{Logical, should cases be truncated if they occur
+after the first date reported in the data. Defaults to \code{TRUE}.}
 }
 \value{
-A \code{data.table} containing a \code{date} variable (date of report) and a \code{cases} variable. If \code{return_onset = TRUE} there will be
-a third variable \code{reference} which indicates what the date variable refers to.
+A \code{data.table} containing a \code{date} variable (date of report) and a
+\code{cases} variable. If \code{return_onset = TRUE} there will be a third variable
+\code{reference} which indicates what the date variable refers to.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -61,7 +67,9 @@ incubation_def <- lognorm_dist_def(
 )
 
 # simple mapping
-report <- adjust_infection_to_report(cases, delay_defs = list(incubation_def, delay_def))
+report <- adjust_infection_to_report(
+ cases, delay_defs = list(incubation_def, delay_def)
+)
 print(report)
 
 # mapping with a weekly reporting effect

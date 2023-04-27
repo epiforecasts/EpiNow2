@@ -1,17 +1,24 @@
 #' Summarise Real-time Results
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' Used internally by `regional_summary` to produce a summary table of results. May be streamlined in later
-#' releases.
-#' @param regions An character string containing the list of regions to extract results for
-#' (must all have results for the same target date).
+#' Used internally by `regional_summary` to produce a summary table of results.
+#' May be streamlined in later releases.
+#'
+#' @param regions An character string containing the list of regions to extract
+#' results for (must all have results for the same target date).
+#'
 #' @param summaries A list of summary data frames as output by `epinow`
-#' @param results_dir An optional character string indicating the location of the results directory to extract results
-#' from.
+#'
+#' @param results_dir An optional character string indicating the location of
+#' the results directory to extract results from.
+#'
 #' @param target_date A character string indicating the target date to extract
 #' results for. All regions must have results
 #' for this date.
-#' @param region_scale A character string indicating the name to give the regions being summarised.
+#'
+#' @param region_scale A character string indicating the name to give the
+#' regions being summarised.
+#'
 #' @importFrom purrr safely map_chr map_dbl map_chr
 #' @importFrom data.table setorderv melt merge.data.table dcast
 #' @return A list of summary data
@@ -27,11 +34,17 @@ summarise_results <- function(regions,
 
   if (is.null(results_dir)) {
     if (is.null(summaries)) {
-      stop("Either a results directory or a list of summary data frames must be supplied")
+      stop(
+        "Either a results directory or a list of summary data frames must be",
+        " supplied"
+      )
     }
   } else {
     if (!is.null(summaries)) {
-      stop("Both a results directory and a list of summary data frames have been supplied.")
+      stop(
+        "Both a results directory and a list of summary data frames have been",
+        " supplied."
+      )
     }
   }
 
@@ -46,9 +59,11 @@ summarise_results <- function(regions,
       )
     }
 
-    load_data <- purrr::safely(get_result)
+    load_data <- purrr::safely(get_result) # nolint
 
-    estimates <- purrr::map(regions, ~ load_data(file = "summary.rds", region = .)[[1]])
+    estimates <- purrr::map(
+      regions, ~ load_data(file = "summary.rds", region = .)[[1]]
+    )
     names(estimates) <- regions
   } else {
     estimates <- summaries
@@ -77,7 +92,10 @@ summarise_results <- function(regions,
   numeric_estimates <- data.table::merge.data.table(numeric_estimates,
     estimates[measure %in% "Expected change in daily cases"][
       ,
-      .(region, `Expected change in daily cases` = estimate, prob_control = numeric_estimate)
+      .(region,
+       `Expected change in daily cases` = estimate,
+       prob_control = numeric_estimate
+      )
     ],
     by = "region", all.x = TRUE
   )
@@ -86,7 +104,9 @@ summarise_results <- function(regions,
     data.table::setorderv(numeric_estimates, cols = "median", order = -1)$region
   )
 
-  numeric_estimates <- numeric_estimates[, region := factor(region, levels = high_inc_regions)]
+  numeric_estimates <- numeric_estimates[,
+    region := factor(region, levels = high_inc_regions)
+  ]
 
   # clean up joined estimate table and munge into a presentation format
   estimates <- estimates[, numeric_estimate := NULL][
@@ -96,13 +116,17 @@ summarise_results <- function(regions,
       "Expected change in daily cases",
       "Effective reproduction no.",
       "Rate of growth",
-      "Doubling/halving time (days)"
+      "Doubling/halving time (days)" # nolint
     ))
   ]
 
-  estimates <- data.table::dcast(estimates, region ~ ..., value.var = "estimate")
+  estimates <- data.table::dcast(
+    estimates, region ~ ..., value.var = "estimate"
+  )
   estimates <- estimates[, (region_scale) := region][, region := NULL]
-  estimates <- estimates[, c(region_scale, colnames(estimates)[-ncol(estimates)]), with = FALSE]
+  estimates <- estimates[,
+    c(region_scale, colnames(estimates)[-ncol(estimates)]), with = FALSE
+  ]
 
   out <- list(estimates, numeric_estimates, high_inc_regions)
   names(out) <- c("table", "data", "regions_by_inc")
@@ -143,8 +167,12 @@ summarise_results <- function(regions,
 #' @examples
 #' \donttest{
 #' # example delays
-#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' generation_time <- get_generation_time(
+#'  disease = "SARS-CoV-2", source = "ganyani"
+#' )
+#' incubation_period <- get_incubation_period(
+#'  disease = "SARS-CoV-2", source = "lauer"
+#' )
 #' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 30)
 #'
 #' # example case vector from EpiSoon
@@ -181,13 +209,15 @@ regional_summary <- function(regional_output = NULL,
                              ...) {
   reported_cases <- data.table::setDT(reported_cases)
   if (is.null(summary_dir)) {
-    futile.logger::flog.info("No summary directory specified so returning summary output")
+    futile.logger::flog.info(
+      "No summary directory specified so returning summary output"
+    )
     return_output <- TRUE
   } else {
     futile.logger::flog.info("Saving summary to : %s", summary_dir)
   }
 
-  if (!is.null(results_dir) & !is.null(regional_output)) {
+  if (!is.null(results_dir) && !is.null(regional_output)) {
     stop("Only one of results_dir and regional_output should be specified")
   }
 
@@ -222,7 +252,9 @@ regional_summary <- function(regional_output = NULL,
       dir.create(summary_dir, recursive = TRUE)
     }
     saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
-    data.table::fwrite(reported_cases, file.path(summary_dir, "reported_cases.csv"))
+    data.table::fwrite(
+      reported_cases, file.path(summary_dir, "reported_cases.csv")
+    )
   }
 
   if (!is.null(regional_output)) {
@@ -262,14 +294,20 @@ regional_summary <- function(regional_output = NULL,
   summarised_results$data <- force_factor(summarised_results$data)
 
   if (!is.null(summary_dir)) {
-    data.table::fwrite(summarised_results$table, file.path(summary_dir, "summary_table.csv"))
-    data.table::fwrite(summarised_results$data, file.path(summary_dir, "summary_data.csv"))
+    data.table::fwrite(
+      summarised_results$table, file.path(summary_dir, "summary_table.csv")
+    )
+    data.table::fwrite(
+      summarised_results$data, file.path(summary_dir, "summary_data.csv")
+    )
   }
 
   # adaptive add a logscale to the summary plot based on range of observed cases
-  current_inf <- summarised_results$data[metric %in% "New confirmed cases by infection date"]
-  uppers <- grepl("upper_", colnames(current_inf))
-  lowers <- grepl("lower_", colnames(current_inf))
+  current_inf <- summarised_results$data[
+    metric %in% "New confirmed cases by infection date"
+  ]
+  uppers <- grepl("upper_", colnames(current_inf), fixed = TRUE) # nolint
+  lowers <- grepl("lower_", colnames(current_inf), fixed = TRUE) # nolint
   log_cases <- (max(current_inf[, ..uppers], na.rm = TRUE) /
     min(current_inf[, ..lowers], na.rm = TRUE)) > 1000
 
@@ -299,7 +337,7 @@ regional_summary <- function(regional_output = NULL,
       }
       save_ggplot(summary_plot, "summary_plot.png",
         width = ifelse(length(regions) > 60,
-          ifelse(length(regions) > 120, 36, 24),
+          ifelse(length(regions) > 120, 36, 24), # nolint
           12
         )
       )
@@ -311,7 +349,9 @@ regional_summary <- function(regional_output = NULL,
     )
 
     high_plots <- report_plots(
-      summarised_estimates = results$estimates$summarised[region %in% most_reports],
+      summarised_estimates = results$estimates$summarised[
+        region %in% most_reports
+      ],
       reported = reported_cases[region %in% most_reports],
       max_plot = max_plot, ...
     )
@@ -330,9 +370,11 @@ regional_summary <- function(regional_output = NULL,
     }
 
     if (all_regions) {
+      # nolint start
       plots_per_row <- ifelse(length(regions) > 60,
         ifelse(length(regions) > 120, 8, 5), 3
-      )
+      ) 
+      # nolint end
 
       plots <- report_plots(
         summarised_estimates = results$estimates$summarised,
@@ -377,7 +419,7 @@ regional_summary <- function(regional_output = NULL,
     out$reported_cases <- reported_cases
     out$high_plots <- high_plots
 
-    if (all_regions & plot) {
+    if (all_regions && plot) {
       out$plots <- plots
     }
     return(out)
@@ -389,16 +431,25 @@ regional_summary <- function(regional_output = NULL,
 #' Summarise rt and cases
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' Produces summarised data frames of output across regions. Used internally by `regional_summary`.
-#' @param regional_results A list of dataframes as produced by `get_regional_results`
+#' Produces summarised data frames of output across regions. Used internally by
+#' `regional_summary`.
+#'
+#' @param regional_results A list of dataframes as produced by
+#' `get_regional_results`
+#'
 #' @param results_dir Character string indicating the directory from which to
 #' extract results.
+#'
 #' @param summary_dir Character string the directory into which to save results
 #' as a csv.
-#' @param type Character string, the region identifier to apply (defaults to region).
+#'
+#' @param type Character string, the region identifier to apply (defaults to
+#' region).
+#'
 #' @inheritParams get_regional_results
 #' @seealso regional_summary
-#' @return A list of summarised Rt, cases by date of infection and cases by date of report
+#' @return A list of summarised Rt, cases by date of infection and cases by
+#' date of report
 #' @export
 #' @importFrom data.table setnames fwrite setorderv
 summarise_key_measures <- function(regional_results = NULL,
@@ -445,17 +496,19 @@ summarise_key_measures <- function(regional_results = NULL,
   save_variable(out$growth_rate, "growth_rate")
 
   # clean and save case estimates
-  out$cases_by_infection <- summarise_variable(sum_est[variable == "infections"][
-    ,
+  out$cases_by_infection <- summarise_variable(
+    sum_est[variable == "infections"][,
     variable := NULL
-  ], 1)
+    ], 1
+  )
   save_variable(out$cases_by_infection, "cases_by_infection")
 
   # clean and save case estimates
-  out$cases_by_report <- summarise_variable(sum_est[variable == "reported_cases"][
-    ,
+  out$cases_by_report <- summarise_variable(
+    sum_est[variable == "reported_cases"][,
     variable := NULL
-  ], 1)
+    ], 1
+  )
   save_variable(out$cases_by_report, "cases_by_report")
   return(out)
 }
@@ -463,6 +516,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #'
 #' @description `r lifecycle::badge("maturing")`
 #' Used internally by `regional_epinow` to summarise region run times.
+#'
 #' @seealso regional_summary regional_epinow
 #' @inheritParams regional_summary
 #' @inheritParams epinow
@@ -473,8 +527,12 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @examples
 #' \donttest{
 #' # example delays
-#' generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-#' incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' generation_time <- get_generation_time(
+#'  disease = "SARS-CoV-2", source = "ganyani"
+#' )
+#' incubation_period <- get_incubation_period(
+#'  disease = "SARS-CoV-2", source = "lauer"
+#' )
 #' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 15)
 #'
 #' cases <- example_confirmed[1:30]
@@ -498,14 +556,18 @@ regional_runtimes <- function(regional_output = NULL,
                               target_folder = NULL,
                               target_date = NULL,
                               return_output = FALSE) {
-  if (is.null(target_folder) & is.null(regional_output)) {
+  if (is.null(target_folder) && is.null(regional_output)) {
     stop("Either an output should be passed in or a target folder specified")
   }
   if (is.null(target_folder)) {
-    futile.logger::flog.info("No target directory specified so returning timings")
+    futile.logger::flog.info(
+      "No target directory specified so returning timings"
+    )
     return_output <- TRUE
   } else {
-    futile.logger::flog.info("Saving timings information to : %s", target_folder)
+    futile.logger::flog.info(
+      "Saving timings information to : %s", target_folder
+    )
   }
   if (!is.null(regional_output)) {
     timings <- data.table::data.table(
@@ -516,7 +578,7 @@ regional_runtimes <- function(regional_output = NULL,
     if (is.null(target_date)) {
       target_date <- "latest"
     }
-    safe_read <- purrr::safely(readRDS)
+    safe_read <- purrr::safely(readRDS) # nolint
     regions <- get_regions(target_folder)
     timings <- data.table::data.table(
       region = regions,
@@ -543,9 +605,10 @@ regional_runtimes <- function(regional_output = NULL,
 #' Adds symmetric a credible interval based on quantiles.
 #' @param samples A data.table containing at least a value variable
 #' @param summarise_by A character vector of variables to group by.
-#' @param CrI Numeric between 0 and 1. The credible interval for which to return values.
-#' Defaults to 0.9.
-#' @return A data.table containing the upper and lower bounds for the specified credible interval
+#' @param CrI Numeric between 0 and 1. The credible interval for which to
+#' return values. Defaults to 0.9.
+#' @return A data.table containing the upper and lower bounds for the specified
+#' credible interval.
 #' @export
 #' @importFrom data.table copy setDT
 #' @importFrom stats quantile
@@ -555,7 +618,7 @@ regional_runtimes <- function(regional_output = NULL,
 #' calc_CrI(samples)
 #' # add 90% credible interval grouped by type
 #' calc_CrI(samples, summarise_by = "type")
-calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
+calc_CrI <- function(samples, summarise_by = NULL, CrI = 0.9) {
   samples <- data.table::setDT(samples)
   CrI_half <- CrI / 2
   lower_CrI <- 0.5 - CrI_half
@@ -576,10 +639,14 @@ calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Adds symmetric credible intervals based on quantiles.
+#'
 #' @param CrIs Numeric vector of credible intervals to calculate.
+#'
 #' @inheritParams calc_CrI
-#' @return A data.table containing the `summarise_by` variables and the specified lower and upper
-#' credible intervals
+#'
+#' @return A data.table containing the `summarise_by` variables and the
+#' specified lower and upper credible intervals.
+#'
 #' @importFrom purrr map
 #' @importFrom data.table rbindlist dcast
 #' @export
@@ -589,7 +656,7 @@ calc_CrI <- function(samples, summarise_by = c(), CrI = 0.9) {
 #' calc_CrIs(samples)
 #' # add 90% credible interval grouped by type
 #' calc_CrIs(samples, summarise_by = "type")
-calc_CrIs <- function(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9)) {
+calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
   CrIs <- CrIs[order(CrIs)]
   with_CrIs <- purrr::map(CrIs, ~ calc_CrI(
     samples = samples,
@@ -599,8 +666,13 @@ calc_CrIs <- function(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9)) {
 
   with_CrIs <- data.table::rbindlist(with_CrIs)
   scale_CrIs <- round(CrIs * 100, 1)
-  order_CrIs <- c(paste0("lower_", rev(scale_CrIs)), paste0("upper_", scale_CrIs))
-  with_CrIs <- data.table::dcast(with_CrIs, ... ~ factor(CrI, levels = order_CrIs),
+  # nolint start
+  order_CrIs <- c(
+    paste0("lower_", rev(scale_CrIs)), paste0("upper_", scale_CrIs)
+  ) 
+  # nolint end
+  with_CrIs <- data.table::dcast(
+    with_CrIs, ... ~ factor(CrI, levels = order_CrIs),
     value.var = "value"
   )
   return(with_CrIs)
@@ -621,8 +693,8 @@ calc_CrIs <- function(samples, summarise_by = c(), CrIs = c(0.2, 0.5, 0.9)) {
 #' )
 #' extract_CrIs(summarised)
 extract_CrIs <- function(summarised) {
-  CrIs <- grep("lower_", colnames(summarised), value = TRUE)
-  CrIs <- gsub("lower_", "", CrIs)
+  CrIs <- grep("lower_", colnames(summarised), value = TRUE, fixed = TRUE)
+  CrIs <- gsub("lower_", "", CrIs, fixed = TRUE)
   CrIs <- as.numeric(CrIs)
   return(CrIs)
 }
@@ -630,9 +702,10 @@ extract_CrIs <- function(summarised) {
 #' Calculate Summary Statistics
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Calculate summary statistics from a data frame by group. Currently supports the
-#' mean, median and standard deviation.
-#' @return A data.table containing the upper and lower bounds for the specified credible interval
+#' Calculate summary statistics from a data frame by group. Currently supports
+#' the mean, median and standard deviation.
+#' @return A data.table containing the upper and lower bounds for the specified
+#' credible interval
 #' @export
 #' @inheritParams calc_CrI
 #' @importFrom data.table copy setDT
@@ -642,7 +715,7 @@ extract_CrIs <- function(summarised) {
 #' calc_summary_stats(samples)
 #' #  by type
 #' calc_summary_stats(samples, summarise_by = "type")
-calc_summary_stats <- function(samples, summarise_by = c()) {
+calc_summary_stats <- function(samples, summarise_by = NULL) {
   samples <- data.table::setDT(samples)
   sum_stats <-
     data.table::copy(samples)[, .(
@@ -658,10 +731,14 @@ calc_summary_stats <- function(samples, summarise_by = c()) {
 #' Calculate All Summary Measures
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Calculate summary statistics and credible intervals from a data frame by group.
-#' @param order_by A character vector of parameters to order by, defaults to all `summarise_by`
-#' variables.
+#' Calculate summary statistics and credible intervals from a data frame by
+#' group.
+#'
+#' @param order_by A character vector of parameters to order by, defaults to
+#' all `summarise_by` variables.
+#'
 #' @return A data.table containing summary statistics by group.
+#'
 #' @export
 #' @inheritParams calc_CrIs
 #' @importFrom data.table setorderv
@@ -703,10 +780,14 @@ calc_summary_measures <- function(samples,
 #' @description `r lifecycle::badge("stable")`
 #'  \code{summary} method for class "epinow".
 #' @param object A list of output as produced by "epinow".
-#' @param output A character string of output to summarise. Defaults to "estimates"
-#' but also supports "forecast", and "estimated_reported_cases".
+#'
+#' @param output A character string of output to summarise. Defaults to
+#' "estimates" but also supports "forecast", and "estimated_reported_cases".
+#'
 #' @inheritParams summary.estimate_infections
+#'
 #' @param ... Pass additional summary arguments to lower level methods
+#'
 #' @seealso summary.estimate_infections epinow
 #' @aliases summary
 #' @method summary epinow
@@ -739,16 +820,23 @@ summary.epinow <- function(object, output = "estimates",
 #'
 #' @description `r lifecycle::badge("stable")`
 #' \code{summary} method for class "estimate_infections".
+#'
 #' @param object A list of output as produced by "estimate_infections".
-#' @param type A character vector of data types to return. Defaults to "snapshot"
-#' but also supports "parameters", and "samples". "snapshot" returns a summary at
-#' a given date (by default the latest date informed by data). "parameters" returns
-#' summarised parameter estimates that can be further filtered using `params` to
-#' show just the parameters of interest and date. "samples" similarly returns posterior
+#'
+#' @param type A character vector of data types to return. Defaults to
+#' "snapshot" but also supports "parameters", and "samples". "snapshot" return
+#' a summary at a given date (by default the latest date informed by data).
+#' "parameters" returns summarised parameter estimates that can be further
+#' filtered using `params` to show just the parameters of interest and date.
+#' "samples" similarly returns posterior
 #' samples.
+#'
 #' @param date A date in the form "yyyy-mm-dd" to inspect estimates for.
+#'
 #' @param params A character vector of parameters to filter for.
+#'
 #' @param ... Pass additional arguments to `report_summary`
+#'
 #' @seealso summary estimate_infections report_summary
 #' @method summary estimate_infections
 #' @return Returns a data frame of summary output
@@ -758,7 +846,9 @@ summary.estimate_infections <- function(object, type = "snapshot",
   choices <- c("snapshot", "parameters", "samples")
   type <- match.arg(type, choices, several.ok = FALSE)
   if (is.null(date)) {
-    target_date <- unique(object$summarised[type != "forecast"][date == max(date)]$date)
+    target_date <- unique(
+      object$summarised[type != "forecast"][date == max(date)]$date
+    )
   } else {
     target_date <- as.Date(date)
   }
@@ -766,7 +856,9 @@ summary.estimate_infections <- function(object, type = "snapshot",
   if (type %in% "snapshot") {
     out <- report_summary(
       summarised_estimates = object$summarised[date == target_date],
-      rt_samples = object$samples[variable == "R"][date == target_date, .(sample, value)],
+      rt_samples = object$samples[variable == "R"][
+        date == target_date, .(sample, value)
+      ],
       ...
     )
   } else if (type %in% c("parameters", "samples")) {

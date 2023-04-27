@@ -1,31 +1,15 @@
-linters: with_defaults(
-    line_length_linter = line_length_linter(120)
+linters: linters_with_tags(
+    tags = NULL, # include all linters
+    implicit_integer_linter = NULL,
+    extraction_operator_linter = NULL,
+    undesirable_function_linter = NULL,
+    function_argument_linter = NULL,
+    indentation_linter = NULL,
+    object_name_linter = NULL,
+    cyclocomp_linter(25L)
   )
-exclusions: list(
-    "inst/dev/load-stan-functions.R",
-    "inst/dev/recover-synthetic.R",
-    "inst/dev/test-secondary.R",
-    "inst/pkg-structure/generate-pkgstructure-report.R",
-    "R/stanmodels.R",
-    "tests/spelling.R",
-    "tests/testthat.R",
-    "tests/testthat/test-calc_CrI.R",
-    "tests/testthat/test-calc_CrIs.R",
-    "tests/testthat/test-calc_summary_measures.R",
-    "tests/testthat/test-calc_summary_stats.R",
-    "tests/testthat/test-create_future-rt.R",
-    "tests/testthat/test-create_stan_args.R",
-    "tests/testthat/test-epinow.R",
-    "tests/testthat/test-estimate_infections.R",
-    "tests/testthat/test-extract_CrIs.R",
-    "tests/testthat/test-get_dist.R",
-    "tests/testthat/test-set_dt_single_thread.R",
-    "tests/testthat/test-match_output_arguments.R",
-    "tests/testthat/test-regional_epinow.R",
-    "tests/testthat/test-regional_runtimes.R",
-    "tests/testthat/test-setup_future.R",
-    "tests/testthat/test-simulate_infections.R",
-    "tests/testthat/test-stan-infections.R",
-    "tests/testthat/test-stan-rt.R",
-    "tests/testthat/test-stan-secondary.R"
+exclusions: c(
+    list.files("tests", recursive = TRUE, full.names = TRUE),
+    list.files("inst", recursive = TRUE, full.names = TRUE),
+    "R/stanmodels.R"
   )

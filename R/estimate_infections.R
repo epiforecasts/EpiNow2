@@ -48,7 +48,8 @@
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams create_clean_reported_cases
 #' @inheritParams calc_CrIs
-#' @importFrom data.table data.table copy merge.data.table as.data.table setorder rbindlist melt .N setDT
+#' @importFrom data.table data.table copy merge.data.table as.data.table
+#' @importFrom data.table setorder rbindlist melt .N setDT
 #' @importFrom purrr transpose
 #' @importFrom lubridate days
 #' @importFrom purrr transpose
@@ -87,7 +88,8 @@
 #' # summary plot
 #' plot(def)
 #'
-#' # decreasing the accuracy of the approximate Gaussian to speed up computation.
+#' # decreasing the accuracy of the approximate Gaussian to speed up
+#' #computation.
 #' # These settings are an area of active research. See ?gp_opts for details.
 #' agp <- estimate_infections(reported_cases,
 #'   generation_time = generation_time,
@@ -185,13 +187,17 @@
 #' plot(fixed)
 #'
 #' # no delays
-#' no_delay <- estimate_infections(reported_cases, generation_time = generation_time)
+#' no_delay <- estimate_infections(
+#'  reported_cases, generation_time = generation_time
+#' )
 #' plot(no_delay)
 #'
 #' # break point but otherwise static Rt
 #' # with uncertain reporting delays
 #' bp_cases <- data.table::copy(reported_cases)
-#' bp_cases <- bp_cases[, breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)]
+#' bp_cases <- bp_cases[,
+#'  breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)
+#' ]
 #' bkp <- estimate_infections(bp_cases,
 #'   generation_time = generation_time,
 #'   delays = delay_opts(incubation_period, reporting_delay),
@@ -263,7 +269,9 @@ estimate_infections <- function(reported_cases,
   # Create mean shifted reported cases as prior
   reported_cases <- data.table::rbindlist(list(
     data.table::data.table(
-      date = seq(min(reported_cases$date) - delays$seeding_time - backcalc$prior_window,
+      date =
+        seq(min(reported_cases$date) - delays$seeding_time -
+          backcalc$prior_window,
         min(reported_cases$date) - 1,
         by = "days"
       ),
@@ -304,7 +312,7 @@ estimate_infections <- function(reported_cases,
 
   # Initialise fitting by using a previous fit or fitting to cumulative cases
   if (!is.null(args$init_fit)) {
-    if (!("stanfit" %in% class(args$init_fit))) {
+    if (!inherits(args$init_fit, "stanfit")) {
       if (args$init_fit %in% "cumulative") {
         args$init_fit <- init_cumulative_fit(args,
           warmup = 50, samples = 50,
@@ -339,7 +347,7 @@ estimate_infections <- function(reported_cases,
     out$prior_infections <- shifted_cases[
       ,
       .(
-        parameter = "prior_infections", time = 1:.N,
+        parameter = "prior_infections", time = seq_len(.N),
         date, value = confirm, sample = 1
       )
     ]
@@ -395,10 +403,12 @@ estimate_infections <- function(reported_cases,
 #' @author Sam Abbott
 init_cumulative_fit <- function(args, samples = 50, warmup = 50,
                                 id = "init", verbose = FALSE) {
-  futile.logger::flog.debug("%s: Fitting to cumulative data to initialise chains", id,
+  futile.logger::flog.debug(
+    "%s: Fitting to cumulative data to initialise chains", id,
     name = "EpiNow2.epinow.estimate_infections.fit"
   )
-  # copy main run settings and override to use only 100 iterations and a single chain
+  # copy main run settings and override to use only 100 iterations and a single
+  # chain
   initial_args <- list(
     object = args$object,
     data = args$data,
@@ -412,8 +422,8 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
     control = list(adapt_delta = 0.9, max_treedepth = 13),
     refresh = ifelse(verbose, 50, -1)
   )
-  # change observations to be cumulative in order to protect against noise and give
-  # an approximate fit (though for Rt constrained to be > 1)
+  # change observations to be cumulative in order to protect against noise and
+  # give an approximate fit (though for Rt constrained to be > 1)
   initial_args$data$cases <- cumsum(initial_args$data$cases)
   initial_args$data$shifted_cases <- cumsum(initial_args$data$shifted_cases)
 
@@ -462,7 +472,8 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 #' @importFrom rlang abort cnd_muffle
 #' @return A stan model object
 #' @author Sam Abbott
-fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, id = "stan") {
+fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
+                                id = "stan") {
   args$method <- NULL
   args$max_execution_time <- NULL
   args$future <- NULL
@@ -496,14 +507,17 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
             onTimeout = "silent"
           ),
           warning = function(w) {
-            futile.logger::flog.warn("%s (chain: %s): %s - %s", id, chain, w$message, toString(w$call),
+            futile.logger::flog.warn(
+              "%s (chain: %s): %s - %s", id, chain, w$message, toString(w$call),
               name = "EpiNow2.epinow.estimate_infections.fit"
             )
             rlang::cnd_muffle(w)
           }
         ),
         error = function(e) {
-          error_text <- sprintf("%s (chain: %s): %s - %s", id, chain, e$message, toString(e$call))
+          error_text <- sprintf(
+            "%s (chain: %s): %s - %s", id, chain, e$message, toString(e$call)
+          )
           futile.logger::flog.error(error_text,
             name = "EpiNow2.epinow.estimate_infections.fit"
           )
@@ -552,17 +566,22 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf, 
     if (length(fit) == 0) {
       fit <- NULL
       if (is.null(fit)) {
-        rlang::abort("all chains failed - try inspecting the output for errors or increasing the max_execution_time")
+        rlang::abort(
+          "all chains failed - try inspecting the output for errors or",
+          " increasing the max_execution_time"
+        )
       }
     } else {
       failed_chains <- chains - length(fit)
       if (failed_chains > 0) {
-        futile.logger::flog.warn("%s: %s chains failed or were timed out.", id, failed_chains,
+        futile.logger::flog.warn(
+          "%s: %s chains failed or were timed out.", id, failed_chains,
           name = "EpiNow2.epinow.estimate_infections.fit"
         )
         if ((chains - failed_chains) < 2) {
           rlang::abort(
-            "model fitting failed as too few chains were returned to assess convergence (2 or more required)"
+            "model fitting failed as too few chains were returned to assess",
+             " convergence (2 or more required)"
           )
         }
       }
@@ -588,8 +607,10 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
   args$method <- NULL
   futile.logger::flog.debug(
     paste0(
-      "%s: Running in approximate mode for ", args$iter, " iterations (with ", args$trials, " attempts). Extracting ",
-      args$output_samples, " approximate posterior samples for ", args$data$t, " time steps of which ",
+      "%s: Running in approximate mode for ", args$iter,
+      " iterations (with ", args$trials, " attempts). Extracting ",
+      args$output_samples, " approximate posterior samples for ",
+      args$data$t, " time steps of which ",
       args$data$horizon, " are a forecast"
     ),
     id,
@@ -613,11 +634,11 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
     }
     return(fit)
   }
-  safe_vb <- purrr::safely(fit_vb)
+  safe_vb <- purrr::safely(fit_vb) # nolint
   fit <- NULL
   current_trials <- 0
 
-  while (current_trials <= trials & is.null(fit)) {
+  while (current_trials <= trials && is.null(fit)) {
     fit <- safe_vb(args)
 
     error <- fit[[2]]
@@ -627,7 +648,9 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
 
   if (is.null(fit)) {
     if (is.null(fit)) {
-      futile.logger::flog.error("%s: Fitting failed - try increasing stan_args$trials or inspecting the model input",
+      futile.logger::flog.error(
+        "%s: Fitting failed - try increasing stan_args$trials or inspecting",
+        " the model input",
         id,
         name = "EpiNow2.epinow.estimate_infections.fit"
       )
@@ -664,12 +687,15 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
                        CrIs) {
   format_out <- list()
   # bind all samples together
-  format_out$samples <- data.table::rbindlist(posterior_samples, fill = TRUE, idcol = "variable")
+  format_out$samples <- data.table::rbindlist(
+    posterior_samples, fill = TRUE, idcol = "variable"
+  )
 
   if (is.null(format_out$samples$strat)) {
     format_out$samples <- format_out$samples[, strat := NA]
   }
   # add type based on horizon
+  # nolint start
   format_out$samples <- format_out$samples[
     ,
     type := data.table::fifelse(
@@ -682,15 +708,17 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
       )
     )
   ]
+  # nolint end
 
   # remove burn in period if specified
   if (burn_in > 0) {
-    futile.logger::flog.info("burn_in is depreciated as of EpiNow2 1.3.0 - if using
-                             this feature please contact the developers",
+    futile.logger::flog.info(
+      "burn_in is depreciated as of EpiNow2 1.3.0 - if using this feature",
+      " please contact the developers",
       name = "EpiNow2.epinow.estimate_infections"
     )
-    format_out$samples <- 
-      format_out$samples[is.na(date) | 
+    format_out$samples <-
+      format_out$samples[is.na(date) ||
         date >= (start_date + lubridate::days(burn_in))]
   }
 

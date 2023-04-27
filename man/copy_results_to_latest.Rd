@@ -7,7 +7,8 @@
 copy_results_to_latest(target_folder = NULL, latest_folder = NULL)
 }
 \arguments{
-\item{target_folder}{Character string specifying where to save results (will create if not present).}
+\item{target_folder}{Character string specifying where to save results (will
+create if not present).}
 
 \item{latest_folder}{Character string containing the path to the latest
 target folder. As produced by \code{setup_target_folder}.}

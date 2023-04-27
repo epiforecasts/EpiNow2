@@ -1,11 +1,14 @@
 #' Clean Nowcasts for a Supplied Date
 #'
 #' @description `r lifecycle::badge("stable")`
-#' This function removes nowcasts in the format produced by `EpiNow2` from a target
-#' directory for the date supplied.
+#' This function removes nowcasts in the format produced by `EpiNow2` from a
+#' target directory for the date supplied.
+#'
 #' @param date Date object. Defaults to today's date
-#' @param nowcast_dir Character string giving the filepath to the nowcast results directory. Defaults
-#' to the current directory.
+#'
+#' @param nowcast_dir Character string giving the filepath to the nowcast
+#' results directory. Defaults to the current directory.
+#'
 #' @importFrom purrr walk
 #' @importFrom futile.logger flog.info
 #' @return No return value, called for side effects
@@ -38,11 +41,15 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Combines a list of values into formatted credible intervals.
+#'
 #' @param value List of value to map into a string. Requires,
 #'  `point`, `lower`, and `upper.`
-#' @param CrI Numeric, credible interval to report. Defaults to 90
+#'
+#' @param CrI Numeric, credible interval to report. Defaults to 90.
+#'
 #' @param reverse Logical, defaults to FALSE. Should the reported
 #' credible interval be switched.
+#'
 #' @return A character vector formatted for reporting
 #' @export
 #' @examples
@@ -66,7 +73,8 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Categorises a numeric variable into "Increasing" (< 0.05),
-#' "Likely increasing" (<0.4), "Stable" (< 0.6), "Likely decreasing" (< 0.95), "Decreasing" (<= 1)
+#' "Likely increasing" (<0.4), "Stable" (< 0.6),
+#' "Likely decreasing" (< 0.95), "Decreasing" (<= 1)
 #' @param var Numeric variable to be categorised
 #'
 #' @return A character variable.
@@ -77,6 +85,7 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 #'
 #' map_prob_change(var)
 map_prob_change <- function(var) {
+  # nolint start
   var <- ifelse(var < 0.05, "Increasing",
     ifelse(var < 0.4, "Likely increasing",
       ifelse(var < 0.6, "Stable",
@@ -85,7 +94,8 @@ map_prob_change <- function(var) {
         )
       )
     )
-  )
+  ) 
+  # nolint end
   var <- factor(var, levels = c(
     "Increasing", "Likely increasing", "Stable",
     "Likely decreasing", "Decreasing"
@@ -96,12 +106,15 @@ map_prob_change <- function(var) {
 #' Convert Growth Rates to Reproduction numbers.
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf)
-#' for justification. Now handled internally by stan so may be removed in future updates if
-#' no user demand.
-#' @param r Numeric, rate of growth estimates
+#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
+#' for justification. Now handled internally by stan so may be removed in
+#' future updates if no user demand.
+#' @param r Numeric, rate of growth estimates.
+#'
 #' @param gamma_mean Numeric, mean of the gamma distribution
+#'
 #' @param gamma_sd Numeric, standard deviation of the gamma distribution
+#'.
 #' @return Numeric vector of reproduction number estimates
 #' @export
 #' @examples
@@ -115,9 +128,9 @@ growth_to_R <- function(r, gamma_mean, gamma_sd) {
 #' Convert Reproduction Numbers to Growth Rates
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf)
-#' for justification. Now handled internally by stan so may be removed in future updates if
-#' no user demand.
+#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
+#' for justification. Now handled internally by stan so may be removed in
+#' future updates if no user demand.
 #' @param R Numeric, Reproduction number estimates
 #' @inheritParams growth_to_R
 #' @return Numeric vector of reproduction number estimates
@@ -168,18 +181,24 @@ allocate_empty <- function(data, params, n = 0) {
 #' Match User Supplied Arguments with Supported Options
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Match user supplied arguments with supported options and return a logical list for
-#' internal usage
+#' Match user supplied arguments with supported options and return a logical
+#' list for internal usage.
+#'
 #' @param input_args A character vector of input arguments (can be partial).
+#'
 #' @param supported_args A character vector of supported output arguments.
-#' @param logger A character vector indicating the logger to target messages at. Defaults
-#' to no logging.
-#' @param level Character string defaulting to "info". Logging level see documentation
-#' of futile.logger for details. Supported options are "info" and "debug"
+#'
+#' @param logger A character vector indicating the logger to target messages
+#' at. Defaults to no logging.
+#'
+#' @param level Character string defaulting to "info". Logging level see
+#' documentation of futile.logger for details. Supported options are "info" and
+#' "debug".
+#'
 #' @return A logical vector of named output arguments
 #' @importFrom  futile.logger flog.info flog.debug
-match_output_arguments <- function(input_args = c(),
-                                   supported_args = c(),
+match_output_arguments <- function(input_args = NULL,
+                                   supported_args = NULL,
                                    logger = NULL,
                                    level = "info") {
   if (level %in% "info") {
@@ -193,7 +212,7 @@ match_output_arguments <- function(input_args = c(),
 
   # get arguments supplied and linked to supported args
   found_args <- lapply(input_args, function(arg) {
-    supported_args[grepl(arg, supported_args)]
+    grep(arg, supported_args, value = TRUE)
   })
   found_args <- unlist(found_args)
   found_args <- unique(found_args)
@@ -202,7 +221,7 @@ match_output_arguments <- function(input_args = c(),
   if (!is.null(logger)) {
     if (length(found_args) > 0) {
       flog_fn("Producing following optional outputs: %s",
-        paste(found_args, collapse = ", "),
+        toString(found_args),
         name = logger
       )
     } else {
@@ -221,11 +240,16 @@ match_output_arguments <- function(input_args = c(),
 #'
 #' @description `r lifecycle::badge("stable")`
 #' his function exposes internal stan functions in R from a user
-#' supplied list of target files. Allows for testing of stan functions in R and potentially
-#' user use in R code.
-#' @param files A character vector indicating the target files
-#' @param target_dir A character string indicating the target directory for the file
+#' supplied list of target files. Allows for testing of stan functions in R and
+#' potentially user use in R code.
+#'
+#' @param files A character vector indicating the target files.
+#'
+#' @param target_dir A character string indicating the target directory for the
+#' file.
+#'
 #' @param ... Additional arguments passed to `rstan::expose_stan_functions`.
+#'
 #' @return No return value, called for side effects
 #' @export
 #' @importFrom rstan expose_stan_functions stanc
@@ -396,28 +420,32 @@ set_dt_single_thread <- function() {
   )
 }
 
-#' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp rgamma rlnorm rnorm rpois runif sd var
+#' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
 #' @importFrom lifecycle deprecate_warn
+#' @importFrom stats rlnorm rnorm rpois runif sd var rgamma
 globalVariables(
   c(
     "bottom", "cases", "confidence", "confirm", "country_code", "crps",
     "cum_cases", "Date", "date_confirm", "date_confirmation", "date_onset",
     "date_onset_sample", "date_onset_symptoms", "date_onset.x", "date_onset.y",
-    "date_report", "day", "doubling_time", "effect", "Effective reproduction no.",
-    "estimates", "Expected change in daily cases", "fit_meas", "goodness_of_fit",
+    "date_report", "day", "doubling_time", "effect",
+    "Effective reproduction no.", "estimates",
+    "Expected change in daily cases", "fit_meas", "goodness_of_fit",
     "gt_sample", "import_status", "imported", "index", "latest", "little_r",
-    "lower", "max_time", "mean_R", "Mean(R)", "metric", "mid_lower", "mid_upper",
-    "min_time", "model", "modifier", "n", "New", "confirmed cases by infection date",
-    "overall_little_r", "params", "prob_control", "provnum_ne", "R0_range",
-    "region", "region_code", "report_delay", "results_dir", "rt", "rt_type",
+    "lower", "max_time", "mean_R", "Mean(R)", "metric", "mid_lower",
+    "mid_upper", "min_time", "model", "modifier", "n", "New",
+    "confirmed cases by infection date", "overall_little_r", "params",
+    "prob_control", "provnum_ne", "R0_range", "region", "region_code",
+    "report_delay", "results_dir", "rt", "rt_type",
     "sample_R", "sampled_r", "sd_R", "sd_rt", "Std(R)", "t_end", "t_start",
     "target_date", "time", "time_varying_r", "top", "total", "type", "upper",
     "value", "var", "vars", "viridis_palette", "window", ".", "%>%",
     "New confirmed cases by infection date", "Data", "R", "reference",
     ".SD", "day_of_week", "forecast_type", "measure", "numeric_estimate",
-    "point", "strat", "estimate", "breakpoint", "variable", "value.V1", "central_lower", "central_upper",
-    "mean_sd", "sd_sd", "average_7", "..lowers", "..upper_CrI", "..uppers", "timing",
-    "dataset", "last_confirm", "report_date", "secondary", "id",
-    "conv", "meanlog", "primary", "scaled", "scaling", "sdlog"
+    "point", "strat", "estimate", "breakpoint", "variable", "value.V1",
+    "central_lower", "central_upper", "mean_sd", "sd_sd", "average_7",
+    "..lowers", "..upper_CrI", "..uppers", "timing", "dataset", "last_confirm",
+    "report_date", "secondary", "id", "conv", "meanlog", "primary", "scaled",
+    "scaling", "sdlog"
   )
 )

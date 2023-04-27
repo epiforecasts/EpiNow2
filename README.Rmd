@@ -6,7 +6,7 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "man/figures/",
+  fig.path = "man/figures/", # nolint
   eval = TRUE
 )
 ```
@@ -46,19 +46,19 @@ A simple example of using the package to estimate a national Rt for Covid-19 can
 
 ## Installation
 
-Install the stable version of the package:
+Install the released version of the package:
 
 ```{r, eval = FALSE}
 install.packages("EpiNow2")
 ```
 
-Install the stable development version of the package with:
+Install the development version of the package with:
 
 ```{r, eval = FALSE}
 install.packages("EpiNow2", repos = "https://epiforecasts.r-universe.dev")
 ```
 
-Install the unstable development version of the package with (few users should need to do this):
+Alternatively, install the development version of the package with (few users should need to do this):
 
 ```{r, eval = FALSE}
 remotes::install_github("epiforecasts/EpiNow2")

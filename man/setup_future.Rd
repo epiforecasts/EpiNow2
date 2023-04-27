@@ -11,11 +11,13 @@ setup_future(
 )
 }
 \arguments{
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date (date), and region (\code{region}).}
+\item{reported_cases}{A data frame of confirmed cases (confirm) by date
+(date), and region (\code{region}).}
 
-\item{strategies}{A vector length 1 to 2 of strategies to pass to \code{future::plan}. Nesting
-of parallelisation is from the top level down. The default is to set up nesting parallelisation
-with both using \code{future::multisession} (\code{future::multicore} will likely be a faster option on
+\item{strategies}{A vector length 1 to 2 of strategies to pass to
+\code{future::plan}. Nesting of parallelisation is from the top level down.
+The default is to set up nesting parallelisation with both using
+\code{future::multisession} (\code{future::multicore} will likely be a faster option on
 supported platforms). For single level parallelisation use a single strategy
 or \code{future::plan} directly. See \code{?future::plan} for options.}
 
@@ -24,13 +26,13 @@ Defaults to 4 which assumes 4 MCMC chains are in use per region.}
 }
 \value{
 Numeric number of cores to use per worker. If greater than 1 pass to
-\code{stan_args = list(cores = "output from setup future")} or use \code{future = TRUE}. If only a single strategy is
-used then nothing is returned.
+\code{stan_args = list(cores = "output from setup future")} or use
+\code{future = TRUE}. If only a single strategy is used then nothing is returned.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 A utility function that aims to streamline the set up
-of the required future backend with sensible defaults for most users of \code{regional_epinow}.
-More advanced users are recommended to setup their own \code{future} backend based on their
-available resources.
+of the required future backend with sensible defaults for most users of
+\code{regional_epinow}. More advanced users are recommended to setup their own
+\code{future} backend based on their available resources.
 }

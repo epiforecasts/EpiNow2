@@ -2,7 +2,8 @@
 % Please edit documentation in R/simulate_infections.R
 \name{simulate_infections}
 \alias{simulate_infections}
-\title{Simulate infections using a given trajectory of the time-varying reproduction number}
+\title{Simulate infections using a given trajectory of the time-varying
+reproduction number}
 \usage{
 simulate_infections(
   estimates,
@@ -42,9 +43,10 @@ results from the specified scenario rather than fitting.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-This function simulates infections using an existing fit to observed cases but with a modified
-time-varying reproduction number. This can be used to explore forecast models or past counterfactuals.
-Simulations can be run in parallel using \code{future::plan}.
+This function simulates infections using an existing fit to observed cases
+but with a modified time-varying reproduction number. This can be used to
+explore forecast models or past counterfactuals. Simulations can be run in
+parallel using \code{future::plan}.
 }
 \examples{
 \donttest{
@@ -56,9 +58,13 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 reported_cases <- example_confirmed[1:50]
 
 # set up example generation time
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+generation_time <- get_generation_time(
+ disease = "SARS-CoV-2", source = "ganyani"
+)
 # set delays between infection and case report
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+incubation_period <- get_incubation_period(
+ disease = "SARS-CoV-2", source = "lauer"
+)
 reporting_delay <- list(
   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 15
@@ -92,7 +98,9 @@ plot(sims)
 
 #' # with a data.frame input of samples
 R_samples <- summary(est, type = "samples", param = "R")
-R_samples <- R_samples[, .(date, sample, value)][sample <= 1000][date <= "2020-04-10"]
+R_samples <- R_samples[,
+ .(date, sample, value)][sample <= 1000][date <= "2020-04-10"
+]
 R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
 sims <- simulate_infections(est, R_samples)
 plot(sims)
