@@ -95,7 +95,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' # run model
 #' out <- estimate_infections(cases,
 #'   generation_time = generation_time_opts(generation_time),
-#'   delays = delay_opts(c(incubation_period, reporting_delay))
+#'   delays = delay_opts(incubation_period + reporting_delay)
 #' )
 #' # plot infections
 #' plot_estimates(

@@ -186,7 +186,7 @@ summarise_results <- function(regions,
 #' out <- regional_epinow(
 #'   reported_cases = cases,
 #'   generation_time = generation_time_opts(generation_time),
-#'   delays = delay_opts(c(incubation_period, reporting_delay)),
+#'   delays = delay_opts(incubation_period + reporting_delay),
 #'   output = "region",
 #'   rt = NULL
 #' )
@@ -546,7 +546,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' regional_out <- regional_epinow(
 #'   reported_cases = cases,
 #'   generation_time = generation_time_opts(generation_time),
-#'   delays = delay_opts(c(incubation_period, reporting_delay)),
+#'   delays = delay_opts(incubation_period + reporting_delay),
 #'   stan = stan_opts(samples = 100, warmup = 100),
 #'   output = c("region", "timing")
 #' )

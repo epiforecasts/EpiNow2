@@ -21,7 +21,7 @@ obs <- obs_opts(scale = list(mean = 0.1, sd = 0.025), return_likelihood = TRUE)
 # shared simulation settings
 init <- estimate_infections(example_confirmed[1:100],
   generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(c(incubation_period, reporting_delay)),
+  delays = delay_opts(incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 14),
   gp = NULL, horizon = 0,
   obs = obs
@@ -64,7 +64,7 @@ for (method in c("nuts")) {
   gp[[method]] <-
     estimate_infections(sim_cases,
       generation_time = generation_time_opts(generation_time),
-      delays = delay_opts(c(incubation_period, reporting_delay)),
+      delays = delay_opts(incubation_period + reporting_delay),
       rt = rt_opts(prior = list(mean = 2, sd = 0.25)),
       stan = stanopts,
       obs = obs,
@@ -79,7 +79,7 @@ for (method in c("nuts")) {
   backcalc[[method]] <-
     estimate_infections(sim_cases,
       generation_time = generation_time_opts(generation_time),
-      delays = delay_opts(c(incubation_period, reporting_delay)),
+      delays = delay_opts(incubation_period + reporting_delay),
       rt = NULL,
       stan = stanopts,
       obs = obs,
@@ -94,7 +94,7 @@ for (method in c("nuts")) {
   weekly_rw[[method]] <-
     estimate_infections(sim_cases,
       generation_time = generation_time_opts(generation_time),
-      delays = delay_opts(c(incubation_period, reporting_delay)),
+      delays = delay_opts(incubation_period + reporting_delay),
       rt = rt_opts(
         prior = list(mean = 2, sd = 0.25),
         rw = 7
@@ -113,7 +113,7 @@ for (method in c("nuts")) {
   gp_rw[[method]] <-
     estimate_infections(sim_cases,
       generation_time = generation_time_opts(generation_time),
-      delays = delay_opts(c(incubation_period, reporting_delay)),
+      delays = delay_opts(incubation_period + reporting_delay),
       rt = rt_opts(
         prior = list(mean = 2, sd = 0.25), rw = 14, gp_on = "R0"
       ),
@@ -132,7 +132,7 @@ for (method in c("nuts")) {
     daily_rw[[method]] <-
       estimate_infections(sim_cases,
         generation_time = generation_time_opts(generation_time),
-        delays = delay_opts(c(incubation_period, reporting_delay)),
+        delays = delay_opts(incubation_period + reporting_delay),
         rt = rt_opts(
           prior = list(mean = 2, sd = 0.25),
           rw = 1

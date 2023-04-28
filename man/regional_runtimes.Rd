@@ -53,7 +53,7 @@ cases <- data.table::rbindlist(list(
 regional_out <- regional_epinow(
   reported_cases = cases,
   generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(c(incubation_period, reporting_delay)),
+  delays = delay_opts(incubation_period + reporting_delay),
   stan = stan_opts(samples = 100, warmup = 100),
   output = c("region", "timing")
 )

@@ -22,7 +22,7 @@ test_that("epinow produces expected output when run with default settings", {
   out <- suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(generation_time),
-    delays = delay_opts(c(incubation_period, reporting_delay)),
+    delays = delay_opts(incubation_period + reporting_delay),
     stan = stan_opts(
       samples = 25, warmup = 25,
       cores = 1, chains = 2,
@@ -44,7 +44,7 @@ test_that("epinow runs without error when saving to disk", {
   expect_null(suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(generation_time),
-    delays = delay_opts(c(incubation_period, reporting_delay)),
+    delays = delay_opts(incubation_period + reporting_delay),
     stan = stan_opts(
       samples = 25, warmup = 25, cores = 1, chains = 2,
       control = list(adapt_delta = 0.8)
@@ -58,7 +58,7 @@ test_that("epinow can produce partial output as specified", {
   out <- suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(generation_time),
-    delays = delay_opts(c(incubation_period, reporting_delay)),
+    delays = delay_opts(incubation_period + reporting_delay),
     stan = stan_opts(
       samples = 25, warmup = 25,
       cores = 1, chains = 2,
@@ -81,7 +81,7 @@ test_that("epinow fails as expected when given a short timeout", {
   expect_error(suppressWarnings(x = epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(generation_time),
-    delays = delay_opts(c(incubation_period, reporting_delay)),
+    delays = delay_opts(incubation_period + reporting_delay),
     stan = stan_opts(
       samples = 100, warmup = 100,
       cores = 1, chains = 2,
@@ -97,7 +97,7 @@ test_that("epinow fails if given NUTs arguments when using variational inference
   expect_error(suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(generation_time),
-    delays = delay_opts(c(incubation_period, reporting_delay)),
+    delays = delay_opts(incubation_period + reporting_delay),
     stan = stan_opts(
       samples = 100, warmup = 100,
       cores = 1, chains = 2,
@@ -112,7 +112,7 @@ test_that("epinow fails if given variational inference arguments when using NUTs
   expect_error(suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(generation_time),
-    delays = delay_opts(c(incubation_period, reporting_delay)),
+    delays = delay_opts(incubation_period + reporting_delay),
     stan = stan_opts(method = "sampling", tol_rel_obj = 1),
     logs = NULL, verbose = FALSE
   )))

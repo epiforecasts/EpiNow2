@@ -60,7 +60,7 @@ dir <- file.path(tempdir(check = TRUE), "results")
 regional_out <- regional_epinow(
   reported_cases = cases,
   generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(c(incubation_period, reporting_delay)),
+  delays = delay_opts(incubation_period + reporting_delay),
   rt = rt_opts(rw = 7), gp = NULL,
   output = c("regions", "latest"),
   target_folder = dir,

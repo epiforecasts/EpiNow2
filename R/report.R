@@ -51,7 +51,7 @@
 #'
 #' reported_cases <- report_cases(
 #'   case_estimates = cases,
-#'   delays = delay_opts(c(incubation_period, reporting_delay)),
+#'   delays = delay_opts(incubation_period + reporting_delay),
 #'   type = "sample"
 #' )
 #' print(reported_cases)
@@ -284,7 +284,7 @@ report_summary <- function(summarised_estimates,
 #' out <- estimate_infections(cases,
 #'   stan = stan_opts(samples = 500),
 #'   generation_time = generation_time_opts(generation_time),
-#'   delays = delay_opts(c(incubation_period, reporting_delay)),
+#'   delays = delay_opts(incubation_period + reporting_delay),
 #'   rt = NULL
 #' )
 #'

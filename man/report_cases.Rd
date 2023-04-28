@@ -72,7 +72,7 @@ cases <- cases[, confirm := NULL][, sample := 1]
 
 reported_cases <- report_cases(
   case_estimates = cases,
-  delays = delay_opts(c(incubation_period, reporting_delay)),
+  delays = delay_opts(incubation_period + reporting_delay),
   type = "sample"
 )
 print(reported_cases)

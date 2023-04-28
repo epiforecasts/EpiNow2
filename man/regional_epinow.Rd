@@ -161,7 +161,7 @@ cases <- data.table::rbindlist(list(
 def <- regional_epinow(
   reported_cases = cases,
   generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(c(incubation_period, reporting_delay)),
+  delays = delay_opts(incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
   stan = stan_opts(
     samples = 100, warmup = 200,
@@ -178,7 +178,7 @@ rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
 region_rt <- regional_epinow(
   reported_cases = cases,
   generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(c(incubation_period, reporting_delay)),
+  delays = delay_opts(incubation_period + reporting_delay),
   rt = rt, gp = gp,
   stan = stan_opts(
     samples = 100, warmup = 200,
