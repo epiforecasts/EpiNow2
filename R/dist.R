@@ -486,7 +486,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' @param max_value Numeric, defaults to  the maximum value in the observed
 #' data. Maximum delay to  allow (added to output but does impact fitting).
 #'
-#' @return A list summarising the bootstrapped distribution
+#' @return A `dist_spec` object summarising the bootstrapped distribution
 #' @author Sam Abbott
 #' @importFrom purrr transpose
 #' @importFrom future.apply future_lapply
@@ -578,7 +578,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
   } else {
     out$max <- max(values)
   }
-  return(out)
+  return(do.call(dist_spec, out))
 }
 
 #' Estimate a Delay Distribution
