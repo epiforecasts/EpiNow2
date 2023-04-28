@@ -70,12 +70,14 @@ generation_time_opts <- function(dist = dist_spec(mean = 1)) {
 #' delay_opts(delay + delay)
 delay_opts <- function(dist = dist_spec()) {
   if (!is(dist, "dist_spec")) {
-    stop("Delay distributions must be of given either using a call to `dist_spec` ",
-         "or one of the `get_...` functions such as `get_incubation_period`. ",
-         "This behaviour has changed from previous versions of `EpiNow2` and ",
-         "any code using it may need to be updated. For examples and more ",
-         "information, see the relevant documentation pages using ",
-         "`?delay_opts`")
+    stop(
+      "Delay distributions must be of given either using a call to ",
+      "`dist_spec` or one of the `get_...` functions such as ",
+      "`get_incubation_period`. This behaviour has changed from previous ",
+      "versions of `EpiNow2` and any code using it may need to be updated. ",
+      "For examples and more information, see the relevant documentation ",
+      "pages using `?delay_opts`."
+    )
   }
   return(dist)
 }
@@ -104,12 +106,14 @@ delay_opts <- function(dist = dist_spec()) {
 #' trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
 trunc_opts <- function(dist = dist_spec()) {
   if (!is(dist, "dist_spec")) {
-    stop("Truncation distributions must be of given either using a call to `dist_spec` or ",
-         "one of the `get_...` functions. ",
-         "This behaviour has changed from previous versions of `EpiNow2` and ",
-         "any code using it may need to be updated. For examples and more ",
-         "information, see the relevant documentation pages using ",
-         "`?trunc_opts`")
+    stop(
+      "Truncation distributions must be of given either using a call to ",
+      "`dist_spec` or one of the `get_...` functions. ",
+      "This behaviour has changed from previous versions of `EpiNow2` and ",
+      "any code using it may need to be updated. For examples and more ",
+      "information, see the relevant documentation pages using ",
+      "`?trunc_opts`"
+    )
   }
   return(dist)
 }

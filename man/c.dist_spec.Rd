@@ -13,8 +13,8 @@
 Combined delay distributions (with class \code{\link[=dist_spec]{dist_spec()}}`)
 }
 \description{
-This combines the parameters so that they can
-be fed as multiple delay distributions to \code{\link[=epinow]{epinow()}} or \code{\link[=estimate_infections]{estimate_infections()}}.
+This combines the parameters so that they can be fed as multiple delay
+distributions to \code{\link[=epinow]{epinow()}} or \code{\link[=estimate_infections]{estimate_infections()}}.
 }
 \author{
 Sebastian Funk
