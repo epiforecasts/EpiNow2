@@ -8,6 +8,8 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * Moved to a GitHub Action to only lint changed files.
 * Linted the package with a wider range of default linters.
 * Added a GitHub Action to build the README when it is altered.
+* Added handling of edge case where we sample from the negative binomial with
+  mean close or equal to 0. By @sbfnk in #366.
 
 # EpiNow2 1.3.5
 
