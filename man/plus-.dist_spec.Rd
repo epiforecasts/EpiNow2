@@ -4,7 +4,7 @@
 \alias{+.dist_spec}
 \title{Creates a delay distribution as the sum of two other delay distributions}
 \usage{
-\method{`+`}{dist_spec}(e1, e2)
+\method{+}{dist_spec}(e1, e2)
 }
 \arguments{
 \item{e1}{The fist delay distributions (from a calls to \code{\link[=dist_spec]{dist_spec()}}) to

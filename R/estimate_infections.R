@@ -28,6 +28,10 @@
 #' options. See the documentation of `delay_opts()` and the examples below for
 #' details.
 #'
+#' @param truncation A casll to `trunc_opts()` defining the truncation of
+#'   observed data.  Defaults to `trunc_opts()`. See `estimate_truncation()` for
+#'   an approach to estimating truncation from data.
+#'
 #' @param horizon Numeric, defaults to 7. Number of days into the future to
 #' forecast.
 #'

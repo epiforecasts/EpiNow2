@@ -1034,7 +1034,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 ##' @return Delay distributions representing the sum of the two delays
 ##' (with class [dist_spec()]`)
 ##' @author Sebastian Funk
-##' @method `+` dist_spec
+##' @method + dist_spec
 ##' @importFrom stats convolve
 ##' @export
 `+.dist_spec` <- function(e1, e2) {
