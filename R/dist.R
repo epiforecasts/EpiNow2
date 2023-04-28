@@ -1018,16 +1018,17 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
   return(ret)
 }
 
-##' Combines multiple delay distributions into a new delay distribution
+##' Creates a delay distribution as the sum of two other delay distributions
 ##'
-##' This combines the parameters so that they can
-##' be fed as multiple delay distributions to [epinow()] or [estimate_infections()].
-##'
-##' @param ... The delay distributions (from calls to [dist_spec()]) to combine
-##' @return Combined delay distributions (with class [dist_spec()]`)
+##' This is done via convolution with `stats::convolve()`.
+##' @param e1 The fist delay distributions (from a calls to [dist_spec()]) to
+##' combine
+##' @param e2 The second delay distributions (from a calls to [dist_spec()])
+##' to combine
+##' @return Delay distributions representing the sum of the two delays
+##' (with class [dist_spec()]`)
 ##' @author Sebastian Funk
 ##' @method `+` dist_spec
-##' @importFrom purrr transpose map
 ##' @importFrom stats convolve
 ##' @export
 `+.dist_spec` <- function(e1, e2) {

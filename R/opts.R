@@ -67,7 +67,7 @@ generation_time_opts <- function(dist = dist_spec(mean = 1)) {
 #' delay_opts(delay)
 #'
 #' # Multiple delays
-#' delay_opts(c(delay, delay))
+#' delay_opts(delay + delay)
 delay_opts <- function(dist = dist_spec()) {
   if (!is(dist, "dist_spec")) {
     stop("Delay distributions must be of given either using a call to `dist_spec` ",

@@ -2,19 +2,23 @@
 % Please edit documentation in R/dist.R
 \name{+.dist_spec}
 \alias{+.dist_spec}
-\title{Combines multiple delay distributions into a new delay distribution}
+\title{Creates a delay distribution as the sum of two other delay distributions}
 \usage{
 \method{`+`}{dist_spec}(e1, e2)
 }
 \arguments{
-\item{...}{The delay distributions (from calls to \code{\link[=dist_spec]{dist_spec()}}) to combine}
+\item{e1}{The fist delay distributions (from a calls to \code{\link[=dist_spec]{dist_spec()}}) to
+combine}
+
+\item{e2}{The second delay distributions (from a calls to \code{\link[=dist_spec]{dist_spec()}})
+to combine}
 }
 \value{
-Combined delay distributions (with class \code{\link[=dist_spec]{dist_spec()}}`)
+Delay distributions representing the sum of the two delays
+(with class \code{\link[=dist_spec]{dist_spec()}}`)
 }
 \description{
-This combines the parameters so that they can
-be fed as multiple delay distributions to \code{\link[=epinow]{epinow()}} or \code{\link[=estimate_infections]{estimate_infections()}}.
+This is done via convolution with \code{stats::convolve()}.
 }
 \author{
 Sebastian Funk

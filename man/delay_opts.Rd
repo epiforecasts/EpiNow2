@@ -31,7 +31,7 @@ delay <- dist_spec(mean = 1, sd = 0.5, max = 15)
 delay_opts(delay)
 
 # Multiple delays
-delay_opts(c(delay, delay))
+delay_opts(delay + delay)
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
