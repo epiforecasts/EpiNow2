@@ -1,7 +1,7 @@
 // convolve two vectors
 // length of x
 // produces a convolution across the lenght specified
-vector convolve(vector x, vector y, int len) {
+vector convolve_pmf(vector x, vector y, int len) {
   int xlen = num_elements(x);
   int ylen = num_elements(y);
   vector[len] convolution = rep_vector(0, len);

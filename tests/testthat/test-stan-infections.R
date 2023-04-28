@@ -15,7 +15,12 @@ test_that("update_infectiousness works as expected with default settings", {
 })
 
 pmf <- discretised_pmf(3, 2, 15, 1)
-gt_rev_pmf <- combine_pmfs(pmf, numeric(0), numeric(0), integer(0), integer(0), 15, 1, 1)
+gt_rev_pmf <- get_delay_rev_pmf(
+  1L, 15L, array(0L), array(1L),
+  array(c(1L, 2L)), array(15L), pmf,
+  array(c(1L, 16L)), numeric(0), numeric(0), 0L,
+  1L, 1L, 0L
+)
 
 # test generate infections
 test_that("generate_infections works as expected", {
