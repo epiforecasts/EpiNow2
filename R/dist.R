@@ -1092,8 +1092,8 @@ c.dist_spec <- function(...) {
 
 ##' Returns the mean of one or more delay distribution
 ##'
-##' This works out the mean of all the (parametric / nonparametric) delay distributions
-##' combined in the passed [dist_spec()].
+##' This works out the mean of all the (parametric / nonparametric) delay
+##' distributions combined in the passed [dist_spec()].
 ##'
 ##' @param x The [dist_spec()] to use
 ##' @param ... Not used
