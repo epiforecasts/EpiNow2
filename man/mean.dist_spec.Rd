@@ -15,8 +15,8 @@
 A vector of means.
 }
 \description{
-This works out the mean of all the (parametric / nonparametric) delay distributions
-combined in the passed \code{\link[=dist_spec]{dist_spec()}}.
+This works out the mean of all the (parametric / nonparametric) delay
+distributions combined in the passed \code{\link[=dist_spec]{dist_spec()}}.
 }
 \author{
 Sebastian Funk
