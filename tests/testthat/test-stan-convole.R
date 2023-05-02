@@ -3,12 +3,14 @@ skip_on_os("windows")
 
 test_that("convolve can combine two pmfs as expected", {
   expect_equal(
-    convolve_pmf(c(0.1, 0.2, 0.7), c(0.1, 0.2, 0.7), 6),
+    convolve_with_rev_pmf(c(0.1, 0.2, 0.7), rev(c(0.1, 0.2, 0.7)), 6),
     c(0.01, 0.04, 0.18, 0.28, 0.49, 0.00),
     tolerance = 0.01
   )
   expect_equal(
-    sum(convolve_pmf(c(0.05, 0.55, 0.4), c(0.1, 0.2, 0.7), 6)), 1
+    sum(convolve_with_rev_pmf(
+      c(0.05, 0.55, 0.4), rev(c(0.1, 0.2, 0.7)), 6
+    )), 1
   )
 })
 
@@ -22,7 +24,7 @@ test_that("convolve performs the same as a numerical convolution", {
   # Add sampled Poisson distributions up to get combined distribution
   z <- x + y
   # Analytical convolution of PMFs
-  conv_pmf <- convolve_pmf(xpmf, ypmf, 42)
+  conv_pmf <- convolve_with_rev_pmf(xpmf, rev(ypmf), 42)
   conv_cdf <- cumsum(conv_pmf)
   # Empirical convolution of PMFs
   cdf <- ecdf(z)(0:41)
@@ -33,12 +35,12 @@ test_that("convolve performs the same as a numerical convolution", {
 
 test_that("convolve_dot_product can combine vectors as we expect", {
   expect_equal(
-    convolve_dot_product(c(0.1, 0.2, 0.7), rev(c(0.1, 0.2, 0.7)), 3),
+    convolve_with_rev_pmf(c(0.1, 0.2, 0.7), rev(c(0.1, 0.2, 0.7)), 3),
     c(0.01, 0.04, 0.18),
     tolerance = 0.01
   )
   expect_equal(
-    convolve_dot_product(
+    convolve_with_rev_pmf(
       seq_len(10), rev(c(0.1, 0.4, 0.3, 0.2)), 10
     ),
     c(0.1, 0.6, 1.4, 2.4, 3.4, 4.4, 5.4, 6.4, 7.4, 8.4)
@@ -47,7 +49,7 @@ test_that("convolve_dot_product can combine vectors as we expect", {
   x[2:10] <- x[1:9] / 2
   x[1] <- 0
   expect_equal(
-    convolve_dot_product(
+    convolve_with_rev_pmf(
       seq_len(10), rev(c(0, 0.5, 0, 0)), 10
     ),
     x
