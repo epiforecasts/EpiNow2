@@ -36,14 +36,14 @@ vector get_delay_rev_pmf(
           delay_max[delay_types_id[i]],
           delay_dist[delay_types_id[i]]
       );
-      pmf = convolve_pmf(pmf, variable_pmf, len);
+      pmf = convolve_with_rev_pmf(pmf, reverse_mf(variable_pmf), len);
     } else { // nonparametric
-      pmf = convolve_pmf(
+      pmf = convolve_with_rev_pmf(
         pmf,
-        delay_np_pmf[
+        reverse_mf(delay_np_pmf[
           delay_np_pmf_groups[delay_types_id[i]]:
           delay_np_pmf_groups[delay_types_id[i] + 1] - 1
-        ],
+        ]),
         len
       );
     }
