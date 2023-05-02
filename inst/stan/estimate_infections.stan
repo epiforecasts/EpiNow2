@@ -157,37 +157,34 @@ generated quantities {
   int imputed_reports[ot_h];
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
   real r[ot_h];
+  real gt_mean;
+  real gt_var;
   vector[return_likelihood ? ot : 0] log_lik;
   if (estimate_r){
     // estimate growth from estimated Rt
-    real gen_gt_mean = rev_pmf_mean(gt_rev_pmf, 1);
-    real gen_gt_var = rev_pmf_var(gt_rev_pmf, 1, gen_gt_mean);
-    r = R_to_growth(R, gen_gt_mean, gen_gt_var);
+    gt_mean = rev_pmf_mean(gt_rev_pmf, 1);
+    gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);
+    r = R_to_growth(R, gt_mean, gt_var);
   } else {
     // sample generation time
-    real delay_mean_sample[delay_n_p];
-    real delay_sd_sample[delay_n_p];
-    real gen_gt_mean;
-    real gen_gt_var;
-    vector[delay_type_max[gt_id]] gen_rev_pmf;
-
-    delay_mean_sample = normal_rng(delay_mean_mean, delay_mean_sd);
-    delay_sd_sample = normal_rng(delay_sd_mean, delay_sd_sd);
-    gen_rev_pmf = get_delay_rev_pmf(
+    real delay_mean_sample[delay_n_p] = 
+      normal_rng(delay_mean_mean, delay_mean_sd);
+    real delay_sd_sample[delay_n_p] =
+      normal_rng(delay_sd_mean, delay_sd_sd);
+    vector[delay_type_max[gt_id]] sampled_gt_rev_pmf = get_delay_rev_pmf(
       gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
-      1, 1, 0
+      delay_np_pmf_groups, delay_mean_sample, delay_sd_sample, 
+      delay_dist, 1, 1, 0
     );
-
-    gen_gt_mean = rev_pmf_mean(gt_rev_pmf, 1);
-    gen_gt_var = rev_pmf_var(gt_rev_pmf, 1, gen_gt_mean);
+    gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);
+    gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);
     // calculate Rt using infections and generation time
     gen_R = calculate_Rt(
-      infections, seeding_time, gen_rev_pmf, rt_half_window
+      infections, seeding_time, sampled_gt_rev_pmf, rt_half_window
     );
     // estimate growth from calculated Rt
-    r = R_to_growth(gen_R, gen_gt_mean, gen_gt_var);
+    r = R_to_growth(gen_R, gt_mean, gt_var);
   }
   // simulate reported cases
   imputed_reports = report_rng(reports, rep_phi, model_type);

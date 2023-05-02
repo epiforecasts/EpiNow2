@@ -112,7 +112,8 @@ simulate_infections <- function(estimates,
   draws <- extract(estimates$fit,
     pars = c(
       "noise", "eta", "lp__", "infections",
-      "reports", "imputed_reports", "r"
+      "reports", "imputed_reports", "r",
+      "gt_mean", "gt_var"
     ),
     include = FALSE
   )

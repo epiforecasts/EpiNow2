@@ -80,6 +80,10 @@ generated quantities {
     imputed_reports[i] = report_rng(
       to_vector(reports[i]), rep_phi[i], model_type
     );
-   r[i] = R_to_growth(to_vector(R[i]), delay_mean[i, gt_id], delay_sd[i, gt_id]);
+  {
+    real gt_mean = rev_pmf_mean(gt_rev_pmf, 1);
+    real gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);
+    r[i] = R_to_growth(to_vector(R[i]), gt_mean, gt_var);
+  }
   }
 }
