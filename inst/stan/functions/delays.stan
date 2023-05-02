@@ -4,13 +4,13 @@ int[] get_delay_type_max(
 ) {
   int ret[delay_types];
   for (i in 1:delay_types) {
-    ret[i] = 0;
+    ret[i] = 1;
     for (j in delay_types_groups[i]:(delay_types_groups[i + 1] - 1)) {
       if (delay_types_p[j]) { // parametric
-        ret[i] += delay_max[delay_types_id[j]];
+        ret[i] += delay_max[delay_types_id[j]] - 1;
       } else { // nonparametric
         ret[i] += delay_np_pmf_groups[delay_types_id[j] + 1] -
-          delay_np_pmf_groups[delay_types_id[j]];
+          delay_np_pmf_groups[delay_types_id[j]] - 1;
       }
     }
   }
