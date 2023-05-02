@@ -167,14 +167,14 @@ generated quantities {
     r = R_to_growth(R, gt_mean, gt_var);
   } else {
     // sample generation time
-    real delay_mean_sample[delay_n_p] = 
+    real delay_mean_sample[delay_n_p] =
       normal_rng(delay_mean_mean, delay_mean_sd);
     real delay_sd_sample[delay_n_p] =
       normal_rng(delay_sd_mean, delay_sd_sd);
     vector[delay_type_max[gt_id]] sampled_gt_rev_pmf = get_delay_rev_pmf(
       gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean_sample, delay_sd_sample, 
+      delay_np_pmf_groups, delay_mean_sample, delay_sd_sample,
       delay_dist, 1, 1, 0
     );
     gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);
