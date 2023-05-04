@@ -32,3 +32,5 @@ CRAN-RELEASE
 inst/include/*.o
 # avoid rstantools generated files
 src
+
+.DS_Store
