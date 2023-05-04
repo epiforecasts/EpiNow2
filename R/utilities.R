@@ -89,10 +89,10 @@ map_prob_change <- function(var) {
 
   var <- data.table::fcase(
     var < 0.05, "Increasing",
-    var >= 0.05 & var < 0.4, "Likely increasing",
-    var >= 0.4 & var < 0.6, "Stable",
-    var >= 0.6 & var < 0.95, "Likely decreasing",
-    var >= 0.95 & var <= 1, "Decreasing"
+    var < 0.4, "Likely increasing",
+    var < 0.6, "Stable",
+    var < 0.95, "Likely decreasing",
+    var <= 1, "Decreasing"
   )
 
   var <- factor(var, levels = c(
