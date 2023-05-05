@@ -263,6 +263,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #' define the back calculation. Defaults to `backcalc_opts()`.
 #'
 #' @seealso backcalc_opts
+#' @importFrom data.table fcase
 #' @return A list of settings defining the Gaussian process
 #' @export
 #' @author Sam Abbott
@@ -282,18 +283,19 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #'
 #' # custom lengthscale
 #' create_gp_data(gp_opts(ls_mean = 14), data)
-create_backcalc_data <- function(backcalc = backcalc_opts) {
+create_backcalc_data <- function(backcalc = backcalc_opts()) {
   data <- list(
-    rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
-    # nolint start
-    backcalc_prior = ifelse(backcalc$prior == "none", 0,
-      ifelse(backcalc$prior == "reports", 1,
-        ifelse(backcalc$prior == "infections", 2, 0)
-      )
-    )
-    # nolint end
-  )
-  return(data)
+   rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
+   # nolint start
+   backcalc_prior = data.table::fcase(
+     backcalc$prior == "none", 0,
+     backcalc$prior == "reports", 1,
+     backcalc$prior == "infections", 2,
+     default = 0
+   )
+ )
+ # nolint end
+ return(data)
 }
 #' Create Gaussian Process Data
 #'
