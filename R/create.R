@@ -544,6 +544,7 @@ create_stan_data <- function(reported_cases, generation_time,
 #' @return An initial condition generating function
 #' @importFrom purrr map2_dbl
 #' @importFrom truncnorm rtruncnorm
+#' @importFrom data.table fcase
 #' @export
 #  @author Sam Abbott
 #  @author Sebastian Funk
@@ -587,13 +588,13 @@ create_initial_conditions <- function(data) {
         meanlog = data$ls_meanlog,
         sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog * 0.1, 0.01)
       ))
-      # nolint start
-      out$rho <- ifelse(out$rho > data$ls_max, data$ls_max - 0.001,
-        ifelse(out$rho < data$ls_min, data$ls_min + 0.001,
-          out$rho
+
+      out$rho <- data.table::fcase(
+        out$rho > data$ls_max, data$ls_max - 0.001,
+        out$rho < data$ls_min, data$ls_min + 0.001,
+        default = out$rho
         )
-      )
-      # nolint end
+
       out$alpha <- array(
         truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd)
       )
