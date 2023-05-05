@@ -678,7 +678,7 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
 #' @param start_date Date, earliest date with data.
 #'
 #' @inheritParams calc_summary_measures
-#' @importFrom data.table fifelse rbindlist
+#' @importFrom data.table fcase rbindlist
 #' @importFrom lubridate days
 #' @importFrom futile.logger flog.info
 #' @return A list of samples and summarised posterior parameter estimates.
@@ -698,15 +698,12 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
   # nolint start
   format_out$samples <- format_out$samples[
     ,
-    type := data.table::fifelse(
-      date > (max(date, na.rm = TRUE) - horizon),
-      "forecast",
-      data.table::fifelse(
-        date > (max(date, na.rm = TRUE) - horizon - shift),
-        "estimate based on partial data",
-        "estimate"
+    type := data.table::fcase(
+      date > (max(date, na.rm = TRUE) - horizon), "forecast",
+      date > (max(date, na.rm = TRUE) - horizon - shift),
+      "estimate based on partial data",
+      default = "estimate"
       )
-    )
   ]
   # nolint end
 
