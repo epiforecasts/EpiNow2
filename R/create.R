@@ -307,26 +307,28 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
 #' Gaussian process.
 #' @param data A list containing the following numeric values:
 #' `t`, `seeding_time`, `horizon`.
+#' @importFrom data.table fcase
 #' @seealso gp_opts
 #' @return A list of settings defining the Gaussian process
 #' @export
 #' @author Sam Abbott
 #' @examples
 #' # define input data required
-#' data <- list(
-#'   t = 30,
-#'   seeding_time = 7,
-#'   horizon = 7
-#' )
-#'
-#' # default gaussian process data
-#' create_gp_data(data = data)
-#'
-#' # settings when no gaussian process is desired
-#' create_gp_data(NULL, data)
-#'
-#' # custom lengthscale
-#' create_gp_data(gp_opts(ls_mean = 14), data)
+# data <- list(
+#   t = 30,
+#   seeding_time = 7,
+#   horizon = 7
+# )
+#
+# # default gaussian process data
+# create_gp_data(data = data)
+#
+# # settings when no gaussian process is desired
+# create_gp_data(NULL, data)
+#
+# # custom lengthscale
+# create_gp_data(gp_opts(ls_mean = 14), data)
+
 create_gp_data <- function(gp = gp_opts(), data) {
   # Define if GP is on or off
   if (is.null(gp)) {
@@ -349,20 +351,22 @@ create_gp_data <- function(gp = gp_opts(), data) {
 
   # map settings to underlying gp stan requirements
   gp_data <- list(
-    fixed = as.numeric(fixed),
-    M = M,
-    L = gp$boundary_scale,
-    ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
-    ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
-    ls_min = gp$ls_min,
-    ls_max = data$t - data$seeding_time - data$horizon,
-    alpha_sd = gp$alpha_sd,
-    # nolint start
-    gp_type = ifelse(gp$kernel == "se", 0,
-      ifelse(gp$kernel == "matern", 1, 0)
+  fixed = as.numeric(fixed),
+  M = M,
+  L = gp$boundary_scale,
+  ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
+  ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
+  ls_min = gp$ls_min,
+  ls_max = data$t - data$seeding_time - data$horizon,
+  alpha_sd = gp$alpha_sd,
+  # nolint start
+  gp_type = data.table::fcase(
+    gp$kernel == "se", 0,
+    gp$kernel == "matern", 1,
+    default = 0
     )
-    # nolint end
   )
+    # nolint end
 
   gp_data <- c(data, gp_data)
   return(gp_data)
