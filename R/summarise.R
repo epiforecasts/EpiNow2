@@ -162,7 +162,7 @@ summarise_results <- function(regions,
 #' @inheritParams epinow
 #' @importFrom purrr map_chr compact
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
-#' @importFrom data.table setDT
+#' @importFrom data.table setDT fcase
 #' @importFrom futile.logger flog.info
 #' @examples
 #' \donttest{
@@ -336,10 +336,11 @@ regional_summary <- function(regional_output = NULL,
         )
       }
       save_ggplot(summary_plot, "summary_plot.png",
-        width = ifelse(length(regions) > 60,
-          ifelse(length(regions) > 120, 36, 24), # nolint
-          12
-        )
+        width = data.table::fcase(
+          length(regions) > 60 & length(regions) > 120, 36,
+          length(regions) > 60 & !(length(regions) > 120), 24,
+          default = 12
+          )
       )
     }
     # extract regions with highest number of reported cases in the last week
@@ -370,10 +371,11 @@ regional_summary <- function(regional_output = NULL,
     }
 
     if (all_regions) {
-      # nolint start
-      plots_per_row <- ifelse(length(regions) > 60,
-        ifelse(length(regions) > 120, 8, 5), 3
-      ) 
+      plots_per_row <- data.table::fcase(
+        length(regions) > 60 & length(regions) > 120, 8,
+        length(regions) > 60 & ! (length(regions) > 120), 5,
+        default = 3
+      )
       # nolint end
 
       plots <- report_plots(
@@ -669,7 +671,7 @@ calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
   # nolint start
   order_CrIs <- c(
     paste0("lower_", rev(scale_CrIs)), paste0("upper_", scale_CrIs)
-  ) 
+  )
   # nolint end
   with_CrIs <- data.table::dcast(
     with_CrIs, ... ~ factor(CrI, levels = order_CrIs),
