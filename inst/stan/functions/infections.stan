@@ -25,7 +25,7 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   int ot = num_elements(oR);
   int nht = ot - ht;
   int t = ot + uot;
-  int aa = 1/4400000;
+  real aa = 1/4400000;
   vector[ot] R = oR;
   real exp_adj_Rt;
   vector[t] infections = rep_vector(1e-5, t);
@@ -46,7 +46,7 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   for (s in 1:ot) {
     infectiousness[s] += update_infectiousness(infections, gt_rev_pmf, uot, s);
     if (pop && s > nht) {
-      R[s] = exp(log(R[s-1]) + aa*infections[s-1])
+      R[s] = exp(log(R[s-1]) + aa*infections[s-1]);
       exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[nht]));
       exp_adj_Rt = exp_adj_Rt > 1 ? 1 : exp_adj_Rt;
       infections[s + uot] = (pop - cum_infections[s]) * (1 - exp_adj_Rt);
