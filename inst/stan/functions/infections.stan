@@ -25,7 +25,7 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   int ot = num_elements(oR);
   int nht = ot - ht;
   int t = ot + uot;
-  int aa = 1/4.4e6;
+  int aa = 1/4400000;
   vector[ot] R = oR;
   real exp_adj_Rt;
   vector[t] infections = rep_vector(1e-5, t);
