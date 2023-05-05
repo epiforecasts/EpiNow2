@@ -314,20 +314,20 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
 #' @author Sam Abbott
 #' @examples
 #' # define input data required
-# data <- list(
-#   t = 30,
-#   seeding_time = 7,
-#   horizon = 7
-# )
-#
-# # default gaussian process data
-# create_gp_data(data = data)
-#
-# # settings when no gaussian process is desired
-# create_gp_data(NULL, data)
-#
-# # custom lengthscale
-# create_gp_data(gp_opts(ls_mean = 14), data)
+#' data <- list(
+#'   t = 30,
+#'   seeding_time = 7,
+#'   horizon = 7
+#' )
+#'
+#' # default gaussian process data
+#' create_gp_data(data = data)
+#'
+#' # settings when no gaussian process is desired
+#' create_gp_data(NULL, data)
+#'
+#' # custom lengthscale
+#' create_gp_data(gp_opts(ls_mean = 14), data)
 
 create_gp_data <- function(gp = gp_opts(), data) {
   # Define if GP is on or off

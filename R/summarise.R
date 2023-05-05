@@ -373,10 +373,9 @@ regional_summary <- function(regional_output = NULL,
     if (all_regions) {
       plots_per_row <- data.table::fcase(
         length(regions) > 60 & length(regions) > 120, 8,
-        length(regions) > 60 & ! (length(regions) > 120), 5,
+        length(regions) > 60 & !(length(regions) > 120), 5,
         default = 3
       )
-      # nolint end
 
       plots <- report_plots(
         summarised_estimates = results$estimates$summarised,
