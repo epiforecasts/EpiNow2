@@ -25,9 +25,9 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   int ot = num_elements(oR);
   int nht = ot - ht;
   int t = ot + uot;
-  real aa = 1/10000;
   vector[ot] R = oR;
-  real exp_adj_Rt;
+  real exp_adj_Rt; 
+  real aa = .001;
   vector[t] infections = rep_vector(1e-5, t);
   vector[ot] cum_infections = rep_vector(0, ot);
   vector[ot] infectiousness = rep_vector(1e-5, ot);
