@@ -589,11 +589,11 @@ create_initial_conditions <- function(data) {
         sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog * 0.1, 0.01)
       ))
 
-      out$rho <- data.table::fcase(
+      out$rho <- array(data.table::fcase(
         out$rho > data$ls_max, data$ls_max - 0.001,
         out$rho < data$ls_min, data$ls_min + 0.001,
         default = out$rho
-        )
+        ))
 
       out$alpha <- array(
         truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd)
