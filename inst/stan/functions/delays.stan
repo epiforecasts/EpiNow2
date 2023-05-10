@@ -28,7 +28,6 @@ vector get_delay_rev_pmf(
   vector[len] pmf = rep_vector(0, len);
   int current_len = 1;
   int new_len;
-  pmf[1] = 1;
   for (i in delay_types_groups[delay_id]:(delay_types_groups[delay_id + 1] - 1)) {
     if (delay_types_p[i]) { // parametric
       vector[delay_max[delay_types_id[i]]] new_variable_pmf =
@@ -39,17 +38,25 @@ vector get_delay_rev_pmf(
           delay_dist[delay_types_id[i]]
       );
       new_len = current_len + delay_max[delay_types_id[i]] - 1;
-      pmf[1:new_len] = convolve_with_rev_pmf(
-        pmf[1:current_len], reverse_mf(new_variable_pmf), new_len
-      );
+      if (current_len == 1) { // first delay
+        pmf[1:new_len] = new_variable_pmf;
+      } else { // subsequent delay to be convolved
+        pmf[1:new_len] = convolve_with_rev_pmf(
+          pmf[1:current_len], reverse_mf(new_variable_pmf), new_len
+        );
+      }
     } else { // nonparametric
       int start = delay_np_pmf_groups[delay_types_id[i]];
       int end = delay_np_pmf_groups[delay_types_id[i] + 1] - 1;
       vector[end - start + 1] new_fixed_pmf = delay_np_pmf[start:end];
       new_len = current_len + end - start;
-      pmf[1:new_len] = convolve_with_rev_pmf(
-        pmf[1:current_len], reverse_mf(new_fixed_pmf), new_len
-      );
+      if (current_len == 1) { // first delay
+        pmf[1:new_len] = new_fixed_pmf;
+      } else { // subsequent delay to be convolved
+        pmf[1:new_len] = convolve_with_rev_pmf(
+          pmf[1:current_len], reverse_mf(new_fixed_pmf), new_len
+        );
+      }
     }
     current_len = new_len;
   }
