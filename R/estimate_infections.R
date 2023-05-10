@@ -702,6 +702,7 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
       date > (max(date, na.rm = TRUE) - horizon), "forecast",
       date > (max(date, na.rm = TRUE) - horizon - shift),
       "estimate based on partial data",
+      is.na(date), NA_character_,
       default = "estimate"
       )
   ]
