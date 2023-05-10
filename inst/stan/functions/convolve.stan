@@ -8,8 +8,8 @@ vector convolve_with_rev_pmf(vector x, vector y, int len) {
     vector[len] z;
     for (s in 1:len) {
       z[s] = dot_product(
-        x[max(1, (s - ylen + 1)):min(s, xlen)],
-        y[max(1, ylen - s + 1):min(ylen, ylen + xlen - s)]
+        s < ylen ? head(x, min(s, xlen)) : x[(s - ylen + 1):min(s, xlen)],
+        s < xlen ? tail(y, min(s, ylen)) : y[max(1, ylen - s + 1):(ylen + xlen - s)]
       );
     }
    return(z);
