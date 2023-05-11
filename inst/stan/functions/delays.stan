@@ -48,13 +48,12 @@ vector get_delay_rev_pmf(
     } else { // nonparametric
       int start = delay_np_pmf_groups[delay_types_id[i]];
       int end = delay_np_pmf_groups[delay_types_id[i] + 1] - 1;
-      vector[end - start + 1] new_fixed_pmf = delay_np_pmf[start:end];
       new_len = current_len + end - start;
       if (current_len == 1) { // first delay
-        pmf[1:new_len] = new_fixed_pmf;
+        pmf[1:new_len] = delay_np_pmf[start:end];
       } else { // subsequent delay to be convolved
         pmf[1:new_len] = convolve_with_rev_pmf(
-          pmf[1:current_len], reverse_mf(new_fixed_pmf), new_len
+          pmf[1:current_len], delay_np_pmf[end:start], new_len
         );
       }
     }
