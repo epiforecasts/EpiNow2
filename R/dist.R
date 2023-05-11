@@ -205,7 +205,7 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
 
   if (samples < 1000) {
     samples <- 1000
-    }
+  }
   # model parameters
   lows <- values - 1
   lows <- ifelse(lows <= 0, 1e-6, lows)
