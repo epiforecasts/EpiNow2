@@ -704,7 +704,7 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
       is.na(date), NA_character_,
       default = "estimate"
       )
-  ]
+    ]
 
   # remove burn in period if specified
   if (burn_in > 0) {
