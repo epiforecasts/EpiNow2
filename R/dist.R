@@ -158,7 +158,8 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' `stan`.
 #' @param values Numeric vector of values
 #'
-#' @param samples Numeric, number of samples to take
+#' @param samples Numeric, number of samples to take. Must be >= 1000. 
+#' Defaults to 1000.
 #'
 #' @param dist Character string, which distribution to fit. Defaults to
 #' exponential (`"exp"`) but gamma (`"gamma"`) and lognormal (`"lognormal"`) are
@@ -197,16 +198,16 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #'   cores = ifelse(interactive(), 4, 1), verbose = TRUE
 #' )
 #' }
-dist_fit <- function(values = NULL, samples = NULL, cores = 1,
+dist_fit <- function(values = NULL, samples = 1000, cores = 1,
                      chains = 2, dist = "exp", verbose = FALSE) {
-  if (is.null(samples)) {
-    samples <- 1000
-  }
-
   if (samples < 1000) {
     samples <- 1000
   }
 
+  warning(sprintf("%s %s", "`samples` must be at least 1000.",
+                  "Now setting it to 1000 internally."
+                  )
+          )
   # model parameters
   lows <- values - 1
   lows <- ifelse(lows <= 0, 1e-6, lows)
