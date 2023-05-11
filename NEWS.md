@@ -1,4 +1,6 @@
-# EpiNow2 1.3.6.2000
+# EpiNow2 (development version)
+
+# EpiNow2 1.3.6.2001
 
 This release is in development. For a stable release install 1.3.5 from CRAN.
 
@@ -10,6 +12,8 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * Added a GitHub Action to build the README when it is altered.
 * Added handling of edge case where we sample from the negative binomial with
   mean close or equal to 0. By @sbfnk in #366.
+* Replaced use of nested `ifelse()` and `data.table::fifelse()` in the
+  code base with `data.table::fcase()`.
 
 # EpiNow2 1.3.5
 
