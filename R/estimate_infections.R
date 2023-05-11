@@ -695,7 +695,6 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
     format_out$samples <- format_out$samples[, strat := NA]
   }
   # add type based on horizon
-  # nolint start
   format_out$samples <- format_out$samples[
     ,
     type := data.table::fcase(
@@ -706,7 +705,6 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
       default = "estimate"
       )
   ]
-  # nolint end
 
   # remove burn in period if specified
   if (burn_in > 0) {

@@ -286,7 +286,6 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 create_backcalc_data <- function(backcalc = backcalc_opts()) {
   data <- list(
    rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
-   # nolint start
    backcalc_prior = data.table::fcase(
      backcalc$prior == "none", 0,
      backcalc$prior == "reports", 1,
@@ -294,7 +293,6 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
      default = 0
    )
  )
- # nolint end
  return(data)
 }
 #' Create Gaussian Process Data
@@ -359,14 +357,13 @@ create_gp_data <- function(gp = gp_opts(), data) {
   ls_min = gp$ls_min,
   ls_max = data$t - data$seeding_time - data$horizon,
   alpha_sd = gp$alpha_sd,
-  # nolint start
+
   gp_type = data.table::fcase(
     gp$kernel == "se", 0,
     gp$kernel == "matern", 1,
     default = 0
     )
   )
-    # nolint end
 
   gp_data <- c(data, gp_data)
   return(gp_data)
