@@ -12,6 +12,7 @@ data {
   // dimensions
   int n; // number of samples
   int t; // unobserved time
+  real aa;
   int seeding_time; // time period used for seeding and not observed
   int future_time; // fixed future time
   // Rt
@@ -45,7 +46,7 @@ generated quantities {
       delay_max_total, 0, 1
     );
 
-    infections[i] = to_row_vector(generate_infections(
+    infections[i] = to_row_vector(generate_infections(aa,
       to_vector(R[i]), seeding_time, gt_rev_pmf, initial_infections[i],
       initial_growth[i], pop, future_time
     ));

@@ -17,8 +17,9 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
   );
   return(new_inf);
 }
+
 // generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
-vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
+vector generate_infections(real aa, vector oR, int uot, vector gt_rev_pmf,
                            real[] initial_infections, real[] initial_growth,
                            int pop, int ht) {
   // time indices and storage
@@ -27,7 +28,6 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   int t = ot + uot;
   vector[ot] R = oR;
   real exp_adj_Rt; 
-  real aa = .001;
   vector[t] infections = rep_vector(1e-5, t);
   vector[ot] cum_infections = rep_vector(0, ot);
   vector[ot] infectiousness = rep_vector(1e-5, ot);
@@ -45,19 +45,17 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   // iteratively update infections
   for (s in 1:ot) {
     infectiousness[s] += update_infectiousness(infections, gt_rev_pmf, uot, s);
-    if (pop && s > nht) {
-      if ( s > 1 ){
+      if (s > nht ){
       	R[s] = exp(log(R[s-1]) - aa*infections[s-1]);
       }
-      exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[nht]));
-      exp_adj_Rt = exp_adj_Rt > 1 ? 1 : exp_adj_Rt;
-      infections[s + uot] = (pop - cum_infections[s]) * (1 - exp_adj_Rt);
-    }else{
+      if( R[s] < 0){
+        R[s] = 0;
+      }
       infections[s + uot] += R[s] * infectiousness[s];
-    }
-    if (pop && s < ot) {
-      cum_infections[s + 1] = cum_infections[s] + infections[s + uot];
-    }
+      if (s < ot) {
+        cum_infections[s + 1] = cum_infections[s] + infections[s + uot];
+      }
+
   }
   return(infections);
 }

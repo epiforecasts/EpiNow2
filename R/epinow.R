@@ -10,6 +10,7 @@
 #' an example of using `epinow` to estimate Rt for Covid-19 in a country from
 #' the ECDC data source.
 #'
+
 #' @param output A character vector of optional output to return. Supported
 #' options are samples ("samples"), plots ("plots"), the run time ("timing"),
 #' copying the dated folder into a latest folder (if `target_folder` is not
@@ -82,6 +83,7 @@ epinow <- function(reported_cases,
                    backcalc = backcalc_opts(),
                    gp = gp_opts(),
                    obs = obs_opts(),
+	                 aa = 0,
                    stan = stan_opts(),
                    horizon = 7,
                    CrIs = c(0.2, 0.5, 0.9),
@@ -163,6 +165,7 @@ epinow <- function(reported_cases,
       delays = delays,
       truncation = truncation,
       rt = rt,
+      aa = aa,
       backcalc = backcalc,
       gp = gp,
       obs = obs,

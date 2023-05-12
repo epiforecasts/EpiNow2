@@ -8,7 +8,6 @@ functions {
 #include functions/generated_quantities.stan
 }
 
-
 data {
 #include data/observations.stan
 #include data/delays.stan
@@ -17,6 +16,7 @@ data {
 #include data/rt.stan
 #include data/backcalc.stan
 #include data/observation_model.stan
+  real aa;
 }
 
 transformed data{
@@ -29,7 +29,6 @@ transformed data{
   // Rt
   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
-
   int delay_max_fixed = (n_fixed_delays == 0 ? 0 :
     sum(delay_max[fixed_delays]) - num_elements(fixed_delays) + 1);
   int delay_max_total = (delays == 0 ? 0 :
@@ -37,7 +36,6 @@ transformed data{
   vector[gt_fixed[1] ? gt_max[1] : 0] gt_fixed_pmf;
   vector[truncation && trunc_fixed[1] ? trunc_max[1] : 0] trunc_fixed_pmf;
   vector[delay_max_fixed] delays_fixed_pmf;
-
   if (gt_fixed[1]) {
     gt_fixed_pmf = discretised_pmf(gt_mean_mean[1], gt_sd_mean[1], gt_max[1], gt_dist[1], 1);
   }
@@ -74,7 +72,7 @@ parameters{
   simplex[week_effect] day_of_week_simplex;// day of week reporting effect
   real<lower = 0, upper = 1> frac_obs[obs_scale];     // fraction of cases that are ultimately observed
   real trunc_mean[truncation && !trunc_fixed[1]];        // mean of truncation
-  real<lower = 0> trunc_sd[truncation && !trunc_fixed[1]]; // sd of truncation
+  real<lower = 0> trunc_sd[truncation && !trunc_fixed[1]]; // sd of truncationa
   real<lower = 0> rep_phi[model_type];     // overdispersion of the reporting process
 }
 
@@ -99,7 +97,7 @@ transformed parameters {
       ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary
     );
     infections = generate_infections(
-      R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,
+      aa, R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,
       future_time
     );
   } else {

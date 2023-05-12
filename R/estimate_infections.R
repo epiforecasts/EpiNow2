@@ -27,7 +27,7 @@
 #' @param delays A call to `delay_opts()` defining delay distributions and
 #' options. See the documentation of `delay_opts()` and the examples below for
 #' details.
-#'
+#' @param aa
 #' @param horizon Numeric, defaults to 7. Number of days into the future to
 #' forecast.
 #'
@@ -227,6 +227,7 @@ estimate_infections <- function(reported_cases,
                                 generation_time = generation_time_opts(),
                                 delays = delay_opts(),
                                 truncation = trunc_opts(),
+                                aa = 0,
                                 rt = rt_opts(),
                                 backcalc = backcalc_opts(),
                                 gp = gp_opts(),
@@ -301,7 +302,7 @@ estimate_infections <- function(reported_cases,
     shifted_cases = shifted_cases$confirm,
     horizon = horizon
   )
-
+  data$aa <- aa 
   # Set up default settings
   args <- create_stan_args(
     stan = stan,
