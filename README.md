@@ -81,23 +81,17 @@ admissions) using `estimate_secondary()`.
 
 ## Installation
 
-Install the released version of the package:
-
-``` r
-install.packages("EpiNow2")
-```
-
 Install the development version of the package with:
 
 ``` r
-install.packages("EpiNow2", repos = "https://epiforecasts.r-universe.dev")
+install.packages("EpiNow2", repos = "https://github.com/mrbatist/EpiNow2.git")
 ```
 
-Alternatively, install the development version of the package with (few
-users should need to do this):
+Alternatively, download locally as zip and use:
 
 ``` r
-remotes::install_github("epiforecasts/EpiNow2")
+library(devtools)
+install_local("~/GitHub/EpiNow2.zip")
 ```
 
 Windows users will need a working installation of Rtools in order to
