@@ -1,5 +1,5 @@
 Type: Package
-Package: EpiNow2
+Package: EpiNow2D
 Title: Estimate Real-Time Case Counts and Time-Varying
     Epidemiological Parameters
 Version: 1.3.6.2000
