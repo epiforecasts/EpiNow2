@@ -129,7 +129,7 @@ documentation](https://epiforecasts.io/EpiNow2/reference/index.html).
 The first step to using the package is to load it as follows.
 
 ``` r
-library(EpiNow2)
+library(EpiNow2D)
 ```
 
 ### Reporting delays, incubation period and generation time
