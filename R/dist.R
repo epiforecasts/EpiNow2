@@ -1167,7 +1167,7 @@ print.dist_spec <- function(x, ...) {
       cat(
         "Fixed distribution with PMF [",
         paste(signif(
-          x$np_pmf[seq(fixed_pos, fixed_pos + x$np_pmf_length[i] - 1)],
+          x$np_pmf[seq(fixed_pos, fixed_pos + x$np_pmf_length[fixed_id] - 1)],
           digits = 2
         ), collapse = " "),
         "]\n", sep = "")
