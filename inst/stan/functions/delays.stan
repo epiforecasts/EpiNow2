@@ -53,7 +53,7 @@ vector get_delay_rev_pmf(
         pmf[1:new_len] = delay_np_pmf[start:end];
       } else { // subsequent delay to be convolved
         pmf[1:new_len] = convolve_with_rev_pmf(
-          pmf[1:current_len], delay_np_pmf[end:start], new_len
+          pmf[1:current_len], reverse_mf(delay_np_pmf[start:end]), new_len
         );
       }
     }
