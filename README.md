@@ -1,5 +1,5 @@
 
-# EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters
+# EpiNow2D: Estimate real-time case counts and time-varying epidemiological parameters
 
 [![Lifecycle:
 maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#maturing)
@@ -24,7 +24,7 @@ best practices ([Gostic et
 al.](https://doi.org/10.1371/journal.pcbi.1008409)). It aims to help
 users avoid some of the limitations of naive implementations in a
 framework that is informed by community feedback and is actively
-supported.
+supported. This is an edited version of the main to account for a drift parameter. 
 
 It estimates the time-varying reproduction number on cases by date of
 infection (using a similar approach to that implemented in
@@ -84,7 +84,7 @@ admissions) using `estimate_secondary()`.
 Install the development version of the package with:
 
 ``` r
-install.packages("EpiNow2", repos = "https://github.com/mrbatist/EpiNow2.git")
+install.packages("EpiNow2D", repos = "https://github.com/mrbatist/EpiNow2.git")
 ```
 
 Alternatively, download locally as zip and use:
