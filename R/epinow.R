@@ -75,7 +75,7 @@
 #'
 #' options(old_opts)
 #' }
-epinowD <- function(reported_cases,
+epinow <- function(reported_cases,
                    generation_time = NULL,
                    delays = delay_opts(),
                    truncation = trunc_opts(),
