@@ -1,6 +1,4 @@
-# EpiNow2 (development version)
-
-# EpiNow2 1.3.6.2001
+# EpiNow2 1.3.6
 
 This release is in development. For a stable release install 1.3.5 from CRAN.
 
