@@ -349,15 +349,15 @@ create_gp_data <- function(gp = gp_opts(), data) {
 
   # map settings to underlying gp stan requirements
   gp_data <- list(
-  fixed = as.numeric(fixed),
-  M = M,
-  L = gp$boundary_scale,
-  ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
-  ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
-  ls_min = gp$ls_min,
-  ls_max = data$t - data$seeding_time - data$horizon,
-  alpha_sd = gp$alpha_sd,
-  gp_type = data.table::fcase(
+    fixed = as.numeric(fixed),
+    M = M,
+    L = gp$boundary_scale,
+    ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
+    ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
+    ls_min = gp$ls_min,
+    ls_max = data$t - data$seeding_time - data$horizon,
+    alpha_sd = gp$alpha_sd,
+    gp_type = data.table::fcase(
     gp$kernel == "se", 0,
     gp$kernel == "matern", 1,
     default = 0
