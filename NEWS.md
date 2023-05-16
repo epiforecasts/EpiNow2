@@ -11,7 +11,7 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * Added handling of edge case where we sample from the negative binomial with
   mean close or equal to 0. By @sbfnk in #366.
 * Replaced use of nested `ifelse()` and `data.table::fifelse()` in the
-  code base with `data.table::fcase()`.
+  code base with `data.table::fcase()`. By @jamesmbaazam in #383 and reviewed by @seabbs.
 
 # EpiNow2 1.3.5
 
