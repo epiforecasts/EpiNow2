@@ -7,11 +7,11 @@ touchstone::branch_install()
 #  benchmnark README example
 touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
-  default = { epinow(
+  renewal = { epinow(
     reported_cases = reported_cases,
     generation_time = generation_time,
     delays = delays,
-    rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
+    rt = rt,
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
@@ -20,14 +20,13 @@ touchstone::benchmark_run(
   n = 5
 )
 
-# benchmark readme example with uncertain delays and gt
 touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
-  uncertain = { epinow(
+  nonmechanistic = { epinow(
     reported_cases = reported_cases,
     generation_time = generation_time,
     delays = delays,
-    rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
+    rt = NULL,
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
@@ -36,52 +35,19 @@ touchstone::benchmark_run(
   n = 5
 )
 
-# benchmark readme example without delays
+# benchmark individual model components
 touchstone::benchmark_run(
-  expr_before_benchmark = { source("touchstone/setup.R") },
-  no_delays = { epinow(
-    reported_cases = reported_cases,
-    generation_time = generation_time,
-    rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-    stan = stan_opts(
-      cores = 2, samples = 500, chains = 2,
-      control = list(adapt_delta = 0.95)),
-    verbose = interactive()
-  ) },
-  n = 5
-)
-
-# benchmark readme example with a stationary GP
-touchstone::benchmark_run(
-  expr_before_benchmark = { source("touchstone/setup.R") },
-  stationary = { epinow(
-    reported_cases = reported_cases,
-    generation_time = generation_time,
-    delays = delays,
-    rt = rt_opts(prior = list(mean = 2, sd = 0.2), gp_on = "R0"),
-    stan = stan_opts(
-      cores = 2, samples = 500, chains = 2,
-      control = list(adapt_delta = 0.95)),
-    verbose = interactive()
-  ) },
-  n = 5
-)
-
-# benchmark readme example with a weekly random walk
-touchstone::benchmark_run(
-  expr_before_benchmark = { source("touchstone/setup.R") },
-  random_walk = { epinow(
-    reported_cases = reported_cases,
-    generation_time = generation_time,
-    delays = delays,
-    rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
-    gp = NULL,
-    stan = stan_opts(
-      cores = 2, samples = 500, chains = 2,
-      control = list(adapt_delta = 0.95)),
-    verbose = interactive()
-  ) },
-  n = 5
+  expr_before_benchmark = {
+    source("touchstone/ssetup.R")
+    source("touchstone/setup_stan.R")
+  },
+  gt_pmf = get_delay_rev_pmf(
+    data$gt_id, delay_type_max[data$gt_id], data$delay_types_p,
+    data$delay_types_id, data$delay_types_groups, data$delay_max,
+    data$delay_np_pmf, data$delay_np_pmf_groups, init$delay_mean,
+    init$delay_sd, data$delay_dist, 1, 1, 0
+  ),
+  n = 100
 )
 
 # create artifacts used downstream in the GitHub Action

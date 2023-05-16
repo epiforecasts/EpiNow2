@@ -1,5 +1,6 @@
 *
 !setup.R
+!setup_stan.R
 !script.R
 !config.json
 !.gitignore
