@@ -217,24 +217,27 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
     low = lows,
     up = ups,
     iter = samples + 1000,
-    warmup = 1000
+    warmup = 1000,
+    lam_mean = numeric(0),
+    prior_mean = numeric(0),
+    prior_sd = numeric(0),
+    par_sigma = numeric(0)
   )
 
+  model <- stanmodels$dist_fit
+
   if (dist %in% "exp") {
-    model <- stanmodels$exp
-    data <- c(data, lam_mean = mean(values))
+    data <- c(data, lam_mean = array(mean(values)))
   } else if (dist %in% "gamma") {
-    model <- stanmodels$gamma
     data <- c(data,
-      prior_mean = mean(values),
-      prior_sd = sd(values),
-      par_sigma = 1.0
+      prior_mean = array(mean(values)),
+      prior_sd = array(sd(values)),
+      par_sigma = array(1.0)
     )
   } else if (dist %in% "lognormal") {
-    model <- stanmodels$lnorm
     data <- c(data,
-      prior_mean = log(mean(values)),
-      prior_sd = log(sd(values))
+      prior_mean = array(log(mean(values))),
+      prior_sd = array(log(sd(values)))
     )
   }
 
