@@ -3,44 +3,49 @@ data {
   int N;
   vector[N] low;
   vector[N] up;
-  real[dist == 0] lam_mean;
-  real[dist > 0] prior_mean;
-  real[dist > 0] prior_sd;
-  real[dist == 2] <lower = 0> par_sigma;
+  real lam_mean[dist == 0];
+  real prior_mean[dist > 0];
+  real prior_sd[dist > 0];
+  real<lower = 0> par_sigma[dist == 2];
 }
 
 transformed data {
-  real[dist == 2] prior_alpha = ((prior_mean) / prior_sd)^2;
-  real[dist == 2] prior_beta = (prior_mean) / (prior_sd^2);
+  real prior_alpha[dist == 2];
+  real prior_beta[dist == 2];
+
+  if (dist == 2) {
+    prior_alpha[1] = (prior_mean[1] / prior_sd[1])^2;
+    prior_beta[1] = prior_mean[1] / prior_sd[1]^2;
+  }
 }
 
 parameters {
-  real[dist == 0]<lower = 0> lambda;
-  real[dist == 0] mu;
-  real[dist == 1]<lower = 0> sigma;
-  real[dist == 2]<lower = 0> alpha_raw;
-  real[dist == 2]<lower = 0> beta_raw;
+  real<lower = 0> lambda[dist == 0];
+  real mu[dist == 0];
+  real<lower = 0> sigma[dist == 1];
+  real<lower = 0> alpha_raw[dist == 2];
+  real<lower = 0> beta_raw[dist == 2];
 }
 
 transformed parameters{
-  real[dist == 2]<lower = 0> alpha;
-  real[dist == 2]<lower = 0> beta;
+  real<lower = 0> alpha[dist == 2];
+  real<lower = 0> beta[dist == 2];
 
   if (dist == 2) {
-    alpha = prior_alpha + par_sigma * alpha_raw;
-    beta = prior_beta + par_sigma * beta_raw;
+    alpha[1] = prior_alpha[1] + par_sigma[1] * alpha_raw[1];
+    beta[1] = prior_beta[1] + par_sigma[1] * beta_raw[1];
   }
 }
 
 model {
   if (dist == 0) {
-    lambda ~ uniform(1 / (5 * lam_mean), 1 / (0.2 * lam_mean));
+    lambda[1] ~ uniform(1 / (5. * lam_mean[1]), 1 / (0.2 * lam_mean[1]));
   } else if (dist == 1) {
-    mu ~ normal(prior_mean, 10);
-    sigma ~ normal(prior_sd, 10) T[0,];
+    mu[1] ~ normal(prior_mean[1], 10);
+    sigma[1] ~ normal(prior_sd[1], 10) T[0,];
   } else if (dist == 2) {
-    alpha_raw ~ normal(0, 1);
-    beta_raw ~ normal(0, 1);
+    alpha_raw[1] ~ normal(0, 1);
+    beta_raw[1] ~ normal(0, 1);
   }
 
   for(i in 1:N){
@@ -60,15 +65,5 @@ model {
         gamma_cdf(low[i], alpha, beta)
       );
     }
-  }
-}
-
-generated quantities {
-  real[model == 2] mu;
-  real[model == 2] sigma;
-
-  if (model == 2) {
-    mu = alpha / beta;
-    sigma = sqrt(alpha / (beta^2));
   }
 }

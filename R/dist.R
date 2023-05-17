@@ -216,8 +216,6 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
     N = length(values),
     low = lows,
     up = ups,
-    iter = samples + 1000,
-    warmup = 1000,
     lam_mean = numeric(0),
     prior_mean = numeric(0),
     prior_sd = numeric(0),
@@ -252,6 +250,8 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
   fit <- rstan::sampling(
     model,
     data = data,
+    iter = samples + 1000,
+    warmup = 1000,
     control = list(adapt_delta = adapt_delta),
     chains = chains,
     cores = cores,
@@ -487,9 +487,15 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 
 
     out <- list()
-    out$mean_samples <- sample(rstan::extract(fit)$mu, samples)
-    out$sd_samples <- sample(rstan::extract(fit)$sigma, samples)
-
+    if (dist == "lognormal") {
+      out$mean_samples <- sample(rstan::extract(fit)$mu, samples)
+      out$sd_samples <- sample(rstan::extract(fit)$sigma, samples)
+    } else if (dist == "gamma") {
+      alpha_samples <- sample(rstan::extract(fit)$alpha, samples)
+      beta_samples <- sample(rstan::extract(fit)$beta, samples)
+      out$mean_samples <- alpha_samples / beta_samples
+      out$sd_samples <- sqrt(alpha_samples) / beta_samples
+    }
     return(out)
   }
 
