@@ -236,7 +236,6 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
     data$prior_mean <- array(mean(values))
     data$prior_sd <- array(sd(values))
     data$par_sigma <- array(1.0)
-    )
   }
 
   # set adapt delta based on the sample size
