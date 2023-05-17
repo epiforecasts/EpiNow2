@@ -263,6 +263,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #' define the back calculation. Defaults to `backcalc_opts()`.
 #'
 #' @seealso backcalc_opts
+#' @importFrom data.table fcase
 #' @return A list of settings defining the Gaussian process
 #' @export
 #' @author Sam Abbott
@@ -282,18 +283,17 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #'
 #' # custom lengthscale
 #' create_gp_data(gp_opts(ls_mean = 14), data)
-create_backcalc_data <- function(backcalc = backcalc_opts) {
+create_backcalc_data <- function(backcalc = backcalc_opts()) {
   data <- list(
-    rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
-    # nolint start
-    backcalc_prior = ifelse(backcalc$prior == "none", 0,
-      ifelse(backcalc$prior == "reports", 1,
-        ifelse(backcalc$prior == "infections", 2, 0)
-      )
-    )
-    # nolint end
-  )
-  return(data)
+   rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
+   backcalc_prior = data.table::fcase(
+     backcalc$prior == "none", 0,
+     backcalc$prior == "reports", 1,
+     backcalc$prior == "infections", 2,
+     default = 0
+   )
+ )
+ return(data)
 }
 #' Create Gaussian Process Data
 #'
@@ -305,6 +305,7 @@ create_backcalc_data <- function(backcalc = backcalc_opts) {
 #' Gaussian process.
 #' @param data A list containing the following numeric values:
 #' `t`, `seeding_time`, `horizon`.
+#' @importFrom data.table fcase
 #' @seealso gp_opts
 #' @return A list of settings defining the Gaussian process
 #' @export
@@ -355,11 +356,11 @@ create_gp_data <- function(gp = gp_opts(), data) {
     ls_min = gp$ls_min,
     ls_max = data$t - data$seeding_time - data$horizon,
     alpha_sd = gp$alpha_sd,
-    # nolint start
-    gp_type = ifelse(gp$kernel == "se", 0,
-      ifelse(gp$kernel == "matern", 1, 0)
+    gp_type = data.table::fcase(
+    gp$kernel == "se", 0,
+    gp$kernel == "matern", 1,
+    default = 0
     )
-    # nolint end
   )
 
   gp_data <- c(data, gp_data)
@@ -538,6 +539,7 @@ create_stan_data <- function(reported_cases, generation_time,
 #' @return An initial condition generating function
 #' @importFrom purrr map2_dbl
 #' @importFrom truncnorm rtruncnorm
+#' @importFrom data.table fcase
 #' @export
 #  @author Sam Abbott
 #  @author Sebastian Funk
@@ -581,13 +583,13 @@ create_initial_conditions <- function(data) {
         meanlog = data$ls_meanlog,
         sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog * 0.1, 0.01)
       ))
-      # nolint start
-      out$rho <- ifelse(out$rho > data$ls_max, data$ls_max - 0.001,
-        ifelse(out$rho < data$ls_min, data$ls_min + 0.001,
-          out$rho
-        )
-      )
-      # nolint end
+
+      out$rho <- array(data.table::fcase(
+        out$rho > data$ls_max, data$ls_max - 0.001,
+        out$rho < data$ls_min, data$ls_min + 0.001,
+        default = out$rho
+        ))
+
       out$alpha <- array(
         truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd)
       )

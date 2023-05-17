@@ -77,6 +77,7 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 #' "Likely decreasing" (< 0.95), "Decreasing" (<= 1)
 #' @param var Numeric variable to be categorised
 #'
+#' @importFrom data.table fcase
 #' @return A character variable.
 #' @export
 #' @examples
@@ -85,17 +86,15 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 #'
 #' map_prob_change(var)
 map_prob_change <- function(var) {
-  # nolint start
-  var <- ifelse(var < 0.05, "Increasing",
-    ifelse(var < 0.4, "Likely increasing",
-      ifelse(var < 0.6, "Stable",
-        ifelse(var < 0.95, "Likely decreasing",
-          "Decreasing"
-        )
-      )
-    )
-  ) 
-  # nolint end
+
+  var <- data.table::fcase(
+    var < 0.05, "Increasing",
+    var < 0.4, "Likely increasing",
+    var < 0.6, "Stable",
+    var < 0.95, "Likely decreasing",
+    var <= 1, "Decreasing"
+  )
+
   var <- factor(var, levels = c(
     "Increasing", "Likely increasing", "Stable",
     "Likely decreasing", "Decreasing"
