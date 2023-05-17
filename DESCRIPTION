@@ -2,7 +2,7 @@ Type: Package
 Package: EpiNow2
 Title: Estimate Real-Time Case Counts and Time-Varying
     Epidemiological Parameters
-Version: 1.3.6.2000
+Version: 1.3.6.3000
 Authors@R: 
     c(person(given = "Sam",
              family = "Abbott",
@@ -67,6 +67,11 @@ Authors@R:
              family = "Chapman",
              role = "ctb",
              email = "lloyd.chapman1@lshtm.ac.uk "),
+      person(given = "James M.",
+             family = "Azam",
+             role = "ctb",
+             email = "james.azam@lshtm.ac.uk",
+             comment = c(ORCID = "0000-0001-5782-7330")),
       person(given = "EpiForecasts",
              role = "aut"),
       person(given = "Sebastian",
