@@ -21,7 +21,7 @@ transformed data {
 
 parameters {
   real<lower = 0> lambda[dist == 0];
-  real mu[dist == 0];
+  real mu[dist == 1];
   real<lower = 0> sigma[dist == 1];
   real<lower = 0> alpha_raw[dist == 2];
   real<lower = 0> beta_raw[dist == 2];
