@@ -19,21 +19,7 @@ Takes the output of \code{backcalc_opts()} and converts it into a list understoo
 by \code{stan}.
 }
 \examples{
-# define input data required
-data <- list(
-  t = 30,
-  seeding_time = 7,
-  horizon = 7
-)
-
-# default gaussian process data
-create_gp_data(data = data)
-
-# settings when no gaussian process is desired
-create_gp_data(NULL, data)
-
-# custom lengthscale
-create_gp_data(gp_opts(ls_mean = 14), data)
+create_backcalc_data(backcalc = backcalc_opts())
 }
 \seealso{
 backcalc_opts
