@@ -268,21 +268,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #' @export
 #' @author Sam Abbott
 #' @examples
-#' # define input data required
-#' data <- list(
-#'   t = 30,
-#'   seeding_time = 7,
-#'   horizon = 7
-#' )
-#'
-#' # default gaussian process data
-#' create_gp_data(data = data)
-#'
-#' # settings when no gaussian process is desired
-#' create_gp_data(NULL, data)
-#'
-#' # custom lengthscale
-#' create_gp_data(gp_opts(ls_mean = 14), data)
+#' create_backcalc_data(backcalc = backcalc_opts())
 create_backcalc_data <- function(backcalc = backcalc_opts()) {
   data <- list(
    rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
