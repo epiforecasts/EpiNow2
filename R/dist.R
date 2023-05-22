@@ -747,6 +747,38 @@ sample_approx_dist <- function(cases = NULL,
   return(mapped_cases)
 }
 
+#' Tune an Inverse Gamma to Achieve the Target Truncation
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Allows an inverse gamma distribution to be. tuned so that less than 0.01 of
+#' its probability mass function falls outside of the specified bounds. This is
+#' required when using an inverse gamma prior, for example for a Gaussian
+#' process. As no inverse gamma priors are currently in use and this function
+#' has some stability issues it has been deprecated.
+#'
+#' @param lower Numeric, defaults to 2. Lower truncation bound.
+#'
+#' @param upper Numeric, defaults to 21. Upper truncation bound.
+#'
+#' @return A list of alpha and beta values that describe a inverse gamma
+#' distribution that achieves the target truncation.
+#' @export
+#'
+#' @keywords internal
+#'
+tune_inv_gamma <- function(lower = 2, upper = 21) {
+  lifecycle::deprecate_stop(
+    "1.3.6", "tune_inv_gamma()",
+    details = paste0(
+      "As no inverse gamma priors are currently in use and this function has ",
+      "some stability issues it has been deprecated. For the last active ",
+      "version of the function see version 1.3.5 at ",
+      "https://github.com/epiforecasts/EpiNow2/blob/",
+      "bad836ebd650ace73ad1ead887fd0eae98c52dd6/R/dist.R#L739"
+    )
+  )
+}
+
 #' Specify a distribution.
 #'
 #' @description `r lifecycle::badge("stable")`
