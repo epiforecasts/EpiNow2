@@ -202,12 +202,11 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
                      chains = 2, dist = "exp", verbose = FALSE) {
   if (samples < 1000) {
     samples <- 1000
+    warning(sprintf("%s %s", "`samples` must be at least 1000.",
+                    "Now setting it to 1000 internally."
+                    )
+            )
   }
-
-  warning(sprintf("%s %s", "`samples` must be at least 1000.",
-                  "Now setting it to 1000 internally."
-                  )
-          )
   # model parameters
   lows <- values - 1
   lows <- ifelse(lows <= 0, 1e-6, lows)
