@@ -37,17 +37,83 @@ touchstone::benchmark_run(
 
 # benchmark individual model components
 touchstone::benchmark_run(
-  expr_before_benchmark = {
-    source("touchstone/ssetup.R")
-    source("touchstone/setup_stan.R")
+  expr_before_benchmark = { source("touchstone/setup_stan.R") },
+  gt_fixed_pmf = {
+    combine_pmfs(
+      gt_fixed_pmf, gt_mean, gt_sd, data$gt_max, data$gt_dist,
+      data$gt_max, 1, 1
+    )
   },
-  gt_pmf = get_delay_rev_pmf(
-    data$gt_id, delay_type_max[data$gt_id], data$delay_types_p,
-    data$delay_types_id, data$delay_types_groups, data$delay_max,
-    data$delay_np_pmf, data$delay_np_pmf_groups, init$delay_mean,
-    init$delay_sd, data$delay_dist, 1, 1, 0
-  ),
-  n = 100
+  n = 10000
+)
+
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup_stan.R") },
+  delay_var_pmf = {
+    combine_pmfs(
+      delay_fixed_pmf, init$delay_mean, init$delay_sd, data$delay_max,
+      data$delay_dist, delay_max_total, 1, 1
+    )
+  },
+  n = 10000
+)
+
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup_stan.R") },
+  update_gp = {
+    update_gp(
+      PHI, data$M, data$L, init$alpha[1], init$rho[1], init$eta, data$gp_type
+    )
+  },
+  n = 10000
+)
+
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup_stan.R") },
+  update_Rt = {
+    update_Rt(
+      ot_h, init$log_R, noise, data$breakpoints, bp_effects, data$stationary
+    )
+  },
+  n = 10000
+)
+
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup_stan.R") },
+  generate_infections = {
+    generate_infections(
+      R, data$seeding_time, gt_rev_pmf, init$initial_infections,
+      init$initial_growth, data$pop, data$future_time
+    )
+  },
+  n = 10000
+)
+
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup_stan.R") },
+  convolve_to_report = {
+    convolve_to_report(infections, delay_rev_pmf, data$seeding_time)
+  },
+  n = 10000
+)
+
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup_stan.R") },
+  day_of_week_effect = {
+    day_of_week_effect(reports, data$day_of_week, init$day_of_week_simplex)
+  },
+  n = 10000
+)
+
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup_stan.R") },
+  report_lp = {
+    report_lp(
+      data$cases, obs_reports, init$rep_phi, data$phi_mean, data$phi_sd,
+      data$model_type, data$obs_weight
+    )
+  },
+  n = 10000
 )
 
 # create artifacts used downstream in the GitHub Action

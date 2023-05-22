@@ -36,7 +36,11 @@
 #' Corresponds to the "DEBUG" level from `futile.logger`. See `setup_logging`
 #' for more detailed logging options.
 #'
-#' @export
+#' @param dry_run Logical, defaults to `FALSE`. If set to `TRUE` no sampling
+#' will be done but the data be prepared for stan and the function for initial
+#' created.
+#'
+##' @export
 #' @return A list of output including: posterior samples, summarised posterior
 #' samples, data used to fit the model, and the fit object itself.
 #'
@@ -237,7 +241,8 @@ estimate_infections <- function(reported_cases,
                                 filter_leading_zeros = TRUE,
                                 zero_threshold = Inf,
                                 id = "estimate_infections",
-                                verbose = interactive()) {
+                                verbose = interactive(),
+                                dry_run = FALSE) {
   set_dt_single_thread()
 
   # store dirty reported case data
@@ -328,44 +333,51 @@ estimate_infections <- function(reported_cases,
     args$init_fit <- NULL
   }
   # Fit model
-  if (args$method == "sampling") {
-    fit <- fit_model_with_nuts(args,
-      future = args$future,
-      max_execution_time = args$max_execution_time, id = id
-    )
-  } else if (args$method == "vb") {
-    fit <- fit_model_with_vb(args, id = id)
-  }
-  # Extract parameters of interest from the fit
-  out <- extract_parameter_samples(fit, data,
-    reported_inf_dates = reported_cases$date,
-    reported_dates = reported_cases$date[-(1:data$seeding_time)]
-  )
-
-  ## Add prior infections
-  if (delays$delays > 0) {
-    out$prior_infections <- shifted_cases[
-      ,
-      .(
-        parameter = "prior_infections", time = seq_len(.N),
-        date, value = confirm, sample = 1
+  if (dry_run) {
+    format_out <- list()
+  } else {
+    if (args$method == "sampling") {
+      fit <- fit_model_with_nuts(args,
+        future = args$future,
+        max_execution_time = args$max_execution_time, id = id
       )
-    ]
-  }
-  # Format output
-  format_out <- format_fit(
-    posterior_samples = out,
-    horizon = horizon,
-    shift = data$seeding_time,
-    burn_in = 0,
-    start_date = start_date,
-    CrIs = CrIs
-  )
+    } else if (args$method == "vb") {
+      fit <- fit_model_with_vb(args, id = id)
+    }
+    # Extract parameters of interest from the fit
+    out <- extract_parameter_samples(fit, data,
+      reported_inf_dates = reported_cases$date,
+      reported_dates = reported_cases$date[-(1:data$seeding_time)]
+    )
 
-  ## Join stan fit if required
-  if (stan$return_fit) {
-    format_out$fit <- fit
-    format_out$args <- data
+    ## Add prior infections
+    if (delays$delays > 0) {
+      out$prior_infections <- shifted_cases[
+       ,
+         .(
+           parameter = "prior_infections", time = seq_len(.N),
+           date, value = confirm, sample = 1
+         )
+      ]
+    }
+    # Format output
+    format_out <- format_fit(
+      posterior_samples = out,
+      horizon = horizon,
+      shift = data$seeding_time,
+      burn_in = 0,
+      start_date = start_date,
+      CrIs = CrIs
+    )
+
+    ## Join stan fit if required
+    if (stan$return_fit) {
+      format_out$fit <- fit
+    }
+  }
+
+  if (stan$return_fit || dry_run) {
+    format_out$args <- args
   }
   format_out$observations <- dirty_reported_cases
   class(format_out) <- c("estimate_infections", class(format_out))

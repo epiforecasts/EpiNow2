@@ -9,7 +9,7 @@ generation_time <- get_generation_time(
 
 # set delays between infection and case report
 incubation_period <- get_incubation_period(
-  disease = "SARS-CoV-2", source = "lauer", fixed = TRUE
+  disease = "SARS-CoV-2", source = "lauer"
 )
 
 reporting_delay <- list(
