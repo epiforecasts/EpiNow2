@@ -773,8 +773,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
       "As no inverse gamma priors are currently in use and this function has ",
       "some stability issues it has been deprecated. For the last active ",
       "version of the function see version 1.3.5 at ",
-      "https://github.com/epiforecasts/EpiNow2/blob/",
-      "bad836ebd650ace73ad1ead887fd0eae98c52dd6/R/dist.R#L739"
+      "https://github.com/epiforecasts/EpiNow2/blob/bad836ebd650ace73ad1ead887fd0eae98c52dd6/R/dist.R#L739" # nolint
     )
   )
 }
