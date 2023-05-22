@@ -158,7 +158,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' `stan`.
 #' @param values Numeric vector of values
 #'
-#' @param samples Numeric, number of samples to take. Must be >= 1000. 
+#' @param samples Numeric, number of samples to take. Must be >= 1000.
 #' Defaults to 1000.
 #'
 #' @param dist Character string, which distribution to fit. Defaults to
