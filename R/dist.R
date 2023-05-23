@@ -216,26 +216,26 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
     N = length(values),
     low = lows,
     up = ups,
-    iter = samples + 1000,
-    warmup = 1000
+    lam_mean = numeric(0),
+    prior_mean = numeric(0),
+    prior_sd = numeric(0),
+    par_sigma = numeric(0)
   )
 
+  model <- stanmodels$dist_fit
+
   if (dist %in% "exp") {
-    model <- stanmodels$exp
-    data <- c(data, lam_mean = mean(values))
-  } else if (dist %in% "gamma") {
-    model <- stanmodels$gamma
-    data <- c(data,
-      prior_mean = mean(values),
-      prior_sd = sd(values),
-      par_sigma = 1.0
-    )
+    data$dist <- 0
+    data$lam_mean <- array(mean(values))
   } else if (dist %in% "lognormal") {
-    model <- stanmodels$lnorm
-    data <- c(data,
-      prior_mean = log(mean(values)),
-      prior_sd = log(sd(values))
-    )
+    data$dist <- 1
+    data$prior_mean <- array(log(mean(values)))
+    data$prior_sd <- array(log(sd(values)))
+  } else if (dist %in% "gamma") {
+    data$dist <- 2
+    data$prior_mean <- array(mean(values))
+    data$prior_sd <- array(sd(values))
+    data$par_sigma <- array(1.0)
   }
 
   # set adapt delta based on the sample size
@@ -249,6 +249,8 @@ dist_fit <- function(values = NULL, samples = NULL, cores = 1,
   fit <- rstan::sampling(
     model,
     data = data,
+    iter = samples + 1000,
+    warmup = 1000,
     control = list(adapt_delta = adapt_delta),
     chains = chains,
     cores = cores,
@@ -484,9 +486,15 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 
 
     out <- list()
-    out$mean_samples <- sample(rstan::extract(fit)$mu, samples)
-    out$sd_samples <- sample(rstan::extract(fit)$sigma, samples)
-
+    if (dist == "lognormal") {
+      out$mean_samples <- sample(rstan::extract(fit)$mu, samples)
+      out$sd_samples <- sample(rstan::extract(fit)$sigma, samples)
+    } else if (dist == "gamma") {
+      alpha_samples <- sample(rstan::extract(fit)$alpha, samples)
+      beta_samples <- sample(rstan::extract(fit)$beta, samples)
+      out$mean_samples <- alpha_samples / beta_samples
+      out$sd_samples <- sqrt(alpha_samples) / beta_samples
+    }
     return(out)
   }
 
@@ -741,12 +749,12 @@ sample_approx_dist <- function(cases = NULL,
 
 #' Tune an Inverse Gamma to Achieve the Target Truncation
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("deprecated")`
 #' Allows an inverse gamma distribution to be. tuned so that less than 0.01 of
 #' its probability mass function falls outside of the specified bounds. This is
 #' required when using an inverse gamma prior, for example for a Gaussian
 #' process. As no inverse gamma priors are currently in use and this function
-#' has some stability issues it may be deprecated at a later date.
+#' has some stability issues it has been deprecated.
 #'
 #' @param lower Numeric, defaults to 2. Lower truncation bound.
 #'
@@ -756,32 +764,20 @@ sample_approx_dist <- function(cases = NULL,
 #' distribution that achieves the target truncation.
 #' @export
 #'
-#' @examples
+#' @keywords internal
 #'
-#' tune_inv_gamma(lower = 2, upper = 21)
 tune_inv_gamma <- function(lower = 2, upper = 21) {
-  model <- stanmodels$tune_inv_gamma
-  # optimise for correct upper and lower probabilites
-  fit <- rstan::sampling(model,
-    data = list(
-      u = upper,
-      l = lower
-    ),
-    iter = 1,
-    warmup = 0,
-    chains = 1,
-    algorithm = "Fixed_param",
-    refresh = 0
+  lifecycle::deprecate_stop(
+    "1.3.6", "tune_inv_gamma()",
+    details = paste0(
+      "As no inverse gamma priors are currently in use and this function has ",
+      "some stability issues it has been deprecated. Please let the package ",
+      "authors know if deprecating this function has caused any issues. ",
+      "For the last active version of the function see the one contained ",
+      "in version 1.3.5 at ",
+      "https://github.com/epiforecasts/EpiNow2/blob/bad836ebd650ace73ad1ead887fd0eae98c52dd6/R/dist.R#L739" # nolint
+    )
   )
-
-  alpha <- rstan::extract(fit, "alpha")
-  beta <- rstan::extract(fit, "beta")
-
-  out <- list(
-    alpha = round(unlist(unname(alpha)), 1),
-    beta = round(unlist(unname(beta)), 1)
-  )
-  return(out)
 }
 
 #' Specify a distribution.
