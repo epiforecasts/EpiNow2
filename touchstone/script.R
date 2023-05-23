@@ -7,10 +7,24 @@ touchstone::branch_install()
 #  benchmnark README example
 touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
-  renewal = { epinow(
+  default = { epinow(
     reported_cases = reported_cases,
     generation_time = generation_time,
     delays = delays,
+    rt = rt,
+    stan = stan_opts(
+      cores = 2, samples = 500, chains = 2,
+      control = list(adapt_delta = 0.95)),
+    verbose = interactive()
+  ) },
+  n = 5
+)
+
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup.R") },
+  no_delay = { epinow(
+    reported_cases = reported_cases,
+    generation_time = generation_time,
     rt = rt,
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
