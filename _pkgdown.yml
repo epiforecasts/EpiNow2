@@ -114,7 +114,6 @@ reference:
     desc: Functions to define, fit and parameterise distributions
     contents:
       - contains("dist")
-      - tune_inv_gamma
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases
     contents:
