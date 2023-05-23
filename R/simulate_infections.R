@@ -123,7 +123,7 @@ simulate_infections <- function(estimates,
     samples <- R_samples
   }
   # extract parameters from passed stanfit object
-  shift <- estimates$args$seeding_time
+  shift <- estimates$args$data$seeding_time
 
   # if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
@@ -163,8 +163,8 @@ simulate_infections <- function(estimates,
   }
 
   # redefine time if Rt != data$t
-  time <- estimates$args$t
-  horizon <- estimates$args$h
+  time <- estimates$args$data$t
+  horizon <- estimates$args$data$h
   obs_time <- time - shift
 
   if (obs_time != dim(draws$R)[2]) {
@@ -172,16 +172,16 @@ simulate_infections <- function(estimates,
     horizon <- ifelse(horizon < 0, 0, horizon) # nolint
     time <- dim(draws$R)[2] + shift
     obs_time <- time - shift
-    starting_day <- estimates$args$day_of_week[1]
-    days <- max(estimates$args$day_of_week)
+    starting_day <- estimates$args$data$day_of_week[1]
+    days <- max(estimates$args$data$day_of_week)
     day_of_week <- (
       (starting_day + rep(0:(days - 1), ceiling((obs_time) / days))) %% days)
     day_of_week <- day_of_week[1:(obs_time)]
     day_of_week <- ifelse(day_of_week == 0, days, day_of_week)
 
-    estimates$args$horizon <- horizon
-    estimates$args$t <- time
-    estimates$args$day_of_week <- day_of_week
+    estimates$args$data$horizon <- horizon
+    estimates$args$data$t <- time
+    estimates$args$data$day_of_week <- day_of_week
   }
 
   # define dates of interest
@@ -204,7 +204,7 @@ simulate_infections <- function(estimates,
     draws <- map(draws, ~ as.matrix(.[nstart:nend, ]))
 
     ## prepare data for stan command
-    data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
+    data <- c(list(n = dim(draws$R)[1]), draws, estimates$args$data)
 
     ## allocate empty parameters
     data <- allocate_empty(
@@ -270,7 +270,7 @@ simulate_infections <- function(estimates,
   ## format output
   format_out <- format_fit(
     posterior_samples = out,
-    horizon = estimates$args$horizon,
+    horizon = estimates$args$data$horizon,
     shift = shift,
     burn_in = 0,
     start_date = min(estimates$observations$date),
