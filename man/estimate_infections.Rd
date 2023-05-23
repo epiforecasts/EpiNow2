@@ -20,7 +20,8 @@ estimate_infections(
   filter_leading_zeros = TRUE,
   zero_threshold = Inf,
   id = "estimate_infections",
-  verbose = interactive()
+  verbose = interactive(),
+  dry_run = FALSE
 )
 }
 \arguments{
@@ -80,6 +81,10 @@ run with error catching.}
 otherwise \code{FALSE}. Should verbose debug progress messages be printed.
 Corresponds to the "DEBUG" level from \code{futile.logger}. See \code{setup_logging}
 for more detailed logging options.}
+
+\item{dry_run}{Logical, defaults to \code{FALSE}. If set to \code{TRUE} no sampling
+will be done but the data be prepared for stan and the function for initial
+created.}
 }
 \value{
 A list of output including: posterior samples, summarised posterior
