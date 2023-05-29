@@ -24,7 +24,7 @@ create_clean_reported_cases <- function(reported_cases, horizon,
                                         zero_threshold = Inf) {
   reported_cases <- data.table::setDT(reported_cases)
   reported_cases_grid <- data.table::copy(reported_cases)[,
-   .(date = seq(min(date), max(date) + horizon, by = "days"))
+   .(date = seq(min(date), max(date) + horizon, by = 1))
   ]
 
   reported_cases <- data.table::merge.data.table(
