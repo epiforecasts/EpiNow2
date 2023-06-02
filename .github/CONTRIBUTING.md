@@ -40,6 +40,20 @@ precommit::use_precommit()
 
 *  For user-facing changes, add a bullet to the top of `NEWS.md` (i.e. just below the first header). Follow the style described in <https://style.tidyverse.org/news.html>.
 
+#### What happens after submitting a PR?
+
+*   PRs are reviewed by the team before they are merged. The review process only begins after the continuous integration checks, which are manually triggered by the maintainer, have passed.
+
+*   The Github Actions checks currently take a while (about an hour), so it might be helpful to "watch" the repository and check your email for a notification when it's   all done.
+
+*   Usually, all the review conversations occur under the PR. The reviewer merges the PR when every issue has been resolved. It is good practice to response to each raised conversation with a commit pointing to the change made to fix the issue.
+
+*   When a PR is ready to be merged, you may be asked to [rebase](https://www.atlassian.com/git/tutorials/merging-vs-rebasing) on the `main` branch. You can do this by checking out your branch and running `git rebase main`. If it is successful, your commits will be placed on top of the commit history of `main` in preparation for a merge. A rebase might result in some merge conflicts. Make sure that they are resolved, then push your changes to your branch again.
+
+*   A number of issues can cause the Github checks to fail. It might be helpful to safeguard against them by doing the following:
+  *   Check that there are no linting issues by running `lintr::lint_package()`.
+  *   Run `devtoools::check()` to check for wider package issues like mismatching documentation, e.t.c.
+  *   (Optional) Turn on continuous integration with Github Actions on your forked repository.
 ### Code style
 
 *   New code should follow the tidyverse [style guide](https://style.tidyverse.org). 
