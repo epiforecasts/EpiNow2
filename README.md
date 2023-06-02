@@ -97,7 +97,11 @@ Alternatively, install the development version of the package with (few
 users should need to do this):
 
 ``` r
-remotes::install_github("epiforecasts/EpiNow2")
+# check whether {pak} is installed
+if (!require("pak")) {
+  install.packages("pak")
+}
+pak::pkg_install("epiforecasts/EpiNow2")
 ```
 
 Windows users will need a working installation of Rtools in order to
