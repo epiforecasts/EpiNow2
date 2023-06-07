@@ -15,6 +15,7 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * Reviewed the example in `calc_backcalc_data()` to call `calc_backcalc_data()`
   instead of `create_gp_data()`. By @jamesmbaazam in #388 and reviewed by @seabbs.
 * Improved compilation times by reducing the number of distinct stan models and deprecated `tune_inv_gamma()`. By @sbfnk in #394 and reviewed by @seabbs.
+* Changed touchstone settings so that benchmarks are only performed if the stan model is changed. By @sbfnk in #400 and reviewed by @seabbs.
 
 # EpiNow2 1.3.5
 
