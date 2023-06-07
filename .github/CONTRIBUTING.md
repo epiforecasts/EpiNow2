@@ -49,7 +49,7 @@ precommit::use_precommit()
 
 *   When a PR is ready to be merged, you may be asked to [rebase](https://www.atlassian.com/git/tutorials/merging-vs-rebasing) on the `main` branch. You can do this by checking out your branch and running `git rebase main`. If it is successful, your commits will be placed on top of the commit history of `main` in preparation for a merge. A rebase might result in some merge conflicts. Make sure that they are resolved, then push your changes to your branch again.
 
-*   A number of issues can cause the Github checks to fail. It might be helpful to safeguard against them by doing the following:
+*   A number of issues can cause the Github checks to fail. It can be helpful to safeguard against them by doing the following:
   *   Check that there are no linting issues by running `lintr::lint_package()`.
   *   Run `devtoools::check()` to check for wider package issues like mismatching documentation, e.t.c.
   *   (Optional) Turn on continuous integration with Github Actions on your forked repository.
