@@ -43,7 +43,7 @@ precommit::use_precommit()
 #### What happens after submitting a PR?
 
 *   PRs are reviewed by the team before they are merged. The review process only begins after the continuous integration checks, which have to be manually triggered by a maintainer for first-time contributors, have passed.
-*   The Github Actions checks currently take a while (about an hour), so it might be helpful to "watch" the repository and check your email for a notification when it's   all done.
+*   The Github Actions checks currently take a while (about an hour), so it might be helpful to "watch" the repository and check your email for a notification when it's all done.
 
 *   Usually, all the review conversations occur under the PR. The reviewer merges the PR when every issue has been resolved. It is good practice to response to each raised conversation with a commit pointing to the change made to fix the issue.
 
