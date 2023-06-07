@@ -12,6 +12,8 @@ on:
       - "touchstone/**"
       # Benchmarking config file
       - ".github/workflows/touchstone-*.yaml"
+      # Manual trigger
+      - ".benchmark"
 
 jobs:
   prepare:
