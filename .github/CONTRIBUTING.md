@@ -51,7 +51,7 @@ precommit::use_precommit()
 
 *   A number of issues can cause the Github checks to fail. It can be helpful to safeguard against them by doing the following:
   *   Check that there are no linting issues by running `lintr::lint_package()`.
-  *   Run `devtoools::check()` to check for wider package issues like mismatching documentation, e.t.c.
+  *   Run `devtoools::check()` to check for wider package issues like mismatching documentation, etc. (this currently requires a fair bit of time/computation).
   *   (Optional) Turn on continuous integration with Github Actions on your forked repository.
 ### Code style
 
