@@ -39,6 +39,7 @@ Nowcasts
 ORCID
 PLoS
 PMF
+PRs
 Poisson
 Quilty
 Riutort
@@ -101,6 +102,8 @@ poisson
 progressr
 rds
 realland
+reprex
+roxygen
 rstan
 runtimes
 sd
@@ -110,7 +113,9 @@ st
 stan
 stanfit
 testland
+testthat
 tibbles
+tidyverse
 timelimit
 underreporting
 varphi
