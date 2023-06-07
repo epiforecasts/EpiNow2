@@ -14,7 +14,7 @@ examples for details."><meta property="og:image" content="epiforecasts.io/EpiNow
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.5000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.6000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -150,21 +150,21 @@ returned.</p></dd>
 <span class="r-in"><span>  target_folder <span class="op">=</span> <span class="va">dir</span>,</span></span>
 <span class="r-in"><span>  return_output <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 16:17:56] Producing following optional outputs: regions, latest</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 19:21:58] Producing following optional outputs: regions, latest</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Logging threshold set at INFO for the EpiNow2 logger</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Writing EpiNow2 logs to the console and: /tmp/Rtmp8fYefx/regional-epinow/2020-03-22.log</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Writing EpiNow2 logs to the console and: /tmp/RtmpOv2xqg/regional-epinow/2020-03-22.log</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Logging threshold set at INFO for the EpiNow2.epinow logger</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Writing EpiNow2.epinow logs to: /tmp/Rtmp8fYefx/epinow/2020-03-22.log</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 16:17:56] Reporting estimates using data up to: 2020-03-22</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 16:17:56] Saving estimates to : /tmp/Rtmp8fYefx/results</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 16:17:56] Producing estimates for: testland, realland</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 16:17:56] Regions excluded: none</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 16:18:31] Completed estimates for: testland</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 16:19:15] Completed estimates for: realland</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 16:19:15] Completed regional estimates</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 16:19:15] Regions with estimates: 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 16:19:15] Regions with runtime errors: 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 16:19:15] Saving timings information to : /tmp/Rtmp8fYefx/results</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Writing EpiNow2.epinow logs to: /tmp/RtmpOv2xqg/epinow/2020-03-22.log</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 19:21:58] Reporting estimates using data up to: 2020-03-22</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 19:21:58] Saving estimates to : /tmp/RtmpOv2xqg/results</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 19:21:58] Producing estimates for: testland, realland</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 19:21:58] Regions excluded: none</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 19:22:45] Completed estimates for: testland</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 19:23:41] Completed estimates for: realland</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 19:23:41] Completed regional estimates</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 19:23:41] Regions with estimates: 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 19:23:41] Regions with runtime errors: 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2023-06-07 19:23:41] Saving timings information to : /tmp/RtmpOv2xqg/results</span>
 <span class="r-in"><span><span class="co"># from output</span></span></span>
 <span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">get_regional_results</span><span class="op">(</span><span class="va">regional_out</span><span class="op">$</span><span class="va">regional</span>, samples <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span></span>

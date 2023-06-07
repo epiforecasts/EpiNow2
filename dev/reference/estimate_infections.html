@@ -40,7 +40,7 @@ estimate Rt for Covid-19 in a country from the ECDC data source."><meta property
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.5000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.6000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -265,18 +265,18 @@ samples, data used to fit the model, and the fit object itself.</p>
 <span class="r-in"><span>  rt <span class="op">=</span> <span class="fu"><a href="rt_opts.html">rt_opts</a></span><span class="op">(</span>prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">2</span>, sd <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  stan <span class="op">=</span> <span class="fu"><a href="stan_opts.html">stan_opts</a></span><span class="op">(</span>control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>adapt_delta <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 13 divergent transitions after warmup. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 8 divergent transitions after warmup. See</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Examine the pairs() plot to diagnose sampling problems</span>
 <span class="r-in"><span><span class="co"># real time estimates</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">def</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                  measure               estimate</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1: New confirmed cases by infection date    2168 (1111 -- 3991)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:        Expected change in daily cases      Likely decreasing</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3:            Effective reproduction no.      0.86 (0.6 -- 1.1)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4:                        Rate of growth -0.04 (-0.12 -- 0.039)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5:          Doubling/halving time (days)       -17 (18 -- -5.9)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                  measure                estimate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: New confirmed cases by infection date     2187 (1128 -- 4132)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:        Expected change in daily cases       Likely decreasing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:            Effective reproduction no.      0.86 (0.61 -- 1.2)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:                        Rate of growth -0.038 (-0.12 -- 0.041)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5:          Doubling/halving time (days)          -18 (17 -- -6)</span>
 <span class="r-in"><span><span class="co"># summary plot</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">def</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="estimate_infections-1.png" alt="" width="864" height="864"></span>
@@ -291,17 +291,17 @@ samples, data used to fit the model, and the fit object itself.</p>
 <span class="r-in"><span>  gp <span class="op">=</span> <span class="fu"><a href="gp_opts.html">gp_opts</a></span><span class="op">(</span>ls_min <span class="op">=</span> <span class="fl">10</span>, basis_prop <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  stan <span class="op">=</span> <span class="fu"><a href="stan_opts.html">stan_opts</a></span><span class="op">(</span>control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>adapt_delta <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 14 divergent transitions after warmup. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 2 divergent transitions after warmup. See</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Examine the pairs() plot to diagnose sampling problems</span>
 <span class="r-in"><span><span class="fu"><a href="summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">agp</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                  measure               estimate</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1: New confirmed cases by infection date    2230 (1248 -- 4181)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: New confirmed cases by infection date    2306 (1249 -- 4145)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2:        Expected change in daily cases      Likely decreasing</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3:            Effective reproduction no.     0.87 (0.65 -- 1.2)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4:                        Rate of growth -0.036 (-0.1 -- 0.043)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5:          Doubling/halving time (days)       -19 (16 -- -6.7)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:            Effective reproduction no.     0.88 (0.64 -- 1.2)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:                        Rate of growth -0.033 (-0.1 -- 0.043)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5:          Doubling/halving time (days)       -21 (16 -- -6.7)</span>
 <span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">agp</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="estimate_infections-2.png" alt="" width="864" height="864"></span>
 <span class="r-in"><span></span></span>
@@ -316,7 +316,7 @@ samples, data used to fit the model, and the fit object itself.</p>
 <span class="r-in"><span>  gp <span class="op">=</span> <span class="fu"><a href="gp_opts.html">gp_opts</a></span><span class="op">(</span>ls_min <span class="op">=</span> <span class="fl">10</span>, basis_prop <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>, horizon <span class="op">=</span> <span class="fl">21</span>,</span></span>
 <span class="r-in"><span>  stan <span class="op">=</span> <span class="fu"><a href="stan_opts.html">stan_opts</a></span><span class="op">(</span>control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>adapt_delta <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 5 divergent transitions after warmup. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 18 divergent transitions after warmup. See</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Examine the pairs() plot to diagnose sampling problems</span>
@@ -338,11 +338,11 @@ samples, data used to fit the model, and the fit object itself.</p>
 <span class="r-in"><span>  gp <span class="op">=</span> <span class="fu"><a href="gp_opts.html">gp_opts</a></span><span class="op">(</span>ls_min <span class="op">=</span> <span class="fl">10</span>, basis_prop <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  stan <span class="op">=</span> <span class="fu"><a href="stan_opts.html">stan_opts</a></span><span class="op">(</span>control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>adapt_delta <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 1995 divergent transitions after warmup. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 1984 divergent transitions after warmup. See</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Examine the pairs() plot to diagnose sampling problems</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The largest R-hat is 3.47, indicating chains have not mixed.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The largest R-hat is 1.78, indicating chains have not mixed.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#r-hat</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
@@ -381,7 +381,7 @@ samples, data used to fit the model, and the fit object itself.</p>
 <span class="r-in"><span>    future <span class="op">=</span> <span class="st">"project"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 7 divergent transitions after warmup. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 13 divergent transitions after warmup. See</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Examine the pairs() plot to diagnose sampling problems</span>
@@ -395,7 +395,7 @@ samples, data used to fit the model, and the fit object itself.</p>
 <span class="r-in"><span>  delays <span class="op">=</span> <span class="fu"><a href="delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">incubation_period</span>, <span class="va">reporting_delay</span>, fixed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  rt <span class="op">=</span> <span class="fu"><a href="rt_opts.html">rt_opts</a></span><span class="op">(</span>prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">1</span>, sd <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 22 divergent transitions after warmup. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 15 divergent transitions after warmup. See</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Examine the pairs() plot to diagnose sampling problems</span>
@@ -426,7 +426,7 @@ samples, data used to fit the model, and the fit object itself.</p>
 <span class="r-in"><span><span class="va">no_delay</span> <span class="op">&lt;-</span> <span class="fu">estimate_infections</span><span class="op">(</span></span></span>
 <span class="r-in"><span> <span class="va">reported_cases</span>, generation_time <span class="op">=</span> <span class="va">generation_time</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 6 divergent transitions after warmup. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 13 divergent transitions after warmup. See</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Examine the pairs() plot to diagnose sampling problems</span>
@@ -448,9 +448,9 @@ samples, data used to fit the model, and the fit object itself.</p>
 <span class="r-in"><span><span class="co"># break point effect</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">bkp</span>, type <span class="op">=</span> <span class="st">"parameters"</span>, params <span class="op">=</span> <span class="st">"breakpoints"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    date    variable strat type     median       mean         sd   lower_90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1: &lt;NA&gt; breakpoints     1 &lt;NA&gt; -0.6569189 -0.6570654 0.02533522 -0.6993071</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: &lt;NA&gt; breakpoints     1 &lt;NA&gt; -0.6565489 -0.6568934 0.02496425 -0.6997512</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      lower_50   lower_20   upper_20   upper_50   upper_90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1: -0.6740853 -0.6629722 -0.6505703 -0.6407946 -0.6152073</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: -0.6725356 -0.6631443 -0.6504409 -0.6396636 -0.6168147</span>
 <span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">bkp</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="estimate_infections-11.png" alt="" width="864" height="864"></span>
 <span class="r-in"><span></span></span>
@@ -466,23 +466,23 @@ samples, data used to fit the model, and the fit object itself.</p>
 <span class="r-in"><span><span class="co"># random walk effects</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">rw</span>, type <span class="op">=</span> <span class="st">"parameters"</span>, params <span class="op">=</span> <span class="st">"breakpoints"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    date    variable strat type      median        mean         sd   lower_90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1: &lt;NA&gt; breakpoints     1 &lt;NA&gt; -0.13460589 -0.13276596 0.06650323 -0.2402959</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2: &lt;NA&gt; breakpoints     2 &lt;NA&gt; -0.14214879 -0.14406470 0.07799312 -0.2762574</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3: &lt;NA&gt; breakpoints     3 &lt;NA&gt; -0.22129945 -0.21911267 0.08344849 -0.3521982</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4: &lt;NA&gt; breakpoints     4 &lt;NA&gt; -0.28913022 -0.29011785 0.09093794 -0.4418851</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5: &lt;NA&gt; breakpoints     5 &lt;NA&gt; -0.06086706 -0.06146170 0.09409617 -0.2159987</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6: &lt;NA&gt; breakpoints     6 &lt;NA&gt;  0.04613831  0.04626718 0.09734231 -0.1076400</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7: &lt;NA&gt; breakpoints     7 &lt;NA&gt; -0.06350655 -0.06464977 0.11036749 -0.2488254</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8: &lt;NA&gt; breakpoints     8 &lt;NA&gt; -0.01562438 -0.02026561 0.16951351 -0.3034204</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       lower_50    lower_20    upper_20      upper_50    upper_90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1: -0.17692547 -0.14979271 -0.11630359 -0.0893346063 -0.02511812</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2: -0.19852793 -0.16198849 -0.12313211 -0.0910643124 -0.01900428</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3: -0.27384828 -0.24099845 -0.19877453 -0.1648893300 -0.07760012</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4: -0.34894094 -0.31160609 -0.26475294 -0.2292819247 -0.14435521</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5: -0.12360509 -0.08662697 -0.03808913 -0.0009274288  0.08958390</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6: -0.01962867  0.02099424  0.06854480  0.1077222376  0.21050354</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7: -0.13762407 -0.09378415 -0.03542555  0.0108711297  0.11307819</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8: -0.12544979 -0.05723709  0.02477409  0.0865323176  0.24611604</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: &lt;NA&gt; breakpoints     1 &lt;NA&gt; -0.12766715 -0.12740935 0.06723531 -0.2364623</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2: &lt;NA&gt; breakpoints     2 &lt;NA&gt; -0.15012343 -0.14891516 0.08041659 -0.2773901</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3: &lt;NA&gt; breakpoints     3 &lt;NA&gt; -0.21605783 -0.21835854 0.08914441 -0.3681640</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4: &lt;NA&gt; breakpoints     4 &lt;NA&gt; -0.29029273 -0.28976120 0.09464299 -0.4425929</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5: &lt;NA&gt; breakpoints     5 &lt;NA&gt; -0.06137737 -0.06239205 0.09625701 -0.2192194</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6: &lt;NA&gt; breakpoints     6 &lt;NA&gt;  0.04382957  0.04650435 0.09793994 -0.1071099</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7: &lt;NA&gt; breakpoints     7 &lt;NA&gt; -0.05878698 -0.06170315 0.11016859 -0.2461853</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8: &lt;NA&gt; breakpoints     8 &lt;NA&gt; -0.01888871 -0.02566344 0.17373716 -0.3216195</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       lower_50    lower_20    upper_20     upper_50    upper_90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: -0.17288620 -0.14465894 -0.11039133 -0.083943974 -0.01725306</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2: -0.20248003 -0.16941361 -0.12931238 -0.097295750 -0.01215664</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3: -0.27514478 -0.24001653 -0.19523315 -0.158737741 -0.07489105</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4: -0.35029283 -0.31442681 -0.26546651 -0.227278529 -0.13210659</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5: -0.12829232 -0.08772849 -0.03534756  0.002048941  0.09470083</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6: -0.02065216  0.01921373  0.06946047  0.110648380  0.20928600</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7: -0.13212117 -0.08661291 -0.03575279  0.014565802  0.11505628</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8: -0.13135669 -0.06205445  0.02103623  0.088652085  0.24287815</span>
 <span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">rw</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="estimate_infections-12.png" alt="" width="864" height="864"></span>
 <span class="r-in"><span></span></span>
