@@ -53,6 +53,7 @@ precommit::use_precommit()
   *   Check that there are no linting issues by running `lintr::lint_package()`.
   *   Run `devtoools::check()` to check for wider package issues like mismatching documentation, etc. (this currently requires a fair bit of time/computation).
   *   (Optional) Turn on continuous integration with Github Actions on your forked repository.
+  
 ### Code style
 
 *   New code should follow the tidyverse [style guide](https://style.tidyverse.org). 
