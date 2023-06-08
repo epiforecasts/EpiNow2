@@ -16,6 +16,10 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
   instead of `create_gp_data()`. By @jamesmbaazam in #388 and reviewed by @seabbs.
 * Improved compilation times by reducing the number of distinct stan models and deprecated `tune_inv_gamma()`. By @sbfnk in #394 and reviewed by @seabbs.
 * Changed touchstone settings so that benchmarks are only performed if the stan model is changed. By @sbfnk in #400 and reviewed by @seabbs.
+* `dist_fit()`'s `samples` argument now takes a default value of 1000 instead
+  of NULL. If a supplied `samples` is less than 1000, it is changed to 1000
+  and a warning is thrown to indicate the change. By @jamesmbazam in #389 and
+  reviewed by @seabbs.
 
 # EpiNow2 1.3.5
 
