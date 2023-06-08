@@ -16,11 +16,7 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
   instead of `create_gp_data()`. By @jamesmbaazam in #388 and reviewed by @seabbs.
 * Improved compilation times by reducing the number of distinct stan models and deprecated `tune_inv_gamma()`. By @sbfnk in #394 and reviewed by @seabbs.
 * Changed touchstone settings so that benchmarks are only performed if the stan model is changed. By @sbfnk in #400 and reviewed by @seabbs.
-* [pak](https://pak.r-lib.org/) is now suggested for installing the developmental
-  version of the package. By @jamesmbaazam in #407 and reviewed by @seabbs. This
-  has been successfully tested on MacOS Ventura, Ubuntu 20.04, and Windows 10.
-  Users are advised to use `remotes::install_github("epiforecasts/EpiNow2")`
-  if `pak` fails and if both fail, raise an issue.
+* [pak](https://pak.r-lib.org/) is now suggested for installing the developmental version of the package. By @jamesmbaazam in #407 and reviewed by @seabbs. This has been successfully tested on MacOS Ventura, Ubuntu 20.04, and Windows 10. Users are advised to use `remotes::install_github("epiforecasts/EpiNow2")` if `pak` fails and if both fail, raise an issue.
 
 # EpiNow2 1.3.5
 
