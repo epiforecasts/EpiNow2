@@ -6,7 +6,7 @@ test_that("dist_spec returns correct output for fixed lognormal distribution", {
   expect_equal(dim(result$sd_mean), 0)
   expect_equal(dim(result$dist), 0)
   expect_equal(dim(result$max), 0)
-  expect_equal(result$fixed, 1)
+  expect_equal(result$fixed, array(1))
   expect_equal(
     as.vector(round(result$np_pmf, 2)),
     c(0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03,
@@ -60,3 +60,47 @@ test_that("dist_spec returns error when maximum of parametric distributions is n
                "Maximum of parametric distributions must be specified.")
 })
 
+test_that("+.dist_spec returns correct output for sum of two distributions", {
+  lognormal <- dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal")
+  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20, distribution = "gamma")
+  result <- lognormal + gamma
+  expect_equal(result$mean_mean, array(3))
+  expect_equal(result$sd_mean, array(2))
+  expect_equal(result$mean_sd, array(0.5))
+  expect_equal(result$sd_sd, array(0.5))
+  expect_equal(result$n, 2)
+  expect_equal(result$n_p, 1)
+  expect_equal(result$n_np, 1)
+  expect_equal(result$np_pmf_max, 20)
+  expect_equal(result$np_pmf_length, array(20))
+})
+
+test_that("+.dist_spec returns correct output for sum of two fixed distributions", {
+  lognormal <- dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal", fixed = TRUE)
+  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20, distribution = "gamma", fixed = TRUE)
+  result <- lognormal + gamma
+  expect_equal(dim(result$mean_mean), 0)
+  expect_equal(dim(result$sd_mean), 0)
+  expect_equal(result$n, 1)
+  expect_equal(result$n_p, 0)
+  expect_equal(result$n_np, 1)
+  expect_equal(result$np_pmf_max, 39)
+  expect_equal(result$np_pmf_length, 39)
+})
+
+test_that("+.dist_spec returns correct output for sum of two nonparametric distributions", {
+  lognormal <- dist_spec(pmf = c(0.1, 0.2, 0.3, 0.4))
+  gamma <- dist_spec(pmf = c(0.1, 0.2, 0.3, 0.4))
+  result <- lognormal + gamma
+  expect_equal(dim(result$mean_mean), 0)
+  expect_equal(dim(result$sd_mean), 0)
+  expect_equal(result$n, 1)
+  expect_equal(result$n_p, 0)
+  expect_equal(result$n_np, 1)
+  expect_equal(result$np_pmf_max, 7)
+  expect_equal(result$np_pmf_length, 7)
+  expect_equal(
+    as.vector(round(result$np_pmf, 2)),
+    c(0.01, 0.04, 0.10, 0.20, 0.25, 0.24, 0.16)
+  )
+})
