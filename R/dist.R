@@ -342,12 +342,14 @@ gamma_dist_def <- function(shape, shape_sd,
   } else {
     if (!missing(shape_sd)) {
       shape <- truncnorm::rtruncnorm(
-        samples, a = 0, mean = shape, sd = shape_sd
+        samples,
+        a = 0, mean = shape, sd = shape_sd
       )
     }
     if (!missing(scale_sd)) {
       scale <- 1 / truncnorm::rtruncnorm(
-        samples, a = 0, mean = scale, sd = scale_sd
+        samples,
+        a = 0, mean = scale, sd = scale_sd
       )
     }
   }
@@ -424,7 +426,8 @@ lognorm_dist_def <- function(mean, mean_sd,
     sampled_means <- mean
   } else {
     sampled_means <- truncnorm::rtruncnorm(
-      samples, a = 0, mean = mean, sd = mean_sd
+      samples,
+      a = 0, mean = mean, sd = mean_sd
     )
   }
 
@@ -759,20 +762,23 @@ sample_approx_dist <- function(cases = NULL,
 
     # filter out all zero cases until first recorded case
     mapped_cases <- data.table::setorder(mapped_cases, date)
-    mapped_cases <- mapped_cases[,
-      cum_cases := cumsum(cases)][cum_cases != 0][, cum_cases := NULL
-    ]
+    mapped_cases <- mapped_cases[
+      ,
+      cum_cases := cumsum(cases)
+    ][cum_cases != 0][, cum_cases := NULL]
   } else if (type %in% "median") {
     shift <- as.integer(
       median(as.integer(dist_fn(1000, dist = FALSE)), na.rm = TRUE)
     )
 
     if (direction %in% "backwards") {
-      mapped_cases <- data.table::copy(cases)[,
+      mapped_cases <- data.table::copy(cases)[
+        ,
         date := date - lubridate::days(shift)
       ]
     } else if (direction %in% "forwards") {
-      mapped_cases <- data.table::copy(cases)[,
+      mapped_cases <- data.table::copy(cases)[
+        ,
         date := date + lubridate::days(shift)
       ]
     }
@@ -896,19 +902,21 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal")
-#' 
+#'
 #' # An uncertain gamma distribution with mean 3 and sd 2
 #' dist_spec(
-#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-#'  distribution = "gamma"
-#')
+#'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'   distribution = "gamma"
+#' )
 dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
                       distribution = c("lognormal", "gamma"), max,
                       pmf = numeric(0), fixed = FALSE, prior_weight = 0L) {
   ## check if parametric or nonparametric
   if (length(pmf) > 0 &&
-        !all(missing(mean), missing(sd), missing(mean_sd),
-          missing(sd_sd), missing(distribution), missing(max))) {
+    !all(
+      missing(mean), missing(sd), missing(mean_sd),
+      missing(sd_sd), missing(distribution), missing(max)
+    )) {
     stop("Distributional parameters or a pmf can be specified, but not both.")
   }
 
@@ -941,11 +949,13 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       }
     }
   } else {
-    if (!all(missing(sd), missing(mean_sd),
-      missing(sd_sd), missing(distribution), missing(max))) {
-        stop(
-          "If any distributional parameters are given then so must the mean."
-        )
+    if (!all(
+      missing(sd), missing(mean_sd),
+      missing(sd_sd), missing(distribution), missing(max)
+    )) {
+      stop(
+        "If any distributional parameters are given then so must the mean."
+      )
     }
   }
 
@@ -976,11 +986,15 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
           pmf <- c(rep(0, mean), 1)
         } else {
           if (distribution == "lognormal") {
-            params <- lognorm_dist_def(mean = mean, mean_sd = mean_sd,
-              sd = sd, sd_sd = sd_sd, max_value = max, samples = 1)
+            params <- lognorm_dist_def(
+              mean = mean, mean_sd = mean_sd,
+              sd = sd, sd_sd = sd_sd, max_value = max, samples = 1
+            )
           } else if (distribution == "gamma") {
-            params <- gamma_dist_def(mean = mean, mean_sd = mean_sd,
-              sd = sd, sd_sd = sd_sd, max_value = max, samples = 1)
+            params <- gamma_dist_def(
+              mean = mean, mean_sd = mean_sd,
+              sd = sd, sd_sd = sd_sd, max_value = max, samples = 1
+            )
           }
           pmf <- dist_skel(
             n = seq_len(max) - 1, dist = TRUE, cum = FALSE,
@@ -1049,14 +1063,14 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' lognormal <- dist_spec(
-#'  mean = 5, sd = 1, max = 20, distribution = "lognormal"
+#'   mean = 5, sd = 1, max = 20, distribution = "lognormal"
 #' )
-#' 
+#'
 #' # An uncertain gamma distribution with mean 3 and sd 2
 #' gamma <- dist_spec(
-#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-#'  distribution = "gamma"
-#')
+#'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'   distribution = "gamma"
+#' )
 #' lognormal + gamma
 `+.dist_spec` <- function(e1, e2) {
   ## process delay distributions
@@ -1095,14 +1109,14 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' lognormal <- dist_spec(
-#'  mean = 5, sd = 1, max = 20, distribution = "lognormal"
+#'   mean = 5, sd = 1, max = 20, distribution = "lognormal"
 #' )
-#' 
+#'
 #' # An uncertain gamma distribution with mean 3 and sd 2
 #' gamma <- dist_spec(
-#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-#'  distribution = "gamma"
-#')
+#'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'   distribution = "gamma"
+#' )
 #' c(lognormal, gamma)
 c.dist_spec <- function(...) {
   ## process delay distributions
@@ -1182,15 +1196,15 @@ mean.dist_spec <- function(x, ...) {
 #' @examples
 #' #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' lognormal <- dist_spec(
-#'  mean = 1.5, sd = 0.5, max = 20, distribution = "lognormal"
+#'   mean = 1.5, sd = 0.5, max = 20, distribution = "lognormal"
 #' )
 #' print(lognormal)
-#' 
+#'
 #' # An uncertain gamma distribution with mean 3 and sd 2
 #' gamma <- dist_spec(
-#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-#'  distribution = "gamma"
-#')
+#'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'   distribution = "gamma"
+#' )
 #' print(gamma)
 print.dist_spec <- function(x, ...) {
   cat("\n")
@@ -1217,7 +1231,8 @@ print.dist_spec <- function(x, ...) {
         " (SD ", signif(x$mean_sd[variable_id], digits = 2), ") and ",
         ifelse(dist == "lognormal", "log", ""),
         "SD ", signif(x$sd_mean[variable_id], 2),
-        " (SD ", signif(x$sd_sd[variable_id], 2), ")\n", sep = ""
+        " (SD ", signif(x$sd_sd[variable_id], 2), ")\n",
+        sep = ""
       )
       variable_id <- variable_id + 1
     } else {
@@ -1227,7 +1242,9 @@ print.dist_spec <- function(x, ...) {
           x$np_pmf[seq(fixed_pos, fixed_pos + x$np_pmf_length[fixed_id] - 1)],
           digits = 2
         ), collapse = " "),
-        "]\n", sep = "")
+        "]\n",
+        sep = ""
+      )
       fixed_id <- fixed_id + 1
       fixed_pos <- fixed_pos + x$np_pmf_length[i]
     }
@@ -1249,28 +1266,33 @@ print.dist_spec <- function(x, ...) {
 #' @examples
 #' #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' lognormal <- dist_spec(
-#'  mean = 1.6, sd = 0.5, max = 20, distribution = "lognormal"
+#'   mean = 1.6, sd = 0.5, max = 20, distribution = "lognormal"
 #' )
 #' plot(lognormal)
-#' 
+#'
 #' # An uncertain gamma distribution with mean 3 and sd 2
 #' gamma <- dist_spec(
-#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-#'  distribution = "gamma"
-#')
+#'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'   distribution = "gamma"
+#' )
 #' plot(gamma)
-#' 
+#'
 #' # Multiple distributions
 #' plot(lognormal + gamma + lognormal)
-#' 
+#'
 #' # A combination of the two fixed distributions
 #' plot(lognormal + lognormal)
 plot.dist_spec <- function(x, ...) {
+  distribution <- cdf <- NULL
   # Get the PMF and CDF data
-  pmf_data <- data.frame(value = numeric(), pmf = numeric(),
-                         distribution = factor())
-  cdf_data <- data.frame(value = numeric(), cdf = numeric(),
-                         distribution = factor())
+  pmf_data <- data.frame(
+    value = numeric(), pmf = numeric(),
+    distribution = factor()
+  )
+  cdf_data <- data.frame(
+    value = numeric(), cdf = numeric(),
+    distribution = factor()
+  )
   variable_id <- 1
   for (i in 1:x$n) {
     if (x$fixed[i] == 0) {
@@ -1284,7 +1306,7 @@ plot.dist_spec <- function(x, ...) {
       )
       pmf <- c_dist$np_pmf
       variable_id <- variable_id + 1
-      dist_name <- paste0(dist_name, " (ID: ", i,")")
+      dist_name <- paste0(dist_name, " (ID: ", i, ")")
     } else {
       # Fixed distribution
       pmf <- x$np_pmf
@@ -1293,8 +1315,9 @@ plot.dist_spec <- function(x, ...) {
     pmf_data <- rbind(
       pmf_data,
       data.frame(
-        value = seq_along(pmf), pmf = pmf, distribution = dist_name)
+        value = seq_along(pmf), pmf = pmf, distribution = dist_name
       )
+    )
     cumsum_pmf <- cumsum(pmf)
     cdf_data <- rbind(
       cdf_data,
