@@ -88,6 +88,16 @@ This function provides distribution
 functionality in \code{\link[=delay_opts]{delay_opts()}}, \code{\link[=generation_time_opts]{generation_time_opts()}}, and
 \code{\link[=trunc_opts]{trunc_opts()}}.
 }
+\examples{
+# A fixed lognormal distribution with mean 5 and sd 1.
+dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal")
+
+# An uncertain gamma distribution with mean 3 and sd 2
+dist_spec(
+ mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+ distribution = "gamma"
+)
+}
 \author{
 Sebastian Funk
 

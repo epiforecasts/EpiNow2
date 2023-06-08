@@ -18,6 +18,20 @@ invisible
 This displays the parameters of the uncertain and probability mass
 functions of fixed delay distributions combined in the passed \code{\link[=dist_spec]{dist_spec()}}.
 }
+\examples{
+#' # A fixed lognormal distribution with mean 5 and sd 1.
+lognormal <- dist_spec(
+ mean = 1.5, sd = 0.5, max = 20, distribution = "lognormal"
+)
+print(lognormal)
+
+# An uncertain gamma distribution with mean 3 and sd 2
+gamma <- dist_spec(
+ mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+ distribution = "gamma"
+)
+print(gamma)
+}
 \author{
 Sebastian Funk
 }

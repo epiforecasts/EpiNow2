@@ -893,6 +893,15 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @author Sebastian Funk
 #' @author Sam Abbott
 #' @export
+#' @examples
+#' # A fixed lognormal distribution with mean 5 and sd 1.
+#' dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal")
+#' 
+#' # An uncertain gamma distribution with mean 3 and sd 2
+#' dist_spec(
+#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'  distribution = "gamma"
+#')
 dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
                       distribution = c("lognormal", "gamma"), max,
                       pmf = numeric(0), fixed = FALSE, prior_weight = 0L) {
@@ -1024,19 +1033,31 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
   return(ret)
 }
 
-##' Creates a delay distribution as the sum of two other delay distributions
-##'
-##' This is done via convolution with `stats::convolve()`.
-##' @param e1 The fist delay distributions (from a calls to [dist_spec()]) to
-##' combine
-##' @param e2 The second delay distributions (from a calls to [dist_spec()])
-##' to combine
-##' @return Delay distributions representing the sum of the two delays
-##' (with class [dist_spec()]`)
-##' @author Sebastian Funk
-##' @method + dist_spec
-##' @importFrom stats convolve
-##' @export
+#' Creates a delay distribution as the sum of two other delay distributions
+#'
+#' This is done via convolution with `stats::convolve()`.
+#' @param e1 The fist delay distributions (from a calls to [dist_spec()]) to
+#' combine
+#' @param e2 The second delay distributions (from a calls to [dist_spec()])
+#' to combine
+#' @return Delay distributions representing the sum of the two delays
+#' (with class [dist_spec()]`)
+#' @author Sebastian Funk
+#' @method + dist_spec
+#' @importFrom stats convolve
+#' @export
+#' @examples
+#' # A fixed lognormal distribution with mean 5 and sd 1.
+#' lognormal <- dist_spec(
+#'  mean = 5, sd = 1, max = 20, distribution = "lognormal"
+#' )
+#' 
+#' # An uncertain gamma distribution with mean 3 and sd 2
+#' gamma <- dist_spec(
+#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'  distribution = "gamma"
+#')
+#' lognormal + gamma
 `+.dist_spec` <- function(e1, e2) {
   ## process delay distributions
   delays <- c(e1, e2)
@@ -1061,16 +1082,28 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
   return(delays)
 }
 
-##' Combines multiple delay distributions for further processing
-##'
-##' This combines the parameters so that they can be fed as multiple delay
-##' distributions to [epinow()] or [estimate_infections()].
-##'
-##' @param ... The delay distributions (from calls to [dist_spec()]) to combine
-##' @return Combined delay distributions (with class [dist_spec()]`)
-##' @author Sebastian Funk
-##' @method c dist_spec
-##' @importFrom purrr transpose map
+#' Combines multiple delay distributions for further processing
+#'
+#' This combines the parameters so that they can be fed as multiple delay
+#' distributions to [epinow()] or [estimate_infections()].
+#'
+#' @param ... The delay distributions (from calls to [dist_spec()]) to combine
+#' @return Combined delay distributions (with class [dist_spec()]`)
+#' @author Sebastian Funk
+#' @method c dist_spec
+#' @importFrom purrr transpose map
+#' @examples
+#' # A fixed lognormal distribution with mean 5 and sd 1.
+#' lognormal <- dist_spec(
+#'  mean = 5, sd = 1, max = 20, distribution = "lognormal"
+#' )
+#' 
+#' # An uncertain gamma distribution with mean 3 and sd 2
+#' gamma <- dist_spec(
+#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'  distribution = "gamma"
+#')
+#' c(lognormal, gamma)
 c.dist_spec <- function(...) {
   ## process delay distributions
   delays <- list(...)
@@ -1125,16 +1158,29 @@ mean.dist_spec <- function(x, ...) {
   return(ret)
 }
 
-##' Prints the parameters of one or more delay distributions
-##'
-##' This displays the parameters of the uncertain and probability mass
-##' functions of fixed delay distributions combined in the passed [dist_spec()].
-##' @param x The [dist_spec()] to use
-##' @param ... Not used
-##' @return invisible
-##' @author Sebastian Funk
-##' @method print dist_spec
-##' @export
+#' Prints the parameters of one or more delay distributions
+#'
+#' This displays the parameters of the uncertain and probability mass
+#' functions of fixed delay distributions combined in the passed [dist_spec()].
+#' @param x The [dist_spec()] to use
+#' @param ... Not used
+#' @return invisible
+#' @author Sebastian Funk
+#' @method print dist_spec
+#' @export
+#' @examples
+#' #' # A fixed lognormal distribution with mean 5 and sd 1.
+#' lognormal <- dist_spec(
+#'  mean = 1.5, sd = 0.5, max = 20, distribution = "lognormal"
+#' )
+#' print(lognormal)
+#' 
+#' # An uncertain gamma distribution with mean 3 and sd 2
+#' gamma <- dist_spec(
+#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'  distribution = "gamma"
+#')
+#' print(gamma)
 print.dist_spec <- function(x, ...) {
   cat("\n")
   if (x$n == 0) {
@@ -1176,4 +1222,85 @@ print.dist_spec <- function(x, ...) {
     }
   }
   cat("\n")
+}
+
+#' Plot PMF and CDF for a dist_spec object
+#'
+#' This function takes a [dist_spec] object and plots its probability mass
+#' function (PMF) and cumulative distribution function (CDF) using [ggplot2].
+#' Note that currently uncertainty in distributions is not plot.
+#'
+#' @param x A [dist_spec] object
+#' @param ... Additional arguments to pass to \code{ggplot}
+#' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
+#' @export
+#' @author Sam Abbott
+#' @examples
+#' #' # A fixed lognormal distribution with mean 5 and sd 1.
+#' lognormal <- dist_spec(
+#'  mean = 1.6, sd = 0.5, max = 20, distribution = "lognormal"
+#' )
+#' plot(lognormal)
+#' 
+#' # An uncertain gamma distribution with mean 3 and sd 2
+#' gamma <- dist_spec(
+#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'  distribution = "gamma"
+#')
+#' plot(gamma)
+#' 
+#' # Multiple distributions
+#' plot(lognormal + gamma + lognormal)
+#' 
+#' # A combination of the two fixed distributions
+#' plot(lognormal + lognormal)
+plot.dist_spec <- function(x, ...) {
+  # Get the PMF and CDF data
+  pmf_data <- data.frame(value = numeric(), pmf = numeric(),
+                         distribution = factor())
+  cdf_data <- data.frame(value = numeric(), cdf = numeric(),
+                         distribution = factor())
+  variable_id <- 1
+  for (i in 1:x$n) {
+    if (x$fixed[i] == 0) {
+      # Uncertain distribution
+      dist_name <- c("Lognormal", "Gamma")[x$dist[variable_id] + 1]
+      mean <- x$mean_mean[variable_id]
+      sd <- x$sd_mean[variable_id]
+      c_dist <- dist_spec(
+        mean = mean, sd = sd, max = x$max[variable_id],
+        distribution = tolower(dist_name)
+      )
+      pmf <- c_dist$np_pmf
+      variable_id <- variable_id + 1
+      dist_name <- paste0(dist_name, " (ID: ", i,")")
+    } else {
+      # Fixed distribution
+      pmf <- x$np_pmf
+      dist_name <- "Fixed"
+    }
+    pmf_data <- rbind(
+      pmf_data,
+      data.frame(
+        value = seq_along(pmf), pmf = pmf, distribution = dist_name)
+      )
+    cumsum_pmf <- cumsum(pmf)
+    cdf_data <- rbind(
+      cdf_data,
+      data.frame(
+        value = seq_along(pmf), cdf = cumsum_pmf / sum(pmf),
+        distribution = dist_name
+      )
+    )
+  }
+
+  # Plot PMF and CDF as facets in the same plot
+  plot <- ggplot() +
+    aes(x = value, y = pmf) +
+    geom_col(data = pmf_data) +
+    geom_step(data = cdf_data, aes(y = cdf)) +
+    facet_wrap(vars(distribution)) +
+    labs(x = "Day", y = "Probability density") +
+    theme_bw()
+  return(plot)
 }

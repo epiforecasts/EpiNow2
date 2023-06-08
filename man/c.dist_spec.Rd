@@ -16,6 +16,19 @@ Combined delay distributions (with class \code{\link[=dist_spec]{dist_spec()}}`)
 This combines the parameters so that they can be fed as multiple delay
 distributions to \code{\link[=epinow]{epinow()}} or \code{\link[=estimate_infections]{estimate_infections()}}.
 }
+\examples{
+# A fixed lognormal distribution with mean 5 and sd 1.
+lognormal <- dist_spec(
+ mean = 5, sd = 1, max = 20, distribution = "lognormal"
+)
+
+# An uncertain gamma distribution with mean 3 and sd 2
+gamma <- dist_spec(
+ mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+ distribution = "gamma"
+)
+c(lognormal, gamma)
+}
 \author{
 Sebastian Funk
 }

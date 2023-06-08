@@ -34,7 +34,7 @@ for details. By default a diffuse prior  is assumed with a mean of 14 days
 and standard deviation of 7 days (with a standard deviation of 0.5 and 0.25
 respectively on the log scale).}
 
-\item{truncation}{A casll to \code{trunc_opts()} defining the truncation of
+\item{truncation}{A call to \code{trunc_opts()} defining the truncation of
 observed data.  Defaults to \code{trunc_opts()}. See \code{estimate_truncation()} for
 an approach to estimating truncation from data.}
 

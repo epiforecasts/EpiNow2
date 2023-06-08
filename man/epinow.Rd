@@ -40,7 +40,7 @@ summary parameters can also be passed.}
 options. See the documentation of \code{delay_opts()} and the examples below for
 details.}
 
-\item{truncation}{A casll to \code{trunc_opts()} defining the truncation of
+\item{truncation}{A call to \code{trunc_opts()} defining the truncation of
 observed data.  Defaults to \code{trunc_opts()}. See \code{estimate_truncation()} for
 an approach to estimating truncation from data.}
 

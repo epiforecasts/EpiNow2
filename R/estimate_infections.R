@@ -28,7 +28,7 @@
 #' options. See the documentation of `delay_opts()` and the examples below for
 #' details.
 #'
-#' @param truncation A casll to `trunc_opts()` defining the truncation of
+#' @param truncation A call to `trunc_opts()` defining the truncation of
 #'   observed data.  Defaults to `trunc_opts()`. See `estimate_truncation()` for
 #'   an approach to estimating truncation from data.
 #'
@@ -690,7 +690,7 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
 #' @param start_date Date, earliest date with data.
 #'
 #' @inheritParams calc_summary_measures
-#' @importFrom data.table fcase rbindlist
+#' @importFrom data.table fifelse rbindlist
 #' @importFrom lubridate days
 #' @importFrom futile.logger flog.info
 #' @return A list of samples and summarised posterior parameter estimates.
@@ -707,17 +707,20 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
     format_out$samples <- format_out$samples[, strat := NA]
   }
   # add type based on horizon
+  # nolint start
   format_out$samples <- format_out$samples[
     ,
-    type := data.table::fcase(
+    type := data.table::fifelse(
       date > (max(date, na.rm = TRUE) - horizon),
       "forecast",
-      date > (max(date, na.rm = TRUE) - horizon - shift),
-      "estimate based on partial data",
-      is.na(date), NA_character_,
-      default = "estimate"
+      data.table::fifelse(
+        date > (max(date, na.rm = TRUE) - horizon - shift),
+        "estimate based on partial data",
+        "estimate"
       )
+    )
   ]
+  # nolint end
 
   # remove burn in period if specified
   if (burn_in > 0) {
