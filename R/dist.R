@@ -1303,6 +1303,8 @@ plot.dist_spec <- function(x, ...) {
     distribution = factor()
   )
   variable_id <- 1
+  fixed_id <- 1
+  group_starts <- c(1L, cumsum(x$np_pmf_length) + 1L)
   for (i in 1:x$n) {
     if (x$fixed[i] == 0) {
       # Uncertain distribution
@@ -1318,8 +1320,9 @@ plot.dist_spec <- function(x, ...) {
       dist_name <- paste0(dist_name, " (ID: ", i, ")")
     } else {
       # Fixed distribution
-      pmf <- x$np_pmf
-      dist_name <- "Fixed"
+      pmf <- x$np_pmf[seq(group_starts[i], group_starts[i + 1L] - 1L)]
+      dist_name <- paste0("Fixed", " (ID: ", i, ")")
+      fixed_id <- fixed_id + 1
     }
     pmf_data <- rbind(
       pmf_data,
