@@ -1106,6 +1106,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 #' @author Sebastian Funk
 #' @method c dist_spec
 #' @importFrom purrr transpose map
+#' @export
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' lognormal <- dist_spec(
@@ -1118,7 +1119,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 #'   distribution = "gamma"
 #' )
 #' c(lognormal, gamma)
-c.dist_spec <- function(...) {
+`c.dist_spec` <- function(...) {
   ## process delay distributions
   delays <- list(...)
   if (!(all(vapply(delays, is, FALSE, "dist_spec")))) {
@@ -1157,7 +1158,10 @@ c.dist_spec <- function(...) {
 #' mean(lognormal)
 #'
 #' # An uncertain gamma distribution with mean 3 and sd 2
-#' gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20, distribution = "gamma")
+#' gamma <- dist_spec(
+#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'  distribution = "gamma"
+#' )
 #' mean(gamma)
 #'
 #' # The mean of the sum of two distributions
@@ -1284,6 +1288,9 @@ print.dist_spec <- function(x, ...) {
 #'
 #' # A combination of the two fixed distributions
 #' plot(lognormal + lognormal)
+#' 
+#' # Both fixed distributions
+#' plot(c(lognormal, lognormal))
 plot.dist_spec <- function(x, ...) {
   distribution <- cdf <- NULL
   # Get the PMF and CDF data
