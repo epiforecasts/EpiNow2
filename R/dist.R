@@ -1151,7 +1151,9 @@ c.dist_spec <- function(...) {
 ##' @export
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
-#' lognormal <- dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal")
+#' lognormal <- dist_spec(
+#'  mean = 5, sd = 1, max = 20, distribution = "lognormal"
+#' )
 #' mean(lognormal)
 #'
 #' # An uncertain gamma distribution with mean 3 and sd 2

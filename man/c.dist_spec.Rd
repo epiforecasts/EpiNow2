@@ -19,13 +19,13 @@ distributions to \code{\link[=epinow]{epinow()}} or \code{\link[=estimate_infect
 \examples{
 # A fixed lognormal distribution with mean 5 and sd 1.
 lognormal <- dist_spec(
- mean = 5, sd = 1, max = 20, distribution = "lognormal"
+  mean = 5, sd = 1, max = 20, distribution = "lognormal"
 )
 
 # An uncertain gamma distribution with mean 3 and sd 2
 gamma <- dist_spec(
- mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
- distribution = "gamma"
+  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+  distribution = "gamma"
 )
 c(lognormal, gamma)
 }

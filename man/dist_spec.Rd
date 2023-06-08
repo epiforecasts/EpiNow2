@@ -94,8 +94,8 @@ dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal")
 
 # An uncertain gamma distribution with mean 3 and sd 2
 dist_spec(
- mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
- distribution = "gamma"
+  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+  distribution = "gamma"
 )
 }
 \author{
