@@ -6,6 +6,9 @@ vector convolve_with_rev_pmf(vector x, vector y, int len) {
     int xlen = num_elements(x);
     int ylen = num_elements(y);
     vector[len] z;
+    if (xlen + ylen <= len) {
+      reject("convolve_with_rev_pmf: len is longer then x and y combined");
+    }
     for (s in 1:len) {
       z[s] = dot_product(
         x[max(1, (s - ylen + 1)):min(s, xlen)],

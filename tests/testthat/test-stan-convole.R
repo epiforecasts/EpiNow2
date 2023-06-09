@@ -3,13 +3,13 @@ skip_on_os("windows")
 
 test_that("convolve can combine two pmfs as expected", {
   expect_equal(
-    convolve_with_rev_pmf(c(0.1, 0.2, 0.7), rev(c(0.1, 0.2, 0.7)), 6),
-    c(0.01, 0.04, 0.18, 0.28, 0.49, 0.00),
+    convolve_with_rev_pmf(c(0.1, 0.2, 0.7), rev(c(0.1, 0.2, 0.7)), 5),
+    c(0.01, 0.04, 0.18, 0.28, 0.49),
     tolerance = 0.01
   )
   expect_equal(
     sum(convolve_with_rev_pmf(
-      c(0.05, 0.55, 0.4), rev(c(0.1, 0.2, 0.7)), 6
+      c(0.05, 0.55, 0.4), rev(c(0.1, 0.2, 0.7)), 5
     )), 1
   )
 })
@@ -24,10 +24,10 @@ test_that("convolve performs the same as a numerical convolution", {
   # Add sampled Poisson distributions up to get combined distribution
   z <- x + y
   # Analytical convolution of PMFs
-  conv_pmf <- convolve_with_rev_pmf(xpmf, rev(ypmf), 42)
+  conv_pmf <- convolve_with_rev_pmf(xpmf, rev(ypmf), 41)
   conv_cdf <- cumsum(conv_pmf)
   # Empirical convolution of PMFs
-  cdf <- ecdf(z)(0:41)
+  cdf <- ecdf(z)(0:40)
   # Test analytical and numerical convolutions are similar with a small error
   # allowed
   expect_lte(sum(abs(conv_cdf - cdf)), 0.1)
