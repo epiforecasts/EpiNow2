@@ -15,7 +15,7 @@ vector discretised_pmf(real mu, real sigma, int n, int dist) {
     } else if (dist == 1) {
       real alpha = mu^2 / sigma^2;
       real beta = mu / sigma^2;
-      for (i in 1:(n + 1)) {
+      for (i in 1:n) {
         upper_cdf[i] = gamma_cdf(i, alpha, beta);
       }
     } else {
