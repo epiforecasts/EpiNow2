@@ -1058,39 +1058,14 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 #' combine.
 #' @param e2 The second delay distribution (from a call to [dist_spec()]) to
 #' combine.
-#' @param tolerance A numeric value that sets the cumulative probability
-#' to retain when truncating the cumulative distribution function of the
-#' combined nonparametric delays. The default value is 0.001 with this retaining
-#' 0.999 of the cumulative probability. Note that using a larger tolerance may
-#' result in a smaller number of points in the combined nonparametric delay but
-#' may also impact the accuracy of the combined delay (i.e., change the mean
-#' and standard deviation).
 #'
 #' @return A delay distribution representing the sum of the two delays
 #' (with class [dist_spec()])
 #'
 #' @author Sebastian Funk
-#' @method + dist_spec
+#' @author Sam Abbott
 #' @importFrom stats convolve
-#' @export
-#'
-#' @examples
-#' # A fixed lognormal distribution with mean 5 and sd 1.
-#' lognormal <- dist_spec(
-#'   mean = 1.6, sd = 1, max = 20, distribution = "lognormal"
-#' )
-#' lognormal + lognormal
-#'
-#' # An uncertain gamma distribution with mean 3 and sd 2
-#' gamma <- dist_spec(
-#'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-#'   distribution = "gamma"
-#' )
-#' lognormal + gamma
-#'
-#' # Using tolerance parameter
-#' EpiNow2:::`+.dist_spec`(lognormal, lognormal, tolerance = 0.5)
-`+.dist_spec` <- function(e1, e2, tolerance = 0.001) {
+dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
   ## process delay distributions
   delays <- c(e1, e2)
   ## combine any nonparametric delays that can be combined
@@ -1117,6 +1092,39 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
     delays$np_pmf_length <- length(delays$np_pmf)
   }
   return(delays)
+}
+
+#' Creates a delay distribution as the sum of two other delay distributions
+#'
+#' This is done via convolution with `stats::convolve()`. Nonparametric delays
+#' that can be combined are processed together, and their cumulative
+#' distribution function is truncated at a specified tolerance level, ensuring
+#' numeric stability.
+#'
+#' @return A delay distribution representing the sum of the two delays
+#' (with class [dist_spec()])
+#' @inheritParams dist_spec_plus
+#' @author Sebastian Funk
+#' @method + dist_spec
+#' @export
+#' @examples
+#' # A fixed lognormal distribution with mean 5 and sd 1.
+#' lognormal <- dist_spec(
+#'   mean = 1.6, sd = 1, max = 20, distribution = "lognormal"
+#' )
+#' lognormal + lognormal
+#'
+#' # An uncertain gamma distribution with mean 3 and sd 2
+#' gamma <- dist_spec(
+#'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+#'   distribution = "gamma"
+#' )
+#' lognormal + gamma
+#'
+#' # Using tolerance parameter
+#' EpiNow2:::dist_spec_plus(lognormal, lognormal, tolerance = 0.5)
+`+.dist_spec` <- function(e1, e2) {
+  dist_spec_plus(e1, e2, tolerance = 0.001)
 }
 
 #' Combines multiple delay distributions for further processing

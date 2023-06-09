@@ -121,7 +121,7 @@ test_that("Testing `+.dist_spec` function with tolerance parameter", {
   combined_default <- `+.dist_spec`(lognormal, gamma)
   
   # Compute combined distribution with larger tolerance
-  combined_larger_tolerance <- `+.dist_spec`(
+  combined_larger_tolerance <- EpiNow2:::dist_spec_plus(
     lognormal, gamma, tolerance = 0.01
   )
 
