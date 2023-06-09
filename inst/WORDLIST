@@ -13,6 +13,7 @@ Dockerfile
 ECDC
 EpiNow
 Epinow
+Gostic
 Gruson
 Habakuk
 Hain
@@ -94,6 +95,7 @@ nowcasting
 nowcasts
 objec
 obs
+pak
 parallisation
 parameterisations
 parameterised

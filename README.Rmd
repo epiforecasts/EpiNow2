@@ -58,12 +58,25 @@ Install the development version of the package with:
 install.packages("EpiNow2", repos = "https://epiforecasts.r-universe.dev")
 ```
 
-Alternatively, install the development version of the package with (few users should need to do this):
+Alternatively, install the development version of the package with [pak](https://pak.r-lib.org/)
+as follows (few users should need to do this):
 
 ```{r, eval = FALSE}
-remotes::install_github("epiforecasts/EpiNow2")
+# check whether {pak} is installed
+if (!require("pak")) {
+  install.packages("pak")
+}
+pak::pkg_install("epiforecasts/EpiNow2")
 ```
 
+If using `pak` fails, try:
+```{r, eval = FALSE}
+# check whether {remotes} is installed
+if (!require("remotes")) {
+  install.packages("remotes")
+}
+remotes::install_github("epiforecasts/EpiNow2")
+```
 
 Windows users will need a working installation of Rtools in order to build the package from source. See [here](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#checking-the-c-toolchain) for a guide to installing Rtools for use with Stan (which is the statistical modelling platform used for the underlying model). For simple deployment/development a prebuilt docker image is also available (see documentation [here](https://github.com/epiforecasts/EpiNow2/wiki/Docker)).
 
