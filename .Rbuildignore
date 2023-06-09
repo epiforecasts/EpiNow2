@@ -24,3 +24,4 @@
 ^\.devcontainer$
 ^CRAN-SUBMISSION$
 ^touchstone$
+^\.benchmark$
