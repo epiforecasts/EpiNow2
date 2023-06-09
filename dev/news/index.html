@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.6000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.7000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,6 +73,8 @@
 <li>Reviewed the example in <code>calc_backcalc_data()</code> to call <code>calc_backcalc_data()</code> instead of <code><a href="../reference/create_gp_data.html">create_gp_data()</a></code>. By <a href="https://github.com/jamesmbaazam" class="external-link">@jamesmbaazam</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/388" class="external-link">#388</a> and reviewed by <a href="https://github.com/seabbs" class="external-link">@seabbs</a>.</li>
 <li>Improved compilation times by reducing the number of distinct stan models and deprecated <code><a href="../reference/tune_inv_gamma.html">tune_inv_gamma()</a></code>. By <a href="https://github.com/sbfnk" class="external-link">@sbfnk</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/394" class="external-link">#394</a> and reviewed by <a href="https://github.com/seabbs" class="external-link">@seabbs</a>.</li>
 <li>Changed touchstone settings so that benchmarks are only performed if the stan model is changed. By <a href="https://github.com/sbfnk" class="external-link">@sbfnk</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/400" class="external-link">#400</a> and reviewed by <a href="https://github.com/seabbs" class="external-link">@seabbs</a>.</li>
+<li>
+<code><a href="../reference/dist_fit.html">dist_fit()</a></code>’s <code>samples</code> argument now takes a default value of 1000 instead of NULL. If a supplied <code>samples</code> is less than 1000, it is changed to 1000 and a warning is thrown to indicate the change. By <a href="https://github.com/jamesmbazam" class="external-link">@jamesmbazam</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/389" class="external-link">#389</a> and reviewed by <a href="https://github.com/seabbs" class="external-link">@seabbs</a>.</li>
 </ul></div>
 </div>
     <div class="section level2">
