@@ -1089,7 +1089,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 #' lognormal + gamma
 #'
 #' # Using tolerance parameter
-#' `+.dist_spec`(lognormal, lognormal, tolerance = 0.5)
+#' EpiNow2:::`+.dist_spec`(lognormal, lognormal, tolerance = 0.5)
 `+.dist_spec` <- function(e1, e2, tolerance = 0.001) {
   ## process delay distributions
   delays <- c(e1, e2)

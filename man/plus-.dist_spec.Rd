@@ -46,7 +46,7 @@ gamma <- dist_spec(
 lognormal + gamma
 
 # Using tolerance parameter
-`+.dist_spec`(lognormal, lognormal, tolerance = 0.5)
+EpiNow2:::`+.dist_spec`(lognormal, lognormal, tolerance = 0.5)
 }
 \author{
 Sebastian Funk
