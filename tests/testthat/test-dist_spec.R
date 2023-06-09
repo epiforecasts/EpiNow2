@@ -75,16 +75,20 @@ test_that("+.dist_spec returns correct output for sum of two distributions", {
 })
 
 test_that("+.dist_spec returns correct output for sum of two fixed distributions", {
-  lognormal <- dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal", fixed = TRUE)
-  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20, distribution = "gamma", fixed = TRUE)
+  lognormal <- dist_spec(
+    mean = 5, sd = 1, max = 20, distribution = "lognormal", fixed = TRUE
+  )
+  gamma <- dist_spec(
+    mean = 3, sd = 2, max = 20, distribution = "gamma", fixed = TRUE
+  )
   result <- lognormal + gamma
   expect_equal(dim(result$mean_mean), 0)
   expect_equal(dim(result$sd_mean), 0)
   expect_equal(result$n, 1)
   expect_equal(result$n_p, 0)
   expect_equal(result$n_np, 1)
-  expect_equal(result$np_pmf_max, 39)
-  expect_equal(result$np_pmf_length, 39)
+  expect_equal(result$np_pmf_max, 30)
+  expect_equal(result$np_pmf_length, 30)
 })
 
 test_that("+.dist_spec returns correct output for sum of two nonparametric distributions", {
@@ -131,9 +135,11 @@ test_that("Testing `+.dist_spec` function with tolerance parameter", {
   # The first 5 entries should be within 0.01 of each other
   expect_equal(
     combined_default$np_pmf[1:5], combined_larger_tolerance$np_pmf[1:5],
-    tolerance = 0.03
+    tolerance = 0.01
   )
-  expect_equal(mean(combined_default), mean(combined_larger_tolerance))
+  expect_equal(
+    mean(combined_default), mean(combined_larger_tolerance), tolerance = 0.1
+  )
 })
 
 
@@ -157,7 +163,7 @@ test_that("mean.dist_spec returns correct output for sum of two distributions", 
   lognormal <- dist_spec(mean = 1, sd = 1, max = 20, distribution = "lognormal")
   gamma <- dist_spec(mean = 3, sd = 2, max = 20, distribution = "gamma")
   result <- mean.dist_spec(lognormal + gamma)
-  expect_equal(result, c(5.85), tolerance = 0.001)
+  expect_equal(result, c(5.84), tolerance = 0.001)
 })
 
 test_that("print.dist_spec correctly prints the parameters of the fixed lognormal", {

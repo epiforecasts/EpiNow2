@@ -1103,8 +1103,10 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
         rev(delays$np_pmf[seq(group_starts[i], group_starts[i + 1L] - 1L)]),
         type = "open"
       )
+    }
+    if (!is.infinite(tolerance)) {
       cdf <- cumsum(new_pmf)
-      new_pmf <- new_pmf[1 - cdf >= tolerance]
+      new_pmf <- new_pmf[c(TRUE, (1 - cdf[-length(cdf)]) >= tolerance)]
       new_pmf <- new_pmf / sum(new_pmf)
     }
     delays$np_pmf <- new_pmf
