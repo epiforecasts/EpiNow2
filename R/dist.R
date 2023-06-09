@@ -1288,7 +1288,7 @@ print.dist_spec <- function(x, ...) {
 #'
 #' # A combination of the two fixed distributions
 #' plot(lognormal + lognormal)
-#' 
+#'
 #' # Both fixed distributions
 #' plot(c(lognormal, lognormal))
 plot.dist_spec <- function(x, ...) {
