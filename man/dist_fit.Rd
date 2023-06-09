@@ -6,7 +6,7 @@
 \usage{
 dist_fit(
   values = NULL,
-  samples = NULL,
+  samples = 1000,
   cores = 1,
   chains = 2,
   dist = "exp",
@@ -16,7 +16,8 @@ dist_fit(
 \arguments{
 \item{values}{Numeric vector of values}
 
-\item{samples}{Numeric, number of samples to take}
+\item{samples}{Numeric, number of samples to take. Must be >= 1000.
+Defaults to 1000.}
 
 \item{cores}{Numeric, defaults to 1. Number of CPU cores to use (no effect
 if greater than the number of chains).}
