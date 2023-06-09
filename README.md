@@ -93,10 +93,25 @@ Install the development version of the package with:
 install.packages("EpiNow2", repos = "https://epiforecasts.r-universe.dev")
 ```
 
-Alternatively, install the development version of the package with (few
-users should need to do this):
+Alternatively, install the development version of the package with
+[pak](https://pak.r-lib.org/) as follows (few users should need to do
+this):
 
 ``` r
+# check whether {pak} is installed
+if (!require("pak")) {
+  install.packages("pak")
+}
+pak::pkg_install("epiforecasts/EpiNow2")
+```
+
+If using `pak` fails, try:
+
+``` r
+# check whether {remotes} is installed
+if (!require("remotes")) {
+  install.packages("remotes")
+}
 remotes::install_github("epiforecasts/EpiNow2")
 ```
 
