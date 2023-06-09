@@ -7,7 +7,7 @@
 vector discretised_pmf(real mu, real sigma, int n, int dist) {
   vector[n] pmf;
   if (sigma > 0) {
-    vector[n + 1] upper_cdf;
+    vector[n] upper_cdf;
     if (dist == 0) {
       for (i in 1:n) {
         upper_cdf[i] = lognormal_cdf(i, mu, sigma);

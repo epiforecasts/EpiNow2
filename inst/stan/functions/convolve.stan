@@ -1,7 +1,6 @@
 // convolve two vectors as a backwards dot product
-// y vector shoud be reversed
+// y vector should be reversed
 // limited to the length of x and backwards looking for x indexes
-// designed for use convolve a case vector and a delay pmf
 vector convolve_with_rev_pmf(vector x, vector y, int len) {
     int xlen = num_elements(x);
     int ylen = num_elements(y);
