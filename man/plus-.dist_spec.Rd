@@ -4,27 +4,39 @@
 \alias{+.dist_spec}
 \title{Creates a delay distribution as the sum of two other delay distributions}
 \usage{
-\method{+}{dist_spec}(e1, e2)
+\method{+}{dist_spec}(e1, e2, tolerance = 0.001)
 }
 \arguments{
-\item{e1}{The fist delay distributions (from a calls to \code{\link[=dist_spec]{dist_spec()}}) to
-combine}
+\item{e1}{The first delay distribution (from a call to \code{\link[=dist_spec]{dist_spec()}}) to
+combine.}
 
-\item{e2}{The second delay distributions (from a calls to \code{\link[=dist_spec]{dist_spec()}})
-to combine}
+\item{e2}{The second delay distribution (from a call to \code{\link[=dist_spec]{dist_spec()}}) to
+combine.}
+
+\item{tolerance}{A numeric value that sets the cumulative probability
+to retain when truncating the cumulative distribution function of the
+combined nonparametric delays. The default value is 0.001 with this retaining
+0.999 of the cumulative probability. Note that using a larger tolerance may
+result in a smaller number of points in the combined nonparametric delay but
+may also impact the accuracy of the combined delay (i.e., change the mean
+and standard deviation).}
 }
 \value{
-Delay distributions representing the sum of the two delays
-(with class \code{\link[=dist_spec]{dist_spec()}}`)
+A delay distribution representing the sum of the two delays
+(with class \code{\link[=dist_spec]{dist_spec()}})
 }
 \description{
-This is done via convolution with \code{stats::convolve()}.
+This is done via convolution with \code{stats::convolve()}. Nonparametric delays
+that can be combined are processed together, and their cumulative
+distribution function is truncated at a specified tolerance level, ensuring
+numeric stability.
 }
 \examples{
 # A fixed lognormal distribution with mean 5 and sd 1.
 lognormal <- dist_spec(
-  mean = 5, sd = 1, max = 20, distribution = "lognormal"
+  mean = 1.6, sd = 1, max = 20, distribution = "lognormal"
 )
+lognormal + lognormal
 
 # An uncertain gamma distribution with mean 3 and sd 2
 gamma <- dist_spec(
@@ -32,6 +44,9 @@ gamma <- dist_spec(
   distribution = "gamma"
 )
 lognormal + gamma
+
+# Using tolerance parameter
+`+.dist_spec`(lognormal, lognormal, tolerance = 0.5)
 }
 \author{
 Sebastian Funk

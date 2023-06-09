@@ -105,6 +105,39 @@ test_that("+.dist_spec returns correct output for sum of two nonparametric distr
   )
 })
 
+test_that("Testing `+.dist_spec` function with tolerance parameter", {
+  # Create distributions
+  lognormal <- dist_spec(
+    mean = 1.6, sd = 1, max = 20, distribution = "lognormal"
+  )
+  gamma <- dist_spec(
+    mean = 3, sd = 2, max = 20, distribution = "gamma"
+  )
+  
+  # Compute combined distribution with default tolerance
+  combined_default <- `+.dist_spec`(lognormal, gamma)
+  
+  # Compute combined distribution with larger tolerance
+  combined_larger_tolerance <- `+.dist_spec`(
+    lognormal, gamma, tolerance = 0.01
+  )
+
+  # The length of the combined PMF should be greater with default tolerance
+  expect_true(
+    length(combined_default$np_pmf) > length(combined_larger_tolerance$np_pmf)
+  )
+  # Both should sum to 1
+  expect_equal(sum(combined_default$np_pmf), 1)
+  expect_equal(sum(combined_larger_tolerance$np_pmf), 1)
+  # The first 5 entries should be within 0.01 of each other
+  expect_equal(
+    combined_default$np_pmf[1:5], combined_larger_tolerance$np_pmf[1:5],
+    tolerance = 0.03
+  )
+  expect_equal(mean(combined_default), mean(combined_larger_tolerance))
+})
+
+
 test_that("mean.dist_spec returns correct output for fixed lognormal distribution", {
   lognormal <- dist_spec(
     mean = convert_to_logmean(3, 1), sd = convert_to_logsd(3, 1),
