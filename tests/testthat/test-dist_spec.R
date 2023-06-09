@@ -1,4 +1,3 @@
-library(testthat)
 
 test_that("dist_spec returns correct output for fixed lognormal distribution", {
   result <- dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal")
