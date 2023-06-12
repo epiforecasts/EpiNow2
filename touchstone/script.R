@@ -25,8 +25,8 @@ touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
   uncertain = { epinow(
     reported_cases = reported_cases,
-    generation_time = generation_time,
-    delays = delays,
+    generation_time = u_generation_time,
+    delays = u_delays,
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
