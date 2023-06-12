@@ -1088,7 +1088,7 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
       )
     }
     if (!is.infinite(tolerance)) {
-      if (length(cdf) > 1) {
+      if (length(new_pmf) > 1) {
         cdf <- cumsum(new_pmf)
         new_pmf <- new_pmf[c(TRUE, (1 - cdf[-length(cdf)]) >= tolerance)]
         new_pmf <- new_pmf / sum(new_pmf)
