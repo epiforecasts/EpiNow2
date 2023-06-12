@@ -1056,9 +1056,10 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 #'
 #' @param e1 The first delay distribution (from a call to [dist_spec()]) to
 #' combine.
+#'
 #' @param e2 The second delay distribution (from a call to [dist_spec()]) to
 #' combine.
-#' 
+#'
 #' @param tolerance A numeric value that sets the cumulative probability
 #' to retain when truncating the cumulative distribution function of the
 #' combined nonparametric delays. The default value is 0.001 with this retaining
@@ -1066,7 +1067,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 #' result in a smaller number of points in the combined nonparametric delay but
 #' may also impact the accuracy of the combined delay (i.e., change the mean
 #' and standard deviation).
-#' 
+#'
 #' @return A delay distribution representing the sum of the two delays
 #' (with class [dist_spec()])
 #'
