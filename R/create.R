@@ -645,6 +645,7 @@ create_stan_args <- function(stan = stan_opts(),
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom purrr transpose map
 ##' @author Sebastian Funk
+##' @internal
 create_stan_delays <- function(..., ot) {
   dot_args <- list(...)
   ## combine delays
