@@ -66,7 +66,7 @@ generation_time_opts <- function(dist = dist_spec(mean = 1)) {
 #' delay <- dist_spec(mean = 1, sd = 0.5, max = 15)
 #' delay_opts(delay)
 #'
-#' # Multiple delays
+#' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
 delay_opts <- function(dist = dist_spec()) {
   if (!is(dist, "dist_spec")) {
