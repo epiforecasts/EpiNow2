@@ -30,7 +30,7 @@ delay_opts(delay)
 delay <- dist_spec(mean = 1, sd = 0.5, max = 15)
 delay_opts(delay)
 
-# Multiple delays
+# Multiple delays (in this case twice the same)
 delay_opts(delay + delay)
 }
 \seealso{
