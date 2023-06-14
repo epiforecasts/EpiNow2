@@ -5,3 +5,4 @@
   real<lower = 0, upper = 1> frac_obs[n, obs_scale];
   int model_type;
   real<lower = 0> rep_phi[n, model_type];  // overdispersion of the reporting process
+  int<lower = 0> trunc_id; // id of truncation

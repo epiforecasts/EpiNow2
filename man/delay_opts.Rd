@@ -4,20 +4,11 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(..., fixed = FALSE)
+delay_opts(dist = dist_spec())
 }
 \arguments{
-\item{...}{A list of lists specifying distributions of reporting delays.
-Each list is passed to \code{\link[=dist_spec]{dist_spec()}} and so should contain parameters linked
-to the functions arguments. If a list is not given then it is assumed that
-no delay is present. If multiple lists are given then they are assumed to
-be independent.}
-
-\item{fixed}{Logical, defaults to \code{FALSE}. Should all reporting delays be
-treated as coming from fixed (vs uncertain) distributions. Making this
-simplification drastically reduces compute requirements. Setting this here
-overrides any of the constituent delay distributions being set to be fixed
-or not.}
+\item{dist}{A delay distribution or series of delay distributions generated
+using \code{\link[=dist_spec]{dist_spec()}}. Default is an empty call to \code{\link[=dist_spec]{dist_spec()}}, i.e. no delay}
 }
 \value{
 A list summarising the input delay distributions.
@@ -32,17 +23,15 @@ functions.
 delay_opts()
 
 # A single delay that has uncertainty
-delay <- list(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
+delay <- dist_spec(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
 delay_opts(delay)
 
-# A single delay where we override the uncertainty assumption
-delay_opts(delay, fixed = TRUE)
+# A single delay without uncertainty
+delay <- dist_spec(mean = 1, sd = 0.5, max = 15)
+delay_opts(delay)
 
-# A delay where uncertainty is implict
-delay_opts(list(mean = 1, mean_sd = 0, sd = 0.5, sd_sd = 0, max = 15))
-
-# Multiple delays
-delay_opts(delay, delay)
+# Multiple delays (in this case twice the same)
+delay_opts(delay + delay)
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec

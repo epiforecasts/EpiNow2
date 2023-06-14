@@ -9,9 +9,11 @@ dist_spec(
   sd = 0,
   mean_sd = 0,
   sd_sd = 0,
-  dist = c("lognormal", "gamma"),
-  max = NULL,
-  fixed = FALSE
+  distribution = c("lognormal", "gamma"),
+  max,
+  pmf = numeric(0),
+  fixed = FALSE,
+  prior_weight = 0L
 )
 }
 \arguments{
@@ -30,7 +32,7 @@ prior.}
 \item{sd_sd}{Numeric, defaults to 0. Sets the standard deviation of the
 uncertainty around the sd of the  distribution assuming a normal prior.}
 
-\item{dist}{Character, defaults to "lognormal". The (discretised
+\item{distribution}{Character, defaults to "lognormal". The (discretised
 distribution to be used. If sd == 0 then the distribution  is fixed and a
 delta function is used. If sd > 0 then the distribution is discretised and
 truncated.
@@ -46,7 +48,7 @@ model fitting these are then transformed to the shape and scale of the gamma
 distribution.
 }
 
-When \code{dist} is the default lognormal distribution the other function
+When \code{distribution} is the default lognormal distribution the other function
 arguments have the following definition:
 \itemize{
 \item \code{mean} is the mean of the natural logarithm of the delay (on the
@@ -57,9 +59,21 @@ log scale).
 \item{max}{Numeric, maximum value of the distribution. The distribution will
 be truncated at this value.}
 
+\item{pmf}{Numeric, a vector of values that represent the (nonparametric)
+probability mass function of the delay (starting with 0); defaults to an
+empty vector corresponding to a parametric specification of the distribution
+(using \code{mean}, \code{sd} and corresponding uncertainties)}
+
 \item{fixed}{Logical, defaults to \code{FALSE}. Should delays be treated
-as coming from fixed (vs uncertain) distributions. Making this simplification
+as coming from fixed (vs uncertain) distributions. Overrides any values
+assigned to \code{mean_sd} and \code{sd_sd} by setting them to zero.
 reduces compute requirement but may produce spuriously precise estimates.}
+
+\item{prior_weight}{Integer, weight given to the generation time prior.
+By default (prior_weight = 00) the priors will be weighted by the number of
+observation data points, usually preventing the posteriors from shifting
+much from the given distribution. Another sensible option would be 1,
+i.e. treating the generation time distribution as a single parameter.}
 }
 \value{
 A list of distribution options.
@@ -68,9 +82,21 @@ A list of distribution options.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines the parameters of a supported distribution for use in onward
 modelling. Multiple distribution families are supported - see the
-documentation for \code{family} for details. This function provides distribution
+documentation for \code{family} for details. Alternatively, a nonparametric
+distribution can be specified using the \code{pmf} argument.
+This function provides distribution
 functionality in \code{\link[=delay_opts]{delay_opts()}}, \code{\link[=generation_time_opts]{generation_time_opts()}}, and
 \code{\link[=trunc_opts]{trunc_opts()}}.
+}
+\examples{
+# A fixed lognormal distribution with mean 5 and sd 1.
+dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal")
+
+# An uncertain gamma distribution with mean 3 and sd 2
+dist_spec(
+  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+  distribution = "gamma"
+)
 }
 \author{
 Sebastian Funk

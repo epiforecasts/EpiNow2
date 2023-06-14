@@ -127,9 +127,10 @@
 estimate_secondary <- function(reports,
                                secondary = secondary_opts(),
                                delays = delay_opts(
-                                 list(
+                                 dist_spec(
                                    mean = 2.5, mean_sd = 0.5,
-                                   sd = 0.47, sd_sd = 0.25, max = 30
+                                   sd = 0.47, sd_sd = 0.25, max = 30,
+                                   prior_weight = 1
                                  )
                                ),
                                truncation = trunc_opts(),
@@ -151,15 +152,17 @@ estimate_secondary <- function(reports,
     t = nrow(reports),
     obs = reports$secondary,
     primary = reports$primary,
-    burn_in = burn_in
+    burn_in = burn_in,
+    seeding_time = 0
   )
   # secondary model options
   data <- c(data, secondary)
   # delay data
-  data <- c(data, delays)
-  data$seeding_time <- 0
-  # truncation data
-  data <- c(data, truncation)
+  data <- c(data, create_stan_delays(
+    delay = delays,
+    trunc = truncation
+  ))
+
   # observation model data
   data <- c(data, create_obs_model(obs, dates = reports$date))
 

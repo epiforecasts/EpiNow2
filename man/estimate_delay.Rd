@@ -12,7 +12,7 @@ estimate_delay(delays, ...)
 \item{...}{Arguments to pass to internal methods.}
 }
 \value{
-A list summarising the bootstrapped distribution
+A \code{dist_spec} summarising the bootstrapped distribution
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}

@@ -6,90 +6,40 @@
 #' be passed to [get_generation_time], or as parameters of a distribution to be
 #' passed to [dist_spec].
 #'
-#' @param ... Any parameters to be passed to [dist_spec()], if the generation
-#' time is given as parameters of a distribution rather than a \code{disease}
-#' and \code{source}. In this case if the \code{mean} parameter is not set a
-#' mean of 1 will be assumed, if the \code{max} parameter not set then the
-#' \code{max} will be set to 15 to ensure backwards compatibility, and if no
-#' \code{dist} parameter is given then a gamma distribution will be used for
-#' backwards compatibility. As for [delay_opts()] a list of parameters can
-#' also be supplied that describe a distribution (but unlike [delay_opts()]
-#' multiple distributions may not currently be used (for example as output by
-#' get_generation_time()).
-#'
-#' @param max Integer, defaults to 15. Maximum generation time. This will
-#' not be used if a maximum is set in the distribution parameters.
-#'
-#' @param fixed Logical, defaults to `FALSE`. Should the generation time be
-#' treated as coming from fixed (vs uncertain) distributions.
-#'
-#' @param prior_weight numeric, weight given to the generation time prior.
-#' By default the generation time prior will be weighted by the number of
-#' observation data points, usually preventing the posteriors from shifting
-#' much from the given distribution. Another sensible option would be 1,
-#' i.e. treating the generation time distribution as a single parameter.
+#' @param dist A delay distribution or series of delay distributions generated
+#' using [dist_spec()] or [get_generation_time()]. If no distribution is given
+#' a fixed generation time of 1 will be assumed.
 #'
 #' @return A list summarising the input delay distributions.
 #' @author Sebastian Funk
 #' @author Sam Abbott
-#' @inheritParams get_generation_time
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
 #' @export
 #' @examples
-#' # default settings with a fixed generation time
+#' # default settings with a fixed generation time of 1
 #' generation_time_opts()
 #'
 #' # A fixed gamma distributed generation time
-#' generation_time_opts(mean = 3, sd = 2)
+#' generation_time_opts(dist_spec(mean = 3, sd = 2, max = 15))
 #'
 #' # An uncertain gamma distributed generation time
-#' generation_time_opts(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5)
+#' generation_time_opts(
+#'  dist_spec(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5, max = 15)
+#' )
 #'
-generation_time_opts <- function(..., disease, source, max = 15L,
-                                 fixed = FALSE, prior_weight = NULL) {
-  dot_options <- list(...) ## options for dist_spec
-  ## check consistent options are given
-  type_options <- (length(dot_options) > 0) + ## distributional parameters
-    (!missing(disease) && !missing(source)) ## from included distributions
-  if (type_options > 1) {
-    stop(
-      "Generation time should be given either as distributional options",
-      " or as disease/source, but not both." # nolint
-    )
+#' # A generation time sourced from the literature
+#' dist <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+#' generation_time_opts(dist)
+generation_time_opts <- function(dist = dist_spec(mean = 1)) {
+  if (!is(dist, "dist_spec")) {
+    stop("The generation time distribution must be given either using a call ",
+         "to `dist_spec` or `get_generation_time`. ",
+         "This behaviour has changed from previous versions of `EpiNow2` and ",
+         "any code using it may need to be updated. For examples and more ",
+         "information, see the relevant documentation pages using ",
+         "`?generation_time_opts`")
   }
-
-  ## check to see if options have been passed in as a list
-  if (length(dot_options) == 1 && is.list(dot_options[[1]])) {
-    dot_options <- dot_options[[1]]
-  }
-
-  if (!missing(disease) && !missing(source)) {
-    dist <- get_generation_time(
-      disease = disease, source = source, max_value = max
-    )
-    dist$fixed <- fixed
-    gt <- do.call(dist_spec, dist)
-  } else {
-    ## make gamma default for backwards compatibility
-    if (!("dist" %in% names(dot_options))) {
-      dot_options$dist <- "gamma"
-    }
-    ## set max
-    if (!("max" %in% names(dot_options))) {
-      dot_options$max <- max
-    }
-    ## set default of mean=1 for backwards compatibility
-    if (!("mean" %in% names(dot_options))) {
-      dot_options$mean <- 1
-    }
-    dot_options$fixed <- fixed
-    gt <- do.call(dist_spec, dot_options)
-  }
-  gt$weight <- prior_weight
-
-  names(gt) <- paste0("gt_", names(gt))
-
-  return(gt)
+  return(dist)
 }
 
 #' Delay Distribution Options
@@ -97,18 +47,8 @@ generation_time_opts <- function(..., disease, source, max = 15L,
 #' @description `r lifecycle::badge("stable")`
 #' Returns delay distributions formatted for usage by downstream
 #' functions.
-#' @param ... A list of lists specifying distributions of reporting delays.
-#' Each list is passed to [dist_spec()] and so should contain parameters linked
-#' to the functions arguments. If a list is not given then it is assumed that
-#' no delay is present. If multiple lists are given then they are assumed to
-#' be independent.
-#'
-#' @param fixed Logical, defaults to `FALSE`. Should all reporting delays be
-#' treated as coming from fixed (vs uncertain) distributions. Making this
-#' simplification drastically reduces compute requirements. Setting this here
-#' overrides any of the constituent delay distributions being set to be fixed
-#' or not.
-#'
+#' @param dist A delay distribution or series of delay distributions generated
+#' using [dist_spec()]. Default is an empty call to [dist_spec()], i.e. no delay
 #' @return A list summarising the input delay distributions.
 #' @author Sam Abbott
 #' @author Sebastian Funk
@@ -119,65 +59,27 @@ generation_time_opts <- function(..., disease, source, max = 15L,
 #' delay_opts()
 #'
 #' # A single delay that has uncertainty
-#' delay <- list(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
+#' delay <- dist_spec(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
 #' delay_opts(delay)
 #'
-#' # A single delay where we override the uncertainty assumption
-#' delay_opts(delay, fixed = TRUE)
+#' # A single delay without uncertainty
+#' delay <- dist_spec(mean = 1, sd = 0.5, max = 15)
+#' delay_opts(delay)
 #'
-#' # A delay where uncertainty is implict
-#' delay_opts(list(mean = 1, mean_sd = 0, sd = 0.5, sd_sd = 0, max = 15))
-#'
-#' # Multiple delays
-#' delay_opts(delay, delay)
-delay_opts <- function(..., fixed = FALSE) {
-  delays <- list(...)
-  data <- lapply(delays, do.call, what = dist_spec)
-
-  if (fixed) { ## set all to fixed
-    data <- lapply(data, function(x) {
-      x$fixed <- 1L
-      x$mean_sd <- 0
-      x$sd_sd <- 0
-      return(x)
-    })
+#' # Multiple delays (in this case twice the same)
+#' delay_opts(delay + delay)
+delay_opts <- function(dist = dist_spec()) {
+  if (!is(dist, "dist_spec")) {
+    stop(
+      "Delay distributions must be of given either using a call to ",
+      "`dist_spec` or one of the `get_...` functions such as ",
+      "`get_incubation_period`. This behaviour has changed from previous ",
+      "versions of `EpiNow2` and any code using it may need to be updated. ",
+      "For examples and more information, see the relevant documentation ",
+      "pages using `?delay_opts`."
+    )
   }
-
-  if (length(data) > 0) {
-    data <- purrr::transpose(data)
-    ## convert back to arrays
-    data <- lapply(data, function(x) array(unlist(x)))
-  } else {
-    data <- dist_spec()
-  }
-
-  names(data) <- paste0("delay_", names(data))
-  # Estimate the mean delay -----------------------------------------------
-  data$seeding_time <- sum(purrr::pmap_dbl(
-    list(data$delay_mean_mean, data$delay_sd_mean, data$delay_dist),
-    function(.x, .y, .z) {
-      ifelse(.z == 0, exp(.x + .y^2 / 2), .x)
-    }
-  ))
-  if (data$seeding_time < 1) {
-    data$seeding_time <- 1
-  } else {
-    data$seeding_time <- as.integer(data$seeding_time)
-  }
-
-  data$delays <- length(delays)
-
-  data$uncertain_mean_delays <- array(which(data$delay_mean_sd > 0))
-  data$uncertain_sd_delays <- array(which(data$delay_sd_sd > 0))
-  data$fixed_delays <- array(
-    which(data$delay_mean_sd == 0 & data$delay_sd_sd == 0)
-  )
-
-  data$n_uncertain_mean_delays <- length(data$uncertain_mean_delays)
-  data$n_uncertain_sd_delays <- length(data$uncertain_sd_delays)
-  data$n_fixed_delays <- length(data$fixed_delays)
-
-  return(data)
+  return(dist)
 }
 
 #' Truncation Distribution Options
@@ -187,9 +89,9 @@ delay_opts <- function(..., fixed = FALSE) {
 #' downstream functions. See `estimate_truncation()` for an approach to
 #' estimate these distributions.
 #'
-#' @param dist Parameters of a distribution as supported by
-#' [dist_spec()].
-#'
+#' @param dist A delay distribution or series of delay distributions reflecting
+#' the truncation generated using [dist_spec()] or [estimate_truncation()].
+#' Default is an empty call to [dist_spec()], i.e. no truncation
 #' @return A list summarising the input truncation distribution.
 #'
 #' @author Sam Abbott
@@ -201,12 +103,19 @@ delay_opts <- function(..., fixed = FALSE) {
 #' trunc_opts()
 #'
 #' # truncation dist
-#' trunc_opts(dist = list(mean = 3, sd = 2))
-trunc_opts <- function(dist = list()) {
-  data <- do.call(dist_spec, dist)
-  names(data) <- paste0("trunc_", names(data))
-  data$truncation <- as.integer(length(data$trunc_max) > 0)
-  return(data)
+#' trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
+trunc_opts <- function(dist = dist_spec()) {
+  if (!is(dist, "dist_spec")) {
+    stop(
+      "Truncation distributions must be of given either using a call to ",
+      "`dist_spec` or one of the `get_...` functions. ",
+      "This behaviour has changed from previous versions of `EpiNow2` and ",
+      "any code using it may need to be updated. For examples and more ",
+      "information, see the relevant documentation pages using ",
+      "`?trunc_opts`"
+    )
+  }
+  return(dist)
 }
 
 #' Time-Varying Reproduction Number Options
