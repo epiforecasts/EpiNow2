@@ -65,15 +65,15 @@ generation_time <- get_generation_time(
 incubation_period <- get_incubation_period(
  disease = "SARS-CoV-2", source = "lauer"
 )
-reporting_delay <- list(
+reporting_delay <- dist_spec(
   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 15
 )
 
 # fit model to data to recover Rt estimates
 est <- estimate_infections(reported_cases,
-  generation_time = generation_time,
-  delays = delay_opts(incubation_period, reporting_delay),
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7),
   stan = stan_opts(control = list(adapt_delta = 0.9)),
   obs = obs_opts(scale = list(mean = 0.1, sd = 0.01)),

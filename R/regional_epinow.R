@@ -72,7 +72,7 @@
 #' incubation_period <- get_incubation_period(
 #'  disease = "SARS-CoV-2", source = "lauer"
 #' )
-#' reporting_delay <- list(
+#' reporting_delay <- dist_spec(
 #'   mean = convert_to_logmean(2, 1),
 #'   mean_sd = 0.1,
 #'   sd = convert_to_logsd(2, 1),
@@ -90,8 +90,8 @@
 #' # samples and warmup have been reduced for this example
 #' def <- regional_epinow(
 #'   reported_cases = cases,
-#'   generation_time = generation_time,
-#'   delays = delay_opts(incubation_period, reporting_delay),
+#'   generation_time = generation_time_opts(generation_time),
+#'   delays = delay_opts(incubation_period + reporting_delay),
 #'   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
 #'   stan = stan_opts(
 #'     samples = 100, warmup = 200,
@@ -107,8 +107,8 @@
 #' rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
 #' region_rt <- regional_epinow(
 #'   reported_cases = cases,
-#'   generation_time = generation_time,
-#'   delays = delay_opts(incubation_period, reporting_delay),
+#'   generation_time = generation_time_opts(generation_time),
+#'   delays = delay_opts(incubation_period + reporting_delay),
 #'   rt = rt, gp = gp,
 #'   stan = stan_opts(
 #'     samples = 100, warmup = 200,

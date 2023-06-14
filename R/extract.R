@@ -152,46 +152,21 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
      c("time", "date") := NULL
     ]
   }
-  if (data$n_uncertain_mean_delays > 0) {
+  if (data$delay_n_p > 0) {
     out$delay_mean <- extract_parameter(
-      "delay_mean", samples, 1:data$n_uncertain_mean_delays
+      "delay_mean", samples, seq_len(data$delay_n_p)
     )
     out$delay_mean <-
       out$delay_mean[, strat := as.character(time)][, time := NULL][,
-       date := NULL
+        date := NULL
       ]
-  }
-  if (data$n_uncertain_sd_delays > 0) {
     out$delay_sd <- extract_parameter(
-      "delay_sd", samples, seq_len(data$n_uncertain_sd_delays)
+      "delay_sd", samples, seq_len(data$delay_n_p)
     )
     out$delay_sd <-
       out$delay_sd[, strat := as.character(time)][, time := NULL][,
        date := NULL
       ]
-  }
-  if (data$truncation > 0) {
-    if (data$trunc_mean_sd > 0) {
-      out$truncation_mean <- extract_parameter("trunc_mean", samples, 1)
-      out$truncation_mean <-
-        out$truncation_mean[,
-         strat := as.character(time)][, time := NULL][, date := NULL
-        ]
-    }
-    if (data$trunc_sd_sd > 0) {
-      out$truncation_sd <- extract_parameter("trunc_sd", samples, 1)
-      out$truncation_sd <- out$truncation_sd[,
-        strat := as.character(time)][, time := NULL][, date := NULL
-      ]
-    }
-  }
-  if (data$estimate_r && data$gt_mean_sd > 0) {
-    out$gt_mean <- extract_static_parameter("gt_mean", samples)
-    out$gt_mean <- out$gt_mean[, value := value.V1][, value.V1 := NULL]
-  }
-  if (data$estimate_r && data$gt_sd_sd > 0) {
-    out$gt_sd <- extract_static_parameter("gt_sd", samples)
-    out$gt_sd <- out$gt_sd[, value := value.V1][, value.V1 := NULL]
   }
   if (data$model_type == 1) {
     out$reporting_overdispersion <- extract_static_parameter("rep_phi", samples)
