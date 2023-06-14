@@ -78,55 +78,15 @@ passed to <a href="dist_spec.html">dist_spec</a>.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">generation_time_opts</span><span class="op">(</span></span>
-<span>  <span class="va">...</span>,</span>
-<span>  <span class="va">disease</span>,</span>
-<span>  <span class="va">source</span>,</span>
-<span>  max <span class="op">=</span> <span class="fl">15L</span>,</span>
-<span>  fixed <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  prior_weight <span class="op">=</span> <span class="cn">NULL</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">generation_time_opts</span><span class="op">(</span>dist <span class="op">=</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>...</dt>
-<dd><p>Any parameters to be passed to <code><a href="dist_spec.html">dist_spec()</a></code>, if the generation
-time is given as parameters of a distribution rather than a <code>disease</code>
-and <code>source</code>. In this case if the <code>mean</code> parameter is not set a
-mean of 1 will be assumed, if the <code>max</code> parameter not set then the
-<code>max</code> will be set to 15 to ensure backwards compatibility, and if no
-<code>dist</code> parameter is given then a gamma distribution will be used for
-backwards compatibility. As for <code><a href="delay_opts.html">delay_opts()</a></code> a list of parameters can
-also be supplied that describe a distribution (but unlike <code><a href="delay_opts.html">delay_opts()</a></code>
-multiple distributions may not currently be used (for example as output by
-get_generation_time()).</p></dd>
-
-
-<dt>disease</dt>
-<dd><p>A character string indicating the disease of interest.</p></dd>
-
-
-<dt>source</dt>
-<dd><p>A character string indicating the source of interest.</p></dd>
-
-
-<dt>max</dt>
-<dd><p>Integer, defaults to 15. Maximum generation time. This will
-not be used if a maximum is set in the distribution parameters.</p></dd>
-
-
-<dt>fixed</dt>
-<dd><p>Logical, defaults to <code>FALSE</code>. Should the generation time be
-treated as coming from fixed (vs uncertain) distributions.</p></dd>
-
-
-<dt>prior_weight</dt>
-<dd><p>numeric, weight given to the generation time prior.
-By default the generation time prior will be weighted by the number of
-observation data points, usually preventing the posteriors from shifting
-much from the given distribution. Another sensible option would be 1,
-i.e. treating the generation time distribution as a single parameter.</p></dd>
+    <dl><dt>dist</dt>
+<dd><p>A delay distribution or series of delay distributions generated
+using <code><a href="dist_spec.html">dist_spec()</a></code> or <code><a href="get_generation_time.html">get_generation_time()</a></code>. If no distribution is given
+a fixed generation time of 1 will be assumed.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -147,78 +107,32 @@ i.e. treating the generation time distribution as a single parameter.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># default settings with a fixed generation time</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># default settings with a fixed generation time of 1</span></span></span>
 <span class="r-in"><span><span class="fu">generation_time_opts</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_mean_mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_mean_sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_sd_mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_sd_sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_fixed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_max</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_dist</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Fixed distribution with PMF [0 1]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A fixed gamma distributed generation time</span></span></span>
-<span class="r-in"><span><span class="fu">generation_time_opts</span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_mean_mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3</span>
+<span class="r-in"><span><span class="fu">generation_time_opts</span><span class="op">(</span><span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">2</span>, max <span class="op">=</span> <span class="fl">15</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_mean_sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_sd_mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_sd_sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_fixed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_max</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 15</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_dist</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Fixed distribution with PMF [0.15 0.13 0.11 0.088 0.076 0.067 0.059 0.053 0.048 0.044 0.041 0.038 0.035 0.033 0.031]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># An uncertain gamma distributed generation time</span></span></span>
-<span class="r-in"><span><span class="fu">generation_time_opts</span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">2</span>, mean_sd <span class="op">=</span> <span class="fl">1</span>, sd_sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_mean_mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3</span>
+<span class="r-in"><span><span class="fu">generation_time_opts</span><span class="op">(</span></span></span>
+<span class="r-in"><span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">2</span>, mean_sd <span class="op">=</span> <span class="fl">1</span>, sd_sd <span class="op">=</span> <span class="fl">0.5</span>, max <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_mean_sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_sd_mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_sd_sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_fixed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_max</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 15</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $gt_dist</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Uncertain lognormal distribution with (untruncated) logmean 3 (SD 1) and logSD 2 (SD 0.5)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># A generation time sourced from the literature</span></span></span>
+<span class="r-in"><span><span class="va">dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="get_generation_time.html">get_generation_time</a></span><span class="op">(</span>disease <span class="op">=</span> <span class="st">"SARS-CoV-2"</span>, source <span class="op">=</span> <span class="st">"ganyani"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">generation_time_opts</span><span class="op">(</span><span class="va">dist</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Uncertain gamma distribution with (untruncated) mean 3.6 (SD 0.71) and SD 3.1 (SD 0.77)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

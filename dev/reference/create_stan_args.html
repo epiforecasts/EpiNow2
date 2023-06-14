@@ -136,32 +136,21 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> S4 class stanmodel 'estimate_infections' coded as follows:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> functions {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // convolve two vectors</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // length of x</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // produces a convolution across the lenght specified</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> vector convolve(vector x, vector y, int len) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int xlen = num_elements(x);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int ylen = num_elements(y);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] convolution = rep_vector(0, len);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in 1:xlen) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     for (j in 1:(min(len - i + 1, ylen))) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       convolution[i + j - 1] += x[i] * y[j];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   return(convolution);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // convolve two vectors as a backwards dot product</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // y vector shoud be reversed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // y vector should be reversed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // limited to the length of x and backwards looking for x indexes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // designed for use convolve a case vector and a delay pmf</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> vector convolve_dot_product(vector x, vector y, int len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector convolve_with_rev_pmf(vector x, vector y, int len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int xlen = num_elements(x);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     int ylen = num_elements(y);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     vector[len] z;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (xlen + ylen &lt;= len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       reject("convolve_with_rev_pmf: len is longer then x and y combined");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in 1:len) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         z[s] = dot_product(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             x[max(1, (s - ylen + 1)):s], tail(y, min(ylen, s))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       z[s] = dot_product(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         x[max(1, (s - ylen + 1)):min(s, xlen)],</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         y[max(1, ylen - s + 1):min(ylen, ylen + xlen - s)]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    return(z);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
@@ -176,7 +165,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] unobs_reports = infections;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int delays = num_elements(delay_rev_pmf);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     unobs_reports = convolve_dot_product(unobs_reports, delay_rev_pmf, t);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     unobs_reports = convolve_with_rev_pmf(unobs_reports, delay_rev_pmf, t);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reports = unobs_reports[(seeding_time + 1):t];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reports = infections[(seeding_time + 1):t];</span>
@@ -190,28 +179,28 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // Adapted from https://github.com/epiforecasts/epinowcast</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // @author Sam Abbott</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // @author Adrian Lison</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> vector discretised_pmf(real mu, real sigma, int n, int dist,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                        int left_truncate) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector discretised_pmf(real mu, real sigma, int n, int dist) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[n] pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (sigma &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[n + 1] upper_cdf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[n] upper_cdf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (dist == 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:(n + 1)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_cdf[i] = lognormal_cdf(i - 1 + left_truncate, mu, sigma);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:n) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_cdf[i] = lognormal_cdf(i, mu, sigma);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else if (dist == 1) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       real alpha = mu^2 / sigma^2;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       real beta = mu / sigma^2;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:(n + 1)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_cdf[i] = gamma_cdf(i - 1 + left_truncate, alpha, beta);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:n) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_cdf[i] = gamma_cdf(i, alpha, beta);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       reject("Unknown distribution function provided.");</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // discretise</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = upper_cdf[2:(n + 1)] - upper_cdf[1:n];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf[1] = upper_cdf[1];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf[2:n] = upper_cdf[2:n] - upper_cdf[1:(n-1)];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // normalize</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = pmf / (upper_cdf[n + 1] - upper_cdf[1]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = pmf / upper_cdf[n];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // delta function</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = rep_vector(0, n);</span>
@@ -230,40 +219,119 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return rev_pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // combined fixed/variable pmfs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf_n, int[] dist, int len, int left_truncate, int reverse_pmf) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_fixed = num_elements(fixed_pmf);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_variable = num_elements(pmf_mu);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] pmf = rep_vector(0, len);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (n_fixed &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf[1:n_fixed] = fixed_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   } else if (n_variable &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf[1] = 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector rev_seq(int base, int len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] seq;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in 1:len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     seq[i] = len + base - i;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   for (s in 1:n_variable) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[pmf_n[s]] variable_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     variable_pmf = discretised_pmf(pmf_mu[s], pmf_sigma[s], pmf_n[s], dist[s], left_truncate);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = convolve(pmf, variable_pmf, len);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return(seq);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> real rev_pmf_mean(vector rev_pmf, int base) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int len = num_elements(rev_pmf);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] rev_pmf_seq = rev_seq(base, len);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return(dot_product(rev_pmf_seq, rev_pmf));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> real rev_pmf_var(vector rev_pmf, int base, real mean) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int len = num_elements(rev_pmf);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] rev_pmf_seq = rev_seq(base, len);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in 1:len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     rev_pmf_seq[i] = pow(rev_pmf_seq[i], 2);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return(dot_product(rev_pmf_seq, rev_pmf) - pow(mean, 2));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> int[] get_delay_type_max(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_types, int[] delay_types_p, int[] delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int[] delay_types_groups, int[] delay_max, int[] delay_np_pmf_groups</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int ret[delay_types];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in 1:delay_types) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ret[i] = 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     for (j in delay_types_groups[i]:(delay_types_groups[i + 1] - 1)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (delay_types_p[j]) { // parametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ret[i] += delay_max[delay_types_id[j]] - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       } else { // nonparametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ret[i] += delay_np_pmf_groups[delay_types_id[j] + 1] -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_np_pmf_groups[delay_types_id[j]] - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return ret;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_id, int len, int[] delay_types_p, int[] delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int[] delay_types_groups, int[] delay_max,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector delay_np_pmf, int[] delay_np_pmf_groups,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real[] delay_mean, real[] delay_sigma, int[] delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int left_truncate, int reverse_pmf, int cumulative</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // loop over delays</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] pmf = rep_vector(0, len);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int current_len = 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int new_len;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in delay_types_groups[delay_id]:(delay_types_groups[delay_id + 1] - 1)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (delay_types_p[i]) { // parametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       vector[delay_max[delay_types_id[i]]] new_variable_pmf =</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         discretised_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_mean[delay_types_id[i]],</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_sigma[delay_types_id[i]],</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_max[delay_types_id[i]],</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_dist[delay_types_id[i]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       new_len = current_len + delay_max[delay_types_id[i]] - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (current_len == 1) { // first delay</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pmf[1:new_len] = new_variable_pmf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       } else { // subsequent delay to be convolved</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pmf[1:new_len] = convolve_with_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           pmf[1:current_len], reverse_mf(new_variable_pmf), new_len</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     } else { // nonparametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       int start = delay_np_pmf_groups[delay_types_id[i]];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       int end = delay_np_pmf_groups[delay_types_id[i] + 1] - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       new_len = current_len + end - start;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (current_len == 1) { // first delay</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pmf[1:new_len] = delay_np_pmf[start:end];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       } else { // subsequent delay to be convolved</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pmf[1:new_len] = convolve_with_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           pmf[1:current_len], reverse_mf(delay_np_pmf[start:end]), new_len</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     current_len = new_len;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (left_truncate) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = append_row(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       rep_vector(0, left_truncate),</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       pmf[(left_truncate + 1):len] / sum(pmf[(left_truncate + 1):len])</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (cumulative) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = cumulative_sum(pmf);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (reverse_pmf) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = reverse_mf(pmf);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   return(pmf);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                int[] delay_dist, int weight) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                int[] delay_dist, int[] weight) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     int mean_delays = num_elements(delay_mean);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     int sd_delays = num_elements(delay_sd);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (mean_delays) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       for (s in 1:mean_delays) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         if (delay_mean_sd[s] &gt; 0) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           // uncertain mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight[s];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           // if a distribution with postive support only truncate the prior</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           if (delay_dist[s]) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             target += -normal_lccdf(0 | delay_mean_mean[s], delay_mean_sd[s]) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             target += -normal_lccdf(0 | delay_mean_mean[s], delay_mean_sd[s]) * weight[s];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
@@ -272,8 +340,8 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       for (s in 1:sd_delays) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         if (delay_sd_sd[s] &gt; 0) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           // uncertain sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += -normal_lccdf(0 | delay_sd_mean[s], delay_sd_sd[s]) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight[s];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           target += -normal_lccdf(0 | delay_sd_mean[s], delay_sd_sd[s]) * weight[s];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
@@ -426,11 +494,11 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // work out where to start the convolution of past infections with the</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // generation time distribution: (current_time - maximal generation time) if</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // that is &gt;= 1, otherwise 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int inf_start = max(1, (index + seeding_time - gt_max));</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // work out where to end the convolution: (current_time - 1)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int inf_end = (index + seeding_time - 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int inf_start = max(1, (index + seeding_time - gt_max + 1));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // work out where to end the convolution: current_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int inf_end = (index + seeding_time);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // number of indices of the generation time to sum over (inf_end - inf_start + 1)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int pmf_accessed = min(gt_max, index + seeding_time - 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int pmf_accessed = min(gt_max, index + seeding_time);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // calculate the elements of the convolution</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real new_inf = dot_product(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     infections[inf_start:inf_end], tail(gt_rev_pmf, pmf_accessed)</span>
@@ -657,11 +725,11 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(sR);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // Convert an estimate of Rt to growth</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> real[] R_to_growth(vector R, real gt_mean, real gt_sd) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> real[] R_to_growth(vector R, real gt_mean, real gt_var) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(R);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r[t];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (gt_sd &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real k = pow(gt_sd / gt_mean, 2);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (gt_var &gt; 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real k = gt_var / pow(gt_mean, 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in 1:t) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       r[s] = (pow(R[s], k) - 1) / (k * gt_mean);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
@@ -685,20 +753,26 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; cases[t - horizon - seeding_time]; // observed cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = 0&gt;[t] shifted_cases;               // prior infections (for backcalculation)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int delays;                  // no. of delay distributions</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_uncertain_mean_delays;   // no. of delay distributions with uncertain mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_uncertain_sd_delays;     // no. of delay distributions with uncertain sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_fixed_delays;     // no. of delay distributions with uncertain sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // indices of delay distributions with uncertainty</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1, upper = delays&gt; uncertain_mean_delays[n_uncertain_mean_delays];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1, upper = delays&gt; uncertain_sd_delays[n_uncertain_sd_delays];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1, upper = delays&gt; fixed_delays[n_fixed_delays];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_mean_sd[delays];  // prior sd of mean incubation period</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_mean_mean[delays];// prior mean of mean incubation period</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_sd_mean[delays];  // prior sd of sd of incubation period</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_sd_sd[delays];    // prior sd of sd of incubation period</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1&gt; delay_max[delays];       // maximum incubation period</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_dist[delays];       // 0 = lognormal; 1 = gamma</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n;                     // number of delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n_p;                   // number of parametric delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n_np;                  // number of nonparametric delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_mean_mean[delay_n_p];            // prior mean of mean delay distribution</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_mean_sd[delay_n_p];   // prior sd of mean delay distribution</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_sd_mean[delay_n_p];   // prior sd of sd of delay distribution</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_sd_sd[delay_n_p];     // prior sd of sd of delay distribution</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1&gt; delay_max[delay_n_p];        // maximum delay distribution</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_dist[delay_n_p];       // 0 = lognormal; 1 = gamma</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_np_pmf_max;            // number of nonparametric pmf elements</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = 0, upper = 1&gt;[delay_np_pmf_max] delay_np_pmf; // ragged array of fixed PMFs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1&gt; delay_np_pmf_groups[delay_n_np + 1];              // links to ragged array</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_weight[delay_n_p];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_types;                     // number of delay types</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_types_p[delay_n];          // whether delay types are parametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_types_id[delay_n];          // whether delay types are parametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_types_groups[delay_types + 1]; // index of each delay (parametric or non)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_id; // id of generation time</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real L;				                     // boundary value for infections gp</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower=1&gt; M;			               // basis functions for infections gp</span>
@@ -711,15 +785,6 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int stationary;                    // is underlying gaussian process first or second order</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int fixed;                         //  should a gaussian process be used</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean_sd[1];                   // prior sd of mean generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean_mean[1];                 // prior mean of mean generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_sd_mean[1];                   // prior mean of sd of generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_sd_sd[1];                     // prior sd of sd of generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1&gt; gt_max[1];                        // maximum generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int gt_fixed[1];                      // 0 = variable gt; 1 = fixed gt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int gt_dist[1];                    // distribution (0 = lognormal, 1 = gamma)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int gt_weight;                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int estimate_r;                    // should the reproduction no be estimated (1 = yes)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real prior_infections;             // prior for initial infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real prior_growth;                 // prior on initial growth rate</span>
@@ -730,29 +795,23 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int future_fixed;                  // is underlying future Rt assumed to be fixed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int fixed_from;                    // Reference date for when Rt estimation should be fixed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int pop;                           // Initial susceptible population</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; gt_id;              // id of generation time</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int backcalc_prior;                // Prior type to use for backcalculation</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int rt_half_window;                // Half the moving average window used when calculating Rt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int day_of_week[t - seeding_time]; // day of the week indicator (1 - 7)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int model_type;                    // type of model: 0 = poisson otherwise negative binomial</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real phi_mean;                      // Mean and sd of the normal prior for the</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real phi_sd;                        // reporting process</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real phi_mean;                     // Mean and sd of the normal prior for the</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real phi_sd;                       // reporting process</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int week_effect;                   // length of week effect</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int truncation;                    // 1/0 indicating if truncation should be adjusted for</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real trunc_mean_mean[truncation];  // truncation mean of mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real trunc_mean_sd[truncation];    // truncation sd of mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real trunc_sd_mean[truncation];    // truncation mean of sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real trunc_sd_sd[truncation];      // truncation sd of sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1&gt; trunc_max[truncation];    // maximum truncation supported</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int trunc_fixed[truncation];    // whether the truncation distribution is fixed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int trunc_dist[truncation];    // 0 = lognormal; 1 = gamma</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int obs_scale;                     // logical controlling scaling of observations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real obs_scale_mean;               // mean scaling factor for observations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real obs_scale_sd;                 // standard deviation of observation scaling</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real obs_weight;                   // weight given to observation in log density</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int likelihood;                    // Should the likelihood be included in the model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int return_likelihood; // Should the likehood be returned by the model</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; trunc_id; // id of truncation</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> transformed data{</span>
@@ -766,29 +825,10 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_max_fixed = (n_fixed_delays == 0 ? 0 :</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     sum(delay_max[fixed_delays]) - num_elements(fixed_delays) + 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_max_total = (delays == 0 ? 0 :</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     sum(delay_max) - num_elements(delay_max) + 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[gt_fixed[1] ? gt_max[1] : 0] gt_fixed_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[truncation &amp;&amp; trunc_fixed[1] ? trunc_max[1] : 0] trunc_fixed_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[delay_max_fixed] delays_fixed_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (gt_fixed[1]) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_fixed_pmf = discretised_pmf(gt_mean_mean[1], gt_sd_mean[1], gt_max[1], gt_dist[1], 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (truncation &amp;&amp; trunc_fixed[1]) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_fixed_pmf = discretised_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       trunc_mean_mean[1], trunc_sd_mean[1], trunc_max[1], trunc_dist[1], 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (n_fixed_delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delays_fixed_pmf = combine_pmfs(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       to_vector([ 1 ]), delay_mean_mean[fixed_delays],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_sd_mean[fixed_delays], delay_max[fixed_delays], </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_dist[fixed_delays], delay_max_fixed, 0, 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_type_max[delay_types] = get_delay_type_max(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_types, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_types_groups, delay_max, delay_np_pmf_groups</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> parameters{</span>
@@ -800,17 +840,13 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r] log_R;                // baseline reproduction number estimate (log)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real initial_infections[estimate_r] ;    // seed infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real initial_growth[estimate_r &amp;&amp; seeding_time &gt; 1 ? 1 : 0]; // seed growth rate</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;upper = gt_max[1]&gt; gt_mean[estimate_r &amp;&amp; gt_mean_sd[1] &gt; 0]; // mean of generation time (if uncertain)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; gt_sd[estimate_r &amp;&amp; gt_sd_sd[1] &gt; 0];       // sd of generation time (if uncertain)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; bp_sd[bp_n &gt; 0 ? 1 : 0]; // standard deviation of breakpoint effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real bp_effects[bp_n];                   // Rt breakpoint effects</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observation model</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_mean[n_uncertain_mean_delays];         // mean of delays</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_sd[n_uncertain_sd_delays];  // sd of delays</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_mean[delay_n_p];         // mean of delays</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_sd[delay_n_p];  // sd of delays</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   simplex[week_effect] day_of_week_simplex;// day of week reporting effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0, upper = 1&gt; frac_obs[obs_scale];     // fraction of cases that are ultimately observed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real trunc_mean[truncation &amp;&amp; !trunc_fixed[1]];        // mean of truncation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; trunc_sd[truncation &amp;&amp; !trunc_fixed[1]]; // sd of truncation</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; rep_phi[model_type];     // overdispersion of the reporting process</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -820,16 +856,18 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] infections;                                     // latent infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot_h] reports;                                     // estimated reported cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] obs_reports;                                   // observed estimated reported cases</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[delay_type_max[gt_id]] gt_rev_pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // GP in noise - spectral densities</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (!fixed) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Estimate latent infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // via Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[gt_max[1]] gt_rev_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_rev_pmf = combine_pmfs(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_fixed_pmf, gt_mean, gt_sd, gt_max, gt_dist, gt_max[1], 1, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     R = update_Rt(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary</span>
@@ -845,15 +883,19 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // convolve from latent infections to mean of observations</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_max_total] delay_rev_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_rev_pmf = combine_pmfs(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delays_fixed_pmf, delay_mean, delay_sd, delay_max, delay_dist, delay_max_total, 0, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (delay_id) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[delay_id]] delay_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_id, delay_type_max[delay_id], delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     reports = infections[(seeding_time + 1):t];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  // weekly reporting effect</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  if (week_effect &gt; 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // weekly reporting effect</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (week_effect &gt; 1) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // scaling of reported cases by fraction observed</span>
@@ -861,12 +903,14 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    reports = scale_obs(reports, frac_obs[1]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  // truncate near time cases to observed reports</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  if (truncation) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    vector[trunc_max[1]] trunc_rev_cmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    trunc_rev_cmf = reverse_mf(cumulative_sum(combine_pmfs(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      trunc_fixed_pmf, trunc_mean, trunc_sd, trunc_max, trunc_dist, trunc_max[1], 0, 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    )));</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  if (trunc_id) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       trunc_id, delay_type_max[trunc_id], delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    obs_reports = reports[1:ot];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  }</span>
@@ -881,27 +925,15 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // penalised priors for delay distributions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   delays_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean, delay_mean_mean[uncertain_mean_delays],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean_sd[uncertain_mean_delays],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_sd, delay_sd_mean[uncertain_sd_delays],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_sd_sd[uncertain_sd_delays], delay_dist[uncertain_mean_delays], t</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // priors for truncation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   delays_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_mean, trunc_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_mean_mean, trunc_mean_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_sd_mean, trunc_sd_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_dist, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean, delay_mean_mean,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_dist, delay_weight</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // priors on Rt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rt_lp(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       seeding_time, r_logmean, r_logsd, prior_infections, prior_growth</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // penalised_prior on generation interval</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delays_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, gt_dist, gt_weight</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // prior observation scaling</span>
@@ -920,31 +952,34 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int imputed_reports[ot_h];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r &gt; 0 ? 0: ot_h] gen_R;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r[ot_h];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_var;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[return_likelihood ? ot : 0] log_lik;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r){</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // estimate growth from estimated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real set_gt_mean = (gt_mean_sd[1] &gt; 0 ? gt_mean[1] : gt_mean_mean[1]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real set_gt_sd = (gt_sd_sd [1]&gt; 0 ? gt_sd[1] : gt_sd_mean[1]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(R, set_gt_mean, set_gt_sd);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean = rev_pmf_mean(gt_rev_pmf, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(R, gt_mean, gt_var);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // sample generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real gt_mean_sample[1];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real gt_sd_sample[1];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[gt_max[1]] gt_rev_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean_sample[1] = (gt_mean_sd[1] &gt; 0 ? normal_rng(gt_mean_mean[1], gt_mean_sd[1]) : gt_mean_mean[1]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_sd_sample[1] = (gt_sd_sd[1] &gt; 0 ? normal_rng(gt_sd_mean[1], gt_sd_sd[1]) : gt_sd_mean[1]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_rev_pmf = combine_pmfs(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_fixed_pmf, gt_mean_sample, gt_sd_sample, gt_max, gt_dist, gt_max[1],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real delay_mean_sample[delay_n_p] =</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       normal_rng(delay_mean_mean, delay_mean_sd);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real delay_sd_sample[delay_n_p] =</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       normal_rng(delay_sd_mean, delay_sd_sd);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[gt_id]] sampled_gt_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean_sample, delay_sd_sample,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_dist, 1, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // calculate Rt using infections and generation time</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gen_R = calculate_Rt(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       infections, seeding_time, gt_rev_pmf, rt_half_window</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       infections, seeding_time, sampled_gt_rev_pmf, rt_half_window</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // estimate growth from calculated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(gen_R, gt_mean_sample[1], gt_sd_sample[1]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(gen_R, gt_mean, gt_var);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // simulate reported cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   imputed_reports = report_rng(reports, rep_phi, model_type);</span>
@@ -972,7 +1007,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $seed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 11084623</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 84016929</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $future</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
@@ -1007,32 +1042,21 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> S4 class stanmodel 'estimate_infections' coded as follows:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> functions {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // convolve two vectors</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // length of x</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // produces a convolution across the lenght specified</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> vector convolve(vector x, vector y, int len) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int xlen = num_elements(x);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int ylen = num_elements(y);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] convolution = rep_vector(0, len);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in 1:xlen) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     for (j in 1:(min(len - i + 1, ylen))) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       convolution[i + j - 1] += x[i] * y[j];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   return(convolution);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // convolve two vectors as a backwards dot product</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // y vector shoud be reversed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // y vector should be reversed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // limited to the length of x and backwards looking for x indexes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // designed for use convolve a case vector and a delay pmf</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> vector convolve_dot_product(vector x, vector y, int len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector convolve_with_rev_pmf(vector x, vector y, int len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int xlen = num_elements(x);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     int ylen = num_elements(y);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     vector[len] z;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (xlen + ylen &lt;= len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       reject("convolve_with_rev_pmf: len is longer then x and y combined");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in 1:len) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         z[s] = dot_product(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             x[max(1, (s - ylen + 1)):s], tail(y, min(ylen, s))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       z[s] = dot_product(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         x[max(1, (s - ylen + 1)):min(s, xlen)],</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         y[max(1, ylen - s + 1):min(ylen, ylen + xlen - s)]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    return(z);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
@@ -1047,7 +1071,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] unobs_reports = infections;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int delays = num_elements(delay_rev_pmf);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     unobs_reports = convolve_dot_product(unobs_reports, delay_rev_pmf, t);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     unobs_reports = convolve_with_rev_pmf(unobs_reports, delay_rev_pmf, t);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reports = unobs_reports[(seeding_time + 1):t];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reports = infections[(seeding_time + 1):t];</span>
@@ -1061,28 +1085,28 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // Adapted from https://github.com/epiforecasts/epinowcast</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // @author Sam Abbott</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // @author Adrian Lison</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> vector discretised_pmf(real mu, real sigma, int n, int dist,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                        int left_truncate) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector discretised_pmf(real mu, real sigma, int n, int dist) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[n] pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (sigma &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[n + 1] upper_cdf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[n] upper_cdf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (dist == 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:(n + 1)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_cdf[i] = lognormal_cdf(i - 1 + left_truncate, mu, sigma);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:n) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_cdf[i] = lognormal_cdf(i, mu, sigma);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else if (dist == 1) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       real alpha = mu^2 / sigma^2;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       real beta = mu / sigma^2;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:(n + 1)) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_cdf[i] = gamma_cdf(i - 1 + left_truncate, alpha, beta);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:n) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_cdf[i] = gamma_cdf(i, alpha, beta);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       reject("Unknown distribution function provided.");</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // discretise</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = upper_cdf[2:(n + 1)] - upper_cdf[1:n];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf[1] = upper_cdf[1];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf[2:n] = upper_cdf[2:n] - upper_cdf[1:(n-1)];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // normalize</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = pmf / (upper_cdf[n + 1] - upper_cdf[1]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = pmf / upper_cdf[n];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // delta function</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = rep_vector(0, n);</span>
@@ -1101,40 +1125,119 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return rev_pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // combined fixed/variable pmfs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> vector combine_pmfs(vector fixed_pmf, real[] pmf_mu, real[] pmf_sigma, int[] pmf_n, int[] dist, int len, int left_truncate, int reverse_pmf) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_fixed = num_elements(fixed_pmf);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_variable = num_elements(pmf_mu);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] pmf = rep_vector(0, len);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (n_fixed &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf[1:n_fixed] = fixed_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   } else if (n_variable &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf[1] = 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector rev_seq(int base, int len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] seq;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in 1:len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     seq[i] = len + base - i;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   for (s in 1:n_variable) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[pmf_n[s]] variable_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     variable_pmf = discretised_pmf(pmf_mu[s], pmf_sigma[s], pmf_n[s], dist[s], left_truncate);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = convolve(pmf, variable_pmf, len);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return(seq);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> real rev_pmf_mean(vector rev_pmf, int base) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int len = num_elements(rev_pmf);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] rev_pmf_seq = rev_seq(base, len);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return(dot_product(rev_pmf_seq, rev_pmf));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> real rev_pmf_var(vector rev_pmf, int base, real mean) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int len = num_elements(rev_pmf);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] rev_pmf_seq = rev_seq(base, len);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in 1:len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     rev_pmf_seq[i] = pow(rev_pmf_seq[i], 2);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return(dot_product(rev_pmf_seq, rev_pmf) - pow(mean, 2));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> int[] get_delay_type_max(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_types, int[] delay_types_p, int[] delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int[] delay_types_groups, int[] delay_max, int[] delay_np_pmf_groups</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int ret[delay_types];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in 1:delay_types) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ret[i] = 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     for (j in delay_types_groups[i]:(delay_types_groups[i + 1] - 1)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (delay_types_p[j]) { // parametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ret[i] += delay_max[delay_types_id[j]] - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       } else { // nonparametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ret[i] += delay_np_pmf_groups[delay_types_id[j] + 1] -</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_np_pmf_groups[delay_types_id[j]] - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return ret;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_id, int len, int[] delay_types_p, int[] delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int[] delay_types_groups, int[] delay_max,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector delay_np_pmf, int[] delay_np_pmf_groups,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real[] delay_mean, real[] delay_sigma, int[] delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int left_truncate, int reverse_pmf, int cumulative</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // loop over delays</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] pmf = rep_vector(0, len);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int current_len = 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int new_len;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in delay_types_groups[delay_id]:(delay_types_groups[delay_id + 1] - 1)) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (delay_types_p[i]) { // parametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       vector[delay_max[delay_types_id[i]]] new_variable_pmf =</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         discretised_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_mean[delay_types_id[i]],</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_sigma[delay_types_id[i]],</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_max[delay_types_id[i]],</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_dist[delay_types_id[i]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       new_len = current_len + delay_max[delay_types_id[i]] - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (current_len == 1) { // first delay</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pmf[1:new_len] = new_variable_pmf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       } else { // subsequent delay to be convolved</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pmf[1:new_len] = convolve_with_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           pmf[1:current_len], reverse_mf(new_variable_pmf), new_len</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     } else { // nonparametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       int start = delay_np_pmf_groups[delay_types_id[i]];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       int end = delay_np_pmf_groups[delay_types_id[i] + 1] - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       new_len = current_len + end - start;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (current_len == 1) { // first delay</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pmf[1:new_len] = delay_np_pmf[start:end];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       } else { // subsequent delay to be convolved</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pmf[1:new_len] = convolve_with_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           pmf[1:current_len], reverse_mf(delay_np_pmf[start:end]), new_len</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     current_len = new_len;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (left_truncate) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = append_row(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       rep_vector(0, left_truncate),</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       pmf[(left_truncate + 1):len] / sum(pmf[(left_truncate + 1):len])</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (cumulative) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = cumulative_sum(pmf);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (reverse_pmf) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     pmf = reverse_mf(pmf);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   return(pmf);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                int[] delay_dist, int weight) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                int[] delay_dist, int[] weight) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     int mean_delays = num_elements(delay_mean);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     int sd_delays = num_elements(delay_sd);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (mean_delays) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       for (s in 1:mean_delays) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         if (delay_mean_sd[s] &gt; 0) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           // uncertain mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight[s];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           // if a distribution with postive support only truncate the prior</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           if (delay_dist[s]) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             target += -normal_lccdf(0 | delay_mean_mean[s], delay_mean_sd[s]) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             target += -normal_lccdf(0 | delay_mean_mean[s], delay_mean_sd[s]) * weight[s];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
@@ -1143,8 +1246,8 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       for (s in 1:sd_delays) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         if (delay_sd_sd[s] &gt; 0) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           // uncertain sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += -normal_lccdf(0 | delay_sd_mean[s], delay_sd_sd[s]) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight[s];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           target += -normal_lccdf(0 | delay_sd_mean[s], delay_sd_sd[s]) * weight[s];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
@@ -1297,11 +1400,11 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // work out where to start the convolution of past infections with the</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // generation time distribution: (current_time - maximal generation time) if</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // that is &gt;= 1, otherwise 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int inf_start = max(1, (index + seeding_time - gt_max));</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // work out where to end the convolution: (current_time - 1)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int inf_end = (index + seeding_time - 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int inf_start = max(1, (index + seeding_time - gt_max + 1));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // work out where to end the convolution: current_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int inf_end = (index + seeding_time);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // number of indices of the generation time to sum over (inf_end - inf_start + 1)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int pmf_accessed = min(gt_max, index + seeding_time - 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int pmf_accessed = min(gt_max, index + seeding_time);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // calculate the elements of the convolution</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real new_inf = dot_product(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     infections[inf_start:inf_end], tail(gt_rev_pmf, pmf_accessed)</span>
@@ -1528,11 +1631,11 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(sR);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // Convert an estimate of Rt to growth</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> real[] R_to_growth(vector R, real gt_mean, real gt_sd) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> real[] R_to_growth(vector R, real gt_mean, real gt_var) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(R);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r[t];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (gt_sd &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real k = pow(gt_sd / gt_mean, 2);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (gt_var &gt; 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real k = gt_var / pow(gt_mean, 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in 1:t) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       r[s] = (pow(R[s], k) - 1) / (k * gt_mean);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
@@ -1556,20 +1659,26 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; cases[t - horizon - seeding_time]; // observed cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = 0&gt;[t] shifted_cases;               // prior infections (for backcalculation)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int delays;                  // no. of delay distributions</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_uncertain_mean_delays;   // no. of delay distributions with uncertain mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_uncertain_sd_delays;     // no. of delay distributions with uncertain sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_fixed_delays;     // no. of delay distributions with uncertain sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // indices of delay distributions with uncertainty</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1, upper = delays&gt; uncertain_mean_delays[n_uncertain_mean_delays];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1, upper = delays&gt; uncertain_sd_delays[n_uncertain_sd_delays];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1, upper = delays&gt; fixed_delays[n_fixed_delays];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_mean_sd[delays];  // prior sd of mean incubation period</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_mean_mean[delays];// prior mean of mean incubation period</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_sd_mean[delays];  // prior sd of sd of incubation period</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_sd_sd[delays];    // prior sd of sd of incubation period</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1&gt; delay_max[delays];       // maximum incubation period</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_dist[delays];       // 0 = lognormal; 1 = gamma</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n;                     // number of delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n_p;                   // number of parametric delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n_np;                  // number of nonparametric delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_mean_mean[delay_n_p];            // prior mean of mean delay distribution</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_mean_sd[delay_n_p];   // prior sd of mean delay distribution</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_sd_mean[delay_n_p];   // prior sd of sd of delay distribution</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_sd_sd[delay_n_p];     // prior sd of sd of delay distribution</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1&gt; delay_max[delay_n_p];        // maximum delay distribution</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_dist[delay_n_p];       // 0 = lognormal; 1 = gamma</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_np_pmf_max;            // number of nonparametric pmf elements</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = 0, upper = 1&gt;[delay_np_pmf_max] delay_np_pmf; // ragged array of fixed PMFs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1&gt; delay_np_pmf_groups[delay_n_np + 1];              // links to ragged array</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_weight[delay_n_p];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_types;                     // number of delay types</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_types_p[delay_n];          // whether delay types are parametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_types_id[delay_n];          // whether delay types are parametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_types_groups[delay_types + 1]; // index of each delay (parametric or non)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_id; // id of generation time</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real L;				                     // boundary value for infections gp</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower=1&gt; M;			               // basis functions for infections gp</span>
@@ -1582,15 +1691,6 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int stationary;                    // is underlying gaussian process first or second order</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int fixed;                         //  should a gaussian process be used</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean_sd[1];                   // prior sd of mean generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean_mean[1];                 // prior mean of mean generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_sd_mean[1];                   // prior mean of sd of generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_sd_sd[1];                     // prior sd of sd of generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1&gt; gt_max[1];                        // maximum generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int gt_fixed[1];                      // 0 = variable gt; 1 = fixed gt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int gt_dist[1];                    // distribution (0 = lognormal, 1 = gamma)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int gt_weight;                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int estimate_r;                    // should the reproduction no be estimated (1 = yes)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real prior_infections;             // prior for initial infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real prior_growth;                 // prior on initial growth rate</span>
@@ -1601,29 +1701,23 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int future_fixed;                  // is underlying future Rt assumed to be fixed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int fixed_from;                    // Reference date for when Rt estimation should be fixed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int pop;                           // Initial susceptible population</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; gt_id;              // id of generation time</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int backcalc_prior;                // Prior type to use for backcalculation</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int rt_half_window;                // Half the moving average window used when calculating Rt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int day_of_week[t - seeding_time]; // day of the week indicator (1 - 7)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int model_type;                    // type of model: 0 = poisson otherwise negative binomial</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real phi_mean;                      // Mean and sd of the normal prior for the</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real phi_sd;                        // reporting process</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real phi_mean;                     // Mean and sd of the normal prior for the</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real phi_sd;                       // reporting process</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int week_effect;                   // length of week effect</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int truncation;                    // 1/0 indicating if truncation should be adjusted for</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real trunc_mean_mean[truncation];  // truncation mean of mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real trunc_mean_sd[truncation];    // truncation sd of mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real trunc_sd_mean[truncation];    // truncation mean of sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real trunc_sd_sd[truncation];      // truncation sd of sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 1&gt; trunc_max[truncation];    // maximum truncation supported</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int trunc_fixed[truncation];    // whether the truncation distribution is fixed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int trunc_dist[truncation];    // 0 = lognormal; 1 = gamma</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int obs_scale;                     // logical controlling scaling of observations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real obs_scale_mean;               // mean scaling factor for observations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real obs_scale_sd;                 // standard deviation of observation scaling</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real obs_weight;                   // weight given to observation in log density</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int likelihood;                    // Should the likelihood be included in the model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int return_likelihood; // Should the likehood be returned by the model</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; trunc_id; // id of truncation</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> transformed data{</span>
@@ -1637,29 +1731,10 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_max_fixed = (n_fixed_delays == 0 ? 0 :</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     sum(delay_max[fixed_delays]) - num_elements(fixed_delays) + 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_max_total = (delays == 0 ? 0 :</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     sum(delay_max) - num_elements(delay_max) + 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[gt_fixed[1] ? gt_max[1] : 0] gt_fixed_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[truncation &amp;&amp; trunc_fixed[1] ? trunc_max[1] : 0] trunc_fixed_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[delay_max_fixed] delays_fixed_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (gt_fixed[1]) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_fixed_pmf = discretised_pmf(gt_mean_mean[1], gt_sd_mean[1], gt_max[1], gt_dist[1], 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (truncation &amp;&amp; trunc_fixed[1]) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_fixed_pmf = discretised_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       trunc_mean_mean[1], trunc_sd_mean[1], trunc_max[1], trunc_dist[1], 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (n_fixed_delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delays_fixed_pmf = combine_pmfs(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       to_vector([ 1 ]), delay_mean_mean[fixed_delays],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_sd_mean[fixed_delays], delay_max[fixed_delays], </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_dist[fixed_delays], delay_max_fixed, 0, 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_type_max[delay_types] = get_delay_type_max(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_types, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_types_groups, delay_max, delay_np_pmf_groups</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> parameters{</span>
@@ -1671,17 +1746,13 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r] log_R;                // baseline reproduction number estimate (log)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real initial_infections[estimate_r] ;    // seed infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real initial_growth[estimate_r &amp;&amp; seeding_time &gt; 1 ? 1 : 0]; // seed growth rate</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;upper = gt_max[1]&gt; gt_mean[estimate_r &amp;&amp; gt_mean_sd[1] &gt; 0]; // mean of generation time (if uncertain)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; gt_sd[estimate_r &amp;&amp; gt_sd_sd[1] &gt; 0];       // sd of generation time (if uncertain)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; bp_sd[bp_n &gt; 0 ? 1 : 0]; // standard deviation of breakpoint effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real bp_effects[bp_n];                   // Rt breakpoint effects</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observation model</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_mean[n_uncertain_mean_delays];         // mean of delays</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_sd[n_uncertain_sd_delays];  // sd of delays</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_mean[delay_n_p];         // mean of delays</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_sd[delay_n_p];  // sd of delays</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   simplex[week_effect] day_of_week_simplex;// day of week reporting effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0, upper = 1&gt; frac_obs[obs_scale];     // fraction of cases that are ultimately observed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real trunc_mean[truncation &amp;&amp; !trunc_fixed[1]];        // mean of truncation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; trunc_sd[truncation &amp;&amp; !trunc_fixed[1]]; // sd of truncation</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; rep_phi[model_type];     // overdispersion of the reporting process</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -1691,16 +1762,18 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] infections;                                     // latent infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot_h] reports;                                     // estimated reported cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] obs_reports;                                   // observed estimated reported cases</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[delay_type_max[gt_id]] gt_rev_pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // GP in noise - spectral densities</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (!fixed) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Estimate latent infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // via Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[gt_max[1]] gt_rev_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_rev_pmf = combine_pmfs(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_fixed_pmf, gt_mean, gt_sd, gt_max, gt_dist, gt_max[1], 1, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     R = update_Rt(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary</span>
@@ -1716,15 +1789,19 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // convolve from latent infections to mean of observations</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_max_total] delay_rev_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_rev_pmf = combine_pmfs(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delays_fixed_pmf, delay_mean, delay_sd, delay_max, delay_dist, delay_max_total, 0, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (delay_id) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[delay_id]] delay_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_id, delay_type_max[delay_id], delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     reports = infections[(seeding_time + 1):t];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  // weekly reporting effect</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  if (week_effect &gt; 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // weekly reporting effect</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (week_effect &gt; 1) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // scaling of reported cases by fraction observed</span>
@@ -1732,12 +1809,14 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    reports = scale_obs(reports, frac_obs[1]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  // truncate near time cases to observed reports</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  if (truncation) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    vector[trunc_max[1]] trunc_rev_cmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    trunc_rev_cmf = reverse_mf(cumulative_sum(combine_pmfs(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      trunc_fixed_pmf, trunc_mean, trunc_sd, trunc_max, trunc_dist, trunc_max[1], 0, 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    )));</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  if (trunc_id) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       trunc_id, delay_type_max[trunc_id], delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    obs_reports = reports[1:ot];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  }</span>
@@ -1752,27 +1831,15 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // penalised priors for delay distributions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   delays_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean, delay_mean_mean[uncertain_mean_delays],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean_sd[uncertain_mean_delays],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_sd, delay_sd_mean[uncertain_sd_delays],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_sd_sd[uncertain_sd_delays], delay_dist[uncertain_mean_delays], t</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // priors for truncation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   delays_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_mean, trunc_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_mean_mean, trunc_mean_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_sd_mean, trunc_sd_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_dist, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean, delay_mean_mean,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_dist, delay_weight</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // priors on Rt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rt_lp(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       seeding_time, r_logmean, r_logsd, prior_infections, prior_growth</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // penalised_prior on generation interval</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delays_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_mean, gt_mean_mean, gt_mean_sd, gt_sd, gt_sd_mean, gt_sd_sd, gt_dist, gt_weight</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // prior observation scaling</span>
@@ -1791,31 +1858,34 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int imputed_reports[ot_h];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r &gt; 0 ? 0: ot_h] gen_R;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r[ot_h];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_var;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[return_likelihood ? ot : 0] log_lik;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r){</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // estimate growth from estimated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real set_gt_mean = (gt_mean_sd[1] &gt; 0 ? gt_mean[1] : gt_mean_mean[1]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real set_gt_sd = (gt_sd_sd [1]&gt; 0 ? gt_sd[1] : gt_sd_mean[1]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(R, set_gt_mean, set_gt_sd);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean = rev_pmf_mean(gt_rev_pmf, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(R, gt_mean, gt_var);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // sample generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real gt_mean_sample[1];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real gt_sd_sample[1];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[gt_max[1]] gt_rev_pmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean_sample[1] = (gt_mean_sd[1] &gt; 0 ? normal_rng(gt_mean_mean[1], gt_mean_sd[1]) : gt_mean_mean[1]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_sd_sample[1] = (gt_sd_sd[1] &gt; 0 ? normal_rng(gt_sd_mean[1], gt_sd_sd[1]) : gt_sd_mean[1]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_rev_pmf = combine_pmfs(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_fixed_pmf, gt_mean_sample, gt_sd_sample, gt_max, gt_dist, gt_max[1],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real delay_mean_sample[delay_n_p] =</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       normal_rng(delay_mean_mean, delay_mean_sd);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real delay_sd_sample[delay_n_p] =</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       normal_rng(delay_sd_mean, delay_sd_sd);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[gt_id]] sampled_gt_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean_sample, delay_sd_sample,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_dist, 1, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // calculate Rt using infections and generation time</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gen_R = calculate_Rt(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       infections, seeding_time, gt_rev_pmf, rt_half_window</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       infections, seeding_time, sampled_gt_rev_pmf, rt_half_window</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // estimate growth from calculated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(gen_R, gt_mean_sample[1], gt_sd_sample[1]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(gen_R, gt_mean, gt_var);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // simulate reported cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   imputed_reports = report_rng(reports, rep_phi, model_type);</span>
@@ -1843,7 +1913,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $seed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 42596670</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 19763037</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $future</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>

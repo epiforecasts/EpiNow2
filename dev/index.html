@@ -162,7 +162,7 @@
 <span><span class="op">)</span></span></code></pre></div>
 <p>If data was not available we could instead make an informed estimate of the likely delay (<em>this is a synthetic example and not applicable to real world use cases and we have not included uncertainty to decrease runtimes</em>),</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">reporting_delay</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">reporting_delay</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/dist_spec.html">dist_spec</a></span><span class="op">(</span></span>
 <span>  mean <span class="op">=</span> <span class="fu"><a href="reference/convert_to_logmean.html">convert_to_logmean</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fu"><a href="reference/convert_to_logsd.html">convert_to_logsd</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, max <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  dist <span class="op">=</span> <span class="st">"lognormal"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -196,7 +196,7 @@
 <code class="sourceCode R"><span><span class="va">estimates</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/epinow.html">epinow</a></span><span class="op">(</span></span>
 <span>  reported_cases <span class="op">=</span> <span class="va">reported_cases</span>,</span>
 <span>  generation_time <span class="op">=</span> <span class="fu"><a href="reference/generation_time_opts.html">generation_time_opts</a></span><span class="op">(</span><span class="va">generation_time</span><span class="op">)</span>,</span>
-<span>  delays <span class="op">=</span> <span class="fu"><a href="reference/delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">incubation_period</span>, <span class="va">reporting_delay</span><span class="op">)</span>,</span>
+<span>  delays <span class="op">=</span> <span class="fu"><a href="reference/delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">incubation_period</span> <span class="op">+</span> <span class="va">reporting_delay</span><span class="op">)</span>,</span>
 <span>  rt <span class="op">=</span> <span class="fu"><a href="reference/rt_opts.html">rt_opts</a></span><span class="op">(</span>prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">2</span>, sd <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  stan <span class="op">=</span> <span class="fu"><a href="reference/stan_opts.html">stan_opts</a></span><span class="op">(</span>cores <span class="op">=</span> <span class="fl">4</span>, control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>adapt_delta <span class="op">=</span> <span class="fl">0.99</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -216,7 +216,7 @@
 <tbody>
 <tr class="odd">
 <td align="left">New confirmed cases by infection date</td>
-<td align="left">2260 (1145 – 4079)</td>
+<td align="left">2313 (1159 – 4345)</td>
 </tr>
 <tr class="even">
 <td align="left">Expected change in daily cases</td>
@@ -224,15 +224,15 @@
 </tr>
 <tr class="odd">
 <td align="left">Effective reproduction no.</td>
-<td align="left">0.88 (0.63 – 1.2)</td>
+<td align="left">0.89 (0.62 – 1.2)</td>
 </tr>
 <tr class="even">
 <td align="left">Rate of growth</td>
-<td align="left">-0.033 (-0.11 – 0.041)</td>
+<td align="left">-0.026 (-0.1 – 0.038)</td>
 </tr>
 <tr class="odd">
 <td align="left">Doubling/halving time (days)</td>
-<td align="left">-21 (17 – -6.3)</td>
+<td align="left">-26 (18 – -6.7)</td>
 </tr>
 </tbody>
 </table>
@@ -240,40 +240,40 @@
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">estimates</span>, type <span class="op">=</span> <span class="st">"parameters"</span>, params <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          date variable strat     type   median     mean         sd lower_90</span></span>
-<span><span class="co">#&gt; 1: 2020-02-22        R    NA estimate 2.106722 2.110304 0.13394453 1.893217</span></span>
-<span><span class="co">#&gt; 2: 2020-02-23        R    NA estimate 2.078456 2.079754 0.11199646 1.895084</span></span>
-<span><span class="co">#&gt; 3: 2020-02-24        R    NA estimate 2.047571 2.047837 0.09415931 1.894614</span></span>
-<span><span class="co">#&gt; 4: 2020-02-25        R    NA estimate 2.013123 2.014628 0.08001628 1.881882</span></span>
-<span><span class="co">#&gt; 5: 2020-02-26        R    NA estimate 1.979236 1.980256 0.06909073 1.866860</span></span>
-<span><span class="co">#&gt; 6: 2020-02-27        R    NA estimate 1.945204 1.944881 0.06089018 1.845480</span></span>
+<span><span class="co">#&gt; 1: 2020-02-22        R    NA estimate 2.140044 2.142893 0.13818099 1.937615</span></span>
+<span><span class="co">#&gt; 2: 2020-02-23        R    NA estimate 2.105628 2.106892 0.11415164 1.936612</span></span>
+<span><span class="co">#&gt; 3: 2020-02-24        R    NA estimate 2.068985 2.069442 0.09420757 1.921287</span></span>
+<span><span class="co">#&gt; 4: 2020-02-25        R    NA estimate 2.031434 2.030725 0.07830576 1.907767</span></span>
+<span><span class="co">#&gt; 5: 2020-02-26        R    NA estimate 1.991226 1.990969 0.06634858 1.884688</span></span>
+<span><span class="co">#&gt; 6: 2020-02-27        R    NA estimate 1.950962 1.950427 0.05807390 1.856440</span></span>
 <span><span class="co">#&gt;    lower_50 lower_20 upper_20 upper_50 upper_90</span></span>
-<span><span class="co">#&gt; 1: 2.017975 2.075736 2.143921 2.199814 2.331646</span></span>
-<span><span class="co">#&gt; 2: 2.003099 2.051668 2.108079 2.154005 2.260400</span></span>
-<span><span class="co">#&gt; 3: 1.983107 2.022437 2.070778 2.109637 2.199787</span></span>
-<span><span class="co">#&gt; 4: 1.960463 1.993953 2.033858 2.068386 2.143568</span></span>
-<span><span class="co">#&gt; 5: 1.933872 1.962735 1.997947 2.025679 2.091690</span></span>
-<span><span class="co">#&gt; 6: 1.903834 1.930841 1.960120 1.983832 2.045497</span></span></code></pre></div>
+<span><span class="co">#&gt; 1: 2.046299 2.104219 2.174057 2.232616 2.370781</span></span>
+<span><span class="co">#&gt; 2: 2.025782 2.075403 2.132810 2.182697 2.294095</span></span>
+<span><span class="co">#&gt; 3: 2.003747 2.044222 2.090967 2.131610 2.225019</span></span>
+<span><span class="co">#&gt; 4: 1.977390 2.010528 2.048636 2.082264 2.163819</span></span>
+<span><span class="co">#&gt; 5: 1.944677 1.974170 2.008207 2.035011 2.103163</span></span>
+<span><span class="co">#&gt; 6: 1.910567 1.935790 1.965265 1.988672 2.046538</span></span></code></pre></div>
 <p>Reported cases are returned in a separate data frame in order to streamline the reporting of forecasts and for model evaluation.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">estimates</span>, output <span class="op">=</span> <span class="st">"estimated_reported_cases"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          date  type median     mean       sd lower_90 lower_50 lower_20</span></span>
-<span><span class="co">#&gt; 1: 2020-02-22 gp_rt     50  51.1930 13.63311       30       42       47</span></span>
-<span><span class="co">#&gt; 2: 2020-02-23 gp_rt     68  70.0595 17.77081       44       58       64</span></span>
-<span><span class="co">#&gt; 3: 2020-02-24 gp_rt     76  77.0875 18.71673       49       64       71</span></span>
-<span><span class="co">#&gt; 4: 2020-02-25 gp_rt     77  78.7475 19.59236       50       65       73</span></span>
-<span><span class="co">#&gt; 5: 2020-02-26 gp_rt     85  86.1595 20.75091       55       72       80</span></span>
-<span><span class="co">#&gt; 6: 2020-02-27 gp_rt    118 120.7215 29.62068       77      100      111</span></span>
+<span><span class="co">#&gt; 1: 2020-02-22 gp_rt   65.5  67.2870 18.83096       40       54       61</span></span>
+<span><span class="co">#&gt; 2: 2020-02-23 gp_rt   78.0  78.8395 21.73755       47       63       72</span></span>
+<span><span class="co">#&gt; 3: 2020-02-24 gp_rt   77.0  78.8920 21.59142       47       64       72</span></span>
+<span><span class="co">#&gt; 4: 2020-02-25 gp_rt   73.0  75.0705 20.82804       45       61       68</span></span>
+<span><span class="co">#&gt; 5: 2020-02-26 gp_rt   78.0  79.8325 22.03166       47       65       73</span></span>
+<span><span class="co">#&gt; 6: 2020-02-27 gp_rt  110.0 112.9160 28.92359       71       92      103</span></span>
 <span><span class="co">#&gt;    upper_20 upper_50 upper_90</span></span>
-<span><span class="co">#&gt; 1:       54       60    76.00</span></span>
-<span><span class="co">#&gt; 2:       73       80   100.05</span></span>
-<span><span class="co">#&gt; 3:       80       88   109.05</span></span>
-<span><span class="co">#&gt; 4:       82       91   114.00</span></span>
-<span><span class="co">#&gt; 5:       90       99   123.00</span></span>
-<span><span class="co">#&gt; 6:      125      138   173.00</span></span></code></pre></div>
+<span><span class="co">#&gt; 1:       70    79.00      101</span></span>
+<span><span class="co">#&gt; 2:       83    92.00      117</span></span>
+<span><span class="co">#&gt; 3:       82    92.00      116</span></span>
+<span><span class="co">#&gt; 4:       78    87.00      115</span></span>
+<span><span class="co">#&gt; 5:       83    91.25      120</span></span>
+<span><span class="co">#&gt; 6:      118   130.00      165</span></span></code></pre></div>
 <p>A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following <code>plot</code> method.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">estimates</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/unnamed-chunk-14-1.png"><!-- --></p>
+<p><img src="reference/figures/unnamed-chunk-15-1.png"><!-- --></p>
 </div>
 <div class="section level3">
 <h3 id="regional_epinow">
@@ -298,25 +298,25 @@
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">estimates</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/regional_epinow.html">regional_epinow</a></span><span class="op">(</span></span>
 <span>  reported_cases <span class="op">=</span> <span class="va">reported_cases</span>,</span>
-<span>  generation_time <span class="op">=</span> <span class="va">generation_time</span>,</span>
-<span>  delays <span class="op">=</span> <span class="fu"><a href="reference/delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">incubation_period</span>, <span class="va">reporting_delay</span><span class="op">)</span>,</span>
+<span>  generation_time <span class="op">=</span> <span class="fu"><a href="reference/generation_time_opts.html">generation_time_opts</a></span><span class="op">(</span><span class="va">generation_time</span><span class="op">)</span>,</span>
+<span>  delays <span class="op">=</span> <span class="fu"><a href="reference/delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">incubation_period</span> <span class="op">+</span> <span class="va">reporting_delay</span><span class="op">)</span>,</span>
 <span>  rt <span class="op">=</span> <span class="fu"><a href="reference/rt_opts.html">rt_opts</a></span><span class="op">(</span>prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">2</span>, sd <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span>, rw <span class="op">=</span> <span class="fl">7</span><span class="op">)</span>,</span>
 <span>  gp <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stan <span class="op">=</span> <span class="fu"><a href="reference/stan_opts.html">stan_opts</a></span><span class="op">(</span>cores <span class="op">=</span> <span class="fl">4</span>, warmup <span class="op">=</span> <span class="fl">250</span>, samples <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:43:24] Producing following optional outputs: regions, summary, samples, plots, latest</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:43:24] Reporting estimates using data up to: 2020-04-21</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:43:24] No target directory specified so returning output</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:43:24] Producing estimates for: testland, realland</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:43:24] Regions excluded: none</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:43:52] Completed estimates for: testland</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:44:20] Completed estimates for: realland</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:44:20] Completed regional estimates</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:44:20] Regions with estimates: 2</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:44:20] Regions with runtime errors: 0</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:44:20] Producing summary</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:44:20] No summary directory specified so returning summary output</span></span>
-<span><span class="co">#&gt; INFO [2023-04-28 11:44:21] No target directory specified so returning timings</span></span></code></pre></div>
+<span><span class="co">#&gt; INFO [2023-06-09 13:52:11] Producing following optional outputs: regions, summary, samples, plots, latest</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:52:11] Reporting estimates using data up to: 2020-04-21</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:52:11] No target directory specified so returning output</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:52:11] Producing estimates for: testland, realland</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:52:11] Regions excluded: none</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:52:40] Completed estimates for: testland</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:53:07] Completed estimates for: realland</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:53:07] Completed regional estimates</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:53:07] Regions with estimates: 2</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:53:07] Regions with runtime errors: 0</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:53:07] Producing summary</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:53:07] No summary directory specified so returning summary output</span></span>
+<span><span class="co">#&gt; INFO [2023-06-09 13:53:08] No target directory specified so returning timings</span></span></code></pre></div>
 <p>Results from each region are stored in a <code>regional</code> list with across region summary measures and plots stored in a <code>summary</code> list. All results can be set to be internally saved by setting the <code>target_folder</code> and <code>summary_dir</code> arguments. Each region can be estimated in parallel using the <a href="https://future.futureverse.org" class="external-link">future</a> package (when in most scenarios <code>cores</code> should be set to 1). For routine use each MCMC chain can also be run in parallel (with <code>future</code> = TRUE) with a time out (<code>max_execution_time</code>) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the <a href="https://future.futureverse.org" class="external-link">future</a> package for details on nested futures.</p>
 <p>Summary measures that are returned include a table formatted for reporting (along with raw results for further processing). Futures updated will extend the S3 methods used above to smooth access to this output.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
@@ -324,10 +324,10 @@
 <table class="table">
 <colgroup>
 <col width="6%">
-<col width="24%">
+<col width="23%">
 <col width="19%">
 <col width="17%">
-<col width="14%">
+<col width="15%">
 <col width="18%">
 </colgroup>
 <thead><tr class="header">
@@ -341,26 +341,26 @@
 <tbody>
 <tr class="odd">
 <td align="left">realland</td>
-<td align="left">2116 (1159 – 3665)</td>
+<td align="left">2176 (1192 – 4065)</td>
 <td align="left">Likely decreasing</td>
-<td align="left">0.86 (0.61 – 1.2)</td>
-<td align="left">-0.04 (-0.11 – 0.056)</td>
-<td align="left">-17 (12 – -6)</td>
+<td align="left">0.87 (0.65 – 1.1)</td>
+<td align="left">-0.032 (-0.096 – 0.03)</td>
+<td align="left">-22 (23 – -7.2)</td>
 </tr>
 <tr class="even">
 <td align="left">testland</td>
-<td align="left">2069 (1141 – 3628)</td>
+<td align="left">2217 (1150 – 4155)</td>
 <td align="left">Likely decreasing</td>
-<td align="left">0.86 (0.6 – 1.1)</td>
-<td align="left">-0.039 (-0.12 – 0.04)</td>
-<td align="left">-18 (17 – -5.9)</td>
+<td align="left">0.87 (0.64 – 1.2)</td>
+<td align="left">-0.031 (-0.099 – 0.036)</td>
+<td align="left">-23 (19 – -7)</td>
 </tr>
 </tbody>
 </table>
 <p>A range of plots are again returned (with the single summary plot shown below).</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">estimates</span><span class="op">$</span><span class="va">summary</span><span class="op">$</span><span class="va">summary_plot</span></span></code></pre></div>
-<p><img src="reference/figures/unnamed-chunk-18-1.png"><!-- --></p>
+<p><img src="reference/figures/unnamed-chunk-19-1.png"><!-- --></p>
 </div>
 <div class="section level3">
 <h3 id="reporting-templates">Reporting templates<a class="anchor" aria-label="anchor" href="#reporting-templates"></a>
