@@ -310,11 +310,6 @@ get_regions_with_most_reports <- function(reported_cases,
 ##' @param generation_time Generation time as specified using `dist_spec`
 ##' @return An integer seeding time
 ##' @author Sebastian Funk
-##' @examples
-##' gt1 <- dist_spec(mean = 5, sd = 1, max = 15)
-##' gt2 <- dist_spec(mean = 10, sd = 2, max = 10)
-##' delays <- dist_spec(mean = 5, sd = 1, max = 15)
-##' get_seeding_time(delays, gt1 + gt2)
 get_seeding_time <- function(delays, generation_time) {
   # Estimate the mean delay -----------------------------------------------
   seeding_time <- sum(mean(delays))

@@ -18,12 +18,6 @@ An integer seeding time
 The seeding time is set to the mean of the specified delays, constrained
 to be at least the maximum generation time
 }
-\examples{
-gt1 <- dist_spec(mean = 5, sd = 1, max = 15)
-gt2 <- dist_spec(mean = 10, sd = 2, max = 10)
-delays <- dist_spec(mean = 5, sd = 1, max = 15)
-get_seeding_time(delays, gt1 + gt2)
-}
 \author{
 Sebastian Funk
 }
