@@ -318,10 +318,11 @@ get_seeding_time <- function(delays, generation_time) {
   } else {
     seeding_time <- as.integer(seeding_time)
   }
-  ## make sure we have at least gt_max seeding time
+  ## make sure we have at least (length of total gt pmf - 1) seeding time
   seeding_time <- max(
     seeding_time,
-    sum(generation_time$max) + sum(generation_time$np_pmf_max)
+    sum(generation_time$max) + sum(generation_time$np_pmf_max) -
+      length(generation_time$max) - length(generation_time$np_pmf_max)
   )
   return(seeding_time)
 }
