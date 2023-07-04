@@ -29,7 +29,7 @@ parameters{
   real<lower = 0> delay_sd[delay_n_p];      // sd of delays
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   real<lower = 0, upper = 1> frac_obs[obs_scale];   // fraction of cases that are ultimately observed
-  real<lower = 0> rep_phi[model_type];   // overdispersion of the reporting process
+  real<lower = 0> rep_phi[obs_type];   // overdispersion of the reporting process
 }
 
 transformed parameters {
@@ -84,7 +84,7 @@ model {
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
     report_lp(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-              rep_phi, phi_mean, phi_sd, model_type, 1);
+              rep_phi, phi_mean, phi_sd, obs_dist, 1);
   }
 }
 
@@ -92,10 +92,10 @@ generated quantities {
   int sim_secondary[t - burn_in];
   vector[return_likelihood > 1 ? t - burn_in : 0] log_lik;
   // simulate secondary reports
-  sim_secondary = report_rng(secondary[(burn_in + 1):t], rep_phi, model_type);
+  sim_secondary = report_rng(secondary[(burn_in + 1):t], rep_phi, obs_dist);
   // log likelihood of model
   if (return_likelihood) {
     log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-                             rep_phi, model_type, obs_weight);
+                             rep_phi, obs_dist, obs_weight);
   }
 }

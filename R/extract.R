@@ -168,7 +168,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
        date := NULL
       ]
   }
-  if (data$model_type == 1) {
+  if (data$obs_dist == 1) {
     out$reporting_overdispersion <- extract_static_parameter("rep_phi", samples)
     out$reporting_overdispersion <- out$reporting_overdispersion[,
      value := value.V1][,
