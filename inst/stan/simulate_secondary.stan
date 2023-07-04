@@ -62,7 +62,9 @@ generated quantities {
 
     // weekly reporting effect
     if (week_effect > 1) {
-      secondary = day_of_week_effect(secondary, day_of_week, to_vector(day_of_week_simplex[i]));
+      secondary = day_of_week_effect(
+        secondary, day_of_week, to_vector(day_of_week_simplex[i])
+      );
     }
 
     // truncate near time cases to observed reports
@@ -79,6 +81,8 @@ generated quantities {
     }
 
     // simulate secondary reports
-    sim_secondary[i] = report_rng(tail(secondary, all_dates ? t : h), rep_phi[i], obs_dist);
+    sim_secondary[i] = report_rng(
+      tail(secondary, all_dates ? t : h), rep_phi[i], obs_dist
+    );
   }
 }

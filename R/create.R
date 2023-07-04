@@ -625,7 +625,7 @@ create_initial_conditions <- function(data) {
       if (data$seeding_time > 1) {
         out$initial_growth <- array(rnorm(1, data$prior_growth, 0.01))
       }
-      out$base_cov <- rnorm(
+      out$base_cov <- array(rnorm(
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
         sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
       ))
