@@ -19,6 +19,8 @@ profiles <- list()
 
 ## generate profiles for different versions of the stan model
 profiles[["main"]] <- create_profiles("estimate_infections", seeds)
+profiles[["exp"]] <- create_profiles("estimate_infections_exp", seeds)
+profiles[["zero"]] <- create_profiles("estimate_infections_zero", seeds)
 
 ## merge profiles from the two chains into one, round total time and only kep
 ## name and total_time columns; then average across chains; sort by time from
