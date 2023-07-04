@@ -33,8 +33,9 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   // Initialise infections using daily growth
   infections[1] = exp(initial_infections[1]);
   if (uot > 1) {
+    real growth = exp(initial_growth[1]);
     for (s in 2:uot) {
-      infections[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));
+      infections[s] = infections[s - 1] * growth;
     }
   }
   // calculate cumulative infections
