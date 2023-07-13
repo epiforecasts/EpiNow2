@@ -16,7 +16,7 @@ can be supplied which override the defaults."><meta property="og:image" content=
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.8000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -500,14 +500,15 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t = ot + uot;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] R = oR;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real exp_adj_Rt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] infections = rep_vector(1e-5, t);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] cum_infections = rep_vector(0, ot);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] infectiousness = rep_vector(1e-5, ot);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] infections = rep_vector(0, t);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] cum_infections;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] infectiousness;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Initialise infections using daily growth</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   infections[1] = exp(initial_infections[1]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (uot &gt; 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real growth = exp(initial_growth[1]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in 2:uot) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       infections[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       infections[s] = infections[s - 1] * growth;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // calculate cumulative infections</span>
@@ -516,13 +517,13 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // iteratively update infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   for (s in 1:ot) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     infectiousness[s] += update_infectiousness(infections, gt_rev_pmf, uot, s);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     infectiousness[s] = update_infectiousness(infections, gt_rev_pmf, uot, s);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (pop &amp;&amp; s &gt; nht) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[nht]));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       exp_adj_Rt = exp_adj_Rt &gt; 1 ? 1 : exp_adj_Rt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       infections[s + uot] = (pop - cum_infections[s]) * (1 - exp_adj_Rt);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }else{</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       infections[s + uot] += R[s] * infectiousness[s];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       infections[s + uot] = R[s] * infectiousness[s];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (pop &amp;&amp; s &lt; ot) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       cum_infections[s + 1] = cum_infections[s] + infections[s + uot];</span>
@@ -1397,14 +1398,15 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t = ot + uot;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] R = oR;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real exp_adj_Rt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] infections = rep_vector(1e-5, t);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] cum_infections = rep_vector(0, ot);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] infectiousness = rep_vector(1e-5, ot);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] infections = rep_vector(0, t);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] cum_infections;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] infectiousness;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Initialise infections using daily growth</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   infections[1] = exp(initial_infections[1]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (uot &gt; 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real growth = exp(initial_growth[1]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in 2:uot) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       infections[s] = exp(initial_infections[1] + initial_growth[1] * (s - 1));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       infections[s] = infections[s - 1] * growth;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // calculate cumulative infections</span>
@@ -1413,13 +1415,13 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // iteratively update infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   for (s in 1:ot) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     infectiousness[s] += update_infectiousness(infections, gt_rev_pmf, uot, s);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     infectiousness[s] = update_infectiousness(infections, gt_rev_pmf, uot, s);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (pop &amp;&amp; s &gt; nht) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[nht]));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       exp_adj_Rt = exp_adj_Rt &gt; 1 ? 1 : exp_adj_Rt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       infections[s + uot] = (pop - cum_infections[s]) * (1 - exp_adj_Rt);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }else{</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       infections[s + uot] += R[s] * infectiousness[s];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       infections[s + uot] = R[s] * infectiousness[s];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (pop &amp;&amp; s &lt; ot) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       cum_infections[s + 1] = cum_infections[s] + infections[s + uot];</span>
