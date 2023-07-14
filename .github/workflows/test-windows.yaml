@@ -34,5 +34,7 @@ jobs:
           extra-packages: testthat, local::.
 
       - name: test
-        run: testthat::test_package("EpiNow2")
+        run: |
+          devtools::install(quick = FALSE)
+          devtools::test()
         shell: Rscript {0}
