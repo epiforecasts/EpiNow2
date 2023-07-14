@@ -6,8 +6,6 @@ on:
       - main
       - master
       - develop
-  schedule:
-    - cron: '5 4 * * 1'
   pull_request:
     branches:
       - main
@@ -15,16 +13,12 @@ on:
       - develop
   workflow_dispatch:
   
-name: R-CMD-as-cran-check
+name: test-windows
 
 jobs:
-  R-CMD-as-cran-check:
-    if: "! contains(github.event.head_commit.message, '[ci skip]')"
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      NOT_CRAN: false
-      
+  test-windows:
+    runs-on: {os: windows-latest, r: 'release', rtools: '42'}
+
     steps:
       - uses: actions/checkout@v2
         
@@ -36,9 +30,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
-          needs: check
+          extra-packages: devtools
 
-      - uses: r-lib/actions/check-r-package@v2
-        with:
-          upload-snapshots: true
+      - name: test
+        run: devtools::test()
