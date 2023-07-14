@@ -31,10 +31,10 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: devtools
+          extra-packages: devtools, local::.
 
       - name: test
         run: |
-          devtools::install(quick = FALSE)
+          devtools::load_all(compile = FALSE)
           devtools::test()
         shell: Rscript {0}
