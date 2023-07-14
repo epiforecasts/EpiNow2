@@ -6,5 +6,5 @@
 "${R_HOME}/bin/Rscript" -e "rstantools::rstan_config()" \
 			-e 'mv <- readLines("src/Makevars")' \
 			-e 'con <- file("src/Makevars", "wb")' \
-			-e 'writeLines(c(sub("^CXX_STD = CXX14$", "CXX_STD = CXX17", mv), "PKG_CPPFLAGS += -D_HAS_AUTO_PTR_ETC=0"), con=con, useBytes=TRUE)' \
+			-e 'writeLines(c(sub("^CXX_STD = CXX14$", "CXX_STD = CXX17", mv), "PKG_CPPFLAGS += -D_HAS_AUTO_PTR_ETC=0 -w"), con=con, useBytes=TRUE)' \
 			-e 'close(con)'
