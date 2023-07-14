@@ -31,8 +31,8 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: devtools, local::.
+          extra-packages: testthat, local::.
 
       - name: test
-        run: devtools::test()
+        run: testthat::test_package("EpiNow2")
         shell: Rscript {0}
