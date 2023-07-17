@@ -82,8 +82,8 @@ cases <- data.table::rbindlist(list(
 # run basic nowcasting pipeline
 out <- regional_epinow(
   reported_cases = cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period + reporting_delay),
+  generation_time = generation_time,
+  delays = delay_opts(incubation_period, reporting_delay),
   output = "region",
   rt = NULL
 )

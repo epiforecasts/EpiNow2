@@ -19,6 +19,7 @@ reporting_delay <- dist_spec(
 
 delays <- delay_opts(incubation_period + reporting_delay)
 
+
 # set up example generation time
 u_generation_time <- get_generation_time(
   disease = "SARS-CoV-2", source = "ganyani", fixed = FALSE

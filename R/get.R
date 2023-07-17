@@ -92,8 +92,8 @@ get_raw_result <- function(file, region, date,
 #' # run multiregion estimates
 #' regional_out <- regional_epinow(
 #'   reported_cases = cases,
-#'   generation_time = generation_time_opts(generation_time),
-#'   delays = delay_opts(incubation_period + reporting_delay),
+#'   generation_time = generation_time,
+#'   delays = delay_opts(incubation_period, reporting_delay),
 #'   rt = rt_opts(rw = 7), gp = NULL,
 #'   output = c("regions", "latest"),
 #'   target_folder = dir,
@@ -221,7 +221,7 @@ get_dist <- function(data, disease, source, max_value = 15, fixed = FALSE) {
     dist$mean_sd <- 0
     dist$sd_sd <- 0
   }
-  return(do.call(dist_spec, dist))
+  return(dist)
 }
 #'  Get a Literature Distribution for the Generation Time
 #'
@@ -300,28 +300,4 @@ get_regions_with_most_reports <- function(reported_cases,
   )
   most_reports <- most_reports[1:no_regions][!is.na(region)]$region
   return(most_reports)
-}
-
-##' Estimate seeding time from delays and generation time
-##'
-##' The seeding time is set to the mean of the specified delays, constrained
-##' to be at least the maximum generation time
-##' @param delays Delays as specified using `dist_spec`
-##' @param generation_time Generation time as specified using `dist_spec`
-##' @return An integer seeding time
-##' @author Sebastian Funk
-get_seeding_time <- function(delays, generation_time) {
-  # Estimate the mean delay -----------------------------------------------
-  seeding_time <- sum(mean(delays))
-  if (seeding_time < 1) {
-    seeding_time <- 1
-  } else {
-    seeding_time <- as.integer(seeding_time)
-  }
-  ## make sure we have at least gt_max seeding time
-  seeding_time <- max(
-    seeding_time,
-    sum(generation_time$max) + sum(generation_time$np_pmf_max)
-  )
-  return(seeding_time)
 }

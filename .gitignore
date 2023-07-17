@@ -34,4 +34,3 @@ inst/include/*.o
 src
 
 .DS_Store
-.vscode

@@ -4,14 +4,14 @@ futile.logger::flog.threshold("FATAL")
 reported_cases <- EpiNow2::example_confirmed[1:50]
 generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 10)
 incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 10)
-reporting_delay <- dist_spec(
+reporting_delay <- list(
   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10
 )
 
 library(data.table)
 out <- suppressWarnings(estimate_infections(reported_cases,
-  generation_time = generation_time_opts(generation_time),
+  generation_time = generation_time,
   delays = delay_opts(reporting_delay),
   gp = NULL, rt = rt_opts(rw = 14),
   stan = stan_opts(
@@ -28,14 +28,14 @@ test_that("simulate_infections works to simulate a passed in estimate_infections
 })
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object with an adjusted Rt", {
-  R <- c(rep(NA_real_, 40), rep(0.5, 17))
+  R <- c(rep(NA_real_, 40), rep(0.5, 9))
   sims <- simulate_infections(out, R)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
   expect_equal(tail(sims$summarised[variable == "R"]$median, 9), rep(0.5, 9))
 })
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object with a short adjusted Rt", {
-  R <- c(rep(NA_real_, 40), rep(0.5, 17))
+  R <- c(rep(NA_real_, 40), rep(0.5, 10))
   sims <- simulate_infections(out, R)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
   expect_equal(tail(sims$summarised[variable == "R"]$median, 9), rep(0.5, 9))
@@ -63,7 +63,7 @@ test_that("simulate infections fails as expected", {
 })
 
 test_that("simulate_infections works to simulate a passed in estimate_infections object with an adjusted Rt in data frame", {
-  R <- c(rep(1.4, 40), rep(0.5, 17))
+  R <- c(rep(1.4, 32), rep(0.5, 17))
   R_dt <- data.frame(date = summary(out, type = "parameters", param = "R")$date, value = R)
   sims_dt <- simulate_infections(out, R_dt)
   expect_equal(names(sims_dt), c("samples", "summarised", "observations"))

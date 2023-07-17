@@ -10,7 +10,7 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 reported_cases <- example_confirmed[1:60]
 
 # define example truncation distribution (note not integer adjusted)
-trunc_dist <- dist_spec(
+trunc_dist <- list(
   mean = convert_to_logmean(3, 2),
   mean_sd = 0.1,
   sd = convert_to_logsd(3, 2),
@@ -24,8 +24,8 @@ construct_truncation <- function(index, cases, dist) {
   cmf <- cumsum(
     dlnorm(
       1:(dist$max + 1),
-      rnorm(1, dist$mean_mean, dist$mean_sd),
-      rnorm(1, dist$sd_mean, dist$sd_sd)
+      rnorm(1, dist$mean, dist$mean_sd),
+      rnorm(1, dist$sd, dist$sd_sd)
     )
   )
   cmf <- cmf / cmf[dist$max + 1]

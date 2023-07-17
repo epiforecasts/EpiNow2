@@ -23,7 +23,6 @@ cases[
 # with a secondary case
 inc <- estimate_secondary(cases[1:60],
   obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
-  control = list(adapt_delta = 0.98),
   verbose = FALSE
 )
 
@@ -55,7 +54,7 @@ prev <- estimate_secondary(cases[1:100],
     week_effect = FALSE,
     scale = list(mean = 0.4, sd = 0.1)
   ),
-  verbose = TRUE
+  verbose = FALSE
 )
 
 # extract posterior parameters of interest

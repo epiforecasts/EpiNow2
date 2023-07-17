@@ -2,24 +2,22 @@
 
 This release is in development. For a stable release install 1.3.5 from CRAN.
 
-## Breaking changes
-
-- The external distribution interface has been updated to use the `dist_spec()` function. This comes with a range of benefits, including optimising model fitting when static delays are used (by convolving when first defined vs in stan), easy printing (using `print()`), and easy plotting (using `plot()`). It also makes it possible to use all supported distributions everywhere (i.e, as a generation time or reporting delay). However, this update will break most users code as the interface has changed. See the documentation for `dist_spec()` for more details. By @sbfnk in #363 and reviewed by @seabbs.
-
 ## Package
 
-* Model description has been expanded to include more detail. By @sbfnk in #373 and reviewed by @seabbs.
-* Moved to a GitHub Action to only lint changed files. By @seabbs in #378.
-* Linted the package with a wider range of default linters. By @seabbs in #378.
-* Added a GitHub Action to build the README when it is altered. By @seabbs.
-* Added handling of edge case where we sample from the negative binomial with mean close or equal to 0. By @sbfnk in #366 and reviewed by @seabbs.
-* Replaced use of nested `ifelse()` and `data.table::fifelse()` in the code base with `data.table::fcase()`. By @jamesmbaazam in #383 and reviewed by @seabbs.
-* Reviewed the example in `calc_backcalc_data()` to call `calc_backcalc_data()` instead of `create_gp_data()`. By @jamesmbaazam in #388 and reviewed by @seabbs.
+* Model description has been expanded to include more detail.
+* Moved to a GitHub Action to only lint changed files.
+* Linted the package with a wider range of default linters.
+* Added a GitHub Action to build the README when it is altered.
+* Added handling of edge case where we sample from the negative binomial with
+  mean close or equal to 0. By @sbfnk in #366.
+* Replaced use of nested `ifelse()` and `data.table::fifelse()` in the
+  code base with `data.table::fcase()`. By @jamesmbaazam in #383 and reviewed by @seabbs.
+* Reviewed the example in `calc_backcalc_data()` to call `calc_backcalc_data()`
+  instead of `create_gp_data()`. By @jamesmbaazam in #388 and reviewed by @seabbs.
 * Improved compilation times by reducing the number of distinct stan models and deprecated `tune_inv_gamma()`. By @sbfnk in #394 and reviewed by @seabbs.
 * Changed touchstone settings so that benchmarks are only performed if the stan model is changed. By @sbfnk in #400 and reviewed by @seabbs.
 * [pak](https://pak.r-lib.org/) is now suggested for installing the developmental version of the package. By @jamesmbaazam in #407 and reviewed by @seabbs. This has been successfully tested on MacOS Ventura, Ubuntu 20.04, and Windows 10. Users are advised to use `remotes::install_github("epiforecasts/EpiNow2")` if `pak` fails and if both fail, raise an issue.
 * `dist_fit()`'s `samples` argument now takes a default value of 1000 instead of NULL. If a supplied `samples` is less than 1000, it is changed to 1000 and a warning is thrown to indicate the change. By @jamesmbazam in #389 and reviewed by @seabbs.
-* The internal distribution interface has been streamlined to reduce code duplication. By @sbfnk in #363 and reviewed by @seabbs.
 
 # EpiNow2 1.3.5
 

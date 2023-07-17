@@ -39,7 +39,7 @@
 #' incubation_period <- get_incubation_period(
 #'  disease = "SARS-CoV-2", source = "lauer"
 #' )
-#' reporting_delay <- dist_spec(
+#' reporting_delay <- list(
 #'   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
 #'   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10
 #' )
@@ -51,7 +51,7 @@
 #'
 #' reported_cases <- report_cases(
 #'   case_estimates = cases,
-#'   delays = delay_opts(incubation_period + reporting_delay),
+#'   delays = delay_opts(incubation_period, reporting_delay),
 #'   type = "sample"
 #' )
 #' print(reported_cases)
@@ -66,13 +66,13 @@ report_cases <- function(case_estimates,
 
   # define delay distributions
   delay_defs <- purrr::map(
-    seq_along(delays$mean_mean),
+    seq_along(delays$delay_mean_mean),
     ~ EpiNow2::lognorm_dist_def(
-      mean = delays$mean_mean[.],
-      mean_sd = delays$mean_sd[.],
-      sd = delays$mean_mean[.],
-      sd_sd = delays$mean_sd[.],
-      max_value = delays$max[.],
+      mean = delays$delay_mean_mean[.],
+      mean_sd = delays$delay_mean_sd[.],
+      sd = delays$delay_sd_mean[.],
+      sd_sd = delays$delay_sd_sd[.],
+      max_value = delays$delay_max[.],
       samples = samples
     )
   )
@@ -283,8 +283,8 @@ report_summary <- function(summarised_estimates,
 #' # run model
 #' out <- estimate_infections(cases,
 #'   stan = stan_opts(samples = 500),
-#'   generation_time = generation_time_opts(generation_time),
-#'   delays = delay_opts(incubation_period + reporting_delay),
+#'   generation_time = generation_time,
+#'   delays = delay_opts(incubation_period, reporting_delay),
 #'   rt = NULL
 #' )
 #'

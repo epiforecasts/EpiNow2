@@ -1,7 +1,6 @@
 functions {
 #include functions/convolve.stan
 #include functions/pmfs.stan
-#include functions/delays.stan
 #include functions/observation_model.stan
 #include functions/secondary.stan
 }
@@ -23,21 +22,17 @@ data {
 }
 
 transformed data {
-  int delay_type_max[delay_types] = get_delay_type_max(
-    delay_types, delay_types_p, delay_types_id,
-    delay_types_groups, delay_max, delay_np_pmf_groups
-  );
+  int delay_max_total = sum(delay_max) - num_elements(delay_max) + 1;
 }
 
 generated quantities {
   int sim_secondary[n, all_dates ? t : h];
   for (i in 1:n) {
     vector[t] secondary;
-    vector[delay_type_max[delay_id]] delay_rev_pmf = get_delay_rev_pmf(
-        delay_id, delay_type_max[delay_id], delay_types_p, delay_types_id,
-        delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_mean[i], delay_sd[i], delay_dist,
-        0, 1, 0
+    vector[delay_max_total] delay_rev_pmf;
+    delay_rev_pmf = combine_pmfs(
+      to_vector([ 1 ]), delay_mean[i], delay_sd[i], delay_max, delay_dist, 
+      delay_max_total, 0, 1
     );
 
     // calculate secondary reports from primary

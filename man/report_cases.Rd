@@ -60,7 +60,7 @@ generation_time <- get_generation_time(
 incubation_period <- get_incubation_period(
  disease = "SARS-CoV-2", source = "lauer"
 )
-reporting_delay <- dist_spec(
+reporting_delay <- list(
   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10
 )
@@ -72,7 +72,7 @@ cases <- cases[, confirm := NULL][, sample := 1]
 
 reported_cases <- report_cases(
   case_estimates = cases,
-  delays = delay_opts(incubation_period + reporting_delay),
+  delays = delay_opts(incubation_period, reporting_delay),
   type = "sample"
 )
 print(reported_cases)

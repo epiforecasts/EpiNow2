@@ -4,12 +4,11 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(dist = dist_spec())
+trunc_opts(dist = list())
 }
 \arguments{
-\item{dist}{A delay distribution or series of delay distributions reflecting
-the truncation generated using \code{\link[=dist_spec]{dist_spec()}} or \code{\link[=estimate_truncation]{estimate_truncation()}}.
-Default is an empty call to \code{\link[=dist_spec]{dist_spec()}}, i.e. no truncation}
+\item{dist}{Parameters of a distribution as supported by
+\code{\link[=dist_spec]{dist_spec()}}.}
 }
 \value{
 A list summarising the input truncation distribution.
@@ -25,7 +24,7 @@ estimate these distributions.
 trunc_opts()
 
 # truncation dist
-trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
+trunc_opts(dist = list(mean = 3, sd = 2))
 }
 \seealso{
 convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec

@@ -21,7 +21,7 @@ transformed parameters{
   matrix[trunc_max, obs_sets - 1] trunc_obs;
   real sqrt_phi = 1 / sqrt(phi);
   vector[trunc_max] rev_cmf = reverse_mf(cumulative_sum(
-    discretised_pmf(logmean, logsd, trunc_max, trunc_dist)
+    discretised_pmf(logmean, logsd, trunc_max, trunc_dist, 0)
   ));
   {
   vector[t] last_obs;
