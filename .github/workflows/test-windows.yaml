@@ -35,6 +35,6 @@ jobs:
 
       - name: test
         run: |
-          devtools::load_all(compile = FALSE)
-          devtools::test()
+          library("EpiNow2")
+          testthat::test_directory("tests/testthat")
         shell: Rscript {0}
