@@ -36,5 +36,5 @@ jobs:
       - name: test
         run: |
           library("EpiNow2")
-          testthat::test_directory("tests/testthat")
+          testthat::test_dir("tests/testthat")
         shell: Rscript {0}
