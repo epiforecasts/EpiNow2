@@ -21,7 +21,7 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * `dist_fit()`'s `samples` argument now takes a default value of 1000 instead of NULL. If a supplied `samples` is less than 1000, it is changed to 1000 and a warning is thrown to indicate the change. By @jamesmbazam in #389 and reviewed by @seabbs.
 * The internal distribution interface has been streamlined to reduce code duplication. By @sbfnk in #363 and reviewed by @seabbs.
 * A small bug has been fixed where the seeding time was too long. When a single delay is used this shortens the seeding time by one day and when more delays are used it shortens the seeding time by n days where n is the number of delays used e.g. for two parametric delays it's two days. By @sbfnk in #413 and reviewed by @seabbs.
-* Some tuning was done to speed up the renewal model. By @sbfnk in #416 and reviewed by @seabbs.
+* Some tuning was done to speed up the renewal model. By @sbfnk in #416.
 
 # EpiNow2 1.3.5
 
