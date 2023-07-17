@@ -17,7 +17,16 @@ name: test-windows
 
 jobs:
   test-windows:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.config.os }}
+
+    name: ${{ matrix.config.os }}
+
+    strategy:
+      matrix:
+        config:
+          - {os: macOS-latest}
+          - {os: windows-latest}
+          - {os: ubuntu-latest}
 
     steps:
       - uses: actions/checkout@v2
