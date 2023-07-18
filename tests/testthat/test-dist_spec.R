@@ -118,7 +118,7 @@ test_that("Testing `+.dist_spec` function with tolerance parameter", {
   )
   
   # Compute combined distribution with default tolerance
-  combined_default <- `+.dist_spec`(lognormal, gamma)
+  combined_default <- EpiNow2:::`+.dist_spec`(lognormal, gamma)
   
   # Compute combined distribution with larger tolerance
   combined_larger_tolerance <- EpiNow2:::dist_spec_plus(
@@ -148,21 +148,21 @@ test_that("mean.dist_spec returns correct output for fixed lognormal distributio
     mean = convert_to_logmean(3, 1), sd = convert_to_logsd(3, 1),
     max = 20, distribution = "lognormal"
   )
-  result <- mean.dist_spec(lognormal)
+  result <- EpiNow2:::mean.dist_spec(lognormal)
   expect_equal(result, 2.49, tolerance = 0.01) # here we can see the bias from 
   # using this kind of discretisation approach
 })
 
 test_that("mean.dist_spec returns correct output for uncertain gamma distribution", {
   gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20, distribution = "gamma")
-  result <- mean.dist_spec(gamma)
+  result <- EpiNow2:::mean.dist_spec(gamma)
   expect_equal(result, 3)
 })
 
 test_that("mean.dist_spec returns correct output for sum of two distributions", {
   lognormal <- dist_spec(mean = 1, sd = 1, max = 20, distribution = "lognormal")
   gamma <- dist_spec(mean = 3, sd = 2, max = 20, distribution = "gamma")
-  result <- mean.dist_spec(lognormal + gamma)
+  result <- EpiNow2:::mean.dist_spec(lognormal + gamma)
   expect_equal(result, c(5.84), tolerance = 0.001)
 })
 

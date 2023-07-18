@@ -2,7 +2,7 @@ test_stan_delays <- function(generation_time = generation_time_opts(),
                              delays = delay_opts(),
                              truncation = trunc_opts(),
                              params = c()) {
-  data <- create_stan_delays(
+  data <- EpiNow2:::create_stan_delays(
     generation_time = generation_time,
     delays = delays,
     truncation = truncation,
