@@ -136,7 +136,7 @@ LinkingTo:
     RcppEigen (>= 0.3.3.3.0),
     RcppParallel (>= 5.0.1),
     rstan (>= 2.21.1),
-    StanHeaders (>= 2.21.0-5)
+    StanHeaders (<= 2.21.0-7)
 Biarch: true
 Config/testthat/edition: 3
 Encoding: UTF-8
