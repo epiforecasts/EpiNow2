@@ -65,8 +65,9 @@ jobs:
 
       - name: install old StanHeaders
         run: |
+          install.packages("remotes")
           url <- "https://cran.r-project.org/src/contrib/Archive/StanHeaders/StanHeaders_2.21.0-7.tar.gz"
-          install.packages(url, repos = NULL, type = "source")
+          remotes::install_url(url, dependencies = TRUE)
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
