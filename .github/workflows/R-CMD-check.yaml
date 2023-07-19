@@ -67,7 +67,7 @@ jobs:
         run: |
           url <- "https://cran.r-project.org/src/contrib/Archive/StanHeaders/StanHeaders_2.21.0-7.tar.gz"
           install.packages(url, repos = NULL, type = "source")
-          shell: Rscript {0}
+        shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
