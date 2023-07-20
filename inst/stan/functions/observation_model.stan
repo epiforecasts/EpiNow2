@@ -54,28 +54,22 @@ void truncation_lp(real[] truncation_mean, real[] truncation_sd,
 void report_lp(int[] cases, vector reports,
                real[] rep_phi, real phi_mean, real phi_sd,
                int model_type, real weight) {
-  real sqrt_phi = 1e5;
   if (model_type) {
-    // the reciprocal overdispersion parameter (phi)
+    real sqrt_phi; // the reciprocal overdispersion parameter (phi)
     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
     sqrt_phi = 1 / sqrt(rep_phi[model_type]);
-    // defer to poisson if phi is large, to avoid overflow or
-    // if poisson specified
-  }
-  if (sqrt_phi > 1e4) {
     if (weight == 1) {
-      cases ~ poisson(reports);
-    }else{
-      target += poisson_lpmf(cases | reports) * weight;
+      cases ~ neg_binomial_2(reports, sqrt_phi);
+    } else {
+      target += neg_binomial_2_lpmf(cases | reports, sqrt_phi) * weight;
     }
   } else {
     if (weight == 1) {
-      cases ~ neg_binomial_2(reports, sqrt_phi);
-    }else{
-      target += neg_binomial_2_lpmf(cases | reports, sqrt_phi);
+      cases ~ poisson(reports);
+    } else {
+      target += poisson_lpmf(cases | reports) * weight;
     }
   }
-  
 }
 // update log likelihood (as above but not vectorised and returning log likelihood)
 vector report_log_lik(int[] cases, vector reports,
@@ -85,11 +79,11 @@ vector report_log_lik(int[] cases, vector reports,
   real sqrt_phi = 1e5;
   if (model_type) {
   // the reciprocal overdispersion parameter (phi)
-  sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+    sqrt_phi = 1 / sqrt(rep_phi[model_type]);
   }
 
   // defer to poisson if phi is large, to avoid overflow
-  if (sqrt_phi > 1e4) {
+  if (model_type == 0) {
     for (i in 1:t) {
       log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;
     }
