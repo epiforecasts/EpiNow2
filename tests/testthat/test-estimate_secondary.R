@@ -88,12 +88,12 @@ test_that("estimate_secondary can recover simulated parameters", {
   )
   # These tests currently fail indicating the model is not recovering the
   # simulated parameters.
-  # expect_equal(
-  #   prev_posterior[, mean], c(1.6, 0.8, 0.3), tolerance = 0.1
-  # )
-  # expect_equal(
-  #   prev_posterior[, median], c(1.6, 0.8, 0.3), tolerance = 0.1
-  # )
+  expect_equal(
+    prev_posterior[, mean], c(1.6, 0.8, 0.3), tolerance = 0.1
+  )
+  expect_equal(
+    prev_posterior[, median], c(1.6, 0.8, 0.3), tolerance = 0.1
+  )
 })
 
 test_that("forecast_secondary can return values from simulated data and plot
