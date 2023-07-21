@@ -543,7 +543,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
       )
     }
 
-    if (is.null(fit) || length(names(fit)) == 0) {
+    if (is.null(fit) || !is.array(fit) || length(names(fit)) == 0) {
       return(NULL)
     } else {
       return(fit)
