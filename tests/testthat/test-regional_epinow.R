@@ -51,8 +51,8 @@ test_that("regional_epinow produces expected output when run with default settin
 })
 
 test_that("regional_epinow runs without error when given a very short timeout", {
-  expect_error(
-    regional_epinow(
+  output <- capture.output(suppressMessages(
+    out <- regional_epinow(
       reported_cases = cases,
       generation_time = generation_time_opts(generation_time),
       delays = delay_opts(reporting_delay),
@@ -62,11 +62,11 @@ test_that("regional_epinow runs without error when given a very short timeout", 
         control = list(adapt_delta = 0.8),
         max_execution_time = 1
       ), logs = NULL, verbose = FALSE
-    ),
-    NA
-  )
-  expect_error(
-    regional_epinow(
+    )
+  ))
+  expect_true(all(vapply(out$regional, function(x) !is.null(x$error), TRUE)))
+  output <- capture.output(suppressMessages(
+    out <- regional_epinow(
       reported_cases = cases,
       generation_time = generation_time_opts(generation_time),
       delays = delay_opts(reporting_delay),
@@ -76,9 +76,9 @@ test_that("regional_epinow runs without error when given a very short timeout", 
         control = list(adapt_delta = 0.8),
         max_execution_time = 1, future = TRUE
       ), logs = NULL, verbose = FALSE
-    ),
-    NA
-  )
+    )
+  ))
+  expect_true(all(vapply(out$regional, function(x) !is.null(x$error), TRUE)))
 })
 
 
