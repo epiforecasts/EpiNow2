@@ -54,7 +54,7 @@ prev <- estimate_secondary(cases[1:100],
     week_effect = FALSE,
     scale = list(mean = 0.4, sd = 0.1)
   ),
-  verbose = TRUE
+  verbose = FALSE
 )
 
 # extract posterior parameters of interest
