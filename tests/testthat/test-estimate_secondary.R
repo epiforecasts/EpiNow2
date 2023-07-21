@@ -85,8 +85,6 @@ test_that("estimate_secondary can recover simulated parameters", {
     inc_posterior[, median], c(1.8, 0.5, 0.4),
     tolerance = 0.1
   )
-  # These tests currently fail indicating the model is not recovering the
-  # simulated parameters.
   expect_equal(
     prev_posterior[, mean], c(1.6, 0.8, 0.3), tolerance = 0.1
   )
