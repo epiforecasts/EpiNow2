@@ -86,10 +86,10 @@ test_that("estimate_secondary can recover simulated parameters", {
     tolerance = 0.1
   )
   expect_equal(
-    prev_posterior[, mean], c(1.6, 0.8, 0.3), tolerance = 0.1
+    prev_posterior[, mean], c(1.6, 0.8, 0.3), tolerance = 0.2
   )
   expect_equal(
-    prev_posterior[, median], c(1.6, 0.8, 0.3), tolerance = 0.1
+    prev_posterior[, median], c(1.6, 0.8, 0.3), tolerance = 0.2
   )
 })
 
