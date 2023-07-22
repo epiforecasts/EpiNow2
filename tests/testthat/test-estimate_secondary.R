@@ -23,7 +23,6 @@ cases[
 # with a secondary case
 inc <- estimate_secondary(cases[1:60],
   obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
-  control = list(adapt_delta = 0.98),
   verbose = FALSE
 )
 
@@ -86,14 +85,12 @@ test_that("estimate_secondary can recover simulated parameters", {
     inc_posterior[, median], c(1.8, 0.5, 0.4),
     tolerance = 0.1
   )
-  # These tests currently fail indicating the model is not recovering the
-  # simulated parameters.
-  # expect_equal(
-  #   prev_posterior[, mean], c(1.6, 0.8, 0.3), tolerance = 0.1
-  # )
-  # expect_equal(
-  #   prev_posterior[, median], c(1.6, 0.8, 0.3), tolerance = 0.1
-  # )
+  expect_equal(
+    prev_posterior[, mean], c(1.6, 0.8, 0.3), tolerance = 0.2
+  )
+  expect_equal(
+    prev_posterior[, median], c(1.6, 0.8, 0.3), tolerance = 0.2
+  )
 })
 
 test_that("forecast_secondary can return values from simulated data and plot
