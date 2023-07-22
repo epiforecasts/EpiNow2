@@ -16,7 +16,7 @@ can be supplied which override the defaults."><meta property="og:image" content=
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9001</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -610,50 +610,40 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> void report_lp(int[] cases, vector reports,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                real[] rep_phi, real phi_mean, real phi_sd,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                int model_type, real weight) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real sqrt_phi = 1e5;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // the reciprocal overdispersion parameter (phi)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real sqrt_phi; // the reciprocal overdispersion parameter (phi)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // defer to poisson if phi is large, to avoid overflow or</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // if poisson specified</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (sqrt_phi &gt; 1e4) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ poisson(reports);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }else{</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       target += poisson_lpmf(cases | reports) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ neg_binomial_2(reports, sqrt_phi);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(cases | reports, sqrt_phi) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ neg_binomial_2(reports, sqrt_phi);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }else{</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(cases | reports, sqrt_phi);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ poisson(reports);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       target += poisson_lpmf(cases | reports) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // update log likelihood (as above but not vectorised and returning log likelihood)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> vector report_log_lik(int[] cases, vector reports,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                       real[] rep_phi, int model_type, real weight) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(reports);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] log_lik;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real sqrt_phi = 1e5;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // the reciprocal overdispersion parameter (phi)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // defer to poisson if phi is large, to avoid overflow</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (sqrt_phi &gt; 1e4) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type == 0) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:t) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:t) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], sqrt_phi) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(log_lik);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // sample reported cases from the observation model</span>
@@ -1508,50 +1498,40 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> void report_lp(int[] cases, vector reports,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                real[] rep_phi, real phi_mean, real phi_sd,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                int model_type, real weight) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real sqrt_phi = 1e5;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // the reciprocal overdispersion parameter (phi)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real sqrt_phi; // the reciprocal overdispersion parameter (phi)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // defer to poisson if phi is large, to avoid overflow or</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // if poisson specified</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (sqrt_phi &gt; 1e4) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ poisson(reports);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }else{</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       target += poisson_lpmf(cases | reports) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ neg_binomial_2(reports, sqrt_phi);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(cases | reports, sqrt_phi) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ neg_binomial_2(reports, sqrt_phi);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }else{</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(cases | reports, sqrt_phi);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ poisson(reports);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       target += poisson_lpmf(cases | reports) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // update log likelihood (as above but not vectorised and returning log likelihood)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> vector report_log_lik(int[] cases, vector reports,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                       real[] rep_phi, int model_type, real weight) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(reports);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] log_lik;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real sqrt_phi = 1e5;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // the reciprocal overdispersion parameter (phi)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // defer to poisson if phi is large, to avoid overflow</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (sqrt_phi &gt; 1e4) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type == 0) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:t) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:t) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], sqrt_phi) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(log_lik);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // sample reported cases from the observation model</span>
