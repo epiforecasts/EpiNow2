@@ -326,11 +326,10 @@ estimate_infections <- function(reported_cases,
   if (!is.null(args$init_fit)) {
     if (!inherits(args$init_fit, "stanfit") &&
           args$init_fit %in% "cumulative") {
-        args$init_fit <- init_cumulative_fit(args,
-          warmup = 50, samples = 50,
-          id = id, verbose = FALSE
-        )
-      }
+      args$init_fit <- init_cumulative_fit(args,
+        warmup = 50, samples = 50,
+        id = id, verbose = FALSE
+      )
     }
     args$init <- extract_inits(args$init_fit,
       current_inits = args$init,
