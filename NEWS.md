@@ -23,6 +23,7 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * A small bug has been fixed where the seeding time was too long. When a single delay is used this shortens the seeding time by one day and when more delays are used it shortens the seeding time by n days where n is the number of delays used e.g. for two parametric delays it's two days. By @sbfnk in #413 and reviewed by @seabbs.
 * Some tuning was done to speed up the renewal model. By @sbfnk in #416 and reviewed by @seabbs.
 * An approximation of the negative binomial by the Poisson at low levels of overdispersion was disabled as it led to parameter identification issues. By @sbfnk in #432 and reviewed by @seabbs.
+* Reduced verbosity of tests. By @sbfnk in #433.
 
 # EpiNow2 1.3.5
 
