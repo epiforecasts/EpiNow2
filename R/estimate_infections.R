@@ -324,8 +324,8 @@ estimate_infections <- function(reported_cases,
 
   # Initialise fitting by using a previous fit or fitting to cumulative cases
   if (!is.null(args$init_fit)) {
-    if (!inherits(args$init_fit, "stanfit")) {
-      if (args$init_fit %in% "cumulative") {
+    if (!inherits(args$init_fit, "stanfit") &&
+          args$init_fit %in% "cumulative") {
         args$init_fit <- init_cumulative_fit(args,
           warmup = 50, samples = 50,
           id = id, verbose = FALSE
@@ -659,15 +659,13 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
   }
 
   if (is.null(fit)) {
-    if (is.null(fit)) {
-      futile.logger::flog.error(
-        "%s: Fitting failed - try increasing stan_args$trials or inspecting",
-        " the model input",
-        id,
-        name = "EpiNow2.epinow.estimate_infections.fit"
-      )
-      rlang::abort("Variational Inference failed due to: ", error)
-    }
+    futile.logger::flog.error(
+      "%s: Fitting failed - try increasing stan_args$trials or inspecting",
+      " the model input",
+      id,
+      name = "EpiNow2.epinow.estimate_infections.fit"
+    )
+    rlang::abort("Variational Inference failed due to: ", error)
   }
   return(fit)
 }
