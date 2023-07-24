@@ -34,3 +34,34 @@ test_that("regional_summary works when no plots are requested", {
   )
   expect_true(all(purrr::map_lgl(out, ~ !is.null(.))))
 })
+
+test_that("regional_summary works with a lower and upper bound of 0", {
+  regional_zero_fit <- lapply(fit$regional, function(x) {
+    numeric_estimate <- x$summary[
+        measure == "New confirmed cases by infection date"
+      ]$numeric_estimate[[1]]
+    uppers <- grep("upper_", colnames(numeric_estimate), value = TRUE)
+    lowers <- grep("lower_", colnames(numeric_estimate), value = TRUE)
+    numeric_estimate[, paste(uppers) := 0]
+    numeric_estimate[, paste(lowers) := 0]
+    x$summary[
+        measure == "New confirmed cases by infection date",
+        numeric_estimate := list(..numeric_estimate)
+      ]
+    return(x)
+  })
+  out <- regional_summary(
+    regional_output = regional_zero_fit,
+    reported_cases = cases,
+    plot = TRUE
+  )
+  expect_equal(
+    names(out),
+    c(
+      "latest_date", "results", "summarised_results",
+      "summary_plot", "summarised_measures", "reported_cases",
+      "high_plots", "plots"
+    )
+  )
+  expect_true(all(purrr::map_lgl(out, ~ !is.null(.))))
+})
