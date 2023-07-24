@@ -103,10 +103,8 @@ simulate_infections <- function(estimates,
                                 batch_size = 10,
                                 verbose = interactive()) {
   ## check batch size
-  if (!is.null(batch_size)) {
-    if (batch_size <= 1) {
-      stop("batch_size must be greater than 1")
-    }
+  if (!is.null(batch_size) && batch_size <= 1) {
+    stop("batch_size must be greater than 1")
   }
   ## extract samples from given stanfit object
   draws <- extract(estimates$fit,
@@ -128,10 +126,8 @@ simulate_infections <- function(estimates,
 
   # if R is given, update trajectories in stanfit object
   if (!is.null(R)) {
-    if (inherits(R, "data.frame")) {
-      if (is.null(R$sample)) {
-        R <- R$value
-      }
+    if (inherits(R, "data.frame") && is.null(R$sample)) {
+      R <- R$value
     }
     if (inherits(R, "data.frame")) {
       R <- as.data.table(R)
@@ -266,7 +262,7 @@ simulate_infections <- function(estimates,
   ## join batches
   out <- compact(out)
   out <- transpose(out)
-  out <- map(out, ~ data.table::rbindlist(.))
+  out <- map(out, rbindlist)
 
   ## format output
   format_out <- format_fit(

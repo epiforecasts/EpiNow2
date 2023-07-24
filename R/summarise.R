@@ -658,7 +658,7 @@ calc_CrI <- function(samples, summarise_by = NULL, CrI = 0.9) {
 #' # add 90% credible interval grouped by type
 #' calc_CrIs(samples, summarise_by = "type")
 calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
-  CrIs <- CrIs[order(CrIs)]
+  CrIs <- sort(CrIs)
   with_CrIs <- purrr::map(CrIs, ~ calc_CrI(
     samples = samples,
     summarise_by = summarise_by,
