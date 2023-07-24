@@ -309,7 +309,7 @@ regional_summary <- function(regional_output = NULL,
   uppers <- grepl("upper_", colnames(current_inf), fixed = TRUE) # nolint
   lowers <- grepl("lower_", colnames(current_inf), fixed = TRUE) # nolint
   log_cases <- (max(current_inf[, ..uppers], na.rm = TRUE) /
-    min(current_inf[, ..lowers], na.rm = TRUE)) > 1000
+    (min(current_inf[, ..lowers], na.rm = TRUE) + 1)) > 1000
 
   max_reported_cases <- round(
     max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0
