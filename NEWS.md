@@ -24,7 +24,6 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * Some tuning was done to speed up the renewal model. By @sbfnk in #416 and reviewed by @seabbs.
 * An approximation of the negative binomial by the Poisson at low levels of overdispersion was disabled as it led to parameter identification issues. By @sbfnk in #432 and reviewed by @seabbs.
 * Reduced verbosity of tests. By @sbfnk in #433 and reviewed by @seabbs.
-* Updated code style in response to lintr warnings. By @sbfnk in #437.
 
 # EpiNow2 1.3.5
 
