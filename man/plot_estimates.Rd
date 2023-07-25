@@ -49,7 +49,7 @@ releases it  may be depreciated in favour of increasing the functionality of
 the S3 plot methods.
 }
 \examples{
-\donttest{
+if (interactive()) {
 # define example cases
 cases <- example_confirmed[1:40]
 

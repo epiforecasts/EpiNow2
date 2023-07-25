@@ -28,7 +28,7 @@
 #' @importFrom data.table data.table rbindlist
 #' @importFrom future.apply future_lapply
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # define example cases
 #' cases <- example_confirmed[1:40]
 #'
@@ -262,7 +262,7 @@ report_summary <- function(summarised_estimates,
 #' `summarised_estimates[variable == "growth_rate"]`, respectively.
 #' @export
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # define example cases
 #' cases <- example_confirmed[1:40]
 #'

@@ -47,7 +47,7 @@ Maps from cases by date of infection to date of report via date of
 onset.
 }
 \examples{
-\donttest{
+if (interactive()) {
 # define example cases
 cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
 

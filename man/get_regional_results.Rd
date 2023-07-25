@@ -37,7 +37,7 @@ Summarises results across regions either from input or from disk. See the
 examples for details.
 }
 \examples{
-\donttest{
+if (interactive()) {
 # construct example distributions
 generation_time <- get_generation_time(
  disease = "SARS-CoV-2", source = "ganyani"

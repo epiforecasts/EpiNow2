@@ -79,7 +79,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' @importFrom data.table setDT fifelse copy as.data.table
 #' @importFrom purrr map
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # define example cases
 #' cases <- example_confirmed[1:40]
 #'

@@ -165,7 +165,7 @@ summarise_results <- function(regions,
 #' @importFrom data.table setDT fcase
 #' @importFrom futile.logger flog.info
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # example delays
 #' generation_time <- get_generation_time(
 #'  disease = "SARS-CoV-2", source = "ganyani"
@@ -526,7 +526,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @importFrom data.table data.table fwrite
 #' @importFrom purrr map safely
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # example delays
 #' generation_time <- get_generation_time(
 #'  disease = "SARS-CoV-2", source = "ganyani"

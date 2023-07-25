@@ -60,7 +60,7 @@
 #' @importFrom rlang cnd_muffle
 #' @importFrom progressr with_progress progressor
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))

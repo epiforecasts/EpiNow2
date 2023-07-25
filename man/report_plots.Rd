@@ -31,7 +31,7 @@ Returns key summary plots for estimates. May be depreciated in later
 releases as current S3 methods are enhanced.
 }
 \examples{
-\donttest{
+if (interactive()) {
 # define example cases
 cases <- example_confirmed[1:40]
 

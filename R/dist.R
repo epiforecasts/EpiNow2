@@ -201,7 +201,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @author Sam Abbott
 #' @export
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # integer adjusted exponential model
 #' dist_fit(rexp(1:100, 2),
 #'   samples = 1000, dist = "exp",
@@ -497,7 +497,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' @importFrom data.table data.table rbindlist
 #' @export
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # lognormal
 #' delays <- rlnorm(500, log(5), 1)
 #' out <- bootstrapped_dist_fit(delays,
@@ -599,7 +599,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #' @export
 #' @seealso bootstrapped_dist_fit
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' delays <- rlnorm(500, log(5), 1)
 #' estimate_delay(delays, samples = 1000, bootstraps = 10)
 #' }
@@ -646,7 +646,7 @@ estimate_delay <- function(delays, ...) {
 #' @importFrom data.table data.table setorder
 #' @importFrom lubridate days
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' cases <- example_confirmed
 #' cases <- cases[, cases := as.integer(confirm)]
 #' print(cases)

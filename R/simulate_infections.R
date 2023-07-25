@@ -38,7 +38,7 @@
 #' results from the specified scenario rather than fitting.
 #' @export
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))

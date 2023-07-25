@@ -102,7 +102,7 @@ for an example of using \code{estimate_infections} within the \code{epinow} wrap
 estimate Rt for Covid-19 in a country from the ECDC data source.
 }
 \examples{
-\donttest{
+if (interactive()) {
 # set number of cores to use
 old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))

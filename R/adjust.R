@@ -27,7 +27,7 @@
 #' @importFrom lubridate wday
 #' @author Sam Abbott
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # define example cases
 #' cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
 #'

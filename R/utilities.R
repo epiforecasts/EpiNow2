@@ -392,7 +392,7 @@ add_day_of_week <- function(dates, week_effect = 7) {
 #' @keywords internal
 #' @return an environment in the parent frame named "dt_settings"
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' data.table::setDTthreads(2)
 #' test_function <- function() {
 #'   set_dt_single_thread()

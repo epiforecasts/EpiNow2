@@ -36,7 +36,7 @@
 #' @importFrom rlang cnd_muffle
 #' @author Sam Abbott
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))

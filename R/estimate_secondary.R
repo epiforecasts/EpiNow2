@@ -59,7 +59,7 @@
 #' @importFrom lubridate wday
 #' @importFrom data.table as.data.table merge.data.table
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))

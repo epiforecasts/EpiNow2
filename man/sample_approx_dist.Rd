@@ -47,7 +47,7 @@ Convolves cases by a PMF function. This function will soon be removed or
 replaced with a more robust \code{stan} implementation.
 }
 \examples{
-\donttest{
+if (interactive()) {
 cases <- example_confirmed
 cases <- cases[, cases := as.integer(confirm)]
 print(cases)

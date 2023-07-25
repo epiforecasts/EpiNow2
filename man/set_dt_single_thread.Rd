@@ -16,7 +16,7 @@ This is primarily used as an internal function inside of other functions
 and will generally not be used on its own.
 }
 \examples{
-\donttest{
+if (interactive()) {
 data.table::setDTthreads(2)
 test_function <- function() {
   set_dt_single_thread()

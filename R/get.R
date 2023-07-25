@@ -70,7 +70,7 @@ get_raw_result <- function(file, region, date,
 #' @importFrom purrr map safely
 #' @importFrom data.table rbindlist
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # construct example distributions
 #' generation_time <- get_generation_time(
 #'  disease = "SARS-CoV-2", source = "ganyani"

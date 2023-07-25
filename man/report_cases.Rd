@@ -49,7 +49,7 @@ Likely to be removed/replaced in later releases by functionality drawing on
 the \code{stan} implementation.
 }
 \examples{
-\donttest{
+if (interactive()) {
 # define example cases
 cases <- example_confirmed[1:40]
 

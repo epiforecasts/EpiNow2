@@ -59,7 +59,7 @@
 #' @importFrom purrr transpose
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @examples
-#' \donttest{
+#' if (interactive()) {
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))

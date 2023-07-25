@@ -62,7 +62,7 @@ Used to produce summary output either internally in \code{regional_epinow} or
 externally.
 }
 \examples{
-\donttest{
+if (interactive()) {
 # example delays
 generation_time <- get_generation_time(
  disease = "SARS-CoV-2", source = "ganyani"

@@ -33,7 +33,7 @@ A data.table of region run times
 Used internally by \code{regional_epinow} to summarise region run times.
 }
 \examples{
-\donttest{
+if (interactive()) {
 # example delays
 generation_time <- get_generation_time(
  disease = "SARS-CoV-2", source = "ganyani"
