@@ -178,7 +178,6 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
       phi = abs(rnorm(1, 0, 1)),
       sigma = abs(rnorm(1, 0, 1))
     )
-    cat(unlist(data), "\n")
     return(data)
   }
 
