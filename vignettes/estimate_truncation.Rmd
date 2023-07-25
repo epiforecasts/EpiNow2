@@ -16,3 +16,33 @@ knitr::opts_chunk$set(
 )
 ```
 **This is a work in progress. Please consider submitting a PR to improve it.** 
+
+This model deals with the problem of _nowcasting_, or adjusting for right-truncation in reported count data. This occurs when the quantity being observed, for example cases, hospitalisations or deaths, is reported with a delay, resulting in an underestimation of recent counts. The `estimate_truncation()` model attempts to infer parameters of the underlying delay distributions from multiple snapshots of past data. It is designed as a simple and imperfect model. For a more principled approach to nowcasting please consider using the [epinowcast](https://package.epinowcast.org) package.
+
+Given snapshots $C^{i}_{t}$ reflecting reported counts for time $t$ where $i=1\ldots S$ is in order of recency (earliest snapshots first) and $S$ is the number of past snapshots used for estimation, we try to infer the parameters of a discrete truncation distribution $\zeta(\tau | \mu_{\zeta}, \sigma_{\zeta})$ with corresponding probability mass function $\Zeta(\tau | \mu_{\zeta}$.
+
+The model assumes that final counts $D_{t}$ are related to observed snapshots via the truncation distribution such that
+
+\begin{equation}
+C^{i < S)_{t}_\sim \mathcal{NegBinom}\left(\Zeta (T_i - t | \mu_{\Zeta}, \sigma_{\Zeta}) D(t) + \sigma, \varphi\right)
+\end{equation}
+
+where $T_i$ is the date of the final observation in snapshot $i$, $\Zeta(\tau)$
+is defined to be zero for negative values of $\tau$ and $\sigma$ is an
+additional error term.
+
+The final counts $D_{t}$ are estimated from the most recent snapshot as
+
+\begin{equation}
+D_t = \frac{C^{S}}{\Zeta (T_\mathrm{S} - t | \mu_{\Zeta}, \sigma_{\Zeta})}
+\end{equation}
+
+Relevant priors are:
+
+\begin{align}
+\mu_\zeta &\sim \mathrm{Normal}(0, 1)\\
+\sigma_\zeta &\sim \mathrm{HalfNormal}(0, 1)\\
+\varphi &\sim \mathrm{HalfNormal}(0, 1)\\
+\sigma &\sim \mathrm{HalfNormal}(0, 1)
+\end{align}
+
