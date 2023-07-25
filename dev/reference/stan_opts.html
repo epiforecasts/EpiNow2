@@ -16,7 +16,7 @@ settings can be supplied which override the defaults."><meta property="og:image"
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9002</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9003</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -840,7 +840,7 @@ returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; bp_sd[bp_n &gt; 0 ? 1 : 0]; // standard deviation of breakpoint effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real bp_effects[bp_n];                   // Rt breakpoint effects</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observation model</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_mean[delay_n_p];         // mean of delays</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_mean[delay_n_p];         // mean of delays</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_sd[delay_n_p];  // sd of delays</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   simplex[week_effect] day_of_week_simplex;// day of week reporting effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0, upper = 1&gt; frac_obs[obs_scale];     // fraction of cases that are ultimately observed</span>
@@ -1731,7 +1731,7 @@ returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; bp_sd[bp_n &gt; 0 ? 1 : 0]; // standard deviation of breakpoint effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real bp_effects[bp_n];                   // Rt breakpoint effects</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observation model</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_mean[delay_n_p];         // mean of delays</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real delay_mean[delay_n_p];         // mean of delays</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0&gt; delay_sd[delay_n_p];  // sd of delays</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   simplex[week_effect] day_of_week_simplex;// day of week reporting effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real&lt;lower = 0, upper = 1&gt; frac_obs[obs_scale];     // fraction of cases that are ultimately observed</span>
