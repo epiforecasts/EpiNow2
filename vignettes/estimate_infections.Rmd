@@ -181,7 +181,7 @@ The scaling factor $\alpha$ represents the proportion of cases that are ultimate
 
 # Observation model
 
-The modelled cases $D_{t}$ are related to observations $C_{t}$.
+The modelled counts $D_{t}$ are related to observations $C_{t}$.
 By default this is assumed to follow a negative binomial distribution with overdispersion $\varphi$ (alternatively it can be modelled as a Poisson, in which case $\varphi$ is not used):
 
 \begin{align}
@@ -196,5 +196,15 @@ This model uses the following priors for the observation model,
     \frac{\omega}{n_\omega} &\sim \mathcal{Dirichlet}(1, \ldots, 1) \\
     \frac{1}{\sqrt{\varphi}} &\sim \mathcal{HalfNormal}(0, 1)
 \end{align}
+
+## Truncation
+
+The model supports counts that are right-truncated, i.e. reported with a delay leading to recent counts being subject to future upwards revision. Denoting the final truncated counts with $D^{\ast}_{t}$ they are obtained form the final modelled cases $D_{t}$ by applying a given discrete truncation distribution $\zeta(\tau | \mu_{\zeta}, \sigma_{\zeta})$ with cumulative mass function $\Zeta(\tau | \mu_{\zeta})$:
+
+\begin{equation}
+  D^ast_t = \Zeta (T - t | \mu_{\Zeta}, \sigma_{\Zeta}) D_{t}
+\end{equation}
+
+If truncation is applied, the modelled cases $D_{t}$ are replaced by the truncated counts before confronting them with observations $C_{t}$ as described above.
 
 # References
