@@ -299,38 +299,36 @@ secondary_opts <- function(type = "incidence", ...) {
 #' update_secondary_args(data, priors)
 update_secondary_args <- function(data, priors, verbose = TRUE) {
   priors <- data.table::as.data.table(priors)
-  if (!missing(priors)) {
-    if (!is.null(priors) && nrow(priors) > 0) {
-      if (verbose) {
-        message(
-          "Replacing specified priors with those from the passed in prior dataframe" # nolint
+  if (!missing(priors) && !is.null(priors) && nrow(priors) > 0) {
+    if (verbose) {
+      message(
+        "Replacing specified priors with those from the passed in prior dataframe" # nolint
+      )
+    }
+    # replace scaling if present in the prior
+    scale <- priors[grepl("frac_obs", variable, fixed = TRUE)]
+    if (nrow(scale) > 0) {
+      data$obs_scale_mean <- as.array(signif(scale$mean, 3))
+      data$obs_scale_sd <- as.array(signif(scale$sd, 3))
+    }
+    # replace delay parameters if present
+    delay_mean <- priors[grepl("delay_mean", variable, fixed = TRUE)]
+    delay_sd <- priors[grepl("delay_sd", variable, fixed = TRUE)]
+    if (nrow(delay_mean) > 0) {
+      if (is.null(data$delay_mean_mean)) {
+        warning(
+          "Cannot replace delay distribution parameters as no default has been set" # nolint
         )
       }
-      # replace scaling if present in the prior
-      scale <- priors[grepl("frac_obs", variable, fixed = TRUE)]
-      if (nrow(scale) > 0) {
-        data$obs_scale_mean <- as.array(signif(scale$mean, 3))
-        data$obs_scale_sd <- as.array(signif(scale$sd, 3))
-      }
-      # replace delay parameters if present
-      delay_mean <- priors[grepl("delay_mean", variable, fixed = TRUE)]
-      delay_sd <- priors[grepl("delay_sd", variable, fixed = TRUE)]
-      if (nrow(delay_mean) > 0) {
-        if (is.null(data$delay_mean_mean)) {
-          warning(
-            "Cannot replace delay distribution parameters as no default has been set" # nolint
-          )
-        }
-        data$delay_mean_mean <- as.array(signif(delay_mean$mean, 3))
-        data$delay_mean_sd <- as.array(signif(delay_mean$sd, 3))
-        data$delay_sd_mean <- as.array(signif(delay_sd$mean, 3))
-        data$delay_sd_sd <- as.array(signif(delay_sd$sd, 3))
-      }
-      phi <- priors[grepl("rep_phi", variable, fixed = TRUE)]
-      if (nrow(phi) > 0) {
-        data$phi_mean <- signif(phi$mean, 3)
-        data$phi_sd <- signif(phi$sd, 3)
-      }
+      data$delay_mean_mean <- as.array(signif(delay_mean$mean, 3))
+      data$delay_mean_sd <- as.array(signif(delay_mean$sd, 3))
+      data$delay_sd_mean <- as.array(signif(delay_sd$mean, 3))
+      data$delay_sd_sd <- as.array(signif(delay_sd$sd, 3))
+    }
+    phi <- priors[grepl("rep_phi", variable, fixed = TRUE)]
+    if (nrow(phi) > 0) {
+      data$phi_mean <- signif(phi$mean, 3)
+      data$phi_sd <- signif(phi$sd, 3)
     }
   }
   return(data)
@@ -687,7 +685,7 @@ forecast_secondary <- function(estimate,
     summarise_by = "date",
     CrIs = CrIs
   )
-  summarised <- summarised[, purrr::map(.SD, ~ round(., 1))]
+  summarised <- summarised[, purrr::map(.SD, round, digits = 1)]
 
   # construct output
   out <- list()
