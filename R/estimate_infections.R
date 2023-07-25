@@ -51,7 +51,7 @@
 #' samples, data used to fit the model, and the fit object itself.
 #'
 #' @author Sam Abbott
-#' @seealso epinow regional_epinow forecast_infections simulate_infections
+#' @seealso epinow regional_epinow simulate_infections
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
 #' @inheritParams create_stan_data

@@ -1,14 +1,13 @@
 #' Real-time Rt Estimation, Forecasting and Reporting
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' This function wraps the functionality of `estimate_infections()` and
-#' `forecast_infections()` in order to estimate Rt and cases by date of
-#' infection, forecast into these infections into the future. It also contains
-#' additional functionality to convert forecasts to date of report and produce
-#' summary output useful for reporting results and interpreting them. See
-#' [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867) for
-#' an example of using `epinow` to estimate Rt for Covid-19 in a country from
-#' the ECDC data source.
+#' This function wraps the functionality of `estimate_infections()` in order
+#' to estimate Rt and cases by date of infection and forecast these infections
+#' into the future. In addition to the functionality of
+#' `estimate_infections()` it produces additional summary output useful for
+#' reporting results and interpreting them as well as error catching and
+#' reporting, making it particularly useful for production use e.g. running at
+#' set intervals on a deidcated server.
 #'
 #' @param output A character vector of optional output to return. Supported
 #' options are samples ("samples"), plots ("plots"), the run time ("timing"),
@@ -21,11 +20,11 @@
 #'
 #' @param plot_args A list of optional arguments passed to `plot.epinow()`.
 #'
-#' @return A list of output from estimate_infections, forecast_infections,
-#' report_cases, and report_summary.
+#' @return A list of output from estimate_infections with additional elements
+#'   summarising results and reporting errors if they have occurred.
 #' @author Sam Abbott
 #' @export
-#' @seealso estimate_infections simulate_infections forecast_infections
+#' @seealso estimate_infections simulate_infections
 #' @seealso regional_epinow
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
