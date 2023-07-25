@@ -27,6 +27,7 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * Updated code style in response to lintr warnings. By @sbfnk in #437 and reviewed by @seabbs.
 * Fixed an edge case breaking summary output. Reported by @jrcpulliam, fixed by @sbfnk in #436 and reviewed by @seabbs.
 * Added content to the vignette for the estimate_truncation model. By @sbfnk in #439 and reviewed by @seabbs.
+* Fixed an issue in the `estimate_truncation` model where it threw an error when applied to time series that were shorter than the truncation max. By @sbfnk in #438 and reviewed by @seabbs.
 
 # EpiNow2 1.3.5
 
