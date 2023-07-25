@@ -149,7 +149,7 @@ options(old_opts)
 }
 }
 \seealso{
-epinow regional_epinow forecast_infections simulate_infections
+epinow regional_epinow simulate_infections
 }
 \author{
 Sam Abbott

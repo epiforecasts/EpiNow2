@@ -50,7 +50,7 @@
 #' @return A list of output stratified at the top level into regional output
 #' and across region output summary output
 #' @export
-#' @seealso epinow estimate_infections forecast_infections
+#' @seealso epinow estimate_infections
 #' @seealso setup_future regional_summary
 #' @importFrom future.apply future_lapply
 #' @importFrom data.table as.data.table setDT copy setorder

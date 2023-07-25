@@ -3,6 +3,7 @@
 ## Documentation
 
 * Two new vignettes have been added to cover the workflow and example uses. By @sbfnk in #458 and reviewed by @jamesmbaazam.
+* Removed references to the no longer existing `forecast_infections` function.
 
 ## Package
 

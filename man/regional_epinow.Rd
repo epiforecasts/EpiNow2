@@ -173,7 +173,7 @@ options(old_opts)
 }
 }
 \seealso{
-epinow estimate_infections forecast_infections
+epinow estimate_infections
 
 setup_future regional_summary
 }

@@ -109,19 +109,17 @@ Corresponds to the "DEBUG" level from \code{futile.logger}. See \code{setup_logg
 for more detailed logging options.}
 }
 \value{
-A list of output from estimate_infections, forecast_infections,
-report_cases, and report_summary.
+A list of output from estimate_infections with additional elements
+summarising results and reporting errors if they have occurred.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
-This function wraps the functionality of \code{estimate_infections()} and
-\code{forecast_infections()} in order to estimate Rt and cases by date of
-infection, forecast into these infections into the future. It also contains
-additional functionality to convert forecasts to date of report and produce
-summary output useful for reporting results and interpreting them. See
-\href{https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867}{here} for
-an example of using \code{epinow} to estimate Rt for Covid-19 in a country from
-the ECDC data source.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}} This function wraps the
+functionality of \code{estimate_infections()} in order to estimate Rt and cases
+by date of infection and forecast these infections into the future. In
+addition to the functionality of \code{estimate_infections()} it produces
+additional summary output useful for reporting results and interpreting
+them as well as error catching and reporting, making it particularly useful
+for production use e.g. running at set intervals on a deidcated server.
 }
 \examples{
 \donttest{
@@ -165,7 +163,7 @@ options(old_opts)
 }
 }
 \seealso{
-estimate_infections simulate_infections forecast_infections
+estimate_infections simulate_infections
 
 regional_epinow
 }
