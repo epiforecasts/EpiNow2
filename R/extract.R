@@ -212,9 +212,9 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
 extract_stan_param <- function(fit, params = NULL,
                                CrIs = c(0.2, 0.5, 0.9), var_names = FALSE) {
   # generate symmetric CrIs
-  CrIs <- CrIs[order(CrIs)]
+  CrIs <- sort(CrIs)
   sym_CrIs <- c(0.5, 0.5 - CrIs / 2, 0.5 + CrIs / 2)
-  sym_CrIs <- sym_CrIs[order(sym_CrIs)]
+  sym_CrIs <- sort(sym_CrIs)
   CrIs <- round(100 * CrIs, 0)
   CrIs <- c(paste0("lower_", rev(CrIs)), "median", paste0("upper_", CrIs))
   args <- list(object = fit, probs = sym_CrIs)

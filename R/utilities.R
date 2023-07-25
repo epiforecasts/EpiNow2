@@ -210,9 +210,7 @@ match_output_arguments <- function(input_args = NULL,
   names(output_args) <- supported_args
 
   # get arguments supplied and linked to supported args
-  found_args <- lapply(input_args, function(arg) {
-    grep(arg, supported_args, value = TRUE)
-  })
+  found_args <- lapply(input_args, grep, x = supported_args, value = TRUE)
   found_args <- unlist(found_args)
   found_args <- unique(found_args)
 

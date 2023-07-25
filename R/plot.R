@@ -170,10 +170,8 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
       )
       estimate <- estimate[, max := max_cases_to_plot]
     }
-    estimate <- estimate[, lapply(.SD, function(var) {
-      pmin(var, max)
-    }),
-    by = setdiff(colnames(estimate), sd_cols), .SDcols = sd_cols
+    estimate <- estimate[, lapply(.SD, pmin, max),
+      by = setdiff(colnames(estimate), sd_cols), .SDcols = sd_cols
     ]
   }
 
