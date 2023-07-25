@@ -26,6 +26,7 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * Reduced verbosity of tests. By @sbfnk in #433 and reviewed by @seabbs.
 * Updated code style in response to lintr warnings. By @sbfnk in #437 and reviewed by @seabbs.
 * Fixed an edge case breaking summary output. Reported by @jrcpulliam, fixed by @sbfnk in #436 and reviewed by @seabbs.
+* Added content to the vignette for the estimate_truncation model. By @sbfnk in #439.
 
 # EpiNow2 1.3.5
 
