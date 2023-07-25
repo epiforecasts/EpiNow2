@@ -151,7 +151,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     confirm := NULL
   ])
   obs <- purrr::reduce(obs, merge, all = TRUE)
-  obs_start <- nrow(obs) - trunc_max - sum(is.na(obs$`1`)) + 1
+  obs_start <- max(nrow(obs) - trunc_max - sum(is.na(obs$`1`)) + 1, 1)
   obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
   obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
   obs_data <- obs_data[obs_start:.N]
