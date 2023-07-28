@@ -364,7 +364,7 @@ truncated to be between 0 and 1.</p>
 <div class="section level2">
 <h2 id="observation-model">Observation model<a class="anchor" aria-label="anchor" href="#observation-model"></a>
 </h2>
-<p>The modelled cases <span class="math inline">\(D_{t}\)</span> are
+<p>The modelled counts <span class="math inline">\(D_{t}\)</span> are
 related to observations <span class="math inline">\(C_{t}\)</span>. By
 default this is assumed to follow a negative binomial distribution with
 overdispersion <span class="math inline">\(\varphi\)</span>
@@ -382,6 +382,22 @@ day-of-the-week reporting effect.</p>
 \\
     \frac{1}{\sqrt{\varphi}} &amp;\sim \mathcal{HalfNormal}(0, 1)
 \end{align}\]</span></p>
+<div class="section level3">
+<h3 id="truncation">Truncation<a class="anchor" aria-label="anchor" href="#truncation"></a>
+</h3>
+<p>The model supports counts that are right-truncated, i.e. reported
+with a delay leading to recent counts being subject to future upwards
+revision. Denoting the final truncated counts with <span class="math inline">\(D^{\ast}_{t}\)</span> they are obtained form the
+final modelled cases <span class="math inline">\(D_{t}\)</span> by
+applying a given discrete truncation distribution <span class="math inline">\(\zeta(\tau | \mu_{\zeta}, \sigma_{\zeta})\)</span>
+with cumulative mass function <span class="math inline">\(\Zeta(\tau |
+\mu_{\zeta})\)</span>:</p>
+<p><span class="math display">\[\begin{equation}
+  D^ast_t = \Zeta (T - t | \mu_{\Zeta}, \sigma_{\Zeta}) D_{t}
+\end{equation}\]</span></p>
+<p>If truncation is applied, the modelled cases <span class="math inline">\(D_{t}\)</span> are replaced by the truncated
+counts before confronting them with observations <span class="math inline">\(C_{t}\)</span> as described above.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
