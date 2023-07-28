@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 ```
 **This is a work in progress. Please consider submitting a PR to improve it.** 
 
-This model deals with the problem of _nowcasting_, or adjusting for right-truncation in reported count data. This occurs when the quantity being observed, for example cases, hospitalisations or deaths, is reported with a delay, resulting in an underestimation of recent counts. The `estimate_truncation()` model attempts to infer parameters of the underlying delay distributions from multiple snapshots of past data. It is designed as a simple and imperfect model. For a more principled approach to nowcasting please consider using the [epinowcast](https://package.epinowcast.org) package.
+This model deals with the problem of _nowcasting_, or adjusting for right-truncation in reported count data. This occurs when the quantity being observed, for example cases, hospitalisations or deaths, is reported with a delay, resulting in an underestimation of recent counts. The `estimate_truncation()` model attempts to infer parameters of the underlying delay distributions from multiple snapshots of past data. It is designed to be a simple model that can integrate with the other models in the package and therefore may not be ideal for all uses. For a more principled approach to nowcasting please consider using the [epinowcast](https://package.epinowcast.org) package.
 
 Given snapshots $C^{i}_{t}$ reflecting reported counts for time $t$ where $i=1\ldots S$ is in order of recency (earliest snapshots first) and $S$ is the number of past snapshots used for estimation, we try to infer the parameters of a discrete truncation distribution $\zeta(\tau | \mu_{\zeta}, \sigma_{\zeta})$ with corresponding probability mass function $\Zeta(\tau | \mu_{\zeta}$.
 
