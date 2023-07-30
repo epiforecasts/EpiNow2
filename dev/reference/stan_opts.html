@@ -601,13 +601,13 @@ returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(reports);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] trunc_reports = reports;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Calculate cmf of truncation delay</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int trunc_max = num_elements(trunc_rev_cmf);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int trunc_max = min(t, num_elements(trunc_rev_cmf));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int first_t = t - trunc_max + 1;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Apply cdf of truncation delay to truncation max last entries in reports</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (reconstruct) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_reports[first_t:t] = trunc_reports[first_t:t] ./ trunc_rev_cmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }else{</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_reports[first_t:t] = trunc_reports[first_t:t] .* trunc_rev_cmf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_reports[first_t:t] ./= trunc_rev_cmf[1:trunc_max];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_reports[first_t:t] .*= trunc_rev_cmf[1:trunc_max];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(trunc_reports);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
@@ -1492,13 +1492,13 @@ returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(reports);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] trunc_reports = reports;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Calculate cmf of truncation delay</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int trunc_max = num_elements(trunc_rev_cmf);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int trunc_max = min(t, num_elements(trunc_rev_cmf));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int first_t = t - trunc_max + 1;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Apply cdf of truncation delay to truncation max last entries in reports</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (reconstruct) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_reports[first_t:t] = trunc_reports[first_t:t] ./ trunc_rev_cmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }else{</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_reports[first_t:t] = trunc_reports[first_t:t] .* trunc_rev_cmf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_reports[first_t:t] ./= trunc_rev_cmf[1:trunc_max];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     trunc_reports[first_t:t] .*= trunc_rev_cmf[1:trunc_max];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(trunc_reports);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
