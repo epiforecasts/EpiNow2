@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 # Case studies 
 
-- [Estimating reporting delays and nowcasting/forecasting infections with EpiNow2 using HHS COVID-19 hospitalizations](https://samabbott.co.uk/cste-forecasting-workshop/)
+- [Estimating reporting delays and nowcasting/forecasting infections with EpiNow2 using HHS COVID-19 hospitalizations](https://samabbott.co.uk/cste-forecasting-workshop/) by Sam Abbott, Zachary Susswein, and Katie Gostic.
 - [Estimating reporting delays and nowcasting/forecasting infections with EpiNow2](https://github.com/epiforecasts/nowcasting.example/blob/main/inst/reports/epinow2.md) by Sebastian Funk and Sam Abbott.
 - [Forecast Covid-19 reported deaths from Covid-19 reported cases (both observed and forecast) for a country in the ECDC](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17) by Sam Abbott.
 - [Explore Covid-19 data truncation in England](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a) by Sam Abbott.
