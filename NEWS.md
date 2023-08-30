@@ -29,6 +29,10 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * Added content to the vignette for the estimate_truncation model. By @sbfnk in #439 and reviewed by @seabbs.
 * Added a feature to the `estimate_truncation` to allow it to be applied to time series that are shorter than the truncation max. By @sbfnk in #438 and reviewed by @seabbs.
 
+## Documentation
+
+- Added a link to the recent CSTE workshop on using `EpiNow2` to the case studies vignette. By @seabbs in #441 and reviewed by @sbfnk.
+
 # EpiNow2 1.3.5
 
 This is a minor release to resolve issues with the recent CRAN requirement to make use of a C++ 17 compiler which has been causing [issues with the `rstantools` package](https://github.com/stan-dev/rstantools/pull/100).
