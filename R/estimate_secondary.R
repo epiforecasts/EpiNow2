@@ -160,7 +160,8 @@ estimate_secondary <- function(reports,
   # delay data
   data <- c(data, create_stan_delays(
     delay = delays,
-    trunc = truncation
+    trunc = truncation,
+    ot = data$t
   ))
 
   # observation model data
