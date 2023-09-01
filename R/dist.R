@@ -890,7 +890,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' assigned to \code{mean_sd} and \code{sd_sd} by setting them to zero.
 #' reduces compute requirement but may produce spuriously precise estimates.
 #' @param prior_weight Integer, weight given to the generation time prior.
-#' By default (prior_weight = 00) the priors will be weighted by the number of
+#' By default (prior_weight = 0) the priors will be weighted by the number of
 #' observation data points, usually preventing the posteriors from shifting
 #' much from the given distribution. Another sensible option would be 1,
 #' i.e. treating the generation time distribution as a single parameter.
