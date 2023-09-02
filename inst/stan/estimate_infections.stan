@@ -30,7 +30,7 @@ transformed data{
   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
 
-  int delay_type_max[delay_types] = get_delay_type_max(
+  array[delay_types] int delay_type_max = get_delay_type_max(
     delay_types, delay_types_p, delay_types_id,
     delay_types_groups, delay_max, delay_np_pmf_groups
   );
@@ -38,21 +38,21 @@ transformed data{
 
 parameters{
   // gaussian process
-  real<lower = ls_min,upper=ls_max> rho[fixed ? 0 : 1];  // length scale of noise GP
-  real<lower = 0> alpha[fixed ? 0 : 1];    // scale of of noise GP
+  array[fixed ? 0 : 1] real<lower = ls_min,upper=ls_max> rho;  // length scale of noise GP
+  array[fixed ? 0 : 1] real<lower = 0> alpha;    // scale of of noise GP
   vector[fixed ? 0 : M] eta;               // unconstrained noise
   // Rt
   vector[estimate_r] log_R;                // baseline reproduction number estimate (log)
-  real initial_infections[estimate_r] ;    // seed infections
-  real initial_growth[estimate_r && seeding_time > 1 ? 1 : 0]; // seed growth rate
-  real<lower = 0> bp_sd[bp_n > 0 ? 1 : 0]; // standard deviation of breakpoint effect
-  real bp_effects[bp_n];                   // Rt breakpoint effects
+  array[estimate_r] real initial_infections ;    // seed infections
+  array[estimate_r && seeding_time > 1 ? 1 : 0] real initial_growth; // seed growth rate
+  array[bp_n > 0 ? 1 : 0] real<lower = 0> bp_sd; // standard deviation of breakpoint effect
+  array[bp_n] real bp_effects;                   // Rt breakpoint effects
   // observation model
-  real delay_mean[delay_n_p];         // mean of delays
-  real<lower = 0> delay_sd[delay_n_p];  // sd of delays
+  array[delay_n_p] real delay_mean;         // mean of delays
+  array[delay_n_p] real<lower = 0> delay_sd;  // sd of delays
   simplex[week_effect] day_of_week_simplex;// day of week reporting effect
-  real<lower = 0, upper = 1> frac_obs[obs_scale];     // fraction of cases that are ultimately observed
-  real<lower = 0> rep_phi[model_type];     // overdispersion of the reporting process
+  array[obs_scale] real<lower = 0, upper = 1> frac_obs;     // fraction of cases that are ultimately observed
+  array[model_type] real<lower = 0> rep_phi;     // overdispersion of the reporting process
 }
 
 transformed parameters {
@@ -154,9 +154,9 @@ model {
 }
 
 generated quantities {
-  int imputed_reports[ot_h];
+  array[ot_h] int imputed_reports;
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
-  real r[ot_h];
+  array[ot_h] real r;
   real gt_mean;
   real gt_var;
   vector[return_likelihood ? ot : 0] log_lik;
@@ -167,9 +167,9 @@ generated quantities {
     r = R_to_growth(R, gt_mean, gt_var);
   } else {
     // sample generation time
-    real delay_mean_sample[delay_n_p] =
+    array[delay_n_p] real delay_mean_sample =
       normal_rng(delay_mean_mean, delay_mean_sd);
-    real delay_sd_sample[delay_n_p] =
+    array[delay_n_p] real delay_sd_sample =
       normal_rng(delay_sd_mean, delay_sd_sd);
     vector[delay_type_max[gt_id]] sampled_gt_rev_pmf = get_delay_rev_pmf(
       gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,

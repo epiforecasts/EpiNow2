@@ -8,7 +8,7 @@ functions {
 
 data {
   int t;                             // time of observations
-  int<lower = 0> obs[t];             // observed secondary data
+  array[t] int<lower = 0> obs;             // observed secondary data
   vector[t] primary;                 // observed primary data
   int burn_in;                       // time period to not use for fitting
 #include data/secondary.stan
@@ -17,7 +17,7 @@ data {
 }
 
 transformed data{
-  int delay_type_max[delay_types] = get_delay_type_max(
+  array[delay_types] int delay_type_max = get_delay_type_max(
     delay_types, delay_types_p, delay_types_id,
     delay_types_groups, delay_max, delay_np_pmf_groups
   );
@@ -25,11 +25,11 @@ transformed data{
 
 parameters{
   // observation model
-  real delay_mean[delay_n_p];
-  real<lower = 0> delay_sd[delay_n_p];      // sd of delays
+  array[delay_n_p] real delay_mean;
+  array[delay_n_p] real<lower = 0> delay_sd;      // sd of delays
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
-  real<lower = 0, upper = 1> frac_obs[obs_scale];   // fraction of cases that are ultimately observed
-  real<lower = 0> rep_phi[model_type];   // overdispersion of the reporting process
+  array[obs_scale] real<lower = 0, upper = 1> frac_obs;   // fraction of cases that are ultimately observed
+  array[model_type] real<lower = 0> rep_phi;   // overdispersion of the reporting process
 }
 
 transformed parameters {
@@ -89,7 +89,7 @@ model {
 }
 
 generated quantities {
-  int sim_secondary[t - burn_in];
+  array[t - burn_in] int sim_secondary;
   vector[return_likelihood > 1 ? t - burn_in : 0] log_lik;
   // simulate secondary reports
   sim_secondary = report_rng(secondary[(burn_in + 1):t], rep_phi, model_type);

@@ -1,5 +1,5 @@
 // Calculate secondary reports condition only on primary reports
-vector calculate_secondary(vector reports, int[] obs, real[] frac_obs,
+vector calculate_secondary(vector reports, array[] int obs, array[] real frac_obs,
                            vector delay_rev_pmf, int cumulative, int historic,
                            int primary_hist_additive, int current,
                            int primary_current_additive, int predict) {

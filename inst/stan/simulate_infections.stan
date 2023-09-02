@@ -24,7 +24,7 @@ data {
 }
 
 transformed data {
-  int delay_type_max[delay_types] = get_delay_type_max(
+  array[delay_types] int delay_type_max = get_delay_type_max(
     delay_types, delay_types_p, delay_types_id,
     delay_types_groups, delay_max, delay_np_pmf_groups
   );
@@ -34,8 +34,8 @@ generated quantities {
   // generated quantities
   matrix[n, t] infections; //latent infections
   matrix[n, t - seeding_time] reports; // observed cases
-  int imputed_reports[n, t - seeding_time];
-  real r[n, t - seeding_time];
+  array[n, t - seeding_time] int imputed_reports;
+  array[n, t - seeding_time] real r;
   for (i in 1:n) {
     // generate infections from Rt trace
     vector[delay_type_max[gt_id]] gt_rev_pmf;

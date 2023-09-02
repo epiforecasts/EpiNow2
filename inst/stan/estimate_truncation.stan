@@ -6,14 +6,14 @@ functions {
 data {
   int t;
   int obs_sets;
-  int obs[t, obs_sets];
-  int obs_dist[obs_sets];
+  array[t, obs_sets] int obs;
+  array[obs_sets] int obs_dist;
   int trunc_max;
   int trunc_dist;
 }
 transformed data{
-  int<lower = 1> end_t[obs_sets];
-  int<lower = 1> start_t[obs_sets];
+  array[obs_sets] int<lower = 1> end_t;
+  array[obs_sets] int<lower = 1> start_t;
   for (i in 1:obs_sets) {
     end_t[i] = t - obs_dist[i];
     start_t[i] = max(1, end_t[i] - trunc_max + 1);
