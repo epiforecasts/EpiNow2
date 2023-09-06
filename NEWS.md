@@ -28,7 +28,7 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * Fixed an edge case breaking summary output. Reported by @jrcpulliam, fixed by @sbfnk in #436 and reviewed by @seabbs.
 * Added content to the vignette for the estimate_truncation model. By @sbfnk in #439 and reviewed by @seabbs.
 * Added a feature to the `estimate_truncation` to allow it to be applied to time series that are shorter than the truncation max. By @sbfnk in #438 and reviewed by @seabbs.
-* Changed the `estimate_truncation` to use the `dist_spec` interface, deprecating existing options `max_trunc` and `trunc_dist`. By @sbfnk
+* Changed the `estimate_truncation` to use the `dist_spec` interface, deprecating existing options `max_trunc` and `trunc_dist`. By @sbfnk in #448.
 
 ## Documentation
 
