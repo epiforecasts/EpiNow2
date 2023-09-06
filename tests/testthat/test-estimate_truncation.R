@@ -59,4 +59,20 @@ test_that("estimate_truncation can return values from simulated data and plot
   expect_error(plot(est), NA)
 })
 
+test_that("deprecated arguments are recognised", {
+  options(warn = 2)
+  expect_error(estimate_truncation(example_data,
+    verbose = interactive(), refresh = 0,
+    trunc_max = 10
+  ), "deprecated")
+  expect_error(estimate_truncation(example_data,
+    verbose = interactive(), refresh = 0,
+    max_truncation = 10
+  ), "deprecated")
+  expect_error(estimate_truncation(example_data,
+    verbose = interactive(), refresh = 0,
+    trunc_dist = "lognormal"
+  ), "deprecated")
+})
+
 options(old_opts)
