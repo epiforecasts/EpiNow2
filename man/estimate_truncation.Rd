@@ -9,6 +9,8 @@ estimate_truncation(
   max_truncation,
   trunc_max = 10,
   trunc_dist = "lognormal",
+  truncation = dist_spec(mean = 0, sd = 0, mean_sd = 1, sd_sd = 1, max = 10, prior_weight
+    = 1L),
   model = NULL,
   CrIs = c(0.2, 0.5, 0.9),
   verbose = TRUE,
@@ -21,13 +23,15 @@ and a confirm (integer) variable. Each data set should be a snapshot
 of the reported data over time. All data sets must contain a complete vector
 of dates.}
 
-\item{max_truncation}{Deprecated; use \code{trunc_max} instead.}
+\item{max_truncation}{Deprecated; use \code{truncation} instead.}
 
-\item{trunc_max}{Integer, defaults to 10. Maximum number of
-days to include in the truncation distribution.}
+\item{trunc_max}{Deprecated; use \code{truncation} instead.}
 
-\item{trunc_dist}{Character, defaults to "lognormal". The parametric
-distribution to be used for truncation.}
+\item{trunc_dist}{Deprecated; use \code{truncation} instead.}
+
+\item{truncation}{A call to \code{trunc_opts()} defining the truncation of
+observed data.  Defaults to \code{trunc_opts()}. See \code{estimate_truncation()} for
+an approach to estimating truncation from data.}
 
 \item{model}{A compiled stan model to override the default model. May be
 useful for package developers or those developing extensions.}
@@ -91,7 +95,7 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 reported_cases <- example_confirmed[1:60]
 
 # define example truncation distribution (note not integer adjusted)
-trunc <- list(
+trunc <- dist_spec(
   mean = convert_to_logmean(3, 2),
   mean_sd = 0.1,
   sd = convert_to_logsd(3, 2),
@@ -102,11 +106,16 @@ trunc <- list(
 # apply truncation to example data
 construct_truncation <- function(index, cases, dist) {
   set.seed(index)
+  if (dist$dist == 0) {
+    dfunc <- dlnorm
+  } else {
+    dfunc <- dgamma
+  }
   cmf <- cumsum(
-    dlnorm(
+    dfunc(
       1:(dist$max + 1),
-      rnorm(1, dist$mean, dist$mean_sd),
-      rnorm(1, dist$sd, dist$sd_sd)
+      rnorm(1, dist$mean_mean, dist$mean_sd),
+      rnorm(1, dist$sd_mean, dist$sd_sd)
     )
   )
   cmf <- cmf / cmf[dist$max + 1]
@@ -142,4 +151,6 @@ options(old_opts)
 }
 \author{
 Sam Abbott
+
+Sebastian Funk
 }

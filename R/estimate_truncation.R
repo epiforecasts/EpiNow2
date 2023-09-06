@@ -38,13 +38,11 @@
 #' of the reported data over time. All data sets must contain a complete vector
 #' of dates.
 #'
-#' @param max_truncation Deprecated; use `trunc_max` instead.
+#' @param max_truncation Deprecated; use `truncation` instead.
 #'
-#' @param trunc_max Integer, defaults to 10. Maximum number of
-#' days to include in the truncation distribution.
+#' @param trunc_max Deprecated; use `truncation` instead.
 #'
-#' @param trunc_dist Character, defaults to "lognormal". The parametric
-#' distribution to be used for truncation.
+#' @param trunc_dist Deprecated; use `truncation` instead.
 #'
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
@@ -62,8 +60,10 @@
 #' used for fitting (`data`) and the fit object (`fit`).
 #'
 #' @author Sam Abbott
+#' @author Sebastian Funk
 #' @export
 #' @inheritParams calc_CrIs
+#' @inheritParams estimate_infections
 #' @importFrom purrr map reduce map_dbl
 #' @importFrom rstan sampling
 #' @importFrom data.table copy .N as.data.table merge.data.table setDT
@@ -77,7 +77,7 @@
 #' reported_cases <- example_confirmed[1:60]
 #'
 #' # define example truncation distribution (note not integer adjusted)
-#' trunc <- list(
+#' trunc <- dist_spec(
 #'   mean = convert_to_logmean(3, 2),
 #'   mean_sd = 0.1,
 #'   sd = convert_to_logsd(3, 2),
@@ -88,11 +88,16 @@
 #' # apply truncation to example data
 #' construct_truncation <- function(index, cases, dist) {
 #'   set.seed(index)
+#'   if (dist$dist == 0) {
+#'     dfunc <- dlnorm
+#'   } else {
+#'     dfunc <- dgamma
+#'   }
 #'   cmf <- cumsum(
-#'     dlnorm(
+#'     dfunc(
 #'       1:(dist$max + 1),
-#'       rnorm(1, dist$mean, dist$mean_sd),
-#'       rnorm(1, dist$sd, dist$sd_sd)
+#'       rnorm(1, dist$mean_mean, dist$mean_sd),
+#'       rnorm(1, dist$sd_mean, dist$sd_sd)
 #'     )
 #'   )
 #'   cmf <- cmf / cmf[dist$max + 1]
@@ -127,18 +132,65 @@
 #' options(old_opts)
 estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
+                                truncation = dist_spec(
+                                  mean = 0, sd = 0, mean_sd = 1, sd_sd = 1,
+                                  max = 10, prior_weight = 1L
+                                ),
                                 model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 verbose = TRUE,
                                 ...) {
-  trunc_dist <- match.arg(trunc_dist)
 
-  if (!missing(max_truncation) && missing(trunc_max)) {
+  ## code block to remove in EpiNow2 2.0.0
+  construct_trunc <- FALSE
+  if (!missing(trunc_max)) {
+    if (!missing(truncation)) {
+      stop(
+        "`trunc_max` and `truncation` arguments are both given. ",
+        "Use only `truncation` instead.")
+    }
+    if (!missing(max_truncation)) {
+      stop(
+        "`max_truncation` and `trunc_max` arguments are both given. ",
+        "Use only `truncation` instead.")
+    }
     warning(
-      "The `max_truncation` argument is deprecated. ",
-      "Use `trunc_max` instead."
+      "The `trunc_max` argument is deprecated and will be removed in ",
+      "version 2.0.0. Use `truncation` instead."
+    )
+    construct_trunc <- TRUE
+  }
+  if (!missing(max_truncation)) {
+    if (!missing(truncation)) {
+      stop(
+        "`max_truncation` and `truncation` arguments are both given. ",
+        "Use only `truncation` instead.")
+    }
+    warning(
+      "The `max_truncation` argument is deprecated and will be removed in ",
+      "version 2.0.0. Use `truncation` instead."
     )
     trunc_max <- max_truncation
+    construct_trunc <- TRUE
+  }
+  if (!missing(trunc_dist)) {
+    trunc_dist <- match.arg(trunc_dist)
+    if (!missing(truncation)) {
+      stop(
+        "`trunc_dist` and `truncation` arguments are both given. ",
+        "Use only `truncation` instead.")
+    }
+     warning(
+      "The `trunc_dist` argument is deprecated and will be removed in ",
+      "version 2.0.0. Use `truncation` instead."
+    )
+    construct_trunc <- TRUE
+  }
+  if (construct_trunc) {
+    truncation <- dist_spec(
+      mean = 0, mean_sd = 1, sd = 0, sd_sd = 1, distribution = trunc_dist,
+      max = trunc_max, prior_weight = 1
+    )
   }
 
   # combine into ordered matrix
@@ -161,9 +213,11 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     obs = obs_data,
     obs_dist = obs_dist,
     t = nrow(obs_data),
-    obs_sets = ncol(obs_data),
-    trunc_max = trunc_max,
-    trunc_dist = trunc_dist
+    obs_sets = ncol(obs_data)
+  )
+
+  data <- c(data,
+    create_stan_delays(trunc = truncation)
   )
 
   ## convert to integer
@@ -173,8 +227,8 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   # initial conditions
   init_fn <- function() {
     data <- list(
-      logmean = rnorm(1, 0, 1),
-      logsd = abs(rnorm(1, 0, 1)),
+      delay_mean = array(rnorm(1, 0, 1)),
+      delay_sd = array(abs(rnorm(1, 0, 1))),
       phi = abs(rnorm(1, 0, 1)),
       sigma = abs(rnorm(1, 0, 1))
     )
@@ -195,10 +249,10 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   out <- list()
   # Summarise fit truncation distribution for downstream usage
   out$dist <- list(
-    mean = round(rstan::summary(fit, pars = "logmean")$summary[1], 3),
-    mean_sd = round(rstan::summary(fit, pars = "logmean")$summary[3], 3),
-    sd = round(rstan::summary(fit, pars = "logsd")$summary[1], 3),
-    sd_sd = round(rstan::summary(fit, pars = "logsd")$summary[3], 3),
+    mean = round(rstan::summary(fit, pars = "delay_mean")$summary[1], 3),
+    mean_sd = round(rstan::summary(fit, pars = "delay_mean")$summary[3], 3),
+    sd = round(rstan::summary(fit, pars = "delay_sd")$summary[1], 3),
+    sd_sd = round(rstan::summary(fit, pars = "delay_sd")$summary[3], 3),
     max = trunc_max
   )
 
@@ -249,7 +303,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   out$obs <- data.table::rbindlist(out$obs)
   out$last_obs <- last_obs
   # summarise estimated cmf of the truncation distribution
-  out$cmf <- extract_stan_param(fit, "rev_cmf", CrIs = CrIs)
+  out$cmf <- extract_stan_param(fit, "trunc_rev_cmf", CrIs = CrIs)
   out$cmf <- data.table::as.data.table(out$cmf)[, index := seq_len(.N)]
   data.table::setcolorder(out$cmf, "index")
   out$data <- data
