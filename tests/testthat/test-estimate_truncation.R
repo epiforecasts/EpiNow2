@@ -51,10 +51,7 @@ test_that("estimate_truncation can return values from simulated data and plot
     names(est),
     c("dist", "obs", "last_obs", "cmf", "data", "fit")
   )
-  expect_equal(
-    names(est$dist),
-    c("mean", "mean_sd", "sd", "sd_sd", "max")
-  )
+  expect_s3_class(est$dist, "dist_spec")
   expect_error(plot(est), NA)
 })
 
