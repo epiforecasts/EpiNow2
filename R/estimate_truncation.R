@@ -257,13 +257,14 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   out <- list()
   # Summarise fit truncation distribution for downstream usage
-  out$dist <- list(
+  out$dist <- dist_spec(
     mean = round(rstan::summary(fit, pars = "delay_mean")$summary[1], 3),
     mean_sd = round(rstan::summary(fit, pars = "delay_mean")$summary[3], 3),
     sd = round(rstan::summary(fit, pars = "delay_sd")$summary[1], 3),
     sd_sd = round(rstan::summary(fit, pars = "delay_sd")$summary[3], 3),
-    max = trunc_max
+    max = truncation$max
   )
+  out$dist$dist <- truncation$dist
 
   # summarise reconstructed observations
   recon_obs <- extract_stan_param(fit, "recon_obs",
