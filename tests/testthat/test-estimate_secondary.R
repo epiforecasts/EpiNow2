@@ -101,14 +101,14 @@ test_that("forecast_secondary can return values from simulated data and plot
   expect_error(plot(inc_preds, new_obs = cases, from = "2020-05-01"), NA)
 })
 
-test_that("estimate_secondary works with prior_weight = 0", {
-  weight_0_delays <- dist_spec(
+test_that("estimate_secondary works with weigh_prior_delays = TRUE", {
+  delays <- dist_spec(
     mean = 2.5, mean_sd = 0.5, sd = 0.47, sd_sd = 0.25, max = 30
   )
-  inc_weight_0 <- estimate_secondary(
+  inc_weigh <- estimate_secondary(
     cases[1:60], delays = weight_0_delays,
     obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
-    verbose = FALSE
+    weigh_prior_delays = TRUE, verbose = FALSE
   )
-  expect_s3_class(inc_weight_0, "estimate_secondary")
+  expect_s3_class(inc_weigh, "estimate_secondary")
 })

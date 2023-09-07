@@ -889,11 +889,6 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' as coming from fixed (vs uncertain) distributions. Overrides any values
 #' assigned to \code{mean_sd} and \code{sd_sd} by setting them to zero.
 #' reduces compute requirement but may produce spuriously precise estimates.
-#' @param prior_weight Integer, weight given to the generation time prior.
-#' By default (prior_weight = 0) the priors will be weighted by the number of
-#' observation data points, usually preventing the posteriors from shifting
-#' much from the given distribution. Another sensible option would be 1,
-#' i.e. treating the generation time distribution as a single parameter.
 #' @return A list of distribution options.
 #'
 #' @author Sebastian Funk
@@ -910,7 +905,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' )
 dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
                       distribution = c("lognormal", "gamma"), max,
-                      pmf = numeric(0), fixed = FALSE, prior_weight = 0L) {
+                      pmf = numeric(0), fixed = FALSE) {
   ## check if parametric or nonparametric
   if (length(pmf) > 0 &&
     !all(
@@ -978,7 +973,6 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
           np_pmf_max = 0,
           np_pmf = numeric(0),
           np_pmf_length = integer(0),
-          weight = numeric(0),
           fixed = integer(0)
         ))
       } else { ## parametric fixed
@@ -1017,7 +1011,6 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
         np_pmf_max = length(pmf),
         np_pmf = pmf,
         np_pmf_length = length(pmf),
-        weight = numeric(0),
         fixed = 1L
       ))
     }
@@ -1036,7 +1029,6 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       np_pmf_max = 0,
       np_pmf = numeric(0),
       np_pmf_length = integer(0),
-      weight = prior_weight,
       fixed = 0L
     )
   }

@@ -8,13 +8,14 @@ estimate_secondary(
   reports,
   secondary = secondary_opts(),
   delays = delay_opts(dist_spec(mean = 2.5, mean_sd = 0.5, sd = 0.47, sd_sd = 0.25, max =
-    30, prior_weight = 1)),
+    30, )),
   truncation = trunc_opts(),
   obs = obs_opts(),
   burn_in = 14,
   CrIs = c(0.2, 0.5, 0.9),
   priors = NULL,
   model = NULL,
+  weigh_prior_delays = FALSE,
   verbose = interactive(),
   ...
 )
@@ -54,6 +55,11 @@ fit.}
 
 \item{model}{A compiled stan model to override the default model. May be
 useful for package developers or those developing extensions.}
+
+\item{weigh_prior_delays}{Logical. If TRUE, all delay distribution
+priors will be weighted by the number of observation data points, usually
+preventing the posteriors from shifting. If FALSE (default), no weight will
+be applied, i.e. delay distributions will be treated as a single parameters.}
 
 \item{verbose}{Logical, should model fitting progress be returned. Defaults
 to \code{interactive()}.}

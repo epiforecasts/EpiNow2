@@ -47,6 +47,11 @@
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
 #'
+#' @param weigh_prior_delays Logical. If TRUE, all delay distribution
+#' priors will be weighted by the number of observation data points, usually
+#' preventing the posteriors from shifting. If FALSE (default), no weight will
+#' be applied, i.e. delay distributions will be treated as a single parameters.
+#
 #' @param verbose Logical, should model fitting progress be returned.
 #'
 #' @param ... Additional parameters to pass to `rstan::sampling`.
@@ -134,10 +139,11 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
                                 truncation = dist_spec(
                                   mean = 0, sd = 0, mean_sd = 1, sd_sd = 1,
-                                  max = 10, prior_weight = 1L
+                                  max = 10
                                 ),
                                 model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),
+                                weigh_prior_delays = FALSE,
                                 verbose = TRUE,
                                 ...) {
 
@@ -189,7 +195,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   if (construct_trunc) {
     truncation <- dist_spec(
       mean = 0, mean_sd = 1, sd = 0, sd_sd = 1, distribution = trunc_dist,
-      max = trunc_max, prior_weight = 1
+      max = trunc_max
     )
   }
 
@@ -216,9 +222,10 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     obs_sets = ncol(obs_data)
   )
 
-  data <- c(data,
-    create_stan_delays(trunc = truncation)
-  )
+  data <- c(data, create_stan_delays(
+    trunc = truncation,
+    weight = ifelse(weigh_prior_delays, data$t, 1)
+  ))
 
   ## convert to integer
   data$trunc_dist <-
