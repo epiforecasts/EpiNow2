@@ -15,8 +15,7 @@ trunc_dist <- dist_spec(
   mean_sd = 0.1,
   sd = convert_to_logsd(3, 2),
   sd_sd = 0.1,
-  max = 10,
-  prior_weight = 1
+  max = 10
 )
 
 # apply truncation to example data

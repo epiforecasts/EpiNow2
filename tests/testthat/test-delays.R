@@ -6,7 +6,7 @@ test_stan_delays <- function(generation_time = generation_time_opts(),
     generation_time = generation_time,
     delays = delays,
     truncation = truncation,
-    ot = 10
+    weight = 10
   )
   return(unlist(unname(data[params])))
 }

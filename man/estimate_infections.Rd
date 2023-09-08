@@ -19,6 +19,7 @@ estimate_infections(
   CrIs = c(0.2, 0.5, 0.9),
   filter_leading_zeros = TRUE,
   zero_threshold = Inf,
+  weigh_delay_priors = TRUE,
   id = "estimate_infections",
   verbose = interactive()
 )
@@ -70,6 +71,12 @@ to Inf. Indicates if detected zero cases are meaningful by using a threshold
 number of cases based on the 7 day average. If the average is above this
 threshold then the zero is replaced with the backwards looking rolling
 average. If set to infinity then no changes are made.}
+
+\item{weigh_delay_priors}{Logical. If TRUE (default), all delay distribution
+priors will be weighted by the number of observation data points, in doing so
+approximately placing an independent prior at each time step and usually
+preventing the posteriors from shifting. If FALSE, no weight will be applied,
+i.e. delay distributions will be treated as a single parameters.}
 
 \item{id}{A character string used to assign logging information on error.
 Used by \code{regional_epinow} to assign errors to regions. Alter the default to
