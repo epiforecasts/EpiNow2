@@ -640,12 +640,11 @@ create_stan_args <- function(stan = stan_opts(),
 ##'
 ##' @param ... Named delay distributions specified using `dist_spec()`.
 ##' The names are assigned to IDs
-##' @param ot Integer, number of observations (needed if weighing any priors)
-##' with the number of observations
+##' @param weight Numeric, weight associated with delay priors; default: 1
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom purrr transpose map
 ##' @author Sebastian Funk
-create_stan_delays <- function(..., ot) {
+create_stan_delays <- function(..., weight = 1) {
   dot_args <- list(...)
   ## combine delays
   combined_delays <- unclass(c(...))
@@ -673,9 +672,7 @@ create_stan_delays <- function(..., ot) {
   ## map pmfs
   ret$np_pmf_groups <- array(c(0, cumsum(combined_delays$np_pmf_length)) + 1)
   ## assign prior weights
-  if (any(ret$weight == 0)) {
-    ret$weight[ret$weight == 0] <- ot
-  }
+  ret$weight <- array(rep(weight, ret$n_p))
   ## remove auxiliary variables
   ret$fixed <- NULL
   ret$np_pmf_length <- NULL
