@@ -29,7 +29,7 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 * Added content to the vignette for the estimate_truncation model. By @sbfnk in #439 and reviewed by @seabbs.
 * Added a feature to the `estimate_truncation` to allow it to be applied to time series that are shorter than the truncation max. By @sbfnk in #438 and reviewed by @seabbs.
 * Changed the `estimate_truncation` to use the `dist_spec` interface, deprecating existing options `max_trunc` and `trunc_dist`. By @sbfnk in #448 reviewed by @seabbs.
-* Added a `weigh_prior_delays` argument to the main functions, allowing the users to choose whether to weigh delay priors by the number of data points or not. By @sbfnk in #450 and reviewed by @seabbs.
+* Added a `weigh_delay_priors` argument to the main functions, allowing the users to choose whether to weigh delay priors by the number of data points or not. By @sbfnk in #450 and reviewed by @seabbs.
 
 ## Documentation
 

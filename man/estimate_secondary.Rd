@@ -15,7 +15,7 @@ estimate_secondary(
   CrIs = c(0.2, 0.5, 0.9),
   priors = NULL,
   model = NULL,
-  weigh_prior_delays = FALSE,
+  weigh_delay_priors = FALSE,
   verbose = interactive(),
   ...
 )
@@ -56,10 +56,12 @@ fit.}
 \item{model}{A compiled stan model to override the default model. May be
 useful for package developers or those developing extensions.}
 
-\item{weigh_prior_delays}{Logical. If TRUE, all delay distribution
-priors will be weighted by the number of observation data points, usually
+\item{weigh_delay_priors}{Logical. If TRUE, all delay distribution priors
+will be weighted by the number of observation data points, in doing so
+approximately placing an independent prior at each time step and usually
 preventing the posteriors from shifting. If FALSE (default), no weight will
-be applied, i.e. delay distributions will be treated as a single parameters.}
+be applied, i.e. delay distributions will be treated as a single
+parameters.}
 
 \item{verbose}{Logical, should model fitting progress be returned. Defaults
 to \code{interactive()}.}

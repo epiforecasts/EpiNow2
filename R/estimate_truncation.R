@@ -47,11 +47,13 @@
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
 #'
-#' @param weigh_prior_delays Logical. If TRUE, all delay distribution
-#' priors will be weighted by the number of observation data points, usually
+#' @param weigh_delay_priors Logical. If TRUE, all delay distribution priors
+#' will be weighted by the number of observation data points, in doing so
+#' approximately placing an independent prior at each time step and usually
 #' preventing the posteriors from shifting. If FALSE (default), no weight will
-#' be applied, i.e. delay distributions will be treated as a single parameters.
-#
+#' be applied, i.e. delay distributions will be treated as a single
+#' parameters.
+#'
 #' @param verbose Logical, should model fitting progress be returned.
 #'
 #' @param ... Additional parameters to pass to `rstan::sampling`.
@@ -143,7 +145,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 ),
                                 model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),
-                                weigh_prior_delays = FALSE,
+                                weigh_delay_priors = FALSE,
                                 verbose = TRUE,
                                 ...) {
 
@@ -224,7 +226,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   data <- c(data, create_stan_delays(
     trunc = truncation,
-    weight = ifelse(weigh_prior_delays, data$t, 1)
+    weight = ifelse(weigh_delay_priors, data$t, 1)
   ))
 
   ## convert to integer

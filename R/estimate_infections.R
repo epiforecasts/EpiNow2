@@ -35,8 +35,9 @@
 #' @param horizon Numeric, defaults to 7. Number of days into the future to
 #' forecast.
 #'
-#' @param weigh_prior_delays Logical. If TRUE (default), all delay distribution
-#' priors will be weighted by the number of observation data points, usually
+#' @param weigh_delay_priors Logical. If TRUE (default), all delay distribution
+#' priors will be weighted by the number of observation data points, in doing so
+#' approximately placing an independent prior at each time step and usually
 #' preventing the posteriors from shifting. If FALSE, no weight will be applied,
 #' i.e. delay distributions will be treated as a single parameters.
 #'
@@ -251,7 +252,7 @@ estimate_infections <- function(reported_cases,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 filter_leading_zeros = TRUE,
                                 zero_threshold = Inf,
-                                weigh_prior_delays = TRUE,
+                                weigh_delay_priors = TRUE,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
   set_dt_single_thread()
@@ -319,7 +320,7 @@ estimate_infections <- function(reported_cases,
     delay = delays,
     trunc = truncation,
     weight = ifelse(
-      weigh_prior_delays, data$t - data$seeding_time - data$horizon, 1
+      weigh_delay_priors, data$t - data$seeding_time - data$horizon, 1
     )
   ))
 

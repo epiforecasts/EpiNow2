@@ -12,7 +12,7 @@ estimate_truncation(
   truncation = dist_spec(mean = 0, sd = 0, mean_sd = 1, sd_sd = 1, max = 10),
   model = NULL,
   CrIs = c(0.2, 0.5, 0.9),
-  weigh_prior_delays = FALSE,
+  weigh_delay_priors = FALSE,
   verbose = TRUE,
   ...
 )
@@ -38,10 +38,12 @@ useful for package developers or those developing extensions.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{weigh_prior_delays}{Logical. If TRUE, all delay distribution
-priors will be weighted by the number of observation data points, usually
+\item{weigh_delay_priors}{Logical. If TRUE, all delay distribution priors
+will be weighted by the number of observation data points, in doing so
+approximately placing an independent prior at each time step and usually
 preventing the posteriors from shifting. If FALSE (default), no weight will
-be applied, i.e. delay distributions will be treated as a single parameters.}
+be applied, i.e. delay distributions will be treated as a single
+parameters.}
 
 \item{verbose}{Logical, should model fitting progress be returned.}
 
