@@ -50,19 +50,19 @@ model {
 
   for(i in 1:N){
     if (dist == 0) {
-      target += log(
-        exponential_cdf(up[i] | lambda) -
-        exponential_cdf(low[i] | lambda)
+      target += log_diff_exp(
+        exponential_lcdf(up[i] | lambda),
+        exponential_lcdf(low[i] | lambda)
       );
     } else if (dist == 1) {
-      target += log(
-        lognormal_cdf(up[i] | mu, sigma) -
-        lognormal_cdf(low[i] | mu, sigma)
+      target += log_diff_exp(
+        lognormal_lcdf(up[i] | mu, sigma),
+        lognormal_lcdf(low[i] | mu, sigma)
       );
     } else if (dist == 2) {
-      target += log(
-        gamma_cdf(up[i] | alpha, beta) -
-        gamma_cdf(low[i] | alpha, beta)
+      target += log_diff_exp(
+        gamma_lcdf(up[i] | alpha, beta),
+        gamma_lcdf(low[i] | alpha, beta)
       );
     }
   }
