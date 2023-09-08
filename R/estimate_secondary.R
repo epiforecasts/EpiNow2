@@ -40,6 +40,13 @@
 #' use for estimation but not to fit to at the beginning of the time series.
 #' This must be less than the number of observations.
 #'
+#' @param weigh_delay_priors Logical. If TRUE, all delay distribution priors
+#' will be weighted by the number of observation data points, in doing so
+#' approximately placing an independent prior at each time step and usually
+#' preventing the posteriors from shifting. If FALSE (default), no weight will
+#' be applied, i.e. delay distributions will be treated as a single
+#' parameters.
+#'
 #' @param verbose Logical, should model fitting progress be returned. Defaults
 #' to `interactive()`.
 #'
@@ -129,8 +136,7 @@ estimate_secondary <- function(reports,
                                delays = delay_opts(
                                  dist_spec(
                                    mean = 2.5, mean_sd = 0.5,
-                                   sd = 0.47, sd_sd = 0.25, max = 30,
-                                   prior_weight = 1
+                                   sd = 0.47, sd_sd = 0.25, max = 30
                                  )
                                ),
                                truncation = trunc_opts(),
@@ -139,6 +145,7 @@ estimate_secondary <- function(reports,
                                CrIs = c(0.2, 0.5, 0.9),
                                priors = NULL,
                                model = NULL,
+                               weigh_delay_priors = FALSE,
                                verbose = interactive(),
                                ...) {
   reports <- data.table::as.data.table(reports)
@@ -160,7 +167,8 @@ estimate_secondary <- function(reports,
   # delay data
   data <- c(data, create_stan_delays(
     delay = delays,
-    trunc = truncation
+    trunc = truncation,
+    weight = ifelse(weigh_delay_priors, data$t, 1)
   ))
 
   # observation model data

@@ -16,5 +16,3 @@
   array[delay_n] int<lower = 0> delay_types_p;          // whether delay types are parametric
   array[delay_n] int<lower = 0> delay_types_id;          // whether delay types are parametric
   array[delay_types + 1] int<lower = 0> delay_types_groups; // index of each delay (parametric or non)
-
-  int<lower = 0> delay_id; // id of generation time

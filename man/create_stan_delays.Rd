@@ -4,14 +4,13 @@
 \alias{create_stan_delays}
 \title{Create delay variables for stan}
 \usage{
-create_stan_delays(..., ot)
+create_stan_delays(..., weight = 1)
 }
 \arguments{
 \item{...}{Named delay distributions specified using \code{dist_spec()}.
 The names are assigned to IDs}
 
-\item{ot}{Integer, number of observations (needed if weighing any priors)
-with the number of observations}
+\item{weight}{Numeric, weight associated with delay priors; default: 1}
 }
 \value{
 A list of variables as expected by the stan model

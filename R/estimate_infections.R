@@ -35,6 +35,12 @@
 #' @param horizon Numeric, defaults to 7. Number of days into the future to
 #' forecast.
 #'
+#' @param weigh_delay_priors Logical. If TRUE (default), all delay distribution
+#' priors will be weighted by the number of observation data points, in doing so
+#' approximately placing an independent prior at each time step and usually
+#' preventing the posteriors from shifting. If FALSE, no weight will be applied,
+#' i.e. delay distributions will be treated as a single parameters.
+#'
 #' @param verbose Logical, defaults to `TRUE` when used interactively and
 #' otherwise `FALSE`. Should verbose debug progress messages be printed.
 #' Corresponds to the "DEBUG" level from `futile.logger`. See `setup_logging`
@@ -47,6 +53,7 @@
 #' @author Sam Abbott
 #' @seealso epinow regional_epinow forecast_infections simulate_infections
 #' @inheritParams create_stan_args
+#' @inheritParams create_stan_data
 #' @inheritParams create_stan_data
 #' @inheritParams create_gp_data
 #' @inheritParams fit_model_with_nuts
@@ -245,6 +252,7 @@ estimate_infections <- function(reported_cases,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 filter_leading_zeros = TRUE,
                                 zero_threshold = Inf,
+                                weigh_delay_priors = TRUE,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
   set_dt_single_thread()
@@ -311,7 +319,9 @@ estimate_infections <- function(reported_cases,
     gt = generation_time,
     delay = delays,
     trunc = truncation,
-    ot = data$t - data$seeding_time - data$horizon
+    weight = ifelse(
+      weigh_delay_priors, data$t - data$seeding_time - data$horizon, 1
+    )
   ))
 
   # Set up default settings
