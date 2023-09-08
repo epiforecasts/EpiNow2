@@ -106,7 +106,7 @@ test_that("estimate_secondary works with weigh_prior_delays = TRUE", {
     mean = 2.5, mean_sd = 0.5, sd = 0.47, sd_sd = 0.25, max = 30
   )
   inc_weigh <- estimate_secondary(
-    cases[1:60], delays = weight_0_delays,
+    cases[1:60], delays = delays,
     obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
     weigh_prior_delays = TRUE, verbose = FALSE
   )
