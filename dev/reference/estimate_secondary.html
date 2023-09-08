@@ -34,7 +34,7 @@ for an application forecasting Covid-19 deaths in Germany and Poland."><meta pro
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9008</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -106,13 +106,14 @@ for an application forecasting Covid-19 deaths in Germany and Poland.</p>
 <span>  <span class="va">reports</span>,</span>
 <span>  secondary <span class="op">=</span> <span class="fu"><a href="secondary_opts.html">secondary_opts</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  delays <span class="op">=</span> <span class="fu"><a href="delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">2.5</span>, mean_sd <span class="op">=</span> <span class="fl">0.5</span>, sd <span class="op">=</span> <span class="fl">0.47</span>, sd_sd <span class="op">=</span> <span class="fl">0.25</span>, max <span class="op">=</span></span>
-<span>    <span class="fl">30</span>, prior_weight <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="fl">30</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  truncation <span class="op">=</span> <span class="fu"><a href="trunc_opts.html">trunc_opts</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  obs <span class="op">=</span> <span class="fu"><a href="obs_opts.html">obs_opts</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  burn_in <span class="op">=</span> <span class="fl">14</span>,</span>
 <span>  CrIs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span><span class="op">)</span>,</span>
 <span>  priors <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  weigh_delay_priors <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -171,6 +172,15 @@ fit.</p></dd>
 <dt>model</dt>
 <dd><p>A compiled stan model to override the default model. May be
 useful for package developers or those developing extensions.</p></dd>
+
+
+<dt>weigh_delay_priors</dt>
+<dd><p>Logical. If TRUE, all delay distribution priors
+will be weighted by the number of observation data points, in doing so
+approximately placing an independent prior at each time step and usually
+preventing the posteriors from shifting. If FALSE (default), no weight will
+be applied, i.e. delay distributions will be treated as a single
+parameters.</p></dd>
 
 
 <dt>verbose</dt>

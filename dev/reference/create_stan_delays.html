@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9008</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,7 +66,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">create_stan_delays</span><span class="op">(</span><span class="va">...</span>, <span class="va">ot</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">create_stan_delays</span><span class="op">(</span><span class="va">...</span>, weight <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -76,9 +76,8 @@
 The names are assigned to IDs</p></dd>
 
 
-<dt>ot</dt>
-<dd><p>Integer, number of observations (needed if weighing any priors)
-with the number of observations</p></dd>
+<dt>weight</dt>
+<dd><p>Numeric, weight associated with delay priors; default: 1</p></dd>
 
 </dl></div>
     <div class="section level2">

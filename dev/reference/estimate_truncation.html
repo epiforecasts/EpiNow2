@@ -68,7 +68,7 @@ Truncation is log normally distributed.
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9008</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -152,10 +152,10 @@ overdispersion and additive noise term.</p>
 <span>  <span class="va">max_truncation</span>,</span>
 <span>  trunc_max <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  trunc_dist <span class="op">=</span> <span class="st">"lognormal"</span>,</span>
-<span>  truncation <span class="op">=</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">0</span>, mean_sd <span class="op">=</span> <span class="fl">1</span>, sd_sd <span class="op">=</span> <span class="fl">1</span>, max <span class="op">=</span> <span class="fl">10</span>, prior_weight</span>
-<span>    <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span>,</span>
+<span>  truncation <span class="op">=</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">0</span>, mean_sd <span class="op">=</span> <span class="fl">1</span>, sd_sd <span class="op">=</span> <span class="fl">1</span>, max <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
 <span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  CrIs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span><span class="op">)</span>,</span>
+<span>  weigh_delay_priors <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -195,6 +195,15 @@ useful for package developers or those developing extensions.</p></dd>
 
 <dt>CrIs</dt>
 <dd><p>Numeric vector of credible intervals to calculate.</p></dd>
+
+
+<dt>weigh_delay_priors</dt>
+<dd><p>Logical. If TRUE, all delay distribution priors
+will be weighted by the number of observation data points, in doing so
+approximately placing an independent prior at each time step and usually
+preventing the posteriors from shifting. If FALSE (default), no weight will
+be applied, i.e. delay distributions will be treated as a single
+parameters.</p></dd>
 
 
 <dt>verbose</dt>
