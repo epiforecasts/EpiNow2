@@ -158,17 +158,17 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">report</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            date cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-26     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-27     6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-28     8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-29    31</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-03-01    40</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-26     3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-27     9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-28    13</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-29    18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-03-01    36</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ---                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 122: 2020-06-26   234</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 123: 2020-06-27   263</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 124: 2020-06-28   253</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 125: 2020-06-29   232</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 126: 2020-06-30   256</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 122: 2020-06-26   253</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 123: 2020-06-27   246</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 124: 2020-06-28   257</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 125: 2020-06-29   249</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 126: 2020-06-30   237</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># mapping with a weekly reporting effect</span></span></span>
 <span class="r-in"><span><span class="va">report_weekly</span> <span class="op">&lt;-</span> <span class="fu">adjust_infection_to_report</span><span class="op">(</span></span></span>
@@ -178,17 +178,17 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">report_weekly</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            date cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-25     2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-26     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-27    13</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-28    14</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-02-29    29</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-26     3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-27     4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-28    15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-29    23</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-03-01    24</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ---                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 123: 2020-06-26   246</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 124: 2020-06-27   222</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 125: 2020-06-28   240</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 126: 2020-06-29   253</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 127: 2020-06-30   246</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 122: 2020-06-26   240</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 123: 2020-06-27   237</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 124: 2020-06-28   255</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 125: 2020-06-29   293</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 126: 2020-06-30   265</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># map using a deterministic median shift for both delays</span></span></span>
 <span class="r-in"><span><span class="va">report_median</span> <span class="op">&lt;-</span> <span class="fu">adjust_infection_to_report</span><span class="op">(</span><span class="va">cases</span>,</span></span>
@@ -197,17 +197,17 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">report_median</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            date confirm cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-03-02      14    14</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-03-03      62    62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-03-04      53    53</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-03-05      97    97</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-03-06      93    93</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-03-03      14    14</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-03-04      62    62</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-03-05      53    53</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-03-06      97    97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-03-07      93    93</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ---                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 126: 2020-07-05     296   296</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 127: 2020-07-06     255   255</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 128: 2020-07-07     175   175</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 129: 2020-07-08     174   174</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 130: 2020-07-09     126   126</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 126: 2020-07-06     296   296</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 127: 2020-07-07     255   255</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 128: 2020-07-08     175   175</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 129: 2020-07-09     174   174</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 130: 2020-07-10     126   126</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># map with a weekly reporting effect and stochastic reporting model</span></span></span>
 <span class="r-in"><span><span class="va">report_stochastic</span> <span class="op">&lt;-</span> <span class="fu">adjust_infection_to_report</span><span class="op">(</span></span></span>
@@ -221,17 +221,17 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">report_stochastic</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            date cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-25     2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-26     7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-27     9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-28    19</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-02-29    18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-24     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-25     2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-26     2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-27    12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-02-28     9</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ---                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 123: 2020-06-26   305</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 124: 2020-06-27   226</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 125: 2020-06-28   225</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 126: 2020-06-29   300</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 127: 2020-06-30   283</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 124: 2020-06-26   264</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 125: 2020-06-27   199</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 126: 2020-06-28   244</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 127: 2020-06-29   219</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 128: 2020-06-30   232</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
