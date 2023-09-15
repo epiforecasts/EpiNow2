@@ -237,7 +237,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   init_fn <- function() {
     data <- list(
       delay_mean = array(rnorm(1, 0, 1)),
-      delay_sd = array(abs(rnorm(1, 0, 1))),
+      delay_sd = array(abs(rnorm(1, 0, 1))) + 1,
       phi = abs(rnorm(1, 0, 1)),
       sigma = abs(rnorm(1, 0, 1))
     )
