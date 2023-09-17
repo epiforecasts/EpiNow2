@@ -4,7 +4,7 @@ This release is in development. For a stable release install 1.3.5 from CRAN.
 
 ## Breaking changes
 
-- The external distribution interface has been updated to use the `dist_spec()` function. This comes with a range of benefits, including optimising model fitting when static delays are used (by convolving when first defined vs in stan), easy printing (using `print()`), and easy plotting (using `plot()`). It also makes it possible to use all supported distributions everywhere (i.e, as a generation time or reporting delay). However, this update will break most users code as the interface has changed. See the documentation for `dist_spec()` for more details. By @sbfnk in #363 and reviewed by @seabbs.
+- The external distribution interface has been updated to use the `dist_spec()` function. This comes with a range of benefits, including optimising model fitting when static delays are used (by convolving when first defined vs in stan), easy printing (using `print()`), and easy plotting (using `plot()`). It also makes it possible to use all supported distributions everywhere (i.e, as a generation time or reporting delay). However, while for now backwards compatibility has been ensured this update will break most users' code eventually as the interface has changed. See the documentation for `dist_spec()` for more details. By @sbfnk in #363 and reviewed by @seabbs.
 
 ## Package
 
