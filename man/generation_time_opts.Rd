@@ -4,12 +4,34 @@
 \alias{generation_time_opts}
 \title{Generation Time Distribution Options}
 \usage{
-generation_time_opts(dist = dist_spec(mean = 1))
+generation_time_opts(
+  dist = dist_spec(mean = 1),
+  ...,
+  disease,
+  source,
+  max = 15L,
+  fixed = FALSE,
+  prior_weight
+)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions generated
 using \code{\link[=dist_spec]{dist_spec()}} or \code{\link[=get_generation_time]{get_generation_time()}}. If no distribution is given
 a fixed generation time of 1 will be assumed.}
+
+\item{...}{deprecated; use \code{dist} instead}
+
+\item{disease}{deprecated; use \code{dist} instead}
+
+\item{source}{deprecated; use \code{dist} instead}
+
+\item{max}{deprecated; use \code{dist} instead}
+
+\item{fixed}{deprecated; use \code{dist} instead}
+
+\item{prior_weight}{deprecated; prior weights are now specified as a
+model option. Use the \code{weigh_delay_priors} argument of \code{estimate_infections}
+instead.}
 }
 \value{
 A list summarising the input delay distributions.
