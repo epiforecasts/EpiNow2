@@ -10,6 +10,14 @@
 #' using [dist_spec()] or [get_generation_time()]. If no distribution is given
 #' a fixed generation time of 1 will be assumed.
 #'
+#' @param ... deprecated; use `dist` instead
+#' @param disease deprecated; use `dist` instead
+#' @param source deprecated; use `dist` instead
+#' @param max deprecated; use `dist` instead
+#' @param fixed deprecated; use `dist` instead
+#' @param prior_weight deprecated; prior weights are now specified as a
+#' model option. Use the `weigh_delay_priors` argument of `estimate_infections`
+#' instead.
 #' @return A list summarising the input delay distributions.
 #' @author Sebastian Funk
 #' @author Sam Abbott
@@ -30,14 +38,65 @@
 #' # A generation time sourced from the literature
 #' dist <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' generation_time_opts(dist)
-generation_time_opts <- function(dist = dist_spec(mean = 1)) {
+generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
+                                 disease, source, max = 15L, fixed = FALSE,
+                                 prior_weight) {
+  deprecated_options_given <- FALSE
+  dot_options <- list(...)
+
+  ## check consistent options are given
+  type_options <- (length(dot_options) > 0) + ## distributional parameters
+    (!missing(disease) && !missing(source)) ## from included distributions
+  if (type_options > 1) {
+    stop(
+      "Generation time can be given either as distributional options ",
+      "or as disease/source, but not both."
+    )
+  }
+  if (length(dot_options) > 0) {
+    if (is(dist, "dist_spec")) { ## dist not specified
+      dot_options$dist <- "gamma"
+    }
+    ## set max
+    if (!("max" %in% names(dot_options))) {
+      dot_options$max <- max
+    }
+    ## set default of mean=1 for backwards compatibility
+    if (!("mean" %in% names(dot_options))) {
+      dot_options$mean <- 1
+    }
+    dot_options$fixed <- fixed
+    dist <- do.call(dist_spec, dot_options)
+    deprecated_options_given <- TRUE
+  } else if (!missing(disease) && !missing(source)) {
+    dist <- get_generation_time(disease, source, max, fixed)
+    dist$fixed <- fixed
+    deprecated_options_given <- TRUE
+  }
   if (!is(dist, "dist_spec")) {
-    stop("The generation time distribution must be given either using a call ",
-         "to `dist_spec` or `get_generation_time`. ",
-         "This behaviour has changed from previous versions of `EpiNow2` and ",
-         "any code using it may need to be updated. For examples and more ",
-         "information, see the relevant documentation pages using ",
-         "`?generation_time_opts`")
+    if (is.list(dist) && length(dot_options) == 0) {
+      dist <- do.call(dist_spec, dist)
+    }
+    deprecated_options_given <- TRUE
+  }
+  if (!missing(prior_weight)) {
+    deprecate_warn(
+      "1.4.0", "generation_time_opts(prior_weight)",
+      "estimate_infections(weigh_delay_prior)",
+      "This argument will be removed in version 2.0.0."
+    )
+  }
+  if (deprecated_options_given) {
+    warning(
+      "The generation time distribution must be given to ",
+      "`generation_time_opts` using a call to either ",
+      "`dist_spec` or `get_generation_time`. ",
+      "This behaviour has changed from previous versions of `EpiNow2` and ",
+      "any code using it may need to be updated as any other ways of ",
+      "specifying the generation time are deprecated and will be removed in ",
+      "version 2.0.0. For examples and more ",
+      "information, see the relevant documentation pages using ",
+      "`?generation_time_opts`")
   }
   return(dist)
 }
@@ -49,6 +108,8 @@ generation_time_opts <- function(dist = dist_spec(mean = 1)) {
 #' functions.
 #' @param dist A delay distribution or series of delay distributions generated
 #' using [dist_spec()]. Default is an empty call to [dist_spec()], i.e. no delay
+#' @param ... deprecated; use `dist` instead
+#' @param fixed deprecated; use `dist` instead
 #' @return A list summarising the input delay distributions.
 #' @author Sam Abbott
 #' @author Sebastian Funk
@@ -68,16 +129,36 @@ generation_time_opts <- function(dist = dist_spec(mean = 1)) {
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = dist_spec()) {
-  if (!is(dist, "dist_spec")) {
-    stop(
+delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
+  dot_options <- list(...)
+  if (!is(dist, "dist_spec")) { ## could be old syntax
+    if (is.list(dist)) {
+      ## combine lists if more than one given
+      dot_options <- c(list(dist), dot_options)
+      dist <- lapply(dot_options, do.call, what = dist_spec)
+      if (length(dist) > 1) {
+        for (i in seq(2, length(dist))) {
+          dist[[1]] <- dist[[1]] + dist[[i]]
+        }
+      }
+      dist <- dist[[1]]
+    } else {
+      stop("`dist` should be given as result of a call to `dist_spec`.")
+    }
+    warning(
       "Delay distributions must be of given either using a call to ",
       "`dist_spec` or one of the `get_...` functions such as ",
-      "`get_incubation_period`. This behaviour has changed from previous ",
-      "versions of `EpiNow2` and any code using it may need to be updated. ",
-      "For examples and more information, see the relevant documentation ",
-      "pages using `?delay_opts`."
+      "`get_incubation_period`. ",
+      "This behaviour has changed from previous versions of `EpiNow2` and ",
+      "any code using it may need to be updated as any other ways of ",
+      "specifying delays are deprecated and will be removed in ",
+      "version 2.0.0. For examples and more ",
+      "information, see the relevant documentation pages using ",
+      "`?delay_opts`."
     )
+  } else if (length(dot_options) > 0) {
+    ## can be removed once dot options are hard deprecated
+    stop("Unknown named arguments passed to `delay_opts`" )
   }
   return(dist)
 }
@@ -106,11 +187,16 @@ delay_opts <- function(dist = dist_spec()) {
 #' trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
 trunc_opts <- function(dist = dist_spec()) {
   if (!is(dist, "dist_spec")) {
-    stop(
+    if (is.list(dist)) {
+      dist <- do.call(dist_spec, dist)
+    }
+    warning(
       "Truncation distributions must be of given either using a call to ",
       "`dist_spec` or one of the `get_...` functions. ",
       "This behaviour has changed from previous versions of `EpiNow2` and ",
-      "any code using it may need to be updated. For examples and more ",
+      "any code using it may need to be updated as any other ways of ",
+      "specifying delays are deprecated and will be removed in ",
+      "version 2.0.0. For examples and more ",
       "information, see the relevant documentation pages using ",
       "`?trunc_opts`"
     )
