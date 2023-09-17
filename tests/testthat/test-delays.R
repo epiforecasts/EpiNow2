@@ -104,3 +104,36 @@ test_that("contradictory delays are caught", {
     "must be 0"
   )
 })
+
+test_that("deprecated arguments are caught", {
+  expect_warning(
+    test_stan_delays(
+      generation_time = generation_time_opts(mean = 3),
+      params = delay_params
+    ), "deprecated"
+  )
+  expect_error(
+    test_stan_delays(
+      delays = delay_opts(mean = 3),
+      params = delay_params
+    ), "named arguments"
+  )
+  expect_warning(
+    test_stan_delays(
+      delays = delay_opts(list(mean = 3)),
+      params = delay_params
+    ), "deprecated"
+  )
+  expect_warning(
+    test_stan_delays(
+      delays = delay_opts(list(mean = 3)),
+      params = delay_params
+    ), "deprecated"
+  )
+  expect_warning(
+    test_stan_delays(
+      delays = trunc_opts(list(mean = 3)),
+      params = delay_params
+    ), "deprecated"
+  )
+})
