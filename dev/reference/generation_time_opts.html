@@ -78,7 +78,15 @@ passed to <a href="dist_spec.html">dist_spec</a>.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">generation_time_opts</span><span class="op">(</span>dist <span class="op">=</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">generation_time_opts</span><span class="op">(</span></span>
+<span>  dist <span class="op">=</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  <span class="va">disease</span>,</span>
+<span>  <span class="va">source</span>,</span>
+<span>  max <span class="op">=</span> <span class="fl">15L</span>,</span>
+<span>  fixed <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">prior_weight</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -87,6 +95,32 @@ passed to <a href="dist_spec.html">dist_spec</a>.</p>
 <dd><p>A delay distribution or series of delay distributions generated
 using <code><a href="dist_spec.html">dist_spec()</a></code> or <code><a href="get_generation_time.html">get_generation_time()</a></code>. If no distribution is given
 a fixed generation time of 1 will be assumed.</p></dd>
+
+
+<dt>...</dt>
+<dd><p>deprecated; use <code>dist</code> instead</p></dd>
+
+
+<dt>disease</dt>
+<dd><p>deprecated; use <code>dist</code> instead</p></dd>
+
+
+<dt>source</dt>
+<dd><p>deprecated; use <code>dist</code> instead</p></dd>
+
+
+<dt>max</dt>
+<dd><p>deprecated; use <code>dist</code> instead</p></dd>
+
+
+<dt>fixed</dt>
+<dd><p>deprecated; use <code>dist</code> instead</p></dd>
+
+
+<dt>prior_weight</dt>
+<dd><p>deprecated; prior weights are now specified as a
+model option. Use the <code>weigh_delay_priors</code> argument of <code>estimate_infections</code>
+instead.</p></dd>
 
 </dl></div>
     <div class="section level2">
