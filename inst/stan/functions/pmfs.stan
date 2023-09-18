@@ -5,33 +5,33 @@
 // @author Sam Abbott
 // @author Adrian Lison
 vector discretised_pmf(real mu, real sigma, int n, int dist) {
-  vector[n] pmf;
+  vector[n] lpmf;
   if (sigma > 0) {
-    vector[n] upper_cdf;
+    vector[n] upper_lcdf;
     if (dist == 0) {
       for (i in 1:n) {
-        upper_cdf[i] = lognormal_cdf(i, mu, sigma);
+        upper_lcdf[i] = lognormal_lcdf(i | mu, sigma);
       }
     } else if (dist == 1) {
       real alpha = mu^2 / sigma^2;
       real beta = mu / sigma^2;
       for (i in 1:n) {
-        upper_cdf[i] = gamma_cdf(i, alpha, beta);
+        upper_lcdf[i] = gamma_lcdf(i | alpha, beta);
       }
     } else {
       reject("Unknown distribution function provided.");
     }
     // discretise
-    pmf[1] = upper_cdf[1];
-    pmf[2:n] = upper_cdf[2:n] - upper_cdf[1:(n-1)];
+    lpmf[1] = upper_lcdf[1];
+    lpmf[2:n] = log_diff_exp(upper_lcdf[2:n], upper_lcdf[1:(n-1)]);
     // normalize
-    pmf = pmf / upper_cdf[n];
+    lpmf = lpmf - upper_lcdf[n];
   } else {
     // delta function
-    pmf = rep_vector(0, n);
-    pmf[n] = 1;
+    lpmf = rep_vector(negative_infinity(), n);
+    lpmf[n] = 0;
   }
-  return(pmf);
+  return(exp(lpmf));
 }
 
 // reverse a mf

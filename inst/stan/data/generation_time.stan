@@ -1,8 +1,8 @@
-  real gt_mean_sd[1];                   // prior sd of mean generation time
-  real gt_mean_mean[1];                 // prior mean of mean generation time
-  real gt_sd_mean[1];                   // prior mean of sd of generation time
-  real gt_sd_sd[1];                     // prior sd of sd of generation time
-  int<lower = 1> gt_max[1];                        // maximum generation time
-  int gt_fixed[1];                      // 0 = variable gt; 1 = fixed gt
-  int gt_dist[1];                    // distribution (0 = lognormal, 1 = gamma)
+  array[1] real gt_mean_sd;                   // prior sd of mean generation time
+  array[1] real gt_mean_mean;                 // prior mean of mean generation time
+  array[1] real gt_sd_mean;                   // prior mean of sd of generation time
+  array[1] real gt_sd_sd;                     // prior sd of sd of generation time
+  array[1] int<lower = 1> gt_max;                        // maximum generation time
+  array[1] int gt_fixed;                      // 0 = variable gt; 1 = fixed gt
+  array[1] int gt_dist;                    // distribution (0 = lognormal, 1 = gamma)
   int gt_weight;                   
