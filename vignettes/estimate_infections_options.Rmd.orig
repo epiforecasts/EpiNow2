@@ -1,0 +1,386 @@
+---
+title: "Examples: estimate_infections()"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Examples: estimate_infections()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6.5, 
+  fig.height = 6.5
+)
+```
+
+The `estimate_infections()` function encodes a range of different model options.
+In this vignette we apply some of these to the example data provided with the _EpiNow2_ package, highlighting differences in inference results and run times. 
+It is not meant as a comprehensive exploration of all the functionality in the package, but intended to give users a flavour of the kind of model options that exist for reproduction number estimation and forecasting within the package, and the differences in computational speed between them.
+For mathematical detail on the model please consult the [model definition](estimate_infections.html) vignette, and for a more general description of the use of the function, the [estimate_infections workflow](estimate_infections_workflow.html) vignette.
+
+# Set up
+
+We first load the _EpiNow2_ package and also the _rstan_ package that we will use later to show the differences in run times between different model options.
+
+```{r packages}
+library("EpiNow2")
+library("rstan")
+```
+
+We then set the number of cores to use. We will want to run 4 MCMC chains in parallel so we set this to 4. If we had fewer than 4 available or wanted to run fewer than 4 chains (at the expense of some robustness), or had fewer than 4 computing cores available we could set it to that. To find out the number of cores available one can use the [detectCores](https://rdrr.io/r/parallel/detectCores.html) function from the `parallel` package.
+
+```{r}
+options(mc.cores = 4)
+```
+
+# Data
+
+As data set we will use an example data set that is included in the package, representing an outbreak of COVID-19 with an initial rapid increase followed by decreasing incidence.
+
+```{r data, fig.height = 4}
+library("ggplot2")
+reported_cases <- example_confirmed[1:60]
+ggplot(reported_cases, aes(x =  date, y = confirm)) +
+  geom_col() +
+  theme_minimal() +
+  xlab("Date") +
+  ylab("Cases")
+```
+
+# Parameters
+
+Before running the model we need to decide on some parameter values, in particular any delays, the generation time, and a prior on the initial reproduction number.
+
+## Delays: incubation period and reporting delay
+
+Delays reflect the time that passes between infection and reporting, if these exist. In this example, we assume two delays, an _incubation period_ (i.e. delay from infection to symptom onset) and a _reporting delay_ (i.e. the delay from symptom onset to being recorded as a symptomatic case). These delays are usually not the same for everyone and are instead characterised by a distribution. For the incubation period we use an example from the literature that is included in the package.
+
+```{r incubation_period}
+incubation_period <- get_incubation_period(
+  disease = "SARS-CoV-2", source = "lauer"
+)
+incubation_period
+```
+
+For the reporting delay, we use a lognormal distribution with mean of 2 days and 
+standard deviation of 1 day.
+
+```{r reporting_delay}
+reporting_delay <- dist_spec(
+  mean = convert_to_logmean(2, 1), mean_sd = 0,
+  sd = convert_to_logsd(2, 1), sd_sd = 0, max = 10
+)
+reporting_delay
+```
+
+We can combine these delays into one by summing them up
+
+```{r delay}
+delay <- incubation_period + reporting_delay
+delay
+```
+
+## Generation time
+
+If we want to estimate the reproduction number we need to provide a distribution of generation times. Here again we use an example from the literature that is included with the package.
+
+```{r generation_time}
+generation_time <- get_generation_time(
+  disease = "SARS-CoV-2", source = "ganyani"
+)
+generation_time
+```
+
+## Initial reproduction number
+
+Lastly we need to choose a prior for the initial value of the reproduction number. This is assumed by the model to be normally distributed and we can set the mean and the standard deviation. We decide to set the mean to 2 and the standard deviation to 1.
+
+```{r initial_r}
+rt_prior <- list(mean = 2, sd = 0.1)
+```
+
+# Running the model
+
+We are now ready to run the model and will in the following show a number of possible options for doing so.
+
+## Default options
+
+By default the model uses a renewal equation for infections and a Gaussian Process prior for the reproduction number. 
+Putting all the data and parameters together and tweaking the Gaussian Process to have a shorter length scale prior than the default we run.
+
+```{r default}
+def <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior)
+)
+# summarise results
+summary(def)
+# elapsed time (in seconds)
+get_elapsed_time(def$fit)
+# summary plot
+plot(def)
+```
+
+## Reducing the accuracy of the approximate Gaussian Process
+
+To speed up the calculation of the Gaussian Process we could decrease its accuracy, e.g. decrease the proportion of time points to use as basis functions from the default of 0.2 to 0.1.
+
+```{r lower_accuracy}
+agp <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior),
+  gp = gp_opts(basis_prop = 0.1)
+)
+# summarise results
+summary(agp)
+# elapsed time (in seconds)
+get_elapsed_time(agp$fit)
+# summary plot
+plot(agp)
+```
+
+## Adjusting for future susceptible depletion
+
+We might want to adjust for future susceptible depletion.
+Here, we do so by setting the population to 1000000 and projecting the reproduction number from the latest estimate (rather than the default, which fixes the reproduction number to an earlier time point based on the given reporting delays).
+Note that this only affects the forecasts and is done using a crude adjustment (see the [model definition](estimate_infections.html)).
+
+```{r susceptible_depletion}
+dep <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(
+    prior = rt_prior,
+    pop = 1000000, future = "latest"
+  )
+)
+# summarise results
+summary(dep)
+# elapsed time (in seconds)
+get_elapsed_time(dep$fit)
+# summary plot
+plot(dep)
+```
+
+## Adjusting for truncation of the most recent data
+
+We might further want to adjust for right-truncation of recent data estimated using the [estimate_truncation](estimate_truncation.html) model.
+Here, instead of doing so we assume that we know about truncation with mean of 1/2 day, sd 1/2 day, following a lognormal distribution and with a maximum of three days.
+
+```{r define_truncation}
+trunc_dist <- dist_spec(
+  mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
+  sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1,
+  max = 3
+)
+```
+
+We can then use this in the `esimtate_infections()` function using the `truncation` option.
+
+```{r truncation}
+trunc <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  truncation = trunc_opts(trunc_dist),
+  rt = rt_opts(prior = rt_prior)
+)
+# summarise results
+summary(trunc)
+# elapsed time (in seconds)
+get_elapsed_time(trunc$fit)
+# summary plot
+plot(trunc)
+```
+
+## Projecting the reproduction number with the Gaussian Process
+
+Instead of keeping the reproduction number fixed from a certain time point we might want to extrapolate the Gaussian Process into the future. 
+This will lead to wider uncertainty, and the researcher should check whether this or fixing the reproduction number from an earlier is desirable.
+
+```{r gp_projection}
+project_rt <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(
+    prior = rt_prior, future = "project"
+  )
+)
+# summarise results
+summary(project_rt)
+# elapsed time (in seconds)
+get_elapsed_time(project_rt$fit)
+# summary plot
+plot(project_rt)
+```
+
+## Fixed reproduction number
+
+We might want to estimate a fixed reproduction number, i.e. assume that it does not change.
+
+```{r fixed}
+fixed <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  gp = NULL
+)
+# summarise results
+summary(fixed)
+# elapsed time (in seconds)
+get_elapsed_time(fixed$fit)
+# summary plot
+plot(fixed)
+```
+
+## Breakpoints
+
+Instead of assuming the reproduction number varies freely or is fixed, we can assume that it is fixed but with breakpoints.
+This can be done by adding a `breakpoint` column to the reported case data set.
+e.g. if we think that the reproduction number was constant but would like to allow it to change on the 16th of March 2020 we would define a new case data set using
+
+```{r bp_define}
+bp_cases <- data.table::copy(reported_cases)
+bp_cases <- bp_cases[,
+ breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)
+]
+```
+
+We then use this instead of `reported_cases` in the `estimate_infections()` function:
+
+```{r bp}
+bkp <- estimate_infections(bp_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior),
+  gp = NULL
+)
+# summarise results
+summary(bkp)
+# elapsed time (in seconds)
+get_elapsed_time(bkp$fit)
+# summary plot
+plot(bkp)
+```
+
+## Weekly random walk
+
+Instead of a smooth Gaussian Process we might want the reproduction number to change step-wise, e.g. every week.
+This can be achieved using the `rw` option which defines the length of the time step in a random walk that the reproduction number is assumed to follow.
+
+```{r weekly_rw}
+rw <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior, rw = 7),
+  gp = NULL
+)
+# summarise results
+summary(rw)
+# elapsed time (in seconds)
+get_elapsed_time(rw$fit)
+# summary plot
+plot(rw)
+```
+
+## No delays
+
+Whilst _EpiNow2_ allows the user to specify delays, it can also run directly on the data as does e.g. the [EpiEstim](https://CRAN.R-project.org/package=EpiEstim) package.
+
+```{r no_delays}
+no_delay <- estimate_infections(
+  reported_cases,
+  generation_time = generation_time_opts(generation_time)
+)
+# summarise results
+summary(no_delay)
+# elapsed time (in seconds)
+get_elapsed_time(no_delay$fit)
+# summary plot
+plot(no_delay)
+```
+
+## Non-parametric infection model
+
+The package also includes a non-parametric infection model.
+This runs much faster but does not use the renewal equation to generate infections.
+Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting user choice and model generality.
+It also means that the model is questionable for forecasting, which is why were here set the predictive horizon to 0.
+
+```{r nonparametric}
+non_parametric <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = NULL,
+  backcalc = backcalc_opts(),
+  horizon = 0
+)
+# summarise results
+summary(non_parametric)
+# elapsed time (in seconds)
+get_elapsed_time(non_parametric$fit)
+# summary plot
+plot(non_parametric)
+```
+
+# Running the model in production mode
+
+The package contains functionality to run `estimate_infections` in production mode, i.e. with full logging and saving all relevant outputs to the hard drive.
+This is done with the `epinow()` function, that takes the same options as `estimate_infections` with some additional infections that determine, for example, where output gets stored and what output exactly.
+The function can be a useful option when, e.g., running the model daily with updated data on a high-perforumance computing server to feed into a dashboard.
+
+## Running the model simultaneously on multiple regions
+
+The package also contains functionality to conduct inference contemporaneously (if separately) in production mode on multiple time series, e.g. to run the model on multiple regions.
+This is done with the `regional_epinow()` function.
+
+Say, for example, we construct a data sets containing two regions, `testland` and `realland` (in this simple example both containing the same case data).
+
+```{r construct_regional_cases}
+cases <- example_confirmed[1:60]
+cases <- data.table::rbindlist(list(
+  data.table::copy(cases)[, region := "testland"],
+  cases[, region := "realland"]
+ ))
+```
+
+To then run this on multiple regions using the default options above, we could use
+
+```{r regional_epinow, fig.width = 8}
+region_rt <- regional_epinow(
+  reported_cases = cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior),
+)
+## summary
+region_rt$summary$summarised_results$table
+## plot
+region_rt$summary$plots$R
+```
+
+If instead, we wanted to use the Gaussian Process for `testland` and a weekly random walk for `realland` we could specify these separately using the `opts_list()` and `update_list()` functions
+
+```{r regional_epinow_multiple, fig.width = 8}
+gp <- opts_list(gp_opts(), cases)
+gp <- update_list(gp, list(realland = NULL))
+rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+region_separate_rt <- regional_epinow(
+  reported_cases = cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt, gp = gp,
+)
+## summary
+region_separate_rt$summary$summarised_results$table
+## plot
+region_separate_rt$summary$plots$R
+```
