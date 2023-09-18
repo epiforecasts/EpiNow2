@@ -18,7 +18,7 @@ gp_opts(
 }
 \arguments{
 \item{basis_prop}{Numeric, proportion of time points to use as basis
-functions. Defaults to 0.1. Decreasing this value results in a decrease in
+functions. Defaults to 0.2. Decreasing this value results in a decrease in
 accuracy but a faster compute time (with increasing it having the first
 effect). In general smaller posterior length scales require a higher
 proportion of basis functions. See (Riutort-Mayol et al. 2020
