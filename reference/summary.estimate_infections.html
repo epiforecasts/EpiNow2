@@ -12,7 +12,7 @@ summary method for class "estimate_infections".'><meta property="og:image" conte
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.4.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,6 +29,7 @@ summary method for class "estimate_infections".'><meta property="og:image" conte
     <a class="dropdown-item" href="../articles/estimate_infections.html">estimate_infections()</a>
     <a class="dropdown-item" href="../articles/estimate_secondary.html">estimate_secondary()</a>
     <a class="dropdown-item" href="../articles/estimate_truncation.html">estimate_truncation()</a>
+    <a class="dropdown-item" href="../articles/gaussian_process_implementation_details.html">Gaussian Process implementation details</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -79,11 +80,12 @@ summary method for class "estimate_infections".'><meta property="og:image" conte
 
 
 <dt>type</dt>
-<dd><p>A character vector of data types to return. Defaults to "snapshot"
-but also supports "parameters", and "samples". "snapshot" returns a summary at
-a given date (by default the latest date informed by data). "parameters" returns
-summarised parameter estimates that can be further filtered using <code>params</code> to
-show just the parameters of interest and date. "samples" similarly returns posterior
+<dd><p>A character vector of data types to return. Defaults to
+"snapshot" but also supports "parameters", and "samples". "snapshot" return
+a summary at a given date (by default the latest date informed by data).
+"parameters" returns summarised parameter estimates that can be further
+filtered using <code>params</code> to show just the parameters of interest and date.
+"samples" similarly returns posterior
 samples.</p></dd>
 
 

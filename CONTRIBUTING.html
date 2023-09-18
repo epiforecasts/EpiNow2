@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="index.html">EpiNow2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.4.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,6 +27,7 @@
     <a class="dropdown-item" href="articles/estimate_infections.html">estimate_infections()</a>
     <a class="dropdown-item" href="articles/estimate_secondary.html">estimate_secondary()</a>
     <a class="dropdown-item" href="articles/estimate_truncation.html">estimate_truncation()</a>
+    <a class="dropdown-item" href="articles/gaussian_process_implementation_details.html">Gaussian Process implementation details</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -63,7 +64,7 @@
 <p>This outlines how to propose a change to EpiNow2.</p>
 <div class="section level2">
 <h2 id="fixing-typos">Fixing typos<a class="anchor" aria-label="anchor" href="#fixing-typos"></a></h2>
-<p>You can fix typos, spelling mistakes, or grammatical errors in the documentation directly using the GitHub web interface, as long as the changes are made in the <em>source</em> file. This generally means you’ll need to edit <a href="https://roxygen2.r-lib.org/articles/roxygen2.html" class="external-link">roxygen2 comments</a> in an <code>.R</code>, not a <code>.Rd</code> file. You can find the <code>.R</code> file that generates the <code>.Rd</code> by reading the comment in the first line.</p>
+<p>You can fix typos, spelling mistakes, or grammatical errors in the documentation directly using the GitHub web interface, as long as the changes are made in the <em>source</em> file. This generally means you’ll need to edit <a href="https://roxygen2.r-lib.org/articles/roxygen2.html" class="external-link">roxygen2 comments</a> in an <code>.R</code>, not a <code>.Rd</code> file. You can find the <code>.R</code> file that generates the <code>.Rd</code> by reading the comment in the first line of the <code>.Rd</code> file in the <code>/man</code> directory.</p>
 </div>
 <div class="section level2">
 <h2 id="bigger-changes">Bigger changes<a class="anchor" aria-label="anchor" href="#bigger-changes"></a></h2>
@@ -84,7 +85,18 @@
 <span><span class="fu">precommit</span><span class="fu">::</span><span class="fu"><a href="https://lorenzwalthert.github.io/precommit/reference/use_precommit.html" class="external-link">use_precommit</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <ul><li><p>Make your changes, commit to git, and then create a PR by running <code>usethis::pr_push()</code>, and following the prompts in your browser. The title of your PR should briefly describe the change. The body of your PR should contain <code>Fixes #issue-number</code>.</p></li>
 <li><p>For user-facing changes, add a bullet to the top of <code>NEWS.md</code> (i.e. just below the first header). Follow the style described in <a href="https://style.tidyverse.org/news.html" class="external-link uri">https://style.tidyverse.org/news.html</a>.</p></li>
+</ul><div class="section level4">
+<h4 id="what-happens-after-submitting-a-pr">What happens after submitting a PR?<a class="anchor" aria-label="anchor" href="#what-happens-after-submitting-a-pr"></a></h4>
+<ul><li><p>PRs are reviewed by the team before they are merged. The review process only begins after the continuous integration checks, which have to be manually triggered by a maintainer for first-time contributors, have passed.</p></li>
+<li><p>The Github Actions checks currently take a while (about an hour), so it might be helpful to “watch” the repository and check your email for a notification when it’s all done.</p></li>
+<li><p>Usually, all the review conversations occur under the PR. The reviewer merges the PR when every issue has been resolved. Please use the “Resolve conversation” functionality in the GitHub web interface to indicate when a specific issue has been adressed, responding with a commit pointing to the change made where applicable.</p></li>
+<li><p>When a PR is ready to be merged, you may be asked to <a href="https://www.atlassian.com/git/tutorials/merging-vs-rebasing" class="external-link">rebase</a> on the <code>main</code> branch. You can do this by checking out your branch and running <code>git rebase main</code>. If it is successful, your commits will be placed on top of the commit history of <code>main</code> in preparation for a merge. A rebase might result in some merge conflicts. Make sure that they are resolved, then push your changes to your branch again (using the <code>--force</code> option, that is, <code>git push -f</code>, if required).</p></li>
+<li><p>A number of issues can cause the Github checks to fail. It can be helpful to safeguard against them by doing the following:</p></li>
+<li><p>Check that there are no linting issues by running <code>lintr::lint_package()</code>.</p></li>
+<li><p>Run <code>devtoools::check()</code> to check for wider package issues like mismatching documentation, etc. (this currently requires a fair bit of time/computation).</p></li>
+<li><p>(Optional) Turn on continuous integration with Github Actions on your forked repository.</p></li>
 </ul></div>
+</div>
 <div class="section level3">
 <h3 id="code-style">Code style<a class="anchor" aria-label="anchor" href="#code-style"></a></h3>
 <ul><li><p>New code should follow the tidyverse <a href="https://style.tidyverse.org" class="external-link">style guide</a>. You can use the <a href="https://CRAN.R-project.org/package=styler" class="external-link">styler</a> package to apply these styles, but please don’t restyle code that has nothing to do with your PR.</p></li>

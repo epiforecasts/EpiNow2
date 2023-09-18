@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.4.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,6 +27,7 @@
     <a class="dropdown-item" href="../articles/estimate_infections.html">estimate_infections()</a>
     <a class="dropdown-item" href="../articles/estimate_secondary.html">estimate_secondary()</a>
     <a class="dropdown-item" href="../articles/estimate_truncation.html">estimate_truncation()</a>
+    <a class="dropdown-item" href="../articles/gaussian_process_implementation_details.html">Gaussian Process implementation details</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -109,7 +110,8 @@ Growth</dd>
           
           <code><a href="simulate_infections.html">simulate_infections()</a></code> 
         </dt>
-        <dd>Simulate infections using a given trajectory of the time-varying reproduction number</dd>
+        <dd>Simulate infections using a given trajectory of the time-varying
+reproduction number</dd>
       </dl><dl><dt>
           
           <code><a href="estimate_secondary.html">estimate_secondary()</a></code> 
@@ -304,6 +306,11 @@ Growth</dd>
         <dd>Create Stan Data Required for estimate_infections</dd>
       </dl><dl><dt>
           
+          <code><a href="create_stan_delays.html">create_stan_delays()</a></code> 
+        </dt>
+        <dd>Create delay variables for stan</dd>
+      </dl><dl><dt>
+          
           <code><a href="allocate_delays.html">allocate_delays()</a></code> 
         </dt>
         <dd>Allocate Delays into Required Stan Format</dd>
@@ -458,6 +465,11 @@ Growth</dd>
 
       <dl><dt>
           
+          <code><a href="plot.dist_spec.html">plot(<i>&lt;dist_spec&gt;</i>)</a></code> 
+        </dt>
+        <dd>Plot PMF and CDF for a dist_spec object</dd>
+      </dl><dl><dt>
+          
           <code><a href="plot.epinow.html">plot(<i>&lt;epinow&gt;</i>)</a></code> 
         </dt>
         <dd>Plot method for epinow</dd>
@@ -537,7 +549,13 @@ Growth</dd>
           
           <code><a href="bootstrapped_dist_fit.html">bootstrapped_dist_fit()</a></code> 
         </dt>
-        <dd>Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution Parameters</dd>
+        <dd>Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution
+Parameters</dd>
+      </dl><dl><dt>
+          
+          <code><a href="c.dist_spec.html">c(<i>&lt;dist_spec&gt;</i>)</a></code> 
+        </dt>
+        <dd>Combines multiple delay distributions for further processing</dd>
       </dl><dl><dt>
           
           <code><a href="dist_fit.html">dist_fit()</a></code> 
@@ -555,6 +573,11 @@ Growth</dd>
         <dd>Specify a distribution.</dd>
       </dl><dl><dt>
           
+          <code><a href="dist_spec_plus.html">dist_spec_plus()</a></code> 
+        </dt>
+        <dd>Creates a delay distribution as the sum of two other delay distributions</dd>
+      </dl><dl><dt>
+          
           <code><a href="gamma_dist_def.html">gamma_dist_def()</a></code> 
         </dt>
         <dd>Generate a Gamma Distribution Definition Based on Parameter Estimates</dd>
@@ -570,14 +593,29 @@ Growth</dd>
         <dd>Generate a Log Normal Distribution Definition Based on Parameter Estimates</dd>
       </dl><dl><dt>
           
+          <code><a href="mean.dist_spec.html">mean(<i>&lt;dist_spec&gt;</i>)</a></code> 
+        </dt>
+        <dd>Returns the mean of one or more delay distribution</dd>
+      </dl><dl><dt>
+          
+          <code><a href="plot.dist_spec.html">plot(<i>&lt;dist_spec&gt;</i>)</a></code> 
+        </dt>
+        <dd>Plot PMF and CDF for a dist_spec object</dd>
+      </dl><dl><dt>
+          
+          <code><a href="plus-.dist_spec.html">`+`(<i>&lt;dist_spec&gt;</i>)</a></code> 
+        </dt>
+        <dd>Creates a delay distribution as the sum of two other delay distributions</dd>
+      </dl><dl><dt>
+          
+          <code><a href="print.dist_spec.html">print(<i>&lt;dist_spec&gt;</i>)</a></code> 
+        </dt>
+        <dd>Prints the parameters of one or more delay distributions</dd>
+      </dl><dl><dt>
+          
           <code><a href="sample_approx_dist.html">sample_approx_dist()</a></code> 
         </dt>
         <dd>Approximate Sampling a Distribution using Counts</dd>
-      </dl><dl><dt>
-          
-          <code><a href="tune_inv_gamma.html">tune_inv_gamma()</a></code> 
-        </dt>
-        <dd>Tune an Inverse Gamma to Achieve the Target Truncation</dd>
       </dl></div><div class="section level2">
       <h2 id="simulate">Simulate<a class="anchor" aria-label="anchor" href="#simulate"></a></h2>
       
@@ -593,7 +631,8 @@ Growth</dd>
           
           <code><a href="simulate_infections.html">simulate_infections()</a></code> 
         </dt>
-        <dd>Simulate infections using a given trajectory of the time-varying reproduction number</dd>
+        <dd>Simulate infections using a given trajectory of the time-varying
+reproduction number</dd>
       </dl><dl><dt>
           
           <code><a href="simulate_secondary.html">simulate_secondary()</a></code> 
@@ -676,6 +715,11 @@ Growth</dd>
           <code><a href="get_regions_with_most_reports.html">get_regions_with_most_reports()</a></code> 
         </dt>
         <dd>Get Regions with Most Reported Cases</dd>
+      </dl><dl><dt>
+          
+          <code><a href="get_seeding_time.html">get_seeding_time()</a></code> 
+        </dt>
+        <dd>Estimate seeding time from delays and generation time</dd>
       </dl><dl><dt>
           
           <code><a href="setup_target_folder.html">setup_target_folder()</a></code> 

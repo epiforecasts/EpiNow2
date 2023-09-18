@@ -31,7 +31,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.4.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,7 @@
     <a class="dropdown-item" href="../articles/estimate_infections.html">estimate_infections()</a>
     <a class="dropdown-item" href="../articles/estimate_secondary.html">estimate_secondary()</a>
     <a class="dropdown-item" href="../articles/estimate_truncation.html">estimate_truncation()</a>
+    <a class="dropdown-item" href="../articles/gaussian_process_implementation_details.html">Gaussian Process implementation details</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -95,6 +96,47 @@
     
 <p><strong>This is a work in progress. Please consider submitting a PR
 to improve it.</strong></p>
+<p>This model deals with the problem of <em>nowcasting</em>, or
+adjusting for right-truncation in reported count data. This occurs when
+the quantity being observed, for example cases, hospitalisations or
+deaths, is reported with a delay, resulting in an underestimation of
+recent counts. The <code><a href="../reference/estimate_truncation.html">estimate_truncation()</a></code> model attempts to
+infer parameters of the underlying delay distributions from multiple
+snapshots of past data. It is designed to be a simple model that can
+integrate with the other models in the package and therefore may not be
+ideal for all uses. For a more principled approach to nowcasting please
+consider using the <a href="https://package.epinowcast.org" class="external-link">epinowcast</a> package.</p>
+<p>Given snapshots <span class="math inline">\(C^{i}_{t}\)</span>
+reflecting reported counts for time <span class="math inline">\(t\)</span> where <span class="math inline">\(i=1\ldots S\)</span> is in order of recency
+(earliest snapshots first) and <span class="math inline">\(S\)</span> is
+the number of past snapshots used for estimation, we try to infer the
+parameters of a discrete truncation distribution <span class="math inline">\(\zeta(\tau | \mu_{\zeta}, \sigma_{\zeta})\)</span>
+with corresponding probability mass function <span class="math inline">\(\Zeta(\tau | \mu_{\zeta}\)</span>.</p>
+<p>The model assumes that final counts <span class="math inline">\(D_{t}\)</span> are related to observed snapshots
+via the truncation distribution such that</p>
+<p><span class="math display">\[\begin{equation}
+C^{i &lt; S)_{t}_\sim \mathcal{NegBinom}\left(\Zeta (T_i - t |
+\mu_{\Zeta}, \sigma_{\Zeta}) D(t) + \sigma, \varphi\right)
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(T_i\)</span> is the date of the
+final observation in snapshot <span class="math inline">\(i\)</span>,
+<span class="math inline">\(\Zeta(\tau)\)</span> is defined to be zero
+for negative values of <span class="math inline">\(\tau\)</span> and
+<span class="math inline">\(\sigma\)</span> is an additional error
+term.</p>
+<p>The final counts <span class="math inline">\(D_{t}\)</span> are
+estimated from the most recent snapshot as</p>
+<p><span class="math display">\[\begin{equation}
+D_t = \frac{C^{S}}{\Zeta (T_\mathrm{S} - t | \mu_{\Zeta},
+\sigma_{\Zeta})}
+\end{equation}\]</span></p>
+<p>Relevant priors are:</p>
+<p><span class="math display">\[\begin{align}
+\mu_\zeta &amp;\sim \mathrm{Normal}(0, 1)\\
+\sigma_\zeta &amp;\sim \mathrm{HalfNormal}(0, 1)\\
+\varphi &amp;\sim \mathrm{HalfNormal}(0, 1)\\
+\sigma &amp;\sim \mathrm{HalfNormal}(0, 1)
+\end{align}\]</span></p>
   </main>
 </div>
 

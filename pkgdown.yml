@@ -6,7 +6,8 @@ articles:
   estimate_infections: estimate_infections.html
   estimate_secondary: estimate_secondary.html
   estimate_truncation: estimate_truncation.html
-last_built: 2023-09-17T17:36Z
+  gaussian_process_implementation_details: gaussian_process_implementation_details.html
+last_built: 2023-09-18T09:32Z
 urls:
   reference: epiforecasts.io/EpiNow2/reference
   article: epiforecasts.io/EpiNow2/articles

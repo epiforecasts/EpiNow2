@@ -28,6 +28,9 @@
     <loc>epiforecasts.io/EpiNow2/articles/estimate_truncation.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/articles/gaussian_process_implementation_details.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/articles/index.html</loc>
   </url>
   <url>
@@ -62,6 +65,9 @@
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/reference/bootstrapped_dist_fit.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/reference/c.dist_spec.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/reference/calc_CrI.html</loc>
@@ -124,6 +130,9 @@
     <loc>epiforecasts.io/EpiNow2/reference/create_stan_data.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/reference/create_stan_delays.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/reference/delay_opts.html</loc>
   </url>
   <url>
@@ -134,6 +143,9 @@
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/reference/dist_spec.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/reference/dist_spec_plus.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/reference/epinow.html</loc>
@@ -223,6 +235,9 @@
     <loc>epiforecasts.io/EpiNow2/reference/get_regions_with_most_reports.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/reference/get_seeding_time.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/reference/gp_opts.html</loc>
   </url>
   <url>
@@ -250,10 +265,16 @@
     <loc>epiforecasts.io/EpiNow2/reference/match_output_arguments.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/reference/mean.dist_spec.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/reference/obs_opts.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/reference/opts_list.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/reference/plot.dist_spec.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/reference/plot.epinow.html</loc>
@@ -275,6 +296,12 @@
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/reference/plot_summary.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/reference/plus-.dist_spec.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/reference/print.dist_spec.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/reference/process_region.html</loc>

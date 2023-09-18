@@ -68,7 +68,7 @@ Truncation is log normally distributed.
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.4.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,6 +85,7 @@ Truncation is log normally distributed.
     <a class="dropdown-item" href="../articles/estimate_infections.html">estimate_infections()</a>
     <a class="dropdown-item" href="../articles/estimate_secondary.html">estimate_secondary()</a>
     <a class="dropdown-item" href="../articles/estimate_truncation.html">estimate_truncation()</a>
+    <a class="dropdown-item" href="../articles/gaussian_process_implementation_details.html">Gaussian Process implementation details</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -150,9 +151,11 @@ overdispersion and additive noise term.</p>
 <span>  <span class="va">obs</span>,</span>
 <span>  <span class="va">max_truncation</span>,</span>
 <span>  trunc_max <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>  trunc_dist <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lognormal"</span><span class="op">)</span>,</span>
+<span>  trunc_dist <span class="op">=</span> <span class="st">"lognormal"</span>,</span>
+<span>  truncation <span class="op">=</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">0</span>, mean_sd <span class="op">=</span> <span class="fl">1</span>, sd_sd <span class="op">=</span> <span class="fl">1</span>, max <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
 <span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  CrIs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span><span class="op">)</span>,</span>
+<span>  weigh_delay_priors <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -168,17 +171,21 @@ of dates.</p></dd>
 
 
 <dt>max_truncation</dt>
-<dd><p>Deprecated; use <code>trunc_max</code> instead.</p></dd>
+<dd><p>Deprecated; use <code>truncation</code> instead.</p></dd>
 
 
 <dt>trunc_max</dt>
-<dd><p>Integer, defaults to 10. Maximum number of
-days to include in the truncation distribution.</p></dd>
+<dd><p>Deprecated; use <code>truncation</code> instead.</p></dd>
 
 
 <dt>trunc_dist</dt>
-<dd><p>Character, defaults to "lognormal". The parametric
-distribution to be used for truncation.</p></dd>
+<dd><p>Deprecated; use <code>truncation</code> instead.</p></dd>
+
+
+<dt>truncation</dt>
+<dd><p>A call to <code><a href="trunc_opts.html">trunc_opts()</a></code> defining the truncation of
+observed data.  Defaults to <code><a href="trunc_opts.html">trunc_opts()</a></code>. See <code>estimate_truncation()</code> for
+an approach to estimating truncation from data.</p></dd>
 
 
 <dt>model</dt>
@@ -188,6 +195,15 @@ useful for package developers or those developing extensions.</p></dd>
 
 <dt>CrIs</dt>
 <dd><p>Numeric vector of credible intervals to calculate.</p></dd>
+
+
+<dt>weigh_delay_priors</dt>
+<dd><p>Logical. If TRUE, all delay distribution priors
+will be weighted by the number of observation data points, in doing so
+approximately placing an independent prior at each time step and usually
+preventing the posteriors from shifting. If FALSE (default), no weight will
+be applied, i.e. delay distributions will be treated as a single
+parameters.</p></dd>
 
 
 <dt>verbose</dt>
@@ -213,6 +229,7 @@ used for fitting (<code>data</code>) and the fit object (<code>fit</code>).</p>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
     <p>Sam Abbott</p>
+<p>Sebastian Funk</p>
     </div>
 
     <div class="section level2">
@@ -225,7 +242,7 @@ used for fitting (<code>data</code>) and the fit object (<code>fit</code>).</p>
 <span class="r-in"><span><span class="va">reported_cases</span> <span class="op">&lt;-</span> <span class="va">example_confirmed</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">60</span><span class="op">]</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># define example truncation distribution (note not integer adjusted)</span></span></span>
-<span class="r-in"><span><span class="va">trunc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">trunc</span> <span class="op">&lt;-</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  mean <span class="op">=</span> <span class="fu"><a href="convert_to_logmean.html">convert_to_logmean</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  mean_sd <span class="op">=</span> <span class="fl">0.1</span>,</span></span>
 <span class="r-in"><span>  sd <span class="op">=</span> <span class="fu"><a href="convert_to_logsd.html">convert_to_logsd</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
@@ -236,17 +253,24 @@ used for fitting (<code>data</code>) and the fit object (<code>fit</code>).</p>
 <span class="r-in"><span><span class="co"># apply truncation to example data</span></span></span>
 <span class="r-in"><span><span class="va">construct_truncation</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">index</span>, <span class="va">cases</span>, <span class="va">dist</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">index</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="kw">if</span> <span class="op">(</span><span class="va">dist</span><span class="op">$</span><span class="va">dist</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="va">dfunc</span> <span class="op">&lt;-</span> <span class="va">dlnorm</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="va">dfunc</span> <span class="op">&lt;-</span> <span class="va">dgamma</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span></span></span>
 <span class="r-in"><span>  <span class="va">cmf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html" class="external-link">cumsum</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/stats/Lognormal.html" class="external-link">dlnorm</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="fu">dfunc</span><span class="op">(</span></span></span>
 <span class="r-in"><span>      <span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">dist</span><span class="op">$</span><span class="va">max</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">dist</span><span class="op">$</span><span class="va">mean</span>, <span class="va">dist</span><span class="op">$</span><span class="va">mean_sd</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">dist</span><span class="op">$</span><span class="va">sd</span>, <span class="va">dist</span><span class="op">$</span><span class="va">sd_sd</span><span class="op">)</span></span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">dist</span><span class="op">$</span><span class="va">mean_mean</span>, <span class="va">dist</span><span class="op">$</span><span class="va">mean_sd</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">dist</span><span class="op">$</span><span class="va">sd_mean</span>, <span class="va">dist</span><span class="op">$</span><span class="va">sd_sd</span><span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="va">cmf</span> <span class="op">&lt;-</span> <span class="va">cmf</span> <span class="op">/</span> <span class="va">cmf</span><span class="op">[</span><span class="va">dist</span><span class="op">$</span><span class="va">max</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span></span></span>
 <span class="r-in"><span>  <span class="va">cmf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">cmf</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span></span></span>
 <span class="r-in"><span>  <span class="va">trunc_cases</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/copy.html" class="external-link">copy</a></span><span class="op">(</span><span class="va">cases</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">.N</span> <span class="op">-</span> <span class="va">index</span><span class="op">)</span><span class="op">]</span></span></span>
-<span class="r-in"><span>  <span class="va">trunc_cases</span><span class="op">[</span><span class="op">(</span><span class="va">.N</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">cmf</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="va">.N</span>, <span class="va">confirm</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">confirm</span> <span class="op">*</span> <span class="va">cmf</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="va">trunc_cases</span><span class="op">[</span></span></span>
+<span class="r-in"><span>    <span class="op">(</span><span class="va">.N</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">cmf</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="va">.N</span>, <span class="va">confirm</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">confirm</span> <span class="op">*</span> <span class="va">cmf</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">]</span></span></span>
 <span class="r-in"><span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">trunc_cases</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span><span class="va">example_data</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">15</span>, <span class="fl">10</span>, <span class="fl">0</span><span class="op">)</span>,</span></span>
@@ -263,122 +287,110 @@ used for fitting (<code>data</code>) and the fit object (<code>fit</code>).</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># summary of the distribution</span></span></span>
 <span class="r-in"><span><span class="va">est</span><span class="op">$</span><span class="va">dist</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.745</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $mean_sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.84</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $sd_sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.059</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $max</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Uncertain lognormal distribution with (untruncated) logmean 0.74 (SD 0.049) and logSD 0.84 (SD 0.057)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="co"># summary of the estimated truncation cmf (can be applied to new data)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">est</span><span class="op">$</span><span class="va">cmf</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     index      mean      se_mean           sd  lower_90  lower_50  lower_20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1:     1 1.0000000 2.302027e-18 1.024132e-16 1.0000000 1.0000000 1.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2:     2 0.9895982 9.176570e-05 2.646600e-03 0.9849291 0.9878976 0.9891746</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3:     3 0.9750423 2.006583e-04 5.803188e-03 0.9648830 0.9712562 0.9740222</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4:     4 0.9541988 3.274644e-04 9.508543e-03 0.9376125 0.9479575 0.9524403</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5:     5 0.9235566 4.694685e-04 1.370829e-02 0.9003607 0.9144667 0.9208286</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6:     6 0.8771449 6.153048e-04 1.810567e-02 0.8469418 0.8650258 0.8730685</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7:     7 0.8044811 7.355327e-04 2.183086e-02 0.7688298 0.7898142 0.7990584</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8:     8 0.6868409 7.591644e-04 2.282052e-02 0.6506437 0.6716882 0.6807440</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9:     9 0.4925611 5.559438e-04 1.772973e-02 0.4646008 0.4810018 0.4878088</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10:    10 0.1937785 2.699410e-04 1.217999e-02 0.1749467 0.1856016 0.1901209</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1:     1 1.0000000 2.977565e-18 1.279969e-16 1.0000000 1.0000000 1.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2:     2 0.9897790 9.852952e-05 2.561621e-03 0.9853582 0.9881719 0.9892414</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3:     3 0.9754393 2.164045e-04 5.635502e-03 0.9657961 0.9718691 0.9742069</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4:     4 0.9548505 3.552062e-04 9.267472e-03 0.9391303 0.9488744 0.9527539</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5:     5 0.9244992 5.129389e-04 1.341384e-02 0.9023601 0.9156591 0.9213726</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6:     6 0.8783954 6.780371e-04 1.779213e-02 0.8492902 0.8662863 0.8739658</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7:     7 0.8059975 8.155125e-04 2.154708e-02 0.7718169 0.7912876 0.8002060</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8:     8 0.6884286 8.380394e-04 2.262024e-02 0.6527860 0.6729946 0.6818290</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9:     9 0.4937034 5.804593e-04 1.766879e-02 0.4654358 0.4817656 0.4888049</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10:    10 0.1937325 2.635360e-04 1.226994e-02 0.1748211 0.1853655 0.1901667</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        median  upper_20  upper_50  upper_90</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1: 1.0000000 1.0000000 1.0000000 1.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 0.9898493 0.9904653 0.9913890 0.9935133</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 0.9755325 0.9768890 0.9789957 0.9837274</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 0.9548782 0.9571258 0.9606731 0.9686553</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 0.9241927 0.9276313 0.9327822 0.9448137</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 0.8775828 0.8823825 0.8892456 0.9055914</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 0.8046830 0.8104275 0.8190252 0.8394890</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 0.6864749 0.6920434 0.7018776 0.7247355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 0.4921454 0.4961947 0.5036332 0.5228642</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 0.1931644 0.1962036 0.2010258 0.2154464</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 0.9898978 0.9904790 0.9915543 0.9937713</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 0.9756249 0.9769393 0.9792924 0.9842957</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 0.9550449 0.9572126 0.9610993 0.9695906</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 0.9246170 0.9278812 0.9334502 0.9461651</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 0.8781359 0.8829275 0.8900884 0.9075979</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 0.8051511 0.8111331 0.8199902 0.8419513</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 0.6873882 0.6932944 0.7027855 0.7268224</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 0.4929576 0.4975440 0.5048212 0.5239339</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 0.1932452 0.1959349 0.2011387 0.2145805</span>
 <span class="r-in"><span><span class="co"># observations linked to truncation adjusted estimates</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">est</span><span class="op">$</span><span class="va">obs</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           date confirm last_confirm report_date mean se_mean  sd lower_90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 2020-03-24    4751         4789  2020-04-01 4800       0  12     4782</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 2020-03-25    5163         5249  2020-04-01 5295       1  31     5248</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 2020-03-26    5049         5210  2020-04-01 5291       1  52     5212</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 2020-03-27    5804         6153  2020-04-01 6285       3  93     6143</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 2020-03-28    5345         5959  2020-04-01 6096       4 126     5902</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 2020-03-29    4860         5974  2020-04-01 6045       5 164     5789</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 2020-03-30    3474         5217  2020-04-01 5063       5 168     4793</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 2020-03-31    1721         4050  2020-04-01 3498       3 125     3291</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 2020-04-01     502         4053  2020-04-01 2600       3 162     2330</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 2020-03-29    5852         5974  2020-04-06 5913       0  15     5890</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 2020-03-30    5025         5217  2020-04-06 5153       1  30     5108</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12: 2020-03-31    3808         4050  2020-04-06 3991       1  39     3931</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13: 2020-04-01    3676         4053  2020-04-06 3981       2  59     3890</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14: 2020-04-02    4105         4782  2020-04-06 4681       3  97     4532</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15: 2020-04-03    3668         4668  2020-04-06 4562       4 124     4369</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16: 2020-04-04    3093         4585  2020-04-06 4508       5 149     4267</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17: 2020-04-05    2423         4805  2020-04-06 4925       5 176     4634</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18: 2020-04-06    1106         4316  2020-04-06 5729       7 357     5133</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19: 2020-04-03    4636         4668  2020-04-11 4684       0  12     4666</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20: 2020-04-04    4522         4585  2020-04-11 4637       0  27     4596</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21: 2020-04-05    4681         4805  2020-04-11 4906       1  49     4832</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22: 2020-04-06    4115         4316  2020-04-11 4456       2  66     4355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23: 2020-04-07    3298         3599  2020-04-11 3761       2  77     3641</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24: 2020-04-08    2580         3039  2020-04-11 3209       2  87     3073</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25: 2020-04-09    2788         3836  2020-04-11 4063       4 134     3846</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26: 2020-04-10    2156         4204  2020-04-11 4382       4 157     4123</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27: 2020-04-11     789         3951  2020-04-11 4087       5 254     3662</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28: 2020-04-13    4050         4050  2020-04-21 4092       0  10     4076</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29: 2020-04-14    3089         3089  2020-04-21 3168       0  18     3140</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30: 2020-04-15    2861         2861  2020-04-21 2998       1  29     2953</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31: 2020-04-16    2491         2491  2020-04-21 2697       1  40     2636</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32: 2020-04-17    3350         3350  2020-04-21 3820       2  79     3699</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33: 2020-04-18    2793         2793  2020-04-21 3474       3  94     3327</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34: 2020-04-19    2284         2284  2020-04-21 3329       3 110     3151</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35: 2020-04-20    1291         1291  2020-04-21 2624       2  94     2469</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36: 2020-04-21     302          302  2020-04-21 1564       2  97     1401</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 2020-03-24    4751         4789  2020-04-01 4800       0  12     4780</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 2020-03-25    5163         5249  2020-04-01 5293       1  30     5245</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 2020-03-26    5049         5210  2020-04-01 5288       1  51     5207</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 2020-03-27    5804         6153  2020-04-01 6279       3  91     6134</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 2020-03-28    5345         5959  2020-04-01 6087       4 123     5889</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 2020-03-29    4860         5974  2020-04-01 6034       6 161     5772</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 2020-03-30    3474         5217  2020-04-01 5051       6 165     4779</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 2020-03-31    1721         4050  2020-04-01 3490       4 124     3284</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 2020-04-01     502         4053  2020-04-01 2601       3 163     2339</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 2020-03-29    5852         5974  2020-04-06 5912       0  15     5888</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 2020-03-30    5025         5217  2020-04-06 5151       1  29     5105</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12: 2020-03-31    3808         4050  2020-04-06 3988       1  38     3927</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13: 2020-04-01    3676         4053  2020-04-06 3977       2  57     3885</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14: 2020-04-02    4105         4782  2020-04-06 4675       3  94     4522</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15: 2020-04-03    3668         4668  2020-04-06 4554       4 121     4356</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16: 2020-04-04    3093         4585  2020-04-06 4497       5 147     4255</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17: 2020-04-05    2423         4805  2020-04-06 4914       5 175     4624</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18: 2020-04-06    1106         4316  2020-04-06 5731       7 359     5154</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19: 2020-04-03    4636         4668  2020-04-11 4683       0  12     4665</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20: 2020-04-04    4522         4585  2020-04-11 4636       1  26     4594</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21: 2020-04-05    4681         4805  2020-04-11 4902       1  47     4827</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22: 2020-04-06    4115         4316  2020-04-11 4451       2  64     4349</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23: 2020-04-07    3298         3599  2020-04-11 3756       2  76     3633</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24: 2020-04-08    2580         3039  2020-04-11 3203       3  85     3064</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25: 2020-04-09    2788         3836  2020-04-11 4054       4 133     3835</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26: 2020-04-10    2156         4204  2020-04-11 4372       5 156     4115</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27: 2020-04-11     789         3951  2020-04-11 4088       5 256     3676</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28: 2020-04-13    4050         4050  2020-04-21 4091       0  10     4075</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29: 2020-04-14    3089         3089  2020-04-21 3166       0  18     3138</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30: 2020-04-15    2861         2861  2020-04-21 2996       1  29     2950</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31: 2020-04-16    2491         2491  2020-04-21 2695       1  39     2632</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32: 2020-04-17    3350         3350  2020-04-21 3815       2  77     3691</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33: 2020-04-18    2793         2793  2020-04-21 3467       3  92     3317</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34: 2020-04-19    2284         2284  2020-04-21 3321       4 109     3142</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35: 2020-04-20    1291         1291  2020-04-21 2618       3  93     2464</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36: 2020-04-21     302          302  2020-04-21 1565       2  98     1407</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           date confirm last_confirm report_date mean se_mean  sd lower_90</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     lower_50 lower_20 median upper_20 upper_50 upper_90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1:     4792     4796   4799     4802     4809     4823</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2:     5273     5285   5292     5300     5315     5350</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3:     5255     5275   5287     5301     5326     5384</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4:     6222     6256   6280     6303     6346     6446</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5:     6010     6057   6090     6122     6179     6310</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6:     5933     5996   6039     6082     6153     6321</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7:     4949     5019   5060     5103     5172     5339</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8:     3417     3468   3496     3528     3577     3704</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9:     2497     2558   2598     2640     2704     2869</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10:     5902     5908   5912     5916     5923     5941</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11:     5132     5143   5151     5159     5173     5207</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12:     3963     3978   3987     3998     4017     4061</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13:     3940     3962   3977     3992     4019     4082</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14:     4616     4652   4677     4701     4745     4846</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15:     4478     4526   4558     4590     4644     4770</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16:     4406     4469   4505     4543     4604     4753</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17:     4811     4883   4923     4967     5037     5215</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18:     5501     5637   5725     5817     5959     6321</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19:     4676     4680   4683     4686     4692     4706</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20:     4619     4628   4635     4642     4655     4686</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21:     4872     4890   4902     4914     4937     4992</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22:     4411     4436   4452     4468     4499     4570</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23:     3708     3737   3758     3777     3812     3894</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24:     3150     3183   3206     3228     3266     3355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25:     3972     4028   4061     4095     4150     4284</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26:     4280     4345   4380     4419     4482     4640</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27:     3924     4021   4084     4149     4251     4509</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28:     4085     4088   4091     4094     4099     4111</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29:     3155     3162   3166     3171     3180     3201</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30:     2978     2989   2996     3003     3018     3051</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31:     2670     2685   2695     2705     2723     2766</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32:     3767     3796   3817     3837     3872     3955</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33:     3410     3446   3470     3495     3536     3632</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34:     3254     3300   3327     3355     3400     3510</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35:     2563     2601   2623     2646     2683     2778</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36:     1502     1539   1563     1588     1627     1726</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1:     4791     4796   4799     4802     4807     4821</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2:     5272     5284   5291     5299     5312     5345</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3:     5253     5274   5286     5299     5321     5376</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4:     6217     6255   6277     6299     6338     6432</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5:     6005     6053   6086     6115     6170     6293</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6:     5926     5991   6036     6073     6141     6296</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7:     4943     5010   5053     5095     5162     5321</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8:     3409     3458   3491     3520     3572     3697</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9:     2495     2562   2597     2639     2708     2871</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10:     5901     5908   5911     5915     5922     5938</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11:     5131     5143   5150     5158     5170     5202</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12:     3962     3978   3987     3996     4013     4054</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13:     3938     3961   3975     3989     4014     4073</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14:     4611     4649   4674     4696     4738     4833</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15:     4473     4522   4555     4583     4635     4752</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16:     4401     4461   4499     4536     4595     4738</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17:     4799     4869   4915     4956     5029     5205</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18:     5498     5644   5723     5815     5966     6326</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19:     4675     4680   4683     4686     4691     4704</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20:     4617     4628   4634     4641     4652     4682</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21:     4870     4890   4901     4913     4933     4984</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22:     4408     4434   4450     4466     4494     4560</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23:     3705     3735   3755     3773     3807     3883</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24:     3146     3180   3204     3224     3260     3342</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25:     3967     4021   4055     4089     4142     4270</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26:     4270     4333   4373     4410     4475     4632</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27:     3922     4026   4082     4148     4256     4513</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28:     4084     4088   4091     4094     4098     4110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29:     3154     3161   3166     3170     3178     3198</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30:     2976     2988   2995     3002     3015     3046</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31:     2668     2684   2694     2703     2720     2760</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32:     3763     3794   3814     3833     3867     3944</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33:     3406     3443   3468     3490     3529     3618</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34:     3249     3294   3322     3349     3393     3498</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35:     2557     2594   2618     2641     2679     2773</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36:     1501     1541   1562     1588     1629     1727</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     lower_50 lower_20 median upper_20 upper_50 upper_90</span>
 <span class="r-in"><span><span class="co"># validation plot of observations vs estimates</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">est</span><span class="op">)</span></span></span>

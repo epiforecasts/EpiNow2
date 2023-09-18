@@ -16,7 +16,7 @@ distribution information."><meta property="og:image" content="epiforecasts.io/Ep
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.4.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,7 @@ distribution information."><meta property="og:image" content="epiforecasts.io/Ep
     <a class="dropdown-item" href="../articles/estimate_infections.html">estimate_infections()</a>
     <a class="dropdown-item" href="../articles/estimate_secondary.html">estimate_secondary()</a>
     <a class="dropdown-item" href="../articles/estimate_truncation.html">estimate_truncation()</a>
+    <a class="dropdown-item" href="../articles/gaussian_process_implementation_details.html">Gaussian Process implementation details</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -165,10 +166,10 @@ Samples outside of this range are resampled.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  9: gamma &lt;list[2]&gt;        20</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 10: gamma &lt;list[2]&gt;        20</span>
 <span class="r-in"><span><span class="va">def</span><span class="op">$</span><span class="va">params</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $alpha</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $shape</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 5.720998</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $beta</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $scale</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.100175</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
@@ -191,10 +192,10 @@ Samples outside of this range are resampled.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  9: gamma &lt;list[2]&gt;        20</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 10: gamma &lt;list[2]&gt;        20</span>
 <span class="r-in"><span><span class="va">def</span><span class="op">$</span><span class="va">params</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $alpha</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $shape</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.018861</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $beta</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $scale</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3328072</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
