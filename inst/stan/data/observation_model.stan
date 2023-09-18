@@ -1,4 +1,4 @@
-  int day_of_week[t - seeding_time]; // day of the week indicator (1 - 7)
+  array[t - seeding_time] int day_of_week; // day of the week indicator (1 - 7)
   int model_type;                    // type of model: 0 = poisson otherwise negative binomial
   real phi_mean;                     // Mean and sd of the normal prior for the
   real phi_sd;                       // reporting process

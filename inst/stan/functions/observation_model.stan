@@ -1,5 +1,5 @@
 // apply day of the week effect
-vector day_of_week_effect(vector reports, int[] day_of_week, vector effect) {
+vector day_of_week_effect(vector reports, array[] int day_of_week, vector effect) {
   int t = num_elements(reports);
   int wl = num_elements(effect);
   // scale day of week effect
@@ -35,9 +35,9 @@ vector truncate(vector reports, vector trunc_rev_cmf, int reconstruct) {
   return(trunc_reports);
 }
 // Truncation distribution priors
-void truncation_lp(real[] truncation_mean, real[] truncation_sd,
-                   real[] trunc_mean_mean, real[] trunc_mean_sd,
-                   real[] trunc_sd_mean, real[] trunc_sd_sd) {
+void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
+                   array[] real trunc_mean_mean, array[] real trunc_mean_sd,
+                   array[] real trunc_sd_mean, array[] real trunc_sd_sd) {
   int truncation = num_elements(truncation_mean);
   if (truncation) {
     if (trunc_mean_sd[1] > 0) {
@@ -51,8 +51,8 @@ void truncation_lp(real[] truncation_mean, real[] truncation_sd,
   }
 }
 // update log density for reported cases
-void report_lp(int[] cases, vector reports,
-               real[] rep_phi, real phi_mean, real phi_sd,
+void report_lp(array[] int cases, vector reports,
+               array[] real rep_phi, real phi_mean, real phi_sd,
                int model_type, real weight) {
   if (model_type) {
     real sqrt_phi; // the reciprocal overdispersion parameter (phi)
@@ -72,8 +72,8 @@ void report_lp(int[] cases, vector reports,
   }
 }
 // update log likelihood (as above but not vectorised and returning log likelihood)
-vector report_log_lik(int[] cases, vector reports,
-                      real[] rep_phi, int model_type, real weight) {
+vector report_log_lik(array[] int cases, vector reports,
+                      array[] real rep_phi, int model_type, real weight) {
   int t = num_elements(reports);
   vector[t] log_lik;
 
@@ -91,9 +91,9 @@ vector report_log_lik(int[] cases, vector reports,
   return(log_lik);
 }
 // sample reported cases from the observation model
-int[] report_rng(vector reports, real[] rep_phi, int model_type) {
+array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
   int t = num_elements(reports);
-  int sampled_reports[t];
+  array[t] int sampled_reports;
   real sqrt_phi = 1e5;
   if (model_type) {
     sqrt_phi = 1 / sqrt(rep_phi[model_type]);

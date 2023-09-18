@@ -7,16 +7,16 @@ functions {
 data {
   int t;
   int obs_sets;
-  int obs[t, obs_sets];
-  int obs_dist[obs_sets];
+  array[t, obs_sets] int obs;
+  array[obs_sets] int obs_dist;
 #include data/delays.stan
 }
 transformed data{
   int trunc_id = 1;
-  int<lower = 1> end_t[obs_sets];
-  int<lower = 1> start_t[obs_sets];
+  array[obs_sets] int<lower = 1> end_t;
+  array[obs_sets] int<lower = 1> start_t;
 
-  int delay_type_max[delay_types];
+  array[delay_types] int delay_type_max;
   delay_type_max = get_delay_type_max(
     delay_types, delay_types_p, delay_types_id,
     delay_types_groups, delay_max, delay_np_pmf_groups
@@ -28,8 +28,8 @@ transformed data{
   }
 }
 parameters {
-  real delay_mean[delay_n_p];
-  real<lower = 0> delay_sd[delay_n_p];      // sd of delays
+  array[delay_n_p] real delay_mean;
+  array[delay_n_p] real<lower = 0> delay_sd;      // sd of delays
   real<lower=0> phi;
   real<lower=0> sigma;
 }

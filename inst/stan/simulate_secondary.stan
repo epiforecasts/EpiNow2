@@ -13,7 +13,7 @@ data {
   int h; // forecast horizon
   int all_dates; // should all dates have simulations returned
   // secondary model specific data
-  int<lower = 0> obs[t - h];         // observed secondary data
+  array[t - h] int<lower = 0> obs;         // observed secondary data
   matrix[n, t] primary;              // observed primary data
 #include data/secondary.stan
   // delay from infection to report
@@ -23,14 +23,14 @@ data {
 }
 
 transformed data {
-  int delay_type_max[delay_types] = get_delay_type_max(
+  array[delay_types] int delay_type_max = get_delay_type_max(
     delay_types, delay_types_p, delay_types_id,
     delay_types_groups, delay_max, delay_np_pmf_groups
   );
 }
 
 generated quantities {
-  int sim_secondary[n, all_dates ? t : h];
+  array[n, all_dates ? t : h] int sim_secondary;
   for (i in 1:n) {
     vector[t] secondary;
     vector[delay_type_max[delay_id]] delay_rev_pmf = get_delay_rev_pmf(

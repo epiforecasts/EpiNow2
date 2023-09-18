@@ -19,7 +19,7 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
 }
 // generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
 vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
-                           real[] initial_infections, real[] initial_growth,
+                           array[] real initial_infections, array[] real initial_growth,
                            int pop, int ht) {
   // time indices and storage
   int ot = num_elements(oR);

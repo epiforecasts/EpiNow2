@@ -1,8 +1,8 @@
-int[] get_delay_type_max(
-  int delay_types, int[] delay_types_p, int[] delay_types_id,
-  int[] delay_types_groups, int[] delay_max, int[] delay_np_pmf_groups
+array[] int get_delay_type_max(
+  int delay_types, array[] int delay_types_p, array[] int delay_types_id,
+  array[] int delay_types_groups, array[] int delay_max, array[] int delay_np_pmf_groups
 ) {
-  int ret[delay_types];
+  array[delay_types] int ret;
   for (i in 1:delay_types) {
     ret[i] = 1;
     for (j in delay_types_groups[i]:(delay_types_groups[i + 1] - 1)) {
@@ -18,10 +18,10 @@ int[] get_delay_type_max(
 }
 
 vector get_delay_rev_pmf(
-  int delay_id, int len, int[] delay_types_p, int[] delay_types_id,
-  int[] delay_types_groups, int[] delay_max,
-  vector delay_np_pmf, int[] delay_np_pmf_groups,
-  real[] delay_mean, real[] delay_sigma, int[] delay_dist,
+  int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id,
+  array[] int delay_types_groups, array[] int delay_max,
+  vector delay_np_pmf, array[] int delay_np_pmf_groups,
+  array[] real delay_mean, array[] real delay_sigma, array[] int delay_dist,
   int left_truncate, int reverse_pmf, int cumulative
 ) {
   // loop over delays
@@ -75,9 +75,9 @@ vector get_delay_rev_pmf(
 }
 
 
-void delays_lp(real[] delay_mean, real[] delay_mean_mean, real[] delay_mean_sd,
-               real[] delay_sd, real[] delay_sd_mean, real[] delay_sd_sd,
-               int[] delay_dist, int[] weight) {
+void delays_lp(array[] real delay_mean, array[] real delay_mean_mean, array[] real delay_mean_sd,
+               array[] real delay_sd, array[] real delay_sd_mean, array[] real delay_sd_sd,
+               array[] int delay_dist, array[] int weight) {
     int mean_delays = num_elements(delay_mean);
     int sd_delays = num_elements(delay_sd);
     if (mean_delays) {
