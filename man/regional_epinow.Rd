@@ -157,6 +157,7 @@ cases <- data.table::rbindlist(list(
 
 # run epinow across multiple regions and generate summaries
 # samples and warmup have been reduced for this example
+# for more examples, see the "estimate_infections examples" vignette
 def <- regional_epinow(
   reported_cases = cases,
   generation_time = generation_time_opts(generation_time),
@@ -168,24 +169,6 @@ def <- regional_epinow(
   ),
   verbose = interactive()
 )
-
-# apply a different rt method per region
-# (here a gaussian process and a weekly random walk)
-gp <- opts_list(gp_opts(), cases)
-gp <- update_list(gp, list(realland = NULL))
-rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
-region_rt <- regional_epinow(
-  reported_cases = cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period + reporting_delay),
-  rt = rt, gp = gp,
-  stan = stan_opts(
-    samples = 100, warmup = 200,
-    control = list(adapt_delta = 0.95)
-  ),
-  verbose = interactive()
-)
-
 options(old_opts)
 }
 }
