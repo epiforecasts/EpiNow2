@@ -144,14 +144,13 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
     if (!dist) {
       rdist(n)
     } else {
-      if (length(n) > max_value) {
-        n <- 1:max_value
-      }
       if (cum) {
-        pdist(n)
+        ret <- pdist(n)
       } else {
-        ddist(n)
+        ret <- ddist(n)
       }
+      ret[ret > 1] <- NA_real_
+      return(ret)
     }
   }
 
