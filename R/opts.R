@@ -353,7 +353,7 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #' @param ls_min Numeric, defaults to 0. The minimum value of the length scale.
 #'
 #' @param alpha_sd Numeric, defaults to 0.05. The standard deviation of the
-#'  magnitude parameter o  the Gaussian process kernel. Should be approximately
+#'  magnitude parameter of the Gaussian process kernel. Should be approximately
 #' the expected standard deviation of the logged Rt.
 #'
 #' @param kernel Character string, the type of kernel required. Currently

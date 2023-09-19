@@ -43,7 +43,7 @@ scale. Updated in \code{create_gp_data} to be the length of the input data if th
 is smaller.}
 
 \item{alpha_sd}{Numeric, defaults to 0.05. The standard deviation of the
-magnitude parameter o  the Gaussian process kernel. Should be approximately
+magnitude parameter of the Gaussian process kernel. Should be approximately
 the expected standard deviation of the logged Rt.}
 
 \item{kernel}{Character string, the type of kernel required. Currently
