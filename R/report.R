@@ -262,36 +262,15 @@ report_summary <- function(summarised_estimates,
 #' `summarised_estimates[variable == "growth_rate"]`, respectively.
 #' @export
 #' @examples
-#' \donttest{
-#' # define example cases
-#' cases <- example_confirmed[1:40]
-#'
-#' # set up example delays
-#' generation_time <- get_generation_time(
-#'  disease = "SARS-CoV-2", source = "ganyani"
-#' )
-#' incubation_period <- get_incubation_period(
-#'  disease = "SARS-CoV-2", source = "lauer"
-#' )
-#' reporting_delay <- bootstrapped_dist_fit(
-#'  rlnorm(100, log(6), 1), max_value = 30
-#' )
-#'
-#' # run model
-#' out <- estimate_infections(cases,
-#'   stan = stan_opts(samples = 500),
-#'   generation_time = generation_time_opts(generation_time),
-#'   delays = delay_opts(incubation_period + reporting_delay),
-#'   rt = NULL
-#' )
+#' # get example output form estimate_infections
+#' out <- example_estimate_infections
 #'
 #' # plot infections
 #' plots <- report_plots(
 #'   summarised_estimates = out$summarised,
-#'   reported = cases
+#'   reported = out$observations
 #' )
 #' plots
-#' }
 report_plots <- function(summarised_estimates, reported,
                          target_folder = NULL, ...) {
   # set input to data.table
