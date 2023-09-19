@@ -817,7 +817,7 @@ sample_approx_dist <- function(cases = NULL,
 #'
 tune_inv_gamma <- function(lower = 2, upper = 21) {
   lifecycle::deprecate_stop(
-    "1.4.0", "tune_inv_gamma()",
+    "1.3.6", "tune_inv_gamma()",
     details = paste0(
       "As no inverse gamma priors are currently in use and this function has ",
       "some stability issues it has been deprecated. Please let the package ",
