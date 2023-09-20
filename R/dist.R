@@ -95,7 +95,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
     ddist <- function(n) {
       (pexp(n + 1, params$rate) -
         pexp(n, params$rate)) /
-        pexp(max_value, params$rate)
+        pexp(max_value + 1, params$rate)
     }
   } else if (model %in% "gamma") {
     rdist <- function(n) {
@@ -103,12 +103,12 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
     }
     pdist <- function(n) {
       pgamma(n, params$shape, params$scale) /
-        pgamma(max_value, params$shape, params$scale)
+        pgamma(max_value + 1, params$shape, params$scale)
     }
     ddist <- function(n) {
       (pgamma(n + 1, params$shape, params$scale) -
         pgamma(n, params$shape, params$scale)) /
-        pgamma(max_value, params$shape, params$scale)
+        pgamma(max_value + 1, params$shape, params$scale)
     }
   } else if (model %in% "lognormal") {
     rdist <- function(n) {
@@ -116,12 +116,12 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
     }
     pdist <- function(n) {
       plnorm(n, params$mean, params$sd) /
-        plnorm(max_value, params$mean, params$sd)
+        plnorm(max_value + 1, params$mean, params$sd)
     }
     ddist <- function(n) {
       (plnorm(n + 1, params$mean, params$sd) -
         plnorm(n, params$mean, params$sd)) /
-        plnorm(max_value, params$mean, params$sd)
+        plnorm(max_value + 1, params$mean, params$sd)
     }
   }
 
@@ -129,7 +129,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
     cmf <- c(0, pdist(seq_len(max_value + 1)))
     pmf <- diff(cmf)
     rdist <- function(n) {
-      sample(x = seq_len(max_value) - 1, size = n, prob = pmf)
+      sample(x = seq_len(max_value + 1) - 1, size = n, prob = pmf)
     }
     pdist <- function(n) {
       cmf[n + 1]
@@ -990,7 +990,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
             )
           }
           pmf <- dist_skel(
-            n = seq_len(max) - 1, dist = TRUE, cum = FALSE,
+            n = seq_len(max + 1) - 1, dist = TRUE, cum = FALSE,
             model = distribution, params = params$params[[1]], max_value = max,
             discrete = TRUE
           )
