@@ -28,18 +28,18 @@
 #' generation_time_opts()
 #'
 #' # A fixed gamma distributed generation time
-#' generation_time_opts(dist_spec(mean = 3, sd = 2, max = 15))
+#' generation_time_opts(dist_spec(mean = 3, sd = 2, max = 14))
 #'
 #' # An uncertain gamma distributed generation time
 #' generation_time_opts(
-#'  dist_spec(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5, max = 15)
+#'  dist_spec(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5, max = 14)
 #' )
 #'
 #' # A generation time sourced from the literature
 #' dist <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 #' generation_time_opts(dist)
 generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
-                                 disease, source, max = 15L, fixed = FALSE,
+                                 disease, source, max = 14, fixed = FALSE,
                                  prior_weight) {
   deprecated_options_given <- FALSE
   dot_options <- list(...)
@@ -120,11 +120,11 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
 #' delay_opts()
 #'
 #' # A single delay that has uncertainty
-#' delay <- dist_spec(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
+#' delay <- dist_spec(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 14)
 #' delay_opts(delay)
 #'
 #' # A single delay without uncertainty
-#' delay <- dist_spec(mean = 1, sd = 0.5, max = 15)
+#' delay <- dist_spec(mean = 1, sd = 0.5, max = 14)
 #' delay_opts(delay)
 #'
 #' # Multiple delays (in this case twice the same)

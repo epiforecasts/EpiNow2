@@ -9,7 +9,7 @@ generation_time_opts(
   ...,
   disease,
   source,
-  max = 15L,
+  max = 14,
   fixed = FALSE,
   prior_weight
 )
@@ -48,11 +48,11 @@ passed to \link{dist_spec}.
 generation_time_opts()
 
 # A fixed gamma distributed generation time
-generation_time_opts(dist_spec(mean = 3, sd = 2, max = 15))
+generation_time_opts(dist_spec(mean = 3, sd = 2, max = 14))
 
 # An uncertain gamma distributed generation time
 generation_time_opts(
- dist_spec(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5, max = 15)
+ dist_spec(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5, max = 14)
 )
 
 # A generation time sourced from the literature
