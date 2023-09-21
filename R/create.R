@@ -669,13 +669,18 @@ create_stan_delays <- function(..., weight = 1) {
   ret$types_id <- array(ret$types_id)
   ## map delays to identifiers
   ret$types_groups <- array(c(0, cumsum(unname(type_n[type_n > 0]))) + 1)
-  ## map pmfs
-  ret$np_pmf_groups <- array(c(0, cumsum(combined_delays$np_pmf_length)) + 1)
+  ## get non zero length delay pmf lengths
+  ret$np_pmf_groups <- array(
+    c(0, cumsum(
+      combined_delays$np_pmf_length[combined_delays$np_pmf_length > 0])
+    ) + 1
+  )
+  ## calculate total np pmf length
+  ret$np_pmf_length <- sum(combined_delays$np_pmf_length)
   ## assign prior weights
   ret$weight <- array(rep(weight, ret$n_p))
   ## remove auxiliary variables
   ret$fixed <- NULL
-  ret$np_pmf_length <- NULL
 
   names(ret) <- paste("delay", names(ret), sep = "_")
   ret <- c(ret, ids)

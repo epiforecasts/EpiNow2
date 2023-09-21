@@ -5,8 +5,8 @@
   array[n, delay_n_p] real<lower = 0> delay_sd;   // prior sd of sd of delay distribution
   array[delay_n_p] int<lower = 1> delay_max;          // maximum delay distribution
   array[delay_n_p] int<lower = 0> delay_dist;       // 0 = lognormal; 1 = gamma
-  int<lower = 0> delay_np_pmf_max;          // number of nonparametric pmf elements
-  vector<lower = 0, upper = 1>[delay_np_pmf_max] delay_np_pmf; // ragged array of fixed PMFs
+  int<lower = 0> delay_np_pmf_length;          // number of nonparametric pmf elements
+  vector<lower = 0, upper = 1>[delay_np_pmf_length] delay_np_pmf; // ragged array of fixed PMFs
   array[delay_n_np + 1] int<lower = 1> delay_np_pmf_groups;      // links to ragged array
   array[delay_n_p] int delay_weight;
 

@@ -36,10 +36,10 @@ vector discretised_pmf(real mu, real sigma, int n, int dist) {
 
 // reverse a mf
 vector reverse_mf(vector pmf) {
-  int max_pmf = num_elements(pmf);
-  vector[max_pmf] rev_pmf;
-  for (d in 1:max_pmf) {
-    rev_pmf[d] = pmf[max_pmf - d + 1];
+  int pmf_length = num_elements(pmf);
+  vector[pmf_length] rev_pmf;
+  for (d in 1:pmf_length) {
+    rev_pmf[d] = pmf[pmf_length - d + 1];
   }
   return rev_pmf;
 }
