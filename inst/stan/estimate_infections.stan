@@ -61,7 +61,7 @@ transformed parameters {
   vector[t] infections;                                     // latent infections
   vector[ot_h] reports;                                     // estimated reported cases
   vector[ot] obs_reports;                                   // observed estimated reported cases
-  vector[estimate_r * delay_type_max[gt_id]] gt_rev_pmf;
+  vector[estimate_r * (delay_type_max[gt_id] + 1)] gt_rev_pmf;
   // GP in noise - spectral densities
   if (!fixed) {
     noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);
@@ -69,7 +69,7 @@ transformed parameters {
   // Estimate latent infections
   if (estimate_r) {
     gt_rev_pmf = get_delay_rev_pmf(
-      gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,
+      gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
       1, 1, 0
@@ -89,8 +89,8 @@ transformed parameters {
   }
   // convolve from latent infections to mean of observations
   if (delay_id) {
-    vector[delay_type_max[delay_id]] delay_rev_pmf = get_delay_rev_pmf(
-      delay_id, delay_type_max[delay_id], delay_types_p, delay_types_id,
+    vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(
+      delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
       0, 1, 0
@@ -109,8 +109,8 @@ transformed parameters {
  }
  // truncate near time cases to observed reports
  if (trunc_id) {
-    vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(
-      trunc_id, delay_type_max[trunc_id], delay_types_p, delay_types_id,
+    vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(
+      trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
       0, 1, 1
@@ -171,8 +171,8 @@ generated quantities {
       normal_rng(delay_mean_mean, delay_mean_sd);
     array[delay_n_p] real delay_sd_sample =
       normal_rng(delay_sd_mean, delay_sd_sd);
-    vector[delay_type_max[gt_id]] sampled_gt_rev_pmf = get_delay_rev_pmf(
-      gt_id, delay_type_max[gt_id], delay_types_p, delay_types_id,
+    vector[delay_type_max[gt_id] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(
+      gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
       delay_np_pmf_groups, delay_mean_sample, delay_sd_sample,
       delay_dist, 1, 1, 0

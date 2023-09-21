@@ -306,9 +306,9 @@ convert_to_logsd <- function(mean, sd) {
 }
 
 discretised_lognormal_pmf <- function(meanlog, sdlog, max_d, reverse = FALSE) {
-  pmf <- plnorm(1:max_d, meanlog, sdlog) -
-    plnorm(0:(max_d - 1), meanlog, sdlog)
-  pmf <- as.vector(pmf) / as.vector(plnorm(max_d, meanlog, sdlog))
+  pmf <- plnorm(1:(max_d + 1), meanlog, sdlog) -
+    plnorm(0:max_d, meanlog, sdlog)
+  pmf <- as.vector(pmf) / as.vector(plnorm(max_d + 1, meanlog, sdlog))
   if (reverse) {
     pmf <- rev(pmf)
   }
@@ -316,7 +316,9 @@ discretised_lognormal_pmf <- function(meanlog, sdlog, max_d, reverse = FALSE) {
 }
 
 discretised_lognormal_pmf_conv <- function(x, meanlog, sdlog) {
-  pmf <- discretised_lognormal_pmf(meanlog, sdlog, length(x), reverse = TRUE)
+  pmf <- discretised_lognormal_pmf(
+    meanlog, sdlog, length(x) - 1, reverse = TRUE
+  )
   conv <- sum(x * pmf, na.rm = TRUE)
   return(conv)
 }
@@ -325,9 +327,10 @@ discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
                                   reverse = FALSE) {
   alpha <- exp(2 * (log(mean) - log(sd)))
   beta <- exp(log(mean) - 2 * log(sd))
-  pmf <- pgamma(1:max_d, shape = alpha, scale = beta) -
-    pgamma(0:(max_d - 1), shape = alpha, scale = beta)
-  pmf <- as.vector(pmf) / as.vector(pgamma(max_d, shape = alpha, scale = beta))
+  pmf <- pgamma(1:(max_d + 1), shape = alpha, scale = beta) -
+    pgamma(0:max_d, shape = alpha, scale = beta)
+  pmf <- as.vector(pmf) /
+    as.vector(pgamma(max_d + 1, shape = alpha, scale = beta))
   if (zero_pad > 0) {
     pmf <- c(rep(0, zero_pad), pmf)
   }

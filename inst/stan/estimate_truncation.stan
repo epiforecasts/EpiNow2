@@ -24,7 +24,7 @@ transformed data{
 
   for (i in 1:obs_sets) {
     end_t[i] = t - obs_dist[i];
-    start_t[i] = max(1, end_t[i] - delay_type_max[trunc_id] + 1);
+    start_t[i] = max(1, end_t[i] - delay_type_max[trunc_id]);
   }
 }
 parameters {
@@ -35,11 +35,11 @@ parameters {
 }
 transformed parameters{
   real sqrt_phi = 1 / sqrt(phi);
-  matrix[delay_type_max[trunc_id], obs_sets - 1] trunc_obs = rep_matrix(
-    0, delay_type_max[trunc_id], obs_sets - 1
+  matrix[delay_type_max[trunc_id] + 1, obs_sets - 1] trunc_obs = rep_matrix(
+    0, delay_type_max[trunc_id] + 1, obs_sets - 1
   );
-  vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(
-    trunc_id, delay_type_max[trunc_id], delay_types_p, delay_types_id,
+  vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(
+    trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
     delay_types_groups, delay_max, delay_np_pmf,
     delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
     0, 1, 1
@@ -75,10 +75,10 @@ model {
   }
 }
 generated quantities {
-  matrix[delay_type_max[trunc_id], obs_sets] recon_obs = rep_matrix(
-    0, delay_type_max[trunc_id], obs_sets
+  matrix[delay_type_max[trunc_id] + 1, obs_sets] recon_obs = rep_matrix(
+    0, delay_type_max[trunc_id] + 1, obs_sets
   );
-  matrix[delay_type_max[trunc_id], obs_sets - 1] gen_obs;
+  matrix[delay_type_max[trunc_id] + 1, obs_sets - 1] gen_obs;
   // reconstruct all truncated datasets using posterior of the truncation distribution
   for (i in 1:obs_sets) {
     recon_obs[1:(end_t[i] - start_t[i] + 1), i] = truncate(
@@ -87,7 +87,7 @@ generated quantities {
   }
  // generate observations for comparing
   for (i in 1:(obs_sets - 1)) {
-    for (j in 1:delay_type_max[trunc_id]) {
+    for (j in 1:(delay_type_max[trunc_id] + 1)) {
       if (trunc_obs[j, i] == 0) {
         gen_obs[j, i] = 0;
       } else {

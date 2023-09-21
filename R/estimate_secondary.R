@@ -497,7 +497,7 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
       list(i = index, m = meanlog, s = sdlog),
       function(i, m, s) {
         discretised_lognormal_pmf_conv(
-          scaled[max(1, i - delay_max):i],
+          scaled[max(1, i - delay_max - 1):i],
           meanlog = m, sdlog = s
         )
       }
