@@ -969,9 +969,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
           n = 0,
           n_p = 0,
           n_np = 0,
-          np_pmf_max = 0,
           np_pmf = numeric(0),
-          np_pmf_length = integer(0),
           fixed = integer(0)
         ))
       } else { ## parametric fixed
@@ -1007,9 +1005,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
         n = 1,
         n_p = 0,
         n_np = 1,
-        np_pmf_max = length(pmf),
         np_pmf = pmf,
-        np_pmf_length = length(pmf),
         fixed = 1L
       ))
     }
@@ -1025,14 +1021,13 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       n = 1,
       n_p = 1,
       n_np = 0,
-      np_pmf_max = 0,
       np_pmf = numeric(0),
-      np_pmf_length = integer(0),
       fixed = 0L
     )
   }
   ret <- purrr::map(ret, array)
-  sum_args <- grep("(^n$|^n_|_max$)", names(ret))
+  sum_args <- grep("(^n$|^n_$)", names(ret))
+  ret$np_pmf_length <- length(ret$np_pmf)
   ret[sum_args] <- purrr::map(ret[sum_args], sum)
   attr(ret, "class") <- c("list", "dist_spec")
   return(ret)
@@ -1088,9 +1083,8 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
     delays$fixed <- c(1, rep(0, delays$n_p))
     delays$n_np <- 1
     delays$n <- delays$n_p + 1
-    delays$np_pmf_max <- length(delays$np_pmf)
-    delays$np_pmf_length <- length(delays$np_pmf)
   }
+  delays$np_pmf_length <- length(delays$np_pmf)
   return(delays)
 }
 
@@ -1150,7 +1144,7 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
   delays <- purrr::transpose(delays)
   ## convert back to arrays
   delays <- purrr::map(delays, function(x) array(unlist(x)))
-  sum_args <- grep("(^n$|^n_|_max$)", names(delays))
+  sum_args <- grep("^n($|_)", names(delays))
   delays[sum_args] <- purrr::map(delays[sum_args], sum)
   attr(delays, "class") <- c("list", "dist_spec")
   return(delays)
