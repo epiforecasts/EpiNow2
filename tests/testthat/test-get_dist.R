@@ -4,7 +4,7 @@ test_that("get_dist returns distributional definition data in the format expecte
   expect_equal(
     dist[c("mean_mean", "mean_sd", "sd_mean", "sd_sd", "max")],
     list(mean_mean = array(1), mean_sd = array(1),
-         sd_mean = array(1), sd_sd = array(1), max = array(15L))
+         sd_mean = array(1), sd_sd = array(1), max = array(14))
   )
 })
 

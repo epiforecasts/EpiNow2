@@ -1,8 +1,8 @@
 test_that("Seeding times are correctly calculated", {
-  gt1 <- dist_spec(mean = 5, sd = 1, max = 10)
-  gt2 <- dist_spec(mean = 10, sd = 2, max = 15)
-  delay1 <- dist_spec(mean = 5, sd = 1, max = 10)
-  delay2 <- dist_spec(mean = 7, sd = 3, max = 15)
+  gt1 <- dist_spec(mean = 5, sd = 1, max = 9)
+  gt2 <- dist_spec(mean = 10, sd = 2, max = 14)
+  delay1 <- dist_spec(mean = 5, sd = 1, max = 9)
+  delay2 <- dist_spec(mean = 7, sd = 3, max = 14)
   expect_equal(
     EpiNow2:::get_seeding_time(delay1, gt1 + gt2), 23L ## 10 + 15 - 1 - 1
   )

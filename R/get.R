@@ -169,7 +169,7 @@ get_regional_results <- function(regional_output,
 #'
 #' @param source A character string indicating the source of interest.
 #'
-#' @param max_value Numeric, the maximum value to allow. Defaults to 15 days.
+#' @param max_value Numeric, the maximum value to allow. Defaults to 14 days.
 #'
 #' @param fixed Logical, defaults to `FALSE`. Should distributions be supplied
 #' as fixed values (vs with uncertainty)?
@@ -182,7 +182,7 @@ get_regional_results <- function(regional_output,
 #' get_dist(
 #'  EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani"
 #' )
-get_dist <- function(data, disease, source, max_value = 15, fixed = FALSE) {
+get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
   target_disease <- disease
   target_source <- source
   data <- data[disease == target_disease][source == target_source]
@@ -204,7 +204,7 @@ get_dist <- function(data, disease, source, max_value = 15, fixed = FALSE) {
 #' @author Sam Abbott
 #' @examples
 #' get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-get_generation_time <- function(disease, source, max_value = 15,
+get_generation_time <- function(disease, source, max_value = 14,
                                 fixed = FALSE) {
   dist <- get_dist(EpiNow2::generation_times,
     disease = disease, source = source,
@@ -224,7 +224,7 @@ get_generation_time <- function(disease, source, max_value = 15,
 #' @export
 #' @examples
 #' get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
-get_incubation_period <- function(disease, source, max_value = 15,
+get_incubation_period <- function(disease, source, max_value = 14,
                                   fixed = FALSE) {
   dist <- get_dist(EpiNow2::incubation_periods,
     disease = disease, source = source,

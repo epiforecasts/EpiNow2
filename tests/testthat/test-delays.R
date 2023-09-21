@@ -29,7 +29,7 @@ test_that("generation times can be specified in different ways", {
   )
   expect_equal(
     round(test_stan_delays(
-      generation_time = generation_time_opts(dist_spec(mean = 3, sd = 1, max = 5)),
+      generation_time = generation_time_opts(dist_spec(mean = 3, sd = 1, max = 4)),
       params = delay_params
     ), digits = 2),
     c(0.02, 0.11, 0.22, 0.30, 0.35)
@@ -39,7 +39,7 @@ test_that("generation times can be specified in different ways", {
       generation_time = generation_time_opts(
         get_generation_time(
           disease = "SARS-CoV-2", source = "ganyani",
-          max = 10, fixed = TRUE
+          max = 9, fixed = TRUE
         )
       ),
       params = delay_params
@@ -69,7 +69,7 @@ test_that("delay parameters can be specified in different ways", {
   )
   expect_equal(
     tail(round(test_stan_delays(
-      delays = delay_opts(dist_spec(mean = 3, sd = 1, max = 5)),
+      delays = delay_opts(dist_spec(mean = 3, sd = 1, max = 4)),
       params = delay_params
     ), digits = 2), n = -2),
     c(0.02, 0.11, 0.22, 0.30, 0.35)
@@ -79,7 +79,7 @@ test_that("delay parameters can be specified in different ways", {
 test_that("truncation parameters can be specified in different ways", {
   expect_equal(
     tail(round(test_stan_delays(
-      truncation = trunc_opts(dist = dist_spec(mean = 3, sd = 1, max = 5)),
+      truncation = trunc_opts(dist = dist_spec(mean = 3, sd = 1, max = 4)),
       params = delay_params
     ), digits = 2), n = -2),
     c(0.02, 0.11, 0.22, 0.30, 0.35)

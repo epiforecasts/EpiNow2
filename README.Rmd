@@ -100,7 +100,7 @@ For example if data on the delay between onset and infection was available we co
 ```{r, eval = FALSE}
 reporting_delay <- estimate_delay(
   rlnorm(1000, log(2), 1),
-  max_value = 15, bootstraps = 1
+  max_value = 14, bootstraps = 1
 )
 ```
 

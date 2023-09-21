@@ -1,6 +1,6 @@
 
 test_that("dist_spec returns correct output for fixed lognormal distribution", {
-  result <- dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal")
+  result <- dist_spec(mean = 5, sd = 1, max = 19, distribution = "lognormal")
   expect_equal(dim(result$mean_mean), 0)
   expect_equal(dim(result$sd_mean), 0)
   expect_equal(dim(result$dist), 0)
@@ -16,7 +16,7 @@ test_that("dist_spec returns correct output for fixed lognormal distribution", {
 
 test_that("dist_spec returns correct output for uncertain gamma distribution", {
   result <- dist_spec(
-    mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+    mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 19,
     distribution = "gamma"
   )
   expect_equal(result$mean_mean, array(3L))
@@ -24,13 +24,13 @@ test_that("dist_spec returns correct output for uncertain gamma distribution", {
   expect_equal(result$mean_sd, array(0.5))
   expect_equal(result$sd_sd, array(0.5))
   expect_equal(result$dist, array(1))
-  expect_equal(result$max, array(20))
+  expect_equal(result$max, array(19))
   expect_equal(result$fixed, array(0L))
 })
 
 test_that("dist_spec returns correct output for fixed distribution", {
   result <- dist_spec(
-    mean = 5, mean_sd = 3, sd = 1, max = 20, distribution = "lognormal",
+    mean = 5, mean_sd = 3, sd = 1, max = 19, distribution = "lognormal",
     fixed = TRUE
   )
   expect_equal(dim(result$mean_mean), 0)
@@ -60,7 +60,7 @@ test_that("dist_spec returns error when maximum of parametric distributions is n
 })
 
 test_that("+.dist_spec returns correct output for sum of two distributions", {
-  lognormal <- dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal")
+  lognormal <- dist_spec(mean = 5, sd = 1, max = 19, distribution = "lognormal")
   gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20, distribution = "gamma")
   result <- lognormal + gamma
   expect_equal(result$mean_mean, array(3))
@@ -70,16 +70,15 @@ test_that("+.dist_spec returns correct output for sum of two distributions", {
   expect_equal(result$n, 2)
   expect_equal(result$n_p, 1)
   expect_equal(result$n_np, 1)
-  expect_equal(result$np_pmf_max, 20)
-  expect_equal(result$np_pmf_length, array(20))
+  expect_equal(result$np_pmf_length, 20)
 })
 
 test_that("+.dist_spec returns correct output for sum of two fixed distributions", {
   lognormal <- dist_spec(
-    mean = 5, sd = 1, max = 20, distribution = "lognormal", fixed = TRUE
+    mean = 5, sd = 1, max = 19, distribution = "lognormal", fixed = TRUE
   )
   gamma <- dist_spec(
-    mean = 3, sd = 2, max = 20, distribution = "gamma", fixed = TRUE
+    mean = 3, sd = 2, max = 19, distribution = "gamma", fixed = TRUE
   )
   result <- lognormal + gamma
   expect_equal(dim(result$mean_mean), 0)
@@ -87,7 +86,6 @@ test_that("+.dist_spec returns correct output for sum of two fixed distributions
   expect_equal(result$n, 1)
   expect_equal(result$n_p, 0)
   expect_equal(result$n_np, 1)
-  expect_equal(result$np_pmf_max, 30)
   expect_equal(result$np_pmf_length, 30)
 })
 
@@ -100,7 +98,6 @@ test_that("+.dist_spec returns correct output for sum of two nonparametric distr
   expect_equal(result$n, 1)
   expect_equal(result$n_p, 0)
   expect_equal(result$n_np, 1)
-  expect_equal(result$np_pmf_max, 7)
   expect_equal(result$np_pmf_length, 7)
   expect_equal(
     as.vector(round(result$np_pmf, 2)),
@@ -111,10 +108,10 @@ test_that("+.dist_spec returns correct output for sum of two nonparametric distr
 test_that("Testing `+.dist_spec` function with tolerance parameter", {
   # Create distributions
   lognormal <- dist_spec(
-    mean = 1.6, sd = 1, max = 20, distribution = "lognormal"
+    mean = 1.6, sd = 1, max = 19, distribution = "lognormal"
   )
   gamma <- dist_spec(
-    mean = 3, sd = 2, max = 20, distribution = "gamma"
+    mean = 3, sd = 2, max = 19, distribution = "gamma"
   )
   
   # Compute combined distribution with default tolerance
@@ -146,7 +143,7 @@ test_that("Testing `+.dist_spec` function with tolerance parameter", {
 test_that("mean.dist_spec returns correct output for fixed lognormal distribution", {
   lognormal <- dist_spec(
     mean = convert_to_logmean(3, 1), sd = convert_to_logsd(3, 1),
-    max = 20, distribution = "lognormal"
+    max = 19, distribution = "lognormal"
   )
   result <- EpiNow2:::mean.dist_spec(lognormal)
   expect_equal(result, 2.49, tolerance = 0.01) # here we can see the bias from 
@@ -154,27 +151,27 @@ test_that("mean.dist_spec returns correct output for fixed lognormal distributio
 })
 
 test_that("mean.dist_spec returns correct output for uncertain gamma distribution", {
-  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20, distribution = "gamma")
+  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 19, distribution = "gamma")
   result <- EpiNow2:::mean.dist_spec(gamma)
   expect_equal(result, 3)
 })
 
 test_that("mean.dist_spec returns correct output for sum of two distributions", {
-  lognormal <- dist_spec(mean = 1, sd = 1, max = 20, distribution = "lognormal")
-  gamma <- dist_spec(mean = 3, sd = 2, max = 20, distribution = "gamma")
+  lognormal <- dist_spec(mean = 1, sd = 1, max = 19, distribution = "lognormal")
+  gamma <- dist_spec(mean = 3, sd = 2, max = 19, distribution = "gamma")
   result <- EpiNow2:::mean.dist_spec(lognormal + gamma)
   expect_equal(result, c(5.84), tolerance = 0.001)
 })
 
 test_that("print.dist_spec correctly prints the parameters of the fixed lognormal", {
-  lognormal <- dist_spec(mean = 1.5, sd = 0.5, max = 20, distribution = "lognormal")
+  lognormal <- dist_spec(mean = 1.5, sd = 0.5, max = 19, distribution = "lognormal")
   
   expect_output(print(lognormal), "\\n  Fixed distribution with PMF \\[0\\.0014 0\\.052 0\\.16 0\\.2 0\\.18 0\\.13 0\\.094 0\\.063 0\\.042 0\\.027 0\\.018 0\\.012 0\\.0079 0\\.0052 0\\.0035 0\\.0024 0\\.0016 0\\.0011 0\\.00078 0\\.00055\\]\\n")
 })
 
 test_that("print.dist_spec correctly prints the parameters of the uncertain gamma", {
   gamma <- dist_spec(
-    mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
+    mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 19,
     distribution = "gamma"
   )
   
@@ -182,7 +179,7 @@ test_that("print.dist_spec correctly prints the parameters of the uncertain gamm
 })
 
 test_that("print.dist_spec correctly prints the parameters of the uncertain lognormal", {
-  lognormal_uncertain <- dist_spec(mean = 1.5, sd = 0.5, mean_sd = 0.1, sd_sd = 0.1, max = 20, distribution = "lognormal")
+  lognormal_uncertain <- dist_spec(mean = 1.5, sd = 0.5, mean_sd = 0.1, sd_sd = 0.1, max = 19, distribution = "lognormal")
   
   expect_output(print(lognormal_uncertain), "\\n  Uncertain lognormal distribution with \\(untruncated\\) logmean 1\\.5 \\(SD 0\\.1\\) and logSD 0\\.5 \\(SD 0\\.1\\)\\n")
 })
@@ -194,29 +191,29 @@ test_that("print.dist_spec correctly prints the parameters of an empty distribut
 })
 
 test_that("print.dist_spec correctly prints the parameters of a combination of distributions", {
-  lognormal <- dist_spec(mean = 1.5, sd = 0.5, max = 20, distribution = "lognormal")
-  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20, distribution = "gamma")
+  lognormal <- dist_spec(mean = 1.5, sd = 0.5, max = 19, distribution = "lognormal")
+  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 19, distribution = "gamma")
   combined <- lognormal + gamma
   
   expect_output(print(combined), "Combination of delay distributions:\\n  Fixed distribution with PMF \\[0\\.0014 0\\.052 0\\.16 0\\.2 0\\.18 0\\.13 0\\.094 0\\.063 0\\.042 0\\.027 0\\.018 0\\.012 0\\.0079 0\\.0052 0\\.0035 0\\.0024 0\\.0016 0\\.0011 0\\.00078 0\\.00055\\]\\n  Uncertain gamma distribution with \\(untruncated\\) mean 3 \\(SD 0\\.5\\) and SD 2 \\(SD 0\\.5\\)\\n")
 })
 
 test_that("plot.dist_spec returns a ggplot object", {
-  lognormal <- dist_spec(mean = 1.6, sd = 0.5, max = 20, distribution = "lognormal")
+  lognormal <- dist_spec(mean = 1.6, sd = 0.5, max = 19, distribution = "lognormal")
   plot <- plot(lognormal)
   expect_s3_class(plot, "ggplot")
 })
 
 test_that("plot.dist_spec correctly plots a single distribution", {
-  lognormal <- dist_spec(mean = 1.6, sd = 0.5, max = 20, distribution = "lognormal")
+  lognormal <- dist_spec(mean = 1.6, sd = 0.5, max = 19, distribution = "lognormal")
   plot <- plot(lognormal)
   expect_equal(length(plot$layers), 2)
   expect_equal(length(plot$facet$params$facets), 1)
 })
 
 test_that("plot.dist_spec correctly plots multiple distributions", {
-  lognormal <- dist_spec(mean = 1.6, sd = 0.5, max = 20, distribution = "lognormal")
-  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20, distribution = "gamma")
+  lognormal <- dist_spec(mean = 1.6, sd = 0.5, max = 19, distribution = "lognormal")
+  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 19, distribution = "gamma")
   combined <- lognormal + gamma
   plot <- plot(combined)
   expect_equal(length(plot$layers), 2)
@@ -224,7 +221,7 @@ test_that("plot.dist_spec correctly plots multiple distributions", {
 })
 
 test_that("plot.dist_spec correctly plots a combination of fixed distributions", {
-  lognormal <- dist_spec(mean = 1.6, sd = 0.5, max = 20, distribution = "lognormal")
+  lognormal <- dist_spec(mean = 1.6, sd = 0.5, max = 19, distribution = "lognormal")
   combined <- lognormal + lognormal
   plot <- plot(combined)
   expect_equal(length(plot$layers), 2)

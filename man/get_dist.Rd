@@ -4,7 +4,7 @@
 \alias{get_dist}
 \title{Get a Literature Distribution}
 \usage{
-get_dist(data, disease, source, max_value = 15, fixed = FALSE)
+get_dist(data, disease, source, max_value = 14, fixed = FALSE)
 }
 \arguments{
 \item{data}{A \code{data.table} in the format of \code{generation_times}.}
@@ -13,7 +13,7 @@ get_dist(data, disease, source, max_value = 15, fixed = FALSE)
 
 \item{source}{A character string indicating the source of interest.}
 
-\item{max_value}{Numeric, the maximum value to allow. Defaults to 15 days.}
+\item{max_value}{Numeric, the maximum value to allow. Defaults to 14 days.}
 
 \item{fixed}{Logical, defaults to \code{FALSE}. Should distributions be supplied
 as fixed values (vs with uncertainty)?}

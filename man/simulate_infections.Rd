@@ -67,7 +67,7 @@ incubation_period <- get_incubation_period(
 )
 reporting_delay <- dist_spec(
   mean = convert_to_logmean(2, 1), mean_sd = 0.1,
-  sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 15
+  sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 14
 )
 
 # fit model to data to recover Rt estimates

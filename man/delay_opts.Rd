@@ -27,11 +27,11 @@ functions.
 delay_opts()
 
 # A single delay that has uncertainty
-delay <- dist_spec(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 15)
+delay <- dist_spec(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 14)
 delay_opts(delay)
 
 # A single delay without uncertainty
-delay <- dist_spec(mean = 1, sd = 0.5, max = 15)
+delay <- dist_spec(mean = 1, sd = 0.5, max = 14)
 delay_opts(delay)
 
 # Multiple delays (in this case twice the same)
