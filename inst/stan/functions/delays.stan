@@ -4,10 +4,10 @@ array[] int get_delay_type_max(
 ) {
   array[delay_types] int ret;
   for (i in 1:delay_types) {
-    ret[i] = 1;
+    ret[i] = 0;
     for (j in delay_types_groups[i]:(delay_types_groups[i + 1] - 1)) {
       if (delay_types_p[j]) { // parametric
-        ret[i] += delay_max[delay_types_id[j]] - 1;
+        ret[i] += delay_max[delay_types_id[j]];
       } else { // nonparametric
         ret[i] += delay_np_pmf_groups[delay_types_id[j] + 1] -
           delay_np_pmf_groups[delay_types_id[j]] - 1;
@@ -30,14 +30,14 @@ vector get_delay_rev_pmf(
   int new_len;
   for (i in delay_types_groups[delay_id]:(delay_types_groups[delay_id + 1] - 1)) {
     if (delay_types_p[i]) { // parametric
-      vector[delay_max[delay_types_id[i]]] new_variable_pmf =
+      vector[delay_max[delay_types_id[i]] + 1] new_variable_pmf =
         discretised_pmf(
           delay_mean[delay_types_id[i]],
           delay_sigma[delay_types_id[i]],
-          delay_max[delay_types_id[i]],
+          delay_max[delay_types_id[i]] + 1,
           delay_dist[delay_types_id[i]]
       );
-      new_len = current_len + delay_max[delay_types_id[i]] - 1;
+      new_len = current_len + delay_max[delay_types_id[i]];
       if (current_len == 1) { // first delay
         pmf[1:new_len] = new_variable_pmf;
       } else { // subsequent delay to be convolved

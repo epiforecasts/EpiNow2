@@ -33,8 +33,8 @@ generated quantities {
   array[n, all_dates ? t : h] int sim_secondary;
   for (i in 1:n) {
     vector[t] secondary;
-    vector[delay_type_max[delay_id]] delay_rev_pmf = get_delay_rev_pmf(
-        delay_id, delay_type_max[delay_id], delay_types_p, delay_types_id,
+    vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(
+        delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
         delay_types_groups, delay_max, delay_np_pmf,
         delay_np_pmf_groups, delay_mean[i], delay_sd[i], delay_dist,
         0, 1, 0
