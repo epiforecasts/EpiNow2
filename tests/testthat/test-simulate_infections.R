@@ -2,16 +2,10 @@ skip_on_cran()
 # Setup for testing -------------------------------------------------------
 futile.logger::flog.threshold("FATAL")
 reported_cases <- EpiNow2::example_confirmed[1:50]
-generation_time <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani", max_value = 10)
-incubation_period <- get_incubation_period(disease = "SARS-CoV-2", source = "lauer", max_value = 10)
-reporting_delay <- dist_spec(
-  mean = convert_to_logmean(2, 1), mean_sd = 0.1,
-  sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10
-)
 
 out <- suppressWarnings(estimate_infections(reported_cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(reporting_delay),
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(example_reporting_delay),
   gp = NULL, rt = rt_opts(rw = 14),
   stan = stan_opts(
     chains = 2, warmup = 100, samples = 100,

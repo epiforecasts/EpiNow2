@@ -65,20 +65,6 @@
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #'
-#' # construct example distributions
-#' generation_time <- get_generation_time(
-#'  disease = "SARS-CoV-2", source = "ganyani"
-#' )
-#' incubation_period <- get_incubation_period(
-#'  disease = "SARS-CoV-2", source = "lauer"
-#' )
-#' reporting_delay <- dist_spec(
-#'   mean = convert_to_logmean(2, 1),
-#'   mean_sd = 0.1,
-#'   sd = convert_to_logsd(2, 1),
-#'   sd_sd = 0.1, max = 15
-#' )
-#'
 #' # uses example case vector
 #' cases <- example_confirmed[1:60]
 #' cases <- data.table::rbindlist(list(
@@ -91,8 +77,8 @@
 #' # for more examples, see the "estimate_infections examples" vignette
 #' def <- regional_epinow(
 #'   reported_cases = cases,
-#'   generation_time = generation_time_opts(generation_time),
-#'   delays = delay_opts(incubation_period + reporting_delay),
+#'   generation_time = generation_time_opts(example_generation_time),
+#'   delays = delay_opts(example_incubation_period + example_reporting_delay),
 #'   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
 #'   stan = stan_opts(
 #'     samples = 100, warmup = 200,

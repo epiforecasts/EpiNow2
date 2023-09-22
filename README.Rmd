@@ -104,24 +104,25 @@ reporting_delay <- estimate_delay(
 )
 ```
 
-If data was not available we could instead make an informed estimate of the likely delay (*this is a synthetic example and not applicable to real world use cases and we have not included uncertainty to decrease runtimes*),
+If data was not available we could instead make an informed estimate of the likely delay. We choose a lognormal distribution with mean 2, standard deviation 1 (both with some uncertainty) and a maximum of 10. *This is just an example and unlikely to apply in any particular use case*.
 
 ```{r}
 reporting_delay <- dist_spec(
-  mean = convert_to_logmean(2, 1), sd = convert_to_logsd(2, 1), max = 10,
+  mean = convert_to_logmean(2, 1),
+  mean_sd = 0.1,
+  sd = convert_to_logsd(2, 1),
+  sd_sd = 0.1,
+  max = 10,
   dist = "lognormal"
 )
+reporting_delay
 ```
 
-Here we define the incubation period and generation time based on literature estimates for Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/main/data-raw) for the code that generates these estimates). *Note that these distributions may not be applicable for your use case and that we have not included uncertainty here to reduce the runtime of this example but in most settings this is not recommended.*
+We use example literature estimates for the incubation period and generation time of Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/main/data-raw) for the code that generates these estimates). *These distributions are unlikely to be applicable for your use case. We strongly recommend investigating what might be the best distributions to use in any given use case.*
 
 ```{r}
-generation_time <- get_generation_time(
-  disease = "SARS-CoV-2", source = "ganyani", max = 10, fixed = TRUE
-)
-incubation_period <- get_incubation_period(
-  disease = "SARS-CoV-2", source = "lauer", max = 10, fixed = TRUE
-)
+example_generation_time
+example_incubation_period
 ```
 
 ### [epinow()](https://epiforecasts.io/EpiNow2/reference/epinow.html) 
@@ -140,8 +141,8 @@ Estimate cases by date of infection, the time-varying reproduction number, the r
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(
   reported_cases = reported_cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period + reporting_delay),
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
   stan = stan_opts(cores = 4, control = list(adapt_delta = 0.99)),
   verbose = interactive()
@@ -194,8 +195,8 @@ Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in pa
 ```{r, message = FALSE, warning = FALSE}
 estimates <- regional_epinow(
   reported_cases = reported_cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period + reporting_delay),
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
