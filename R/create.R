@@ -513,8 +513,12 @@ create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- list()
     if (data$delay_n_p > 0) {
+      out$delay_mean <- array(rep(0, data$delay_n_p))
+      lower_bounds <- rep(-Inf, data$delay_n_p)
+      ## gamma
+      lower_bounds[data$dist == 1] <- 0
       out$delay_mean <- array(truncnorm::rtruncnorm(
-        n = data$delay_n_p, a = 0,
+        n = data$delay_n_p, a = lower_bounds,
         mean = data$delay_mean_mean, sd = data$delay_mean_sd * 0.1
       ))
       out$delay_sd <- array(truncnorm::rtruncnorm(
