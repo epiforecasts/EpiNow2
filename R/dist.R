@@ -973,7 +973,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       mean_sd = numeric(0),
       sd_mean = numeric(0),
       sd_sd = numeric(0),
-      dist = integer(0),
+      dist = character(0),
       max = integer(0)
     )
     if (length(pmf) == 0) {
@@ -1028,8 +1028,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       mean_sd = mean_sd,
       sd_mean = sd,
       sd_sd = sd_sd,
-      dist =
-        which(eval(formals()[["distribution"]]) == distribution) - 1,
+      dist = distribution,
       max = max,
       n = 1,
       n_p = 1,
@@ -1204,10 +1203,12 @@ mean.dist_spec <- function(x, ...) {
   ## parametric
   if (x$n_p > 0) {
     ret[x$fixed == 0L] <- vapply(seq_along(which(x$fixed == 0L)), function(id) {
-      if (x$dist[id] == 0) { ## lognormal
+      if (x$dist[id] == "lognormal") {
         return(exp(x$mean_mean[id] + x$sd_mean[id] / 2))
-      } else if (x$dist[id] == 1) { ## gamma
+      } else if (x$dist[id] == "gamma") {
         return(x$mean_mean[id])
+      } else {
+	stop("Unknown distribution: ", x$dist[id])
       }
     }, 0)
   }
@@ -1254,7 +1255,7 @@ print.dist_spec <- function(x, ...) {
       cat(x$names[i], ": ", sep = "")
     }
     if (x$fixed[i] == 0) {
-      dist <- c("lognormal", "gamma")[x$dist[variable_id] + 1]
+      dist <- x$dist[variable_id]
       cat(
         "Uncertain ", dist, " distribution with (untruncated) ",
         ifelse(dist == "lognormal", "log", ""),
@@ -1330,16 +1331,15 @@ plot.dist_spec <- function(x, ...) {
   for (i in 1:x$n) {
     if (x$fixed[i] == 0) {
       # Uncertain distribution
-      dist_name <- c("Lognormal", "Gamma")[x$dist[variable_id] + 1]
       mean <- x$mean_mean[variable_id]
       sd <- x$sd_mean[variable_id]
       c_dist <- dist_spec(
         mean = mean, sd = sd, max = x$max[variable_id],
-        distribution = tolower(dist_name)
+        distribution = x$dist[variable_id]
       )
       pmf <- c_dist$np_pmf
       variable_id <- variable_id + 1
-      dist_name <- paste0(dist_name, " (ID: ", i, ")")
+      dist_name <- paste0("Uncertain ", x$dist[variable_id], " (ID: ", i, ")")
     } else {
       # Fixed distribution
       pmf <- x$np_pmf[seq(group_starts[i], group_starts[i + 1L] - 1L)]
@@ -1371,4 +1371,49 @@ plot.dist_spec <- function(x, ...) {
     labs(x = "Day", y = "Probability density") +
     theme_bw()
   return(plot)
+}
+
+##' Fix the parameters of a `dist_spec`
+##'
+##' If the given `dist_spec` has any uncertainty, it is removed and the
+##' corresponding distribution converted into a fixed one.
+##' @return A `dist_spec` object without uncertainty
+##' @author Sebastian Funk
+##' @export
+##' @param x A [dist_spec] object
+##' @param strategy Character; either "mean" (use the mean estimates of the
+##'   mean and standard deviation) or "sample" (randomly sample mean and
+##'   standard deviation from uncertainty given in the `dist_spec`)
+##' @importFrom truncnorm rtruncnorm
+fix_dist <- function(x, strategy = c("mean", "sample")) {
+  ## if x is fixed already we don't have to do anything
+  if (x$fixed) return(x)
+  ## match startegy argument to options
+  strategy <- match.arg(strategy)
+  ## apply stragey depending on choice
+  if (strategy == "mean") {
+    x <- dist_spec(
+      mean = x$mean_mean,
+      sd = x$sd_mean,
+      mean_sd = 0,
+      sd_sd = 0,
+      distribution = x$dist,
+      max = x$max
+    )
+  } else if (strategy == "sample") {
+    lower_bound <- ifelse(x$dist == "gamma", 0, -Inf)
+    mean <- rtruncnorm(
+      n = 1, a = lower_bound, mean = x$mean_mean, sd = x$mean_sd
+    )
+    sd <- rtruncnorm(n = 1, a = 0, mean = x$sd_mean, sd = x$mean_sd)
+    x <- dist_spec(
+      mean = mean,
+      sd = sd,
+      mean_sd = 0,
+      sd_sd = 0,
+      distribution = x$dist,
+      max = x$max
+    )
+  }
+  return(x)
 }

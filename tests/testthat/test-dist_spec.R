@@ -23,7 +23,7 @@ test_that("dist_spec returns correct output for uncertain gamma distribution", {
   expect_equal(result$sd_mean, array(2))
   expect_equal(result$mean_sd, array(0.5))
   expect_equal(result$sd_sd, array(0.5))
-  expect_equal(result$dist, array(1))
+  expect_equal(result$dist, array("gamma"))
   expect_equal(result$max, array(19))
   expect_equal(result$fixed, array(0L))
 })
