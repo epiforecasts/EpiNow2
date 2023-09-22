@@ -682,6 +682,8 @@ create_stan_delays <- function(..., weight = 1) {
   ret$np_pmf_length <- sum(combined_delays$np_pmf_length)
   ## assign prior weights
   ret$weight <- array(rep(weight, ret$n_p))
+  ## assign distribution
+  ret$dist <- array(match(c(ret$dist), c("lognormal", "gamma")) - 1L)
   ## remove auxiliary variables
   ret$fixed <- NULL
 
