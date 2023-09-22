@@ -16,7 +16,7 @@ generation_time_opts(
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions generated
-using \code{\link[=dist_spec]{dist_spec()}} or \code{\link[=get_generation_time]{get_generation_time()}}. If no distribution is given
+using \code{\link[=dist_spec]{dist_spec()}}. If no distribution is given
 a fixed generation time of 1 will be assumed.}
 
 \item{...}{deprecated; use \code{dist} instead}
@@ -38,10 +38,7 @@ A list summarising the input delay distributions.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Returns generation time parameters in a format for lower level model use. The
-generation time can either be given as a \code{disease} and \code{source} to
-be passed to \link{get_generation_time}, or as parameters of a distribution to be
-passed to \link{dist_spec}.
+Returns generation time parameters in a format for lower level model use.
 }
 \examples{
 # default settings with a fixed generation time of 1

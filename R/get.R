@@ -158,10 +158,10 @@ get_regional_results <- function(regional_output,
 #' Get a Literature Distribution
 #'
 #'
-#' @description `r lifecycle::badge("stable")`
-#' Search a data frame for a distribution and return it in the format expected
-#' by `delay_opts()` and the `generation_time` argument of `epinow` and
-#' `estimate_infections`.
+#' @description `r lifecycle::badge("deprecated")`
+#'
+#' This function has been deprecated. Please specify a distribution
+#' using `dist_spec` instead
 #'
 #' @param data A `data.table` in the format of `generation_times`.
 #'
@@ -177,12 +177,13 @@ get_regional_results <- function(regional_output,
 #' @return A list defining a distribution
 #'
 #' @author Sam Abbott
+#' @seealso dist_spec
 #' @export
-#' @examples
-#' get_dist(
-#'  EpiNow2::generation_times, disease = "SARS-CoV-2", source = "ganyani"
-#' )
 get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
+  lifecycle::deprecate_warn(
+    "2.0.0", "get_dist()", "dist_spec()",
+    "The function will be removed completely in version 2.1.0."
+  )
   target_disease <- disease
   target_source <- source
   data <- data[disease == target_disease][source == target_source]
@@ -195,19 +196,25 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
   }
   return(do.call(dist_spec, dist))
 }
-#'  Get a Literature Distribution for the Generation Time
+#' Get a Literature Distribution for the Generation Time
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description `r lifecycle::badge("deprecated")`
+#'
 #' Extracts a literature distribution from `generation_times`.
+#' This function has been deprecated. Please specify a distribution
+#' using `dist_spec` instead
 #'
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @export
+#' @seealso dist_spec
 #' @author Sam Abbott
-#' @examples
-#' get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
 get_generation_time <- function(disease, source, max_value = 14,
                                 fixed = FALSE) {
+  lifecycle::deprecate_warn(
+    "2.0.0", "get_generation_time()", "dist_spec()",
+    "The function will be removed completely in version 2.1.0."
+  )
   dist <- get_dist(EpiNow2::generation_times,
     disease = disease, source = source,
     max_value = max_value, fixed = fixed
@@ -217,17 +224,23 @@ get_generation_time <- function(disease, source, max_value = 14,
 }
 #'  Get a Literature Distribution for the Incubation Period
 #'
-#' @description `r lifecycle::badge("stable")`
-#' Extracts a literature distribution from `incubation_periods`.
+#' @description `r lifecycle::badge("deprecated")`
+#'
+#' Extracts a literature distribution from `generation_times`.
+#' This function has been deprecated. Please specify a distribution
+#' using `dist_spec` instead
 #'
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @author Sam Abbott
 #' @export
-#' @examples
-#' get_incubation_period(disease = "SARS-CoV-2", source = "lauer")
+#' @seealso dist_spec
 get_incubation_period <- function(disease, source, max_value = 14,
                                   fixed = FALSE) {
+  lifecycle::deprecate_warn(
+    "2.0.0", "get_incubation_period()", "dist_spec()",
+    "The function will be removed completely in version 2.1.0."
+  )
   dist <- get_dist(EpiNow2::incubation_periods,
     disease = disease, source = source,
     max_value = max_value, fixed = fixed

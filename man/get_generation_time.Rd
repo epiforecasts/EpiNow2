@@ -20,11 +20,14 @@ as fixed values (vs with uncertainty)?}
 A list defining a distribution
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
 Extracts a literature distribution from \code{generation_times}.
+This function has been deprecated. Please specify a distribution
+using \code{dist_spec} instead
 }
-\examples{
-get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
+\seealso{
+dist_spec
 }
 \author{
 Sam Abbott
