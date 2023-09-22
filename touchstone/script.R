@@ -9,8 +9,8 @@ touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
   default = { epinow(
     reported_cases = reported_cases,
-    generation_time = generation_time,
-    delays = delays,
+    generation_time = fixed_generation_time,
+    delays = fixed_delays,
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
@@ -25,8 +25,8 @@ touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
   uncertain = { epinow(
     reported_cases = reported_cases,
-    generation_time = u_generation_time,
-    delays = u_delays,
+    generation_time = example_generation_time,
+    delays = delays,
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
@@ -41,7 +41,7 @@ touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
   no_delays = { epinow(
     reported_cases = reported_cases,
-    generation_time = generation_time,
+    generation_time = fixed_generation_time,
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
@@ -56,8 +56,8 @@ touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
   stationary = { epinow(
     reported_cases = reported_cases,
-    generation_time = generation_time,
-    delays = delays,
+    generation_time = fixed_generation_time,
+    delays = fixed_delays,
     rt = rt_opts(prior = list(mean = 2, sd = 0.2), gp_on = "R0"),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
@@ -72,8 +72,8 @@ touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
   random_walk = { epinow(
     reported_cases = reported_cases,
-    generation_time = generation_time,
-    delays = delays,
+    generation_time = fixed_generation_time,
+    delays = fixed_delays,
     rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
     gp = NULL,
     stan = stan_opts(

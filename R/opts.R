@@ -35,9 +35,8 @@
 #'  dist_spec(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5, max = 14)
 #' )
 #'
-#' # A generation time sourced from the literature
-#' dist <- get_generation_time(disease = "SARS-CoV-2", source = "ganyani")
-#' generation_time_opts(dist)
+#' # An example generation time
+#' generation_time_opts(example_generation_time)
 generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
                                  disease, source, max = 14, fixed = FALSE,
                                  prior_weight) {

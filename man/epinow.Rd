@@ -127,20 +127,11 @@ set intervals on a deidcated server.
 # set number of cores to use
 old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
-# construct example distributions
-generation_time <- get_generation_time(
- disease = "SARS-CoV-2", source = "ganyani"
-)
-incubation_period <- get_incubation_period(
- disease = "SARS-CoV-2", source = "lauer"
-)
-reporting_delay <- dist_spec(
-  mean = convert_to_logmean(2, 1),
-  mean_sd = 0.1,
-  sd = convert_to_logsd(2, 1),
-  sd_sd = 0.1,
-  max = 10
-)
+
+# get example delays
+generation_time <- example_generation_time
+incubation_period <- example_incubation_period
+reporting_delay <- example_reporting_delay
 
 # example case data
 reported_cases <- example_confirmed[1:40]

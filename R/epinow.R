@@ -39,19 +39,32 @@
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
-#' # construct example distributions
-#' generation_time <- get_generation_time(
-#'  disease = "SARS-CoV-2", source = "ganyani"
+#'
+#' # set an example generation time. In practice this should use an estimate
+#' # from the literature or be estimated from data
+#' generation_time <- dist_spec(
+#'   mean = 3.6,
+#'   mean_sd = 0.7,
+#'   sd = 3.1,
+#'   sd_sd = 0.8,
+#'   max = 14
 #' )
-#' incubation_period <- get_incubation_period(
-#'  disease = "SARS-CoV-2", source = "lauer"
+#' # set an example incubation period. In practice this should use an estimate
+#' # from the literature or be estimated from data
+#' incubation_period <- dist_spec(
+#'    mean = 1.6,
+#'    mean_sd = 0.06,
+#'    sd = 0.4,
+#'    sd_sd = 0.07,
+#'    max = 14
 #' )
+#' # set an example reporting delay. In practice this should use an estimate
+#' # from the literature or be estimated from data
 #' reporting_delay <- dist_spec(
 #'   mean = convert_to_logmean(2, 1),
-#'   mean_sd = 0.1,
 #'   sd = convert_to_logsd(2, 1),
-#'   sd_sd = 0.1,
-#'   max = 10
+#'   max = 10,
+#'   dist = "lognormal"
 #' )
 #'
 #' # example case data
