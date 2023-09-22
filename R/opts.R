@@ -1,13 +1,10 @@
 #' Generation Time Distribution Options
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Returns generation time parameters in a format for lower level model use. The
-#' generation time can either be given as a \code{disease} and \code{source} to
-#' be passed to [get_generation_time], or as parameters of a distribution to be
-#' passed to [dist_spec].
+#' Returns generation time parameters in a format for lower level model use.
 #'
 #' @param dist A delay distribution or series of delay distributions generated
-#' using [dist_spec()] or [get_generation_time()]. If no distribution is given
+#' using [dist_spec()]. If no distribution is given
 #' a fixed generation time of 1 will be assumed.
 #'
 #' @param ... deprecated; use `dist` instead
@@ -88,8 +85,7 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
   if (deprecated_options_given) {
     warning(
       "The generation time distribution must be given to ",
-      "`generation_time_opts` using a call to either ",
-      "`dist_spec` or `get_generation_time`. ",
+      "`generation_time_opts` using a call to `dist_spec`. ",
       "This behaviour has changed from previous versions of `EpiNow2` and ",
       "any code using it may need to be updated as any other ways of ",
       "specifying the generation time are deprecated and will be removed in ",

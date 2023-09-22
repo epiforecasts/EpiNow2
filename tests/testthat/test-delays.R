@@ -34,29 +34,6 @@ test_that("generation times can be specified in different ways", {
     ), digits = 2),
     c(0.02, 0.11, 0.22, 0.30, 0.35)
   )
-  expect_equal(
-    round(test_stan_delays(
-      generation_time = generation_time_opts(
-        get_generation_time(
-          disease = "SARS-CoV-2", source = "ganyani",
-          max = 9, fixed = TRUE
-        )
-      ),
-      params = delay_params
-    ), digits = 2),
-    c(0.18, 0.20, 0.17, 0.13, 0.10, 0.07, 0.05, 0.04, 0.03, 0.02)
-  )
-  expect_equal(
-    round(test_stan_delays(
-      generation_time = generation_time_opts(
-        get_generation_time(
-          disease = "SARS-CoV-2", source = "ganyani", max = 10
-        )
-      ),
-      params = delay_params
-    ), digits = 2),
-    c(3.64, 0.71, 3.08, 0.77, 10.00)
-  )
 })
 
 test_that("delay parameters can be specified in different ways", {
@@ -134,6 +111,24 @@ test_that("deprecated arguments are caught", {
     test_stan_delays(
       delays = trunc_opts(list(mean = 3)),
       params = delay_params
+    ), "deprecated"
+  )
+  expect_warning(
+    test_stan_delays(
+      generation_time = generation_time_opts(
+        get_generation_time(
+          disease = "SARS-CoV-2", source = "ganyani",
+        )
+      ),
+    ), "deprecated"
+  )
+  expect_warning(
+    test_stan_delays(
+      delays = delay_opts(
+        get_incubation_period(
+          disease = "SARS-CoV-2", source = "lauer"
+        )
+      ),
     ), "deprecated"
   )
 })
