@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">EpiNow2</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.3.6.9008</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.4.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,14 +60,17 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.6" id="epinow2-136">EpiNow2 1.3.6<a class="anchor" aria-label="anchor" href="#epinow2-136"></a></h2>
-<p>This release is in development. For a stable release install 1.3.5 from CRAN.</p>
+<h2 class="pkg-version" data-toc-text="1.4.9000" id="epinow2-149000">EpiNow2 1.4.9000<a class="anchor" aria-label="anchor" href="#epinow2-149000"></a></h2>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.0" id="epinow2-140">EpiNow2 1.4.0<a class="anchor" aria-label="anchor" href="#epinow2-140"></a></h2><p class="text-muted">CRAN release: 2023-09-26</p>
+<p>This release contains some bug fixes, minor new features, and the initial stages of some broader improvement to future handling of delay distributions.</p>
 <div class="section level3">
-<h3 id="breaking-changes-1-3-6">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-3-6"></a></h3>
+<h3 id="breaking-changes-1-4-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-4-0"></a></h3>
 <ul><li>The external distribution interface has been updated to use the <code><a href="../reference/dist_spec.html">dist_spec()</a></code> function. This comes with a range of benefits, including optimising model fitting when static delays are used (by convolving when first defined vs in stan), easy printing (using <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code>), and easy plotting (using <code><a href="../reference/plot.estimate_infections.html">plot()</a></code>). It also makes it possible to use all supported distributions everywhere (i.e, as a generation time or reporting delay). However, while for now backwards compatibility has been ensured this update will break most users’ code eventually as the interface has changed. See the documentation for <code><a href="../reference/dist_spec.html">dist_spec()</a></code> for more details. By <a href="https://github.com/sbfnk" class="external-link">@sbfnk</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/363" class="external-link">#363</a> and reviewed by <a href="https://github.com/seabbs" class="external-link">@seabbs</a>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="package-1-3-6">Package<a class="anchor" aria-label="anchor" href="#package-1-3-6"></a></h3>
+<h3 id="package-1-4-0">Package<a class="anchor" aria-label="anchor" href="#package-1-4-0"></a></h3>
 <ul><li>Model description has been expanded to include more detail. By <a href="https://github.com/sbfnk" class="external-link">@sbfnk</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/373" class="external-link">#373</a> and reviewed by <a href="https://github.com/seabbs" class="external-link">@seabbs</a>.</li>
 <li>Moved to a GitHub Action to only lint changed files. By <a href="https://github.com/seabbs" class="external-link">@seabbs</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/378" class="external-link">#378</a>.</li>
 <li>Linted the package with a wider range of default linters. By <a href="https://github.com/seabbs" class="external-link">@seabbs</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/378" class="external-link">#378</a>.</li>
@@ -94,7 +97,7 @@
 <li>Added a <code>weigh_delay_priors</code> argument to the main functions, allowing the users to choose whether to weigh delay priors by the number of data points or not. By <a href="https://github.com/sbfnk" class="external-link">@sbfnk</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/450" class="external-link">#450</a> and reviewed by <a href="https://github.com/seabbs" class="external-link">@seabbs</a>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="documentation-1-3-6">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-3-6"></a></h3>
+<h3 id="documentation-1-4-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-4-0"></a></h3>
 <ul><li>Added a link to the recent CSTE workshop on using <code>EpiNow2</code> to the case studies vignette. By <a href="https://github.com/seabbs" class="external-link">@seabbs</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/441" class="external-link">#441</a> and reviewed by <a href="https://github.com/sbfnk" class="external-link">@sbfnk</a>.</li>
 </ul></div>
 </div>
