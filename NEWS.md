@@ -1,3 +1,5 @@
+# EpiNow2 1.4.9000
+
 # EpiNow2 1.4.0
 
 This release contains some bug fixes, minor new features, and the initial stages of some broader improvement to future handling of delay distributions.
