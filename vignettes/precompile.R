@@ -2,6 +2,10 @@
 
 library("knitr")
 knit(
-  "vignettes/estimate_infections_options.Rmd.orig",
-  "vignettes/estimate_infections_options.Rmd"
+  "estimate_infections_options.Rmd.orig",
+  "estimate_infections_options.Rmd"
+)
+knit(
+  "estimate_infections_workflow.Rmd.orig",
+  "estimate_infections_workflow.Rmd"
 )

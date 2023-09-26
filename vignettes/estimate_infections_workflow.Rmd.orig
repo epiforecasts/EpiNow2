@@ -178,9 +178,9 @@ rt_opts(prior = rt_prior)
 
 When providing uncertain delay distributions one can end up in a situation where the estimated means are shifted a long way from the given distribution means, and possibly further than is deemed realistic by the user.
 In that case, one could specify narrower prior distributions (e.g., smaller `mean_sd`) in order to keep the estimated means closer to the given mean, but this can be difficult to do in a principled manner in practice.
-As a more straightforward alternative, one can choose to weigh the given priors by the number of data points in the case data set by setting `weight_delay_priors`, i.e.
+As a more straightforward alternative, one can choose to weigh the generation time priors by the number of data points in the case data set by setting `weigh_delay_priors = TRUE` (the default). 
 
-# Inference
+# Estimation and forecasting
 
 All the options are combined in a call to the `estimate_infections()` function.
 For example, using some of the options described above one could call
@@ -195,6 +195,12 @@ def <- estimate_infections(
 ```
 
 Alternatively, for production environments the `epinow` function can be used that uses `estimate_infections` internally but adds functionality for logging and saving results and plots in dedicated places in the user's file system.
+
+## Forecasting secondary outcomes
+
+The `estimate_infections` works with a single time series of outcomes such as cases by symptom onset or hospitalisations.
+Sometimes one wants to further create forecasts of other secondary outcomes such as deaths.
+The package contains functionality to estimate the delay and scaling between multiple time series with the `estimate_secondary()` function, as well as for using this to make forecasts with the `forecast_secondary()` function.
 
 # Interpretation
 
