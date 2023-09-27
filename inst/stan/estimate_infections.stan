@@ -61,7 +61,7 @@ transformed parameters {
   vector[t] infections;                                     // latent infections
   vector[ot_h] reports;                                     // estimated reported cases
   vector[ot] obs_reports;                                   // observed estimated reported cases
-  vector[delay_type_max[gt_id]] gt_rev_pmf;
+  vector[estimate_r * delay_type_max[gt_id]] gt_rev_pmf;
   // GP in noise - spectral densities
   if (!fixed) {
     noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);
