@@ -41,6 +41,20 @@ A thorough understanding of the data that is used for EpiNow2 and its limitation
 This includes but is not limited to biases in the population groups that are represented (EpiNow2 assumes a closed population with all infections being caused by other infections in the same population), reporting artefacts and delays, and completeness of reporting.
 Some of these can be mitigated using the routines available in EpiNow2 as described below, but others will cause biases in the results and need to be carefully considered when interpreting the results.
 
+# Set up
+
+We first load the _EpiNow2_ package.
+
+```{r packages}
+library("EpiNow2")
+```
+
+We then set the number of cores to use. We will want to run 4 MCMC chains in parallel so we set this to 4. If we had fewer than 4 available or wanted to run fewer than 4 chains (at the expense of some robustness), or had fewer than 4 computing cores available we could set it to that. To find out the number of cores available one can use the [detectCores](https://rdrr.io/r/parallel/detectCores.html) function from the `parallel` package.
+
+```{r}
+options(mc.cores = 4)
+```
+
 # Parameters
 
 Once a data set has been identified, a number of relevant parameters need to be considered before using EpiNow2.
