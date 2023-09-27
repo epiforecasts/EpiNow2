@@ -1,5 +1,4 @@
 library("EpiNow2")
-library("here")
 
 # get example case counts
 reported_cases <- example_confirmed[1:60]
@@ -40,7 +39,7 @@ example_regional_epinow <- regional_epinow(
   generation_time = generation_time_opts(generation_time),
   delays = delay_opts(incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-  stan = stan_opts( samples = 200, control = list(adapt_delta = 0.95))
+  stan = stan_opts(samples = 200, control = list(adapt_delta = 0.95))
 )
 
 usethis::use_data(example_estimate_infections, overwrite = TRUE)
