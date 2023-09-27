@@ -800,7 +800,7 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] infections;                                     // latent infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot_h] reports;                                     // estimated reported cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] obs_reports;                                   // observed estimated reported cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[delay_type_max[gt_id]] gt_rev_pmf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r * delay_type_max[gt_id]] gt_rev_pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // GP in noise - spectral densities</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (!fixed) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);</span>
@@ -1654,7 +1654,7 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] infections;                                     // latent infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot_h] reports;                                     // estimated reported cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] obs_reports;                                   // observed estimated reported cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[delay_type_max[gt_id]] gt_rev_pmf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r * delay_type_max[gt_id]] gt_rev_pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // GP in noise - spectral densities</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (!fixed) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);</span>
