@@ -9,3 +9,7 @@ knit(
   "estimate_infections_workflow.Rmd.orig",
   "estimate_infections_workflow.Rmd"
 )
+knit(
+  "epinow.Rmd.orig",
+  "epinow.Rmd"
+)

@@ -1,0 +1,113 @@
+---
+title: "epinow(): production mode"
+output:
+  rmarkdown::html_vignette:
+    toc: false
+    number_sections: false
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{epinow(): production mode}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6.5,
+  fig.height = 6.5
+)
+```
+
+The _EpiNow2_ package contains functionality to run `estimate_infections()` in production mode, i.e. with full logging and saving all relevant outputs and plots to dedicated folders in the hard drive.
+This is done with the `epinow()` function, that takes the same options as `estimate_infections()` with some additional infections that determine, for example, where output gets stored and what output exactly.
+The function can be a useful option when, e.g., running the model daily with updated data on a high-performance computing server to feed into a dashboard.
+For more detail on the various model options available, see the [Examples](estimate_infections_options.html) vignette, for more on the general modelling approach the [Workflow](estimate_infections_workflow.html), and for theoretical background the [Model definitions](estimate_infections.html) vignette
+
+# Running the model on a single region
+
+To run the model in production model for a single region, set the parameters up in the same way as for `estimate_infections()` (see the [Workflow](estimate_infections_workflow.html) vignette).
+Here we use the example delay and generation time distributions that come with the package.
+This should be replaced with parameters relevant to the system that is being studied.
+
+```{r setup }
+library("EpiNow2")
+options(mc.cores = 4)
+reported_cases <- example_confirmed[1:60]
+incubation_period <- get_incubation_period(
+  disease = "SARS-CoV-2", source = "lauer"
+)
+reporting_delay <- dist_spec(
+  mean = convert_to_logmean(2, 1), mean_sd = 0,
+  sd = convert_to_logsd(2, 1), sd_sd = 0, max = 10
+)
+delay <- incubation_period + reporting_delay
+generation_time <- get_generation_time(
+  disease = "SARS-CoV-2", source = "ganyani"
+)
+rt_prior <- list(mean = 2, sd = 0.1)
+```
+
+We can then run the `epinow()` function with the same arguments as `estimate_infections()`.
+
+```{r epinow}
+res <- epinow(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior),
+  target_folder = "results"
+)
+res$plots$R
+```
+
+The initial messages here indicate where log files can be fund, and summarised results and plots are in the folder given by `target_folder` (here: `results/`).
+
+# Running the model simultaneously on multiple regions
+
+The package also contains functionality to conduct inference contemporaneously (if separately) in production mode on multiple time series, e.g. to run the model on multiple regions.
+This is done with the `regional_epinow()` function.
+
+Say, for example, we construct a data sets containing two regions, `testland` and `realland` (in this simple example both containing the same case data).
+
+```{r construct_regional_cases}
+cases <- example_confirmed[1:60]
+cases <- data.table::rbindlist(list(
+  data.table::copy(cases)[, region := "testland"],
+  cases[, region := "realland"]
+ ))
+```
+
+To then run this on multiple regions using the default options above, we could use
+
+```{r regional_epinow, fig.width = 8}
+region_rt <- regional_epinow(
+  reported_cases = cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior),
+)
+## summary
+region_rt$summary$summarised_results$table
+## plot
+region_rt$summary$plots$R
+```
+
+If instead, we wanted to use the Gaussian Process for `testland` and a weekly random walk for `realland` we could specify these separately using the `opts_list()` and `update_list()` functions
+
+```{r regional_epinow_multiple, fig.width = 8}
+gp <- opts_list(gp_opts(), cases)
+gp <- update_list(gp, list(realland = NULL))
+rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+region_separate_rt <- regional_epinow(
+  reported_cases = cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt, gp = gp,
+)
+## summary
+region_separate_rt$summary$summarised_results$table
+## plot
+region_separate_rt$summary$plots$R
+```
