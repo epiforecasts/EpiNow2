@@ -263,7 +263,9 @@ report_summary <- function(summarised_estimates,
 #' @export
 #' @examples
 #' # get example output form estimate_infections
-#' out <- example_estimate_infections
+#' out <- readRDS(system.file(
+#'     package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+#' ))
 #'
 #' # plot infections
 #' plots <- report_plots(

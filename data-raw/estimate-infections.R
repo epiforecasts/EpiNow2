@@ -1,4 +1,7 @@
 library("EpiNow2")
+library("here")
+
+options(mc.cores = 4)
 
 # get example case counts
 reported_cases <- example_confirmed[1:60]
@@ -42,5 +45,13 @@ example_regional_epinow <- regional_epinow(
   stan = stan_opts(samples = 200, control = list(adapt_delta = 0.95))
 )
 
-usethis::use_data(example_estimate_infections, overwrite = TRUE)
-usethis::use_data(example_regional_epinow, overwrite = TRUE)
+saveRDS(
+  example_estimate_infections,
+  here("inst", "extdata", "example_estimate_infections.rds"),
+  compress = "xz"
+)
+saveRDS(
+  example_regional_epinow,
+  here("inst", "extdata", "example_regional_epinow.rds"),
+  compress = "xz"
+)

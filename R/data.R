@@ -21,21 +21,3 @@
 #' An example data frame of observed cases
 #' @format A data frame containing cases reported on each date.
 "example_confirmed"
-
-#' Example estimate_infections output
-#'
-#' @description `r lifecycle::badge("stable")`
-#' An example output of `estimate_infections` containing 200 samples.
-#' See here for details:
-#'  https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/estimate_infections.R # nolint
-#' @format An `estimate_infections` object with the results
-"example_estimate_infections"
-
-#' Example regional_epinow output
-#'
-#' @description `r lifecycle::badge("stable")`
-#' An example output of `regional_epinow` containing 200 samples per region.
-#' See here for details:
-#'  https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/estimate_infections.R # nolint
-#' @format A list with the results
-"example_regional_epinow"

@@ -71,7 +71,10 @@ get_raw_result <- function(file, region, date,
 #' @importFrom data.table rbindlist
 #' @examples
 #' # get example multiregion estimates
-#' regional_out <- example_regional_epinow
+#' regional_out <- readRDS(system.file(
+#'     package = "EpiNow2", "extdata", "example_regional_epinow.rds"
+#' ))
+#'
 #' # from output
 #' results <- get_regional_results(regional_out$regional, samples = FALSE)
 get_regional_results <- function(regional_output,

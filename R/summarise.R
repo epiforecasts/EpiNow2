@@ -166,10 +166,13 @@ summarise_results <- function(regions,
 #' @importFrom futile.logger flog.info
 #' @examples
 #' # get example output from regional_epinow model
-#' out <- example_regional_epinow
+#' regional_out <- readRDS(system.file(
+#'     package = "EpiNow2", "extdata", "example_regional_epinow.rds"
+#' ))
+#'
 #' regional_summary(
-#'   regional_output = out$regional,
-#'   reported_cases = out$summary$reported_cases
+#'   regional_output = regional_out$regional,
+#'   reported_cases = regional_out$summary$reported_cases
 #' )
 regional_summary <- function(regional_output = NULL,
                              reported_cases,
@@ -501,7 +504,9 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @importFrom data.table data.table fwrite
 #' @importFrom purrr map safely
 #' @examples
-#' regional_out <- example_regional_epinow # get example run outputs
+#' regional_out <- readRDS(system.file(
+#'     package = "EpiNow2", "extdata", "example_regional_epinow.rds"
+#' ))
 #' regional_runtimes(regional_output = regional_out$regional)
 regional_runtimes <- function(regional_output = NULL,
                               target_folder = NULL,
