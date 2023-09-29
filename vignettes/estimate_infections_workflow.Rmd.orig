@@ -157,7 +157,7 @@ For more details on the model used for this, see the [estimate_truncation](estim
 ?estimate_truncation
 ```
 
-In the `estimate_infections()` function, the truncation distribution is defined by a call to `trunc_opts()`, a function that takes a single argument defined as a `dist_spec` (either defined by the user or obtained from a call to `estimate_truncation` or any other method for estimating right truncation).
+In the `estimate_infections()` function, the truncation distribution is defined by a call to `trunc_opts()`, a function that takes a single argument defined as a `dist_spec` (either defined by the user or obtained from a call to `estimate_truncation()` or any other method for estimating right truncation).
 This will then be used to correct for right truncation in the data.
 
 The separation of estimation of right truncation on the one hand and estimation of the reproduction number on the other may be attractive for practical purposes but is questionable statistically as it separates two processes that are not strictly separable, potentially introducing a bias.
@@ -177,7 +177,7 @@ obs_opts(scale = obs_scale)
 
 ## Initial reproduction number
 
-The default model that `estimate_infections` uses EpiNow2 uses to estimate reproduction numbers specification of a prior probability distribution for the initial reproduction number. 
+The default model that `estimate_infections()` uses to estimate reproduction numbers requires specification of a prior probability distribution for the initial reproduction number.
 This represents the user's initial belief of the value of the reproduction number, where there is no data yet to inform its value.
 By default this is assumed to be represented by a lognormal distribution with mean and standard deviation of 1.
 It can be changed using the `rt_opts()` function.
@@ -212,17 +212,17 @@ Alternatively, for production environments the `epinow` function can be used tha
 
 ## Forecasting secondary outcomes
 
-The `estimate_infections` works with a single time series of outcomes such as cases by symptom onset or hospitalisations.
+The `estimate_infections()` function works with a single time series of outcomes such as cases by symptom onset or hospitalisations.
 Sometimes one wants to further create forecasts of other secondary outcomes such as deaths.
 The package contains functionality to estimate the delay and scaling between multiple time series with the `estimate_secondary()` function, as well as for using this to make forecasts with the `forecast_secondary()` function.
 
 # Interpretation
 
-To visualise the results one can use the `plot` function that comes with the package
+To visualise the results one can use the `plot()` function that comes with the package
 
-```{r}
+```{r results}
 plot(def)
-``
+```
 
 The results returned by the `estimate_infections` model depend on the values assigned to all to parameters discussed in this vignette, i.e. delays, scaling, and reproduction numbers, as well as the model variant used and its parameters.
 Any interpretation of the results will therefore need to bear these in mind, as well as any properties of the data and/or the subpopulations that it represents.
