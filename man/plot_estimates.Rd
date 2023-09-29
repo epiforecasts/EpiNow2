@@ -50,7 +50,10 @@ the S3 plot methods.
 }
 \examples{
 # get example model results
-out <- example_estimate_infections
+out <- readRDS(system.file(
+    package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+))
+
 # plot infections
 plot_estimates(
   estimate = out$summarised[variable == "infections"],
