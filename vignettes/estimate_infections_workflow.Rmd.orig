@@ -27,7 +27,7 @@ See other vignettes for a more thorough exploration of [alternative model varian
 # Data
 
 Obtaining a good and full understanding of the data being used an important first step in any inference procedure such as the one applied here. 
-EpiNow2 expects data in the format of a data frame with two columns, `date` and `confirm`, where `confirm` stands for the number of confirmed counts - although in reality this can be applied to any data including suspected cases and lab-confirmed outcomes.
+_EpiNow2_ expects data in the format of a data frame with two columns, `date` and `confirm`, where `confirm` stands for the number of confirmed counts - although in reality this can be applied to any data including suspected cases and lab-confirmed outcomes.
 The user might already have the data as such a time series provided, for example, on public dashboards or directly from public health authorities.
 Alternatively, they can be constructed from individual-level data, for example using the [incidence2](https://cran.r-project.org/web/packages/incidence2/index.html) R package.
 An example data set called `example_confirm`  is included in the package:
@@ -37,9 +37,9 @@ head(example_confirmed)
 ```
 
 Any estimation procedure is only as good as the data that feeds into it.
-A thorough understanding of the data that is used for EpiNow2 and its limitations is a prerequisite for its use.
-This includes but is not limited to biases in the population groups that are represented (EpiNow2 assumes a closed population with all infections being caused by other infections in the same population), reporting artefacts and delays, and completeness of reporting.
-Some of these can be mitigated using the routines available in EpiNow2 as described below, but others will cause biases in the results and need to be carefully considered when interpreting the results.
+A thorough understanding of the data that is used for _EpiNow2_ and its limitations is a prerequisite for its use.
+This includes but is not limited to biases in the population groups that are represented (_EpiNow2_ assumes a closed population with all infections being caused by other infections in the same population), reporting artefacts and delays, and completeness of reporting.
+Some of these can be mitigated using the routines available in _EpiNow2_ as described below, but others will cause biases in the results and need to be carefully considered when interpreting the results.
 
 # Set up
 
@@ -57,12 +57,12 @@ options(mc.cores = 4)
 
 # Parameters
 
-Once a data set has been identified, a number of relevant parameters need to be considered before using EpiNow2.
+Once a data set has been identified, a number of relevant parameters need to be considered before using _EpiNow2_.
 As these will affect any results, it is worth spending some time investigating what their values should be.
 
 ## Delay distributions
 
-EpiNow2 works with different delays that apply to different parts of the infection and observation process.
+_EpiNow2_ works with different delays that apply to different parts of the infection and observation process.
 They are defined using a common interface with the `dist_spec()` function.
 For help with this function, see its manual page
 
@@ -77,7 +77,7 @@ For example, to define a fixed gamma distribution with mean 3, standard deviatio
 dist_spec(mean = 3, sd = 1, distribution = "gamma", max = 10)
 ```
 
-If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by EpiNow2, i.e. they are estimated as part of the inference.
+If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by _EpiNow2_, i.e. they are estimated as part of the inference.
 For example, to define a variable gamma distribution where uncertainty in the mean is given by a normal distribution with mean 3 and sd 2, and uncertainty in the standard deviation is given by a normal distribution with mean 1 and sd 0.1, with a maximum value 10, you would write
 
 ```{r}
@@ -96,7 +96,7 @@ For a more comprehensive treatment of delays and their estimation avoiding commo
 ### Generation intervals
 
 The generation interval is a delay distribution that describes the amount of time that passes between an individual becoming infected and infecting someone else.
-In EpiNow2, the generation time distribution is defined by a call to `generation_time_opts()`, a function that takes a single argument defined as a `dist_spec`.
+In _EpiNow2_, the generation time distribution is defined by a call to `generation_time_opts()`, a function that takes a single argument defined as a `dist_spec`.
 For example, to define the generation time as gamma distributed with uncertain mean centered on 3 (sd: 2) and sd centered on 1 (sd: 0.1), a maximum value of 10 and weighted by the number of case data points we would use
 
 ```{r, results = 'hide'}
@@ -108,7 +108,7 @@ generation_time_opts(generation_time)
 
 ### Reporting delays
 
-EpiNow2 calculates reproduction numbers based on the trajectory of infection incidence.
+_EpiNow2_ calculates reproduction numbers based on the trajectory of infection incidence.
 Usually this is not observed directly.
 Instead, we calculate case counts based on, for example, onset of symptoms, lab confirmations, hospitalisations, etc.
 In order to estimate the trajectory of infection incidence from this we need to either know or estimate the distribution of delays from infection to count.
@@ -126,7 +126,7 @@ reporting_delay <- dist_spec(
 incubation_period + reporting_delay
 ```
 
-In EpiNow2, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec`.
+In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec`.
 For example, if our observations were by symptom onset we would use
 
 ```{r, results = 'hide'}
@@ -149,7 +149,7 @@ In practice, it means that recent data will be unlikely to be complete.
 
 The amount of such truncation that exists in the data can be estimated from multiple snapshots of the data, i.e. what the data looked like at multiple past dates.
 One can then use methods that use the amount of backfilling that occurred 1, 2, ... days after data for a date are first reported.
-In EpiNow2, this can be done using the `estimate_truncation()` method which returns, amongst others, posterior estimates of the truncation distribution.
+In _EpiNow2_, this can be done using the `estimate_truncation()` method which returns, amongst others, posterior estimates of the truncation distribution.
 For more details on the model used for this, see the [estimate_truncation](estimate_truncation.html) vignette.
 
 
@@ -167,7 +167,7 @@ For an alternative approach where these are estimated jointly that is being deve
 
 Another issue affecting the progression from infections to reported outcomes is underreporting, i.e. the fact that not all infections are reported as cases.
 This varies both by pathogen and population (and e.g. the proportion of infections that are asymptomatic) as well as the specific outcome used as data and where it is located on the severity pyramid (e.g. hospitalisations vs. community cases).
-In EpiNow2 we can specify the proportion of infections that we expect to be observed (with uncertainty assumed represented by a truncated normal distribution with bounds at 0 and 1) using the `scale` argument to the `obs_opts()` function.
+In _EpiNow2_ we can specify the proportion of infections that we expect to be observed (with uncertainty assumed represented by a truncated normal distribution with bounds at 0 and 1) using the `scale` argument to the `obs_opts()` function.
 For example, if we think that 40% (with standard deviation 1%) of infections end up in the data as observations we could specify.
 
 ```{r results = 'hide'}
