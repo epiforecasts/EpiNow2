@@ -26,7 +26,18 @@ We first load the _EpiNow2_ package and also the _rstan_ package that we will us
 
 ```r
 library("EpiNow2")
+#> Loading required namespace: V8
 library("rstan")
+#> Loading required package: StanHeaders
+#> 
+#> rstan version 2.26.24 (Stan version 2.26.1)
+#> For execution on a local, multicore CPU with excess RAM we recommend calling
+#> options(mc.cores = parallel::detectCores()).
+#> To avoid recompilation of unchanged Stan programs, we recommend calling
+#> rstan_options(auto_write = TRUE)
+#> For within-chain threading using `reduce_sum()` or `map_rect()` Stan functions,
+#> change `threads_per_chain` option:
+#> rstan_options(threads_per_chain = 1)
 ```
 
 In this examples we set the number of cores to use to 4 but the optimal value here will depend on the computing resources available.
@@ -136,26 +147,25 @@ def <- estimate_infections(reported_cases,
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior)
 )
-#> DEBUG [2023-09-27 14:44:21] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
-#> Warning: There were 11 divergent transitions after warmup. See
+#> Warning: There were 15 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(def)
 #>                                  measure                estimate
-#> 1: New confirmed cases by infection date     2241 (1172 -- 4382)
+#> 1: New confirmed cases by infection date     2261 (1099 -- 4448)
 #> 2:        Expected change in daily cases       Likely decreasing
-#> 3:            Effective reproduction no.      0.87 (0.63 -- 1.2)
-#> 4:                        Rate of growth -0.028 (-0.093 -- 0.04)
-#> 5:          Doubling/halving time (days)        -25 (17 -- -7.4)
+#> 3:            Effective reproduction no.      0.88 (0.61 -- 1.2)
+#> 4:                        Rate of growth -0.027 (-0.096 -- 0.04)
+#> 5:          Doubling/halving time (days)        -26 (17 -- -7.2)
 # elapsed time (in seconds)
 get_elapsed_time(def$fit)
 #>         warmup sample
-#> chain:1 30.001 21.748
-#> chain:2 33.049 39.920
-#> chain:3 28.223 23.169
-#> chain:4 28.411 23.003
+#> chain:1 35.330 32.297
+#> chain:2 39.418 54.855
+#> chain:3 39.610 39.884
+#> chain:4 34.486 32.182
 # summary plot
 plot(def)
 ```
@@ -174,26 +184,25 @@ agp <- estimate_infections(reported_cases,
   rt = rt_opts(prior = rt_prior),
   gp = gp_opts(basis_prop = 0.1)
 )
-#> DEBUG [2023-09-27 14:45:43] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
 #> Warning: There were 5 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(agp)
-#>                                  measure                 estimate
-#> 1: New confirmed cases by infection date      2377 (1192 -- 4418)
-#> 2:        Expected change in daily cases        Likely decreasing
-#> 3:            Effective reproduction no.        0.9 (0.64 -- 1.2)
-#> 4:                        Rate of growth -0.022 (-0.088 -- 0.039)
-#> 5:          Doubling/halving time (days)         -31 (18 -- -7.9)
+#>                                  measure                estimate
+#> 1: New confirmed cases by infection date     2366 (1220 -- 4583)
+#> 2:        Expected change in daily cases       Likely decreasing
+#> 3:            Effective reproduction no.      0.89 (0.65 -- 1.2)
+#> 4:                        Rate of growth -0.024 (-0.086 -- 0.04)
+#> 5:          Doubling/halving time (days)          -29 (17 -- -8)
 # elapsed time (in seconds)
 get_elapsed_time(agp$fit)
 #>         warmup sample
-#> chain:1 22.400 38.232
-#> chain:2 21.219 23.342
-#> chain:3 19.743 22.348
-#> chain:4 29.886 28.058
+#> chain:1 27.499 31.038
+#> chain:2 23.096 40.688
+#> chain:3 25.129 46.259
+#> chain:4 21.050 26.049
 # summary plot
 plot(agp)
 ```
@@ -216,26 +225,25 @@ dep <- estimate_infections(reported_cases,
     pop = 1000000, future = "latest"
   )
 )
-#> DEBUG [2023-09-27 14:46:53] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
-#> Warning: There were 16 divergent transitions after warmup. See
+#> Warning: There were 8 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(dep)
 #>                                  measure                 estimate
-#> 1: New confirmed cases by infection date      2298 (1125 -- 4465)
+#> 1: New confirmed cases by infection date      2322 (1162 -- 4382)
 #> 2:        Expected change in daily cases        Likely decreasing
-#> 3:            Effective reproduction no.       0.88 (0.62 -- 1.2)
-#> 4:                        Rate of growth -0.026 (-0.095 -- 0.039)
+#> 3:            Effective reproduction no.       0.89 (0.62 -- 1.2)
+#> 4:                        Rate of growth -0.025 (-0.095 -- 0.038)
 #> 5:          Doubling/halving time (days)         -27 (18 -- -7.3)
 # elapsed time (in seconds)
 get_elapsed_time(dep$fit)
 #>         warmup sample
-#> chain:1 31.101 23.427
-#> chain:2 29.395 28.204
-#> chain:3 33.768 23.732
-#> chain:4 32.974 23.888
+#> chain:1 39.387 27.190
+#> chain:2 32.756 26.621
+#> chain:3 31.918 28.095
+#> chain:4 30.689 26.735
 # summary plot
 plot(dep)
 ```
@@ -266,26 +274,25 @@ trunc <- estimate_infections(reported_cases,
   truncation = trunc_opts(trunc_dist),
   rt = rt_opts(prior = rt_prior)
 )
-#> DEBUG [2023-09-27 14:48:00] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
-#> Warning: There were 8 divergent transitions after warmup. See
+#> Warning: There were 20 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(trunc)
 #>                                  measure                estimate
-#> 1: New confirmed cases by infection date     2473 (1253 -- 4804)
+#> 1: New confirmed cases by infection date     2490 (1315 -- 4925)
 #> 2:        Expected change in daily cases       Likely decreasing
-#> 3:            Effective reproduction no.      0.91 (0.64 -- 1.2)
-#> 4:                        Rate of growth -0.02 (-0.088 -- 0.044)
-#> 5:          Doubling/halving time (days)        -34 (16 -- -7.8)
+#> 3:            Effective reproduction no.      0.91 (0.66 -- 1.3)
+#> 4:                        Rate of growth -0.019 (-0.085 -- 0.05)
+#> 5:          Doubling/halving time (days)        -37 (14 -- -8.2)
 # elapsed time (in seconds)
 get_elapsed_time(trunc$fit)
 #>         warmup sample
-#> chain:1 27.277 23.100
-#> chain:2 27.429 25.753
-#> chain:3 24.803 44.369
-#> chain:4 33.643 49.227
+#> chain:1 38.588 26.820
+#> chain:2 38.403 24.647
+#> chain:3 41.815 49.189
+#> chain:4 35.495 28.319
 # summary plot
 plot(trunc)
 ```
@@ -306,26 +313,25 @@ project_rt <- estimate_infections(reported_cases,
     prior = rt_prior, future = "project"
   )
 )
-#> DEBUG [2023-09-27 14:49:32] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
-#> Warning: There were 9 divergent transitions after warmup. See
+#> Warning: There were 11 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(project_rt)
-#>                                  measure                estimate
-#> 1: New confirmed cases by infection date     2335 (1209 -- 4326)
-#> 2:        Expected change in daily cases       Likely decreasing
-#> 3:            Effective reproduction no.      0.89 (0.63 -- 1.2)
-#> 4:                        Rate of growth -0.024 (-0.09 -- 0.036)
-#> 5:          Doubling/halving time (days)        -29 (19 -- -7.7)
+#>                                  measure              estimate
+#> 1: New confirmed cases by infection date   2314 (1088 -- 4542)
+#> 2:        Expected change in daily cases     Likely decreasing
+#> 3:            Effective reproduction no.     0.89 (0.6 -- 1.2)
+#> 4:                        Rate of growth -0.025 (-0.1 -- 0.04)
+#> 5:          Doubling/halving time (days)      -28 (17 -- -6.9)
 # elapsed time (in seconds)
 get_elapsed_time(project_rt$fit)
 #>         warmup sample
-#> chain:1 32.279 37.451
-#> chain:2 27.772 31.089
-#> chain:3 28.069 23.597
-#> chain:4 31.708 22.856
+#> chain:1 35.698 35.492
+#> chain:2 40.701 27.915
+#> chain:3 34.761 27.982
+#> chain:4 43.075 26.794
 # summary plot
 plot(project_rt)
 ```
@@ -343,22 +349,21 @@ fixed <- estimate_infections(reported_cases,
   delays = delay_opts(delay),
   gp = NULL
 )
-#> DEBUG [2023-09-27 14:50:51] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
 # summarise results
 summary(fixed)
 #>                                  measure              estimate
-#> 1: New confirmed cases by infection date 16041 (9078 -- 30199)
+#> 1: New confirmed cases by infection date 15657 (8824 -- 28878)
 #> 2:        Expected change in daily cases            Increasing
 #> 3:            Effective reproduction no.      1.2 (1.1 -- 1.3)
-#> 4:                        Rate of growth 0.038 (0.026 -- 0.05)
+#> 4:                        Rate of growth 0.037 (0.026 -- 0.05)
 #> 5:          Doubling/halving time (days)         18 (14 -- 27)
 # elapsed time (in seconds)
 get_elapsed_time(fixed$fit)
 #>         warmup sample
-#> chain:1  1.998  1.084
-#> chain:2  1.734  1.165
-#> chain:3  2.918  0.954
-#> chain:4  2.388  0.983
+#> chain:1  1.980  1.227
+#> chain:2  2.035  1.325
+#> chain:3  1.999  1.291
+#> chain:4  1.990  1.156
 # summary plot
 plot(fixed)
 ```
@@ -389,22 +394,21 @@ bkp <- estimate_infections(bp_cases,
   rt = rt_opts(prior = rt_prior),
   gp = NULL
 )
-#> DEBUG [2023-09-27 14:51:04] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
 # summarise results
 summary(bkp)
-#>                                  measure                  estimate
-#> 1: New confirmed cases by infection date       2463 (2042 -- 2980)
-#> 2:        Expected change in daily cases                Decreasing
-#> 3:            Effective reproduction no.       0.91 (0.88 -- 0.93)
-#> 4:                        Rate of growth -0.021 (-0.026 -- -0.015)
-#> 5:          Doubling/halving time (days)          -34 (-46 -- -26)
+#>                                  measure                 estimate
+#> 1: New confirmed cases by infection date      2472 (2054 -- 3025)
+#> 2:        Expected change in daily cases               Decreasing
+#> 3:            Effective reproduction no.      0.91 (0.88 -- 0.93)
+#> 4:                        Rate of growth -0.02 (-0.026 -- -0.015)
+#> 5:          Doubling/halving time (days)         -34 (-47 -- -27)
 # elapsed time (in seconds)
 get_elapsed_time(bkp$fit)
 #>         warmup sample
-#> chain:1  2.612  1.894
-#> chain:2  2.882  2.245
-#> chain:3  2.760  1.982
-#> chain:4  2.956  2.457
+#> chain:1  3.784  2.468
+#> chain:2  3.225  2.688
+#> chain:3  4.021  2.443
+#> chain:4  3.882  2.342
 # summary plot
 plot(bkp)
 ```
@@ -424,22 +428,21 @@ rw <- estimate_infections(reported_cases,
   rt = rt_opts(prior = rt_prior, rw = 7),
   gp = NULL
 )
-#> DEBUG [2023-09-27 14:51:18] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
 # summarise results
 summary(rw)
-#>                                  measure               estimate
-#> 1: New confirmed cases by infection date    2180 (1158 -- 4097)
-#> 2:        Expected change in daily cases      Likely decreasing
-#> 3:            Effective reproduction no.     0.87 (0.64 -- 1.1)
-#> 4:                        Rate of growth -0.03 (-0.09 -- 0.027)
-#> 5:          Doubling/halving time (days)       -23 (25 -- -7.7)
+#>                                  measure                estimate
+#> 1: New confirmed cases by infection date     2164 (1144 -- 4158)
+#> 2:        Expected change in daily cases       Likely decreasing
+#> 3:            Effective reproduction no.      0.86 (0.63 -- 1.1)
+#> 4:                        Rate of growth -0.032 (-0.094 -- 0.03)
+#> 5:          Doubling/halving time (days)        -22 (23 -- -7.4)
 # elapsed time (in seconds)
 get_elapsed_time(rw$fit)
 #>         warmup sample
-#> chain:1  5.777  9.814
-#> chain:2  7.139  7.239
-#> chain:3  7.401 10.126
-#> chain:4  7.102  9.983
+#> chain:1  7.931  9.961
+#> chain:2  8.007 12.656
+#> chain:3  8.219 11.543
+#> chain:4  7.988 10.539
 # summary plot
 plot(rw)
 ```
@@ -456,26 +459,25 @@ no_delay <- estimate_infections(
   reported_cases,
   generation_time = generation_time_opts(generation_time)
 )
-#> DEBUG [2023-09-27 14:51:45] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
-#> Warning: There were 2 divergent transitions after warmup. See
+#> Warning: There were 10 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(no_delay)
-#>                                  measure                   estimate
-#> 1: New confirmed cases by infection date        2776 (2331 -- 3338)
-#> 2:        Expected change in daily cases                 Decreasing
-#> 3:            Effective reproduction no.        0.88 (0.77 -- 0.99)
-#> 4:                        Rate of growth -0.027 (-0.053 -- -0.0019)
-#> 5:          Doubling/halving time (days)          -26 (-360 -- -13)
+#>                                  measure                    estimate
+#> 1: New confirmed cases by infection date         2792 (2338 -- 3331)
+#> 2:        Expected change in daily cases                  Decreasing
+#> 3:            Effective reproduction no.            0.88 (0.77 -- 1)
+#> 4:                        Rate of growth -0.026 (-0.054 -- -0.00063)
+#> 5:          Doubling/halving time (days)          -26 (-1100 -- -13)
 # elapsed time (in seconds)
 get_elapsed_time(no_delay$fit)
 #>         warmup sample
-#> chain:1 36.415 38.937
-#> chain:2 29.110 34.879
-#> chain:3 34.784 35.283
-#> chain:4 33.756 50.211
+#> chain:1 33.957 32.806
+#> chain:2 26.216 35.115
+#> chain:3 29.836 33.585
+#> chain:4 28.293 34.279
 # summary plot
 plot(no_delay)
 ```
@@ -498,170 +500,23 @@ non_parametric <- estimate_infections(reported_cases,
   backcalc = backcalc_opts(),
   horizon = 0
 )
-#> DEBUG [2023-09-27 14:53:18] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 73 time steps of which 0 are a forecast
-#> Warning in validityMethod(object): The following variables have undefined
-#> values: gt_rev_pmf[1],The following variables have undefined values:
-#> gt_rev_pmf[2],The following variables have undefined values: gt_rev_pmf[3],The
-#> following variables have undefined values: gt_rev_pmf[4],The following
-#> variables have undefined values: gt_rev_pmf[5],The following variables have
-#> undefined values: gt_rev_pmf[6],The following variables have undefined values:
-#> gt_rev_pmf[7],The following variables have undefined values: gt_rev_pmf[8],The
-#> following variables have undefined values: gt_rev_pmf[9],The following
-#> variables have undefined values: gt_rev_pmf[10],The following variables have
-#> undefined values: gt_rev_pmf[11],The following variables have undefined values:
-#> gt_rev_pmf[12],The following variables have undefined values:
-#> gt_rev_pmf[13],The following variables have undefined values:
-#> gt_rev_pmf[14],The following variables have undefined values: gt_rev_pmf[15].
-#> Many subsequent functions will not work correctly.
 # summarise results
 summary(non_parametric)
-#>                                  measure                  estimate
-#> 1: New confirmed cases by infection date       2333 (1759 -- 3070)
-#> 2:        Expected change in daily cases                Decreasing
-#> 3:            Effective reproduction no.        0.9 (0.78 -- 0.99)
-#> 4:                        Rate of growth -0.023 (-0.049 -- -0.002)
-#> 5:          Doubling/halving time (days)         -30 (-340 -- -14)
+#>                                  measure                   estimate
+#> 1: New confirmed cases by infection date        2353 (1761 -- 3058)
+#> 2:        Expected change in daily cases                 Decreasing
+#> 3:            Effective reproduction no.        0.89 (0.79 -- 0.99)
+#> 4:                        Rate of growth -0.023 (-0.048 -- -0.0027)
+#> 5:          Doubling/halving time (days)          -30 (-250 -- -15)
 # elapsed time (in seconds)
 get_elapsed_time(non_parametric$fit)
 #>         warmup sample
-#> chain:1  2.953  0.957
-#> chain:2  3.467  0.933
-#> chain:3  3.384  0.857
-#> chain:4  3.659  0.963
+#> chain:1  3.599  0.979
+#> chain:2  3.299  1.010
+#> chain:3  3.543  0.958
+#> chain:4  3.767  1.015
 # summary plot
 plot(non_parametric)
 ```
 
 ![plot of chunk nonparametric](figure/nonparametric-1.png)
-
-# Running the model in production mode
-
-The package contains functionality to run `estimate_infections` in production mode, i.e. with full logging and saving all relevant outputs to the hard drive.
-This is done with the `epinow()` function, that takes the same options as `estimate_infections` with some additional infections that determine, for example, where output gets stored and what output exactly.
-The function can be a useful option when, e.g., running the model daily with updated data on a high-perforumance computing server to feed into a dashboard.
-
-## Running the model simultaneously on multiple regions
-
-The package also contains functionality to conduct inference contemporaneously (if separately) in production mode on multiple time series, e.g. to run the model on multiple regions.
-This is done with the `regional_epinow()` function.
-
-Say, for example, we construct a data sets containing two regions, `testland` and `realland` (in this simple example both containing the same case data).
-
-
-```r
-cases <- example_confirmed[1:60]
-cases <- data.table::rbindlist(list(
-  data.table::copy(cases)[, region := "testland"],
-  cases[, region := "realland"]
- ))
-```
-
-To then run this on multiple regions using the default options above, we could use
-
-
-```r
-region_rt <- regional_epinow(
-  reported_cases = cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
-)
-#> INFO [2023-09-27 14:53:32] Producing following optional outputs: regions, summary, samples, plots, latest
-#> Logging threshold set at INFO for the EpiNow2 logger
-#> Writing EpiNow2 logs to the console and: /tmp/Rtmp2uOU76/regional-epinow/2020-04-21.log
-#> Logging threshold set at INFO for the EpiNow2.epinow logger
-#> Writing EpiNow2.epinow logs to: /tmp/Rtmp2uOU76/epinow/2020-04-21.log
-#> INFO [2023-09-27 14:53:32] Reporting estimates using data up to: 2020-04-21
-#> INFO [2023-09-27 14:53:32] No target directory specified so returning output
-#> INFO [2023-09-27 14:53:32] Producing estimates for: testland, realland
-#> INFO [2023-09-27 14:53:32] Regions excluded: none
-#> DEBUG [2023-09-27 14:53:32] testland: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
-#> WARN [2023-09-27 14:54:51] testland (chain: 1): There were 1 divergent transitions after warmup. See
-#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-#> to find out why this is a problem and how to eliminate them. - 
-#> WARN [2023-09-27 14:54:51] testland (chain: 1): Examine the pairs() plot to diagnose sampling problems
-#>  - 
-#> INFO [2023-09-27 14:54:54] Completed estimates for: testland
-#> DEBUG [2023-09-27 14:54:54] realland: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
-#> WARN [2023-09-27 14:56:12] realland (chain: 1): There were 12 divergent transitions after warmup. See
-#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-#> to find out why this is a problem and how to eliminate them. - 
-#> WARN [2023-09-27 14:56:12] realland (chain: 1): Examine the pairs() plot to diagnose sampling problems
-#>  - 
-#> INFO [2023-09-27 14:56:14] Completed estimates for: realland
-#> INFO [2023-09-27 14:56:14] Completed regional estimates
-#> INFO [2023-09-27 14:56:14] Regions with estimates: 2
-#> INFO [2023-09-27 14:56:14] Regions with runtime errors: 0
-#> INFO [2023-09-27 14:56:14] Producing summary
-#> INFO [2023-09-27 14:56:14] No summary directory specified so returning summary output
-#> INFO [2023-09-27 14:56:15] No target directory specified so returning timings
-## summary
-region_rt$summary$summarised_results$table
-#>      Region New confirmed cases by infection date
-#> 1: realland                   2283 (1106 -- 4420)
-#> 2: testland                   2270 (1131 -- 4386)
-#>    Expected change in daily cases Effective reproduction no.
-#> 1:              Likely decreasing          0.88 (0.6 -- 1.2)
-#> 2:              Likely decreasing         0.88 (0.61 -- 1.2)
-#>              Rate of growth Doubling/halving time (days)
-#> 1:   -0.026 (-0.1 -- 0.037)             -26 (19 -- -6.9)
-#> 2: -0.028 (-0.099 -- 0.037)               -25 (19 -- -7)
-## plot
-region_rt$summary$plots$R
-```
-
-![plot of chunk regional_epinow](figure/regional_epinow-1.png)
-
-If instead, we wanted to use the Gaussian Process for `testland` and a weekly random walk for `realland` we could specify these separately using the `opts_list()` and `update_list()` functions
-
-
-```r
-gp <- opts_list(gp_opts(), cases)
-gp <- update_list(gp, list(realland = NULL))
-rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
-region_separate_rt <- regional_epinow(
-  reported_cases = cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(delay),
-  rt = rt, gp = gp,
-)
-#> INFO [2023-09-27 14:56:15] Producing following optional outputs: regions, summary, samples, plots, latest
-#> Logging threshold set at INFO for the EpiNow2 logger
-#> Writing EpiNow2 logs to the console and: /tmp/Rtmp2uOU76/regional-epinow/2020-04-21.log
-#> Logging threshold set at INFO for the EpiNow2.epinow logger
-#> Writing EpiNow2.epinow logs to: /tmp/Rtmp2uOU76/epinow/2020-04-21.log
-#> INFO [2023-09-27 14:56:15] Reporting estimates using data up to: 2020-04-21
-#> INFO [2023-09-27 14:56:15] No target directory specified so returning output
-#> INFO [2023-09-27 14:56:15] Producing estimates for: testland, realland
-#> INFO [2023-09-27 14:56:15] Regions excluded: none
-#> DEBUG [2023-09-27 14:56:15] testland: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
-#> WARN [2023-09-27 14:57:44] testland (chain: 1): There were 7 divergent transitions after warmup. See
-#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-#> to find out why this is a problem and how to eliminate them. - 
-#> WARN [2023-09-27 14:57:44] testland (chain: 1): Examine the pairs() plot to diagnose sampling problems
-#>  - 
-#> INFO [2023-09-27 14:57:47] Completed estimates for: testland
-#> DEBUG [2023-09-27 14:57:47] realland: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 80 time steps of which 7 are a forecast
-#> INFO [2023-09-27 14:58:14] Completed estimates for: realland
-#> INFO [2023-09-27 14:58:14] Completed regional estimates
-#> INFO [2023-09-27 14:58:14] Regions with estimates: 2
-#> INFO [2023-09-27 14:58:14] Regions with runtime errors: 0
-#> INFO [2023-09-27 14:58:14] Producing summary
-#> INFO [2023-09-27 14:58:14] No summary directory specified so returning summary output
-#> INFO [2023-09-27 14:58:15] No target directory specified so returning timings
-## summary
-region_separate_rt$summary$summarised_results$table
-#>      Region New confirmed cases by infection date
-#> 1: realland                   2195 (1128 -- 4079)
-#> 2: testland                    2100 (977 -- 4287)
-#>    Expected change in daily cases Effective reproduction no.
-#> 1:              Likely decreasing         0.87 (0.63 -- 1.2)
-#> 2:              Likely decreasing         0.85 (0.54 -- 1.2)
-#>             Rate of growth Doubling/halving time (days)
-#> 1: -0.03 (-0.092 -- 0.032)             -23 (22 -- -7.5)
-#> 2: -0.033 (-0.12 -- 0.038)             -21 (18 -- -5.9)
-## plot
-region_separate_rt$summary$plots$R
-```
-
-![plot of chunk regional_epinow_multiple](figure/regional_epinow_multiple-1.png)
