@@ -42,6 +42,7 @@ navbar:
         href: articles/gaussian_process_implementation_details.html
     usage:
       text: Usage
+      menu:
       - text: Workflow for Rt estimation and forecasting
         href: articles/estimate_infections_workflow.html
       - text: Examples: estimate_infections()
