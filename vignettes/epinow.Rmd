@@ -1,5 +1,5 @@
 ---
-title: "epinow(): production mode"
+title: "Using epinow() for running in production mode"
 output:
   rmarkdown::html_vignette:
     toc: false
@@ -7,7 +7,7 @@ output:
 bibliography: library.bib
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
 vignette: >
-  %\VignetteIndexEntry{epinow(): production mode}
+  %\VignetteIndexEntry{Using epinow() for running in production mode}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,13 +15,13 @@ vignette: >
 
 
 The _EpiNow2_ package contains functionality to run `estimate_infections()` in production mode, i.e. with full logging and saving all relevant outputs and plots to dedicated folders in the hard drive.
-This is done with the `epinow()` function, that takes the same options as `estimate_infections()` with some additional infections that determine, for example, where output gets stored and what output exactly.
+This is done with the `epinow()` function, that takes the same options as `estimate_infections()` with some additional options that determine, for example, where output gets stored and what output exactly.
 The function can be a useful option when, e.g., running the model daily with updated data on a high-performance computing server to feed into a dashboard.
 For more detail on the various model options available, see the [Examples](estimate_infections_options.html) vignette, for more on the general modelling approach the [Workflow](estimate_infections_workflow.html), and for theoretical background the [Model definitions](estimate_infections.html) vignette
 
 # Running the model on a single region
 
-To run the model in production model for a single region, set the parameters up in the same way as for `estimate_infections()` (see the [Workflow](estimate_infections_workflow.html) vignette).
+To run the model in production mode for a single region, set the parameters up in the same way as for `estimate_infections()` (see the [Workflow](estimate_infections_workflow.html) vignette).
 Here we use the example delay and generation time distributions that come with the package.
 This should be replaced with parameters relevant to the system that is being studied.
 
@@ -55,26 +55,26 @@ res <- epinow(reported_cases,
   target_folder = "results"
 )
 #> Logging threshold set at INFO for the EpiNow2 logger
-#> Writing EpiNow2 logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpzqj3B1/regional-epinow/2020-04-21.log
+#> Writing EpiNow2 logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmp2g83K0/regional-epinow/2020-04-21.log
 #> Logging threshold set at INFO for the EpiNow2.epinow logger
-#> Writing EpiNow2.epinow logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpzqj3B1/epinow/2020-04-21.log
-#> WARN [2023-09-29 02:09:41] epinow: There were 10 divergent transitions after warmup. See
+#> Writing EpiNow2.epinow logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmp2g83K0/epinow/2020-04-21.log
+#> WARN [2023-10-02 20:01:50] epinow: There were 17 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them. - 
-#> WARN [2023-09-29 02:09:41] epinow: Examine the pairs() plot to diagnose sampling problems
+#> WARN [2023-10-02 20:01:50] epinow: Examine the pairs() plot to diagnose sampling problems
 #>  -
 res$plots$R
 #> NULL
 ```
 
-The initial messages here indicate where log files can be fund, and summarised results and plots are in the folder given by `target_folder` (here: `results/`).
+The initial messages here indicate where log files can be found, and summarised results and plots are in the folder given by `target_folder` (here: `results/`).
 
 # Running the model simultaneously on multiple regions
 
 The package also contains functionality to conduct inference contemporaneously (if separately) in production mode on multiple time series, e.g. to run the model on multiple regions.
 This is done with the `regional_epinow()` function.
 
-Say, for example, we construct a data sets containing two regions, `testland` and `realland` (in this simple example both containing the same case data).
+Say, for example, we construct a dataset containing two regions, `testland` and `realland` (in this simple example both containing the same case data).
 
 
 ```r
@@ -95,34 +95,34 @@ region_rt <- regional_epinow(
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
 )
-#> INFO [2023-09-29 02:09:48] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2023-10-02 20:01:56] Producing following optional outputs: regions, summary, samples, plots, latest
 #> Logging threshold set at INFO for the EpiNow2 logger
-#> Writing EpiNow2 logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpzqj3B1/regional-epinow/2020-04-21.log
+#> Writing EpiNow2 logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmp2g83K0/regional-epinow/2020-04-21.log
 #> Logging threshold set at INFO for the EpiNow2.epinow logger
-#> Writing EpiNow2.epinow logs to: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpzqj3B1/epinow/2020-04-21.log
-#> INFO [2023-09-29 02:09:48] Reporting estimates using data up to: 2020-04-21
-#> INFO [2023-09-29 02:09:48] No target directory specified so returning output
-#> INFO [2023-09-29 02:09:48] Producing estimates for: testland, realland
-#> INFO [2023-09-29 02:09:48] Regions excluded: none
-#> INFO [2023-09-29 02:12:46] Completed estimates for: testland
-#> INFO [2023-09-29 02:15:42] Completed estimates for: realland
-#> INFO [2023-09-29 02:15:42] Completed regional estimates
-#> INFO [2023-09-29 02:15:42] Regions with estimates: 2
-#> INFO [2023-09-29 02:15:42] Regions with runtime errors: 0
-#> INFO [2023-09-29 02:15:42] Producing summary
-#> INFO [2023-09-29 02:15:42] No summary directory specified so returning summary output
-#> INFO [2023-09-29 02:15:42] No target directory specified so returning timings
+#> Writing EpiNow2.epinow logs to: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmp2g83K0/epinow/2020-04-21.log
+#> INFO [2023-10-02 20:01:56] Reporting estimates using data up to: 2020-04-21
+#> INFO [2023-10-02 20:01:56] No target directory specified so returning output
+#> INFO [2023-10-02 20:01:56] Producing estimates for: testland, realland
+#> INFO [2023-10-02 20:01:56] Regions excluded: none
+#> INFO [2023-10-02 20:03:16] Completed estimates for: testland
+#> INFO [2023-10-02 20:04:44] Completed estimates for: realland
+#> INFO [2023-10-02 20:04:44] Completed regional estimates
+#> INFO [2023-10-02 20:04:44] Regions with estimates: 2
+#> INFO [2023-10-02 20:04:44] Regions with runtime errors: 0
+#> INFO [2023-10-02 20:04:44] Producing summary
+#> INFO [2023-10-02 20:04:44] No summary directory specified so returning summary output
+#> INFO [2023-10-02 20:04:45] No target directory specified so returning timings
 ## summary
 region_rt$summary$summarised_results$table
 #>      Region New confirmed cases by infection date
-#> 1: realland                   2244 (1099 -- 4398)
-#> 2: testland                   2258 (1129 -- 4405)
+#> 1: realland                   2243 (1148 -- 4405)
+#> 2: testland                   2327 (1127 -- 4494)
 #>    Expected change in daily cases Effective reproduction no.
-#> 1:              Likely decreasing          0.87 (0.6 -- 1.2)
-#> 2:              Likely decreasing          0.88 (0.6 -- 1.2)
+#> 1:              Likely decreasing         0.88 (0.62 -- 1.2)
+#> 2:              Likely decreasing         0.89 (0.61 -- 1.2)
 #>              Rate of growth Doubling/halving time (days)
-#> 1:    -0.028 (-0.1 -- 0.04)             -24 (17 -- -6.9)
-#> 2: -0.027 (-0.099 -- 0.036)               -26 (19 -- -7)
+#> 1: -0.028 (-0.095 -- 0.037)             -25 (19 -- -7.3)
+#> 2: -0.025 (-0.098 -- 0.042)             -27 (17 -- -7.1)
 ## plot
 region_rt$summary$plots$R
 ```
@@ -142,34 +142,34 @@ region_separate_rt <- regional_epinow(
   delays = delay_opts(delay),
   rt = rt, gp = gp,
 )
-#> INFO [2023-09-29 02:15:43] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2023-10-02 20:04:45] Producing following optional outputs: regions, summary, samples, plots, latest
 #> Logging threshold set at INFO for the EpiNow2 logger
-#> Writing EpiNow2 logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpzqj3B1/regional-epinow/2020-04-21.log
+#> Writing EpiNow2 logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmp2g83K0/regional-epinow/2020-04-21.log
 #> Logging threshold set at INFO for the EpiNow2.epinow logger
-#> Writing EpiNow2.epinow logs to: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpzqj3B1/epinow/2020-04-21.log
-#> INFO [2023-09-29 02:15:43] Reporting estimates using data up to: 2020-04-21
-#> INFO [2023-09-29 02:15:43] No target directory specified so returning output
-#> INFO [2023-09-29 02:15:43] Producing estimates for: testland, realland
-#> INFO [2023-09-29 02:15:43] Regions excluded: none
-#> INFO [2023-09-29 02:19:50] Completed estimates for: testland
-#> INFO [2023-09-29 02:21:19] Completed estimates for: realland
-#> INFO [2023-09-29 02:21:19] Completed regional estimates
-#> INFO [2023-09-29 02:21:19] Regions with estimates: 2
-#> INFO [2023-09-29 02:21:19] Regions with runtime errors: 0
-#> INFO [2023-09-29 02:21:19] Producing summary
-#> INFO [2023-09-29 02:21:19] No summary directory specified so returning summary output
-#> INFO [2023-09-29 02:21:19] No target directory specified so returning timings
+#> Writing EpiNow2.epinow logs to: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmp2g83K0/epinow/2020-04-21.log
+#> INFO [2023-10-02 20:04:45] Reporting estimates using data up to: 2020-04-21
+#> INFO [2023-10-02 20:04:45] No target directory specified so returning output
+#> INFO [2023-10-02 20:04:45] Producing estimates for: testland, realland
+#> INFO [2023-10-02 20:04:45] Regions excluded: none
+#> INFO [2023-10-02 20:06:46] Completed estimates for: testland
+#> INFO [2023-10-02 20:07:21] Completed estimates for: realland
+#> INFO [2023-10-02 20:07:21] Completed regional estimates
+#> INFO [2023-10-02 20:07:21] Regions with estimates: 2
+#> INFO [2023-10-02 20:07:21] Regions with runtime errors: 0
+#> INFO [2023-10-02 20:07:21] Producing summary
+#> INFO [2023-10-02 20:07:21] No summary directory specified so returning summary output
+#> INFO [2023-10-02 20:07:21] No target directory specified so returning timings
 ## summary
 region_separate_rt$summary$summarised_results$table
 #>      Region New confirmed cases by infection date
-#> 1: realland                   2154 (1108 -- 4240)
-#> 2: testland                    2163 (953 -- 4372)
+#> 1: realland                   2168 (1094 -- 4167)
+#> 2: testland                   2233 (1014 -- 4477)
 #>    Expected change in daily cases Effective reproduction no.
 #> 1:              Likely decreasing         0.86 (0.61 -- 1.2)
-#> 2:              Likely decreasing         0.86 (0.55 -- 1.2)
+#> 2:              Likely decreasing         0.88 (0.56 -- 1.2)
 #>              Rate of growth Doubling/halving time (days)
-#> 1: -0.031 (-0.096 -- 0.035)             -23 (20 -- -7.2)
-#> 2:  -0.032 (-0.12 -- 0.037)             -22 (19 -- -5.9)
+#> 1: -0.032 (-0.096 -- 0.034)             -22 (20 -- -7.2)
+#> 2:  -0.028 (-0.11 -- 0.044)             -25 (16 -- -6.1)
 ## plot
 region_separate_rt$summary$plots$R
 ```
