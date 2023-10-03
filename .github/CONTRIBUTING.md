@@ -10,9 +10,21 @@ You can find the `.R` file that generates the `.Rd` by reading the comment in th
 
 ## Bigger changes
 
-If you want to make a bigger change, it's a good idea to first file an issue and make sure someone from the team agrees that it’s needed. 
-If you’ve found a bug, please file an issue that illustrates the bug with a minimal 
-[reprex](https://www.tidyverse.org/help/#reprex) (this will also help you write a unit test, if needed).
+If you want to make a bigger change, it's a good idea to first file an issue and make sure 
+someone from the team agrees that it’s needed. 
+
+## New features & Bugs
+
+If you have an idea for a feature or have found a bug, please file an issue.
+For bugs, illustrate them with a minimal [reprex](https://www.tidyverse.org/help/#reprex)
+(this will also help you write a unit test, if needed). 
+
+## Vignettes
+
+If you have an idea for a vignette, please file an issue with an outline of the vignette 
+to be discussed with the team first. Since the models in _EpiNow2_ have long run times 
+in most cases, we pre-compile the vignettes before merging. Please follow this guide 
+on [how to precompute vignettes or pkgdown articles](https://ropensci.org/blog/2019/12/08/precompute-vignettes/).
 
 ### Pull request process
 
