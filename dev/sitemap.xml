@@ -16,7 +16,16 @@
     <loc>epiforecasts.io/EpiNow2/dev/articles/case-studies.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/dev/articles/epinow.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/dev/articles/estimate_infections.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/articles/estimate_infections_options.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/articles/estimate_infections_workflow.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/articles/estimate_secondary.html</loc>

@@ -3,11 +3,14 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   case-studies: case-studies.html
+  epinow: epinow.html
   estimate_infections: estimate_infections.html
+  estimate_infections_options: estimate_infections_options.html
+  estimate_infections_workflow: estimate_infections_workflow.html
   estimate_secondary: estimate_secondary.html
   estimate_truncation: estimate_truncation.html
   gaussian_process_implementation_details: gaussian_process_implementation_details.html
-last_built: 2023-10-03T09:53Z
+last_built: 2023-10-03T13:21Z
 urls:
   reference: epiforecasts.io/EpiNow2/reference
   article: epiforecasts.io/EpiNow2/articles
