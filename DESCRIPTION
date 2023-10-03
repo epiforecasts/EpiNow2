@@ -133,6 +133,7 @@ Suggests:
     styler,
     testthat,
     tidyr,
+    usethis,
     withr
 LinkingTo: 
     BH (>= 1.66.0),

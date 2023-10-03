@@ -33,33 +33,10 @@ A data.table of region run times
 Used internally by \code{regional_epinow} to summarise region run times.
 }
 \examples{
-\donttest{
-# example delays
-generation_time <- get_generation_time(
- disease = "SARS-CoV-2", source = "ganyani"
-)
-incubation_period <- get_incubation_period(
- disease = "SARS-CoV-2", source = "lauer"
-)
-reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 15)
-
-cases <- example_confirmed[1:30]
-cases <- data.table::rbindlist(list(
-  data.table::copy(cases)[, region := "testland"],
-  cases[, region := "realland"]
+regional_out <- readRDS(system.file(
+    package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 ))
-
-# run basic nowcasting pipeline
-regional_out <- regional_epinow(
-  reported_cases = cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period + reporting_delay),
-  stan = stan_opts(samples = 100, warmup = 100),
-  output = c("region", "timing")
-)
-
 regional_runtimes(regional_output = regional_out$regional)
-}
 }
 \seealso{
 regional_summary regional_epinow

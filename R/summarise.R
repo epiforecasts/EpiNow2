@@ -165,37 +165,15 @@ summarise_results <- function(regions,
 #' @importFrom data.table setDT fcase
 #' @importFrom futile.logger flog.info
 #' @examples
-#' \donttest{
-#' # example delays
-#' generation_time <- get_generation_time(
-#'  disease = "SARS-CoV-2", source = "ganyani"
-#' )
-#' incubation_period <- get_incubation_period(
-#'  disease = "SARS-CoV-2", source = "lauer"
-#' )
-#' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 30)
-#'
-#' # example case vector from EpiSoon
-#' cases <- example_confirmed[1:30]
-#' cases <- data.table::rbindlist(list(
-#'   data.table::copy(cases)[, region := "testland"],
-#'   cases[, region := "realland"]
+#' # get example output from regional_epinow model
+#' regional_out <- readRDS(system.file(
+#'     package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 #' ))
 #'
-#' # run basic nowcasting pipeline
-#' out <- regional_epinow(
-#'   reported_cases = cases,
-#'   generation_time = generation_time_opts(generation_time),
-#'   delays = delay_opts(incubation_period + reporting_delay),
-#'   output = "region",
-#'   rt = NULL
-#' )
-#'
 #' regional_summary(
-#'   regional_output = out$regional,
-#'   reported_cases = cases
+#'   regional_output = regional_out$regional,
+#'   reported_cases = regional_out$summary$reported_cases
 #' )
-#' }
 regional_summary <- function(regional_output = NULL,
                              reported_cases,
                              results_dir = NULL,
@@ -526,33 +504,10 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @importFrom data.table data.table fwrite
 #' @importFrom purrr map safely
 #' @examples
-#' \donttest{
-#' # example delays
-#' generation_time <- get_generation_time(
-#'  disease = "SARS-CoV-2", source = "ganyani"
-#' )
-#' incubation_period <- get_incubation_period(
-#'  disease = "SARS-CoV-2", source = "lauer"
-#' )
-#' reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 15)
-#'
-#' cases <- example_confirmed[1:30]
-#' cases <- data.table::rbindlist(list(
-#'   data.table::copy(cases)[, region := "testland"],
-#'   cases[, region := "realland"]
+#' regional_out <- readRDS(system.file(
+#'     package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 #' ))
-#'
-#' # run basic nowcasting pipeline
-#' regional_out <- regional_epinow(
-#'   reported_cases = cases,
-#'   generation_time = generation_time_opts(generation_time),
-#'   delays = delay_opts(incubation_period + reporting_delay),
-#'   stan = stan_opts(samples = 100, warmup = 100),
-#'   output = c("region", "timing")
-#' )
-#'
 #' regional_runtimes(regional_output = regional_out$regional)
-#' }
 regional_runtimes <- function(regional_output = NULL,
                               target_folder = NULL,
                               target_date = NULL,

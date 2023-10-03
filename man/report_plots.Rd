@@ -31,36 +31,17 @@ Returns key summary plots for estimates. May be depreciated in later
 releases as current S3 methods are enhanced.
 }
 \examples{
-\donttest{
-# define example cases
-cases <- example_confirmed[1:40]
-
-# set up example delays
-generation_time <- get_generation_time(
- disease = "SARS-CoV-2", source = "ganyani"
-)
-incubation_period <- get_incubation_period(
- disease = "SARS-CoV-2", source = "lauer"
-)
-reporting_delay <- bootstrapped_dist_fit(
- rlnorm(100, log(6), 1), max_value = 30
-)
-
-# run model
-out <- estimate_infections(cases,
-  stan = stan_opts(samples = 500),
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period + reporting_delay),
-  rt = NULL
-)
+# get example output form estimate_infections
+out <- readRDS(system.file(
+    package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+))
 
 # plot infections
 plots <- report_plots(
   summarised_estimates = out$summarised,
-  reported = cases
+  reported = out$observations
 )
 plots
-}
 }
 \seealso{
 \code{\link[=plot_estimates]{plot_estimates()}} of

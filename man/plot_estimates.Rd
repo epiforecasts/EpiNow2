@@ -49,35 +49,22 @@ releases it  may be depreciated in favour of increasing the functionality of
 the S3 plot methods.
 }
 \examples{
-\donttest{
-# define example cases
-cases <- example_confirmed[1:40]
+# get example model results
+out <- readRDS(system.file(
+    package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+))
 
-# set up example delays
-generation_time <- get_generation_time(
- disease = "SARS-CoV-2", source = "ganyani"
-)
-incubation_period <- get_incubation_period(
- disease = "SARS-CoV-2", source = "lauer"
-)
-reporting_delay <- estimate_delay(rlnorm(100, log(6), 1), max_value = 10)
-
-# run model
-out <- estimate_infections(cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period + reporting_delay)
-)
 # plot infections
 plot_estimates(
   estimate = out$summarised[variable == "infections"],
-  reported = cases,
+  reported = out$observations,
   ylab = "Cases", max_plot = 2
 ) + ggplot2::facet_wrap(~type, scales = "free_y")
 
 # plot reported cases estimated via Rt
 plot_estimates(
   estimate = out$summarised[variable == "reported_cases"],
-  reported = cases,
+  reported = out$observations,
   ylab = "Cases"
 )
 
@@ -94,5 +81,4 @@ plot_estimates(
   ylab = "Effective Reproduction No.",
   hline = 1, estimate_type = "Estimate"
 )
-}
 }
