@@ -1,9 +1,10 @@
-# EpiNow2 1.4.9000
+# EpiNow2 1.4.9001
 
 ## Documentation
 
 * Two new vignettes have been added to cover the workflow and example uses. By @sbfnk in #458 and reviewed by @jamesmbaazam.
 * Removed references to the no longer existing `forecast_infections` function. By @sbfnk in #460 and reviewed by @seabbs.
+* The contribution guide has been improved to include more detail on ways to contribute new features/enhancements, report bugs, and improve or suggest vignettes. By @jamesmbaazam in #464 and reviewed by @seabbs.
 
 ## Package
 
