@@ -6,7 +6,7 @@
 
 ## Package
 
-* Reduced the number of long-running examples.
+* Reduced the number of long-running examples. By @sbfnk in #459 and reviewed by @seabbs.
 
 # EpiNow2 1.4.0
 
