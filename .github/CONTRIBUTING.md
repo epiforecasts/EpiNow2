@@ -1,30 +1,42 @@
 # Contributing to EpiNow2
 
-This outlines how to propose a change to EpiNow2. 
+This outlines how to propose a change to EpiNow2. In general, we accept contributions
+in the form of issues and/or pull requests.
 
-## Fixing typos
+## Small changes
+
+### Grammatical issues
 
 You can fix typos, spelling mistakes, or grammatical errors in the documentation directly using the GitHub web interface, as long as the changes are made in the _source_ file. 
 This generally means you'll need to edit [roxygen2 comments](https://roxygen2.r-lib.org/articles/roxygen2.html) in an `.R`, not a `.Rd` file. 
 You can find the `.R` file that generates the `.Rd` by reading the comment in the first line of the `.Rd` file in the `/man` directory.
 
-## Bigger changes
+## Big changes
 
 If you want to make a bigger change, it's a good idea to first file an issue and make sure 
-someone from the team agrees that it’s needed. 
+someone from the team agrees that it’s needed. Any of the following counts as a big change:
 
-## New features & Bugs
+### New features
 
-If you have an idea for a feature or have found a bug, please file an issue.
-For bugs, illustrate them with a minimal [reprex](https://www.tidyverse.org/help/#reprex)
-(this will also help you write a unit test, if needed). 
+You can suggest an idea for a new feature/enhancement. Please provide as much
+detail of its use case as possible. As an example, see this extensive issue about [making the model outputs S3 classes](https://github.com/epiforecasts/EpiNow2/issues/451).
 
-## Vignettes
+### Bugs
 
-If you have an idea for a vignette, please file an issue with an outline of the vignette 
-to be discussed with the team first. Since the models in _EpiNow2_ have long run times 
+If you have found a bug, ideally illustrate it with a minimal [reprex](https://www.tidyverse.org/help/#reprex)
+(this will also help you write a unit test, if you opt to fix it yourself). Here is an [example of a bug report](https://github.com/epiforecasts/EpiNow2/issues/392).
+
+### Vignettes
+
+If you find an issue with existing vignettes or would like to help improve them, outline
+the suggested changes in the submitted issue for discussion with the team. Use the various GitHub
+markdown features to (cross)reference lines, highlight suggested deletions/additions, etc.
+
+For new vignettes, please provide an outline of the vignette to be discussed with
+the team first. Since the models in _EpiNow2_ have long run times 
 in most cases, we pre-compile the vignettes before merging. Please follow this guide 
 on [how to precompute vignettes or pkgdown articles](https://ropensci.org/blog/2019/12/08/precompute-vignettes/).
+Here is [an example where new pre-compiled vignettes](https://github.com/epiforecasts/EpiNow2/pull/458) were submitted.
 
 ### Pull request process
 
