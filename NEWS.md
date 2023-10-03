@@ -2,7 +2,7 @@
 
 ## Documentation
 
-* Two new vignettes have been added to cover the workflow and example uses
+* Two new vignettes have been added to cover the workflow and example uses. By @sbfnk in #458 and reviewed by @jamesmbaazam.
 
 # EpiNow2 1.4.0
 

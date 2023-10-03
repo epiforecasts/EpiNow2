@@ -43,7 +43,7 @@ options(mc.cores = 4)
 
 # Data
 
-As data set we will use an example data set that is included in the package, representing an outbreak of COVID-19 with an initial rapid increase followed by decreasing incidence.
+We will use an example data set that is included in the package, representing an outbreak of COVID-19 with an initial rapid increase followed by decreasing incidence.
 
 ```{r data, fig.height = 4}
 library("ggplot2")
@@ -70,8 +70,8 @@ incubation_period <- get_incubation_period(
 incubation_period
 ```
 
-For the reporting delay, we use a lognormal distribution with mean of 2 days and 
-standard deviation of 1 day.
+For the reporting delay, we use a lognormal distribution with mean of 2 days and standard deviation of 1 day.
+Note that the mean and standard deviation must be converted to the log scale, which can be done using the `convert_log_logmean()` function.
 
 ```{r reporting_delay}
 reporting_delay <- dist_spec(
@@ -81,7 +81,7 @@ reporting_delay <- dist_spec(
 reporting_delay
 ```
 
-We can combine these delays into one by summing them up
+_EpiNow2_ provides a feature that allows us to combine these delays into one by summing them up
 
 ```{r delay}
 delay <- incubation_period + reporting_delay

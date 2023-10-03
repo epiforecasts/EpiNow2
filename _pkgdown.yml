@@ -46,7 +46,7 @@ navbar:
         href: articles/estimate_infections_workflow.html
       - text: Examples: estimate_infections()
         href: articles/estimate_infections_options.html
-      - text: epinow(): production mode
+      - text: Using epinow() for running in production mode
         href: articles/epinow.html
     casestudies:
       text: Case studies

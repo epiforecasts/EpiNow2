@@ -1,5 +1,5 @@
 ---
-title: "epinow(): production mode"
+title: "Using epinow() for running in production mode"
 output:
   rmarkdown::html_vignette:
     toc: false
@@ -7,7 +7,7 @@ output:
 bibliography: library.bib
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
 vignette: >
-  %\VignetteIndexEntry{epinow(): production mode}
+  %\VignetteIndexEntry{Using epinow() for running in production mode}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -22,13 +22,13 @@ knitr::opts_chunk$set(
 ```
 
 The _EpiNow2_ package contains functionality to run `estimate_infections()` in production mode, i.e. with full logging and saving all relevant outputs and plots to dedicated folders in the hard drive.
-This is done with the `epinow()` function, that takes the same options as `estimate_infections()` with some additional infections that determine, for example, where output gets stored and what output exactly.
+This is done with the `epinow()` function, that takes the same options as `estimate_infections()` with some additional options that determine, for example, where output gets stored and what output exactly.
 The function can be a useful option when, e.g., running the model daily with updated data on a high-performance computing server to feed into a dashboard.
 For more detail on the various model options available, see the [Examples](estimate_infections_options.html) vignette, for more on the general modelling approach the [Workflow](estimate_infections_workflow.html), and for theoretical background the [Model definitions](estimate_infections.html) vignette
 
 # Running the model on a single region
 
-To run the model in production model for a single region, set the parameters up in the same way as for `estimate_infections()` (see the [Workflow](estimate_infections_workflow.html) vignette).
+To run the model in production mode for a single region, set the parameters up in the same way as for `estimate_infections()` (see the [Workflow](estimate_infections_workflow.html) vignette).
 Here we use the example delay and generation time distributions that come with the package.
 This should be replaced with parameters relevant to the system that is being studied.
 
@@ -62,14 +62,14 @@ res <- epinow(reported_cases,
 res$plots$R
 ```
 
-The initial messages here indicate where log files can be fund, and summarised results and plots are in the folder given by `target_folder` (here: `results/`).
+The initial messages here indicate where log files can be found, and summarised results and plots are in the folder given by `target_folder` (here: `results/`).
 
 # Running the model simultaneously on multiple regions
 
 The package also contains functionality to conduct inference contemporaneously (if separately) in production mode on multiple time series, e.g. to run the model on multiple regions.
 This is done with the `regional_epinow()` function.
 
-Say, for example, we construct a data sets containing two regions, `testland` and `realland` (in this simple example both containing the same case data).
+Say, for example, we construct a dataset containing two regions, `testland` and `realland` (in this simple example both containing the same case data).
 
 ```{r construct_regional_cases}
 cases <- example_confirmed[1:60]
