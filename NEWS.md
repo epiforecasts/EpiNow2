@@ -1,5 +1,9 @@
 # EpiNow2 1.4.9000
 
+## Documentation
+
+* Two new vignettes have been added to cover the workflow and example uses. By @sbfnk in #458 and reviewed by @jamesmbaazam.
+
 ## Package
 
 * Reduced the number of long-running examples.

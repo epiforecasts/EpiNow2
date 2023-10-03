@@ -1,0 +1,522 @@
+---
+title: "Examples: estimate_infections()"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Examples: estimate_infections()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+The `estimate_infections()` function encodes a range of different model options.
+In this vignette we apply some of these to the example data provided with the _EpiNow2_ package, highlighting differences in inference results and run times. 
+It is not meant as a comprehensive exploration of all the functionality in the package, but intended to give users a flavour of the kind of model options that exist for reproduction number estimation and forecasting within the package, and the differences in computational speed between them.
+For mathematical detail on the model please consult the [model definition](estimate_infections.html) vignette, and for a more general description of the use of the function, the [estimate_infections workflow](estimate_infections_workflow.html) vignette.
+
+# Set up
+
+We first load the _EpiNow2_ package and also the _rstan_ package that we will use later to show the differences in run times between different model options.
+
+
+```r
+library("EpiNow2")
+#> Loading required namespace: V8
+library("rstan")
+#> Loading required package: StanHeaders
+#> 
+#> rstan version 2.26.24 (Stan version 2.26.1)
+#> For execution on a local, multicore CPU with excess RAM we recommend calling
+#> options(mc.cores = parallel::detectCores()).
+#> To avoid recompilation of unchanged Stan programs, we recommend calling
+#> rstan_options(auto_write = TRUE)
+#> For within-chain threading using `reduce_sum()` or `map_rect()` Stan functions,
+#> change `threads_per_chain` option:
+#> rstan_options(threads_per_chain = 1)
+```
+
+In this examples we set the number of cores to use to 4 but the optimal value here will depend on the computing resources available.
+
+
+```r
+options(mc.cores = 4)
+```
+
+# Data
+
+We will use an example data set that is included in the package, representing an outbreak of COVID-19 with an initial rapid increase followed by decreasing incidence.
+
+
+```r
+library("ggplot2")
+reported_cases <- example_confirmed[1:60]
+ggplot(reported_cases, aes(x =  date, y = confirm)) +
+  geom_col() +
+  theme_minimal() +
+  xlab("Date") +
+  ylab("Cases")
+```
+
+![plot of chunk data](figure/data-1.png)
+
+# Parameters
+
+Before running the model we need to decide on some parameter values, in particular any delays, the generation time, and a prior on the initial reproduction number.
+
+## Delays: incubation period and reporting delay
+
+Delays reflect the time that passes between infection and reporting, if these exist. In this example, we assume two delays, an _incubation period_ (i.e. delay from infection to symptom onset) and a _reporting delay_ (i.e. the delay from symptom onset to being recorded as a symptomatic case). These delays are usually not the same for everyone and are instead characterised by a distribution. For the incubation period we use an example from the literature that is included in the package.
+
+
+```r
+incubation_period <- get_incubation_period(
+  disease = "SARS-CoV-2", source = "lauer"
+)
+incubation_period
+#> 
+#>   Uncertain lognormal distribution with (untruncated) logmean 1.6 (SD 0.064) and logSD 0.42 (SD 0.069)
+```
+
+For the reporting delay, we use a lognormal distribution with mean of 2 days and standard deviation of 1 day.
+Note that the mean and standard deviation must be converted to the log scale, which can be done using the `convert_log_logmean()` function.
+
+
+```r
+reporting_delay <- dist_spec(
+  mean = convert_to_logmean(2, 1), mean_sd = 0,
+  sd = convert_to_logsd(2, 1), sd_sd = 0, max = 10
+)
+reporting_delay
+#> 
+#>   Fixed distribution with PMF [0.11 0.48 0.27 0.093 0.029 0.0096 0.0033 0.0012 0.00045 0.00018]
+```
+
+_EpiNow2_ provides a feature that allows us to combine these delays into one by summing them up
+
+
+```r
+delay <- incubation_period + reporting_delay
+delay
+#> 
+#> Combination of delay distributions:
+#>   Uncertain lognormal distribution with (untruncated) logmean 1.6 (SD 0.064) and logSD 0.42 (SD 0.069)
+#>   Fixed distribution with PMF [0.11 0.48 0.27 0.093 0.029 0.0096 0.0033 0.0012 0.00045 0.00018]
+```
+
+## Generation time
+
+If we want to estimate the reproduction number we need to provide a distribution of generation times. Here again we use an example from the literature that is included with the package.
+
+
+```r
+generation_time <- get_generation_time(
+  disease = "SARS-CoV-2", source = "ganyani"
+)
+generation_time
+#> 
+#>   Uncertain gamma distribution with (untruncated) mean 3.6 (SD 0.71) and SD 3.1 (SD 0.77)
+```
+
+## Initial reproduction number
+
+Lastly we need to choose a prior for the initial value of the reproduction number. This is assumed by the model to be normally distributed and we can set the mean and the standard deviation. We decide to set the mean to 2 and the standard deviation to 1.
+
+
+```r
+rt_prior <- list(mean = 2, sd = 0.1)
+```
+
+# Running the model
+
+We are now ready to run the model and will in the following show a number of possible options for doing so.
+
+## Default options
+
+By default the model uses a renewal equation for infections and a Gaussian Process prior for the reproduction number. 
+Putting all the data and parameters together and tweaking the Gaussian Process to have a shorter length scale prior than the default we run.
+
+
+```r
+def <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior)
+)
+#> Warning: There were 18 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
+# summarise results
+summary(def)
+#>                                  measure                 estimate
+#> 1: New confirmed cases by infection date      2248 (1143 -- 4365)
+#> 2:        Expected change in daily cases        Likely decreasing
+#> 3:            Effective reproduction no.       0.88 (0.62 -- 1.2)
+#> 4:                        Rate of growth -0.028 (-0.095 -- 0.037)
+#> 5:          Doubling/halving time (days)         -25 (19 -- -7.3)
+# elapsed time (in seconds)
+get_elapsed_time(def$fit)
+#>         warmup sample
+#> chain:1 47.203 35.025
+#> chain:2 44.973 36.144
+#> chain:3 55.958 31.756
+#> chain:4 42.884 35.091
+# summary plot
+plot(def)
+```
+
+![plot of chunk default](figure/default-1.png)
+
+## Reducing the accuracy of the approximate Gaussian Process
+
+To speed up the calculation of the Gaussian Process we could decrease its accuracy, e.g. decrease the proportion of time points to use as basis functions from the default of 0.2 to 0.1.
+
+
+```r
+agp <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior),
+  gp = gp_opts(basis_prop = 0.1)
+)
+#> Warning: There were 9 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
+# summarise results
+summary(agp)
+#>                                  measure                 estimate
+#> 1: New confirmed cases by infection date      2321 (1229 -- 4588)
+#> 2:        Expected change in daily cases        Likely decreasing
+#> 3:            Effective reproduction no.       0.89 (0.65 -- 1.2)
+#> 4:                        Rate of growth -0.024 (-0.087 -- 0.041)
+#> 5:          Doubling/halving time (days)         -28 (17 -- -7.9)
+# elapsed time (in seconds)
+get_elapsed_time(agp$fit)
+#>         warmup sample
+#> chain:1 28.912 48.824
+#> chain:2 25.219 30.999
+#> chain:3 32.968 32.434
+#> chain:4 37.553 30.607
+# summary plot
+plot(agp)
+```
+
+![plot of chunk lower_accuracy](figure/lower_accuracy-1.png)
+
+## Adjusting for future susceptible depletion
+
+We might want to adjust for future susceptible depletion.
+Here, we do so by setting the population to 1000000 and projecting the reproduction number from the latest estimate (rather than the default, which fixes the reproduction number to an earlier time point based on the given reporting delays).
+Note that this only affects the forecasts and is done using a crude adjustment (see the [model definition](estimate_infections.html)).
+
+
+```r
+dep <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(
+    prior = rt_prior,
+    pop = 1000000, future = "latest"
+  )
+)
+#> Warning: There were 3 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
+# summarise results
+summary(dep)
+#>                                  measure               estimate
+#> 1: New confirmed cases by infection date    2269 (1117 -- 4377)
+#> 2:        Expected change in daily cases      Likely decreasing
+#> 3:            Effective reproduction no.      0.88 (0.6 -- 1.2)
+#> 4:                        Rate of growth -0.027 (-0.1 -- 0.037)
+#> 5:          Doubling/halving time (days)       -26 (19 -- -6.9)
+# elapsed time (in seconds)
+get_elapsed_time(dep$fit)
+#>         warmup sample
+#> chain:1 44.156 39.473
+#> chain:2 48.509 61.754
+#> chain:3 49.279 47.867
+#> chain:4 53.546 38.343
+# summary plot
+plot(dep)
+```
+
+![plot of chunk susceptible_depletion](figure/susceptible_depletion-1.png)
+
+## Adjusting for truncation of the most recent data
+
+We might further want to adjust for right-truncation of recent data estimated using the [estimate_truncation](estimate_truncation.html) model.
+Here, instead of doing so we assume that we know about truncation with mean of 1/2 day, sd 1/2 day, following a lognormal distribution and with a maximum of three days.
+
+
+```r
+trunc_dist <- dist_spec(
+  mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
+  sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1,
+  max = 3
+)
+```
+
+We can then use this in the `esimtate_infections()` function using the `truncation` option.
+
+
+```r
+trunc <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  truncation = trunc_opts(trunc_dist),
+  rt = rt_opts(prior = rt_prior)
+)
+#> Warning: There were 2 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
+# summarise results
+summary(trunc)
+#>                                  measure                 estimate
+#> 1: New confirmed cases by infection date      2522 (1296 -- 4745)
+#> 2:        Expected change in daily cases        Likely decreasing
+#> 3:            Effective reproduction no.       0.92 (0.66 -- 1.2)
+#> 4:                        Rate of growth -0.018 (-0.085 -- 0.045)
+#> 5:          Doubling/halving time (days)         -38 (15 -- -8.2)
+# elapsed time (in seconds)
+get_elapsed_time(trunc$fit)
+#>         warmup sample
+#> chain:1 50.283 45.799
+#> chain:2 41.206 45.834
+#> chain:3 37.676 73.545
+#> chain:4 52.158 47.402
+# summary plot
+plot(trunc)
+```
+
+![plot of chunk truncation](figure/truncation-1.png)
+
+## Projecting the reproduction number with the Gaussian Process
+
+Instead of keeping the reproduction number fixed from a certain time point we might want to extrapolate the Gaussian Process into the future. 
+This will lead to wider uncertainty, and the researcher should check whether this or fixing the reproduction number from an earlier is desirable.
+
+
+```r
+project_rt <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(
+    prior = rt_prior, future = "project"
+  )
+)
+#> Warning: There were 8 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
+# summarise results
+summary(project_rt)
+#>                                  measure              estimate
+#> 1: New confirmed cases by infection date   2236 (1068 -- 4349)
+#> 2:        Expected change in daily cases     Likely decreasing
+#> 3:            Effective reproduction no.    0.87 (0.59 -- 1.2)
+#> 4:                        Rate of growth -0.028 (-0.1 -- 0.04)
+#> 5:          Doubling/halving time (days)      -25 (17 -- -6.7)
+# elapsed time (in seconds)
+get_elapsed_time(project_rt$fit)
+#>         warmup sample
+#> chain:1 31.483 37.108
+#> chain:2 35.041 36.827
+#> chain:3 35.983 41.154
+#> chain:4 37.730 56.884
+# summary plot
+plot(project_rt)
+```
+
+![plot of chunk gp_projection](figure/gp_projection-1.png)
+
+## Fixed reproduction number
+
+We might want to estimate a fixed reproduction number, i.e. assume that it does not change.
+
+
+```r
+fixed <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  gp = NULL
+)
+# summarise results
+summary(fixed)
+#>                                  measure              estimate
+#> 1: New confirmed cases by infection date 15823 (8907 -- 29156)
+#> 2:        Expected change in daily cases            Increasing
+#> 3:            Effective reproduction no.      1.2 (1.1 -- 1.3)
+#> 4:                        Rate of growth 0.038 (0.026 -- 0.05)
+#> 5:          Doubling/halving time (days)         18 (14 -- 26)
+# elapsed time (in seconds)
+get_elapsed_time(fixed$fit)
+#>         warmup sample
+#> chain:1  2.195  0.946
+#> chain:2  1.797  1.289
+#> chain:3  2.017  0.947
+#> chain:4  1.555  1.498
+# summary plot
+plot(fixed)
+```
+
+![plot of chunk fixed](figure/fixed-1.png)
+
+## Breakpoints
+
+Instead of assuming the reproduction number varies freely or is fixed, we can assume that it is fixed but with breakpoints.
+This can be done by adding a `breakpoint` column to the reported case data set.
+e.g. if we think that the reproduction number was constant but would like to allow it to change on the 16th of March 2020 we would define a new case data set using
+
+
+```r
+bp_cases <- data.table::copy(reported_cases)
+bp_cases <- bp_cases[,
+ breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)
+]
+```
+
+We then use this instead of `reported_cases` in the `estimate_infections()` function:
+
+
+```r
+bkp <- estimate_infections(bp_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior),
+  gp = NULL
+)
+# summarise results
+summary(bkp)
+#>                                  measure                 estimate
+#> 1: New confirmed cases by infection date      2465 (2051 -- 3002)
+#> 2:        Expected change in daily cases               Decreasing
+#> 3:            Effective reproduction no.      0.91 (0.88 -- 0.93)
+#> 4:                        Rate of growth -0.02 (-0.026 -- -0.015)
+#> 5:          Doubling/halving time (days)         -34 (-46 -- -26)
+# elapsed time (in seconds)
+get_elapsed_time(bkp$fit)
+#>         warmup sample
+#> chain:1  3.299  4.363
+#> chain:2  3.731  4.280
+#> chain:3  3.246  3.890
+#> chain:4  3.468  4.295
+# summary plot
+plot(bkp)
+```
+
+![plot of chunk bp](figure/bp-1.png)
+
+## Weekly random walk
+
+Instead of a smooth Gaussian Process we might want the reproduction number to change step-wise, e.g. every week.
+This can be achieved using the `rw` option which defines the length of the time step in a random walk that the reproduction number is assumed to follow.
+
+
+```r
+rw <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior, rw = 7),
+  gp = NULL
+)
+# summarise results
+summary(rw)
+#>                                  measure                 estimate
+#> 1: New confirmed cases by infection date      2125 (1162 -- 3967)
+#> 2:        Expected change in daily cases        Likely decreasing
+#> 3:            Effective reproduction no.       0.86 (0.64 -- 1.1)
+#> 4:                        Rate of growth -0.032 (-0.088 -- 0.028)
+#> 5:          Doubling/halving time (days)         -22 (24 -- -7.8)
+# elapsed time (in seconds)
+get_elapsed_time(rw$fit)
+#>         warmup sample
+#> chain:1 10.352 12.955
+#> chain:2  9.689 14.484
+#> chain:3 10.946 14.684
+#> chain:4  8.797 10.092
+# summary plot
+plot(rw)
+```
+
+![plot of chunk weekly_rw](figure/weekly_rw-1.png)
+
+## No delays
+
+Whilst _EpiNow2_ allows the user to specify delays, it can also run directly on the data as does e.g. the [EpiEstim](https://CRAN.R-project.org/package=EpiEstim) package.
+
+
+```r
+no_delay <- estimate_infections(
+  reported_cases,
+  generation_time = generation_time_opts(generation_time)
+)
+#> Warning: There were 9 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
+# summarise results
+summary(no_delay)
+#>                                  measure                   estimate
+#> 1: New confirmed cases by infection date        2770 (2323 -- 3317)
+#> 2:        Expected change in daily cases                 Decreasing
+#> 3:            Effective reproduction no.        0.88 (0.77 -- 0.98)
+#> 4:                        Rate of growth -0.028 (-0.053 -- -0.0035)
+#> 5:          Doubling/halving time (days)          -25 (-200 -- -13)
+# elapsed time (in seconds)
+get_elapsed_time(no_delay$fit)
+#>         warmup sample
+#> chain:1 42.824 38.712
+#> chain:2 49.368 42.698
+#> chain:3 43.148 36.002
+#> chain:4 37.123 36.357
+# summary plot
+plot(no_delay)
+```
+
+![plot of chunk no_delays](figure/no_delays-1.png)
+
+## Non-parametric infection model
+
+The package also includes a non-parametric infection model.
+This runs much faster but does not use the renewal equation to generate infections.
+Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting user choice and model generality.
+It also means that the model is questionable for forecasting, which is why were here set the predictive horizon to 0.
+
+
+```r
+non_parametric <- estimate_infections(reported_cases,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = NULL,
+  backcalc = backcalc_opts(),
+  horizon = 0
+)
+# summarise results
+summary(non_parametric)
+#>                                  measure                   estimate
+#> 1: New confirmed cases by infection date        2328 (1740 -- 3059)
+#> 2:        Expected change in daily cases                 Decreasing
+#> 3:            Effective reproduction no.        0.89 (0.78 -- 0.99)
+#> 4:                        Rate of growth -0.024 (-0.049 -- -0.0012)
+#> 5:          Doubling/halving time (days)          -29 (-590 -- -14)
+# elapsed time (in seconds)
+get_elapsed_time(non_parametric$fit)
+#>         warmup sample
+#> chain:1  4.597  1.014
+#> chain:2  3.146  1.074
+#> chain:3  3.497  1.129
+#> chain:4  3.992  0.992
+# summary plot
+plot(non_parametric)
+```
+
+![plot of chunk nonparametric](figure/nonparametric-1.png)
