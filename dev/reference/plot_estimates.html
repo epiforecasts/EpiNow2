@@ -135,42 +135,15 @@ based on partial data", and "Forecast".</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="co"># define example cases</span></span></span>
-<span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="va">example_confirmed</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">40</span><span class="op">]</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># get example model results</span></span></span>
+<span class="r-in"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    package <span class="op">=</span> <span class="st">"EpiNow2"</span>, <span class="st">"extdata"</span>, <span class="st">"example_estimate_infections.rds"</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># set up example delays</span></span></span>
-<span class="r-in"><span><span class="va">generation_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="get_generation_time.html">get_generation_time</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span> disease <span class="op">=</span> <span class="st">"SARS-CoV-2"</span>, source <span class="op">=</span> <span class="st">"ganyani"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">incubation_period</span> <span class="op">&lt;-</span> <span class="fu"><a href="get_incubation_period.html">get_incubation_period</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span> disease <span class="op">=</span> <span class="st">"SARS-CoV-2"</span>, source <span class="op">=</span> <span class="st">"lauer"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">reporting_delay</span> <span class="op">&lt;-</span> <span class="fu"><a href="estimate_delay.html">estimate_delay</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Lognormal.html" class="external-link">rlnorm</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>, max_value <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># run model</span></span></span>
-<span class="r-in"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="estimate_infections.html">estimate_infections</a></span><span class="op">(</span><span class="va">cases</span>,</span></span>
-<span class="r-in"><span>  generation_time <span class="op">=</span> <span class="fu"><a href="generation_time_opts.html">generation_time_opts</a></span><span class="op">(</span><span class="va">generation_time</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  delays <span class="op">=</span> <span class="fu"><a href="delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">incubation_period</span> <span class="op">+</span> <span class="va">reporting_delay</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 10 divergent transitions after warmup. See</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Examine the pairs() plot to diagnose sampling problems</span>
 <span class="r-in"><span><span class="co"># plot infections</span></span></span>
 <span class="r-in"><span><span class="fu">plot_estimates</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  estimate <span class="op">=</span> <span class="va">out</span><span class="op">$</span><span class="va">summarised</span><span class="op">[</span><span class="va">variable</span> <span class="op">==</span> <span class="st">"infections"</span><span class="op">]</span>,</span></span>
-<span class="r-in"><span>  reported <span class="op">=</span> <span class="va">cases</span>,</span></span>
+<span class="r-in"><span>  reported <span class="op">=</span> <span class="va">out</span><span class="op">$</span><span class="va">observations</span>,</span></span>
 <span class="r-in"><span>  ylab <span class="op">=</span> <span class="st">"Cases"</span>, max_plot <span class="op">=</span> <span class="fl">2</span></span></span>
 <span class="r-in"><span><span class="op">)</span> <span class="op">+</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">type</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_estimates-1.png" alt="" width="864" height="864"></span>
@@ -178,7 +151,7 @@ based on partial data", and "Forecast".</p></dd>
 <span class="r-in"><span><span class="co"># plot reported cases estimated via Rt</span></span></span>
 <span class="r-in"><span><span class="fu">plot_estimates</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  estimate <span class="op">=</span> <span class="va">out</span><span class="op">$</span><span class="va">summarised</span><span class="op">[</span><span class="va">variable</span> <span class="op">==</span> <span class="st">"reported_cases"</span><span class="op">]</span>,</span></span>
-<span class="r-in"><span>  reported <span class="op">=</span> <span class="va">cases</span>,</span></span>
+<span class="r-in"><span>  reported <span class="op">=</span> <span class="va">out</span><span class="op">$</span><span class="va">observations</span>,</span></span>
 <span class="r-in"><span>  ylab <span class="op">=</span> <span class="st">"Cases"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_estimates-2.png" alt="" width="864" height="864"></span>
@@ -198,7 +171,6 @@ based on partial data", and "Forecast".</p></dd>
 <span class="r-in"><span>  hline <span class="op">=</span> <span class="fl">1</span>, estimate_type <span class="op">=</span> <span class="st">"Estimate"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_estimates-4.png" alt="" width="864" height="864"></span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
