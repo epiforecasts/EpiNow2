@@ -67,6 +67,7 @@ precommit::use_precommit()
 #### What happens after submitting a PR?
 
 *   PRs are reviewed by the team before they are merged. The review process only begins after the continuous integration checks, which have to be manually triggered by a maintainer for first-time contributors, have passed.
+
 *   The Github Actions checks currently take a while (about an hour), so it might be helpful to "watch" the repository and check your email for a notification when it's all done.
 
 *   Usually, all the review conversations occur under the PR. The reviewer merges the PR when every issue has been resolved. Please use the "Resolve conversation" functionality in the GitHub web interface to indicate when a specific issue has been adressed, responding with a commit pointing to the change made where applicable.
@@ -77,6 +78,10 @@ precommit::use_precommit()
   *   Check that there are no linting issues by running `lintr::lint_package()`.
   *   Run `devtoools::check()` to check for wider package issues like mismatching documentation, etc. (this currently requires a fair bit of time/computation).
   *   (Optional) Turn on continuous integration with Github Actions on your forked repository.
+  
+* On a case-by-case basis, you may be asked to increment the package version both in the `NEWS.md` and
+`DESCRIPTION` files. Please do not do this unless you're asked to. We follow the [Tidyverse package versioning guide](https://r-pkgs.org/lifecycle.html). You can run `usethis::use_version()` to automatically
+make the changes for you interactively.
   
 ### Code style
 
