@@ -118,7 +118,6 @@ Imports:
     runner,
     scales,
     stats,
-    StanHeaders,
     truncnorm,
     utils
 Suggests:
@@ -144,8 +143,8 @@ LinkingTo:
     rstan (>= 2.26.0),
     StanHeaders (>= 2.26.0)
 Remotes:
-    stan-dev/rstan/rstan/rstan@develop,
-    stan-dev/rstan/StanHeaders@develop
+    stan-dev/rstan/StanHeaders@develop,
+    stan-dev/rstan/rstan/rstan@develop
 Biarch: true
 Config/testthat/edition: 3
 Encoding: UTF-8
