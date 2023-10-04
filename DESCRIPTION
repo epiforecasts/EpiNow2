@@ -113,7 +113,7 @@ Imports:
     R.utils (>= 2.0.0),
     Rcpp (>= 0.12.0), 
     rlang (>= 0.4.7),
-    rstan (>= 2.26.0),
+    rstan (>= d962b4cd960d1a10c5ce0bbf0d442648159bdcd1),
     rstantools (>= 2.2.0),
     runner,
     scales,
@@ -142,6 +142,8 @@ LinkingTo:
     RcppParallel (>= 5.0.1),
     rstan (>= 2.26.0),
     StanHeaders (>= 2.26.0)
+Remotes:
+    stan-dev/rstan/rstan/rstan@develop
 Biarch: true
 Config/testthat/edition: 3
 Encoding: UTF-8
