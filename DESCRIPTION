@@ -113,7 +113,7 @@ Imports:
     R.utils (>= 2.0.0),
     Rcpp (>= 0.12.0), 
     rlang (>= 0.4.7),
-    rstan (>= d962b4cd960d1a10c5ce0bbf0d442648159bdcd1),
+    rstan,
     rstantools (>= 2.2.0),
     runner,
     scales,
