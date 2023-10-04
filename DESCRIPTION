@@ -143,7 +143,7 @@ LinkingTo:
     rstan (>= 2.26.0),
     StanHeaders (>= 2.26.0)
 Remotes:
-    stan-dev/rstan/rstan/rstan@develop
+    stan-dev/rstan/rstan/rstan@develop,
     stan-dev/rstan/StanHeaders@develop
 Biarch: true
 Config/testthat/edition: 3
