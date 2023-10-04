@@ -118,6 +118,7 @@ Imports:
     runner,
     scales,
     stats,
+    StanHeaders,
     truncnorm,
     utils
 Suggests:
