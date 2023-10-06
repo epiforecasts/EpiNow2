@@ -892,6 +892,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #'
 #' @author Sebastian Funk
 #' @author Sam Abbott
+#' @importFrom rlang warn
 #' @export
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
@@ -905,6 +906,18 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
                       distribution = c("lognormal", "gamma"), max,
                       pmf = numeric(0), fixed = FALSE) {
+  ## deprecate previous behaviour
+  warn(
+    message = paste(
+      "The meaning of the 'max' argument has changed compared to",
+      "previous versions. It now indicates the maximum of a distribution",
+      "rather than the length of the probability mass function (including 0)",
+      "that it represented previously. To replicate previous behaviour reduce",
+      "max by 1."
+    ),
+    .frequency = "regularly",
+    .frequency_id = "dist_spec_max"
+  )
   ## check if parametric or nonparametric
   if (length(pmf) > 0 &&
     !all(

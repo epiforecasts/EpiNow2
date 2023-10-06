@@ -50,7 +50,7 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
   if (type_options > 1) {
     stop(
       "Generation time can be given either as distributional options ",
-      "or as disease/source, but not both."
+      "or as a combination of disease and source, but not both."
     )
   }
   if (length(dot_options) > 0) {
@@ -158,7 +158,7 @@ delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
     )
   } else if (length(dot_options) > 0) {
     ## can be removed once dot options are hard deprecated
-    stop("Unknown named arguments passed to `delay_opts`" )
+    stop("Unknown named arguments passed to `delay_opts`")
   }
   return(dist)
 }
