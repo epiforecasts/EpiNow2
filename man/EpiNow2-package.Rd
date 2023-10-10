@@ -29,6 +29,7 @@ Authors:
   \item Joe Hickson \email{joseph.hickson@metoffice.gov.uk}
   \item Hamada S. Badr \email{badr@jhu.edu} (\href{https://orcid.org/0000-0002-9808-2344}{ORCID})
   \item Michael DeWitt \email{me.dewitt.jr@gmail.com} (\href{https://orcid.org/0000-0001-8940-1967}{ORCID})
+  \item James M. Azam \email{james.azam@lshtm.ac.uk} (\href{https://orcid.org/0000-0001-5782-7330}{ORCID})
   \item EpiForecasts
   \item Sebastian Funk \email{sebastian.funk@lshtm.ac.uk} (\href{https://orcid.org/0000-0002-2842-3406}{ORCID})
 }
@@ -43,7 +44,6 @@ Other contributors:
   \item Peter Ellis \email{peter.ellis2013nz@gmail.com} [contributor]
   \item Pietro Monticone \email{pietro.monticone@edu.unito.it} [contributor]
   \item Lloyd Chapman \email{lloyd.chapman1@lshtm.ac.uk } [contributor]
-  \item James M. Azam \email{james.azam@lshtm.ac.uk} (\href{https://orcid.org/0000-0001-5782-7330}{ORCID}) [contributor]
   \item Andrew Johnson \email{andrew.johnson@arjohnsonau.com} [contributor]
 }
 

@@ -113,13 +113,14 @@ A list of output from estimate_infections with additional elements
 summarising results and reporting errors if they have occurred.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}} This function wraps the
-functionality of \code{estimate_infections()} in order to estimate Rt and cases
-by date of infection and forecast these infections into the future. In
-addition to the functionality of \code{estimate_infections()} it produces
-additional summary output useful for reporting results and interpreting
-them as well as error catching and reporting, making it particularly useful
-for production use e.g. running at set intervals on a deidcated server.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
+This function wraps the functionality of \code{estimate_infections()} in order
+to estimate Rt and cases by date of infection and forecast these infections
+into the future. In addition to the functionality of
+\code{estimate_infections()} it produces additional summary output useful for
+reporting results and interpreting them as well as error catching and
+reporting, making it particularly useful for production use e.g. running at
+set intervals on a deidcated server.
 }
 \examples{
 \donttest{
