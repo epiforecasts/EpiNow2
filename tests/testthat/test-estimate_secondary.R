@@ -1,5 +1,4 @@
 skip_on_cran()
-library(data.table)
 
 #### Incidence data example ####
 

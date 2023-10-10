@@ -1,3 +1,5 @@
+library("data.table")
+
 if (identical(Sys.getenv("NOT_CRAN"), "true")) {
   files <- c(
     "convolve.stan", "pmfs.stan", "observation_model.stan", "secondary.stan",

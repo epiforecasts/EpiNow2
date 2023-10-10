@@ -9,7 +9,6 @@ reporting_delay <- dist_spec(
   sd = convert_to_logsd(2, 1), sd_sd = 0.1, max = 10
 )
 
-library(data.table)
 out <- suppressWarnings(estimate_infections(reported_cases,
   generation_time = generation_time_opts(generation_time),
   delays = delay_opts(reporting_delay),

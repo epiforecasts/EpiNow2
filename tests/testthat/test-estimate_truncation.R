@@ -44,8 +44,7 @@ test_that("estimate_truncation can return values from simulated data and plot
            them", {
   # fit model to example data
   est <- estimate_truncation(example_data,
-    verbose = interactive(), refresh = 0,
-    chains = 2, iter = 1000, warmup = 250
+    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
   )
   expect_equal(
     names(est),
@@ -58,16 +57,13 @@ test_that("estimate_truncation can return values from simulated data and plot
 test_that("deprecated arguments are recognised", {
   options(warn = 2)
   expect_error(estimate_truncation(example_data,
-    verbose = interactive(), refresh = 0,
-    trunc_max = 10
+    verbose = FALSE, trunc_max = 10
   ), "deprecated")
   expect_error(estimate_truncation(example_data,
-    verbose = interactive(), refresh = 0,
-    max_truncation = 10
+    verbose = FALSE, max_truncation = 10
   ), "deprecated")
   expect_error(estimate_truncation(example_data,
-    verbose = interactive(), refresh = 0,
-    trunc_dist = "lognormal"
+    verbose = FALSE, trunc_dist = "lognormal"
   ), "deprecated")
 })
 
