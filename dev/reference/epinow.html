@@ -292,22 +292,22 @@ summarising results and reporting errors if they have occurred.</p>
 <span class="r-in"><span>  delays <span class="op">=</span> <span class="fu"><a href="delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">incubation_period</span> <span class="op">+</span> <span class="va">reporting_delay</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Logging threshold set at INFO for the EpiNow2 logger</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Writing EpiNow2 logs to the console and: /tmp/RtmpkUxiPR/regional-epinow/2020-04-01.log</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Writing EpiNow2 logs to the console and: /tmp/RtmpKnRgS0/regional-epinow/2020-04-01.log</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Logging threshold set at INFO for the EpiNow2.epinow logger</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Writing EpiNow2.epinow logs to the console and: /tmp/RtmpkUxiPR/epinow/2020-04-01.log</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2023-10-10 16:29:39] epinow: There were 4 divergent transitions after warmup. See</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Writing EpiNow2.epinow logs to the console and: /tmp/RtmpKnRgS0/epinow/2020-04-01.log</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2023-10-10 18:03:45] epinow: There were 15 divergent transitions after warmup. See</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them. - </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2023-10-10 16:29:39] epinow: Examine the pairs() plot to diagnose sampling problems</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2023-10-10 18:03:45] epinow: Examine the pairs() plot to diagnose sampling problems</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - </span>
 <span class="r-in"><span><span class="co"># summary of the latest estimates</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                  measure               estimate</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1: New confirmed cases by infection date    3348 (1400 -- 7782)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:        Expected change in daily cases      Likely decreasing</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3:            Effective reproduction no.     0.78 (0.51 -- 1.2)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4:                        Rate of growth -0.05 (-0.13 -- 0.031)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5:          Doubling/halving time (days)       -14 (22 -- -5.4)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                  measure                estimate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1: New confirmed cases by infection date     3447 (1382 -- 7730)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2:        Expected change in daily cases       Likely decreasing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3:            Effective reproduction no.      0.79 (0.51 -- 1.1)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4:                        Rate of growth -0.049 (-0.13 -- 0.029)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5:          Doubling/halving time (days)        -14 (24 -- -5.3)</span>
 <span class="r-in"><span><span class="co"># plot estimates</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="epinow-1.png" alt="" width="864" height="864"></span>
@@ -315,151 +315,151 @@ summarising results and reporting errors if they have occurred.</p>
 <span class="r-in"><span><span class="co"># summary of R estimates</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">out</span>, type <span class="op">=</span> <span class="st">"parameters"</span>, params <span class="op">=</span> <span class="st">"R"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           date variable strat                           type    median</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 2020-02-22        R  &lt;NA&gt;                       estimate 2.0631235</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 2020-02-23        R  &lt;NA&gt;                       estimate 2.0554065</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 2020-02-24        R  &lt;NA&gt;                       estimate 2.0441156</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 2020-02-25        R  &lt;NA&gt;                       estimate 2.0287714</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 2020-02-26        R  &lt;NA&gt;                       estimate 2.0109789</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 2020-02-27        R  &lt;NA&gt;                       estimate 1.9903055</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 2020-02-28        R  &lt;NA&gt;                       estimate 1.9657136</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 2020-02-29        R  &lt;NA&gt;                       estimate 1.9362832</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 2020-03-01        R  &lt;NA&gt;                       estimate 1.9039078</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 2020-03-02        R  &lt;NA&gt;                       estimate 1.8675406</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 2020-03-03        R  &lt;NA&gt;                       estimate 1.8290482</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12: 2020-03-04        R  &lt;NA&gt;                       estimate 1.7883560</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13: 2020-03-05        R  &lt;NA&gt;                       estimate 1.7455397</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14: 2020-03-06        R  &lt;NA&gt;                       estimate 1.7020955</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15: 2020-03-07        R  &lt;NA&gt;                       estimate 1.6575346</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16: 2020-03-08        R  &lt;NA&gt;                       estimate 1.6120946</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17: 2020-03-09        R  &lt;NA&gt;                       estimate 1.5659084</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18: 2020-03-10        R  &lt;NA&gt;                       estimate 1.5186877</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19: 2020-03-11        R  &lt;NA&gt;                       estimate 1.4712462</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20: 2020-03-12        R  &lt;NA&gt;                       estimate 1.4243681</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21: 2020-03-13        R  &lt;NA&gt;                       estimate 1.3784762</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22: 2020-03-14        R  &lt;NA&gt;                       estimate 1.3322018</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23: 2020-03-15        R  &lt;NA&gt;                       estimate 1.2851686</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24: 2020-03-16        R  &lt;NA&gt;                       estimate 1.2401195</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25: 2020-03-17        R  &lt;NA&gt;                       estimate 1.1957614</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26: 2020-03-18        R  &lt;NA&gt;                       estimate 1.1538619</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27: 2020-03-19        R  &lt;NA&gt;                       estimate 1.1128270</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28: 2020-03-20        R  &lt;NA&gt; estimate based on partial data 1.0739285</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29: 2020-03-21        R  &lt;NA&gt; estimate based on partial data 1.0364832</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30: 2020-03-22        R  &lt;NA&gt; estimate based on partial data 1.0019576</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31: 2020-03-23        R  &lt;NA&gt; estimate based on partial data 0.9704226</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32: 2020-03-24        R  &lt;NA&gt; estimate based on partial data 0.9425532</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33: 2020-03-25        R  &lt;NA&gt; estimate based on partial data 0.9155027</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34: 2020-03-26        R  &lt;NA&gt; estimate based on partial data 0.8891514</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35: 2020-03-27        R  &lt;NA&gt; estimate based on partial data 0.8649912</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36: 2020-03-28        R  &lt;NA&gt; estimate based on partial data 0.8463930</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 37: 2020-03-29        R  &lt;NA&gt; estimate based on partial data 0.8290598</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38: 2020-03-30        R  &lt;NA&gt; estimate based on partial data 0.8140425</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 39: 2020-03-31        R  &lt;NA&gt; estimate based on partial data 0.7972727</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 40: 2020-04-01        R  &lt;NA&gt; estimate based on partial data 0.7840513</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 41: 2020-04-02        R  &lt;NA&gt;                       forecast 0.7840513</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 42: 2020-04-03        R  &lt;NA&gt;                       forecast 0.7840513</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 43: 2020-04-04        R  &lt;NA&gt;                       forecast 0.7840513</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 44: 2020-04-05        R  &lt;NA&gt;                       forecast 0.7840513</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 45: 2020-04-06        R  &lt;NA&gt;                       forecast 0.7840513</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 46: 2020-04-07        R  &lt;NA&gt;                       forecast 0.7840513</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 47: 2020-04-08        R  &lt;NA&gt;                       forecast 0.7840513</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 2020-02-22        R  &lt;NA&gt;                       estimate 2.0636724</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 2020-02-23        R  &lt;NA&gt;                       estimate 2.0579237</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 2020-02-24        R  &lt;NA&gt;                       estimate 2.0471760</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 2020-02-25        R  &lt;NA&gt;                       estimate 2.0295203</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 2020-02-26        R  &lt;NA&gt;                       estimate 2.0096264</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 2020-02-27        R  &lt;NA&gt;                       estimate 1.9867163</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 2020-02-28        R  &lt;NA&gt;                       estimate 1.9619728</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 2020-02-29        R  &lt;NA&gt;                       estimate 1.9321104</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 2020-03-01        R  &lt;NA&gt;                       estimate 1.9008576</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 2020-03-02        R  &lt;NA&gt;                       estimate 1.8648779</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 2020-03-03        R  &lt;NA&gt;                       estimate 1.8268193</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12: 2020-03-04        R  &lt;NA&gt;                       estimate 1.7870079</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13: 2020-03-05        R  &lt;NA&gt;                       estimate 1.7455577</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14: 2020-03-06        R  &lt;NA&gt;                       estimate 1.7021533</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15: 2020-03-07        R  &lt;NA&gt;                       estimate 1.6581520</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16: 2020-03-08        R  &lt;NA&gt;                       estimate 1.6128250</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17: 2020-03-09        R  &lt;NA&gt;                       estimate 1.5658255</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18: 2020-03-10        R  &lt;NA&gt;                       estimate 1.5194242</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19: 2020-03-11        R  &lt;NA&gt;                       estimate 1.4721156</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20: 2020-03-12        R  &lt;NA&gt;                       estimate 1.4247347</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21: 2020-03-13        R  &lt;NA&gt;                       estimate 1.3778896</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22: 2020-03-14        R  &lt;NA&gt;                       estimate 1.3322959</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23: 2020-03-15        R  &lt;NA&gt;                       estimate 1.2877169</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24: 2020-03-16        R  &lt;NA&gt;                       estimate 1.2445254</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25: 2020-03-17        R  &lt;NA&gt;                       estimate 1.2006013</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26: 2020-03-18        R  &lt;NA&gt;                       estimate 1.1581579</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27: 2020-03-19        R  &lt;NA&gt;                       estimate 1.1171113</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28: 2020-03-20        R  &lt;NA&gt; estimate based on partial data 1.0798472</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29: 2020-03-21        R  &lt;NA&gt; estimate based on partial data 1.0425593</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30: 2020-03-22        R  &lt;NA&gt; estimate based on partial data 1.0076139</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31: 2020-03-23        R  &lt;NA&gt; estimate based on partial data 0.9763445</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32: 2020-03-24        R  &lt;NA&gt; estimate based on partial data 0.9473525</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33: 2020-03-25        R  &lt;NA&gt; estimate based on partial data 0.9208391</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34: 2020-03-26        R  &lt;NA&gt; estimate based on partial data 0.8964322</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35: 2020-03-27        R  &lt;NA&gt; estimate based on partial data 0.8740912</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36: 2020-03-28        R  &lt;NA&gt; estimate based on partial data 0.8521887</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37: 2020-03-29        R  &lt;NA&gt; estimate based on partial data 0.8345818</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38: 2020-03-30        R  &lt;NA&gt; estimate based on partial data 0.8188198</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39: 2020-03-31        R  &lt;NA&gt; estimate based on partial data 0.8041538</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40: 2020-04-01        R  &lt;NA&gt; estimate based on partial data 0.7915310</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41: 2020-04-02        R  &lt;NA&gt;                       forecast 0.7915310</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42: 2020-04-03        R  &lt;NA&gt;                       forecast 0.7915310</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 43: 2020-04-04        R  &lt;NA&gt;                       forecast 0.7915310</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 44: 2020-04-05        R  &lt;NA&gt;                       forecast 0.7915310</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 45: 2020-04-06        R  &lt;NA&gt;                       forecast 0.7915310</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 46: 2020-04-07        R  &lt;NA&gt;                       forecast 0.7915310</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 47: 2020-04-08        R  &lt;NA&gt;                       forecast 0.7915310</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           date variable strat                           type    median</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          mean         sd  lower_90  lower_50  lower_20  upper_20  upper_50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 2.0665863 0.09696621 1.9094092 2.0015729 2.0375660 2.0886231 2.1309441</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 2.0578005 0.08583610 1.9170022 1.9985756 2.0329073 2.0775403 2.1146356</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 2.0462340 0.08001749 1.9165205 1.9924225 2.0229261 2.0632102 2.0997965</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 2.0314445 0.07775683 1.9069926 1.9807252 2.0094906 2.0490691 2.0811642</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 2.0131146 0.07695775 1.8919002 1.9633058 1.9922384 2.0284791 2.0632700</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 1.9910804 0.07612534 1.8702459 1.9426946 1.9719677 2.0078032 2.0383370</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 1.9653397 0.07463149 1.8472503 1.9164916 1.9489204 1.9826773 2.0106622</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 1.9360387 0.07250636 1.8209941 1.8878334 1.9202592 1.9541649 1.9796201</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 1.9034412 0.07009291 1.7922130 1.8566322 1.8867984 1.9207858 1.9471300</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 1.8678899 0.06773844 1.7591002 1.8239115 1.8503607 1.8845684 1.9118707</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 1.8297680 0.06561014 1.7255496 1.7862537 1.8131103 1.8451835 1.8722280</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12: 1.7894667 0.06367244 1.6882230 1.7482971 1.7733400 1.8039631 1.8296003</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13: 1.7473625 0.06179398 1.6500282 1.7081787 1.7320392 1.7605894 1.7868194</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14: 1.7038032 0.05989389 1.6103313 1.6649763 1.6890365 1.7163025 1.7424080</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15: 1.6590997 0.05803577 1.5689708 1.6226143 1.6454855 1.6715437 1.6958627</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16: 1.6135236 0.05642054 1.5248092 1.5770225 1.5974942 1.6268514 1.6494482</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17: 1.5673085 0.05527841 1.4793190 1.5315574 1.5519298 1.5802079 1.6031627</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18: 1.5206571 0.05471618 1.4330423 1.4857928 1.5050553 1.5330762 1.5557131</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19: 1.4737527 0.05462216 1.3863706 1.4392494 1.4588795 1.4847727 1.5090285</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20: 1.4267747 0.05470791 1.3383803 1.3911950 1.4128802 1.4384136 1.4612284</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21: 1.3799146 0.05465797 1.2909343 1.3458657 1.3666980 1.3906154 1.4134033</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22: 1.3333873 0.05427898 1.2456172 1.3002425 1.3205491 1.3438031 1.3654460</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23: 1.2874356 0.05356874 1.2016990 1.2553071 1.2743061 1.2973708 1.3175516</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24: 1.2423269 0.05270661 1.1602032 1.2100931 1.2284779 1.2526480 1.2736456</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25: 1.1983430 0.05201315 1.1184840 1.1649369 1.1845884 1.2074986 1.2296635</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26: 1.1557687 0.05191318 1.0751184 1.1215688 1.1418284 1.1657761 1.1876138</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27: 1.1148784 0.05289281 1.0319212 1.0804954 1.1002070 1.1266735 1.1473519</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28: 1.0759259 0.05541854 0.9901152 1.0400627 1.0609108 1.0881549 1.1095794</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29: 1.0391352 0.05982465 0.9457613 1.0004754 1.0227787 1.0511742 1.0763244</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30: 1.0046950 0.06623508 0.8994883 0.9619751 0.9863294 1.0177932 1.0447220</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31: 0.9727543 0.07457443 0.8524791 0.9239743 0.9529373 0.9892639 1.0172144</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32: 0.9434214 0.08464490 0.8060697 0.8874023 0.9206449 0.9614872 0.9946988</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33: 0.9167645 0.09620906 0.7634007 0.8546374 0.8929269 0.9363302 0.9768236</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34: 0.8928135 0.10904653 0.7218805 0.8232766 0.8651007 0.9162372 0.9620676</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35: 0.8715636 0.12298380 0.6799948 0.7924273 0.8407656 0.8981271 0.9509883</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36: 0.8529781 0.13790506 0.6397635 0.7628917 0.8167266 0.8806904 0.9418489</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 37: 0.8369917 0.15375073 0.6006613 0.7342320 0.7942062 0.8666876 0.9334426</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38: 0.8235137 0.17051065 0.5712045 0.7097084 0.7726817 0.8532081 0.9272693</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 39: 0.8124298 0.18821782 0.5399191 0.6866066 0.7536911 0.8448619 0.9227597</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 40: 0.8036030 0.20694410 0.5146990 0.6641654 0.7379821 0.8362399 0.9193680</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 41: 0.8036030 0.20694410 0.5146990 0.6641654 0.7379821 0.8362399 0.9193680</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 42: 0.8036030 0.20694410 0.5146990 0.6641654 0.7379821 0.8362399 0.9193680</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 43: 0.8036030 0.20694410 0.5146990 0.6641654 0.7379821 0.8362399 0.9193680</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 44: 0.8036030 0.20694410 0.5146990 0.6641654 0.7379821 0.8362399 0.9193680</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 45: 0.8036030 0.20694410 0.5146990 0.6641654 0.7379821 0.8362399 0.9193680</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 46: 0.8036030 0.20694410 0.5146990 0.6641654 0.7379821 0.8362399 0.9193680</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 47: 0.8036030 0.20694410 0.5146990 0.6641654 0.7379821 0.8362399 0.9193680</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 2.0684218 0.09490392 1.9183827 2.0038081 2.0419871 2.0872719 2.1322503</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 2.0599643 0.08363734 1.9266421 2.0007831 2.0375519 2.0785116 2.1182793</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 2.0486993 0.07879975 1.9222776 1.9934564 2.0256594 2.0664541 2.1022647</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 2.0341428 0.07809862 1.9120140 1.9841693 2.0128388 2.0483245 2.0833436</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 2.0159407 0.07873121 1.8940984 1.9643672 1.9920242 2.0292939 2.0630706</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 1.9939023 0.07872743 1.8741969 1.9418838 1.9710594 2.0077769 2.0400699</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 1.9680115 0.07727249 1.8488645 1.9158439 1.9454098 1.9799079 2.0152778</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 1.9384176 0.07445353 1.8212036 1.8881050 1.9159088 1.9519754 1.9836240</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 1.9054046 0.07088030 1.7958042 1.8576168 1.8834665 1.9189979 1.9504038</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 1.8693502 0.06730956 1.7668992 1.8236549 1.8484284 1.8828347 1.9125988</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 1.8306814 0.06431925 1.7317991 1.7881380 1.8118557 1.8430086 1.8719798</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12: 1.7898354 0.06211373 1.6931305 1.7494613 1.7725625 1.8013748 1.8291160</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13: 1.7472306 0.06053887 1.6512762 1.7077045 1.7304419 1.7597076 1.7857184</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14: 1.7032489 0.05927455 1.6078837 1.6639328 1.6890810 1.7157195 1.7413048</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15: 1.6582265 0.05805683 1.5655058 1.6202066 1.6460836 1.6718633 1.6953920</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16: 1.6124525 0.05679762 1.5238187 1.5755287 1.5990805 1.6267489 1.6481928</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17: 1.5661721 0.05557124 1.4801698 1.5307612 1.5528383 1.5798762 1.6004813</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18: 1.5195932 0.05451660 1.4335452 1.4844541 1.5064993 1.5317621 1.5526169</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19: 1.4728973 0.05372915 1.3857921 1.4398531 1.4598594 1.4849304 1.5050324</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20: 1.4262519 0.05320034 1.3411540 1.3933737 1.4124967 1.4374160 1.4594171</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21: 1.3798237 0.05282422 1.2979061 1.3462918 1.3661671 1.3912173 1.4131836</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22: 1.3337902 0.05245519 1.2519663 1.3001449 1.3204697 1.3452934 1.3660231</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23: 1.2883482 0.05198618 1.2078594 1.2545849 1.2768359 1.2996312 1.3199687</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24: 1.2437176 0.05142036 1.1626880 1.2103663 1.2317349 1.2543376 1.2734010</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25: 1.2001401 0.05092059 1.1203172 1.1682875 1.1873062 1.2117743 1.2298498</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26: 1.1578742 0.05083100 1.0780901 1.1265774 1.1464355 1.1695169 1.1876760</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27: 1.1171851 0.05165976 1.0358540 1.0856992 1.1056103 1.1297348 1.1482234</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28: 1.0783340 0.05399289 0.9933880 1.0441347 1.0659260 1.0910206 1.1125376</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29: 1.0415646 0.05832396 0.9459440 1.0043346 1.0285200 1.0556565 1.0784360</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30: 1.0070924 0.06487750 0.8976134 0.9657046 0.9919714 1.0231086 1.0479406</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31: 0.9750949 0.07356066 0.8516163 0.9283443 0.9578118 0.9933585 1.0218294</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32: 0.9457061 0.08406837 0.8066191 0.8906282 0.9251540 0.9664885 1.0008489</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33: 0.9190142 0.09603589 0.7592189 0.8552894 0.8954711 0.9429356 0.9814531</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34: 0.8950625 0.10914422 0.7155761 0.8225650 0.8677086 0.9214793 0.9638141</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35: 0.8738508 0.12315875 0.6788943 0.7924855 0.8437861 0.9011453 0.9491189</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36: 0.8553390 0.13792350 0.6414249 0.7657486 0.8200075 0.8831922 0.9361894</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37: 0.8394495 0.15333733 0.6024130 0.7410878 0.7985816 0.8692892 0.9285143</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38: 0.8260709 0.16932826 0.5712651 0.7185830 0.7798526 0.8569286 0.9220874</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39: 0.8150616 0.18583097 0.5399246 0.6978969 0.7645345 0.8426157 0.9143526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40: 0.8062537 0.20276579 0.5093841 0.6787846 0.7503188 0.8331187 0.9121867</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41: 0.8062537 0.20276579 0.5093841 0.6787846 0.7503188 0.8331187 0.9121867</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42: 0.8062537 0.20276579 0.5093841 0.6787846 0.7503188 0.8331187 0.9121867</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 43: 0.8062537 0.20276579 0.5093841 0.6787846 0.7503188 0.8331187 0.9121867</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 44: 0.8062537 0.20276579 0.5093841 0.6787846 0.7503188 0.8331187 0.9121867</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 45: 0.8062537 0.20276579 0.5093841 0.6787846 0.7503188 0.8331187 0.9121867</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 46: 0.8062537 0.20276579 0.5093841 0.6787846 0.7503188 0.8331187 0.9121867</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 47: 0.8062537 0.20276579 0.5093841 0.6787846 0.7503188 0.8331187 0.9121867</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          mean         sd  lower_90  lower_50  lower_20  upper_20  upper_50</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     upper_90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 2.233825</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 2.204730</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 2.179893</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 2.157114</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 2.138311</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 2.114354</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 2.088391</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 2.053803</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 2.017468</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 1.978900</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 1.934094</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12: 1.890645</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13: 1.847486</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14: 1.802368</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15: 1.754503</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16: 1.708930</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17: 1.658341</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18: 1.609373</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19: 1.563157</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20: 1.516136</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21: 1.467908</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22: 1.423916</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23: 1.378323</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24: 1.331336</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25: 1.287123</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26: 1.244573</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27: 1.203317</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28: 1.170545</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29: 1.141529</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30: 1.118224</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31: 1.098764</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32: 1.083471</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33: 1.071236</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34: 1.064168</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35: 1.069707</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36: 1.079091</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 37: 1.090497</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38: 1.110456</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 39: 1.128804</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 40: 1.153530</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 41: 1.153530</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 42: 1.153530</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 43: 1.153530</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 44: 1.153530</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 45: 1.153530</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 46: 1.153530</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 47: 1.153530</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 2.229450</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 2.198028</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 2.180342</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 2.166186</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 2.152932</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 2.128992</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 2.097385</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 2.063361</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 2.024563</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 1.983035</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 1.937222</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12: 1.892847</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13: 1.846340</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14: 1.798710</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15: 1.752127</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16: 1.703674</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17: 1.654806</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18: 1.605916</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19: 1.561110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20: 1.516192</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21: 1.468645</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22: 1.420459</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23: 1.374329</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24: 1.327744</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25: 1.281794</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26: 1.240246</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27: 1.199508</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28: 1.163428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29: 1.133174</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30: 1.113988</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31: 1.094921</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32: 1.081458</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33: 1.074134</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34: 1.070263</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35: 1.069694</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36: 1.075945</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37: 1.088749</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38: 1.105687</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39: 1.119178</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40: 1.145129</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41: 1.145129</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42: 1.145129</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 43: 1.145129</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 44: 1.145129</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 45: 1.145129</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 46: 1.145129</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 47: 1.145129</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     upper_90</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opts</span><span class="op">)</span></span></span>
