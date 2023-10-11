@@ -1,4 +1,6 @@
+library(EpiNow2)
 library(data.table)
+library(here)
 
 ## We use the method outlined here:  https://www.eurosurveillance.org/content/10.2807/1560-7917.ES.2020.25.17.2000257 # nolint
 ## to estimate the generation time based on the incubation time estimated
@@ -6,24 +8,15 @@ library(data.table)
 ## Code for this estimation process is available here: https://github.com/seabbs/COVID19 # nolint
 ## We assume that a case cannot infect another case on the day of infection.
 ## Load raw MCMC output
-gi <- data.table::setDT(readRDS(file.path("data-raw", "gi.rds")))
+gi <- data.table::setDT(readRDS(here::here("data-raw", "gi.rds")))
 ## Check mean and standard deviation
-covid_generation_times_summary <-
-  gi[, .(
-    mean = median(mean), mean_sd = sd(mean),
-    sd = median(sd), sd_sd = sd(sd)
-  )]
+example_generation_time <- dist_spec(
+  mean = median(gi$mean),
+  mean_sd = sd(gi$mean),
+  sd = median(gi$sd), 
+  sd_sd = sd(gi$sd),
+  dist = "gamma",
+  max = 14L
+)
 
-generation_times <-
-  covid_generation_times_summary[, `:=`(
-    as_reported = "3.64 (SD 3.08)",
-    dist = "gamma",
-    disease = "SARS-CoV-2",
-    source = "ganyani",
-    url = "https://www.eurosurveillance.org/content/10.2807/1560-7917.ES.2020.25.17.2000257" # nolint
-  )]
-
-generation_times
-
-
-usethis::use_data(generation_times, overwrite = TRUE)
+usethis::use_data(example_generation_time, overwrite = TRUE)

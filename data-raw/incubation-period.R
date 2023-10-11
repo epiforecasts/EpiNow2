@@ -1,13 +1,14 @@
-library(data.table)
+library(EpiNow2)
 
-incubation_periods <- data.table(
-  as_reported = "5.06 (log SD 0.418)",
-  mean = 1.621, mean_sd = 0.0640,
-  sd = 0.418, sd_sd = 0.0691,
+## COVID-19 incubation period from Lauer et al., https://doi.org/10.7326/M20-0504
+
+example_incubation_period <- dist_spec(
+  mean = 1.621,
+  mean_sd = 0.0640,
+  sd = 0.418,
+  sd_sd = 0.0691,
   dist = "lognormal",
-  disease = "SARS-CoV-2",
-  source = "lauer",
-  url = "doi.org/10.7326/M20-0504" # nolint
+  max = 14L
 )
 
-usethis::use_data(incubation_periods, overwrite = TRUE)
+usethis::use_data(example_incubation_period, overwrite = TRUE)
