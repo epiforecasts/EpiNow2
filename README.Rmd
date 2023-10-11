@@ -144,7 +144,7 @@ estimates <- epinow(
   delays = delay_opts(incubation_period + reporting_delay),
   rt = rt_opts(
     prior = list(mean = 2, sd = 0.2),
-    incidence_feedback = list(mean = 0, sd = 0.0001)
+    incidence_feedback = list(mean = 0.01, sd = 0.01)
   ),
   stan = stan_opts(cores = 4, control = list(adapt_delta = 0.99)),
   verbose = interactive()

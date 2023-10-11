@@ -48,7 +48,7 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   for (s in 1:ot) {
     infectiousness[s] = update_infectiousness(infections, gt_rev_pmf, uot, s);
     if (if_present) {
-      infections[s + uot] = exp(
+      R[s] = exp(
         log(R[s]) - incidence_feedback[1] .* infectiousness[s]
       );
     }
