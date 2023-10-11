@@ -240,7 +240,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   }
 
   # check incidence feedback
-  if (names(rt$incidence_feedback) != c("mean", "sd")) {
+  if (!identical(names(rt$incidence_feedback), c("mean", "sd"))) {
     stop("incidence_feedback must be a list with mean and sd")
   }
 
