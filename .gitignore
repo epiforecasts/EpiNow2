@@ -35,3 +35,5 @@ src
 
 .DS_Store
 .vscode
+
+vignettes/results
