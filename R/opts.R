@@ -261,7 +261,8 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
                     use_breakpoints = TRUE,
                     future = "latest",
                     gp_on = "R_t-1",
-                    pop = 0) {
+                    pop = 0
+                    incidence_feedback = c(0, 0)) {
   rt <- list(
     prior = prior,
     use_rt = use_rt,
@@ -269,6 +270,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
     use_breakpoints = use_breakpoints,
     future = future,
     pop = pop,
+    incidence_feedback = incidence_feedback,
     gp_on = match.arg(gp_on, choices = c("R_t-1", "R0"))
   )
 

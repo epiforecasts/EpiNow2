@@ -9,3 +9,7 @@
   int fixed_from;                    // Reference date for when Rt estimation should be fixed
   int pop;                           // Initial susceptible population
   int<lower = 0> gt_id;              // id of generation time
+  int incidence_feedback_used;           // should incidence feedback be used (1 = yes)
+  real incidence_feedback_mean;     // mean of incidence feedback
+  real incidence_feedback_sd;       // sd of incidence feedback
+

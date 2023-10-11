@@ -53,6 +53,7 @@ parameters{
   simplex[week_effect] day_of_week_simplex;// day of week reporting effect
   array[obs_scale] real<lower = 0, upper = 1> frac_obs;     // fraction of cases that are ultimately observed
   array[model_type] real<lower = 0> rep_phi;     // overdispersion of the reporting process
+  array[incidence_feedback_used] real<lower = 0> incidence_feedback; // incidence feedback
 }
 
 transformed parameters {
@@ -79,7 +80,7 @@ transformed parameters {
     );
     infections = generate_infections(
       R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,
-      future_time
+      future_time, incidence_feedback
     );
   } else {
     // via deconvolution
@@ -144,6 +145,12 @@ model {
   // prior observation scaling
   if (obs_scale) {
     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];
+  }
+  // Incidence feedback prior
+  if (incidence_feedback_used) {
+    incidence_feedback ~ normal(
+      incidence_feedback_mean, incidence_feedback_sd
+    ); 
   }
   // observed reports from mean of reports (update likelihood)
   if (likelihood) {

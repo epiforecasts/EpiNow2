@@ -238,6 +238,12 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   if (is.null(breakpoints) || sum(breakpoints) == 0) {
     rt$use_breakpoints <- FALSE
   }
+
+  # check incidence feedback
+  if (names(rt$incidence_feedback) != c("mean", "sd")) {
+    stop("incidence_feedback must be a list with mean and sd")
+  }
+
   # map settings to underlying gp stan requirements
   rt_data <- list(
     r_mean = rt$prior$mean,
@@ -249,7 +255,10 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     fixed_from = future_rt$from,
     pop = rt$pop,
     stationary =  as.numeric(rt$gp_on %in% "R0"),
-    future_time = horizon - future_rt$from
+    future_time = horizon - future_rt$from,
+    incidence_feedback_used = as.numeric(rt$incidence_feedback$sd != 0),
+    incidence_feedback_mean = rt$incidence_feedback$mean
+    incidence_feedback_sd = rt$incidence_feedback$sd
   )
   return(rt_data)
 }
