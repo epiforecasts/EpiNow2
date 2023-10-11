@@ -5,3 +5,5 @@
   int pop;                       // susceptible population
 
   int<lower = 0> gt_id; // id of generation time
+  int incidence_feedback_used; // 0 = no incidence feedback, 1 = incidence feedback
+  array[incidence_feedback_used] real incidence_feedback; // incidence feedback

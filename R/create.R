@@ -257,7 +257,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     stationary =  as.numeric(rt$gp_on %in% "R0"),
     future_time = horizon - future_rt$from,
     incidence_feedback_used = as.numeric(rt$incidence_feedback$sd != 0),
-    incidence_feedback_mean = rt$incidence_feedback$mean
+    incidence_feedback_mean = rt$incidence_feedback$mean,
     incidence_feedback_sd = rt$incidence_feedback$sd
   )
   return(rt_data)
@@ -595,6 +595,13 @@ create_initial_conditions <- function(data) {
       out$day_of_week_simplex <- array(
         rep(1 / data$week_effect, data$week_effect)
       )
+    }
+    if (data$incidence_feedback_used == 1) {
+      out$incidence_feedback <- array(truncnorm::rtruncnorm(1,
+        a = 0,
+        mean = data$incidence_feedback_mean,
+        sd = data$incidence_feedback_sd * 0.1
+      ))
     }
     return(out)
   }

@@ -242,6 +242,13 @@ trunc_opts <- function(dist = dist_spec()) {
 #' but the method relying on a global mean will revert to this for real time
 #' estimates, which may not be desirable.
 #'
+#' @param incidence_feedback List, defaulting to NULL. Should incidence
+#' feedback be used to update the prior on Rt. If NULL no incidence feedback
+#' is used. If a list then the it must have `mean` and `sd` elements defining
+#' the mean and standard deviation of the normal prior on the log of the
+#' incidence feedback. The prior will be updated using estimated previous
+#' infections weighted by the generation time distribution.
+#' 
 #' @return A list of settings defining the time-varying reproduction number.
 #' @author Sam Abbott
 #' @inheritParams create_future_rt
@@ -262,7 +269,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
                     future = "latest",
                     gp_on = "R_t-1",
                     pop = 0
-                    incidence_feedback = c(0, 0)) {
+                    incidence_feedback = NULL) {
   rt <- list(
     prior = prior,
     use_rt = use_rt,
