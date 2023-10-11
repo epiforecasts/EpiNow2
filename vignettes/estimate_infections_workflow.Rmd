@@ -84,7 +84,7 @@ For example, to define a fixed gamma distribution with mean 3, standard deviatio
 ```r
 dist_spec(mean = 3, sd = 1, distribution = "gamma", max = 10)
 #> 
-#>   Fixed distribution with PMF [0.0038 0.15 0.39 0.3 0.12 0.03 0.006 0.00096 0.00013 1.6e-05]
+#>   Fixed distribution with PMF [0.0038 0.15 0.39 0.3 0.12 0.03 0.006 0.00096 0.00013 1.6e-05 1.8e-06]
 ```
 
 If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by _EpiNow2_, i.e. they are estimated as part of the inference.
@@ -142,7 +142,7 @@ incubation_period + reporting_delay
 #> 
 #> Combination of delay distributions:
 #>   Uncertain lognormal distribution with (untruncated) logmean 1.6 (SD 0.05) and logSD 0.5 (SD 0.05)
-#>   Fixed distribution with PMF [0.16 0.49 0.23 0.077 0.025 0.0084 0.003 0.0011 0.00045 0.00019]
+#>   Fixed distribution with PMF [0.16 0.49 0.23 0.077 0.025 0.0084 0.003 0.0011 0.00045 0.00019 8.2e-05]
 ```
 
 In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `dist_spec()`).
@@ -230,7 +230,7 @@ def <- estimate_infections(
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior)
 )
-#> Warning: There were 3 divergent transitions after warmup. See
+#> Warning: There were 10 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
