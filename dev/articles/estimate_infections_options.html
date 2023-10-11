@@ -122,11 +122,10 @@ workflow</a> vignette.</p>
 run times between different model options.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://epiforecasts.io/EpiNow2/">"EpiNow2"</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required namespace: V8</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://mc-stan.org/rstan/" class="external-link">"rstan"</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: StanHeaders</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; rstan version 2.26.24 (Stan version 2.26.1)</span></span>
+<span><span class="co">#&gt; rstan version 2.33.1.9000 (Stan version 2.33.0)</span></span>
 <span><span class="co">#&gt; For execution on a local, multicore CPU with excess RAM we recommend calling</span></span>
 <span><span class="co">#&gt; options(mc.cores = parallel::detectCores()).</span></span>
 <span><span class="co">#&gt; To avoid recompilation of unchanged Stan programs, we recommend calling</span></span>
@@ -178,6 +177,9 @@ in the package.</p>
 <code class="sourceCode R"><span><span class="va">incubation_period</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_incubation_period.html">get_incubation_period</a></span><span class="op">(</span></span>
 <span>  disease <span class="op">=</span> <span class="st">"SARS-CoV-2"</span>, source <span class="op">=</span> <span class="st">"lauer"</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: The meaning of the 'max' argument has changed compared to previous versions. It now indicates the maximum of a distribution rather than the length of the probability mass function (including 0) that it represented previously. To replicate previous behaviour reduce max by 1.</span></span>
+<span><span class="co">#&gt; This warning is displayed onc every 8 hours.</span></span>
+<span><span class="co">#&gt; This warning is displayed once every 8 hours.</span></span>
 <span><span class="va">incubation_period</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   Uncertain lognormal distribution with (untruncated) logmean 1.6 (SD 0.064) and logSD 0.42 (SD 0.069)</span></span></code></pre></div>
@@ -192,7 +194,7 @@ the <code>convert_log_logmean()</code> function.</p>
 <span><span class="op">)</span></span>
 <span><span class="va">reporting_delay</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   Fixed distribution with PMF [0.11 0.48 0.27 0.093 0.029 0.0096 0.0033 0.0012 0.00045 0.00018]</span></span></code></pre></div>
+<span><span class="co">#&gt;   Fixed distribution with PMF [0.11 0.48 0.27 0.093 0.029 0.0096 0.0033 0.0012 0.00045 0.00018 7.4e-05]</span></span></code></pre></div>
 <p><em>EpiNow2</em> provides a feature that allows us to combine these
 delays into one by summing them up</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -201,7 +203,7 @@ delays into one by summing them up</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Combination of delay distributions:</span></span>
 <span><span class="co">#&gt;   Uncertain lognormal distribution with (untruncated) logmean 1.6 (SD 0.064) and logSD 0.42 (SD 0.069)</span></span>
-<span><span class="co">#&gt;   Fixed distribution with PMF [0.11 0.48 0.27 0.093 0.029 0.0096 0.0033 0.0012 0.00045 0.00018]</span></span></code></pre></div>
+<span><span class="co">#&gt;   Fixed distribution with PMF [0.11 0.48 0.27 0.093 0.029 0.0096 0.0033 0.0012 0.00045 0.00018 7.4e-05]</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="generation-time">Generation time<a class="anchor" aria-label="anchor" href="#generation-time"></a>
@@ -246,25 +248,28 @@ shorter length scale prior than the default we run.</p>
 <span>  delays <span class="op">=</span> <span class="fu"><a href="../reference/delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">delay</span><span class="op">)</span>,</span>
 <span>  rt <span class="op">=</span> <span class="fu"><a href="../reference/rt_opts.html">rt_opts</a></span><span class="op">(</span>prior <span class="op">=</span> <span class="va">rt_prior</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: There were 18 divergent transitions after warmup. See</span></span>
+<span><span class="co">#&gt; Warning: There were 29 divergent transitions after warmup. See</span></span>
 <span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span></span>
 <span><span class="co">#&gt; to find out why this is a problem and how to eliminate them.</span></span>
 <span><span class="co">#&gt; Warning: Examine the pairs() plot to diagnose sampling problems</span></span>
+<span><span class="co">#&gt; Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span></span>
+<span><span class="co">#&gt; Running the chains for more iterations may help. See</span></span>
+<span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#tail-ess</span></span>
 <span><span class="co"># summarise results</span></span>
 <span><span class="fu"><a href="../reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">def</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                  measure                 estimate</span></span>
-<span><span class="co">#&gt; 1: New confirmed cases by infection date      2248 (1143 -- 4365)</span></span>
-<span><span class="co">#&gt; 2:        Expected change in daily cases        Likely decreasing</span></span>
-<span><span class="co">#&gt; 3:            Effective reproduction no.       0.88 (0.62 -- 1.2)</span></span>
-<span><span class="co">#&gt; 4:                        Rate of growth -0.028 (-0.095 -- 0.037)</span></span>
-<span><span class="co">#&gt; 5:          Doubling/halving time (days)         -25 (19 -- -7.3)</span></span>
+<span><span class="co">#&gt;                                  measure               estimate</span></span>
+<span><span class="co">#&gt; 1: New confirmed cases by infection date    2290 (1101 -- 4384)</span></span>
+<span><span class="co">#&gt; 2:        Expected change in daily cases      Likely decreasing</span></span>
+<span><span class="co">#&gt; 3:            Effective reproduction no.      0.88 (0.6 -- 1.2)</span></span>
+<span><span class="co">#&gt; 4:                        Rate of growth -0.026 (-0.1 -- 0.038)</span></span>
+<span><span class="co">#&gt; 5:          Doubling/halving time (days)       -27 (18 -- -6.9)</span></span>
 <span><span class="co"># elapsed time (in seconds)</span></span>
 <span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-class.html" class="external-link">get_elapsed_time</a></span><span class="op">(</span><span class="va">def</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         warmup sample</span></span>
-<span><span class="co">#&gt; chain:1 47.203 35.025</span></span>
-<span><span class="co">#&gt; chain:2 44.973 36.144</span></span>
-<span><span class="co">#&gt; chain:3 55.958 31.756</span></span>
-<span><span class="co">#&gt; chain:4 42.884 35.091</span></span>
+<span><span class="co">#&gt; chain:1 27.009 23.896</span></span>
+<span><span class="co">#&gt; chain:2 31.504 24.599</span></span>
+<span><span class="co">#&gt; chain:3 35.044 25.610</span></span>
+<span><span class="co">#&gt; chain:4 25.206 22.827</span></span>
 <span><span class="co"># summary plot</span></span>
 <span><span class="fu"><a href="../reference/plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">def</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -284,25 +289,25 @@ basis functions from the default of 0.2 to 0.1.</p>
 <span>  rt <span class="op">=</span> <span class="fu"><a href="../reference/rt_opts.html">rt_opts</a></span><span class="op">(</span>prior <span class="op">=</span> <span class="va">rt_prior</span><span class="op">)</span>,</span>
 <span>  gp <span class="op">=</span> <span class="fu"><a href="../reference/gp_opts.html">gp_opts</a></span><span class="op">(</span>basis_prop <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: There were 9 divergent transitions after warmup. See</span></span>
+<span><span class="co">#&gt; Warning: There were 7 divergent transitions after warmup. See</span></span>
 <span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span></span>
 <span><span class="co">#&gt; to find out why this is a problem and how to eliminate them.</span></span>
 <span><span class="co">#&gt; Warning: Examine the pairs() plot to diagnose sampling problems</span></span>
 <span><span class="co"># summarise results</span></span>
 <span><span class="fu"><a href="../reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">agp</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                  measure                 estimate</span></span>
-<span><span class="co">#&gt; 1: New confirmed cases by infection date      2321 (1229 -- 4588)</span></span>
+<span><span class="co">#&gt; 1: New confirmed cases by infection date      2322 (1213 -- 4472)</span></span>
 <span><span class="co">#&gt; 2:        Expected change in daily cases        Likely decreasing</span></span>
-<span><span class="co">#&gt; 3:            Effective reproduction no.       0.89 (0.65 -- 1.2)</span></span>
-<span><span class="co">#&gt; 4:                        Rate of growth -0.024 (-0.087 -- 0.041)</span></span>
-<span><span class="co">#&gt; 5:          Doubling/halving time (days)         -28 (17 -- -7.9)</span></span>
+<span><span class="co">#&gt; 3:            Effective reproduction no.       0.89 (0.63 -- 1.2)</span></span>
+<span><span class="co">#&gt; 4:                        Rate of growth -0.025 (-0.091 -- 0.038)</span></span>
+<span><span class="co">#&gt; 5:          Doubling/halving time (days)         -27 (18 -- -7.6)</span></span>
 <span><span class="co"># elapsed time (in seconds)</span></span>
 <span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-class.html" class="external-link">get_elapsed_time</a></span><span class="op">(</span><span class="va">agp</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         warmup sample</span></span>
-<span><span class="co">#&gt; chain:1 28.912 48.824</span></span>
-<span><span class="co">#&gt; chain:2 25.219 30.999</span></span>
-<span><span class="co">#&gt; chain:3 32.968 32.434</span></span>
-<span><span class="co">#&gt; chain:4 37.553 30.607</span></span>
+<span><span class="co">#&gt; chain:1 20.929 23.721</span></span>
+<span><span class="co">#&gt; chain:2 22.423 27.525</span></span>
+<span><span class="co">#&gt; chain:3 22.271 25.142</span></span>
+<span><span class="co">#&gt; chain:4 21.271 44.261</span></span>
 <span><span class="co"># summary plot</span></span>
 <span><span class="fu"><a href="../reference/plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">agp</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -327,25 +332,25 @@ using a crude adjustment (see the <a href="estimate_infections.html">model defin
 <span>    pop <span class="op">=</span> <span class="fl">1000000</span>, future <span class="op">=</span> <span class="st">"latest"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: There were 3 divergent transitions after warmup. See</span></span>
+<span><span class="co">#&gt; Warning: There were 5 divergent transitions after warmup. See</span></span>
 <span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span></span>
 <span><span class="co">#&gt; to find out why this is a problem and how to eliminate them.</span></span>
 <span><span class="co">#&gt; Warning: Examine the pairs() plot to diagnose sampling problems</span></span>
 <span><span class="co"># summarise results</span></span>
 <span><span class="fu"><a href="../reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">dep</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                  measure               estimate</span></span>
-<span><span class="co">#&gt; 1: New confirmed cases by infection date    2269 (1117 -- 4377)</span></span>
-<span><span class="co">#&gt; 2:        Expected change in daily cases      Likely decreasing</span></span>
-<span><span class="co">#&gt; 3:            Effective reproduction no.      0.88 (0.6 -- 1.2)</span></span>
-<span><span class="co">#&gt; 4:                        Rate of growth -0.027 (-0.1 -- 0.037)</span></span>
-<span><span class="co">#&gt; 5:          Doubling/halving time (days)       -26 (19 -- -6.9)</span></span>
+<span><span class="co">#&gt;                                  measure                 estimate</span></span>
+<span><span class="co">#&gt; 1: New confirmed cases by infection date      2259 (1153 -- 4268)</span></span>
+<span><span class="co">#&gt; 2:        Expected change in daily cases        Likely decreasing</span></span>
+<span><span class="co">#&gt; 3:            Effective reproduction no.       0.88 (0.62 -- 1.2)</span></span>
+<span><span class="co">#&gt; 4:                        Rate of growth -0.027 (-0.095 -- 0.035)</span></span>
+<span><span class="co">#&gt; 5:          Doubling/halving time (days)         -25 (20 -- -7.3)</span></span>
 <span><span class="co"># elapsed time (in seconds)</span></span>
 <span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-class.html" class="external-link">get_elapsed_time</a></span><span class="op">(</span><span class="va">dep</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         warmup sample</span></span>
-<span><span class="co">#&gt; chain:1 44.156 39.473</span></span>
-<span><span class="co">#&gt; chain:2 48.509 61.754</span></span>
-<span><span class="co">#&gt; chain:3 49.279 47.867</span></span>
-<span><span class="co">#&gt; chain:4 53.546 38.343</span></span>
+<span><span class="co">#&gt; chain:1 36.586 25.974</span></span>
+<span><span class="co">#&gt; chain:2 36.141 24.833</span></span>
+<span><span class="co">#&gt; chain:3 33.936 50.047</span></span>
+<span><span class="co">#&gt; chain:4 41.159 52.056</span></span>
 <span><span class="co"># summary plot</span></span>
 <span><span class="fu"><a href="../reference/plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">dep</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -375,25 +380,25 @@ function using the <code>truncation</code> option.</p>
 <span>  truncation <span class="op">=</span> <span class="fu"><a href="../reference/trunc_opts.html">trunc_opts</a></span><span class="op">(</span><span class="va">trunc_dist</span><span class="op">)</span>,</span>
 <span>  rt <span class="op">=</span> <span class="fu"><a href="../reference/rt_opts.html">rt_opts</a></span><span class="op">(</span>prior <span class="op">=</span> <span class="va">rt_prior</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: There were 2 divergent transitions after warmup. See</span></span>
+<span><span class="co">#&gt; Warning: There were 1 divergent transitions after warmup. See</span></span>
 <span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span></span>
 <span><span class="co">#&gt; to find out why this is a problem and how to eliminate them.</span></span>
 <span><span class="co">#&gt; Warning: Examine the pairs() plot to diagnose sampling problems</span></span>
 <span><span class="co"># summarise results</span></span>
 <span><span class="fu"><a href="../reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">trunc</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                  measure                 estimate</span></span>
-<span><span class="co">#&gt; 1: New confirmed cases by infection date      2522 (1296 -- 4745)</span></span>
-<span><span class="co">#&gt; 2:        Expected change in daily cases        Likely decreasing</span></span>
-<span><span class="co">#&gt; 3:            Effective reproduction no.       0.92 (0.66 -- 1.2)</span></span>
-<span><span class="co">#&gt; 4:                        Rate of growth -0.018 (-0.085 -- 0.045)</span></span>
-<span><span class="co">#&gt; 5:          Doubling/halving time (days)         -38 (15 -- -8.2)</span></span>
+<span><span class="co">#&gt;                                  measure                estimate</span></span>
+<span><span class="co">#&gt; 1: New confirmed cases by infection date     2475 (1261 -- 4873)</span></span>
+<span><span class="co">#&gt; 2:        Expected change in daily cases       Likely decreasing</span></span>
+<span><span class="co">#&gt; 3:            Effective reproduction no.      0.91 (0.64 -- 1.2)</span></span>
+<span><span class="co">#&gt; 4:                        Rate of growth -0.02 (-0.089 -- 0.045)</span></span>
+<span><span class="co">#&gt; 5:          Doubling/halving time (days)        -34 (15 -- -7.8)</span></span>
 <span><span class="co"># elapsed time (in seconds)</span></span>
 <span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-class.html" class="external-link">get_elapsed_time</a></span><span class="op">(</span><span class="va">trunc</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         warmup sample</span></span>
-<span><span class="co">#&gt; chain:1 50.283 45.799</span></span>
-<span><span class="co">#&gt; chain:2 41.206 45.834</span></span>
-<span><span class="co">#&gt; chain:3 37.676 73.545</span></span>
-<span><span class="co">#&gt; chain:4 52.158 47.402</span></span>
+<span><span class="co">#&gt; chain:1 28.014 25.827</span></span>
+<span><span class="co">#&gt; chain:2 32.793 39.760</span></span>
+<span><span class="co">#&gt; chain:3 32.755 30.886</span></span>
+<span><span class="co">#&gt; chain:4 32.998 25.945</span></span>
 <span><span class="co"># summary plot</span></span>
 <span><span class="fu"><a href="../reference/plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">trunc</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -416,25 +421,25 @@ desirable.</p>
 <span>    prior <span class="op">=</span> <span class="va">rt_prior</span>, future <span class="op">=</span> <span class="st">"project"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: There were 8 divergent transitions after warmup. See</span></span>
+<span><span class="co">#&gt; Warning: There were 14 divergent transitions after warmup. See</span></span>
 <span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span></span>
 <span><span class="co">#&gt; to find out why this is a problem and how to eliminate them.</span></span>
 <span><span class="co">#&gt; Warning: Examine the pairs() plot to diagnose sampling problems</span></span>
 <span><span class="co"># summarise results</span></span>
 <span><span class="fu"><a href="../reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">project_rt</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                  measure              estimate</span></span>
-<span><span class="co">#&gt; 1: New confirmed cases by infection date   2236 (1068 -- 4349)</span></span>
-<span><span class="co">#&gt; 2:        Expected change in daily cases     Likely decreasing</span></span>
-<span><span class="co">#&gt; 3:            Effective reproduction no.    0.87 (0.59 -- 1.2)</span></span>
-<span><span class="co">#&gt; 4:                        Rate of growth -0.028 (-0.1 -- 0.04)</span></span>
-<span><span class="co">#&gt; 5:          Doubling/halving time (days)      -25 (17 -- -6.7)</span></span>
+<span><span class="co">#&gt;                                  measure                 estimate</span></span>
+<span><span class="co">#&gt; 1: New confirmed cases by infection date      2292 (1144 -- 4280)</span></span>
+<span><span class="co">#&gt; 2:        Expected change in daily cases        Likely decreasing</span></span>
+<span><span class="co">#&gt; 3:            Effective reproduction no.       0.88 (0.62 -- 1.2)</span></span>
+<span><span class="co">#&gt; 4:                        Rate of growth -0.026 (-0.095 -- 0.036)</span></span>
+<span><span class="co">#&gt; 5:          Doubling/halving time (days)         -27 (19 -- -7.3)</span></span>
 <span><span class="co"># elapsed time (in seconds)</span></span>
 <span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-class.html" class="external-link">get_elapsed_time</a></span><span class="op">(</span><span class="va">project_rt</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         warmup sample</span></span>
-<span><span class="co">#&gt; chain:1 31.483 37.108</span></span>
-<span><span class="co">#&gt; chain:2 35.041 36.827</span></span>
-<span><span class="co">#&gt; chain:3 35.983 41.154</span></span>
-<span><span class="co">#&gt; chain:4 37.730 56.884</span></span>
+<span><span class="co">#&gt; chain:1 28.801 23.172</span></span>
+<span><span class="co">#&gt; chain:2 39.812 25.088</span></span>
+<span><span class="co">#&gt; chain:3 37.989 47.964</span></span>
+<span><span class="co">#&gt; chain:4 36.925 31.186</span></span>
 <span><span class="co"># summary plot</span></span>
 <span><span class="fu"><a href="../reference/plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">project_rt</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -454,19 +459,19 @@ that it does not change.</p>
 <span><span class="op">)</span></span>
 <span><span class="co"># summarise results</span></span>
 <span><span class="fu"><a href="../reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">fixed</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                  measure              estimate</span></span>
-<span><span class="co">#&gt; 1: New confirmed cases by infection date 15823 (8907 -- 29156)</span></span>
-<span><span class="co">#&gt; 2:        Expected change in daily cases            Increasing</span></span>
-<span><span class="co">#&gt; 3:            Effective reproduction no.      1.2 (1.1 -- 1.3)</span></span>
-<span><span class="co">#&gt; 4:                        Rate of growth 0.038 (0.026 -- 0.05)</span></span>
-<span><span class="co">#&gt; 5:          Doubling/halving time (days)         18 (14 -- 26)</span></span>
+<span><span class="co">#&gt;                                  measure               estimate</span></span>
+<span><span class="co">#&gt; 1: New confirmed cases by infection date  15813 (8914 -- 28821)</span></span>
+<span><span class="co">#&gt; 2:        Expected change in daily cases             Increasing</span></span>
+<span><span class="co">#&gt; 3:            Effective reproduction no.       1.2 (1.1 -- 1.2)</span></span>
+<span><span class="co">#&gt; 4:                        Rate of growth 0.038 (0.026 -- 0.049)</span></span>
+<span><span class="co">#&gt; 5:          Doubling/halving time (days)          18 (14 -- 27)</span></span>
 <span><span class="co"># elapsed time (in seconds)</span></span>
 <span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-class.html" class="external-link">get_elapsed_time</a></span><span class="op">(</span><span class="va">fixed</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         warmup sample</span></span>
-<span><span class="co">#&gt; chain:1  2.195  0.946</span></span>
-<span><span class="co">#&gt; chain:2  1.797  1.289</span></span>
-<span><span class="co">#&gt; chain:3  2.017  0.947</span></span>
-<span><span class="co">#&gt; chain:4  1.555  1.498</span></span>
+<span><span class="co">#&gt; chain:1  1.615  1.093</span></span>
+<span><span class="co">#&gt; chain:2  1.964  1.228</span></span>
+<span><span class="co">#&gt; chain:3  1.954  0.840</span></span>
+<span><span class="co">#&gt; chain:4  1.386  0.692</span></span>
 <span><span class="co"># summary plot</span></span>
 <span><span class="fu"><a href="../reference/plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">fixed</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -499,18 +504,18 @@ define a new case data set using</p>
 <span><span class="co"># summarise results</span></span>
 <span><span class="fu"><a href="../reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">bkp</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                  measure                 estimate</span></span>
-<span><span class="co">#&gt; 1: New confirmed cases by infection date      2465 (2051 -- 3002)</span></span>
+<span><span class="co">#&gt; 1: New confirmed cases by infection date      2482 (2047 -- 2989)</span></span>
 <span><span class="co">#&gt; 2:        Expected change in daily cases               Decreasing</span></span>
 <span><span class="co">#&gt; 3:            Effective reproduction no.      0.91 (0.88 -- 0.93)</span></span>
 <span><span class="co">#&gt; 4:                        Rate of growth -0.02 (-0.026 -- -0.015)</span></span>
-<span><span class="co">#&gt; 5:          Doubling/halving time (days)         -34 (-46 -- -26)</span></span>
+<span><span class="co">#&gt; 5:          Doubling/halving time (days)         -34 (-46 -- -27)</span></span>
 <span><span class="co"># elapsed time (in seconds)</span></span>
 <span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-class.html" class="external-link">get_elapsed_time</a></span><span class="op">(</span><span class="va">bkp</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         warmup sample</span></span>
-<span><span class="co">#&gt; chain:1  3.299  4.363</span></span>
-<span><span class="co">#&gt; chain:2  3.731  4.280</span></span>
-<span><span class="co">#&gt; chain:3  3.246  3.890</span></span>
-<span><span class="co">#&gt; chain:4  3.468  4.295</span></span>
+<span><span class="co">#&gt; chain:1  2.864  2.679</span></span>
+<span><span class="co">#&gt; chain:2  3.296  2.027</span></span>
+<span><span class="co">#&gt; chain:3  3.127  2.783</span></span>
+<span><span class="co">#&gt; chain:4  3.046  2.688</span></span>
 <span><span class="co"># summary plot</span></span>
 <span><span class="fu"><a href="../reference/plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">bkp</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -534,18 +539,18 @@ a random walk that the reproduction number is assumed to follow.</p>
 <span><span class="co"># summarise results</span></span>
 <span><span class="fu"><a href="../reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">rw</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                  measure                 estimate</span></span>
-<span><span class="co">#&gt; 1: New confirmed cases by infection date      2125 (1162 -- 3967)</span></span>
+<span><span class="co">#&gt; 1: New confirmed cases by infection date      2131 (1133 -- 4131)</span></span>
 <span><span class="co">#&gt; 2:        Expected change in daily cases        Likely decreasing</span></span>
-<span><span class="co">#&gt; 3:            Effective reproduction no.       0.86 (0.64 -- 1.1)</span></span>
-<span><span class="co">#&gt; 4:                        Rate of growth -0.032 (-0.088 -- 0.028)</span></span>
-<span><span class="co">#&gt; 5:          Doubling/halving time (days)         -22 (24 -- -7.8)</span></span>
+<span><span class="co">#&gt; 3:            Effective reproduction no.       0.86 (0.63 -- 1.2)</span></span>
+<span><span class="co">#&gt; 4:                        Rate of growth -0.032 (-0.092 -- 0.032)</span></span>
+<span><span class="co">#&gt; 5:          Doubling/halving time (days)         -22 (22 -- -7.5)</span></span>
 <span><span class="co"># elapsed time (in seconds)</span></span>
 <span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-class.html" class="external-link">get_elapsed_time</a></span><span class="op">(</span><span class="va">rw</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         warmup sample</span></span>
-<span><span class="co">#&gt; chain:1 10.352 12.955</span></span>
-<span><span class="co">#&gt; chain:2  9.689 14.484</span></span>
-<span><span class="co">#&gt; chain:3 10.946 14.684</span></span>
-<span><span class="co">#&gt; chain:4  8.797 10.092</span></span>
+<span><span class="co">#&gt; chain:1  6.551 10.788</span></span>
+<span><span class="co">#&gt; chain:2  6.904 10.467</span></span>
+<span><span class="co">#&gt; chain:3  8.090 10.050</span></span>
+<span><span class="co">#&gt; chain:4  9.149 10.736</span></span>
 <span><span class="co"># summary plot</span></span>
 <span><span class="fu"><a href="../reference/plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">rw</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -563,25 +568,25 @@ package.</p>
 <span>  <span class="va">reported_cases</span>,</span>
 <span>  generation_time <span class="op">=</span> <span class="fu"><a href="../reference/generation_time_opts.html">generation_time_opts</a></span><span class="op">(</span><span class="va">generation_time</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: There were 9 divergent transitions after warmup. See</span></span>
+<span><span class="co">#&gt; Warning: There were 6 divergent transitions after warmup. See</span></span>
 <span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span></span>
 <span><span class="co">#&gt; to find out why this is a problem and how to eliminate them.</span></span>
 <span><span class="co">#&gt; Warning: Examine the pairs() plot to diagnose sampling problems</span></span>
 <span><span class="co"># summarise results</span></span>
 <span><span class="fu"><a href="../reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">no_delay</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                  measure                   estimate</span></span>
-<span><span class="co">#&gt; 1: New confirmed cases by infection date        2770 (2323 -- 3317)</span></span>
+<span><span class="co">#&gt; 1: New confirmed cases by infection date        2797 (2337 -- 3327)</span></span>
 <span><span class="co">#&gt; 2:        Expected change in daily cases                 Decreasing</span></span>
-<span><span class="co">#&gt; 3:            Effective reproduction no.        0.88 (0.77 -- 0.98)</span></span>
-<span><span class="co">#&gt; 4:                        Rate of growth -0.028 (-0.053 -- -0.0035)</span></span>
-<span><span class="co">#&gt; 5:          Doubling/halving time (days)          -25 (-200 -- -13)</span></span>
+<span><span class="co">#&gt; 3:            Effective reproduction no.        0.88 (0.77 -- 0.99)</span></span>
+<span><span class="co">#&gt; 4:                        Rate of growth -0.026 (-0.053 -- -0.0021)</span></span>
+<span><span class="co">#&gt; 5:          Doubling/halving time (days)          -26 (-330 -- -13)</span></span>
 <span><span class="co"># elapsed time (in seconds)</span></span>
 <span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-class.html" class="external-link">get_elapsed_time</a></span><span class="op">(</span><span class="va">no_delay</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         warmup sample</span></span>
-<span><span class="co">#&gt; chain:1 42.824 38.712</span></span>
-<span><span class="co">#&gt; chain:2 49.368 42.698</span></span>
-<span><span class="co">#&gt; chain:3 43.148 36.002</span></span>
-<span><span class="co">#&gt; chain:4 37.123 36.357</span></span>
+<span><span class="co">#&gt; chain:1 31.294 37.416</span></span>
+<span><span class="co">#&gt; chain:2 35.055 42.806</span></span>
+<span><span class="co">#&gt; chain:3 32.537 37.764</span></span>
+<span><span class="co">#&gt; chain:4 35.792 38.235</span></span>
 <span><span class="co"># summary plot</span></span>
 <span><span class="fu"><a href="../reference/plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">no_delay</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -609,18 +614,18 @@ horizon to 0.</p>
 <span><span class="co"># summarise results</span></span>
 <span><span class="fu"><a href="../reference/summary.epinow.html">summary</a></span><span class="op">(</span><span class="va">non_parametric</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                  measure                   estimate</span></span>
-<span><span class="co">#&gt; 1: New confirmed cases by infection date        2328 (1740 -- 3059)</span></span>
+<span><span class="co">#&gt; 1: New confirmed cases by infection date        2366 (1780 -- 3089)</span></span>
 <span><span class="co">#&gt; 2:        Expected change in daily cases                 Decreasing</span></span>
-<span><span class="co">#&gt; 3:            Effective reproduction no.        0.89 (0.78 -- 0.99)</span></span>
-<span><span class="co">#&gt; 4:                        Rate of growth -0.024 (-0.049 -- -0.0012)</span></span>
-<span><span class="co">#&gt; 5:          Doubling/halving time (days)          -29 (-590 -- -14)</span></span>
+<span><span class="co">#&gt; 3:            Effective reproduction no.          0.9 (0.8 -- 0.99)</span></span>
+<span><span class="co">#&gt; 4:                        Rate of growth -0.023 (-0.045 -- -0.0029)</span></span>
+<span><span class="co">#&gt; 5:          Doubling/halving time (days)          -30 (-240 -- -15)</span></span>
 <span><span class="co"># elapsed time (in seconds)</span></span>
 <span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-class.html" class="external-link">get_elapsed_time</a></span><span class="op">(</span><span class="va">non_parametric</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         warmup sample</span></span>
-<span><span class="co">#&gt; chain:1  4.597  1.014</span></span>
-<span><span class="co">#&gt; chain:2  3.146  1.074</span></span>
-<span><span class="co">#&gt; chain:3  3.497  1.129</span></span>
-<span><span class="co">#&gt; chain:4  3.992  0.992</span></span>
+<span><span class="co">#&gt; chain:1  3.050  0.813</span></span>
+<span><span class="co">#&gt; chain:2  2.864  0.847</span></span>
+<span><span class="co">#&gt; chain:3  2.770  0.823</span></span>
+<span><span class="co">#&gt; chain:4  2.356  0.789</span></span>
 <span><span class="co"># summary plot</span></span>
 <span><span class="fu"><a href="../reference/plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">non_parametric</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">

@@ -91,7 +91,7 @@ passed to <a href="dist_spec.html">dist_spec</a>.</p>
 <span>  <span class="va">...</span>,</span>
 <span>  <span class="va">disease</span>,</span>
 <span>  <span class="va">source</span>,</span>
-<span>  max <span class="op">=</span> <span class="fl">15L</span>,</span>
+<span>  max <span class="op">=</span> <span class="fl">14</span>,</span>
 <span>  fixed <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">prior_weight</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -156,14 +156,14 @@ instead.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A fixed gamma distributed generation time</span></span></span>
-<span class="r-in"><span><span class="fu">generation_time_opts</span><span class="op">(</span><span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">2</span>, max <span class="op">=</span> <span class="fl">15</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">generation_time_opts</span><span class="op">(</span><span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">2</span>, max <span class="op">=</span> <span class="fl">14</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Fixed distribution with PMF [0.15 0.13 0.11 0.088 0.076 0.067 0.059 0.053 0.048 0.044 0.041 0.038 0.035 0.033 0.031]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># An uncertain gamma distributed generation time</span></span></span>
 <span class="r-in"><span><span class="fu">generation_time_opts</span><span class="op">(</span></span></span>
-<span class="r-in"><span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">2</span>, mean_sd <span class="op">=</span> <span class="fl">1</span>, sd_sd <span class="op">=</span> <span class="fl">0.5</span>, max <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></span>
+<span class="r-in"><span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">2</span>, mean_sd <span class="op">=</span> <span class="fl">1</span>, sd_sd <span class="op">=</span> <span class="fl">0.5</span>, max <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Uncertain lognormal distribution with (untruncated) logmean 3 (SD 1) and logSD 2 (SD 0.5)</span>

@@ -155,7 +155,7 @@ Samples outside of this range are resampled.</p></dd>
 <span class="r-in"><span><span class="co">## Exponential model</span></span></span>
 <span class="r-in"><span><span class="co"># sample</span></span></span>
 <span class="r-in"><span><span class="fu">dist_skel</span><span class="op">(</span><span class="fl">10</span>, model <span class="op">=</span> <span class="st">"exp"</span>, params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rate <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0 0 0 0 1 1 1 0 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 1 0 0 1 0 0 0 1 0 0</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># cumulative prob density</span></span></span>
 <span class="r-in"><span><span class="fu">dist_skel</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, model <span class="op">=</span> <span class="st">"exp"</span>, dist <span class="op">=</span> <span class="cn">TRUE</span>, params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rate <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -173,7 +173,7 @@ Samples outside of this range are resampled.</p></dd>
 <span class="r-in"><span><span class="co">## Gamma model</span></span></span>
 <span class="r-in"><span><span class="co"># sample</span></span></span>
 <span class="r-in"><span><span class="fu">dist_skel</span><span class="op">(</span><span class="fl">10</span>, model <span class="op">=</span> <span class="st">"gamma"</span>, params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">1</span>, scale <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0 1 1 0 0 0 0 0 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0 1 0 0 0 0 0 1 0 0</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># cumulative prob density</span></span></span>
 <span class="r-in"><span><span class="fu">dist_skel</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">10</span>,</span></span>
@@ -195,23 +195,23 @@ Samples outside of this range are resampled.</p></dd>
 <span class="r-in"><span><span class="co">## Log normal model</span></span></span>
 <span class="r-in"><span><span class="co"># sample</span></span></span>
 <span class="r-in"><span><span class="fu">dist_skel</span><span class="op">(</span><span class="fl">10</span>, model <span class="op">=</span> <span class="st">"lognormal"</span>, params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1]  9  8 18  3  4  4  3  7  2 13</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 12  4  3 12  5  3  2  5 20 11</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># cumulative prob density</span></span></span>
 <span class="r-in"><span><span class="fu">dist_skel</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">10</span>,</span></span>
 <span class="r-in"><span>  model <span class="op">=</span> <span class="st">"lognormal"</span>, dist <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.00000000 0.01011843 0.09309626 0.23057216 0.37375443 0.50000114</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.60373934 0.68631476 0.75113865 0.80178197 0.84134666</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.00000000 0.01011843 0.09309625 0.23057213 0.37375439 0.50000107</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.60373926 0.68631467 0.75113856 0.80178187 0.84134655</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># probability density</span></span></span>
 <span class="r-in"><span><span class="fu">dist_skel</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">10</span>,</span></span>
 <span class="r-in"><span>  model <span class="op">=</span> <span class="st">"lognormal"</span>, dist <span class="op">=</span> <span class="cn">TRUE</span>, cum <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
 <span class="r-in"><span>  params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.01011843 0.08297783 0.13747590 0.14318227 0.12624670 0.10373821</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.08257541 0.06482390 0.05064332 0.03956468 0.03099140</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.01011843 0.08297782 0.13747588 0.14318225 0.12624669 0.10373819</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.08257540 0.06482389 0.05064331 0.03956468 0.03099139</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

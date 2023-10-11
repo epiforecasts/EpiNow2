@@ -122,14 +122,14 @@ using <code><a href="dist_spec.html">dist_spec()</a></code>. Default is an empty
 <span class="r-out co"><span class="r-pr">#&gt;</span> Empty `dist_spec` distribution.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A single delay that has uncertainty</span></span></span>
-<span class="r-in"><span><span class="va">delay</span> <span class="op">&lt;-</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">1</span>, mean_sd <span class="op">=</span> <span class="fl">0.2</span>, sd <span class="op">=</span> <span class="fl">0.5</span>, sd_sd <span class="op">=</span> <span class="fl">0.1</span>, max <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">delay</span> <span class="op">&lt;-</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">1</span>, mean_sd <span class="op">=</span> <span class="fl">0.2</span>, sd <span class="op">=</span> <span class="fl">0.5</span>, sd_sd <span class="op">=</span> <span class="fl">0.1</span>, max <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">delay_opts</span><span class="op">(</span><span class="va">delay</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Uncertain lognormal distribution with (untruncated) logmean 1 (SD 0.2) and logSD 0.5 (SD 0.1)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A single delay without uncertainty</span></span></span>
-<span class="r-in"><span><span class="va">delay</span> <span class="op">&lt;-</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">1</span>, sd <span class="op">=</span> <span class="fl">0.5</span>, max <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">delay</span> <span class="op">&lt;-</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">1</span>, sd <span class="op">=</span> <span class="fl">0.5</span>, max <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">delay_opts</span><span class="op">(</span><span class="va">delay</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Fixed distribution with PMF [0.023 0.25 0.31 0.2 0.11 0.055 0.027 0.014 0.0071 0.0037 0.002 0.0011 0.00062 0.00035 2e-04]</span>
