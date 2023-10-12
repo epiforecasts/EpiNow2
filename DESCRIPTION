@@ -99,6 +99,7 @@ BugReports: https://github.com/epiforecasts/EpiNow2/issues
 Depends: 
     R (>= 3.5.0)
 Imports:
+    checkmate,
     data.table,
     futile.logger (>= 1.4),
     future,
