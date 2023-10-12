@@ -148,7 +148,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 weigh_delay_priors = FALSE,
                                 verbose = TRUE,
                                 ...) {
-
+  purrr::walk(obs, check_reports_valid, for_estimate_secondary = FALSE)
   ## code block to remove in EpiNow2 2.0.0
   construct_trunc <- FALSE
   if (!missing(trunc_max)) {
