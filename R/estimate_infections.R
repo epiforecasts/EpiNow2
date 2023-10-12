@@ -131,6 +131,7 @@ estimate_infections <- function(reported_cases,
                                 weigh_delay_priors = TRUE,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
+  check_reports_valid(reported_cases, for_estimate_secondary = FALSE)
   set_dt_single_thread()
 
   # store dirty reported case data

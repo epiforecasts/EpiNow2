@@ -149,6 +149,7 @@ estimate_secondary <- function(reports,
                                weigh_delay_priors = FALSE,
                                verbose = interactive(),
                                ...) {
+  check_reports_valid(reports, for_estimate_secondary = TRUE)
   reports <- data.table::as.data.table(reports)
 
   if (burn_in >= nrow(reports)) {
