@@ -270,6 +270,15 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
                     gp_on = "R_t-1",
                     pop = 0,
                     incidence_feedback = NULL) {
+
+  if (is.null(rt$incidence_feedback)) {
+    rt$incidence_feedback <- list(mean = 0, sd = 0)
+  }
+
+  if (!identical(names(rt$incidence_feedback), c("mean", "sd"))) {
+    stop("incidence_feedback must be a list with mean and sd")
+  }
+
   rt <- list(
     prior = prior,
     use_rt = use_rt,

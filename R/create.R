@@ -238,12 +238,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   if (is.null(breakpoints) || sum(breakpoints) == 0) {
     rt$use_breakpoints <- FALSE
   }
-
-  # check incidence feedback
-  if (!identical(names(rt$incidence_feedback), c("mean", "sd"))) {
-    stop("incidence_feedback must be a list with mean and sd")
-  }
-
+  
   # map settings to underlying gp stan requirements
   rt_data <- list(
     r_mean = rt$prior$mean,
