@@ -69,14 +69,30 @@
 
 <div id="contributing-to-epinow2" class="section level1">
 
-<p>This outlines how to propose a change to EpiNow2.</p>
+<p>This outlines how to propose a change to EpiNow2. In general, we accept contributions in the form of issues and/or pull requests.</p>
 <div class="section level2">
-<h2 id="fixing-typos">Fixing typos<a class="anchor" aria-label="anchor" href="#fixing-typos"></a></h2>
+<h2 id="small-changes">Small changes<a class="anchor" aria-label="anchor" href="#small-changes"></a></h2>
+<div class="section level3">
+<h3 id="grammatical-issues">Grammatical issues<a class="anchor" aria-label="anchor" href="#grammatical-issues"></a></h3>
 <p>You can fix typos, spelling mistakes, or grammatical errors in the documentation directly using the GitHub web interface, as long as the changes are made in the <em>source</em> file. This generally means you’ll need to edit <a href="https://roxygen2.r-lib.org/articles/roxygen2.html" class="external-link">roxygen2 comments</a> in an <code>.R</code>, not a <code>.Rd</code> file. You can find the <code>.R</code> file that generates the <code>.Rd</code> by reading the comment in the first line of the <code>.Rd</code> file in the <code>/man</code> directory.</p>
 </div>
+</div>
 <div class="section level2">
-<h2 id="bigger-changes">Bigger changes<a class="anchor" aria-label="anchor" href="#bigger-changes"></a></h2>
-<p>If you want to make a bigger change, it’s a good idea to first file an issue and make sure someone from the team agrees that it’s needed. If you’ve found a bug, please file an issue that illustrates the bug with a minimal <a href="https://www.tidyverse.org/help/#reprex" class="external-link">reprex</a> (this will also help you write a unit test, if needed).</p>
+<h2 id="big-changes">Big changes<a class="anchor" aria-label="anchor" href="#big-changes"></a></h2>
+<p>If you want to make a bigger change, it’s a good idea to first file an issue and make sure someone from the team agrees that it’s needed. Any of the following counts as a big change:</p>
+<div class="section level3">
+<h3 id="new-features">New features<a class="anchor" aria-label="anchor" href="#new-features"></a></h3>
+<p>You can suggest an idea for a new feature/enhancement. Please provide as much detail of its use case as possible. As an example, see this extensive issue about <a href="https://github.com/epiforecasts/EpiNow2/issues/451" class="external-link">making the model outputs S3 classes</a>.</p>
+</div>
+<div class="section level3">
+<h3 id="bugs">Bugs<a class="anchor" aria-label="anchor" href="#bugs"></a></h3>
+<p>If you have found a bug, ideally illustrate it with a minimal <a href="https://www.tidyverse.org/help/#reprex" class="external-link">reprex</a> (this will also help you write a unit test, if you opt to fix it yourself). Here is an <a href="https://github.com/epiforecasts/EpiNow2/issues/392" class="external-link">example of a bug report</a>.</p>
+</div>
+<div class="section level3">
+<h3 id="vignettes">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes"></a></h3>
+<p>If you find an issue with existing vignettes or would like to help improve them, outline the suggested changes in the submitted issue for discussion with the team. Use the various GitHub markdown features to (cross)reference lines, highlight suggested deletions/additions, etc.</p>
+<p>For new vignettes, please provide an outline of the vignette to be discussed with the team first. Since the models in <em>EpiNow2</em> have long run times in most cases, we pre-compile the vignettes before merging. Please follow this guide on <a href="https://ropensci.org/blog/2019/12/08/precompute-vignettes/" class="external-link">how to precompute vignettes or pkgdown articles</a>. Here is <a href="https://github.com/epiforecasts/EpiNow2/pull/458" class="external-link">an example where new pre-compiled vignettes</a> were submitted.</p>
+</div>
 <div class="section level3">
 <h3 id="pull-request-process">Pull request process<a class="anchor" aria-label="anchor" href="#pull-request-process"></a></h3>
 <ul><li><p>Fork the package and clone onto your computer. If you haven’t done this before, we recommend using <code>usethis::create_from_github("epiforecasts/EpiNow2", fork = TRUE)</code>.</p></li>
@@ -103,6 +119,7 @@
 <li><p>Check that there are no linting issues by running <code>lintr::lint_package()</code>.</p></li>
 <li><p>Run <code>devtoools::check()</code> to check for wider package issues like mismatching documentation, etc. (this currently requires a fair bit of time/computation).</p></li>
 <li><p>(Optional) Turn on continuous integration with Github Actions on your forked repository.</p></li>
+<li><p>On a case-by-case basis, you may be asked to increment the package version both in the <code>NEWS.md</code> and <code>DESCRIPTION</code> files. Please do not do this unless you’re asked to. We follow the <a href="https://r-pkgs.org/lifecycle.html" class="external-link">Tidyverse package versioning guide</a>. You can run <code><a href="https://usethis.r-lib.org/reference/use_version.html" class="external-link">usethis::use_version()</a></code> to automatically make the changes for you interactively.</p></li>
 </ul></div>
 </div>
 <div class="section level3">
