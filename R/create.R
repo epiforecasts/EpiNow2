@@ -238,7 +238,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   if (is.null(breakpoints) || sum(breakpoints) == 0) {
     rt$use_breakpoints <- FALSE
   }
-  
+
   # map settings to underlying gp stan requirements
   rt_data <- list(
     r_mean = rt$prior$mean,
