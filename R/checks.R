@@ -1,11 +1,11 @@
 #' Validate data input
-#' 
+#'
 #' @description
 #' `check_reports_valid()` checks that the input data frame is a data frame,
 #' and that it has the right column names and types. In particular, it checks
 #' that the date column is a date, and that the other columns are integers. It
 #' checks that the date column has no NA values.
-#' 
+#'
 #' @param reports A data frame with either:
 #' * two columns: date and confirm, if to be
 #'  used by estimate_infection() or estimate_truncation, or
