@@ -199,10 +199,10 @@ This model uses the following priors for the observation model,
 
 ## Truncation
 
-The model supports counts that are right-truncated, i.e. reported with a delay leading to recent counts being subject to future upwards revision. Denoting the final truncated counts with $D^{\ast}_{t}$ they are obtained form the final modelled cases $D_{t}$ by applying a given discrete truncation distribution $\zeta(\tau | \mu_{\zeta}, \sigma_{\zeta})$ with cumulative mass function $\Zeta(\tau | \mu_{\zeta})$:
+The model supports counts that are right-truncated, i.e. reported with a delay leading to recent counts being subject to future upwards revision. Denoting the final truncated counts with $D^{\ast}_{t}$ they are obtained form the final modelled cases $D_{t}$ by applying a given discrete truncation distribution $\zeta(\tau | \mu_{\zeta}, \sigma_{\zeta})$ with cumulative mass function $Z(\tau | \mu_{\zeta})$:
 
 \begin{equation}
-  D^ast_t = \Zeta (T - t | \mu_{\Zeta}, \sigma_{\Zeta}) D_{t}
+  D^ast_t = \Z (T - t | \mu_{Z}, \sigma_{Z}) D_{t}
 \end{equation}
 
 If truncation is applied, the modelled cases $D_{t}$ are replaced by the truncated counts before confronting them with observations $C_{t}$ as described above.
