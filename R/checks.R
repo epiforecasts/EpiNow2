@@ -18,27 +18,27 @@
 #' @keywords internal
 check_reports_valid <- function(reports, for_estimate_secondary) {
   # Check that the case time series (reports) is a data frame
-  checkmate::assert_data_frame(reports)
+  assert_data_frame(reports)
   # Perform checks depending on whether the data is for estimate_secondary()
   # or not
   if (for_estimate_secondary) {
     # Check that reports has the right column names
-    checkmate::assert_names(
+    assert_names(
       names(reports),
       must.include = c("date", "primary", "secondary")
     )
     # Check that the reports data.frame has the right column types
-    checkmate::assert_date(reports$date, any.missing = FALSE)
-    checkmate::assert_integerish(reports$primary)
-    checkmate::assert_integerish(reports$secondary)
+    assert_date(reports$date, any.missing = FALSE)
+    assert_numeric(reports$primary, lower = 0)
+    assert_numeric(reports$secondary, lower = 0)
   } else {
     # Check that reports has the right column names
-    checkmate::assert_names(
+    assert_names(
       names(reports),
       must.include = c("date", "confirm")
     )
     # Check that the reports data.frame has the right column types
-    checkmate::assert_date(reports$date, any.missing = FALSE)
-    checkmate::assert_integerish(reports$confirm)
+    assert_date(reports$date, any.missing = FALSE)
+    assert_numeric(reports$confirm, lower = 0)
   }
 }
