@@ -13,6 +13,8 @@
 #'  estimate_secondary().
 #' @param for_estimate_secondary Logical; whether the data is being passed by
 #' estimate_secondary() or the other estimate_*() functions.
+#' @importFrom checkmate assert_data_frame assert_date assert_names
+#' assert_numeric
 #' @return Called for its side effects.
 #' @author James M. Azam
 #' @keywords internal
