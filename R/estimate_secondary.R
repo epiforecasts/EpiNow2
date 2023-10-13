@@ -66,6 +66,8 @@
 #' @importFrom lubridate wday
 #' @importFrom data.table as.data.table merge.data.table
 #' @importFrom utils modifyList
+#' @importFrom checkmate assert_class assert_numeric assert_integer
+#' assert_data_frame assert_logical
 #' @examples
 #' \donttest{
 #' # set number of cores to use
