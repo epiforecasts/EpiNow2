@@ -133,7 +133,24 @@ estimate_infections <- function(reported_cases,
                                 weigh_delay_priors = TRUE,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
+  # Validate inputs
   check_reports_valid(reported_cases, for_estimate_secondary = FALSE)
+  assert_class(generation_time, "generation_time_opts")
+  assert_class(delays, "delay_opts")
+  assert_class(truncation, "trunc_opts")
+  assert_class(rt, "rt_opts")
+  assert_class(backcalc, "backcalc_opts")
+  assert_class(gp, "gp_opts")
+  assert_class(obs, "obs_opts")
+  assert_class(stan, "stan_opts")
+  assert_numeric(horizon, lower = 1)
+  assert_numeric(CrIs, lower = 0, upper = 1)
+  assert_logical(filter_leading_zeros)
+  assert_numeric(zero_threshold, lower = 0)
+  assert_logical(weigh_delay_priors)
+  assert_string(id)
+  assert_logical(verbose)
+  
   set_dt_single_thread()
 
   # store dirty reported case data

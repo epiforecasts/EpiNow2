@@ -150,7 +150,14 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 weigh_delay_priors = FALSE,
                                 verbose = TRUE,
                                 ...) {
-  purrr::walk(obs, check_reports_valid, for_estimate_secondary = FALSE)
+  # Validate inputs
+  walk(obs, check_reports_valid, for_estimate_secondary = FALSE)
+  assert_class(truncation, "dist_spec")
+  assert_class(model, "stanfit", null.ok = TRUE)
+  assert_numeric(CrIs, lower = 0, upper = 1)
+  assert_logical(weigh_delay_priors)
+  assert_logical(verbose)
+  
   ## code block to remove in EpiNow2 2.0.0
   construct_trunc <- FALSE
   if (!missing(trunc_max)) {
