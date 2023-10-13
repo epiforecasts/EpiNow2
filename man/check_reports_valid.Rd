@@ -24,8 +24,8 @@ Called for its side effects.
 \description{
 \code{check_reports_valid()} checks that the input data frame is a data frame,
 and that it has the right column names and types. In particular, it checks
-that the date column is a date, and that the other columns are integers. It
-checks that the date column has no NA values.
+that the date column is in date format and does not contain NA's, and that
+the other columns are numerics.
 }
 \author{
 James M. Azam
