@@ -291,6 +291,7 @@ secondary_opts <- function(type = "incidence", ...) {
     )
   }
   data <- modifyList(data, list(...))
+  attr(data, "class") <- c("secondary_opts", class(data))
   return(data)
 }
 
