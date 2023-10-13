@@ -186,7 +186,9 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
   target_disease <- disease
   target_source <- source
   data <- data[disease == target_disease][source == target_source]
-  dist <- as.list(data[, .(mean, mean_sd, sd, sd_sd, max = max_value, dist)])
+  dist <- as.list(
+    data[, .(mean, mean_sd, sd, sd_sd, max = max_value, distribution = dist)]
+  )
   if (fixed) {
     dist$mean_sd <- 0
     dist$sd_sd <- 0
