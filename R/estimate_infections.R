@@ -65,6 +65,8 @@
 #' @importFrom lubridate days
 #' @importFrom purrr transpose
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
+#' @importFrom checkmate assert_class assert_numeric assert_logical
+#' assert_string
 #' @examples
 #' \donttest{
 #' # set number of cores to use
