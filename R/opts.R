@@ -93,6 +93,7 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
       "information, see the relevant documentation pages using ",
       "`?generation_time_opts`")
   }
+  attr(dist, "class") <- c("generation_time_opts", class(dist))
   return(dist)
 }
 
@@ -155,6 +156,7 @@ delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
     ## can be removed once dot options are hard deprecated
     stop("Unknown named arguments passed to `delay_opts`")
   }
+  attr(dist, "class") <- c("delay_opts", class(dist))
   return(dist)
 }
 
@@ -196,6 +198,7 @@ trunc_opts <- function(dist = dist_spec()) {
       "`?trunc_opts`"
     )
   }
+  attr(dist, "class") <- c("trunc_opts", class(dist))
   return(dist)
 }
 
@@ -275,6 +278,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
   if (!("mean" %in% names(rt$prior) && "sd" %in% names(rt$prior))) {
     stop("prior must have both a mean and sd specified")
   }
+  attr(rt, "class") <- c("rt_opts", class(rt))
   return(rt)
 }
 
@@ -324,6 +328,7 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
        estimate"
     )
   }
+  attr(backcalc, "class") <- c("backcalc_opts", class(backcalc))
   return(backcalc)
 }
 
@@ -403,6 +408,7 @@ gp_opts <- function(basis_prop = 0.2,
   if (gp$matern_type != 3 / 2) {
     stop("only the Matern 3/2 kernel is currently supported") # nolint
   }
+  attr(gp, "class") <- c("gp_opts", class(gp))
   return(gp)
 }
 
@@ -478,6 +484,7 @@ obs_opts <- function(family = "negbin",
       stop("If specifying a scale both a mean and sd are needed")
     }
   }
+  attr(obs, "class") <- c("obs_opts", class(obs))
   return(obs)
 }
 
@@ -551,6 +558,7 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
   opts$control <- modifyList(control_def, control)
   opts$iter <- ceiling(samples / opts$chains) + opts$warmup
   opts <- c(opts, ...)
+  attr(opts, "class") <- c("rstan_sampling_opts", class(opts))
   return(opts)
 }
 
@@ -691,6 +699,7 @@ stan_opts <- function(samples = 2000,
     opts$init_fit <- init_fit
   }
   opts <- c(opts, list(return_fit = return_fit))
+  attr(opts, "class") <- c("stan_opts", class(opts))
   return(opts)
 }
 
