@@ -1,22 +1,3 @@
-array[] int get_delay_type_max(
-  int delay_types, array[] int delay_types_p, array[] int delay_types_id,
-  array[] int delay_types_groups, array[] int delay_max, array[] int delay_np_pmf_groups
-) {
-  array[delay_types] int ret;
-  for (i in 1:delay_types) {
-    ret[i] = 0;
-    for (j in delay_types_groups[i]:(delay_types_groups[i + 1] - 1)) {
-      if (delay_types_p[j]) { // parametric
-        ret[i] += delay_max[delay_types_id[j]];
-      } else { // nonparametric
-        ret[i] += delay_np_pmf_groups[delay_types_id[j] + 1] -
-          delay_np_pmf_groups[delay_types_id[j]] - 1;
-      }
-    }
-  }
-  return ret;
-}
-
 vector get_delay_rev_pmf(
   int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id,
   array[] int delay_types_groups, array[] int delay_max,

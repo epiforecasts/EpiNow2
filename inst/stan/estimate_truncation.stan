@@ -16,11 +16,7 @@ transformed data{
   array[obs_sets] int<lower = 1> end_t;
   array[obs_sets] int<lower = 1> start_t;
 
-  array[delay_types] int delay_type_max;
-  delay_type_max = get_delay_type_max(
-    delay_types, delay_types_p, delay_types_id,
-    delay_types_groups, delay_max, delay_np_pmf_groups
-  );
+#include chunks/delay_type_max.stan
 
   for (i in 1:obs_sets) {
     end_t[i] = t - obs_dist[i];

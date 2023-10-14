@@ -24,10 +24,7 @@ data {
 }
 
 transformed data {
-  array[delay_types] int delay_type_max = get_delay_type_max(
-    delay_types, delay_types_p, delay_types_id,
-    delay_types_groups, delay_max, delay_np_pmf_groups
-  );
+#include chunks/delay_type_max.stan
 }
 
 generated quantities {

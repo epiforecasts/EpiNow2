@@ -17,10 +17,7 @@ data {
 }
 
 transformed data{
-  array[delay_types] int delay_type_max = get_delay_type_max(
-    delay_types, delay_types_p, delay_types_id,
-    delay_types_groups, delay_max, delay_np_pmf_groups
-  );
+#include chunks/delay_type_max.stan
 }
 
 parameters{
@@ -60,7 +57,7 @@ transformed parameters {
  }
  // truncate near time cases to observed reports
  if (trunc_id) {
-    vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(
+    vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(
       trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
