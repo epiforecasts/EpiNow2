@@ -4,7 +4,7 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(dist = dist_spec(), ..., fixed = FALSE)
+delay_opts(dist = dist_spec("empty"), ..., fixed = FALSE)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions generated

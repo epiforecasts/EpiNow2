@@ -87,41 +87,56 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
   if (model == "exp") {
     # define support functions for exponential dist
     rdist <- function(n) {
-      rexp(n, params$rate)
+      rexp(n, params[["rate"]])
     }
     pdist <- function(n) {
-      pexp(n, params$rate) / pexp(max_value, params$rate)
+      pexp(n, params[["rate"]]) / pexp(max_value, params[["rate"]])
     }
     ddist <- function(n) {
-      (pexp(n + 1, params$rate) -
-        pexp(n, params$rate)) /
-        pexp(max_value + 1, params$rate)
+      (pexp(n + 1, params[["rate"]]) -
+        pexp(n, params[["rate"]])) /
+        pexp(max_value + 1, params[["rate"]])
     }
   } else if (model == "gamma") {
     rdist <- function(n) {
-      rgamma(n, params$shape, params$scale)
+      rgamma(n = n, shape = params[["shape"]], rate = params[["rate"]])
     }
     pdist <- function(n) {
-      pgamma(n, params$shape, params$scale) /
-        pgamma(max_value + 1, params$shape, params$scale)
+      pgamma(q = n, shape = params[["shape"]], rate = params[["rate"]]) /
+        pgamma(
+          q = max_value + 1, shape = params[["shape"]], rate = params[["rate"]]
+        )
     }
     ddist <- function(n) {
-      (pgamma(n + 1, params$shape, params$scale) -
-        pgamma(n, params$shape, params$scale)) /
-        pgamma(max_value + 1, params$shape, params$scale)
+      (pgamma(q = n + 1, shape = params[["shape"]], rate = params[["rate"]]) -
+        pgamma(q = n, shape = params[["shape"]], rate = params[["rate"]])) /
+        pgamma(q = max_value + 1, params[["shape"]], rate = params[["rate"]])
     }
   } else if (model == "lognormal") {
     rdist <- function(n) {
-      rlnorm(n, params$mean, params$sd)
+      rlnorm(n, params[["mean"]], params[["sd"]])
     }
     pdist <- function(n) {
-      plnorm(n, params$mean, params$sd) /
-        plnorm(max_value + 1, params$mean, params$sd)
+      plnorm(n, params[["mean"]], params[["sd"]]) /
+        plnorm(max_value + 1, params[["mean"]], params[["sd"]])
     }
     ddist <- function(n) {
-      (plnorm(n + 1, params$mean, params$sd) -
-        plnorm(n, params$mean, params$sd)) /
-        plnorm(max_value + 1, params$mean, params$sd)
+      (plnorm(n + 1, params[["mean"]], params[["sd"]]) -
+        plnorm(n, params[["mean"]], params[["sd"]])) /
+        plnorm(max_value + 1, params[["mean"]], params[["sd"]])
+    }
+  } else if (model %in% "normal") {
+    rdist <- function(n) {
+      rnorm(n, params[["mean"]], params[["sd"]])
+    }
+    pdist <- function(n) {
+      pnorm(n, params[["mean"]], params[["sd"]]) /
+        pnorm(max_value + 1, params[["mean"]], params[["sd"]])
+    }
+    ddist <- function(n) {
+      (pnorm(n + 1, params[["mean"]], params[["sd"]]) -
+        pnorm(n, params[["mean"]], params[["sd"]])) /
+        pnorm(max_value + 1, params[["mean"]], params[["sd"]])
     }
   }
 
@@ -551,7 +566,6 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
     return(out)
   }
 
-
   if (bootstraps == 1) {
     dist_samples <- get_single_dist(values, samples = samples)
   } else {
@@ -912,9 +926,12 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
 #'   distribution = "gamma"
 #' )
-dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
-                      distribution = c("lognormal", "gamma"), max,
-                      pmf = numeric(0), fixed = FALSE) {
+dist_spec <- function(distribution = c(
+                        "lognormal", "normal", "gamma", "fixed", "empty"
+                      ),
+                      params_mean = c(), params_sd = c(),
+                      mean, sd, mean_sd = 0, sd_sd = 0,
+                      max = Inf, pmf = numeric(0), fixed = FALSE) {
   ## deprecate previous behaviour
   warn(
     message = paste(
@@ -935,98 +952,87 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       "fix_dist()",
       "The argument will be removed completely in version 2.1.0."
     )
-    mean_sd <- 0
-    sd_sd <- 0
+  }
+  ## check for deprecated parameters
+  if (!all(missing(mean), missing(sd), missing(mean_sd), missing(sd_sd)) &&
+      (!missing(params_mean || !missing(params_sd)))) {
+    stop("Distributional should not be given as `mean`, `sd`, etc. ",
+         "in addition to `params_mean` or `params_sd`")
+  }
+  call <- match.call()
+  for (deprecated_arg in c("mean", "sd", "mean_sd", "sd_sd")) {
+    if (!is.null(call[[deprecated_arg]])) {
+      deprecate_warn(
+        "2.0.0",
+        paste0("dist_spec(", deprecated_arg, ")"),
+               "dist_spec(param)",
+               "The argument will be removed completely in version 2.1.0."
+      )
+      params[[deprecated_arg]] <- get(deprecated_arg)
+    }
   }
   ## check if parametric or nonparametric
   if (length(pmf) > 0 &&
     !all(
-      missing(mean), missing(sd), missing(mean_sd),
-      missing(sd_sd), missing(distribution), missing(max)
+       missing(distribution), missing(params_mean), missing(params_sd),
+       missing(mean), missing(sd), missing(mean_sd), missing(sd_sd)
     )) {
     stop("Distributional parameters or a pmf can be specified, but not both.")
   }
 
-  fixed <- mean_sd == 0 && sd_sd == 0
+  distribution <- match.arg(distribution)
 
-  ## check parametric parameters make sense
-  if (!missing(mean)) {
-    if (sd == 0 && sd_sd == 0) { ## integer fixed
-      if (mean %% 1 != 0) {
-        stop(
-          "When a distribution is set to a constant ",
-          "(sd == 0 and sd_sd == 0) then the mean parameter ",
-          "must be an integer."
-        )
-      }
-      max <- mean
-      if (mean_sd > 0) {
-        stop(
-          "When a distribution has sd == 0 and ",
-          "sd_sd == 0 then mean_sd must be 0, too."
-        )
-      }
+  if (distribution == "fixed") {
+    ## if integer fixed then can write the PMF
+    if (as.integer(params_mean) == params_mean) {
+      max <- params_mean
+      parametric <- TRUE
     } else {
-      if (missing(max)) {
-        stop("Maximum of parametric distributions must be specified.")
-      }
+      parametric <- FALSE
     }
+    if (length(params_sd) > 0 && any(params_sd) > 0) {
+      stop("Fixed parameters cannot have a nonzero standard deviation.")
+    }
+    params_sd <- numeric(0)
   } else {
-    if (!all(
-      missing(sd), missing(mean_sd),
-      missing(sd_sd), missing(distribution), missing(max)
-    )) {
-      stop(
-        "If any distributional parameters are given then so must the mean."
-      )
+    ## if PMF is given, set max
+    if (is.infinite(max) && length(pmf) > 0) {
+      max <- length(pmf) - 1
     }
+    parametric <- all(params_sd == 0) && is.finite(max)
   }
-
-  distribution <- arg_match(distribution)
-  if (fixed) {
+  if (parametric) { ## calculate pmf
     ret <- list(
-      mean_mean = numeric(0),
-      mean_sd = numeric(0),
-      sd_mean = numeric(0),
-      sd_sd = numeric(0),
+      params_mean = numeric(0),
+      params_sd = numeric(0),
       dist = character(0),
-      max = integer(0)
+      max = integer(0),
+      parametric = FALSE
     )
     if (length(pmf) == 0) {
-      if (missing(mean)) { ## empty
+      if (distribution == "empty") { ## empty
         ret <- c(ret, list(
           n = 0,
           n_p = 0,
           n_np = 0,
           np_pmf = numeric(0),
-          fixed = integer(0)
+          parametric = logical(0)
         ))
       } else { ## parametric fixed
-        if (sd == 0) { ## delta
-          pmf <- c(rep(0, mean), 1)
+        if (distribution == "fixed") { ## delta
+          pmf <- c(rep(0, params_mean), 1)
         } else {
-          if (distribution == "lognormal") {
-            params <- lognorm_dist_def(
-              mean = mean, mean_sd = mean_sd,
-              sd = sd, sd_sd = sd_sd, max_value = max, samples = 1
-            )
-          } else if (distribution == "gamma") {
-            params <- gamma_dist_def(
-              mean = mean, mean_sd = mean_sd,
-              sd = sd, sd_sd = sd_sd, max_value = max, samples = 1
-            )
-          }
+          params <- params_mean
+          names(params) <- natural_params(distribution)
           pmf <- dist_skel(
             n = seq_len(max + 1) - 1, dist = TRUE, cum = FALSE,
-            model = distribution, params = params$params[[1]], max_value = max,
+            model = distribution, params = params, max_value = max,
             discrete = TRUE
           )
         }
       }
     } else { ## nonparametric fixed
-      if (!missing(max) && (max + 1) < length(pmf)) {
-        pmf <- pmf[1:(max + 1)]
-      }
+      pmf <- pmf[1:(max + 1)]
       pmf <- pmf / sum(pmf)
     }
     if (length(pmf) > 0) {
@@ -1034,28 +1040,26 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
         n = 1,
         n_p = 0,
         n_np = 1,
-        np_pmf = pmf,
-        fixed = 1L
+        np_pmf = pmf
       ))
     }
   } else {
     ret <- list(
-      mean_mean = mean,
-      mean_sd = mean_sd,
-      sd_mean = sd,
-      sd_sd = sd_sd,
+      params_mean = params_mean,
+      params_sd = params_sd,
       dist = distribution,
       max = max,
       n = 1,
       n_p = 1,
       n_np = 0,
       np_pmf = numeric(0),
-      fixed = 0L
+      parametric = TRUE
     )
   }
   ret <- purrr::map(ret, array)
   sum_args <- grep("(^n$|^n_$)", names(ret))
   ret$np_pmf_length <- length(ret$np_pmf)
+  ret$params_length <- length(ret$params_mean)
   ret[sum_args] <- purrr::map(ret[sum_args], sum)
   attr(ret, "class") <- c("list", "dist_spec")
   return(ret)
@@ -1207,26 +1211,88 @@ c.dist_spec <- function(...) {
 #' # The mean of the sum of two distributions
 #' mean(lognormal + gamma)
 mean.dist_spec <- function(x, ...) {
-  ret <- rep(0, x$n)
-  ## nonparametric
-  if (x$n_np > 0) {
-    init_id <- c(1, head(cumsum(x$np_pmf_length) + 1, n = -1))
-    ret[x$fixed == 1L] <- vapply(seq_along(init_id), function(id) {
-      pmf <- x$np_pmf[seq(init_id[id], cumsum(x$np_pmf_length)[id])]
-      return(sum((seq_len(x$np_pmf_length[id]) - 1) * pmf))
-    }, 0)
+  if (x$n > 1) {
+    stop("Cannot calculate mean of composite distributions.")
   }
-  ## parametric
-  if (x$n_p > 0) {
-    ret[x$fixed == 0L] <- vapply(seq_along(which(x$fixed == 0L)), function(id) {
-      if (x$dist[id] == "lognormal") {
-        return(exp(x$mean_mean[id] + x$sd_mean[id] / 2))
-      } else if (x$dist[id] == "gamma") {
-        return(x$mean_mean[id])
-      } else {
-        stop("Unknown distribution: ", x$dist[id])
-      }
-    }, 0)
+  if (x$n_np > 0) {
+    ## nonparametric
+    ret <- sum((seq_len(x$np_pmf_length) - 1) * x$np_pmf)
+  } else {
+    ## parametric
+    if (any(x$params_sd > 0)) {
+      stop("Cannot calculate mean of uncertain distribution")
+    }
+    if (x$dist == "lognormal") {
+      ret <- exp(x$params_mean[[1]] + x$params_mean[[2]]**2 / 2)
+    } else if (x$dist == "gamma") {
+      ret <- x$params_mean[[1]] / x$params_mean[[2]]
+    } else if (x$dist == "normal") {
+      ret <- x$params_mean[[1]]
+    } else if (x$dist == "fixed") {
+      ret <- x$params_mean[[1]]
+    } else {
+      stop("Don't know how to calculate mean of ", x$dist, " distribution.")
+    }
+  }
+  return(ret)
+}
+
+##' Returns the standard deviation of one or more delay distribution
+##'
+##' This works out the standard deviation of all the (parametric /
+##' nonparametric) delay distributions combined in the passed [dist_spec()].
+##'
+##' @param x The [dist_spec()] to use
+##' @param ... Not used
+##' @return A vector of standard deviations.
+##' @author Sebastian Funk
+##' @method sd dist_spec
+##' @importFrom utils head
+##' @export
+#' @examples
+#' # A fixed lognormal distribution with sd 5 and sd 1.
+#' lognormal <- dist_spec(
+#'  sd = 5, sd = 1, max = 20, distribution = "lognormal"
+#' )
+#' sd(lognormal)
+#'
+#' # An uncertain gamma distribution with sd 3 and sd 2
+#' gamma <- dist_spec(
+#'  sd = 3, sd = 2, sd_sd = 0.5, sd_sd = 0.5, max = 20,
+#'  distribution = "gamma"
+#' )
+#' sd(gamma)
+#'
+#' # The sd of the sum of two distributions
+#' sd(lognormal + gamma)
+sd.dist_spec <- function(x, ...) {
+  if (x$n > 1) {
+    stop("Cannot calculate standard deviation of composite distributions.")
+  }
+  if (x$n_np > 0) {
+    ## nonparametric
+    mean_pmf <- sum((seq_len(x$np_pmf_length) - 1) * x$np_pmf)
+    ret <- sum((seq_len(x$np_pmf_length) - 1)**2 * x$np_pmf) - mean_pmf^2
+  } else {
+    ## parametric
+    if (any(x$params_sd > 0)) {
+      stop("Cannot calculate standard deviation of uncertain distribution")
+    }
+    if (x$dist == "lognormal") {
+      ret <- sqrt(exp(x$params_mean[2]**2) - 1) *
+        exp(x$params_mean[1] + 0.5 * x$params_mean[2]**2)
+    } else if (x$dist == "gamma") {
+      ret <- sqrt(x$params_mean[1] / x$params_mean[2]**2)
+    } else if (x$dist == "normal") {
+      ret <- x$params_mean[2]
+    } else if (x$dist == "fixed") {
+      ret <- 0
+    } else {
+      stop(
+        "Don't know how to calculate standard deviation of ", x$dist,
+        " distribution."
+      )
+    }
   }
   return(ret)
 }
@@ -1260,42 +1326,63 @@ print.dist_spec <- function(x, ...) {
     cat("Empty `dist_spec` distribution.\n")
     return(invisible(NULL))
   } else if (x$n > 1) {
-    cat("Combination of delay distributions:\n")
+    cat("Composite delay distribution:\n")
   }
   fixed_id <- 1
   fixed_pos <- 1
   variable_id <- 1
+  variable_pos <- 1
   for (i in 1:x$n) {
     cat("  ")
     if (!is.null(x$names) && nchar(x$names[i]) > 0) {
       cat(x$names[i], ": ", sep = "")
     }
-    if (x$fixed[i] == 0) {
+    if (x$parametric[i] > 0) {
       dist <- x$dist[variable_id]
-      cat(
-        "Uncertain ", dist, " distribution with (untruncated) ",
-        ifelse(dist == "lognormal", "log", ""),
-        "mean ", signif(x$mean_mean[variable_id], digits = 2),
-        " (SD ", signif(x$mean_sd[variable_id], digits = 2), ") and ",
-        ifelse(dist == "lognormal", "log", ""),
-        "SD ", signif(x$sd_mean[variable_id], 2),
-        " (SD ", signif(x$sd_sd[variable_id], 2), ")\n",
-        sep = ""
-      )
+      cat(dist, " distribution", sep = "")
+      if (is.finite(x$max)) {
+        cat(" (max: ", x$max, ")", sep = "")
+      }
+      cat(" with ", sep = "")
+      ## loop over natural parameters and print
+      for (id in seq(variable_pos, x$params_length[variable_pos])) {
+        if (id > variable_pos) {
+          if (id == x$params_length[variable_pos]) {
+            cat(" and ")
+          } else {
+            cat(", ")
+          }
+        }
+        if (x$params_sd[id] > 0) {
+          cat("uncertain ")
+        }
+        cat(natural_params(dist)[id])
+        if (x$params_sd[id] > 0) {
+          cat(
+            " (mean = ", signif(x$params_mean[id], digits = 2), ", ",
+            "sd = ", signif(x$params_sd[id], digits = 2), ")",
+            sep = ""
+          )
+        } else {
+          cat(" = ", signif(x$params_mean[id], digits = 2), sep = "")
+        }
+      }
       variable_id <- variable_id + 1
+      variable_pos <- variable_pos + x$params_length[i]
     } else {
       cat(
-        "Fixed distribution with PMF [",
+        "distribution with PMF [",
         paste(signif(
           x$np_pmf[seq(fixed_pos, fixed_pos + x$np_pmf_length[fixed_id] - 1)],
           digits = 2
         ), collapse = " "),
-        "]\n",
+        "]",
         sep = ""
       )
       fixed_id <- fixed_id + 1
       fixed_pos <- fixed_pos + x$np_pmf_length[i]
     }
+    cat(".\n")
   }
   cat("\n")
 }
@@ -1404,7 +1491,7 @@ plot.dist_spec <- function(x, ...) {
 ##' @importFrom rlang arg_match
 fix_dist <- function(x, strategy = c("mean", "sample")) {
   ## if x is fixed already we don't have to do anything
-  if (x$fixed) return(x)
+  if (x$mean_sd == 0 && x$sd_sd == 0) return(x)
   ## match startegy argument to options
   strategy <- arg_match(strategy)
   ## apply stragey depending on choice
@@ -1433,4 +1520,134 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
     )
   }
   return(x)
+}
+
+##' @export
+lognormal <- function(meanlog, sdlog, mean, sd, median, max = Inf) {
+  params <- as.list(environment())
+  lower_bounds <- c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0, median = 0)
+  return(process_dist(params, lower_bounds, "lognormal"))
+}
+
+##' @export
+gamma <- function(shape, rate, scale, mean, sd, max = Inf) {
+  params <- as.list(environment())
+  lower_bounds <- c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0)
+  return(process_dist(params, lower_bounds, "gamma"))
+}
+
+##' @export
+normal <- function(mean, sd, max = Inf) {
+  params <- as.list(environment())
+  lower_bounds <- c(mean = -Inf, sd = 0)
+  return(process_dist(params, lower_bounds, "normal"))
+}
+
+##' @export
+fixed <- function(value) {
+  params <- as.list(environment())
+  params <- extract_params(params, "fixed")
+  if (is(params$value, "dist_spec")) {
+    return(params)
+  } else if (is.numeric(params$value)) {
+    fixed_value <- params$value
+  }
+  return(dist_spec(params_mean = fixed_value, distribution = "fixed"))
+}
+
+##' @export
+pmf <- function(x) {
+  return(dist_spec(pmf = x))
+}
+
+natural_params <- function(distribution) {
+  if (distribution == "gamma") {
+    ret <- c("shape", "rate")
+  } else if (distribution == "lognormal") {
+    ret <- c("meanlog", "sdlog")
+  } else if (distribution == "normal") {
+    ret <- c("mean", "sd")
+  } else if (distribution == "fixed") {
+    ret <- "value"
+  }
+  return(ret)
+}
+
+extract_params <- function(params, distribution) {
+  params <- params[!vapply(params, inherits, "name", FUN.VALUE = TRUE)]
+  n_params <- length(natural_params(distribution))
+  if (length(params) != n_params) {
+    stop(
+      "Exactly ", n_params, " parameters of the ", distribution,
+      " distribution must be specified."
+    )
+  }
+  return(params)
+}
+
+process_dist <- function(params, lower_bounds, distribution) {
+  ## process min/max first
+  max <- params$max
+  params$max <- NULL
+  ## extract parameters and convert all to dist_spec
+  params <- extract_params(params, distribution)
+  params <- lapply(params, function(x) {
+    if (is(x, "dist_spec") && x$dist == "normal") {
+      if (any(x$param_sd > 0)) {
+        stop(
+          "Normal distribution indicating uncertainty cannot itself ",
+          "be uncertain."
+        )
+      }
+      x
+    } else if (is.numeric(x)) {
+      fixed(x)
+    } else {
+      stop("Parameter ", x, " must be numeric or normally distributed.")
+    }
+  })
+  ## sample parameters if they are uncertain
+  samples <- lapply(names(params), function(x) {
+    rtruncnorm(
+      n = 2000, a = lower_bounds[x],
+      mean = mean.dist_spec(params[[x]]), sd = sd.dist_spec(params[[x]])
+    )
+  })
+  names(samples) <- names(params)
+  ## generate natural parameters
+  converted_params <- convert_to_natural(samples, distribution)
+
+  dist <- dist_spec(
+    distribution = distribution,
+    params_mean = converted_params$params_mean,
+    params_sd = converted_params$params_sd,
+    max = max
+  )
+
+  ## now we have a distribution with natural parameters - return dist_spec
+  return(dist)
+}
+
+convert_to_natural <- function(x, distribution) {
+  if (distribution == "gamma") {
+    if ("mean" %in% names(x) && "sd" %in% names(x)) {
+      x$shape <- x$mean**2 / x$sd**2
+      x$rate <- x$shape / x$mean
+    } else if (!("rate" %in% names(x)) && ("scale" %in% names(x))) {
+      x$rate <- 1 / x$scale
+    }
+  } else if (distribution == "lognormal" &&
+             "mean" %in% names(x) && "sd" %in% names(x)) {
+    x$meanlog <- convert_to_logmean(x$mean, x$sd)
+    x$sdlog <- convert_to_logsd(x$mean, x$sd)
+  }
+  params <- list(
+    params_mean = unname(vapply(natural_params(distribution), function(param) {
+      mean(x[[param]])
+    }, numeric(1))),
+    params_sd = unname(vapply(natural_params(distribution), function(param) {
+      sd(x[[param]])
+    }, numeric(1)))
+  )
+  return(params)
 }

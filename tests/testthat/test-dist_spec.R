@@ -184,7 +184,7 @@ test_that("print.dist_spec correctly prints the parameters of the uncertain logn
 })
 
 test_that("print.dist_spec correctly prints the parameters of an empty distribution", {
-  empty <- dist_spec()
+  empty <- dist_spec("empty")
   
   expect_output(print(empty), "Empty `dist_spec` distribution.")
 })

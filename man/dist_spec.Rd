@@ -5,32 +5,19 @@
 \title{Specify a distribution.}
 \usage{
 dist_spec(
+  distribution = c("lognormal", "normal", "gamma", "fixed", "empty"),
+  params_mean = c(),
+  params_sd = c(),
   mean,
-  sd = 0,
+  sd,
   mean_sd = 0,
   sd_sd = 0,
-  distribution = c("lognormal", "gamma"),
-  max,
+  max = Inf,
   pmf = numeric(0),
   fixed = FALSE
 )
 }
 \arguments{
-\item{mean}{Numeric. If the only non-zero summary parameter
-then this is the fixed interval of the distribution. If the \code{sd} is
-non-zero then this is the mean of the distribution given by \code{dist}.
-If this is not given a vector of empty vectors is returned.}
-
-\item{sd}{Numeric, defaults to 0. Sets the standard deviation of the
-distribution.}
-
-\item{mean_sd}{Numeric, defaults to 0. Sets the standard deviation of the
-uncertainty around the mean of the  distribution assuming a normal
-prior.}
-
-\item{sd_sd}{Numeric, defaults to 0. Sets the standard deviation of the
-uncertainty around the sd of the  distribution assuming a normal prior.}
-
 \item{distribution}{Character, defaults to "lognormal". The (discretised
 distribution to be used. If sd == 0 then the distribution  is fixed and a
 delta function is used. If sd > 0 then the distribution is discretised and
@@ -54,6 +41,21 @@ arguments have the following definition:
 log scale).
 \item \code{sd} is the standard deviation of the natural logarithm of the delay.
 }}
+
+\item{mean}{Numeric. If the only non-zero summary parameter
+then this is the fixed interval of the distribution. If the \code{sd} is
+non-zero then this is the mean of the distribution given by \code{dist}.
+If this is not given a vector of empty vectors is returned.}
+
+\item{sd}{Numeric, defaults to 0. Sets the standard deviation of the
+distribution.}
+
+\item{mean_sd}{Numeric, defaults to 0. Sets the standard deviation of the
+uncertainty around the mean of the  distribution assuming a normal
+prior.}
+
+\item{sd_sd}{Numeric, defaults to 0. Sets the standard deviation of the
+uncertainty around the sd of the  distribution assuming a normal prior.}
 
 \item{max}{Numeric, maximum value of the distribution. The distribution will
 be truncated at this value.}

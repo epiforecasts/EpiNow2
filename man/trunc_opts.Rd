@@ -4,12 +4,13 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(dist = dist_spec())
+trunc_opts(dist = dist_spec("empty"))
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions reflecting
 the truncation generated using \code{\link[=dist_spec]{dist_spec()}} or \code{\link[=estimate_truncation]{estimate_truncation()}}.
-Default is an empty call to \code{\link[=dist_spec]{dist_spec()}}, i.e. no truncation}
+Default is an call to \code{\link[=dist_spec]{dist_spec()}}, with `distribution = "empty", i.e. no
+truncation}
 }
 \value{
 A \verb{<trunc_opts>} object summarising the input truncation

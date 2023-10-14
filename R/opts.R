@@ -128,7 +128,7 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
+delay_opts <- function(dist = dist_spec("empty"), ..., fixed = FALSE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec")) { ## could be old syntax
     if (is.list(dist)) {
@@ -187,7 +187,7 @@ delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
 #'
 #' # truncation dist
 #' trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = dist_spec()) {
+trunc_opts <- function(dist = dist_spec("empty")) {
   if (!is(dist, "dist_spec")) {
     if (is.list(dist)) {
       dist <- do.call(dist_spec, dist)
