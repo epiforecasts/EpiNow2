@@ -1,4 +1,5 @@
 library("data.table")
+library("lifecycle")
 
 if (identical(Sys.getenv("NOT_CRAN"), "true")) {
   files <- c(
