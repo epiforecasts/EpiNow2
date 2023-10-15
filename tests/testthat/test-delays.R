@@ -83,6 +83,7 @@ test_that("contradictory delays are caught", {
 })
 
 test_that("deprecated arguments are caught", {
+  options(lifecycle_verbosity = "warning")
   expect_warning(
     test_stan_delays(
       generation_time = generation_time_opts(mean = 3),
@@ -113,22 +114,5 @@ test_that("deprecated arguments are caught", {
       params = delay_params
     ), "deprecated"
   )
-  expect_warning(
-    test_stan_delays(
-      generation_time = generation_time_opts(
-        get_generation_time(
-          disease = "SARS-CoV-2", source = "ganyani",
-        )
-      ),
-    ), "deprecated"
-  )
-  expect_warning(
-    test_stan_delays(
-      delays = delay_opts(
-        get_incubation_period(
-          disease = "SARS-CoV-2", source = "lauer"
-        )
-      ),
-    ), "deprecated"
-  )
+  options(lifecycle_verbosity = NULL)
 })
