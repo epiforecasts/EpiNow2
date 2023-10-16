@@ -513,7 +513,6 @@ create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- list()
     if (data$delay_n_p > 0) {
-      out$delay_mean <- array(rep(0, data$delay_n_p))
       lower_bounds <- rep(-Inf, data$delay_n_p)
       ## gamma
       lower_bounds[data$dist == 1] <- 0
