@@ -1,5 +1,9 @@
 # EpiNow2 1.4.9000
 
+## Breaking changes
+
+* The functions `get_dist`, `get_generation_time`, `get_incubation_period` have been deprecated and replaced with examples. By @sbfnk.
+
 ## Documentation
 
 * Two new vignettes have been added to cover the workflow and example uses. By @sbfnk in #458 and reviewed by @jamesmbaazam.
