@@ -1208,7 +1208,7 @@ mean.dist_spec <- function(x, ...) {
       } else if (x$dist[id] == "gamma") {
         return(x$mean_mean[id])
       } else {
-	stop("Unknown distribution: ", x$dist[id])
+        stop("Unknown distribution: ", x$dist[id])
       }
     }, 0)
   }
