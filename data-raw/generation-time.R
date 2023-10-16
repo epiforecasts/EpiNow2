@@ -8,12 +8,12 @@ library(here)
 ## Code for this estimation process is available here: https://github.com/seabbs/COVID19 # nolint
 ## We assume that a case cannot infect another case on the day of infection.
 ## Load raw MCMC output
-gi <- data.table::setDT(readRDS(here::here("data-raw", "gi.rds")))
+gi <- setDT(readRDS(here("data-raw", "gi.rds")))
 ## Check mean and standard deviation
 example_generation_time <- dist_spec(
   mean = median(gi$mean),
   mean_sd = sd(gi$mean),
-  sd = median(gi$sd), 
+  sd = median(gi$sd),
   sd_sd = sd(gi$sd),
   dist = "gamma",
   max = 14L
