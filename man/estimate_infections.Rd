@@ -117,10 +117,33 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 # get example case counts
 reported_cases <- example_confirmed[1:60]
 
-# get example delays
-generation_time <- example_generation_time
-incubation_period <- example_incubation_period
-reporting_delay <- example_reporting_delay
+# set an example generation time. In practice this should use an estimate
+# from the literature or be estimated from data
+generation_time <- dist_spec(
+  mean = 3.6,
+  mean_sd = 0.7,
+  sd = 3.1,
+  sd_sd = 0.8,
+  max = 14
+)
+# set an example incubation period. In practice this should use an estimate
+# from the literature or be estimated from data
+incubation_period <- dist_spec(
+   mean = 1.6,
+   mean_sd = 0.06,
+   sd = 0.4,
+   sd_sd = 0.07,
+   max = 14
+)
+# set an example reporting delay. In practice this should use an estimate
+# from the literature or be estimated from data
+reporting_delay <- dist_spec(
+  mean = convert_to_logmean(2, 1),
+  sd = convert_to_logsd(2, 1),
+  max = 10,
+  dist = "lognormal"
+)
+
 
 # for more examples, see the "estimate_infections examples" vignette
 def <- estimate_infections(reported_cases,

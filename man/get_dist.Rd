@@ -25,7 +25,7 @@ A list defining a distribution
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 
 This function has been deprecated. Please specify a distribution
-using \code{dist_spec} instead
+using \code{dist_spec} instead.
 }
 \seealso{
 dist_spec
