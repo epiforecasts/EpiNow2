@@ -152,7 +152,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 ...) {
   # Validate inputs
   walk(obs, check_reports_valid, for_estimate_secondary = FALSE)
-  assert_class(truncation, "dist_spec")
+  assert_class(truncation, "dist_spec", null.ok = TRUE)
   assert_class(model, "stanfit", null.ok = TRUE)
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_logical(weigh_delay_priors)

@@ -153,10 +153,10 @@ estimate_secondary <- function(reports,
                                ...) {
   # Validate the inputs
   check_reports_valid(reports, for_estimate_secondary = TRUE)
-  assert_class(secondary, "secondary_opts")
-  assert_class(delays, "delay_opts")
-  assert_class(truncation, "trunc_opts")
-  assert_class(obs, "obs_opts")
+  assert_class(secondary, "secondary_opts", null.ok = TRUE)
+  assert_class(delays, "delay_opts", null.ok = TRUE)
+  assert_class(truncation, "trunc_opts", null.ok = TRUE)
+  assert_class(obs, "obs_opts", null.ok = TRUE)
   assert_integer(burn_in, lower = 0)
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_data_frame(priors, null.ok = TRUE)
