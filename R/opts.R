@@ -15,7 +15,8 @@
 #' @param prior_weight deprecated; prior weights are now specified as a
 #' model option. Use the `weigh_delay_priors` argument of `estimate_infections`
 #' instead.
-#' @return A list summarising the input delay distributions.
+#' @return A `<generation_time_opts>` object summarising the input delay
+#' distributions.
 #' @author Sebastian Funk
 #' @author Sam Abbott
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
@@ -106,7 +107,7 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
 #' using [dist_spec()]. Default is an empty call to [dist_spec()], i.e. no delay
 #' @param ... deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
-#' @return A list summarising the input delay distributions.
+#' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @author Sam Abbott
 #' @author Sebastian Funk
 #' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
@@ -170,7 +171,8 @@ delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
 #' @param dist A delay distribution or series of delay distributions reflecting
 #' the truncation generated using [dist_spec()] or [estimate_truncation()].
 #' Default is an empty call to [dist_spec()], i.e. no truncation
-#' @return A list summarising the input truncation distribution.
+#' @return A `<trunc_opts>` object summarising the input truncation
+#' distribution.
 #'
 #' @author Sam Abbott
 #' @author Sebastian Funk
@@ -240,7 +242,8 @@ trunc_opts <- function(dist = dist_spec()) {
 #' but the method relying on a global mean will revert to this for real time
 #' estimates, which may not be desirable.
 #'
-#' @return A list of settings defining the time-varying reproduction number.
+#' @return An `<rt_opts>` object with settings defining the time-varying
+#' reproduction number.
 #' @author Sam Abbott
 #' @inheritParams create_future_rt
 #' @export
@@ -310,7 +313,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' average to use when estimating Rt. This must be odd so that the central
 #' estimate is included.
 #'
-#' @return A list of back calculation settings.
+#' @return A `<backcalc_opts>` object of back calculation settings.
 #' @author Sam Abbott
 #' @export
 #' @examples
@@ -375,7 +378,7 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #' approximate Gaussian process. See (Riutort-Mayol et al. 2020
 #' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
 #'
-#' @return A list of settings defining the Gaussian process
+#' @return A `<gp_opts>` object of settings defining the Gaussian process
 #' @author Sam Abbott
 #' @export
 #' @examples
@@ -443,7 +446,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #' be returned by the model.
 #'
-#' @return A list of observation model settings.
+#' @return An `<obs_opts>` object of observation model settings.
 #' @author Sam Abbott
 #' @export
 #' @examples
@@ -530,7 +533,8 @@ obs_opts <- function(family = "negbin",
 #'
 #' @param ... Additional parameters to pass to `rstan::sampling`.
 #' @importFrom utils modifyList
-#' @return A list of arguments to pass to `rstan::sampling`.
+#' @return An `<rstan_sampling_opts>` object of arguments to pass to
+#' `rstan::sampling`.
 #' @author Sam Abbott
 #' @export
 #' @examples
@@ -669,7 +673,8 @@ rstan_opts <- function(object = NULL,
 #'
 #' @param ... Additional parameters to pass  underlying option functions.
 #'
-#' @return A list of arguments to pass to the appropriate rstan functions.
+#' @return A `<stan_opts>` object  of arguments to pass to the appropriate
+#' rstan functions.
 #' @author Sam Abbott
 #' @export
 #' @inheritParams rstan_opts

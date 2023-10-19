@@ -55,7 +55,7 @@ kernel ("matern", with \code{matern_type = 3/2}). Defaulting to the Matern 3 ove
 Currently only the Matern 3/2 kernel is supported.}
 }
 \value{
-A list of settings defining the Gaussian process
+A \verb{<gp_opts>} object of settings defining the Gaussian process
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

@@ -45,7 +45,7 @@ included in the model.}
 be returned by the model.}
 }
 \value{
-A list of observation model settings.
+An \verb{<obs_opts>} object of observation model settings.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

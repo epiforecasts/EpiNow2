@@ -34,7 +34,8 @@ model option. Use the \code{weigh_delay_priors} argument of \code{estimate_infec
 instead.}
 }
 \value{
-A list summarising the input delay distributions.
+A \verb{<generation_time_opts>} object summarising the input delay
+distributions.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

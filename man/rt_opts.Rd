@@ -55,7 +55,8 @@ the population that is susceptible. When set to 0 no population adjustment
 is done.}
 }
 \value{
-A list of settings defining the time-varying reproduction number.
+An \verb{<rt_opts>} object with settings defining the time-varying
+reproduction number.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
