@@ -161,7 +161,7 @@ get_regional_results <- function(regional_output,
 #' @description `r lifecycle::badge("deprecated")`
 #'
 #' This function has been deprecated. Please specify a distribution
-#' using `dist_spec` instead
+#' using `dist_spec` instead.
 #'
 #' @param data A `data.table` in the format of `generation_times`.
 #'
@@ -202,7 +202,7 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
 #'
 #' Extracts a literature distribution from `generation_times`.
 #' This function has been deprecated. Please specify a distribution
-#' using `dist_spec` instead
+#' using `dist_spec` instead.
 #'
 #' @inheritParams get_dist
 #' @inherit get_dist
