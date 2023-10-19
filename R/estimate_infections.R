@@ -143,7 +143,7 @@ estimate_infections <- function(reported_cases,
   assert_class(gp, "gp_opts", null.ok = TRUE)
   assert_class(obs, "obs_opts", null.ok = TRUE)
   assert_class(stan, "stan_opts", null.ok = TRUE)
-  assert_numeric(horizon, lower = 1)
+  assert_numeric(horizon, lower = 0)
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_logical(filter_leading_zeros)
   assert_numeric(zero_threshold, lower = 0)
