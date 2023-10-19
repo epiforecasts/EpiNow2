@@ -30,17 +30,12 @@ This should be replaced with parameters relevant to the system that is being stu
 library("EpiNow2")
 options(mc.cores = 4)
 reported_cases <- example_confirmed[1:60]
-incubation_period <- get_incubation_period(
-  disease = "SARS-CoV-2", source = "lauer"
-)
 reporting_delay <- dist_spec(
   mean = convert_to_logmean(2, 1), mean_sd = 0,
   sd = convert_to_logsd(2, 1), sd_sd = 0, max = 10
 )
-delay <- incubation_period + reporting_delay
-generation_time <- get_generation_time(
-  disease = "SARS-CoV-2", source = "ganyani"
-)
+delay <- example_incubation_period + reporting_delay
+#> Error in eval(expr, envir, enclos): object 'example_incubation_period' not found
 rt_prior <- list(mean = 2, sd = 0.1)
 ```
 
@@ -49,22 +44,18 @@ We can then run the `epinow()` function with the same arguments as `estimate_inf
 
 ```r
 res <- epinow(reported_cases,
-  generation_time = generation_time_opts(generation_time),
+  generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
   target_folder = "results"
 )
 #> Logging threshold set at INFO for the EpiNow2 logger
-#> Writing EpiNow2 logs to the console and: /tmp/RtmpyrWM57/regional-epinow/2020-04-21.log
+#> Writing EpiNow2 logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpb9LWrR/regional-epinow/2020-04-21.log
 #> Logging threshold set at INFO for the EpiNow2.epinow logger
-#> Writing EpiNow2.epinow logs to the console and: /tmp/RtmpyrWM57/epinow/2020-04-21.log
-#> WARN [2023-10-11 13:27:59] epinow: There were 11 divergent transitions after warmup. See
-#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-#> to find out why this is a problem and how to eliminate them. - 
-#> WARN [2023-10-11 13:27:59] epinow: Examine the pairs() plot to diagnose sampling problems
-#>  -
+#> Writing EpiNow2.epinow logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpb9LWrR/epinow/2020-04-21.log
+#> Error in eval(expr, envir, enclos): object 'example_generation_time' not found
 res$plots$R
-#> NULL
+#> Error in eval(expr, envir, enclos): object 'res' not found
 ```
 
 The initial messages here indicate where log files can be found, and summarised results and plots are in the folder given by `target_folder` (here: `results/`).
@@ -95,34 +86,34 @@ region_rt <- regional_epinow(
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
 )
-#> INFO [2023-10-11 13:28:05] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2023-10-19 16:50:18] Producing following optional outputs: regions, summary, samples, plots, latest
 #> Logging threshold set at INFO for the EpiNow2 logger
-#> Writing EpiNow2 logs to the console and: /tmp/RtmpyrWM57/regional-epinow/2020-04-21.log
+#> Writing EpiNow2 logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpb9LWrR/regional-epinow/2020-04-21.log
 #> Logging threshold set at INFO for the EpiNow2.epinow logger
-#> Writing EpiNow2.epinow logs to: /tmp/RtmpyrWM57/epinow/2020-04-21.log
-#> INFO [2023-10-11 13:28:05] Reporting estimates using data up to: 2020-04-21
-#> INFO [2023-10-11 13:28:05] No target directory specified so returning output
-#> INFO [2023-10-11 13:28:05] Producing estimates for: testland, realland
-#> INFO [2023-10-11 13:28:05] Regions excluded: none
-#> INFO [2023-10-11 13:29:30] Completed estimates for: testland
-#> INFO [2023-10-11 13:30:38] Completed estimates for: realland
-#> INFO [2023-10-11 13:30:38] Completed regional estimates
-#> INFO [2023-10-11 13:30:38] Regions with estimates: 2
-#> INFO [2023-10-11 13:30:38] Regions with runtime errors: 0
-#> INFO [2023-10-11 13:30:38] Producing summary
-#> INFO [2023-10-11 13:30:38] No summary directory specified so returning summary output
-#> INFO [2023-10-11 13:30:38] No target directory specified so returning timings
+#> Writing EpiNow2.epinow logs to: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpb9LWrR/epinow/2020-04-21.log
+#> INFO [2023-10-19 16:50:18] Reporting estimates using data up to: 2020-04-21
+#> INFO [2023-10-19 16:50:18] No target directory specified so returning output
+#> INFO [2023-10-19 16:50:18] Producing estimates for: testland, realland
+#> INFO [2023-10-19 16:50:18] Regions excluded: none
+#> INFO [2023-10-19 16:52:38] Completed estimates for: testland
+#> INFO [2023-10-19 16:54:34] Completed estimates for: realland
+#> INFO [2023-10-19 16:54:34] Completed regional estimates
+#> INFO [2023-10-19 16:54:34] Regions with estimates: 2
+#> INFO [2023-10-19 16:54:34] Regions with runtime errors: 0
+#> INFO [2023-10-19 16:54:34] Producing summary
+#> INFO [2023-10-19 16:54:34] No summary directory specified so returning summary output
+#> INFO [2023-10-19 16:54:34] No target directory specified so returning timings
 ## summary
 region_rt$summary$summarised_results$table
 #>      Region New confirmed cases by infection date
-#> 1: realland                   2299 (1120 -- 4463)
-#> 2: testland                   2327 (1154 -- 4455)
+#> 1: realland                    2178 (945 -- 4053)
+#> 2: testland                    2150 (915 -- 4118)
 #>    Expected change in daily cases Effective reproduction no.
-#> 1:              Likely decreasing         0.89 (0.61 -- 1.2)
-#> 2:              Likely decreasing         0.89 (0.62 -- 1.2)
-#>              Rate of growth Doubling/halving time (days)
-#> 1: -0.024 (-0.096 -- 0.042)             -28 (17 -- -7.2)
-#> 2: -0.025 (-0.095 -- 0.038)             -28 (18 -- -7.3)
+#> 1:              Likely decreasing         0.89 (0.62 -- 1.1)
+#> 2:              Likely decreasing         0.89 (0.61 -- 1.1)
+#>             Rate of growth Doubling/halving time (days)
+#> 1:  -0.031 (-0.13 -- 0.04)             -22 (18 -- -5.2)
+#> 2: -0.032 (-0.13 -- 0.038)             -22 (18 -- -5.2)
 ## plot
 region_rt$summary$plots$R
 ```
@@ -142,34 +133,34 @@ region_separate_rt <- regional_epinow(
   delays = delay_opts(delay),
   rt = rt, gp = gp,
 )
-#> INFO [2023-10-11 13:30:39] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2023-10-19 16:54:35] Producing following optional outputs: regions, summary, samples, plots, latest
 #> Logging threshold set at INFO for the EpiNow2 logger
-#> Writing EpiNow2 logs to the console and: /tmp/RtmpyrWM57/regional-epinow/2020-04-21.log
+#> Writing EpiNow2 logs to the console and: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpb9LWrR/regional-epinow/2020-04-21.log
 #> Logging threshold set at INFO for the EpiNow2.epinow logger
-#> Writing EpiNow2.epinow logs to: /tmp/RtmpyrWM57/epinow/2020-04-21.log
-#> INFO [2023-10-11 13:30:39] Reporting estimates using data up to: 2020-04-21
-#> INFO [2023-10-11 13:30:39] No target directory specified so returning output
-#> INFO [2023-10-11 13:30:39] Producing estimates for: testland, realland
-#> INFO [2023-10-11 13:30:39] Regions excluded: none
-#> INFO [2023-10-11 13:32:06] Completed estimates for: testland
-#> INFO [2023-10-11 13:32:36] Completed estimates for: realland
-#> INFO [2023-10-11 13:32:36] Completed regional estimates
-#> INFO [2023-10-11 13:32:36] Regions with estimates: 2
-#> INFO [2023-10-11 13:32:36] Regions with runtime errors: 0
-#> INFO [2023-10-11 13:32:36] Producing summary
-#> INFO [2023-10-11 13:32:36] No summary directory specified so returning summary output
-#> INFO [2023-10-11 13:32:36] No target directory specified so returning timings
+#> Writing EpiNow2.epinow logs to: /var/folders/gd/x84kkjzd6bn9rlf3f2v830c00000gp/T//Rtmpb9LWrR/epinow/2020-04-21.log
+#> INFO [2023-10-19 16:54:35] Reporting estimates using data up to: 2020-04-21
+#> INFO [2023-10-19 16:54:35] No target directory specified so returning output
+#> INFO [2023-10-19 16:54:35] Producing estimates for: testland, realland
+#> INFO [2023-10-19 16:54:35] Regions excluded: none
+#> INFO [2023-10-19 16:57:36] Completed estimates for: testland
+#> INFO [2023-10-19 16:58:20] Completed estimates for: realland
+#> INFO [2023-10-19 16:58:20] Completed regional estimates
+#> INFO [2023-10-19 16:58:20] Regions with estimates: 2
+#> INFO [2023-10-19 16:58:20] Regions with runtime errors: 0
+#> INFO [2023-10-19 16:58:20] Producing summary
+#> INFO [2023-10-19 16:58:20] No summary directory specified so returning summary output
+#> INFO [2023-10-19 16:58:21] No target directory specified so returning timings
 ## summary
 region_separate_rt$summary$summarised_results$table
 #>      Region New confirmed cases by infection date
-#> 1: realland                   2125 (1135 -- 4129)
-#> 2: testland                    2189 (934 -- 4255)
+#> 1: realland                   1996 (1006 -- 3934)
+#> 2: testland                    2073 (896 -- 4109)
 #>    Expected change in daily cases Effective reproduction no.
-#> 1:              Likely decreasing         0.85 (0.63 -- 1.2)
-#> 2:              Likely decreasing         0.86 (0.55 -- 1.2)
-#>              Rate of growth Doubling/halving time (days)
-#> 1: -0.034 (-0.091 -- 0.032)             -20 (22 -- -7.6)
-#> 2:  -0.031 (-0.12 -- 0.036)             -22 (19 -- -5.9)
+#> 1:              Likely decreasing         0.88 (0.67 -- 1.1)
+#> 2:              Likely decreasing          0.88 (0.6 -- 1.2)
+#>             Rate of growth Doubling/halving time (days)
+#> 1: -0.036 (-0.11 -- 0.036)             -19 (19 -- -6.2)
+#> 2:  -0.035 (-0.14 -- 0.04)             -20 (17 -- -4.9)
 ## plot
 region_separate_rt$summary$plots$R
 ```
