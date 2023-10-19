@@ -157,7 +157,7 @@ estimate_secondary <- function(reports,
   assert_class(delays, "delay_opts", null.ok = TRUE)
   assert_class(truncation, "trunc_opts", null.ok = TRUE)
   assert_class(obs, "obs_opts", null.ok = TRUE)
-  assert_integer(burn_in, lower = 0)
+  assert_numeric(burn_in, lower = 0)
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_data_frame(priors, null.ok = TRUE)
   assert_class(model, "stanfit")
