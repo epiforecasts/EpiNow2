@@ -76,7 +76,7 @@
 #' @importFrom data.table copy .N as.data.table merge.data.table setDT
 #' @importFrom data.table setcolorder
 #' @importFrom checkmate assert_character assert_numeric assert_class
-#' assert_logical assert_integer
+#' assert_logical
 #' @examples
 #' # set number of cores to use
 #' old_opts <- options()
