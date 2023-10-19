@@ -15,7 +15,7 @@ using \code{\link[=dist_spec]{dist_spec()}}. Default is an empty call to \code{\
 \item{fixed}{deprecated; use \code{dist} instead}
 }
 \value{
-A list summarising the input delay distributions.
+A \verb{<delay_opts>} object summarising the input delay distributions.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

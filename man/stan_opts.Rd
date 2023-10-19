@@ -38,7 +38,8 @@ returned.}
 \item{...}{Additional parameters to pass  underlying option functions.}
 }
 \value{
-A list of arguments to pass to the appropriate rstan functions.
+A \verb{<stan_opts>} object  of arguments to pass to the appropriate
+rstan functions.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

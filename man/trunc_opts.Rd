@@ -12,7 +12,8 @@ the truncation generated using \code{\link[=dist_spec]{dist_spec()}} or \code{\l
 Default is an empty call to \code{\link[=dist_spec]{dist_spec()}}, i.e. no truncation}
 }
 \value{
-A list summarising the input truncation distribution.
+A \verb{<trunc_opts>} object summarising the input truncation
+distribution.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

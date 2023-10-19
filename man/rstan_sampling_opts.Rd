@@ -54,7 +54,8 @@ estimation will fail with an informative error.}
 \item{...}{Additional parameters to pass to \code{rstan::sampling}.}
 }
 \value{
-A list of arguments to pass to \code{rstan::sampling}.
+An \verb{<rstan_sampling_opts>} object of arguments to pass to
+\code{rstan::sampling}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

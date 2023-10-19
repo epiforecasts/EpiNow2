@@ -30,7 +30,7 @@ average to use when estimating Rt. This must be odd so that the central
 estimate is included.}
 }
 \value{
-A list of back calculation settings.
+A \verb{<backcalc_opts>} object of back calculation settings.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
