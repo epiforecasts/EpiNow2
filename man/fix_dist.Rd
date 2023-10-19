@@ -4,14 +4,14 @@
 \alias{fix_dist}
 \title{Fix the parameters of a \code{dist_spec}}
 \usage{
-fix_dist(x, strategy = c("center", "sample"))
+fix_dist(x, strategy = c("mean", "sample"))
 }
 \arguments{
 \item{x}{A \link{dist_spec} object}
 
-\item{strategy}{Character; either "center" (use the central estimate) or
-"sample" (randomly sample mean and standard deviation from
-uncertainty given in the \code{dist_spec})}
+\item{strategy}{Character; either "mean" (use the mean estimates of the
+mean and standard deviation) or "sample" (randomly sample mean and
+standard deviation from uncertainty given in the \code{dist_spec})}
 }
 \value{
 A \code{dist_spec} object without uncertainty
