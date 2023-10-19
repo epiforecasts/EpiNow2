@@ -36,17 +36,11 @@ This should be replaced with parameters relevant to the system that is being stu
 library("EpiNow2")
 options(mc.cores = 4)
 reported_cases <- example_confirmed[1:60]
-incubation_period <- get_incubation_period(
-  disease = "SARS-CoV-2", source = "lauer"
-)
 reporting_delay <- dist_spec(
   mean = convert_to_logmean(2, 1), mean_sd = 0,
   sd = convert_to_logsd(2, 1), sd_sd = 0, max = 10
 )
-delay <- incubation_period + reporting_delay
-generation_time <- get_generation_time(
-  disease = "SARS-CoV-2", source = "ganyani"
-)
+delay <- example_incubation_period + reporting_delay
 rt_prior <- list(mean = 2, sd = 0.1)
 ```
 
@@ -54,7 +48,7 @@ We can then run the `epinow()` function with the same arguments as `estimate_inf
 
 ```{r epinow}
 res <- epinow(reported_cases,
-  generation_time = generation_time_opts(generation_time),
+  generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
   target_folder = "results"
