@@ -10,6 +10,7 @@
 
 * Reduced the number of long-running examples. By @sbfnk in #459 and reviewed by @seabbs.
 * Changed all instances of arguments that refer to the maximum of a distribution to reflect the maximum. Previously this did, in some instance, refer to the length of the PMF. By @sbfnk in #468.
+* Fixed a bug in the bounds of delays when setting initial conditions. By @sbfnk in #474.
 
 # EpiNow2 1.4.0
 
