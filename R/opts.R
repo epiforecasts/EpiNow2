@@ -4,8 +4,8 @@
 #' Returns generation time parameters in a format for lower level model use.
 #'
 #' @param dist A delay distribution or series of delay distributions generated
-#' using [dist_spec()]. If no distribution is given
-#' a fixed generation time of 1 will be assumed.
+#'   using [dist_spec()]. If no distribution is given a fixed generation time of
+#'   1 will be assumed.
 #'
 #' @param ... deprecated; use `dist` instead
 #' @param disease deprecated; use `dist` instead
