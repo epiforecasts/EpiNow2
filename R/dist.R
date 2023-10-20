@@ -884,7 +884,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' empty vector corresponding to a parametric specification of the distribution
 #' (using \code{mean}, \code{sd} and corresponding uncertainties)
 #'
-#' @param fixed Logical, defaults to `FALSE`. Should delays be treated
+#' @param fixed Deprecated, use [fix_dist() instead]
 #' as coming from fixed (vs uncertain) distributions. Overrides any values
 #' assigned to \code{mean_sd} and \code{sd_sd} by setting them to zero.
 #' reduces compute requirement but may produce spuriously precise estimates.
@@ -918,6 +918,17 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
     .frequency = "regularly",
     .frequency_id = "dist_spec_max"
   )
+  ## check for deprecated parameters
+  if (!missing(fixed)) {
+    deprecate_warn(
+      "2.0.0",
+      "dist_spec(fixed)",
+      "fix_dist()",
+      "The argument will be removed completely in version 2.1.0."
+    )
+    mean_sd <- 0
+    sd_sd <- 0
+  }
   ## check if parametric or nonparametric
   if (length(pmf) > 0 &&
     !all(
