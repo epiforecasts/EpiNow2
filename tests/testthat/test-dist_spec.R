@@ -227,3 +227,7 @@ test_that("plot.dist_spec correctly plots a combination of fixed distributions",
   expect_equal(length(plot$layers), 2)
   expect_equal(length(plot$facet$params$facets), 1)
 })
+
+test_that("deprecated arguments are caught", {
+  expect_deprecated(dist_spec(mean = 1.6, sd = 0.6, max = 19, fixed = TRUE))
+})
