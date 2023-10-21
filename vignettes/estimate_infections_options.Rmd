@@ -74,7 +74,8 @@ Delays reflect the time that passes between infection and reporting, if these ex
 
 ```r
 example_incubation_period
-#> Error in eval(expr, envir, enclos): object 'example_incubation_period' not found
+#> 
+#>   Uncertain lognormal distribution with (untruncated) logmean 1.6 (SD 0.064) and logSD 0.42 (SD 0.069)
 ```
 
 For the reporting delay, we use a lognormal distribution with mean of 2 days and standard deviation of 1 day.
@@ -98,9 +99,11 @@ _EpiNow2_ provides a feature that allows us to combine these delays into one by 
 
 ```r
 delay <- example_incubation_period + reporting_delay
-#> Error in eval(expr, envir, enclos): object 'example_incubation_period' not found
 delay
-#> Error in eval(expr, envir, enclos): object 'delay' not found
+#> 
+#> Combination of delay distributions:
+#>   Uncertain lognormal distribution with (untruncated) logmean 1.6 (SD 0.064) and logSD 0.42 (SD 0.069)
+#>   Fixed distribution with PMF [0.11 0.48 0.27 0.093 0.029 0.0096 0.0033 0.0012 0.00045 0.00018 7.4e-05]
 ```
 
 ## Generation time
@@ -110,7 +113,8 @@ If we want to estimate the reproduction number we need to provide a distribution
 
 ```r
 example_generation_time
-#> Error in eval(expr, envir, enclos): object 'example_generation_time' not found
+#> 
+#>   Uncertain gamma distribution with (untruncated) mean 3.6 (SD 0.71) and SD 3.1 (SD 0.77)
 ```
 
 ## Initial reproduction number
@@ -138,17 +142,30 @@ def <- estimate_infections(reported_cases,
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior)
 )
-#> Error in eval(expr, envir, enclos): object 'delay' not found
+#> Warning: There were 7 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(def)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'def' not found
+#>                                  measure                 estimate
+#> 1: New confirmed cases by infection date      2326 (1160 -- 4361)
+#> 2:        Expected change in daily cases        Likely decreasing
+#> 3:            Effective reproduction no.       0.89 (0.62 -- 1.2)
+#> 4:                        Rate of growth -0.024 (-0.094 -- 0.036)
+#> 5:          Doubling/halving time (days)         -29 (19 -- -7.4)
 # elapsed time (in seconds)
 get_elapsed_time(def$fit)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'get_elapsed_time': object 'def' not found
+#>         warmup sample
+#> chain:1 33.573 24.459
+#> chain:2 27.082 34.938
+#> chain:3 34.183 24.497
+#> chain:4 30.027 31.835
 # summary plot
 plot(def)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'plot': object 'def' not found
 ```
+
+![plot of chunk default](figure/default-1.png)
 
 ## Reducing the accuracy of the approximate Gaussian Process
 
@@ -162,17 +179,30 @@ agp <- estimate_infections(reported_cases,
   rt = rt_opts(prior = rt_prior),
   gp = gp_opts(basis_prop = 0.1)
 )
-#> Error in eval(expr, envir, enclos): object 'delay' not found
+#> Warning: There were 8 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(agp)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'agp' not found
+#>                                  measure                 estimate
+#> 1: New confirmed cases by infection date      2343 (1188 -- 4363)
+#> 2:        Expected change in daily cases        Likely decreasing
+#> 3:            Effective reproduction no.       0.89 (0.63 -- 1.2)
+#> 4:                        Rate of growth -0.024 (-0.091 -- 0.039)
+#> 5:          Doubling/halving time (days)         -29 (18 -- -7.6)
 # elapsed time (in seconds)
 get_elapsed_time(agp$fit)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'get_elapsed_time': object 'agp' not found
+#>         warmup sample
+#> chain:1 23.392 23.266
+#> chain:2 18.817 23.019
+#> chain:3 19.906 23.454
+#> chain:4 27.043 23.983
 # summary plot
 plot(agp)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'plot': object 'agp' not found
 ```
+
+![plot of chunk lower_accuracy](figure/lower_accuracy-1.png)
 
 ## Adjusting for future susceptible depletion
 
@@ -190,17 +220,30 @@ dep <- estimate_infections(reported_cases,
     pop = 1000000, future = "latest"
   )
 )
-#> Error in eval(expr, envir, enclos): object 'delay' not found
+#> Warning: There were 14 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(dep)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'dep' not found
+#>                                  measure                 estimate
+#> 1: New confirmed cases by infection date      2275 (1141 -- 4324)
+#> 2:        Expected change in daily cases        Likely decreasing
+#> 3:            Effective reproduction no.       0.88 (0.62 -- 1.2)
+#> 4:                        Rate of growth -0.027 (-0.096 -- 0.036)
+#> 5:          Doubling/halving time (days)         -26 (19 -- -7.2)
 # elapsed time (in seconds)
 get_elapsed_time(dep$fit)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'get_elapsed_time': object 'dep' not found
+#>         warmup sample
+#> chain:1 30.522 24.801
+#> chain:2 29.964 24.931
+#> chain:3 33.582 25.698
+#> chain:4 27.050 25.586
 # summary plot
 plot(dep)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'plot': object 'dep' not found
 ```
+
+![plot of chunk susceptible_depletion](figure/susceptible_depletion-1.png)
 
 ## Adjusting for truncation of the most recent data
 
@@ -226,13 +269,25 @@ trunc <- estimate_infections(reported_cases,
   truncation = trunc_opts(trunc_dist),
   rt = rt_opts(prior = rt_prior)
 )
-#> Error in eval(expr, envir, enclos): object 'delay' not found
+#> Warning: There were 6 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(trunc)
-#> Error in object[[i]]: object of type 'builtin' is not subsettable
+#>                                  measure                estimate
+#> 1: New confirmed cases by infection date     2477 (1311 -- 4653)
+#> 2:        Expected change in daily cases       Likely decreasing
+#> 3:            Effective reproduction no.      0.91 (0.65 -- 1.2)
+#> 4:                        Rate of growth -0.02 (-0.085 -- 0.044)
+#> 5:          Doubling/halving time (days)        -34 (16 -- -8.2)
 # elapsed time (in seconds)
 get_elapsed_time(trunc$fit)
-#> Error in (function (cond) : error in evaluating the argument 'object' in selecting a method for function 'get_elapsed_time': object of type 'builtin' is not subsettable
+#>         warmup sample
+#> chain:1 32.951 25.092
+#> chain:2 33.920 25.699
+#> chain:3 31.455 46.192
+#> chain:4 27.765 26.048
 # summary plot
 plot(trunc)
 ```
@@ -253,17 +308,30 @@ project_rt <- estimate_infections(reported_cases,
     prior = rt_prior, future = "project"
   )
 )
-#> Error in eval(expr, envir, enclos): object 'delay' not found
+#> Warning: There were 4 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(project_rt)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'project_rt' not found
+#>                                  measure                 estimate
+#> 1: New confirmed cases by infection date      2246 (1150 -- 4539)
+#> 2:        Expected change in daily cases        Likely decreasing
+#> 3:            Effective reproduction no.       0.87 (0.62 -- 1.2)
+#> 4:                        Rate of growth -0.028 (-0.096 -- 0.042)
+#> 5:          Doubling/halving time (days)         -24 (16 -- -7.2)
 # elapsed time (in seconds)
 get_elapsed_time(project_rt$fit)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'get_elapsed_time': object 'project_rt' not found
+#>         warmup sample
+#> chain:1 28.858 24.636
+#> chain:2 36.509 47.931
+#> chain:3 32.023 47.087
+#> chain:4 34.074 27.767
 # summary plot
 plot(project_rt)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'plot': object 'project_rt' not found
 ```
+
+![plot of chunk gp_projection](figure/gp_projection-1.png)
 
 ## Fixed reproduction number
 
@@ -276,17 +344,26 @@ fixed <- estimate_infections(reported_cases,
   delays = delay_opts(delay),
   gp = NULL
 )
-#> Error in eval(expr, envir, enclos): object 'delay' not found
 # summarise results
 summary(fixed)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'fixed' not found
+#>                                  measure              estimate
+#> 1: New confirmed cases by infection date 15737 (8930 -- 29454)
+#> 2:        Expected change in daily cases            Increasing
+#> 3:            Effective reproduction no.      1.2 (1.1 -- 1.3)
+#> 4:                        Rate of growth 0.038 (0.026 -- 0.05)
+#> 5:          Doubling/halving time (days)         18 (14 -- 27)
 # elapsed time (in seconds)
 get_elapsed_time(fixed$fit)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'get_elapsed_time': object 'fixed' not found
+#>         warmup sample
+#> chain:1  2.091  1.127
+#> chain:2  1.884  0.847
+#> chain:3  1.912  0.981
+#> chain:4  1.857  0.900
 # summary plot
 plot(fixed)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'plot': object 'fixed' not found
 ```
+
+![plot of chunk fixed](figure/fixed-1.png)
 
 ## Breakpoints
 
@@ -312,17 +389,26 @@ bkp <- estimate_infections(bp_cases,
   rt = rt_opts(prior = rt_prior),
   gp = NULL
 )
-#> Error in eval(expr, envir, enclos): object 'delay' not found
 # summarise results
 summary(bkp)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'bkp' not found
+#>                                  measure                  estimate
+#> 1: New confirmed cases by infection date       2468 (2035 -- 2968)
+#> 2:        Expected change in daily cases                Decreasing
+#> 3:            Effective reproduction no.       0.91 (0.88 -- 0.93)
+#> 4:                        Rate of growth -0.021 (-0.026 -- -0.015)
+#> 5:          Doubling/halving time (days)          -34 (-46 -- -27)
 # elapsed time (in seconds)
 get_elapsed_time(bkp$fit)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'get_elapsed_time': object 'bkp' not found
+#>         warmup sample
+#> chain:1  3.115  2.705
+#> chain:2  2.910  2.433
+#> chain:3  3.695  2.271
+#> chain:4  3.683  2.654
 # summary plot
 plot(bkp)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'plot': object 'bkp' not found
 ```
+
+![plot of chunk bp](figure/bp-1.png)
 
 ## Weekly random walk
 
@@ -337,17 +423,26 @@ rw <- estimate_infections(reported_cases,
   rt = rt_opts(prior = rt_prior, rw = 7),
   gp = NULL
 )
-#> Error in eval(expr, envir, enclos): object 'delay' not found
 # summarise results
 summary(rw)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'rw' not found
+#>                                  measure                 estimate
+#> 1: New confirmed cases by infection date      2168 (1146 -- 4136)
+#> 2:        Expected change in daily cases        Likely decreasing
+#> 3:            Effective reproduction no.       0.86 (0.63 -- 1.2)
+#> 4:                        Rate of growth -0.031 (-0.091 -- 0.031)
+#> 5:          Doubling/halving time (days)         -22 (22 -- -7.6)
 # elapsed time (in seconds)
 get_elapsed_time(rw$fit)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'get_elapsed_time': object 'rw' not found
+#>         warmup sample
+#> chain:1  7.324  9.414
+#> chain:2  9.205  9.808
+#> chain:3  8.057 10.079
+#> chain:4  6.632  7.324
 # summary plot
 plot(rw)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'plot': object 'rw' not found
 ```
+
+![plot of chunk weekly_rw](figure/weekly_rw-1.png)
 
 ## No delays
 
@@ -359,17 +454,30 @@ no_delay <- estimate_infections(
   reported_cases,
   generation_time = generation_time_opts(example_generation_time)
 )
-#> Error in eval(expr, envir, enclos): object 'example_generation_time' not found
+#> Warning: There were 5 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(no_delay)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'no_delay' not found
+#>                                  measure                   estimate
+#> 1: New confirmed cases by infection date        2790 (2313 -- 3329)
+#> 2:        Expected change in daily cases                 Decreasing
+#> 3:            Effective reproduction no.        0.88 (0.76 -- 0.99)
+#> 4:                        Rate of growth -0.026 (-0.055 -- -0.0022)
+#> 5:          Doubling/halving time (days)          -26 (-320 -- -13)
 # elapsed time (in seconds)
 get_elapsed_time(no_delay$fit)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'get_elapsed_time': object 'no_delay' not found
+#>         warmup sample
+#> chain:1 42.446 68.684
+#> chain:2 32.455 34.207
+#> chain:3 42.812 62.019
+#> chain:4 28.186 37.280
 # summary plot
 plot(no_delay)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'plot': object 'no_delay' not found
 ```
+
+![plot of chunk no_delays](figure/no_delays-1.png)
 
 ## Non-parametric infection model
 
@@ -387,14 +495,23 @@ non_parametric <- estimate_infections(reported_cases,
   backcalc = backcalc_opts(),
   horizon = 0
 )
-#> Error in eval(expr, envir, enclos): object 'delay' not found
 # summarise results
 summary(non_parametric)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'non_parametric' not found
+#>                                  measure                   estimate
+#> 1: New confirmed cases by infection date        2361 (1808 -- 3074)
+#> 2:        Expected change in daily cases                 Decreasing
+#> 3:            Effective reproduction no.          0.9 (0.8 -- 0.99)
+#> 4:                        Rate of growth -0.023 (-0.045 -- -0.0014)
+#> 5:          Doubling/halving time (days)          -30 (-510 -- -15)
 # elapsed time (in seconds)
 get_elapsed_time(non_parametric$fit)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'get_elapsed_time': object 'non_parametric' not found
+#>         warmup sample
+#> chain:1  2.811  0.823
+#> chain:2  2.688  0.784
+#> chain:3  3.013  0.826
+#> chain:4  3.280  0.805
 # summary plot
 plot(non_parametric)
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'plot': object 'non_parametric' not found
 ```
+
+![plot of chunk nonparametric](figure/nonparametric-1.png)
