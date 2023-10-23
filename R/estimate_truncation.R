@@ -157,7 +157,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
-  
+
   ## code block to remove in EpiNow2 2.0.0
   construct_trunc <- FALSE
   if (!missing(trunc_max)) {
