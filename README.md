@@ -175,34 +175,42 @@ reporting_delay <- estimate_delay(
 ```
 
 If data was not available we could instead make an informed estimate of
-the likely delay (*this is a synthetic example and not applicable to
-real world use cases and we have not included uncertainty to decrease
-runtimes*),
+the likely delay. We choose a lognormal distribution with mean 2,
+standard deviation 1 (both with some uncertainty) and a maximum of 10.
+*This is just an example and unlikely to apply in any particular use
+case*.
 
 ``` r
 reporting_delay <- dist_spec(
-  mean = convert_to_logmean(2, 1), sd = convert_to_logsd(2, 1), max = 10,
+  mean = convert_to_logmean(2, 1),
+  mean_sd = 0.1,
+  sd = convert_to_logsd(2, 1),
+  sd_sd = 0.1,
+  max = 10,
   dist = "lognormal"
 )
 #> Warning: The meaning of the 'max' argument has changed compared to previous versions. It now indicates the maximum of a distribution rather than the length of the probability mass function (including 0) that it represented previously. To replicate previous behaviour reduce max by 1.
 #> This warning is displayed once every 8 hours.
+reporting_delay
+#> 
+#>   Uncertain lognormal distribution with (untruncated) logmean 0.58 (SD 0.1) and logSD 0.47 (SD 0.1)
 ```
 
-Here we define the incubation period and generation time based on
-literature estimates for Covid-19 (see
+We use example literature estimates for the incubation period and
+generation time of Covid-19 (see
 [here](https://github.com/epiforecasts/EpiNow2/tree/main/data-raw) for
-the code that generates these estimates). *Note that these distributions
-may not be applicable for your use case and that we have not included
-uncertainty here to reduce the runtime of this example but in most
-settings this is not recommended.*
+the code that generates these estimates). *These distributions are
+unlikely to be applicable for your use case. We strongly recommend
+investigating what might be the best distributions to use in any given
+use case.*
 
 ``` r
-generation_time <- get_generation_time(
-  disease = "SARS-CoV-2", source = "ganyani", max = 10, fixed = TRUE
-)
-incubation_period <- get_incubation_period(
-  disease = "SARS-CoV-2", source = "lauer", max = 10, fixed = TRUE
-)
+example_generation_time
+#> 
+#>   Uncertain gamma distribution with (untruncated) mean 3.6 (SD 0.71) and SD 3.1 (SD 0.77)
+example_incubation_period
+#> 
+#>   Uncertain lognormal distribution with (untruncated) logmean 1.6 (SD 0.064) and logSD 0.42 (SD 0.069)
 ```
 
 ### [epinow()](https://epiforecasts.io/EpiNow2/reference/epinow.html)
@@ -239,8 +247,8 @@ For other formulations see the documentation for
 ``` r
 estimates <- epinow(
   reported_cases = reported_cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period + reporting_delay),
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
   stan = stan_opts(cores = 4, control = list(adapt_delta = 0.99)),
   verbose = interactive()
@@ -260,13 +268,13 @@ parameters at the latest date partially supported by data.
 knitr::kable(summary(estimates))
 ```
 
-| measure                               | estimate               |
-|:--------------------------------------|:-----------------------|
-| New confirmed cases by infection date | 2250 (1129 – 4224)     |
-| Expected change in daily cases        | Likely decreasing      |
-| Effective reproduction no.            | 0.88 (0.61 – 1.2)      |
-| Rate of growth                        | -0.028 (-0.11 – 0.036) |
-| Doubling/halving time (days)          | -25 (19 – -6.6)        |
+| measure                               | estimate                |
+|:--------------------------------------|:------------------------|
+| New confirmed cases by infection date | 2289 (1115 – 4367)      |
+| Expected change in daily cases        | Likely decreasing       |
+| Effective reproduction no.            | 0.89 (0.62 – 1.2)       |
+| Rate of growth                        | -0.025 (-0.096 – 0.036) |
+| Doubling/halving time (days)          | -27 (19 – -7.2)         |
 
 Summarised parameter estimates can also easily be returned, either
 filtered for a single parameter or for all parameters.
@@ -274,19 +282,19 @@ filtered for a single parameter or for all parameters.
 ``` r
 head(summary(estimates, type = "parameters", params = "R"))
 #>          date variable strat     type   median     mean         sd lower_90
-#> 1: 2020-02-22        R    NA estimate 2.165168 2.172162 0.14593854 1.941092
-#> 2: 2020-02-23        R    NA estimate 2.131549 2.136040 0.11998939 1.941084
-#> 3: 2020-02-24        R    NA estimate 2.097955 2.098431 0.09900182 1.935873
-#> 4: 2020-02-25        R    NA estimate 2.060349 2.059484 0.08271136 1.925641
-#> 5: 2020-02-26        R    NA estimate 2.020232 2.019406 0.07061650 1.907712
-#> 6: 2020-02-27        R    NA estimate 1.978571 1.978434 0.06200852 1.876838
+#> 1: 2020-02-22        R  <NA> estimate 2.212959 2.220541 0.14576748 1.988091
+#> 2: 2020-02-23        R  <NA> estimate 2.182545 2.186632 0.12162401 1.992521
+#> 3: 2020-02-24        R  <NA> estimate 2.150369 2.150836 0.10169055 1.986534
+#> 4: 2020-02-25        R  <NA> estimate 2.113105 2.113283 0.08594870 1.974178
+#> 5: 2020-02-26        R  <NA> estimate 2.073614 2.074148 0.07420031 1.955402
+#> 6: 2020-02-27        R  <NA> estimate 2.034058 2.033642 0.06600593 1.928757
 #>    lower_50 lower_20 upper_20 upper_50 upper_90
-#> 1: 2.072901 2.130679 2.202326 2.268532 2.422487
-#> 2: 2.053218 2.102913 2.163595 2.215637 2.339445
-#> 3: 2.030270 2.072284 2.121847 2.164987 2.260809
-#> 4: 2.003278 2.036221 2.081113 2.114809 2.195010
-#> 5: 1.971672 2.001096 2.038018 2.067643 2.136014
-#> 6: 1.935102 1.961685 1.995176 2.019346 2.079872
+#> 1: 2.121108 2.179966 2.251215 2.319625 2.463337
+#> 2: 2.103825 2.154804 2.213847 2.267385 2.395556
+#> 3: 2.081757 2.123637 2.174697 2.216957 2.325451
+#> 4: 2.055113 2.091263 2.133835 2.167701 2.262721
+#> 5: 2.024078 2.053914 2.092803 2.120727 2.202303
+#> 6: 1.988182 2.016474 2.051127 2.074294 2.145812
 ```
 
 Reported cases are returned in a separate data frame in order to
@@ -295,19 +303,19 @@ streamline the reporting of forecasts and for model evaluation.
 ``` r
 head(summary(estimates, output = "estimated_reported_cases"))
 #>          date  type median     mean       sd lower_90 lower_50 lower_20
-#> 1: 2020-02-22 gp_rt     64  65.8305 17.79986       41       53       60
-#> 2: 2020-02-23 gp_rt     77  78.5915 21.24272       47       64       72
-#> 3: 2020-02-24 gp_rt     76  77.9760 21.13539       47       63       71
-#> 4: 2020-02-25 gp_rt     74  75.8540 20.46272       47       61       69
-#> 5: 2020-02-26 gp_rt     79  80.8435 20.94625       50       66       74
-#> 6: 2020-02-27 gp_rt    113 115.5645 29.60269       72       96      105
+#> 1: 2020-02-22 gp_rt     66  68.2645 19.68574    40.00       54       61
+#> 2: 2020-02-23 gp_rt     77  78.8550 21.40584    48.00       64       71
+#> 3: 2020-02-24 gp_rt     76  77.8660 21.55264    47.00       63       71
+#> 4: 2020-02-25 gp_rt     73  75.0555 20.84360    46.00       60       67
+#> 5: 2020-02-26 gp_rt     78  80.2720 22.22163    48.95       65       73
+#> 6: 2020-02-27 gp_rt    111 112.9485 29.56885    70.95       93      103
 #>    upper_20 upper_50 upper_90
-#> 1:       68       76    98.00
-#> 2:       82       91   115.00
-#> 3:       82       91   116.00
-#> 4:       79       89   112.00
-#> 5:       84       94   118.00
-#> 6:      120      134   167.05
+#> 1:       71       80   103.00
+#> 2:       82       91   116.05
+#> 3:       81       91   117.00
+#> 4:       78       88   112.00
+#> 5:       83       93   120.00
+#> 6:      118      131   165.00
 ```
 
 A range of plots are returned (with the single summary plot shown
@@ -350,25 +358,25 @@ us piecewise constant estimates by week.
 ``` r
 estimates <- regional_epinow(
   reported_cases = reported_cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period + reporting_delay),
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
 )
-#> INFO [2023-10-12 13:04:43] Producing following optional outputs: regions, summary, samples, plots, latest
-#> INFO [2023-10-12 13:04:43] Reporting estimates using data up to: 2020-04-21
-#> INFO [2023-10-12 13:04:43] No target directory specified so returning output
-#> INFO [2023-10-12 13:04:43] Producing estimates for: testland, realland
-#> INFO [2023-10-12 13:04:43] Regions excluded: none
-#> INFO [2023-10-12 13:05:08] Completed estimates for: testland
-#> INFO [2023-10-12 13:05:31] Completed estimates for: realland
-#> INFO [2023-10-12 13:05:31] Completed regional estimates
-#> INFO [2023-10-12 13:05:31] Regions with estimates: 2
-#> INFO [2023-10-12 13:05:31] Regions with runtime errors: 0
-#> INFO [2023-10-12 13:05:31] Producing summary
-#> INFO [2023-10-12 13:05:31] No summary directory specified so returning summary output
-#> INFO [2023-10-12 13:05:32] No target directory specified so returning timings
+#> INFO [2023-10-23 16:31:10] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2023-10-23 16:31:10] Reporting estimates using data up to: 2020-04-21
+#> INFO [2023-10-23 16:31:11] No target directory specified so returning output
+#> INFO [2023-10-23 16:31:11] Producing estimates for: testland, realland
+#> INFO [2023-10-23 16:31:11] Regions excluded: none
+#> INFO [2023-10-23 16:31:59] Completed estimates for: testland
+#> INFO [2023-10-23 16:32:51] Completed estimates for: realland
+#> INFO [2023-10-23 16:32:51] Completed regional estimates
+#> INFO [2023-10-23 16:32:51] Regions with estimates: 2
+#> INFO [2023-10-23 16:32:51] Regions with runtime errors: 0
+#> INFO [2023-10-23 16:32:51] Producing summary
+#> INFO [2023-10-23 16:32:51] No summary directory specified so returning summary output
+#> INFO [2023-10-23 16:32:51] No target directory specified so returning timings
 ```
 
 Results from each region are stored in a `regional` list with across
@@ -393,8 +401,8 @@ knitr::kable(estimates$summary$summarised_results$table)
 
 | Region   | New confirmed cases by infection date | Expected change in daily cases | Effective reproduction no. | Rate of growth          | Doubling/halving time (days) |
 |:---------|:--------------------------------------|:-------------------------------|:---------------------------|:------------------------|:-----------------------------|
-| realland | 2128 (1143 – 4078)                    | Likely decreasing              | 0.87 (0.64 – 1.2)          | -0.032 (-0.095 – 0.033) | -22 (21 – -7.3)              |
-| testland | 2155 (1133 – 4435)                    | Likely decreasing              | 0.87 (0.64 – 1.2)          | -0.032 (-0.097 – 0.038) | -22 (18 – -7.2)              |
+| realland | 2149 (1092 – 4175)                    | Likely decreasing              | 0.86 (0.61 – 1.2)          | -0.032 (-0.097 – 0.031) | -21 (22 – -7.2)              |
+| testland | 2128 (1116 – 4273)                    | Likely decreasing              | 0.85 (0.62 – 1.2)          | -0.033 (-0.095 – 0.033) | -21 (21 – -7.3)              |
 
 A range of plots are again returned (with the single summary plot shown
 below).
