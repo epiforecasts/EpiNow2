@@ -17,6 +17,7 @@ data {
 }
 
 transformed data{
+  int predict = t;
 #include chunks/delay_type_max.stan
 }
 
@@ -30,11 +31,8 @@ transformed parameters {
   vector<lower=0>[t] reports; // secondary reports
 
   {
-    secondary = calculate_secondary(
-      primary, obs, frac_obs, delay_rev_pmf, cumulative, historic,
-      primary_hist_additive, current, primary_current_additive, t
-    );
 #include chunks/delay_rev_pmf.stan
+#include chunks/calculate_secondary.stan
   // weekly reporting effect
 #include chunks/day_of_week_effect.stan
   // truncate near time cases to observed reports
