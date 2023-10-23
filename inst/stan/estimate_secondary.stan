@@ -54,8 +54,9 @@ model {
    }
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
-    report_lp(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-              rep_phi, phi_mean, phi_sd, model_type, 1);
+    array[t - burn_in] int cases = obs[(burn_in + 1):t];
+    vector[t - burn_in] obs_reports = reports[(burn_in + 1):t];
+#include chunks/report_lp.stan
   }
 }
 
