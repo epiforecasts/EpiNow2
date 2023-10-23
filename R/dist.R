@@ -978,13 +978,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
     )
     if (length(pmf) == 0) {
       if (missing(mean)) { ## empty
-        ret <- c(ret, list(
-          n = 0,
-          n_p = 0,
-          n_np = 0,
-          np_pmf = numeric(0),
-          fixed = integer(0)
-        ))
+        pmf <- 1
       } else { ## parametric fixed
         if (sd == 0) { ## delta
           pmf <- c(rep(0, mean), 1)
@@ -1013,15 +1007,13 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
       }
       pmf <- pmf / sum(pmf)
     }
-    if (length(pmf) > 0) {
-      ret <- c(ret, list(
-        n = 1,
-        n_p = 0,
-        n_np = 1,
-        np_pmf = pmf,
-        fixed = 1L
-      ))
-    }
+    ret <- c(ret, list(
+      n = 1,
+      n_p = 0,
+      n_np = 1,
+      np_pmf = pmf,
+      fixed = 1L
+    ))
   } else {
     ret <- list(
       mean_mean = mean,

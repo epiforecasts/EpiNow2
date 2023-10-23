@@ -72,13 +72,8 @@ transformed parameters {
     );
   }
   // convolve from latent infections to mean of observations
-  if (delay_id) {
-    vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(
-      delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
-      delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
-      0, 1, 0
-    );
+  {
+#include chunks/delay_rev_pmf.stan
     reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);
   } else {
     reports = infections[(seeding_time + 1):t];
@@ -92,17 +87,10 @@ transformed parameters {
    reports = scale_obs(reports, frac_obs[1]);
  }
  // truncate near time cases to observed reports
- if (trunc_id) {
-    vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(
-      trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
-      delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
-      0, 1, 1
-    );
+  {
+#include chunks/trunc_rev_cmf.stan
     obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);
- } else {
-   obs_reports = reports[1:ot];
- }
+  }
 }
 
 model {

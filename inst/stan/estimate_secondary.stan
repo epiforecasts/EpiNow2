@@ -31,21 +31,13 @@ transformed parameters {
   // calculate secondary reports from primary
 
   {
-    vector[delay_type_max[delay_id] + 1] delay_rev_pmf;
-    if (delay_id) {
-      delay_rev_pmf = get_delay_rev_pmf(
-        delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
-        delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
-        0, 1, 0
-      );
-    } else {
-      delay_rev_pmf = to_vector({ 1 });
-    }
     secondary = calculate_secondary(
       primary, obs, frac_obs, delay_rev_pmf, cumulative, historic,
       primary_hist_additive, current, primary_current_additive, t
     );
+#include chunks/delay_rev_pmf.stan
+  // truncate near time cases to observed reports
+#include chunks/trunc_rev_cmf.stan
   }
 
  // weekly reporting effect
@@ -54,12 +46,6 @@ transformed parameters {
  }
  // truncate near time cases to observed reports
  if (trunc_id) {
-    vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(
-      trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
-      delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
-      0, 1, 1
-    );
     secondary = truncate(secondary, trunc_rev_cmf, 0);
  }
 }

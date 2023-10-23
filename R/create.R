@@ -654,8 +654,7 @@ create_stan_delays <- function(..., weight = 1) {
   ## number of different non-empty types
   type_n <- unlist(purrr::transpose(dot_args)$n)
   ## assign ID values to each type
-  ids <- rep(0L, length(type_n))
-  ids[type_n > 0] <- seq_len(sum(type_n > 0))
+  ids <- seq_along(type_n)
   names(ids) <- paste(names(type_n), "id", sep = "_")
 
   ## start consructing stan object
