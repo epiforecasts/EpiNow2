@@ -132,9 +132,12 @@ reference:
   - title: Data
     desc: Package datasets that may be used to parameterise other functions or in examples
     contents:
+      - example_generation_time
+      - example_incubation_period
+      - example_reporting_delay
+      - example_confirmed
       - generation_times
       - incubation_periods
-      - example_confirmed
   - title: Get/Extract Data
     desc: Functions for extracting data from objects or getting data from sources
     contents:
