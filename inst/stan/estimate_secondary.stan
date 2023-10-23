@@ -43,15 +43,9 @@ transformed parameters {
 
 model {
   // penalised priors for delay distributions
-  delays_lp(
-    delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean,
-    delay_sd_sd, delay_dist, delay_weight
-  );
-  
+#include chunks/delays_lp.stan
   // prior primary report scaling
-  if (obs_scale) {
-    frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];
-   }
+#include chunks/obs_scale_lp.stan
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
     array[t - burn_in] int cases = obs[(burn_in + 1):t];
