@@ -107,9 +107,7 @@ model {
 #include chunks/obs_scale_lp.stan
   // observed reports from mean of reports (update likelihood)
   if (likelihood) {
-    report_lp(
-      cases, obs_reports, rep_phi, phi_mean, phi_sd, model_type, obs_weight
-    );
+#include chunks/report_lp.stan
   }
 }
 
@@ -151,8 +149,6 @@ generated quantities {
   imputed_reports = report_rng(reports, rep_phi, model_type);
   // log likelihood of model
   if (return_likelihood) {
-    log_lik = report_log_lik(
-      cases, obs_reports, rep_phi, model_type, obs_weight
-    );
+#include chunks/report_log_lik.stan
   }
 }

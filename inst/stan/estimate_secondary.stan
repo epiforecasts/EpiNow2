@@ -61,7 +61,8 @@ generated quantities {
   sim_secondary = report_rng(reports[(burn_in + 1):t], rep_phi, model_type);
   // log likelihood of model
   if (return_likelihood) {
-    log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-                             rep_phi, model_type, obs_weight);
+    array[t - burn_in] int cases = obs[(burn_in + 1):t];
+    vector[t - burn_in] obs_reports = reports[(burn_in + 1):t];
+#include chunks/report_log_lik.stan
   }
 }
