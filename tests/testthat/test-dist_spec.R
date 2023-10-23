@@ -187,7 +187,7 @@ test_that("print.dist_spec correctly prints the parameters of the uncertain logn
 test_that("print.dist_spec correctly prints the parameters of an empty distribution", {
   empty <- dist_spec()
   
-  expect_output(print(empty), "Empty `dist_spec` distribution.")
+  expect_output(print(empty), "PMF \\[1\\].")
 })
 
 test_that("print.dist_spec correctly prints the parameters of a combination of distributions", {
