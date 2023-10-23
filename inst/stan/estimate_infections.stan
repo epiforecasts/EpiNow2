@@ -74,18 +74,12 @@ transformed parameters {
   // convolve from latent infections to mean of observations
   {
 #include chunks/delay_rev_pmf.stan
-    reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);
-  } else {
-    reports = infections[(seeding_time + 1):t];
+#include chunks/convolve_to_report.stan
   }
   // weekly reporting effect
-  if (week_effect > 1) {
-   reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);
-  }
+#include chunks/day_of_week_effect.stan
   // scaling of reported cases by fraction observed
- if (obs_scale) {
-   reports = scale_obs(reports, frac_obs[1]);
- }
+#include chunks/scale_obs.stan
  // truncate near time cases to observed reports
   {
 #include chunks/trunc_rev_cmf.stan

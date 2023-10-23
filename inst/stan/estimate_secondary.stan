@@ -27,8 +27,7 @@ parameters{
 }
 
 transformed parameters {
-  vector<lower=0>[t] secondary;
-  // calculate secondary reports from primary
+  vector<lower=0>[t] reports; // secondary reports
 
   {
     secondary = calculate_secondary(
@@ -36,18 +35,12 @@ transformed parameters {
       primary_hist_additive, current, primary_current_additive, t
     );
 #include chunks/delay_rev_pmf.stan
+  // weekly reporting effect
+#include chunks/day_of_week_effect.stan
   // truncate near time cases to observed reports
 #include chunks/trunc_rev_cmf.stan
+    reports = truncate(reports, trunc_rev_cmf, 0);
   }
-
- // weekly reporting effect
- if (week_effect > 1) {
-   secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
- }
- // truncate near time cases to observed reports
- if (trunc_id) {
-    secondary = truncate(secondary, trunc_rev_cmf, 0);
- }
 }
 
 model {
@@ -72,7 +65,7 @@ generated quantities {
   array[t - burn_in] int sim_secondary;
   vector[return_likelihood > 1 ? t - burn_in : 0] log_lik;
   // simulate secondary reports
-  sim_secondary = report_rng(secondary[(burn_in + 1):t], rep_phi, model_type);
+  sim_secondary = report_rng(reports[(burn_in + 1):t], rep_phi, model_type);
   // log likelihood of model
   if (return_likelihood) {
     log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
