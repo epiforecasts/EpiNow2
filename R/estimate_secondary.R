@@ -628,6 +628,7 @@ forecast_secondary <- function(estimate,
   )
   # extract data from stanfit
   data <- estimate$data
+  data$primary <- NULL
 
   # combined primary from data and input primary
   primary_fit <- estimate$predictions[,
@@ -643,19 +644,20 @@ forecast_secondary <- function(estimate,
   data.table::setorderv(primary_fit, c("sample", "date"))
 
   # update data with primary samples and day of week
-  data$primary <- t(
+  data$primary_samples <- t(
     matrix(primary_fit$value, ncol = length(unique(primary_fit$sample)))
   )
   data$day_of_week <- add_day_of_week(
     unique(primary_fit$date), data$week_effect
   )
-  data$n <- nrow(data$primary)
-  data$t <- ncol(data$primary)
+  data$n <- nrow(data$primary_samples)
+  data$t <- ncol(data$primary_samples)
   data$h <- nrow(primary[sample == min(sample)])
 
   # extract samples for posterior of estimates
   posterior_samples <- sample(seq_len(data$n), data$n, replace = TRUE) # nolint
   draws <- purrr::map(draws, ~ as.matrix(.[posterior_samples, ]))
+  names(draws) <- paste0(names(draws), "_samples")
   # combine with data
   data <- c(data, draws)
 
@@ -666,8 +668,10 @@ forecast_secondary <- function(estimate,
 
   # allocate empty parameters
   data <- allocate_empty(
-    data, c("frac_obs", "delay_mean", "delay_sd", "rep_phi"),
-    n = data$n
+    data, c(
+      "frac_obs_samples", "delay_mean_samples", "delay_sd_samples",
+      "rep_phi_samples"
+    ), n = data$n
   )
   data$all_dates <- as.integer(all_dates)
   ## simulate

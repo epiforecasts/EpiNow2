@@ -186,13 +186,17 @@ simulate_infections <- function(estimates,
                              shift, dates, nstart, nend) {
     # extract batch samples from draws
     draws <- map(draws, ~ as.matrix(.[nstart:nend, ]))
+    names(draws) <- paste0(draws, "_samples")
 
     ## prepare data for stan command
-    data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
+    data <- c(list(n = dim(draws$R_samples)[1]), draws, estimates$args)
 
     ## allocate empty parameters
     data <- allocate_empty(
-      data, c("frac_obs", "delay_mean", "delay_sd", "rep_phi"),
+      data, c(
+        "frac_obs_samples", "delay_mean_samples", "delay_sd_samples",
+        "rep_phi_samples"
+      ),
       n = data$n
     )
 
@@ -250,6 +254,8 @@ simulate_infections <- function(estimates,
   out <- compact(out)
   out <- transpose(out)
   out <- map(out, rbindlist)
+
+  names(out) <- sub("^sim_", "", names(out))
 
   ## format output
   format_out <- format_fit(

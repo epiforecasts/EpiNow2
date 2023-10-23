@@ -14,7 +14,7 @@ data {
   int all_dates; // should all dates have simulations returned
   // secondary model specific data
   array[t - h] int<lower = 0> obs;         // observed secondary data
-  matrix[n, t] primary;              // observed primary data
+  matrix[n, t] primary_samples;              // observed primary data
 #include data/secondary.stan
   // delay from infection to report
 #include data/simulation_delays.stan
@@ -23,34 +23,26 @@ data {
 }
 
 transformed data {
+  int predict = t - h;
 #include chunks/delay_type_max.stan
 }
 
 generated quantities {
   array[n, all_dates ? t : h] int sim_secondary;
   for (i in 1:n) {
-    vector[t] secondary;
-    vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(
-        delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
-        delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_mean[i], delay_sd[i], delay_dist,
-        0, 1, 0
-    );
+    vector[t] reports;
+    vector[t] primary = to_vector(primary_samples[i]);
+#include chunks/sim_vars.stan
 
+#include chunks/delay_rev_pmf.stan
     // calculate secondary reports from primary
-    secondary =
-       calculate_secondary(
-        to_vector(primary[i]), obs, frac_obs[i], delay_rev_pmf, cumulative,
-        historic, primary_hist_additive, current, primary_current_additive,
-        t - h + 1
-      );
+#include chunks/calculate_secondary.stan
     // weekly reporting effect
-    if (week_effect > 1) {
-      secondary = day_of_week_effect(secondary, day_of_week, to_vector(day_of_week_simplex[i]));
-    }
+#include chunks/day_of_week_effect.stan
+
     // simulate secondary reports
     sim_secondary[i] = report_rng(
-      tail(secondary, all_dates ? t : h), rep_phi[i], model_type
+      tail(reports, all_dates ? t : h), rep_phi, model_type
     );
   }
 }

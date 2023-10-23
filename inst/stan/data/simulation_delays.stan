@@ -1,8 +1,8 @@
   int<lower = 0> delay_n;                  // number of delay distribution distributions
   int<lower = 0> delay_n_p;                // number of parametric delay distributions
   int<lower = 0> delay_n_np;                // number of nonparametric delay distributions
-  array[n, delay_n_p] real delay_mean; // prior mean of mean delay distribution
-  array[n, delay_n_p] real<lower = 0> delay_sd;   // prior sd of sd of delay distribution
+  array[n, delay_n_p] real delay_mean_samples; // prior mean of mean delay distribution
+  array[n, delay_n_p] real<lower = 0> delay_sd_samples;   // prior sd of sd of delay distribution
   array[delay_n_p] int<lower = 1> delay_max;          // maximum delay distribution
   array[delay_n_p] int<lower = 0> delay_dist;       // 0 = lognormal; 1 = gamma
   int<lower = 0> delay_np_pmf_length;          // number of nonparametric pmf elements
