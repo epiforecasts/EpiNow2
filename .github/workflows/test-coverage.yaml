@@ -29,14 +29,6 @@ jobs:
           extra-packages: any::covr
           needs: coverage
 
-      ## to remove once rstan is updated on CRAN
-      - name: Manually install dev versions of StanHeaders and rstan
-        run: |
-          install.packages("devtools")
-          devtools::install_github("stan-dev/rstan/StanHeaders@develop")
-          devtools::install_github("stan-dev/rstan/rstan/rstan@develop")
-        shell: Rscript {0}
-
       - name: Test coverage
         run: covr::codecov(quiet = FALSE)
         shell: Rscript {0}
