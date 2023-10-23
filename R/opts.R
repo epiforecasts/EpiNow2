@@ -549,6 +549,7 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                 future = FALSE,
                                 max_execution_time = Inf,
                                 ...) {
+  dot_args <- list(...)
   opts <- list(
     cores = cores,
     warmup = warmup,
@@ -560,8 +561,9 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
   )
   control_def <- list(adapt_delta = 0.95, max_treedepth = 15)
   opts$control <- modifyList(control_def, control)
+  dot_args$iter <- NULL
   opts$iter <- ceiling(samples / opts$chains) + opts$warmup
-  opts <- c(opts, ...)
+  opts <- c(opts, dot_args)
   return(opts)
 }
 
