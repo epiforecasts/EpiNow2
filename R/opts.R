@@ -562,7 +562,6 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
   opts$control <- modifyList(control_def, control)
   opts$iter <- ceiling(samples / opts$chains) + opts$warmup
   opts <- c(opts, ...)
-  attr(opts, "class") <- c("rstan_sampling_opts", class(opts))
   return(opts)
 }
 
