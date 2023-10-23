@@ -175,6 +175,15 @@
     <loc>epiforecasts.io/EpiNow2/dev/reference/example_confirmed.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/example_generation_time.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/example_incubation_period.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/example_reporting_delay.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/expose_stan_fns.html</loc>
   </url>
   <url>
@@ -203,6 +212,9 @@
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/fit_model_with_vb.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/fix_dist.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/forecast_secondary.html</loc>
