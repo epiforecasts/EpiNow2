@@ -115,15 +115,11 @@ generated quantities {
   array[ot_h] int imputed_reports;
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
   array[ot_h] real r;
-  real gt_mean;
-  real gt_var;
   vector[return_likelihood ? ot : 0] log_lik;
   if (estimate_r){
 #include chunks/gt_rev_pmf.stan
     // estimate growth from estimated Rt
-    gt_mean = rev_pmf_mean(gt_rev_pmf, 1);
-    gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);
-    r = R_to_growth(R, gt_mean, gt_var);
+#include chunks/R_to_growth.stan
   } else {
     // sample generation time
     array[delay_n_p] real delay_mean_sample =
@@ -136,8 +132,8 @@ generated quantities {
       delay_np_pmf_groups, delay_mean_sample, delay_sd_sample,
       delay_dist, 1, 1, 0
     );
-    gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);
-    gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);
+    real gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);
+    real gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);
     // calculate Rt using infections and generation time
     gen_R = calculate_Rt(
       infections, seeding_time, sampled_gt_rev_pmf, rt_half_window
