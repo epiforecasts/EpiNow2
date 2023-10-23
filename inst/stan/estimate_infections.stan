@@ -64,10 +64,7 @@ transformed parameters {
     R = update_Rt(
       ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary
     );
-    infections = generate_infections(
-      R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,
-      future_time
-    );
+#include chunks/generate_infections.stan
   } else {
     // via deconvolution
     infections = deconvolve_infections(
