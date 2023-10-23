@@ -54,19 +54,13 @@ transformed parameters {
   vector[t] infections;                                     // latent infections
   vector[ot_h] reports;                                     // estimated reported cases
   vector[ot] obs_reports;                                   // observed estimated reported cases
-  vector[estimate_r * (delay_type_max[gt_id] + 1)] gt_rev_pmf;
   // GP in noise - spectral densities
   if (!fixed) {
     noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);
   }
   // Estimate latent infections
   if (estimate_r) {
-    gt_rev_pmf = get_delay_rev_pmf(
-      gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,
-      delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
-      1, 1, 0
-    );
+#include chunks/gt_rev_pmf.stan
     R = update_Rt(
       ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary
     );
@@ -154,6 +148,7 @@ generated quantities {
   real gt_var;
   vector[return_likelihood ? ot : 0] log_lik;
   if (estimate_r){
+#include chunks/gt_rev_pmf.stan
     // estimate growth from estimated Rt
     gt_mean = rev_pmf_mean(gt_rev_pmf, 1);
     gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);
