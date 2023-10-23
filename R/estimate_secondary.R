@@ -163,7 +163,7 @@ estimate_secondary <- function(reports,
   assert_class(model, "stanfit", null.ok = TRUE)
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
-  
+
   reports <- data.table::as.data.table(reports)
 
   if (burn_in >= nrow(reports)) {
