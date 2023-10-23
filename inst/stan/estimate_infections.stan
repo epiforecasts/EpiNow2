@@ -146,7 +146,7 @@ generated quantities {
     r = R_to_growth(gen_R, gt_mean, gt_var);
   }
   // simulate reported cases
-  imputed_reports = report_rng(reports, rep_phi, model_type);
+#include chunks/impute_reports.stan
   // log likelihood of model
   if (return_likelihood) {
 #include chunks/report_log_lik.stan
