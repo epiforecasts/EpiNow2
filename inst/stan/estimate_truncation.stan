@@ -24,8 +24,7 @@ transformed data{
   }
 }
 parameters {
-  array[delay_n_p] real delay_mean;
-  array[delay_n_p] real<lower = 0> delay_sd;      // sd of delays
+#include params/delays.stan
   real<lower=0> phi;
   real<lower=0> sigma;
 }
