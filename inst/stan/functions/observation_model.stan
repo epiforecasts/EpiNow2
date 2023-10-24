@@ -93,7 +93,7 @@ vector report_log_lik(array[] int cases, vector reports,
 array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
   int t = num_elements(reports);
   array[t] int sampled_reports;
-  real sqrt_phi = 1e5;
+  real dispersion = 1e5;
   if (model_type) {
     sqrt_phi = 1 / pow(rep_phi[model_type], 2);
   }
