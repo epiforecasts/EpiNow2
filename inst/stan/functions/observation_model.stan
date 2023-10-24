@@ -57,7 +57,7 @@ void report_lp(array[] int cases, vector reports,
   if (model_type) {
     real sqrt_phi; // the reciprocal overdispersion parameter (phi)
     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
-    sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+    sqrt_phi = 1 / pow(rep_phi[model_type], 2);
     if (weight == 1) {
       cases ~ neg_binomial_2(reports, sqrt_phi);
     } else {
@@ -83,7 +83,7 @@ vector report_log_lik(array[] int cases, vector reports,
       log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;
     }
   } else {
-    real sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+    real sqrt_phi = 1 / pow(rep_phi[model_type], 2);
     for (i in 1:t) {
       log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], sqrt_phi) * weight;
     }
@@ -96,7 +96,7 @@ array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
   array[t] int sampled_reports;
   real sqrt_phi = 1e5;
   if (model_type) {
-    sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+    sqrt_phi = 1 / pow(rep_phi[model_type], 2);
   }
     
   for (s in 1:t) {
