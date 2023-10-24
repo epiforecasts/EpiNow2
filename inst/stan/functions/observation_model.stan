@@ -57,7 +57,6 @@ void report_lp(array[] int cases, vector reports,
   if (model_type) {
     real dispersion = 1 / pow(rep_phi[model_type], 2); 
     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
-    sqrt_phi = 1 / pow(rep_phi[model_type], 2);
     if (weight == 1) {
       cases ~ neg_binomial_2(reports, sqrt_phi);
     } else {
