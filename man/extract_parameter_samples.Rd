@@ -5,7 +5,7 @@
 \title{Extract Parameter Samples from a Stan Model}
 \usage{
 extract_parameter_samples(
-  stan_fit,
+  samples,
   data,
   reported_dates,
   reported_inf_dates,
@@ -14,7 +14,8 @@ extract_parameter_samples(
 )
 }
 \arguments{
-\item{stan_fit}{A fit Stan model as returned by \code{rstan:sampling}.}
+\item{samples}{A list of arrays containing samples extracted from a stan
+model using \code{\link[rsta]{extract}}}
 
 \item{data}{A list of the data supplied to the \code{rstan::sampling} call.}
 

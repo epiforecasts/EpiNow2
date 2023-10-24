@@ -65,6 +65,7 @@
 #' @importFrom lubridate days
 #' @importFrom purrr transpose
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
+#' @importFrom rstan extract
 #' @examples
 #' \donttest{
 #' # set number of cores to use
@@ -234,7 +235,8 @@ estimate_infections <- function(reported_cases,
     fit <- fit_model_with_vb(args, id = id)
   }
   # Extract parameters of interest from the fit
-  out <- extract_parameter_samples(fit, data,
+  samples <- extract(fit)
+  out <- extract_parameter_samples(samples, data,
     reported_inf_dates = reported_cases$date,
     reported_dates = reported_cases$date[-(1:data$seeding_time)]
   )

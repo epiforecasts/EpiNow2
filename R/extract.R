@@ -60,7 +60,8 @@ extract_static_parameter <- function(param, samples) {
 #' Extracts a custom set of parameters from a stan object and adds
 #' stratification and dates where appropriate.
 #'
-#' @param stan_fit A fit Stan model as returned by `rstan:sampling`.
+#' @param samples A list of arrays containing samples extracted from a stan
+#'   model using \code{\link[rsta]{extract}}
 #'
 #' @param data A list of the data supplied to the `rstan::sampling` call.
 #'
@@ -77,14 +78,10 @@ extract_static_parameter <- function(param, samples) {
 #'
 #' @return A list of dataframes each containing the posterior of a parameter
 #' @author Sam Abbott
-#' @importFrom rstan extract
 #' @importFrom data.table data.table
-extract_parameter_samples <- function(stan_fit, data, reported_dates,
+extract_parameter_samples <- function(samples, data, reported_dates,
                                       reported_inf_dates,
                                       drop_length_1 = FALSE, merge = FALSE) {
-  # extract sample from stan object
-  samples <- rstan::extract(stan_fit)
-
   ## drop initial length 1 dimensions if requested
   if (drop_length_1) {
     samples <- lapply(samples, function(x) {

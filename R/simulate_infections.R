@@ -34,6 +34,7 @@
 #' @importFrom progressr with_progress progressor
 #' @importFrom data.table rbindlist as.data.table
 #' @importFrom lubridate days
+#' @importFrom rstan extract
 #' @return A list of output as returned by [estimate_infections()] but based on
 #' results from the specified scenario rather than fitting.
 #' @export
@@ -186,7 +187,7 @@ simulate_infections <- function(estimates,
                              shift, dates, nstart, nend) {
     # extract batch samples from draws
     draws <- map(draws, ~ as.matrix(.[nstart:nend, ]))
-    names(draws) <- paste0(draws, "_samples")
+    names(draws) <- paste0(names(draws), "_samples")
 
     ## prepare data for stan command
     data <- c(list(n = dim(draws$R_samples)[1]), draws, estimates$args)
@@ -207,8 +208,12 @@ simulate_infections <- function(estimates,
       algorithm = "Fixed_param",
       refresh = 0
     )
+    ## extract sample from stan object
+    samples <- extract(sims)
+    names(samples) <- sub("^sim_", "", names(samples))
+    names(data) <- sub("_samples$", "", names(data))
 
-    out <- extract_parameter_samples(sims, data,
+    out <- extract_parameter_samples(samples, data,
       reported_inf_dates = dates,
       reported_dates = dates[-(1:shift)],
       drop_length_1 = TRUE, merge = TRUE
