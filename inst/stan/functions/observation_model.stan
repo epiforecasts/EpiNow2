@@ -60,7 +60,7 @@ void report_lp(array[] int cases, vector reports,
     if (weight == 1) {
       cases ~ neg_binomial_2(reports, dispersion);
     } else {
-      target += neg_binomial_2_lpmf(cases | reports, sqrt_phi) * weight;
+      target += neg_binomial_2_lpmf(cases | reports, dispersion) * weight;
     }
   } else {
     if (weight == 1) {
@@ -106,7 +106,7 @@ array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
       if (sqrt_phi > 1e4) {
         sampled_reports[s] = poisson_rng(reports[s] > 1e8 ? 1e8 : reports[s]);
       } else {
-        sampled_reports[s] = neg_binomial_2_rng(reports[s] > 1e8 ? 1e8 : reports[s], sqrt_phi);
+        sampled_reports[s] = neg_binomial_2_rng(reports[s] > 1e8 ? 1e8 : reports[s], dispersion);
       }
     }
   }
