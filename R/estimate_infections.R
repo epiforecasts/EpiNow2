@@ -150,7 +150,7 @@ estimate_infections <- function(reported_cases,
   assert_logical(weigh_delay_priors)
   assert_string(id)
   assert_logical(verbose)
-  
+
   set_dt_single_thread()
 
   # store dirty reported case data
