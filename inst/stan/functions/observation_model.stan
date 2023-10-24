@@ -84,7 +84,7 @@ vector report_log_lik(array[] int cases, vector reports,
   } else {
     real sqrt_phi = 1 / pow(rep_phi[model_type], 2);
     for (i in 1:t) {
-      log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], sqrt_phi) * weight;
+      log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], dispersion) * weight;
     }
   }
   return(log_lik);
