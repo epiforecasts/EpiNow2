@@ -95,7 +95,7 @@ array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
   array[t] int sampled_reports;
   real dispersion = 1e5;
   if (model_type) {
-    sqrt_phi = 1 / pow(rep_phi[model_type], 2);
+    dispersion = 1 / pow(rep_phi[model_type], 2);
   }
     
   for (s in 1:t) {
