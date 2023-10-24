@@ -16,6 +16,10 @@
 * Changed all instances of arguments that refer to the maximum of a distribution to reflect the maximum. Previously this did, in some instance, refer to the length of the PMF. By @sbfnk in #468.
 * Fixed a bug in the bounds of delays when setting initial conditions. By @sbfnk in #474.
 
+## Model changes
+
+* Updated the parameterisation of the overdispersion term `phi` to be `phi = 1 / sqrt_phi ^ 2` rather than the previous parameterisation `phi = 1 / sqrt(sqrt_phi)` based on the suggested prior [here](https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations#story-when-the-generic-prior-fails-the-case-of-the-negative-binomial) and the performance benefits seen in the `epinowcast` package (see [here](https://github.com/epinowcast/epinowcast/blob/8eff560d1fd8305f5fb26c21324b2bfca1f002b4/inst/stan/epinowcast.stan#L314)). By @seabbs in # and reviewed by @sbfnk.
+
 # EpiNow2 1.4.0
 
 This release contains some bug fixes, minor new features, and the initial stages of some broader improvement to future handling of delay distributions.
