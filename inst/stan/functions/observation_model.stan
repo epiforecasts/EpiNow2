@@ -55,13 +55,12 @@ void report_lp(array[] int cases, vector reports,
                array[] real rep_phi, real phi_mean, real phi_sd,
                int model_type, real weight) {
   if (model_type) {
-    real sqrt_phi; // the reciprocal overdispersion parameter (phi)
+    real dispersion = 1 / pow(rep_phi[model_type], 2); 
     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
-    sqrt_phi = 1 / sqrt(rep_phi[model_type]);
     if (weight == 1) {
-      cases ~ neg_binomial_2(reports, sqrt_phi);
+      cases ~ neg_binomial_2(reports, dispersion);
     } else {
-      target += neg_binomial_2_lpmf(cases | reports, sqrt_phi) * weight;
+      target += neg_binomial_2_lpmf(cases | reports, dispersion) * weight;
     }
   } else {
     if (weight == 1) {
@@ -83,9 +82,9 @@ vector report_log_lik(array[] int cases, vector reports,
       log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;
     }
   } else {
-    real sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+    real dispersion = 1 / pow(rep_phi[model_type], 2);
     for (i in 1:t) {
-      log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], sqrt_phi) * weight;
+      log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], dispersion) * weight;
     }
   }
   return(log_lik);
@@ -94,9 +93,9 @@ vector report_log_lik(array[] int cases, vector reports,
 array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
   int t = num_elements(reports);
   array[t] int sampled_reports;
-  real sqrt_phi = 1e5;
+  real dispersion = 1e5;
   if (model_type) {
-    sqrt_phi = 1 / sqrt(rep_phi[model_type]);
+    dispersion = 1 / pow(rep_phi[model_type], 2);
   }
     
   for (s in 1:t) {
@@ -104,10 +103,10 @@ array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
       sampled_reports[s] = 0;
     } else {
       // defer to poisson if phi is large, to avoid overflow
-      if (sqrt_phi > 1e4) {
+      if (dispersion > 1e4) {
         sampled_reports[s] = poisson_rng(reports[s] > 1e8 ? 1e8 : reports[s]);
       } else {
-        sampled_reports[s] = neg_binomial_2_rng(reports[s] > 1e8 ? 1e8 : reports[s], sqrt_phi);
+        sampled_reports[s] = neg_binomial_2_rng(reports[s] > 1e8 ? 1e8 : reports[s], dispersion);
       }
     }
   }
