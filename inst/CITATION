@@ -1,10 +1,17 @@
+# Code copied from citation()
+author <- meta$`Authors@R`
+if (length(author)) {
+    aar <- .read_authors_at_R_field(author)
+    author <- Filter(function(e) {
+        !(is.null(e$given) && is.null(e$family)) && !is.na(match("aut", 
+            e$role))
+    }, aar)
+}
+
 bibentry(
   bibtype = "Manual",
-  title = "EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters",
-  author       = c(person("Sam Abbott"), person("Joel Hellewell"),
-    person("Katharine Sherratt"), person("Katelyn Gostic"),
-    person("Joe Hickson"), person("Hamada S. Badr"), person("Michael DeWitt"),
-    person("Robin Thompson"), person("EpiForecasts"), person("Sebastian Funk")),
-  year         = "2020",
-  doi          = "10.5281/zenodo.3957489"
+  title   = paste0(meta$Package, ": ", gsub("[[:space:]]+", " ", meta$Title)),
+  author  = author,
+  year    = format(meta$Date, "%Y"),
+  doi     = "10.5281/zenodo.3957489"
 )
