@@ -603,13 +603,12 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                array[] real rep_phi, real phi_mean, real phi_sd,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                int model_type, real weight) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real sqrt_phi; // the reciprocal overdispersion parameter (phi)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real dispersion = 1 / pow(rep_phi[model_type], 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ neg_binomial_2(reports, sqrt_phi);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ neg_binomial_2(reports, dispersion);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(cases | reports, sqrt_phi) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(cases | reports, dispersion) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
@@ -630,9 +629,9 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real dispersion = 1 / pow(rep_phi[model_type], 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:t) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], sqrt_phi) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], dispersion) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(log_lik);</span>
@@ -641,9 +640,9 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(reports);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[t] int sampled_reports;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real sqrt_phi = 1e5;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real dispersion = 1e5;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     dispersion = 1 / pow(rep_phi[model_type], 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   for (s in 1:t) {</span>
@@ -651,10 +650,10 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       sampled_reports[s] = 0;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       // defer to poisson if phi is large, to avoid overflow</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       if (sqrt_phi &gt; 1e4) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (dispersion &gt; 1e4) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         sampled_reports[s] = poisson_rng(reports[s] &gt; 1e8 ? 1e8 : reports[s]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         sampled_reports[s] = neg_binomial_2_rng(reports[s] &gt; 1e8 ? 1e8 : reports[s], sqrt_phi);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         sampled_reports[s] = neg_binomial_2_rng(reports[s] &gt; 1e8 ? 1e8 : reports[s], dispersion);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
@@ -1457,13 +1456,12 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                array[] real rep_phi, real phi_mean, real phi_sd,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                int model_type, real weight) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real sqrt_phi; // the reciprocal overdispersion parameter (phi)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real dispersion = 1 / pow(rep_phi[model_type], 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ neg_binomial_2(reports, sqrt_phi);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ neg_binomial_2(reports, dispersion);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(cases | reports, sqrt_phi) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(cases | reports, dispersion) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
@@ -1484,9 +1482,9 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real dispersion = 1 / pow(rep_phi[model_type], 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:t) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], sqrt_phi) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], dispersion) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(log_lik);</span>
@@ -1495,9 +1493,9 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(reports);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[t] int sampled_reports;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real sqrt_phi = 1e5;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   real dispersion = 1e5;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     sqrt_phi = 1 / sqrt(rep_phi[model_type]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     dispersion = 1 / pow(rep_phi[model_type], 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   for (s in 1:t) {</span>
@@ -1505,10 +1503,10 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       sampled_reports[s] = 0;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       // defer to poisson if phi is large, to avoid overflow</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       if (sqrt_phi &gt; 1e4) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (dispersion &gt; 1e4) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         sampled_reports[s] = poisson_rng(reports[s] &gt; 1e8 ? 1e8 : reports[s]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         sampled_reports[s] = neg_binomial_2_rng(reports[s] &gt; 1e8 ? 1e8 : reports[s], sqrt_phi);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         sampled_reports[s] = neg_binomial_2_rng(reports[s] &gt; 1e8 ? 1e8 : reports[s], dispersion);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>

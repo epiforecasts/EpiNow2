@@ -85,6 +85,10 @@
 <li>Changed all instances of arguments that refer to the maximum of a distribution to reflect the maximum. Previously this did, in some instance, refer to the length of the PMF. By <a href="https://github.com/sbfnk" class="external-link">@sbfnk</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/468" class="external-link">#468</a>.</li>
 <li>Fixed a bug in the bounds of delays when setting initial conditions. By <a href="https://github.com/sbfnk" class="external-link">@sbfnk</a> in <a href="https://github.com/epiforecasts/EpiNow2/issues/474" class="external-link">#474</a>.</li>
 </ul></div>
+<div class="section level3">
+<h3 id="model-changes-1-4-9000">Model changes<a class="anchor" aria-label="anchor" href="#model-changes-1-4-9000"></a></h3>
+<ul><li>Updated the parameterisation of the dispersion term <code>phi</code> to be <code>phi = 1 / sqrt_phi ^ 2</code> rather than the previous parameterisation <code>phi = 1 / sqrt(sqrt_phi)</code> based on the suggested prior <a href="https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations#story-when-the-generic-prior-fails-the-case-of-the-negative-binomial" class="external-link">here</a> and the performance benefits seen in the <code>epinowcast</code> package (see <a href="https://github.com/epinowcast/epinowcast/blob/8eff560d1fd8305f5fb26c21324b2bfca1f002b4/inst/stan/epinowcast.stan#L314" class="external-link">here</a>). By <a href="https://github.com/seabbs" class="external-link">@seabbs</a> in # and reviewed by <a href="https://github.com/sbfnk" class="external-link">@sbfnk</a>.</li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.4.0" id="epinow2-140">EpiNow2 1.4.0<a class="anchor" aria-label="anchor" href="#epinow2-140"></a></h2><p class="text-muted">CRAN release: 2023-09-26</p>
