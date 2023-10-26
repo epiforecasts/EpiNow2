@@ -33,6 +33,8 @@
 #' @importFrom lubridate days
 #' @importFrom futile.logger flog.fatal flog.warn flog.error flog.debug ftry
 #' @importFrom rlang cnd_muffle
+#' @importFrom checkmate assert_string assert_path_for_output
+#' assert_date assert_logical
 #' @author Sam Abbott
 #' @examples
 #' \donttest{
@@ -105,6 +107,17 @@ epinow <- function(reported_cases,
                    plot_args = list(),
                    target_folder = NULL, target_date,
                    logs = tempdir(), id = "epinow", verbose = interactive()) {
+  # Check inputs
+  assert_logical(return_output)
+  if (!is.null(target_folder)) {
+    assert_path_for_output(target_folder)
+    }
+  if (!missing(target_date)) {
+    assert_date(target_date, len = 1)
+    }
+  assert_string(id)
+  assert_logical(verbose)
+  
   if (is.null(target_folder)) {
     return_output <- TRUE
   }
