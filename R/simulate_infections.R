@@ -34,6 +34,8 @@
 #' @importFrom progressr with_progress progressor
 #' @importFrom data.table rbindlist as.data.table
 #' @importFrom lubridate days
+#' @importFrom checkmate assert_class assert_names
+#' assert_numeric assert_integerish assert_logical
 #' @return A list of output as returned by [estimate_infections()] but based on
 #' results from the specified scenario rather than fitting.
 #' @export
@@ -89,10 +91,14 @@ simulate_infections <- function(estimates,
                                 samples = NULL,
                                 batch_size = 10,
                                 verbose = interactive()) {
-  ## check batch size
-  if (!is.null(batch_size) && batch_size <= 1) {
-    stop("batch_size must be greater than 1")
-  }
+  ## check inputs
+  assert_class(estimates, "estimate_infections")
+  assert_names(names(estimates), must.include = c("fit"))
+  assert_numeric(R, lower = 0, null.ok = TRUE)
+  assert_class(model, "stanfit", null.ok = TRUE)
+  assert_integerish(samples, lower = 1, null.ok = TRUE)
+  assert_integerish(batch_size, lower = 2)
+  assert_logical(verbose)
   ## extract samples from given stanfit object
   draws <- extract(estimates$fit,
     pars = c(
