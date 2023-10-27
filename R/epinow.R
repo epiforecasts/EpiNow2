@@ -35,6 +35,7 @@
 #' @importFrom rlang cnd_muffle
 #' @importFrom checkmate assert_string assert_path_for_output
 #' assert_date assert_logical
+#' @importFrom R.utils isDirectory
 #' @author Sam Abbott
 #' @examples
 #' \donttest{
@@ -109,15 +110,15 @@ epinow <- function(reported_cases,
                    logs = tempdir(), id = "epinow", verbose = interactive()) {
   # Check inputs
   assert_logical(return_output)
-  if (!is.null(target_folder)) {
-    assert_path_for_output(target_folder)
-    }
+  stopifnot("target_folder is not a directory" =
+              !is.null(target_folder) || isDirectory(target_folder)
+            )
   if (!missing(target_date)) {
     assert_string(target_date)
     }
   assert_string(id)
   assert_logical(verbose)
-  
+
   if (is.null(target_folder)) {
     return_output <- TRUE
   }
