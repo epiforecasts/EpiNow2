@@ -340,25 +340,6 @@ discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
   return(pmf)
 }
 
-#' Update a List
-#'
-#' @description `r lifecycle::badge("stable")`
-#' Used to handle updating settings in a list. For example when making
-#' changes to `opts_list` output.
-#' @param defaults A list of default settings
-#' @param optional A list of optional settings to override defaults
-#' @return A list
-#' @export
-update_list <- function(defaults = list(), optional = list()) {
-  if (length(optional) != 0) {
-    defaults <- defaults[setdiff(names(defaults), names(optional))]
-    updated <- c(defaults, optional)
-  } else {
-    updated <- defaults
-  }
-  return(updated)
-}
-
 #' Adds a day of the week vector
 #'
 #' @param dates Vector of dates
