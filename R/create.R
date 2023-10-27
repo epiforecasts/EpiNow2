@@ -614,6 +614,8 @@ create_initial_conditions <- function(data) {
 #'
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress
 #' messages be returned.
+#' 
+#' @importFrom utils modifyList
 #'
 #' @return A list of stan arguments
 #' @author Sam Abbott
@@ -634,7 +636,7 @@ create_stan_args <- function(stan = stan_opts(),
     init = init,
     refresh = ifelse(verbose, 50, 0)
   )
-  args <- update_list(args, stan)
+  args <- modifyList(args, stan)
   args$return_fit <- NULL
   return(args)
 }

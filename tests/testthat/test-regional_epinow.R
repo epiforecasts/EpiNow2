@@ -79,7 +79,7 @@ test_that("regional_epinow runs without error when given a very short timeout", 
 
 test_that("regional_epinow produces expected output when run with region specific settings", {
   gp <- opts_list(gp_opts(), cases)
-  gp <- update_list(gp, list(realland = NULL))
+  gp <- modifyList(gp, list(realland = NULL))
   rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
   out <- suppressWarnings(
     regional_epinow(

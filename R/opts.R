@@ -522,7 +522,7 @@ obs_opts <- function(family = "negbin",
 #' estimation will fail with an informative error.
 #'
 #' @param ... Additional parameters to pass to `rstan::sampling`.
-#'
+#' @importFrom utils modifyList
 #' @return A list of arguments to pass to `rstan::sampling`.
 #' @author Sam Abbott
 #' @export
@@ -548,7 +548,7 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
     max_execution_time = max_execution_time
   )
   control_def <- list(adapt_delta = 0.95, max_treedepth = 15)
-  opts$control <- update_list(control_def, control)
+  opts$control <- modifyList(control_def, control)
   opts$iter <- ceiling(samples / opts$chains) + opts$warmup
   opts <- c(opts, ...)
   return(opts)
@@ -710,6 +710,8 @@ stan_opts <- function(samples = 2000,
 #'
 #' @param ... Optional override for region defaults. See the examples
 #' for use case.
+#' 
+#' @importFrom utils modifyList
 #'
 #' @return A named list of options per region which can be passed to the `_opt`
 #' accepting arguments of `regional_epinow`.
@@ -738,7 +740,7 @@ opts_list <- function(opts, reported_cases, ...) {
   regions <- unique(reported_cases$region)
   default <- rep(list(opts), length(regions))
   names(default) <- regions
-  out <- update_list(default, list(...))
+  out <- modifyList(default, list(...))
   return(out)
 }
 
