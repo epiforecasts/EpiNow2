@@ -34,7 +34,7 @@
 #' @importFrom progressr with_progress progressor
 #' @importFrom data.table rbindlist as.data.table
 #' @importFrom lubridate days
-#' @importFrom checkmate assert_class assert_names
+#' @importFrom checkmate assert_class assert_names test_numeric test_data_frame
 #' assert_numeric assert_integerish assert_logical
 #' @return A list of output as returned by [estimate_infections()] but based on
 #' results from the specified scenario rather than fitting.
