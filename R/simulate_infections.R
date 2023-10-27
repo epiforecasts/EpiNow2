@@ -94,7 +94,15 @@ simulate_infections <- function(estimates,
   ## check inputs
   assert_class(estimates, "estimate_infections")
   assert_names(names(estimates), must.include = "fit")
-  assert_numeric(R, lower = 0, null.ok = TRUE)
+  stopifnot(
+    "R must either be a numeric vector or a data.frame" =
+    test_numeric(R, lower = 0, null.ok = TRUE) ||
+    test_data_frame(R, null.ok = TRUE)
+  )
+  if (test_data_frame(R)) {
+    assert_names(names(R), must.include = c("date", "value"))
+    assert_numeric(R$value, lower = 0)
+  }
   assert_class(model, "stanfit", null.ok = TRUE)
   assert_integerish(samples, lower = 1, null.ok = TRUE)
   assert_integerish(batch_size, lower = 2)
