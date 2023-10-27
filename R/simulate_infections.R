@@ -93,7 +93,7 @@ simulate_infections <- function(estimates,
                                 verbose = interactive()) {
   ## check inputs
   assert_class(estimates, "estimate_infections")
-  assert_names(names(estimates), must.include = c("fit"))
+  assert_names(names(estimates), must.include = "fit")
   assert_numeric(R, lower = 0, null.ok = TRUE)
   assert_class(model, "stanfit", null.ok = TRUE)
   assert_integerish(samples, lower = 1, null.ok = TRUE)
