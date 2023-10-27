@@ -65,6 +65,7 @@
 #' @importFrom rstan sampling
 #' @importFrom lubridate wday
 #' @importFrom data.table as.data.table merge.data.table
+#' @importFrom utils modifyList
 #' @examples
 #' \donttest{
 #' # set number of cores to use
@@ -274,7 +275,7 @@ secondary_opts <- function(type = "incidence", ...) {
       primary_current_additive = 1
     )
   }
-  data <- update_list(data, list(...))
+  data <- modifyList(data, list(...))
   return(data)
 }
 

@@ -272,6 +272,7 @@ extract_stan_param <- function(fit, params = NULL,
 #' @author Sam Abbott
 #' @importFrom purrr map
 #' @importFrom rstan extract
+#' @importFrom utils modifyList
 #' @export
 
 extract_inits <- function(fit, current_inits,
@@ -318,7 +319,7 @@ extract_inits <- function(fit, current_inits,
     if (!is.null(exclude_list)) {
       old_inits_sample <- old_inits()
       old_inits_sample <- old_inits_sample[exclude]
-      new_inits <- update_list(fit_inits, old_inits_sample)
+      new_inits <- modifyList(fit_inits, old_inits_sample)
     } else {
       new_inits <- fit_inits
     }
