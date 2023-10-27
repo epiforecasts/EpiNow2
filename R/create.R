@@ -614,7 +614,7 @@ create_initial_conditions <- function(data) {
 #'
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress
 #' messages be returned.
-#' 
+#'
 #' @importFrom utils modifyList
 #'
 #' @return A list of stan arguments

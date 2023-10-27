@@ -710,7 +710,7 @@ stan_opts <- function(samples = 2000,
 #'
 #' @param ... Optional override for region defaults. See the examples
 #' for use case.
-#' 
+#'
 #' @importFrom utils modifyList
 #'
 #' @return A named list of options per region which can be passed to the `_opt`
