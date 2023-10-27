@@ -113,7 +113,7 @@ epinow <- function(reported_cases,
     assert_path_for_output(target_folder)
     }
   if (!missing(target_date)) {
-    assert_date(target_date, len = 1)
+    assert_string(target_date)
     }
   assert_string(id)
   assert_logical(verbose)
