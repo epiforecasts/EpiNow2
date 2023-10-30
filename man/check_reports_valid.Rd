@@ -4,19 +4,20 @@
 \alias{check_reports_valid}
 \title{Validate data input}
 \usage{
-check_reports_valid(reports, for_estimate_secondary)
+check_reports_valid(reports, model)
 }
 \arguments{
 \item{reports}{A data frame with either:
 \itemize{
 \item two columns: date and confirm, if to be
-used by estimate_infection() or estimate_truncation, or
+used by \code{\link[=estimate_infection]{estimate_infection()}} or \code{\link[=estimate_truncation]{estimate_truncation()}}, or
 \item three columns: date, primary, and secondary, if to be used by
-estimate_secondary().
+\code{\link[=estimate_secondary]{estimate_secondary()}}.
 }}
 
-\item{for_estimate_secondary}{Logical; whether the data is being passed by
-estimate_secondary() or the other estimate_*() functions.}
+\item{model}{The EpiNow2 model to be used. Either
+"estimate_infections", "estimate_truncation", or "estimate_secondary".
+This is used to determine which checks to perform on the data input.}
 }
 \value{
 Called for its side effects.

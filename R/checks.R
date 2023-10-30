@@ -11,19 +11,27 @@
 #'  used by [estimate_infection()] or [estimate_truncation()], or
 #' * three columns: date, primary, and secondary, if to be used by
 #'  [estimate_secondary()].
-#' @param for_estimate_secondary Logical; whether the data is being passed by
-#' [estimate_secondary()] or the other `estimate_*()` functions.
+#' @param model The EpiNow2 model to be used. Either
+#' "estimate_infections", "estimate_truncation", or "estimate_secondary".
+#' This is used to determine which checks to perform on the data input.
 #' @importFrom checkmate assert_data_frame assert_date assert_names
 #' assert_numeric
 #' @return Called for its side effects.
 #' @author James M. Azam
 #' @keywords internal
-check_reports_valid <- function(reports, for_estimate_secondary) {
+check_reports_valid <- function(reports, model) {
   # Check that the case time series (reports) is a data frame
   assert_data_frame(reports)
-  # Perform checks depending on whether the data is for estimate_secondary()
-  # or not
-  if (for_estimate_secondary) {
+  # Perform checks depending on the model to the data is meant to be used with
+  model <- match.arg(
+    model,
+    c("estimate_infections",
+      "estimate_truncation",
+      "estimate_secondary"
+      )
+    )
+
+  if (model == "estimate_secondary") {
     # Check that reports has the right column names
     assert_names(
       names(reports),
