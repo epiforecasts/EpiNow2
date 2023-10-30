@@ -4,7 +4,7 @@
 #' `check_reports_valid()` checks that the input data frame is a data frame,
 #' and that it has the right column names and types. In particular, it checks
 #' that the date column is in date format and does not contain NA's, and that
-#' the other columns are numerics.
+#' the other columns are numeric.
 #'
 #' @param reports A data frame with either:
 #' * two columns: date and confirm, if to be
