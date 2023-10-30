@@ -152,7 +152,7 @@ estimate_secondary <- function(reports,
                                verbose = interactive(),
                                ...) {
   # Validate the inputs
-  check_reports_valid(reports, for_estimate_secondary = TRUE)
+  check_reports_valid(reports, model = "estimate_secondary")
   assert_class(secondary, "secondary_opts", null.ok = TRUE)
   assert_class(delays, "delay_opts", null.ok = TRUE)
   assert_class(truncation, "trunc_opts", null.ok = TRUE)

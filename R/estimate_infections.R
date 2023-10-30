@@ -134,7 +134,7 @@ estimate_infections <- function(reported_cases,
                                 id = "estimate_infections",
                                 verbose = interactive()) {
   # Validate inputs
-  check_reports_valid(reported_cases, for_estimate_secondary = FALSE)
+  check_reports_valid(reported_cases, model = "estimate_infections")
   assert_class(generation_time, "generation_time_opts", null.ok = TRUE)
   assert_class(delays, "delay_opts", null.ok = TRUE)
   assert_class(truncation, "trunc_opts", null.ok = TRUE)

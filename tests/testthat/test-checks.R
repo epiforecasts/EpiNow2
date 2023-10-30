@@ -16,7 +16,7 @@ est_sec <- data.table::copy(est_inf)[
 ]
 
 # Custom test functions ---------------------------------------------------
-test_col_specs <- function(dt_list, for_estimate_secondary = FALSE) {
+test_col_specs <- function(dt_list, model = "estimate_infections") {
   expect_error(
     check_reports_valid(dt_list$bad_col_name,
       for_estimate_secondary = for_estimate_secondary
@@ -58,7 +58,7 @@ test_that("check_reports_valid errors for bad 'confirm' specifications", {
     ]
   )
   # Run tests
-  test_col_specs(confirm_col_dt, for_estimate_secondary = FALSE)
+  test_col_specs(confirm_col_dt, model = "estimate_infections")
 })
 
 test_that("check_reports_valid errors for bad 'date' specifications", {
@@ -85,7 +85,7 @@ test_that("check_reports_valid errors for bad 'date' specifications", {
     ]
   )
   # Run tests
-  test_col_specs(date_col_dt, for_estimate_secondary = FALSE)
+  test_col_specs(date_col_dt, model = "estimate_infections")
 })
 
 test_that("check_reports_valid errors for bad 'primary' specifications", {
@@ -112,7 +112,7 @@ test_that("check_reports_valid errors for bad 'primary' specifications", {
     ]
   )
   # Run tests
-  test_col_specs(primary_col_dt, for_estimate_secondary = TRUE)
+  test_col_specs(primary_col_dt, model = "estimate_secondary")
 })
 
 test_that("check_reports_valid errors for bad 'secondary' specifications", {
@@ -139,5 +139,5 @@ test_that("check_reports_valid errors for bad 'secondary' specifications", {
     ]
   )
   # Run tests
-  test_col_specs(secondary_col_dt, for_estimate_secondary = TRUE)
+  test_col_specs(secondary_col_dt, model = "estimate_secondary")
 })
