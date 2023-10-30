@@ -8,7 +8,7 @@
 #'
 #' @param reports A data frame with either:
 #' * two columns: date and confirm, if to be
-#'  used by estimate_infection() or estimate_truncation, or
+#'  used by [estimate_infection()] or [estimate_truncation()], or
 #' * three columns: date, primary, and secondary, if to be used by
 #'  estimate_secondary().
 #' @param for_estimate_secondary Logical; whether the data is being passed by
