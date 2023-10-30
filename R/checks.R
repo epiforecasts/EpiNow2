@@ -10,7 +10,7 @@
 #' * two columns: date and confirm, if to be
 #'  used by [estimate_infection()] or [estimate_truncation()], or
 #' * three columns: date, primary, and secondary, if to be used by
-#'  estimate_secondary().
+#'  [estimate_secondary()].
 #' @param for_estimate_secondary Logical; whether the data is being passed by
 #' estimate_secondary() or the other estimate_*() functions.
 #' @importFrom checkmate assert_data_frame assert_date assert_names
