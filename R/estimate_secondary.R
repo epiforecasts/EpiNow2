@@ -253,7 +253,8 @@ estimate_secondary <- function(reports,
 #' options that can be passed.
 #'
 #' @seealso estimate_secondary
-#' @return A list of binary options summarising secondary model used in
+#' @return A `<secondary_opts>` object of binary options summarising secondary
+#' model used in
 #' `estimate_secondary()`. Options returned are `cumulative` (should the
 #' secondary report be cumulative), `historic` (should a convolution of primary
 #' reported cases be used to predict secondary reported cases),
