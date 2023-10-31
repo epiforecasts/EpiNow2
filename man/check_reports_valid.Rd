@@ -9,9 +9,9 @@ check_reports_valid(reports, model)
 \arguments{
 \item{reports}{A data frame with either:
 \itemize{
-\item two columns: date and confirm, if to be
+\item a minimum of two columns: date and confirm, if to be
 used by \code{\link[=estimate_infection]{estimate_infection()}} or \code{\link[=estimate_truncation]{estimate_truncation()}}, or
-\item three columns: date, primary, and secondary, if to be used by
+\item a minimum of three columns: date, primary, and secondary, if to be used by
 \code{\link[=estimate_secondary]{estimate_secondary()}}.
 }}
 
@@ -23,7 +23,7 @@ This is used to determine which checks to perform on the data input.}
 Called for its side effects.
 }
 \description{
-\code{check_reports_valid()} checks that the input data frame is a data frame,
+\code{check_reports_valid()} checks that the supplied data is a \verb{<data.frame>},
 and that it has the right column names and types. In particular, it checks
 that the date column is in date format and does not contain NA's, and that
 the other columns are numeric.
