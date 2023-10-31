@@ -10,7 +10,7 @@ check_reports_valid(reports, model)
 \item{reports}{A data frame with either:
 \itemize{
 \item a minimum of two columns: \code{date} and \code{confirm}, if to be
-used by \code{\link[=estimate_infection]{estimate_infection()}} or \code{\link[=estimate_truncation]{estimate_truncation()}}, or
+used by \code{\link[=estimate_infections]{estimate_infections()}} or \code{\link[=estimate_truncation]{estimate_truncation()}}, or
 \item a minimum of three columns: \code{date}, \code{primary}, and \code{secondary}, if
 to be used by
 \code{\link[=estimate_secondary]{estimate_secondary()}}.
