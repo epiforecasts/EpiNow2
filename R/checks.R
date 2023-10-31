@@ -8,7 +8,7 @@
 #'
 #' @param reports A data frame with either:
 #' * a minimum of two columns: `date` and `confirm`, if to be
-#'  used by [estimate_infection()] or [estimate_truncation()], or
+#'  used by [estimate_infections()] or [estimate_truncation()], or
 #' * a minimum of three columns: `date`, `primary`, and `secondary`, if
 #' to be used by
 #'  [estimate_secondary()].
