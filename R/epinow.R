@@ -115,7 +115,7 @@ epinow <- function(reported_cases,
             )
   if (!missing(target_date)) {
     assert_string(target_date)
-    }
+  }
   assert_string(id)
   assert_logical(verbose)
 
