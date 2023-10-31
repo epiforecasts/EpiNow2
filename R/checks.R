@@ -35,7 +35,7 @@ check_reports_valid <- function(reports, model) {
     # Check that reports has the right column names
     assert_names(
       names(reports),
-      permutation.of = c("date", "primary", "secondary")
+      must.include = c("date", "primary", "secondary")
     )
     # Check that the reports data.frame has the right column types
     assert_date(reports$date, any.missing = FALSE)
@@ -45,7 +45,7 @@ check_reports_valid <- function(reports, model) {
     # Check that reports has the right column names
     assert_names(
       names(reports),
-      permutation.of = c("date", "confirm")
+      must.include = c("date", "confirm")
     )
     # Check that the reports data.frame has the right column types
     assert_date(reports$date, any.missing = FALSE)
