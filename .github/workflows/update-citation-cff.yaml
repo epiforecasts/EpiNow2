@@ -5,13 +5,13 @@
 # - Can be run manually
 # For customizing the triggers, visit https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
 on:
-  release:
-    types: [published]
   push:
-    branches: [master, main]
+    tags-ignore:
+      - '*'
     paths:
       - DESCRIPTION
       - inst/CITATION
+      - .github/workflows/update-citation-cff.yaml
   workflow_dispatch:
 
 name: Update CITATION.cff
@@ -52,6 +52,7 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CITATION.cff
           git commit -m 'Update CITATION.cff' || echo "No changes to commit"
+          git pull --rebase origin ${{ github.ref.name }}
           git push origin || echo "No changes to commit"
 
 
