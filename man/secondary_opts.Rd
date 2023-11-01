@@ -25,14 +25,13 @@ options that can be passed.}
 }
 \value{
 A \verb{<secondary_opts>} object of binary options summarising secondary
-model used in
-\code{estimate_secondary()}. Options returned are \code{cumulative} (should the
-secondary report be cumulative), \code{historic} (should a convolution of primary
-reported cases be used to predict secondary reported cases),
-\code{primary_hist_additive} (should the historic convolution of primary reported
-cases be additive or subtractive), \code{current} (should currently observed
-primary reported cases contribute to current secondary reported cases),
-\code{primary_current_additive} (should current primary reported cases be
+model used in \code{estimate_secondary()}. Options returned are \code{cumulative}
+(should the secondary report be cumulative), \code{historic} (should a
+convolution of primary reported cases be used to predict secondary reported
+cases), \code{primary_hist_additive} (should the historic convolution of primary
+reported cases be additive or subtractive), \code{current} (should currently
+observed primary reported cases contribute to current secondary reported
+cases), \code{primary_current_additive} (should current primary reported cases be
 additive or subtractive).
 }
 \description{

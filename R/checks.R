@@ -9,14 +9,14 @@
 #' @param reports A data frame with either:
 #' * a minimum of two columns: `date` and `confirm`, if to be
 #'  used by [estimate_infections()] or [estimate_truncation()], or
-#' * a minimum of three columns: `date`, `primary`, and `secondary`, if
-#' to be used by
-#'  [estimate_secondary()].
+#' * a minimum of three columns: `date`, `primary`, and `secondary`, if to be
+#' used by [estimate_secondary()].
 #' @param model The EpiNow2 model to be used. Either
 #' "estimate_infections", "estimate_truncation", or "estimate_secondary".
 #' This is used to determine which checks to perform on the data input.
 #' @importFrom checkmate assert_data_frame assert_date assert_names
 #' assert_numeric
+#' @importFrom rlang arg_match
 #' @return Called for its side effects.
 #' @author James M. Azam
 #' @keywords internal
