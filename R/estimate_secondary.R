@@ -254,14 +254,13 @@ estimate_secondary <- function(reports,
 #'
 #' @seealso estimate_secondary
 #' @return A `<secondary_opts>` object of binary options summarising secondary
-#' model used in
-#' `estimate_secondary()`. Options returned are `cumulative` (should the
-#' secondary report be cumulative), `historic` (should a convolution of primary
-#' reported cases be used to predict secondary reported cases),
-#' `primary_hist_additive` (should the historic convolution of primary reported
-#' cases be additive or subtractive), `current` (should currently observed
-#' primary reported cases contribute to current secondary reported cases),
-#' `primary_current_additive` (should current primary reported cases be
+#' model used in `estimate_secondary()`. Options returned are `cumulative`
+#' (should the secondary report be cumulative), `historic` (should a
+#' convolution of primary reported cases be used to predict secondary reported
+#' cases), `primary_hist_additive` (should the historic convolution of primary
+#' reported cases be additive or subtractive), `current` (should currently
+#' observed primary reported cases contribute to current secondary reported
+#' cases), `primary_current_additive` (should current primary reported cases be
 #' additive or subtractive).
 #'
 #' @export
