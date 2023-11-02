@@ -340,6 +340,26 @@ discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
   return(pmf)
 }
 
+#' Update a List
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Used to handle updating settings in a list. For example when making
+#' changes to `opts_list` output.
+#' @param defaults A list of default settings
+#' @param optional A list of optional settings to override defaults
+#' @importFrom lifecycle deprecate_stop
+#' @return A list
+#' @export
+update_list <- function(defaults = list(), optional = list()) {
+  deprecate_stop(
+    when = "1.4.1",
+    what = "update_list()",
+    with = "utils::modifyList()",
+    details = "Please file an issue if deprecating this \
+      function has caused any issues."
+    )
+}
+
 #' Adds a day of the week vector
 #'
 #' @param dates Vector of dates
