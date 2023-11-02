@@ -123,12 +123,12 @@ region_rt$summary$plots$R
 
 ![plot of chunk regional_epinow](figure/regional_epinow-1.png)
 
-If instead, we wanted to use the Gaussian Process for `testland` and a weekly random walk for `realland` we could specify these separately using the `opts_list()` and `update_list()` functions
+If instead, we wanted to use the Gaussian Process for `testland` and a weekly random walk for `realland` we could specify these separately using the `opts_list()` from the package and `modifyList()` from `R`.
 
 
 ```r
 gp <- opts_list(gp_opts(), cases)
-gp <- update_list(gp, list(realland = NULL))
+gp <- modifyList(gp, list(realland = NULL))
 rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
 region_separate_rt <- regional_epinow(
   reported_cases = cases,
