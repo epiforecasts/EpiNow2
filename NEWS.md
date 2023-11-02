@@ -3,9 +3,7 @@
 ## Breaking changes
 
 * The functions `get_dist`, `get_generation_time`, `get_incubation_period` have been deprecated and replaced with examples. By @sbfnk in #481 and reviewed by @seabbs.
-* The utility function `update_list()` has been removed in favour
-of `modifyList()` from the `utils` package that comes with an
-installation of R. By @jamesmbaazam in #491 and reviewed by .
+* The utility function `update_list()` has been deprecated in favour of `utils::modifyList()` because it comes with an installation of R. By @jamesmbaazam in #491 and reviewed by @seabbs.
 
 ## Documentation
 
