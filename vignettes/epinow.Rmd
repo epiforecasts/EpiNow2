@@ -128,7 +128,7 @@ If instead, we wanted to use the Gaussian Process for `testland` and a weekly ra
 
 ```r
 gp <- opts_list(gp_opts(), cases)
-gp <- modifyList(gp, list(realland = NULL))
+gp <- modifyList(gp, list(realland = NULL), keep.null = TRUE)
 rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
 region_separate_rt <- regional_epinow(
   reported_cases = cases,
