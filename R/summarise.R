@@ -742,6 +742,8 @@ calc_summary_measures <- function(samples,
 #'
 #' @inheritParams summary.estimate_infections
 #'
+#' @importFrom rlang arg_match
+#'
 #' @param ... Pass additional summary arguments to lower level methods
 #'
 #' @seealso summary.estimate_infections epinow
@@ -753,7 +755,7 @@ summary.epinow <- function(object, output = "estimates",
                            date = NULL, params = NULL,
                            ...) {
   choices <- c("estimates", "forecast", "estimated_reported_cases")
-  output <- match.arg(output, choices, several.ok = FALSE)
+  output <- arg_match(output, values = choices, multiple = FALSE)
   if (output %in% "estimates") {
     out <- summary(object$estimates,
       date = date,
@@ -792,7 +794,8 @@ summary.epinow <- function(object, output = "estimates",
 #' @param params A character vector of parameters to filter for.
 #'
 #' @param ... Pass additional arguments to `report_summary`
-#'
+#' 
+#' @importFrom rlang arg_match
 #' @seealso summary estimate_infections report_summary
 #' @method summary estimate_infections
 #' @return Returns a data frame of summary output
@@ -800,7 +803,7 @@ summary.epinow <- function(object, output = "estimates",
 summary.estimate_infections <- function(object, type = "snapshot",
                                         date = NULL, params = NULL, ...) {
   choices <- c("snapshot", "parameters", "samples")
-  type <- match.arg(type, choices, several.ok = FALSE)
+  type <- arg_match(type, values = choices, multiple = FALSE)
   if (is.null(date)) {
     target_date <- unique(
       object$summarised[type != "forecast"][date == max(date)]$date

@@ -892,7 +892,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #'
 #' @author Sebastian Funk
 #' @author Sam Abbott
-#' @importFrom rlang warn
+#' @importFrom rlang warn arg_match
 #' @export
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
@@ -973,7 +973,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
     }
   }
 
-  distribution <- match.arg(distribution)
+  distribution <- arg_match(distribution)
   if (fixed) {
     ret <- list(
       mean_mean = numeric(0),
@@ -1392,11 +1392,12 @@ plot.dist_spec <- function(x, ...) {
 ##'   mean and standard deviation) or "sample" (randomly sample mean and
 ##'   standard deviation from uncertainty given in the `dist_spec`)
 ##' @importFrom truncnorm rtruncnorm
+##' @importFrom rlang arg_match
 fix_dist <- function(x, strategy = c("mean", "sample")) {
   ## if x is fixed already we don't have to do anything
   if (x$fixed) return(x)
   ## match startegy argument to options
-  strategy <- match.arg(strategy)
+  strategy <- arg_match(strategy)
   ## apply stragey depending on choice
   if (strategy == "mean") {
     x <- dist_spec(

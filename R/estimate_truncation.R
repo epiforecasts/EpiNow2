@@ -75,6 +75,7 @@
 #' @importFrom rstan sampling
 #' @importFrom data.table copy .N as.data.table merge.data.table setDT
 #' @importFrom data.table setcolorder
+#' @importFrom rlang arg_match
 #' @importFrom checkmate assert_character assert_numeric assert_class
 #' assert_logical
 #' @examples
@@ -195,7 +196,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     construct_trunc <- TRUE
   }
   if (!missing(trunc_dist)) {
-    trunc_dist <- match.arg(trunc_dist)
+    trunc_dist <- arg_match(trunc_dist)
     if (!missing(truncation)) {
       stop(
         "`trunc_dist` and `truncation` arguments are both given. ",

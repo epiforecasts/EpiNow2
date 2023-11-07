@@ -246,6 +246,7 @@ trunc_opts <- function(dist = dist_spec()) {
 #' reproduction number.
 #' @author Sam Abbott
 #' @inheritParams create_future_rt
+#' @importFrom rlang arg_match
 #' @export
 #' @examples
 #' # default settings
@@ -270,7 +271,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
     use_breakpoints = use_breakpoints,
     future = future,
     pop = pop,
-    gp_on = match.arg(gp_on, choices = c("R_t-1", "R0"))
+    gp_on = arg_match(gp_on, values = c("R_t-1", "R0"))
   )
 
   # replace default settings with those specified by user
@@ -312,6 +313,8 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' @param rt_window Integer, defaults to 1. The size of the centred rolling
 #' average to use when estimating Rt. This must be odd so that the central
 #' estimate is included.
+#' 
+#' @importFrom rlang arg_match
 #'
 #' @return A `<backcalc_opts>` object of back calculation settings.
 #' @author Sam Abbott
@@ -321,7 +324,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' backcalc_opts()
 backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
   backcalc <- list(
-    prior = match.arg(prior, choices = c("reports", "none", "infections")),
+    prior = arg_match(prior, values = c("reports", "none", "infections")),
     prior_window = prior_window,
     rt_window = as.integer(rt_window)
   )
@@ -378,6 +381,7 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #' approximate Gaussian process. See (Riutort-Mayol et al. 2020
 #' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
 #'
+#' @importFrom rlang arg_match
 #' @return A `<gp_opts>` object of settings defining the Gaussian process
 #' @author Sam Abbott
 #' @export
@@ -404,7 +408,7 @@ gp_opts <- function(basis_prop = 0.2,
     ls_min = ls_min,
     ls_max = ls_max,
     alpha_sd = alpha_sd,
-    kernel = match.arg(kernel, choices = c("se", "matern_3/2")),
+    kernel = arg_match(kernel, values = c("se", "matern_3/2")),
     matern_type = matern_type
   )
 
@@ -445,6 +449,8 @@ gp_opts <- function(basis_prop = 0.2,
 #'
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #' be returned by the model.
+#' 
+#' @importFrom rlang arg_match
 #'
 #' @return An `<obs_opts>` object of observation model settings.
 #' @author Sam Abbott
@@ -470,7 +476,7 @@ obs_opts <- function(family = "negbin",
     stop("phi be numeric and of length two")
   }
   obs <- list(
-    family = match.arg(family, choices = c("poisson", "negbin")),
+    family = arg_match(family, values = c("poisson", "negbin")),
     phi = phi,
     weight = weight,
     week_effect = week_effect,
@@ -614,6 +620,8 @@ rstan_vb_opts <- function(samples = 2000,
 #' `rstan::sampling` ("sampling") or `rstan:vb` ("vb").
 #'
 #' @param ... Additional parameters to pass  underlying option functions.
+#' 
+#' @importFrom rlang arg_match
 #'
 #' @return A list of arguments to pass to the appropriate rstan functions.
 #' @author Sam Abbott
@@ -628,7 +636,7 @@ rstan_vb_opts <- function(samples = 2000,
 rstan_opts <- function(object = NULL,
                        samples = 2000,
                        method = "sampling", ...) {
-  method <- match.arg(method, choices = c("sampling", "vb"))
+  method <- arg_match(method, values = c("sampling", "vb"))
   # shared everywhere opts
   if (is.null(object)) {
     object <- stanmodels$estimate_infections
@@ -673,6 +681,7 @@ rstan_opts <- function(object = NULL,
 #'
 #' @param ... Additional parameters to pass  underlying option functions.
 #'
+#' @importFrom rlang arg_match
 #' @return A `<stan_opts>` object  of arguments to pass to the appropriate
 #' rstan functions.
 #' @author Sam Abbott
@@ -690,8 +699,8 @@ stan_opts <- function(samples = 2000,
                       init_fit = NULL,
                       return_fit = TRUE,
                       ...) {
-  backend <- match.arg(backend, choices = "rstan")
-  if (backend == "rstan") {
+  backend <- arg_match(backend, values = "rstan")
+  if (backend %in% "rstan") {
     opts <- rstan_opts(
       samples = samples,
       ...
@@ -699,7 +708,7 @@ stan_opts <- function(samples = 2000,
   }
   if (!is.null(init_fit)) {
     if (is.character(init_fit)) {
-      init_fit <- match.arg(init_fit, choices = "cumulative")
+      init_fit <- arg_match(init_fit, values = "cumulative")
     }
     opts$init_fit <- init_fit
   }
