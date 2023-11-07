@@ -78,6 +78,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' @importFrom scales comma
 #' @importFrom data.table setDT fifelse copy as.data.table
 #' @importFrom purrr map
+#' @importFrom rlang arg_match
 #' @examples
 #' # get example model results
 #' out <- readRDS(system.file(
@@ -129,10 +130,10 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
 
   orig_estimate <- copy(estimate)
   if (!is.null(estimate_type)) {
-    estimate_type <- match.arg(
+    estimate_type <- arg_match(
       estimate_type,
-      choices = c("Estimate", "Estimate based on partial data", "Forecast"),
-      several.ok = TRUE
+      values = c("Estimate", "Estimate based on partial data", "Forecast"),
+      multiple = TRUE
     )
     estimate <- estimate[type %in% estimate_type]
   }
@@ -374,6 +375,8 @@ plot_summary <- function(summary_results,
 #' "R", "growth_rate", "summary", "all".
 #'
 #' @param ... Pass additional arguments to report_plots
+#' 
+#' @importFrom rlang arg_match
 #'
 #' @seealso plot report_plots estimate_infections
 #' @aliases plot
@@ -386,7 +389,7 @@ plot.estimate_infections <- function(x, type = "summary", ...) {
     reported = x$observations, ...
   )
   choices <- c("infections", "reports", "R", "growth_rate", "summary", "all")
-  type <- match.arg(type, choices, several.ok = TRUE)
+  type <- arg_match(type, values = choices, multiple = TRUE)
   if (type %in% "all") {
     type <- choices[-length(choices)]
   }

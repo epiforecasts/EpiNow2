@@ -251,7 +251,8 @@ estimate_secondary <- function(reports,
 #'
 #' @param ... Overwrite options defined by type. See the returned values for all
 #' options that can be passed.
-#'
+#' 
+#' @importFrom rlang arg_match
 #' @seealso estimate_secondary
 #' @return A `<secondary_opts>` object of binary options summarising secondary
 #' model used in `estimate_secondary()`. Options returned are `cumulative`
@@ -272,8 +273,11 @@ estimate_secondary <- function(reports,
 #' # prevalence model
 #' secondary_opts("prevalence")
 secondary_opts <- function(type = "incidence", ...) {
-  type <- match.arg(type, choices = c("incidence", "prevalence"))
-  if (type == "incidence") {
+  type <- arg_match(
+    type,
+    values = c("incidence", "prevalence")
+  )
+  if (type %in% "incidence") {
     data <- list(
       cumulative = 0,
       historic = 1,
@@ -463,6 +467,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' @inheritParams secondary_opts
 #' @importFrom data.table as.data.table copy shift
 #' @importFrom purrr pmap_dbl
+#' @importFrom rlang arg_match
 #' @export
 #' @examples
 #' # load data.table for manipulation
@@ -500,8 +505,8 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' cases
 simulate_secondary <- function(data, type = "incidence", family = "poisson",
                                delay_max = 30, ...) {
-  type <- match.arg(type, choices = c("incidence", "prevalence"))
-  family <- match.arg(family, choices = c("none", "poisson", "negbin"))
+  type <- arg_match(type, values = c("incidence", "prevalence"))
+  family <- arg_match(family, values = c("none", "poisson", "negbin"))
   data <- data.table::as.data.table(data)
   data <- data.table::copy(data)
   data <- data[, index := seq_len(.N)]
