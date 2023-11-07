@@ -375,7 +375,6 @@ plot_summary <- function(summary_results,
 #' "R", "growth_rate", "summary", "all".
 #'
 #' @param ... Pass additional arguments to report_plots
-#' 
 #' @importFrom rlang arg_match
 #'
 #' @seealso plot report_plots estimate_infections

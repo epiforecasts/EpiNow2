@@ -156,7 +156,6 @@ create_shifted_cases <- function(reported_cases, shift,
 #' time.
 #'
 #' @param delay Numeric mean delay
-#' 
 #' @importFrom rlang arg_match
 #' @return A list containing a logical called fixed and an integer called from
 #' @author Sam Abbott

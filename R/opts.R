@@ -313,7 +313,6 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' @param rt_window Integer, defaults to 1. The size of the centred rolling
 #' average to use when estimating Rt. This must be odd so that the central
 #' estimate is included.
-#' 
 #' @importFrom rlang arg_match
 #'
 #' @return A `<backcalc_opts>` object of back calculation settings.
@@ -622,7 +621,6 @@ rstan_vb_opts <- function(samples = 2000,
 #' @param ... Additional parameters to pass  underlying option functions.
 #' 
 #' @importFrom rlang arg_match
-#'
 #' @return A list of arguments to pass to the appropriate rstan functions.
 #' @author Sam Abbott
 #' @export
