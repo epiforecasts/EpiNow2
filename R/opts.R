@@ -52,7 +52,7 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
   }
   if (length(dot_options) > 0) {
     if (is(dist, "dist_spec")) { ## dist not specified
-      dot_options$dist <- "gamma"
+      dot_options$distribution <- "gamma"
     }
     ## set max
     if (!("max" %in% names(dot_options))) {
@@ -398,7 +398,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_min = 0,
                     ls_max = 60,
                     alpha_sd = 0.05,
-                    kernel = "matern",
+                    kernel = "matern_3/2",
                     matern_type = 3 / 2) {
   gp <- list(
     basis_prop = basis_prop,

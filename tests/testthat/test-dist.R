@@ -9,12 +9,12 @@ test_that("distributions are the same in R and stan", {
     do.call(gamma_dist_def, (c(args, list(samples = 1))))$params[[1]]
   pmf_r_lognormal <- dist_skel(
     n = seq_len(args$max_value + 1) - 1, dist = TRUE, cum = FALSE,
-    model = "lognormal", params = lognormal_params, max_value = args$max,
+    model = "lognormal", params = lognormal_params, max_value = args$max_value,
     discrete = TRUE
   )
   pmf_r_gamma <- dist_skel(
     n = seq_len(args$max_value + 1) - 1, dist = TRUE, cum = FALSE,
-    model = "gamma", params = gamma_params, max_value = args$max,
+    model = "gamma", params = gamma_params, max_value = args$max_value,
     discrete = TRUE
   )
 
