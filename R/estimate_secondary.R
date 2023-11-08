@@ -251,7 +251,6 @@ estimate_secondary <- function(reports,
 #'
 #' @param ... Overwrite options defined by type. See the returned values for all
 #' options that can be passed.
-#' 
 #' @importFrom rlang arg_match
 #' @seealso estimate_secondary
 #' @return A `<secondary_opts>` object of binary options summarising secondary
