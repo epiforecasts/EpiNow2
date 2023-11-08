@@ -448,7 +448,6 @@ gp_opts <- function(basis_prop = 0.2,
 #'
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #' be returned by the model.
-#' 
 #' @importFrom rlang arg_match
 #'
 #' @return An `<obs_opts>` object of observation model settings.
@@ -619,7 +618,6 @@ rstan_vb_opts <- function(samples = 2000,
 #' `rstan::sampling` ("sampling") or `rstan:vb` ("vb").
 #'
 #' @param ... Additional parameters to pass  underlying option functions.
-#' 
 #' @importFrom rlang arg_match
 #' @return A list of arguments to pass to the appropriate rstan functions.
 #' @author Sam Abbott
