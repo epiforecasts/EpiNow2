@@ -134,7 +134,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
       choices = c("Estimate", "Estimate based on partial data", "Forecast"),
       several.ok = TRUE
     )
-    estimate <- estimate[type %in% estimate_type]
+    estimate <- estimate[type == estimate_type]
   }
   # scale plot values based on reported cases
   if (!missing(reported) && !is.na(max_plot)) {
@@ -305,7 +305,7 @@ plot_summary <- function(summary_results,
   upper_CrI <- paste0("upper_", max_CrI) # nolint
   max_upper <- max(
     summary_results[
-      metric %in% "New confirmed cases by infection date"][, ..upper_CrI],
+      metric == "New confirmed cases by infection date"][, ..upper_CrI],
       na.rm = TRUE
   )
   max_cases <- min(
@@ -318,7 +318,7 @@ plot_summary <- function(summary_results,
   # cases plot
   cases_plot <-
     inner_plot(
-      summary_results[metric %in% "New confirmed cases by infection date"]
+      summary_results[metric == "New confirmed cases by infection date"]
     ) +
     ggplot2::labs(x = x_lab, y = "") +
     ggplot2::expand_limits(y = 0) +
@@ -345,7 +345,7 @@ plot_summary <- function(summary_results,
   }
 
   # rt plot
-  rt_data <- summary_results[metric %in% "Effective reproduction no."]
+  rt_data <- summary_results[metric == "Effective reproduction no."]
   uppers <- grepl("upper_", colnames(rt_data), fixed = TRUE) # nolint
   max_rt <- max(data.table::copy(rt_data)[, ..uppers], na.rm = TRUE)
   rt_plot <-
@@ -387,7 +387,7 @@ plot.estimate_infections <- function(x, type = "summary", ...) {
   )
   choices <- c("infections", "reports", "R", "growth_rate", "summary", "all")
   type <- match.arg(type, choices, several.ok = TRUE)
-  if (type %in% "all") {
+  if (type == "all") {
     type <- choices[-length(choices)]
   }
 

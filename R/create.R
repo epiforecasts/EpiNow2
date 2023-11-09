@@ -170,9 +170,9 @@ create_future_rt <- function(future = "latest", delay = 0) {
         "estimate"
       )
     )
-    if (!(future %in% "project")) {
+    if (!(future == "project")) {
       out$fixed <- TRUE
-      out$from <- ifelse(future %in% "latest", 0, -delay)
+      out$from <- ifelse(future == "latest", 0, -delay)
     }
   } else if (is.numeric(future)) {
     out$fixed <- TRUE
@@ -227,7 +227,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   # apply random walk
   if (rt$rw != 0) {
     breakpoints <- as.integer(seq_along(breakpoints) %% rt$rw == 0)
-    if (!(rt$future %in% "project")) {
+    if (!(rt$future == "project")) {
       max_bps <- length(breakpoints) - horizon + future_rt$from
       if (max_bps < length(breakpoints)) {
         breakpoints[(max_bps + 1):length(breakpoints)] <- 0
@@ -248,7 +248,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     future_fixed =  as.numeric(future_rt$fixed),
     fixed_from = future_rt$from,
     pop = rt$pop,
-    stationary =  as.numeric(rt$gp_on %in% "R0"),
+    stationary =  as.numeric(rt$gp_on == "R0"),
     future_time = horizon - future_rt$from
   )
   return(rt_data)
@@ -383,7 +383,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #' create_obs_model(obs_opts(week_length = 3), dates = dates)
 create_obs_model <- function(obs = obs_opts(), dates) {
   data <- list(
-    model_type = as.numeric(obs$family %in% "negbin"),
+    model_type = as.numeric(obs$family == "negbin"),
     phi_mean = obs$phi[1],
     phi_sd = obs$phi[2],
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
