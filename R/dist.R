@@ -84,7 +84,7 @@
 #' )
 dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
                       discrete = FALSE, params, max_value = 120) {
-  if (model %in% "exp") {
+  if (model == "exp") {
     # define support functions for exponential dist
     rdist <- function(n) {
       rexp(n, params$rate)
@@ -97,7 +97,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
         pexp(n, params$rate)) /
         pexp(max_value + 1, params$rate)
     }
-  } else if (model %in% "gamma") {
+  } else if (model == "gamma") {
     rdist <- function(n) {
       rgamma(n, params$shape, params$scale)
     }
@@ -110,7 +110,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
         pgamma(n, params$shape, params$scale)) /
         pgamma(max_value + 1, params$shape, params$scale)
     }
-  } else if (model %in% "lognormal") {
+  } else if (model == "lognormal") {
     rdist <- function(n) {
       rlnorm(n, params$mean, params$sd)
     }
@@ -141,9 +141,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 
   # define internal sampling function
   inner_skel <- function(n, dist = FALSE, cum = TRUE, max_value = NULL) {
-    if (!dist) {
-      rdist(n)
-    } else {
+    if (dist) {
       if (cum) {
         ret <- pdist(n)
       } else {
@@ -151,6 +149,8 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
       }
       ret[ret > 1] <- NA_real_
       return(ret)
+    } else {
+      rdist(n)
     }
   }
 
@@ -246,14 +246,14 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 
   model <- stanmodels$dist_fit
 
-  if (dist %in% "exp") {
+  if (dist == "exp") {
     data$dist <- 0
     data$lam_mean <- array(mean(values))
-  } else if (dist %in% "lognormal") {
+  } else if (dist == "lognormal") {
     data$dist <- 1
     data$prior_mean <- array(log(mean(values)))
     data$prior_sd <- array(log(sd(values)))
-  } else if (dist %in% "gamma") {
+  } else if (dist == "gamma") {
     data$dist <- 2
     data$prior_mean <- array(mean(values))
     data$prior_sd <- array(sd(values))
@@ -705,10 +705,10 @@ sample_approx_dist <- function(cases = NULL,
                                direction = "backwards",
                                type = "sample",
                                truncate_future = TRUE) {
-  if (type %in% "sample") {
-    if (direction %in% "backwards") {
+  if (type == "sample") {
+    if (direction == "backwards") {
       direction_fn <- rev
-    } else if (direction %in% "forwards") {
+    } else if (direction == "forwards") {
       direction_fn <- function(x) {
         x
       }
@@ -735,12 +735,12 @@ sample_approx_dist <- function(cases = NULL,
 
 
     # set dates order based on direction mapping
-    if (direction %in% "backwards") {
+    if (direction == "backwards") {
       dates <- seq(min(cases$date) - lubridate::days(length(draw) - 1),
         max(cases$date),
         by = "days"
       )
-    } else if (direction %in% "forwards") {
+    } else if (direction == "forwards") {
       dates <- seq(min(cases$date),
         max(cases$date) + lubridate::days(length(draw) - 1),
         by = "days"
@@ -765,17 +765,17 @@ sample_approx_dist <- function(cases = NULL,
       ,
       cum_cases := cumsum(cases)
     ][cum_cases != 0][, cum_cases := NULL]
-  } else if (type %in% "median") {
+  } else if (type == "median") {
     shift <- as.integer(
       median(as.integer(dist_fn(1000, dist = FALSE)), na.rm = TRUE)
     )
 
-    if (direction %in% "backwards") {
+    if (direction == "backwards") {
       mapped_cases <- data.table::copy(cases)[
         ,
         date := date - lubridate::days(shift)
       ]
-    } else if (direction %in% "forwards") {
+    } else if (direction == "forwards") {
       mapped_cases <- data.table::copy(cases)[
         ,
         date := date + lubridate::days(shift)
@@ -788,7 +788,7 @@ sample_approx_dist <- function(cases = NULL,
   }
 
   # filter out future cases
-  if (direction %in% "forwards" && truncate_future) {
+  if (direction == "forwards" && truncate_future) {
     max_date <- max(cases$date)
     mapped_cases <- mapped_cases[date <= max_date]
   }
@@ -1143,7 +1143,7 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
 #' @author Sebastian Funk
 #' @method c dist_spec
 #' @importFrom purrr transpose map
-`c.dist_spec` <- function(...) {
+c.dist_spec <- function(...) {
   ## process delay distributions
   delays <- list(...)
   if (!(all(vapply(delays, is, FALSE, "dist_spec")))) {
