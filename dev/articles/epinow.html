@@ -219,11 +219,11 @@ we could use</p>
 </div>
 <p>If instead, we wanted to use the Gaussian Process for
 <code>testland</code> and a weekly random walk for <code>realland</code>
-we could specify these separately using the <code><a href="../reference/opts_list.html">opts_list()</a></code> and
-<code><a href="../reference/update_list.html">update_list()</a></code> functions</p>
+we could specify these separately using the <code><a href="../reference/opts_list.html">opts_list()</a></code>
+from the package and <code><a href="https://rdrr.io/r/utils/modifyList.html" class="external-link">modifyList()</a></code> from <code>R</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/opts_list.html">opts_list</a></span><span class="op">(</span><span class="fu"><a href="../reference/gp_opts.html">gp_opts</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">cases</span><span class="op">)</span></span>
-<span><span class="va">gp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/update_list.html">update_list</a></span><span class="op">(</span><span class="va">gp</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>realland <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">gp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/modifyList.html" class="external-link">modifyList</a></span><span class="op">(</span><span class="va">gp</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>realland <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>, keep.null <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">rt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/opts_list.html">opts_list</a></span><span class="op">(</span><span class="fu"><a href="../reference/rt_opts.html">rt_opts</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">cases</span>, realland <span class="op">=</span> <span class="fu"><a href="../reference/rt_opts.html">rt_opts</a></span><span class="op">(</span>rw <span class="op">=</span> <span class="fl">7</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">region_separate_rt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/regional_epinow.html">regional_epinow</a></span><span class="op">(</span></span>
 <span>  reported_cases <span class="op">=</span> <span class="va">cases</span>,</span>
