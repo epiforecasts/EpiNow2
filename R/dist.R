@@ -931,7 +931,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
     mean_sd <- 0
     sd_sd <- 0
   }
-  fixed <- mean_sd == 0 && mean_sd == 0
+  fixed <- mean_sd == 0 && sd_sd == 0
 
   ## check parametric parameters make sense
   if (!missing(mean)) {
