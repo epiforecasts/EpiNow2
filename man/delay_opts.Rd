@@ -4,11 +4,11 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(dist = dist_spec("empty"), ..., fixed = FALSE)
+delay_opts(dist = fixed(0), ..., fixed = FALSE)
 }
 \arguments{
-\item{dist}{A delay distribution or series of delay distributions generated
-using \code{\link[=dist_spec]{dist_spec()}}. Default is an empty call to \code{\link[=dist_spec]{dist_spec()}}, i.e. no delay}
+\item{dist}{A delay distribution or series of delay distributions. Default is
+an fixed distribution with of 0, \code{\link[=dist_spec]{dist_spec()}}, i.e. no delay.}
 
 \item{...}{deprecated; use \code{dist} instead}
 

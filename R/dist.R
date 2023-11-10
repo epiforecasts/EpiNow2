@@ -927,7 +927,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #'   distribution = "gamma"
 #' )
 dist_spec <- function(distribution = c(
-                        "lognormal", "normal", "gamma", "fixed", "empty"
+                        "lognormal", "normal", "gamma", "fixed"
                       ),
                       params_mean = c(), params_sd = c(),
                       mean, sd, mean_sd = 0, sd_sd = 0,
@@ -979,8 +979,15 @@ dist_spec <- function(distribution = c(
     )) {
     stop("Distributional parameters or a pmf can be specified, but not both.")
   }
-
   distribution <- match.arg(distribution)
+  ## check if distribution is given as empty and warn about deprecation if so
+  if (distribution == "empty") {
+    deprecate_warn(
+      "2.0.0",
+      "dist_spec(distribution = 'must not be \"empty\"')",
+      detail = "Please use `fixed(0)` instead."
+    )
+  }
 
   if (distribution == "fixed") {
     ## if integer fixed then can write the PMF
@@ -1010,26 +1017,16 @@ dist_spec <- function(distribution = c(
       parametric = FALSE
     )
     if (length(pmf) == 0) {
-      if (distribution == "empty") { ## empty
-        ret <- c(ret, list(
-          n = 0,
-          n_p = 0,
-          n_np = 0,
-          np_pmf = numeric(0),
-          parametric = logical(0)
-        ))
-      } else { ## parametric fixed
-        if (distribution == "fixed") { ## delta
-          pmf <- c(rep(0, params_mean), 1)
-        } else {
-          params <- params_mean
-          names(params) <- natural_params(distribution)
-          pmf <- dist_skel(
-            n = seq_len(max + 1) - 1, dist = TRUE, cum = FALSE,
-            model = distribution, params = params, max_value = max,
-            discrete = TRUE
-          )
-        }
+      if (distribution == "fixed") { ## delta
+        pmf <- c(rep(0, params_mean), 1)
+      } else {
+        params <- params_mean
+        names(params) <- natural_params(distribution)
+        pmf <- dist_skel(
+          n = seq_len(max + 1) - 1, dist = TRUE, cum = FALSE,
+          model = distribution, params = params, max_value = max,
+          discrete = TRUE
+        )
       }
     } else { ## nonparametric fixed
       pmf <- pmf[1:(max + 1)]
@@ -1322,10 +1319,7 @@ sd.dist_spec <- function(x, ...) {
 #' print(gamma)
 print.dist_spec <- function(x, ...) {
   cat("\n")
-  if (x$n == 0) {
-    cat("Empty `dist_spec` distribution.\n")
-    return(invisible(NULL))
-  } else if (x$n > 1) {
+  if (x$n > 1) {
     cat("Composite delay distribution:\n")
   }
   fixed_id <- 1

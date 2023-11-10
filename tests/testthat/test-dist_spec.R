@@ -183,12 +183,6 @@ test_that("print.dist_spec correctly prints the parameters of the uncertain logn
   expect_output(print(lognormal_uncertain), "\\n  Uncertain lognormal distribution with \\(untruncated\\) logmean 1\\.5 \\(SD 0\\.1\\) and logSD 0\\.5 \\(SD 0\\.1\\)\\n")
 })
 
-test_that("print.dist_spec correctly prints the parameters of an empty distribution", {
-  empty <- dist_spec("empty")
-  
-  expect_output(print(empty), "Empty `dist_spec` distribution.")
-})
-
 test_that("print.dist_spec correctly prints the parameters of a combination of distributions", {
   lognormal <- dist_spec(mean = 1.5, sd = 0.5, max = 19, distribution = "lognormal")
   gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 19, distribution = "gamma")

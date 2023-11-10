@@ -3,9 +3,8 @@
 #' @description `r lifecycle::badge("stable")`
 #' Returns generation time parameters in a format for lower level model use.
 #'
-#' @param dist A delay distribution or series of delay distributions generated
-#'   using [dist_spec()]. If no distribution is given a fixed generation time of
-#'   1 will be assumed.
+#' @param dist A delay distribution or series of delay distributions . If no
+#'   distribution is given a fixed generation time of 1 will be assumed.
 #'
 #' @param ... deprecated; use `dist` instead
 #' @param disease deprecated; use `dist` instead
@@ -36,7 +35,7 @@
 #'
 #' # An example generation time
 #' generation_time_opts(example_generation_time)
-generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
+generation_time_opts <- function(dist = fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
                                  prior_weight) {
   deprecated_options_given <- FALSE
@@ -104,8 +103,8 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
 #' @description `r lifecycle::badge("stable")`
 #' Returns delay distributions formatted for usage by downstream
 #' functions.
-#' @param dist A delay distribution or series of delay distributions generated
-#' using [dist_spec()]. Default is an empty call to [dist_spec()], i.e. no delay
+#' @param dist A delay distribution or series of delay distributions. Default is
+#'   an fixed distribution with of 0, [dist_spec()], i.e. no delay.
 #' @param ... deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
 #' @return A `<delay_opts>` object summarising the input delay distributions.
@@ -128,7 +127,7 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = dist_spec("empty"), ..., fixed = FALSE) {
+delay_opts <- function(dist = fixed(0), ..., fixed = FALSE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec")) { ## could be old syntax
     if (is.list(dist)) {
@@ -172,7 +171,7 @@ delay_opts <- function(dist = dist_spec("empty"), ..., fixed = FALSE) {
 #'
 #' @param dist A delay distribution or series of delay distributions reflecting
 #' the truncation generated using [dist_spec()] or [estimate_truncation()].
-#' Default is an empty call to [dist_spec()], i.e. no truncation
+#' Default is fixed distribution with maximum 0, i.e. no truncation
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'
@@ -187,7 +186,7 @@ delay_opts <- function(dist = dist_spec("empty"), ..., fixed = FALSE) {
 #'
 #' # truncation dist
 #' trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = dist_spec("empty")) {
+trunc_opts <- function(dist = fixed(0)) {
   if (!is(dist, "dist_spec")) {
     if (is.list(dist)) {
       dist <- do.call(dist_spec, dist)

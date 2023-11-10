@@ -5,7 +5,7 @@
 \title{Generation Time Distribution Options}
 \usage{
 generation_time_opts(
-  dist = dist_spec(mean = 1),
+  dist = fixed(1),
   ...,
   disease,
   source,
@@ -15,9 +15,8 @@ generation_time_opts(
 )
 }
 \arguments{
-\item{dist}{A delay distribution or series of delay distributions generated
-using \code{\link[=dist_spec]{dist_spec()}}. If no distribution is given a fixed generation time of
-1 will be assumed.}
+\item{dist}{A delay distribution or series of delay distributions . If no
+distribution is given a fixed generation time of 1 will be assumed.}
 
 \item{...}{deprecated; use \code{dist} instead}
 
