@@ -938,10 +938,6 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
     stop("Distributional parameters or a pmf can be specified, but not both.")
   }
 
-  if (fixed) {
-    mean_sd <- 0
-    sd_sd <- 0
-  }
   fixed <- mean_sd == 0 && sd_sd == 0
 
   ## check parametric parameters make sense
