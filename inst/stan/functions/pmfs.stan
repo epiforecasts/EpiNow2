@@ -17,10 +17,17 @@ vector discretised_pmf(vector params, int n, int dist) {
     reject("Unknown distribution function provided.");
   }
   // discretise
-  lpmf[1] = upper_lcdf[1];
-  lpmf[2:n] = log_diff_exp(upper_lcdf[2:n], upper_lcdf[1:(n-1)]);
-  // normalize
-  lpmf = lpmf - upper_lcdf[n];
+  if (n > 1) {
+    lpmf[1] = upper_lcdf[1];
+    lpmf[2] = upper_lcdf[2];
+    if (n > 2) {
+      lpmf[3:n] = log_diff_exp(upper_lcdf[3:n], upper_lcdf[1:(n - 2)]);
+    }
+    // normalize
+    lpmf = lpmf - log_sum_exp(upper_lcdf[(n - 1):n]);
+  } else {
+    lpmf[1] = 0;
+  }
   return(exp(lpmf));
 }
 

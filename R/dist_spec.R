@@ -151,8 +151,8 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
   }
 
   if (discrete) {
-    cmf <- c(0, pdist(seq_len(max_value + 1)))
-    pmf <- diff(cmf)
+    cmf <- c(0, pdist(seq_len(max_value + 2)))
+    pmf <- (cmf[-1] - c(0, cmf[seq(1, length(cmf) - 2)])) / sum(tail(cmf, 2))
     rdist <- function(n) {
       sample(
         x = seq_len(max_value + 1) - 1, size = n, prob = pmf, replace = TRUE
