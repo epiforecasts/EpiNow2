@@ -1234,6 +1234,9 @@ mean.dist_spec <- function(x, ...) {
   return(ret)
 }
 
+
+#' @export
+sd <- function(x, ...) UseMethod("sd")
 ##' Returns the standard deviation of one or more delay distribution
 ##'
 ##' This works out the standard deviation of all the (parametric /
@@ -1292,6 +1295,10 @@ sd.dist_spec <- function(x, ...) {
     }
   }
   return(ret)
+}
+#' @export
+sd.default <- function(x, ...) {
+  stats::sd(x, ...)
 }
 
 #' Prints the parameters of one or more delay distributions
@@ -1600,11 +1607,12 @@ process_dist <- function(params, lower_bounds, distribution) {
       stop("Parameter ", x, " must be numeric or normally distributed.")
     }
   })
-  ## sample parameters if they are uncertain
-  samples <- lapply(names(params), function(x) {
-    rtruncnorm(
-      n = 2000, a = lower_bounds[x],
-      mean = mean.dist_spec(params[[x]]), sd = sd.dist_spec(params[[x]])
+    samples <- lapply(names(params), function(x) {
+      rtruncnorm(
+        n = 2000, a = lower_bounds[x],
+        mean = mean(params[[x]]), sd = sd(params[[x]])
+      )
+    })
     )
   })
   names(samples) <- names(params)
