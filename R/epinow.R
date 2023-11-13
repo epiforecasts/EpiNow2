@@ -283,15 +283,15 @@ epinow <- function(reported_cases,
   }
 
   if (!is.null(target_folder) && !is.null(out$error)) {
-    saveRDS(out$error, paste0(target_folder, "/error.rds"))
-    saveRDS(out$trace, paste0(target_folder, "/trace.rds"))
+    saveRDS(out$error, file.path(target_folder, "error.rds"))
+    saveRDS(out$trace, file.path(target_folder, "trace.rds"))
   }
 
   # log timing if specified
   if (output["timing"]) {
     out$timing <- round(as.numeric(end_time - start_time), 1)
     if (!is.null(target_folder)) {
-      saveRDS(out$timing, paste0(target_folder, "/runtime.rds"))
+      saveRDS(out$timing, file.path(target_folder, "runtime.rds"))
     }
   }
 
