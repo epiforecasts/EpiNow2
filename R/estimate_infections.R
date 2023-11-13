@@ -231,7 +231,7 @@ estimate_infections <- function(reported_cases,
   # Initialise fitting by using a previous fit or fitting to cumulative cases
   if (!is.null(args$init_fit)) {
     if (!inherits(args$init_fit, "stanfit") &&
-          args$init_fit %in% "cumulative") {
+          args$init_fit == "cumulative") {
       args$init_fit <- init_cumulative_fit(args,
         warmup = 50, samples = 50,
         id = id, verbose = FALSE

@@ -638,9 +638,9 @@ rstan_opts <- function(object = NULL,
     object = object,
     method = method
   )
-  if (method %in% "sampling") {
+  if (method == "sampling") {
     opts <- c(opts, rstan_sampling_opts(samples = samples, ...))
-  } else if (method %in% "vb") {
+  } else if (method == "vb") {
     opts <- c(opts, rstan_vb_opts(samples = samples, ...))
   }
   return(opts)
@@ -692,7 +692,7 @@ stan_opts <- function(samples = 2000,
                       return_fit = TRUE,
                       ...) {
   backend <- match.arg(backend, choices = "rstan")
-  if (backend %in% "rstan") {
+  if (backend == "rstan") {
     opts <- rstan_opts(
       samples = samples,
       ...

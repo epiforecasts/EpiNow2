@@ -273,7 +273,7 @@ estimate_secondary <- function(reports,
 #' secondary_opts("prevalence")
 secondary_opts <- function(type = "incidence", ...) {
   type <- match.arg(type, choices = c("incidence", "prevalence"))
-  if (type %in% "incidence") {
+  if (type == "incidence") {
     data <- list(
       cumulative = 0,
       historic = 1,
@@ -281,7 +281,7 @@ secondary_opts <- function(type = "incidence", ...) {
       current = 0,
       primary_current_additive = 0
     )
-  } else if (type %in% "prevalence") {
+  } else if (type == "prevalence") {
     data <- list(
       cumulative = 1,
       historic = 1,
