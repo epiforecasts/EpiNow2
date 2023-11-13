@@ -265,7 +265,7 @@ epinow <- function(reported_cases,
       }
     ),
     error = function(e) {
-      if (id %in% "epinow") {
+      if (id == "epinow") {
         stop(e)
       } else {
         error_text <- sprintf("%s: %s - %s", id, e$message, toString(e$call))
