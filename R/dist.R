@@ -1607,17 +1607,24 @@ process_dist <- function(params, lower_bounds, distribution) {
       stop("Parameter ", x, " must be numeric or normally distributed.")
     }
   })
+  unnatural_params <- setdiff(names(params), natural_params(distribution))
+  if (length(unnatural_params) > 0) {
+    ## sample parameters if they are uncertain
     samples <- lapply(names(params), function(x) {
       rtruncnorm(
         n = 2000, a = lower_bounds[x],
         mean = mean(params[[x]]), sd = sd(params[[x]])
       )
     })
+    names(samples) <- names(params)
+    ## generate natural parameters
+    converted_params <- convert_to_natural(samples, distribution)
+  } else {
+    converted_params <- list(
+      params_mean = vapply(params, mean, numeric(1), USE.NAMES = FALSE),
+      params_sd = vapply(params, sd, numeric(1), USE.NAMES = FALSE)
     )
-  })
-  names(samples) <- names(params)
-  ## generate natural parameters
-  converted_params <- convert_to_natural(samples, distribution)
+  }
 
   dist <- dist_spec(
     distribution = distribution,
