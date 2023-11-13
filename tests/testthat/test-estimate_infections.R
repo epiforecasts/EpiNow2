@@ -7,12 +7,12 @@ reported_cases <- EpiNow2::example_confirmed[1:30]
 default_estimate_infections <- function(..., add_stan = list(), delay = TRUE) {
   futile.logger::flog.threshold("FATAL")
 
-  def_stan <- stan_opts(
+  def_stan <- list(
     chains = 2, warmup = 50, samples = 50,
     control = list(adapt_delta = 0.8)
   )
-  stan_args <- def_stan[setdiff(names(def_stan), names(add_stan))]
-  stan_args <- do.call(stan_opts, c(stan_args, add_stan))
+  def_stan <- modifyList(def_stan, add_stan)
+  stan_args <- do.call(stan_opts, def_stan)
 
   suppressWarnings(estimate_infections(...,
     generation_time = generation_time_opts(example_generation_time),
@@ -78,12 +78,12 @@ test_that("estimate_infections fails as expected when given a very short timeout
   expect_error(output <- capture.output(suppressMessages(
     out <- default_estimate_infections(
       reported_cases,
-      add_stan = stan_opts(future = TRUE, max_execution_time = 1)
+      add_stan = list(future = TRUE, max_execution_time = 1)
   ))), "all chains failed")
   expect_error(output <- capture.output(suppressMessages(
     out <- default_estimate_infections(
       reported_cases,
-      add_stan = stan_opts(future = FALSE, max_execution_time = 1)
+      add_stan = list(future = FALSE, max_execution_time = 1)
   ))), "timed out")
 })
 
@@ -91,7 +91,7 @@ test_that("estimate_infections fails as expected when given a very short timeout
 test_that("estimate_infections works as expected with failing chains", {
   skip_on_cran()
   test_estimate_infections(reported_cases,
-    add_stan = stan_opts(
+    add_stan = list(
       chains = 4,
       stuck_chains = 2, future = TRUE,
       control = list(adapt_delta = 0.8)
@@ -99,10 +99,10 @@ test_that("estimate_infections works as expected with failing chains", {
   )
 
   expect_error(default_estimate_infections(reported_cases,
-    add_stan = stan_opts(chains = 4, stuck_chains = 1)
+    add_stan = list(chains = 4, stuck_chains = 1)
   ))
   expect_error(default_estimate_infections(reported_cases,
-    add_stan = stan_opts(
+    add_stan = list(
       chains = 4,
       stuck_chains = 3,
       future = TRUE
