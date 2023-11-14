@@ -24,9 +24,9 @@ file should they also be duplicated in the console.}
 \item{name}{Character string defaulting to EpiNow2. This indicates the name
 of the logger to setup. The default logger for EpiNow2 is called EpiNow2.
 Nested options include: Epinow2.epinow which controls all logging for
-\code{\link[=epinow]{epinow()}} and nested functions, EpiNow2.epinow.estimate_infections (logging in
-\code{\link[=estimate_infections]{estimate_infections()}}, and EpiNow2.epinow.estimate_infections.fit (logging
-in fitting functions).}
+\code{\link[=epinow]{epinow()}} and nested functions, EpiNow2.epinow.estimate_infections
+(logging in \code{\link[=estimate_infections]{estimate_infections()}}, and
+EpiNow2.epinow.estimate_infections.fit (logging in fitting functions).}
 }
 \value{
 Nothing

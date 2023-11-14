@@ -10,7 +10,8 @@ extract_CrIs(summarised)
 \item{summarised}{A \verb{<data.frame>} as processed by \code{calc_CrIs}}
 }
 \value{
-A numeric vector of credible intervals detected in the \verb{<data.frame>}.
+A numeric vector of credible intervals detected in
+the \verb{<data.frame>}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
