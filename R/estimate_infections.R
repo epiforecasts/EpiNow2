@@ -459,11 +459,12 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     chains <- args$chains
     args$chains <- 1
     args$cores <- 1
-    fits <- future.apply::future_lapply(1:chains, fit_chain,
-                                        stan_args = args,
-                                        max_time = max_execution_time,
-                                        catch = TRUE,
-                                        future.seed = TRUE
+    fits <- future.apply::future_lapply(1:chains,
+      fit_chain,
+      stan_args = args,
+      max_time = max_execution_time,
+      catch = TRUE,
+      future.seed = TRUE
     )
     if (stuck_chains > 0) {
       fits[1:stuck_chains] <- NULL
