@@ -7,7 +7,7 @@
 create_shifted_cases(reported_cases, shift, smoothing_window, horizon)
 }
 \arguments{
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date
+\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
 (date). confirm must be integer and date must be in date format.}
 
 \item{shift}{Numeric, mean delay shift to apply.}
@@ -19,7 +19,7 @@ to apply. Must be odd in order to be defined as a centred average.}
 forecast.}
 }
 \value{
-A data frame for shifted reported cases
+A \verb{<data.frame>} for shifted reported cases
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -27,8 +27,8 @@ A data frame for shifted reported cases
 This functions creates a data frame of reported cases that has been smoothed
 using a centred partial rolling average (with a period set by
 \code{smoothing_window}) and shifted back in time by some delay. It is used by
-\code{estimate_infections} to generate the mean shifted prior on which the back
-calculation method (see \code{backcalc_opts()}) is based.
+\code{\link[=estimate_infections]{estimate_infections()}} to generate the mean shifted prior on which the back
+calculation method (see \code{\link[=backcalc_opts]{backcalc_opts()}}) is based.
 }
 \examples{
 create_shifted_cases(example_confirmed, 7, 14, 7)

@@ -40,12 +40,12 @@ Samples outside of this range are resampled.}
 \item{samples}{Numeric, number of sample distributions to generate.}
 }
 \value{
-A data.table defining the distribution as used by \code{dist_skel}
+A \verb{<data.table>} defining the distribution as used by \code{\link[=dist_skel]{dist_skel()}}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
 Generates a distribution definition when only parameter estimates
-are available for gamma distributed parameters. See \code{rgamma} for
+are available for gamma distributed parameters. See \code{\link[=rgamma]{rgamma()}} for
 distribution information.
 }
 \examples{

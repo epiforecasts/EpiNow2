@@ -7,9 +7,9 @@
 get_seeding_time(delays, generation_time)
 }
 \arguments{
-\item{delays}{Delays as specified using \code{dist_spec}}
+\item{delays}{Delays as specified using \code{\link[=dist_spec]{dist_spec()}}}
 
-\item{generation_time}{Generation time as specified using \code{dist_spec}}
+\item{generation_time}{Generation time as specified using \code{\link[=dist_spec]{dist_spec()}}}
 }
 \value{
 An integer seeding time

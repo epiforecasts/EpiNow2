@@ -24,8 +24,8 @@ file should they also be duplicated in the console.}
 \item{name}{Character string defaulting to EpiNow2. This indicates the name
 of the logger to setup. The default logger for EpiNow2 is called EpiNow2.
 Nested options include: Epinow2.epinow which controls all logging for
-\code{epinow} and nested functions, EpiNow2.epinow.estimate_infections (logging in
-\code{estimate_infections}), and EpiNow2.epinow.estimate_infections.fit (logging
+\code{\link[=epinow]{epinow()}} and nested functions, EpiNow2.epinow.estimate_infections (logging in
+\code{\link[=estimate_infections]{estimate_infections()}}, and EpiNow2.epinow.estimate_infections.fit (logging
 in fitting functions).}
 }
 \value{
@@ -33,9 +33,9 @@ Nothing
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
-Sets up \code{futile.logger} logging, which is integrated into \code{EpiNow2}. See the
-documentation for \code{futile.logger} for full details. By default \code{EpiNow2}
-prints all logs at the "INFO" level and returns them to the console. Usage
-of logging is currently being explored as the current setup cannot log stan
-errors or progress.
+Sets up \code{{futile.logger}} logging, which is integrated into \code{{EpiNow2}}.
+See the documentation for \code{{futile.logger}} for full details. By default
+\code{{EpiNow2}} prints all logs at the "INFO" level and returns them to the
+console. Usage of logging is currently being explored as the current
+setup cannot log stan errors or progress.
 }

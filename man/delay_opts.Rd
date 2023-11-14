@@ -38,7 +38,8 @@ delay_opts(delay)
 delay_opts(delay + delay)
 }
 \seealso{
-convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
+\code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
+\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[=dist_spec]{dist_spec()}}
 }
 \author{
 Sam Abbott

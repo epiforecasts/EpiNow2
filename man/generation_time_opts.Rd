@@ -30,8 +30,8 @@ using \code{\link[=dist_spec]{dist_spec()}}. If no distribution is given a fixed
 \item{fixed}{deprecated; use \code{dist} instead}
 
 \item{prior_weight}{deprecated; prior weights are now specified as a
-model option. Use the \code{weigh_delay_priors} argument of \code{estimate_infections}
-instead.}
+model option. Use the \code{weigh_delay_priors} argument of
+\code{\link[=estimate_infections]{estimate_infections()}} instead.}
 }
 \value{
 A \verb{<generation_time_opts>} object summarising the input delay
@@ -57,7 +57,8 @@ generation_time_opts(
 generation_time_opts(example_generation_time)
 }
 \seealso{
-convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
+\code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
+\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[=dist_spec]{dist_spec()}}
 }
 \author{
 Sebastian Funk

@@ -38,7 +38,7 @@ data. Maximum delay to  allow (added to output but does impact fitting).}
 printed.}
 }
 \value{
-A \code{dist_spec} object summarising the bootstrapped distribution
+A \verb{<dist_spec>} object summarising the bootstrapped distribution
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

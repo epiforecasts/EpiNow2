@@ -26,7 +26,7 @@ national level fit to parametrise regional level fits. Optionally a
 character string can be passed with the currently supported option being
 "cumulative". This fits the model to cumulative cases and may be useful for
 certain data sets where the sampler gets stuck or struggles to initialise.
-See \code{init_cumulative_fit()} for details.
+See \code{\link[=init_cumulative_fit]{init_cumulative_fit()}} for details.
 
 This implementation is based on the approach taken in
 \href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia} authored by
@@ -44,18 +44,18 @@ rstan functions.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to underlying stan
-backend functions via \code{rstan_sampling_opts()} and \code{rstan_vb_opts()}. Custom
+backend functions via \code{\link[=rstan_sampling_opts]{rstan_sampling_opts()}} and \code{\link[=rstan_vb_opts]{rstan_vb_opts()}}. Custom
 settings can be supplied which override the defaults.
 }
 \examples{
-# using default of rstan::sampling
+# using default of [rstan::sampling()]
 stan_opts(samples = 1000)
 
 # using vb
 stan_opts(method = "vb")
 }
 \seealso{
-rstan_opts
+\code{\link[=rstan_opts]{rstan_opts()}}
 }
 \author{
 Sam Abbott

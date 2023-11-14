@@ -13,7 +13,7 @@ simulate_secondary(
 )
 }
 \arguments{
-\item{data}{A data frame containing the \code{date} of report and \code{primary}
+\item{data}{A \verb{<data.frame>} containing the \code{date} of report and \code{primary}
 cases as a numeric vector.}
 
 \item{type}{A character string indicating the type of observation the
@@ -40,7 +40,7 @@ the convolution model.}
 \code{rnbinom} or \code{rpois}).}
 }
 \value{
-A data frame containing simulated data in the format required by
+A \verb{<data.frame>} containing simulated data in the format required by
 \code{\link[=estimate_secondary]{estimate_secondary()}}.
 }
 \description{

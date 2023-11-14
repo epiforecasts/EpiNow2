@@ -7,7 +7,7 @@
 get_dist(data, disease, source, max_value = 14, fixed = FALSE)
 }
 \arguments{
-\item{data}{A \code{data.table} in the format of \code{generation_times}.}
+\item{data}{A \verb{<data.table>} in the format of \code{generation_times}.}
 
 \item{disease}{A character string indicating the disease of interest.}
 
@@ -25,10 +25,10 @@ A list defining a distribution
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 
 This function has been deprecated. Please specify a distribution
-using \code{dist_spec} instead.
+using \code{\link[=dist_spec]{dist_spec()}} instead.
 }
 \seealso{
-dist_spec
+\code{\link[=dist_spec]{dist_spec()}}
 }
 \author{
 Sam Abbott

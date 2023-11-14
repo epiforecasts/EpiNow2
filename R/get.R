@@ -3,7 +3,7 @@
 #' @description `r lifecycle::badge("stable")`
 #'
 #' @param results_dir A character string giving the directory in which results
-#'  are stored (as produced by `regional_rt_pipeline`).
+#'  are stored (as produced by [regional_rt_pipeline()]).
 #'
 #' @return A named character vector containing the results to plot.
 #' @author Sam Abbott
@@ -34,7 +34,7 @@ get_regions <- function(results_dir) {
 #' @param result_dir Character string giving the location of the target
 #' directory.
 #'
-#' @return An R object read in from the targeted .rds file
+#' @return An R object read in from the targeted `.rds` file
 #' @author Sam Abbott
 #' @export
 get_raw_result <- function(file, region, date,
@@ -49,11 +49,11 @@ get_raw_result <- function(file, region, date,
 #' Summarises results across regions either from input or from disk. See the
 #' examples for details.
 #'
-#' @param regional_output A list of output as produced by `regional_epinow` and
-#' stored in the `regional` list.
+#' @param regional_output A list of output as produced by [regional_epinow()]
+#' and stored in the `regional` list.
 #'
 #' @param results_dir A character string indicating the folder containing the
-#' `EpiNow2` results to extract.
+#' `{EpiNow2}` results to extract.
 #'
 #' @param date A Character string (in the format "yyyy-mm-dd") indicating the
 #' date to extract data for. Defaults to "latest" which finds the latest
@@ -161,9 +161,9 @@ get_regional_results <- function(regional_output,
 #' @description `r lifecycle::badge("deprecated")`
 #'
 #' This function has been deprecated. Please specify a distribution
-#' using `dist_spec` instead.
+#' using [dist_spec()] instead.
 #'
-#' @param data A `data.table` in the format of `generation_times`.
+#' @param data A `<data.table>` in the format of `generation_times`.
 #'
 #' @param disease A character string indicating the disease of interest.
 #'
@@ -177,7 +177,7 @@ get_regional_results <- function(regional_output,
 #' @return A list defining a distribution
 #'
 #' @author Sam Abbott
-#' @seealso dist_spec
+#' @seealso [dist_spec()]
 #' @export
 get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
   lifecycle::deprecate_warn(
@@ -202,12 +202,12 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
 #'
 #' Extracts a literature distribution from `generation_times`.
 #' This function has been deprecated. Please specify a distribution
-#' using `dist_spec` instead.
+#' using [dist_spec()] instead.
 #'
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @export
-#' @seealso dist_spec
+#' @seealso [dist_spec()]
 #' @author Sam Abbott
 get_generation_time <- function(disease, source, max_value = 14,
                                 fixed = FALSE) {
@@ -232,13 +232,13 @@ get_generation_time <- function(disease, source, max_value = 14,
 #'
 #' Extracts a literature distribution from `generation_times`.
 #' This function has been deprecated. Please specify a distribution
-#' using `dist_spec` instead
+#' using [dist_spec()] instead
 #'
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @author Sam Abbott
 #' @export
-#' @seealso dist_spec
+#' @seealso [dist_spec()]
 get_incubation_period <- function(disease, source, max_value = 14,
                                   fixed = FALSE) {
   lifecycle::deprecate_warn(
@@ -299,8 +299,8 @@ get_regions_with_most_reports <- function(reported_cases,
 ##'
 ##' The seeding time is set to the mean of the specified delays, constrained
 ##' to be at least the maximum generation time
-##' @param delays Delays as specified using `dist_spec`
-##' @param generation_time Generation time as specified using `dist_spec`
+##' @param delays Delays as specified using [dist_spec()]
+##' @param generation_time Generation time as specified using [dist_spec()]
 ##' @return An integer seeding time
 ##' @author Sebastian Funk
 get_seeding_time <- function(delays, generation_time) {

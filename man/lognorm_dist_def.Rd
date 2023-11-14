@@ -23,12 +23,12 @@ Samples outside of this range are resampled.}
 \item{to_log}{Logical, should parameters be logged before use.}
 }
 \value{
-A data.table defining the distribution as used by \code{dist_skel}
+A \verb{<data.table>} defining the distribution as used by \code{\link[=dist_skel]{dist_skel()}}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
 Generates a distribution definition when only parameter estimates
-are available for log normal distributed parameters. See \code{rlnorm} for
+are available for log normal distributed parameters. See \code{\link[=rlnorm]{rlnorm()}} for
 distribution information.
 }
 \examples{

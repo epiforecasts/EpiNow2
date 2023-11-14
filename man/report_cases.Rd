@@ -21,8 +21,8 @@ variables: date, sample, cases}
 variables: date, sample, cases. If not supplied the default is not to
 incorporate forecasts.}
 
-\item{delays}{A call to \code{delay_opts()} defining delay distributions and
-options. See the documentation of \code{delay_opts()} and the examples below for
+\item{delays}{A call to \code{\link[=delay_opts]{delay_opts()}} defining delay distributions and
+options. See the documentation of \code{\link[=delay_opts]{delay_opts()}} and the examples below for
 details.}
 
 \item{type}{Character string indicating the method to use to transform

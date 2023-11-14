@@ -3,7 +3,7 @@
 #' @description `r lifecycle::badge("questioning")`
 #' This function acts as a skeleton for a truncated distribution defined by
 #' model type, maximum value and model parameters. It is designed to be used
-#' with the output from `get_dist`.
+#' with the output from [get_dist()].
 #'
 #' @param n Numeric vector, number of samples to take (or days for the
 #' probability density).
@@ -177,7 +177,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Fits an integer adjusted exponential, gamma or lognormal distribution using
-#' `stan`.
+#' `{stan}`.
 #' @param values Numeric vector of values
 #'
 #' @param samples Numeric, number of samples to take. Must be >= 1000.
@@ -196,7 +196,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @param verbose Logical, defaults to FALSE. Should verbose progress messages
 #' be printed.
 #'
-#' @return A `stan` fit of an interval censored distribution
+#' @return A `{stan}` fit of an interval censored distribution
 #' @author Sam Abbott
 #' @export
 #' @examples
@@ -286,7 +286,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #'
 #' @description `r lifecycle::badge("soft-deprecated")`
 #' Generates a distribution definition when only parameter estimates
-#' are available for gamma distributed parameters. See `rgamma` for
+#' are available for gamma distributed parameters. See [rgamma()] for
 #' distribution information.
 #'
 #' @param shape Numeric, shape parameter of the gamma distribution.
@@ -300,7 +300,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #' @param samples Numeric, number of sample distributions to generate.
 #'
 #' @importFrom truncnorm rtruncnorm
-#' @return A data.table defining the distribution as used by `dist_skel`
+#' @return A `<data.table>` defining the distribution as used by [dist_skel()]
 #' @export
 #' @inheritParams dist_skel
 #' @inheritParams lognorm_dist_def
@@ -370,7 +370,7 @@ gamma_dist_def <- function(shape, shape_sd,
 #'
 #' @description `r lifecycle::badge("soft-deprecated")`
 #' Generates a distribution definition when only parameter estimates
-#' are available for log normal distributed parameters. See `rlnorm` for
+#' are available for log normal distributed parameters. See [rlnorm()] for
 #' distribution information.
 #'
 #' @param mean Numeric, log mean parameter of the gamma distribution.
@@ -385,7 +385,7 @@ gamma_dist_def <- function(shape, shape_sd,
 #'
 #' @param to_log Logical, should parameters be logged before use.
 #'
-#' @return A data.table defining the distribution as used by `dist_skel`
+#' @return A `<data.table>` defining the distribution as used by [dist_skel()]
 #' @author Sam Abbott
 #' @importFrom truncnorm rtruncnorm
 #' @export
@@ -488,7 +488,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' @param max_value Numeric, defaults to  the maximum value in the observed
 #' data. Maximum delay to  allow (added to output but does impact fitting).
 #'
-#' @return A `dist_spec` object summarising the bootstrapped distribution
+#' @return A `<dist_spec>` object summarising the bootstrapped distribution
 #' @author Sam Abbott
 #' @importFrom purrr transpose
 #' @importFrom future.apply future_lapply
@@ -587,16 +587,16 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #'
 #' @description `r lifecycle::badge("maturing")`
 #' Estimate a log normal delay distribution from a vector of integer delays.
-#' Currently this function is a simple wrapper for `bootstrapped_dist_fit`.
+#' Currently this function is a simple wrapper for [bootstrapped_dist_fit()].
 #'
 #' @param delays Integer vector of delays
 #'
 #' @param ... Arguments to pass to internal methods.
 #'
-#' @return A `dist_spec` summarising the bootstrapped distribution
+#' @return A `<dist_spec>` summarising the bootstrapped distribution
 #' @author Sam Abbott
 #' @export
-#' @seealso bootstrapped_dist_fit
+#' @seealso [bootstrapped_dist_fit()]
 #' @examples
 #' \donttest{
 #' delays <- rlnorm(500, log(5), 1)
@@ -614,9 +614,9 @@ estimate_delay <- function(delays, ...) {
 #'
 #' @description `r lifecycle::badge("soft-deprecated")`
 #' Convolves cases by a PMF function. This function will soon be removed or
-#' replaced with a more robust `stan` implementation.
+#' replaced with a more robust `{stan}` implementation.
 #'
-#' @param cases A dataframe of cases (in date order) with the following
+#' @param cases A `<data.frame>` of cases (in date order) with the following
 #' variables: `date` and `cases`.
 #'
 #' @param max_value Numeric, maximum value to allow. Defaults to 120 days
@@ -639,7 +639,7 @@ estimate_delay <- function(delays, ...) {
 #' @param truncate_future Logical, should cases be truncated if they occur
 #' after the first date reported in the data. Defaults to `TRUE`.
 #'
-#' @return A `data.table` of cases by date of onset
+#' @return A `<data.table>` of cases by date of onset
 #' @export
 #' @importFrom purrr map_dfc
 #' @importFrom data.table data.table setorder
@@ -1054,7 +1054,7 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 
 #' Creates a delay distribution as the sum of two other delay distributions
 #'
-#' This is done via convolution with `stats::convolve()`. Nonparametric delays
+#' This is done via convolution with [stats::convolve()]. Nonparametric delays
 #' that can be combined are processed together, and their cumulative
 #' distribution function is truncated at a specified tolerance level, ensuring
 #' numeric stability.
@@ -1109,7 +1109,7 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
 
 #' Creates a delay distribution as the sum of two other delay distributions
 #'
-#' This is done via convolution with `stats::convolve()`. Nonparametric delays
+#' This is done via convolution with [stats::convolve()]. Nonparametric delays
 #' that can be combined are processed together, and their cumulative
 #' distribution function is truncated at a specified tolerance level, ensuring
 #' numeric stability.
@@ -1146,7 +1146,7 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
 #' distributions to [epinow()] or [estimate_infections()].
 #'
 #' @param ... The delay distributions (from calls to [dist_spec()]) to combine
-#' @return Combined delay distributions (with class [dist_spec()]`)
+#' @return Combined delay distributions (with class `<dist_spec>`)
 #' @author Sebastian Funk
 #' @method c dist_spec
 #' @importFrom purrr transpose map
@@ -1174,7 +1174,7 @@ c.dist_spec <- function(...) {
 ##' This works out the mean of all the (parametric / nonparametric) delay
 ##' distributions combined in the passed [dist_spec()].
 ##'
-##' @param x The [dist_spec()] to use
+##' @param x The `<dist_spec>` to use
 ##' @param ... Not used
 ##' @return A vector of means.
 ##' @author Sebastian Funk
@@ -1226,7 +1226,7 @@ mean.dist_spec <- function(x, ...) {
 #'
 #' This displays the parameters of the uncertain and probability mass
 #' functions of fixed delay distributions combined in the passed [dist_spec()].
-#' @param x The [dist_spec()] to use
+#' @param x The `<dist_spec>` to use
 #' @param ... Not used
 #' @return invisible
 #' @author Sebastian Funk
@@ -1293,12 +1293,12 @@ print.dist_spec <- function(x, ...) {
 
 #' Plot PMF and CDF for a dist_spec object
 #'
-#' This function takes a [dist_spec] object and plots its probability mass
-#' function (PMF) and cumulative distribution function (CDF) using [ggplot2].
+#' This function takes a `<dist_spec>` object and plots its probability mass
+#' function (PMF) and cumulative distribution function (CDF) using `{ggplot2}`.
 #' Note that currently uncertainty in distributions is not plot.
 #'
-#' @param x A [dist_spec] object
-#' @param ... Additional arguments to pass to \code{ggplot}
+#' @param x A `<dist_spec>` object
+#' @param ... Additional arguments to pass to `{ggplot}`.
 #' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
 #' @export
 #' @author Sam Abbott
@@ -1380,17 +1380,17 @@ plot.dist_spec <- function(x, ...) {
   return(plot)
 }
 
-##' Fix the parameters of a `dist_spec`
+##' Fix the parameters of a `<dist_spec>` object
 ##'
-##' If the given `dist_spec` has any uncertainty, it is removed and the
+##' If the given `<dist_spec>` has any uncertainty, it is removed and the
 ##' corresponding distribution converted into a fixed one.
-##' @return A `dist_spec` object without uncertainty
+##' @return A `<dist_spec>` object without uncertainty
 ##' @author Sebastian Funk
 ##' @export
-##' @param x A [dist_spec] object
+##' @param x A `<dist_spec>` object
 ##' @param strategy Character; either "mean" (use the mean estimates of the
 ##'   mean and standard deviation) or "sample" (randomly sample mean and
-##'   standard deviation from uncertainty given in the `dist_spec`)
+##'   standard deviation from uncertainty given in the `<dist_spec>`
 ##' @importFrom truncnorm rtruncnorm
 ##' @importFrom rlang arg_match
 fix_dist <- function(x, strategy = c("mean", "sample")) {

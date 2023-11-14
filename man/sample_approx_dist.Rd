@@ -15,7 +15,7 @@ sample_approx_dist(
 )
 }
 \arguments{
-\item{cases}{A dataframe of cases (in date order) with the following
+\item{cases}{A \verb{<data.frame>} of cases (in date order) with the following
 variables: \code{date} and \code{cases}.}
 
 \item{dist_fn}{Function that takes two arguments with the first being
@@ -39,12 +39,12 @@ would shift by the median of the distribution.}
 after the first date reported in the data. Defaults to \code{TRUE}.}
 }
 \value{
-A \code{data.table} of cases by date of onset
+A \verb{<data.table>} of cases by date of onset
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
 Convolves cases by a PMF function. This function will soon be removed or
-replaced with a more robust \code{stan} implementation.
+replaced with a more robust \code{{stan}} implementation.
 }
 \examples{
 \donttest{

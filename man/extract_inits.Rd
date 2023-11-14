@@ -7,10 +7,10 @@
 extract_inits(fit, current_inits, exclude_list = NULL, samples = 50)
 }
 \arguments{
-\item{fit}{A stanfit object.}
+\item{fit}{A \verb{<stanfit>} object.}
 
 \item{current_inits}{A function that returns a list of initial conditions
-(such as \code{create_initial_conditions()}). Only used in \code{exclude_list} is
+(such as \code{\link[=create_initial_conditions]{create_initial_conditions()}}). Only used in \code{exclude_list} is
 specified.}
 
 \item{exclude_list}{A character vector of parameters to not initialise from
@@ -26,8 +26,8 @@ named list.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 Extracts posterior samples to use to initialise a full model fit. This may
 be useful for certain data sets where the sampler gets stuck or cannot
-easily be initialised. In \code{estimate_infections()}, \code{epinow()} and\
-\code{regional_epinow()} this option can be engaged by setting
+easily be initialised. In \code{\link[=estimate_infections]{estimate_infections()}}, \code{\link[=epinow]{epinow()}} and
+\code{\link[=regional_epinow]{regional_epinow()}} this option can be engaged by setting
 \verb{stan_opts(init_fit = <stanfit>)}.
 
 This implementation is based on the approach taken in

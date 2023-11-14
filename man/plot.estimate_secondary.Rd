@@ -16,7 +16,7 @@ be plot?}
 
 \item{to}{Date object indicating when to plot up to.}
 
-\item{new_obs}{A data.frame containing the columns \code{date} and \code{secondary}
+\item{new_obs}{A \verb{<data.frame>} containing the columns \code{date} and \code{secondary}
 which replace the secondary observations stored in the \code{estimate_secondary}
 output.}
 

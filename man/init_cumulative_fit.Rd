@@ -20,7 +20,7 @@ init_cumulative_fit(
 \item{warmup}{Numeric, defaults to 50. Number of warmup samples.}
 
 \item{id}{A character string used to assign logging information on error.
-Used by \code{regional_epinow} to assign errors to regions. Alter the default to
+Used by \code{\link[=regional_epinow]{regional_epinow()}} to assign errors to regions. Alter the default to
 run with error catching.}
 
 \item{verbose}{Logical, should fitting progress be returned. Defaults to

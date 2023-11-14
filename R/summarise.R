@@ -7,7 +7,7 @@
 #' @param regions An character string containing the list of regions to extract
 #' results for (must all have results for the same target date).
 #'
-#' @param summaries A list of summary data frames as output by `epinow`
+#' @param summaries A list of summary `<data.frame>`s as output by `epinow`
 #'
 #' @param results_dir An optional character string indicating the location of
 #' the results directory to extract results from.
@@ -410,8 +410,8 @@ regional_summary <- function(regional_output = NULL,
 #' Summarise rt and cases
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' Produces summarised data frames of output across regions. Used internally by
-#' `regional_summary`.
+#' Produces summarised `<data.frame>`s of output across regions.
+#' Used internally by `regional_summary`.
 #'
 #' @param regional_results A list of dataframes as produced by
 #' `get_regional_results`
@@ -636,9 +636,11 @@ calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
 #' Extract Credible Intervals Present
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Helper function to extract the credible intervals present in a data frame.
-#' @param summarised A data frame as processed by `calc_CrIs`
-#' @return A numeric vector of credible intervals detected in the data frame.
+#' Helper function to extract the credible intervals present in a
+#' `<data.frame>`.
+#' @param summarised A `<data.frame>` as processed by `calc_CrIs`
+#' @return A numeric vector of credible intervals detected in
+#' the `<data.frame>`.
 #' @export
 #' @examples
 #' samples <- data.frame(value = 1:10, type = "car")
@@ -657,8 +659,8 @@ extract_CrIs <- function(summarised) {
 #' Calculate Summary Statistics
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Calculate summary statistics from a data frame by group. Currently supports
-#' the mean, median and standard deviation.
+#' Calculate summary statistics from a `<data.frame>` by group.
+#' Currently supports the mean, median and standard deviation.
 #' @return A data.table containing the upper and lower bounds for the specified
 #' credible interval
 #' @export
@@ -686,7 +688,7 @@ calc_summary_stats <- function(samples, summarise_by = NULL) {
 #' Calculate All Summary Measures
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Calculate summary statistics and credible intervals from a data frame by
+#' Calculate summary statistics and credible intervals from a `<data.frame>` by
 #' group.
 #'
 #' @param order_by A character vector of parameters to order by, defaults to
@@ -748,7 +750,7 @@ calc_summary_measures <- function(samples,
 #' @seealso summary.estimate_infections epinow
 #' @aliases summary
 #' @method summary epinow
-#' @return Returns a data frame of summary output
+#' @return Returns a `<data.frame>` of summary output
 #' @export
 summary.epinow <- function(object, output = "estimates",
                            date = NULL, params = NULL,
@@ -796,7 +798,7 @@ summary.epinow <- function(object, output = "estimates",
 #' @importFrom rlang arg_match
 #' @seealso summary estimate_infections report_summary
 #' @method summary estimate_infections
-#' @return Returns a data frame of summary output
+#' @return Returns a `<data.frame>` of summary output
 #' @export
 summary.estimate_infections <- function(object, type = "snapshot",
                                         date = NULL, params = NULL, ...) {

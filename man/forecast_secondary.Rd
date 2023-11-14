@@ -16,21 +16,21 @@ forecast_secondary(
 }
 \arguments{
 \item{estimate}{An object of class "estimate_secondary" as produced by
-\code{estimate_secondary()}.}
+\code{\link[=estimate_secondary]{estimate_secondary()}}.}
 
-\item{primary}{A data.frame containing at least \code{date} and \code{value} (integer)
-variables and optionally \code{sample}. Used as the primary observation used to
-forecast the secondary observations. Alternatively, this may be an object of
-class "estimate_infections" as produced by \code{estimate_infections()}. If
-\code{primary} is of class "estimate_infections" then the internal samples will
+\item{primary}{A \verb{<data.frame>} containing at least \code{date} and \code{value}
+(integer) variables and optionally \code{sample}. Used as the primary observation
+used to forecast the secondary observations. Alternatively, this may be an
+object of class "estimate_infections" as produced by \code{estimate_infections()}.
+If \code{primary} is of class "estimate_infections" then the internal samples will
 be filtered to have a minimum date ahead of those observed in the \code{estimate}
 object.}
 
 \item{primary_variable}{A character string indicating the primary variable,
 defaulting to "reported_cases". Only used when primary is of class
-"estimate_infections".}
+\verb{<estimate_infections>}.}
 
-\item{model}{A compiled stan model as returned by \code{rstan::stan_model}.}
+\item{model}{A compiled stan model as returned by \code{\link[rstan:stan_model]{rstan::stan_model()}}.}
 
 \item{samples}{Numeric, number of posterior samples to simulate from. The
 default is to use all samples in the \code{primary} input when present. If not
@@ -42,27 +42,27 @@ and not just those in the forecast horizon be returned.}
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 }
 \value{
-A list containing: \code{predictions} (a data frame ordered by date with
-the primary, and secondary observations, and a summary of the forecast
+A list containing: \code{predictions} (a \verb{<data.frame>} ordered by date
+with the primary, and secondary observations, and a summary of the forecast
 secondary observations. For primary observations in the forecast horizon
-when uncertainty is present the median is used), \code{samples} a data frame of
-forecast secondary observation posterior samples, and \code{forecast} a summary
+when uncertainty is present the median is used), \code{samples} a \verb{<data.frame>}
+of forecast secondary observation posterior samples, and \code{forecast} a summary
 of the forecast secondary observation posterior.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This function forecasts secondary observations using the output of
-\code{estimate_secondary()} and either observed primary data or a forecast of
-primary observations. See the examples of \code{estimate_secondary()}
-for one use case. It can also be combined with \code{estimate_infections()} t
+\code{\link[=estimate_secondary]{estimate_secondary()}} and either observed primary data or a forecast of
+primary observations. See the examples of \code{\link[=estimate_secondary]{estimate_secondary()}}
+for one use case. It can also be combined with \code{\link[=estimate_infections]{estimate_infections()}} to
 produce a forecast for a secondary observation from a forecast of a primary
-observation. See the examples of \code{estimate_secondary()} for
+observation. See the examples of \code{\link[=estimate_secondary]{estimate_secondary()}} for
 example use cases on synthetic data. See
 \href{https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17}{here}
 for an example of forecasting Covid-19 deaths from Covid-19 cases.
 }
 \seealso{
-estimate_secondary
+\code{\link[=estimate_secondary]{estimate_secondary()}}
 }
 \author{
 Sam Abbott

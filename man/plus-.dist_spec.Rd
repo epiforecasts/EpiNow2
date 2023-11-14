@@ -18,7 +18,7 @@ A delay distribution representing the sum of the two delays
 (with class \code{\link[=dist_spec]{dist_spec()}})
 }
 \description{
-This is done via convolution with \code{stats::convolve()}. Nonparametric delays
+This is done via convolution with \code{\link[stats:convolve]{stats::convolve()}}. Nonparametric delays
 that can be combined are processed together, and their cumulative
 distribution function is truncated at a specified tolerance level, ensuring
 numeric stability.

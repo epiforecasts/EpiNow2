@@ -7,7 +7,8 @@
 process_regions(regional_out, regions)
 }
 \arguments{
-\item{regional_out}{A list of output from multiple runs of \code{regional_epinow}}
+\item{regional_out}{A list of output from multiple runs of
+\code{\link[=regional_epinow]{regional_epinow()}}}
 
 \item{regions}{A character vector identifying the regions that have been run}
 }
@@ -16,9 +17,9 @@ A list of all regional estimates and successful regional estimates
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Internal function that processes the output from multiple \code{epinow} runs, adds
-summary logging information.
+Internal function that processes the output from multiple \code{\link[=epinow]{epinow()}} runs,
+adds summary logging information.
 }
 \seealso{
-regional_epinow epinow
+\code{\link[=regional_epinow]{regional_epinow()}} \code{\link[=epinow]{epinow()}}
 }

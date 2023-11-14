@@ -14,9 +14,9 @@ extract_parameter_samples(
 )
 }
 \arguments{
-\item{stan_fit}{A fit Stan model as returned by \code{rstan:sampling}.}
+\item{stan_fit}{A fit Stan model as returned by \code{\link[=rstan:sampling]{rstan:sampling()}}.}
 
-\item{data}{A list of the data supplied to the \code{rstan::sampling} call.}
+\item{data}{A list of the data supplied to the \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} call.}
 
 \item{reported_dates}{A vector of dates to report estimates for.}
 
@@ -30,11 +30,12 @@ if it is off length 1; this is necessary when processing simulation results.}
 extracted from data.}
 }
 \value{
-A list of dataframes each containing the posterior of a parameter
+A list of \verb{<data.frame>}'s each containing the posterior of a
+parameter
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Extracts a custom set of parameters from a stan object and adds
+Extracts a custom set of parameters from a \code{{stan}} object and adds
 stratification and dates where appropriate.
 }
 \author{

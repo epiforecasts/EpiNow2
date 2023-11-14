@@ -12,12 +12,12 @@ estimate_delay(delays, ...)
 \item{...}{Arguments to pass to internal methods.}
 }
 \value{
-A \code{dist_spec} summarising the bootstrapped distribution
+A \verb{<dist_spec>} summarising the bootstrapped distribution
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Estimate a log normal delay distribution from a vector of integer delays.
-Currently this function is a simple wrapper for \code{bootstrapped_dist_fit}.
+Currently this function is a simple wrapper for \code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}}.
 }
 \examples{
 \donttest{
@@ -26,7 +26,7 @@ estimate_delay(delays, samples = 1000, bootstraps = 10)
 }
 }
 \seealso{
-bootstrapped_dist_fit
+\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}}
 }
 \author{
 Sam Abbott

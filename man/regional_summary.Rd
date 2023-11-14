@@ -19,10 +19,10 @@ regional_summary(
 )
 }
 \arguments{
-\item{regional_output}{A list of output as produced by \code{regional_epinow} and
-stored in the \code{regional} list.}
+\item{regional_output}{A list of output as produced by \code{\link[=regional_epinow]{regional_epinow()}}
+and stored in the \code{regional} list.}
 
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date
+\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
 (date), and region (\code{region}).}
 
 \item{results_dir}{An optional character string indicating the location of

@@ -2,22 +2,22 @@
 % Please edit documentation in R/dist.R
 \name{fix_dist}
 \alias{fix_dist}
-\title{Fix the parameters of a \code{dist_spec}}
+\title{Fix the parameters of a \verb{<dist_spec>} object}
 \usage{
 fix_dist(x, strategy = c("mean", "sample"))
 }
 \arguments{
-\item{x}{A \link{dist_spec} object}
+\item{x}{A \verb{<dist_spec>} object}
 
 \item{strategy}{Character; either "mean" (use the mean estimates of the
 mean and standard deviation) or "sample" (randomly sample mean and
-standard deviation from uncertainty given in the \code{dist_spec})}
+standard deviation from uncertainty given in the \verb{<dist_spec>}}
 }
 \value{
-A \code{dist_spec} object without uncertainty
+A \verb{<dist_spec>} object without uncertainty
 }
 \description{
-If the given \code{dist_spec} has any uncertainty, it is removed and the
+If the given \verb{<dist_spec>} has any uncertainty, it is removed and the
 corresponding distribution converted into a fixed one.
 }
 \author{

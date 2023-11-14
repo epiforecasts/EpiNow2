@@ -17,5 +17,5 @@ A list
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Used to handle updating settings in a list. For example when making
-changes to \code{opts_list} output.
+changes to \code{\link[=opts_list]{opts_list()}} output.
 }

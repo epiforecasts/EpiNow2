@@ -7,7 +7,7 @@
 save_input(reported_cases, target_folder)
 }
 \arguments{
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date
+\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
 (date). confirm must be integer and date must be in date format.}
 
 \item{target_folder}{Character string specifying where to save results (will

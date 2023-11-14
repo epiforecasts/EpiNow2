@@ -15,12 +15,12 @@ plot_estimates(
 )
 }
 \arguments{
-\item{estimate}{A data.table of estimates containing the following
+\item{estimate}{A \verb{<data.table>} of estimates containing the following
 variables: date, type (must contain "estimate", "estimate based on partial
 data" and optionally "forecast").}
 
-\item{reported}{A data.table of reported cases with the following variables:
-date, confirm.}
+\item{reported}{A \verb{<data.table>} of reported cases with the following
+variables: date, confirm.}
 
 \item{ylab}{Character string, defaulting to "Cases". Title for the plot y
 axis.}
@@ -44,9 +44,9 @@ A \code{ggplot2} object
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
-Allows users to plot the output from \code{estimate_infections} easily. In future
-releases it  may be depreciated in favour of increasing the functionality of
-the S3 plot methods.
+Allows users to plot the output from \code{\link[=estimate_infections]{estimate_infections()}} easily.
+In future releases it may be depreciated in favour of increasing the
+functionality of the S3 plot methods.
 }
 \examples{
 # get example model results
