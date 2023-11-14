@@ -13,11 +13,11 @@ get_regional_results(
 )
 }
 \arguments{
-\item{regional_output}{A list of output as produced by \code{regional_epinow} and
-stored in the \code{regional} list.}
+\item{regional_output}{A list of output as produced by \code{\link[=regional_epinow]{regional_epinow()}}
+and stored in the \code{regional} list.}
 
 \item{results_dir}{A character string indicating the folder containing the
-\code{EpiNow2} results to extract.}
+\code{{EpiNow2}} results to extract.}
 
 \item{date}{A Character string (in the format "yyyy-mm-dd") indicating the
 date to extract data for. Defaults to "latest" which finds the latest

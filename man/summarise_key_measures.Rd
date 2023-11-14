@@ -35,7 +35,7 @@ date of report
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
-Produces summarised data frames of output across regions. Used internally by
+Produces summarised \verb{<data.frame>}s of output across regions. Used internally by
 \code{regional_summary}.
 }
 \seealso{

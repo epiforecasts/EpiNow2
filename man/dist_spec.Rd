@@ -63,7 +63,7 @@ probability mass function of the delay (starting with 0); defaults to an
 empty vector corresponding to a parametric specification of the distribution
 (using \code{mean}, \code{sd} and corresponding uncertainties)}
 
-\item{fixed}{Logical, defaults to \code{FALSE}. Should delays be treated
+\item{fixed}{Deprecated, use \link{fix_dist() instead}
 as coming from fixed (vs uncertain) distributions. Overrides any values
 assigned to \code{mean_sd} and \code{sd_sd} by setting them to zero.
 reduces compute requirement but may produce spuriously precise estimates.}

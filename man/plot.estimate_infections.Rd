@@ -17,11 +17,11 @@ Defaults to  "summary" with supported options being "infections", "reports",
 \item{...}{Pass additional arguments to report_plots}
 }
 \value{
-List of plots as produced by \code{report_plots}
+List of plots as produced by \code{\link[=report_plots]{report_plots()}}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
-\code{plot} method for class "estimate_infections".
+\code{plot} method for class \verb{<estimate_infections>}.
 }
 \seealso{
 plot report_plots estimate_infections

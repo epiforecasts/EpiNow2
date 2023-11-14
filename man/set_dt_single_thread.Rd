@@ -10,10 +10,10 @@ set_dt_single_thread()
 an environment in the parent frame named "dt_settings"
 }
 \description{
-This function sets the threads used by data.table to 1 in the parent function
-and then restores the initial data.table threads when the function exits.
-This is primarily used as an internal function inside of other functions
-and will generally not be used on its own.
+This function sets the threads used by \code{{data.table}} to 1 in the parent
+function and then restores the initial \code{{data.table}} threads when the
+function exits. This is primarily used as an internal function inside of
+other functions and will generally not be used on its own.
 }
 \examples{
 \donttest{

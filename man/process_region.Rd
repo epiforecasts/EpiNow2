@@ -14,11 +14,11 @@ process_region(
 )
 }
 \arguments{
-\item{out}{List of output returned by \code{epinow}}
+\item{out}{List of output returned by \code{\link[=epinow]{epinow()}}}
 
 \item{target_region}{Character string indicating the region being evaluated}
 
-\item{timing}{Output from \code{Sys.time}}
+\item{timing}{Output from \code{\link[=Sys.time]{Sys.time()}}}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned,
 this automatically updates to TRUE if no directory for saving is specified.}
@@ -37,5 +37,5 @@ Internal function that removes output that is not required, and returns
 logging information.
 }
 \seealso{
-regional_epinow
+\code{\link[=regional_epinow]{regional_epinow()}}
 }

@@ -7,13 +7,13 @@
 \method{plot}{dist_spec}(x, ...)
 }
 \arguments{
-\item{x}{A \link{dist_spec} object}
+\item{x}{A \verb{<dist_spec>} object}
 
-\item{...}{Additional arguments to pass to \code{ggplot}}
+\item{...}{Additional arguments to pass to \code{{ggplot}}.}
 }
 \description{
-This function takes a \link{dist_spec} object and plots its probability mass
-function (PMF) and cumulative distribution function (CDF) using \link{ggplot2}.
+This function takes a \verb{<dist_spec>} object and plots its probability mass
+function (PMF) and cumulative distribution function (CDF) using \code{{ggplot2}}.
 Note that currently uncertainty in distributions is not plot.
 }
 \examples{

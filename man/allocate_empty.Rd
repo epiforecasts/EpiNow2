@@ -20,5 +20,5 @@ A list of parameters some allocated to be empty
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Allocate missing parameters to be empty two dimensional arrays. Used
-internally by \code{simulate_infections.}
+internally by \code{\link[=simulate_infections]{simulate_infections()}}.
 }

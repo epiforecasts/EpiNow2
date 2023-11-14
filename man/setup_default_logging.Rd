@@ -14,11 +14,11 @@ setup_default_logging(
 \item{logs}{Character path indicating the target folder in which to store log
 information. Defaults to the temporary directory if not specified. Default
 logging can be disabled if \code{logs} is set to NULL. If specifying a custom
-logging setup then the code for \code{setup_default_logging} and the
-\code{setup_logging} function are a sensible place to start.}
+logging setup then the code for \code{\link[=setup_default_logging]{setup_default_logging()}} and the
+\code{\link[=setup_logging]{setup_logging()}} function are a sensible place to start.}
 
 \item{mirror_epinow}{Logical, defaults to FALSE. Should internal logging be
-returned from \code{epinow} to the console.}
+returned from \code{\link[=epinow]{epinow()}} to the console.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not
 specified.}

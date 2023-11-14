@@ -13,13 +13,14 @@
 #' @param max deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
 #' @param prior_weight deprecated; prior weights are now specified as a
-#' model option. Use the `weigh_delay_priors` argument of `estimate_infections`
-#' instead.
+#' model option. Use the `weigh_delay_priors` argument of
+#' [estimate_infections()] instead.
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
 #' @author Sebastian Funk
 #' @author Sam Abbott
-#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
+#' @seealso [convert_to_logmean()] [convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [dist_spec()]
 #' @export
 #' @examples
 #' # default settings with a fixed generation time of 1
@@ -110,7 +111,8 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
 #' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @author Sam Abbott
 #' @author Sebastian Funk
-#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
+#' @seealso [convert_to_logmean()] [convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [dist_spec()]
 #' @export
 #' @examples
 #' # no delays
@@ -165,7 +167,7 @@ delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Returns a truncation distribution formatted for usage by
-#' downstream functions. See `estimate_truncation()` for an approach to
+#' downstream functions. See [estimate_truncation()] for an approach to
 #' estimate these distributions.
 #'
 #' @param dist A delay distribution or series of delay distributions reflecting
@@ -176,7 +178,8 @@ delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
 #'
 #' @author Sam Abbott
 #' @author Sebastian Funk
-#' @seealso convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
+#' @seealso [convert_to_logmean()] [convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [dist_spec()]
 #' @export
 #' @examples
 #' # no truncation
@@ -352,8 +355,8 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #' \code{inv_gamma(1.499007, 0.057277 * ls_max)}.
 #'
 #' @param ls_max Numeric, defaults to 60. The maximum value of the length
-#' scale. Updated in `create_gp_data` to be the length of the input data if this
-#' is smaller.
+#' scale. Updated in [create_gp_data()] to be the length of the input data if
+#' this is smaller.
 #'
 #' @param ls_min Numeric, defaults to 0. The minimum value of the length scale.
 #'
@@ -499,7 +502,7 @@ obs_opts <- function(family = "negbin",
 #'
 #' @description `r lifecycle::badge("stable")`
 #'  Defines a list specifying the arguments passed to
-#' `rstan::sampling`. Custom settings can be supplied which override the
+#' [rstan::sampling()]. Custom settings can be supplied which override the
 #'  defaults.
 #'
 #' @param cores Number of cores to use when executing the chains in parallel,
@@ -527,7 +530,7 @@ obs_opts <- function(family = "negbin",
 #' @param future Logical, defaults to `FALSE`. Should stan chains be run in
 #' parallel using `future`. This allows users to have chains fail gracefully
 #' (i.e when combined with `max_execution_time`). Should be combined with a
-#' call to `future::plan`.
+#' call to [future::plan()].
 #'
 #' @param max_execution_time Numeric, defaults to Inf (seconds). If set wil
 #' kill off processing of each chain if not finished within the specified
@@ -535,9 +538,9 @@ obs_opts <- function(family = "negbin",
 #' returned. If less than 2 chains return within the allowed time then
 #' estimation will fail with an informative error.
 #'
-#' @param ... Additional parameters to pass to `rstan::sampling`.
+#' @param ... Additional parameters to pass to [rstan::sampling()].
 #' @importFrom utils modifyList
-#' @return A list of arguments to pass to `rstan::sampling`.
+#' @return A list of arguments to pass to [rstan::sampling()].
 #' @author Sam Abbott
 #' @export
 #' @examples
@@ -574,20 +577,20 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 #'
 #' @description `r lifecycle::badge("stable")`
 #'  Defines a list specifying the arguments passed to
-#' `rstan::vb`. Custom settings can be supplied which override the defaults.
+#' [rstan::vb()]. Custom settings can be supplied which override the defaults.
 #'
 #' @param samples Numeric, default 2000. Overall number of approximate posterior
 #' samples.
 #'
-#' @param trials Numeric, defaults to 10. Number of attempts to use `rstan::vb`
-#' before failing.
+#' @param trials Numeric, defaults to 10. Number of attempts to use
+#' rstan::vb()] before failing.
 #'
 #' @param iter Numeric, defaulting to 10000. Number of iterations to use in
-#' `rtan::vb`.
+#' [rstan::vb()].
 #'
-#' @param ... Additional parameters to pass to `rstan::vb`.
+#' @param ... Additional parameters to pass to [rstan::vb()].
 #'
-#' @return A list of arguments to pass to `rstan::vb`.
+#' @return A list of arguments to pass to [rstan::vb()].
 #' @author Sam Abbott
 #' @export
 #' @examples
@@ -608,14 +611,14 @@ rstan_vb_opts <- function(samples = 2000,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the arguments passed to underlying `rstan`
-#' functions via `rstan_sampling_opts()` and `rstan_vb_opts()`.Custom settings
+#' functions via [rstan_sampling_opts()] and [rstan_vb_opts()].Custom settings
 #'  can be supplied which override the defaults.
 #'
 #' @param object Stan model object. By default uses the compiled package
 #' default.
 #'
 #' @param method A character string, defaulting to sampling. Currently supports
-#' `rstan::sampling` ("sampling") or `rstan:vb` ("vb").
+#' [rstan::sampling()] ("sampling") or [rstan:vb()] ("vb").
 #'
 #' @param ... Additional parameters to pass  underlying option functions.
 #' @importFrom rlang arg_match
@@ -623,7 +626,7 @@ rstan_vb_opts <- function(samples = 2000,
 #' @author Sam Abbott
 #' @export
 #' @inheritParams rstan_sampling_opts
-#' @seealso rstan_sampling_opts rstan_vb_opts
+#' @seealso [rstan_sampling_opts()] [rstan_vb_opts()]
 #' @examples
 #' rstan_opts(samples = 1000)
 #'
@@ -653,7 +656,7 @@ rstan_opts <- function(object = NULL,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the arguments passed to underlying stan
-#' backend functions via `rstan_sampling_opts()` and `rstan_vb_opts()`. Custom
+#' backend functions via [rstan_sampling_opts()] and [rstan_vb_opts()]. Custom
 #' settings can be supplied which override the defaults.
 #'
 #' @param backend Character string indicating the backend to use for fitting
@@ -666,7 +669,7 @@ rstan_opts <- function(object = NULL,
 #' character string can be passed with the currently supported option being
 #' "cumulative". This fits the model to cumulative cases and may be useful for
 #'  certain data sets where the sampler gets stuck or struggles to initialise.
-#' See `init_cumulative_fit()` for details.
+#' See [init_cumulative_fit()] for details.
 #'
 #' This implementation is based on the approach taken in
 #' [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) authored by
@@ -683,9 +686,9 @@ rstan_opts <- function(object = NULL,
 #' @author Sam Abbott
 #' @export
 #' @inheritParams rstan_opts
-#' @seealso rstan_opts
+#' @seealso [rstan_opts()]
 #' @examples
-#' # using default of rstan::sampling
+#' # using default of [rstan::sampling()]
 #' stan_opts(samples = 1000)
 #'
 #' # using vb
@@ -716,13 +719,13 @@ stan_opts <- function(samples = 2000,
 #' Return an _opts List per Region
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' Define a list of `_opts()` to pass to `regional_epinow` `_opts()` accepting
+#' Define a list of `_opts()` to pass to [regional_epinow()] `_opts()` accepting
 #' arguments. This is useful when different settings are needed between regions
-#' within a single `regional_epinow` call. Using `opts_list` the defaults can
-#' be applied to all regions present with an override passed to regions as
-#' necessary (either within `opts_list` or externally).
+#' within a single [regional_epinow()] call. Using [opts_list()] the defaults
+#' can be applied to all regions present with an override passed to regions as
+#' necessary (either within [opts_list()] or externally).
 #'
-#' @param opts An `_opts()` function call such as `rt_opts()`.
+#' @param opts An `_opts()` function call such as [rt_opts()].
 #'
 #' @param reported_cases A data frame containing a `region` variable
 #' indicating the target regions.
@@ -735,7 +738,7 @@ stan_opts <- function(samples = 2000,
 #' @return A named list of options per region which can be passed to the `_opt`
 #' accepting arguments of `regional_epinow`.
 #' @author Sam Abbott
-#' @seealso regional_epinow rt_opts
+#' @seealso [regional_epinow()] [rt_opts()]
 #' @export
 #' @examples
 #' # uses example case vector

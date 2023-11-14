@@ -7,7 +7,7 @@
 clean_regions(reported_cases, non_zero_points)
 }
 \arguments{
-\item{reported_cases}{A data frame of confirmed cases (confirm) by date
+\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
 (date), and region (\code{region}).}
 
 \item{non_zero_points}{Numeric, the minimum number of time points with
@@ -23,5 +23,5 @@ Removes regions with insufficient time points, and provides logging
 information on the input.
 }
 \seealso{
-regional_epinow
+\code{\link[=regional_epinow]{regional_epinow()}}
 }

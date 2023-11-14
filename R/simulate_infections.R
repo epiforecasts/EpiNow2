@@ -5,28 +5,28 @@
 #' This function simulates infections using an existing fit to observed cases
 #' but with a modified time-varying reproduction number. This can be used to
 #' explore forecast models or past counterfactuals. Simulations can be run in
-#' parallel using `future::plan`.
+#' parallel using [future::plan()].
 #'
-#' @param estimates The \code{estimates} element of an \code{epinow} run that
+#' @param estimates The \code{estimates} element of an [epinow()] run that
 #' has been done with output = "fit", or the result of
-#' \code{estimate_infections} with \code{return_fit} set to TRUE.
+#' [estimate_infections()] with \code{return_fit} set to TRUE.
 #'
-#' @param model A compiled stan model as returned by `rstan::stan_model`.
+#' @param model A compiled stan model as returned by [rstan::stan_model()].
 #'
 #' @param R A numeric vector of reproduction numbers; these will overwrite the
 #' reproduction numbers contained in \code{estimates}, except elements set to
-#' NA. Alternatively accepts a data.frame containing at least `date` and `value`
-#' (integer) variables and optionally `sample`. More (or fewer) days than in
-#' the original fit can be simulated.
+#' NA. Alternatively accepts a `<data.frame>` containing at least `date` and
+#' `value` (integer) variables and optionally `sample`. More (or fewer) days
+#' than in the original fit can be simulated.
 #'
 #' @param samples Numeric, number of posterior samples to simulate from. The
 #' default is to use all samples in the `estimates` input.
 #'
 #' @param batch_size Numeric, defaults to 10. Size of batches in which to
 #' simulate. May decrease run times due to reduced IO costs but this is still
-#' being evaluated. If set to NULL then al simulations are done at once.
+#' being evaluated. If set to NULL then all simulations are done at once.
 #'
-#' @param verbose Logical defaults to `interactive()`. Should a progress bar
+#' @param verbose Logical defaults to [interactive()]. Should a progress bar
 #' (from `progressr`) be shown.
 #' @importFrom rstan extract sampling
 #' @importFrom purrr transpose map safely compact
@@ -38,6 +38,9 @@
 #' assert_numeric assert_integerish assert_logical
 #' @return A list of output as returned by [estimate_infections()] but based on
 #' results from the specified scenario rather than fitting.
+#' @seealso [dist_spec()] [generation_time_opts()] [delay_opts()] [rt_opts()]
+#' [estimate_infections()] [trunc_opts()] [stan_opts()] [obs_opts()]
+#' [gp_opts()]
 #' @export
 #' @examples
 #' \donttest{

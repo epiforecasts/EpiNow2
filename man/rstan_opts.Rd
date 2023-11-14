@@ -14,7 +14,7 @@ default.}
 When using multiple chains iterations per chain is samples / chains.}
 
 \item{method}{A character string, defaulting to sampling. Currently supports
-\code{rstan::sampling} ("sampling") or \code{rstan:vb} ("vb").}
+\code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} ("sampling") or \code{\link[=rstan:vb]{rstan:vb()}} ("vb").}
 
 \item{...}{Additional parameters to pass  underlying option functions.}
 }
@@ -24,7 +24,7 @@ A list of arguments to pass to the appropriate rstan functions.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to underlying \code{rstan}
-functions via \code{rstan_sampling_opts()} and \code{rstan_vb_opts()}.Custom settings
+functions via \code{\link[=rstan_sampling_opts]{rstan_sampling_opts()}} and \code{\link[=rstan_vb_opts]{rstan_vb_opts()}}.Custom settings
 can be supplied which override the defaults.
 }
 \examples{
@@ -34,7 +34,7 @@ rstan_opts(samples = 1000)
 rstan_opts(method = "vb")
 }
 \seealso{
-rstan_sampling_opts rstan_vb_opts
+\code{\link[=rstan_sampling_opts]{rstan_sampling_opts()}} \code{\link[=rstan_vb_opts]{rstan_vb_opts()}}
 }
 \author{
 Sam Abbott

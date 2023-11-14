@@ -1,11 +1,11 @@
 #' Setup Logging
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' Sets up `futile.logger` logging, which is integrated into `EpiNow2`. See the
-#' documentation for `futile.logger` for full details. By default `EpiNow2`
-#' prints all logs at the "INFO" level and returns them to the console. Usage
-#' of logging is currently being explored as the current setup cannot log stan
-#' errors or progress.
+#' Sets up `{futile.logger}` logging, which is integrated into `{EpiNow2}`.
+#' See the documentation for `{futile.logger}` for full details. By default
+#' `{EpiNow2}` prints all logs at the "INFO" level and returns them to the
+#' console. Usage of logging is currently being explored as the current
+#' setup cannot log stan errors or progress.
 #'
 #' @param threshold Character string indicating the logging level see
 #' (?futile.logger for details of the available options). Defaults to "INFO".
@@ -19,9 +19,9 @@
 #' @param name Character string defaulting to EpiNow2. This indicates the name
 #' of the logger to setup. The default logger for EpiNow2 is called EpiNow2.
 #' Nested options include: Epinow2.epinow which controls all logging for
-#' `epinow` and nested functions, EpiNow2.epinow.estimate_infections (logging in
-#'  `estimate_infections`), and EpiNow2.epinow.estimate_infections.fit (logging
-#' in fitting functions).
+#' [epinow()] and nested functions, EpiNow2.epinow.estimate_infections
+#' (logging in [estimate_infections()], and
+#' EpiNow2.epinow.estimate_infections.fit (logging in fitting functions).
 #'
 #' @importFrom futile.logger flog.threshold flog.appender appender.tee
 #' @importFrom futile.logger appender.file flog.info
@@ -66,11 +66,11 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 #' @param logs Character path indicating the target folder in which to store log
 #' information. Defaults to the temporary directory if not specified. Default
 #' logging can be disabled if `logs` is set to NULL. If specifying a custom
-#' logging setup then the code for `setup_default_logging` and the
-#' `setup_logging` function are a sensible place to start.
+#' logging setup then the code for [setup_default_logging()] and the
+#' [setup_logging()] function are a sensible place to start.
 #'
 #' @param mirror_epinow Logical, defaults to FALSE. Should internal logging be
-#' returned from `epinow` to the console.
+#' returned from [epinow()] to the console.
 #'
 #' @inheritParams setup_target_folder
 #' @return No return value, called for side effects
@@ -114,15 +114,16 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 #' @description `r lifecycle::badge("stable")`
 #' A utility function that aims to streamline the set up
 #' of the required future backend with sensible defaults for most users of
-#' `regional_epinow`. More advanced users are recommended to setup their own
-#' `future` backend based on their available resources.
+#' [regional_epinow()]. More advanced users are recommended to setup their own
+#' `{future}` backend based on their available resources.
 #'
 #' @param strategies A vector length 1 to 2 of strategies to pass to
-#' `future::plan`. Nesting of parallelisation is from the top level down.
+#' [future::plan()]. Nesting of parallelisation is from the top level down.
 #' The default is to set up nesting parallelisation with both using
-#' `future::multisession` (`future::multicore` will likely be a faster option on
-#' supported platforms). For single level parallelisation use a single strategy
-#' or `future::plan` directly. See `?future::plan` for options.
+#' [future::multisession()] ([future::multicore()] will likely be a faster
+#' option on supported platforms). For single level parallelisation use a
+#' single strategy or [future::plan()] directly. See [future::plan()] for
+#' options.
 #'
 #' @param min_cores_per_worker Numeric, the minimum number of cores per worker.
 #' Defaults to 4 which assumes 4 MCMC chains are in use per region.
@@ -182,8 +183,8 @@ setup_future <- function(reported_cases,
 
 #' Convert to Data Table
 #' @description `r lifecycle::badge("stable")`
-#' Convenience function that sets the number of `data.table` cores to 1 and
-#' maps input to be a `data.table`
+#' Convenience function that sets the number of `{data.table}` cores to 1 and
+#' maps input to be a `{data.table}`
 #' @inheritParams estimate_infections
 #' @return A data table
 #' @export

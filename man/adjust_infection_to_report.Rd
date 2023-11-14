@@ -14,12 +14,12 @@ adjust_infection_to_report(
 )
 }
 \arguments{
-\item{infections}{\code{data.table} containing a \code{date} variable and a numeric
+\item{infections}{\verb{<data.table>} containing a \code{date} variable and a numeric
 \code{cases} variable.}
 
 \item{delay_defs}{A list of single row data.tables that each  defines a
 delay distribution (model, parameters and maximum delay for each model).
-See \code{lognorm_dist_def} for an example of the structure.}
+See \code{\link[=lognorm_dist_def]{lognorm_dist_def()}} for an example of the structure.}
 
 \item{reporting_model}{A function that takes a single numeric vector as an
 argument and returns a single numeric vector. Can be used to apply stochastic

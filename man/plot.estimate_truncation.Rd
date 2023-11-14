@@ -7,7 +7,7 @@
 \method{plot}{estimate_truncation}(x, ...)
 }
 \arguments{
-\item{x}{A list of output as produced by \code{estimate_truncation}}
+\item{x}{A list of output as produced by \code{\link[=estimate_truncation]{estimate_truncation()}}}
 
 \item{...}{Pass additional arguments to plot function. Not currently in use.}
 }
@@ -16,7 +16,7 @@
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-\code{plot} method for class "estimate_truncation". Returns
+\code{\link[=plot]{plot()}} method for class \verb{<estimate_truncation>}. Returns
 a plot faceted over each dataset used in fitting with the latest
 observations as columns, the data observed at the time (and so truncated)
 as dots and the truncation adjusted estimates as a ribbon.

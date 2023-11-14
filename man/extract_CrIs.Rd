@@ -7,14 +7,15 @@
 extract_CrIs(summarised)
 }
 \arguments{
-\item{summarised}{A data frame as processed by \code{calc_CrIs}}
+\item{summarised}{A \verb{<data.frame>} as processed by \code{calc_CrIs}}
 }
 \value{
-A numeric vector of credible intervals detected in the data frame.
+A numeric vector of credible intervals detected in the \verb{<data.frame>}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Helper function to extract the credible intervals present in a data frame.
+Helper function to extract the credible intervals present in a
+\verb{<data.frame>}.
 }
 \examples{
 samples <- data.frame(value = 1:10, type = "car")

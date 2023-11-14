@@ -49,7 +49,7 @@ A vector of samples or a probability distribution.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 This function acts as a skeleton for a truncated distribution defined by
 model type, maximum value and model parameters. It is designed to be used
-with the output from \code{get_dist}.
+with the output from \code{\link[=get_dist]{get_dist()}}.
 }
 \examples{
 

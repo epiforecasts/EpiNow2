@@ -1,13 +1,13 @@
 #' Real-time Rt Estimation, Forecasting and Reporting
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' This function wraps the functionality of `estimate_infections()` in order
+#' This function wraps the functionality of [estimate_infections()] in order
 #' to estimate Rt and cases by date of infection and forecast these infections
 #' into the future. In addition to the functionality of
-#' `estimate_infections()` it produces additional summary output useful for
+#' [estimate_infections()] it produces additional summary output useful for
 #' reporting results and interpreting them as well as error catching and
 #' reporting, making it particularly useful for production use e.g. running at
-#' set intervals on a deidcated server.
+#' set intervals on a dedicated server.
 #'
 #' @param output A character vector of optional output to return. Supported
 #' options are samples ("samples"), plots ("plots"), the run time ("timing"),
@@ -18,14 +18,13 @@
 #' @param return_output Logical, defaults to FALSE. Should output be returned,
 #' this automatically updates to TRUE if no directory for saving is specified.
 #'
-#' @param plot_args A list of optional arguments passed to `plot.epinow()`.
+#' @param plot_args A list of optional arguments passed to [plot.epinow()].
 #'
 #' @return A list of output from estimate_infections with additional elements
 #'   summarising results and reporting errors if they have occurred.
 #' @author Sam Abbott
 #' @export
-#' @seealso estimate_infections simulate_infections
-#' @seealso regional_epinow
+#' @seealso [estimate_infections()] [simulate_infections()] [regional_epinow()]
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
 #' @inheritParams setup_default_logging

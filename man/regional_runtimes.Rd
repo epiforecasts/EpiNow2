@@ -12,8 +12,8 @@ regional_runtimes(
 )
 }
 \arguments{
-\item{regional_output}{A list of output as produced by \code{regional_epinow} and
-stored in the \code{regional} list.}
+\item{regional_output}{A list of output as produced by \code{\link[=regional_epinow]{regional_epinow()}}
+and stored in the \code{regional} list.}
 
 \item{target_folder}{Character string specifying where to save results (will
 create if not present).}

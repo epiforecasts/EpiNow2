@@ -15,26 +15,26 @@ simulate_infections(
 )
 }
 \arguments{
-\item{estimates}{The \code{estimates} element of an \code{epinow} run that
+\item{estimates}{The \code{estimates} element of an \code{\link[=epinow]{epinow()}} run that
 has been done with output = "fit", or the result of
-\code{estimate_infections} with \code{return_fit} set to TRUE.}
+\code{\link[=estimate_infections]{estimate_infections()}} with \code{return_fit} set to TRUE.}
 
 \item{R}{A numeric vector of reproduction numbers; these will overwrite the
 reproduction numbers contained in \code{estimates}, except elements set to
-NA. Alternatively accepts a data.frame containing at least \code{date} and \code{value}
-(integer) variables and optionally \code{sample}. More (or fewer) days than in
-the original fit can be simulated.}
+NA. Alternatively accepts a \verb{<data.frame>} containing at least \code{date} and
+\code{value} (integer) variables and optionally \code{sample}. More (or fewer) days
+than in the original fit can be simulated.}
 
-\item{model}{A compiled stan model as returned by \code{rstan::stan_model}.}
+\item{model}{A compiled stan model as returned by \code{\link[rstan:stan_model]{rstan::stan_model()}}.}
 
 \item{samples}{Numeric, number of posterior samples to simulate from. The
 default is to use all samples in the \code{estimates} input.}
 
 \item{batch_size}{Numeric, defaults to 10. Size of batches in which to
 simulate. May decrease run times due to reduced IO costs but this is still
-being evaluated. If set to NULL then al simulations are done at once.}
+being evaluated. If set to NULL then all simulations are done at once.}
 
-\item{verbose}{Logical defaults to \code{interactive()}. Should a progress bar
+\item{verbose}{Logical defaults to \code{\link[=interactive]{interactive()}}. Should a progress bar
 (from \code{progressr}) be shown.}
 }
 \value{
@@ -46,7 +46,7 @@ results from the specified scenario rather than fitting.
 This function simulates infections using an existing fit to observed cases
 but with a modified time-varying reproduction number. This can be used to
 explore forecast models or past counterfactuals. Simulations can be run in
-parallel using \code{future::plan}.
+parallel using \code{\link[future:plan]{future::plan()}}.
 }
 \examples{
 \donttest{
@@ -94,4 +94,9 @@ plot(sims)
 
 options(old_opts)
 }
+}
+\seealso{
+\code{\link[=dist_spec]{dist_spec()}} \code{\link[=generation_time_opts]{generation_time_opts()}} \code{\link[=delay_opts]{delay_opts()}} \code{\link[=rt_opts]{rt_opts()}}
+\code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=trunc_opts]{trunc_opts()}} \code{\link[=stan_opts]{stan_opts()}} \code{\link[=obs_opts]{obs_opts()}}
+\code{\link[=gp_opts]{gp_opts()}}
 }

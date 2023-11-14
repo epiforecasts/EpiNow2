@@ -10,21 +10,21 @@ rstan_vb_opts(samples = 2000, trials = 10, iter = 10000, ...)
 \item{samples}{Numeric, default 2000. Overall number of approximate posterior
 samples.}
 
-\item{trials}{Numeric, defaults to 10. Number of attempts to use \code{rstan::vb}
-before failing.}
+\item{trials}{Numeric, defaults to 10. Number of attempts to use
+rstan::vb()] before failing.}
 
 \item{iter}{Numeric, defaulting to 10000. Number of iterations to use in
-\code{rtan::vb}.}
+\code{\link[rstan:stanmodel-method-vb]{rstan::vb()}}.}
 
-\item{...}{Additional parameters to pass to \code{rstan::vb}.}
+\item{...}{Additional parameters to pass to \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}}.}
 }
 \value{
-A list of arguments to pass to \code{rstan::vb}.
+A list of arguments to pass to \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to
-\code{rstan::vb}. Custom settings can be supplied which override the defaults.
+\code{\link[rstan:stanmodel-method-vb]{rstan::vb()}}. Custom settings can be supplied which override the defaults.
 }
 \examples{
 rstan_vb_opts(samples = 1000)

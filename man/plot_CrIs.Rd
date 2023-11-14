@@ -7,17 +7,17 @@
 plot_CrIs(plot, CrIs, alpha, linewidth)
 }
 \arguments{
-\item{plot}{A \code{ggplot2} plot}
+\item{plot}{A \code{{ggplot2}} plot}
 
 \item{CrIs}{Numeric list of credible intervals present in the data. As
-produced by \code{extract_CrIs}}
+produced by \code{\link[=extract_CrIs]{extract_CrIs()}}.}
 
 \item{alpha}{Numeric, overall alpha of the target line range}
 
 \item{linewidth}{Numeric, line width of the default line range.}
 }
 \value{
-A \code{ggplot2} plot.
+A \code{{ggplot2}} plot.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

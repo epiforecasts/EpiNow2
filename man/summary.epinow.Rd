@@ -20,7 +20,7 @@
 \item{...}{Pass additional summary arguments to lower level methods}
 }
 \value{
-Returns a data frame of summary output
+Returns a \verb{<data.frame>} of summary output
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

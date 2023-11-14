@@ -3,12 +3,12 @@
 #' @description  `r lifecycle::badge("stable")`
 #' Maps from cases by date of infection to date of report via date of
 #' onset.
-#' @param infections `data.table` containing a `date` variable and a numeric
+#' @param infections `<data.table>` containing a `date` variable and a numeric
 #' `cases` variable.
 #'
 #' @param delay_defs A list of single row data.tables that each  defines a
 #' delay distribution (model, parameters and maximum delay for each model).
-#' See `lognorm_dist_def` for an example of the structure.
+#' See [lognorm_dist_def()] for an example of the structure.
 #'
 #' @param reporting_effect A numeric vector of length 7 that allows the scaling
 #' of reported cases by the day on which they report (1 = Monday, 7 = Sunday).

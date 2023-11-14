@@ -10,7 +10,7 @@
 \item{...}{The delay distributions (from calls to \code{\link[=dist_spec]{dist_spec()}}) to combine}
 }
 \value{
-Combined delay distributions (with class \code{\link[=dist_spec]{dist_spec()}}`)
+Combined delay distributions (with class \verb{<dist_spec>})
 }
 \description{
 This combines the parameters so that they can be fed as multiple delay

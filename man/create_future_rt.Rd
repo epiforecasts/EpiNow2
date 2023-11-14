@@ -22,8 +22,8 @@ A list containing a logical called fixed and an integer called from
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Converts the \code{future} argument from \code{rt_opts()} into arguments that can be
-passed to \code{stan}.
+Converts the \code{future} argument from \code{\link[=rt_opts]{rt_opts()}} into arguments that can be
+passed to \code{{stan}}.
 }
 \author{
 Sam Abbott

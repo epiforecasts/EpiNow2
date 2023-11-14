@@ -24,10 +24,10 @@ A list defining a distribution
 
 Extracts a literature distribution from \code{generation_times}.
 This function has been deprecated. Please specify a distribution
-using \code{dist_spec} instead
+using \code{\link[=dist_spec]{dist_spec()}} instead
 }
 \seealso{
-dist_spec
+\code{\link[=dist_spec]{dist_spec()}}
 }
 \author{
 Sam Abbott

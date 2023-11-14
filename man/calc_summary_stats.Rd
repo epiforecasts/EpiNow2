@@ -17,7 +17,7 @@ credible interval
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Calculate summary statistics from a data frame by group. Currently supports
+Calculate summary statistics from a \verb{<data.frame>} by group. Currently supports
 the mean, median and standard deviation.
 }
 \examples{

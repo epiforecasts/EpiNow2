@@ -7,7 +7,7 @@
 \method{print}{dist_spec}(x, ...)
 }
 \arguments{
-\item{x}{The \code{\link[=dist_spec]{dist_spec()}} to use}
+\item{x}{The \verb{<dist_spec>} to use}
 
 \item{...}{Not used}
 }

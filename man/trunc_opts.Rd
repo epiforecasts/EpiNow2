@@ -18,7 +18,7 @@ distribution.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Returns a truncation distribution formatted for usage by
-downstream functions. See \code{estimate_truncation()} for an approach to
+downstream functions. See \code{\link[=estimate_truncation]{estimate_truncation()}} for an approach to
 estimate these distributions.
 }
 \examples{
@@ -29,7 +29,8 @@ trunc_opts()
 trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
 }
 \seealso{
-convert_to_logmean convert_to_logsd bootstrapped_dist_fit dist_spec
+\code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
+\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[=dist_spec]{dist_spec()}}
 }
 \author{
 Sam Abbott

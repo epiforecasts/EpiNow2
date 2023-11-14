@@ -3,7 +3,7 @@
 #' @description `r lifecycle::badge("stable")`
 #' Estimates the relationship between a primary and secondary observation, for
 #' example hospital admissions and deaths or hospital admissions and bed
-#' occupancy. See `secondary_opts()` for model structure options. See parameter
+#' occupancy. See [secondary_opts()] for model structure options. See parameter
 #' documentation for model defaults and options. See the examples for case
 #' studies using synthetic data and
 #' [here](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17)
@@ -14,24 +14,24 @@
 #' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R) # nolint
 #' for an application forecasting Covid-19 deaths in Germany and Poland.
 #'
-#' @param secondary A call to `secondary_opts()` or a list containing the
+#' @param secondary A call to [secondary_opts()] or a list containing the
 #' following  binary variables: cumulative, historic, primary_hist_additive,
 #' current, primary_current_additive. These parameters control the structure of
-#' the secondary model, see `secondary_opts()` for details.
+#' the secondary model, see [secondary_opts()] for details.
 #'
 #' @param delays A call to [delay_opts()] defining delay distributions between
-#' primary and secondary observations See the documentation of `delay_opts()`
+#' primary and secondary observations See the documentation of [delay_opts()]
 #' for details. By default a diffuse prior  is assumed with a mean of 14 days
 #' and standard deviation of 7 days (with a standard deviation of 0.5 and 0.25
 #' respectively on the log scale).
 #'
-#' @param reports A data frame containing the `date` of report and both
+#' @param reports A `<data.frame>` containing the `date` of report and both
 #' `primary` and `secondary` reports.
 #'
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
 #'
-#' @param priors A `data.frame` of named priors to be used in model fitting
+#' @param priors A `<data.frame>` of named priors to be used in model fitting
 #' rather than the defaults supplied from other arguments. This is typically
 #' useful if wanting to inform an estimate from the posterior of another model
 #' fit.
@@ -48,12 +48,12 @@
 #' parameters.
 #'
 #' @param verbose Logical, should model fitting progress be returned. Defaults
-#' to `interactive()`.
+#' to [interactive()].
 #'
-#' @param ... Additional parameters to pass to `rstan::sampling`.
+#' @param ... Additional parameters to pass to [rstan::sampling()].
 #'
-#' @return A list containing: `predictions` (a data frame ordered by date with
-#' the primary, and secondary observations, and a summary of the model
+#' @return A list containing: `predictions` (a `<data.frame>` ordered by date
+#' with the primary, and secondary observations, and a summary of the model
 #' estimated secondary observations), `posterior` which contains a summary of
 #' the entire model posterior, `data` (a list of data used to fit the
 #' model), and `fit` (the `stanfit` object).
@@ -230,7 +230,7 @@ estimate_secondary <- function(reports,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Returns a list of options defining the secondary model used in
-#' `estimate_secondary()`. This model is a combination of a convolution of
+#' [estimate_secondary()]. This model is a combination of a convolution of
 #' previously observed primary reports combined with current primary reports
 #' (either additive or subtractive). It can optionally be cumulative. See the
 #' documentation of `type` for sensible options to cover most use cases and the
@@ -302,18 +302,18 @@ secondary_opts <- function(type = "incidence", ...) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' This functions allows the user to more easily specify data driven or model
-#' based priors for `estimate_secondary()` from example from previous model fits
-#' using a `data.frame` to overwrite other default settings. Note that default
+#' based priors for [estimate_secondary()] from example from previous model fits
+#' using a `<data.frame>` to overwrite other default settings. Note that default
 #' settings are still required.
 #'
 #' @param data A list of data and arguments as returned by `create_stan_data()`.
 #'
-#' @param priors A `data.frame` of named priors to be used in model fitting
+#' @param priors A `<data.frame>` of named priors to be used in model fitting
 #' rather than the defaults supplied from other arguments. This is typically
 #' useful if wanting to inform a estimate from the posterior of another model
 #' fit. Priors that are currently use to update the defaults are the scaling
 #' fraction ("frac_obs"), the mean delay ("delay_mean"), and standard deviation
-#' of the delay ("delay_sd"). The `data.frame` should have the following
+#' of the delay ("delay_sd"). The `<data.frame>` should have the following
 #' variables: `variable`, `mean`, and `sd`.
 #'
 #' @return A list as produced by `create_stan_data()`.
@@ -376,7 +376,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #'
 #' @param to Date object indicating when to plot up to.
 #'
-#' @param new_obs A data.frame containing the columns `date` and `secondary`
+#' @param new_obs A `<data.frame>` containing the columns `date` and `secondary`
 #' which replace the secondary observations stored in the `estimate_secondary`
 #' output.
 #'
@@ -444,7 +444,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 
 #' Simulate a secondary observation
 #'
-#' @param data A data frame containing the `date` of report and `primary`
+#' @param data A `<data.frame>` containing the `date` of report and `primary`
 #' cases as a numeric vector.
 #'
 #' @param family Character string defining the observation model. Options are
@@ -457,7 +457,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' @param ... Additional parameters to pass to the observation model (i.e
 #'  `rnbinom` or `rpois`).
 #'
-#' @return A data frame containing simulated data in the format required by
+#' @return A `<data.frame>` containing simulated data in the format required by
 #' [estimate_secondary()].
 #'
 #' @author Sam Abbott
@@ -555,31 +555,31 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' This function forecasts secondary observations using the output of
-#' `estimate_secondary()` and either observed primary data or a forecast of
-#' primary observations. See the examples of `estimate_secondary()`
-#' for one use case. It can also be combined with `estimate_infections()` t
+#' [estimate_secondary()] and either observed primary data or a forecast of
+#' primary observations. See the examples of [estimate_secondary()]
+#' for one use case. It can also be combined with [estimate_infections()] to
 #' produce a forecast for a secondary observation from a forecast of a primary
-#' observation. See the examples of `estimate_secondary()` for
+#' observation. See the examples of [estimate_secondary()] for
 #' example use cases on synthetic data. See
 #' [here](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17)
 #' for an example of forecasting Covid-19 deaths from Covid-19 cases.
 #'
 #' @param estimate An object of class "estimate_secondary" as produced by
-#' `estimate_secondary()`.
+#' [estimate_secondary()].
 #'
-#' @param primary A data.frame containing at least `date` and `value` (integer)
-#' variables and optionally `sample`. Used as the primary observation used to
-#' forecast the secondary observations. Alternatively, this may be an object of
-#' class "estimate_infections" as produced by `estimate_infections()`. If
-#' `primary` is of class "estimate_infections" then the internal samples will
+#' @param primary A `<data.frame>` containing at least `date` and `value`
+#' (integer) variables and optionally `sample`. Used as the primary observation
+#' used to forecast the secondary observations. Alternatively, this may be an
+#' object of class "estimate_infections" as produced by `estimate_infections()`.
+#' If `primary` is of class "estimate_infections" then the internal samples will
 #' be filtered to have a minimum date ahead of those observed in the `estimate`
 #' object.
 #'
 #' @param primary_variable A character string indicating the primary variable,
 #' defaulting to "reported_cases". Only used when primary is of class
-#' "estimate_infections".
+#' `<estimate_infections>`.
 #'
-#' @param model A compiled stan model as returned by `rstan::stan_model`.
+#' @param model A compiled stan model as returned by [rstan::stan_model()].
 #'
 #' @param samples Numeric, number of posterior samples to simulate from. The
 #' default is to use all samples in the `primary` input when present. If not
@@ -588,11 +588,11 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
 #' @param all_dates Logical, defaults to FALSE. Should a forecast for all dates
 #' and not just those in the forecast horizon be returned.
 #'
-#' @return A list containing: `predictions` (a data frame ordered by date with
-#' the primary, and secondary observations, and a summary of the forecast
+#' @return A list containing: `predictions` (a `<data.frame>` ordered by date
+#' with the primary, and secondary observations, and a summary of the forecast
 #' secondary observations. For primary observations in the forecast horizon
-#' when uncertainty is present the median is used), `samples` a data frame of
-#' forecast secondary observation posterior samples, and `forecast` a summary
+#' when uncertainty is present the median is used), `samples` a `<data.frame>`
+#' of forecast secondary observation posterior samples, and `forecast` a summary
 #' of the forecast secondary observation posterior.
 #'
 #' @author Sam Abbott
@@ -603,7 +603,7 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
 #' @importFrom utils tail
 #' @importFrom purrr map
 #' @inheritParams estimate_secondary
-#' @seealso estimate_secondary
+#' @seealso [estimate_secondary()]
 #' @export
 forecast_secondary <- function(estimate,
                                primary,

@@ -39,8 +39,8 @@ process length scale will be used with recommended parameters
 \item{ls_min}{Numeric, defaults to 0. The minimum value of the length scale.}
 
 \item{ls_max}{Numeric, defaults to 60. The maximum value of the length
-scale. Updated in \code{create_gp_data} to be the length of the input data if this
-is smaller.}
+scale. Updated in \code{\link[=create_gp_data]{create_gp_data()}} to be the length of the input data if
+this is smaller.}
 
 \item{alpha_sd}{Numeric, defaults to 0.05. The standard deviation of the
 magnitude parameter of the Gaussian process kernel. Should be approximately

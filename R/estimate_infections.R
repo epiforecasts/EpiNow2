@@ -17,19 +17,19 @@
 #' for an example of using `estimate_infections` within the `epinow` wrapper to
 #' estimate Rt for Covid-19 in a country from the ECDC data source.
 #'
-#' @param reported_cases A data frame of confirmed cases (confirm) by date
+#' @param reported_cases A `<data.frame>` of confirmed cases (confirm) by date
 #' (date). confirm must be integer and date must be in date format.
 #'
-#' @param generation_time A call to `generation_time_opts()` defining the
+#' @param generation_time A call to [generation_time_opts()] defining the
 #' generation time distribution used. For backwards compatibility a list of
 #' summary parameters can also be passed.
 #'
-#' @param delays A call to `delay_opts()` defining delay distributions and
-#' options. See the documentation of `delay_opts()` and the examples below for
+#' @param delays A call to [delay_opts()] defining delay distributions and
+#' options. See the documentation of [delay_opts()] and the examples below for
 #' details.
 #'
-#' @param truncation A call to `trunc_opts()` defining the truncation of
-#'   observed data.  Defaults to `trunc_opts()`. See `estimate_truncation()` for
+#' @param truncation A call to [trunc_opts()] defining the truncation of
+#'   observed data.  Defaults to [trunc_opts()]. See [estimate_truncation()] for
 #'   an approach to estimating truncation from data.
 #'
 #' @param horizon Numeric, defaults to 7. Number of days into the future to
@@ -51,7 +51,8 @@
 #' samples, data used to fit the model, and the fit object itself.
 #'
 #' @author Sam Abbott
-#' @seealso epinow regional_epinow simulate_infections
+#' @seealso [epinow()] [regional_epinow()] [simulate_infections()]
+#' [estimate_truncation()]
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
 #' @inheritParams create_stan_data
@@ -364,7 +365,7 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 #' Fit a Stan Model using the NUTs sampler
 #'
 #' @description `r lifecycle::badge("maturing")`
-#' Fits a stan model using `rstan::sampling`. Provides the optional ability to
+#' Fits a stan model using [rstan::sampling()]. Provides the optional ability to
 #' run chains using `future` with error catching, timeouts and merging of
 #' completed chains.
 #'
@@ -378,7 +379,7 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 #' as at least 2 chains complete successfully within the timelimit.
 #'
 #' @param id A character string used to assign logging information on error.
-#' Used by `regional_epinow` to assign errors to regions. Alter the default to
+#' Used by [regional_epinow()] to assign errors to regions. Alter the default to
 #' run with error catching.
 #'
 #' @importFrom futile.logger flog.debug flog.info flog.error
@@ -583,7 +584,7 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
 #' Summaries posterior samples and adds additional custom variables.
 #'
 #' @param posterior_samples A list of posterior samples as returned by
-#' `extract_parameter_samples`.
+#' [extract_parameter_samples()].
 #'
 #' @param horizon Numeric, forecast horizon.
 #'

@@ -106,7 +106,7 @@ map_prob_change <- function(var) {
 #'
 #' @description `r lifecycle::badge("questioning")`
 #' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
-#' for justification. Now handled internally by stan so may be removed in
+#' for justification. Now handled internally by `{stan}` so may be removed in
 #' future updates if no user demand.
 #' @param r Numeric, rate of growth estimates.
 #'
@@ -146,7 +146,7 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 #' Allocate Delays into Required Stan Format
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Allocate delays for stan. Used in `delay_opts()`.
+#' Allocate delays for `{stan}`. Used in [delay_opts()].
 #' @param delay_var List of numeric delays
 #' @param no_delays Numeric, number of delays
 #' @return A numeric array
@@ -163,7 +163,7 @@ allocate_delays <- function(delay_var, no_delays) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Allocate missing parameters to be empty two dimensional arrays. Used
-#' internally by `simulate_infections.`
+#' internally by [simulate_infections()].
 #' @param data A list of parameters
 #' @param params A character vector of parameters to allocate to
 #' empty if missing.
@@ -236,7 +236,7 @@ match_output_arguments <- function(input_args = NULL,
 #' Expose internal package stan functions in R
 #'
 #' @description `r lifecycle::badge("stable")`
-#' his function exposes internal stan functions in R from a user
+#' his function exposes internal `{stan}` functions in R from a user
 #' supplied list of target files. Allows for testing of stan functions in R and
 #' potentially user use in R code.
 #'
@@ -245,7 +245,7 @@ match_output_arguments <- function(input_args = NULL,
 #' @param target_dir A character string indicating the target directory for the
 #' file.
 #'
-#' @param ... Additional arguments passed to `rstan::expose_stan_functions`.
+#' @param ... Additional arguments passed to [rstan::expose_stan_functions()].
 #'
 #' @return No return value, called for side effects
 #' @export
@@ -272,7 +272,7 @@ expose_stan_fns <- function(files, target_dir, ...) {
 #' @description `r lifecycle::badge("stable")`
 #' Convert from mean and standard deviation to the log mean of the
 #' lognormal distribution. Useful for defining distributions supported by
-#' `estimate_infections`, `epinow`, and `regional_epinow`.
+#' [estimate_infections()], [epinow()], and [regional_epinow()].
 #' @param mean Numeric, mean of a distribution
 #' @param sd Numeric, standard deviation of a distribution
 #'
@@ -291,7 +291,7 @@ convert_to_logmean <- function(mean, sd) {
 #' @description `r lifecycle::badge("stable")`
 #' Convert from mean and standard deviation to the log standard deviation of the
 #' lognormal distribution. Useful for defining distributions supported by
-#' `estimate_infections`, `epinow`, and `regional_epinow`.
+#' [estimate_infections()], [epinow()], and [regional_epinow()].
 #' @param mean Numeric, mean of a distribution
 #' @param sd Numeric, standard deviation of a distribution
 #'
@@ -344,7 +344,7 @@ discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
 #'
 #' @description `r lifecycle::badge("deprecated")`
 #' Used to handle updating settings in a list. For example when making
-#' changes to `opts_list` output.
+#' changes to [opts_list()] output.
 #' @param defaults A list of default settings
 #' @param optional A list of optional settings to override defaults
 #' @importFrom lifecycle deprecate_stop
@@ -387,10 +387,10 @@ add_day_of_week <- function(dates, week_effect = 7) {
 
 #' Set to Single Threading
 #'
-#' This function sets the threads used by data.table to 1 in the parent function
-#' and then restores the initial data.table threads when the function exits.
-#' This is primarily used as an internal function inside of other functions
-#' and will generally not be used on its own.
+#' This function sets the threads used by `{data.table}` to 1 in the parent
+#' function and then restores the initial `{data.table}` threads when the
+#' function exits. This is primarily used as an internal function inside of
+#' other functions and will generally not be used on its own.
 #'
 #' @importFrom data.table getDTthreads setDTthreads
 #' @keywords internal

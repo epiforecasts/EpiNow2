@@ -3,7 +3,7 @@
 #' @description `r lifecycle::badge("stable")`
 #' Estimates a truncation distribution from multiple snapshots of the same
 #' data source over time. This distribution can then be used in
-#' `regional_epinow`, `epinow`, and `estimate_infections` to adjust for
+#' [regional_epinow()], [epinow()], and [estimate_infections()] to adjust for
 #' truncated data. See
 #' [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)
 #' for an example of using this approach on Covid-19 data in England. The
@@ -33,7 +33,7 @@
 #'  - Truncation is a multiplicative scaling of underlying reported cases.
 #'  - Truncation is log normally distributed.
 #'
-#' @param obs A list of data frames each containing a date variable
+#' @param obs A list of `<data.frame>`s each containing a date variable
 #' and a confirm (integer) variable. Each data set should be a snapshot
 #' of the reported data over time. All data sets must contain a complete vector
 #' of dates.
@@ -56,13 +56,13 @@
 #'
 #' @param verbose Logical, should model fitting progress be returned.
 #'
-#' @param ... Additional parameters to pass to `rstan::sampling`.
+#' @param ... Additional parameters to pass to [rstan::sampling()].
 #'
 #' @return A list containing: the summary parameters of the truncation
 #'  distribution (`dist`), the estimated CMF of the truncation distribution
-#' (`cmf`, can be used to adjusted new data), a data frame containing the
+#' (`cmf`, can be used to adjusted new data), a `<data.frame>` containing the
 #' observed truncated data, latest observed data and the adjusted for
-#' truncation observations (`obs`), a data frame containing the last
+#' truncation observations (`obs`), a `<data.frame>` containing the last
 #' observed data (`last_obs`, useful for plotting and validation), the data
 #' used for fitting (`data`) and the fit object (`fit`).
 #'
@@ -342,12 +342,12 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 #' Plot method for estimate_truncation
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' `plot` method for class "estimate_truncation". Returns
+#' [plot()] method for class `<estimate_truncation>`. Returns
 #' a plot faceted over each dataset used in fitting with the latest
 #' observations as columns, the data observed at the time (and so truncated)
 #' as dots and the truncation adjusted estimates as a ribbon.
 #'
-#' @param x A list of output as produced by `estimate_truncation`
+#' @param x A list of output as produced by [estimate_truncation()]
 #'
 #' @param ... Pass additional arguments to plot function. Not currently in use.
 #'
