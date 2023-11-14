@@ -69,8 +69,8 @@ to \code{\link[=interactive]{interactive()}}.}
 \item{...}{Additional parameters to pass to \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}.}
 }
 \value{
-A list containing: \code{predictions} (a \verb{<data.frame>} ordered by date with
-the primary, and secondary observations, and a summary of the model
+A list containing: \code{predictions} (a \verb{<data.frame>} ordered by date
+with the primary, and secondary observations, and a summary of the model
 estimated secondary observations), \code{posterior} which contains a summary of
 the entire model posterior, \code{data} (a list of data used to fit the
 model), and \code{fit} (the \code{stanfit} object).

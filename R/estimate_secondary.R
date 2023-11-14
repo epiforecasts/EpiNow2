@@ -252,9 +252,9 @@ estimate_secondary <- function(reports,
 #' @param ... Overwrite options defined by type. See the returned values for all
 #' options that can be passed.
 #' @importFrom rlang arg_match
-#' @seealso estimate_secondary
+#' @seealso [estimate_secondary()]
 #' @return A `<secondary_opts>` object of binary options summarising secondary
-#' model used in `estimate_secondary()`. Options returned are `cumulative`
+#' model used in [estimate_secondary()]. Options returned are `cumulative`
 #' (should the secondary report be cumulative), `historic` (should a
 #' convolution of primary reported cases be used to predict secondary reported
 #' cases), `primary_hist_additive` (should the historic convolution of primary
