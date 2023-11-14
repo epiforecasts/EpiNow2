@@ -119,14 +119,16 @@ options that can be passed.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>A list of binary options summarising secondary model used in
-<code><a href="estimate_secondary.html">estimate_secondary()</a></code>. Options returned are <code>cumulative</code> (should the
-secondary report be cumulative), <code>historic</code> (should a convolution of primary
-reported cases be used to predict secondary reported cases),
-<code>primary_hist_additive</code> (should the historic convolution of primary reported
-cases be additive or subtractive), <code>current</code> (should currently observed
-primary reported cases contribute to current secondary reported cases),
-<code>primary_current_additive</code> (should current primary reported cases be
+<p>A <code>&lt;secondary_opts&gt;</code> object of binary options summarising secondary
+model used in <code><a href="estimate_secondary.html">estimate_secondary()</a></code>. Options returned are <code>cumulative</code></p>
+
+
+<p>(should the secondary report be cumulative), <code>historic</code> (should a
+convolution of primary reported cases be used to predict secondary reported
+cases), <code>primary_hist_additive</code> (should the historic convolution of primary
+reported cases be additive or subtractive), <code>current</code> (should currently
+observed primary reported cases contribute to current secondary reported
+cases), <code>primary_current_additive</code> (should current primary reported cases be
 additive or subtractive).</p>
     </div>
     <div class="section level2">
@@ -157,6 +159,8 @@ additive or subtractive).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $primary_current_additive</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "secondary_opts" "list"          </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># prevalence model</span></span></span>
 <span class="r-in"><span><span class="fu">secondary_opts</span><span class="op">(</span><span class="st">"prevalence"</span><span class="op">)</span></span></span>
@@ -175,6 +179,8 @@ additive or subtractive).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $primary_current_additive</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "secondary_opts" "list"          </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

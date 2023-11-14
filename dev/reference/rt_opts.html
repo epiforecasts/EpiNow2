@@ -153,7 +153,8 @@ is done.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>A list of settings defining the time-varying reproduction number.</p>
+<p>An <code>&lt;rt_opts&gt;</code> object with settings defining the time-varying
+reproduction number.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -190,6 +191,8 @@ is done.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $gp_on</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "R_t-1"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "rt_opts" "list"   </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># add a custom length scale</span></span></span>
 <span class="r-in"><span><span class="fu">rt_opts</span><span class="op">(</span>prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">2</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -219,6 +222,8 @@ is done.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $gp_on</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "R_t-1"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "rt_opts" "list"   </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># add a weekly random walk</span></span></span>
 <span class="r-in"><span><span class="fu">rt_opts</span><span class="op">(</span>rw <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span></span>
@@ -248,6 +253,8 @@ is done.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $gp_on</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "R_t-1"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "rt_opts" "list"   </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
