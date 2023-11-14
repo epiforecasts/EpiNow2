@@ -533,8 +533,7 @@ obs_opts <- function(family = "negbin",
 #'
 #' @param ... Additional parameters to pass to `rstan::sampling`.
 #' @importFrom utils modifyList
-#' @return An `<rstan_sampling_opts>` object of arguments to pass to
-#' `rstan::sampling`.
+#' @return A list of arguments to pass to `rstan::sampling`.
 #' @author Sam Abbott
 #' @export
 #' @examples
