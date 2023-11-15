@@ -294,11 +294,11 @@ plot_summary <- function(summary_results,
       ggplot2::facet_wrap(~metric, ncol = 1, scales = "free_y") +
       ggplot2::theme_bw() +
       ggplot2::scale_color_manual(values = c(
-        "Increasing" = "#e75f00",
+        Increasing = "#e75f00",
         "Likely increasing" = "#fd9e49",
         "Likely decreasing" = "#5fa2ce",
-        "Decreasing" = "#1170aa",
-        "Stable" = "#7b848f"
+        Decreasing = "#1170aa",
+        Stable = "#7b848f"
       ), drop = FALSE)
   }
 
