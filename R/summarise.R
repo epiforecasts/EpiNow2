@@ -538,15 +538,14 @@ regional_runtimes <- function(regional_output = NULL,
     regions <- get_regions(target_folder)
     timings <- data.table::data.table(
       region = regions,
-      time = unlist(purrr::map(regions, ~ safe_read(paste0(
-        target_folder,
-        "/", ., "/", target_date,
-        "/runtime.rds"
+      time = unlist(purrr::map(regions, ~ safe_read(file.path(
+        target_folder,., target_date,
+        "runtime.rds"
       )))[[1]])
     )
   }
   if (!is.null(target_folder)) {
-    data.table::fwrite(timings, paste0(target_folder, "/runtimes.csv"))
+    data.table::fwrite(timings, file.path(target_folder, "runtimes.csv"))
   }
   if (return_output) {
     return(timings)
