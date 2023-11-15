@@ -539,7 +539,7 @@ regional_runtimes <- function(regional_output = NULL,
     timings <- data.table::data.table(
       region = regions,
       time = unlist(purrr::map(regions, ~ safe_read(file.path(
-        target_folder,., target_date,
+        target_folder, ., target_date,
         "runtime.rds"
       )))[[1]])
     )
