@@ -62,8 +62,8 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
   )
   conf <- paste0(
     value$median, " (",
-    ifelse(!reverse, CrI$lower, CrI$upper), " -- ",
-    ifelse(!reverse, CrI$upper, CrI$lower), ")"
+    ifelse(reverse, CrI$upper, CrI$lower), " -- ",
+    ifelse(reverse, CrI$lower, CrI$upper), ")"
   )
   return(conf)
 }
