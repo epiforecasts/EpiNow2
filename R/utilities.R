@@ -200,9 +200,9 @@ match_output_arguments <- function(input_args = NULL,
                                    supported_args = NULL,
                                    logger = NULL,
                                    level = "info") {
-  if (level %in% "info") {
+  if (level == "info") {
     flog_fn <- futile.logger::flog.info
-  } else if (level %in% "debug") {
+  } else if (level == "debug") {
     flog_fn <- futile.logger::flog.debug
   }
   # make supported args a logical vector
