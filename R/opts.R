@@ -696,7 +696,7 @@ stan_opts <- function(samples = 2000,
                       return_fit = TRUE,
                       ...) {
   backend <- arg_match(backend, values = "rstan")
-  if (backend %in% "rstan") {
+  if (backend == "rstan") {
     opts <- rstan_opts(
       samples = samples,
       ...
