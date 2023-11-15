@@ -142,7 +142,7 @@ adjust_infection_to_report <- function(infections, delay_defs,
   }
 
   ## Truncate reported cases by maximum infection date
-  if (type %in% "sample" && truncate_future) {
+  if (type == "sample" && truncate_future) {
     report <- report[date <= max(infections$date)]
   }
   return(report)
