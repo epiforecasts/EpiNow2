@@ -60,7 +60,7 @@ extract_static_parameter <- function(param, samples) {
 #' Extracts a custom set of parameters from a `{stan}` object and adds
 #' stratification and dates where appropriate.
 #'
-#' @param stan_fit A fit Stan model as returned by [rstan:sampling()].
+#' @param stan_fit A fit `{stan}` model as returned by [rstan::sampling()].
 #'
 #' @param data A list of the data supplied to the [rstan::sampling()] call.
 #'

@@ -14,7 +14,7 @@ extract_parameter_samples(
 )
 }
 \arguments{
-\item{stan_fit}{A fit Stan model as returned by \code{\link[=rstan:sampling]{rstan:sampling()}}.}
+\item{stan_fit}{A fit \code{{stan}} model as returned by \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}.}
 
 \item{data}{A list of the data supplied to the \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} call.}
 

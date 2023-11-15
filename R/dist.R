@@ -884,7 +884,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' empty vector corresponding to a parametric specification of the distribution
 #' (using \code{mean}, \code{sd} and corresponding uncertainties)
 #'
-#' @param fixed Deprecated, use [fix_dist() instead]
+#' @param fixed Deprecated, use [fix_dist()] instead
 #' as coming from fixed (vs uncertain) distributions. Overrides any values
 #' assigned to \code{mean_sd} and \code{sd_sd} by setting them to zero.
 #' reduces compute requirement but may produce spuriously precise estimates.

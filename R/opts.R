@@ -618,7 +618,7 @@ rstan_vb_opts <- function(samples = 2000,
 #' default.
 #'
 #' @param method A character string, defaulting to sampling. Currently supports
-#' [rstan::sampling()] ("sampling") or [rstan:vb()] ("vb").
+#' [rstan::sampling()] ("sampling") or [rstan::vb()] ("vb").
 #'
 #' @param ... Additional parameters to pass  underlying option functions.
 #' @importFrom rlang arg_match
