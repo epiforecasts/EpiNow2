@@ -276,7 +276,7 @@ secondary_opts <- function(type = "incidence", ...) {
     type,
     values = c("incidence", "prevalence")
   )
-  if (type %in% "incidence") {
+  if (type == "incidence") {
     data <- list(
       cumulative = 0,
       historic = 1,

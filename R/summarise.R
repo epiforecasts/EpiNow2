@@ -90,7 +90,7 @@ summarise_results <- function(regions,
 
 
   numeric_estimates <- data.table::merge.data.table(numeric_estimates,
-    estimates[measure %in% "Expected change in daily cases"][
+    estimates[measure == "Expected change in daily cases"][
       ,
       .(region,
        `Expected change in daily cases` = estimate,
@@ -282,7 +282,7 @@ regional_summary <- function(regional_output = NULL,
 
   # adaptive add a logscale to the summary plot based on range of observed cases
   current_inf <- summarised_results$data[
-    metric %in% "New confirmed cases by infection date"
+    metric == "New confirmed cases by infection date"
   ]
   uppers <- grepl("upper_", colnames(current_inf), fixed = TRUE) # nolint
   lowers <- grepl("lower_", colnames(current_inf), fixed = TRUE) # nolint
@@ -756,7 +756,7 @@ summary.epinow <- function(object, output = "estimates",
                            ...) {
   choices <- c("estimates", "forecast", "estimated_reported_cases")
   output <- arg_match(output, values = choices, multiple = FALSE)
-  if (output %in% "estimates") {
+  if (output == "estimates") {
     out <- summary(object$estimates,
       date = date,
       params = params, ...
@@ -811,7 +811,7 @@ summary.estimate_infections <- function(object, type = "snapshot",
     target_date <- as.Date(date)
   }
 
-  if (type %in% "snapshot") {
+  if (type == "snapshot") {
     out <- report_summary(
       summarised_estimates = object$summarised[date == target_date],
       rt_samples = object$samples[variable == "R"][
@@ -820,7 +820,7 @@ summary.estimate_infections <- function(object, type = "snapshot",
       ...
     )
   } else if (type %in% c("parameters", "samples")) {
-    if (type %in% "parameters") {
+    if (type == "parameters") {
       type <- "summarised"
     }
     out <- object[[type]]
