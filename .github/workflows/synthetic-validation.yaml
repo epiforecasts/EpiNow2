@@ -37,14 +37,14 @@ jobs:
         shell: Rscript {0}
 
       - name: Upload validation figures
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: figures
           retention-days: 5
           path: inst/dev/figs
   
       - name: Upload validation fits
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: fits
           retention-days: 5
