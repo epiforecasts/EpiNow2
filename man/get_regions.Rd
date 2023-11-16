@@ -8,7 +8,7 @@ get_regions(results_dir)
 }
 \arguments{
 \item{results_dir}{A character string giving the directory in which results
-are stored (as produced by \code{\link[=regional_rt_pipeline]{regional_rt_pipeline()}}).}
+are stored (as produced by \code{\link[=regional_epinow]{regional_epinow()}}).}
 }
 \value{
 A named character vector containing the results to plot.
