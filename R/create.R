@@ -611,7 +611,7 @@ create_initial_conditions <- function(data) {
 #' @param data A list of `{stan}` data as created by [create_stan_data()]
 #'
 #' @param init Initial conditions passed to `{rstan}`. Defaults to "random" but
-#' can also be a function (as supplied by [create_intitial_conditions()]).
+#' can also be a function (as supplied by [create_initial_conditions()]).
 #'
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress
 #' messages be returned.
