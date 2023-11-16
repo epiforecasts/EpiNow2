@@ -3,7 +3,7 @@
 #' @description `r lifecycle::badge("stable")`
 #'
 #' @param results_dir A character string giving the directory in which results
-#'  are stored (as produced by [regional_rt_pipeline()]).
+#'  are stored (as produced by [regional_epinow()]).
 #'
 #' @return A named character vector containing the results to plot.
 #' @author Sam Abbott
