@@ -16,7 +16,8 @@ A vector of means.
 }
 \description{
 This works out the mean of all the (parametric / nonparametric) delay
-distributions combined in the passed \code{\link[=dist_spec]{dist_spec()}}.
+distributions combined in the passed \code{\link[=dist_spec]{dist_spec()}} (ignoring any uncertainty
+in parameters)
 }
 \examples{
 # A fixed lognormal distribution with mean 5 and sd 1.

@@ -1182,7 +1182,8 @@ c.dist_spec <- function(...) {
 ##' Returns the mean of one or more delay distribution
 ##'
 ##' This works out the mean of all the (parametric / nonparametric) delay
-##' distributions combined in the passed [dist_spec()].
+##' distributions combined in the passed [dist_spec()] (ignoring any uncertainty
+##' in parameters)
 ##'
 ##' @param x The `<dist_spec>` to use
 ##' @param ... Not used
@@ -1208,28 +1209,28 @@ c.dist_spec <- function(...) {
 #' # The mean of the sum of two distributions
 #' mean(lognormal + gamma)
 mean.dist_spec <- function(x, ...) {
-  if (x$n > 1) {
-    stop("Cannot calculate mean of composite distributions.")
-  }
+  ret <- rep(.0, x$n)
   if (x$n_np > 0) {
     ## nonparametric
-    ret <- sum((seq_len(x$np_pmf_length) - 1) * x$np_pmf)
-  } else {
+    ret[!x$parametric] <- sum((seq_len(x$np_pmf_length) - 1) * x$np_pmf)
+  }
+  if (x$n_p > 0) {
     ## parametric
-    if (any(x$params_sd > 0)) {
-      stop("Cannot calculate mean of uncertain distribution")
-    }
-    if (x$dist == "lognormal") {
-      ret <- exp(x$params_mean[[1]] + x$params_mean[[2]]**2 / 2)
-    } else if (x$dist == "gamma") {
-      ret <- x$params_mean[[1]] / x$params_mean[[2]]
-    } else if (x$dist == "normal") {
-      ret <- x$params_mean[[1]]
-    } else if (x$dist == "fixed") {
-      ret <- x$params_mean[[1]]
-    } else {
-      stop("Don't know how to calculate mean of ", x$dist, " distribution.")
-    }
+    ret[x$parametric] <- vapply(
+      seq_along(which(x$parametric)), function(id) {
+        if (x$dist == "lognormal") {
+          ret <- exp(x$params_mean[[1]] + x$params_mean[[2]]**2 / 2)
+        } else if (x$dist == "gamma") {
+          ret <- x$params_mean[[1]] / x$params_mean[[2]]
+        } else if (x$dist == "normal") {
+          ret <- x$params_mean[[1]]
+        } else if (x$dist == "fixed") {
+          ret <- x$params_mean[[1]]
+        } else {
+          stop("Don't know how to calculate mean of ", x$dist, " distribution.")
+        }
+      }, .0
+    )
   }
   return(ret)
 }
