@@ -114,16 +114,16 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
     }
   } else if (model == "lognormal") {
     rdist <- function(n) {
-      rlnorm(n, params[["mean"]], params[["sd"]])
+      rlnorm(n, params[["meanlog"]], params[["sdlog"]])
     }
     pdist <- function(n) {
-      plnorm(n, params[["mean"]], params[["sd"]]) /
-        plnorm(max_value + 1, params[["mean"]], params[["sd"]])
+      plnorm(n, params[["meanlog"]], params[["sdlog"]]) /
+        plnorm(max_value + 1, params[["meanlog"]], params[["sdlog"]])
     }
     ddist <- function(n) {
-      (plnorm(n + 1, params[["mean"]], params[["sd"]]) -
-        plnorm(n, params[["mean"]], params[["sd"]])) /
-        plnorm(max_value + 1, params[["mean"]], params[["sd"]])
+      (plnorm(n + 1, params[["meanlog"]], params[["sdlog"]]) -
+        plnorm(n, params[["meanlog"]], params[["sdlog"]])) /
+        plnorm(max_value + 1, params[["meanlog"]], params[["sdlog"]])
     }
   } else if (model %in% "normal") {
     rdist <- function(n) {
