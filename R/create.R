@@ -545,20 +545,17 @@ create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- list()
     if (data$delay_n_p > 0) {
-      lower_bounds <- rep(-Inf, data$delay_n_p)
+      lower_bounds <- rep(-Inf, data$delay_params_length)
       ## gamma
-      lower_bounds[data$dist == 1] <- 0
-      out$delay_mean <- array(truncnorm::rtruncnorm(
-        n = data$delay_n_p, a = lower_bounds,
-        mean = data$delay_mean_mean, sd = data$delay_mean_sd * 0.1
-      ))
-      out$delay_sd <- array(truncnorm::rtruncnorm(
-        n = data$delay_n_p, a = 0,
-        mean = data$delay_sd_mean, sd = data$delay_sd_sd * 0.1
+      param_dist <- rep(data$dist, times = diff(data$params_groups))
+      lower_bounds[data$dist == "gamma"] <- 0
+
+      out$delay_params <- array(truncnorm::rtruncnorm(
+        n = data$delay_params_length, a = lower_bounds,
+        mean = data$delay_params_mean, sd = data$delay_params_sd * 0.1
       ))
     } else {
-      out$delay_mean <- array(numeric(0))
-      out$delay_sd <- array(numeric(0))
+      out$delay_params <- array(numeric(0))
     }
 
     if (data$fixed == 0) {
@@ -724,7 +721,7 @@ create_stan_delays <- function(..., weight = 1) {
   ## construct additional variables
   ret <- c(ret, list(
     types = sum(type_n > 0),
-    types_p = array(1L - combined_delays$fixed)
+    types_p = array(as.integer(combined_delays$parametric))
   ))
   ## delay identifiers
   ret$types_id <- integer(0)
@@ -741,6 +738,14 @@ create_stan_delays <- function(..., weight = 1) {
   )
   ## calculate total np pmf length
   ret$np_pmf_length <- sum(combined_delays$np_pmf_length)
+  ## get non zero length param lengths
+  ret$params_groups <- array(
+    c(0, cumsum(
+      combined_delays$params_length[combined_delays$params_length > 0])
+    ) + 1
+  )
+  ## calculate total param length
+  ret$params_length <- sum(combined_delays$params_length)
   ## assign prior weights
   ret$weight <- array(rep(weight, ret$n_p))
   ## assign distribution

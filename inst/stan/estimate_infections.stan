@@ -48,8 +48,7 @@ parameters{
   array[bp_n > 0 ? 1 : 0] real<lower = 0> bp_sd; // standard deviation of breakpoint effect
   array[bp_n] real bp_effects;                   // Rt breakpoint effects
   // observation model
-  array[delay_n_p] real delay_mean;         // mean of delays
-  array[delay_n_p] real<lower = 0> delay_sd;  // sd of delays
+  vector[delay_params_length] delay_params;         // delay parameters
   simplex[week_effect] day_of_week_simplex;// day of week reporting effect
   array[obs_scale_sd > 0 ? 1 : 0] real<lower = 0, upper = 1> frac_obs;     // fraction of cases that are ultimately observed
   array[model_type] real<lower = 0> rep_phi;     // overdispersion of the reporting process
@@ -71,7 +70,7 @@ transformed parameters {
     gt_rev_pmf = get_delay_rev_pmf(
       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
+      delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
       1, 1, 0
     );
     R = update_Rt(
@@ -92,7 +91,7 @@ transformed parameters {
     vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(
       delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
+      delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
       0, 1, 0
     );
     reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);
@@ -112,7 +111,7 @@ transformed parameters {
     vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(
       trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
+      delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
       0, 1, 1
     );
     obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);
@@ -130,8 +129,7 @@ model {
   }
   // penalised priors for delay distributions
   delays_lp(
-    delay_mean, delay_mean_mean,
-    delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd,
+    delay_params, delay_params_mean, delay_params_sd, delay_params_groups,
     delay_dist, delay_weight
   );
   if (estimate_r) {
@@ -168,14 +166,12 @@ generated quantities {
     r = R_to_growth(R, gt_mean, gt_var);
   } else {
     // sample generation time
-    array[delay_n_p] real delay_mean_sample =
-      normal_rng(delay_mean_mean, delay_mean_sd);
-    array[delay_n_p] real delay_sd_sample =
-      normal_rng(delay_sd_mean, delay_sd_sd);
+    vector[delay_params_length] delay_params_sample =
+      to_vector(normal_rng(delay_params_mean, delay_params_sd));
     vector[delay_type_max[gt_id] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(
       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean_sample, delay_sd_sample,
+      delay_np_pmf_groups, delay_params_sample, delay_params_groups,
       delay_dist, 1, 1, 0
     );
     gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);

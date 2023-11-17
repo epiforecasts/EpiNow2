@@ -221,19 +221,12 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
     ]
   }
   if (data$delay_n_p > 0) {
-    out$delay_mean <- extract_parameter(
-      "delay_mean", samples, seq_len(data$delay_n_p)
+    out$delay_params <- extract_parameter(
+      "delay_params", samples, seq_len(data$delay_params_length)
     )
-    out$delay_mean <-
-      out$delay_mean[, strat := as.character(time)][, time := NULL][,
+    out$delay_params <-
+      out$delay_params[, strat := as.character(time)][, time := NULL][,
         date := NULL
-      ]
-    out$delay_sd <- extract_parameter(
-      "delay_sd", samples, seq_len(data$delay_n_p)
-    )
-    out$delay_sd <-
-      out$delay_sd[, strat := as.character(time)][, time := NULL][,
-       date := NULL
       ]
   }
   if (data$model_type == 1) {

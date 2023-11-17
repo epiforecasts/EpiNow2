@@ -27,8 +27,7 @@ transformed data{
 
 parameters{
   // observation model
-  array[delay_n_p] real delay_mean;
-  array[delay_n_p] real<lower = 0> delay_sd;      // sd of delays
+  vector[delay_params_length] delay_params;
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   array[obs_scale] real<lower = 0, upper = 1> frac_obs;   // fraction of cases that are ultimately observed
   array[model_type] real<lower = 0> rep_phi;   // overdispersion of the reporting process
@@ -44,7 +43,7 @@ transformed parameters {
       delay_rev_pmf = get_delay_rev_pmf(
         delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
         delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
+        delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
         0, 1, 0
       );
     } else {
@@ -65,7 +64,7 @@ transformed parameters {
     vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(
       trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
+      delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
       0, 1, 1
     );
     secondary = truncate(secondary, trunc_rev_cmf, 0);
@@ -75,10 +74,10 @@ transformed parameters {
 model {
   // penalised priors for delay distributions
   delays_lp(
-    delay_mean, delay_mean_mean, delay_mean_sd, delay_sd, delay_sd_mean,
-    delay_sd_sd, delay_dist, delay_weight
+    delay_params, delay_params_mean, delay_params_sd, delay_params_groups,
+    delay_dist, delay_weight
   );
-  
+
   // prior primary report scaling
   if (obs_scale) {
     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];
