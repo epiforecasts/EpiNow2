@@ -296,7 +296,7 @@ clean_regions <- function(reported_cases, non_zero_points) {
 #'
 #' @description `r lifecycle::badge("maturing")`
 #' Internal function that handles calling [epinow()]. Future work will extend
-#' this function to better handle `{stan}` logs and allow the user to modify
+#' this function to better handle stan logs and allow the user to modify
 #' settings between regions.
 #'
 #' @param target_region Character string indicating the region being evaluated

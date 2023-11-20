@@ -14,7 +14,7 @@ extract_parameter_samples(
 )
 }
 \arguments{
-\item{stan_fit}{A fit \code{{stan}} model as returned by \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}.}
+\item{stan_fit}{A fit stan model as returned by \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}.}
 
 \item{data}{A list of the data supplied to the \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} call.}
 
@@ -35,7 +35,7 @@ parameter
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Extracts a custom set of parameters from a \code{{stan}} object and adds
+Extracts a custom set of parameters from a stan object and adds
 stratification and dates where appropriate.
 }
 \author{

@@ -20,7 +20,7 @@ sample value.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Extracts a single from a list of \code{{stan}} output and returns it as a
+Extracts a single from a list of stan output and returns it as a
 \verb{<data.table>}.
 }
 \author{

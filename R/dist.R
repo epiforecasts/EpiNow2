@@ -177,7 +177,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Fits an integer adjusted exponential, gamma or lognormal distribution using
-#' `{stan}`.
+#' stan.
 #' @param values Numeric vector of values
 #'
 #' @param samples Numeric, number of samples to take. Must be >= 1000.
@@ -196,7 +196,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @param verbose Logical, defaults to FALSE. Should verbose progress messages
 #' be printed.
 #'
-#' @return A `{stan}` fit of an interval censored distribution
+#' @return A stan fit of an interval censored distribution
 #' @author Sam Abbott
 #' @export
 #' @examples
@@ -614,7 +614,7 @@ estimate_delay <- function(delays, ...) {
 #'
 #' @description `r lifecycle::badge("soft-deprecated")`
 #' Convolves cases by a PMF function. This function will soon be removed or
-#' replaced with a more robust `{stan}` implementation.
+#' replaced with a more robust stan implementation.
 #'
 #' @param cases A `<data.frame>` of cases (in date order) with the following
 #' variables: `date` and `cases`.

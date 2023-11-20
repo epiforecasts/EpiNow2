@@ -46,8 +46,8 @@ A list of stan data
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Takes the output of \code{\link[=stan_opts]{stan_opts()}} and converts it into a list understood by
-\code{{stan}}. Internally calls the other \code{create_} family of functions to
-construct a single list for input into \code{{stan}} with all data required
+stan. Internally calls the other \code{create_} family of functions to
+construct a single list for input into stan with all data required
 present.
 }
 \author{

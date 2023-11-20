@@ -106,7 +106,7 @@ map_prob_change <- function(var) {
 #'
 #' @description `r lifecycle::badge("questioning")`
 #' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
-#' for justification. Now handled internally by `{stan}` so may be removed in
+#' for justification. Now handled internally by stan so may be removed in
 #' future updates if no user demand.
 #' @param r Numeric, rate of growth estimates.
 #'
@@ -146,7 +146,7 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 #' Allocate Delays into Required Stan Format
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Allocate delays for `{stan}`. Used in [delay_opts()].
+#' Allocate delays for stan. Used in [delay_opts()].
 #' @param delay_var List of numeric delays
 #' @param no_delays Numeric, number of delays
 #' @return A numeric array
@@ -236,7 +236,7 @@ match_output_arguments <- function(input_args = NULL,
 #' Expose internal package stan functions in R
 #'
 #' @description `r lifecycle::badge("stable")`
-#' his function exposes internal `{stan}` functions in R from a user
+#' his function exposes internal stan functions in R from a user
 #' supplied list of target files. Allows for testing of stan functions in R and
 #' potentially user use in R code.
 #'
