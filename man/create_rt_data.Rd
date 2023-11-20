@@ -24,7 +24,7 @@ A list of settings defining the time-varying reproduction number
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Takes the output from \code{\link[=rt_opts]{rt_opts()}} and converts it into a list understood by
-\code{{stan}}.
+stan.
 }
 \examples{
 # default Rt data

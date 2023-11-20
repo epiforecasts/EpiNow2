@@ -104,7 +104,7 @@ A list of processed output as produced by \code{\link[=process_region]{process_r
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Internal function that handles calling \code{\link[=epinow]{epinow()}}. Future work will extend
-this function to better handle \code{{stan}} logs and allow the user to modify
+this function to better handle stan logs and allow the user to modify
 settings between regions.
 }
 \seealso{

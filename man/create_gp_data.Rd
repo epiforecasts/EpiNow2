@@ -20,7 +20,7 @@ A list of settings defining the Gaussian process
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Takes the output of \code{\link[=gp_opts]{gp_opts()}} and converts it into a list understood by
-\code{{stan}}.
+stan.
 }
 \examples{
 # define input data required

@@ -1,7 +1,7 @@
 #' Extract Samples for a Parameter from a Stan model
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Extracts a single from a list of `{stan}` output and returns it as a
+#' Extracts a single from a list of stan output and returns it as a
 #' `<data.table>`.
 #
 #' @param param Character string indicating the parameter to extract
@@ -57,10 +57,10 @@ extract_static_parameter <- function(param, samples) {
 #' Extract Parameter Samples from a Stan Model
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Extracts a custom set of parameters from a `{stan}` object and adds
+#' Extracts a custom set of parameters from a stan object and adds
 #' stratification and dates where appropriate.
 #'
-#' @param stan_fit A fit `{stan}` model as returned by [rstan::sampling()].
+#' @param stan_fit A fit stan model as returned by [rstan::sampling()].
 #'
 #' @param data A list of the data supplied to the [rstan::sampling()] call.
 #'

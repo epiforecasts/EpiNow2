@@ -13,13 +13,13 @@ observation model. Defaults to \code{\link[=obs_opts]{obs_opts()}}.}
 \item{dates}{A vector of dates used to calculate the day of the week.}
 }
 \value{
-A list of settings ready to be passed to \code{{stan}} defining
+A list of settings ready to be passed to stan defining
 the Observation Model
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Takes the output of \code{\link[=obs_opts]{obs_opts()}} and converts it into a list understood
-by \code{{stan}}.
+by stan.
 }
 \examples{
 dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)

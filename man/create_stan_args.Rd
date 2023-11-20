@@ -16,7 +16,7 @@ create_stan_args(
 to \code{\link[=stan_opts]{stan_opts()}}. Can be used to override \code{data}, \code{init}, and \code{verbose}
 settings if desired.}
 
-\item{data}{A list of \code{{stan}} data as created by \code{\link[=create_stan_data]{create_stan_data()}}}
+\item{data}{A list of stan data as created by \code{\link[=create_stan_data]{create_stan_data()}}}
 
 \item{init}{Initial conditions passed to \code{{rstan}}. Defaults to "random" but
 can also be a function (as supplied by \code{\link[=create_initial_conditions]{create_initial_conditions()}}).}
@@ -25,7 +25,7 @@ can also be a function (as supplied by \code{\link[=create_initial_conditions]{c
 messages be returned.}
 }
 \value{
-A list of \code{{stan}} arguments
+A list of stan arguments
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
