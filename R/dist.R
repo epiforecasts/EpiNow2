@@ -873,10 +873,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #'
 #' @param sd_sd Deprecated; use `params_sd` instead.
 #'
-#' @param fixed Deprecated, use [fix_dist()] instead
-#' as coming from fixed (vs uncertain) distributions. Overrides any values
-#' assigned to \code{mean_sd} and \code{sd_sd} by setting them to zero.
-#' reduces compute requirement but may produce spuriously precise estimates.
+#' @param fixed Deprecated, use [fix_dist()] instead.
 #' @return A list of distribution options.
 #'
 #' @author Sebastian Funk
@@ -975,7 +972,7 @@ dist_spec <- function(distribution = c(
 #'
 #' @param distribution Character, defaults to "lognormal". The (discretised)
 #' distribution to be used. Can be "lognormal", "gamma", "normal" or "fixed".
-#' The corresponding parameters (defined in [natural_parameters()]) are passed
+#' The corresponding parameters (defined in [natural_params()]) are passed
 #' as `params_mean`,  and their uncertainty as `params_sd`.
 #'
 #' @param max Numeric, maximum value of the distribution. The distribution will
@@ -1002,7 +999,7 @@ dist_spec <- function(distribution = c(
 #' # An uncertain gamma distribution with mean 3 and sd 2
 #' .dist_spec(
 #'   params_mean = c(alpha = 3, beta = 0.5),
-#'   params_sd = c(alpha = 75, beta = 25)
+#'   params_sd = c(alpha = 0.75, beta = 0.25),
 #'   distribution = "gamma"
 #' )
 .dist_spec <- function(distribution = c(
@@ -1020,7 +1017,7 @@ dist_spec <- function(distribution = c(
     deprecate_warn(
       "2.0.0",
       "dist_spec(distribution = 'must not be \"empty\"')",
-      detail = "Please use `fixed(0)` instead."
+      details = "Please use `fixed(0)` instead."
     )
   }
 
@@ -1640,25 +1637,85 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
   return(ret)
 }
 
+##' @details
+##' Probability distributions are ubiquitous in EpiNow2, usually representing
+##' epidemiological delays (e.g., the generation time for delays between
+##' becoming infecting and infecting others; or reporting delays)
+##'
+##' They are generated using functions that have a name corresponding to the
+##' probability distribution that is being used. They generated `dist_spec`
+##' objects that are then passed to the models underlying EpiNow2.
+##
+##' All parameters can be given either as fixed values (a numeric value) or as
+##' uncertain values (a `dist_sepc`). If given as uncertain values, currently
+##' only normally distributed parameters (generated using `normal()`) are
+##' supported.
+##'
+##' Each distribution has a representation in terms of "natural" parameters (the
+##' ones used in stan) but can sometimes also be specified using other
+##' parameters such as the mean or standard deviation of the distribution. If
+##' not given as natural parameters then these will be calculated from the given
+##' parameters. If they have uncertainty, this will be done by random sampling
+##' from the given uncertainty and coverting resulting parameters to their
+##' natural representation.
+##'
+##' Currently available distributions are lognormal, gamma, normal, fixed
+##' (delta) and nonparametric. The nonparametric is a special case where the
+##' probability mass function is given directly as a numeric vector.
+##'
+##' @inheritParams stats::Lognormal
+##' @inheritParams .dist_spec
+##' @return A `dist_spec` representing a distribution of the given
+##'   specification.
+##' @author Sebastian Funk
 ##' @export
-lognormal <- function(meanlog, sdlog, mean, sd, median, max = Inf) {
+##' @rdname Distributions
+##' @name Distributions
+##' @order 1
+##' @examples
+##' lognormal(mean = 4, sd = 1)
+##' lognormal(mean = 4, sd = 1, max = 10)
+##' lognormal(mean = normal(4, 1), sd = 1, max = 10)
+lognormal <- function(meanlog, sdlog, mean, sd, max = Inf) {
   params <- as.list(environment())
-  return(process_dist(params, "lognormal"))
+  return(generate_dist_spec(params, "lognormal"))
 }
 
+##' @inheritParams stats::Gamma
+##' @author Sebastian Funk
+##' @rdname Distributions
+##' @title Probability distributions
+##' @order 2
 ##' @export
+##' @examples
+##' gamma(mean = 4, sd = 1)
+##' gamma(shape = 16, rate = 4)
+##' gamma(shape = normal(16, 2), rate = normal(4, 1))
 gamma <- function(shape, rate, scale, mean, sd, max = Inf) {
   params <- as.list(environment())
-  return(process_dist(params, "gamma"))
+  return(generate_dist_spec(params, "gamma"))
 }
 
+##' @rdname Distributions
+##' @order 3
+##' @author Sebastian Funk
 ##' @export
+##' @examples
+##' normal(mean = 4, sd = 1)
+##' normal(mean = 4, sd = 1, max = 10)
 normal <- function(mean, sd, max = Inf) {
   params <- as.list(environment())
-  return(process_dist(params, "normal"))
+  return(generate_dist_spec(params, "normal"))
 }
 
+##' @rdname Distributions
+##' @order 4
+##' @param value Value of the fixed (delta) distribution
+##' @author Sebastian Funk
 ##' @export
+##' @examples
+##' fixed(value = 3)
+##' fixed(value = 3.5)
 fixed <- function(value) {
   params <- as.list(environment())
   params <- extract_params(params, "fixed")
@@ -1670,11 +1727,34 @@ fixed <- function(value) {
   return(.dist_spec(params_mean = fixed_value, distribution = "fixed"))
 }
 
+##' Generates a nonparametric distribution.
+##'
+##' @param pmf Probability mass function of the given distribution; this is
+##'   passed as a zero-indexed numeric vector (i.e. the fist entry represents
+##'   the probability mass of zero). If not summing to one it will be normalised
+##'   to sum to one internally.
+##' @author Sebastian Funk
+##' @rdname Distributions
+##' @order 5
 ##' @export
+##' @examples
+##' pmf(c(0.1, 0.3, 0.2, 0.4))
+##' pmf(c(0.1, 0.3, 0.2, 0.1, 0.1))
 pmf <- function(x) {
   return(.dist_spec(pmf = x))
 }
 
+##' Get the names of the natural parameters of a distribution
+##'
+##' These are the parameters used in the stan models. All other parameter
+##' representations are converted to these using [convert_to_natural()] before
+##' being passed to teh stan mnodels.
+##' @param distribution Character; the distribution to use.
+##' @return A character vector, the natural parameters.
+##' @author Sebastian Funk
+##' @keywords internal
+##' @examples
+##' natural_params("gamma")
 natural_params <- function(distribution) {
   if (distribution == "gamma") {
     ret <- c("shape", "rate")
@@ -1688,11 +1768,20 @@ natural_params <- function(distribution) {
   return(ret)
 }
 
+##' Get the lower bounds of the parameters of a distribution
+##'
+##' This is used to avoid sampling parameter values that have no support.
+##' @return A numeric vector, the lower bounds.
+##' @inheritParams natural_params
+##' @author Sebastian Funk
+##' @keywords internal
+##' @examples
+##' lower_bounds("lognormal")
 lower_bounds <- function(distribution) {
   if (distribution == "gamma") {
     ret <- c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0)
   } else if (distribution == "lognormal") {
-    ret <- c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0, median = 0)
+    ret <- c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0)
   } else if (distribution == "normal") {
     ret <- c(mean = -Inf, sd = 0)
   } else if (distribution == "fixed") {
@@ -1701,6 +1790,14 @@ lower_bounds <- function(distribution) {
   return(ret)
 }
 
+##' Internal function for extracting given parameter names of a distribution
+##' from the environment
+##'
+##' @param params Given parameters (obtained using `as.list(environment())`)
+##' @return A character vector of parameters and their values.
+##' @inheritParams natural_params
+##' @author Sebastian Funk
+##' @keywords internal
 extract_params <- function(params, distribution) {
   params <- params[!vapply(params, inherits, "name", FUN.VALUE = TRUE)]
   n_params <- length(natural_params(distribution))
@@ -1713,7 +1810,15 @@ extract_params <- function(params, distribution) {
   return(params)
 }
 
-process_dist <- function(params, distribution) {
+##' Internal function for generating a `dist_spec` given parametrs and a
+##' distribution.
+##'
+##' This will convert all parameters to natural parameters before generating
+##' a `dist_spec`. If they have uncertainty this will be done using sampling.
+##' @inheritParams extract_params
+##' @return A `dist_spec` of the given specificaiton.`
+##' @author Sebastian Funk
+generate_dist_spec <- function(params, distribution) {
   ## process min/max first
   max <- params$max
   params$max <- NULL
@@ -1764,6 +1869,15 @@ process_dist <- function(params, distribution) {
   return(dist)
 }
 
+##' Internal function for converting parameters to natural parameters.
+##'
+##' This is used for preprocessing before generating a `dist_spec` object
+##' from a given set of parametrs and distribution
+##' @param x A numerical named parameter vector
+##' @inheritParams natural_params
+##' @return A list with two elements, `params_mean` and `params_sd`, containign
+##' mean and sd of natural parameters.
+##' @author Sebastian Funk
 convert_to_natural <- function(x, distribution) {
   if (distribution == "gamma") {
     if ("mean" %in% names(x) && "sd" %in% names(x)) {

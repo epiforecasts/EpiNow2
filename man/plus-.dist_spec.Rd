@@ -25,20 +25,19 @@ numeric stability.
 }
 \examples{
 # A fixed lognormal distribution with mean 5 and sd 1.
-lognormal <- dist_spec(
-  mean = 1.6, sd = 1, max = 20, distribution = "lognormal"
+dist1 <- lognormal_spec(
+  meanlog = 1.6, sdlog = 1, max = 20, distribution = "lognormal"
 )
-lognormal + lognormal
+dist1 + dist1
 
 # An uncertain gamma distribution with mean 3 and sd 2
-gamma <- dist_spec(
-  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-  distribution = "gamma"
+dist2 <- gamma(
+  mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20
 )
-lognormal + gamma
+dist1 + dist2
 
 # Using tolerance parameter
-EpiNow2:::dist_spec_plus(lognormal, lognormal, tolerance = 0.5)
+EpiNow2:::dist_spec_plus(dist1, dist1, tolerance = 0.5)
 }
 \author{
 Sebastian Funk

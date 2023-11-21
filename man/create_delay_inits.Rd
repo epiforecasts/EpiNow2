@@ -7,7 +7,7 @@
 create_delay_inits(data)
 }
 \arguments{
-\item{data}{A list of data as produced by \code{create_stan_data.}}
+\item{data}{A list of data as produced by \code{\link[=create_stan_data]{create_stan_data()}}.}
 }
 \value{
 A list of initial conditions for delays

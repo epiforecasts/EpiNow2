@@ -20,7 +20,7 @@ dist_spec(
 \arguments{
 \item{distribution}{Character, defaults to "lognormal". The (discretised)
 distribution to be used. Can be "lognormal", "gamma", "normal" or "fixed".
-The corresponding parameters (defined in \code{\link[=natural_parameters]{natural_parameters()}}) are passed
+The corresponding parameters (defined in \code{\link[=natural_params]{natural_params()}}) are passed
 as \code{params_mean},  and their uncertainty as \code{params_sd}.}
 
 \item{params_mean}{Numeric. Central values of the parameters of the
@@ -45,10 +45,7 @@ probability mass function of the delay (starting with 0); defaults to an
 empty vector corresponding to a parametric specification of the distribution
 (using \code{params_mean}, and \code{params_sd}.}
 
-\item{fixed}{Deprecated, use \code{\link[=fix_dist]{fix_dist()}} instead
-as coming from fixed (vs uncertain) distributions. Overrides any values
-assigned to \code{mean_sd} and \code{sd_sd} by setting them to zero.
-reduces compute requirement but may produce spuriously precise estimates.}
+\item{fixed}{Deprecated, use \code{\link[=fix_dist]{fix_dist()}} instead.}
 }
 \value{
 A list of distribution options.

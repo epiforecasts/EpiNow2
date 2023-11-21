@@ -2,7 +2,7 @@
 % Please edit documentation in R/dist.R
 \name{extract_single_dist}
 \alias{extract_single_dist}
-\title{Extract a single element of a composite \code{dist_spec}}
+\title{Extract a single element of a composite \verb{<dist_spec>}}
 \usage{
 extract_single_dist(x, i)
 }
@@ -15,7 +15,7 @@ extract_single_dist(x, i)
 A single \code{dist_spec} object
 }
 \description{
-Extract a single element of a composite \code{dist_spec}
+Extract a single element of a composite \verb{<dist_spec>}
 }
 \author{
 Sebastian Funk

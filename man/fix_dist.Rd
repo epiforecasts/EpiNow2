@@ -2,12 +2,12 @@
 % Please edit documentation in R/dist.R
 \name{fix_dist}
 \alias{fix_dist}
-\title{Fix the parameters of a \verb{<dist_spec>} object}
+\title{Fix the parameters of a \verb{<dist_spec>}}
 \usage{
 fix_dist(x, strategy = c("mean", "sample"))
 }
 \arguments{
-\item{x}{A \verb{<dist_spec>} object}
+\item{x}{A \verb{<dist_spec>}}
 
 \item{strategy}{Character; either "mean" (use the mean estimates of the
 mean and standard deviation) or "sample" (randomly sample mean and

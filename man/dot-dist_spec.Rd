@@ -15,7 +15,7 @@
 \arguments{
 \item{distribution}{Character, defaults to "lognormal". The (discretised)
 distribution to be used. Can be "lognormal", "gamma", "normal" or "fixed".
-The corresponding parameters (defined in \code{\link[=natural_parameters]{natural_parameters()}}) are passed
+The corresponding parameters (defined in \code{\link[=natural_params]{natural_params()}}) are passed
 as \code{params_mean},  and their uncertainty as \code{params_sd}.}
 
 \item{params_mean}{Numeric. Central values of the parameters of the
@@ -55,7 +55,7 @@ functionality in \code{\link[=delay_opts]{delay_opts()}}, \code{\link[=generatio
 # An uncertain gamma distribution with mean 3 and sd 2
 .dist_spec(
   params_mean = c(alpha = 3, beta = 0.5),
-  params_sd = c(alpha = 75, beta = 25)
+  params_sd = c(alpha = 0.75, beta = 0.25),
   distribution = "gamma"
 )
 }
