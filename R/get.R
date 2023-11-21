@@ -222,11 +222,17 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
 get_generation_time <- function(disease, source, max_value = 14,
                                 fixed = FALSE) {
   lifecycle::deprecate_warn(
-    "2.0.0", "get_generation_time()", "dist_spec()",
-    paste(
-      "The function will be removed completely in version 2.1.0. To obtain the",
-      "previous estimate by Ganyani et al. (2020) use ",
-      "`example_generation_time`"
+    "2.0.0", "get_generation_time()",
+    details = c(
+      paste(
+        "Please use distribution functions such as `gamma` or `lognormal`",
+        "instead."
+      ),
+      "The function will be removed completely in version 2.1.0.",
+      paste(
+        "To obtain the previous estimate by Ganyani et al. (2020) use",
+        "`example_generation_time`."
+      )
     )
   )
   dist <- get_dist(EpiNow2::generation_times,
@@ -251,11 +257,17 @@ get_generation_time <- function(disease, source, max_value = 14,
 get_incubation_period <- function(disease, source, max_value = 14,
                                   fixed = FALSE) {
   lifecycle::deprecate_warn(
-    "2.0.0", "get_incubation_period()", "dist_spec()",
-    paste(
-      "The function will be removed completely in version 2.1.0. To obtain the",
-      "previous estimate by Ganyani et al. (2020) use ",
-      "`example_incubation_period`"
+    "2.0.0", "get_incubation_period()",
+    details = c(
+      paste(
+        "Please use distribution functions such as `gamma` or `lognormal`",
+        "instead."
+      ),
+      "The function will be removed completely in version 2.1.0.",
+     paste(
+      "To obtain the previous estimate by Ganyani et al. (2020) use",
+      "`example_incubation_period`."
+     )
     )
   )
   dist <- get_dist(EpiNow2::incubation_periods,
