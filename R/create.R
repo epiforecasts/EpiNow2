@@ -527,6 +527,25 @@ create_stan_data <- function(reported_cases, seeding_time,
   return(data)
 }
 
+##' Create initial conditions for delays
+##'
+##' @inheritParams create_initial_conditions
+##' @return A list of initial conditions for delays
+##' @author Sebastian Funk
+##' @keywords internal
+create_delay_inits <- function(data) {
+  out <- list()
+  if (data$delay_n_p > 0) {
+    out$delay_params <- array(truncnorm::rtruncnorm(
+      n = data$delay_params_length, a = data$delay_params_lower,
+      mean = data$delay_params_mean, sd = data$delay_params_sd * 0.1 + 1
+    ))
+  } else {
+    out$delay_params <- array(numeric(0))
+  }
+  return(out)
+}
+
 #' Create Initial Conditions Generating Function
 #' @description `r lifecycle::badge("stable")`
 #' Uses the output of [create_stan_data()] to create a function which can be
@@ -543,20 +562,7 @@ create_stan_data <- function(reported_cases, seeding_time,
 #  @author Sebastian Funk
 create_initial_conditions <- function(data) {
   init_fun <- function() {
-    out <- list()
-    if (data$delay_n_p > 0) {
-      lower_bounds <- rep(-Inf, data$delay_params_length)
-      ## gamma
-      param_dist <- rep(data$dist, times = diff(data$params_groups))
-      lower_bounds[data$dist == "gamma"] <- 0
-
-      out$delay_params <- array(truncnorm::rtruncnorm(
-        n = data$delay_params_length, a = lower_bounds,
-        mean = data$delay_params_mean, sd = data$delay_params_sd * 0.1
-      ))
-    } else {
-      out$delay_params <- array(numeric(0))
-    }
+    out <- create_delay_inits(data)
 
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))

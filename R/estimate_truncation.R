@@ -254,18 +254,12 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     weight = ifelse(weigh_delay_priors, data$t, 1)
   ))
 
-  ## convert to integer
-  data$trunc_dist <-
-    which(eval(formals()[["trunc_dist"]]) == trunc_dist) - 1
-
   # initial conditions
   init_fn <- function() {
-    data <- list(
-      delay_mean = array(rnorm(1, 0, 1)),
-      delay_sd = array(abs(rnorm(1, 0, 1))) + 1,
+    data <- c(create_delay_inits(data), list(
       phi = abs(rnorm(1, 0, 1)),
       sigma = abs(rnorm(1, 0, 1))
-    )
+    ))
     return(data)
   }
 
