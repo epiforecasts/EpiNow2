@@ -7,10 +7,10 @@
 dist_spec_plus(e1, e2, tolerance = 0.001)
 }
 \arguments{
-\item{e1}{The first delay distribution (from a call to \code{\link[=dist_spec]{dist_spec()}}) to
+\item{e1}{The first delay distribution (of type \code{\link[=dist_spec]{dist_spec()}}) to
 combine.}
 
-\item{e2}{The second delay distribution (from a call to \code{\link[=dist_spec]{dist_spec()}}) to
+\item{e2}{The second delay distribution (of type \code{\link[=dist_spec]{dist_spec()}}) to
 combine.}
 
 \item{tolerance}{A numeric value that sets the cumulative probability

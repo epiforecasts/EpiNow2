@@ -859,59 +859,19 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 
 #' Specify a distribution.
 #'
-#' @description `r lifecycle::badge("stable")`
-#' Defines the parameters of a supported distribution for use in onward
-#' modelling. Multiple distribution families are supported - see the
-#' documentation for `family` for details. Alternatively, a nonparametric
-#' distribution can be specified using the \code{pmf} argument.
-#' This function provides distribution
-#' functionality in [delay_opts()], [generation_time_opts()], and
-#' [trunc_opts()].
+#' @description `r lifecycle::badge("deprecated")`
+#' This function is deprecated as a user-facing function (while its
+#' functionality is still used internally). Construct distributions using
+#' the corresponding distribution function such as [gamma()], [lognormal()],
+#' [normal()] or [fixed()] instead.
 #'
-#' @param mean Numeric. If the only non-zero summary parameter
-#' then this is the fixed interval of the distribution. If the `sd` is
-#' non-zero then this is the mean of the distribution given by \code{dist}.
-#' If this is not given a vector of empty vectors is returned.
+#' @param mean Deprecated; use `params_mean` instead.
 #'
-#' @param sd Numeric, defaults to 0. Sets the standard deviation of the
-#' distribution.
+#' @param sd Deprecated; use `params_mean` instead.
 #'
-#' @param mean_sd Numeric, defaults to 0. Sets the standard deviation of the
-#' uncertainty around the mean of the  distribution assuming a normal
-#' prior.
+#' @param mean_sd Deprecated; use `params_sd` instead.
 #'
-#' @param sd_sd Numeric, defaults to 0. Sets the standard deviation of the
-#' uncertainty around the sd of the  distribution assuming a normal prior.
-#'
-#' @param distribution Character, defaults to "lognormal". The (discretised
-#' distribution to be used. If sd == 0 then the distribution  is fixed and a
-#' delta function is used. If sd > 0 then the distribution is discretised and
-#' truncated.
-#'
-#' The following distributions are currently supported:
-#'
-#'  - "lognormal" - a lognormal distribution. For this distribution `mean`
-#' is the mean of the natural logarithm of the delay (on the log scale) and
-#' `sd` is the standard deviation of the natural logarithm of the delay.
-#'
-#' - "gamma" - a gamma distribution. For this distribution `mean` is the
-#' mean of the delay and `sd` is the standard deviation of the delay. During
-#' model fitting these are then transformed to the shape and scale of the gamma
-#' distribution.
-#'
-#' When `distribution` is the default lognormal distribution the other function
-#' arguments have the following definition:
-#'  - `mean` is the mean of the natural logarithm of the delay (on the
-#' log scale).
-#' - `sd` is the standard deviation of the natural logarithm of the delay.
-#'
-#' @param max Numeric, maximum value of the distribution. The distribution will
-#' be truncated at this value.
-#'
-#' @param pmf Numeric, a vector of values that represent the (nonparametric)
-#' probability mass function of the delay (starting with 0); defaults to an
-#' empty vector corresponding to a parametric specification of the distribution
-#' (using \code{mean}, \code{sd} and corresponding uncertainties)
+#' @param sd_sd Deprecated; use `params_sd` instead.
 #'
 #' @param fixed Deprecated, use [fix_dist()] instead
 #' as coming from fixed (vs uncertain) distributions. Overrides any values
@@ -922,22 +882,26 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @author Sebastian Funk
 #' @author Sam Abbott
 #' @importFrom rlang warn arg_match
+#' @inheritParams .dist_spec
 #' @export
-#' @examples
-#' # A fixed lognormal distribution with mean 5 and sd 1.
-#' dist_spec(mean = 5, sd = 1, max = 20, distribution = "lognormal")
-#'
-#' # An uncertain gamma distribution with mean 3 and sd 2
-#' dist_spec(
-#'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-#'   distribution = "gamma"
-#' )
 dist_spec <- function(distribution = c(
                         "lognormal", "normal", "gamma", "fixed"
                       ),
-                      params_mean = c(), params_sd = c(),
-                      mean, sd, mean_sd = 0, sd_sd = 0,
+                      params_mean = numeric(0), params_sd = numeric(0),
+                      mean, sd = 0, mean_sd = 0, sd_sd = 0,
                       max = Inf, pmf = numeric(0), fixed = FALSE) {
+
+  lifecycle::deprecate_warn(
+    "2.0.0",
+    "dist_spec()",
+    details = c(
+      paste0(
+        "Please use distribution functions such as `gamma` or `lognormal` ",
+        "instead."
+      ),
+      "The function will become internal only in version 2.1.0."
+    )
+  )
   ## deprecate previous behaviour
   warn(
     message = paste(
@@ -952,37 +916,102 @@ dist_spec <- function(distribution = c(
   )
   ## check for deprecated parameters
   if (!missing(fixed)) {
-    deprecate_warn(
+    lifecycle::deprecate_warn(
       "2.0.0",
       "dist_spec(fixed)",
-      "fix_dist()",
-      "The argument will be removed completely in version 2.1.0."
+      "fix_dist()"
     )
+    params_sd <- c()
   }
   ## check for deprecated parameters
   if (!all(missing(mean), missing(sd), missing(mean_sd), missing(sd_sd)) &&
-      (!missing(params_mean || !missing(params_sd)))) {
-    stop("Distributional should not be given as `mean`, `sd`, etc. ",
+      (length(params_mean) > 0 || length(params_sd) > 0)) {
+    stop("Distributional parameters should not be given as `mean`, `sd`, etc. ",
          "in addition to `params_mean` or `params_sd`")
   }
-  call <- match.call()
-  for (deprecated_arg in c("mean", "sd", "mean_sd", "sd_sd")) {
-    if (!is.null(call[[deprecated_arg]])) {
-      deprecate_warn(
-        "2.0.0",
-        paste0("dist_spec(", deprecated_arg, ")"),
-               "dist_spec(param)",
-               "The argument will be removed completely in version 2.1.0."
+  if (!all(missing(mean), missing(sd), missing(mean_sd), missing(sd_sd))) {
+    distribution <- match.arg(distribution)
+    if (sd == 0 && mean_sd == 0 && sd_sd == 0) {
+      distribution <- "fixed"
+    }
+    ## deprecated arguments given
+    if (distribution == "lognormal") {
+      params_mean <- c(meanlog = mean, sdlog = sd)
+      params_sd <- c(meanlog = mean_sd, sdlog = sd_sd)
+    } else if (distribution == "gamma") {
+      temp_dist <- gamma(
+        mean = normal(mean, mean_sd),
+        sd = normal(sd, sd_sd)
       )
-      params[[deprecated_arg]] <- get(deprecated_arg)
+      params_mean <- temp_dist$params_mean
+      params_sd <- temp_dist$params_sd
+    } else if (distribution == "normal") {
+      params_mean <- c(mean = mean, sd = sd)
+      params_sd <- c(mean = mean_sd, sd = sd_sd)
+    } else if (distribution == "fixed") {
+      params_mean <- mean
+      params_sd <- c()
     }
   }
-  ## check if parametric or nonparametric
+  return(.dist_spec(distribution, params_mean, params_sd, max, pmf))
+}
+
+#' Specify a distribution.
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Defines the parameters of a supported distribution for use in onward
+#' modelling. Multiple distribution families are supported - see the
+#' documentation for `family` for details. Alternatively, a nonparametric
+#' distribution can be specified using the \code{pmf} argument.
+#' This function provides distribution
+#' functionality in [delay_opts()], [generation_time_opts()], and
+#' [trunc_opts()].
+#'
+#' @param params_mean Numeric. Central values of the parameters of the
+#' distribution as defined in [natural_params().
+#'
+#' @param params_sd Numeric. Standard deviations of the parameters of the
+#' distribution as defined in [natural_params().
+#'
+#' @param distribution Character, defaults to "lognormal". The (discretised)
+#' distribution to be used. Can be "lognormal", "gamma", "normal" or "fixed".
+#' The corresponding parameters (defined in [natural_parameters()]) are passed
+#' as `params_mean`,  and their uncertainty as `params_sd`.
+#'
+#' @param max Numeric, maximum value of the distribution. The distribution will
+#' be truncated at this value. Default: `Inf`, i.e. no maximum.
+#'
+#' @param pmf Numeric, a vector of values that represent the (nonparametric)
+#' probability mass function of the delay (starting with 0); defaults to an
+#' empty vector corresponding to a parametric specification of the distribution
+#' (using \code{params_mean}, and \code{params_sd}.
+#'
+#' @return A `dist_spec` object defining the distribution.
+#'
+#' @author Sebastian Funk
+#' @author Sam Abbott
+#' @importFrom rlang warn
+#' @keywords internal
+#' @examples
+#' # A fixed lognormal distribution with mean 5 and sd 1.
+#' .dist_spec(
+#'   params_mean = c(meanlog = 5, sdlog = 1), max = 20,
+#'   distribution = "lognormal"
+#' )
+#'
+#' # An uncertain gamma distribution with mean 3 and sd 2
+#' .dist_spec(
+#'   params_mean = c(alpha = 3, beta = 0.5),
+#'   params_sd = c(alpha = 75, beta = 25)
+#'   distribution = "gamma"
+#' )
+.dist_spec <- function(distribution = c(
+                         "lognormal", "normal", "gamma", "fixed"
+                       ),
+                       params_mean = numeric(0), params_sd = numeric(0),
+                       max = Inf, pmf = numeric(0)) {
   if (length(pmf) > 0 &&
-    !all(
-       missing(distribution), missing(params_mean), missing(params_sd),
-       missing(mean), missing(sd), missing(mean_sd), missing(sd_sd)
-    )) {
+        !(length(params_mean) == 0 && length(params_sd) == 0)) {
     stop("Distributional parameters or a pmf can be specified, but not both.")
   }
   distribution <- match.arg(distribution)
@@ -995,26 +1024,41 @@ dist_spec <- function(distribution = c(
     )
   }
 
+  if (length(params_sd) == 0) {
+    params_sd <- rep(0, length(params_mean))
+  }
+
   if (distribution == "fixed") {
     ## if integer fixed then can write the PMF
     if (as.integer(params_mean) == params_mean) {
       max <- params_mean
-      parametric <- TRUE
-    } else {
       parametric <- FALSE
+    } else {
+      parametric <- TRUE
     }
-    if (length(params_sd) > 0 && any(params_sd) > 0) {
+    if (any(params_sd > 0)) {
       stop("Fixed parameters cannot have a nonzero standard deviation.")
     }
-    params_sd <- numeric(0)
   } else {
     ## if PMF is given, set max
     if (is.infinite(max) && length(pmf) > 0) {
       max <- length(pmf) - 1
     }
-    parametric <- all(params_sd == 0) && is.finite(max)
+    parametric <- any(params_sd > 0) || is.infinite(max)
   }
   if (parametric) { ## calculate pmf
+    ret <- list(
+      params_mean = params_mean,
+      params_sd = params_sd,
+      dist = distribution,
+      max = max,
+      n = 1,
+      n_p = 1,
+      n_np = 0,
+      np_pmf = numeric(0),
+      parametric = TRUE
+    )
+  } else {
     ret <- list(
       params_mean = numeric(0),
       params_sd = numeric(0),
@@ -1046,18 +1090,6 @@ dist_spec <- function(distribution = c(
         np_pmf = pmf
       ))
     }
-  } else {
-    ret <- list(
-      params_mean = params_mean,
-      params_sd = params_sd,
-      dist = distribution,
-      max = max,
-      n = 1,
-      n_p = 1,
-      n_np = 0,
-      np_pmf = numeric(0),
-      parametric = TRUE
-    )
   }
   ret <- purrr::map(ret, array)
   sum_args <- grep("(^n$|^n_$)", names(ret))
@@ -1075,10 +1107,10 @@ dist_spec <- function(distribution = c(
 #' distribution function is truncated at a specified tolerance level, ensuring
 #' numeric stability.
 #'
-#' @param e1 The first delay distribution (from a call to [dist_spec()]) to
+#' @param e1 The first delay distribution (of type [dist_spec()]) to
 #' combine.
 #'
-#' @param e2 The second delay distribution (from a call to [dist_spec()]) to
+#' @param e2 The second delay distribution (of type [dist_spec()]) to
 #' combine.
 #'
 #' @param tolerance A numeric value that sets the cumulative probability
@@ -1099,7 +1131,7 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
   ## process delay distributions
   delays <- c(e1, e2)
   ## combine any nonparametric delays that can be combined
-  if (sum(delays$fixed) > 1) {
+  if (sum(!delays$parametric) > 1) {
     new_pmf <- 1L
     group_starts <- c(1L, cumsum(delays$np_pmf_length) + 1L)
     for (i in seq_len(length(group_starts) - 1L)) {
@@ -1115,7 +1147,11 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
         new_pmf <- new_pmf / sum(new_pmf)
     }
     delays$np_pmf <- new_pmf
-    delays$fixed <- c(1, rep(0, delays$n_p))
+    delays$np_pmf_length <- length(delays$np_pmf)
+    delays$params_length <- c(
+      0, delays$params_length[delays$parametric == TRUE]
+    )
+    delays$parametric <- array(c(FALSE, rep(TRUE, delays$n_p)))
     delays$n_np <- 1
     delays$n <- delays$n_p + 1
   }
@@ -1560,12 +1596,12 @@ fixed <- function(value) {
   } else if (is.numeric(params$value)) {
     fixed_value <- params$value
   }
-  return(dist_spec(params_mean = fixed_value, distribution = "fixed"))
+  return(.dist_spec(params_mean = fixed_value, distribution = "fixed"))
 }
 
 ##' @export
 pmf <- function(x) {
-  return(dist_spec(pmf = x))
+  return(.dist_spec(pmf = x))
 }
 
 natural_params <- function(distribution) {
@@ -1633,7 +1669,7 @@ process_dist <- function(params, lower_bounds, distribution) {
     )
   }
 
-  dist <- dist_spec(
+  dist <- .dist_spec(
     distribution = distribution,
     params_mean = converted_params$params_mean,
     params_sd = converted_params$params_sd,

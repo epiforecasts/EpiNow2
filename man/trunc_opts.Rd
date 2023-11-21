@@ -9,7 +9,7 @@ trunc_opts(dist = fixed(0))
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions reflecting
 the truncation generated using \code{\link[=dist_spec]{dist_spec()}} or \code{\link[=estimate_truncation]{estimate_truncation()}}.
-Default is a fixed distribution of 0, i.e. no truncation.}
+Default is fixed distribution with maximum 0, i.e. no truncation}
 }
 \value{
 A \verb{<trunc_opts>} object summarising the input truncation

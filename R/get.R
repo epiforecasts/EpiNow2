@@ -161,7 +161,7 @@ get_regional_results <- function(regional_output,
 #' @description `r lifecycle::badge("deprecated")`
 #'
 #' This function has been deprecated. Please specify a distribution
-#' using [dist_spec()] instead.
+#' using functions such as [gamma()] or [lognormal()] instead.
 #'
 #' @param data A `<data.table>` in the format of `generation_times`.
 #'
@@ -177,12 +177,17 @@ get_regional_results <- function(regional_output,
 #' @return A list defining a distribution
 #'
 #' @author Sam Abbott
-#' @seealso [dist_spec()]
 #' @export
 get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
   lifecycle::deprecate_warn(
-    "2.0.0", "get_dist()", "dist_spec()",
-    "The function will be removed completely in version 2.1.0."
+    "2.0.0", "get_dist()",
+    details = c(
+      paste0(
+        "Please use distribution functions such as `gamma` or `lognormal` ",
+        "instead."
+      ),
+      "The function will be removed completely in version 2.1.0."
+    )
   )
   target_disease <- disease
   target_source <- source
@@ -202,12 +207,11 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
 #'
 #' Extracts a literature distribution from `generation_times`.
 #' This function has been deprecated. Please specify a distribution
-#' using [dist_spec()] instead.
+#' using functions such as [gamma()] or [lognormal()] instead.
 #'
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @export
-#' @seealso [dist_spec()]
 #' @author Sam Abbott
 get_generation_time <- function(disease, source, max_value = 14,
                                 fixed = FALSE) {
@@ -232,13 +236,12 @@ get_generation_time <- function(disease, source, max_value = 14,
 #'
 #' Extracts a literature distribution from `generation_times`.
 #' This function has been deprecated. Please specify a distribution
-#' using [dist_spec()] instead
+#' using functions such as [gamma()] or [lognormal()] instead.
 #'
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @author Sam Abbott
 #' @export
-#' @seealso [dist_spec()]
 get_incubation_period <- function(disease, source, max_value = 14,
                                   fixed = FALSE) {
   lifecycle::deprecate_warn(
@@ -299,8 +302,10 @@ get_regions_with_most_reports <- function(reported_cases,
 ##'
 ##' The seeding time is set to the mean of the specified delays, constrained
 ##' to be at least the maximum generation time
-##' @param delays Delays as specified using [dist_spec()]
-##' @param generation_time Generation time as specified using [dist_spec()]
+##' @param delays Delays specified using distribution functions such as
+##'   [gamma()] or [lognormal()]
+##' @param generation_time Generation specified using distribution functions
+##'   such as [gamma()] or [lognormal()]
 ##' @return An integer seeding time
 ##' @author Sebastian Funk
 get_seeding_time <- function(delays, generation_time) {

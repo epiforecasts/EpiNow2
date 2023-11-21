@@ -19,7 +19,7 @@
 #' @author Sebastian Funk
 #' @author Sam Abbott
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] [dist_spec()]
+#' [bootstrapped_dist_fit()] [gamma()] [lognormal()] [fixed()]
 #' @export
 #' @examples
 #' # default settings with a fixed generation time of 1
@@ -85,8 +85,8 @@ generation_time_opts <- function(dist = fixed(1), ...,
   }
   if (deprecated_options_given) {
     warning(
-      "The generation time distribution must be given to ",
-      "`generation_time_opts` using a call to `dist_spec`. ",
+      "The generation time distribution should be given to ",
+      "`generation_time_opts` using a `dist_spec`. ",
       "This behaviour has changed from previous versions of `EpiNow2` and ",
       "any code using it may need to be updated as any other ways of ",
       "specifying the generation time are deprecated and will be removed in ",

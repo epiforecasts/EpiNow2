@@ -24,10 +24,7 @@ A list defining a distribution
 
 Extracts a literature distribution from \code{generation_times}.
 This function has been deprecated. Please specify a distribution
-using \code{\link[=dist_spec]{dist_spec()}} instead
-}
-\seealso{
-\code{\link[=dist_spec]{dist_spec()}}
+using functions such as \code{\link[=gamma]{gamma()}} or \code{\link[=lognormal]{lognormal()}} instead.
 }
 \author{
 Sam Abbott
