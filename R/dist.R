@@ -1559,43 +1559,47 @@ extract_single_dist <- function(x, i) {
 ##' @return A `<dist_spec>` object without uncertainty
 ##' @author Sebastian Funk
 ##' @export
-##' @param x A `<dist_spec>` object
+##' @param x A `<dist_spec>`
 ##' @param strategy Character; either "mean" (use the mean estimates of the
 ##'   mean and standard deviation) or "sample" (randomly sample mean and
 ##'   standard deviation from uncertainty given in the `<dist_spec>`
 ##' @importFrom truncnorm rtruncnorm
 ##' @importFrom rlang arg_match
 fix_dist <- function(x, strategy = c("mean", "sample")) {
-  ## if x is fixed already we don't have to do anything
-  if (x$mean_sd == 0 && x$sd_sd == 0) return(x)
-  ## match startegy argument to options
+  ## match strategy argument to options
   strategy <- arg_match(strategy)
-  ## apply stragey depending on choice
-  if (strategy == "mean") {
-    x <- dist_spec(
-      mean = c(x$mean_mean),
-      sd = c(x$sd_mean),
-      mean_sd = 0,
-      sd_sd = 0,
-      distribution = x$dist,
-      max = c(x$max)
-    )
-  } else if (strategy == "sample") {
-    lower_bound <- ifelse(x$dist == "gamma", 0, -Inf)
-    mean <- rtruncnorm(
-      n = 1, a = lower_bound, mean = x$mean_mean, sd = x$mean_sd
-    )
-    sd <- rtruncnorm(n = 1, a = 0, mean = x$sd_mean, sd = x$mean_sd)
-    x <- dist_spec(
-      mean = mean,
-      sd = sd,
-      mean_sd = 0,
-      sd_sd = 0,
-      distribution = x$dist,
-      max = c(x$max)
-    )
+
+  fix_single_dist <- function(x) {
+    ## if x is fixed already we don't have to do anything
+    if (!x$parametric || all(x$params_sd == 0)) return(x)
+    ## apply strategy depending on choice
+    if (strategy == "mean") {
+      x <- .dist_spec(
+        params_mean = x$params_mean,
+        distribution = x$dist,
+        max = as.vector(x$max)
+      )
+    } else if (strategy == "sample") {
+      lower_bound <- lower_bounds(x$dist)[natural_params(x$dist)]
+      mean <- rtruncnorm(
+        n = 1, a = lower_bound, mean = x$params_mean
+      )
+      x <- .dist_spec(
+        params_mean = mean,
+        distribution = x$dist,
+        max = as.vector(x$max)
+      )
+    }
+    return(x)
   }
-  return(x)
+
+  ret <- fix_single_dist(extract_single_dist(x, 1))
+  if (x$n > 1) {
+    for (i in 2:x$n) {
+      ret <- ret + fix_single_dist(extract_single_dist(x, i))
+    }
+  }
+  return(ret)
 }
 
 ##' @export
