@@ -7,8 +7,7 @@
 create_stan_delays(..., weight = 1)
 }
 \arguments{
-\item{...}{Named delay distributions specified using \code{dist_spec()}.
-The names are assigned to IDs}
+\item{...}{Named delay distributions. The names are assigned to IDs}
 
 \item{weight}{Numeric, weight associated with delay priors; default: 1}
 }

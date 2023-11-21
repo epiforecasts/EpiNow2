@@ -26,11 +26,15 @@
 #' generation_time_opts()
 #'
 #' # A fixed gamma distributed generation time
-#' generation_time_opts(dist_spec(mean = 3, sd = 2, max = 14))
+#' generation_time_opts(gamma(mean = 3, sd = 2, max = 14))
 #'
 #' # An uncertain gamma distributed generation time
 #' generation_time_opts(
-#'  dist_spec(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5, max = 14)
+#'   gamma(
+#'     mean = normal(mean = 3, sd = 1),
+#'     sd = normal(mean = 2, sd = 0.5),
+#'     max = 14
+#'   )
 #' )
 #'
 #' # An example generation time

@@ -705,8 +705,7 @@ create_stan_args <- function(stan = stan_opts(),
 
 ##' Create delay variables for stan
 ##'
-##' @param ... Named delay distributions specified using `dist_spec()`.
-##' The names are assigned to IDs
+##' @param ... Named delay distributions. The names are assigned to IDs
 ##' @param weight Numeric, weight associated with delay priors; default: 1
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom purrr list_transpose map
