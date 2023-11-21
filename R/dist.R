@@ -1056,7 +1056,8 @@ dist_spec <- function(distribution = c(
       n_p = 1,
       n_np = 0,
       np_pmf = numeric(0),
-      parametric = TRUE
+      parametric = TRUE,
+      params_lower = lower_bounds(distribution)[natural_params(distribution)]
     )
   } else {
     ret <- list(
@@ -1064,7 +1065,8 @@ dist_spec <- function(distribution = c(
       params_sd = numeric(0),
       dist = character(0),
       max = integer(0),
-      parametric = FALSE
+      parametric = FALSE,
+      params_lower = numeric(0)
     )
     if (length(pmf) == 0) {
       if (distribution == "fixed") { ## delta
