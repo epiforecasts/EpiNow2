@@ -1862,13 +1862,26 @@ generate_dist_spec <- function(params, distribution) {
   unnatural_params <- setdiff(names(params), natural_params(distribution))
   if (length(unnatural_params) > 0) {
     ## sample parameters if they are uncertain
-    samples <- lapply(names(params), function(x) {
-      rtruncnorm(
-        n = 2000, a = lower_bounds(distribution)[x],
-        mean = mean(params[[x]]), sd = sd(params[[x]])
+    if (any(vapply(params, sd, .0) > 0)) {
+      warning(
+        "Uncertain ", distribution, " distribution specified in terms of ",
+        "parameters that are not the \"natural\" parameters of the ",
+        "distribution (", paste(natural_params(distribution), collapse = ", "),
+        "). Converting using a finite sample. If possible, it is preferable ",
+        "to specify the distribution direclty in terms of the natural ",
+        "parameters."
       )
-    })
-    names(samples) <- names(params)
+      samples <- lapply(names(params), function(x) {
+        rtruncnorm(
+          n = 2000, a = lower_bounds(distribution)[x],
+          mean = mean(params[[x]]), sd = sd(params[[x]])
+        )
+      })
+      names(samples) <- names(params)
+    } else {
+      params <- mean(params[[x]])
+    }
+
     ## generate natural parameters
     converted_params <- convert_to_natural(samples, distribution)
   } else {
