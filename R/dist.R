@@ -1310,33 +1310,36 @@ sd <- function(x, ...) UseMethod("sd")
 #' # The sd of the sum of two distributions
 #' sd(lognormal + gamma)
 sd.dist_spec <- function(x, ...) {
-  if (x$n > 1) {
-    stop("Cannot calculate standard deviation of composite distributions.")
-  }
+  ret <- rep(.0, x$n)
   if (x$n_np > 0) {
     ## nonparametric
     mean_pmf <- sum((seq_len(x$np_pmf_length) - 1) * x$np_pmf)
-    ret <- sum((seq_len(x$np_pmf_length) - 1)**2 * x$np_pmf) - mean_pmf^2
-  } else {
+    ret[!x$parametric] <- sum((seq_len(x$np_pmf_length) - 1)**2 * x$np_pmf) -
+      mean_pmf^2
+  }
+  if (x$n_p > 0) {
     ## parametric
     if (any(x$params_sd > 0)) {
       stop("Cannot calculate standard deviation of uncertain distribution")
     }
-    if (x$dist == "lognormal") {
-      ret <- sqrt(exp(x$params_mean[2]**2) - 1) *
-        exp(x$params_mean[1] + 0.5 * x$params_mean[2]**2)
-    } else if (x$dist == "gamma") {
-      ret <- sqrt(x$params_mean[1] / x$params_mean[2]**2)
-    } else if (x$dist == "normal") {
-      ret <- x$params_mean[2]
-    } else if (x$dist == "fixed") {
-      ret <- 0
-    } else {
-      stop(
-        "Don't know how to calculate standard deviation of ", x$dist,
-        " distribution."
-      )
-    }
+    ret[x$parametric] <- vapply(which(x$parametric), function(id) {
+      single_dist <- extract_single_dist(x, id)
+      if (single_dist$dist == "lognormal") {
+        ret <- sqrt(exp(single_dist$params_mean[2]**2) - 1) *
+          exp(single_dist$params_mean[1] + 0.5 * single_dist$params_mean[2]**2)
+      } else if (single_dist$dist == "gamma") {
+        ret <- sqrt(single_dist$params_mean[1] / single_dist$params_mean[2]**2)
+      } else if (single_dist$dist == "normal") {
+        ret <- single_dist$params_mean[2]
+      } else if (single_dist$dist == "fixed") {
+        ret <- 0
+      } else {
+        stop(
+          "Don't know how to calculate standard deviation of ",
+          single_dist$dist, " distribution."
+        )
+      }
+    }, .0)
   }
   return(ret)
 }
