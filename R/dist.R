@@ -1176,20 +1176,19 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
 #' @export
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
-#' lognormal <- dist_spec(
-#'   mean = 1.6, sd = 1, max = 20, distribution = "lognormal"
+#' dist1 <- lognormal_spec(
+#'   meanlog = 1.6, sdlog = 1, max = 20, distribution = "lognormal"
 #' )
-#' lognormal + lognormal
+#' dist1 + dist1
 #'
 #' # An uncertain gamma distribution with mean 3 and sd 2
-#' gamma <- dist_spec(
-#'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-#'   distribution = "gamma"
+#' dist2 <- gamma(
+#'   mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20
 #' )
-#' lognormal + gamma
+#' dist1 + dist2
 #'
 #' # Using tolerance parameter
-#' EpiNow2:::dist_spec_plus(lognormal, lognormal, tolerance = 0.5)
+#' EpiNow2:::dist_spec_plus(dist1, dist1, tolerance = 0.5)
 `+.dist_spec` <- function(e1, e2) {
   dist_spec_plus(e1, e2, tolerance = 0.001)
 }
@@ -1260,25 +1259,28 @@ mean.dist_spec <- function(x, ...) {
   }
   if (x$n_p > 0) {
     ## parametric
-    ret[x$parametric] <- vapply(
-      seq_along(which(x$parametric)), function(id) {
-        if (x$dist == "lognormal") {
-          ret <- exp(x$params_mean[[1]] + x$params_mean[[2]]**2 / 2)
-        } else if (x$dist == "gamma") {
-          ret <- x$params_mean[[1]] / x$params_mean[[2]]
-        } else if (x$dist == "normal") {
-          ret <- x$params_mean[[1]]
-        } else if (x$dist == "fixed") {
-          ret <- x$params_mean[[1]]
-        } else {
-          stop("Don't know how to calculate mean of ", x$dist, " distribution.")
-        }
-      }, .0
-    )
+    ret[x$parametric] <- vapply(which(x$parametric), function(id) {
+      single_dist <- extract_single_dist(x, id)
+      if (single_dist$dist == "lognormal") {
+        ret <- exp(
+          single_dist$params_mean[[1]] + single_dist$params_mean[[2]]**2 / 2
+        )
+      } else if (single_dist$dist == "gamma") {
+        ret <- single_dist$params_mean[[1]] / single_dist$params_mean[[2]]
+      } else if (single_dist$dist == "normal") {
+        ret <- single_dist$params_mean[[1]]
+      } else if (single_dist$dist == "fixed") {
+        ret <- single_dist$params_mean[[1]]
+      } else {
+        stop(
+          "Don't know how to calculate mean of ", single_dist$dist,
+          " distribution."
+        )
+      }
+    }, .0)
   }
   return(ret)
 }
-
 
 #' @export
 sd <- function(x, ...) UseMethod("sd")
@@ -1410,59 +1412,62 @@ print.dist_spec <- function(x, ...) {
   if (x$n > 1) {
     cat("Composite delay distribution:\n")
   }
-  fixed_id <- 1
-  fixed_pos <- 1
-  variable_id <- 1
-  variable_pos <- 1
+  nonparametric_id <- 1
+  nonparametric_pos <- 1
+  parametric_id <- 1
+  parametric_pos <- 1
   for (i in 1:x$n) {
     cat("  ")
     if (!is.null(x$names) && nchar(x$names[i]) > 0) {
       cat(x$names[i], ": ", sep = "")
     }
     if (x$parametric[i] > 0) {
-      dist <- x$dist[variable_id]
+      dist <- x$dist[parametric_id]
       cat(dist, " distribution", sep = "")
-      if (is.finite(x$max)) {
-        cat(" (max: ", x$max, ")", sep = "")
+      if (is.finite(x$max[parametric_id])) {
+        cat(" (max: ", x$max[parametric_id], ")", sep = "")
       }
       cat(" with ", sep = "")
       ## loop over natural parameters and print
-      for (id in seq(variable_pos, x$params_length[variable_pos])) {
-        if (id > variable_pos) {
-          if (id == x$params_length[variable_pos]) {
+      for (id in seq(1, x$params_length[i])) {
+        pos <- parametric_pos - 1 + id
+        if (id > 1) {
+          if (id == x$params_length[i]) {
             cat(" and ")
           } else {
             cat(", ")
           }
         }
-        if (x$params_sd[id] > 0) {
+        if (x$params_sd[pos] > 0) {
           cat("uncertain ")
         }
         cat(natural_params(dist)[id])
-        if (x$params_sd[id] > 0) {
+        if (x$params_sd[pos] > 0) {
           cat(
-            " (mean = ", signif(x$params_mean[id], digits = 2), ", ",
-            "sd = ", signif(x$params_sd[id], digits = 2), ")",
+            " (mean = ", signif(x$params_mean[pos], digits = 2), ", ",
+            "sd = ", signif(x$params_sd[pos], digits = 2), ")",
             sep = ""
           )
         } else {
-          cat(" = ", signif(x$params_mean[id], digits = 2), sep = "")
+          cat(" = ", signif(x$params_mean[pos], digits = 2), sep = "")
         }
       }
-      variable_id <- variable_id + 1
-      variable_pos <- variable_pos + x$params_length[i]
+      parametric_id <- parametric_id + 1
+      parametric_pos <- parametric_pos + x$params_length[i]
     } else {
       cat(
         "distribution with PMF [",
         paste(signif(
-          x$np_pmf[seq(fixed_pos, fixed_pos + x$np_pmf_length[fixed_id] - 1)],
+          x$np_pmf[seq(
+            nonparametric_pos, length.out = x$np_pmf_length[nonparametric_id]
+          )],
           digits = 2
         ), collapse = " "),
         "]",
         sep = ""
       )
-      fixed_id <- fixed_id + 1
-      fixed_pos <- fixed_pos + x$np_pmf_length[i]
+      nonparametric_id <- nonparametric_id + 1
+      nonparametric_pos <- nonparametric_pos + x$np_pmf_length[i]
     }
     cat(".\n")
   }
@@ -1510,26 +1515,21 @@ plot.dist_spec <- function(x, ...) {
     value = numeric(), cdf = numeric(),
     distribution = factor()
   )
-  variable_id <- 1
-  fixed_id <- 1
+  parametric_id <- 1
+  nonparametric_id <- 1
   group_starts <- c(1L, cumsum(x$np_pmf_length) + 1L)
   for (i in 1:x$n) {
-    if (x$fixed[i] == 0) {
+    if (x$parametric[i]) {
       # Uncertain distribution
-      mean <- x$mean_mean[variable_id]
-      sd <- x$sd_mean[variable_id]
-      c_dist <- dist_spec(
-        mean = mean, sd = sd, max = x$max[variable_id],
-        distribution = x$dist[variable_id]
-      )
+      c_dist <- fix_dist(extract_single_dist(x, i))
       pmf <- c_dist$np_pmf
-      variable_id <- variable_id + 1
-      dist_name <- paste0("Uncertain ", x$dist[variable_id], " (ID: ", i, ")")
+      parametric_id <- parametric_id + 1
+      dist_name <- paste0("Uncertain ", x$dist[parametric_id], " (ID: ", i, ")")
     } else {
       # Fixed distribution
       pmf <- x$np_pmf[seq(group_starts[i], group_starts[i + 1L] - 1L)]
       dist_name <- paste0("Fixed", " (ID: ", i, ")")
-      fixed_id <- fixed_id + 1
+      nonparametric_id <- nonparametric_id + 1
     }
     pmf_data <- rbind(
       pmf_data,
@@ -1721,7 +1721,7 @@ process_dist <- function(params, distribution) {
   params <- extract_params(params, distribution)
   params <- lapply(params, function(x) {
     if (is(x, "dist_spec") && x$dist == "normal") {
-      if (any(x$param_sd > 0)) {
+      if (any(x$params_sd > 0)) {
         stop(
           "Normal distribution indicating uncertainty cannot itself ",
           "be uncertain."
