@@ -29,7 +29,7 @@ inc <- estimate_secondary(inc_cases[1:60],
 
 # extract posterior variables of interest
 params <- c(
-  "meanlog" = "delay_mean[1]", "sdlog" = "delay_sd[1]",
+  "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
   "scaling" = "frac_obs[1]"
 )
 

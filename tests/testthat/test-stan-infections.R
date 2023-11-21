@@ -14,11 +14,11 @@ test_that("update_infectiousness works as expected with default settings", {
   expect_error(update_infectiousness(rep(1, 20), rep(0.1, 5), 5, 10, 10))
 })
 
-pmf <- discretised_pmf(3, 2, 15, 1)
+pmf <- discretised_pmf(c(2.25, 0.75), 15, 1)
 gt_rev_pmf <- get_delay_rev_pmf(
   1L, 15L, array(0L), array(1L),
   array(c(1L, 2L)), array(15L), pmf,
-  array(c(1L, 16L)), numeric(0), numeric(0), 0L,
+  array(c(1L, 16L)), numeric(0), 1L, 0L,
   1L, 1L, 0L
 )
 

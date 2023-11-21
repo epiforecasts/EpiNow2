@@ -24,8 +24,8 @@ construct_truncation <- function(index, cases, dist) {
   cmf <- cumsum(
     dlnorm(
       1:(dist$max + 1),
-      rnorm(1, dist$mean_mean, dist$mean_sd),
-      rnorm(1, dist$sd_mean, dist$sd_sd)
+      rnorm(1, dist$params_mean[1], dist$params_sd[1]),
+      rnorm(1, dist$params_mean[2], dist$params_sd[2])
     )
   )
   cmf <- cmf / cmf[dist$max + 1]

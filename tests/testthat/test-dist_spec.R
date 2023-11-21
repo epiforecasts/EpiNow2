@@ -1,11 +1,10 @@
 
 test_that("dist_spec returns correct output for fixed lognormal distribution", {
   result <- dist_spec(mean = 5, sd = 1, max = 19, distribution = "lognormal")
-  expect_equal(dim(result$mean_mean), 0)
-  expect_equal(dim(result$sd_mean), 0)
+  expect_equal(dim(result$params_mean), 0)
   expect_equal(dim(result$dist), 0)
   expect_equal(dim(result$max), 0)
-  expect_equal(result$fixed, array(1))
+  expect_equal(result$parametric, array(FALSE))
   expect_equal(
     as.vector(round(result$np_pmf, 2)),
     c(0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03,
@@ -16,25 +15,22 @@ test_that("dist_spec returns correct output for fixed lognormal distribution", {
 
 test_that("dist_spec returns correct output for uncertain gamma distribution", {
   result <- dist_spec(
-    mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 19,
-    distribution = "gamma"
+    params_mean = c(3, 2), params_sd = c(0.5, 0.5), distribution = "gamma",
+    max = 19
   )
-  expect_equal(result$mean_mean, array(3L))
-  expect_equal(result$sd_mean, array(2))
-  expect_equal(result$mean_sd, array(0.5))
-  expect_equal(result$sd_sd, array(0.5))
+  expect_equal(result$params_mean, array(c(3, 2)))
+  expect_equal(result$params_sd, array(c(0.5, 0.5)))
   expect_equal(result$dist, array("gamma"))
   expect_equal(result$max, array(19))
-  expect_equal(result$fixed, array(0L))
+  expect_equal(result$parametric, array(TRUE))
 })
 
 test_that("dist_spec returns correct output for fixed distribution", {
   result <- fix_dist(dist_spec(
     mean = 5, mean_sd = 3, sd = 1, max = 19, distribution = "lognormal",
   ))
-  expect_equal(dim(result$mean_mean), 0)
-  expect_equal(dim(result$sd_mean), 0)
-  expect_equal(result$fixed, array(1L))
+  expect_equal(dim(result$params_mean), 0)
+  expect_equal(result$parametric, array(FALSE))
   expect_equal(
     as.vector(round(result$np_pmf, 2)),
     c(0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03,
@@ -50,22 +46,18 @@ test_that("dist_spec returns error when both pmf and distributional parameters a
 
 test_that("dist_spec returns error when mean is missing but other distributional parameters are given", {
   expect_error(dist_spec(sd = 1, max = 20, distribution = "lognormal"), 
-               "If any distributional parameters are given then so must the mean.")
-})
-
-test_that("dist_spec returns error when maximum of parametric distributions is not specified", {
-  expect_error(dist_spec(mean = 5, sd = 1, distribution = "lognormal"), 
-               "Maximum of parametric distributions must be specified.")
+               "is missing.")
 })
 
 test_that("+.dist_spec returns correct output for sum of two distributions", {
   lognormal <- dist_spec(mean = 5, sd = 1, max = 19, distribution = "lognormal")
-  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20, distribution = "gamma")
+  gamma <- dist_spec(
+    params_mean = c(3, 2), params_sd = c(0.5, 0.5), max = 20,
+    distribution = "gamma"
+  )
   result <- lognormal + gamma
-  expect_equal(result$mean_mean, array(3))
-  expect_equal(result$sd_mean, array(2))
-  expect_equal(result$mean_sd, array(0.5))
-  expect_equal(result$sd_sd, array(0.5))
+  expect_equal(result$params_mean, array(c(3, 2)))
+  expect_equal(result$params_sd, array(c(0.5, 0.5)))
   expect_equal(result$n, 2)
   expect_equal(result$n_p, 1)
   expect_equal(result$n_np, 1)
@@ -80,8 +72,7 @@ test_that("+.dist_spec returns correct output for sum of two fixed distributions
     mean = 3, sd = 2, max = 19, distribution = "gamma"
   ))
   result <- lognormal + gamma
-  expect_equal(dim(result$mean_mean), 0)
-  expect_equal(dim(result$sd_mean), 0)
+  expect_equal(dim(result$params_mean), 0)
   expect_equal(result$n, 1)
   expect_equal(result$n_p, 0)
   expect_equal(result$n_np, 1)
@@ -92,8 +83,7 @@ test_that("+.dist_spec returns correct output for sum of two nonparametric distr
   lognormal <- dist_spec(pmf = c(0.1, 0.2, 0.3, 0.4))
   gamma <- dist_spec(pmf = c(0.1, 0.2, 0.3, 0.4))
   result <- lognormal + gamma
-  expect_equal(dim(result$mean_mean), 0)
-  expect_equal(dim(result$sd_mean), 0)
+  expect_equal(dim(result$params_mean), 0)
   expect_equal(result$n, 1)
   expect_equal(result$n_p, 0)
   expect_equal(result$n_np, 1)
@@ -150,9 +140,9 @@ test_that("mean.dist_spec returns correct output for fixed lognormal distributio
 })
 
 test_that("mean.dist_spec returns correct output for uncertain gamma distribution", {
-  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 19, distribution = "gamma")
+  gamma <- dist_spec(params_mean = c(3, 2), params_sd = c(0.5, 0.5), max = 19, distribution = "gamma")
   result <- EpiNow2:::mean.dist_spec(gamma)
-  expect_equal(result, 3)
+  expect_equal(result, 1.5)
 })
 
 test_that("mean.dist_spec returns correct output for sum of two distributions", {
@@ -165,30 +155,30 @@ test_that("mean.dist_spec returns correct output for sum of two distributions", 
 test_that("print.dist_spec correctly prints the parameters of the fixed lognormal", {
   lognormal <- dist_spec(mean = 1.5, sd = 0.5, max = 19, distribution = "lognormal")
   
-  expect_output(print(lognormal), "\\n  Fixed distribution with PMF \\[0\\.0014 0\\.052 0\\.16 0\\.2 0\\.18 0\\.13 0\\.094 0\\.063 0\\.042 0\\.027 0\\.018 0\\.012 0\\.0079 0\\.0052 0\\.0035 0\\.0024 0\\.0016 0\\.0011 0\\.00078 0\\.00055\\]\\n")
+  expect_output(print(lognormal), "\\n  distribution with PMF \\[0\\.0014 0\\.052 0\\.16 0\\.2 0\\.18 0\\.13 0\\.094 0\\.063 0\\.042 0\\.027 0\\.018 0\\.012 0\\.0079 0\\.0052 0\\.0035 0\\.0024 0\\.0016 0\\.0011 0\\.00078 0\\.00055\\]\\.\\n")
 })
 
 test_that("print.dist_spec correctly prints the parameters of the uncertain gamma", {
   gamma <- dist_spec(
-    mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 19,
+    params_mean = c(3, 2), params_sd = c(0.5, 0.5), max = 19,
     distribution = "gamma"
   )
   
-  expect_output(print(gamma), "\\n  Uncertain gamma distribution with \\(untruncated\\) mean 3 \\(SD 0\\.5\\) and SD 2 \\(SD 0\\.5\\)\\n")
+  expect_output(print(gamma), "\\n  gamma distribution \\(max: 19\\) with uncertain shape \\(mean = 3, sd = 0.5\\) and uncertain rate \\(mean = 2, sd = 0\\.5\\)\\.\\n")
 })
 
 test_that("print.dist_spec correctly prints the parameters of the uncertain lognormal", {
   lognormal_uncertain <- dist_spec(mean = 1.5, sd = 0.5, mean_sd = 0.1, sd_sd = 0.1, max = 19, distribution = "lognormal")
   
-  expect_output(print(lognormal_uncertain), "\\n  Uncertain lognormal distribution with \\(untruncated\\) logmean 1\\.5 \\(SD 0\\.1\\) and logSD 0\\.5 \\(SD 0\\.1\\)\\n")
+  expect_output(print(lognormal_uncertain), "\\n  lognormal distribution \\(max: 19\\) with uncertain meanlog \\(mean = 1\\.5, sd = 0\\.1\\) and uncertain sdlog \\(mean = 0\\.5, sd = 0\\.1\\)\\.\\n")
 })
 
 test_that("print.dist_spec correctly prints the parameters of a combination of distributions", {
   lognormal <- dist_spec(mean = 1.5, sd = 0.5, max = 19, distribution = "lognormal")
-  gamma <- dist_spec(mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 19, distribution = "gamma")
+  gamma <- dist_spec(params_mean = c(3, 2), params_sd = c(0.5, 0.5), max = 19, distribution = "gamma")
   combined <- lognormal + gamma
   
-  expect_output(print(combined), "Combination of delay distributions:\\n  Fixed distribution with PMF \\[0\\.0014 0\\.052 0\\.16 0\\.2 0\\.18 0\\.13 0\\.094 0\\.063 0\\.042 0\\.027 0\\.018 0\\.012 0\\.0079 0\\.0052 0\\.0035 0\\.0024 0\\.0016 0\\.0011 0\\.00078 0\\.00055\\]\\n  Uncertain gamma distribution with \\(untruncated\\) mean 3 \\(SD 0\\.5\\) and SD 2 \\(SD 0\\.5\\)\\n")
+  expect_output(print(combined), "\\nComposite delay distribution:\\n  distribution with PMF \\[0\\.0014 0\\.052 0\\.16 0\\.2 0\\.18 0\\.13 0\\.094 0\\.063 0\\.042 0\\.027 0\\.018 0\\.012 0\\.0079 0\\.0052 0\\.0035 0\\.0024 0\\.0016 0\\.0011 0\\.00078 0\\.00055\\]\\.\\n  gamma distribution \\(max: 19\\) with uncertain shape \\(mean = 3, sd = 0\\.5\\) and uncertain rate \\(mean = 2, sd = 0\\.5\\)\\.\\n")
 })
 
 test_that("plot.dist_spec returns a ggplot object", {
