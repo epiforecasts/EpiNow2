@@ -271,13 +271,10 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   out <- list()
   # Summarise fit truncation distribution for downstream usage
-  delay_mean <- extract_stan_param(fit, params = "delay_mean")
-  delay_sd <- extract_stan_param(fit, params = "delay_sd")
-  out$dist <- dist_spec(
-    mean = round(delay_mean$mean, 3),
-    mean_sd = round(delay_mean$sd, 3),
-    sd = round(delay_sd$mean, 3),
-    sd_sd = round(delay_sd$sd, 3),
+  delay_params <- extract_stan_param(fit, params = "delay_params")
+  out$dist <- .dist_spec(
+    params_mean = round(delay_params$mean, 3),
+    params_sd = round(delay_params$sd, 3),
     max = truncation$max
   )
   out$dist$dist <- truncation$dist
