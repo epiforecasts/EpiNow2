@@ -1346,6 +1346,42 @@ sd.default <- function(x, ...) {
   stats::sd(x, ...)
 }
 
+##' Returns the maximum of one or more delay distribution
+##'
+##' This works out the maximum of all the (parametric / nonparametric) delay
+##' distributions combined in the passed [dist_spec()] (ignoring any uncertainty
+##' in parameters)
+##'
+##' @param x The [dist_spec()] to use
+##' @param ... Not used
+##' @return A vector of means.
+##' @author Sebastian Funk
+##' @method max dist_spec
+##' @export
+#' @examples
+#' # A fixed gamma distribution with mean 5 and sd 1.
+#' dist1 <- gamma(mean = 5, sd = 1, max = 20)
+#' max(dist1)
+#'
+#' # An uncertain lognormal distribution with mean 3 and sd 2
+#' dist2 <- lognormal(mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20)
+#' max(dist2)
+#'
+#' # The mean of the sum of two distributions
+#' mean(dist1 + dist2)
+max.dist_spec <- function(x, ...) {
+  ret <- rep(0L, x$n)
+  if (x$n_np > 0) {
+    ## nonparametric
+    ret[!x$parametric] <- x$np_pmf_length - 1
+  }
+  if (x$n_p > 0) {
+    ## parametric
+    ret[x$parametric] <- x$max
+  }
+  return(ret)
+}
+
 #' Prints the parameters of one or more delay distributions
 #'
 #' This displays the parameters of the uncertain and probability mass

@@ -86,6 +86,7 @@ adjust_infection_to_report <- function(infections, delay_defs,
   # Reset DT Defaults on Exit
   set_dt_single_thread()
 
+  ## deprecated
   sample_single_dist <- function(input, delay_def) {
     ## Define sample delay fn
     sample_delay_fn <- function(n, ...) {
@@ -112,14 +113,52 @@ adjust_infection_to_report <- function(infections, delay_defs,
     return(out)
   }
 
-  report <- sample_single_dist(infections, delay_defs[[1]])
-
-  if (length(delay_defs) > 1) {
-    for (def in 2:length(delay_defs)) {
-      report <- sample_single_dist(report, delay_defs[[def]])
+  sample_dist_spec <- function(input, delay_def) {
+    ## Define sample delay fn
+    sample_delay_fn <- function(n, dist, cum, ...) {
+      fixed_dist <- fix_dist(delay_def, strategy = "sample")
+      if (dist) {
+        fixed_dist$np_pmf[n + 1]
+      } else {
+        sample(seq_along(fixed_dist$np_pmf) - 1, size = n, replace = TRUE)
+      }
     }
+
+    ## Infection to onset
+    out <- EpiNow2::sample_approx_dist(
+      cases = input,
+      dist_fn = sample_delay_fn,
+      max_value = max(delay_def),
+      direction = "forwards",
+      type = type,
+      truncate_future = FALSE
+    )
+
+    return(out)
   }
 
+  if (is(delay_defs, "dist_spec")) {
+    report <- sample_dist_spec(infections, extract_single_dist(delay_defs, 1))
+    if (delay_defs$n > 1) {
+      for (def in 2:delay_defs$n) {
+        report <- sample_dist_spec(report, extract_single_dist(delay_defs, def))
+      }
+    }
+  } else {
+    deprecate_warn(
+      "2.0.0",
+      "adjust_infection_to_report(delay_defs = 'should be a dist_spec')",
+      details = c(
+        "Specifying this as a list of data tables is deprecated."
+      )
+    )
+    report <- sample_single_dist(infections, delay_defs[[1]])
+    if (length(delay_defs ) > 1) {
+      for (def in 2:length(delay_defs)) {
+        report <- sample_single_dist(report, delay_defs[[def]])
+      }
+    }
+  }
   ## Add a weekly reporting effect if present
   if (!missing(reporting_effect)) {
     reporting_effect <- data.table::data.table(
