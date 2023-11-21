@@ -1520,7 +1520,39 @@ plot.dist_spec <- function(x, ...) {
   return(plot)
 }
 
-##' Fix the parameters of a `<dist_spec>` object
+##' Extract a single element of a composite `<dist_spec>`
+##'
+##' @param x A composite `dist_spec` object
+##' @param i The index to extract
+##' @return A single `dist_spec` object
+##' @keywords internal
+##' @author Sebastian Funk
+extract_single_dist <- function(x, i) {
+  if (i > x$n) {
+    stop("i can't be greater than the number of distributions.")
+  }
+  if (x$parametric[i]) {
+    parametric_id <- cumsum(x$parametric)[i]
+    params_start_id <- cumsum(c(0, x$params_length))[i] + 1
+    params_id <- seq(params_start_id, length.out = x$params_length[i])
+    ret <- .dist_spec(
+      params_mean = x$params_mean[params_id],
+      params_sd = x$params_sd[params_id],
+      max = x$max[parametric_id],
+      distribution = x$dist[parametric_id]
+    )
+  } else {
+    nonparametric_id <- cumsum(!x$parametric)[i]
+    pmf_start_id <- cumsum(c(0, x$np_pmf_length))[nonparametric_id] + 1
+    pmf_id <- seq(pmf_start_id, length.out = x$np_pmf_length[nonparametric_id])
+    ret <- .dist_spec(
+      pmf = x$np_pmf[pmf_id]
+    )
+  }
+  return(ret)
+}
+
+##' Fix the parameters of a `<dist_spec>`
 ##'
 ##' If the given `<dist_spec>` has any uncertainty, it is removed and the
 ##' corresponding distribution converted into a fixed one.
