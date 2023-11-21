@@ -1027,7 +1027,7 @@ dist_spec <- function(distribution = c(
 
   if (distribution == "fixed") {
     ## if integer fixed then can write the PMF
-    if (as.integer(params_mean) == params_mean) {
+    if (as.integer(params_mean) == params_mean && params_mean >= 0) {
       max <- params_mean
       parametric <- FALSE
     } else {
@@ -1816,6 +1816,7 @@ extract_params <- function(params, distribution) {
 ##' This will convert all parameters to natural parameters before generating
 ##' a `dist_spec`. If they have uncertainty this will be done using sampling.
 ##' @inheritParams extract_params
+##' @importFrom purrr walk
 ##' @return A `dist_spec` of the given specificaiton.`
 ##' @author Sebastian Funk
 generate_dist_spec <- function(params, distribution) {
@@ -1839,6 +1840,22 @@ generate_dist_spec <- function(params, distribution) {
       stop("Parameter ", x, " must be numeric or normally distributed.")
     }
   })
+
+  ## check bounds
+  for (param_name in names(params)) {
+    if (!params[[param_name]]$parametric ||
+        params[[param_name]]$dist == "fixed") {
+      ## no uncertainty, so check if within range
+      lb <- lower_bounds(distribution)[param_name]
+      if (mean(params[[param_name]]) < lb) {
+        stop(
+          "Parameter ", param_name, " is less than its lower bound ", lb, "."
+        )
+      }
+    }
+  }
+
+  ## convert any unnatural parameters
   unnatural_params <- setdiff(names(params), natural_params(distribution))
   if (length(unnatural_params) > 0) {
     ## sample parameters if they are uncertain

@@ -54,3 +54,30 @@ check_reports_valid <- function(reports, model) {
     assert_numeric(reports$confirm, lower = 0)
   }
 }
+
+#' Validate probability distribution for passing to stan
+#'
+#' @description
+#' `check_stan_dist()` checks that the supplied data is a `<dist_spec>`,
+#' and that it can be further processed by stan.
+#'
+#' @param dist A `dist_spec` object.`
+#' @importFrom checkmate assert_class
+#' @importFrom rlang arg_match
+#' @return Called for its side effects.
+#' @author Sebastian Funk
+#' @keywords internal
+check_stan_dist <- function(dist) {
+  # Check that `dist` is a `dist_spec`
+  assert_class(dist, "dist_spec")
+  # Check that `dist` is lognormal or gamma or nonparametric
+  if (!all(dist$dist %in% c("lognormal", "gamma"))) {
+    stop(
+      "Distributions passed to the model need to be lognormal, gamma or ",
+      "nonparametric (i.e., have no uncertainty)."
+    )
+  }
+  if (any(is.infinite(max(dist)))) {
+    stop("All distribution passed to the model need to have a finite maximum")
+  }
+}

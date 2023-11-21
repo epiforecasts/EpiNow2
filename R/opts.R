@@ -98,6 +98,7 @@ generation_time_opts <- function(dist = fixed(1), ...,
       "information, see the relevant documentation pages using ",
       "`?generation_time_opts`")
   }
+  check_stan_dist(dist)
   attr(dist, "class") <- c("generation_time_opts", class(dist))
   return(dist)
 }
@@ -162,6 +163,7 @@ delay_opts <- function(dist = fixed(0), ..., fixed = FALSE) {
     ## can be removed once dot options are hard deprecated
     stop("Unknown named arguments passed to `delay_opts`")
   }
+  check_stan_dist(dist)
   attr(dist, "class") <- c("delay_opts", class(dist))
   return(dist)
 }
@@ -206,6 +208,7 @@ trunc_opts <- function(dist = fixed(0)) {
       "`?trunc_opts`"
     )
   }
+  check_stan_dist(dist)
   attr(dist, "class") <- c("trunc_opts", class(dist))
   return(dist)
 }
