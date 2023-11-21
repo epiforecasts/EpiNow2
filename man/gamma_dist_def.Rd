@@ -43,10 +43,8 @@ Samples outside of this range are resampled.}
 A \verb{<data.table>} defining the distribution as used by \code{\link[=dist_skel]{dist_skel()}}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
-Generates a distribution definition when only parameter estimates
-are available for gamma distributed parameters. See \code{\link[=rgamma]{rgamma()}} for
-distribution information.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+Deprecated; use \code{\link[=gamma]{gamma()}} instead to define a gamma distribution.
 }
 \examples{
 # using estimated shape and scale

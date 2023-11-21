@@ -306,10 +306,8 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 
 #' Generate a Gamma Distribution Definition Based on Parameter Estimates
 #'
-#' @description `r lifecycle::badge("soft-deprecated")`
-#' Generates a distribution definition when only parameter estimates
-#' are available for gamma distributed parameters. See [rgamma()] for
-#' distribution information.
+#' @description `r lifecycle::badge("deprecated")`
+#' Deprecated; use [gamma()] instead to define a gamma distribution.
 #'
 #' @param shape Numeric, shape parameter of the gamma distribution.
 #'
@@ -350,6 +348,11 @@ gamma_dist_def <- function(shape, shape_sd,
                            mean, mean_sd,
                            sd, sd_sd,
                            max_value, samples) {
+  lifecycle::deprecate_warn(
+    "2.0.0", "gamma_dist_def()", "gamma()",
+    "The function will be removed completely in version 2.1.0."
+  )
+
   if (missing(shape) && missing(scale) && !missing(mean) && !missing(sd)) {
     if (!missing(mean_sd)) {
       mean <- truncnorm::rtruncnorm(samples, a = 0, mean = mean, sd = mean_sd)
@@ -391,7 +394,7 @@ gamma_dist_def <- function(shape, shape_sd,
 
 #' Generate a Log Normal Distribution Definition Based on Parameter Estimates
 #'
-#' @description `r lifecycle::badge("soft-deprecated")`
+#' @description `r lifecycle::badge("deprecated")`
 #' Generates a distribution definition when only parameter estimates
 #' are available for log normal distributed parameters. See [rlnorm()] for
 #' distribution information.
@@ -434,6 +437,11 @@ lognorm_dist_def <- function(mean, mean_sd,
                              sd, sd_sd,
                              max_value, samples,
                              to_log = FALSE) {
+  lifecycle::deprecate_warn(
+    "2.0.0", "lognorm_dist_def()", "lognormal()",
+    "The function will be removed completely in version 2.1.0."
+  )
+
   transform_mean <- function(mu, sig) {
     mean_location <- log(mu^2 / sqrt(sig^2 + mu^2))
     mean_location
