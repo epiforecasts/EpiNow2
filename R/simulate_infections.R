@@ -229,7 +229,7 @@ forecast_infections <- function(estimates,
 
     ## allocate empty parameters
     data <- allocate_empty(
-      data, c("frac_obs", "delay_mean", "delay_sd", "rep_phi"),
+      data, c("frac_obs", "delay_params", "rep_phi"),
       n = data$n
     )
 
