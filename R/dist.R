@@ -362,7 +362,7 @@ gamma_dist_def <- function(shape, shape_sd,
     }
     scale <- sd^2 / mean
     shape <- mean / scale
-    scale <- 1 / scale
+    rate <- 1 / scale
   } else {
     if (!missing(shape_sd)) {
       shape <- truncnorm::rtruncnorm(
@@ -383,9 +383,8 @@ gamma_dist_def <- function(shape, shape_sd,
     params = purrr::list_transpose(
       list(
         shape = shape,
-        scale = scale
-      ),
-      simplify = FALSE
+        rate = rate
+      )
     ),
     max_value = rep(max_value, samples)
   )
@@ -478,10 +477,9 @@ lognorm_dist_def <- function(mean, mean_sd,
     model = rep("lognormal", samples),
     params = purrr::list_transpose(
       list(
-        mean = means,
-        sd = sds
-      ),
-      simplify = FALSE
+        meanlog = means,
+        sdlog = sds
+      )
     ),
     max_value = rep(max_value, samples)
   )
