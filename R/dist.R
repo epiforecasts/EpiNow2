@@ -1605,22 +1605,19 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
 ##' @export
 lognormal <- function(meanlog, sdlog, mean, sd, median, max = Inf) {
   params <- as.list(environment())
-  lower_bounds <- c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0, median = 0)
-  return(process_dist(params, lower_bounds, "lognormal"))
+  return(process_dist(params, "lognormal"))
 }
 
 ##' @export
 gamma <- function(shape, rate, scale, mean, sd, max = Inf) {
   params <- as.list(environment())
-  lower_bounds <- c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0)
-  return(process_dist(params, lower_bounds, "gamma"))
+  return(process_dist(params, "gamma"))
 }
 
 ##' @export
 normal <- function(mean, sd, max = Inf) {
   params <- as.list(environment())
-  lower_bounds <- c(mean = -Inf, sd = 0)
-  return(process_dist(params, lower_bounds, "normal"))
+  return(process_dist(params, "normal"))
 }
 
 ##' @export
@@ -1653,6 +1650,19 @@ natural_params <- function(distribution) {
   return(ret)
 }
 
+lower_bounds <- function(distribution) {
+  if (distribution == "gamma") {
+    ret <- c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0)
+  } else if (distribution == "lognormal") {
+    ret <- c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0, median = 0)
+  } else if (distribution == "normal") {
+    ret <- c(mean = -Inf, sd = 0)
+  } else if (distribution == "fixed") {
+    ret <- c(value = 1)
+  }
+  return(ret)
+}
+
 extract_params <- function(params, distribution) {
   params <- params[!vapply(params, inherits, "name", FUN.VALUE = TRUE)]
   n_params <- length(natural_params(distribution))
@@ -1665,7 +1675,7 @@ extract_params <- function(params, distribution) {
   return(params)
 }
 
-process_dist <- function(params, lower_bounds, distribution) {
+process_dist <- function(params, distribution) {
   ## process min/max first
   max <- params$max
   params$max <- NULL
@@ -1691,7 +1701,7 @@ process_dist <- function(params, lower_bounds, distribution) {
     ## sample parameters if they are uncertain
     samples <- lapply(names(params), function(x) {
       rtruncnorm(
-        n = 2000, a = lower_bounds[x],
+        n = 2000, a = lower_bounds(distribution)[x],
         mean = mean(params[[x]]), sd = sd(params[[x]])
       )
     })
