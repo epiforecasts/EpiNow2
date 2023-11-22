@@ -990,6 +990,7 @@ dist_spec <- function(distribution = c(
 #' @importFrom rlang warn
 #' @keywords internal
 #' @examples
+#' \dontrun{
 #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' .dist_spec(
 #'   params_mean = c(meanlog = 5, sdlog = 1), max = 20,
@@ -1002,6 +1003,7 @@ dist_spec <- function(distribution = c(
 #'   params_sd = c(alpha = 0.75, beta = 0.25),
 #'   distribution = "gamma"
 #' )
+#' }
 .dist_spec <- function(distribution = c(
                          "lognormal", "normal", "gamma", "fixed"
                        ),
@@ -1765,7 +1767,9 @@ pmf <- function(x) {
 ##' @author Sebastian Funk
 ##' @keywords internal
 ##' @examples
+##' \dontrun{
 ##' natural_params("gamma")
+##' }
 natural_params <- function(distribution) {
   if (distribution == "gamma") {
     ret <- c("shape", "rate")
@@ -1787,7 +1791,9 @@ natural_params <- function(distribution) {
 ##' @author Sebastian Funk
 ##' @keywords internal
 ##' @examples
+##' \dontrun{
 ##' lower_bounds("lognormal")
+##' }
 lower_bounds <- function(distribution) {
   if (distribution == "gamma") {
     ret <- c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0)
