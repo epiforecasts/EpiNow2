@@ -362,7 +362,6 @@ gamma_dist_def <- function(shape, shape_sd,
     }
     scale <- sd^2 / mean
     shape <- mean / scale
-    rate <- 1 / scale
   } else {
     if (!missing(shape_sd)) {
       shape <- truncnorm::rtruncnorm(
@@ -377,6 +376,8 @@ gamma_dist_def <- function(shape, shape_sd,
       )
     }
   }
+
+  rate <- 1 / scale
 
   dist <- data.table::data.table(
     model = rep("gamma", samples),
