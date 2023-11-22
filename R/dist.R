@@ -1883,7 +1883,7 @@ generate_dist_spec <- function(params, distribution) {
     }
     ## sample parameters if they are uncertain
     if (any(vapply(params, sd, .0) > 0)) {
-      warning(
+      message(
         "Uncertain ", distribution, " distribution specified in terms of ",
         "parameters that are not the \"natural\" parameters of the ",
         "distribution (", paste(natural_params(distribution), collapse = ", "),
