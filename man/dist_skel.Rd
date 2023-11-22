@@ -68,34 +68,36 @@ dist_skel(1:10,
 
 ## Gamma model
 # sample
-dist_skel(10, model = "gamma", params = list(shape = 1, scale = 2))
+dist_skel(10, model = "gamma", params = list(shape = 1, rate = 0.5))
 
 # cumulative prob density
 dist_skel(0:10,
   model = "gamma", dist = TRUE,
-  params = list(shape = 1, scale = 2)
+  params = list(shape = 1, rate = 0.5)
 )
 
 # probability density
 dist_skel(0:10,
   model = "gamma", dist = TRUE,
-  cum = FALSE, params = list(shape = 2, scale = 2)
+  cum = FALSE, params = list(shape = 2, rate = 0.5)
 )
 
 ## Log normal model
 # sample
-dist_skel(10, model = "lognormal", params = list(mean = log(5), sd = log(2)))
+dist_skel(10,
+  model = "lognormal", params = list(meanlog = log(5), sdlog = log(2))
+)
 
 # cumulative prob density
 dist_skel(0:10,
   model = "lognormal", dist = TRUE,
-  params = list(mean = log(5), sd = log(2))
+  params = list(meanlog = log(5), sdlog = log(2))
 )
 
 # probability density
 dist_skel(0:10,
   model = "lognormal", dist = TRUE, cum = FALSE,
-  params = list(mean = log(5), sd = log(2))
+  params = list(meanlog = log(5), sdlog = log(2))
 )
 }
 \author{
