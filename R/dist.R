@@ -1649,7 +1649,7 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
 ##' parameters such as the mean or standard deviation of the distribution. If
 ##' not given as natural parameters then these will be calculated from the given
 ##' parameters. If they have uncertainty, this will be done by random sampling
-##' from the given uncertainty and coverting resulting parameters to their
+##' from the given uncertainty and converting resulting parameters to their
 ##' natural representation.
 ##'
 ##' Currently available distributions are lognormal, gamma, normal, fixed
@@ -1742,7 +1742,7 @@ pmf <- function(mass) {
 ##'
 ##' These are the parameters used in the stan models. All other parameter
 ##' representations are converted to these using [convert_to_natural()] before
-##' being passed to teh stan mnodels.
+##' being passed to the stan models.
 ##' @param distribution Character; the distribution to use.
 ##' @return A character vector, the natural parameters.
 ##' @author Sebastian Funk
@@ -1808,14 +1808,14 @@ extract_params <- function(params, distribution) {
   return(params)
 }
 
-##' Internal function for generating a `dist_spec` given parametrs and a
+##' Internal function for generating a `dist_spec` given parameters and a
 ##' distribution.
 ##'
 ##' This will convert all parameters to natural parameters before generating
 ##' a `dist_spec`. If they have uncertainty this will be done using sampling.
 ##' @inheritParams extract_params
 ##' @importFrom purrr walk
-##' @return A `dist_spec` of the given specificaiton.`
+##' @return A `dist_spec` of the given specification.
 ##' @author Sebastian Funk
 generate_dist_spec <- function(params, distribution) {
   ## process min/max first
@@ -1906,10 +1906,10 @@ generate_dist_spec <- function(params, distribution) {
 ##' Internal function for converting parameters to natural parameters.
 ##'
 ##' This is used for preprocessing before generating a `dist_spec` object
-##' from a given set of parametrs and distribution
+##' from a given set of parameters and distribution
 ##' @param x A numerical named parameter vector
 ##' @inheritParams natural_params
-##' @return A list with two elements, `params_mean` and `params_sd`, containign
+##' @return A list with two elements, `params_mean` and `params_sd`, containing
 ##' mean and sd of natural parameters.
 ##' @author Sebastian Funk
 convert_to_natural <- function(x, distribution) {

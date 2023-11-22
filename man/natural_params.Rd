@@ -15,7 +15,7 @@ A character vector, the natural parameters.
 \description{
 These are the parameters used in the stan models. All other parameter
 representations are converted to these using \code{\link[=convert_to_natural]{convert_to_natural()}} before
-being passed to teh stan mnodels.
+being passed to the stan models.
 }
 \examples{
 \dontrun{

@@ -12,12 +12,12 @@ convert_to_natural(x, distribution)
 \item{distribution}{Character; the distribution to use.}
 }
 \value{
-A list with two elements, \code{params_mean} and \code{params_sd}, containign
+A list with two elements, \code{params_mean} and \code{params_sd}, containing
 mean and sd of natural parameters.
 }
 \description{
 This is used for preprocessing before generating a \code{dist_spec} object
-from a given set of parametrs and distribution
+from a given set of parameters and distribution
 }
 \author{
 Sebastian Funk

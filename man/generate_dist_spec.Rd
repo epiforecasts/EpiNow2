@@ -2,7 +2,7 @@
 % Please edit documentation in R/dist.R
 \name{generate_dist_spec}
 \alias{generate_dist_spec}
-\title{Internal function for generating a \code{dist_spec} given parametrs and a
+\title{Internal function for generating a \code{dist_spec} given parameters and a
 distribution.}
 \usage{
 generate_dist_spec(params, distribution)
@@ -13,7 +13,7 @@ generate_dist_spec(params, distribution)
 \item{distribution}{Character; the distribution to use.}
 }
 \value{
-A \code{dist_spec} of the given specificaiton.`
+A \code{dist_spec} of the given specification.
 }
 \description{
 This will convert all parameters to natural parameters before generating

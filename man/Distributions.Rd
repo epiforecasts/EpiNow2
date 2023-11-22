@@ -67,7 +67,7 @@ ones used in stan) but can sometimes also be specified using other
 parameters such as the mean or standard deviation of the distribution. If
 not given as natural parameters then these will be calculated from the given
 parameters. If they have uncertainty, this will be done by random sampling
-from the given uncertainty and coverting resulting parameters to their
+from the given uncertainty and converting resulting parameters to their
 natural representation.
 
 Currently available distributions are lognormal, gamma, normal, fixed
