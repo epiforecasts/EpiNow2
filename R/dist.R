@@ -1343,10 +1343,6 @@ sd_dist <- function(x) {
   }
   return(ret)
 }
-#' @export
-sd.default <- function(x, ...) {
-  stats::sd(x, ...)
-}
 
 ##' Returns the maximum of one or more delay distribution
 ##'
