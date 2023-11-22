@@ -1020,8 +1020,8 @@ dist_spec <- function(distribution = c(
         "The meaning of the 'max' argument has changed compared to",
         "previous versions. It now indicates the maximum of a distribution",
         "rather than the length of the probability mass function (including 0)",
-        "that it represented previously. To replicate previous behaviour reduce",
-        "max by 1."
+        "that it represented previously. To replicate previous behaviour ",
+        "reduce max by 1."
       ),
       .frequency = "regularly",
       .frequency_id = "dist_spec_max"
@@ -1158,7 +1158,7 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
     delays$np_pmf <- new_pmf
     delays$np_pmf_length <- length(delays$np_pmf)
     delays$params_length <- c(
-      0, delays$params_length[delays$parametric == TRUE]
+      0, delays$params_length[delays$parametric]
     )
     delays$parametric <- array(c(FALSE, rep(TRUE, delays$n_p)))
     delays$n_np <- 1
@@ -1256,7 +1256,7 @@ c.dist_spec <- function(...) {
 #' # The mean of the sum of two distributions
 #' mean(dist1 + dist2)
 mean.dist_spec <- function(x, ...) {
-  ret <- rep(.0, x$n)
+  ret <- rep(0, x$n)
   if (x$n_np > 0) {
     ## nonparametric
     ret[!x$parametric] <- sum((seq_len(x$np_pmf_length) - 1) * x$np_pmf)
@@ -1266,22 +1266,20 @@ mean.dist_spec <- function(x, ...) {
     ret[x$parametric] <- vapply(which(x$parametric), function(id) {
       single_dist <- extract_single_dist(x, id)
       if (single_dist$dist == "lognormal") {
-        ret <- exp(
-          single_dist$params_mean[[1]] + single_dist$params_mean[[2]]**2 / 2
-        )
+        exp(single_dist$params_mean[[1]] + single_dist$params_mean[[2]]**2 / 2)
       } else if (single_dist$dist == "gamma") {
-        ret <- single_dist$params_mean[[1]] / single_dist$params_mean[[2]]
+        single_dist$params_mean[[1]] / single_dist$params_mean[[2]]
       } else if (single_dist$dist == "normal") {
-        ret <- single_dist$params_mean[[1]]
+        single_dist$params_mean[[1]]
       } else if (single_dist$dist == "fixed") {
-        ret <- single_dist$params_mean[[1]]
+        single_dist$params_mean[[1]]
       } else {
         stop(
           "Don't know how to calculate mean of ", single_dist$dist,
           " distribution."
         )
       }
-    }, .0)
+    }, numeric(1))
   }
   return(ret)
 }
@@ -1310,7 +1308,7 @@ mean.dist_spec <- function(x, ...) {
 ##' sd_dist(dist1 + dist2)
 ##' }
 sd_dist <- function(x) {
-  ret <- rep(.0, x$n)
+  ret <- rep(0, x$n)
   if (x$n_np > 0) {
     ## nonparametric
     mean_pmf <- sum((seq_len(x$np_pmf_length) - 1) * x$np_pmf)
@@ -1325,21 +1323,21 @@ sd_dist <- function(x) {
     ret[x$parametric] <- vapply(which(x$parametric), function(id) {
       single_dist <- extract_single_dist(x, id)
       if (single_dist$dist == "lognormal") {
-        ret <- sqrt(exp(single_dist$params_mean[2]**2) - 1) *
+        sqrt(exp(single_dist$params_mean[2]**2) - 1) *
           exp(single_dist$params_mean[1] + 0.5 * single_dist$params_mean[2]**2)
       } else if (single_dist$dist == "gamma") {
-        ret <- sqrt(single_dist$params_mean[1] / single_dist$params_mean[2]**2)
+        sqrt(single_dist$params_mean[1] / single_dist$params_mean[2]**2)
       } else if (single_dist$dist == "normal") {
-        ret <- single_dist$params_mean[2]
+        single_dist$params_mean[2]
       } else if (single_dist$dist == "fixed") {
-        ret <- 0
+        0
       } else {
         stop(
           "Don't know how to calculate standard deviation of ",
           single_dist$dist, " distribution."
         )
       }
-    }, .0)
+    }, numeric(1))
   }
   return(ret)
 }
@@ -1863,11 +1861,11 @@ generate_dist_spec <- function(params, distribution) {
       )
     }
     ## sample parameters if they are uncertain
-    if (any(vapply(params, sd_dist, .0) > 0)) {
+    if (any(vapply(params, sd_dist, numeric(1)) > 0)) {
       message(
         "Uncertain ", distribution, " distribution specified in terms of ",
         "parameters that are not the \"natural\" parameters of the ",
-        "distribution (", paste(natural_params(distribution), collapse = ", "),
+        "distribution (", toString(natural_params(distribution)),
         "). Converting using a finite sample. If possible, it is preferable ",
         "to specify the distribution direclty in terms of the natural ",
         "parameters."
@@ -1931,7 +1929,7 @@ convert_to_natural <- function(x, distribution) {
     }, numeric(1))),
     params_sd = unname(vapply(natural_params(distribution), function(param) {
       if (length(x[[param]]) == 1) {
-        .0
+        0
       } else {
         sd(x[[param]])
       }
