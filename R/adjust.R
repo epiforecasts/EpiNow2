@@ -148,12 +148,10 @@ adjust_infection_to_report <- function(infections, delay_defs,
     deprecate_warn(
       "2.0.0",
       "adjust_infection_to_report(delay_defs = 'should be a dist_spec')",
-      details = c(
-        "Specifying this as a list of data tables is deprecated."
-      )
+      details = "Specifying this as a list of data tables is deprecated."
     )
     report <- sample_single_dist(infections, delay_defs[[1]])
-    if (length(delay_defs ) > 1) {
+    if (length(delay_defs) > 1) {
       for (def in 2:length(delay_defs)) {
         report <- sample_single_dist(report, delay_defs[[def]])
       }

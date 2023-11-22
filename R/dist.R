@@ -127,7 +127,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
         plnorm(n, params[["meanlog"]], params[["sdlog"]])) /
         plnorm(max_value + 1, params[["meanlog"]], params[["sdlog"]])
     }
-  } else if (model %in% "normal") {
+  } else if (model == "normal") {
     rdist <- function(n) {
       rnorm(n, params[["mean"]], params[["sd"]])
     }
@@ -909,7 +909,7 @@ dist_spec <- function(distribution = c(
       "dist_spec(fixed)",
       "fix_dist()"
     )
-    params_sd <- c()
+    params_sd <- NULL
   }
   ## check for deprecated parameters
   if (!all(missing(mean), missing(sd), missing(mean_sd), missing(sd_sd)) &&
@@ -947,7 +947,7 @@ dist_spec <- function(distribution = c(
       params_sd <- c(mean = mean_sd, sd = sd_sd)
     } else if (distribution == "fixed") {
       params_mean <- mean
-      params_sd <- c()
+      params_sd <- NULL
     }
   }
   return(.dist_spec(distribution, params_mean, params_sd, max, pmf))

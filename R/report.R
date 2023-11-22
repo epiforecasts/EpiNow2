@@ -201,7 +201,7 @@ report_summary <- function(summarised_estimates,
   }
 
   if (!is.null(target_folder)) {
-    saveRDS(summary, paste0(target_folder, "/summary.rds"))
+    saveRDS(summary, file.path(target_folder, "summary.rds"))
   }
   return(summary)
 }
