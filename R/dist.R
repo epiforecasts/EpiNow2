@@ -1286,32 +1286,30 @@ mean.dist_spec <- function(x, ...) {
   return(ret)
 }
 
-#' @export
-sd <- function(x, ...) UseMethod("sd")
 ##' Returns the standard deviation of one or more delay distribution
 ##'
 ##' This works out the standard deviation of all the (parametric /
 ##' nonparametric) delay distributions combined in the passed [dist_spec()].
 ##'
 ##' @param x The [dist_spec()] to use
-##' @param ... Not used
 ##' @return A vector of standard deviations.
 ##' @author Sebastian Funk
-##' @method sd dist_spec
 ##' @importFrom utils head
-##' @export
-#' @examples
-#' # A fixed lognormal distribution with sd 5 and sd 1.
-#' dist1 <- lognormal(mean = 5, sd = 1, max = 20)
-#' sd(dist1)
-#'
-#' # A gamma distribution with mean 3 and sd 2
-#' dist2 <- gamma(mean = 3, sd = 2)
-#' sd(dist2)
-#'
-#' # The sd of the sum of two distributions
-#' sd(dist1 + dist2)
-sd.dist_spec <- function(x, ...) {
+##' @keywords internal
+##' @examples
+##' \dontrun{
+##' # A fixed lognormal distribution with sd 5 and sd 1.
+##' dist1 <- lognormal(mean = 5, sd = 1, max = 20)
+##' sd_dist(dist1)
+##'
+##' # A gamma distribution with mean 3 and sd 2
+##' dist2 <- gamma(mean = 3, sd = 2)
+##' sd_dist(dist2)
+##'
+##' # The sd of the sum of two distributions
+##' sd_dist(dist1 + dist2)
+##' }
+sd_dist <- function(x) {
   ret <- rep(.0, x$n)
   if (x$n_np > 0) {
     ## nonparametric
