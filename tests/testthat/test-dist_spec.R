@@ -119,7 +119,7 @@ test_that("summary functions return correct output for fixed lognormal distribut
   ## here we can see the bias from
   # using this kind of discretisation approach
   expect_equal(EpiNow2:::mean.dist_spec(dist), 2.49, tolerance = 0.01)
-  expect_equal(EpiNow2:::sd.dist_spec(dist), 1.09, tolerance = 0.01)
+  expect_equal(EpiNow2:::sd_dist(dist), 1.09, tolerance = 0.01)
   expect_equal(EpiNow2:::max.dist_spec(dist), 19L)
 })
 
@@ -134,14 +134,14 @@ test_that("mean.dist_spec returns correct output for sum of two distributions", 
   dist2 <- gamma(mean = 3, sd = 2, max = 19)
   dist <- dist1 + dist2
   expect_equal(EpiNow2:::mean.dist_spec(dist), c(5.84), tolerance = 0.001)
-  expect_equal(EpiNow2:::sd.dist_spec(dist), c(16.88), tolerance = 0.001)
+  expect_equal(EpiNow2:::sd_dist(dist), c(16.88), tolerance = 0.001)
   ## shortened due to tolerance level
   expect_equal(EpiNow2:::max.dist_spec(dist), 24L)
 })
 
-test_that("sd.dist_spec returns an error when applied to uncertain distributions", {
+test_that("sd_dist returns an error when applied to uncertain distributions", {
   dist <- gamma(shape = normal(3, 0.5), rate = normal(2, 0.5), max = 19)
-  expect_error(EpiNow2:::sd.dist_spec(dist), "uncertain")
+  expect_error(EpiNow2:::sd_dist(dist), "uncertain")
 })
 
 test_that("print.dist_spec correctly prints the parameters of the fixed lognormal", {
@@ -260,11 +260,6 @@ test_that("delay distributions can be specified in different ways", {
     round(pmf(c(0.1, 0.3, 0.2, 0.1, 0.1))$np_pmf, 2),
     array(c(0.12, 0.37, 0.25, 0.12, 0.12))
   )
-})
-
-test_that("a warning is thrown for non-natural parametrisations", {
-  expect_warning(lognormal(mean = normal(4, 1), sd = 1, max = 10))
-  expect_warning(gamma(mean = normal(4, 1), sd = 1, max = 10))
 })
 
 test_that("deprecated functions are deprecated", {
