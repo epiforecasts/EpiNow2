@@ -1940,7 +1940,11 @@ convert_to_natural <- function(x, distribution) {
       mean(x[[param]])
     }, numeric(1))),
     params_sd = unname(vapply(natural_params(distribution), function(param) {
-      sd(x[[param]])
+      if (length(x[[param]]) == 1) {
+        .0
+      } else {
+        sd(x[[param]])
+      }
     }, numeric(1)))
   )
   return(params)
