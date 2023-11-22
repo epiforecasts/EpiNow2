@@ -882,7 +882,7 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @inheritParams .dist_spec
 #' @export
 dist_spec <- function(distribution = c(
-                        "lognormal", "normal", "gamma", "fixed"
+                        "lognormal", "normal", "gamma", "fixed", "empty"
                       ),
                       params_mean = numeric(0), params_sd = numeric(0),
                       mean, sd = 0, mean_sd = 0, sd_sd = 0,
