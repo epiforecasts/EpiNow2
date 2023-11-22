@@ -28,7 +28,7 @@ transformed data{
   }
 }
 parameters {
-  vector[delay_params_length] delay_params;
+  vector<lower = delay_params_lower>[delay_params_length] delay_params;
   real<lower=0> phi;
   real<lower=0> sigma;
 }

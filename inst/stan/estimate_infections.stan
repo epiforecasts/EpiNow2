@@ -167,8 +167,8 @@ generated quantities {
     r = R_to_growth(R, gt_mean, gt_var);
   } else {
     // sample generation time
-    vector[delay_params_length] delay_params_sample = to_vector(normal_rng(
-      delay_params_mean, delay_params_sd
+    vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(
+      delay_params_mean, delay_params_sd, delay_params_lower
     ));
     vector[delay_type_max[gt_id] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(
       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,

@@ -103,3 +103,9 @@ void delays_lp(vector delay_params,
     }
   }
 }
+
+vector normal_lb_rng(vector mu, vector sigma, vector lb) {
+    real p = normal_cdf(lb, mu, sigma);  // cdf for bounds
+    real u = uniform_rng(p, 1);
+    return (sigma * inv_Phi(u)) + mu;  // inverse cdf for value
+}
