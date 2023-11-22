@@ -105,7 +105,12 @@ void delays_lp(vector delay_params,
 }
 
 vector normal_lb_rng(vector mu, vector sigma, vector lb) {
-    real p = normal_cdf(lb, mu, sigma);  // cdf for bounds
+  int len = num_elements(mu);
+  vector[len] ret;
+  for (i in 1:len) {
+    real p = normal_cdf(lb[i], mu[i], sigma[i]);  // cdf for bounds
     real u = uniform_rng(p, 1);
-    return (sigma * inv_Phi(u)) + mu;  // inverse cdf for value
+    ret[i] = (sigma[i] * inv_Phi(u)) + mu[i];  // inverse cdf for value
+  }
+  return ret;
 }
