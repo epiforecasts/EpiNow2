@@ -16,7 +16,9 @@ A numeric vector, the lower bounds.
 This is used to avoid sampling parameter values that have no support.
 }
 \examples{
+\dontrun{
 lower_bounds("lognormal")
+}
 }
 \author{
 Sebastian Funk

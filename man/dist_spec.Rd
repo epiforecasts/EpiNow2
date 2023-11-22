@@ -5,7 +5,7 @@
 \title{Specify a distribution.}
 \usage{
 dist_spec(
-  distribution = c("lognormal", "normal", "gamma", "fixed"),
+  distribution = c("lognormal", "normal", "gamma", "fixed", "empty"),
   params_mean = numeric(0),
   params_sd = numeric(0),
   mean,

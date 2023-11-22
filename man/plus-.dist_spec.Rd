@@ -25,8 +25,8 @@ numeric stability.
 }
 \examples{
 # A fixed lognormal distribution with mean 5 and sd 1.
-dist1 <- lognormal_spec(
-  meanlog = 1.6, sdlog = 1, max = 20, distribution = "lognormal"
+dist1 <- lognormal(
+  meanlog = 1.6, sdlog = 1, max = 20
 )
 dist1 + dist1
 

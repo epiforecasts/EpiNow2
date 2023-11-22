@@ -20,20 +20,15 @@ nonparametric) delay distributions combined in the passed \code{\link[=dist_spec
 }
 \examples{
 # A fixed lognormal distribution with sd 5 and sd 1.
-lognormal <- dist_spec(
- sd = 5, sd = 1, max = 20, distribution = "lognormal"
-)
-sd(lognormal)
+dist1 <- lognormal(mean = 5, sd = 1, max = 20)
+sd(dist1)
 
-# An uncertain gamma distribution with sd 3 and sd 2
-gamma <- dist_spec(
- sd = 3, sd = 2, sd_sd = 0.5, sd_sd = 0.5, max = 20,
- distribution = "gamma"
-)
-sd(gamma)
+# A gamma distribution with mean 3 and sd 2
+dist2 <- gamma(mean = 3, sd = 2)
+sd(dist2)
 
 # The sd of the sum of two distributions
-sd(lognormal + gamma)
+sd(dist1 + dist2)
 }
 \author{
 Sebastian Funk

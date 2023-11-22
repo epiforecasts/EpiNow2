@@ -21,20 +21,17 @@ in parameters)
 }
 \examples{
 # A fixed lognormal distribution with mean 5 and sd 1.
-lognormal <- dist_spec(
- mean = 5, sd = 1, max = 20, distribution = "lognormal"
-)
-mean(lognormal)
+dist1 <- lognormal(mean = 5, sd = 1, max = 20)
+mean(dist1)
 
 # An uncertain gamma distribution with mean 3 and sd 2
-gamma <- dist_spec(
- mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
- distribution = "gamma"
+dist2 <- gamma(
+ mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20
 )
-mean(gamma)
+mean(dist2)
 
 # The mean of the sum of two distributions
-mean(lognormal + gamma)
+mean(dist1 + dist2)
 }
 \author{
 Sebastian Funk

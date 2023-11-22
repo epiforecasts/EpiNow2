@@ -109,7 +109,7 @@ generation_time_opts <- function(dist = fixed(1), ...,
 #' Returns delay distributions formatted for usage by downstream
 #' functions.
 #' @param dist A delay distribution or series of delay distributions. Default is
-#'   an fixed distribution with of 0, [dist_spec()], i.e. no delay.
+#'   a fixed distribution with all mass at 0, i.e. no delay.
 #' @param ... deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
 #' @return A `<delay_opts>` object summarising the input delay distributions.
@@ -123,11 +123,11 @@ generation_time_opts <- function(dist = fixed(1), ...,
 #' delay_opts()
 #'
 #' # A single delay that has uncertainty
-#' delay <- dist_spec(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 14)
+#' delay <- lognormal(mean = normal(1, 0.2), sd = normal(0.5, 0.1), max = 14)
 #' delay_opts(delay)
 #'
 #' # A single delay without uncertainty
-#' delay <- dist_spec(mean = 1, sd = 0.5, max = 14)
+#' delay <- lognormal(meanlog = 1, sdlog = 0.5, max = 14)
 #' delay_opts(delay)
 #'
 #' # Multiple delays (in this case twice the same)

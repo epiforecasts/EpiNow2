@@ -18,7 +18,9 @@ representations are converted to these using \code{\link[=convert_to_natural]{co
 being passed to teh stan mnodels.
 }
 \examples{
+\dontrun{
 natural_params("gamma")
+}
 }
 \author{
 Sebastian Funk

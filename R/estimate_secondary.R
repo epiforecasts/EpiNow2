@@ -137,9 +137,10 @@
 estimate_secondary <- function(reports,
                                secondary = secondary_opts(),
                                delays = delay_opts(
-                                 dist_spec(
-                                   mean = 2.5, mean_sd = 0.5,
-                                   sd = 0.47, sd_sd = 0.25, max = 30
+                                 lognormal(
+                                   meanlog = normal(2.5, 0.5),
+                                   sdlog = normal(0.47, 0.25),
+                                   max = 30
                                  )
                                ),
                                truncation = trunc_opts(),

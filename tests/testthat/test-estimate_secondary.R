@@ -188,8 +188,10 @@ test_that("forecast_secondary can return values from simulated data when using
 })
 
 test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
-  delays <- dist_spec(
-    mean = 2.5, mean_sd = 0.5, sd = 0.47, sd_sd = 0.25, max = 30
+  delays <- lognormal(
+    meanlog = normal(2.5, 0.5),
+    sdlog = normal(0.47, 0.25),
+    max = 30
   )
   inc_weigh <- estimate_secondary(
     inc_cases[1:60], delays = delay_opts(delays),

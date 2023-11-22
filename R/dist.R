@@ -1183,8 +1183,8 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
 #' @export
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
-#' dist1 <- lognormal_spec(
-#'   meanlog = 1.6, sdlog = 1, max = 20, distribution = "lognormal"
+#' dist1 <- lognormal(
+#'   meanlog = 1.6, sdlog = 1, max = 20
 #' )
 #' dist1 + dist1
 #'
@@ -1244,20 +1244,17 @@ c.dist_spec <- function(...) {
 ##' @export
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
-#' lognormal <- dist_spec(
-#'  mean = 5, sd = 1, max = 20, distribution = "lognormal"
-#' )
-#' mean(lognormal)
+#' dist1 <- lognormal(mean = 5, sd = 1, max = 20)
+#' mean(dist1)
 #'
 #' # An uncertain gamma distribution with mean 3 and sd 2
-#' gamma <- dist_spec(
-#'  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-#'  distribution = "gamma"
+#' dist2 <- gamma(
+#'  mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20
 #' )
-#' mean(gamma)
+#' mean(dist2)
 #'
 #' # The mean of the sum of two distributions
-#' mean(lognormal + gamma)
+#' mean(dist1 + dist2)
 mean.dist_spec <- function(x, ...) {
   ret <- rep(.0, x$n)
   if (x$n_np > 0) {
@@ -1305,20 +1302,15 @@ sd <- function(x, ...) UseMethod("sd")
 ##' @export
 #' @examples
 #' # A fixed lognormal distribution with sd 5 and sd 1.
-#' lognormal <- dist_spec(
-#'  sd = 5, sd = 1, max = 20, distribution = "lognormal"
-#' )
-#' sd(lognormal)
+#' dist1 <- lognormal(mean = 5, sd = 1, max = 20)
+#' sd(dist1)
 #'
-#' # An uncertain gamma distribution with sd 3 and sd 2
-#' gamma <- dist_spec(
-#'  sd = 3, sd = 2, sd_sd = 0.5, sd_sd = 0.5, max = 20,
-#'  distribution = "gamma"
-#' )
-#' sd(gamma)
+#' # A gamma distribution with mean 3 and sd 2
+#' dist2 <- gamma(mean = 3, sd = 2)
+#' sd(dist2)
 #'
 #' # The sd of the sum of two distributions
-#' sd(lognormal + gamma)
+#' sd(dist1 + dist2)
 sd.dist_spec <- function(x, ...) {
   ret <- rep(.0, x$n)
   if (x$n_np > 0) {
@@ -1406,17 +1398,14 @@ max.dist_spec <- function(x, ...) {
 #' @export
 #' @examples
 #' #' # A fixed lognormal distribution with mean 5 and sd 1.
-#' lognormal <- dist_spec(
-#'   mean = 1.5, sd = 0.5, max = 20, distribution = "lognormal"
-#' )
-#' print(lognormal)
+#' dist1 <- lognormal(mean = 1.5, sd = 0.5, max = 20)
+#' print(dist1)
 #'
 #' # An uncertain gamma distribution with mean 3 and sd 2
-#' gamma <- dist_spec(
-#'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-#'   distribution = "gamma"
+#' dist2 <- gamma(
+#'   mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20
 #' )
-#' print(gamma)
+#' print(dist2)
 print.dist_spec <- function(x, ...) {
   cat("\n")
   if (x$n > 1) {
@@ -1497,23 +1486,20 @@ print.dist_spec <- function(x, ...) {
 #' @author Sam Abbott
 #' @examples
 #' #' # A fixed lognormal distribution with mean 5 and sd 1.
-#' lognormal <- dist_spec(
-#'   mean = 1.6, sd = 0.5, max = 20, distribution = "lognormal"
-#' )
-#' plot(lognormal)
+#' dist1 <- lognormal(mean = 1.6, sd = 0.5, max = 20)
+#' plot(dist1)
 #'
 #' # An uncertain gamma distribution with mean 3 and sd 2
-#' gamma <- dist_spec(
-#'   mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-#'   distribution = "gamma"
+#' dist2 <- gamma(
+#'   mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20
 #' )
-#' plot(gamma)
+#' plot(dist2)
 #'
 #' # Multiple distributions
-#' plot(lognormal + gamma + lognormal)
+#' plot(dist1 + dist2 + dist1)
 #'
 #' # A combination of the two fixed distributions
-#' plot(lognormal + lognormal)
+#' plot(dist1 + dist1)
 plot.dist_spec <- function(x, ...) {
   distribution <- cdf <- NULL
   # Get the PMF and CDF data

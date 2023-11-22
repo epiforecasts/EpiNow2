@@ -1,9 +1,9 @@
 skip_on_cran()
 
 # set example reporting delay
-reporting_delay <- dist_spec(
-  mean = convert_to_logmean(2, 1), mean_sd = 0.1,
-  sd = convert_to_logsd(2, 1), sd_sd = 0.1,
+reporting_delay <- lognormal(
+  meanlog = normal(0.6, 0.06),
+  sdlog = normal(0.5, 0.1),
   max = 10
 )
 

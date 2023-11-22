@@ -65,28 +65,29 @@ As these will affect any results, it is worth spending some time investigating w
 ## Delay distributions
 
 _EpiNow2_ works with different delays that apply to different parts of the infection and observation process.
-They are defined using a common interface with the `dist_spec()` function.
+They are defined using a common interface that involves functions that are named after the probability distributions, i.e. `lognormal()`, `gamma()`, etc.
 For help with this function, see its manual page
 
 ```{r eval = FALSE}
-?EpiNow2::dist_spec
+?EpiNow2::Distributions
 ```
 
 In all cases, the distributions given can be *fixed* (i.e. have no uncertainty) or *variable* (i.e. have associated uncertainty).
 For example, to define a fixed gamma distribution with mean 3, standard deviation (sd) 1 and maximum value 10, you would write
 
 ```{r}
-dist_spec(mean = 3, sd = 1, distribution = "gamma", max = 10)
+gamma(mean = 3, sd = 1, max = 10)
 ```
 
 If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by _EpiNow2_, i.e. they are estimated as part of the inference.
 For example, to define a variable gamma distribution where uncertainty in the mean is given by a normal distribution with mean 3 and sd 2, and uncertainty in the standard deviation is given by a normal distribution with mean 1 and sd 0.1, with a maximum value 10, you would write
 
 ```{r}
-dist_spec(
-  mean = 3, mean_sd = 2, sd = 1, sd_sd = 0.1, distribution = "gamma", max = 10
-)
+gamma(mean = normal(3, 2), sd = normal(1, 0.1), max = 10)
 ```
+
+Note the warning about parameters.
+We used the mean and standard deviation to define this distribution with uncertain parameters, but it would be better to use the "natural" parameters of the gamma distribution, shape and rate, for example using the values estimate and reported back after calling the previous command.
 
 There are various ways the specific delay distributions mentioned below might be obtained.
 Often, they will come directly from the existing literature reviewed by the user and studies conducted elsewhere.
@@ -98,12 +99,12 @@ For a more comprehensive treatment of delays and their estimation avoiding commo
 ### Generation intervals
 
 The generation interval is a delay distribution that describes the amount of time that passes between an individual becoming infected and infecting someone else.
-In _EpiNow2_, the generation time distribution is defined by a call to `generation_time_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `dist_spec()`).
-For example, to define the generation time as gamma distributed with uncertain mean centered on 3 (sd: 2) and sd centered on 1 (sd: 0.1), a maximum value of 10 and weighted by the number of case data points we would use
+In _EpiNow2_, the generation time distribution is defined by a call to `generation_time_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by the function corresponding to the probability distribution, i.e. `lognormal()`, `gamma()`, etc.).
+For example, to define the generation time as gamma distributed with uncertain mean centered on 3 (sd: 2) and sd centered on 1 (sd: 0.1), a maximum value of 10 and weighted by the number of case data points we could use the shape and rate parameters obtained above:
 
 ```{r, results = 'hide'}
-generation_time <- dist_spec(
-  mean = 3, mean_sd = 2, sd = 1, sd_sd = 0.1, distribution = "gamma", max = 10
+generation_time <- gamma(
+  shape = normal(15, 15), rate = normal(3.5, 2), max = 10
 )
 generation_time_opts(generation_time)
 ```
@@ -115,20 +116,19 @@ Usually this is not observed directly.
 Instead, we calculate case counts based on, for example, onset of symptoms, lab confirmations, hospitalisations, etc.
 In order to estimate the trajectory of infection incidence from this we need to either know or estimate the distribution of delays from infection to count.
 Often, such counts are composed of multiple delays for which we only have separate information, for example the incubation period (time from infection to symptom onset) and reporting delay (time from symptom onset to being a case in the data, e.g. via lab confirmation, if counts are not by the date of symptom onset).
-In this case, we can combine multiple delays defined using `dist_spec()` with the plus (`+`) operator, e.g.
+In this case, we can combine multiple delays with the plus (`+`) operator, e.g.
 
 ```{r}
-incubation_period <- dist_spec(
-  mean = 1.6, mean_sd = 0.05, sd = 0.5, sd_sd = 0.05,
-  distribution = "lognormal", max = 14
+incubation_period <- lognormal(
+  meanlog = normal(1.6, 0.05),
+  sdlog = normal(0.5, 0.05), 
+  max = 14
 )
-reporting_delay <- dist_spec(
-  mean = 0.5, sd = 0.5, distribution = "lognormal", max = 10
-)
+reporting_delay <- lognormal(meanlog = 0.5, sdlog = 0.5, max = 10)
 incubation_period + reporting_delay
 ```
 
-In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `dist_spec()`).
+In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `lognormal()`, `gamma()` etc.).
 For example, if our observations were by symptom onset we would use
 
 ```{r, results = 'hide'}

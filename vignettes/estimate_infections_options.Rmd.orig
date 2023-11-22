@@ -71,10 +71,7 @@ For the reporting delay, we use a lognormal distribution with mean of 2 days and
 Note that the mean and standard deviation must be converted to the log scale, which can be done using the `convert_log_logmean()` function.
 
 ```{r reporting_delay}
-reporting_delay <- dist_spec(
-  mean = convert_to_logmean(2, 1), mean_sd = 0,
-  sd = convert_to_logsd(2, 1), sd_sd = 0, max = 10
-)
+reporting_delay <- lognormal(mean = 2, sd = 1, max = 10)
 reporting_delay
 ```
 
@@ -172,11 +169,12 @@ We might further want to adjust for right-truncation of recent data estimated us
 Here, instead of doing so we assume that we know about truncation with mean of 1/2 day, sd 1/2 day, following a lognormal distribution and with a maximum of three days.
 
 ```{r define_truncation}
-trunc_dist <- dist_spec(
-  mean = convert_to_logmean(0.5, 0.5), mean_sd = 0.1,
-  sd = convert_to_logsd(0.5, 0.5), sd_sd = 0.1,
+trunc_dist <- lognormal(
+  mean = normal(0.5, 0.1),
+  sd = normal(0.5, 0.1),
   max = 3
 )
+trunc_dist
 ```
 
 We can then use this in the `esimtate_infections()` function using the `truncation` option.

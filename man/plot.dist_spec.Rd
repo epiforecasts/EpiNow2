@@ -18,23 +18,20 @@ Note that currently uncertainty in distributions is not plot.
 }
 \examples{
 #' # A fixed lognormal distribution with mean 5 and sd 1.
-lognormal <- dist_spec(
-  mean = 1.6, sd = 0.5, max = 20, distribution = "lognormal"
-)
-plot(lognormal)
+dist1 <- lognormal(mean = 1.6, sd = 0.5, max = 20)
+plot(dist1)
 
 # An uncertain gamma distribution with mean 3 and sd 2
-gamma <- dist_spec(
-  mean = 3, sd = 2, mean_sd = 0.5, sd_sd = 0.5, max = 20,
-  distribution = "gamma"
+dist2 <- gamma(
+  mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20
 )
-plot(gamma)
+plot(dist2)
 
 # Multiple distributions
-plot(lognormal + gamma + lognormal)
+plot(dist1 + dist2 + dist1)
 
 # A combination of the two fixed distributions
-plot(lognormal + lognormal)
+plot(dist1 + dist1)
 }
 \author{
 Sam Abbott

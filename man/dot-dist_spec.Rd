@@ -46,6 +46,7 @@ functionality in \code{\link[=delay_opts]{delay_opts()}}, \code{\link[=generatio
 \code{\link[=trunc_opts]{trunc_opts()}}.
 }
 \examples{
+\dontrun{
 # A fixed lognormal distribution with mean 5 and sd 1.
 .dist_spec(
   params_mean = c(meanlog = 5, sdlog = 1), max = 20,
@@ -58,6 +59,7 @@ functionality in \code{\link[=delay_opts]{delay_opts()}}, \code{\link[=generatio
   params_sd = c(alpha = 0.75, beta = 0.25),
   distribution = "gamma"
 )
+}
 }
 \author{
 Sebastian Funk

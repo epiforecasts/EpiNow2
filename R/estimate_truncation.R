@@ -87,11 +87,9 @@
 #' reported_cases <- example_confirmed[1:60]
 #'
 #' # define example truncation distribution (note not integer adjusted)
-#' trunc <- dist_spec(
-#'   mean = convert_to_logmean(3, 2),
-#'   mean_sd = 0.1,
-#'   sd = convert_to_logsd(3, 2),
-#'   sd_sd = 0.1,
+#' trunc <- lognormal(
+#'   meanlog = normal(0.9, 0.1),
+#'   sdlog = normal(0.6, 0.1),
 #'   max = 10
 #' )
 #'
@@ -106,8 +104,8 @@
 #'   cmf <- cumsum(
 #'     dfunc(
 #'       1:(dist$max + 1),
-#'       rnorm(1, dist$mean_mean, dist$mean_sd),
-#'       rnorm(1, dist$sd_mean, dist$sd_sd)
+#'       rnorm(1, dist$params_mean[1], dist$params_sd[1]),
+#'       rnorm(1, dist$params_mean[2], dist$params_sd[2])
 #'     )
 #'   )
 #'   cmf <- cmf / cmf[dist$max + 1]
@@ -142,8 +140,8 @@
 #' options(old_opts)
 estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
-                                truncation = dist_spec(
-                                  mean = 0, sd = 0, mean_sd = 1, sd_sd = 1,
+                                truncation = lognormal(
+                                  meanlog = normal(0, 1), sdlog = normal(1, 1),
                                   max = 10
                                 ),
                                 model = NULL,
@@ -220,8 +218,10 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     construct_trunc <- TRUE
   }
   if (construct_trunc) {
-    truncation <- dist_spec(
-      mean = 0, mean_sd = 1, sd = 0, sd_sd = 1, distribution = trunc_dist,
+    truncation <- .dist_spec(
+      params_mean = c(0, 1),
+      params_sd = c(1, 1),
+      distribution = trunc_dist,
       max = trunc_max
     )
   }
