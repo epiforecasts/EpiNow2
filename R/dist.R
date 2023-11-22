@@ -899,18 +899,6 @@ dist_spec <- function(distribution = c(
       "The function will become internal only in version 2.1.0."
     )
   )
-  ## deprecate previous behaviour
-  warn(
-    message = paste(
-      "The meaning of the 'max' argument has changed compared to",
-      "previous versions. It now indicates the maximum of a distribution",
-      "rather than the length of the probability mass function (including 0)",
-      "that it represented previously. To replicate previous behaviour reduce",
-      "max by 1."
-    ),
-    .frequency = "regularly",
-    .frequency_id = "dist_spec_max"
-  )
   ## check for deprecated parameters
   if (!missing(fixed)) {
     lifecycle::deprecate_warn(
@@ -926,8 +914,17 @@ dist_spec <- function(distribution = c(
     stop("Distributional parameters should not be given as `mean`, `sd`, etc. ",
          "in addition to `params_mean` or `params_sd`")
   }
+  distribution <- match.arg(distribution)
+  ## check if distribution is given as empty and warn about deprecation if so
+  if (distribution == "empty") {
+    deprecate_warn(
+      "2.0.0",
+      "dist_spec(distribution = 'must not be \"empty\"')",
+      details = "Please use `fixed(0)` instead."
+    )
+  }
+
   if (!all(missing(mean), missing(sd), missing(mean_sd), missing(sd_sd))) {
-    distribution <- match.arg(distribution)
     if (sd == 0 && mean_sd == 0 && sd_sd == 0) {
       distribution <- "fixed"
     }
@@ -1011,19 +1008,27 @@ dist_spec <- function(distribution = c(
         !(length(params_mean) == 0 && length(params_sd) == 0)) {
     stop("Distributional parameters or a pmf can be specified, but not both.")
   }
-  distribution <- match.arg(distribution)
-  ## check if distribution is given as empty and warn about deprecation if so
-  if (distribution == "empty") {
-    deprecate_warn(
-      "2.0.0",
-      "dist_spec(distribution = 'must not be \"empty\"')",
-      details = "Please use `fixed(0)` instead."
+
+  if (is.finite(max)) {
+    warn(
+      message = paste(
+        "The meaning of the 'max' argument has changed compared to",
+        "previous versions. It now indicates the maximum of a distribution",
+        "rather than the length of the probability mass function (including 0)",
+        "that it represented previously. To replicate previous behaviour reduce",
+        "max by 1."
+      ),
+      .frequency = "regularly",
+      .frequency_id = "dist_spec_max"
     )
   }
 
+  ## deprecate previous behaviour
   if (length(params_sd) == 0) {
     params_sd <- rep(0, length(params_mean))
   }
+
+  distribution <- match.arg(distribution)
 
   if (distribution == "fixed") {
     ## if integer fixed then can write the PMF
@@ -1861,6 +1866,12 @@ generate_dist_spec <- function(params, distribution) {
   ## convert any unnatural parameters
   unnatural_params <- setdiff(names(params), natural_params(distribution))
   if (length(unnatural_params) > 0) {
+    if (length(unnatural_params) < length(params)) {
+      stop(
+        "Incompatible combination of parameters of a ", distribution,
+        " distribution specified."
+      )
+    }
     ## sample parameters if they are uncertain
     if (any(vapply(params, sd, .0) > 0)) {
       warning(
