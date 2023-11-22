@@ -17,18 +17,25 @@ normal(mean, sd, max = Inf)
 
 fixed(value)
 
-pmf(x)
+pmf(mass)
 }
 \arguments{
 \item{meanlog, sdlog}{mean and standard deviation of the distribution
     on the log scale with default values of \code{0} and \code{1} respectively.}
 
+\item{mean, sd}{mean and standard deviation of the distribution}
+
 \item{max}{Numeric, maximum value of the distribution. The distribution will
 be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
 
+\item{shape, scale}{shape and scale parameters.  Must be positive,
+    \code{scale} strictly.}
+
+\item{rate}{an alternative way to specify the scale.}
+
 \item{value}{Value of the fixed (delta) distribution}
 
-\item{pmf}{Probability mass function of the given distribution; this is
+\item{mass}{Probability mass of the given distribution; this is
 passed as a zero-indexed numeric vector (i.e. the fist entry represents
 the probability mass of zero). If not summing to one it will be normalised
 to sum to one internally.}

@@ -1662,6 +1662,7 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
 ##'
 ##' @inheritParams stats::Lognormal
 ##' @inheritParams .dist_spec
+##' @param mean,sd mean and standard deviation of the distribution
 ##' @return A `dist_spec` representing a distribution of the given
 ##'   specification.
 ##' @author Sebastian Funk
@@ -1678,7 +1679,7 @@ lognormal <- function(meanlog, sdlog, mean, sd, max = Inf) {
   return(generate_dist_spec(params, "lognormal"))
 }
 
-##' @inheritParams stats::Gamma
+##' @inheritParams stats::GammaDist
 ##' @author Sebastian Funk
 ##' @rdname Distributions
 ##' @title Probability distributions
@@ -1726,7 +1727,7 @@ fixed <- function(value) {
 
 ##' Generates a nonparametric distribution.
 ##'
-##' @param pmf Probability mass function of the given distribution; this is
+##' @param mass Probability mass of the given distribution; this is
 ##'   passed as a zero-indexed numeric vector (i.e. the fist entry represents
 ##'   the probability mass of zero). If not summing to one it will be normalised
 ##'   to sum to one internally.
@@ -1737,8 +1738,8 @@ fixed <- function(value) {
 ##' @examples
 ##' pmf(c(0.1, 0.3, 0.2, 0.4))
 ##' pmf(c(0.1, 0.3, 0.2, 0.1, 0.1))
-pmf <- function(x) {
-  return(.dist_spec(pmf = x))
+pmf <- function(mass) {
+  return(.dist_spec(pmf = mass))
 }
 
 ##' Get the names of the natural parameters of a distribution
@@ -1891,7 +1892,7 @@ generate_dist_spec <- function(params, distribution) {
   } else {
     converted_params <- list(
       params_mean = vapply(params, mean, numeric(1), USE.NAMES = FALSE),
-      params_sd = vapply(params, sd, numeric(1), USE.NAMES = FALSE)
+      params_sd = vapply(params, sd_dist, numeric(1), USE.NAMES = FALSE)
     )
   }
 
