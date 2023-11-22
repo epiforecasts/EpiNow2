@@ -538,7 +538,7 @@ create_delay_inits <- function(data) {
   if (data$delay_n_p > 0) {
     out$delay_params <- array(truncnorm::rtruncnorm(
       n = data$delay_params_length, a = data$delay_params_lower,
-      mean = data$delay_params_mean, sd = data$delay_params_sd * 0.1 + 1
+      mean = data$delay_params_mean, sd = data$delay_params_sd * 0.1
     ))
   } else {
     out$delay_params <- array(numeric(0))
