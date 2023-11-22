@@ -10,7 +10,7 @@ touchstone::benchmark_run(
   default = { epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(fixed_generation_time),
-    delays = fixed_delays,
+    delays = delay_opts(fixed_delays),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
@@ -39,7 +39,7 @@ touchstone::benchmark_run(
 # benchmark readme example without delays
 touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
-  no_delays = { epinow(
+  delay_opts(no_delays) = { epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(fixed_generation_time),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
@@ -57,7 +57,7 @@ touchstone::benchmark_run(
   stationary = { epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(fixed_generation_time),
-    delays = fixed_delays,
+    delays = delay_opts(fixed_delays),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2), gp_on = "R0"),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
@@ -73,7 +73,7 @@ touchstone::benchmark_run(
   random_walk = { epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(fixed_generation_time),
-    delays = fixed_delays,
+    delays = delay_opts(fixed_delays),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
     gp = NULL,
     stan = stan_opts(
