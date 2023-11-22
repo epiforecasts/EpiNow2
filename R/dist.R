@@ -1863,7 +1863,7 @@ generate_dist_spec <- function(params, distribution) {
       )
     }
     ## sample parameters if they are uncertain
-    if (any(vapply(params, sd, .0) > 0)) {
+    if (any(vapply(params, sd_dist, .0) > 0)) {
       message(
         "Uncertain ", distribution, " distribution specified in terms of ",
         "parameters that are not the \"natural\" parameters of the ",
@@ -1875,7 +1875,7 @@ generate_dist_spec <- function(params, distribution) {
       samples <- lapply(names(params), function(x) {
         rtruncnorm(
           n = 2000, a = lower_bounds(distribution)[x],
-          mean = mean(params[[x]]), sd = sd(params[[x]])
+          mean = mean(params[[x]]), sd = sd_dist(params[[x]])
         )
       })
       names(samples) <- names(params)
