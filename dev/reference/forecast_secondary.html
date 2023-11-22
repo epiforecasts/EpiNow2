@@ -3,7 +3,7 @@
 This function forecasts secondary observations using the output of
 estimate_secondary() and either observed primary data or a forecast of
 primary observations. See the examples of estimate_secondary()
-for one use case. It can also be combined with estimate_infections() t
+for one use case. It can also be combined with estimate_infections() to
 produce a forecast for a secondary observation from a forecast of a primary
 observation. See the examples of estimate_secondary() for
 example use cases on synthetic data. See
@@ -12,7 +12,7 @@ for an example of forecasting Covid-19 deaths from Covid-19 cases."><title>Forec
 This function forecasts secondary observations using the output of
 estimate_secondary() and either observed primary data or a forecast of
 primary observations. See the examples of estimate_secondary()
-for one use case. It can also be combined with estimate_infections() t
+for one use case. It can also be combined with estimate_infections() to
 produce a forecast for a secondary observation from a forecast of a primary
 observation. See the examples of estimate_secondary() for
 example use cases on synthetic data. See
@@ -91,7 +91,7 @@ for an example of forecasting Covid-19 deaths from Covid-19 cases."><meta proper
 This function forecasts secondary observations using the output of
 <code><a href="estimate_secondary.html">estimate_secondary()</a></code> and either observed primary data or a forecast of
 primary observations. See the examples of <code><a href="estimate_secondary.html">estimate_secondary()</a></code>
-for one use case. It can also be combined with <code><a href="estimate_infections.html">estimate_infections()</a></code> t
+for one use case. It can also be combined with <code><a href="estimate_infections.html">estimate_infections()</a></code> to
 produce a forecast for a secondary observation from a forecast of a primary
 observation. See the examples of <code><a href="estimate_secondary.html">estimate_secondary()</a></code> for
 example use cases on synthetic data. See
@@ -120,11 +120,11 @@ for an example of forecasting Covid-19 deaths from Covid-19 cases.</p>
 
 
 <dt>primary</dt>
-<dd><p>A data.frame containing at least <code>date</code> and <code>value</code> (integer)
-variables and optionally <code>sample</code>. Used as the primary observation used to
-forecast the secondary observations. Alternatively, this may be an object of
-class "estimate_infections" as produced by <code><a href="estimate_infections.html">estimate_infections()</a></code>. If
-<code>primary</code> is of class "estimate_infections" then the internal samples will
+<dd><p>A <code>&lt;data.frame&gt;</code> containing at least <code>date</code> and <code>value</code>
+(integer) variables and optionally <code>sample</code>. Used as the primary observation
+used to forecast the secondary observations. Alternatively, this may be an
+object of class "estimate_infections" as produced by <code><a href="estimate_infections.html">estimate_infections()</a></code>.
+If <code>primary</code> is of class "estimate_infections" then the internal samples will
 be filtered to have a minimum date ahead of those observed in the <code>estimate</code>
 object.</p></dd>
 
@@ -132,11 +132,11 @@ object.</p></dd>
 <dt>primary_variable</dt>
 <dd><p>A character string indicating the primary variable,
 defaulting to "reported_cases". Only used when primary is of class
-"estimate_infections".</p></dd>
+<code>&lt;estimate_infections&gt;</code>.</p></dd>
 
 
 <dt>model</dt>
-<dd><p>A compiled stan model as returned by <code><a href="https://mc-stan.org/rstan/reference/stan_model.html" class="external-link">rstan::stan_model</a></code>.</p></dd>
+<dd><p>A compiled stan model as returned by <code><a href="https://mc-stan.org/rstan/reference/stan_model.html" class="external-link">rstan::stan_model()</a></code>.</p></dd>
 
 
 <dt>samples</dt>
@@ -158,16 +158,18 @@ and not just those in the forecast horizon be returned.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>A list containing: <code>predictions</code> (a data frame ordered by date with
-the primary, and secondary observations, and a summary of the forecast
+<p>A list containing: <code>predictions</code> (a <code>&lt;data.frame&gt;</code> ordered by date
+with the primary, and secondary observations, and a summary of the forecast
 secondary observations. For primary observations in the forecast horizon
-when uncertainty is present the median is used), <code>samples</code> a data frame of
-forecast secondary observation posterior samples, and <code>forecast</code> a summary
+when uncertainty is present the median is used), <code>samples</code> a <code>&lt;data.frame&gt;</code></p>
+
+
+<p>of forecast secondary observation posterior samples, and <code>forecast</code> a summary
 of the forecast secondary observation posterior.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p>estimate_secondary</p></div>
+    <div class="dont-index"><p><code><a href="estimate_secondary.html">estimate_secondary()</a></code></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
