@@ -1890,7 +1890,7 @@ generate_dist_spec <- function(params, distribution) {
       })
       names(samples) <- names(params)
     } else {
-      params <- mean(params[[x]])
+      samples <- lapply(params, mean)
     }
 
     ## generate natural parameters
