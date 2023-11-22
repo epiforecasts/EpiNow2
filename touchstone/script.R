@@ -39,7 +39,7 @@ touchstone::benchmark_run(
 # benchmark readme example without delays
 touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
-  delay_opts(no_delays) = { epinow(
+  no_delays = { epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(fixed_generation_time),
     rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
