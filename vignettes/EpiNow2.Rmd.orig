@@ -18,8 +18,7 @@ In the following section we give an overview of the simple use case for `epinow(
 
 The first step to using the package is to load it as follows.
 
-
-```r
+```{r, message = FALSE}
 library(EpiNow2)
 ```
 
@@ -30,8 +29,7 @@ Distributions can be supplied in two ways. First, by supplying delay data to `es
 Second, by specifying predetermined delays with uncertainty using `dist_spec()`. An arbitrary number of delay distributions are supported in `dist_spec()` with the most common use case likely to be an incubation period followed by a reporting delay (see `?EpiNow2::dist_spec()`).
 
 For example if data on the delay between onset and infection was available we could fit a distribution to it, using `estimate_delay()`, with appropriate uncertainty as follows (note this is a synthetic example),
-
-```r
+```{r, eval = FALSE}
 reporting_delay <- estimate_delay(
   rlnorm(1000, log(2), 1),
   max_value = 14, bootstraps = 1
@@ -41,8 +39,7 @@ reporting_delay <- estimate_delay(
 If data was not available we could instead specify an informed estimate of the likely delay
 using `dist_spec()`. To demonstrate, we choose a lognormal distribution with mean 2, standard deviation 1 (both with some uncertainty) and a maximum of 10. *This is just an example and unlikely to apply in any particular use case*.
 
-
-```r
+```{r}
 reporting_delay <- dist_spec(
   mean = convert_to_logmean(2, 1),
   mean_sd = 0.1,
@@ -51,41 +48,14 @@ reporting_delay <- dist_spec(
   max = 10,
   dist = "lognormal"
 )
-```
-
-```
-## Warning in dist_spec(mean = convert_to_logmean(2, 1), mean_sd = 0.1, sd = convert_to_logsd(2, :
-## partial argument match of 'dist' to 'distribution'
-```
-
-```r
 reporting_delay
-```
-
-```
-## 
-##   Uncertain lognormal distribution with (untruncated) logmean 0.58 (SD 0.1) and logSD 0.47 (SD 0.1)
 ```
 
 For the rest of this vignette, we will use inbuilt example literature estimates for the incubation period and generation time of Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/main/data-raw) for the code that generates these estimates). *These distributions are unlikely to be applicable for your use case. We strongly recommend investigating what might be the best distributions to use in any given use case.*
 
-
-```r
+```{r}
 example_generation_time
-```
-
-```
-## 
-##   Uncertain gamma distribution with (untruncated) mean 3.6 (SD 0.71) and SD 3.1 (SD 0.77)
-```
-
-```r
 example_incubation_period
-```
-
-```
-## 
-##   Uncertain lognormal distribution with (untruncated) logmean 1.6 (SD 0.064) and logSD 0.42 (SD 0.069)
 ```
 
 Now, to the functions.
@@ -96,26 +66,14 @@ This function represents the core functionality of the package and includes resu
 
 Load example case data from `{EpiNow2}`.
 
-
-```r
+```{r}
 reported_cases <- example_confirmed[1:60]
 head(reported_cases)
 ```
 
-```
-##          date confirm
-## 1: 2020-02-22      14
-## 2: 2020-02-23      62
-## 3: 2020-02-24      53
-## 4: 2020-02-25      97
-## 5: 2020-02-26      93
-## 6: 2020-02-27      78
-```
-
 Estimate cases by date of infection, the time-varying reproduction number, the rate of growth, and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). Here we use the default model parameterisation that prioritises real-time performance over run-time or other considerations. For other formulations see the documentation for `estimate_infections()`.
 
-
-```r
+```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(
   reported_cases = reported_cases,
   generation_time = generation_time_opts(example_generation_time),
@@ -124,87 +82,32 @@ estimates <- epinow(
   stan = stan_opts(cores = 4, control = list(adapt_delta = 0.99)),
   verbose = interactive()
 )
-```
-
-```
-## DEBUG [2023-11-24 16:30:24] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 79 time steps of which 7 are a forecast
-```
-
-```r
 names(estimates)
-```
-
-```
-## [1] "estimates"                "estimated_reported_cases" "summary"                 
-## [4] "plots"                    "timing"
 ```
 
 Both summary measures and posterior samples are returned for all parameters in an easily explored format which can be accessed using `summary`. The default is to return a summary table of estimates for key parameters at the latest date partially supported by data. 
 
-
-```r
+```{r}
 knitr::kable(summary(estimates))
 ```
 
-
-
-|measure                               |estimate               |
-|:-------------------------------------|:----------------------|
-|New confirmed cases by infection date |2274 (1099 -- 4314)    |
-|Expected change in daily cases        |Likely decreasing      |
-|Effective reproduction no.            |0.88 (0.6 -- 1.2)      |
-|Rate of growth                        |-0.027 (-0.1 -- 0.037) |
-|Doubling/halving time (days)          |-25 (19 -- -6.8)       |
-
 Summarised parameter estimates can also easily be returned, either filtered for a single parameter or for all parameters.
 
-
-```r
+```{r}
 head(summary(estimates, type = "parameters", params = "R"))
-```
-
-```
-##          date variable strat     type   median     mean         sd lower_90 lower_50 lower_20
-## 1: 2020-02-22        R  <NA> estimate 2.221079 2.224645 0.14975914 1.982998 2.120541 2.184087
-## 2: 2020-02-23        R  <NA> estimate 2.188992 2.189990 0.12321715 1.987626 2.105233 2.156689
-## 3: 2020-02-24        R  <NA> estimate 2.154198 2.153534 0.10184039 1.984744 2.083930 2.129261
-## 4: 2020-02-25        R  <NA> estimate 2.115460 2.115351 0.08536356 1.976180 2.057553 2.093551
-## 5: 2020-02-26        R  <NA> estimate 2.076472 2.075590 0.07338724 1.955627 2.025919 2.055536
-## 6: 2020-02-27        R  <NA> estimate 2.033228 2.034460 0.06529358 1.925234 1.990964 2.017267
-##    upper_20 upper_50 upper_90
-## 1: 2.256138 2.321166 2.481580
-## 2: 2.219594 2.269469 2.400337
-## 3: 2.179742 2.222020 2.331207
-## 4: 2.139824 2.173188 2.256432
-## 5: 2.095006 2.125832 2.198023
-## 6: 2.051111 2.079405 2.142454
 ```
 
 Reported cases are returned in a separate data frame in order to streamline the reporting of forecasts and for model evaluation.
 
-
-```r
+```{r}
 head(summary(estimates, output = "estimated_reported_cases"))
-```
-
-```
-##          date  type median     mean       sd lower_90 lower_50 lower_20 upper_20 upper_50 upper_90
-## 1: 2020-02-22 gp_rt     67  68.2710 18.40907    41.95       55       62       71       79      101
-## 2: 2020-02-23 gp_rt     77  79.2985 21.72877    47.00       64       73       83       92      117
-## 3: 2020-02-24 gp_rt     77  78.9005 20.98294    49.00       64       72       82       91      116
-## 4: 2020-02-25 gp_rt     74  75.0540 21.44484    43.00       60       68       78       87      114
-## 5: 2020-02-26 gp_rt     78  80.1645 21.46518    48.00       65       73       84       93      118
-## 6: 2020-02-27 gp_rt    110 113.6910 30.39336    68.00       92      104      118      134      168
 ```
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
 
-
-```r
+```{r, dpi = 330, fig.width = 12, fig.height = 12, message = FALSE, warning = FALSE}
 plot(estimates)
 ```
-
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
 
 
 ### [regional_epinow()](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html)
@@ -214,8 +117,7 @@ an efficient manner.
 
 Define cases in multiple regions delineated by the region variable.
 
-
-```r
+```{r}
 reported_cases <- data.table::rbindlist(list(
   data.table::copy(reported_cases)[, region := "testland"],
   reported_cases[, region := "realland"]
@@ -223,20 +125,9 @@ reported_cases <- data.table::rbindlist(list(
 head(reported_cases)
 ```
 
-```
-##          date confirm   region
-## 1: 2020-02-22      14 testland
-## 2: 2020-02-23      62 testland
-## 3: 2020-02-24      53 testland
-## 4: 2020-02-25      97 testland
-## 5: 2020-02-26      93 testland
-## 6: 2020-02-27      78 testland
-```
-
 Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week.
 
-
-```r
+```{r, message = FALSE, warning = FALSE}
 estimates <- regional_epinow(
   reported_cases = reported_cases,
   generation_time = generation_time_opts(example_generation_time),
@@ -247,51 +138,16 @@ estimates <- regional_epinow(
 )
 ```
 
-```
-## INFO [2023-11-24 16:31:54] Producing following optional outputs: regions, summary, samples, plots, latest
-## INFO [2023-11-24 16:31:54] Reporting estimates using data up to: 2020-04-21
-## INFO [2023-11-24 16:31:54] No target directory specified so returning output
-## INFO [2023-11-24 16:31:54] Producing estimates for: testland, realland
-## INFO [2023-11-24 16:31:54] Regions excluded: none
-## DEBUG [2023-11-24 16:31:54] testland: Running in exact mode for 1000 samples (across 4 chains each with a warm up of 250 iterations each) and 79 time steps of which 7 are a forecast
-## WARN [2023-11-24 16:32:07] testland (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#bulk-ess - 
-## INFO [2023-11-24 16:32:08] Completed estimates for: testland
-## DEBUG [2023-11-24 16:32:08] realland: Running in exact mode for 1000 samples (across 4 chains each with a warm up of 250 iterations each) and 79 time steps of which 7 are a forecast
-## WARN [2023-11-24 16:32:21] realland (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#bulk-ess - 
-## INFO [2023-11-24 16:32:21] Completed estimates for: realland
-## INFO [2023-11-24 16:32:21] Completed regional estimates
-## INFO [2023-11-24 16:32:21] Regions with estimates: 2
-## INFO [2023-11-24 16:32:21] Regions with runtime errors: 0
-## INFO [2023-11-24 16:32:21] Producing summary
-## INFO [2023-11-24 16:32:21] No summary directory specified so returning summary output
-## INFO [2023-11-24 16:32:22] No target directory specified so returning timings
-```
-
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = TRUE) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the `{future}` package for details on nested futures.
 
 Summary measures that are returned include a table formatted for reporting (along with raw results for further processing). Futures updated will extend the S3 methods used above to smooth access to this output.
 
-
-```r
+```{r}
 knitr::kable(estimates$summary$summarised_results$table)
 ```
 
-
-
-|Region   |New confirmed cases by infection date |Expected change in daily cases |Effective reproduction no. |Rate of growth         |Doubling/halving time (days) |
-|:--------|:-------------------------------------|:------------------------------|:--------------------------|:----------------------|:----------------------------|
-|realland |2137 (1071 -- 4099)                   |Likely decreasing              |0.85 (0.6 -- 1.2)          |-0.034 (-0.1 -- 0.034) |-20 (20 -- -6.9)             |
-|testland |2219 (1155 -- 4015)                   |Likely decreasing              |0.87 (0.63 -- 1.1)         |-0.03 (-0.093 -- 0.03) |-23 (23 -- -7.4)             |
-
 A range of plots are again returned (with the single summary plot shown below).
 
-
-```r
+```{r, dpi = 330, fig.width = 12, fig.height = 12, message = FALSE, warning = FALSE}
 estimates$summary$summary_plot
 ```
-
-![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png)
