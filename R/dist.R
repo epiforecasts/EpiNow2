@@ -1020,7 +1020,7 @@ dist_spec <- function(distribution = c(
         "The meaning of the 'max' argument has changed compared to",
         "previous versions. It now indicates the maximum of a distribution",
         "rather than the length of the probability mass function (including 0)",
-        "that it represented previously. To replicate previous behaviour ",
+        "that it represented previously. To replicate previous behaviour",
         "reduce max by 1."
       ),
       .frequency = "regularly",
