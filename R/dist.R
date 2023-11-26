@@ -1862,27 +1862,18 @@ generate_dist_spec <- function(params, distribution) {
     }
     ## sample parameters if they are uncertain
     if (any(vapply(params, sd_dist, numeric(1)) > 0)) {
-      message(
+      warning(
         "Uncertain ", distribution, " distribution specified in terms of ",
         "parameters that are not the \"natural\" parameters of the ",
         "distribution (", toString(natural_params(distribution)),
-        "). Converting using a finite sample. If possible, it is preferable ",
-        "to specify the distribution direclty in terms of the natural ",
-        "parameters."
+        "). Converting using a crude and very approximate method ",
+        "that is likely to produce biased results. If possible, ",
+        "it is preferable to specify the distribution direclty ",
+        "in terms of the natural parameters."
       )
-      samples <- lapply(names(params), function(x) {
-        rtruncnorm(
-          n = 2000, a = lower_bounds(distribution)[x],
-          mean = mean(params[[x]]), sd = sd_dist(params[[x]])
-        )
-      })
-      names(samples) <- names(params)
-    } else {
-      samples <- lapply(params, mean)
     }
-
     ## generate natural parameters
-    converted_params <- convert_to_natural(samples, distribution)
+    converted_params <- convert_to_natural(params, distribution)
   } else {
     converted_params <- list(
       params_mean = vapply(params, mean, numeric(1), USE.NAMES = FALSE),
@@ -1910,30 +1901,30 @@ generate_dist_spec <- function(params, distribution) {
 ##' @return A list with two elements, `params_mean` and `params_sd`, containing
 ##' mean and sd of natural parameters.
 ##' @author Sebastian Funk
-convert_to_natural <- function(x, distribution) {
+convert_to_natural <- function(params, distribution) {
+  ## unnatural parameter means
+  ux <- lapply(params, mean)
+  ## estimate relative uncertainty of parameters
+  rel_unc <- mean(vapply(params, sd_dist, numeric(1)) / unlist(ux))
+  ## store natural parameters
+  x <- list()
   if (distribution == "gamma") {
-    if ("mean" %in% names(x) && "sd" %in% names(x)) {
-      x$shape <- x$mean**2 / x$sd**2
-      x$rate <- x$shape / x$mean
-    } else if (!("rate" %in% names(x)) && ("scale" %in% names(x))) {
-      x$rate <- 1 / x$scale
+    if ("mean" %in% names(ux) && "sd" %in% names(ux)) {
+      x$shape <- ux$mean**2 / ux$sd**2
+      x$rate <- x$shape / ux$mean
+    } else if (!("rate" %in% names(means)) && ("scale" %in% names(means))) {
+      x$shape <- ux$shape
+      x$rate <- 1 / ux$scale
     }
   } else if (distribution == "lognormal" &&
-             "mean" %in% names(x) && "sd" %in% names(x)) {
-    x$meanlog <- convert_to_logmean(x$mean, x$sd)
-    x$sdlog <- convert_to_logsd(x$mean, x$sd)
+             "mean" %in% names(params) && "sd" %in% names(params)) {
+    x$meanlog <- convert_to_logmean(ux$mean, ux$sd)
+    x$sdlog <- convert_to_logsd(ux$mean, ux$sd)
   }
+  natural_means <- unname(unlist(x[natural_params(distribution)]))
   params <- list(
-    params_mean = unname(vapply(natural_params(distribution), function(param) {
-      mean(x[[param]])
-    }, numeric(1))),
-    params_sd = unname(vapply(natural_params(distribution), function(param) {
-      if (length(x[[param]]) == 1) {
-        0
-      } else {
-        sd(x[[param]])
-      }
-    }, numeric(1)))
+    params_mean = natural_means,
+    params_sd = natural_means * rel_unc
   )
   return(params)
 }
