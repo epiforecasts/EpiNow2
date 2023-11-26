@@ -78,8 +78,8 @@
 #' # set an example generation time. In practice this should use an estimate
 #' # from the literature or be estimated from data
 #' generation_time <- gamma(
-#'   shape = normal(2, 2.6),
-#'   rate = normal(0.5, 0.6),
+#'   shape = normal(1.3, 0.3),
+#'   rate = normal(0.37, 0.09),
 #'   max = 14
 #' )
 #' # set an example incubation period. In practice this should use an estimate

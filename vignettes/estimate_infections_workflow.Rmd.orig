@@ -104,7 +104,7 @@ For example, to define the generation time as gamma distributed with uncertain m
 
 ```{r, results = 'hide'}
 generation_time <- gamma(
-  shape = normal(15, 15), rate = normal(3.5, 2), max = 10
+  shape = normal(9, 3.4), rate = normal(3, 1.2), max = 10
 )
 generation_time_opts(generation_time)
 ```
@@ -121,7 +121,7 @@ In this case, we can combine multiple delays with the plus (`+`) operator, e.g.
 ```{r}
 incubation_period <- lognormal(
   meanlog = normal(1.6, 0.05),
-  sdlog = normal(0.5, 0.05), 
+  sdlog = normal(0.5, 0.05),
   max = 14
 )
 reporting_delay <- lognormal(meanlog = 0.5, sdlog = 0.5, max = 10)
