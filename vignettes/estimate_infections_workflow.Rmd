@@ -69,12 +69,12 @@ As these will affect any results, it is worth spending some time investigating w
 ## Delay distributions
 
 _EpiNow2_ works with different delays that apply to different parts of the infection and observation process.
-They are defined using a common interface with the `dist_spec()` function.
+They are defined using a common interface that involves functions that are named after the probability distributions, i.e. `lognormal()`, `gamma()`, etc.
 For help with this function, see its manual page
 
 
 ```r
-?EpiNow2::dist_spec
+?EpiNow2::Distributions
 ```
 
 In all cases, the distributions given can be *fixed* (i.e. have no uncertainty) or *variable* (i.e. have associated uncertainty).
@@ -82,9 +82,11 @@ For example, to define a fixed gamma distribution with mean 3, standard deviatio
 
 
 ```r
-dist_spec(mean = 3, sd = 1, distribution = "gamma", max = 10)
+gamma(mean = 3, sd = 1, max = 10)
+#> Warning: The meaning of the 'max' argument has changed compared to previous versions. It now indicates the maximum of a distribution rather than the length of the probability mass function (including 0) that it represented previously. To replicate previous behaviour reduce max by 1.
+#> This warning is displayed once every 8 hours.
 #> 
-#>   Fixed distribution with PMF [0.0038 0.15 0.39 0.3 0.12 0.03 0.006 0.00096 0.00013 1.6e-05 1.8e-06]
+#>   distribution with PMF [0.0038 0.15 0.39 0.3 0.12 0.03 0.006 0.00096 0.00013 1.6e-05 1.8e-06].
 ```
 
 If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by _EpiNow2_, i.e. they are estimated as part of the inference.
@@ -92,12 +94,18 @@ For example, to define a variable gamma distribution where uncertainty in the me
 
 
 ```r
-dist_spec(
-  mean = 3, mean_sd = 2, sd = 1, sd_sd = 0.1, distribution = "gamma", max = 10
-)
+gamma(mean = normal(3, 2), sd = normal(1, 0.1), max = 10)
+#> Warning in generate_dist_spec(params, "gamma"): Uncertain gamma distribution
+#> specified in terms of parameters that are not the "natural" parameters of the
+#> distribution (shape, rate). Converting using a crude and very approximate
+#> method that is likely to produce biased results. If possible, it is preferable
+#> to specify the distribution direclty in terms of the natural parameters.
 #> 
-#>   Uncertain gamma distribution with (untruncated) mean 3 (SD 2) and SD 1 (SD 0.1)
+#>   gamma distribution (max: 10) with uncertain shape (mean = 9, sd = 3.4) and uncertain rate (mean = 3, sd = 1.2).
 ```
+
+Note the warning about parameters.
+We used the mean and standard deviation to define this distribution with uncertain parameters, but it would be better to use the "natural" parameters of the gamma distribution, shape and rate, for example using the values estimate and reported back after calling the previous command.
 
 There are various ways the specific delay distributions mentioned below might be obtained.
 Often, they will come directly from the existing literature reviewed by the user and studies conducted elsewhere.
@@ -109,13 +117,13 @@ For a more comprehensive treatment of delays and their estimation avoiding commo
 ### Generation intervals
 
 The generation interval is a delay distribution that describes the amount of time that passes between an individual becoming infected and infecting someone else.
-In _EpiNow2_, the generation time distribution is defined by a call to `generation_time_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `dist_spec()`).
-For example, to define the generation time as gamma distributed with uncertain mean centered on 3 (sd: 2) and sd centered on 1 (sd: 0.1), a maximum value of 10 and weighted by the number of case data points we would use
+In _EpiNow2_, the generation time distribution is defined by a call to `generation_time_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by the function corresponding to the probability distribution, i.e. `lognormal()`, `gamma()`, etc.).
+For example, to define the generation time as gamma distributed with uncertain mean centered on 3 and sd centered on 1 with some uncertainty, a maximum value of 10 and weighted by the number of case data points we could use the shape and rate parameters suggested above (though notes that this will only very approximately produce the uncertainty in mean and standard deviation stated there):
 
 
 ```r
-generation_time <- dist_spec(
-  mean = 3, mean_sd = 2, sd = 1, sd_sd = 0.1, distribution = "gamma", max = 10
+generation_time <- gamma(
+  shape = normal(9, 3.4), rate = normal(3, 1.2), max = 10
 )
 generation_time_opts(generation_time)
 ```
@@ -127,25 +135,24 @@ Usually this is not observed directly.
 Instead, we calculate case counts based on, for example, onset of symptoms, lab confirmations, hospitalisations, etc.
 In order to estimate the trajectory of infection incidence from this we need to either know or estimate the distribution of delays from infection to count.
 Often, such counts are composed of multiple delays for which we only have separate information, for example the incubation period (time from infection to symptom onset) and reporting delay (time from symptom onset to being a case in the data, e.g. via lab confirmation, if counts are not by the date of symptom onset).
-In this case, we can combine multiple delays defined using `dist_spec()` with the plus (`+`) operator, e.g.
+In this case, we can combine multiple delays with the plus (`+`) operator, e.g.
 
 
 ```r
-incubation_period <- dist_spec(
-  mean = 1.6, mean_sd = 0.05, sd = 0.5, sd_sd = 0.05,
-  distribution = "lognormal", max = 14
+incubation_period <- lognormal(
+  meanlog = normal(1.6, 0.05),
+  sdlog = normal(0.5, 0.05),
+  max = 14
 )
-reporting_delay <- dist_spec(
-  mean = 0.5, sd = 0.5, distribution = "lognormal", max = 10
-)
+reporting_delay <- lognormal(meanlog = 0.5, sdlog = 0.5, max = 10)
 incubation_period + reporting_delay
 #> 
-#> Combination of delay distributions:
-#>   Uncertain lognormal distribution with (untruncated) logmean 1.6 (SD 0.05) and logSD 0.5 (SD 0.05)
-#>   Fixed distribution with PMF [0.16 0.49 0.23 0.077 0.025 0.0084 0.003 0.0011 0.00045 0.00019 8.2e-05]
+#> Composite delay distribution:
+#>   lognormal distribution (max: 14) with uncertain meanlog (mean = 1.6, sd = 0.05) and uncertain sdlog (mean = 0.5, sd = 0.05).
+#>   distribution with PMF [0.16 0.49 0.23 0.077 0.025 0.0084 0.003 0.0011 0.00045 0.00019 8.2e-05].
 ```
 
-In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `dist_spec()`).
+In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `lognormal()`, `gamma()` etc.).
 For example, if our observations were by symptom onset we would use
 
 
@@ -230,10 +237,23 @@ def <- estimate_infections(
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior)
 )
-#> Warning: There were 15 divergent transitions after warmup. See
+#> Warning: There were 3 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
+#> Warning: There were 1000 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 15. See
+#> https://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded
+#> Warning: There were 1 chains where the estimated Bayesian Fraction of Missing Information was low. See
+#> https://mc-stan.org/misc/warnings.html#bfmi-low
 #> Warning: Examine the pairs() plot to diagnose sampling problems
+#> Warning: The largest R-hat is NA, indicating chains have not mixed.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#r-hat
+#> Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#bulk-ess
+#> Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#tail-ess
 ```
 
 Alternatively, for production environments, we recommend using the `epinow()` function. It uses `estimate_infections()` internally and provides functionality for logging and saving results and plots in dedicated directories in the user's file system.
