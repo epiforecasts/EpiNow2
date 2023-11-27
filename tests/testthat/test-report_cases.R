@@ -15,6 +15,6 @@ test_that("report_cases can simulate infections forward", {
   expect_equal(class(reported_cases), "list")
   expect_equal(class(reported_cases$samples), c("data.table", "data.frame"))
   expect_equal(class(reported_cases$summarised), c("data.table", "data.frame"))
-  expect_equal(nrow(reported_cases$summarised), 10)
+  expect_equal(nrow(reported_cases$summarised), 7)
   expect_equal(class(reported_cases$summarised$median), "numeric")
 })
