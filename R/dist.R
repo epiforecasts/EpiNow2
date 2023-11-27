@@ -1608,7 +1608,7 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
     } else if (strategy == "sample") {
       lower_bound <- lower_bounds(x$dist)[natural_params(x$dist)]
       mean <- rtruncnorm(
-        n = 1, a = lower_bound, mean = x$params_mean
+        n = 1, a = lower_bound, mean = x$params_mean, sd = x$params_sd
       )
       x <- .dist_spec(
         params_mean = mean,
