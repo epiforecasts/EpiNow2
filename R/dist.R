@@ -1912,7 +1912,7 @@ convert_to_natural <- function(params, distribution) {
     if ("mean" %in% names(ux) && "sd" %in% names(ux)) {
       x$shape <- ux$mean**2 / ux$sd**2
       x$rate <- x$shape / ux$mean
-    } else if (!("rate" %in% names(means)) && ("scale" %in% names(means))) {
+    } else if (!("rate" %in% names(ux)) && ("scale" %in% names(ux))) {
       x$shape <- ux$shape
       x$rate <- 1 / ux$scale
     }
