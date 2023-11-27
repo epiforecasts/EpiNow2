@@ -1896,7 +1896,7 @@ generate_dist_spec <- function(params, distribution) {
 ##'
 ##' This is used for preprocessing before generating a `dist_spec` object
 ##' from a given set of parameters and distribution
-##' @param x A numerical named parameter vector
+##' @param params A numerical named parameter vector
 ##' @inheritParams natural_params
 ##' @return A list with two elements, `params_mean` and `params_sd`, containing
 ##' mean and sd of natural parameters.

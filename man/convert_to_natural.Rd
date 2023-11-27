@@ -7,9 +7,9 @@
 convert_to_natural(params, distribution)
 }
 \arguments{
-\item{distribution}{Character; the distribution to use.}
+\item{params}{A numerical named parameter vector}
 
-\item{x}{A numerical named parameter vector}
+\item{distribution}{Character; the distribution to use.}
 }
 \value{
 A list with two elements, \code{params_mean} and \code{params_sd}, containing
