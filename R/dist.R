@@ -355,11 +355,12 @@ gamma_dist_def <- function(shape, shape_sd,
 
   dist <- data.table::data.table(
     model = rep("gamma", samples),
-    params = purrr::transpose(
+    params = purrr::list_transpose(
       list(
         shape = shape,
         scale = scale
-      )
+      ),
+      simplify = FALSE
     ),
     max_value = rep(max_value, samples)
   )
@@ -445,11 +446,12 @@ lognorm_dist_def <- function(mean, mean_sd,
 
   dist <- data.table::data.table(
     model = rep("lognormal", samples),
-    params = purrr::transpose(
+    params = purrr::list_transpose(
       list(
         mean = means,
         sd = sds
-      )
+      ),
+      simplify = FALSE
     ),
     max_value = rep(max_value, samples)
   )
@@ -490,7 +492,7 @@ lognorm_dist_def <- function(mean, mean_sd,
 #'
 #' @return A `<dist_spec>` object summarising the bootstrapped distribution
 #' @author Sam Abbott
-#' @importFrom purrr transpose
+#' @importFrom purrr list_transpose
 #' @importFrom future.apply future_lapply
 #' @importFrom rstan extract
 #' @importFrom data.table data.table rbindlist
@@ -566,7 +568,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
     )
 
 
-    dist_samples <- purrr::transpose(dist_samples)
+    dist_samples <- purrr::list_transpose(dist_samples, simplify = FALSE)
     dist_samples <- purrr::map(dist_samples, unlist)
   }
 
@@ -1149,7 +1151,7 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
 #' @return Combined delay distributions (with class `<dist_spec>`)
 #' @author Sebastian Funk
 #' @method c dist_spec
-#' @importFrom purrr transpose map
+#' @importFrom purrr list_transpose map
 c.dist_spec <- function(...) {
   ## process delay distributions
   delays <- list(...)
@@ -1160,7 +1162,7 @@ c.dist_spec <- function(...) {
     )
   }
   ## transpose delays
-  delays <- purrr::transpose(delays)
+  delays <- purrr::list_transpose(delays, simplify = FALSE)
   ## convert back to arrays
   delays <- purrr::map(delays, function(x) array(unlist(x)))
   sum_args <- grep("^n($|_)", names(delays))

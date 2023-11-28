@@ -648,14 +648,14 @@ create_stan_args <- function(stan = stan_opts(),
 ##' The names are assigned to IDs
 ##' @param weight Numeric, weight associated with delay priors; default: 1
 ##' @return A list of variables as expected by the stan model
-##' @importFrom purrr transpose map
+##' @importFrom purrr list_transpose map
 ##' @author Sebastian Funk
 create_stan_delays <- function(..., weight = 1) {
   dot_args <- list(...)
   ## combine delays
   combined_delays <- unclass(c(...))
   ## number of different non-empty types
-  type_n <- unlist(purrr::transpose(dot_args)$n)
+  type_n <- unlist(purrr::list_transpose(dot_args, simplify = FALSE)$n)
   ## assign ID values to each type
   ids <- rep(0L, length(type_n))
   ids[type_n > 0] <- seq_len(sum(type_n > 0))
