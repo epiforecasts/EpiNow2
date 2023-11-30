@@ -104,7 +104,7 @@ For example, to define the generation time as gamma distributed with uncertain m
 
 ```{r, results = 'hide'}
 generation_time <- gamma(
-  shape = normal(9, 3.4), rate = normal(3, 1.2), max = 10
+  shape = normal(9, 2.5), rate = normal(3, 1.4), max = 10
 )
 generation_time_opts(generation_time)
 ```

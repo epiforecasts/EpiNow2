@@ -83,8 +83,6 @@ For example, to define a fixed gamma distribution with mean 3, standard deviatio
 
 ```r
 gamma(mean = 3, sd = 1, max = 10)
-#> Warning: The meaning of the 'max' argument has changed compared to previous versions. It now indicates the maximum of a distribution rather than the length of the probability mass function (including 0) that it represented previously. To replicate previous behaviour reduce max by 1.
-#> This warning is displayed once every 8 hours.
 #> 
 #>   distribution with PMF [0.0038 0.15 0.39 0.3 0.12 0.03 0.006 0.00096 0.00013 1.6e-05 1.8e-06].
 ```
@@ -101,7 +99,7 @@ gamma(mean = normal(3, 2), sd = normal(1, 0.1), max = 10)
 #> method that is likely to produce biased results. If possible, it is preferable
 #> to specify the distribution direclty in terms of the natural parameters.
 #> 
-#>   gamma distribution (max: 10) with uncertain shape (mean = 9, sd = 3.4) and uncertain rate (mean = 3, sd = 1.2).
+#>   gamma distribution (max: 10) with uncertain shape (mean = 9, sd = 2.5) and uncertain rate (mean = 3, sd = 1.4).
 ```
 
 Note the warning about parameters.
@@ -123,7 +121,7 @@ For example, to define the generation time as gamma distributed with uncertain m
 
 ```r
 generation_time <- gamma(
-  shape = normal(9, 3.4), rate = normal(3, 1.2), max = 10
+  shape = normal(9, 2.5), rate = normal(3, 1.4), max = 10
 )
 generation_time_opts(generation_time)
 ```
@@ -240,20 +238,7 @@ def <- estimate_infections(
 #> Warning: There were 3 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
-#> Warning: There were 1000 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 15. See
-#> https://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded
-#> Warning: There were 1 chains where the estimated Bayesian Fraction of Missing Information was low. See
-#> https://mc-stan.org/misc/warnings.html#bfmi-low
 #> Warning: Examine the pairs() plot to diagnose sampling problems
-#> Warning: The largest R-hat is NA, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat
-#> Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess
-#> Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess
 ```
 
 Alternatively, for production environments, we recommend using the `epinow()` function. It uses `estimate_infections()` internally and provides functionality for logging and saving results and plots in dedicated directories in the user's file system.
