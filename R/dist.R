@@ -1905,7 +1905,7 @@ convert_to_natural <- function(params, distribution) {
   ## unnatural parameter means
   ux <- lapply(params, mean)
   ## estimate relative uncertainty of parameters
-  rel_unc <- mean(vapply(params, sd_dist, numeric(1)) / unlist(ux))
+  rel_unc <- mean(vapply(params, sd_dist, numeric(1))^2 / unlist(ux))
   ## store natural parameters
   x <- list()
   if (distribution == "gamma") {
@@ -1924,7 +1924,7 @@ convert_to_natural <- function(params, distribution) {
   natural_means <- unname(unlist(x[natural_params(distribution)]))
   params <- list(
     params_mean = natural_means,
-    params_sd = natural_means * rel_unc
+    params_sd = sqrt(natural_means * rel_unc)
   )
   return(params)
 }
