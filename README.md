@@ -19,8 +19,8 @@ commits](https://img.shields.io/github/commits-since/epiforecasts/EpiNow2/v1.4.0
 
 ## Summary
 
-EpiNow2 estimates the time-varying reproduction number, growth rate, and
-doubling time using a range of open-source tools ([Abbott et
+`{EpiNow2}` estimates the time-varying reproduction number, growth rate,
+and doubling time using a range of open-source tools ([Abbott et
 al.](https://doi.org/10.12688/wellcomeopenres.16006.1)), and current
 best practices ([Gostic et
 al.](https://doi.org/10.1371/journal.pcbi.1008409)). It aims to help
@@ -56,69 +56,58 @@ generation time also give time-varying estimates of the rate of growth.
 Models provided
 </summary>
 
-`{EpiNow2}` is designed to be used via a single function call to two
-functions:
+`{EpiNow2}` provides three models:
 
-- [`epinow()`](https://epiforecasts.io/EpiNow2/reference/epinow.html):
-  Estimate Rt and cases by date of infection and forecast these
-  infections into the future.
+- [`estimate_infections()`](reference/estimate_infections.html):
+  Reconstruct cases by date of infection from reported cases.
 
-- [`regional_epinow()`](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html):
-  Efficiently run `epinow()` across multiple regions in an efficient
-  manner.
+- [`estimate_secondary()`](reference/estimate_secondary.html): Estimate
+  the relationship between primary and secondary observations, for
+  example, deaths (secondary) based on hospital admissions (primary), or
+  bed occupancy (secondary) based on hospital admissions (primary).
 
-These two functions call
-[`estimate_infections()`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html),
-which works to reconstruct cases by date of infection from reported
-cases.
-
-[`estimate_infections()`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html)
-can be used on its own to infer the underlying infection case curve from
-reported cases and estimate Rt. Estimating the underlying infection case
-curve via back-calculation (and then calculating Rt) is substantially
-less computationally demanding than generating using default settings
-but may result in less reliable estimates of Rt.
+- [`estimate_truncation()`](reference/estimate_truncation.html):
+  Estimate a truncation distribution from multiple snapshots of the same
+  data source over time. For more flexibility, check out the
+  [`{epinowcast}`](https://package.epinowcast.org/) package.
 
 The default model in `estimate_infections()` uses a non-stationary
 Gaussian process to estimate the time-varying reproduction number and
-then infer infections. Other options include:
+infer infections. Other options, which generally reduce runtimes at the
+cost of the granularity of estimates or real-time performance, include:
 
 - A stationary Gaussian process (faster to estimate but currently gives
   reduced performance for real time estimates).
 - User specified breakpoints.
 - A fixed reproduction number.
-- As piecewise constant by combining a fixed reproduction number with
+- A piecewise constant, combining a fixed reproduction number with
   breakpoints.
-- As a random walk (by combining a fixed reproduction number with
-  regularly spaced breakpoints (i.e weekly)).
-- Inferring infections using deconvolution/back-calculation and then
-  calculating the time-varying reproduction number.
+- A random walk, combining a fixed reproduction number with regularly
+  spaced breakpoints (i.e weekly).
+- A deconvolution/back-calculation method for inferring infections,
+  followed with calculating the time-varying reproduction number.
 - Adjustment for the remaining susceptible population beyond the
   forecast horizon.
 
-These options generally reduce runtimes at the cost of the granularity
-of estimates or at the cost of real-time performance.
-
 The documentation for
-[`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html)
-provides examples of the implementation of the different options
-available.
+[`estimate_infections`](reference/estimate_infections.html) provides
+examples of the implementation of the different options available.
 
-### Other functions
+`{EpiNow2}` is designed to be used via a single function call to two
+functions:
 
-- [`estimate_secondary()`](https://epiforecasts.io/EpiNow2/reference/estimate_secondary.html):
-  Estimate the relationship between primary and secondary observations,
-  for example, deaths (secondary) based on hospital admissions
-  (primary), or bed occupancy (secondary) based on hospital admissions
-  (primary).
+- [`epinow()`](reference/epinow.html): Estimate Rt and cases by date of
+  infection and forecast these infections into the future.
 
-- [`estimate_truncation()`](https://epiforecasts.io/EpiNow2/reference/estimate_truncation.html):
-  Estimate a truncation distribution from multiple snapshots of the same
-  data source over time. For more flexibility, check out the
-  [`{epinowcast}`](https://package.epinowcast.org/) package.
+- [`regional_epinow()`](reference/regional_epinow.html): Efficiently run
+  `epinow()` across multiple regions in an efficient manner.
+
+These two functions call
+[`estimate_infections()`](reference/estimate_infections.html), which
+works to reconstruct cases by date of infection from reported cases.
 
 For more details on using each function see the [function
-documentation](https://epiforecasts.io/EpiNow2/reference/index.html).
+documentation](reference/index.html).
 
 </details>
 
@@ -174,12 +163,10 @@ simple deployment/development a prebuilt docker image is also available
 Getting Started
 </summary>
 
-The [Getting Started
-vignette](https://epiforecasts.io/EpiNow2/dev/EpiNow2.html) is your
-quickest entry point to the package. It provides a quick run through of
-the two main functions in the package and how to set up them up. It also
-discusses how to summarise and visualise the results after running the
-models.
+The [Getting Started vignette](EpiNow2.html) is your quickest entry
+point to the package. It provides a quick run through of the two main
+functions in the package and how to set up them up. It also discusses
+how to summarise and visualise the results after running the models.
 
 </details>
 <details>
@@ -187,11 +174,10 @@ models.
 Package website
 </summary>
 
-The [package website](https://epiforecasts.io/EpiNow2/dev/index.html)
-provides various resources for learning about the package, including the
-function reference, details about each model (model definition),
-workflows for each model (usage), and case studies or literature of
-applications of the package.
+The [package website](index.html) provides various resources for
+learning about the package, including the function reference, details
+about each model (model definition), workflows for each model (usage),
+and case studies or literature of applications of the package.
 
 </details>
 <details>
@@ -199,8 +185,7 @@ applications of the package.
 End-to-end workflows
 </summary>
 
-The [workflow
-vignette](https://epiforecasts.io/EpiNow2/dev/articles/estimate_infections_workflow.html)
+The [workflow vignette](articles/estimate_infections_workflow.html)
 provides guidance on the end-to-end process of estimating reproduction
 numbers and performing short-term forecasts for a disease spreading in a
 given setting.
@@ -213,8 +198,7 @@ Model definitions
 
 On the website, we provide the mathematical definition of each model.
 For example, the model definition vignette for `estimate_infections()`
-can be found
-[here](https://epiforecasts.io/EpiNow2/dev/articles/estimate_infections.html).
+can be found [here](articles/estimate_infections.html).
 
 </details>
 <details>
