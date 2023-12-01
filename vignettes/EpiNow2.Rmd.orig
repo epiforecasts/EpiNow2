@@ -46,7 +46,7 @@ reporting_delay <- dist_spec(
   sd = convert_to_logsd(2, 1),
   sd_sd = 0.1,
   max = 10,
-  dist = "lognormal"
+  distribution = "lognormal"
 )
 reporting_delay
 ```

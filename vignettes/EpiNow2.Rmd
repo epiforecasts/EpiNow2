@@ -49,13 +49,13 @@ reporting_delay <- dist_spec(
   sd = convert_to_logsd(2, 1),
   sd_sd = 0.1,
   max = 10,
-  dist = "lognormal"
+  distribution = "lognormal"
 )
 ```
 
 ```
-## Warning in dist_spec(mean = convert_to_logmean(2, 1), mean_sd = 0.1, sd = convert_to_logsd(2, :
-## partial argument match of 'dist' to 'distribution'
+## Warning: The meaning of the 'max' argument has changed compared to previous versions. It now indicates the maximum of a distribution rather than the length of the probability mass function (including 0) that it represented previously. To replicate previous behaviour reduce max by 1.
+## This warning is displayed once every 8 hours.
 ```
 
 ```r
