@@ -33,35 +33,34 @@ Uncertainty is propagated from all inputs into the final parameter estimates, he
 
 <details> <summary> Models provided </summary>
 
-`{EpiNow2}` is designed to be used via a single function call to two functions:
+`{EpiNow2}` provides three models:
 
-* [`epinow()`](https://epiforecasts.io/EpiNow2/reference/epinow.html): Estimate Rt and cases by date of infection and forecast these infections into the future.
+* [`estimate_infections()`](reference/estimate_infections.html): Reconstruct cases by date of infection from reported cases.
 
-* [`regional_epinow()`](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html): Efficiently run `epinow()` across multiple regions in an efficient manner.
+* [`estimate_secondary()`](reference/estimate_secondary.html): Estimate the relationship between primary and secondary observations, for example, deaths (secondary) based on hospital admissions (primary), or bed occupancy (secondary) based on hospital admissions (primary).
 
-These two functions call [`estimate_infections()`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html), which works to reconstruct cases by date of infection from reported cases.
+* [`estimate_truncation()`](reference/estimate_truncation.html): Estimate a truncation distribution from multiple snapshots of the same data source over time. For more flexibility, check out the [`{epinowcast}`](https://package.epinowcast.org/) package.
 
-[`estimate_infections()`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) can be used on its own to infer the underlying infection case curve from reported cases and estimate Rt. Estimating the underlying infection case curve via back-calculation (and then calculating Rt) is substantially less computationally demanding than generating using default settings but may result in less reliable estimates of Rt.
 
-The default model in `estimate_infections()` uses a non-stationary Gaussian process to estimate the time-varying reproduction number and then infer infections. Other options include:
+The default model in `estimate_infections()` uses a non-stationary Gaussian process to estimate the time-varying reproduction number and infer infections. Other options, which generally reduce runtimes at the cost of the granularity of estimates or real-time performance, include:
 
 * A stationary Gaussian process (faster to estimate but currently gives reduced performance for real time estimates).
 * User specified breakpoints.
 * A fixed reproduction number.
-* As piecewise constant by combining a fixed reproduction number with breakpoints.
-* As a random walk (by combining a fixed reproduction number with regularly spaced breakpoints (i.e weekly)).
-* Inferring infections using deconvolution/back-calculation and then calculating the time-varying reproduction number.
+* A piecewise constant, combining a fixed reproduction number with breakpoints.
+* A random walk, combining a fixed reproduction number with regularly spaced breakpoints (i.e weekly).
+* A deconvolution/back-calculation method for inferring infections, followed with calculating the time-varying reproduction number.
 * Adjustment for the remaining susceptible population beyond the forecast horizon.
 
-These options generally reduce runtimes at the cost of the granularity of estimates or at the cost of real-time performance.
+The documentation for [`estimate_infections`](reference/estimate_infections.html) provides examples of the implementation of the different options available. 
 
-The documentation for [`estimate_infections`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.html) provides examples of the implementation of the different options available. 
+`{EpiNow2}` is designed to be used via a single function call to two functions:
 
-### Other functions
+* [`epinow()`](reference/epinow.html): Estimate Rt and cases by date of infection and forecast these infections into the future.
 
-* [`estimate_secondary()`](https://epiforecasts.io/EpiNow2/reference/estimate_secondary.html): Estimate the relationship between primary and secondary observations, for example, deaths (secondary) based on hospital admissions (primary), or bed occupancy (secondary) based on hospital admissions (primary).
+* [`regional_epinow()`](reference/regional_epinow.html): Efficiently run `epinow()` across multiple regions in an efficient manner.
 
-* [`estimate_truncation()`](https://epiforecasts.io/EpiNow2/reference/estimate_truncation.html): Estimate a truncation distribution from multiple snapshots of the same data source over time. For more flexibility, check out the [`{epinowcast}`](https://package.epinowcast.org/) package.
+These two functions call [`estimate_infections()`](reference/estimate_infections.html), which works to reconstruct cases by date of infection from reported cases.
 
 For more details on using each function see the [function documentation](reference/index.html).
 
