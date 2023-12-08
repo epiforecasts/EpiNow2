@@ -65,7 +65,7 @@ As these will affect any results, it is worth spending some time investigating w
 ## Delay distributions
 
 _EpiNow2_ works with different delays that apply to different parts of the infection and observation process.
-They are defined using a common interface that involves functions that are named after the probability distributions, i.e. `lognormal()`, `gamma()`, etc.
+They are defined using a common interface that involves functions that are named after the probability distributions, i.e. `LogNormal()`, `Gamma()`, etc.
 For help with this function, see its manual page
 
 ```{r eval = FALSE}
@@ -76,14 +76,14 @@ In all cases, the distributions given can be *fixed* (i.e. have no uncertainty) 
 For example, to define a fixed gamma distribution with mean 3, standard deviation (sd) 1 and maximum value 10, you would write
 
 ```{r}
-gamma(mean = 3, sd = 1, max = 10)
+Gamma(mean = 3, sd = 1, max = 10)
 ```
 
 If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by _EpiNow2_, i.e. they are estimated as part of the inference.
 For example, to define a variable gamma distribution where uncertainty in the mean is given by a normal distribution with mean 3 and sd 2, and uncertainty in the standard deviation is given by a normal distribution with mean 1 and sd 0.1, with a maximum value 10, you would write
 
 ```{r}
-gamma(mean = normal(3, 2), sd = normal(1, 0.1), max = 10)
+Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
 ```
 
 Note the warning about parameters.
@@ -99,12 +99,12 @@ For a more comprehensive treatment of delays and their estimation avoiding commo
 ### Generation intervals
 
 The generation interval is a delay distribution that describes the amount of time that passes between an individual becoming infected and infecting someone else.
-In _EpiNow2_, the generation time distribution is defined by a call to `generation_time_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by the function corresponding to the probability distribution, i.e. `lognormal()`, `gamma()`, etc.).
+In _EpiNow2_, the generation time distribution is defined by a call to `generation_time_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by the function corresponding to the probability distribution, i.e. `LogNormal()`, `Gamma()`, etc.).
 For example, to define the generation time as gamma distributed with uncertain mean centered on 3 and sd centered on 1 with some uncertainty, a maximum value of 10 and weighted by the number of case data points we could use the shape and rate parameters suggested above (though notes that this will only very approximately produce the uncertainty in mean and standard deviation stated there):
 
 ```{r, results = 'hide'}
-generation_time <- gamma(
-  shape = normal(9, 2.5), rate = normal(3, 1.4), max = 10
+generation_time <- Gamma(
+  shape = Normal(9, 2.5), rate = Normal(3, 1.4), max = 10
 )
 generation_time_opts(generation_time)
 ```
@@ -119,16 +119,16 @@ Often, such counts are composed of multiple delays for which we only have separa
 In this case, we can combine multiple delays with the plus (`+`) operator, e.g.
 
 ```{r}
-incubation_period <- lognormal(
-  meanlog = normal(1.6, 0.05),
-  sdlog = normal(0.5, 0.05),
+incubation_period <- LogNormal(
+  meanlog = Normal(1.6, 0.05),
+  sdlog = Normal(0.5, 0.05),
   max = 14
 )
-reporting_delay <- lognormal(meanlog = 0.5, sdlog = 0.5, max = 10)
+reporting_delay <- LogNormal(meanlog = 0.5, sdlog = 0.5, max = 10)
 incubation_period + reporting_delay
 ```
 
-In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `lognormal()`, `gamma()` etc.).
+In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `LogNormal()`, `Gamma()` etc.).
 For example, if our observations were by symptom onset we would use
 
 ```{r, results = 'hide'}

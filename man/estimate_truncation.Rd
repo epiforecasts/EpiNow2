@@ -9,7 +9,7 @@ estimate_truncation(
   max_truncation,
   trunc_max = 10,
   trunc_dist = "lognormal",
-  truncation = lognormal(meanlog = normal(0, 1), sdlog = normal(1, 1), max = 10),
+  truncation = LogNormal(meanlog = Normal(0, 1), sdlog = Normal(1, 1), max = 10),
   model = NULL,
   stan = stan_opts(),
   CrIs = c(0.2, 0.5, 0.9),
@@ -107,9 +107,9 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 reported_cases <- example_confirmed[1:60]
 
 # define example truncation distribution (note not integer adjusted)
-trunc <- lognormal(
-  meanlog = normal(0.9, 0.1),
-  sdlog = normal(0.6, 0.1),
+trunc <- LogNormal(
+  meanlog = Normal(0.9, 0.1),
+  sdlog = Normal(0.6, 0.1),
   max = 10
 )
 

@@ -161,7 +161,7 @@ get_regional_results <- function(regional_output,
 #' @description `r lifecycle::badge("deprecated")`
 #'
 #' This function has been deprecated. Please specify a distribution
-#' using functions such as [gamma()] or [lognormal()] instead.
+#' using functions such as [Gamma()] or [LogNormal()] instead.
 #'
 #' @param data A `<data.table>` in the format of `generation_times`.
 #'
@@ -182,8 +182,8 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
   lifecycle::deprecate_warn(
     "2.0.0", "get_dist()",
     details = c(
-      paste0(
-        "Please use distribution functions such as `gamma` or `lognormal` ",
+      paste(
+        "Please use distribution functions such as `gamma()` or `lognormal()`",
         "instead."
       ),
       "The function will be removed completely in version 2.1.0."
@@ -213,7 +213,7 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
 #'
 #' Extracts a literature distribution from `generation_times`.
 #' This function has been deprecated. Please specify a distribution
-#' using functions such as [gamma()] or [lognormal()] instead.
+#' using functions such as [Gamma()] or [LogNormal()] instead.
 #'
 #' @inheritParams get_dist
 #' @inherit get_dist
@@ -225,7 +225,7 @@ get_generation_time <- function(disease, source, max_value = 14,
     "2.0.0", "get_generation_time()",
     details = c(
       paste(
-        "Please use distribution functions such as `gamma` or `lognormal`",
+        "Please use distribution functions such as `gamma()` or `lognormal()`",
         "instead."
       ),
       "The function will be removed completely in version 2.1.0.",
@@ -248,7 +248,7 @@ get_generation_time <- function(disease, source, max_value = 14,
 #'
 #' Extracts a literature distribution from `generation_times`.
 #' This function has been deprecated. Please specify a distribution
-#' using functions such as [gamma()] or [lognormal()] instead.
+#' using functions such as [Gamma()] or [LogNormal()] instead.
 #'
 #' @inheritParams get_dist
 #' @inherit get_dist
@@ -260,7 +260,7 @@ get_incubation_period <- function(disease, source, max_value = 14,
     "2.0.0", "get_incubation_period()",
     details = c(
       paste(
-        "Please use distribution functions such as `gamma` or `lognormal`",
+        "Please use distribution functions such as `gamma()` or `lognormal()`",
         "instead."
       ),
       "The function will be removed completely in version 2.1.0.",
@@ -321,9 +321,9 @@ get_regions_with_most_reports <- function(reported_cases,
 ##' The seeding time is set to the mean of the specified delays, constrained
 ##' to be at least the maximum generation time
 ##' @param delays Delays specified using distribution functions such as
-##'   [gamma()] or [lognormal()]
+##'   [Gamma()] or [LogNormal()]
 ##' @param generation_time Generation specified using distribution functions
-##'   such as [gamma()] or [lognormal()]
+##'   such as [Gamma()] or [LogNormal()]
 ##' @return An integer seeding time
 ##' @author Sebastian Funk
 get_seeding_time <- function(delays, generation_time) {

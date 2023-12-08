@@ -19,11 +19,11 @@ nonparametric) delay distributions combined in the passed \code{\link[=dist_spec
 \examples{
 \dontrun{
 # A fixed lognormal distribution with sd 5 and sd 1.
-dist1 <- lognormal(mean = 5, sd = 1, max = 20)
+dist1 <- LogNormal(mean = 5, sd = 1, max = 20)
 sd_dist(dist1)
 
 # A gamma distribution with mean 3 and sd 2
-dist2 <- gamma(mean = 3, sd = 2)
+dist2 <- Gamma(mean = 3, sd = 2)
 sd_dist(dist2)
 
 # The sd of the sum of two distributions

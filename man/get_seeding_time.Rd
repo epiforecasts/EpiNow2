@@ -8,10 +8,10 @@ get_seeding_time(delays, generation_time)
 }
 \arguments{
 \item{delays}{Delays specified using distribution functions such as
-\code{\link[=gamma]{gamma()}} or \code{\link[=lognormal]{lognormal()}}}
+\code{\link[=Gamma]{Gamma()}} or \code{\link[=LogNormal]{LogNormal()}}}
 
 \item{generation_time}{Generation specified using distribution functions
-such as \code{\link[=gamma]{gamma()}} or \code{\link[=lognormal]{lognormal()}}}
+such as \code{\link[=Gamma]{Gamma()}} or \code{\link[=LogNormal]{LogNormal()}}}
 }
 \value{
 An integer seeding time

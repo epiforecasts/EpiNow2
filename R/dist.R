@@ -309,7 +309,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #' Generate a Gamma Distribution Definition Based on Parameter Estimates
 #'
 #' @description `r lifecycle::badge("deprecated")`
-#' Deprecated; use [gamma()] instead to define a gamma distribution.
+#' Deprecated; use [Gamma()] instead to define a gamma distribution.
 #'
 #' @param shape Numeric, shape parameter of the gamma distribution.
 #'
@@ -351,7 +351,7 @@ gamma_dist_def <- function(shape, shape_sd,
                            sd, sd_sd,
                            max_value, samples) {
   lifecycle::deprecate_warn(
-    "2.0.0", "gamma_dist_def()", "gamma()",
+    "2.0.0", "gamma_dist_def()", "Gamma()",
     "The function will be removed completely in version 2.1.0."
   )
 
@@ -440,7 +440,7 @@ lognorm_dist_def <- function(mean, mean_sd,
                              max_value, samples,
                              to_log = FALSE) {
   lifecycle::deprecate_warn(
-    "2.0.0", "lognorm_dist_def()", "lognormal()",
+    "2.0.0", "lognorm_dist_def()", "LogNormal()",
     "The function will be removed completely in version 2.1.0."
   )
 
@@ -865,8 +865,8 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' @description `r lifecycle::badge("deprecated")`
 #' This function is deprecated as a user-facing function (while its
 #' functionality is still used internally). Construct distributions using
-#' the corresponding distribution function such as [gamma()], [lognormal()],
-#' [normal()] or [fixed()] instead.
+#' the corresponding distribution function such as [Gamma()], [LogNormal()],
+#' [Normal()] or [Fixed()] instead.
 #'
 #' @param mean Deprecated; use `params_mean` instead.
 #'
@@ -923,7 +923,7 @@ dist_spec <- function(distribution = c(
     deprecate_warn(
       "2.0.0",
       "dist_spec(distribution = 'must not be \"empty\"')",
-      details = "Please use `fixed(0)` instead."
+      details = "Please use `Fixed(0)` instead."
     )
   }
 
@@ -936,9 +936,9 @@ dist_spec <- function(distribution = c(
       params_mean <- c(meanlog = mean, sdlog = sd)
       params_sd <- c(meanlog = mean_sd, sdlog = sd_sd)
     } else if (distribution == "gamma") {
-      temp_dist <- gamma(
-        mean = normal(mean, mean_sd),
-        sd = normal(sd, sd_sd)
+      temp_dist <- Gamma(
+        mean = Normal(mean, mean_sd),
+        sd = Normal(sd, sd_sd)
       )
       params_mean <- temp_dist$params_mean
       params_sd <- temp_dist$params_sd
@@ -1183,14 +1183,14 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
 #' @export
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
-#' dist1 <- lognormal(
+#' dist1 <- LogNormal(
 #'   meanlog = 1.6, sdlog = 1, max = 20
 #' )
 #' dist1 + dist1
 #'
 #' # An uncertain gamma distribution with mean 3 and sd 2
-#' dist2 <- gamma(
-#'   mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20
+#' dist2 <- Gamma(
+#'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
 #' )
 #' dist1 + dist2
 #'
@@ -1244,12 +1244,12 @@ c.dist_spec <- function(...) {
 ##' @export
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
-#' dist1 <- lognormal(mean = 5, sd = 1, max = 20)
+#' dist1 <- LogNormal(mean = 5, sd = 1, max = 20)
 #' mean(dist1)
 #'
 #' # An uncertain gamma distribution with mean 3 and sd 2
-#' dist2 <- gamma(
-#'  mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20
+#' dist2 <- Gamma(
+#'  mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
 #' )
 #' mean(dist2)
 #'
@@ -1297,11 +1297,11 @@ mean.dist_spec <- function(x, ...) {
 ##' @examples
 ##' \dontrun{
 ##' # A fixed lognormal distribution with sd 5 and sd 1.
-##' dist1 <- lognormal(mean = 5, sd = 1, max = 20)
+##' dist1 <- LogNormal(mean = 5, sd = 1, max = 20)
 ##' sd_dist(dist1)
 ##'
 ##' # A gamma distribution with mean 3 and sd 2
-##' dist2 <- gamma(mean = 3, sd = 2)
+##' dist2 <- Gamma(mean = 3, sd = 2)
 ##' sd_dist(dist2)
 ##'
 ##' # The sd of the sum of two distributions
@@ -1356,11 +1356,11 @@ sd_dist <- function(x) {
 ##' @export
 #' @examples
 #' # A fixed gamma distribution with mean 5 and sd 1.
-#' dist1 <- gamma(mean = 5, sd = 1, max = 20)
+#' dist1 <- Gamma(mean = 5, sd = 1, max = 20)
 #' max(dist1)
 #'
 #' # An uncertain lognormal distribution with mean 3 and sd 2
-#' dist2 <- lognormal(mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20)
+#' dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
 #' max(dist2)
 #'
 #' # The mean of the sum of two distributions
@@ -1390,12 +1390,12 @@ max.dist_spec <- function(x, ...) {
 #' @export
 #' @examples
 #' #' # A fixed lognormal distribution with mean 5 and sd 1.
-#' dist1 <- lognormal(mean = 1.5, sd = 0.5, max = 20)
+#' dist1 <- LogNormal(mean = 1.5, sd = 0.5, max = 20)
 #' print(dist1)
 #'
 #' # An uncertain gamma distribution with mean 3 and sd 2
-#' dist2 <- gamma(
-#'   mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20
+#' dist2 <- Gamma(
+#'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
 #' )
 #' print(dist2)
 print.dist_spec <- function(x, ...) {
@@ -1478,12 +1478,12 @@ print.dist_spec <- function(x, ...) {
 #' @author Sam Abbott
 #' @examples
 #' #' # A fixed lognormal distribution with mean 5 and sd 1.
-#' dist1 <- lognormal(mean = 1.6, sd = 0.5, max = 20)
+#' dist1 <- LogNormal(mean = 1.6, sd = 0.5, max = 20)
 #' plot(dist1)
 #'
 #' # An uncertain gamma distribution with mean 3 and sd 2
-#' dist2 <- gamma(
-#'   mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20
+#' dist2 <- Gamma(
+#'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
 #' )
 #' plot(dist2)
 #'
@@ -1639,7 +1639,7 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
 ##
 ##' All parameters can be given either as fixed values (a numeric value) or as
 ##' uncertain values (a `dist_sepc`). If given as uncertain values, currently
-##' only normally distributed parameters (generated using `normal()`) are
+##' only normally distributed parameters (generated using `Normal()`) are
 ##' supported.
 ##'
 ##' Each distribution has a representation in terms of "natural" parameters (the
@@ -1665,9 +1665,9 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
 ##' @name Distributions
 ##' @order 1
 ##' @examples
-##' lognormal(mean = 4, sd = 1)
-##' lognormal(mean = 4, sd = 1, max = 10)
-##' lognormal(mean = normal(4, 1), sd = 1, max = 10)
+##' LogNormal(mean = 4, sd = 1)
+##' LogNormal(mean = 4, sd = 1, max = 10)
+##' LogNormal(mean = Normal(4, 1), sd = 1, max = 10)
 lognormal <- function(meanlog, sdlog, mean, sd, max = Inf) {
   params <- as.list(environment())
   return(generate_dist_spec(params, "lognormal"))
@@ -1680,9 +1680,9 @@ lognormal <- function(meanlog, sdlog, mean, sd, max = Inf) {
 ##' @order 2
 ##' @export
 ##' @examples
-##' gamma(mean = 4, sd = 1)
-##' gamma(shape = 16, rate = 4)
-##' gamma(shape = normal(16, 2), rate = normal(4, 1))
+##' Gamma(mean = 4, sd = 1)
+##' Gamma(shape = 16, rate = 4)
+##' Gamma(shape = Normal(16, 2), rate = Normal(4, 1))
 gamma <- function(shape, rate, scale, mean, sd, max = Inf) {
   params <- as.list(environment())
   return(generate_dist_spec(params, "gamma"))
@@ -1693,8 +1693,8 @@ gamma <- function(shape, rate, scale, mean, sd, max = Inf) {
 ##' @author Sebastian Funk
 ##' @export
 ##' @examples
-##' normal(mean = 4, sd = 1)
-##' normal(mean = 4, sd = 1, max = 10)
+##' Normal(mean = 4, sd = 1)
+##' Normal(mean = 4, sd = 1, max = 10)
 normal <- function(mean, sd, max = Inf) {
   params <- as.list(environment())
   return(generate_dist_spec(params, "normal"))
@@ -1706,8 +1706,8 @@ normal <- function(mean, sd, max = Inf) {
 ##' @author Sebastian Funk
 ##' @export
 ##' @examples
-##' fixed(value = 3)
-##' fixed(value = 3.5)
+##' Fixed(value = 3)
+##' Fixed(value = 3.5)
 fixed <- function(value) {
   params <- as.list(environment())
   params <- extract_params(params, "fixed")
@@ -1831,7 +1831,7 @@ generate_dist_spec <- function(params, distribution) {
       }
       x
     } else if (is.numeric(x)) {
-      fixed(x)
+      Fixed(x)
     } else {
       stop("Parameter ", x, " must be numeric or normally distributed.")
     }

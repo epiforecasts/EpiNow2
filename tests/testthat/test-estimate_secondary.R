@@ -188,9 +188,9 @@ test_that("forecast_secondary can return values from simulated data when using
 })
 
 test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
-  delays <- lognormal(
-    meanlog = normal(2.5, 0.5),
-    sdlog = normal(0.47, 0.25),
+  delays <- LogNormal(
+    meanlog = Normal(2.5, 0.5),
+    sdlog = Normal(0.47, 0.25),
     max = 30
   )
   inc_weigh <- estimate_secondary(

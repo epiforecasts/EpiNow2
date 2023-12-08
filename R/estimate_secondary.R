@@ -137,9 +137,9 @@
 estimate_secondary <- function(reports,
                                secondary = secondary_opts(),
                                delays = delay_opts(
-                                 lognormal(
-                                   meanlog = normal(2.5, 0.5),
-                                   sdlog = normal(0.47, 0.25),
+                                 LogNormal(
+                                   meanlog = Normal(2.5, 0.5),
+                                   sdlog = Normal(0.47, 0.25),
                                    max = 30
                                  )
                                ),

@@ -9,13 +9,13 @@
 \alias{pmf}
 \title{Probability distributions}
 \usage{
-lognormal(meanlog, sdlog, mean, sd, max = Inf)
+LogNormal(meanlog, sdlog, mean, sd, max = Inf)
 
-gamma(shape, rate, scale, mean, sd, max = Inf)
+Gamma(shape, rate, scale, mean, sd, max = Inf)
 
-normal(mean, sd, max = Inf)
+Normal(mean, sd, max = Inf)
 
-fixed(value)
+Fixed(value)
 
 pmf(mass)
 }
@@ -59,7 +59,7 @@ probability distribution that is being used. They generated \code{dist_spec}
 objects that are then passed to the models underlying EpiNow2.
 All parameters can be given either as fixed values (a numeric value) or as
 uncertain values (a \code{dist_sepc}). If given as uncertain values, currently
-only normally distributed parameters (generated using \code{normal()}) are
+only normally distributed parameters (generated using \code{Normal()}) are
 supported.
 
 Each distribution has a representation in terms of "natural" parameters (the
@@ -75,16 +75,16 @@ Currently available distributions are lognormal, gamma, normal, fixed
 probability mass function is given directly as a numeric vector.
 }
 \examples{
-lognormal(mean = 4, sd = 1)
-lognormal(mean = 4, sd = 1, max = 10)
-lognormal(mean = normal(4, 1), sd = 1, max = 10)
-gamma(mean = 4, sd = 1)
-gamma(shape = 16, rate = 4)
-gamma(shape = normal(16, 2), rate = normal(4, 1))
-normal(mean = 4, sd = 1)
-normal(mean = 4, sd = 1, max = 10)
-fixed(value = 3)
-fixed(value = 3.5)
+LogNormal(mean = 4, sd = 1)
+LogNormal(mean = 4, sd = 1, max = 10)
+LogNormal(mean = Normal(4, 1), sd = 1, max = 10)
+Gamma(mean = 4, sd = 1)
+Gamma(shape = 16, rate = 4)
+Gamma(shape = Normal(16, 2), rate = Normal(4, 1))
+Normal(mean = 4, sd = 1)
+Normal(mean = 4, sd = 1, max = 10)
+Fixed(value = 3)
+Fixed(value = 3.5)
 pmf(c(0.1, 0.3, 0.2, 0.4))
 pmf(c(0.1, 0.3, 0.2, 0.1, 0.1))
 }

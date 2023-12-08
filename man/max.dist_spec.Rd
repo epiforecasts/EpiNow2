@@ -21,11 +21,11 @@ in parameters)
 }
 \examples{
 # A fixed gamma distribution with mean 5 and sd 1.
-dist1 <- gamma(mean = 5, sd = 1, max = 20)
+dist1 <- Gamma(mean = 5, sd = 1, max = 20)
 max(dist1)
 
 # An uncertain lognormal distribution with mean 3 and sd 2
-dist2 <- lognormal(mean = normal(3, 0.5), sd = normal(2, 0.5), max = 20)
+dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
 max(dist2)
 
 # The mean of the sum of two distributions

@@ -7,7 +7,7 @@ options(mc.cores = 4)
 reported_cases <- example_confirmed[1:60]
 
 #' # use example distributions
-reporting_delay <- lognormal(mean = 2, sd = 1, max = 10L)
+reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10L)
 
 example_estimate_infections <- estimate_infections(reported_cases,
   generation_time = generation_time_opts(example_generation_time),

@@ -44,7 +44,7 @@ A \verb{<data.table>} defining the distribution as used by \code{\link[=dist_ske
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
-Deprecated; use \code{\link[=gamma]{gamma()}} instead to define a gamma distribution.
+Deprecated; use \code{\link[=Gamma]{Gamma()}} instead to define a gamma distribution.
 }
 \examples{
 # using estimated shape and scale

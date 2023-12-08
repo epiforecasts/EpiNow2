@@ -54,8 +54,8 @@ A list of distribution options.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 This function is deprecated as a user-facing function (while its
 functionality is still used internally). Construct distributions using
-the corresponding distribution function such as \code{\link[=gamma]{gamma()}}, \code{\link[=lognormal]{lognormal()}},
-\code{\link[=normal]{normal()}} or \code{\link[=fixed]{fixed()}} instead.
+the corresponding distribution function such as \code{\link[=Gamma]{Gamma()}}, \code{\link[=LogNormal]{LogNormal()}},
+\code{\link[=Normal]{Normal()}} or \code{\link[=Fixed]{Fixed()}} instead.
 }
 \author{
 Sebastian Funk

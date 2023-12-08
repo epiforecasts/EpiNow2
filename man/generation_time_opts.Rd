@@ -5,7 +5,7 @@
 \title{Generation Time Distribution Options}
 \usage{
 generation_time_opts(
-  dist = fixed(1),
+  dist = Fixed(1),
   ...,
   disease,
   source,
@@ -45,13 +45,13 @@ Returns generation time parameters in a format for lower level model use.
 generation_time_opts()
 
 # A fixed gamma distributed generation time
-generation_time_opts(gamma(mean = 3, sd = 2, max = 14))
+generation_time_opts(Gamma(mean = 3, sd = 2, max = 14))
 
 # An uncertain gamma distributed generation time
 generation_time_opts(
-  gamma(
-    mean = normal(mean = 3, sd = 1),
-    sd = normal(mean = 2, sd = 0.5),
+  Gamma(
+    mean = Normal(mean = 3, sd = 1),
+    sd = Normal(mean = 2, sd = 0.5),
     max = 14
   )
 )
@@ -61,7 +61,7 @@ generation_time_opts(example_generation_time)
 }
 \seealso{
 \code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
-\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[=gamma]{gamma()}} \code{\link[=lognormal]{lognormal()}} \code{\link[=fixed]{fixed()}}
+\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[=Gamma]{Gamma()}} \code{\link[=LogNormal]{LogNormal()}} \code{\link[=Fixed]{Fixed()}}
 }
 \author{
 Sebastian Funk

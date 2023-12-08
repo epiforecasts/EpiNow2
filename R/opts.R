@@ -19,27 +19,27 @@
 #' @author Sebastian Funk
 #' @author Sam Abbott
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] [gamma()] [lognormal()] [fixed()]
+#' [bootstrapped_dist_fit()] [Gamma()] [LogNormal()] [Fixed()]
 #' @export
 #' @examples
 #' # default settings with a fixed generation time of 1
 #' generation_time_opts()
 #'
 #' # A fixed gamma distributed generation time
-#' generation_time_opts(gamma(mean = 3, sd = 2, max = 14))
+#' generation_time_opts(Gamma(mean = 3, sd = 2, max = 14))
 #'
 #' # An uncertain gamma distributed generation time
 #' generation_time_opts(
-#'   gamma(
-#'     mean = normal(mean = 3, sd = 1),
-#'     sd = normal(mean = 2, sd = 0.5),
+#'   Gamma(
+#'     mean = Normal(mean = 3, sd = 1),
+#'     sd = Normal(mean = 2, sd = 0.5),
 #'     max = 14
 #'   )
 #' )
 #'
 #' # An example generation time
 #' generation_time_opts(example_generation_time)
-generation_time_opts <- function(dist = fixed(1), ...,
+generation_time_opts <- function(dist = Fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
                                  prior_weight) {
   deprecated_options_given <- FALSE
@@ -123,16 +123,16 @@ generation_time_opts <- function(dist = fixed(1), ...,
 #' delay_opts()
 #'
 #' # A single delay that has uncertainty
-#' delay <- lognormal(mean = normal(1, 0.2), sd = normal(0.5, 0.1), max = 14)
+#' delay <- LogNormal(mean = Normal(1, 0.2), sd = Normal(0.5, 0.1), max = 14)
 #' delay_opts(delay)
 #'
 #' # A single delay without uncertainty
-#' delay <- lognormal(meanlog = 1, sdlog = 0.5, max = 14)
+#' delay <- LogNormal(meanlog = 1, sdlog = 0.5, max = 14)
 #' delay_opts(delay)
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = fixed(0), ..., fixed = FALSE) {
+delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec")) { ## could be old syntax
     if (is.list(dist)) {
@@ -192,7 +192,7 @@ delay_opts <- function(dist = fixed(0), ..., fixed = FALSE) {
 #'
 #' # truncation dist
 #' trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = fixed(0)) {
+trunc_opts <- function(dist = Fixed(0)) {
   if (!is(dist, "dist_spec")) {
     if (is.list(dist)) {
       dist <- do.call(dist_spec, dist)

@@ -3,8 +3,8 @@
 cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
 
 # define a single report delay distribution
-delay <- lognormal(
-  meanlog = normal(1.4, 0.3), sdlog = normal(0.6, 0.2), max = 30
+delay <- LogNormal(
+  meanlog = Normal(1.4, 0.3), sdlog = Normal(0.6, 0.2), max = 30
 )
 
 test_that("adjust_infection_to_report can correctly handle a simple mapping", {

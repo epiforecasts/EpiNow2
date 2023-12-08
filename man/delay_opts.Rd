@@ -4,7 +4,7 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(dist = fixed(0), ..., fixed = FALSE)
+delay_opts(dist = Fixed(0), ..., fixed = FALSE)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions. Default is
@@ -27,11 +27,11 @@ functions.
 delay_opts()
 
 # A single delay that has uncertainty
-delay <- lognormal(mean = normal(1, 0.2), sd = normal(0.5, 0.1), max = 14)
+delay <- LogNormal(mean = Normal(1, 0.2), sd = Normal(0.5, 0.1), max = 14)
 delay_opts(delay)
 
 # A single delay without uncertainty
-delay <- lognormal(meanlog = 1, sdlog = 0.5, max = 14)
+delay <- LogNormal(meanlog = 1, sdlog = 0.5, max = 14)
 delay_opts(delay)
 
 # Multiple delays (in this case twice the same)

@@ -25,7 +25,7 @@ A list defining a distribution
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 
 This function has been deprecated. Please specify a distribution
-using functions such as \code{\link[=gamma]{gamma()}} or \code{\link[=lognormal]{lognormal()}} instead.
+using functions such as \code{\link[=Gamma]{Gamma()}} or \code{\link[=LogNormal]{LogNormal()}} instead.
 }
 \author{
 Sam Abbott

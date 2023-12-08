@@ -10,9 +10,9 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 reported_cases <- example_confirmed[1:60]
 
 # define example truncation distribution (note not integer adjusted)
-trunc_dist <- lognormal(
-  meanlog = normal(0.9, 0.1),
-  sdlog = normal(0.6, 0.1),
+trunc_dist <- LogNormal(
+  meanlog = Normal(0.9, 0.1),
+  sdlog = Normal(0.6, 0.1),
   max = 10
 )
 

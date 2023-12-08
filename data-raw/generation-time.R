@@ -10,9 +10,9 @@ library(here)
 ## Load raw MCMC output
 gi <- setDT(readRDS(here("data-raw", "gi.rds")))
 ## Check mean and standard deviation
-example_generation_time <- gamma(
-  mean = normal(median(gi$mean), sd(gi$mean)),
-  sd = normal(median(gi$sd), sd(gi$sd)),
+example_generation_time <- Gamma(
+  mean = Normal(median(gi$mean), sd(gi$mean)),
+  sd = Normal(median(gi$sd), sd(gi$sd)),
   max = 14L
 )
 
