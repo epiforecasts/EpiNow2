@@ -165,7 +165,7 @@ estimate_infections <- function(reported_cases,
       name = "EpiNow2.epinow.estimate_infections"
     )
   }
-  # Make sure there are no missing dates and order cases
+  # Order cases
   reported_cases <- create_clean_reported_cases(
     reported_cases, horizon,
     filter_leading_zeros = filter_leading_zeros,

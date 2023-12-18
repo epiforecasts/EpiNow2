@@ -1,7 +1,6 @@
 #' Create Clean Reported Cases
 #' @description `r lifecycle::badge("stable")`
-#' Cleans a data frame of reported cases by replacing missing dates with 0
-#' cases and applies an optional threshold at which point 0 cases are replaced
+#' Filters leading zeros and applies an optional threshold at which point 0 cases are replaced
 #' with a moving average of observed cases. See `zero_threshold` for details.
 #'
 #' @param filter_leading_zeros Logical, defaults to TRUE. Should zeros at the
@@ -35,9 +34,6 @@ create_clean_reported_cases <- function(reported_cases, horizon,
   if (is.null(reported_cases$breakpoint)) {
     reported_cases$breakpoint <- 0
   }
-  reported_cases <- reported_cases[
-    is.na(confirm), confirm := 0][, .(date = date, confirm, breakpoint)
-  ]
   reported_cases <- reported_cases[is.na(breakpoint), breakpoint := 0]
   reported_cases <- data.table::setorder(reported_cases, date)
   ## Filter out 0 reported cases from the beginning of the data
@@ -434,13 +430,16 @@ create_stan_data <- function(reported_cases, seeding_time,
                              backcalc, shifted_cases) {
 
   cases <- reported_cases[(seeding_time + 1):(.N - horizon)]$confirm
-  cases[, lookup := seq_len(.N))]]
-  cases <- cases[!is.na(cases$confirm)]
   cases <- cases$confirm
+  cases[, lookup := seq_len(.N))]]
+  complete_cases <- cases[!is.na(cases$confirm)]
+  complete_cases <- cases$confirm
   cases_time <- cases$lookup
 
   data <- list(
-    cases = cases,
+    cases = complete_cases,
+    cases_time = cases_time,
+    lt = length(cases_time),
     shifted_cases = shifted_cases,
     t = length(reported_cases$date),
     horizon = horizon,
@@ -459,7 +458,7 @@ create_stan_data <- function(reported_cases, seeding_time,
   first_week <- data.table::data.table(
     confirm = cases[seq_len(min(7, length(cases)))],
     t = seq_len(min(7, length(cases)))
-  )
+  )[!is.na(confirm)]
   data$prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
   data$prior_infections <- ifelse(
     is.na(data$prior_infections) || is.null(data$prior_infections),
