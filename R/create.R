@@ -431,7 +431,7 @@ create_stan_data <- function(reported_cases, seeding_time,
 
   cases <- reported_cases[(seeding_time + 1):(.N - horizon)]$confirm
   cases <- cases$confirm
-  cases[, lookup := seq_len(.N))]]
+  cases[, lookup := seq_len(.N)]
   complete_cases <- cases[!is.na(cases$confirm)]
   complete_cases <- cases$confirm
   cases_time <- cases$lookup
