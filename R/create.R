@@ -34,14 +34,14 @@ create_clean_reported_cases <- function(reported_cases, horizon,
   if (is.null(reported_cases$breakpoint)) {
     reported_cases$breakpoint <- 0
   }
-  reported_cases <- reported_cases[is.na(breakpoint), breakpoint := 0]
+  reported_cases[is.na(breakpoint), breakpoint := 0]
   reported_cases <- data.table::setorder(reported_cases, date)
   ## Filter out 0 reported cases from the beginning of the data
   if (filter_leading_zeros) {
     reported_cases <- reported_cases[order(date)][
       ,
-      cum_cases := cumsum(confirm)
-    ][cum_cases > 0][, cum_cases := NULL]
+      cum_cases := cumsum(confirm, na.rm = TRUE)
+    ][min(date[cum_cases > 0])][, cum_cases := NULL]
   }
 
   # Check case counts preceding zero case counts and set to 7 day average if
@@ -50,7 +50,10 @@ create_clean_reported_cases <- function(reported_cases, horizon,
     reported_cases <-
       reported_cases[
         ,
-        `:=`(average_7 = (data.table::frollsum(confirm, n = 8)) / 7)
+        `:=`(average_7 = (
+            data.table::frollsum(confirm, n = 8, na.rm = TRUE)
+          ) / 7
+        )
       ]
     reported_cases <- reported_cases[
       confirm == 0 & average_7 > zero_threshold,
@@ -454,7 +457,7 @@ create_stan_data <- function(reported_cases, seeding_time,
       delay = data$seeding_time, horizon = data$horizon
     )
   )
-  # initial estimate of growth
+  # initial estimate of growth33
   first_week <- data.table::data.table(
     confirm = cases[seq_len(min(7, length(cases)))],
     t = seq_len(min(7, length(cases)))
