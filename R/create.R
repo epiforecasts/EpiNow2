@@ -1,7 +1,8 @@
 #' Create Clean Reported Cases
 #' @description `r lifecycle::badge("stable")`
-#' Filters leading zeros and applies an optional threshold at which point 0 cases are replaced
-#' with a moving average of observed cases. See `zero_threshold` for details.
+#' Filters leading zeros and applies an optional threshold at which point
+#' 0 cases are replaced with a moving average of observed cases. See
+#' `zero_threshold` for details.
 #'
 #' @param filter_leading_zeros Logical, defaults to TRUE. Should zeros at the
 #' start of the time series be filtered out.
@@ -436,8 +437,8 @@ create_stan_data <- function(reported_cases, seeding_time,
   cases <- reported_cases[(seeding_time + 1):(.N - horizon)]
   cases[, lookup := seq_len(.N)]
   complete_cases <- cases[!is.na(cases$confirm)]
-  complete_cases <- cases$confirm
-  cases_time <- cases$lookup
+  complete_cases <- complete_cases$confirm
+  cases_time <- complete_cases$lookup
   cases <- cases$confirm
 
   data <- list(
