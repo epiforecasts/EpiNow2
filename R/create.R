@@ -18,6 +18,8 @@
 #' @author Sam Abbott
 #' @author Lloyd Chapman
 #' @export
+#' @examples
+#' create_clean_reported_cases(example_confirmed, 7)
 create_clean_reported_cases <- function(reported_cases, horizon,
                                         filter_leading_zeros = TRUE,
                                         zero_threshold = Inf) {
@@ -38,7 +40,9 @@ create_clean_reported_cases <- function(reported_cases, horizon,
   reported_cases <- data.table::setorder(reported_cases, date)
   ## Filter out 0 reported cases from the beginning of the data
   if (filter_leading_zeros) {
-    reported_cases <- reported_cases[order(date)][min(date[confirm > 0])]
+    reported_cases <- reported_cases[order(date)][
+      date >= min(date[confirm[!is.na(confirm)] > 0])
+    ]
   }
 
   # Check case counts preceding zero case counts and set to 7 day average if
