@@ -8,7 +8,8 @@ create_clean_reported_cases(
   reported_cases,
   horizon,
   filter_leading_zeros = TRUE,
-  zero_threshold = Inf
+  zero_threshold = Inf,
+  fill = NA_integer_
 )
 }
 \arguments{
@@ -24,17 +25,23 @@ start of the time series be filtered out.}
 \item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
 to Inf. Indicates if detected zero cases are meaningful by using a threshold
 number of cases based on the 7 day average. If the average is above this
-threshold then the zero is replaced with the backwards looking rolling
-average. If set to infinity then no changes are made.}
+threshold then the zero is replaced using \code{fill}.}
+
+\item{fill}{Numeric, defaults to NA. Value to use to replace NA values or
+zeros that are flagged by \code{zero_threshold}. If the default NA is used then
+dates with NA values will be skipped in model fitting.}
 }
 \value{
 A cleaned data frame of reported cases
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Cleans a data frame of reported cases by replacing missing dates with 0
-cases and applies an optional threshold at which point 0 cases are replaced
-with a moving average of observed cases. See \code{zero_threshold} for details.
+Filters leading zeros, completes dates, and applies an optional threshold at
+which point 0 cases are replaced with a user supplied value (defaults to
+\code{NA}).
+}
+\examples{
+create_clean_reported_cases(example_confirmed, 7)
 }
 \author{
 Sam Abbott

@@ -1,8 +1,8 @@
 #' Create Clean Reported Cases
 #' @description `r lifecycle::badge("stable")`
-#' Filters leading zeros and applies an optional threshold at which point
-#' 0 cases are replaced with a moving average of observed cases. See
-#' `zero_threshold` for details.
+#' Filters leading zeros, completes dates, and applies an optional threshold at
+#' which point 0 cases are replaced with a user supplied value (defaults to
+#' `NA`).
 #'
 #' @param filter_leading_zeros Logical, defaults to TRUE. Should zeros at the
 #' start of the time series be filtered out.
@@ -10,8 +10,11 @@
 #' @param zero_threshold `r lifecycle::badge("experimental")` Numeric defaults
 #' to Inf. Indicates if detected zero cases are meaningful by using a threshold
 #' number of cases based on the 7 day average. If the average is above this
-#' threshold then the zero is replaced with the backwards looking rolling
-#' average. If set to infinity then no changes are made.
+#' threshold then the zero is replaced using `fill`.
+#'
+#' @param fill Numeric, defaults to NA. Value to use to replace NA values or
+#' zeros that are flagged by `zero_threshold`. If the default NA is used then
+#' dates with NA values will be skipped in model fitting.
 #'
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
@@ -23,7 +26,8 @@
 #' create_clean_reported_cases(example_confirmed, 7)
 create_clean_reported_cases <- function(reported_cases, horizon,
                                         filter_leading_zeros = TRUE,
-                                        zero_threshold = Inf) {
+                                        zero_threshold = Inf,
+                                        fill = NA_integer_) {
   reported_cases <- data.table::setDT(reported_cases)
   reported_cases_grid <- data.table::copy(reported_cases)[,
    .(date = seq(min(date), max(date) + horizon, by = "days"))
@@ -45,26 +49,25 @@ create_clean_reported_cases <- function(reported_cases, horizon,
       date >= min(date[confirm[!is.na(confirm)] > 0])
     ]
   }
-
+  # Calculate the 7-day moving average.
+  reported_cases <-
+    reported_cases[
+      ,
+      `:=`(average_7_day = (
+          data.table::frollsum(confirm, n = 8, na.rm = TRUE)
+        ) / 7
+      )
+    ]
   # Check case counts preceding zero case counts and set to 7 day average if
   # average over last 7 days is greater than a threshold
   if (!is.infinite(zero_threshold)) {
-    reported_cases <-
-      reported_cases[
-        ,
-        `:=`(average_7 = (
-            data.table::frollsum(confirm, n = 8, na.rm = TRUE)
-          ) / 7
-        )
-      ]
     reported_cases <- reported_cases[
-      confirm == 0 & average_7 > zero_threshold,
-      confirm := as.integer(average_7)
-    ][
-      ,
-      "average_7" := NULL
+      confirm == 0 & average_7_day > zero_threshold,
+      confirm := NA_integer_
     ]
   }
+  reported_cases[is.na(confirm), confirm := fill]
+  reported_cases[, "average_7_day" := NULL]
   return(reported_cases)
 }
 
@@ -430,6 +433,11 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @author Sam Abbott
 #' @author Sebastian Funk
 #' @export
+#' @examples
+#' create_stan_data(
+#'  example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
+#'  backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
+#' )
 create_stan_data <- function(reported_cases, seeding_time,
                              rt, gp, obs, horizon,
                              backcalc, shifted_cases) {
@@ -437,8 +445,8 @@ create_stan_data <- function(reported_cases, seeding_time,
   cases <- reported_cases[(seeding_time + 1):(.N - horizon)]
   cases[, lookup := seq_len(.N)]
   complete_cases <- cases[!is.na(cases$confirm)]
-  complete_cases <- complete_cases$confirm
   cases_time <- complete_cases$lookup
+  complete_cases <- complete_cases$confirm
   cases <- cases$confirm
 
   data <- list(
