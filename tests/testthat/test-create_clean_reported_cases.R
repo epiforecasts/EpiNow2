@@ -15,7 +15,9 @@ test_that("create_clean_reported_cases filters leading zeros correctly", {
   
   result <- create_clean_reported_cases(modified_data, 7)
   # Check if the first row with non-zero cases is retained
-  expect_equal(result$date[1], min(modified_data$date[modified_data$confirm > 0]))
+  expect_equal(
+    result$date[1], min(modified_data$date[modified_data$confirm > 0])
+  )
 })
 
 test_that("create_clean_reported_cases replaces zero cases correctly", {

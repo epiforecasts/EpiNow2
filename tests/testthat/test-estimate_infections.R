@@ -36,6 +36,14 @@ test_that("estimate_infections successfully returns estimates using default sett
   test_estimate_infections(reported_cases)
 })
 
+test_that("estimate_infections successfully returns estimates when passed NA values", {
+  skip_on_cran()
+  reported_cases_na <- data.table::copy(reported_cases)
+  reported_cases_na[sample(1:30, 5), confirm := NA]
+  test_estimate_infections(reported_cases_na)
+})
+
+
 test_that("estimate_infections successfully returns estimates using no delays", {
   skip_on_cran()
   test_estimate_infections(reported_cases, delay = FALSE)
