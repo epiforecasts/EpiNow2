@@ -85,7 +85,7 @@ To then run this on multiple regions using the default options above, we could u
 ```r
 region_rt <- regional_epinow(
   reported_cases = cases,
-  generation_time = generation_time_opts(generation_time),
+  generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
 )
@@ -132,7 +132,7 @@ gp <- modifyList(gp, list(realland = NULL), keep.null = TRUE)
 rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
 region_separate_rt <- regional_epinow(
   reported_cases = cases,
-  generation_time = generation_time_opts(generation_time),
+  generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt, gp = gp,
 )
