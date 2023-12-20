@@ -145,7 +145,7 @@ the convolution model.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># make some example secondary incidence data</span></span></span>
 <span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="va">example_confirmed</span></span></span>
-<span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/as.data.table.html" class="external-link">as.data.table</a></span><span class="op">(</span><span class="va">cases</span><span class="op">)</span><span class="op">[</span>, <span class="va">primary</span> <span class="op">:=</span> <span class="va">confirm</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/as.data.table.html" class="external-link">as.data.table</a></span><span class="op">(</span><span class="va">cases</span><span class="op">)</span><span class="op">[</span>, <span class="va">primary</span> <span class="op">:=</span> <span class="va">confirm</span><span class="op">]</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Assume that only 40 percent of cases are reported</span></span></span>
 <span class="r-in"><span><span class="va">cases</span><span class="op">[</span>, <span class="va">scaling</span> <span class="op">:=</span> <span class="fl">0.4</span><span class="op">]</span></span></span>
@@ -208,7 +208,7 @@ the convolution model.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># make some example prevalence data</span></span></span>
 <span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="va">example_confirmed</span></span></span>
-<span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/as.data.table.html" class="external-link">as.data.table</a></span><span class="op">(</span><span class="va">cases</span><span class="op">)</span><span class="op">[</span>, <span class="va">primary</span> <span class="op">:=</span> <span class="va">confirm</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/as.data.table.html" class="external-link">as.data.table</a></span><span class="op">(</span><span class="va">cases</span><span class="op">)</span><span class="op">[</span>, <span class="va">primary</span> <span class="op">:=</span> <span class="va">confirm</span><span class="op">]</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Assume that only 30 percent of cases are reported</span></span></span>
 <span class="r-in"><span><span class="va">cases</span><span class="op">[</span>, <span class="va">scaling</span> <span class="op">:=</span> <span class="fl">0.3</span><span class="op">]</span></span></span>

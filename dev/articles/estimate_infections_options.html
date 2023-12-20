@@ -478,7 +478,7 @@ data set. e.g. if we think that the reproduction number was constant but
 would like to allow it to change on the 16th of March 2020 we would
 define a new case data set using</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bp_cases</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/copy.html" class="external-link">copy</a></span><span class="op">(</span><span class="va">reported_cases</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">bp_cases</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/copy.html" class="external-link">copy</a></span><span class="op">(</span><span class="va">reported_cases</span><span class="op">)</span></span>
 <span><span class="va">bp_cases</span> <span class="op">&lt;-</span> <span class="va">bp_cases</span><span class="op">[</span>,</span>
 <span> <span class="va">breakpoint</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">date</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2020-03-16"</span><span class="op">)</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="op">]</span></span></code></pre></div>

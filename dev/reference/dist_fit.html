@@ -192,12 +192,15 @@ be printed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 1950 / 2000 [ 97%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 0.143 seconds (Warm-up)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.165 seconds (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.308 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 0.139 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.157 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.296 seconds (Total)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'dist_fit' NOW (CHAIN 2).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Rejecting initial value:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:   Log probability evaluates to log(0), i.e. negative infinity.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:   Stan can't start sampling from this initial value.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Rejecting initial value:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:   Log probability evaluates to log(0), i.e. negative infinity.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:   Stan can't start sampling from this initial value.</span>
@@ -250,19 +253,19 @@ be printed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 1950 / 2000 [ 97%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:  Elapsed Time: 0.151 seconds (Warm-up)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.133 seconds (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.284 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:  Elapsed Time: 0.143 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.166 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.309 seconds (Total)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Inference for Stan model: dist_fit.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 chains, each with iter=2000; warmup=1000; thin=1; </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> post-warmup draws per chain=1000, total post-warmup draws=2000.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             mean se_mean   sd   2.5%    25%    50%    75%  97.5% n_eff Rhat</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lambda[1]   2.68    0.02 0.44   1.94   2.38   2.64   2.94   3.64   646 1.01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lp__      -15.22    0.02 0.68 -17.06 -15.39 -14.94 -14.78 -14.72   742 1.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lambda[1]   2.93    0.02 0.52   2.06   2.57   2.88   3.25   4.07   560    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lp__      -12.33    0.04 0.76 -14.43 -12.50 -12.04 -11.86 -11.81   444    1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Samples were drawn using NUTS(diag_e) at Tue Dec  5 09:27:10 2023.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples were drawn using NUTS(diag_e) at Wed Dec 20 21:38:28 2023.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> For each parameter, n_eff is a crude measure of effective sample size,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> and Rhat is the potential scale reduction factor on split chains (at </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> convergence, Rhat=1).</span>
@@ -276,8 +279,8 @@ be printed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'dist_fit' NOW (CHAIN 1).</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Gradient evaluation took 0.000227 seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.27 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Gradient evaluation took 0.000222 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.22 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Adjust your expectations accordingly!</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
@@ -324,15 +327,15 @@ be printed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 1950 / 2000 [ 97%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 1.846 seconds (Warm-up)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                1.803 seconds (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                3.649 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 1.913 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                2.038 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                3.951 seconds (Total)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'dist_fit' NOW (CHAIN 2).</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Gradient evaluation took 0.00022 seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 2.2 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Gradient evaluation took 0.000213 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 2.13 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Adjust your expectations accordingly!</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
@@ -379,22 +382,22 @@ be printed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 1950 / 2000 [ 97%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:  Elapsed Time: 1.907 seconds (Warm-up)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                1.738 seconds (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                3.645 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:  Elapsed Time: 1.96 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                2.403 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                4.363 seconds (Total)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Inference for Stan model: dist_fit.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 chains, each with iter=2000; warmup=1000; thin=1; </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> post-warmup draws per chain=1000, total post-warmup draws=2000.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                mean se_mean   sd   2.5%    25%    50%    75%  97.5% n_eff Rhat</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> alpha_raw[1]   0.87    0.03 0.54   0.06   0.46   0.79   1.18   2.10   375 1.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> beta_raw[1]    0.98    0.03 0.52   0.13   0.62   0.93   1.31   2.12   400 1.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> alpha[1]       5.91    0.03 0.54   5.09   5.50   5.83   6.22   7.14   375 1.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> beta[1]        5.90    0.03 0.52   5.04   5.53   5.84   6.22   7.03   400 1.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lp__         -15.93    0.08 1.37 -19.57 -16.47 -15.50 -14.97 -14.58   274 1.01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> alpha_raw[1]   0.92    0.03 0.56   0.09   0.49   0.85   1.28   2.15   287 1.02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> beta_raw[1]    0.91    0.03 0.51   0.10   0.53   0.84   1.24   2.09   252 1.02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> alpha[1]       4.90    0.03 0.56   4.07   4.47   4.83   5.26   6.13   287 1.02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> beta[1]        4.65    0.03 0.51   3.84   4.27   4.58   4.98   5.83   252 1.02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lp__         -24.37    0.13 1.52 -28.56 -24.98 -23.95 -23.27 -22.84   132 1.01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Samples were drawn using NUTS(diag_e) at Tue Dec  5 09:27:17 2023.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples were drawn using NUTS(diag_e) at Wed Dec 20 21:38:36 2023.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> For each parameter, n_eff is a crude measure of effective sample size,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> and Rhat is the potential scale reduction factor on split chains (at </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> convergence, Rhat=1).</span>
@@ -410,8 +413,8 @@ be printed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:   Log probability evaluates to log(0), i.e. negative infinity.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:   Stan can't start sampling from this initial value.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Gradient evaluation took 5.5e-05 seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.55 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Gradient evaluation took 5.6e-05 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.56 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Adjust your expectations accordingly!</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
@@ -458,15 +461,15 @@ be printed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 1950 / 2000 [ 97%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 0.303 seconds (Warm-up)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.25 seconds (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.553 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 0.309 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.283 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.592 seconds (Total)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'dist_fit' NOW (CHAIN 2).</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Gradient evaluation took 4.9e-05 seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.49 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Gradient evaluation took 5.3e-05 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.53 seconds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Adjust your expectations accordingly!</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
@@ -513,20 +516,20 @@ be printed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 1950 / 2000 [ 97%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:  Elapsed Time: 0.297 seconds (Warm-up)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.241 seconds (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.538 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:  Elapsed Time: 0.326 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.291 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.617 seconds (Total)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Inference for Stan model: dist_fit.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 chains, each with iter=2000; warmup=1000; thin=1; </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> post-warmup draws per chain=1000, total post-warmup draws=2000.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            mean se_mean   sd   2.5%    25%    50%    75%  97.5% n_eff Rhat</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> mu[1]      1.59    0.00 0.02   1.55   1.57   1.59   1.60   1.63  1496    1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> sigma[1]   0.16    0.00 0.02   0.13   0.15   0.16   0.17   0.19  1673    1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lp__     -68.84    0.04 1.06 -71.66 -69.23 -68.51 -68.09 -67.81   769    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> mu[1]      1.58    0.00 0.02   1.54   1.57   1.58   1.60   1.62  1262    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> sigma[1]   0.15    0.00 0.02   0.12   0.14   0.15   0.16   0.19  1233    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lp__     -68.78    0.03 0.93 -71.20 -69.19 -68.48 -68.10 -67.84  1075    1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Samples were drawn using NUTS(diag_e) at Tue Dec  5 09:27:18 2023.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples were drawn using NUTS(diag_e) at Wed Dec 20 21:38:38 2023.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> For each parameter, n_eff is a crude measure of effective sample size,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> and Rhat is the potential scale reduction factor on split chains (at </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> convergence, Rhat=1).</span>
