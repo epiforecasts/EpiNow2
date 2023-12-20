@@ -180,7 +180,7 @@ we could use</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">region_rt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/regional_epinow.html">regional_epinow</a></span><span class="op">(</span></span>
 <span>  reported_cases <span class="op">=</span> <span class="va">cases</span>,</span>
-<span>  generation_time <span class="op">=</span> <span class="fu"><a href="../reference/generation_time_opts.html">generation_time_opts</a></span><span class="op">(</span><span class="va">generation_time</span><span class="op">)</span>,</span>
+<span>  generation_time <span class="op">=</span> <span class="fu"><a href="../reference/generation_time_opts.html">generation_time_opts</a></span><span class="op">(</span><span class="va">example_generation_time</span><span class="op">)</span>,</span>
 <span>  delays <span class="op">=</span> <span class="fu"><a href="../reference/delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">delay</span><span class="op">)</span>,</span>
 <span>  rt <span class="op">=</span> <span class="fu"><a href="../reference/rt_opts.html">rt_opts</a></span><span class="op">(</span>prior <span class="op">=</span> <span class="va">rt_prior</span><span class="op">)</span>,</span>
 <span><span class="op">)</span></span>
@@ -227,7 +227,7 @@ from the package and <code><a href="https://rdrr.io/r/utils/modifyList.html" cla
 <span><span class="va">rt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/opts_list.html">opts_list</a></span><span class="op">(</span><span class="fu"><a href="../reference/rt_opts.html">rt_opts</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">cases</span>, realland <span class="op">=</span> <span class="fu"><a href="../reference/rt_opts.html">rt_opts</a></span><span class="op">(</span>rw <span class="op">=</span> <span class="fl">7</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">region_separate_rt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/regional_epinow.html">regional_epinow</a></span><span class="op">(</span></span>
 <span>  reported_cases <span class="op">=</span> <span class="va">cases</span>,</span>
-<span>  generation_time <span class="op">=</span> <span class="fu"><a href="../reference/generation_time_opts.html">generation_time_opts</a></span><span class="op">(</span><span class="va">generation_time</span><span class="op">)</span>,</span>
+<span>  generation_time <span class="op">=</span> <span class="fu"><a href="../reference/generation_time_opts.html">generation_time_opts</a></span><span class="op">(</span><span class="va">example_generation_time</span><span class="op">)</span>,</span>
 <span>  delays <span class="op">=</span> <span class="fu"><a href="../reference/delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">delay</span><span class="op">)</span>,</span>
 <span>  rt <span class="op">=</span> <span class="va">rt</span>, gp <span class="op">=</span> <span class="va">gp</span>,</span>
 <span><span class="op">)</span></span>
