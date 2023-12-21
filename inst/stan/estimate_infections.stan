@@ -77,9 +77,17 @@ transformed parameters {
     R = update_Rt(
       ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary
     );
+    if (if_delay_id) {
+      if_delay_rev_pmf = get_delay_rev_pmf(
+        if_delay_id, delay_type_max[if_delay_id] + 1, delay_types_p, delay_types_id,
+        delay_types_groups, delay_max, delay_np_pmf,
+        delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
+        0, 1, 0
+      );
+    }
     infections = generate_infections(
       R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,
-      future_time
+      future_time, if_delay_id, if_magnitude, if_delay_rev_pmf
     );
   } else {
     // via deconvolution
