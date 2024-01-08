@@ -9,14 +9,14 @@
 #'
 #' @param zero_threshold `r lifecycle::badge("experimental")` Numeric defaults
 #' to Inf. Indicates if detected zero cases are meaningful by using a threshold
-#' number of cases based on the 7 day average. If the average is above this
+#' number of cases based on the 7-day average. If the average is above this
 #' threshold then the zero is replaced using `fill`.
 #'
 #' @param fill Numeric, defaults to NA. Value to use to replace NA values or
 #' zeroes that are flagged because the 7-day average is above the
 #' `zero_threshold`. If the default NA is used then dates with NA values or with
-#' 7-day averages above the `zero_threshold` will be skipped in model fitting. If
-#' this is set to 0 then the only effect is to replace NA values with 0.
+#' 7-day averages above the `zero_threshold` will be skipped in model fitting.
+#' If this is set to 0 then the only effect is to replace NA values with 0.
 #'
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
