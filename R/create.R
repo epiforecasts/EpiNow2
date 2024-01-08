@@ -13,8 +13,10 @@
 #' threshold then the zero is replaced using `fill`.
 #'
 #' @param fill Numeric, defaults to NA. Value to use to replace NA values or
-#' zeros that are flagged by `zero_threshold`. If the default NA is used then
-#' dates with NA values will be skipped in model fitting.
+#' zeroes that are flagged because the 7-day average is above the
+#' `zero_threshold`. If the default NA is used then dates with NA values or with
+#' 7-day averages above the `zero_threshold` will be skipped in model fitting. If
+#' this is set to 0 then the only effect is to replace NA values with 0.
 #'
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
