@@ -49,7 +49,9 @@ create_clean_reported_cases <- function(reported_cases, horizon,
       date >= min(date[confirm[!is.na(confirm)] > 0])
     ]
   }
-  # Calculate the 7-day moving average.
+  # Calculate `average_7_day` which for rows with `confirm == 0`
+  # (the only instance where this is being used) equates to the 7-day
+  # right-aligned moving average at the previous data point.
   reported_cases <-
     reported_cases[
       ,
