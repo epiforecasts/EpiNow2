@@ -24,12 +24,14 @@ start of the time series be filtered out.}
 
 \item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
 to Inf. Indicates if detected zero cases are meaningful by using a threshold
-number of cases based on the 7 day average. If the average is above this
+number of cases based on the 7-day average. If the average is above this
 threshold then the zero is replaced using \code{fill}.}
 
 \item{fill}{Numeric, defaults to NA. Value to use to replace NA values or
-zeros that are flagged by \code{zero_threshold}. If the default NA is used then
-dates with NA values will be skipped in model fitting.}
+zeroes that are flagged because the 7-day average is above the
+\code{zero_threshold}. If the default NA is used then dates with NA values or with
+7-day averages above the \code{zero_threshold} will be skipped in model fitting.
+If this is set to 0 then the only effect is to replace NA values with 0.}
 }
 \value{
 A cleaned data frame of reported cases
