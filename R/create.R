@@ -467,7 +467,7 @@ create_stan_data <- function(reported_cases, seeding_time,
       delay = data$seeding_time, horizon = data$horizon
     )
   )
-  # initial estimate of growth33
+  # initial estimate of growth
   first_week <- data.table::data.table(
     confirm = cases[seq_len(min(7, length(cases)))],
     t = seq_len(min(7, length(cases)))
