@@ -50,6 +50,12 @@ stan. Internally calls the other \code{create_} family of functions to
 construct a single list for input into stan with all data required
 present.
 }
+\examples{
+create_stan_data(
+ example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
+ backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
+)
+}
 \author{
 Sam Abbott
 

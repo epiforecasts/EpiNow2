@@ -72,9 +72,8 @@ start of the time series be filtered out.}
 
 \item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
 to Inf. Indicates if detected zero cases are meaningful by using a threshold
-number of cases based on the 7 day average. If the average is above this
-threshold then the zero is replaced with the backwards looking rolling
-average. If set to infinity then no changes are made.}
+number of cases based on the 7-day average. If the average is above this
+threshold then the zero is replaced using \code{fill}.}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned,
 this automatically updates to TRUE if no directory for saving is specified.}

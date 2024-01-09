@@ -148,7 +148,8 @@ model {
   // observed reports from mean of reports (update likelihood)
   if (likelihood) {
     report_lp(
-      cases, obs_reports, rep_phi, phi_mean, phi_sd, model_type, obs_weight
+      cases, obs_reports[cases_time], rep_phi, phi_mean, phi_sd, model_type,
+      obs_weight
     );
   }
 }
@@ -191,7 +192,7 @@ generated quantities {
   // log likelihood of model
   if (return_likelihood) {
     log_lik = report_log_lik(
-      cases, obs_reports, rep_phi, model_type, obs_weight
+      cases, obs_reports[cases_time], rep_phi, model_type, obs_weight
     );
   }
 }
