@@ -37,8 +37,8 @@ approach as used for estimation.
 More details
 </summary>
 
-EpiNow2 estimates the time-varying reproduction number on cases by date
-of infection (using a similar approach to that implemented in
+`{EpiNow2}` estimates the time-varying reproduction number on cases by
+date of infection (using a similar approach to that implemented in
 [`{EpiEstim}`](https://github.com/mrc-ide/EpiEstim)). Imputed infections
 are then mapped to observed data (for example cases by date of report)
 via a series of uncertain delay distributions (in the examples in the
