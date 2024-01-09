@@ -709,10 +709,12 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> data {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t;                                            // unobserved time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int lt;                          // timepoints in the likelihood</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int seeding_time;                                 // time period used for seeding and not observed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int horizon;                                      // forecast horizon</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int future_time;                                  // time in future for Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[t - horizon - seeding_time] int&lt;lower = 0&gt; cases; // observed cases</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[lt] int&lt;lower = 0&gt; cases; // observed cases</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[lt] int cases_time; // time of observed cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = 0&gt;[t] shifted_cases;               // prior infections (for backcalculation)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n;                     // number of delay distributions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n_p;                   // number of parametric delay distributions</span>
@@ -893,7 +895,8 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observed reports from mean of reports (update likelihood)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (likelihood) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     report_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports, rep_phi, phi_mean, phi_sd, model_type, obs_weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports[cases_time], rep_phi, phi_mean, phi_sd, model_type,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_weight</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
@@ -935,7 +938,7 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // log likelihood of model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (return_likelihood) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     log_lik = report_log_lik(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports, rep_phi, model_type, obs_weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports[cases_time], rep_phi, model_type, obs_weight</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> } </span>
@@ -1562,10 +1565,12 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> data {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int t;                                            // unobserved time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int lt;                          // timepoints in the likelihood</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int seeding_time;                                 // time period used for seeding and not observed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int horizon;                                      // forecast horizon</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int future_time;                                  // time in future for Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[t - horizon - seeding_time] int&lt;lower = 0&gt; cases; // observed cases</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[lt] int&lt;lower = 0&gt; cases; // observed cases</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[lt] int cases_time; // time of observed cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = 0&gt;[t] shifted_cases;               // prior infections (for backcalculation)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n;                     // number of delay distributions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n_p;                   // number of parametric delay distributions</span>
@@ -1746,7 +1751,8 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observed reports from mean of reports (update likelihood)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (likelihood) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     report_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports, rep_phi, phi_mean, phi_sd, model_type, obs_weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports[cases_time], rep_phi, phi_mean, phi_sd, model_type,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_weight</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
@@ -1788,7 +1794,7 @@ When using multiple chains iterations per chain is samples / chains.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // log likelihood of model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (return_likelihood) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     log_lik = report_log_lik(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports, rep_phi, model_type, obs_weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports[cases_time], rep_phi, model_type, obs_weight</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> } </span>
