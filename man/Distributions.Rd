@@ -2,10 +2,10 @@
 % Please edit documentation in R/dist.R
 \name{Distributions}
 \alias{Distributions}
-\alias{lognormal}
-\alias{gamma}
-\alias{normal}
-\alias{fixed}
+\alias{LogNormal}
+\alias{Gamma}
+\alias{Normal}
+\alias{Fixed}
 \alias{pmf}
 \title{Probability distributions}
 \usage{
@@ -15,7 +15,7 @@ Gamma(shape, rate, scale, mean, sd, max = Inf)
 
 Normal(mean, sd, max = Inf)
 
-Fixed(value)
+Fixed(value, max = Inf)
 
 pmf(mass)
 }

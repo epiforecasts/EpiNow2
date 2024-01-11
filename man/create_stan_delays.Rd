@@ -4,7 +4,7 @@
 \alias{create_stan_delays}
 \title{Create delay variables for stan}
 \usage{
-create_stan_delays(..., weight = 1)
+create_stan_delays(..., weight = 1, tolerance = 0.001)
 }
 \arguments{
 \item{...}{Named delay distributions. The names are assigned to IDs}

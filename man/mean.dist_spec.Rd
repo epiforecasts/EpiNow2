@@ -4,15 +4,16 @@
 \alias{mean.dist_spec}
 \title{Returns the mean of one or more delay distribution}
 \usage{
-\method{mean}{dist_spec}(x, ...)
+\method{mean}{dist_spec}(x, ..., ignore_uncertainty = FALSE)
 }
 \arguments{
 \item{x}{The \verb{<dist_spec>} to use}
 
 \item{...}{Not used}
-}
-\value{
-A vector of means.
+
+\item{ignore_uncertainty}{Logical; whether to ignore any uncertainty in
+parameters. If set to FALSE (the default) then the mean of any uncertain
+parameters will be returned as NA.}
 }
 \description{
 This works out the mean of all the (parametric / nonparametric) delay

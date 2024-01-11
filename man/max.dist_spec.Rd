@@ -28,8 +28,8 @@ max(dist1)
 dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
 max(dist2)
 
-# The mean of the sum of two distributions
-mean(dist1 + dist2)
+# The maxf the sum of two distributions
+max(dist1 + dist2)
 }
 \author{
 Sebastian Funk

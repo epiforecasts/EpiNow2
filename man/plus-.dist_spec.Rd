@@ -2,7 +2,7 @@
 % Please edit documentation in R/dist.R
 \name{+.dist_spec}
 \alias{+.dist_spec}
-\title{Creates a delay distribution as the sum of two other delay distributions}
+\title{Creates a delay distribution as the sum of two other delay distributions.}
 \usage{
 \method{+}{dist_spec}(e1, e2)
 }
@@ -18,10 +18,7 @@ A delay distribution representing the sum of the two delays
 (with class \code{\link[=dist_spec]{dist_spec()}})
 }
 \description{
-This is done via convolution with \code{\link[stats:convolve]{stats::convolve()}}. Nonparametric delays
-that can be combined are processed together, and their cumulative
-distribution function is truncated at a specified tolerance level, ensuring
-numeric stability.
+Creates a delay distribution as the sum of two other delay distributions.
 }
 \examples{
 # A fixed lognormal distribution with mean 5 and sd 1.
@@ -35,9 +32,6 @@ dist2 <- Gamma(
   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
 )
 dist1 + dist2
-
-# Using tolerance parameter
-EpiNow2:::dist_spec_plus(dist1, dist1, tolerance = 0.5)
 }
 \author{
 Sebastian Funk
