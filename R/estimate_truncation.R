@@ -224,11 +224,16 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     construct_trunc <- TRUE
   }
   if (construct_trunc) {
-    truncation <- .dist_spec(
-      params_mean = c(0, 1),
-      params_sd = c(1, 1),
-      distribution = trunc_dist,
-      max = trunc_max
+    params_mean <- c(0, 1)
+    params_sd <- c(1, 1)
+    parameters <- lapply(seq_along(params_mean), function (id) {
+      Normal(params_mean, params_sd)
+    })
+    names(parameters) <- natural_params(trunc_dist)
+    parameters$max <- trunc_max
+    truncation <- new_dist_spec(
+      parameters = parameters,
+      distribution = trunc_dist
     )
   }
 
@@ -278,12 +283,14 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   out <- list()
   # Summarise fit truncation distribution for downstream usage
   delay_params <- extract_stan_param(fit, params = "delay_params")
-  out$dist <- .dist_spec(
-    params_mean = round(delay_params$mean, 3),
-    params_sd = round(delay_params$sd, 3),
-    max = truncation$max
-  )
-  out$dist$dist <- truncation$dist
+  params_mean <- round(delay_params$mean, 3)
+  params_sd <- round(delay_params$sd, 3)
+  parameters <- lapply(seq_along(params_mean), function (id) {
+    Normal(params_mean[id], params_sd[id])
+  })
+  names(parameters) <- natural_params(truncation[[1]]$distribution)
+  out$dist <- truncation
+  out$dist$parameters <- parameters
 
   # summarise reconstructed observations
   recon_obs <- extract_stan_param(fit, "recon_obs",
