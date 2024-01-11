@@ -243,7 +243,7 @@ estimate_infections <- function(reported_cases,
   )
 
   ## Add prior infections
-  if (delays$n > 0) {
+  if (length(delays) > 0) {
     out$prior_infections <- shifted_cases[
       ,
       .(

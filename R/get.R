@@ -328,7 +328,7 @@ get_regions_with_most_reports <- function(reported_cases,
 ##' @author Sebastian Funk
 get_seeding_time <- function(delays, generation_time) {
   # Estimate the mean delay -----------------------------------------------
-  seeding_time <- sum(mean(delays))
+  seeding_time <- sum(mean(delays, ignore_uncertainty = TRUE))
   if (seeding_time < 1) {
     seeding_time <- 1
   } else {

@@ -116,11 +116,11 @@ adjust_infection_to_report <- function(infections, delay_defs,
   sample_dist_spec <- function(input, delay_def) {
     ## Define sample delay fn
     sample_delay_fn <- function(n, dist, cum, ...) {
-      fixed_dist <- fix_dist(delay_def, strategy = "sample")
+      fixed_dist <- discretise(fix_dist(delay_def, strategy = "sample"))
       if (dist) {
-        fixed_dist$np_pmf[n + 1]
+        fixed_dist[[1]]$pmf[n + 1]
       } else {
-        sample(seq_along(fixed_dist$np_pmf) - 1, size = n, replace = TRUE)
+        sample(seq_along(fixed_dist[[1]]$pmf) - 1, size = n, replace = TRUE)
       }
     }
 
@@ -139,8 +139,8 @@ adjust_infection_to_report <- function(infections, delay_defs,
 
   if (is(delay_defs, "dist_spec")) {
     report <- sample_dist_spec(infections, extract_single_dist(delay_defs, 1))
-    if (delay_defs$n > 1) {
-      for (def in 2:delay_defs$n) {
+    if (length(delay_defs) > 1) {
+      for (def in seq(2, length(delay_defs))) {
         report <- sample_dist_spec(report, extract_single_dist(delay_defs, def))
       }
     }

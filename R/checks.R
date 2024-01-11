@@ -58,8 +58,8 @@ check_reports_valid <- function(reports, model) {
 #' Validate probability distribution for passing to stan
 #'
 #' @description
-#' `check_stan_dist()` checks that the supplied data is a `<dist_spec>`,
-#' and that it can be further processed by stan.
+#' `check_stan_delay()` checks that the supplied data is a `<dist_spec>`,
+#' that it is lognormal or gamma, and that it has a finite maximum.
 #'
 #' @param dist A `dist_spec` object.`
 #' @importFrom checkmate assert_class
@@ -67,16 +67,40 @@ check_reports_valid <- function(reports, model) {
 #' @return Called for its side effects.
 #' @author Sebastian Funk
 #' @keywords internal
-check_stan_dist <- function(dist) {
+check_stan_delay <- function(dist) {
   # Check that `dist` is a `dist_spec`
   assert_class(dist, "dist_spec")
   # Check that `dist` is lognormal or gamma or nonparametric
-  if (!all(dist$dist %in% c("lognormal", "gamma"))) {
+  distributions <- vapply(dist, function(x) x$distribution, character(1))
+  if (
+    !all(distributions %in% c("lognormal", "gamma", "fixed", "nonparametric"))
+  ) {
     stop(
-      "Distributions passed to the model need to be lognormal, gamma or ",
+      "Distributions passed to the model need to be lognormal, gamma, fixed or ",
       "nonparametric (i.e., have no uncertainty)."
     )
   }
+  # Check that `dist` has parameters that are either numeric or normal
+  # distributions with numeric parameters and infinite maximum
+  numeric_parameters <- vapply(dist$parameters, is.numeric, logical(1))
+  normal_parameters <- vapply(
+    dist$parameters,
+    function(x) {
+      is(x, "dist_spec") &&
+        x$distribution == "normal" &&
+        all(vapply(x$parameters, is.numeric, logical(1))) &&
+        is.infinite(x$max)
+    },
+    logical(1)
+  )
+  if (!all(numeric_parameters | normal_parameters)) {
+    stop(
+      "Delay distributions passed to the model need to have parameters that ",
+      "are either numeric or normally distributed with numeric parameters ",
+      "and infinite maximum."
+    )
+  }
+  # Check that `dist` has a finite maximum
   if (any(is.infinite(max(dist)))) {
     stop("All distribution passed to the model need to have a finite maximum")
   }
