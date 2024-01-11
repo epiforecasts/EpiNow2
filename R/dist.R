@@ -975,7 +975,7 @@ dist_spec <- function(distribution = c(
       params_sd <- c(mean = mean_sd, sd = sd_sd)
     } else if (distribution == "fixed") {
       params_mean <- mean
-      params_sd <- NULL
+      params_sd <- 0
     }
   }
   if (length(pmf) > 0) {
