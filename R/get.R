@@ -192,20 +192,24 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
   target_disease <- disease
   target_source <- source
   data <- data[disease == target_disease][source == target_source]
-  dist <- as.list(
-    data[, .(mean, mean_sd, sd, sd_sd, max = max_value, distribution = dist)]
-  )
   if (fixed) {
-    dist$mean_sd <- 0
-    dist$sd_sd <- 0
+    data$sd <- 0
+    data$sd_sd <- 0
   }
-  dist$params_mean <- c(dist$mean, dist$sd)
-  dist$params_sd <- c(dist$mean_sd, dist$sd_sd)
-  dist$mean <- NULL
-  dist$sd <- NULL
-  dist$mean_sd <- NULL
-  dist$sd_sd <- NULL
-  return(do.call(.dist_spec, dist))
+  parameters <- list(
+    Normal(data$mean, data$mean_sd),
+    Normal(data$sd, data$sd_sd)
+  )
+  if (data$dist == "gamma") {
+    names(parameters) <- c("mean", "sd")
+  } else {
+    names(parameters) <- c("meanlog", "sdlog")
+  }
+  parameters$max <- max_value
+  return(new_dist_spec(
+    params = parameters,
+    distribution = data$dist
+  ))
 }
 #' Get a Literature Distribution for the Generation Time
 #'
