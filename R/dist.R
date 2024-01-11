@@ -1729,7 +1729,7 @@ extract_params <- function(params, distribution) {
 ##' @return A `dist_spec` of the given specification.
 ##' @author Sebastian Funk
 ##' @keywords internal
-new_dist_spec <- function(param, distribution) {
+new_dist_spec <- function(params, distribution) {
   if (distribution == "nonparametric") {
     ## nonparametric distribution
     ret <- list(

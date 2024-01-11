@@ -5,12 +5,12 @@
 \title{Internal function for generating a \code{dist_spec} given parameters and a
 distribution.}
 \usage{
-new_dist_spec(param, distribution)
+new_dist_spec(params, distribution)
 }
 \arguments{
-\item{distribution}{Character; the distribution to use.}
-
 \item{params}{Parameters of the distribution (including \code{max})}
+
+\item{distribution}{Character; the distribution to use.}
 }
 \value{
 A \code{dist_spec} of the given specification.
