@@ -975,7 +975,6 @@ dist_spec <- function(distribution = c(
       params_sd <- c(mean = mean_sd, sd = sd_sd)
     } else if (distribution == "fixed") {
       params_mean <- mean
-      params_sd <- 0
     }
   }
   if (length(pmf) > 0) {
@@ -988,13 +987,16 @@ dist_spec <- function(distribution = c(
     distribution <- "nonparametric"
     parameters <- list(pmf = pmf)
   } else {
+    if (length(params_sd) == 0) {
+      params_sd <- rep(0, length(params_mean))
+    }
     parameters <- lapply(seq_along(params_mean), function(id) {
       Normal(params_mean[id], params_sd[id])
     })
-    names(parameters) <- natural_parameters(distribution)
+    names(parameters) <- natural_params(distribution)
     parameters$max <- max
   }
-  return(new_dist_spec(distribution, parameters))
+  return(new_dist_spec(parameters, distribution))
 }
 
 #' Creates a delay distribution as the sum of two other delay distributions.
@@ -1643,9 +1645,8 @@ Fixed <- function(value, max = Inf) {
 ##' pmf(c(0.1, 0.3, 0.2, 0.4))
 ##' pmf(c(0.1, 0.3, 0.2, 0.1, 0.1))
 pmf <- function(mass) {
-  return(
-    new_dist_spec(parameters = list(pmf = mass / sum(mass)), "nonparametric")
-  )
+  params <- list(pmf = mass / sum(mass))
+  return(new_dist_spec(params, "nonparametric"))
 }
 
 ##' Get the names of the natural parameters of a distribution

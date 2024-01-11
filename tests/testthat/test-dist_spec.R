@@ -263,5 +263,5 @@ test_that("delay distributions can be specified in different ways", {
 })
 
 test_that("deprecated functions are deprecated", {
-  expect_deprecated(dist_spec(params_mean = 1.6, params_sd = 0.6, max = 19))
+  expect_deprecated(dist_spec(params_mean = c(1.6, 0.6), max = 19))
 })
