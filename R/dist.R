@@ -140,13 +140,25 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
         pnorm(n, params[["mean"]], params[["sd"]])) /
         pnorm(max_value + 1, params[["mean"]], params[["sd"]])
     }
+  } else if (model == "fixed") {
+    rdist <- function(n) {
+      rep(params[["value"]], n)
+    }
+    pdist <- function(n) {
+      as.integer(n > params[["value"]])
+    }
+    ddist <- function(n) {
+      as.integer(n == params[["value"]])
+    }
   }
 
   if (discrete) {
     cmf <- c(0, pdist(seq_len(max_value + 1)))
     pmf <- diff(cmf)
     rdist <- function(n) {
-      sample(x = seq_len(max_value + 1) - 1, size = n, prob = pmf)
+      sample(
+        x = seq_len(max_value + 1) - 1, size = n, prob = pmf, replace = TRUE
+      )
     }
     pdist <- function(n) {
       cmf[n + 1]
@@ -1105,79 +1117,19 @@ dist_spec <- function(distribution = c(
   ret$np_pmf_length <- length(ret$np_pmf)
   ret$params_length <- length(ret$params_mean)
   ret[sum_args] <- purrr::map(ret[sum_args], sum)
-  attr(ret, "class") <- c("list", "dist_spec")
+  attr(ret, "class") <- c("dist_spec", class(ret))
   return(ret)
 }
 
-#' Creates a delay distribution as the sum of two other delay distributions
+#' Creates a delay distribution as the sum of two other delay distributions.
 #'
-#' This is done via convolution with [stats::convolve()]. Nonparametric delays
-#' that can be combined are processed together, and their cumulative
-#' distribution function is truncated at a specified tolerance level, ensuring
-#' numeric stability.
-#'
+#' @return A delay distribution representing the sum of the two delays
+#' (with class [dist_spec()])
 #' @param e1 The first delay distribution (of type [dist_spec()]) to
 #' combine.
 #'
 #' @param e2 The second delay distribution (of type [dist_spec()]) to
 #' combine.
-#'
-#' @param tolerance A numeric value that sets the cumulative probability
-#' to retain when truncating the cumulative distribution function of the
-#' combined nonparametric delays. The default value is 0.001 with this retaining
-#' 0.999 of the cumulative probability. Note that using a larger tolerance may
-#' result in a smaller number of points in the combined nonparametric delay but
-#' may also impact the accuracy of the combined delay (i.e., change the mean
-#' and standard deviation).
-#'
-#' @return A delay distribution representing the sum of the two delays
-#' (with class [dist_spec()])
-#'
-#' @author Sebastian Funk
-#' @author Sam Abbott
-#' @importFrom stats convolve
-dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
-  ## process delay distributions
-  delays <- c(e1, e2)
-  ## combine any nonparametric delays that can be combined
-  if (sum(!delays$parametric) > 1) {
-    new_pmf <- 1L
-    group_starts <- c(1L, cumsum(delays$np_pmf_length) + 1L)
-    for (i in seq_len(length(group_starts) - 1L)) {
-      new_pmf <- stats::convolve(
-        new_pmf,
-        rev(delays$np_pmf[seq(group_starts[i], group_starts[i + 1L] - 1L)]),
-        type = "open"
-      )
-    }
-    if (tolerance > 0 && length(new_pmf) > 1) {
-        cdf <- cumsum(new_pmf)
-        new_pmf <- new_pmf[c(TRUE, (1 - cdf[-length(cdf)]) >= tolerance)]
-        new_pmf <- new_pmf / sum(new_pmf)
-    }
-    delays$np_pmf <- new_pmf
-    delays$np_pmf_length <- length(delays$np_pmf)
-    delays$params_length <- c(
-      0, delays$params_length[delays$parametric]
-    )
-    delays$parametric <- array(c(FALSE, rep(TRUE, delays$n_p)))
-    delays$n_np <- 1
-    delays$n <- delays$n_p + 1
-  }
-  delays$np_pmf_length <- length(delays$np_pmf)
-  return(delays)
-}
-
-#' Creates a delay distribution as the sum of two other delay distributions
-#'
-#' This is done via convolution with [stats::convolve()]. Nonparametric delays
-#' that can be combined are processed together, and their cumulative
-#' distribution function is truncated at a specified tolerance level, ensuring
-#' numeric stability.
-#'
-#' @return A delay distribution representing the sum of the two delays
-#' (with class [dist_spec()])
-#' @inheritParams dist_spec_plus
 #' @author Sebastian Funk
 #' @method + dist_spec
 #' @export
@@ -1193,11 +1145,8 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
 #'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
 #' )
 #' dist1 + dist2
-#'
-#' # Using tolerance parameter
-#' EpiNow2:::dist_spec_plus(dist1, dist1, tolerance = 0.5)
 `+.dist_spec` <- function(e1, e2) {
-  dist_spec_plus(e1, e2, tolerance = 0.001)
+  c(e1, e2)
 }
 
 #' Combines multiple delay distributions for further processing
@@ -1209,24 +1158,19 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
 #' @return Combined delay distributions (with class `<dist_spec>`)
 #' @author Sebastian Funk
 #' @method c dist_spec
-#' @importFrom purrr list_transpose map
+#' @export
 c.dist_spec <- function(...) {
   ## process delay distributions
-  delays <- list(...)
-  if (!(all(vapply(delays, is, FALSE, "dist_spec")))) {
+  dist_specs <- list(...)
+  if (!(all(vapply(dist_specs, is, FALSE, "dist_spec")))) {
     stop(
-      "Delay distribution can only be concatenated with other delay ",
+      "Distribution can only be concatenated with other delay ",
       "distributions."
     )
   }
-  ## transpose delays
-  delays <- purrr::list_transpose(delays, simplify = FALSE)
-  ## convert back to arrays
-  delays <- purrr::map(delays, function(x) array(unlist(x)))
-  sum_args <- grep("^n($|_)", names(delays))
-  delays[sum_args] <- purrr::map(delays[sum_args], sum)
-  attr(delays, "class") <- c("list", "dist_spec")
-  return(delays)
+  dist_specs <- do.call(c, lapply(dist_specs, unclass))
+  attr(dist_specs, "class") <- c("dist_spec", "list")
+  return(dist_specs)
 }
 
 ##' Returns the mean of one or more delay distribution
@@ -1237,7 +1181,9 @@ c.dist_spec <- function(...) {
 ##'
 ##' @param x The `<dist_spec>` to use
 ##' @param ... Not used
-##' @return A vector of means.
+##' @param ignore_uncertainty Logical; whether to ignore any uncertainty in
+##'   parameters. If set to FALSE (the default) then the mean of any uncertain
+##'   parameters will be returned as NA.
 ##' @author Sebastian Funk
 ##' @method mean dist_spec
 ##' @importFrom utils head
@@ -1255,32 +1201,39 @@ c.dist_spec <- function(...) {
 #'
 #' # The mean of the sum of two distributions
 #' mean(dist1 + dist2)
-mean.dist_spec <- function(x, ...) {
-  ret <- rep(0, x$n)
-  if (x$n_np > 0) {
-    ## nonparametric
-    ret[!x$parametric] <- sum((seq_len(x$np_pmf_length) - 1) * x$np_pmf)
-  }
-  if (x$n_p > 0) {
-    ## parametric
-    ret[x$parametric] <- vapply(which(x$parametric), function(id) {
-      single_dist <- extract_single_dist(x, id)
-      if (single_dist$dist == "lognormal") {
-        exp(single_dist$params_mean[[1]] + single_dist$params_mean[[2]]**2 / 2)
-      } else if (single_dist$dist == "gamma") {
-        single_dist$params_mean[[1]] / single_dist$params_mean[[2]]
-      } else if (single_dist$dist == "normal") {
-        single_dist$params_mean[[1]]
-      } else if (single_dist$dist == "fixed") {
-        single_dist$params_mean[[1]]
+mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
+  ret <- vapply(x, function(y) {
+    if (is.numeric(y)) {
+      return(y)
+    }
+    ## y is a dist_spec
+    if (y$distribution == "nonparametric") {
+      ## nonparametric
+      return(sum((seq_along(y$pmf) - 1) * y$pmf))
+    } else {
+      if (!all(vapply(y$parameters, is.numeric, logical(1)))) {
+        if (ignore_uncertainty) {
+          y$parameters <- lapply(y$parameters, mean, ignore_uncertainty = TRUE)
+        } else {
+          return(NA_real_)
+        }
+      }
+      if (y$distribution == "lognormal") {
+        return(exp(y$parameters$meanlog + y$parameters$sdlog**2 / 2))
+      } else if (y$distribution == "gamma") {
+        return(y$parameters$shape / y$parameters$rate)
+      } else if (y$distribution == "normal") {
+        return(y$parameters$mean)
+      } else if (y$distribution == "fixed") {
+        return(y$parameters$value)
       } else {
         stop(
           "Don't know how to calculate mean of ", single_dist$dist,
           " distribution."
         )
       }
-    }, numeric(1))
-  }
+    }
+  }, numeric(1))
   return(ret)
 }
 
@@ -1308,28 +1261,28 @@ mean.dist_spec <- function(x, ...) {
 ##' sd_dist(dist1 + dist2)
 ##' }
 sd_dist <- function(x) {
-  ret <- rep(0, x$n)
-  if (x$n_np > 0) {
-    ## nonparametric
-    mean_pmf <- sum((seq_len(x$np_pmf_length) - 1) * x$np_pmf)
-    ret[!x$parametric] <- sum((seq_len(x$np_pmf_length) - 1)**2 * x$np_pmf) -
-      mean_pmf^2
-  }
-  if (x$n_p > 0) {
-    ## parametric
-    if (any(x$params_sd > 0)) {
-      stop("Cannot calculate standard deviation of uncertain distribution")
+  ret <- vapply(x, function(y) {
+    if (is.numeric(y)) {
+      return(0)
     }
-    ret[x$parametric] <- vapply(which(x$parametric), function(id) {
-      single_dist <- extract_single_dist(x, id)
-      if (single_dist$dist == "lognormal") {
-        sqrt(exp(single_dist$params_mean[2]**2) - 1) *
-          exp(single_dist$params_mean[1] + 0.5 * single_dist$params_mean[2]**2)
-      } else if (single_dist$dist == "gamma") {
-        sqrt(single_dist$params_mean[1] / single_dist$params_mean[2]**2)
-      } else if (single_dist$dist == "normal") {
-        single_dist$params_mean[2]
-      } else if (single_dist$dist == "fixed") {
+    ## y is a dist_spec
+    if (y$distribution == "nonparametric") {
+      ## nonparametric
+      mean_pmf <- sum((seq_along(y$pmf) - 1) * y$pmf)
+      return(sum((seq_along(y$pmf) - 1)**2 * y$pmf) - mean_pmf^2)
+    } else {
+      ## parametric
+      if (!all(vapply(y$parameters, is.numeric, logical(1)))) {
+        return(NA_real_)
+      }
+      if (y$distribution == "lognormal") {
+        sqrt(exp(y$parameters$sdlog**2) - 1) *
+          exp(y$parameters$meanlog + 0.5 * y$parameters$sdlog**2)
+      } else if (y$distribution == "gamma") {
+        sqrt(y$parameters$shape / y$parameters$rate**2)
+      } else if (y$distribution == "normal") {
+        y$parameters$sd
+      } else if (y$distribution == "fixed") {
         0
       } else {
         stop(
@@ -1337,8 +1290,8 @@ sd_dist <- function(x) {
           single_dist$dist, " distribution."
         )
       }
-    }, numeric(1))
-  }
+    }
+  }, numeric(1))
   return(ret)
 }
 
@@ -1363,19 +1316,140 @@ sd_dist <- function(x) {
 #' dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
 #' max(dist2)
 #'
-#' # The mean of the sum of two distributions
-#' mean(dist1 + dist2)
+#' # The maxf the sum of two distributions
+#' max(dist1 + dist2)
 max.dist_spec <- function(x, ...) {
-  ret <- rep(0L, x$n)
-  if (x$n_np > 0) {
-    ## nonparametric
-    ret[!x$parametric] <- x$np_pmf_length - 1
-  }
-  if (x$n_p > 0) {
-    ## parametric
-    ret[x$parametric] <- x$max
-  }
+  ret <- vapply(x, function(y) {
+    ## y is a dist_spec
+    if (y$distribution == "nonparametric") {
+      ## nonparametric
+      return(length(y$pmf) - 1)
+    } else if (y$distribution == "fixed") {
+      return(y$parameters$value)
+    } else {
+      return(y$max)
+    }
+  }, numeric(1))
   return(ret)
+}
+##
+##' Discretise a <dist_spec>
+##'
+##' By default it will discretise all the distributions it can discretise
+##' (i.e. those with finite support and constant parameters).
+##' @title Discretise a <dist_spec>
+##' @param x A `<dist_spec>`
+##' @param silent Logical; if `TRUE` then any distribution that can't be
+##'   discretised will be returned as is. If `FALSE` then an error will be
+##'   thrown.
+##' @return A `<dist_spec>` where all distributions with constant parameters are
+##'   nonparametric.
+##' @author Sebastian Funk
+##' @export
+discretise <- function(x, silent = TRUE) {
+  if (!is(x, "dist_spec")) {
+    stop("Can only discretise a <dist_spec>.")
+  }
+  ## check max
+  max_x <- max(x)
+  if (any(is.infinite(max_x)) && !silent) {
+    stop("Cannot discretise a distribution with infinite support.")
+  }
+  ## discretise
+  ret <- lapply(seq_along(x), function(id) {
+    y <- x[[id]]
+    if (y$distribution == "nonparametric") {
+      return(y)
+    } else {
+      if (all(vapply(y$parameters, is.numeric, logical(1))) &&
+          is.finite(max_x[id])) {
+        z <- list(pmf = dist_skel(
+          n = seq_len(max_x[id] + 1) - 1, dist = TRUE, cum = FALSE,
+          model = y$distribution, params = y$parameters,
+          max_value = max_x[id], discrete = TRUE
+        ))
+        z$distribution <- "nonparametric"
+        return(z)
+      } else if (silent) {
+        return(y)
+      } else {
+        stop(
+          "Cannot discretise a distribution with uncertain parameters."
+        )
+      }
+    }
+  })
+  attr(ret, "class") <- c("dist_spec", "list")
+  return(ret)
+}
+
+##' Collapse nonparametric distributions in a <dist_spec>
+##'
+##' This convolves any consecutive nonparametric distributions contained
+##' in the <dist_spec>.
+##' @param x A `<dist_spec>`
+##' @return A `<dist_spec>` where consecutive nonparametric distributions
+##' have been convolved
+##' @importFrom stats convolve
+##' @author Sebastian Funk
+##' @export
+collapse <- function(x) {
+  if (!is(x, "dist_spec")) {
+    stop("Can only convolve distributions in a <dist_spec>.")
+  }
+  ## get nonparametric distributions
+  nonparametric <- unname(unlist(map(x, "distribution"))) == "nonparametric"
+  ## find consecutive nonparametric distributions
+  consecutive <- rle(nonparametric)
+  ids <- unique(c(1, cumsum(consecutive$lengths[-length(consecutive$lengths)])))
+  ## find ids of nonparametric distributions that are collapsable
+  ## (i.e. have other nonparametric distributions followign them)
+  collapseable <- ids[consecutive$values == TRUE & consecutive$length > 1]
+  ## identify ids of distributions that follow the collapseable distributions
+  next_ids <- lapply(collapseable, function(id) {
+    ids[id] + seq_len(consecutive$lengths[id] - 1)
+  })
+  for (id in collapseable) {
+    ## collapse distributions
+    for (next_id in next_ids[id]) {
+      x[[ids[id]]]$pmf <- convolve(
+        x[[ids[id]]]$pmf, rev(x[[next_id]]$pmf), type = "open"
+      )
+    }
+  }
+  ## remove collapsed pmfs
+  x[unlist(next_ids)] <- NULL
+
+  return(x)
+}
+
+##' Applies a threshold to all nonparametric distributions in a <dist_spec>
+##'
+##' This removes any part of the tail of the nonparametric distributions in the
+##' <dist_spec> where the probability mass is below the threshold level.
+##' @param x A `<dist_spec>`
+##' @param tolerance Numeric; the desired tolerance level.
+##' @return A `<dist_spec>` where probability masses below the threshold level
+##' have been removed
+##' @author Sebastian Funk, Sam Abbott
+##' @export
+apply_tolerance <- function(x, tolerance) {
+  if (!is(x, "dist_spec")) {
+    stop("Can only apply tolerance to distributions in a <dist_spec>.")
+  }
+  x <- lapply(x, function(x) {
+    if (x$distribution == "nonparametric") {
+      cmf <- cumsum(x$pmf)
+      new_pmf <- x$pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= tolerance)]
+      x$pmf <- new_pmf / sum(new_pmf)
+      return(x)
+    } else {
+      return(x)
+    }
+  })
+
+  attr(x, "class") <- c("dist_spec", "list")
+  return(x)
 }
 
 #' Prints the parameters of one or more delay distributions
@@ -1399,70 +1473,54 @@ max.dist_spec <- function(x, ...) {
 #' )
 #' print(dist2)
 print.dist_spec <- function(x, ...) {
-  cat("\n")
-  if (x$n > 1) {
-    cat("Composite delay distribution:\n")
+  .print.dist_spec(x, indent = 0, ...)
+}
+
+.print.dist_spec <- function(x, indent, ...) {
+  indent_str <- strrep(" ", indent)
+  if (length(x) > 1) {
+    cat(indent_str, "Composite distribution:\n", sep = "")
   }
-  nonparametric_id <- 1
-  nonparametric_pos <- 1
-  parametric_id <- 1
-  parametric_pos <- 1
-  for (i in 1:x$n) {
-    cat("  ")
-    if (!is.null(x$names) && nchar(x$names[i]) > 0) {
-      cat(x$names[i], ": ", sep = "")
-    }
-    if (x$parametric[i] > 0) {
-      dist <- x$dist[parametric_id]
-      cat(dist, " distribution", sep = "")
-      if (is.finite(x$max[parametric_id])) {
-        cat(" (max: ", x$max[parametric_id], ")", sep = "")
+  for (i in seq_along(x)) {
+    if (x[[i]]$distribution == "nonparametric") {
+      ## nonparametric
+      cat(
+        indent_str, "- nonparametric distribution\n", indent_str, "  PMF: [",
+        paste(signif(x[[i]]$pmf, digits = 2), collapse = " "), "]\n",
+        sep = ""
+      )
+    } else if (x[[i]]$distribution == "fixed") {
+      ## fixed
+      cat(indent_str, "- fixed value:\n", sep = "")
+      if (is.numeric(x[[i]]$parameters$value)) {
+        cat(indent_str, "  ", x[[i]]$parameters$value, "\n", sep = "")
+      } else {
+        .print.dist_spec(x[[i]]$parameters$value, indent = indent + 4)
       }
-      cat(" with ", sep = "")
+    } else {
+      ## parametric
+      cat(indent_str, "- ",  x[[i]]$distribution, " distribution", sep = "")
+      if (is.finite(x[[i]]$max)) {
+        cat(" (max: ", x[[i]]$max, ")", sep = "")
+      }
+      cat(":\n")
       ## loop over natural parameters and print
-      for (id in seq(1, x$params_length[i])) {
-        pos <- parametric_pos - 1 + id
-        if (id > 1) {
-          if (id == x$params_length[i]) {
-            cat(" and ")
-          } else {
-            cat(", ")
-          }
-        }
-        if (x$params_sd[pos] > 0) {
-          cat("uncertain ")
-        }
-        cat(natural_params(dist)[id])
-        if (x$params_sd[pos] > 0) {
+      for (param in names(x[[i]]$parameters)) {
+        cat(
+          indent_str, "  ", param, ":\n", sep = ""
+        )
+        if (is.numeric(x[[i]]$parameters[[param]])) {
           cat(
-            " (mean = ", signif(x$params_mean[pos], digits = 2), ", ",
-            "sd = ", signif(x$params_sd[pos], digits = 2), ")",
+            indent_str, "    ",
+            signif(x[[i]]$parameters[[param]], digits = 2), "\n",
             sep = ""
           )
         } else {
-          cat(" = ", signif(x$params_mean[pos], digits = 2), sep = "")
+          .print.dist_spec(x[[i]]$parameters[[param]], indent = indent + 4)
         }
       }
-      parametric_id <- parametric_id + 1
-      parametric_pos <- parametric_pos + x$params_length[i]
-    } else {
-      cat(
-        "distribution with PMF [",
-        paste(signif(
-          x$np_pmf[seq(
-            nonparametric_pos, length.out = x$np_pmf_length[nonparametric_id]
-          )],
-          digits = 2
-        ), collapse = " "),
-        "]",
-        sep = ""
-      )
-      nonparametric_id <- nonparametric_id + 1
-      nonparametric_pos <- nonparametric_pos + x$np_pmf_length[i]
     }
-    cat(".\n")
   }
-  cat("\n")
 }
 
 #' Plot PMF and CDF for a dist_spec object
@@ -1503,21 +1561,19 @@ plot.dist_spec <- function(x, ...) {
     value = numeric(), cdf = numeric(),
     distribution = factor()
   )
-  parametric_id <- 1
-  nonparametric_id <- 1
   group_starts <- c(1L, cumsum(x$np_pmf_length) + 1L)
-  for (i in 1:x$n) {
-    if (x$parametric[i]) {
-      # Uncertain distribution
-      c_dist <- fix_dist(extract_single_dist(x, i))
-      pmf <- c_dist$np_pmf
-      parametric_id <- parametric_id + 1
-      dist_name <- paste0("Uncertain ", x$dist[parametric_id], " (ID: ", i, ")")
-    } else {
+  for (i in seq_along(x)) {
+    if (x[[i]]$distribution == "nonparametric") {
       # Fixed distribution
-      pmf <- x$np_pmf[seq(group_starts[i], group_starts[i + 1L] - 1L)]
+      pmf <- x$pmf[seq(group_starts[i], group_starts[i + 1L] - 1L)]
       dist_name <- paste0("Fixed", " (ID: ", i, ")")
-      nonparametric_id <- nonparametric_id + 1
+    } else {
+      # Uncertain distribution
+      c_dist <- discretise(fix_dist(extract_single_dist(x, i)))
+      pmf <- c_dist[[1]]$pmf
+      dist_name <- paste0(
+        "Uncertain ", x[[i]]$distribution, " (ID: ", i, ")"
+      )
     }
     pmf_data <- rbind(
       pmf_data,
@@ -1554,27 +1610,11 @@ plot.dist_spec <- function(x, ...) {
 ##' @keywords internal
 ##' @author Sebastian Funk
 extract_single_dist <- function(x, i) {
-  if (i > x$n) {
+  if (i > length(x)) {
     stop("i can't be greater than the number of distributions.")
   }
-  if (x$parametric[i]) {
-    parametric_id <- cumsum(x$parametric)[i]
-    params_start_id <- cumsum(c(0, x$params_length))[i] + 1
-    params_id <- seq(params_start_id, length.out = x$params_length[i])
-    ret <- .dist_spec(
-      params_mean = x$params_mean[params_id],
-      params_sd = x$params_sd[params_id],
-      max = x$max[parametric_id],
-      distribution = x$dist[parametric_id]
-    )
-  } else {
-    nonparametric_id <- cumsum(!x$parametric)[i]
-    pmf_start_id <- cumsum(c(0, x$np_pmf_length))[nonparametric_id] + 1
-    pmf_id <- seq(pmf_start_id, length.out = x$np_pmf_length[nonparametric_id])
-    ret <- .dist_spec(
-      pmf = x$np_pmf[pmf_id]
-    )
-  }
+  ret <- list(x[[i]])
+  attr(ret, "class") <- c("dist_spec", class(ret))
   return(ret)
 }
 
@@ -1592,39 +1632,38 @@ extract_single_dist <- function(x, i) {
 ##' @importFrom truncnorm rtruncnorm
 ##' @importFrom rlang arg_match
 fix_dist <- function(x, strategy = c("mean", "sample")) {
-  ## match strategy argument to options
+  if (!is(x, "dist_spec")) {
+    stop("Can only fix distributions in a <dist_spec>.")
+  }
+   ## match strategy argument to options
   strategy <- arg_match(strategy)
 
-  fix_single_dist <- function(x) {
+  ret <- lapply(x, function(x) {
     ## if x is fixed already we don't have to do anything
-    if (!x$parametric || all(x$params_sd == 0)) return(x)
+    if (
+      x$distribution == "nonparametric" ||
+      all(vapply(x$parameters, is.numeric, logical(1)) == TRUE)
+    ) {
+      return(x)
+    }
     ## apply strategy depending on choice
     if (strategy == "mean") {
-      x <- .dist_spec(
-        params_mean = x$params_mean,
-        distribution = x$dist,
-        max = as.vector(x$max)
-      )
+      x$parameters <- lapply(x$parameters, mean)
     } else if (strategy == "sample") {
-      lower_bound <- lower_bounds(x$dist)[natural_params(x$dist)]
-      mean <- rtruncnorm(
-        n = 1, a = lower_bound, mean = x$params_mean, sd = x$params_sd
-      )
-      x <- .dist_spec(
-        params_mean = mean,
-        distribution = x$dist,
-        max = as.vector(x$max)
-      )
+      lower_bound <-
+        lower_bounds(x$distribution)[natural_params(x$distribution)]
+      mean <- as.list(rtruncnorm(
+        n = 1, a = lower_bound,
+        mean = vapply(x$parameters, mean, numeric(1)),
+        sd = vapply(x$parameters, sd_dist, numeric(1))
+      ))
+      names(mean) <- names(x$parameters)
+      x$parameters <- mean
     }
     return(x)
-  }
+  })
 
-  ret <- fix_single_dist(extract_single_dist(x, 1))
-  if (x$n > 1) {
-    for (i in 2:x$n) {
-      ret <- ret + fix_single_dist(extract_single_dist(x, i))
-    }
-  }
+  attr(ret, "class") <- c("dist_spec", "list")
   return(ret)
 }
 
@@ -1668,9 +1707,9 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
 ##' LogNormal(mean = 4, sd = 1)
 ##' LogNormal(mean = 4, sd = 1, max = 10)
 ##' LogNormal(mean = Normal(4, 1), sd = 1, max = 10)
-lognormal <- function(meanlog, sdlog, mean, sd, max = Inf) {
+LogNormal <- function(meanlog, sdlog, mean, sd, max = Inf) {
   params <- as.list(environment())
-  return(generate_dist_spec(params, "lognormal"))
+  return(new_dist_spec(params, "lognormal"))
 }
 
 ##' @inheritParams stats::GammaDist
@@ -1683,9 +1722,9 @@ lognormal <- function(meanlog, sdlog, mean, sd, max = Inf) {
 ##' Gamma(mean = 4, sd = 1)
 ##' Gamma(shape = 16, rate = 4)
 ##' Gamma(shape = Normal(16, 2), rate = Normal(4, 1))
-gamma <- function(shape, rate, scale, mean, sd, max = Inf) {
+Gamma <- function(shape, rate, scale, mean, sd, max = Inf) {
   params <- as.list(environment())
-  return(generate_dist_spec(params, "gamma"))
+  return(new_dist_spec(params, "gamma"))
 }
 
 ##' @rdname Distributions
@@ -1695,9 +1734,9 @@ gamma <- function(shape, rate, scale, mean, sd, max = Inf) {
 ##' @examples
 ##' Normal(mean = 4, sd = 1)
 ##' Normal(mean = 4, sd = 1, max = 10)
-normal <- function(mean, sd, max = Inf) {
+Normal <- function(mean, sd, max = Inf) {
   params <- as.list(environment())
-  return(generate_dist_spec(params, "normal"))
+  return(new_dist_spec(params, "normal"))
 }
 
 ##' @rdname Distributions
@@ -1708,15 +1747,9 @@ normal <- function(mean, sd, max = Inf) {
 ##' @examples
 ##' Fixed(value = 3)
 ##' Fixed(value = 3.5)
-fixed <- function(value) {
+Fixed <- function(value, max = Inf) {
   params <- as.list(environment())
-  params <- extract_params(params, "fixed")
-  if (is(params$value, "dist_spec")) {
-    return(params)
-  } else if (is.numeric(params$value)) {
-    fixed_value <- params$value
-  }
-  return(.dist_spec(params_mean = fixed_value, distribution = "fixed"))
+  return(new_dist_spec(params, "fixed"))
 }
 
 ##' Generates a nonparametric distribution.
@@ -1733,7 +1766,7 @@ fixed <- function(value) {
 ##' pmf(c(0.1, 0.3, 0.2, 0.4))
 ##' pmf(c(0.1, 0.3, 0.2, 0.1, 0.1))
 pmf <- function(mass) {
-  return(.dist_spec(pmf = mass))
+  return(new_dist_spec(params = mass / sum(mass), "nonparametric"))
 }
 
 ##' Get the names of the natural parameters of a distribution
@@ -1811,85 +1844,92 @@ extract_params <- function(params, distribution) {
 ##'
 ##' This will convert all parameters to natural parameters before generating
 ##' a `dist_spec`. If they have uncertainty this will be done using sampling.
+##' @param params Parameters of the distribution (including `max`)
 ##' @inheritParams extract_params
 ##' @importFrom purrr walk
 ##' @return A `dist_spec` of the given specification.
 ##' @author Sebastian Funk
-generate_dist_spec <- function(params, distribution) {
-  ## process min/max first
-  max <- params$max
-  params$max <- NULL
-  ## extract parameters and convert all to dist_spec
-  params <- extract_params(params, distribution)
-  params <- lapply(params, function(x) {
-    if (is(x, "dist_spec") && x$dist == "normal") {
-      if (any(x$params_sd > 0)) {
-        stop(
-          "Normal distribution indicating uncertainty cannot itself ",
-          "be uncertain."
-        )
-      }
-      x
-    } else if (is.numeric(x)) {
-      Fixed(x)
-    } else {
-      stop("Parameter ", x, " must be numeric or normally distributed.")
-    }
-  })
-
-  ## check bounds
-  for (param_name in names(params)) {
-    if (!params[[param_name]]$parametric ||
-        params[[param_name]]$dist == "fixed") {
-      ## no uncertainty, so check if within range
-      lb <- lower_bounds(distribution)[param_name]
-      if (mean(params[[param_name]]) < lb) {
-        stop(
-          "Parameter ", param_name, " is less than its lower bound ", lb, "."
-        )
-      }
-    }
-  }
-
-  ## convert any unnatural parameters
-  unnatural_params <- setdiff(names(params), natural_params(distribution))
-  if (length(unnatural_params) > 0) {
-    if (length(unnatural_params) < length(params)) {
-      stop(
-        "Incompatible combination of parameters of a ", distribution,
-        " distribution specified."
-      )
-    }
-    ## sample parameters if they are uncertain
-    if (any(vapply(params, sd_dist, numeric(1)) > 0)) {
-      warning(
-        "Uncertain ", distribution, " distribution specified in terms of ",
-        "parameters that are not the \"natural\" parameters of the ",
-        "distribution (", toString(natural_params(distribution)),
-        "). Converting using a crude and very approximate method ",
-        "that is likely to produce biased results. If possible, ",
-        "it is preferable to specify the distribution direclty ",
-        "in terms of the natural parameters."
-      )
-    }
-    ## generate natural parameters
-    converted_params <- convert_to_natural(params, distribution)
-  } else {
-    converted_params <- list(
-      params_mean = vapply(params, mean, numeric(1), USE.NAMES = FALSE),
-      params_sd = vapply(params, sd_dist, numeric(1), USE.NAMES = FALSE)
+##' @keywords internal
+new_dist_spec <- function(params, distribution) {
+  if (distribution == "nonparametric") {
+    ## nonparametric distribution
+    ret <- list(
+      pmf = params,
+      distribution = "nonparametric"
     )
-  }
+  } else {
+    ## process min/max first
+    max <- params$max
+    params$max <- NULL
+    ## extract parameters and convert all to dist_spec
+    params <- extract_params(params, distribution)
+    ## fixed distribution
+    if (distribution == "fixed") {
+      ret <- list(
+        parameters = params,
+        distribution = "fixed"
+      )
+    } else {
+      ## parametric probability distribution
+      ## check bounds
+      for (param_name in names(params)) {
+        lb <- lower_bounds(distribution)[param_name]
+        if (is.numeric(params[[param_name]]) && params[[param_name]] < lb) {
+          stop(
+            "Parameter ", param_name, " is less than its lower bound ", lb,
+            "."
+          )
+        } else if (
+          is(params[[param_name]], "dist") && params[[param_name]]$max < lb
+          ) {
+          stop(
+            "Maximum of parameter ", param_name, " is less than its ",
+            "lower bound ", lb, "."
+          )
+        }
+      }
 
-  dist <- .dist_spec(
-    distribution = distribution,
-    params_mean = converted_params$params_mean,
-    params_sd = converted_params$params_sd,
-    max = max
-  )
+      ## convert any unnatural parameters
+      unnatural_params <- setdiff(names(params), natural_params(distribution))
+      if (length(unnatural_params) > 0) {
+        if (length(unnatural_params) < length(params)) {
+          stop(
+            "Incompatible combination of parameters of a ", distribution,
+            " distribution specified."
+          )
+        }
+        ## sample parameters if they are uncertain
+        if (any(vapply(params, sd_dist, numeric(1)) > 0)) {
+          warning(
+            "Uncertain ", distribution, " distribution specified in terms of ",
+            "parameters that are not the \"natural\" parameters of the ",
+            "distribution (", toString(natural_params(distribution)),
+            "). Converting using a crude and very approximate method ",
+            "that is likely to produce biased results. If possible, ",
+            "it is preferable to specify the distribution directly ",
+            "in terms of the natural parameters."
+          )
+        }
+        ## generate natural parameters
+        params <- convert_to_natural(params, distribution)
+      }
+      ## convert normal with sd == 0 to fixed
+      if (distribution == "normal" && is.numeric(params$sd) && params$sd == 0) {
+        rQet <- list(
+          parameters = list(value = params$mean), distribution = "fixed"
+        )
+      } else {
+        ret <- list(parameters = params, distribution = distribution)
+      }
+    }
+    ret <- c(ret, list(max = max))
+  }
+  ## join and wrap in another list to make concatenating easier
+  ret <- list(ret)
+  attr(ret, "class") <- c("dist_spec", "list")
 
   ## now we have a distribution with natural parameters - return dist_spec
-  return(dist)
+  return(ret)
 }
 
 ##' Internal function for converting parameters to natural parameters.
@@ -1918,13 +1958,16 @@ convert_to_natural <- function(params, distribution) {
     }
   } else if (distribution == "lognormal" &&
              "mean" %in% names(params) && "sd" %in% names(params)) {
-    x$meanlog <- convert_to_logmean(ux$mean, ux$sd)
+    x$meanlog <- log(ux$mean^2 / sqrt(ux$sd^2 + ux$mean^2))
     x$sdlog <- convert_to_logsd(ux$mean, ux$sd)
   }
-  natural_means <- unname(unlist(x[natural_params(distribution)]))
-  params <- list(
-    params_mean = natural_means,
-    params_sd = sqrt(natural_means * rel_unc)
-  )
+  if (rel_unc > 0) {
+    params <- lapply(names(x), function (param_name) {
+      Normal(mean = x[[param_name]], sd = sqrt(x[[param_name]] * rel_unc))
+    })
+    names(params) <- names(x)
+  } else {
+    params <- x
+  }
   return(params)
 }

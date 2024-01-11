@@ -708,26 +708,47 @@ create_stan_args <- function(stan = stan_opts(),
 ##' @param ... Named delay distributions. The names are assigned to IDs
 ##' @param weight Numeric, weight associated with delay priors; default: 1
 ##' @return A list of variables as expected by the stan model
-##' @importFrom purrr list_transpose map
+##' @importFrom purrr transpose map flatten
 ##' @author Sebastian Funk
-create_stan_delays <- function(..., weight = 1) {
-  dot_args <- list(...)
-  ## combine delays
-  combined_delays <- unclass(c(...))
+create_stan_delays <- function(..., weight = 1, tolerance = 0.001) {
+  ## discretise
+  delays <- lapply(list(...), discretise)
+  ## convolve where appropriate
+  delays <- lapply(delays, collapse)
+  ## apply tolerance
+  delays <- lapply(delays, apply_tolerance, tolerance = tolerance)
+  ## get maximum delays
+  max_delay <- unname(as.numeric(flatten(map(delays, max))))
   ## number of different non-empty types
-  type_n <- unlist(purrr::list_transpose(dot_args, simplify = FALSE)$n)
+  type_n <- vapply(delays, length, numeric(1))
   ## assign ID values to each type
   ids <- rep(0L, length(type_n))
   ids[type_n > 0] <- seq_len(sum(type_n > 0))
   names(ids) <- paste(names(type_n), "id", sep = "_")
 
-  ## start consructing stan object
-  ret <- unclass(combined_delays)
-  ## construct additional variables
-  ret <- c(ret, list(
-    types = sum(type_n > 0),
-    types_p = array(as.integer(combined_delays$parametric))
+  delays <- flatten(delays)
+  parametric <- unname(
+    vapply(delays, function(x) x$distribution != "nonparametric", logical(1))
+  )
+  param_length <- unname(vapply(delays[parametric], function(x) {
+    length(x$parameters)
+  }, numeric(1)))
+  nonparam_length <- unname(vapply(delays[!parametric], function(x) {
+    length(x$pmf)
+  }, numeric(1)))
+  distributions <- unname(as.character(
+    map(delays[parametric], ~ .x$distribution)
   ))
+
+  ## create stan object
+  ret <- list(
+    n = length(delays),
+    n_p = sum(parametric),
+    n_np = sum(!parametric),
+    types = sum(type_n > 0),
+    types_p = array(as.integer(parametric))
+  )
+
   ## delay identifiers
   ret$types_id <- integer(0)
   ret$types_id[ret$types_p == 1] <- seq_len(ret$n_p)
@@ -735,28 +756,36 @@ create_stan_delays <- function(..., weight = 1) {
   ret$types_id <- array(ret$types_id)
   ## map delays to identifiers
   ret$types_groups <- array(c(0, cumsum(unname(type_n[type_n > 0]))) + 1)
+
+  ret$params_mean <- array(unname(as.numeric(
+    map(flatten(map(delays[parametric], ~ .x$parameters)), mean)
+  )))
+  ret$params_sd <- array(unname(as.numeric(
+    map(flatten(map(delays[parametric], ~ .x$parameters)), sd_dist)
+  )))
+  ret$max <- array(max_delay[parametric])
+
+  ret$np_pmf <- array(unname(as.numeric(
+    flatten(map(delays[!parametric], ~ .x$pmf))
+  )))
   ## get non zero length delay pmf lengths
-  ret$np_pmf_groups <- array(
-    c(0, cumsum(
-      combined_delays$np_pmf_length[combined_delays$np_pmf_length > 0])
-    ) + 1
-  )
+  ret$np_pmf_groups <- array(c(0, cumsum(nonparam_length)) + 1)
   ## calculate total np pmf length
-  ret$np_pmf_length <- sum(combined_delays$np_pmf_length)
+  ret$np_pmf_length <- sum(nonparam_length)
   ## get non zero length param lengths
-  ret$params_groups <- array(
-    c(0, cumsum(
-      combined_delays$params_length[combined_delays$params_length > 0])
-    ) + 1
-  )
+  ret$params_groups <- array(c(0, cumsum(param_length)) + 1)
   ## calculate total param length
-  ret$params_length <- sum(combined_delays$params_length)
+  ret$params_length <- sum(param_length)
+  ## set lower bounds
+  ret$params_lower <- array(unname(as.numeric(flatten(
+    map(delays[parametric], function(x) {
+      lower_bounds(x$distribution)[names(x$parameters)]
+    })
+  ))))
   ## assign prior weights
   ret$weight <- array(rep(weight, ret$n_p))
   ## assign distribution
-  ret$dist <- array(match(c(ret$dist), c("lognormal", "gamma")) - 1L)
-  ## remove auxiliary variables
-  ret$fixed <- NULL
+  ret$dist <- array(match(distributions, c("lognormal", "gamma")) - 1L)
 
   names(ret) <- paste("delay", names(ret), sep = "_")
   ret <- c(ret, ids)
