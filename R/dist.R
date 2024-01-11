@@ -1794,7 +1794,7 @@ new_dist_spec <- function(params, distribution) {
       }
       ## convert normal with sd == 0 to fixed
       if (distribution == "normal" && is.numeric(params$sd) && params$sd == 0) {
-        rQet <- list(
+        ret <- list(
           parameters = list(value = params$mean), distribution = "fixed"
         )
       } else {
