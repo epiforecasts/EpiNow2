@@ -116,18 +116,24 @@ trunc <- LogNormal(
 # apply truncation to example data
 construct_truncation <- function(index, cases, dist) {
   set.seed(index)
-  if (dist$dist == 0) {
+  if (dist[[1]]$distribution == 0) {
     dfunc <- dlnorm
   } else {
     dfunc <- dgamma
   }
-  cmf <- cumsum(
-    dfunc(
-      1:(dist$max + 1),
-      rnorm(1, dist$params_mean[1], dist$params_sd[1]),
-      rnorm(1, dist$params_mean[2], dist$params_sd[2])
-    )
-  )
+ cmf <- cumsum(
+   dlnorm(
+     seq_len(max(dist) + 1),
+     rnorm(1,
+       dist[[1]]$parameters$meanlog[[1]]$parameters$mean,
+       dist[[1]]$parameters$meanlog[[1]]$parameters$sd
+     ),
+     rnorm(1,
+       dist[[1]]$parameters$sdlog[[1]]$parameters$mean,
+       dist[[1]]$parameters$sdlog[[1]]$parameters$sd
+     )
+   )
+ )
   cmf <- cmf / cmf[dist$max + 1]
   cmf <- rev(cmf)[-1]
   trunc_cases <- data.table::copy(cases)[1:(.N - index)]
