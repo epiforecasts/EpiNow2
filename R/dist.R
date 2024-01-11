@@ -991,6 +991,7 @@ dist_spec <- function(distribution = c(
     parameters <- lapply(seq_along(params_mean), function(id) {
      Normal(params_mean[id], params_sd[id])
     })
+    names(parameters) <- natural_parameters(distribution)
     parameters$max <- max
   }
   return(new_dist_spec(distribution, parameters))
