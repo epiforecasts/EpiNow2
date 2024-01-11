@@ -73,6 +73,6 @@ test_that("distributions incompatible with stan models are caught", {
     Gamma(2, 2)
   ), "maximum")
   expect_error(delay_opts(
-    Normal(2, 2)
+    Normal(2, 2, max = 10)
   ), "lognormal")
 })

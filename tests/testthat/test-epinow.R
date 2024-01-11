@@ -20,7 +20,7 @@ test_that("epinow produces expected output when run with default settings", {
   out <- suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(example_generation_time),
-    delays = delay_opts(example_incubation_period + reporting_delay),
+    delays = delay_opts(c(example_incubation_period, reporting_delay)),
     stan = stan_opts(
       samples = 25, warmup = 25,
       cores = 1, chains = 2,

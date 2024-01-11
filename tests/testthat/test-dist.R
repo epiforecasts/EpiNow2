@@ -2,14 +2,16 @@ skip_on_cran()
 skip_on_os("windows")
 
 test_that("distributions are the same in R and stan", {
-  args <- list(mean = 3, sd = 2)
-  max_args <- c(args, list(max = 15))
+  args <- list(mean = 3, sd = 2, max = 15)
 
-  lognormal_params <- do.call(lognormal, args)$params_mean
-  gamma_params <- do.call(gamma, args)$params_mean
+  lognormal_dist <- do.call(LogNormal, args)
+  gamma_dist <- do.call(Gamma, args)
 
-  pmf_r_lognormal <- as.vector(do.call(lognormal, max_args)$np_pmf)
-  pmf_r_gamma <- as.vector(do.call(gamma, max_args)$np_pmf)
+  lognormal_params <- unname(as.numeric(lognormal_dist[[1]]$parameters))
+  gamma_params <- unname(as.numeric(gamma_dist[[1]]$parameters))
+
+  pmf_r_lognormal <- discretise(lognormal_dist)[[1]]$pmf
+  pmf_r_gamma <- discretise(gamma_dist)[[1]]$pmf
 
   pmf_stan_lognormal <- discretised_pmf(lognormal_params, max_args$max + 1, 0)
   pmf_stan_gamma <- discretised_pmf(gamma_params, max_args$max + 1, 1)
