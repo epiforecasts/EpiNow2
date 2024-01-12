@@ -1842,8 +1842,8 @@ convert_to_natural <- function(params, distribution) {
     x$sdlog <- convert_to_logsd(ux$mean, ux$sd)
   }
   if (rel_unc > 0) {
-    params <- lapply(names(x), function (param_name) {
-      Normal(mean = x[[param_name]], sd = sqrt(x[[param_name]] * rel_unc))
+    params <- lapply(names(x), function(param_name) {
+      Normal(mean = x[[param_name]], sd = sqrt(abs(x[[param_name]]) * rel_unc))
     })
     names(params) <- names(x)
   } else {
