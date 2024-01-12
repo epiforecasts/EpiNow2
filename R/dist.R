@@ -1106,7 +1106,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
         return(y$parameters$value)
       } else {
         stop(
-          "Don't know how to calculate mean of ", single_dist$dist,
+          "Don't know how to calculate mean of ", y$distribution,
           " distribution."
         )
       }
@@ -1165,7 +1165,7 @@ sd_dist <- function(x) {
       } else {
         stop(
           "Don't know how to calculate standard deviation of ",
-          single_dist$dist, " distribution."
+          y$distribution, " distribution."
         )
       }
     }
