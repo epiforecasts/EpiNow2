@@ -707,6 +707,7 @@ create_stan_args <- function(stan = stan_opts(),
 ##'
 ##' @param ... Named delay distributions. The names are assigned to IDs
 ##' @param weight Numeric, weight associated with delay priors; default: 1
+##' @inheritParams apply_tolerance
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom purrr transpose map flatten
 ##' @author Sebastian Funk
