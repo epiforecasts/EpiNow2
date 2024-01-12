@@ -1282,7 +1282,7 @@ collapse <- function(x) {
   ids <- unique(c(1, cumsum(consecutive$lengths[-length(consecutive$lengths)])))
   ## find ids of nonparametric distributions that are collapsable
   ## (i.e. have other nonparametric distributions followign them)
-  collapseable <- ids[consecutive$values == TRUE & consecutive$length > 1]
+  collapseable <- ids[consecutive$values & (consecutive$length > 1)]
   ## identify ids of distributions that follow the collapseable distributions
   next_ids <- lapply(collapseable, function(id) {
     ids[id] + seq_len(consecutive$lengths[id] - 1)
@@ -1520,7 +1520,7 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
     ## if x is fixed already we don't have to do anything
     if (
       x$distribution == "nonparametric" ||
-      all(vapply(x$parameters, is.numeric, logical(1)) == TRUE)
+      all(vapply(x$parameters, is.numeric, logical(1)))
     ) {
       return(x)
     }

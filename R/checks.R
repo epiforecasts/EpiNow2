@@ -76,8 +76,8 @@ check_stan_delay <- function(dist) {
     !all(distributions %in% c("lognormal", "gamma", "fixed", "nonparametric"))
   ) {
     stop(
-      "Distributions passed to the model need to be lognormal, gamma, fixed or ",
-      "nonparametric (i.e., have no uncertainty)."
+      "Distributions passed to the model need to be lognormal, gamma, fixed ",
+      "or nonparametric."
     )
   }
   # Check that `dist` has parameters that are either numeric or normal

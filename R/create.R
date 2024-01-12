@@ -720,7 +720,7 @@ create_stan_delays <- function(..., weight = 1, tolerance = 0.001) {
   ## get maximum delays
   max_delay <- unname(as.numeric(flatten(map(delays, max))))
   ## number of different non-empty types
-  type_n <- vapply(delays, length, numeric(1))
+  type_n <- lengths(delays)
   ## assign ID values to each type
   ids <- rep(0L, length(type_n))
   ids[type_n > 0] <- seq_len(sum(type_n > 0))
