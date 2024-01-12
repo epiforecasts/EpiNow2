@@ -707,17 +707,18 @@ create_stan_args <- function(stan = stan_opts(),
 ##'
 ##' @param ... Named delay distributions. The names are assigned to IDs
 ##' @param weight Numeric, weight associated with delay priors; default: 1
-##' @inheritParams apply_tolerance
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom purrr transpose map flatten
 ##' @author Sebastian Funk
-create_stan_delays <- function(..., weight = 1, tolerance = 0.001) {
+create_stan_delays <- function(..., weight = 1) {
   ## discretise
-  delays <- lapply(list(...), discretise)
+  delays <- map(list(...), discretise)
   ## convolve where appropriate
-  delays <- lapply(delays, collapse)
+  delays <- map(delays, collapse)
   ## apply tolerance
-  delays <- lapply(delays, apply_tolerance, tolerance = tolerance)
+  delays <- map(delays, function(x) {
+    apply_tolerance(x, tolerance = attr(x, "tolerance"))
+  })
   ## get maximum delays
   max_delay <- unname(as.numeric(flatten(map(delays, max))))
   ## number of different non-empty types

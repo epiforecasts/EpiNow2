@@ -4,7 +4,7 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(dist = Fixed(0), ..., fixed = FALSE)
+delay_opts(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions. Default is
@@ -13,6 +13,8 @@ a fixed distribution with all mass at 0, i.e. no delay.}
 \item{...}{deprecated; use \code{dist} instead}
 
 \item{fixed}{deprecated; use \code{dist} instead}
+
+\item{tolerance}{Numeric; the desired tolerance level.}
 }
 \value{
 A \verb{<delay_opts>} object summarising the input delay distributions.

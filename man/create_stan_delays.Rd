@@ -4,14 +4,12 @@
 \alias{create_stan_delays}
 \title{Create delay variables for stan}
 \usage{
-create_stan_delays(..., weight = 1, tolerance = 0.001)
+create_stan_delays(..., weight = 1)
 }
 \arguments{
 \item{...}{Named delay distributions. The names are assigned to IDs}
 
 \item{weight}{Numeric, weight associated with delay priors; default: 1}
-
-\item{tolerance}{Numeric; the desired tolerance level.}
 }
 \value{
 A list of variables as expected by the stan model

@@ -14,6 +14,7 @@
 #' @param prior_weight deprecated; prior weights are now specified as a
 #' model option. Use the `weigh_delay_priors` argument of
 #' [estimate_infections()] instead.
+#' @inheritParams apply_tolerance
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
 #' @author Sebastian Funk
@@ -41,7 +42,7 @@
 #' generation_time_opts(example_generation_time)
 generation_time_opts <- function(dist = Fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
-                                 prior_weight) {
+                                 prior_weight, tolerance = 0.001) {
   deprecated_options_given <- FALSE
   dot_options <- list(...)
 
@@ -99,6 +100,7 @@ generation_time_opts <- function(dist = Fixed(1), ...,
       "`?generation_time_opts`")
   }
   check_stan_delay(dist)
+  attr(dist, "tolerance") <- tolerance
   attr(dist, "class") <- c("generation_time_opts", class(dist))
   return(dist)
 }
@@ -112,6 +114,7 @@ generation_time_opts <- function(dist = Fixed(1), ...,
 #'   a fixed distribution with all mass at 0, i.e. no delay.
 #' @param ... deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
+#' @inheritParams apply_tolerance
 #' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @author Sam Abbott
 #' @author Sebastian Funk
@@ -132,7 +135,7 @@ generation_time_opts <- function(dist = Fixed(1), ...,
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE) {
+delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec")) { ## could be old syntax
     if (is.list(dist)) {
@@ -164,6 +167,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE) {
     stop("Unknown named arguments passed to `delay_opts`")
   }
   check_stan_delay(dist)
+  attr(dist, "tolerance") <- tolerance
   attr(dist, "class") <- c("delay_opts", class(dist))
   return(dist)
 }
@@ -178,6 +182,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE) {
 #' @param dist A delay distribution or series of delay distributions reflecting
 #' the truncation generated using [dist_spec()] or [estimate_truncation()].
 #' Default is fixed distribution with maximum 0, i.e. no truncation
+#' @inheritParams apply_tolerance
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'
@@ -192,7 +197,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE) {
 #'
 #' # truncation dist
 #' trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = Fixed(0)) {
+trunc_opts <- function(dist = Fixed(0), tolerance = 0.001) {
   if (!is(dist, "dist_spec")) {
     if (is.list(dist)) {
       dist <- do.call(dist_spec, dist)
@@ -209,6 +214,7 @@ trunc_opts <- function(dist = Fixed(0)) {
     )
   }
   check_stan_delay(dist)
+  attr(dist, "tolerance") <- tolerance
   attr(dist, "class") <- c("trunc_opts", class(dist))
   return(dist)
 }
