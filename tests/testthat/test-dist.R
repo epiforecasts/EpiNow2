@@ -13,8 +13,8 @@ test_that("distributions are the same in R and stan", {
   pmf_r_lognormal <- discretise(lognormal_dist)[[1]]$pmf
   pmf_r_gamma <- discretise(gamma_dist)[[1]]$pmf
 
-  pmf_stan_lognormal <- discretised_pmf(lognormal_params, max_args$max + 1, 0)
-  pmf_stan_gamma <- discretised_pmf(gamma_params, max_args$max + 1, 1)
+  pmf_stan_lognormal <- discretised_pmf(lognormal_params, args$max + 1, 0)
+  pmf_stan_gamma <- discretised_pmf(gamma_params, args$max + 1, 1)
 
   expect_equal(pmf_r_lognormal, pmf_stan_lognormal)
   expect_equal(pmf_r_gamma, pmf_stan_gamma)
