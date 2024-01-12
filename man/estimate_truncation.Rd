@@ -134,7 +134,7 @@ construct_truncation <- function(index, cases, dist) {
      )
    )
  )
-  cmf <- cmf / cmf[dist$max + 1]
+  cmf <- cmf / cmf[max(dist) + 1]
   cmf <- rev(cmf)[-1]
   trunc_cases <- data.table::copy(cases)[1:(.N - index)]
   trunc_cases[

@@ -114,7 +114,7 @@
 #'      )
 #'    )
 #'  )
-#'   cmf <- cmf / cmf[dist$max + 1]
+#'   cmf <- cmf / cmf[max(dist) + 1]
 #'   cmf <- rev(cmf)[-1]
 #'   trunc_cases <- data.table::copy(cases)[1:(.N - index)]
 #'   trunc_cases[
@@ -226,13 +226,13 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   if (construct_trunc) {
     params_mean <- c(0, 1)
     params_sd <- c(1, 1)
-    parameters <- lapply(seq_along(params_mean), function (id) {
+    parameters <- lapply(seq_along(params_mean), function(id) {
       Normal(params_mean, params_sd)
     })
     names(parameters) <- natural_params(trunc_dist)
     parameters$max <- trunc_max
     truncation <- new_dist_spec(
-      parameters = parameters,
+      params = parameters,
       distribution = trunc_dist
     )
   }
@@ -290,7 +290,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   })
   names(parameters) <- natural_params(truncation[[1]]$distribution)
   out$dist <- truncation
-  out$dist$parameters <- parameters
+  out$dist[[1]]$parameters <- parameters
 
   # summarise reconstructed observations
   recon_obs <- extract_stan_param(fit, "recon_obs",
