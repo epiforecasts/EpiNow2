@@ -1439,18 +1439,19 @@ plot.dist_spec <- function(x, ...) {
     value = numeric(), cdf = numeric(),
     distribution = factor()
   )
-  group_starts <- c(1L, cumsum(x$np_pmf_length) + 1L)
+  dist_sd <- sd_dist(x)
   for (i in seq_along(x)) {
     if (x[[i]]$distribution == "nonparametric") {
       # Fixed distribution
-      pmf <- x$pmf[seq(group_starts[i], group_starts[i + 1L] - 1L)]
-      dist_name <- paste0("Fixed", " (ID: ", i, ")")
+      pmf <- x[[i]]$pmf
+      dist_name <- paste0("Nonparametric", " (ID: ", i, ")")
     } else {
       # Uncertain distribution
       c_dist <- discretise(fix_dist(extract_single_dist(x, i)))
       pmf <- c_dist[[1]]$pmf
       dist_name <- paste0(
-        "Uncertain ", x[[i]]$distribution, " (ID: ", i, ")"
+        ifelse(is.na(dist_sd[i]), "Uncertain ", ""),
+        x[[i]]$distribution, " (ID: ", i, ")"
       )
     }
     pmf_data <- rbind(
