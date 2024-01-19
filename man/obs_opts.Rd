@@ -11,6 +11,7 @@ obs_opts(
   week_effect = TRUE,
   week_length = 7,
   scale = list(),
+  na = "missing",
   likelihood = TRUE,
   return_likelihood = FALSE
 )

@@ -471,11 +471,14 @@ obs_opts <- function(family = "negbin",
                      week_effect = TRUE,
                      week_length = 7,
                      scale = list(),
+                     na = "missing",
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
   if (length(phi) != 2 || !is.numeric(phi)) {
     stop("phi be numeric and of length two")
   }
+  na <- arg_match(na, values = c("missing", "accumulate"))
+
   obs <- list(
     family = arg_match(family, values = c("poisson", "negbin")),
     phi = phi,
@@ -483,6 +486,7 @@ obs_opts <- function(family = "negbin",
     week_effect = week_effect,
     week_length = week_length,
     scale = scale,
+    accumulate = as.integer(na == "accumulate"),
     likelihood = likelihood,
     return_likelihood = return_likelihood
   )
