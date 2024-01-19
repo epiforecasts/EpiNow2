@@ -148,8 +148,8 @@ model {
   // observed reports from mean of reports (update likelihood)
   if (likelihood) {
     report_lp(
-      cases, obs_reports[cases_time], rep_phi, phi_mean, phi_sd, model_type,
-      obs_weight
+      cases, cases_time, obs_reports, rep_phi, phi_mean, phi_sd, model_type,
+      obs_weight, accumulate
     );
   }
 }

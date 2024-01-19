@@ -51,22 +51,37 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
   }
 }
 // update log density for reported cases
-void report_lp(array[] int cases, vector reports,
+void report_lp(array[] int cases, array[] int cases_time, vector reports,
                array[] real rep_phi, real phi_mean, real phi_sd,
-               int model_type, real weight) {
+               int model_type, real weight, int accumulate) {
+  int n = num_elements(cases); // number of observations
+  vector[n] obs_reports; // reports at observation time
+  if (accumulate) {
+    int t = num_elements(reports);
+    int current_obs = 1;
+    obs_reports = rep_vector(0, n);
+    for (i in 1:t) {
+      obs_reports[current_obs] += reports[i];
+      if (i == cases_time[current_obs]) {
+        current_obs += 1;
+      }
+    }
+  } else {
+    obs_reports = reports[cases_time];
+  }
   if (model_type) {
     real dispersion = 1 / pow(rep_phi[model_type], 2); 
     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
     if (weight == 1) {
-      cases ~ neg_binomial_2(reports, dispersion);
+      cases ~ neg_binomial_2(obs_reports, dispersion);
     } else {
-      target += neg_binomial_2_lpmf(cases | reports, dispersion) * weight;
+      target += neg_binomial_2_lpmf(cases | obs_reports, dispersion) * weight;
     }
   } else {
     if (weight == 1) {
-      cases ~ poisson(reports);
+      cases ~ poisson(obs_reports);
     } else {
-      target += poisson_lpmf(cases | reports) * weight;
+      target += poisson_lpmf(cases | obs_reports) * weight;
     }
   }
 }

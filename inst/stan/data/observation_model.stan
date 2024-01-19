@@ -9,5 +9,6 @@
   real obs_weight;                   // weight given to observation in log density
   int likelihood;                    // Should the likelihood be included in the model
   int return_likelihood; // Should the likehood be returned by the model
+  int accumulate; // Should missing values be accumulated
   int<lower = 0> trunc_id; // id of truncation
   int<lower = 0> delay_id; // id of delay

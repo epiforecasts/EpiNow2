@@ -397,6 +397,7 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
     obs_scale = as.numeric(length(obs$scale) != 0),
+    accumulate = obs$accumulate,
     likelihood = as.numeric(obs$likelihood),
     return_likelihood = as.numeric(obs$return_likelihood)
   )
