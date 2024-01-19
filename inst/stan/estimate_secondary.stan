@@ -9,6 +9,7 @@ functions {
 data {
   int t;                             // time of observations
   array[t] int<lower = 0> obs;             // observed secondary data
+  array[t] int obs_time;             // observed secondary data
   vector[t] primary;                 // observed primary data
   int burn_in;                       // time period to not use for fitting
 #include data/secondary.stan
@@ -83,8 +84,8 @@ model {
    }
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
-    report_lp(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-              rep_phi, phi_mean, phi_sd, model_type, 1);
+    report_lp(obs[(burn_in + 1):t], obs_time, secondary[(burn_in + 1):t],
+              rep_phi, phi_mean, phi_sd, model_type, 1, accumulate);
   }
 }
 

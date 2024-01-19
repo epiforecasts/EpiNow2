@@ -175,6 +175,7 @@ estimate_secondary <- function(reports,
   data <- list(
     t = nrow(reports),
     obs = reports$secondary,
+    obs_time = seq_along(reports$secondary),
     primary = reports$primary,
     burn_in = burn_in,
     seeding_time = 0
