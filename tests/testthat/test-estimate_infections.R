@@ -43,6 +43,14 @@ test_that("estimate_infections successfully returns estimates when passed NA val
   test_estimate_infections(reported_cases_na)
 })
 
+test_that("estimate_infections successfully returns estimates when accumulating to weekly", {
+  skip_on_cran()
+  reported_cases_weekly <- data.table::copy(reported_cases)
+  reported_cases_weekly[, confirm := frollsum(confirm, 7)]
+  reported_cases_weekly <-
+    reported_cases_weekly[seq(7, nrow(reported_cases_weekly), 7)]
+  test_estimate_infections(reported_cases_weekly, obs = obs_opts(na = "accumulate"))
+})
 
 test_that("estimate_infections successfully returns estimates using no delays", {
   skip_on_cran()
