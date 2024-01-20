@@ -26,7 +26,7 @@
 #' @export
 #' @examples
 #' create_clean_reported_cases(example_confirmed, 7)
-create_clean_reported_cases <- function(reported_cases, horizon,
+create_clean_reported_cases <- function(reported_cases, horizon = 0,
                                         filter_leading_zeros = TRUE,
                                         zero_threshold = Inf,
                                         fill = NA_integer_) {
@@ -73,6 +73,25 @@ create_clean_reported_cases <- function(reported_cases, horizon,
   reported_cases[is.na(confirm), confirm := fill]
   reported_cases[, "average_7_day" := NULL]
   return(reported_cases)
+}
+
+#' Create complete cases
+#' @description `r lifecycle::badge("stable")`
+#' Creates a complete data set without NA values and appropriate indices
+#'
+#' @param cases; data frame with a column "confirm" that may contain NA values
+#' @param burn_in; integer (default 0). Number of days to remove from the
+#' start of the time series be filtered out.
+#'
+#' @return A data frame without NA values, with two columns: confirm (number)
+#' @author Sebastian Funk
+#' @importFrom data.table setDT
+#' @keywords internal
+create_complete_cases <- function(cases) {
+  cases <- setDT(cases)
+  cases[, lookup := seq_len(.N)]
+  cases <- cases[!is.na(cases$confirm)]
+  return(cases[])
 }
 
 #' Create Delay Shifted Cases
@@ -448,16 +467,13 @@ create_stan_data <- function(reported_cases, seeding_time,
                              backcalc, shifted_cases) {
 
   cases <- reported_cases[(seeding_time + 1):(.N - horizon)]
-  cases[, lookup := seq_len(.N)]
-  complete_cases <- cases[!is.na(cases$confirm)]
-  cases_time <- complete_cases$lookup
-  complete_cases <- complete_cases$confirm
+  complete_cases <- create_complete_cases(cases)
   cases <- cases$confirm
 
   data <- list(
-    cases = complete_cases,
-    cases_time = cases_time,
-    lt = length(cases_time),
+    cases = complete_cases$confirm,
+    cases_time = complete_cases$lookup,
+    lt = nrow(complete_cases),
     shifted_cases = shifted_cases,
     t = length(reported_cases$date),
     horizon = horizon,

@@ -6,7 +6,7 @@
 \usage{
 create_clean_reported_cases(
   reported_cases,
-  horizon,
+  horizon = 0,
   filter_leading_zeros = TRUE,
   zero_threshold = Inf,
   fill = NA_integer_
