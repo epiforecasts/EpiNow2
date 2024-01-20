@@ -64,7 +64,7 @@
 #' @inheritParams calc_CrIs
 #' @importFrom rstan sampling
 #' @importFrom lubridate wday
-#' @importFrom data.table as.data.table merge.data.table
+#' @importFrom data.table as.data.table merge.data.table nafill
 #' @importFrom utils modifyList
 #' @importFrom checkmate assert_class assert_numeric assert_data_frame
 #' assert_logical
@@ -166,6 +166,15 @@ estimate_secondary <- function(reports,
   assert_logical(verbose)
 
   reports <- data.table::as.data.table(reports)
+  secondary_reports <- reports[, list(date, confirm = secondary)]
+  secondary_reports <- create_clean_reported_cases(secondary_reports)
+  ## fill in missing data (required if fitting to prevalence)
+  complete_secondary <- create_complete_cases(secondary_reports)
+
+  ## fill down
+  secondary_reports[, confirm := nafill(confirm, type = "locf")]
+  ## fill any early data up
+  secondary_reports[, confirm := nafill(confirm, type = "nocb")]
 
   if (burn_in >= nrow(reports)) {
     stop("burn_in is greater or equal to the number of observations.
@@ -174,9 +183,10 @@ estimate_secondary <- function(reports,
   # observation and control data
   data <- list(
     t = nrow(reports),
-    obs = reports$secondary,
-    obs_time = seq_along(reports$secondary),
     primary = reports$primary,
+    obs = secondary_reports$confirm,
+    obs_time = complete_secondary[lookup > burn_in]$lookup - burn_in,
+    lt = sum(complete_secondary$lookup > burn_in),
     burn_in = burn_in,
     seeding_time = 0
   )
@@ -392,7 +402,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
                                     from = NULL, to = NULL,
                                     new_obs = NULL,
                                     ...) {
-  predictions <- data.table::copy(x$predictions)
+  predictions <- data.table::copy(x$predictions)[!is.na(secondary)]
 
   if (!is.null(new_obs)) {
     new_obs <- data.table::as.data.table(new_obs)
