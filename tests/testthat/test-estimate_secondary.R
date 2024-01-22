@@ -38,7 +38,8 @@ inc_posterior <- inc$posterior[variable %in% params]
 #### Prevalence data example ####
 
 # make some example prevalence data
-prev_cases <- copy(cases)
+prev_cases <- example_confirmed
+prev_cases <- as.data.table(prev_cases)[, primary := confirm]
 # Assume that only 30 percent of cases are reported
 prev_cases[, scaling := 0.3]
 # Parameters of the assumed log normal delay distribution
@@ -74,6 +75,56 @@ test_that("estimate_secondary can return values from simulated data and plot
   expect_true(is.list(inc$data))
   # validation plot of observations vs estimates
   expect_error(plot(inc, primary = TRUE), NA)
+})
+
+test_that("estimate_secondary successfully returns estimates when passed NA values", {
+  skip_on_cran()
+  cases_na <- data.table::copy(cases)
+  cases_na[sample(1:60, 5), secondary := NA]
+  inc_na <- estimate_secondary(cases_na[1:60],
+    delays = delay_opts(
+      dist_spec(
+        mean = 1.8, mean_sd = 0,
+        sd = 0.5, sd_sd = 0, max = 30
+      )
+    ),
+    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+    verbose = FALSE
+  )
+  prev_cases_na <- data.table::copy(prev_cases)
+  prev_cases_na[sample(1:60, 5), secondary := NA]
+  prev_na <- estimate_secondary(prev_cases_na[1:60],
+    secondary = secondary_opts(type = "prevalence"),
+    delays = delay_opts(
+      dist_spec(
+        mean = 1.8, mean_sd = 0,
+        sd = 0.5, sd_sd = 0, max = 30
+      )
+    ),
+    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+    verbose = FALSE
+  )
+})
+
+test_that("estimate_secondary successfully returns estimates when accumulating to weekly", {
+  skip_on_cran()
+  secondary_weekly <- cases[, list(date, secondary)]
+  secondary_weekly[, secondary := frollsum(secondary, 7)]
+  secondary_weekly <- secondary_weekly[seq(7, nrow(secondary_weekly), by = 7)]
+  cases_weekly <- merge(
+    cases[, list(date, primary)], secondary_weekly, by = "date", all.x = TRUE
+  )
+  inc_weekly <- estimate_secondary(cases_weekly,
+    delays = delay_opts(
+      dist_spec(
+        mean = 1.8, mean_sd = 0,
+        sd = 0.5, sd_sd = 0, max = 30
+      )
+    ),
+    obs = obs_opts(
+      scale = list(mean = 0.4, sd = 0.05), week_effect = FALSE, na = "accumulate"
+    ), verbose = FALSE
+  )
 })
 
 test_that("estimate_secondary can recover simulated parameters", {
