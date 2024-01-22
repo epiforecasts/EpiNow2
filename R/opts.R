@@ -446,6 +446,15 @@ gp_opts <- function(basis_prop = 0.2,
 #' empty a mean (`mean`) and standard deviation (`sd`) needs to be supplied
 #' defining the normally distributed scaling factor.
 #'
+#' @param na Character. Options are "missing" (the default) and "accumulate".
+#'   This determines how NA values in the data are interpreted. If set to
+#'   "missing", any NA values in the observation data set will be interpreted as
+#'   missing and skipped in the likelihood. If set to "accumulate", modelled
+#'   observations will be accumulated and added to the next non-NA data point.
+#'   This can be used to model incidence data that is reported at less than
+#'   daily intervals. If set to "accumulate", the first data point is not
+#'   included in the data point but used only to reset modelled observations to
+#'   zero.
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #' included in the model.
 #'
