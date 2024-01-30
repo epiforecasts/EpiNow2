@@ -738,9 +738,9 @@ rstan_opts <- function(object = NULL,
 #'
 #' @param object Stan model object. By default uses the compiled package
 #' default if using the "rstan" backend, and the default model obtained using
-#' [epinow2_model()] if using the "cmdstanr" backend. If wanting alternative
+#' [package_model()] if using the "cmdstanr" backend. If wanting alternative
 #' options to the default with the "cmdstanr" backend, pass the result of
-#' a call to [epinow2_model()] with desired argument instead.
+#' a call to [package_model()] with desired arguments instead.
 #'
 #' @param method A character string, defaulting to sampling. Currently supports
 #' MCMC sampling ("sampling") or approximate posterior sampling via
@@ -800,11 +800,7 @@ stan_opts <- function(object = NULL,
     }
   }
   if (is.null(object)) {
-    if (backend == "rstan") {
-      object <- stanmodels$estimate_infections
-    } else if (backend == "cmdstanr") {
-      object <- epinow2_model()
-    }
+    object <- stan_model(backend, "estimate_infections")
   }
   opts <- list(
     object = object,
