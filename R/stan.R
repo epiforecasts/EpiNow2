@@ -68,3 +68,21 @@ stan_model <- function(backend = "rstan", model = "estimate_infections") {
   }
   return(object)
 }
+
+#' Fit a model using the chosen backend.
+#'
+#' Internal function for dispatch to fitting with NUTS or VB.
+#' @inheritParams fit_model_with_nuts
+#' @keywords internal
+fit_model <- function(args, id = "stan") {
+  if (args$method == "sampling") {
+    fit <- fit_model_with_nuts(
+      args,
+      future = args$future,
+      max_execution_time = args$max_execution_time, id = id
+    )
+  } else if (args$method == "vb") {
+    fit <- fit_model_with_vb(args, id = id)
+  }
+  return(fit)
+}
