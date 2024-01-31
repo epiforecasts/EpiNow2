@@ -14,9 +14,10 @@ extract_parameter_samples(
 )
 }
 \arguments{
-\item{stan_fit}{A fit stan model as returned by \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}.}
+\item{stan_fit}{A \verb{<stanfit>} or \verb{<CmdStanMCMC>} object as returned by
+\code{\link[=fit_model]{fit_model()}}.}
 
-\item{data}{A list of the data supplied to the \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} call.}
+\item{data}{A list of the data supplied to the \code{\link[=fit_model]{fit_model()}} call.}
 
 \item{reported_dates}{A vector of dates to report estimates for.}
 

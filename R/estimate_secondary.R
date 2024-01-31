@@ -640,7 +640,7 @@ forecast_secondary <- function(estimate,
   updated_primary <- primary
 
   ## extract samples from given stanfit object
-  draws <- rstan::extract(estimate$fit,
+  draws <- extract(estimate$fit,
     pars = c(
       "sim_secondary", "log_lik",
       "lp__", "secondary"
@@ -701,7 +701,7 @@ forecast_secondary <- function(estimate,
 
   # extract samples and organise
   dates <- unique(primary_fit$date)
-  samples <- rstan::extract(sims, "sim_secondary")$sim_secondary
+  samples <- extract(sims, "sim_secondary")$sim_secondary
   samples <- as.data.table(samples)
   colnames(samples) <- c("iterations", "sample", "time", "value")
   samples <- samples[, c("iterations", "time") := NULL]

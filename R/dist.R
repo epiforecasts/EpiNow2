@@ -533,11 +533,11 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 
     out <- list()
     if (dist == "lognormal") {
-      out$mean_samples <- sample(rstan::extract(fit)$mu, samples)
-      out$sd_samples <- sample(rstan::extract(fit)$sigma, samples)
+      out$mean_samples <- sample(extract(fit)$mu, samples)
+      out$sd_samples <- sample(extract(fit)$sigma, samples)
     } else if (dist == "gamma") {
-      alpha_samples <- sample(rstan::extract(fit)$alpha, samples)
-      beta_samples <- sample(rstan::extract(fit)$beta, samples)
+      alpha_samples <- sample(extract(fit)$alpha, samples)
+      beta_samples <- sample(extract(fit)$beta, samples)
       out$mean_samples <- alpha_samples / beta_samples
       out$sd_samples <- sqrt(alpha_samples) / beta_samples
     }

@@ -109,6 +109,7 @@ Imports:
     lubridate,
     methods,
     patchwork,
+    posterior,
     progressr,
     purrr,
     R.utils (>= 2.0.0),
