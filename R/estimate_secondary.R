@@ -50,7 +50,7 @@
 #' @param verbose Logical, should model fitting progress be returned. Defaults
 #' to [interactive()].
 #'
-#' @param ... Additional parameters to pass to [rstan::sampling()].
+#' @param ... Additional parameters to pass to [stan_opts()].
 #'
 #' @return A list containing: `predictions` (a `<data.frame>` ordered by date
 #' with the primary, and secondary observations, and a summary of the model
@@ -144,6 +144,7 @@ estimate_secondary <- function(reports,
                                ),
                                truncation = trunc_opts(),
                                obs = obs_opts(),
+                               stan = stan_opts(),
                                burn_in = 14,
                                CrIs = c(0.2, 0.5, 0.9),
                                priors = NULL,
@@ -198,15 +199,10 @@ estimate_secondary <- function(reports,
     c(data, list(estimate_r = 0, fixed = 1, bp_n = 0))
   )
   # fit
-  if (is.null(model)) {
-    model <- stanmodels$estimate_secondary
-  }
-  fit <- rstan::sampling(model,
-    data = data,
-    init = inits,
-    refresh = ifelse(verbose, 50, 0),
-    ...
+  args <- create_stan_args(
+    stan = stan, data = data, init = inits, model = "estimate_secondary"
   )
+  fit <- fit_model(args, id = "estimate_secondary")
 
   out <- list()
   out$predictions <- extract_stan_param(fit, "sim_secondary", CrIs = CrIs)
@@ -682,7 +678,7 @@ forecast_secondary <- function(estimate,
 
   # load model
   if (is.null(model)) {
-    model <- stanmodels$simulate_secondary
+    model <- epinow2_model("simulate_secondary")
   }
 
   # allocate empty parameters
@@ -692,10 +688,9 @@ forecast_secondary <- function(estimate,
   )
   data$all_dates <- as.integer(all_dates)
   ## simulate
-  sims <- rstan::sampling(
-    object = model,
-    data = data, chains = 1, iter = 1,
-    algorithm = "Fixed_param",
+  sims <- model$sample(
+    data = data, chains = 1,
+    iter_sampling = 1, fixed_param = TRUE,
     refresh = 0
   )
 
