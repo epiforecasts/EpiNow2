@@ -634,6 +634,9 @@ create_initial_conditions <- function(data) {
 #' (initital values randomly drawn between -2 and 2) but can also be a
 #' function (as supplied by [create_initial_conditions()]).
 #'
+#' @param model Character, name of the model for which arguments are
+#' to be created.
+#'
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress
 #' messages be returned.
 #'
@@ -651,7 +654,13 @@ create_initial_conditions <- function(data) {
 create_stan_args <- function(stan = stan_opts(),
                              data = NULL,
                              init = "random",
+                             model = "estimate_infections",
                              verbose = FALSE) {
+  ## generate stan model
+  if (is.null(stan$object)) {
+    stan$object <- stan_model(stan$backend, model)
+    stan$backend <- NULL
+  }
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&
       inherits(stan$object, "CmdStanModel")) {

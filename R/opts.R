@@ -799,13 +799,18 @@ stan_opts <- function(object = NULL,
       ))
     }
   }
-  if (is.null(object)) {
-    object <- stan_model(backend, "estimate_infections")
+  opts <- list()
+  if (!is.null(object) && !missing(backend)) {
+    warning(
+      "`backend` option will be ignored as a stan model object has been passed."
+    )
+  } else {
+    opts <- c(opts, list(backend = backend))
   }
-  opts <- list(
+  opts <- c(opts, list(
     object = object,
     method = method
-  )
+  ))
   if (method == "sampling") {
     opts <- c(
       opts, stan_sampling_opts(samples = samples, backend = backend, ...)
