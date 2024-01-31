@@ -630,8 +630,9 @@ create_initial_conditions <- function(data) {
 #'
 #' @param data A list of stan data as created by [create_stan_data()]
 #'
-#' @param init Initial conditions passed to `{rstan}`. Defaults to "random" but
-#' can also be a function (as supplied by [create_initial_conditions()]).
+#' @param init Initial conditions passed to `{rstan}`. Defaults to "random"
+#' (initital values randomly drawn between -2 and 2) but can also be a
+#' function (as supplied by [create_initial_conditions()]).
 #'
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress
 #' messages be returned.
@@ -651,6 +652,11 @@ create_stan_args <- function(stan = stan_opts(),
                              data = NULL,
                              init = "random",
                              verbose = FALSE) {
+  # cmdstanr doesn't have an init = "random" argument
+  if (is.character(init) && init == "random" &&
+      inherits(stan$object, "CmdStanModel")) {
+    init <- 2
+  }
   # set up shared default arguments
   args <- list(
     data = data,

@@ -18,8 +18,9 @@ settings if desired.}
 
 \item{data}{A list of stan data as created by \code{\link[=create_stan_data]{create_stan_data()}}}
 
-\item{init}{Initial conditions passed to \code{{rstan}}. Defaults to "random" but
-can also be a function (as supplied by \code{\link[=create_initial_conditions]{create_initial_conditions()}}).}
+\item{init}{Initial conditions passed to \code{{rstan}}. Defaults to "random"
+(initital values randomly drawn between -2 and 2) but can also be a
+function (as supplied by \code{\link[=create_initial_conditions]{create_initial_conditions()}}).}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress
 messages be returned.}
