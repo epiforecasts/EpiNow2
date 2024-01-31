@@ -40,3 +40,10 @@ vignettes/results
 
 # unused figures
 man/figures/*.png
+
+inst/stan/dist_fit
+inst/stan/estimate_infections
+inst/stan/simulate_infections
+inst/stan/estimate_secondary
+inst/stan/simulate_secondary
+inst/stan/estimate_truncation
