@@ -46,6 +46,7 @@ simulate_infections <- function(...) {
 #'
 #' @param verbose Logical defaults to [interactive()]. Should a progress bar
 #' (from `progressr`) be shown.
+#' @inheritParams stan_opts
 #' @importFrom rstan extract sampling
 #' @importFrom purrr list_transpose map safely compact
 #' @importFrom future.apply future_lapply
@@ -80,7 +81,7 @@ simulate_infections <- function(...) {
 #' )
 #'
 #' # update Rt trajectory and simulate new infections using it
-#' R <- c(rep(NA_real_, 26), rep(0.5, 10), rep(0.8, 7))
+#' R <- c(rep(NA_real_, 26), rep(0.5, 10), rep(0.8, 14))
 #' sims <- forecast_infections(est, R)
 #' plot(sims)
 #'
@@ -111,6 +112,7 @@ forecast_infections <- function(estimates,
                                 model = NULL,
                                 samples = NULL,
                                 batch_size = 10,
+                                backend = "rstan",
                                 verbose = interactive()) {
   ## check inputs
   assert_class(estimates, "estimate_infections")
@@ -212,9 +214,9 @@ forecast_infections <- function(estimates,
     )
 
   # Load model
-  if (is.null(model)) {
-    model <- stanmodels$simulate_infections
-  }
+  stan <- stan_opts(
+    model = model, backend = backend, chains = 1, samples = 1, warmup = 1
+  )
 
   ## set up batch simulation
   batch_simulate <- function(estimates, draws, model,
@@ -231,13 +233,13 @@ forecast_infections <- function(estimates,
       n = data$n
     )
 
-    ## simulate
-    sims <- sampling(
-      object = model,
-      data = data, chains = 1, iter = 1,
-      algorithm = "Fixed_param",
-      refresh = 0
+    args <- create_stan_args(
+      stan, data = data, fixed_param = TRUE, model = "simulate_infections",
+      verbose = FALSE
     )
+
+    ## simulate
+    sims <- fit_model(args, id = "simulate_infections")
 
     out <- extract_parameter_samples(sims, data,
       reported_inf_dates = dates,

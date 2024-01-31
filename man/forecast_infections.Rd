@@ -11,6 +11,7 @@ forecast_infections(
   model = NULL,
   samples = NULL,
   batch_size = 10,
+  backend = "rstan",
   verbose = interactive()
 )
 }
@@ -33,6 +34,9 @@ default is to use all samples in the \code{estimates} input.}
 \item{batch_size}{Numeric, defaults to 10. Size of batches in which to
 simulate. May decrease run times due to reduced IO costs but this is still
 being evaluated. If set to NULL then all simulations are done at once.}
+
+\item{backend}{Character string indicating the backend to use for fitting
+stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 
 \item{verbose}{Logical defaults to \code{\link[=interactive]{interactive()}}. Should a progress bar
 (from \code{progressr}) be shown.}
@@ -68,7 +72,7 @@ est <- estimate_infections(reported_cases,
 )
 
 # update Rt trajectory and simulate new infections using it
-R <- c(rep(NA_real_, 26), rep(0.5, 10), rep(0.8, 7))
+R <- c(rep(NA_real_, 26), rep(0.5, 10), rep(0.8, 14))
 sims <- forecast_infections(est, R)
 plot(sims)
 
