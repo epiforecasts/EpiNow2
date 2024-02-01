@@ -599,12 +599,14 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
 #' @importFrom utils tail
 #' @importFrom purrr map
 #' @inheritParams estimate_secondary
+#' @inheritParams stan_opts
 #' @seealso [estimate_secondary()]
 #' @export
 forecast_secondary <- function(estimate,
                                primary,
                                primary_variable = "reported_cases",
                                model = NULL,
+                               backend = "rstan",
                                samples = NULL,
                                all_dates = FALSE,
                                CrIs = c(0.2, 0.5, 0.9)) {
@@ -636,7 +638,7 @@ forecast_secondary <- function(estimate,
   updated_primary <- primary
 
   ## extract samples from given stanfit object
-  draws <- extract(estimate$fit,
+  draws <- extract_samples(estimate$fit,
     pars = c(
       "sim_secondary", "log_lik",
       "lp__", "secondary"
@@ -676,27 +678,26 @@ forecast_secondary <- function(estimate,
   # combine with data
   data <- c(data, draws)
 
-  # load model
-  if (is.null(model)) {
-    model <- epinow2_model("simulate_secondary")
-  }
-
   # allocate empty parameters
   data <- allocate_empty(
     data, c("frac_obs", "delay_mean", "delay_sd", "rep_phi"),
     n = data$n
   )
   data$all_dates <- as.integer(all_dates)
+
   ## simulate
-  sims <- model$sample(
-    data = data, chains = 1,
-    iter_sampling = 1, fixed_param = TRUE,
-    refresh = 0
+  args <- create_stan_args(
+    stan_opts(
+      model = model, backend = backend, chains = 1, samples = 1, warmup = 1
+    ),
+    data = data, fixed_param = TRUE, model = "simulate_secondary"
   )
+
+  sims <- fit_model(args, id = "simulate_secondary")
 
   # extract samples and organise
   dates <- unique(primary_fit$date)
-  samples <- extract(sims, "sim_secondary")$sim_secondary
+  samples <- extract_samples(sims, "sim_secondary")$sim_secondary
   samples <- as.data.table(samples)
   colnames(samples) <- c("iterations", "sample", "time", "value")
   samples <- samples[, c("iterations", "time") := NULL]
