@@ -9,6 +9,7 @@ create_stan_args(
   data = NULL,
   init = "random",
   model = "estimate_infections",
+  fixed_param = FALSE,
   verbose = FALSE
 )
 }
@@ -25,6 +26,9 @@ function (as supplied by \code{\link[=create_initial_conditions]{create_initial_
 
 \item{model}{Character, name of the model for which arguments are
 to be created.}
+
+\item{fixed_param}{Logiccal, defaults to \code{FALSE}. Should arguments be
+created to sample from fixed parameters (used by simulation functions).}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress
 messages be returned.}

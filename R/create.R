@@ -636,6 +636,8 @@ create_initial_conditions <- function(data) {
 #'
 #' @param model Character, name of the model for which arguments are
 #' to be created.
+#' @param fixed_param Logiccal, defaults to `FALSE`. Should arguments be
+#' created to sample from fixed parameters (used by simulation functions).
 #'
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress
 #' messages be returned.
@@ -655,7 +657,17 @@ create_stan_args <- function(stan = stan_opts(),
                              data = NULL,
                              init = "random",
                              model = "estimate_infections",
+                             fixed_param = FALSE,
                              verbose = FALSE) {
+  if (fixed_param) {
+    if (stan$backend == "rstan") {
+      stan$algorithm <- "Fixed_param"
+    } else if (stan$backend == "cmdstanr") {
+      stan$fixed_param <- TRUE
+      stan$adapt_delta <- NULL
+      stan$max_treedepth <- NULL
+    }
+  }
   ## generate stan model
   if (is.null(stan$object)) {
     stan$object <- stan_model(stan$backend, model)
