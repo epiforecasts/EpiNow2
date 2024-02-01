@@ -25,6 +25,13 @@ inc <- estimate_secondary(cases[1:60],
   verbose = FALSE
 )
 
+output <- capture.output(suppressMessages(suppressWarnings(
+  inc_cmdstanr <- estimate_secondary(cases[1:60],
+    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+    verbose = FALSE, stan = stan_opts(backend = "cmdstanr")
+  )
+)))
+
 # extract posterior variables of interest
 params <- c(
   "meanlog" = "delay_mean[1]", "sdlog" = "delay_sd[1]",
@@ -32,6 +39,7 @@ params <- c(
 )
 
 inc_posterior <- inc$posterior[variable %in% params]
+inc_posterior_cmdstanr <- inc_cmdstanr$posterior[variable %in% params]
 
 #### Prevalence data example ####
 
@@ -92,12 +100,34 @@ test_that("estimate_secondary can recover simulated parameters", {
   )
 })
 
+test_that("estimate_secondary can recover simulated parameters with the
+           cmdstanr backend", {
+  expect_equal(
+    inc_posterior_cmdstanr[, mean], c(1.8, 0.5, 0.4),
+    tolerance = 0.1
+  )
+  expect_equal(
+    inc_posterior_cmdstanr[, median], c(1.8, 0.5, 0.4),
+    tolerance = 0.1
+  )
+})
+
 test_that("forecast_secondary can return values from simulated data and plot
            them", {
   inc_preds <- forecast_secondary(inc, cases[seq(61, .N)][, value := primary])
   expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
   # validation plot of observations vs estimates
   expect_error(plot(inc_preds, new_obs = cases, from = "2020-05-01"), NA)
+})
+
+test_that("forecast_secondary can return values from simulated data when using
+           the cmdstanr backend", {
+  capture.output(suppressMessages(suppressWarnings(
+    inc_preds <- forecast_secondary(
+      inc_cmdstanr, cases[seq(61, .N)][, value := primary], backend = "cmdstanr"
+    )
+  )))
+  expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
 })
 
 test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
