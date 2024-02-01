@@ -1,8 +1,7 @@
 test_that("create_stan_args returns the expected defaults when the exact method is used", {
   expect_equal(names(create_stan_args()), c(
-    "data", "init", "refresh", "object", "method",
-    "cores", "warmup", "chains", "save_warmup", "seed",
-    "future", "max_execution_time", "control", "iter"
+    "data", "init", "refresh", "object", "method", "chains", "save_warmup",
+    "seed", "future", "max_execution_time", "cores", "warmup", "control", "iter"
   ))
 })
 
