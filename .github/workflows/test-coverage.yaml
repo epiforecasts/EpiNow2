@@ -26,8 +26,17 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::covr
-          needs: coverage
+          dependencies: NA
+          extra-packages: |
+            covr
+            stan-dev/cmdstanr
+            testthat
+
+      - name: Install cmdstan
+        run: |
+          cmdstanr::check_cmdstan_toolchain(fix = TRUE)
+          cmdstanr::install_cmdstan(cores = 2, quiet = TRUE)
+        shell: Rscript {0}
 
       - name: Test coverage
         run: covr::codecov(quiet = FALSE)
