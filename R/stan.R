@@ -35,7 +35,7 @@ package_model <- function(model = "estimate_infections",
   )
   if (verbose) {
     message(sprintf("Using model %s.", model))
-    message(sprintf("include is %s.", paste(include, collapse = ", ")))
+    message(sprintf("include is %s.", toString(include)))
   }
 
   monitor <- suppressMessages

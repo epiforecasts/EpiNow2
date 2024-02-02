@@ -23,6 +23,7 @@ jobs:
         with:
           dependencies: NA
           extra-packages: |
+            stan-dev/cmdstanr
             any::gh
             any::lintr
             any::purrr

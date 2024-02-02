@@ -333,7 +333,7 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
       open_progress = FALSE,
       show_messages = FALSE
     ),
-    data = args$data, init = args$init,
+    data = args$data, init = args$init
   )
   # change observations to be cumulative in order to protect against noise and
   # give an approximate fit (though for Rt constrained to be > 1)
@@ -450,10 +450,10 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
       )
     }
 
-    if (!inherits(fit, c("stanfit", "CmdStanMCMC"))) {
-      return(NULL)
-    } else {
+    if (inherits(fit, c("stanfit", "CmdStanMCMC"))) {
       return(fit)
+    } else {
+      return(NULL)
     }
   }
 

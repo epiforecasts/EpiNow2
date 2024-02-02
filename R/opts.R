@@ -791,13 +791,11 @@ stan_opts <- function(object = NULL,
                       ...) {
   method <- arg_match(method, values = c("sampling", "vb"))
   backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
-  if (backend == "cmdstanr") {
-    if (!requireNamespace("cmdstanr", quietly = TRUE)) {
-      stop(paste0(
-        "The `cmdstanr` package needs to be installed for using the ",
-        "\"cmdstanr\" backend."
-      ))
-    }
+  if (backend == "cmdstanr" && !requireNamespace("cmdstanr", quietly = TRUE)) {
+    stop(
+      "The `cmdstanr` package needs to be installed for using the ",
+      "\"cmdstanr\" backend."
+    )
   }
   opts <- list()
   if (!is.null(object) && !missing(backend)) {

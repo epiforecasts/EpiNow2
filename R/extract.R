@@ -102,7 +102,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     )
     df <- df[, new_draw := permutation[.draw]]
     setkey(df, new_draw)
-    max_indices <- strsplit(tail(df$index, 1), split = ",")[[1]]
+    max_indices <- strsplit(tail(df$index, 1), split = ",", fixed = TRUE)[[1]]
     if (any(grepl("[^0-9]", max_indices))) {
       max_indices <- 1
     } else {
