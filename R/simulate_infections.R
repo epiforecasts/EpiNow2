@@ -263,12 +263,18 @@ forecast_infections <- function(estimates,
 
   safe_batch <- safely(batch_simulate)
 
+  if (backend == "cmdstanr") {
+    lapply_func <- lapply ## future_lapply can't handle cmdstanr
+  } else {
+    lapply_func <- function(...) future_lapply(future.seed = TRUE, ...)
+  }
+
   ## simulate in batches
   with_progress({
     if (verbose) {
       p <- progressor(along = batches)
     }
-    out <- future_lapply(batches,
+    out <- lapply_func(batches,
       function(batch) {
         if (verbose) {
           p()
@@ -278,8 +284,7 @@ forecast_infections <- function(estimates,
           shift, dates, batch[[1]],
           batch[[2]]
         )[[1]]
-      },
-      future.seed = TRUE
+      }
     )
   })
 
