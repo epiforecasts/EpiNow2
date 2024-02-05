@@ -86,12 +86,12 @@ test_that("estimate_infections fails as expected when given a very short timeout
   expect_error(output <- capture.output(suppressMessages(
     out <- default_estimate_infections(
       reported_cases,
-      add_stan = list(future = TRUE, max_execution_time = 1)
+      add_stan = list(future = TRUE, max_execution_time = 1, samples = 2000)
   ))), "all chains failed")
   expect_error(output <- capture.output(suppressMessages(
     out <- default_estimate_infections(
       reported_cases,
-      add_stan = list(future = FALSE, max_execution_time = 1)
+      add_stan = list(future = FALSE, max_execution_time = 1, samples = 2000)
   ))), "timed out")
 })
 
