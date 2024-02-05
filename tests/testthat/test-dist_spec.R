@@ -29,10 +29,9 @@ test_that("dist_spec returns correct output for uncertain gamma distribution", {
 })
 
 test_that("dist_spec returns correct output for fixed distribution", {
-  result <- dist_spec(
+  result <- fix_dist(dist_spec(
     mean = 5, mean_sd = 3, sd = 1, max = 19, distribution = "lognormal",
-    fixed = TRUE
-  )
+  ))
   expect_equal(dim(result$mean_mean), 0)
   expect_equal(dim(result$sd_mean), 0)
   expect_equal(result$fixed, array(1L))
@@ -74,12 +73,12 @@ test_that("+.dist_spec returns correct output for sum of two distributions", {
 })
 
 test_that("+.dist_spec returns correct output for sum of two fixed distributions", {
-  lognormal <- dist_spec(
-    mean = 5, sd = 1, max = 19, distribution = "lognormal", fixed = TRUE
-  )
-  gamma <- dist_spec(
-    mean = 3, sd = 2, max = 19, distribution = "gamma", fixed = TRUE
-  )
+  lognormal <- fix_dist(dist_spec(
+    mean = 5, sd = 1, max = 19, distribution = "lognormal"
+  ))
+  gamma <- fix_dist(dist_spec(
+    mean = 3, sd = 2, max = 19, distribution = "gamma"
+  ))
   result <- lognormal + gamma
   expect_equal(dim(result$mean_mean), 0)
   expect_equal(dim(result$sd_mean), 0)

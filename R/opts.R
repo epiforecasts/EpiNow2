@@ -63,8 +63,8 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
     if (!("mean" %in% names(dot_options))) {
       dot_options$mean <- 1
     }
-    dot_options$fixed <- fixed
     dist <- do.call(dist_spec, dot_options)
+    if (fixed) dist <- fix_dist(dist)
     deprecated_options_given <- TRUE
   } else if (!missing(disease) && !missing(source)) {
     dist <- get_generation_time(disease, source, max, fixed)
