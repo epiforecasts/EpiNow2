@@ -1403,12 +1403,12 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
   ## apply stragey depending on choice
   if (strategy == "mean") {
     x <- dist_spec(
-      mean = x$mean_mean,
-      sd = x$sd_mean,
+      mean = c(x$mean_mean),
+      sd = c(x$sd_mean),
       mean_sd = 0,
       sd_sd = 0,
       distribution = x$dist,
-      max = x$max
+      max = c(x$max)
     )
   } else if (strategy == "sample") {
     lower_bound <- ifelse(x$dist == "gamma", 0, -Inf)
@@ -1422,7 +1422,7 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
       mean_sd = 0,
       sd_sd = 0,
       distribution = x$dist,
-      max = x$max
+      max = c(x$max)
     )
   }
   return(x)
