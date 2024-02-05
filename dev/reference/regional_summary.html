@@ -175,14 +175,16 @@ cases.</p></dd>
 <span class="r-in"><span>  regional_output <span class="op">=</span> <span class="va">regional_out</span><span class="op">$</span><span class="va">regional</span>,</span></span>
 <span class="r-in"><span>  reported_cases <span class="op">=</span> <span class="va">regional_out</span><span class="op">$</span><span class="va">summary</span><span class="op">$</span><span class="va">reported_cases</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-01-09 19:01:33] No summary directory specified so returning summary output</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2024-02-05 14:00:31] No summary directory specified so returning summary output</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $latest_date</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2020-04-21"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $results</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $results$estimates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $results$estimates$summarised</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Indices: &lt;variable&gt;, &lt;region&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        region       date                 variable strat     type       median</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        &lt;char&gt;     &lt;Date&gt;                   &lt;char&gt; &lt;int&gt;   &lt;char&gt;        &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1: testland 2020-02-22                        R    NA estimate 2.220210e+00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2: testland 2020-02-23                        R    NA estimate 2.195509e+00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3: testland 2020-02-24                        R    NA estimate 2.160124e+00</span>
@@ -195,6 +197,7 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 713: realland 2020-04-28           reported_cases    NA forecast 2.076500e+03</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 714: realland       &lt;NA&gt; reporting_overdispersion    NA     &lt;NA&gt; 2.271327e-03</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>              mean           sd     lower_90     lower_50     lower_20</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;num&gt;        &lt;num&gt;        &lt;num&gt;        &lt;num&gt;        &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2.219553e+00 1.445338e-01 1.996923e+00 2.133119e+00 2.177335e+00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2.186584e+00 1.221730e-01 1.990955e+00 2.110518e+00 2.156056e+00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2.151178e+00 1.028954e-01 1.977952e+00 2.082558e+00 2.122920e+00</span>
@@ -207,6 +210,7 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 713: 2.302320e+03 1.306279e+03 9.237500e+02 1.356000e+03 1.789200e+03</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 714: 2.617061e-03 1.460935e-03 1.053273e-03 1.743021e-03 2.019149e-03</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          upper_20     upper_50     upper_90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;num&gt;        &lt;num&gt;        &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2.264476e+00 2.325034e+00 2.443325e+00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2.221881e+00 2.274348e+00 2.367824e+00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2.180853e+00 2.221336e+00 2.302076e+00</span>
@@ -224,27 +228,33 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summarised_results</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summarised_results$table</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      Region New confirmed cases by infection date</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;char&gt;                                &lt;char&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1: realland                   2152 (1027 -- 4614)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2: testland                   2264 (1067 -- 4638)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Expected change in daily cases Effective reproduction no.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                            &lt;fctr&gt;                     &lt;char&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1:              Likely decreasing         0.87 (0.55 -- 1.2)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2:              Likely decreasing          0.89 (0.6 -- 1.2)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            Rate of growth Doubling/halving time (days)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    &lt;char&gt;                       &lt;char&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1: -0.03 (-0.12 -- 0.042)             -23 (16 -- -5.9)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2: -0.024 (-0.1 -- 0.045)             -29 (16 -- -6.9)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summarised_results$data</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      region            estimate  median    mean     sd lower_90 lower_50</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;fctr&gt;              &lt;char&gt;   &lt;num&gt;   &lt;num&gt;  &lt;num&gt;    &lt;num&gt;    &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1: testland 2264 (1067 -- 4638) 2264.00 2521.00 1283.0  1067.00  1663.00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2: realland 2152 (1027 -- 4614) 2152.00 2427.00 1136.0  1027.00  1778.00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3: testland   0.89 (0.6 -- 1.2)    0.89    0.90    0.2     0.60     0.77</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4: realland  0.87 (0.55 -- 1.2)    0.87    0.88    0.2     0.55     0.76</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    lower_20 upper_20 upper_50 upper_90                                metric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       &lt;num&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;                                &lt;fctr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1:  2086.00  2479.00  3039.00   4638.0 New confirmed cases by infection date</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2:  2000.00  2417.00  2918.00   4614.0 New confirmed cases by infection date</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3:     0.84     0.93     1.00      1.2            Effective reproduction no.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4:     0.84     0.91     0.97      1.2            Effective reproduction no.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Expected change in daily cases prob_control</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                            &lt;fctr&gt;       &lt;list&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1:              Likely decreasing         0.74</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2:              Likely decreasing         0.78</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3:              Likely decreasing         0.74</span>
@@ -260,6 +270,7 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summarised_measures</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summarised_measures$rt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        region       date strat     type    median      mean         sd</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        &lt;char&gt;     &lt;Date&gt; &lt;int&gt;   &lt;char&gt;     &lt;num&gt;     &lt;num&gt;      &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1: realland 2020-02-22    NA estimate 2.2003528 2.2088615 0.15228717</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2: realland 2020-02-23    NA estimate 2.1811604 2.1821292 0.12557945</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3: realland 2020-02-24    NA estimate 2.1536436 2.1521783 0.10406800</span>
@@ -272,6 +283,7 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 133: testland 2020-04-27    NA forecast 0.8935489 0.8985073 0.20101719</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 134: testland 2020-04-28    NA forecast 0.8935489 0.8985073 0.20101719</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       lower_90  lower_50  lower_20  upper_20 upper_50 upper_90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;    &lt;num&gt;    &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1: 1.9649006 2.1025353 2.1642174 2.2388770 2.299879 2.478612</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2: 1.9840253 2.1030211 2.1442151 2.2073732 2.259479 2.399317</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3: 1.9838802 2.0816106 2.1274818 2.1738586 2.217655 2.329371</span>
@@ -286,6 +298,7 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summarised_measures$growth_rate</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        region       date strat     type      median        mean          sd</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        &lt;char&gt;     &lt;Date&gt; &lt;int&gt;   &lt;char&gt;       &lt;num&gt;       &lt;num&gt;       &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1: realland 2020-02-22    NA estimate  0.19361000  0.19425184 0.019254246</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2: realland 2020-02-23    NA estimate  0.19116490  0.19098521 0.015999894</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3: realland 2020-02-24    NA estimate  0.18763428  0.18723168 0.013399641</span>
@@ -298,6 +311,7 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 133: testland 2020-04-27    NA forecast -0.02367809 -0.02596132 0.046356583</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 134: testland 2020-04-28    NA forecast -0.02367809 -0.02596132 0.046356583</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        lower_90    lower_50    lower_20   upper_20    upper_50   upper_90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           &lt;num&gt;       &lt;num&gt;       &lt;num&gt;      &lt;num&gt;       &lt;num&gt;      &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1:  0.1625707  0.18099633  0.18899447  0.1984755 0.206067649 0.22756992</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2:  0.1651814  0.18105989  0.18641764  0.1945008 0.201054822 0.21816182</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3:  0.1651616  0.17824781  0.18424960  0.1902309 0.195802083 0.20969020</span>
@@ -312,6 +326,7 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summarised_measures$cases_by_infection</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        region       date strat     type median   mean     sd lower_90 lower_50</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        &lt;char&gt;     &lt;Date&gt; &lt;int&gt;   &lt;char&gt;  &lt;num&gt;  &lt;num&gt;  &lt;num&gt;    &lt;num&gt;    &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1: realland 2020-02-22    NA estimate  156.7  156.5   11.9    136.6    148.8</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2: realland 2020-02-23    NA estimate  198.4  198.7   14.5    174.9    188.6</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3: realland 2020-02-24    NA estimate  254.8  254.0   18.2    226.8    241.2</span>
@@ -324,6 +339,7 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 133: testland 2020-04-27    NA forecast 1898.0 2614.3 2716.6    521.1   1148.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 134: testland 2020-04-28    NA forecast 1841.6 2665.5 3078.0    461.2   1082.1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      lower_20 upper_20 upper_50 upper_90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;num&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1:    153.7    159.5    164.4    175.5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2:    196.0    203.5    208.4    221.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3:    249.3    257.8    267.5    284.4</span>
@@ -338,6 +354,7 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summarised_measures$cases_by_report</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        region       date strat     type median   mean     sd lower_90 lower_50</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        &lt;char&gt;     &lt;Date&gt; &lt;int&gt;   &lt;char&gt;  &lt;num&gt;  &lt;num&gt;  &lt;num&gt;    &lt;num&gt;    &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1: realland 2020-02-22    NA estimate   66.0   68.7   21.3     38.0     54.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2: realland 2020-02-23    NA estimate   77.0   79.2   23.0     45.9     62.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3: realland 2020-02-24    NA estimate   77.0   80.5   23.6     49.0     64.0</span>
@@ -350,6 +367,7 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 133: testland 2020-04-27    NA forecast 2401.5 2769.8 1459.5   1104.8   1794.5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 134: testland 2020-04-28    NA forecast 2022.0 2339.9 1363.1    869.5   1428.5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      lower_20 upper_20 upper_50 upper_90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;num&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1:     61.6     71.0     78.0    115.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2:     72.0     82.4     92.2    119.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3:     71.0     83.0     93.0    127.0</span>
@@ -364,7 +382,9 @@ cases.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $reported_cases</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Index: &lt;region&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            date confirm   region</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;Date&gt;   &lt;num&gt;   &lt;char&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-22      14 testland</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-23      62 testland</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-24      53 testland</span>
