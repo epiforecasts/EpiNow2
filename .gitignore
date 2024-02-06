@@ -37,3 +37,6 @@ src
 .vscode
 
 vignettes/results
+
+# unused figures
+man/figures/*.png
