@@ -2,101 +2,19 @@
 % Please edit documentation in R/simulate_infections.R
 \name{simulate_infections}
 \alias{simulate_infections}
-\title{Simulate infections using a given trajectory of the time-varying
-reproduction number}
+\title{Deprecated; use \code{\link[=forecast_infections]{forecast_infections()}} instead}
 \usage{
-simulate_infections(
-  estimates,
-  R = NULL,
-  model = NULL,
-  samples = NULL,
-  batch_size = 10,
-  verbose = interactive()
-)
+simulate_infections(...)
 }
 \arguments{
-\item{estimates}{The \code{estimates} element of an \code{\link[=epinow]{epinow()}} run that
-has been done with output = "fit", or the result of
-\code{\link[=estimate_infections]{estimate_infections()}} with \code{return_fit} set to TRUE.}
-
-\item{R}{A numeric vector of reproduction numbers; these will overwrite the
-reproduction numbers contained in \code{estimates}, except elements set to
-NA. Alternatively accepts a \verb{<data.frame>} containing at least \code{date} and
-\code{value} (integer) variables and optionally \code{sample}. More (or fewer) days
-than in the original fit can be simulated.}
-
-\item{model}{A compiled stan model as returned by \code{\link[rstan:stan_model]{rstan::stan_model()}}.}
-
-\item{samples}{Numeric, number of posterior samples to simulate from. The
-default is to use all samples in the \code{estimates} input.}
-
-\item{batch_size}{Numeric, defaults to 10. Size of batches in which to
-simulate. May decrease run times due to reduced IO costs but this is still
-being evaluated. If set to NULL then all simulations are done at once.}
-
-\item{verbose}{Logical defaults to \code{\link[=interactive]{interactive()}}. Should a progress bar
-(from \code{progressr}) be shown.}
+\item{...}{Arguments to be passed to \code{\link[=forecast_infections]{forecast_infections()}}}
 }
 \value{
-A list of output as returned by \code{\link[=estimate_infections]{estimate_infections()}} but based on
-results from the specified scenario rather than fitting.
+the result of \code{\link[=forecast_infections]{forecast_infections()}}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-This function simulates infections using an existing fit to observed cases
-but with a modified time-varying reproduction number. This can be used to
-explore forecast models or past counterfactuals. Simulations can be run in
-parallel using \code{\link[future:plan]{future::plan()}}.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
-\examples{
-\donttest{
-# set number of cores to use
-old_opts <- options()
-options(mc.cores = ifelse(interactive(), 4, 1))
-
-# get example case counts
-reported_cases <- example_confirmed[1:50]
-
-# fit model to data to recover Rt estimates
-est <- estimate_infections(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
-  delays = delay_opts(example_incubation_period + example_reporting_delay),
-  rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7),
-  stan = stan_opts(control = list(adapt_delta = 0.9)),
-  obs = obs_opts(scale = list(mean = 0.1, sd = 0.01)),
-  gp = NULL, horizon = 0
-)
-
-# update Rt trajectory and simulate new infections using it
-R <- c(rep(NA_real_, 26), rep(0.5, 10), rep(0.8, 7))
-sims <- simulate_infections(est, R)
-plot(sims)
-
-# with a data.frame input of samples
-R_dt <- data.frame(
-  date = seq(
-    min(summary(est, type = "parameters", param = "R")$date),
-    by = "day", length.out = length(R)
-  ),
-  value = R
-)
-sims <- simulate_infections(est, R_dt)
-plot(sims)
-
-#' # with a data.frame input of samples
-R_samples <- summary(est, type = "samples", param = "R")
-R_samples <- R_samples[,
- .(date, sample, value)][sample <= 1000][date <= "2020-04-10"
-]
-R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
-sims <- simulate_infections(est, R_samples)
-plot(sims)
-
-options(old_opts)
-}
-}
-\seealso{
-\code{\link[=dist_spec]{dist_spec()}} \code{\link[=generation_time_opts]{generation_time_opts()}} \code{\link[=delay_opts]{delay_opts()}} \code{\link[=rt_opts]{rt_opts()}}
-\code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=trunc_opts]{trunc_opts()}} \code{\link[=stan_opts]{stan_opts()}} \code{\link[=obs_opts]{obs_opts()}}
-\code{\link[=gp_opts]{gp_opts()}}
+\details{
+Calling this function passes all arguments to \code{\link[=forecast_infections]{forecast_infections()}}
 }

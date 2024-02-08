@@ -26,7 +26,7 @@ R <- c(
 )
 noisy_R <- R * rnorm(length(R), 1, 0.05)
 # update Rt trajectory and simulate new infections using it
-sims <- simulate_infections(init, R = noisy_R, samples = 10)
+sims <- forecast_infections(init, R = noisy_R, samples = 10)
 
 sim_R <- sims$summarised[variable == "R"]$median
 

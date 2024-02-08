@@ -24,7 +24,7 @@
 #'   summarising results and reporting errors if they have occurred.
 #' @author Sam Abbott
 #' @export
-#' @seealso [estimate_infections()] [simulate_infections()] [regional_epinow()]
+#' @seealso [estimate_infections()] [forecast_infections()] [regional_epinow()]
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
 #' @inheritParams setup_default_logging

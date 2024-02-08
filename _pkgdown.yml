@@ -68,7 +68,7 @@ reference:
     desc: Function to estimate, simulate and forecast parameters of interest.
     contents:
       - estimate_infections
-      - simulate_infections
+      - forecast_infections
       - estimate_secondary
       - forecast_secondary
       - estimate_delay
@@ -126,7 +126,7 @@ reference:
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases
     contents:
-      - simulate_infections
+      - forecast_infections
       - simulate_secondary
       - adjust_infection_to_report
   - title: Data

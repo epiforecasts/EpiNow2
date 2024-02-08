@@ -6,6 +6,7 @@
 * The utility function `update_list()` has been deprecated in favour of `utils::modifyList()` because it comes with an installation of R. By @jamesmbaazam in #491 and reviewed by @seabbs.
 * The `fixed` argument to `dist_spec` has been deprecated and replaced by a `fix_dist()` function. By @sbfnk in #503 and reviewed by @seabbs.
 * Updated `estimate_infections()` so that rather than imputing missing data, it now skips these data points in the likelihood. This is a breaking change as it alters the behaviour of the model when dates are missing from a time series but are known to be zero. We recommend that users check their results when updating to this version but expect this to in most cases improve performance. By @seabbs in #528 and reviewed by @sbfnk.
+* `simulate_infections` has been renamed to `forecast_infections` in line with `simulate_secondary` and `forecast_secondary`. The terminology is: a forecast is done from a fit to existing data, a simulation from first principles.
 
 ## Documentation
 
@@ -168,8 +169,8 @@ reporting delay and the generation time. These are based on an implementation in
  
 ## Deprecated features
 
-* `simulate_cases()` and `forecast_infections()` have been deprecated and have been removed. These functions depend on `EpiSoon` which itself is archived and near equivalent functionality is available within `EpiNow2` and in other packages (@seabbs).
-* Functions supporting secondary forecasting using `forecast_infections()` (i.e in `epinow())
+* `simulate_cases()` and `simulate_infections()` have been deprecated and have been removed. These functions depend on `EpiSoon` which itself is archived and near equivalent functionality is available within `EpiNow2` and in other packages (@seabbs).
+* Functions supporting secondary forecasting using `simulate_infections()` (i.e in `epinow())
 have been removed along with the arguments that supported them (@seabbs).
 * `global_map()`, `country_map()`, and `theme_map()` have all been deprecated and have been removed. These functions were used to support reporting of reproduction number
 estimates and are considered out of scope for `EpiNow2`. If finding useful contacting the
