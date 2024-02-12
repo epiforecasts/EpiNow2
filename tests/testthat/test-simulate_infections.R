@@ -22,6 +22,7 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
 
 test_that("forecast_infections works to simulate a passed in estimate_infections
            object when using the cmdstanr backend", {
+  skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
     sims <- forecast_infections(out, backend = "cmdstanr")
   )))

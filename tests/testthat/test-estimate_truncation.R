@@ -57,6 +57,7 @@ test_that("estimate_truncation can return values from simulated data and plot
 test_that("estimate_truncation can return values from simulated data with the
            cmdstanr backend", {
   # fit model to example data
+  skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
     est <- estimate_truncation(example_data,
       verbose = FALSE, chains = 2, iter = 1000, warmup = 250,

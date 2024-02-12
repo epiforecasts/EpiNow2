@@ -60,12 +60,14 @@ jobs:
         with:
           dependencies: NA
           extra-packages: |
+            dplyr
             rmarkdown
             rcmdcheck
             stan-dev/cmdstanr
             testthat
 
       - name: Install cmdstan
+        if: runner.os != 'Windows'
         uses: epinowcast/actions/install-cmdstan@v1
         with:
             cmdstan-version: 'latest'

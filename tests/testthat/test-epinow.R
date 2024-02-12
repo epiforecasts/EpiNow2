@@ -40,6 +40,7 @@ test_that("epinow produces expected output when run with default settings", {
 
 test_that("epinow produces expected output when run with the
            cmdstanr backend", {
+  skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       reported_cases = reported_cases,
