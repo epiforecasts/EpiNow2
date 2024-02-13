@@ -72,6 +72,18 @@ generated quantities {
         day_of_week_effect(to_vector(reports[i]), day_of_week,
                            to_vector(day_of_week_simplex[i])));
     }
+    // truncate near time cases to observed reports
+    if (trunc_id) {
+      vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(
+        trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
+        delay_types_groups, delay_max, delay_np_pmf,
+        delay_np_pmf_groups, delay_mean[i], delay_sd[i], delay_dist,
+        0, 1, 1
+      );
+      reports[i] = to_row_vector(truncate(
+        to_vector(reports[i]), trunc_rev_cmf, 0)
+      );
+    }
     // scale observations
     if (obs_scale) {
       reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i, 1]));
