@@ -1,0 +1,199 @@
+---
+title: "Reconstructing SARS-CoV-2 and Ebola infections from delayed outcomes"
+output:
+  rmarkdown::html_vignette:
+  toc: true
+  number_sections: true
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Case study: reconstructing COVID and Ebola infections}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+  
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+::: {.alert .alert-primary}
+## Use case {-}
+We want to estimate infection dynamics from incidence data on delayed outcomes such as hospitalisations or deaths.
+:::
+
+::: {.alert .alert-secondary}
+### What we have {-}
+
+  1. Time series of new outcomes (e.g. deaths) per day.
+  2. Estimates of the delay from infection-to-onset and onset-to-death distributions
+
+### What we assume {-}
+  1. New infections each day have a [prior based on a Gaussian process](https://epiforecasts.io/EpiNow2/articles/estimate_infections.html), which allows for faster estimation from delayed outcome data than modelling the full transmission process (and hence also estimating the time varying reproduction number $R_t$).
+:::
+
+First, we load the necessary packages for this vignette.
+```{r, include =FALSE}
+# Load EpiNow2 1.4.9 version with dist-interface available (TO DO: replace later when in main)
+remotes::install_github("epiforecasts/EpiNow2@dist-interface")
+library(EpiNow2)
+
+# Load epiparameter from GitHub
+remotes::install_github("epiverse-trace/epiparameter")
+library(epiparameter)
+
+# Load CRAN packages required for this vignette
+library(dplyr) # required to format outputs
+library(httr) # required to load UK COVID data from URL
+library(cfr) # required for Ebola data (included in this package)
+```
+
+# Reconstruct SARS-CoV-2 infection dynamics in the UK from daily data on deaths
+
+### Load UK data
+
+We load daily data on reported COVID deaths from the [UK COVID dashboard](https://coronavirus.data.gov.uk/details/deaths?areaType=overview&areaName=United%20Kingdom) by copying the 'download data as csv' link, then using the `httr` package to import into R and format as a `data.frame`. The `EpiNow2` package expects data in a two column format with names `date` and `confirm` so we format the imported data accordingly.
+
+```{r, include = FALSE}
+# Define URL for the UK COVID dashboard API
+uk_dashboard_url <- "https://coronavirus.data.gov.uk/api/v1/data?filters=areaType=overview;areaName=United%2520Kingdom&structure=%7B%22areaType%22:%22areaType%22,%22areaName%22:%22areaName%22,%22areaCode%22:%22areaCode%22,%22date%22:%22date%22,%22newDailyNsoDeathsByDeathDate%22:%22newDailyNsoDeathsByDeathDate%22,%22cumDailyNsoDeathsByDeathDate%22:%22cumDailyNsoDeathsByDeathDate%22%7D&format=csv"
+
+# Load data from the UK COVID dashboard API and format as data.frame
+load_uk_data_text <- GET(uk_dashboard_url)
+uk_data <- read.csv(text = content(load_uk_data_text, "text"), stringsAsFactors = FALSE)
+
+# Extract data on deaths and format for EpiNow 2
+incidence_data <- uk_data |> dplyr::select(date,newDailyNsoDeathsByDeathDate)
+incidence_data <- dplyr::rename(incidence_data, confirm = newDailyNsoDeathsByDeathDate)
+incidence_data$date <- as.Date(incidence_data$date)
+
+# Focus on early 2020 period and sort by ascending date
+incidence_data <- incidence_data |> 
+                  dplyr::filter(date<"2020-07-01" & date>="2020-03-01") |> 
+                  arrange(date)
+
+# Preview data
+head(incidence_data)
+```
+
+### Define parameters
+
+Next, we import an estimate of the COVID incubation period (i.e. delay from infection to symptom onset) and onset-to-death distributions from `epiparameter`, then combine these two distributions to specify the infection-to-death distribution and plot the result:
+
+```{r, include = FALSE}
+# Extract infection-to-death distribution (from Aloon et al)
+incubation_period_in <-
+  epiparameter::epidist_db(disease = "covid",epi_dist = "incubation",single_epidist = T)
+
+# Summarise distribution and type
+print(incubation_period_in)
+
+# Get parameters and format for EpiNow2 using LogNormal input
+incubation_params <- get_parameters(incubation_period_in) # Get parameters
+
+# Find the upper 99.9% range by the interval
+incubation_max <- round(quantile(incubation_period_in,0.999))
+
+incubation_period <- LogNormal(meanlog = incubation_params[["meanlog"]], 
+                               sdlog = incubation_params[["sdlog"]], 
+                               max = incubation_max)
+
+## Set onset to death period (from Linton et al)
+onset_to_death_period_in <-
+  epiparameter::epidist_db(disease = "covid",epi_dist = "onset to death",single_epidist = T)
+
+# Summarise distribution and type
+print(onset_to_death_period_in)
+
+# Get parameters and format for EpiNow2 using LogNormal input
+onset_to_death_params <- get_parameters(onset_to_death_period_in) # Get parameters
+
+# Find the upper 99.9% range by the interval
+onset_to_death_max <- round(quantile(onset_to_death_period_in,0.999))
+
+onset_to_death_period <- LogNormal(meanlog = onset_to_death_params[["meanlog"]], 
+                               sdlog = onset_to_death_params[["sdlog"]], 
+                               max = onset_to_death_max)
+
+## Combine infection-to-onset and onset-to-death
+infection_to_death <- incubation_period + onset_to_death_period
+
+# Plot underlying delay distributions
+plot(infection_to_death)
+```
+
+**Notes: opportunities for streamlining many of the above steps?**
+
+For EpiNow2, we also need to define the timescale of the epidemic, i.e. the delay from one infection to the next. We can use serial interval (delay from onset of infector to onset of infectee) as a proxy for this if we assume that the variance of the incubation period of the infector is independent of the variance of the time from onset of symptoms in the infector to infection of the infectee ([Lehtinen et al, JR Soc Interface, 2021](https://royalsocietypublishing.org/doi/10.1098/rsif.2020.0756)).
+
+```{r, include = FALSE}
+# Extract serial interval distribution distribution (from Yang et al)
+serial_interval_in <-
+  epiparameter::epidist_db(
+    disease = "covid",
+    epi_dist = "serial",
+    single_epidist = T
+  )
+
+# Summarise distribution and type
+print(serial_interval_in)
+
+# Discretise serial interval for input into EpiNow2
+serial_int_discrete <- epiparameter::discretise(serial_interval_in)
+
+# Find the upper 99.9% range by the interval
+serial_int_discrete_max <- quantile(serial_int_discrete,0.999)
+
+# Define parameters using LogNormal input
+serial_params <- get_parameters(serial_int_discrete) # Get parameters
+
+serial_interval_covid <- LogNormal(
+  mean = serial_params[["mean"]],
+  sd = serial_params[["sd"]],
+  max = serial_int_discrete_max
+)
+```
+
+**Notes: Serial interval defined via discrete mean and sd rather than continuous meanlog and sdlog - how could potential for error in user inputs be reduced here?**
+
+### Run model
+
+To reconstruct infection dynamics from deaths, we use a non-mechanistic infection model (see the ["estimate_infections()"](https://epiforecasts.io/EpiNow2/articles/estimate_infections.html) vignette for more details of this model, which uses a [Gaussian Process implementation](https://epiforecasts.io/EpiNow2/articles/gaussian_process_implementation_details.html)). Because this model does not calculate the time varying reproduction number $R_t$, it can be run by setting `rt=NULL` in the main `epinow()` function (which calls `estimate_infections()` in the background).
+
+```{r, include = FALSE}
+# Run infection estimation model
+epinow_estimates <- epinow(
+  reported_cases = incidence_data, # time series data
+  generation_time = generation_time_opts(serial_interval_covid), # assume generation time = serial interval
+  delays = delay_opts(infection_to_death), # delay from infection-to-death
+  rt = NULL, # no Rt estimation
+  stan = stan_opts( # set up options for inference
+    cores = 4, samples = 1000, chains = 3,
+    control = list(adapt_delta = 0.99)
+  )
+)
+
+# Extract infection estimates from the model output
+infection_estimates <- epinow_estimates$estimates$summarised |> dplyr::filter(variable=="infections")
+```
+
+### Plot comparison of observed outcomes and estimated infections
+```{r class.source = 'fold-hide', class.source = 'fold-hide', fig.cap="Estimated dynamics of SARS-CoV-2 infections among those with subsequent fatal outcomes in the UK, reconstructed using data on reported deaths. Dashed lines show dates of UK non-essential contact advice (16 Mar) and lockdown (23 Mar)."}
+par(mfrow=c(1,1),mgp=c(2.5,0.7,0),mar = c(3,3.5,1,1))
+plot(incidence_data$date,incidence_data$confirm,ylim=c(0,2e3),col="red",xlab="",ylab="count",type="l",lwd=2,
+     xlim=c(as.Date("2020-03-01"),as.Date("2020-07-01")))
+lines(infection_estimates$date,infection_estimates$median,lwd=2,col="dark blue")
+polygon(c(infection_estimates$date,rev(infection_estimates$date)),
+        c(infection_estimates$lower_90,rev(infection_estimates$upper_90)),
+        col=rgb(0,0,1,0.1),border=NA)
+
+legend("topright", c("Infections", "Deaths"),
+       col = c("dark blue","red"), lty = 1)
+
+# add dates of UK non-essential contact advice (16 Mar) and lockdown (23 Mar)
+abline(v = as.Date("2020-03-16"),lty=2) 
+abline(v = as.Date("2020-03-23"),lty=2) 
+```
