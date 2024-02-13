@@ -51,7 +51,7 @@ library(httr) # required to load UK COVID data from URL
 library(cfr) # required for Ebola data (included in this package)
 ```
 
-# Reconstruct SARS-CoV-2 infection dynamics in the UK from daily data on deaths
+## Reconstruct SARS-CoV-2 infection dynamics in the UK from daily data on deaths, 2020
 
 ### Load UK data
 
@@ -197,3 +197,121 @@ legend("topright", c("Infections", "Deaths"),
 abline(v = as.Date("2020-03-16"),lty=2) 
 abline(v = as.Date("2020-03-23"),lty=2) 
 ```
+
+## Reconstruct Ebola infection dynamics in the UK from data on deaths, 1976
+
+### Load Ebola data
+
+As a second example, we will repeat the analysis, but using data on onset dates from the first recorded outbreak in Yambuku, 1976 ([Camacho et al, Epidemics, 2014](https://pubmed.ncbi.nlm.nih.gov/25480136/)).
+
+```{r, include = FALSE}
+# Load Ebola data from the CFR package
+data("ebola1976")
+
+# Extract data on case onsets and format for EpiNow 2
+incidence_data_ebola <- ebola1976 |> dplyr::select(date,cases)
+incidence_data_ebola <- dplyr::rename(incidence_data_ebola, confirm = cases)
+incidence_data_ebola$date <- as.Date(incidence_data_ebola$date)
+
+# Preview data
+head(incidence_data_ebola)
+```
+
+### Define parameters
+
+Next, we import an estimate of the Ebola incubation period that we will use to reconstruct infections. This time, the extracted parameter follows a gamma distribution, so we use the `Gamma()` function in `EpiNow2`.
+
+```{r, include = FALSE}
+# Extract infection-to-death distribution (from WHO Ebola Response Team)
+incubation_period_ebola_in <-
+  epiparameter::epidist_db(disease = "ebola",epi_dist = "incubation",single_epidist = T)
+
+# Summarise distribution and type
+print(incubation_period_ebola_in)
+
+# Get parameters and format for EpiNow2 using Gamma input
+incubation_ebola_params <- get_parameters(incubation_period_ebola_in) # Get parameters
+
+# Find the upper 99.9% range by the interval
+incubation_ebola_max <- round(quantile(incubation_period_ebola_in,0.999))
+
+incubation_period_ebola <- Gamma(shape = incubation_ebola_params[["shape"]], 
+                           rate = 1/incubation_ebola_params[["scale"]], 
+                           max = incubation_ebola_max)
+
+# Plot delay distribution
+plot(incubation_period_ebola)
+```
+
+Next, we define the timescale of the epidemic:
+
+```{r, include = FALSE}
+# Extract serial interval distribution distribution (from WHO Ebola Response Teaml)
+serial_interval_ebola_in <-
+  epiparameter::epidist_db(
+    disease = "ebola",
+    epi_dist = "serial",
+    single_epidist = T
+  )
+
+# Summarise distribution and type
+print(serial_interval_ebola_in)
+
+# Discretise serial interval for input into EpiNow2
+serial_int_ebola_discrete <- epiparameter::discretise(serial_interval_ebola_in)
+
+# Find the upper 99.9% range by the interval
+serial_int_ebola_discrete_max <- quantile(serial_int_ebola_discrete,0.999)
+
+# Define parameters using LogNormal input
+serial_ebola_params <- get_parameters(serial_int_ebola_discrete) # Get parameters
+
+serial_interval_ebola <- Gamma(
+  shape = serial_ebola_params[["shape"]],
+  rate = 1/serial_ebola_params[["scale"]],
+  max = serial_int_ebola_discrete_max
+)
+```
+
+**Notes: Gamma() function did not seem to take a shape/scale parameterisation ("Incompatible combination of parameters of a gamma distribution specified.")**
+
+### Run model
+
+With parameters defined, we reconstruct infection timings from the case onset data.
+
+```{r, include = FALSE}
+# Run infection estimation model
+epinow_estimates <- epinow(
+  reported_cases = incidence_data, # time series data
+  generation_time = generation_time_opts(serial_interval_ebola), # assume generation time = serial interval
+  delays = delay_opts(incubation_period_ebola), # delay from infection-to-death
+  rt = NULL, # no Rt estimation
+  stan = stan_opts( # set up options for inference
+    cores = 4, samples = 1000, chains = 3,
+    control = list(adapt_delta = 0.99)
+  )
+)
+
+# Extract infection estimates from the model output
+infection_estimates <- epinow_estimates$estimates$summarised |> dplyr::filter(variable=="infections")
+```
+
+**Notes: the estimated infections seem to increase exponentially, rather than track cases with a delay as we'd expect.**
+
+### Plot comparison of observed outcomes and estimated infections
+```{r class.source = 'fold-hide', class.source = 'fold-hide', fig.cap="Estimated dynamics of Ebola infections among those with subsequent onsets in the 1976 Yambuku outbreak, reconstructed using reported case data. Dashed line shows the date on which the local hospital - and source of early nosocomial infections - was closed (30 Sep)."}
+par(mfrow=c(1,1),mgp=c(2.5,0.7,0),mar = c(3,3.5,1,1))
+plot(incidence_data$date,incidence_data$confirm,ylim=c(0,20),col="red",xlab="",ylab="count",type="l",lwd=2,
+     xlim=c(as.Date("1976-08-25"),as.Date("1976-11-05")))
+lines(infection_estimates$date,infection_estimates$median,lwd=2,col="dark blue")
+polygon(c(infection_estimates$date,rev(infection_estimates$date)),
+        c(infection_estimates$lower_90,rev(infection_estimates$upper_90)),
+        col=rgb(0,0,1,0.1),border=NA)
+
+legend("topright", c("Infections", "Cases"),
+       col = c("dark blue","red"), lty = 1)
+
+# add date of local hospital closure
+abline(v = as.Date("1976-09-30"),lty=2) 
+```
+
