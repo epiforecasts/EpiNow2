@@ -427,25 +427,21 @@ gp_opts <- function(basis_prop = 0.2,
 #' Defines a list specifying the structure of the observation
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
-#' Negative binomial ("negbin"), the default, and Poisson.
-#' @param phi A numeric vector of length 2, defaults to 0, 1. Indicates the
-#' mean and standard deviation of the normal prior used for the observation
-#' process.
-#'
-#' @param weight Numeric, defaults to 1. Weight to give the observed data in
-#'  the log density.
+#'   Negative binomial ("negbin"), the default, and Poisson.
+#' @param phi A numeric vector of length 2, defaults to 0, 1. Indicates the mean
+#'   and standard deviation of the normal prior used for the observation
+#'   process.
+#' @param weight Numeric, defaults to 1. Weight to give the observed data in the
+#'   log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week
-#' effect be used in the observation model.
-#'
+#'   effect be used in the observation model.
 #' @param week_length Numeric assumed length of the week in days, defaulting to
 #' 7 days. This can be modified if data aggregated over a period other than a
 #' week or if data has a non-weekly periodicity.
-#'
 #' @param scale List, defaulting to an empty list. Should an scaling factor be
-#' applied to map latent infections (convolved to date of report). If none
-#' empty a mean (`mean`) and standard deviation (`sd`) needs to be supplied
-#' defining the normally distributed scaling factor.
-#'
+#'   applied to map latent infections (convolved to date of report). If none
+#'   empty a mean (`mean`) and standard deviation (`sd`) needs to be supplied
+#'   defining the normally distributed scaling factor.
 #' @param na Character. Options are "missing" (the default) and "accumulate".
 #'   This determines how NA values in the data are interpreted. If set to
 #'   "missing", any NA values in the observation data set will be interpreted as
@@ -456,12 +452,10 @@ gp_opts <- function(basis_prop = 0.2,
 #'   included in the data point but used only to reset modelled observations to
 #'   zero.
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
-#' included in the model.
-#'
+#'   included in the model.
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
-#' be returned by the model.
+#'   be returned by the model.
 #' @importFrom rlang arg_match
-#'
 #' @return An `<obs_opts>` object of observation model settings.
 #' @author Sam Abbott
 #' @export
