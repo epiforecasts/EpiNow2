@@ -428,9 +428,11 @@ gp_opts <- function(basis_prop = 0.2,
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
 #'   Negative binomial ("negbin"), the default, and Poisson.
-#' @param phi A numeric vector of length 2, defaults to 0, 1. Indicates the mean
-#'   and standard deviation of the normal prior used for the observation
-#'   process.
+#' @param phi Overdispersion parameter of the reporting process, used only if
+#'   `familiy` is "negbin". Can be supplied either as a single numeric value
+#'   (fixed overdispersion) or a list with numeric elements mean (`mean`) and
+#'   standard deviation (`sd`) defining a normally distributed overdispersion.
+#'   Defaults to a list with elements `mean = 0` and `sd = 1`.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in the
 #'   log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week
@@ -470,7 +472,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' # Scale reported data
 #' obs_opts(scale = list(mean = 0.2, sd = 0.02))
 obs_opts <- function(family = "negbin",
-                     phi = c(0, 1),
+                     phi = list(mean = 0, sd = 1),
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
@@ -478,9 +480,6 @@ obs_opts <- function(family = "negbin",
                      na = c("missing", "accumulate"),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
-  if (length(phi) != 2 || !is.numeric(phi)) {
-    stop("phi be numeric and of length two")
-  }
   na <- arg_match(na)
   if (na == "accumulate") {
     message(
@@ -505,11 +504,13 @@ obs_opts <- function(family = "negbin",
     return_likelihood = return_likelihood
   )
 
-  if (is.numeric(obs$scale)) {
-    obs$scale <- list(mean = obs$scale, sd = 0)
-  }
-  if (!(all(c("mean", "sd") %in% names(obs$scale)))) {
-    stop("If specifying a scale as list both a mean and sd are needed")
+  for (param in c("phi", "scale")) {
+    if (is.numeric(obs[[param]])) {
+      obs[[param]] <- list(mean = obs[[param]], sd = 0)
+    }
+    if (!(all(c("mean", "sd") %in% names(obs[[param]])))) {
+      stop("If specifying a ", param, " as list both a mean and sd are needed")
+    }
   }
 
   attr(obs, "class") <- c("obs_opts", class(obs))
