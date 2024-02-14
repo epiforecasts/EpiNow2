@@ -38,8 +38,7 @@ inc_posterior <- inc$posterior[variable %in% params]
 #### Prevalence data example ####
 
 # make some example prevalence data
-prev_cases <- example_confirmed
-prev_cases <- as.data.table(prev_cases)[, primary := confirm]
+prev_cases <- copy(cases)
 # Assume that only 30 percent of cases are reported
 prev_cases[, scaling := 0.3]
 # Parameters of the assumed log normal delay distribution
@@ -79,7 +78,7 @@ test_that("estimate_secondary can return values from simulated data and plot
 
 test_that("estimate_secondary successfully returns estimates when passed NA values", {
   skip_on_cran()
-  cases_na <- data.table::copy(cases)
+  cases_na <- data.table::copy(inc_cases)
   cases_na[sample(1:60, 5), secondary := NA]
   inc_na <- estimate_secondary(cases_na[1:60],
     delays = delay_opts(
@@ -104,11 +103,13 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
     obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
     verbose = FALSE
   )
+  expect_true(is.list(inc_na$data))
+  expect_true(is.list(prev_na$data))
 })
 
 test_that("estimate_secondary successfully returns estimates when accumulating to weekly", {
   skip_on_cran()
-  secondary_weekly <- cases[, list(date, secondary)]
+  secondary_weekly <- inc_cases[, list(date, secondary)]
   secondary_weekly[, secondary := frollsum(secondary, 7)]
   secondary_weekly <- secondary_weekly[seq(7, nrow(secondary_weekly), by = 7)]
   cases_weekly <- merge(
@@ -125,6 +126,7 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
       scale = list(mean = 0.4, sd = 0.05), week_effect = FALSE, na = "accumulate"
     ), verbose = FALSE
   )
+  expect_true(is.list(inc_weekly$data))
 })
 
 test_that("estimate_secondary can recover simulated parameters", {
