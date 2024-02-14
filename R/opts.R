@@ -483,7 +483,7 @@ obs_opts <- function(family = "negbin",
   na <- arg_match(na)
   if (na == "accumulate") {
     message(
-      "Accmulating modelled values that correspond to NA values in the data ",
+      "Accumulating modelled values that correspond to NA values in the data ",
       "by adding them to the next non-NA data point. This means that the ",
       "first data point is not included in the likelihood but used only to ",
       "reset modelled observations to zero. If the first data point should be ",
