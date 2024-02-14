@@ -4,7 +4,11 @@
 \alias{stan_model}
 \title{Return a stan model object for the appropriate backend}
 \usage{
-stan_model(backend = "rstan", model = "estimate_infections")
+stan_model(
+  backend = c("rstan", "cmdstanr"),
+  model = c("estimate_infections", "simulate_infections", "estimate_secondary",
+    "simulate_secondary", "estimate_truncation", "dist_fit")
+)
 }
 \arguments{
 \item{backend}{Character string indicating the backend to use for fitting
