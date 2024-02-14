@@ -631,12 +631,12 @@ create_initial_conditions <- function(data) {
 #' @param data A list of stan data as created by [create_stan_data()]
 #'
 #' @param init Initial conditions passed to `{rstan}`. Defaults to "random"
-#' (initital values randomly drawn between -2 and 2) but can also be a
+#' (initial values randomly drawn between -2 and 2) but can also be a
 #' function (as supplied by [create_initial_conditions()]).
 #'
 #' @param model Character, name of the model for which arguments are
 #' to be created.
-#' @param fixed_param Logiccal, defaults to `FALSE`. Should arguments be
+#' @param fixed_param Logical, defaults to `FALSE`. Should arguments be
 #' created to sample from fixed parameters (used by simulation functions).
 #'
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress
