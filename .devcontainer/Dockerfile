@@ -38,7 +38,6 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
         git2r \
         precommit \
         tinytex \
-        httpgd \
     && rm -rf /tmp/downloaded_packages
 
 # install vscode dev deps
