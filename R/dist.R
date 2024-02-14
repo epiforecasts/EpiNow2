@@ -199,6 +199,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @return A stan fit of an interval censored distribution
 #' @author Sam Abbott
 #' @export
+#' @inheritParams stan_opts
 #' @examples
 #' \donttest{
 #' # integer adjusted exponential model
@@ -221,7 +222,8 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' )
 #' }
 dist_fit <- function(values = NULL, samples = 1000, cores = 1,
-                     chains = 2, dist = "exp", verbose = FALSE) {
+                     chains = 2, dist = "exp", verbose = FALSE,
+                     backend = "rstan") {
   if (samples < 1000) {
     samples <- 1000
     warning(sprintf("%s %s", "`samples` must be at least 1000.",
@@ -244,7 +246,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
     par_sigma = numeric(0)
   )
 
-  model <- stanmodels$dist_fit
+  model <- stan_model(backend, "dist_fit")
 
   if (dist == "exp") {
     data$dist <- 0
@@ -268,16 +270,21 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
   }
 
   # fit model
-  fit <- rstan::sampling(
-    model,
-    data = data,
-    iter = samples + 1000,
-    warmup = 1000,
-    control = list(adapt_delta = adapt_delta),
-    chains = chains,
-    cores = cores,
-    refresh = ifelse(verbose, 50, 0)
+  args <- create_stan_args(
+    stan = stan_opts(
+      model,
+      samples = samples,
+      warmup = 1000,
+      control = list(adapt_delta = adapt_delta),
+      chains = chains,
+      cores = cores,
+      backend = backend
+    ),
+    data = data, verbose = verbose, model = "dist_fit"
   )
+
+  fit <- fit_model(args, id = "dist_fit")
+
   return(fit)
 }
 
@@ -533,11 +540,11 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 
     out <- list()
     if (dist == "lognormal") {
-      out$mean_samples <- sample(rstan::extract(fit)$mu, samples)
-      out$sd_samples <- sample(rstan::extract(fit)$sigma, samples)
+      out$mean_samples <- sample(extract(fit)$mu, samples)
+      out$sd_samples <- sample(extract(fit)$sigma, samples)
     } else if (dist == "gamma") {
-      alpha_samples <- sample(rstan::extract(fit)$alpha, samples)
-      beta_samples <- sample(rstan::extract(fit)$beta, samples)
+      alpha_samples <- sample(extract(fit)$alpha, samples)
+      beta_samples <- sample(extract(fit)$beta, samples)
       out$mean_samples <- alpha_samples / beta_samples
       out$sd_samples <- sqrt(alpha_samples) / beta_samples
     }

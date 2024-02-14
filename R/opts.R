@@ -500,9 +500,38 @@ obs_opts <- function(family = "negbin",
 
 #' Rstan Sampling Options
 #'
+#' @description `r lifecycle::badge("deprecated")`
+#' Deprecated; use [stan_sampling_opts()] instead.
+#' @inheritParams stan_sampling_opts
+#' @return A list of arguments to pass to [rstan::sampling()].
+#' @author Sam Abbott
+#' @export
+rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
+                                warmup = 250,
+                                samples = 2000,
+                                chains = 4,
+                                control = list(),
+                                save_warmup = FALSE,
+                                seed = as.integer(runif(1, 1, 1e8)),
+                                future = FALSE,
+                                max_execution_time = Inf,
+                                ...) {
+  lifecycle::deprecate_warn(
+    "2.0.0", "rstan_sampling_opts()",
+    "stan_sampling_opts()",
+     "This function will be removed in version 2.1.0."
+  )
+  return(stan_sampling_opts(
+    cores, warmup, samples, chains, control, save_warmup, seed, future,
+    max_execution_time, backend = "rstan", ...
+  ))
+}
+
+#' Stan Sampling Options
+#'
 #' @description `r lifecycle::badge("stable")`
-#'  Defines a list specifying the arguments passed to
-#' [rstan::sampling()]. Custom settings can be supplied which override the
+#'  Defines a list specifying the arguments passed to either [rstan::sampling()]
+#'  or [cmdstanr::sample()]. Custom settings can be supplied which override the
 #'  defaults.
 #'
 #' @param cores Number of cores to use when executing the chains in parallel,
@@ -538,27 +567,30 @@ obs_opts <- function(family = "negbin",
 #' returned. If less than 2 chains return within the allowed time then
 #' estimation will fail with an informative error.
 #'
+#' @inheritParams stan_opts
+#'
 #' @param ... Additional parameters to pass to [rstan::sampling()].
 #' @importFrom utils modifyList
 #' @return A list of arguments to pass to [rstan::sampling()].
 #' @author Sam Abbott
+#' @author Sebastian Funk
 #' @export
 #' @examples
-#' rstan_sampling_opts(samples = 2000)
-rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
-                                warmup = 250,
-                                samples = 2000,
-                                chains = 4,
-                                control = list(),
-                                save_warmup = FALSE,
-                                seed = as.integer(runif(1, 1, 1e8)),
-                                future = FALSE,
-                                max_execution_time = Inf,
-                                ...) {
+#' stan_sampling_opts(samples = 2000)
+stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
+                               warmup = 250,
+                               samples = 2000,
+                               chains = 4,
+                               control = list(),
+                               save_warmup = FALSE,
+                               seed = as.integer(runif(1, 1, 1e8)),
+                               future = FALSE,
+                               max_execution_time = Inf,
+                               backend = "rstan",
+                               ...) {
   dot_args <- list(...)
+  backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
   opts <- list(
-    cores = cores,
-    warmup = warmup,
     chains = chains,
     save_warmup = save_warmup,
     seed = seed,
@@ -566,18 +598,58 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
     max_execution_time = max_execution_time
   )
   control_def <- list(adapt_delta = 0.95, max_treedepth = 15)
-  opts$control <- modifyList(control_def, control)
+  control_def <- modifyList(control_def, control)
+  if (any(c("iter", "iter_sampling") %in% names(dot_args))) {
+    warning(
+      "Number of samples should be specified using the `samples` and `warmup`",
+      "arguments rather than `iter` or `iter_sampliing` which will be ignored."
+    )
+  }
   dot_args$iter <- NULL
-  opts$iter <- ceiling(samples / opts$chains) + opts$warmup
+  dot_args$iter_sampling <- NULL
+  if (backend == "rstan") {
+    opts <- c(opts, list(
+      cores = cores,
+      warmup = warmup,
+      control = control_def,
+      iter = ceiling(samples / opts$chains) + warmup
+    ))
+  } else if (backend == "cmdstanr") {
+    opts <- c(opts, list(
+      parallel_chains = cores,
+      iter_warmup = warmup,
+      iter_sampling = ceiling(samples / opts$chains)
+    ), control_def)
+  }
   opts <- c(opts, dot_args)
   return(opts)
 }
 
 #' Rstan Variational Bayes Options
 #'
+#' @description `r lifecycle::badge("deprecated")`
+#' Deprecated; use [stan_vb_opts()] instead.
+#' @inheritParams stan_vb_opts
+#' @return A list of arguments to pass to [rstan::vb()].
+#' @author Sam Abbott
+#' @export
+rstan_vb_opts <- function(samples = 2000,
+                          trials = 10,
+                          iter = 10000, ...) {
+  lifecycle::deprecate_warn(
+    "2.0.0", "rstan_vb_opts()",
+    "stan_vb_opts()",
+     "This function will be removed in version 2.1.0."
+  )
+  return(stan_vb_opts(samples, trials, iter, ...))
+}
+
+#' Stan Variational Bayes Options
+#'
 #' @description `r lifecycle::badge("stable")`
-#'  Defines a list specifying the arguments passed to
-#' [rstan::vb()]. Custom settings can be supplied which override the defaults.
+#' Defines a list specifying the arguments passed to [rstan::vb()] or
+#' [cmdstanr::variational()]. Custom settings can be supplied which override the
+#' defaults.
 #'
 #' @param samples Numeric, default 2000. Overall number of approximate posterior
 #' samples.
@@ -588,16 +660,19 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 #' @param iter Numeric, defaulting to 10000. Number of iterations to use in
 #' [rstan::vb()].
 #'
-#' @param ... Additional parameters to pass to [rstan::vb()].
+#' @param ... Additional parameters to pass to [rstan::vb()] or
+#' [cmdstanr::variational()], depending on the chosen backend.
 #'
-#' @return A list of arguments to pass to [rstan::vb()].
+#' @return A list of arguments to pass to [rstan::vb()] or
+#'   [cmdstanr::variational()], depending on the chosen backend.
 #' @author Sam Abbott
+#' @author Sebastian Funk
 #' @export
 #' @examples
-#' rstan_vb_opts(samples = 1000)
-rstan_vb_opts <- function(samples = 2000,
-                          trials = 10,
-                          iter = 10000, ...) {
+#' stan_vb_opts(samples = 1000)
+stan_vb_opts <- function(samples = 2000,
+                         trials = 10,
+                         iter = 10000, ...) {
   opts <- list(
     trials = trials,
     iter = iter,
@@ -609,10 +684,8 @@ rstan_vb_opts <- function(samples = 2000,
 
 #' Rstan Options
 #'
-#' @description `r lifecycle::badge("stable")`
-#' Defines a list specifying the arguments passed to underlying `rstan`
-#' functions via [rstan_sampling_opts()] and [rstan_vb_opts()].Custom settings
-#'  can be supplied which override the defaults.
+#' @description `r lifecycle::badge("deprecated")`
+#' Deprecated; specify options in [stan_opts()] instead.
 #'
 #' @param object Stan model object. By default uses the compiled package
 #' default.
@@ -627,14 +700,14 @@ rstan_vb_opts <- function(samples = 2000,
 #' @export
 #' @inheritParams rstan_sampling_opts
 #' @seealso [rstan_sampling_opts()] [rstan_vb_opts()]
-#' @examples
-#' rstan_opts(samples = 1000)
-#'
-#' # using vb
-#' rstan_opts(method = "vb")
 rstan_opts <- function(object = NULL,
                        samples = 2000,
                        method = "sampling", ...) {
+  lifecycle::deprecate_warn(
+    "2.0.0", "rstan_opts()",
+    "stan_opts()",
+     "This function will be removed in version 2.1.0."
+  )
   method <- arg_match(method, values = c("sampling", "vb"))
   # shared everywhere opts
   if (is.null(object)) {
@@ -645,9 +718,13 @@ rstan_opts <- function(object = NULL,
     method = method
   )
   if (method == "sampling") {
-    opts <- c(opts, rstan_sampling_opts(samples = samples, ...))
+    opts <- c(
+      opts, stan_sampling_opts(samples = samples, backend = "rstan", ...)
+    )
   } else if (method == "vb") {
-    opts <- c(opts, rstan_vb_opts(samples = samples, ...))
+    opts <- c(
+      opts, stan_vb_opts(samples = samples, ...)
+    )
   }
   return(opts)
 }
@@ -656,11 +733,21 @@ rstan_opts <- function(object = NULL,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the arguments passed to underlying stan
-#' backend functions via [rstan_sampling_opts()] and [rstan_vb_opts()]. Custom
+#' backend functions via [stan_sampling_opts()] and [stan_vb_opts()]. Custom
 #' settings can be supplied which override the defaults.
 #'
+#' @param object Stan model object. By default uses the compiled package
+#' default if using the "rstan" backend, and the default model obtained using
+#' [package_model()] if using the "cmdstanr" backend. If wanting alternative
+#' options to the default with the "cmdstanr" backend, pass the result of
+#' a call to [package_model()] with desired arguments instead.
+#'
+#' @param method A character string, defaulting to sampling. Currently supports
+#' MCMC sampling ("sampling") or approximate posterior sampling via
+#' variational inference ("vb").
+#'
 #' @param backend Character string indicating the backend to use for fitting
-#' stan models. Currently only "rstan" is supported.
+#' stan models. Supported arguments are "rstan" (default) or "cmdstanr".
 #'
 #' @param init_fit `r lifecycle::badge("experimental")`
 #' Character string or `stanfit` object, defaults to NULL. Should an initial
@@ -678,32 +765,56 @@ rstan_opts <- function(object = NULL,
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be
 #' returned.
 #'
-#' @param ... Additional parameters to pass  underlying option functions.
+#' @param ... Additional parameters to pass to underlying option functions,
+#'   [stan_sampling_opts()] or [stan_vb_opts()], depending on the method
 #'
 #' @importFrom rlang arg_match
-#' @return A `<stan_opts>` object  of arguments to pass to the appropriate
+#' @return A `<stan_opts>` object of arguments to pass to the appropriate
 #' rstan functions.
 #' @author Sam Abbott
+#' @author Sebastian Funk
 #' @export
 #' @inheritParams rstan_opts
-#' @seealso [rstan_opts()]
+#' @seealso [stan_sampling_opts()] [stan_vb_opts()]
 #' @examples
 #' # using default of [rstan::sampling()]
 #' stan_opts(samples = 1000)
 #'
 #' # using vb
 #' stan_opts(method = "vb")
-stan_opts <- function(samples = 2000,
+stan_opts <- function(object = NULL,
+                      samples = 2000,
+                      method = "sampling",
                       backend = "rstan",
                       init_fit = NULL,
                       return_fit = TRUE,
                       ...) {
-  backend <- arg_match(backend, values = "rstan")
-  if (backend == "rstan") {
-    opts <- rstan_opts(
-      samples = samples,
-      ...
+  method <- arg_match(method, values = c("sampling", "vb"))
+  backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
+  if (backend == "cmdstanr" && !requireNamespace("cmdstanr", quietly = TRUE)) {
+    stop(
+      "The `cmdstanr` package needs to be installed for using the ",
+      "\"cmdstanr\" backend."
     )
+  }
+  opts <- list()
+  if (!is.null(object) && !missing(backend)) {
+    warning(
+      "`backend` option will be ignored as a stan model object has been passed."
+    )
+  } else {
+    opts <- c(opts, list(backend = backend))
+  }
+  opts <- c(opts, list(
+    object = object,
+    method = method
+  ))
+  if (method == "sampling") {
+    opts <- c(
+      opts, stan_sampling_opts(samples = samples, backend = backend, ...)
+    )
+  } else if (method == "vb") {
+    opts <- c(opts, stan_vb_opts(samples = samples, ...))
   }
   if (!is.null(init_fit)) {
     if (is.character(init_fit)) {

@@ -630,8 +630,14 @@ create_initial_conditions <- function(data) {
 #'
 #' @param data A list of stan data as created by [create_stan_data()]
 #'
-#' @param init Initial conditions passed to `{rstan}`. Defaults to "random" but
-#' can also be a function (as supplied by [create_initial_conditions()]).
+#' @param init Initial conditions passed to `{rstan}`. Defaults to "random"
+#' (initial values randomly drawn between -2 and 2) but can also be a
+#' function (as supplied by [create_initial_conditions()]).
+#'
+#' @param model Character, name of the model for which arguments are
+#' to be created.
+#' @param fixed_param Logical, defaults to `FALSE`. Should arguments be
+#' created to sample from fixed parameters (used by simulation functions).
 #'
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress
 #' messages be returned.
@@ -650,7 +656,28 @@ create_initial_conditions <- function(data) {
 create_stan_args <- function(stan = stan_opts(),
                              data = NULL,
                              init = "random",
+                             model = "estimate_infections",
+                             fixed_param = FALSE,
                              verbose = FALSE) {
+  if (fixed_param) {
+    if (stan$backend == "rstan") {
+      stan$algorithm <- "Fixed_param"
+    } else if (stan$backend == "cmdstanr") {
+      stan$fixed_param <- TRUE
+      stan$adapt_delta <- NULL
+      stan$max_treedepth <- NULL
+    }
+  }
+  ## generate stan model
+  if (is.null(stan$object)) {
+    stan$object <- stan_model(stan$backend, model)
+    stan$backend <- NULL
+  }
+  # cmdstanr doesn't have an init = "random" argument
+  if (is.character(init) && init == "random" &&
+      inherits(stan$object, "CmdStanModel")) {
+    init <- 2
+  }
   # set up shared default arguments
   args <- list(
     data = data,

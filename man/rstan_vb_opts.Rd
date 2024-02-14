@@ -16,18 +16,15 @@ rstan::vb()] before failing.}
 \item{iter}{Numeric, defaulting to 10000. Number of iterations to use in
 \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}}.}
 
-\item{...}{Additional parameters to pass to \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}}.}
+\item{...}{Additional parameters to pass to \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}} or
+\code{\link[cmdstanr:model-method-variational]{cmdstanr::variational()}}, depending on the chosen backend.}
 }
 \value{
 A list of arguments to pass to \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}}.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Defines a list specifying the arguments passed to
-\code{\link[rstan:stanmodel-method-vb]{rstan::vb()}}. Custom settings can be supplied which override the defaults.
-}
-\examples{
-rstan_vb_opts(samples = 1000)
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+Deprecated; use \code{\link[=stan_vb_opts]{stan_vb_opts()}} instead.
 }
 \author{
 Sam Abbott

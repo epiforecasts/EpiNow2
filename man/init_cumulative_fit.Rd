@@ -9,7 +9,8 @@ init_cumulative_fit(
   samples = 50,
   warmup = 50,
   id = "init",
-  verbose = FALSE
+  verbose = FALSE,
+  backend = "rstan"
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ run with error catching.}
 
 \item{verbose}{Logical, should fitting progress be returned. Defaults to
 \code{FALSE}.}
+
+\item{backend}{Character string indicating the backend to use for fitting
+stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 }
 \value{
 A stanfit object

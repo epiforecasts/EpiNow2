@@ -233,7 +233,7 @@ estimate_infections <- function(reported_cases,
           args$init_fit == "cumulative") {
       args$init_fit <- init_cumulative_fit(args,
         warmup = 50, samples = 50,
-        id = id, verbose = FALSE
+        id = id, verbose = FALSE, stan$backend
       )
     }
     args$init <- extract_inits(args$init_fit,
@@ -244,14 +244,8 @@ estimate_infections <- function(reported_cases,
     args$init_fit <- NULL
   }
   # Fit model
-  if (args$method == "sampling") {
-    fit <- fit_model_with_nuts(args,
-      future = args$future,
-      max_execution_time = args$max_execution_time, id = id
-    )
-  } else if (args$method == "vb") {
-    fit <- fit_model_with_vb(args, id = id)
-  }
+  fit <- fit_model(args, id = id)
+
   # Extract parameters of interest from the fit
   out <- extract_parameter_samples(fit, data,
     reported_inf_dates = reported_cases$date,
@@ -315,28 +309,31 @@ estimate_infections <- function(reported_cases,
 #' @importFrom futile.logger flog.debug
 #' @importFrom utils capture.output
 #' @inheritParams fit_model_with_nuts
+#' @inheritParams stan_opts
 #' @return A stanfit object
 #' @author Sam Abbott
 init_cumulative_fit <- function(args, samples = 50, warmup = 50,
-                                id = "init", verbose = FALSE) {
+                                id = "init", verbose = FALSE,
+                                backend = "rstan") {
   futile.logger::flog.debug(
     "%s: Fitting to cumulative data to initialise chains", id,
     name = "EpiNow2.epinow.estimate_infections.fit"
   )
   # copy main run settings and override to use only 100 iterations and a single
   # chain
-  initial_args <- list(
-    object = args$object,
-    data = args$data,
-    init = args$init,
-    iter = samples + warmup,
-    warmup = warmup,
-    chains = 1,
-    cores = 2,
-    open_progress = FALSE,
-    show_messages = FALSE,
-    control = list(adapt_delta = 0.9, max_treedepth = 13),
-    refresh = ifelse(verbose, 50, -1)
+  initial_args <- create_stan_args(
+    stan = stan_opts(
+      args$object,
+      samples = samples,
+      warmup = warmup,
+      control = list(adapt_delta = 0.9, max_treedepth = 13),
+      chains = 1,
+      cores = 2,
+      backend = backend,
+      open_progress = FALSE,
+      show_messages = FALSE
+    ),
+    data = args$data, init = args$init
   )
   # change observations to be cumulative in order to protect against noise and
   # give an approximate fit (though for Rt constrained to be > 1)
@@ -345,12 +342,12 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 
   # initial fit
   if (verbose) {
-    fit <- do.call(rstan::sampling, initial_args)
+    fit <- fit_model(initial_args, id = "init_cumulative")
   } else {
     out <- tempfile(tmpdir = tempdir(check = TRUE))
     capture.output(
       {
-        fit <- do.call(rstan::sampling, initial_args)
+        fit <- fit_model(initial_args, id = "init_cumulative")
       },
       type = c("output", "message"),
       split = FALSE,
@@ -415,10 +412,16 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 
   fit_chain <- function(chain, stan_args, max_time, catch = FALSE) {
     stan_args$chain_id <- chain
+    if (inherits(stan_args$object, "stanmodel")) {
+      sample_func <- rstan::sampling
+    } else if (inherits(stan_args$object, "CmdStanModel")) {
+      sample_func <- stan_args$object$sample
+      stan_args$object <- NULL
+    }
     if (catch) {
       fit <- tryCatch(
         withCallingHandlers(
-          R.utils::withTimeout(do.call(rstan::sampling, stan_args),
+          R.utils::withTimeout(do.call(sample_func, stan_args),
             timeout = max_time,
             onTimeout = "silent"
           ),
@@ -441,16 +444,17 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
         }
       )
     } else {
-      fit <- R.utils::withTimeout(do.call(rstan::sampling, stan_args),
+      fit <- R.utils::withTimeout(do.call(sample_func, stan_args),
         timeout = max_time,
         onTimeout = "silent"
       )
     }
 
-    if (is.null(fit) || !is.array(fit)) {
-      return(NULL)
-    } else {
+    if ((inherits(fit, "stanfit") && fit@mode != 2L) ||
+        inherits(fit, "CmdStanMCMC")) {
       return(fit)
+    } else {
+      return(NULL)
     }
   }
 
@@ -494,7 +498,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
       fit <- rstan::sflist2stanfit(fit)
     }
   } else {
-    fit <- fit_chain(1,
+    fit <- fit_chain(seq_len(args$chains),
         stan_args = args, max_time = max_execution_time,
         catch = !id %in% c("estimate_infections", "epinow")
     )
@@ -542,7 +546,13 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
   }
 
   fit_vb <- function(stan_args) {
-    fit <- do.call(rstan::vb, stan_args)
+    if (inherits(stan_args$object, "stanmodel")) {
+      sample_func <- rstan::vb
+    } else if (inherits(stan_args$object, "CmdStanModel")) {
+      sample_func <- stan_args$object$variational
+      stan_args$object <- NULL
+    }
+    fit <- do.call(sample_func, stan_args)
 
     if (length(names(fit)) == 0) {
       return(NULL)

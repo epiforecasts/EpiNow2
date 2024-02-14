@@ -9,6 +9,7 @@ forecast_secondary(
   primary,
   primary_variable = "reported_cases",
   model = NULL,
+  backend = "rstan",
   samples = NULL,
   all_dates = FALSE,
   CrIs = c(0.2, 0.5, 0.9)
@@ -31,6 +32,9 @@ defaulting to "reported_cases". Only used when primary is of class
 \verb{<estimate_infections>}.}
 
 \item{model}{A compiled stan model as returned by \code{\link[rstan:stan_model]{rstan::stan_model()}}.}
+
+\item{backend}{Character string indicating the backend to use for fitting
+stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 
 \item{samples}{Numeric, number of posterior samples to simulate from. The
 default is to use all samples in the \code{primary} input when present. If not

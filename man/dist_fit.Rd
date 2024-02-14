@@ -10,7 +10,8 @@ dist_fit(
   cores = 1,
   chains = 2,
   dist = "exp",
-  verbose = FALSE
+  verbose = FALSE,
+  backend = "rstan"
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ also supported.}
 
 \item{verbose}{Logical, defaults to FALSE. Should verbose progress messages
 be printed.}
+
+\item{backend}{Character string indicating the backend to use for fitting
+stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 }
 \value{
 A stan fit of an interval censored distribution

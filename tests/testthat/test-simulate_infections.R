@@ -20,6 +20,15 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
   expect_equal(names(sims), c("samples", "summarised", "observations"))
 })
 
+test_that("forecast_infections works to simulate a passed in estimate_infections
+           object when using the cmdstanr backend", {
+  skip_on_os("windows")
+  output <- capture.output(suppressMessages(suppressWarnings(
+    sims <- forecast_infections(out, backend = "cmdstanr")
+  )))
+  expect_equal(names(sims), c("samples", "summarised", "observations"))
+})
+
 test_that("forecast_infections works to simulate a passed in estimate_infections object with an adjusted Rt", {
   R <- c(rep(NA_real_, 40), rep(0.5, 17))
   sims <- forecast_infections(out, R)

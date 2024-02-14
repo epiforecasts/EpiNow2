@@ -50,7 +50,7 @@
 #' @param verbose Logical, should model fitting progress be returned. Defaults
 #' to [interactive()].
 #'
-#' @param ... Additional parameters to pass to [rstan::sampling()].
+#' @param ... Additional parameters to pass to [stan_opts()].
 #'
 #' @return A list containing: `predictions` (a `<data.frame>` ordered by date
 #' with the primary, and secondary observations, and a summary of the model
@@ -144,6 +144,7 @@ estimate_secondary <- function(reports,
                                ),
                                truncation = trunc_opts(),
                                obs = obs_opts(),
+                               stan = stan_opts(),
                                burn_in = 14,
                                CrIs = c(0.2, 0.5, 0.9),
                                priors = NULL,
@@ -198,15 +199,10 @@ estimate_secondary <- function(reports,
     c(data, list(estimate_r = 0, fixed = 1, bp_n = 0))
   )
   # fit
-  if (is.null(model)) {
-    model <- stanmodels$estimate_secondary
-  }
-  fit <- rstan::sampling(model,
-    data = data,
-    init = inits,
-    refresh = ifelse(verbose, 50, 0),
-    ...
+  args <- create_stan_args(
+    stan = stan, data = data, init = inits, model = "estimate_secondary"
   )
+  fit <- fit_model(args, id = "estimate_secondary")
 
   out <- list()
   out$predictions <- extract_stan_param(fit, "sim_secondary", CrIs = CrIs)
@@ -603,12 +599,14 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
 #' @importFrom utils tail
 #' @importFrom purrr map
 #' @inheritParams estimate_secondary
+#' @inheritParams stan_opts
 #' @seealso [estimate_secondary()]
 #' @export
 forecast_secondary <- function(estimate,
                                primary,
                                primary_variable = "reported_cases",
                                model = NULL,
+                               backend = "rstan",
                                samples = NULL,
                                all_dates = FALSE,
                                CrIs = c(0.2, 0.5, 0.9)) {
@@ -640,7 +638,7 @@ forecast_secondary <- function(estimate,
   updated_primary <- primary
 
   ## extract samples from given stanfit object
-  draws <- rstan::extract(estimate$fit,
+  draws <- extract_samples(estimate$fit,
     pars = c(
       "sim_secondary", "log_lik",
       "lp__", "secondary"
@@ -680,28 +678,26 @@ forecast_secondary <- function(estimate,
   # combine with data
   data <- c(data, draws)
 
-  # load model
-  if (is.null(model)) {
-    model <- stanmodels$simulate_secondary
-  }
-
   # allocate empty parameters
   data <- allocate_empty(
     data, c("frac_obs", "delay_mean", "delay_sd", "rep_phi"),
     n = data$n
   )
   data$all_dates <- as.integer(all_dates)
+
   ## simulate
-  sims <- rstan::sampling(
-    object = model,
-    data = data, chains = 1, iter = 1,
-    algorithm = "Fixed_param",
-    refresh = 0
+  args <- create_stan_args(
+    stan_opts(
+      model = model, backend = backend, chains = 1, samples = 1, warmup = 1
+    ),
+    data = data, fixed_param = TRUE, model = "simulate_secondary"
   )
+
+  sims <- fit_model(args, id = "simulate_secondary")
 
   # extract samples and organise
   dates <- unique(primary_fit$date)
-  samples <- rstan::extract(sims, "sim_secondary")$sim_secondary
+  samples <- extract_samples(sims, "sim_secondary")$sim_secondary
   samples <- as.data.table(samples)
   colnames(samples) <- c("iterations", "sample", "time", "value")
   samples <- samples[, c("iterations", "time") := NULL]

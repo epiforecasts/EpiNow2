@@ -40,3 +40,8 @@ vignettes/results
 
 # unused figures
 man/figures/*.png
+
+# exclude compiled stan files
+inst/stan/*
+!inst/stan/*/
+!inst/stan/*.stan

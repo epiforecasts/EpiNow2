@@ -5,7 +5,9 @@
 \title{Stan Options}
 \usage{
 stan_opts(
+  object = NULL,
   samples = 2000,
+  method = "sampling",
   backend = "rstan",
   init_fit = NULL,
   return_fit = TRUE,
@@ -13,11 +15,21 @@ stan_opts(
 )
 }
 \arguments{
+\item{object}{Stan model object. By default uses the compiled package
+default if using the "rstan" backend, and the default model obtained using
+\code{\link[=package_model]{package_model()}} if using the "cmdstanr" backend. If wanting alternative
+options to the default with the "cmdstanr" backend, pass the result of
+a call to \code{\link[=package_model]{package_model()}} with desired arguments instead.}
+
 \item{samples}{Numeric, default 2000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}
 
+\item{method}{A character string, defaulting to sampling. Currently supports
+MCMC sampling ("sampling") or approximate posterior sampling via
+variational inference ("vb").}
+
 \item{backend}{Character string indicating the backend to use for fitting
-stan models. Currently only "rstan" is supported.}
+stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 
 \item{init_fit}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 Character string or \code{stanfit} object, defaults to NULL. Should an initial
@@ -35,16 +47,17 @@ James Scott.}
 \item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be
 returned.}
 
-\item{...}{Additional parameters to pass  underlying option functions.}
+\item{...}{Additional parameters to pass to underlying option functions,
+\code{\link[=stan_sampling_opts]{stan_sampling_opts()}} or \code{\link[=stan_vb_opts]{stan_vb_opts()}}, depending on the method}
 }
 \value{
-A \verb{<stan_opts>} object  of arguments to pass to the appropriate
+A \verb{<stan_opts>} object of arguments to pass to the appropriate
 rstan functions.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to underlying stan
-backend functions via \code{\link[=rstan_sampling_opts]{rstan_sampling_opts()}} and \code{\link[=rstan_vb_opts]{rstan_vb_opts()}}. Custom
+backend functions via \code{\link[=stan_sampling_opts]{stan_sampling_opts()}} and \code{\link[=stan_vb_opts]{stan_vb_opts()}}. Custom
 settings can be supplied which override the defaults.
 }
 \examples{
@@ -55,8 +68,10 @@ stan_opts(samples = 1000)
 stan_opts(method = "vb")
 }
 \seealso{
-\code{\link[=rstan_opts]{rstan_opts()}}
+\code{\link[=stan_sampling_opts]{stan_sampling_opts()}} \code{\link[=stan_vb_opts]{stan_vb_opts()}}
 }
 \author{
 Sam Abbott
+
+Sebastian Funk
 }

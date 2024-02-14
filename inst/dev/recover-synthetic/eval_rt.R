@@ -23,13 +23,13 @@ dl <- bind_rows(looic, .id = "model") %>%
 
 R_samples <- lapply(synthetic$models, function(x) {
   if ("R[1]" %in% names(x$fit)) {
-    rstan::extract(x$fit, "R")$R
+    extract(x$fit, "R")$R
   } else {
-    rstan::extract(x$fit, "gen_R")$gen_R
+    extract(x$fit, "gen_R")$gen_R
   }
 })
 inf_samples <- lapply(synthetic$models, function(x) {
-  rstan::extract(x$fit, "infections")$infections
+  extract(x$fit, "infections")$infections
 })
 
 calc_crps <- function(x, truth) {

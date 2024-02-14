@@ -109,6 +109,7 @@ Imports:
     lubridate,
     methods,
     patchwork,
+    posterior,
     progressr,
     purrr,
     R.utils (>= 2.0.0),
@@ -122,6 +123,7 @@ Imports:
     truncnorm,
     utils
 Suggests:
+    cmdstanr,
     covr,
     dplyr,
     here,
@@ -143,13 +145,15 @@ LinkingTo:
     RcppParallel (>= 5.0.1),
     rstan (>= 2.26.0),
     StanHeaders (>= 2.26.0)
+Additional_repositories:
+    https://mc-stan.org/r-packages/
 Biarch: true
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-GB
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 NeedsCompilation: yes
 SystemRequirements: GNU make
        C++17

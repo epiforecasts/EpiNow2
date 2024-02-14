@@ -147,10 +147,19 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                   max = 10
                                 ),
                                 model = NULL,
+                                stan = stan_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
                                 weigh_delay_priors = FALSE,
                                 verbose = TRUE,
                                 ...) {
+
+  if (!is.null(model)) {
+    lifecycle::deprecate_stop(
+      "2.0.0",
+      "estimate_truncation(model)",
+      "estimate_truncation(stan)"
+    )
+  }
   # Validate inputs
   walk(obs, check_reports_valid, model = "estimate_truncation")
   assert_class(truncation, "dist_spec")
@@ -230,7 +239,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   obs_start <- max(nrow(obs) - trunc_max - sum(is.na(obs$`1`)) + 1, 1)
   obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
   obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
-  obs_data <- obs_data[obs_start:.N]
+  obs_data <- as.matrix(obs_data[obs_start:.N])
 
   # convert to stan list
   data <- list(
@@ -261,23 +270,20 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   }
 
   # fit
-  if (is.null(model)) {
-    model <- stanmodels$estimate_truncation
-  }
-  fit <- rstan::sampling(model,
-    data = data,
-    init = init_fn,
-    refresh = ifelse(verbose, 50, 0),
-    ...
+  args <- create_stan_args(
+    stan = stan, data = data, init = init_fn, model = "estimate_truncation"
   )
+  fit <- fit_model(args, id = "estimate_truncation")
 
   out <- list()
   # Summarise fit truncation distribution for downstream usage
+  delay_mean <- extract_stan_param(fit, params = "delay_mean")
+  delay_sd <- extract_stan_param(fit, params = "delay_sd")
   out$dist <- dist_spec(
-    mean = round(rstan::summary(fit, pars = "delay_mean")$summary[1], 3),
-    mean_sd = round(rstan::summary(fit, pars = "delay_mean")$summary[3], 3),
-    sd = round(rstan::summary(fit, pars = "delay_sd")$summary[1], 3),
-    sd_sd = round(rstan::summary(fit, pars = "delay_sd")$summary[3], 3),
+    mean = round(delay_mean$mean, 3),
+    mean_sd = round(delay_mean$sd, 3),
+    sd = round(delay_sd$mean, 3),
+    sd_sd = round(delay_sd$sd, 3),
     max = truncation$max
   )
   out$dist$dist <- truncation$dist

@@ -21,11 +21,12 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          dependencies: NA
           extra-packages: |
+            stan-dev/cmdstanr
             any::gh
             any::lintr
             any::purrr
-          needs: check
 
       - name: Add lintr options
         run: |
