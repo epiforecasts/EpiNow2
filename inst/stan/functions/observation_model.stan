@@ -77,8 +77,10 @@ void report_lp(array[] int cases, array[] int cases_time, vector reports,
     obs_cases = cases;
   }
   if (model_type) {
-    real dispersion = 1 / pow(rep_phi[model_type], 2);
-    rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
+    real dispersion = 1 / pow(phi_sd > 0 ? rep_phi[model_type] : phi_mean, 2);
+    if (phi_sd > 0) {
+      rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
+    }
     if (weight == 1) {
       obs_cases ~ neg_binomial_2(obs_reports, dispersion);
     } else {
