@@ -54,9 +54,23 @@ test_that("create_obs_model can be used with a custom week length", {
 })
 
 test_that("create_obs_model can be used with a user set phi", {
-  obs <- create_obs_model(dates = dates, obs = obs_opts(phi = c(10, 0.1)))
+  obs <- create_obs_model(
+    dates = dates, obs = obs_opts(phi = list(mean = 10, sd = 0.1))
+  )
   expect_equal(obs$phi_mean, 10)
   expect_equal(obs$phi_sd, 0.1)
-  expect_error(obs_opts(phi = c(10)))
+  obs <- create_obs_model(
+    dates = dates,
+    obs = obs_opts(phi = 0.5)
+  )
+  expect_equal(obs$phi_mean, 0.5)
+  expect_equal(obs$phi_sd, 0)
   expect_error(obs_opts(phi = c("Hi", "World")))
+})
+
+test_that("using a vector for phi in create_obs_model is deprecated", {
+  expect_warning(
+    create_obs_model(dates = dates, obs = obs_opts(phi = c(10, 0.1))),
+    "deprecated"
+  )
 })
