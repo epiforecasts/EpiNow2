@@ -126,7 +126,7 @@ reference:
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases
     contents:
-      - forecast_infections
+      - simulate_infections
       - simulate_secondary
       - adjust_infection_to_report
   - title: Data
@@ -164,3 +164,4 @@ reference:
       - add_day_of_week
       - update_secondary_args
       - update_list
+      - package_model
