@@ -438,11 +438,11 @@ gp_opts <- function(basis_prop = 0.2,
 #' @param week_length Numeric assumed length of the week in days, defaulting to
 #'   7 days. This can be modified if data aggregated over a period other than a
 #'   week or if data has a non-weekly periodicity.
-#' @param scale Defaults to 1. Should an scaling factor be applied to
-#'   map latent infections (convolved to date of report). Can be supplied either
-#'   as a single numeric value (fixed scale) or a list with numeric elements
-#'   mean (`mean`) and standard deviation (`sd`) defining a normally
-#'   distributed scaling factor.
+#' @param scale Scaling factor to be applied to map latent infections (convolved
+#'   to date of report). Can be supplied either as a single numeric value (fixed
+#'   scale) or a list with numeric elements mean (`mean`) and standard deviation
+#'   (`sd`) defining a normally distributed scaling factor. Defaults to 1, i.e.
+#'   no scaling.
 #' @param na Character. Options are "missing" (the default) and "accumulate".
 #'   This determines how NA values in the data are interpreted. If set to
 #'   "missing", any NA values in the observation data set will be interpreted as
