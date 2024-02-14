@@ -46,7 +46,7 @@ missing and skipped in the likelihood. If set to "accumulate", modelled
 observations will be accumulated and added to the next non-NA data point.
 This can be used to model incidence data that is reported at less than
 daily intervals. If set to "accumulate", the first data point is not
-included in the data point but used only to reset modelled observations to
+included in the likelihood but used only to reset modelled observations to
 zero.}
 
 \item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be

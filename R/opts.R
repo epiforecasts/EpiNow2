@@ -449,7 +449,7 @@ gp_opts <- function(basis_prop = 0.2,
 #'   observations will be accumulated and added to the next non-NA data point.
 #'   This can be used to model incidence data that is reported at less than
 #'   daily intervals. If set to "accumulate", the first data point is not
-#'   included in the data point but used only to reset modelled observations to
+#'   included in the likelihood but used only to reset modelled observations to
 #'   zero.
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #'   included in the model.
@@ -481,6 +481,16 @@ obs_opts <- function(family = "negbin",
     stop("phi be numeric and of length two")
   }
   na <- arg_match(na)
+  if (na == "accumulate") {
+    message(
+      "Accmulating modelled values that correspond to NA values in the data ",
+      "by adding them to the next non-NA data point. This means that the ",
+      "first data point is not included in the likelihood but used only to ",
+      "reset modelled observations to zero. If the first data point should be ",
+      "included in the likelihood this can be achieved by adding a data point ",
+      "of arbitrary value before the first data point."
+    )
+  }
 
   obs <- list(
     family = arg_match(family, values = c("poisson", "negbin")),
