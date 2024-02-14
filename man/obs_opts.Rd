@@ -6,7 +6,7 @@
 \usage{
 obs_opts(
   family = "negbin",
-  phi = c(0, 1),
+  phi = list(mean = 0, sd = 1),
   weight = 1,
   week_effect = TRUE,
   week_length = 7,
@@ -20,9 +20,11 @@ obs_opts(
 \item{family}{Character string defining the observation model. Options are
 Negative binomial ("negbin"), the default, and Poisson.}
 
-\item{phi}{A numeric vector of length 2, defaults to 0, 1. Indicates the mean
-and standard deviation of the normal prior used for the observation
-process.}
+\item{phi}{Overdispersion parameter of the reporting process, used only if
+\code{familiy} is "negbin". Can be supplied either as a single numeric value
+(fixed overdispersion) or a list with numeric elements mean (\code{mean}) and
+standard deviation (\code{sd}) defining a normally distributed overdispersion.
+Defaults to a list with elements \code{mean = 0} and \code{sd = 1}.}
 
 \item{weight}{Numeric, defaults to 1. Weight to give the observed data in the
 log density.}
