@@ -480,7 +480,7 @@ obs_opts <- function(family = "negbin",
   if (length(phi) != 2 || !is.numeric(phi)) {
     stop("phi be numeric and of length two")
   }
-  na <- arg_match(na, values = c("missing", "accumulate"))
+  na <- arg_match(na)
 
   obs <- list(
     family = arg_match(family, values = c("poisson", "negbin")),
