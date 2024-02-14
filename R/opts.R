@@ -436,9 +436,8 @@ gp_opts <- function(basis_prop = 0.2,
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week
 #'   effect be used in the observation model.
 #' @param week_length Numeric assumed length of the week in days, defaulting to
-#' 7 days. This can be modified if data aggregated over a period other than a
-#' week or if data has a non-weekly periodicity.
-#'
+#'   7 days. This can be modified if data aggregated over a period other than a
+#'   week or if data has a non-weekly periodicity.
 #' @param scale Defaults to 1. Should an scaling factor be applied to
 #'   map latent infections (convolved to date of report). Can be supplied either
 #'   as a single numeric value (fixed scale) or a list with numeric elements
