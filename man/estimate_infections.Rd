@@ -159,7 +159,7 @@ options(old_opts)
 }
 }
 \seealso{
-\code{\link[=epinow]{epinow()}} \code{\link[=regional_epinow]{regional_epinow()}} \code{\link[=simulate_infections]{simulate_infections()}}
+\code{\link[=epinow]{epinow()}} \code{\link[=regional_epinow]{regional_epinow()}} \code{\link[=forecast_infections]{forecast_infections()}}
 \code{\link[=estimate_truncation]{estimate_truncation()}}
 }
 \author{

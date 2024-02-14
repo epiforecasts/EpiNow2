@@ -1,4 +1,22 @@
-#' Simulate infections using a given trajectory of the time-varying
+#' Deprecated; use [forecast_infections()] instead
+#'
+#' Calling this function passes all arguments to [forecast_infections()]
+#' @description `r lifecycle::badge("deprecated")`
+#' @param ... Arguments to be passed to [forecast_infections()]
+#' @return the result of [forecast_infections()]
+#' @export
+simulate_infections <- function(...) {
+    deprecate_warn(
+      "2.0.0",
+      "simulate_infections()",
+      "forecast_infections()",
+      "A new [simulate_infections()] function for simulating from given ",
+      "parameters is planned for implementation in the future."
+    )
+   forecast_infections(...)
+}
+
+#' Forecast infections from a given fit and trajectory of the time-varying
 #' reproduction number
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -63,7 +81,7 @@
 #'
 #' # update Rt trajectory and simulate new infections using it
 #' R <- c(rep(NA_real_, 26), rep(0.5, 10), rep(0.8, 7))
-#' sims <- simulate_infections(est, R)
+#' sims <- forecast_infections(est, R)
 #' plot(sims)
 #'
 #' # with a data.frame input of samples
@@ -74,7 +92,7 @@
 #'   ),
 #'   value = R
 #' )
-#' sims <- simulate_infections(est, R_dt)
+#' sims <- forecast_infections(est, R_dt)
 #' plot(sims)
 #'
 #' #' # with a data.frame input of samples
@@ -83,12 +101,12 @@
 #'  .(date, sample, value)][sample <= 1000][date <= "2020-04-10"
 #' ]
 #' R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
-#' sims <- simulate_infections(est, R_samples)
+#' sims <- forecast_infections(est, R_samples)
 #' plot(sims)
 #'
 #' options(old_opts)
 #' }
-simulate_infections <- function(estimates,
+forecast_infections <- function(estimates,
                                 R = NULL,
                                 model = NULL,
                                 samples = NULL,

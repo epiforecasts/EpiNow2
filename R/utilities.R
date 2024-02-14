@@ -163,7 +163,7 @@ allocate_delays <- function(delay_var, no_delays) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Allocate missing parameters to be empty two dimensional arrays. Used
-#' internally by [simulate_infections()].
+#' internally by [forecast_infections()].
 #' @param data A list of parameters
 #' @param params A character vector of parameters to allocate to
 #' empty if missing.
@@ -423,7 +423,7 @@ set_dt_single_thread <- function() {
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
 #' @importFrom lifecycle deprecate_warn
-#' @importFrom stats rlnorm rnorm rpois runif sd var rgamma
+#' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
 globalVariables(
   c(
     "bottom", "cases", "confidence", "confirm", "country_code", "crps",

@@ -176,7 +176,7 @@ options(old_opts)
 }
 }
 \seealso{
-\code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=simulate_infections]{simulate_infections()}} \code{\link[=regional_epinow]{regional_epinow()}}
+\code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=forecast_infections]{forecast_infections()}} \code{\link[=regional_epinow]{regional_epinow()}}
 }
 \author{
 Sam Abbott
