@@ -51,7 +51,7 @@ parameters{
   array[delay_n_p] real delay_mean;         // mean of delays
   array[delay_n_p] real<lower = 0> delay_sd;  // sd of delays
   simplex[week_effect] day_of_week_simplex;// day of week reporting effect
-  array[obs_scale] real<lower = 0, upper = 1> frac_obs;     // fraction of cases that are ultimately observed
+  array[obs_scale_sd > 0 ? 1 : 0] real<lower = 0, upper = 1> frac_obs;     // fraction of cases that are ultimately observed
   array[model_type] real<lower = 0> rep_phi;     // overdispersion of the reporting process
 }
 
@@ -105,7 +105,7 @@ transformed parameters {
   }
   // scaling of reported cases by fraction observed
  if (obs_scale) {
-   reports = scale_obs(reports, frac_obs[1]);
+   reports = scale_obs(reports, obs_scale_sd > 0 ? frac_obs[1] : obs_scale_mean);
  }
  // truncate near time cases to observed reports
  if (trunc_id) {
@@ -142,7 +142,7 @@ model {
     );
   }
   // prior observation scaling
-  if (obs_scale) {
+  if (obs_scale_sd > 0) {
     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];
   }
   // observed reports from mean of reports (update likelihood)

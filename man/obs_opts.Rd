@@ -10,7 +10,7 @@ obs_opts(
   weight = 1,
   week_effect = TRUE,
   week_length = 7,
-  scale = list(),
+  scale = 1,
   na = c("missing", "accumulate"),
   likelihood = TRUE,
   return_likelihood = FALSE
@@ -34,10 +34,11 @@ effect be used in the observation model.}
 7 days. This can be modified if data aggregated over a period other than a
 week or if data has a non-weekly periodicity.}
 
-\item{scale}{List, defaulting to an empty list. Should an scaling factor be
-applied to map latent infections (convolved to date of report). If none
-empty a mean (\code{mean}) and standard deviation (\code{sd}) needs to be supplied
-defining the normally distributed scaling factor.}
+\item{scale}{Defaults to 1. Should an scaling factor be applied to
+map latent infections (convolved to date of report). Can be supplied either
+as a single numeric value (fixed scale) or a list with numeric elements
+mean (\code{mean}) and standard deviation (\code{sd}) defining a normally
+distributed scaling factor.}
 
 \item{na}{Character. Options are "missing" (the default) and "accumulate".
 This determines how NA values in the data are interpreted. If set to

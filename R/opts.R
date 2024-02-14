@@ -438,10 +438,12 @@ gp_opts <- function(basis_prop = 0.2,
 #' @param week_length Numeric assumed length of the week in days, defaulting to
 #' 7 days. This can be modified if data aggregated over a period other than a
 #' week or if data has a non-weekly periodicity.
-#' @param scale List, defaulting to an empty list. Should an scaling factor be
-#'   applied to map latent infections (convolved to date of report). If none
-#'   empty a mean (`mean`) and standard deviation (`sd`) needs to be supplied
-#'   defining the normally distributed scaling factor.
+#'
+#' @param scale Defaults to 1. Should an scaling factor be applied to
+#'   map latent infections (convolved to date of report). Can be supplied either
+#'   as a single numeric value (fixed scale) or a list with numeric elements
+#'   mean (`mean`) and standard deviation (`sd`) defining a normally
+#'   distributed scaling factor.
 #' @param na Character. Options are "missing" (the default) and "accumulate".
 #'   This determines how NA values in the data are interpreted. If set to
 #'   "missing", any NA values in the observation data set will be interpreted as
@@ -473,7 +475,7 @@ obs_opts <- function(family = "negbin",
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
-                     scale = list(),
+                     scale = 1,
                      na = c("missing", "accumulate"),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
@@ -504,13 +506,13 @@ obs_opts <- function(family = "negbin",
     return_likelihood = return_likelihood
   )
 
-  if (length(obs$scale) != 0) {
-    scale_names <- names(obs$scale)
-    scale_correct <- "mean" %in% scale_names & "sd" %in% scale_names
-    if (!scale_correct) {
-      stop("If specifying a scale both a mean and sd are needed")
-    }
+  if (is.numeric(obs$scale)) {
+    obs$scale <- list(mean = obs$scale, sd = 0)
   }
+  if (!(all(c("mean", "sd") %in% names(obs$scale)))) {
+    stop("If specifying a scale as list both a mean and sd are needed")
+  }
+
   attr(obs, "class") <- c("obs_opts", class(obs))
   return(obs)
 }

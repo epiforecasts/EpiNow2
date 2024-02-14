@@ -243,7 +243,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
       value.V1 := NULL
     ]
   }
-  if (data$obs_scale == 1) {
+  if (data$obs_scale_sd > 0) {
     out$fraction_observed <- extract_static_parameter("frac_obs", samples)
     out$fraction_observed <- out$fraction_observed[, value := value.V1][,
       value.V1 := NULL
