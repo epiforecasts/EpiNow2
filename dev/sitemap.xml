@@ -205,6 +205,9 @@
     <loc>epiforecasts.io/EpiNow2/dev/reference/extract_parameter_samples.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/extract_samples.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/extract_stan_param.html</loc>
   </url>
   <url>
@@ -214,6 +217,9 @@
     <loc>epiforecasts.io/EpiNow2/dev/reference/filter_opts.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/fit_model.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/fit_model_with_nuts.html</loc>
   </url>
   <url>
@@ -221,6 +227,9 @@
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/fix_dist.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/forecast_infections.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/forecast_secondary.html</loc>
@@ -296,6 +305,9 @@
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/opts_list.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/package_model.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/plot.dist_spec.html</loc>
@@ -403,7 +415,16 @@
     <loc>epiforecasts.io/EpiNow2/dev/reference/simulate_secondary.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/stan_model.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/stan_opts.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/stan_sampling_opts.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/stan_vb_opts.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/summarise_key_measures.html</loc>

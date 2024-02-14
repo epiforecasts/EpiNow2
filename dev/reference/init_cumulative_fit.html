@@ -106,7 +106,8 @@ James Scott.</p>
 <span>  samples <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  warmup <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  id <span class="op">=</span> <span class="st">"init"</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  backend <span class="op">=</span> <span class="st">"rstan"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -133,6 +134,11 @@ run with error catching.</p></dd>
 <dt>verbose</dt>
 <dd><p>Logical, should fitting progress be returned. Defaults to
 <code>FALSE</code>.</p></dd>
+
+
+<dt>backend</dt>
+<dd><p>Character string indicating the backend to use for fitting
+stan models. Supported arguments are "rstan" (default) or "cmdstanr".</p></dd>
 
 </dl></div>
     <div class="section level2">
