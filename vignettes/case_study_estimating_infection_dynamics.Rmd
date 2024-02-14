@@ -204,6 +204,8 @@ abline(v = as.Date("2020-03-23"),lty=2)
 
 As a second example, we will repeat the analysis, but using data on onset dates from the first recorded outbreak in Yambuku, 1976 ([Camacho et al, Epidemics, 2014](https://pubmed.ncbi.nlm.nih.gov/25480136/)).
 
+This outbreak starts with a single case identified on 25th August 1976, then no further cases until 1st September, after which cases continue to be reported. We therefore focus on the period after 1st September, because it can be challenging for EpiNow2 to estimate dynamics when there is a prolonged initial period of zero counts.
+
 ```{r, include = FALSE}
 # Load Ebola data from the CFR package
 data("ebola1976")
@@ -211,7 +213,7 @@ data("ebola1976")
 # Extract data on case onsets and format for EpiNow 2
 incidence_data_ebola <- ebola1976 |> dplyr::select(date,cases)
 incidence_data_ebola <- dplyr::rename(incidence_data_ebola, confirm = cases)
-incidence_data_ebola$date <- as.Date(incidence_data_ebola$date)
+incidence_data_ebola <- incidence_data_ebola |> dplyr::filter(date>="1976-09-01")
 
 # Preview data
 head(incidence_data_ebola)
@@ -277,15 +279,15 @@ serial_interval_ebola <- Gamma(
 
 ### Run model
 
-With parameters defined, we reconstruct infection timings from the case onset data.
+With parameters defined, we reconstruct infection timings from the case onset data. Because there are relatively low numbers of cases, the non-mechanistic model can be unstable, so we remove the `rt=NULL` argument to reconstruct infections using model of the transmission process based on a ["renewal equation"](https://epiforecasts.io/EpiNow2/articles/estimate_infections.html).
 
 ```{r, include = FALSE}
 # Run infection estimation model
 epinow_estimates <- epinow(
-  reported_cases = incidence_data, # time series data
+  reported_cases = incidence_data_ebola, # time series data
   generation_time = generation_time_opts(serial_interval_ebola), # assume generation time = serial interval
   delays = delay_opts(incubation_period_ebola), # delay from infection-to-death
-  rt = NULL, # no Rt estimation
+  # rt = NULL, # implement Rt estimation
   stan = stan_opts( # set up options for inference
     cores = 4, samples = 1000, chains = 3,
     control = list(adapt_delta = 0.99)
@@ -301,7 +303,7 @@ infection_estimates <- epinow_estimates$estimates$summarised |> dplyr::filter(va
 ### Plot comparison of observed outcomes and estimated infections
 ```{r class.source = 'fold-hide', class.source = 'fold-hide', fig.cap="Estimated dynamics of Ebola infections among those with subsequent onsets in the 1976 Yambuku outbreak, reconstructed using reported case data. Dashed line shows the date on which the local hospital - and source of early nosocomial infections - was closed (30 Sep)."}
 par(mfrow=c(1,1),mgp=c(2.5,0.7,0),mar = c(3,3.5,1,1))
-plot(incidence_data$date,incidence_data$confirm,ylim=c(0,20),col="red",xlab="",ylab="count",type="l",lwd=2,
+plot(incidence_data_ebola$date,incidence_data_ebola$confirm,ylim=c(0,20),col="red",xlab="",ylab="count",type="l",lwd=2,
      xlim=c(as.Date("1976-08-25"),as.Date("1976-11-05")))
 lines(infection_estimates$date,infection_estimates$median,lwd=2,col="dark blue")
 polygon(c(infection_estimates$date,rev(infection_estimates$date)),
