@@ -492,6 +492,13 @@ obs_opts <- function(family = "negbin",
     )
   }
 
+  if (length(phi) == 2 && is.numeric(phi)) {
+    warning(
+      "Specifying `phi` as a length 2 vector is deprecated. Mean and SD ",
+      "should be given as list elements."
+    )
+    phi <- list(mean = phi[1], sd = phi[2])
+  }
   obs <- list(
     family = arg_match(family, values = c("poisson", "negbin")),
     phi = phi,
