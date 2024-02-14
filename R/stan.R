@@ -59,8 +59,17 @@ package_model <- function(model = "estimate_infections",
 ##' @return A stan model object (either \code{rstan::stanmodel} or
 ##'   \code{cmdstanr::CmdStanModel}, depending on the backend)
 ##' @author Sebastian Funk
+##' @importFrom rlang arg_match
 ##' @keywords internal
 stan_model <- function(backend = "rstan", model = "estimate_infections") {
+  backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
+  model <- arg_match(
+    model,
+    values = c(
+      "estimate_infections", "simulate_infections", "estimate_secondary",
+      "simulate_secondary", "estimate_truncation", "dist_fit"
+    )
+  )
   if (backend == "cmdstanr") {
     object <- package_model(model = model)
   } else {

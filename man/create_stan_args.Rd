@@ -21,13 +21,13 @@ settings if desired.}
 \item{data}{A list of stan data as created by \code{\link[=create_stan_data]{create_stan_data()}}}
 
 \item{init}{Initial conditions passed to \code{{rstan}}. Defaults to "random"
-(initital values randomly drawn between -2 and 2) but can also be a
+(initial values randomly drawn between -2 and 2) but can also be a
 function (as supplied by \code{\link[=create_initial_conditions]{create_initial_conditions()}}).}
 
 \item{model}{Character, name of the model for which arguments are
 to be created.}
 
-\item{fixed_param}{Logiccal, defaults to \code{FALSE}. Should arguments be
+\item{fixed_param}{Logical, defaults to \code{FALSE}. Should arguments be
 created to sample from fixed parameters (used by simulation functions).}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress
