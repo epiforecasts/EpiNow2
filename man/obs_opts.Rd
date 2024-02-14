@@ -11,7 +11,7 @@ obs_opts(
   week_effect = TRUE,
   week_length = 7,
   scale = list(),
-  na = "missing",
+  na = c("missing", "accumulate"),
   likelihood = TRUE,
   return_likelihood = FALSE
 )
@@ -20,12 +20,12 @@ obs_opts(
 \item{family}{Character string defining the observation model. Options are
 Negative binomial ("negbin"), the default, and Poisson.}
 
-\item{phi}{A numeric vector of length 2, defaults to 0, 1. Indicates the
-mean and standard deviation of the normal prior used for the observation
+\item{phi}{A numeric vector of length 2, defaults to 0, 1. Indicates the mean
+and standard deviation of the normal prior used for the observation
 process.}
 
-\item{weight}{Numeric, defaults to 1. Weight to give the observed data in
-the log density.}
+\item{weight}{Numeric, defaults to 1. Weight to give the observed data in the
+log density.}
 
 \item{week_effect}{Logical defaulting to \code{TRUE}. Should a day of the week
 effect be used in the observation model.}
