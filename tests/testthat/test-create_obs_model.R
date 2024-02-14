@@ -34,6 +34,15 @@ test_that("create_obs_model can be used with a scaling", {
   expect_equal(obs$obs_scale_sd, 0.01)
 })
 
+test_that("create_obs_model can be used with fixed scaling", {
+  obs <- create_obs_model(
+    dates = dates,
+    obs = obs_opts(scale = 0.4)
+  )
+  expect_equal(obs$obs_scale_mean, 0.4)
+  expect_equal(obs$obs_scale_sd, 0)
+})
+
 test_that("create_obs_model can be used with no week effect", {
   obs <- create_obs_model(dates = dates, obs = obs_opts(week_effect = FALSE))
   expect_equal(obs$week_effect, 1)
