@@ -36,7 +36,7 @@ We want to estimate infection dynamics from incidence data on delayed outcomes s
 :::
 
 First, we load the necessary packages for this vignette.
-```{r, include =FALSE}
+```{r}
 # Load EpiNow2 1.4.9 version with dist-interface available (TO DO: replace later when in main)
 remotes::install_github("epiforecasts/EpiNow2@dist-interface")
 library(EpiNow2)
@@ -57,7 +57,7 @@ library(cfr) # required for Ebola data (included in this package)
 
 We load daily data on reported COVID deaths from the [UK COVID dashboard](https://coronavirus.data.gov.uk/details/deaths?areaType=overview&areaName=United%20Kingdom) by copying the 'download data as csv' link, then using the `httr` package to import into R and format as a `data.frame`. The `EpiNow2` package expects data in a two column format with names `date` and `confirm` so we format the imported data accordingly.
 
-```{r, include = FALSE}
+```{r}
 # Define URL for the UK COVID dashboard API
 uk_dashboard_url <- "https://coronavirus.data.gov.uk/api/v1/data?filters=areaType=overview;areaName=United%2520Kingdom&structure=%7B%22areaType%22:%22areaType%22,%22areaName%22:%22areaName%22,%22areaCode%22:%22areaCode%22,%22date%22:%22date%22,%22newDailyNsoDeathsByDeathDate%22:%22newDailyNsoDeathsByDeathDate%22,%22cumDailyNsoDeathsByDeathDate%22:%22cumDailyNsoDeathsByDeathDate%22%7D&format=csv"
 
@@ -83,7 +83,7 @@ head(incidence_data)
 
 Next, we import an estimate of the COVID incubation period (i.e. delay from infection to symptom onset) and onset-to-death distributions from `epiparameter`, then combine these two distributions to specify the infection-to-death distribution and plot the result:
 
-```{r, include = FALSE}
+```{r}
 # Extract infection-to-death distribution (from Aloon et al)
 incubation_period_in <-
   epiparameter::epidist_db(disease = "covid",epi_dist = "incubation",single_epidist = T)
@@ -129,7 +129,7 @@ plot(infection_to_death)
 
 For EpiNow2, we also need to define the timescale of the epidemic, i.e. the delay from one infection to the next. We can use serial interval (delay from onset of infector to onset of infectee) as a proxy for this if we assume that the variance of the incubation period of the infector is independent of the variance of the time from onset of symptoms in the infector to infection of the infectee ([Lehtinen et al, JR Soc Interface, 2021](https://royalsocietypublishing.org/doi/10.1098/rsif.2020.0756)).
 
-```{r, include = FALSE}
+```{r}
 # Extract serial interval distribution distribution (from Yang et al)
 serial_interval_in <-
   epiparameter::epidist_db(
@@ -163,7 +163,7 @@ serial_interval_covid <- LogNormal(
 
 To reconstruct infection dynamics from deaths, we use a non-mechanistic infection model (see the ["estimate_infections()"](https://epiforecasts.io/EpiNow2/articles/estimate_infections.html) vignette for more details of this model, which uses a [Gaussian Process implementation](https://epiforecasts.io/EpiNow2/articles/gaussian_process_implementation_details.html)). Because this model does not calculate the time varying reproduction number $R_t$, it can be run by setting `rt=NULL` in the main `epinow()` function (which calls `estimate_infections()` in the background).
 
-```{r, include = FALSE}
+```{r}
 # Run infection estimation model
 epinow_estimates <- epinow(
   reported_cases = incidence_data, # time series data
@@ -206,7 +206,7 @@ As a second example, we will repeat the analysis, but using data on onset dates 
 
 This outbreak starts with a single case identified on 25th August 1976, then no further cases until 1st September, after which cases continue to be reported. We therefore focus on the period after 1st September, because it can be challenging for EpiNow2 to estimate dynamics when there is a prolonged initial period of zero counts.
 
-```{r, include = FALSE}
+```{r}
 # Load Ebola data from the CFR package
 data("ebola1976")
 
@@ -223,7 +223,7 @@ head(incidence_data_ebola)
 
 Next, we import an estimate of the Ebola incubation period that we will use to reconstruct infections. This time, the extracted parameter follows a gamma distribution, so we use the `Gamma()` function in `EpiNow2`.
 
-```{r, include = FALSE}
+```{r}
 # Extract infection-to-death distribution (from WHO Ebola Response Team)
 incubation_period_ebola_in <-
   epiparameter::epidist_db(disease = "ebola",epi_dist = "incubation",single_epidist = T)
@@ -247,7 +247,7 @@ plot(incubation_period_ebola)
 
 Next, we define the timescale of the epidemic:
 
-```{r, include = FALSE}
+```{r}
 # Extract serial interval distribution distribution (from WHO Ebola Response Teaml)
 serial_interval_ebola_in <-
   epiparameter::epidist_db(
@@ -281,13 +281,13 @@ serial_interval_ebola <- Gamma(
 
 With parameters defined, we reconstruct infection timings from the case onset data. Because there are relatively low numbers of cases, the non-mechanistic model can be unstable, so we remove the `rt=NULL` argument to reconstruct infections using model of the transmission process based on a ["renewal equation"](https://epiforecasts.io/EpiNow2/articles/estimate_infections.html).
 
-```{r, include = FALSE}
+```{r}
 # Run infection estimation model
 epinow_estimates <- epinow(
   reported_cases = incidence_data_ebola, # time series data
   generation_time = generation_time_opts(serial_interval_ebola), # assume generation time = serial interval
   delays = delay_opts(incubation_period_ebola), # delay from infection-to-death
-  # rt = NULL, # implement Rt estimation
+  # rt = NULL, # comment out to implement Rt estimation
   stan = stan_opts( # set up options for inference
     cores = 4, samples = 1000, chains = 3,
     control = list(adapt_delta = 0.99)
