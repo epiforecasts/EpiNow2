@@ -84,7 +84,6 @@ stan_model <- function(backend = "rstan", model = "estimate_infections") {
 #' @inheritParams fit_model_with_nuts
 #' @keywords internal
 fit_model <- function(args, id = "stan") {
-  args$method <- arg_match(args$method, values = c("sampling", "vb"))
   if (args$method == "sampling") {
     fit <- fit_model_with_nuts(
       args,
@@ -93,6 +92,8 @@ fit_model <- function(args, id = "stan") {
     )
   } else if (args$method == "vb") {
     fit <- fit_model_with_vb(args, id = id)
+  } else {
+    stop("args$method must be one of 'sampling' or 'vb'")
   }
   return(fit)
 }
