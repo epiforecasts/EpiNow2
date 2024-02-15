@@ -627,22 +627,46 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // update log density for reported cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> void report_lp(array[] int cases, vector reports,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> void report_lp(array[] int cases, array[] int cases_time, vector reports,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                array[] real rep_phi, real phi_mean, real phi_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                int model_type, real weight) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                int model_type, real weight, int accumulate) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int n = num_elements(cases_time) - accumulate; // number of observations</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[n] obs_reports; // reports at observation time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[n] int obs_cases; // observed cases at observation time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (accumulate) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int t = num_elements(reports);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int i = 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int current_obs = 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = rep_vector(0, n);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     while (i &lt;= t &amp;&amp; current_obs &lt;= n) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (current_obs &gt; 0) { // first observation gets ignored when accumulating</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         obs_reports[current_obs] += reports[i];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (i == cases_time[current_obs + 1]) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         current_obs += 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       i += 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_cases = cases[2:(n + 1)];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = reports[cases_time];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_cases = cases;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     real dispersion = 1 / pow(rep_phi[model_type], 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ neg_binomial_2(reports, dispersion);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_cases ~ neg_binomial_2(obs_reports, dispersion);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(cases | reports, dispersion) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         obs_cases | obs_reports, dispersion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       ) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ poisson(reports);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_cases ~ poisson(obs_reports);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       target += poisson_lpmf(cases | reports) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       target += poisson_lpmf(obs_cases | obs_reports) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
@@ -672,7 +696,6 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     dispersion = 1 / pow(rep_phi[model_type], 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   for (s in 1:t) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (reports[s] &lt; 1e-8) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       sampled_reports[s] = 0;</span>
@@ -795,6 +818,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real obs_weight;                   // weight given to observation in log density</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int likelihood;                    // Should the likelihood be included in the model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int return_likelihood; // Should the likehood be returned by the model</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int accumulate; // Should missing values be accumulated</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; trunc_id; // id of truncation</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_id; // id of delay</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
@@ -923,8 +947,8 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observed reports from mean of reports (update likelihood)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (likelihood) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     report_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports[cases_time], rep_phi, phi_mean, phi_sd, model_type,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, cases_time, obs_reports, rep_phi, phi_mean, phi_sd, model_type,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_weight, accumulate</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
@@ -1492,22 +1516,46 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // update log density for reported cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> void report_lp(array[] int cases, vector reports,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> void report_lp(array[] int cases, array[] int cases_time, vector reports,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                array[] real rep_phi, real phi_mean, real phi_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                int model_type, real weight) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                int model_type, real weight, int accumulate) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int n = num_elements(cases_time) - accumulate; // number of observations</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[n] obs_reports; // reports at observation time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[n] int obs_cases; // observed cases at observation time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (accumulate) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int t = num_elements(reports);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int i = 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int current_obs = 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = rep_vector(0, n);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     while (i &lt;= t &amp;&amp; current_obs &lt;= n) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (current_obs &gt; 0) { // first observation gets ignored when accumulating</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         obs_reports[current_obs] += reports[i];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (i == cases_time[current_obs + 1]) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         current_obs += 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       i += 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_cases = cases[2:(n + 1)];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = reports[cases_time];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_cases = cases;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     real dispersion = 1 / pow(rep_phi[model_type], 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ neg_binomial_2(reports, dispersion);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_cases ~ neg_binomial_2(obs_reports, dispersion);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(cases | reports, dispersion) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       target += neg_binomial_2_lpmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         obs_cases | obs_reports, dispersion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       ) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases ~ poisson(reports);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_cases ~ poisson(obs_reports);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       target += poisson_lpmf(cases | reports) * weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       target += poisson_lpmf(obs_cases | obs_reports) * weight;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
@@ -1537,7 +1585,6 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     dispersion = 1 / pow(rep_phi[model_type], 2);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   for (s in 1:t) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (reports[s] &lt; 1e-8) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       sampled_reports[s] = 0;</span>
@@ -1660,6 +1707,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real obs_weight;                   // weight given to observation in log density</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int likelihood;                    // Should the likelihood be included in the model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int return_likelihood; // Should the likehood be returned by the model</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int accumulate; // Should missing values be accumulated</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; trunc_id; // id of truncation</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_id; // id of delay</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
@@ -1788,8 +1836,8 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observed reports from mean of reports (update likelihood)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (likelihood) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     report_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports[cases_time], rep_phi, phi_mean, phi_sd, model_type,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, cases_time, obs_reports, rep_phi, phi_mean, phi_sd, model_type,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_weight, accumulate</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
