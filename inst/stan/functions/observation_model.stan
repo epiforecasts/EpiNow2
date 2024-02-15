@@ -51,22 +51,46 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
   }
 }
 // update log density for reported cases
-void report_lp(array[] int cases, vector reports,
+void report_lp(array[] int cases, array[] int cases_time, vector reports,
                array[] real rep_phi, real phi_mean, real phi_sd,
-               int model_type, real weight) {
+               int model_type, real weight, int accumulate) {
+  int n = num_elements(cases_time) - accumulate; // number of observations
+  vector[n] obs_reports; // reports at observation time
+  array[n] int obs_cases; // observed cases at observation time
+  if (accumulate) {
+    int t = num_elements(reports);
+    int i = 0;
+    int current_obs = 0;
+    obs_reports = rep_vector(0, n);
+    while (i <= t && current_obs <= n) {
+      if (current_obs > 0) { // first observation gets ignored when accumulating
+        obs_reports[current_obs] += reports[i];
+      }
+      if (i == cases_time[current_obs + 1]) {
+        current_obs += 1;
+      }
+      i += 1;
+    }
+    obs_cases = cases[2:(n + 1)];
+  } else {
+    obs_reports = reports[cases_time];
+    obs_cases = cases;
+  }
   if (model_type) {
-    real dispersion = 1 / pow(rep_phi[model_type], 2); 
+    real dispersion = 1 / pow(rep_phi[model_type], 2);
     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
     if (weight == 1) {
-      cases ~ neg_binomial_2(reports, dispersion);
+      obs_cases ~ neg_binomial_2(obs_reports, dispersion);
     } else {
-      target += neg_binomial_2_lpmf(cases | reports, dispersion) * weight;
+      target += neg_binomial_2_lpmf(
+        obs_cases | obs_reports, dispersion
+      ) * weight;
     }
   } else {
     if (weight == 1) {
-      cases ~ poisson(reports);
+      obs_cases ~ poisson(obs_reports);
     } else {
-      target += poisson_lpmf(cases | reports) * weight;
+      target += poisson_lpmf(obs_cases | obs_reports) * weight;
     }
   }
 }
@@ -97,7 +121,7 @@ array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
   if (model_type) {
     dispersion = 1 / pow(rep_phi[model_type], 2);
   }
-    
+
   for (s in 1:t) {
     if (reports[s] < 1e-8) {
       sampled_reports[s] = 0;

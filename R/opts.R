@@ -427,32 +427,35 @@ gp_opts <- function(basis_prop = 0.2,
 #' Defines a list specifying the structure of the observation
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
-#' Negative binomial ("negbin"), the default, and Poisson.
-#' @param phi A numeric vector of length 2, defaults to 0, 1. Indicates the
-#' mean and standard deviation of the normal prior used for the observation
-#' process.
-#'
-#' @param weight Numeric, defaults to 1. Weight to give the observed data in
-#'  the log density.
+#'   Negative binomial ("negbin"), the default, and Poisson.
+#' @param phi A numeric vector of length 2, defaults to 0, 1. Indicates the mean
+#'   and standard deviation of the normal prior used for the observation
+#'   process.
+#' @param weight Numeric, defaults to 1. Weight to give the observed data in the
+#'   log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week
-#' effect be used in the observation model.
-#'
+#'   effect be used in the observation model.
 #' @param week_length Numeric assumed length of the week in days, defaulting to
 #' 7 days. This can be modified if data aggregated over a period other than a
 #' week or if data has a non-weekly periodicity.
-#'
 #' @param scale List, defaulting to an empty list. Should an scaling factor be
-#' applied to map latent infections (convolved to date of report). If none
-#' empty a mean (`mean`) and standard deviation (`sd`) needs to be supplied
-#' defining the normally distributed scaling factor.
-#'
+#'   applied to map latent infections (convolved to date of report). If none
+#'   empty a mean (`mean`) and standard deviation (`sd`) needs to be supplied
+#'   defining the normally distributed scaling factor.
+#' @param na Character. Options are "missing" (the default) and "accumulate".
+#'   This determines how NA values in the data are interpreted. If set to
+#'   "missing", any NA values in the observation data set will be interpreted as
+#'   missing and skipped in the likelihood. If set to "accumulate", modelled
+#'   observations will be accumulated and added to the next non-NA data point.
+#'   This can be used to model incidence data that is reported at less than
+#'   daily intervals. If set to "accumulate", the first data point is not
+#'   included in the likelihood but used only to reset modelled observations to
+#'   zero.
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
-#' included in the model.
-#'
+#'   included in the model.
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
-#' be returned by the model.
+#'   be returned by the model.
 #' @importFrom rlang arg_match
-#'
 #' @return An `<obs_opts>` object of observation model settings.
 #' @author Sam Abbott
 #' @export
@@ -471,11 +474,24 @@ obs_opts <- function(family = "negbin",
                      week_effect = TRUE,
                      week_length = 7,
                      scale = list(),
+                     na = c("missing", "accumulate"),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
   if (length(phi) != 2 || !is.numeric(phi)) {
     stop("phi be numeric and of length two")
   }
+  na <- arg_match(na)
+  if (na == "accumulate") {
+    message(
+      "Accumulating modelled values that correspond to NA values in the data ",
+      "by adding them to the next non-NA data point. This means that the ",
+      "first data point is not included in the likelihood but used only to ",
+      "reset modelled observations to zero. If the first data point should be ",
+      "included in the likelihood this can be achieved by adding a data point ",
+      "of arbitrary value before the first data point."
+    )
+  }
+
   obs <- list(
     family = arg_match(family, values = c("poisson", "negbin")),
     phi = phi,
@@ -483,6 +499,7 @@ obs_opts <- function(family = "negbin",
     week_effect = week_effect,
     week_length = week_length,
     scale = scale,
+    accumulate = as.integer(na == "accumulate"),
     likelihood = likelihood,
     return_likelihood = return_likelihood
   )

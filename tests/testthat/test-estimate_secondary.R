@@ -76,6 +76,59 @@ test_that("estimate_secondary can return values from simulated data and plot
   expect_error(plot(inc, primary = TRUE), NA)
 })
 
+test_that("estimate_secondary successfully returns estimates when passed NA values", {
+  skip_on_cran()
+  cases_na <- data.table::copy(inc_cases)
+  cases_na[sample(1:60, 5), secondary := NA]
+  inc_na <- estimate_secondary(cases_na[1:60],
+    delays = delay_opts(
+      dist_spec(
+        mean = 1.8, mean_sd = 0,
+        sd = 0.5, sd_sd = 0, max = 30
+      )
+    ),
+    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+    verbose = FALSE
+  )
+  prev_cases_na <- data.table::copy(prev_cases)
+  prev_cases_na[sample(1:60, 5), secondary := NA]
+  prev_na <- estimate_secondary(prev_cases_na[1:60],
+    secondary = secondary_opts(type = "prevalence"),
+    delays = delay_opts(
+      dist_spec(
+        mean = 1.8, mean_sd = 0,
+        sd = 0.5, sd_sd = 0, max = 30
+      )
+    ),
+    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+    verbose = FALSE
+  )
+  expect_true(is.list(inc_na$data))
+  expect_true(is.list(prev_na$data))
+})
+
+test_that("estimate_secondary successfully returns estimates when accumulating to weekly", {
+  skip_on_cran()
+  secondary_weekly <- inc_cases[, list(date, secondary)]
+  secondary_weekly[, secondary := frollsum(secondary, 7)]
+  secondary_weekly <- secondary_weekly[seq(7, nrow(secondary_weekly), by = 7)]
+  cases_weekly <- merge(
+    cases[, list(date, primary)], secondary_weekly, by = "date", all.x = TRUE
+  )
+  inc_weekly <- estimate_secondary(cases_weekly,
+    delays = delay_opts(
+      dist_spec(
+        mean = 1.8, mean_sd = 0,
+        sd = 0.5, sd_sd = 0, max = 30
+      )
+    ),
+    obs = obs_opts(
+      scale = list(mean = 0.4, sd = 0.05), week_effect = FALSE, na = "accumulate"
+    ), verbose = FALSE
+  )
+  expect_true(is.list(inc_weekly$data))
+})
+
 test_that("estimate_secondary can recover simulated parameters", {
   expect_equal(
     inc_posterior[, mean], c(1.8, 0.5, 0.4),

@@ -11,6 +11,7 @@ obs_opts(
   week_effect = TRUE,
   week_length = 7,
   scale = list(),
+  na = c("missing", "accumulate"),
   likelihood = TRUE,
   return_likelihood = FALSE
 )
@@ -19,12 +20,12 @@ obs_opts(
 \item{family}{Character string defining the observation model. Options are
 Negative binomial ("negbin"), the default, and Poisson.}
 
-\item{phi}{A numeric vector of length 2, defaults to 0, 1. Indicates the
-mean and standard deviation of the normal prior used for the observation
+\item{phi}{A numeric vector of length 2, defaults to 0, 1. Indicates the mean
+and standard deviation of the normal prior used for the observation
 process.}
 
-\item{weight}{Numeric, defaults to 1. Weight to give the observed data in
-the log density.}
+\item{weight}{Numeric, defaults to 1. Weight to give the observed data in the
+log density.}
 
 \item{week_effect}{Logical defaulting to \code{TRUE}. Should a day of the week
 effect be used in the observation model.}
@@ -37,6 +38,16 @@ week or if data has a non-weekly periodicity.}
 applied to map latent infections (convolved to date of report). If none
 empty a mean (\code{mean}) and standard deviation (\code{sd}) needs to be supplied
 defining the normally distributed scaling factor.}
+
+\item{na}{Character. Options are "missing" (the default) and "accumulate".
+This determines how NA values in the data are interpreted. If set to
+"missing", any NA values in the observation data set will be interpreted as
+missing and skipped in the likelihood. If set to "accumulate", modelled
+observations will be accumulated and added to the next non-NA data point.
+This can be used to model incidence data that is reported at less than
+daily intervals. If set to "accumulate", the first data point is not
+included in the likelihood but used only to reset modelled observations to
+zero.}
 
 \item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be
 included in the model.}
