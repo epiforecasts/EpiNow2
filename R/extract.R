@@ -181,28 +181,31 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
     samples,
     reported_dates
   )
-  if (data$estimate_r == 1) {
-    out$R <- extract_parameter(
-      "R",
-      samples,
-      reported_dates
-    )
-    if (data$bp_n > 0) {
-      out$breakpoints <- extract_parameter(
-        "bp_effects",
+  if ("estimate_r" %in% names(data)) {
+    if (data$estimate_r == 1) {
+      out$R <- extract_parameter(
+        "R",
         samples,
-        1:data$bp_n
+        reported_dates
       )
-      out$breakpoints <- out$breakpoints[,
-        strat := date][, c("time", "date") := NULL
-      ]
+      if (data$bp_n > 0) {
+        out$breakpoints <- extract_parameter(
+          "bp_effects",
+          samples,
+          1:data$bp_n
+        )
+        out$breakpoints <- out$breakpoints[
+          ,
+          strat := date
+        ][, c("time", "date") := NULL]
+      }
+    } else {
+      out$R <- extract_parameter(
+        "gen_R",
+        samples,
+        reported_dates
+      )
     }
-  } else {
-    out$R <- extract_parameter(
-      "gen_R",
-      samples,
-      reported_dates
-    )
   }
   out$growth_rate <- extract_parameter(
     "r",
