@@ -85,7 +85,7 @@ test_that("simulate_infections with a given estimate is deprecated", {
   )
 })
 
-test_that("simulate_infecitons works as expected with given parameters", {
+test_that("simulate_infections works as expected with given parameters", {
   R <- data.frame(
     date = seq.Date(as.Date("2023-01-01"), length.out = 14, by = "day"),
     R = c(rep(1.2, 7), rep(0.8, 7))
