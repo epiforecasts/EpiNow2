@@ -63,7 +63,9 @@ generated quantities {
         to_vector(infections[i]), delay_rev_pmf, seeding_time)
       );
     } else {
-      reports[i] = to_row_vector(infections[(seeding_time + 1):t]);
+      reports[i] = to_row_vector(
+        infections[i, (seeding_time + 1):t]
+      );
     }
 
     // weekly reporting effect
