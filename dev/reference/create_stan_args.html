@@ -852,7 +852,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real delay_mean;         // mean of delays</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real&lt;lower = 0&gt; delay_sd;  // sd of delays</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   simplex[week_effect] day_of_week_simplex;// day of week reporting effect</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[obs_scale] real&lt;lower = 0, upper = 1&gt; frac_obs;     // fraction of cases that are ultimately observed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[obs_scale_sd &gt; 0 ? 1 : 0] real&lt;lower = 0, upper = 1&gt; frac_obs;     // fraction of cases that are ultimately observed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[model_type] real&lt;lower = 0&gt; rep_phi;     // overdispersion of the reporting process</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> transformed parameters {</span>
@@ -905,7 +905,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // scaling of reported cases by fraction observed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  if (obs_scale) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    reports = scale_obs(reports, frac_obs[1]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    reports = scale_obs(reports, obs_scale_sd &gt; 0 ? frac_obs[1] : obs_scale_mean);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  // truncate near time cases to observed reports</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  if (trunc_id) {</span>
@@ -941,7 +941,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // prior observation scaling</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (obs_scale) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (obs_scale_sd &gt; 0) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observed reports from mean of reports (update likelihood)</span>
@@ -1741,7 +1741,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real delay_mean;         // mean of delays</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real&lt;lower = 0&gt; delay_sd;  // sd of delays</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   simplex[week_effect] day_of_week_simplex;// day of week reporting effect</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[obs_scale] real&lt;lower = 0, upper = 1&gt; frac_obs;     // fraction of cases that are ultimately observed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[obs_scale_sd &gt; 0 ? 1 : 0] real&lt;lower = 0, upper = 1&gt; frac_obs;     // fraction of cases that are ultimately observed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[model_type] real&lt;lower = 0&gt; rep_phi;     // overdispersion of the reporting process</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> transformed parameters {</span>
@@ -1794,7 +1794,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // scaling of reported cases by fraction observed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  if (obs_scale) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    reports = scale_obs(reports, frac_obs[1]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    reports = scale_obs(reports, obs_scale_sd &gt; 0 ? frac_obs[1] : obs_scale_mean);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  // truncate near time cases to observed reports</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  if (trunc_id) {</span>
@@ -1830,7 +1830,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // prior observation scaling</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (obs_scale) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (obs_scale_sd &gt; 0) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observed reports from mean of reports (update likelihood)</span>
