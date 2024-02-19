@@ -3,6 +3,13 @@
 ##' Simulations are done from given initial infections and, potentially
 ##' time-varying, reproduction numbers. Delays and parameters of the observation
 ##' model can be specified using the same options as in [estimate_infections()].
+##'
+##' In order to simulate, all parameters that are specified such as the mean and
+##' standard deviatoin of delays or observation scaling, must be fixed.
+##' Uncertain parameters are not allowed.
+##'
+##' A previous function called [simulate_infections()] that simulates from a
+##' given model fit has been renamed [forecast_infections()].
 ##' @param R a data frame of reproduction numbers (column `R`) by date (column
 ##'   `date`). R must be numeric and date must be in date format. If any dates
 ##'   are missing, it will be assumed that R stays the same

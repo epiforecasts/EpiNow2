@@ -66,6 +66,14 @@ Simulations are done from given initial infections and, potentially
 time-varying, reproduction numbers. Delays and parameters of the observation
 model can be specified using the same options as in \code{\link[=estimate_infections]{estimate_infections()}}.
 }
+\details{
+In order to simulate, all parameters that are specified such as the mean and
+standard deviatoin of delays or observation scaling, must be fixed.
+Uncertain parameters are not allowed.
+
+A previous function called \code{\link[=simulate_infections]{simulate_infections()}} that simulates from a
+given model fit has been renamed \code{\link[=forecast_infections]{forecast_infections()}}.
+}
 \examples{
 \donttest{
   R <- data.frame(
