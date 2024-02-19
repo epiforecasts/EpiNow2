@@ -6,5 +6,8 @@ labels: ''
 assignees: ''
 ---
 
-Please include a brief description of the issue and any proposed solutions you may have.
+<!--
+  Please include a brief description of the issue and any proposed solutions
+  you may have.
+-->
 

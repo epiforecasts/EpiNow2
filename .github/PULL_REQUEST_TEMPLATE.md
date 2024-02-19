@@ -1,10 +1,12 @@
-<!-- Thanks for opening this Pull Request! Below we have provided a suggested 
-     template for PRs to this repository and a checklist to complete before 
-     opening a PR -->
+<!--
+  Thanks for opening this Pull Request! Below we have provided a suggested
+  template for PRs to this repository and a checklist to complete before
+  opening a PR.
  
-<!-- If this is your first Pull Request, please make sure you read the 
-     contributing guidelines linked below and at 
-     https://github.com/epiforecasts/EpiNow2/blob/main/.github/CONTRIBUTING.md -->
+  If this is your first Pull Request, please make sure you read the
+  contributing guidelines linked below and at
+  https://github.com/epiforecasts/EpiNow2/blob/main/.github/CONTRIBUTING.md
+-->
 
 ## Description
 

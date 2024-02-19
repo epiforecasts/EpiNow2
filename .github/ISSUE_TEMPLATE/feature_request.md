@@ -6,8 +6,10 @@ labels: ''
 assignees: ''
 ---
 
-<!-- Thank you for suggesting a feature. Please use the section headers below
-     for providing more detail where appropriate -->
+<!--
+  Thank you for suggesting a feature. Please use the section headers below for
+  providing more detail where appropriate
+-->
 
 Is your feature request related to a problem? Please describe:
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]

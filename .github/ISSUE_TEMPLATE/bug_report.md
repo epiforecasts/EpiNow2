@@ -1,16 +1,16 @@
 ---
 name: Bug report
 about: |
-  *Bugs* manifest in issue when using the package but may also include behaviour
-  that does not impact package functionality, but which seems as though it might
-  not be intended by the package developers.
+  Bugs could be unexpected error messages, flawed results and behaviour that does not seem as
+  intended by the package developers.
 title: ''
 labels: ''
 assignees: ''
 ---
 
 <!-- Thank you for reporting a bug. Please use the section headers below
-     for providing more detail where appropriate -->
+     for providing more detail where appropriate
+-->
 
 Summary:
 Please provide a short summary (no more than a sentence or two).
