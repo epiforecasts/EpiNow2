@@ -415,7 +415,9 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     phi_sd = obs$phi[2],
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
-    obs_scale = as.numeric(length(obs$scale) != 0),
+    obs_scale = as.integer(obs$scale$sd > 0 || obs$scale$mean != 1),
+    obs_scale_mean = obs$scale$mean,
+    obs_scale_sd = obs$scale$sd,
     accumulate = obs$accumulate,
     likelihood = as.numeric(obs$likelihood),
     return_likelihood = as.numeric(obs$return_likelihood)
@@ -423,14 +425,6 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 
   data$day_of_week <- add_day_of_week(dates, data$week_effect)
 
-  data <- c(data, list(
-    obs_scale_mean = ifelse(data$obs_scale,
-      obs$scale$mean, 0
-    ),
-    obs_scale_sd = ifelse(data$obs_scale,
-      obs$scale$sd, 0
-    )
-  ))
   return(data)
 }
 #' Create Stan Data Required for estimate_infections
@@ -614,7 +608,7 @@ create_initial_conditions <- function(data) {
       out$bp_sd <- array(numeric(0))
       out$bp_effects <- array(numeric(0))
     }
-    if (data$obs_scale == 1) {
+    if (data$obs_scale_sd > 0) {
       out$frac_obs <- array(truncnorm::rtruncnorm(1,
         a = 0, b = 1,
         mean = data$obs_scale_mean,
