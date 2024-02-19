@@ -17,6 +17,8 @@
 ##' @inheritParams estimate_infections
 ##' @inheritParams rt_opts
 ##' @importFrom lifecycle deprecate_warn
+##' @importFrom checkmate assert_data_frame assert_date assert_numeric
+##'   assert_subset
 ##' @importFrom data.table data.table merge.data.table nafill rbindlist
 ##' @return A data.table of simulated infections (variable `infections`) and
 ##'   reported cases (variable `reported_cases`) by date.
@@ -61,12 +63,9 @@ simulate_infections <- function(estimates, R, initial_infections,
   }
 
   ## check inputs
-  assert_data_frame(R)
-  assert_names(
-    colnames(R),
-    must.include = c("date", "R")
-  )
-  assert_date(R$date, any.missing = FALSE)
+  assert_data_frame(R, any.missing = FALSE)
+  assert_subset(colnames(R), c("date", "R"))
+  assert_date(R$date)
   assert_numeric(R$R, lower = 0)
   assert_numeric(initial_infections, lower = 0)
   assert_numeric(day_of_week_effect, lower = 0, null.ok = TRUE)
