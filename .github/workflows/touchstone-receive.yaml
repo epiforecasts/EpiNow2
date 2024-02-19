@@ -48,7 +48,7 @@ jobs:
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: sbfnk/touchstone/actions/receive@main
+      - uses: lorenzwalthert/touchstone/actions/receive@main
         with:
           cache-version: 1
           extra-packages: stan-dev/cmdstanr
