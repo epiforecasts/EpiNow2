@@ -95,8 +95,8 @@ generated quantities {
       to_vector(reports[i]), rep_phi[i], model_type
     );
   {
-    real gt_mean = rev_pmf_mean(gt_rev_pmf, 1);
-    real gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);
+    real gt_mean = rev_pmf_mean(gt_rev_pmf, 0);
+    real gt_var = rev_pmf_var(gt_rev_pmf, 0, gt_mean);
     r[i] = R_to_growth(to_vector(R[i]), gt_mean, gt_var);
   }
   }
