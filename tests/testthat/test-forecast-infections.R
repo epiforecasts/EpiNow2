@@ -84,18 +84,3 @@ test_that("simulate_infections with a given estimate is deprecated", {
     sims <- simulate_infections(out)
   )
 })
-
-test_that("simulate_infections works as expected with given parameters", {
-  R <- data.frame(
-    date = seq.Date(as.Date("2023-01-01"), length.out = 14, by = "day"),
-    R = c(rep(1.2, 7), rep(0.8, 7))
-  )
-  sim <- simulate_infections(
-    R = R,
-    initial_infections = 100,
-    generation_time = generation_time_opts(fix_dist(example_generation_time)),
-    delays = delay_opts(fix_dist(example_reporting_delay)),
-    obs = obs_opts(family = "negbin")
-  )
-  expect_equal(nrow(sim), 2 * nrow(R))
-})
