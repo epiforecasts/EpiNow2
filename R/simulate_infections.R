@@ -54,6 +54,7 @@ simulate_infections <- function(estimates, R, initial_infections,
                                 truncation = trunc_opts(),
                                 obs = obs_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
+                                backend = "rstan",
                                 pop = 0, ...) {
   ## deprecated usage
   if (!missing(estimates)) {
@@ -173,15 +174,15 @@ simulate_infections <- function(estimates, R, initial_infections,
     day_of_week_effect, dim = c(1, data$week_effect)
   )
 
-  # Load model
-  model <- stanmodels$simulate_infections
-
-  sim <- sampling(
-    object = model,
-    data = data, chains = 1, iter = 1,
-    algorithm = "Fixed_param",
-    refresh = 0
+  # Create stan arguments
+  stan <- stan_opts(backend = backend, chains = 1, samples = 1, warmup = 1)
+  args <- create_stan_args(
+    stan, data = data, fixed_param = TRUE, model = "simulate_infections",
+    verbose = FALSE
   )
+
+  ## simulate
+  sim <- fit_model(args, id = "simulate_infections")
 
   ## join batches
   dates <- c(

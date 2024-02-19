@@ -14,6 +14,7 @@ simulate_infections(
   truncation = trunc_opts(),
   obs = obs_opts(),
   CrIs = c(0.2, 0.5, 0.9),
+  backend = "rstan",
   pop = 0,
   ...
 )
@@ -49,6 +50,9 @@ an approach to estimating truncation from data.}
 observation model. Defaults to \code{\link[=obs_opts]{obs_opts()}}.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
+
+\item{backend}{Character string indicating the backend to use for fitting
+stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 
 \item{pop}{Integer, defaults to 0. Susceptible population initially present.
 Used to adjust Rt estimates when otherwise fixed based on the proportion of
