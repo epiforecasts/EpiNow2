@@ -52,6 +52,7 @@ jobs:
         with:
           cache-version: 1
           extra-packages: stan-dev/cmdstanr
+          touchstone_ref: '@6cbc622'
           benchmarking_repo: ${{ matrix.config.benchmarking_repo }}
           benchmarking_ref: ${{ matrix.config.benchmarking_ref }}
           benchmarking_path: ${{ matrix.config.benchmarking_path }}
