@@ -144,6 +144,12 @@ simulate_infections <- function(estimates, R, initial_infections,
   data$obs_scale_sd <- NULL
 
   if (obs$family == "negbin") {
+    if (data$phi_sd > 0) {
+      stop(
+        "Cannot simulate from uncertain overdispersion; use fixed ",
+        "overdispersion instead."
+      )
+    }
     data$rep_phi <- array(data$phi_mean, dim = c(1, 1))
   } else {
     data$rep_phi <- array(dim = c(1, 0))
