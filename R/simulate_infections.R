@@ -1,36 +1,37 @@
-##' Simulate infections using the renewal equation
-##'
-##' Simulations are done from given initial infections and, potentially
-##' time-varying, reproduction numbers. Delays and parameters of the observation
-##' model can be specified using the same options as in [estimate_infections()].
-##'
-##' In order to simulate, all parameters that are specified such as the mean and
-##' standard deviatoin of delays or observation scaling, must be fixed.
-##' Uncertain parameters are not allowed.
-##'
-##' A previous function called [simulate_infections()] that simulates from a
-##' given model fit has been renamed [forecast_infections()].
-##' @param R a data frame of reproduction numbers (column `R`) by date (column
-##'   `date`). R must be numeric and date must be in date format. If any dates
-##'   are missing, it will be assumed that R stays the same
-##' @param initial_infections numeric; the initial number of infections.
-##' @param day_of_week_effect either `NULL` (no day of the week effect) or a
-##'   numerical vector of length specified in [obs_opts()] as `week_length`
-##'   (default: 7) if `week_effect` is set to TRUE. Each element of the vector
-##'   gives the weight given to reporting on this day (normalised to 1).
-##'   The default is `NULL`.
-##' @param estimates deprecated; use [forecast_infections()] instead
-##' @param ... deprecated; only included for backward compatibility
-##' @inheritParams estimate_infections
-##' @inheritParams rt_opts
-##' @importFrom lifecycle deprecate_warn
-##' @importFrom checkmate assert_data_frame assert_date assert_numeric
-##'   assert_subset
-##' @importFrom data.table data.table merge.data.table nafill rbindlist
-##' @return A data.table of simulated infections (variable `infections`) and
-##'   reported cases (variable `reported_cases`) by date.
-##' @author Sebastian Funk
-##' @export
+#' Simulate infections using the renewal equation
+#'
+#' Simulations are done from given initial infections and, potentially
+#' time-varying, reproduction numbers. Delays and parameters of the observation
+#' model can be specified using the same options as in [estimate_infections()].
+#'
+#' In order to simulate, all parameters that are specified such as the mean and
+#' standard deviatoin of delays or observation scaling, must be fixed.
+#' Uncertain parameters are not allowed.
+#'
+#' A previous function called [simulate_infections()] that simulates from a
+#' given model fit has been renamed [forecast_infections()].
+#' @param R a data frame of reproduction numbers (column `R`) by date (column
+#'   `date`). R must be numeric and date must be in date format. If any dates
+#'   are missing, it will be assumed that R stays the same
+#' @param initial_infections numeric; the initial number of infections.
+#' @param day_of_week_effect either `NULL` (no day of the week effect) or a
+#'   numerical vector of length specified in [obs_opts()] as `week_length`
+#'   (default: 7) if `week_effect` is set to TRUE. Each element of the vector
+#'   gives the weight given to reporting on this day (normalised to 1).
+#'   The default is `NULL`.
+#' @param estimates deprecated; use [forecast_infections()] instead
+#' @param ... deprecated; only included for backward compatibility
+#' @inheritParams estimate_infections
+#' @inheritParams rt_opts
+#' @inheritParams stan_opts
+#' @importFrom lifecycle deprecate_warn
+#' @importFrom checkmate assert_data_frame assert_date assert_numeric
+#'   assert_subset
+#' @importFrom data.table data.table merge.data.table nafill rbindlist
+#' @return A data.table of simulated infections (variable `infections`) and
+#'   reported cases (variable `reported_cases`) by date.
+#' @author Sebastian Funk
+#' @export
 #' @examples
 #' \donttest{
 #'   R <- data.frame(
