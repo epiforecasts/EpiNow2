@@ -91,7 +91,7 @@ given model fit has been renamed \code{\link[=forecast_infections]{forecast_infe
       fix_dist(example_generation_time)
     ),
     delays = delay_opts(fix_dist(example_reporting_delay)),
-    obs = obs_opts(family = "negbin")
+    obs = obs_opts(family = "poisson")
   )
 }
 }
