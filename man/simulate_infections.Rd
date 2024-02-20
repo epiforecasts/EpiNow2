@@ -23,8 +23,8 @@ simulate_infections(
 \item{estimates}{deprecated; use \code{\link[=forecast_infections]{forecast_infections()}} instead}
 
 \item{R}{a data frame of reproduction numbers (column \code{R}) by date (column
-\code{date}). R must be numeric and date must be in date format. If any dates
-are missing, it will be assumed that R stays the same}
+\code{date}). Column \code{R} must be numeric and \code{date} must be in date format. If
+any dates are missing, it will be assumed that R stays the same.}
 
 \item{initial_infections}{numeric; the initial number of infections.}
 
@@ -72,11 +72,13 @@ model can be specified using the same options as in \code{\link[=estimate_infect
 }
 \details{
 In order to simulate, all parameters that are specified such as the mean and
-standard deviatoin of delays or observation scaling, must be fixed.
+standard deviation of delays or observation scaling, must be fixed.
 Uncertain parameters are not allowed.
 
 A previous function called \code{\link[=simulate_infections]{simulate_infections()}} that simulates from a
-given model fit has been renamed \code{\link[=forecast_infections]{forecast_infections()}}.
+given model fit has been renamed \code{\link[=forecast_infections]{forecast_infections()}}. Using
+\code{\link[=simulate_infections]{simulate_infections()}} with existing estimates is now deprecated. This
+option will be removed in version 2.1.0.
 }
 \examples{
 \donttest{
