@@ -66,8 +66,6 @@
 #' observed data (`last_obs`, useful for plotting and validation), the data
 #' used for fitting (`data`) and the fit object (`fit`).
 #'
-#' @author Sam Abbott
-#' @author Sebastian Funk
 #' @export
 #' @inheritParams calc_CrIs
 #' @inheritParams estimate_infections
@@ -320,7 +318,6 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 #' @param ... Pass additional arguments to plot function. Not currently in use.
 #'
 #' @return `ggplot2` object
-#' @author Sam Abbott
 #' @seealso plot estimate_truncation
 #' @method plot estimate_truncation
 #' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date

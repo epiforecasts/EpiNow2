@@ -28,7 +28,4 @@ and that it has the right column names and types. In particular, it checks
 that the date column is in date format and does not contain NA's, and that
 the other columns are numeric.
 }
-\author{
-James M. Azam
-}
 \keyword{internal}

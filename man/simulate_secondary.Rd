@@ -84,8 +84,3 @@ cases
 \seealso{
 estimate_secondary
 }
-\author{
-Sam Abbott
-
-Sebastian Funk
-}

@@ -31,8 +31,3 @@ that can be combined are processed together, and their cumulative
 distribution function is truncated at a specified tolerance level, ensuring
 numeric stability.
 }
-\author{
-Sebastian Funk
-
-Sam Abbott
-}

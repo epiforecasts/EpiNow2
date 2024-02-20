@@ -162,6 +162,3 @@ options(old_opts)
 \code{\link[=epinow]{epinow()}} \code{\link[=regional_epinow]{regional_epinow()}} \code{\link[=forecast_infections]{forecast_infections()}}
 \code{\link[=estimate_truncation]{estimate_truncation()}}
 }
-\author{
-Sam Abbott
-}

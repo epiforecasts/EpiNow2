@@ -20,6 +20,3 @@ A list of options
 A helper function that allows the selection of region specific settings if
 present and otherwise applies the overarching settings.
 }
-\author{
-Sam Abbott
-}

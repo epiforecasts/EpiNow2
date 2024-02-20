@@ -34,8 +34,6 @@
 #'
 #' @return A vector of samples or a probability distribution.
 #' @export
-#' @author Sam Abbott
-#' @author Sebastian Funk
 #' @examples
 #'
 #' ## Exponential model
@@ -197,7 +195,6 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' be printed.
 #'
 #' @return A stan fit of an interval censored distribution
-#' @author Sam Abbott
 #' @export
 #' @inheritParams stan_opts
 #' @examples
@@ -311,7 +308,6 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #' @export
 #' @inheritParams dist_skel
 #' @inheritParams lognorm_dist_def
-#' @author Sam Abbott
 #' @examples
 #' # using estimated shape and scale
 #' def <- gamma_dist_def(
@@ -394,7 +390,6 @@ gamma_dist_def <- function(shape, shape_sd,
 #' @param to_log Logical, should parameters be logged before use.
 #'
 #' @return A `<data.table>` defining the distribution as used by [dist_skel()]
-#' @author Sam Abbott
 #' @importFrom truncnorm rtruncnorm
 #' @export
 #' @inheritParams dist_skel
@@ -498,7 +493,6 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' data. Maximum delay to  allow (added to output but does impact fitting).
 #'
 #' @return A `<dist_spec>` object summarising the bootstrapped distribution
-#' @author Sam Abbott
 #' @importFrom purrr list_transpose
 #' @importFrom future.apply future_lapply
 #' @importFrom rstan extract
@@ -603,7 +597,6 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #' @param ... Arguments to pass to internal methods.
 #'
 #' @return A `<dist_spec>` summarising the bootstrapped distribution
-#' @author Sam Abbott
 #' @export
 #' @seealso [bootstrapped_dist_fit()]
 #' @examples
@@ -898,8 +891,6 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' reduces compute requirement but may produce spuriously precise estimates.
 #' @return A list of distribution options.
 #'
-#' @author Sebastian Funk
-#' @author Sam Abbott
 #' @importFrom rlang warn arg_match
 #' @export
 #' @examples
@@ -1084,8 +1075,6 @@ dist_spec <- function(mean, sd = 0, mean_sd = 0, sd_sd = 0,
 #' @return A delay distribution representing the sum of the two delays
 #' (with class [dist_spec()])
 #'
-#' @author Sebastian Funk
-#' @author Sam Abbott
 #' @importFrom stats convolve
 dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
   ## process delay distributions
@@ -1125,7 +1114,6 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
 #' @return A delay distribution representing the sum of the two delays
 #' (with class [dist_spec()])
 #' @inheritParams dist_spec_plus
-#' @author Sebastian Funk
 #' @method + dist_spec
 #' @export
 #' @examples
@@ -1155,7 +1143,6 @@ dist_spec_plus <- function(e1, e2, tolerance = 0.001) {
 #'
 #' @param ... The delay distributions (from calls to [dist_spec()]) to combine
 #' @return Combined delay distributions (with class `<dist_spec>`)
-#' @author Sebastian Funk
 #' @method c dist_spec
 #' @importFrom purrr list_transpose map
 c.dist_spec <- function(...) {
@@ -1185,7 +1172,6 @@ c.dist_spec <- function(...) {
 ##' @param x The `<dist_spec>` to use
 ##' @param ... Not used
 ##' @return A vector of means.
-##' @author Sebastian Funk
 ##' @method mean dist_spec
 ##' @importFrom utils head
 ##' @export
@@ -1237,7 +1223,6 @@ mean.dist_spec <- function(x, ...) {
 #' @param x The `<dist_spec>` to use
 #' @param ... Not used
 #' @return invisible
-#' @author Sebastian Funk
 #' @method print dist_spec
 #' @export
 #' @examples
@@ -1309,7 +1294,6 @@ print.dist_spec <- function(x, ...) {
 #' @param ... Additional arguments to pass to `{ggplot}`.
 #' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
 #' @export
-#' @author Sam Abbott
 #' @examples
 #' #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' lognormal <- dist_spec(
@@ -1393,7 +1377,6 @@ plot.dist_spec <- function(x, ...) {
 ##' If the given `<dist_spec>` has any uncertainty, it is removed and the
 ##' corresponding distribution converted into a fixed one.
 ##' @return A `<dist_spec>` object without uncertainty
-##' @author Sebastian Funk
 ##' @export
 ##' @param x A `<dist_spec>` object
 ##' @param strategy Character; either "mean" (use the mean estimates of the

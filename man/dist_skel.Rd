@@ -98,8 +98,3 @@ dist_skel(0:10,
   params = list(mean = log(5), sd = log(2))
 )
 }
-\author{
-Sam Abbott
-
-Sebastian Funk
-}

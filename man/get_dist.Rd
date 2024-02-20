@@ -30,6 +30,3 @@ using \code{\link[=dist_spec]{dist_spec()}} instead.
 \seealso{
 \code{\link[=dist_spec]{dist_spec()}}
 }
-\author{
-Sam Abbott
-}

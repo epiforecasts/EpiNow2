@@ -36,6 +36,3 @@ plot(lognormal + gamma + lognormal)
 # A combination of the two fixed distributions
 plot(lognormal + lognormal)
 }
-\author{
-Sam Abbott
-}

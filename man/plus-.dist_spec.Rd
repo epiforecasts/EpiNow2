@@ -40,6 +40,3 @@ lognormal + gamma
 # Using tolerance parameter
 EpiNow2:::dist_spec_plus(lognormal, lognormal, tolerance = 0.5)
 }
-\author{
-Sebastian Funk
-}

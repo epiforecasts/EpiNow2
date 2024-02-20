@@ -17,8 +17,6 @@
 #' [estimate_infections()] instead.
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
-#' @author Sebastian Funk
-#' @author Sam Abbott
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
 #' [bootstrapped_dist_fit()] [dist_spec()]
 #' @export
@@ -137,7 +135,6 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
 #' additive or subtractive).
 #'
 #' @export
-#' @author Sam Abbott
 #' @examples
 #' # incidence model
 #' secondary_opts("incidence")
@@ -181,8 +178,6 @@ secondary_opts <- function(type = "incidence", ...) {
 #' @param ... deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
 #' @return A `<delay_opts>` object summarising the input delay distributions.
-#' @author Sam Abbott
-#' @author Sebastian Funk
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
 #' [bootstrapped_dist_fit()] [dist_spec()]
 #' @export
@@ -248,8 +243,6 @@ delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'
-#' @author Sam Abbott
-#' @author Sebastian Funk
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
 #' [bootstrapped_dist_fit()] [dist_spec()]
 #' @export
@@ -319,7 +312,6 @@ trunc_opts <- function(dist = dist_spec()) {
 #'
 #' @return An `<rt_opts>` object with settings defining the time-varying
 #' reproduction number.
-#' @author Sam Abbott
 #' @inheritParams create_future_rt
 #' @importFrom rlang arg_match
 #' @export
@@ -391,7 +383,6 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' @importFrom rlang arg_match
 #'
 #' @return A `<backcalc_opts>` object of back calculation settings.
-#' @author Sam Abbott
 #' @export
 #' @examples
 #' # default settings
@@ -457,7 +448,6 @@ backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
 #'
 #' @importFrom rlang arg_match
 #' @return A `<gp_opts>` object of settings defining the Gaussian process
-#' @author Sam Abbott
 #' @export
 #' @examples
 #' # default settings
@@ -532,7 +522,6 @@ gp_opts <- function(basis_prop = 0.2,
 #'   be returned by the model.
 #' @importFrom rlang arg_match
 #' @return An `<obs_opts>` object of observation model settings.
-#' @author Sam Abbott
 #' @export
 #' @examples
 #' # default settings
@@ -602,7 +591,6 @@ obs_opts <- function(family = "negbin",
 #' Deprecated; use [stan_sampling_opts()] instead.
 #' @inheritParams stan_sampling_opts
 #' @return A list of arguments to pass to [rstan::sampling()].
-#' @author Sam Abbott
 #' @export
 rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                 warmup = 250,
@@ -669,8 +657,6 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 #' @param ... Additional parameters to pass to [rstan::sampling()].
 #' @importFrom utils modifyList
 #' @return A list of arguments to pass to [rstan::sampling()].
-#' @author Sam Abbott
-#' @author Sebastian Funk
 #' @export
 #' @examples
 #' stan_sampling_opts(samples = 2000)
@@ -728,7 +714,6 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 #' Deprecated; use [stan_vb_opts()] instead.
 #' @inheritParams stan_vb_opts
 #' @return A list of arguments to pass to [rstan::vb()].
-#' @author Sam Abbott
 #' @export
 rstan_vb_opts <- function(samples = 2000,
                           trials = 10,
@@ -761,8 +746,6 @@ rstan_vb_opts <- function(samples = 2000,
 #'
 #' @return A list of arguments to pass to [rstan::vb()] or
 #'   [cmdstanr::variational()], depending on the chosen backend.
-#' @author Sam Abbott
-#' @author Sebastian Funk
 #' @export
 #' @examples
 #' stan_vb_opts(samples = 1000)
@@ -792,7 +775,6 @@ stan_vb_opts <- function(samples = 2000,
 #' @param ... Additional parameters to pass  underlying option functions.
 #' @importFrom rlang arg_match
 #' @return A list of arguments to pass to the appropriate rstan functions.
-#' @author Sam Abbott
 #' @export
 #' @inheritParams rstan_sampling_opts
 #' @seealso [rstan_sampling_opts()] [rstan_vb_opts()]
@@ -869,8 +851,6 @@ rstan_opts <- function(object = NULL,
 #' @importFrom rlang arg_match
 #' @return A `<stan_opts>` object of arguments to pass to the appropriate
 #' rstan functions.
-#' @author Sam Abbott
-#' @author Sebastian Funk
 #' @export
 #' @inheritParams rstan_opts
 #' @seealso [stan_sampling_opts()] [stan_vb_opts()]
@@ -952,7 +932,6 @@ stan_opts <- function(object = NULL,
 #'
 #' @return A named list of options per region which can be passed to the `_opt`
 #' accepting arguments of `regional_epinow`.
-#' @author Sam Abbott
 #' @seealso [regional_epinow()] [rt_opts()]
 #' @export
 #' @examples
@@ -993,7 +972,6 @@ opts_list <- function(opts, reported_cases, ...) {
 #' @param region A character string indicating a region of interest.
 #'
 #' @return A list of options
-#' @author Sam Abbott
 filter_opts <- function(opts, region) {
   if (region %in% names(opts)) {
     out <- opts[[region]]

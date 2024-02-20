@@ -35,6 +35,3 @@ mean(gamma)
 # The mean of the sum of two distributions
 mean(lognormal + gamma)
 }
-\author{
-Sebastian Funk
-}

@@ -22,6 +22,3 @@ An R object read in from the targeted \code{.rds} file
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 }
-\author{
-Sam Abbott
-}
