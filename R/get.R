@@ -184,7 +184,6 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
     details = c(
       paste(
         "Please use distribution functions such as `Gamma()` or `Lognormal()`",
-``
         "instead."
       ),
       "The function will be removed completely in version 2.1.0."
