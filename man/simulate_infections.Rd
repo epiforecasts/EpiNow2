@@ -23,7 +23,7 @@ simulate_infections(
 \item{estimates}{deprecated; use \code{\link[=forecast_infections]{forecast_infections()}} instead}
 
 \item{R}{a data frame of reproduction numbers (column \code{R}) by date (column
-\code{date}). R must be numric and date must be in date format. If any dates
+\code{date}). R must be numeric and date must be in date format. If any dates
 are missing, it will be assumed that R stays the same}
 
 \item{initial_infections}{numeric; the initial number of infections.}
