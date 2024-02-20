@@ -34,6 +34,3 @@ Fits a stan model using \code{\link[rstan:stanmodel-method-sampling]{rstan::samp
 run chains using \code{future} with error catching, timeouts and merging of
 completed chains.
 }
-\author{
-Sam Abbott
-}

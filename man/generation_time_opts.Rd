@@ -60,8 +60,3 @@ generation_time_opts(example_generation_time)
 \code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
 \code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[=dist_spec]{dist_spec()}}
 }
-\author{
-Sebastian Funk
-
-Sam Abbott
-}

@@ -69,6 +69,3 @@ gp_opts()
 # add a custom length scale
 gp_opts(ls_mean = 4)
 }
-\author{
-Sam Abbott
-}

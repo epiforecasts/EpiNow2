@@ -74,6 +74,3 @@ rt_opts(prior = list(mean = 2, sd = 1))
 # add a weekly random walk
 rt_opts(rw = 7)
 }
-\author{
-Sam Abbott
-}

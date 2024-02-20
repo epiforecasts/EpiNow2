@@ -28,6 +28,3 @@ estimate_delay(delays, samples = 1000, bootstraps = 10)
 \seealso{
 \code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}}
 }
-\author{
-Sam Abbott
-}

@@ -25,7 +25,4 @@ A stan model object (either \code{rstan::stanmodel} or
 \description{
 Return a stan model object for the appropriate backend
 }
-\author{
-Sebastian Funk
-}
 \keyword{internal}

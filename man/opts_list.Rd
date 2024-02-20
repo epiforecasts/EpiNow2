@@ -49,6 +49,3 @@ rt
 \seealso{
 \code{\link[=regional_epinow]{regional_epinow()}} \code{\link[=rt_opts]{rt_opts()}}
 }
-\author{
-Sam Abbott
-}

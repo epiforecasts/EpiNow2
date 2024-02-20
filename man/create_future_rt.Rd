@@ -25,6 +25,3 @@ A list containing a logical called fixed and an integer called from
 Converts the \code{future} argument from \code{\link[=rt_opts]{rt_opts()}} into arguments that can be
 passed to stan.
 }
-\author{
-Sam Abbott
-}

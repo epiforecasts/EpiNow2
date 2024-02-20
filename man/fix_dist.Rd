@@ -20,6 +20,3 @@ A \verb{<dist_spec>} object without uncertainty
 If the given \verb{<dist_spec>} has any uncertainty, it is removed and the
 corresponding distribution converted into a fixed one.
 }
-\author{
-Sebastian Funk
-}

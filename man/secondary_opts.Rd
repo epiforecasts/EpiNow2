@@ -53,6 +53,3 @@ secondary_opts("prevalence")
 \seealso{
 \code{\link[=estimate_secondary]{estimate_secondary()}}
 }
-\author{
-Sam Abbott
-}

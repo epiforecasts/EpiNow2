@@ -39,6 +39,3 @@ parameter
 Extracts a custom set of parameters from a stan object and adds
 stratification and dates where appropriate.
 }
-\author{
-Sam Abbott
-}

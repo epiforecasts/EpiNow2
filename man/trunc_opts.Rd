@@ -32,8 +32,3 @@ trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
 \code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
 \code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[=dist_spec]{dist_spec()}}
 }
-\author{
-Sam Abbott
-
-Sebastian Funk
-}

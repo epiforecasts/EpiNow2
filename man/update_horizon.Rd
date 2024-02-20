@@ -24,6 +24,3 @@ Numeric forecast horizon adjusted for the users intention
 Makes sure that a forecast is returned for the user specified time period
 beyond the target date.
 }
-\author{
-Sam Abbott
-}
