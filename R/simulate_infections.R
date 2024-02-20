@@ -4,7 +4,7 @@
 ##' time-varying, reproduction numbers. Delays and parameters of the observation
 ##' model can be specified using the same options as in [estimate_infections()].
 ##' @param R a data frame of reproduction numbers (column `R`) by date (column
-##'   `date`). R must be numric and date must be in date format. If any dates
+##'   `date`). R must be numeric and date must be in date format. If any dates
 ##'   are missing, it will be assumed that R stays the same
 ##' @param initial_infections numeric; the initial number of infections.
 ##' @param day_of_week_effect either `NULL` (no day of the week effect) or a
