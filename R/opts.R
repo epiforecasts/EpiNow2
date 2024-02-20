@@ -196,7 +196,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001) {
 #' trunc_opts()
 #'
 #' # truncation dist
-#' trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
+#' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
 trunc_opts <- function(dist = Fixed(0), tolerance = 0.001) {
   if (!is(dist, "dist_spec")) {
     if (is.list(dist)) {
