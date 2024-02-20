@@ -23,6 +23,7 @@
 * Fixed a bug in the bounds of delays when setting initial conditions. By @sbfnk in #474.
 * Added input checking to `estimate_infections()`, `estimate_secondary()`, `estimate_truncation()`, `simulate_infections()`, and `epinow()`. `check_reports_valid()` has been added to validate the reports dataset passed to these functions. Tests are added to check `check_reports_valid()`. As part of input validation, the various `*_opts()` functions now return subclasses of the same name as the functions and are tested against passed arguments to ensure the right `*_opts()` is passed to the right argument. For example, the `obs` argument in `estimate_secondary()` is expected to only receive arguments passed through `obs_opts()` and will error otherwise. By @jamesmbaazam in #476 and reviewed by @sbfnk and @seabbs.
 * Added the possibility of specifying a fixed observation scaling. By @sbfnk in #550 and reviewed by @seabbs.
+* Added the possibility of specifying fixed overdispersion. By @sbfnk in .
 
 ## Model changes
 
