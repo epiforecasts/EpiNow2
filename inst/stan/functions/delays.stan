@@ -108,7 +108,7 @@ vector normal_lb_rng(vector mu, vector sigma, vector lb) {
   int len = num_elements(mu);
   vector[len] ret;
   for (i in 1:len) {
-    real p = normal_cdf(lb[i], mu[i], sigma[i]);  // cdf for bounds
+    real p = normal_cdf(lb[i] | mu[i], sigma[i]);  // cdf for bounds
     real u = uniform_rng(p, 1);
     ret[i] = (sigma[i] * inv_Phi(u)) + mu[i];  // inverse cdf for value
   }
