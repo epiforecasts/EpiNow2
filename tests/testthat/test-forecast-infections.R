@@ -51,7 +51,7 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
   expect_equal(tail(sims$summarised[variable == "R"]$median, 30), R[41:70])
 })
 
-test_that("simulate infections can be run with a limited number of samples", {
+test_that("forecast infections can be run with a limited number of samples", {
   R <- c(rep(NA_real_, 40), rep(1.2, 15), rep(0.8, 15))
   sims <- forecast_infections(out, R, samples = 10)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
@@ -59,7 +59,7 @@ test_that("simulate infections can be run with a limited number of samples", {
   expect_equal(max(sims$samples$sample), 10)
 })
 
-test_that("simulate infections fails as expected", {
+test_that("forecast infections fails as expected", {
   expect_error(forecast_infections())
   expect_error(forecast_infections(out[-"fit"]))
 })
@@ -79,7 +79,7 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
   expect_equal(names(sims_sample), c("samples", "summarised", "observations"))
 })
 
-test_that("simulate_infections is deprecated", {
+test_that("simulate_infections with a given estimate is deprecated", {
   expect_deprecated(
     sims <- simulate_infections(out)
   )
