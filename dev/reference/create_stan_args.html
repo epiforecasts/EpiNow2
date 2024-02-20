@@ -653,8 +653,10 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     obs_cases = cases;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real dispersion = 1 / pow(rep_phi[model_type], 2);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real dispersion = 1 / pow(phi_sd &gt; 0 ? rep_phi[model_type] : phi_mean, 2);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (phi_sd &gt; 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       obs_cases ~ neg_binomial_2(obs_reports, dispersion);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
@@ -1542,8 +1544,10 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     obs_cases = cases;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (model_type) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real dispersion = 1 / pow(rep_phi[model_type], 2);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real dispersion = 1 / pow(phi_sd &gt; 0 ? rep_phi[model_type] : phi_mean, 2);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (phi_sd &gt; 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (weight == 1) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       obs_cases ~ neg_binomial_2(obs_reports, dispersion);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
