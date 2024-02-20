@@ -14,7 +14,8 @@
 #' option will be removed in version 2.1.0.
 #' @param R a data frame of reproduction numbers (column `R`) by date (column
 #'   `date`). Column `R` must be numeric and `date` must be in date format. If
-#'   any dates are missing, it will be assumed that R stays the same.
+#'   not all days between the first and last day in the `date` are present,
+#'   it will be assumed that R stays the same until the next given date.
 #' @param initial_infections numeric; the initial number of infections.
 #' @param day_of_week_effect either `NULL` (no day of the week effect) or a
 #'   numerical vector of length specified in [obs_opts()] as `week_length`

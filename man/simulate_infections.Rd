@@ -24,7 +24,8 @@ simulate_infections(
 
 \item{R}{a data frame of reproduction numbers (column \code{R}) by date (column
 \code{date}). Column \code{R} must be numeric and \code{date} must be in date format. If
-any dates are missing, it will be assumed that R stays the same.}
+not all days between the first and last day in the \code{date} are present,
+it will be assumed that R stays the same until the next given date.}
 
 \item{initial_infections}{numeric; the initial number of infections.}
 
