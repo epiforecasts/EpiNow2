@@ -924,7 +924,7 @@ dist_spec <- function(distribution = c(
     "dist_spec()",
     details = c(
       paste0(
-        "Please use distribution functions such as `gamma` or `lognormal` ",
+        "Please use distribution functions such as `Gamma()` or `Lognormal()` ",
         "instead."
       ),
       "The function will become internal only in version 2.1.0."
