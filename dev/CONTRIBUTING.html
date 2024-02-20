@@ -104,10 +104,10 @@
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"reticulate"</span><span class="op">)</span></span>
 <span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu">install_miniconda</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co"># install precommit if not already installed</span></span>
-<span><span class="fu">precommit</span><span class="fu">::</span><span class="fu"><a href="https://lorenzwalthert.github.io/precommit/reference/install_precommit.html" class="external-link">install_precommit</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">precommit</span><span class="fu">::</span><span class="fu">install_precommit</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co"># set up precommit for use</span></span>
-<span><span class="fu">precommit</span><span class="fu">::</span><span class="fu"><a href="https://lorenzwalthert.github.io/precommit/reference/use_precommit.html" class="external-link">use_precommit</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<ul><li><p>Make your changes, commit to git, and then create a PR by running <code><a href="https://usethis.r-lib.org/reference/pull-requests.html" class="external-link">usethis::pr_push()</a></code>, and following the prompts in your browser. The title of your PR should briefly describe the change. The body of your PR should contain <code>Fixes #issue-number</code>.</p></li>
+<span><span class="fu">precommit</span><span class="fu">::</span><span class="fu">use_precommit</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<ul><li><p>Make your changes, commit to git, and then create a PR by running <code>usethis::pr_push()</code>, and following the prompts in your browser. The title of your PR should briefly describe the change. The body of your PR should contain <code>Fixes #issue-number</code>.</p></li>
 <li><p>For user-facing changes, add a bullet to the top of <code>NEWS.md</code> (i.e. just below the first header). Follow the style described in <a href="https://style.tidyverse.org/news.html" class="external-link uri">https://style.tidyverse.org/news.html</a>.</p></li>
 </ul><div class="section level4">
 <h4 id="what-happens-after-submitting-a-pr">What happens after submitting a PR?<a class="anchor" aria-label="anchor" href="#what-happens-after-submitting-a-pr"></a></h4>
@@ -119,7 +119,7 @@
 <li><p>Check that there are no linting issues by running <code>lintr::lint_package()</code>.</p></li>
 <li><p>Run <code>devtoools::check()</code> to check for wider package issues like mismatching documentation, etc. (this currently requires a fair bit of time/computation).</p></li>
 <li><p>(Optional) Turn on continuous integration with Github Actions on your forked repository.</p></li>
-<li><p>On a case-by-case basis, you may be asked to increment the package version both in the <code>NEWS.md</code> and <code>DESCRIPTION</code> files. Please do not do this unless you’re asked to. We follow the <a href="https://r-pkgs.org/lifecycle.html" class="external-link">Tidyverse package versioning guide</a>. You can run <code><a href="https://usethis.r-lib.org/reference/use_version.html" class="external-link">usethis::use_version()</a></code> to automatically make the changes for you interactively.</p></li>
+<li><p>On a case-by-case basis, you may be asked to increment the package version both in the <code>NEWS.md</code> and <code>DESCRIPTION</code> files. Please do not do this unless you’re asked to. We follow the <a href="https://r-pkgs.org/lifecycle.html" class="external-link">Tidyverse package versioning guide</a>. You can run <code>usethis::use_version()</code> to automatically make the changes for you interactively.</p></li>
 </ul></div>
 </div>
 <div class="section level3">

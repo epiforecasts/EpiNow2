@@ -173,22 +173,11 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span>  cases <span class="op">=</span> <span class="va">cases</span>,</span></span>
 <span class="r-in"><span>  dist_fn <span class="op">=</span> <span class="va">delay_fn</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in purrr::map_dfc(seq_along(reversed_cases), ~c(rep(0, . - 1), stats::rbinom(length(draw),     rep(reversed_cases[.], length(draw)), draw), rep(0, length(reversed_cases) -     .))):</span> The package "dplyr" is required for `map_dfc()`.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># estimated onset distribution</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">onsets</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            date cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;Date&gt; &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-14     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-15     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-16     2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-17     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-02-18     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ---                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 134: 2020-06-26   248</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 135: 2020-06-27   175</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 136: 2020-06-28   138</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 137: 2020-06-29    97</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 138: 2020-06-30    36</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'onsets' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># check that sum is equal to reported cases</span></span></span>
 <span class="r-in"><span><span class="va">total_onsets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span></span></span>
@@ -200,8 +189,11 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span>    <span class="op">)</span><span class="op">$</span><span class="va">cases</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in purrr::map_dbl(1:10, ~sum(sample_approx_dist(cases = cases, dist_fn = delay_fn)$cases)):</span> <span style="color: #00BBBB;">ℹ</span> In index: 1.</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Caused by error in `purrr::map_dfc()`:</span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> The package "dplyr" is required for `map_dfc()`.</span>
 <span class="r-in"><span><span class="va">total_onsets</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 241033.5</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'total_onsets' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># map from onset cases to reported</span></span></span>
@@ -210,6 +202,7 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span>  dist_fn <span class="op">=</span> <span class="va">delay_fn</span>,</span></span>
 <span class="r-in"><span>  direction <span class="op">=</span> <span class="st">"forwards"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in purrr::map_dfc(seq_along(reversed_cases), ~c(rep(0, . - 1), stats::rbinom(length(draw),     rep(reversed_cases[.], length(draw)), draw), rep(0, length(reversed_cases) -     .))):</span> The package "dplyr" is required for `map_dfc()`.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># map from onset cases to reported using a mean shift</span></span></span>

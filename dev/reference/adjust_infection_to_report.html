@@ -164,20 +164,9 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span><span class="va">report</span> <span class="op">&lt;-</span> <span class="fu">adjust_infection_to_report</span><span class="op">(</span></span></span>
 <span class="r-in"><span> <span class="va">cases</span>, delay_defs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">incubation_def</span>, <span class="va">delay_def</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in purrr::map_dfc(seq_along(reversed_cases), ~c(rep(0, . - 1), stats::rbinom(length(draw),     rep(reversed_cases[.], length(draw)), draw), rep(0, length(reversed_cases) -     .))):</span> The package "dplyr" is required for `map_dfc()`.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">report</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            date cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;Date&gt; &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-24     2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-25     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-26     4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-27    20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-02-28    30</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ---                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 124: 2020-06-26   231</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 125: 2020-06-27   238</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 126: 2020-06-28   220</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 127: 2020-06-29   242</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 128: 2020-06-30   252</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'report' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># mapping with a weekly reporting effect</span></span></span>
 <span class="r-in"><span><span class="va">report_weekly</span> <span class="op">&lt;-</span> <span class="fu">adjust_infection_to_report</span><span class="op">(</span></span></span>
@@ -185,20 +174,9 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span>  delay_defs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">incubation_def</span>, <span class="va">delay_def</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  reporting_effect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.1</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">4</span><span class="op">)</span>, <span class="fl">0.95</span>, <span class="fl">0.95</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in purrr::map_dfc(seq_along(reversed_cases), ~c(rep(0, . - 1), stats::rbinom(length(draw),     rep(reversed_cases[.], length(draw)), draw), rep(0, length(reversed_cases) -     .))):</span> The package "dplyr" is required for `map_dfc()`.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">report_weekly</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            date cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;Date&gt; &lt;int&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-25     3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-26     7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-27    18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-28    25</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-02-29    49</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ---                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 123: 2020-06-26   269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 124: 2020-06-27   224</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 125: 2020-06-28   225</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 126: 2020-06-29   268</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 127: 2020-06-30   311</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'report_weekly' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># map using a deterministic median shift for both delays</span></span></span>
 <span class="r-in"><span><span class="va">report_median</span> <span class="op">&lt;-</span> <span class="fu">adjust_infection_to_report</span><span class="op">(</span><span class="va">cases</span>,</span></span>
@@ -230,20 +208,9 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span>    <span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span>, <span class="fl">0</span>, <span class="va">out</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">}</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in purrr::map_dfc(seq_along(reversed_cases), ~c(rep(0, . - 1), stats::rbinom(length(draw),     rep(reversed_cases[.], length(draw)), draw), rep(0, length(reversed_cases) -     .))):</span> The package "dplyr" is required for `map_dfc()`.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">report_stochastic</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            date cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;Date&gt; &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-25     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-26     7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-27    21</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-28    33</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-02-29    29</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ---                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 123: 2020-06-26   196</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 124: 2020-06-27   197</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 125: 2020-06-28   208</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 126: 2020-06-29   297</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 127: 2020-06-30   227</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'report_stochastic' not found</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
