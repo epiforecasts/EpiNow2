@@ -285,7 +285,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   delay_params <- extract_stan_param(fit, params = "delay_params")
   params_mean <- round(delay_params$mean, 3)
   params_sd <- round(delay_params$sd, 3)
-  parameters <- purrr::map(seq_along(params_mean), function (id) {
+  parameters <- purrr::map(seq_along(params_mean), function(id) {
     Normal(params_mean[id], params_sd[id])
   })
   names(parameters) <- natural_params(truncation[[1]]$distribution)
