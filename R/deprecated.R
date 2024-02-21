@@ -213,3 +213,130 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
     )
   )
 }
+
+#' Specify a distribution.
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' This function is deprecated as a user-facing function (while its
+#' functionality is still used internally). Construct distributions using
+#' the corresponding distribution function such as [Gamma()], [LogNormal()],
+#' [Normal()] or [Fixed()] instead.
+#'
+#' @param distribution Character, defaults to "lognormal". The (discretised)
+#' distribution to be used. Can be "lognormal", "gamma", "normal" or "fixed".
+#' The corresponding parameters (defined in [natural_params()]) are passed
+#' as `params_mean`,  and their uncertainty as `params_sd`.
+#'
+#' @param params_mean Numeric. Central values of the parameters of the
+#' distribution as defined in [natural_params().
+#'
+#' @param params_sd Numeric. Standard deviations of the parameters of the
+#' distribution as defined in [natural_params().
+#'
+#' @param max Numeric, maximum value of the distribution. The distribution will
+#' be truncated at this value. Default: `Inf`, i.e. no maximum.
+#'
+#' @param mean Deprecated; use `params_mean` instead.
+#'
+#' @param sd Deprecated; use `params_mean` instead.
+#'
+#' @param mean_sd Deprecated; use `params_sd` instead.
+#'
+#' @param sd_sd Deprecated; use `params_sd` instead.
+#'
+#' @param pmf Numeric, a vector of values that represent the (nonparametric)
+#' probability mass function of the delay (starting with 0); defaults to an
+#' empty vector corresponding to a parametric specification of the distribution
+#' (using \code{params_mean}, and \code{params_sd}.
+#' @param fixed Deprecated, use [fix_dist()] instead.
+#' @return A list of distribution options.
+#' @author Sebastian Funk
+#' @author Sam Abbott
+#' @importFrom rlang warn arg_match
+#' @export
+dist_spec <- function(distribution = c(
+                        "lognormal", "normal", "gamma", "fixed", "empty"
+                      ),
+                      params_mean = numeric(0), params_sd = numeric(0),
+                      mean, sd = 0, mean_sd = 0, sd_sd = 0,
+                      max = Inf, pmf = numeric(0), fixed = FALSE) {
+
+  lifecycle::deprecate_warn(
+    "2.0.0",
+    "dist_spec()",
+    details = c(
+      paste0(
+        "Please use distribution functions such as `Gamma()` or `Lognormal()` ",
+        "instead."
+      ),
+      "The function will become internal only in version 2.1.0."
+    )
+  )
+  ## check for deprecated parameters
+  if (!missing(fixed)) {
+    lifecycle::deprecate_warn(
+      "2.0.0",
+      "dist_spec(fixed)",
+      "fix_dist()"
+    )
+    params_sd <- NULL
+  }
+  ## check for deprecated parameters
+  if (!all(missing(mean), missing(sd), missing(mean_sd), missing(sd_sd)) &&
+      (length(params_mean) > 0 || length(params_sd) > 0)) {
+    stop("Distributional parameters should not be given as `mean`, `sd`, etc. ",
+         "in addition to `params_mean` or `params_sd`")
+  }
+  distribution <- match.arg(distribution)
+  ## check if distribution is given as empty and warn about deprecation if so
+  if (distribution == "empty") {
+    deprecate_warn(
+      "2.0.0",
+      "dist_spec(distribution = 'must not be \"empty\"')",
+      details = "Please use `Fixed(0)` instead."
+    )
+  }
+
+  if (!all(missing(mean), missing(sd), missing(mean_sd), missing(sd_sd))) {
+    if (sd == 0 && mean_sd == 0 && sd_sd == 0) {
+      distribution <- "fixed"
+    }
+    ## deprecated arguments given
+    if (distribution == "lognormal") {
+      params_mean <- c(meanlog = mean, sdlog = sd)
+      params_sd <- c(meanlog = mean_sd, sdlog = sd_sd)
+    } else if (distribution == "gamma") {
+      temp_dist <- Gamma(
+        mean = Normal(mean, mean_sd),
+        sd = Normal(sd, sd_sd)
+      )
+      params_mean <- temp_dist$params_mean
+      params_sd <- temp_dist$params_sd
+    } else if (distribution == "normal") {
+      params_mean <- c(mean = mean, sd = sd)
+      params_sd <- c(mean = mean_sd, sd = sd_sd)
+    } else if (distribution == "fixed") {
+      params_mean <- mean
+    }
+  }
+  if (length(pmf) > 0) {
+    if (!all(
+      missing(mean), missing(sd), missing(mean_sd), missing(sd_sd),
+      missing(params_mean), missing(params_sd)
+    )) {
+      stop("Distributional parameters should not be given in addition to `pmf`")
+    }
+    distribution <- "nonparametric"
+    parameters <- list(pmf = pmf)
+  } else {
+    if (length(params_sd) == 0) {
+      params_sd <- rep(0, length(params_mean))
+    }
+    parameters <- lapply(seq_along(params_mean), function(id) {
+      Normal(params_mean[id], params_sd[id])
+    })
+    names(parameters) <- natural_params(distribution)
+    parameters$max <- max
+  }
+  return(new_dist_spec(parameters, distribution))
+}
