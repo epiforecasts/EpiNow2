@@ -39,11 +39,12 @@ More details
 
 `{EpiNow2}` estimates the time-varying reproduction number on cases by
 date of infection (using a similar approach to that implemented in
-[`{EpiEstim}`](https://github.com/mrc-ide/EpiEstim)). Imputed infections
-are then mapped to observed data (for example cases by date of report)
-via a series of uncertain delay distributions (in the examples in the
-package documentation these are an incubation period and a reporting
-delay) and a reporting model that can include weekly periodicity.
+[`{EpiEstim}`](https://github.com/mrc-ide/EpiEstim)). True infections
+treated as latent and unobserved, estimated, and then mapped to observed
+data (for example cases by date of report) via a series of uncertain
+delay distributions (in the examples in the package documentation these
+are an incubation period and a reporting delay) and a reporting model
+that can include weekly periodicity.
 
 Uncertainty is propagated from all inputs into the final parameter
 estimates, helping to mitigate spurious findings. This is handled
