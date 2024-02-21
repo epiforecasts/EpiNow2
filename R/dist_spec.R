@@ -204,7 +204,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' Creates a delay distribution as the sum of two other delay distributions.
 #'
 #' @return A delay distribution representing the sum of the two delays
-#' (with class [dist_spec()])
+
 #' @param e1 The first delay distribution (of type [dist_spec()]) to
 #' combine.
 #'
@@ -239,6 +239,18 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @author Sebastian Funk
 #' @method c dist_spec
 #' @export
+#' @examples
+#' # A fixed lognormal distribution with mean 5 and sd 1.
+#' dist1 <- LogNormal(
+#'   meanlog = 1.6, sdlog = 1, max = 20
+#' )
+#' dist1 + dist1
+#'
+#' # An uncertain gamma distribution with mean 3 and sd 2
+#' dist2 <- Gamma(
+#'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
+#' )
+#' c(dist1, dist2)
 c.dist_spec <- function(...) {
   ## process delay distributions
   dist_specs <- list(...)
@@ -396,7 +408,7 @@ sd_dist <- function(x) {
 #' dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
 #' max(dist2)
 #'
-#' # The maxf the sum of two distributions
+#' # The max the sum of two distributions
 #' max(dist1 + dist2)
 max.dist_spec <- function(x, ...) {
   ret <- vapply(x, function(y) {
@@ -412,7 +424,7 @@ max.dist_spec <- function(x, ...) {
   }, numeric(1))
   return(ret)
 }
-##
+
 #' Discretise a <dist_spec>
 #'
 #' By default it will discretise all the distributions it can discretise
@@ -426,6 +438,15 @@ max.dist_spec <- function(x, ...) {
 #'   nonparametric.
 #' @author Sebastian Funk
 #' @export
+#' @examples
+#' # A fixed gamma distribution with mean 5 and sd 1.
+#' dist1 <- Gamma(mean = 5, sd = 1, max = 20)
+#'
+#' # An uncertain lognormal distribution with mean 3 and sd 2
+#' dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
+#'
+#' # The maxf the sum of two distributions
+#' discretise(dist1 + dist2)
 discretise <- function(x, silent = TRUE) {
   if (!is(x, "dist_spec")) {
     stop("Can only discretise a <dist_spec>.")
@@ -473,6 +494,15 @@ discretise <- function(x, silent = TRUE) {
 #' @importFrom stats convolve
 #' @author Sebastian Funk
 #' @export
+#' @examples
+#' # A fixed gamma distribution with mean 5 and sd 1.
+#' dist1 <- Gamma(mean = 5, sd = 1, max = 20)
+#'
+#' # An uncertain lognormal distribution with mean 3 and sd 2
+#' dist2 <- LogNormal(mean = 3, sd = 2, max = 20)
+#'
+#' # The maxf the sum of two distributions
+#' collapse(discretise(dist1 + dist2))
 collapse <- function(x) {
   if (!is(x, "dist_spec")) {
     stop("Can only convolve distributions in a <dist_spec>.")
@@ -513,6 +543,9 @@ collapse <- function(x) {
 #' have been removed
 #' @author Sebastian Funk, Sam Abbott
 #' @export
+#' @examples
+#' dist <- discretise(Gamma(mean = 5, sd = 1, max = 20))
+#' apply_tolerance(dist, 0.01)
 apply_tolerance <- function(x, tolerance) {
   if (!is(x, "dist_spec")) {
     stop("Can only apply tolerance to distributions in a <dist_spec>.")
@@ -690,6 +723,17 @@ plot.dist_spec <- function(x, ...) {
 #' @return A single `dist_spec` object
 #' @keywords internal
 #' @author Sebastian Funk
+#' @examples
+#' dist1 <- LogNormal(mean = 1.6, sd = 0.5, max = 20)
+#'
+#' # An uncertain gamma distribution with mean 3 and sd 2
+#' dist2 <- Gamma(
+#'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
+#' )
+#'
+#' # Multiple distributions
+#' dist <- dist1 + dist2
+#' extract_single_dist(dist, 2)
 extract_single_dist <- function(x, i) {
   if (i > length(x)) {
     stop("i can't be greater than the number of distributions.")
@@ -712,6 +756,13 @@ extract_single_dist <- function(x, i) {
 #'   standard deviation from uncertainty given in the `<dist_spec>`
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom rlang arg_match
+#' @examples
+#' # An uncertain gamma distribution with mean 3 and sd 2
+#' dist <- LogNormal(
+#'   meanlog = Normal(3, 0.5), sdlog = Normal(2, 0.5), max = 20
+#' )
+#'
+#' fix_dist(dist)
 fix_dist <- function(x, strategy = c("mean", "sample")) {
   if (!is(x, "dist_spec")) {
     stop("Can only fix distributions in a <dist_spec>.")
@@ -904,7 +955,7 @@ lower_bounds <- function(distribution) {
 }
 
 #' Internal function for extracting given parameter names of a distribution
-#' from the environment
+#' from the environment. Called by `new_dist_spec`
 #'
 #' @param params Given parameters (obtained using `as.list(environment())`)
 #' @return A character vector of parameters and their values.
@@ -934,6 +985,13 @@ extract_params <- function(params, distribution) {
 #' @return A `dist_spec` of the given specification.
 #' @author Sebastian Funk
 #' @keywords internal
+#' @examples
+#' \dontrun{
+#' new_dist_spec(
+#'   params = list(mean = 2, sd = 1, max = Inf),
+#'   distribution = "normal"
+#' )
+#' }
 new_dist_spec <- function(params, distribution) {
   if (distribution == "nonparametric") {
     ## nonparametric distribution
@@ -1025,6 +1083,13 @@ new_dist_spec <- function(params, distribution) {
 #' @return A list with two elements, `params_mean` and `params_sd`, containing
 #' mean and sd of natural parameters.
 #' @author Sebastian Funk
+#' @keywords internal
+#' \dontrun{
+#' convert_to_natural(
+#'   params = list(mean = 2, sd = 1, max = Inf),
+#'   distribution = "gamma"
+#' )
+#' }
 convert_to_natural <- function(params, distribution) {
   ## unnatural parameter means
   ux <- lapply(params, mean)

@@ -28,7 +28,7 @@ estimate these distributions.
 trunc_opts()
 
 # truncation dist
-trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
+trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
 }
 \seealso{
 \code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
