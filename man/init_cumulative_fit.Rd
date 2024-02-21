@@ -34,7 +34,10 @@ stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 A stanfit object
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+This function has been deprecated and will be removed in version 2.0.0.
+
 Fits a model to cumulative cases. This may be a useful approach to
 initialising a full model fit for certain data sets where the sampler gets
 stuck or cannot easily be initialised as fitting to cumulative cases changes
