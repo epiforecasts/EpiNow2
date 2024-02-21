@@ -142,9 +142,14 @@
 #' options(old_opts)
 estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
-                                truncation = dist_spec(
-                                  mean = 0, sd = 0, mean_sd = 1, sd_sd = 1,
-                                  max = 10
+                                truncation = trunc_opts(
+                                  dist_spec(
+                                    mean = 0,
+                                    mean_sd = 1,
+                                    sd = 0,
+                                    sd_sd = 1,
+                                    max = 10
+                                  )
                                 ),
                                 model = NULL,
                                 stan = stan_opts(),
