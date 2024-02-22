@@ -850,7 +850,8 @@ stan_opts <- function(object = NULL,
       lifecycle::deprecate_warn(
         when = "1.5.0",
         what = "stan_opts(init_fit)",
-        details = "This argument will be removed in version 2.0.0."
+        details = paste("This argument is deprecated and the default (NULL)",
+                        "will be used from version 2.0.0.")
       )
       init_fit <- arg_match(init_fit, values = "cumulative")
     }
