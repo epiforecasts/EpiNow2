@@ -847,7 +847,7 @@ stan_opts <- function(object = NULL,
   }
   if (!is.null(init_fit)) {
     if (is.character(init_fit)) {
-      lifecycle::deprecate_warn(
+      deprecate_warn(
         when = "1.5.0",
         what = "stan_opts(init_fit)",
         details = paste("This argument is deprecated and the default (NULL)",
