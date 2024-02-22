@@ -846,13 +846,13 @@ stan_opts <- function(object = NULL,
     opts <- c(opts, stan_vb_opts(samples = samples, ...))
   }
   if (!is.null(init_fit)) {
+    deprecate_warn(
+      when = "1.5.0",
+      what = "stan_opts(init_fit)",
+      details = paste("This argument is deprecated and the default (NULL)",
+                      "will be used from version 2.0.0.")
+    )
     if (is.character(init_fit)) {
-      deprecate_warn(
-        when = "1.5.0",
-        what = "stan_opts(init_fit)",
-        details = paste("This argument is deprecated and the default (NULL)",
-                        "will be used from version 2.0.0.")
-      )
       init_fit <- arg_match(init_fit, values = "cumulative")
     }
     opts$init_fit <- init_fit
