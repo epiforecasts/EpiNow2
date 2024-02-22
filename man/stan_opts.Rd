@@ -36,15 +36,16 @@ Character string or \code{stanfit} object, defaults to NULL. Should an initial
 fit be used to initialise the full fit. An example scenario would be using a
 national level fit to parametrise regional level fits. Optionally a
 character string can be passed with the currently supported option being
-"cumulative". However, the "cumulative" option is being deprecated and will
-be removed in version 2.0.0. The "cumulative" option fits the model to
-cumulative cases and may be useful for
+"cumulative". This fits the model to cumulative cases and may be useful for
 certain data sets where the sampler gets stuck or struggles to initialise.
 See \code{\link[=init_cumulative_fit]{init_cumulative_fit()}} for details.
 
 This implementation is based on the approach taken in
 \href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia} authored by
-James Scott.}
+James Scott.
+
+This argument is deprecated and the default (NULL) will be used from
+version 2.0.0.}
 
 \item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be
 returned.}
