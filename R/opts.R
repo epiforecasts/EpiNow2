@@ -817,6 +817,11 @@ stan_opts <- function(object = NULL,
                       init_fit = NULL,
                       return_fit = TRUE,
                       ...) {
+  lifecycle::deprecate_warn(
+    when = "1.5.0",
+    what = "stan_opts(init_fit)",
+    details = "This argument will be removed in version 2.0.0."
+  )
   method <- arg_match(method, values = c("sampling", "vb"))
   backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
   if (backend == "cmdstanr" && !requireNamespace("cmdstanr", quietly = TRUE)) {
