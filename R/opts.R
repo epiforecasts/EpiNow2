@@ -1,75 +1,3 @@
-#' Secondary Reports Options
-#'
-#' @description `r lifecycle::badge("stable")`
-#' Returns a list of options defining the secondary model used in
-#' [estimate_secondary()]. This model is a combination of a convolution of
-#' previously observed primary reports combined with current primary reports
-#' (either additive or subtractive). It can optionally be cumulative. See the
-#' documentation of `type` for sensible options to cover most use cases and the
-#' returned values of [secondary_opts()] for all currently supported options.
-#'
-#' @param type A character string indicating the type of observation the
-#' secondary reports are. Options include:
-#'
-#' - "incidence": Assumes that secondary reports equal a convolution of
-#' previously observed primary reported cases. An example application is deaths
-#' from an infectious disease predicted by reported cases of that disease (or
-#' estimated infections).
-#'
-#' - "prevalence": Assumes that secondary reports are cumulative and are
-#' defined by currently observed primary reports minus a convolution of
-#' secondary reports. An example application is hospital bed usage predicted by
-#' hospital admissions.
-#'
-#' @param ... Overwrite options defined by type. See the returned values for all
-#' options that can be passed.
-#' @importFrom rlang arg_match
-#' @seealso [estimate_secondary()]
-#' @return A `<secondary_opts>` object of binary options summarising secondary
-#' model used in [estimate_secondary()]. Options returned are `cumulative`
-#' (should the secondary report be cumulative), `historic` (should a
-#' convolution of primary reported cases be used to predict secondary reported
-#' cases), `primary_hist_additive` (should the historic convolution of primary
-#' reported cases be additive or subtractive), `current` (should currently
-#' observed primary reported cases contribute to current secondary reported
-#' cases), `primary_current_additive` (should current primary reported cases be
-#' additive or subtractive).
-#'
-#' @export
-#' @author Sam Abbott
-#' @examples
-#' # incidence model
-#' secondary_opts("incidence")
-#'
-#' # prevalence model
-#' secondary_opts("prevalence")
-secondary_opts <- function(type = "incidence", ...) {
-  type <- arg_match(
-    type,
-    values = c("incidence", "prevalence")
-  )
-  if (type == "incidence") {
-    data <- list(
-      cumulative = 0,
-      historic = 1,
-      primary_hist_additive = 1,
-      current = 0,
-      primary_current_additive = 0
-    )
-  } else if (type == "prevalence") {
-    data <- list(
-      cumulative = 1,
-      historic = 1,
-      primary_hist_additive = 0,
-      current = 1,
-      primary_current_additive = 1
-    )
-  }
-  data <- modifyList(data, list(...))
-  attr(data, "class") <- c("secondary_opts", class(data))
-  return(data)
-}
-
 #' Generation Time Distribution Options
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -169,6 +97,78 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
   }
   attr(dist, "class") <- c("generation_time_opts", class(dist))
   return(dist)
+}
+
+#' Secondary Reports Options
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Returns a list of options defining the secondary model used in
+#' [estimate_secondary()]. This model is a combination of a convolution of
+#' previously observed primary reports combined with current primary reports
+#' (either additive or subtractive). It can optionally be cumulative. See the
+#' documentation of `type` for sensible options to cover most use cases and the
+#' returned values of [secondary_opts()] for all currently supported options.
+#'
+#' @param type A character string indicating the type of observation the
+#' secondary reports are. Options include:
+#'
+#' - "incidence": Assumes that secondary reports equal a convolution of
+#' previously observed primary reported cases. An example application is deaths
+#' from an infectious disease predicted by reported cases of that disease (or
+#' estimated infections).
+#'
+#' - "prevalence": Assumes that secondary reports are cumulative and are
+#' defined by currently observed primary reports minus a convolution of
+#' secondary reports. An example application is hospital bed usage predicted by
+#' hospital admissions.
+#'
+#' @param ... Overwrite options defined by type. See the returned values for all
+#' options that can be passed.
+#' @importFrom rlang arg_match
+#' @seealso [estimate_secondary()]
+#' @return A `<secondary_opts>` object of binary options summarising secondary
+#' model used in [estimate_secondary()]. Options returned are `cumulative`
+#' (should the secondary report be cumulative), `historic` (should a
+#' convolution of primary reported cases be used to predict secondary reported
+#' cases), `primary_hist_additive` (should the historic convolution of primary
+#' reported cases be additive or subtractive), `current` (should currently
+#' observed primary reported cases contribute to current secondary reported
+#' cases), `primary_current_additive` (should current primary reported cases be
+#' additive or subtractive).
+#'
+#' @export
+#' @author Sam Abbott
+#' @examples
+#' # incidence model
+#' secondary_opts("incidence")
+#'
+#' # prevalence model
+#' secondary_opts("prevalence")
+secondary_opts <- function(type = "incidence", ...) {
+  type <- arg_match(
+    type,
+    values = c("incidence", "prevalence")
+  )
+  if (type == "incidence") {
+    data <- list(
+      cumulative = 0,
+      historic = 1,
+      primary_hist_additive = 1,
+      current = 0,
+      primary_current_additive = 0
+    )
+  } else if (type == "prevalence") {
+    data <- list(
+      cumulative = 1,
+      historic = 1,
+      primary_hist_additive = 0,
+      current = 1,
+      primary_current_additive = 1
+    )
+  }
+  data <- modifyList(data, list(...))
+  attr(data, "class") <- c("secondary_opts", class(data))
+  return(data)
 }
 
 #' Delay Distribution Options
