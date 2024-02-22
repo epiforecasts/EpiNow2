@@ -818,11 +818,6 @@ stan_opts <- function(object = NULL,
                       init_fit = NULL,
                       return_fit = TRUE,
                       ...) {
-  lifecycle::deprecate_warn(
-    when = "1.5.0",
-    what = "stan_opts(init_fit)",
-    details = "This argument will be removed in version 2.0.0."
-  )
   method <- arg_match(method, values = c("sampling", "vb"))
   backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
   if (backend == "cmdstanr" && !requireNamespace("cmdstanr", quietly = TRUE)) {
@@ -852,6 +847,11 @@ stan_opts <- function(object = NULL,
   }
   if (!is.null(init_fit)) {
     if (is.character(init_fit)) {
+      lifecycle::deprecate_warn(
+        when = "1.5.0",
+        what = "stan_opts(init_fit)",
+        details = "This argument will be removed in version 2.0.0."
+      )
       init_fit <- arg_match(init_fit, values = "cumulative")
     }
     opts$init_fit <- init_fit
