@@ -650,7 +650,6 @@ estimate_delay <- function(delays, ...) {
 #'
 #' @return A `<data.table>` of cases by date of onset
 #' @export
-#' @importFrom purrr map_dfc
 #' @importFrom data.table data.table setorder
 #' @importFrom lubridate days
 #' @examples
@@ -729,7 +728,7 @@ sample_approx_dist <- function(cases = NULL,
     draw <- dist_fn(0:max_value, dist = TRUE, cum = FALSE)
 
     # approximate cases
-    mapped_cases <- suppressMessages(purrr::map_dfc(
+    mapped_cases <- do.call(cbind, purrr::map(
       seq_along(reversed_cases),
       ~ c(
         rep(0, . - 1),
