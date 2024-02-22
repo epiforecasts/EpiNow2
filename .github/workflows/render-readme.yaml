@@ -2,6 +2,7 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - .github/workflows/render-readme.yaml
       - 'README.Rmd'
 
 jobs:
