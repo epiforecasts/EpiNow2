@@ -276,9 +276,6 @@ model), and <code>fit</code> (the <code>stanfit</code> object).</p>
 <span class="r-in"><span><span class="va">inc</span> <span class="op">&lt;-</span> <span class="fu">estimate_secondary</span><span class="op">(</span><span class="va">cases</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">60</span><span class="op">]</span>,</span></span>
 <span class="r-in"><span>  obs <span class="op">=</span> <span class="fu"><a href="obs_opts.html">obs_opts</a></span><span class="op">(</span>scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">0.2</span>, sd <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span>, week_effect <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-02-22 09:51:14] estimate_secondary (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#tail-ess - </span>
 <span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">inc</span>, primary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="estimate_secondary-1.png" alt="" width="864" height="864"></span>
 <span class="r-in"><span></span></span>
