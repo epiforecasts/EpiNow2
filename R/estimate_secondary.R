@@ -88,7 +88,7 @@
 #' cases[, meanlog := 1.8][, sdlog := 0.5]
 #'
 #' # Simulate secondary cases
-#' cases <- simulate_secondary(cases, type = "incidence")
+#' cases <- convolve_and_scale(cases, type = "incidence")
 #' #
 #' # fit model to example data specifying a weak prior for fraction reported
 #' # with a secondary case
@@ -114,7 +114,7 @@
 #' cases[, meanlog := 1.6][, sdlog := 0.8]
 #'
 #' # Simulate secondary cases
-#' cases <- simulate_secondary(cases, type = "prevalence")
+#' cases <- convolve_and_scale(cases, type = "prevalence")
 #'
 #' # fit model to example prevalence data
 #' prev <- estimate_secondary(cases[1:100],
@@ -377,7 +377,14 @@ plot.estimate_secondary <- function(x, primary = FALSE,
   return(plot)
 }
 
-#' Simulate a secondary observation
+#' Convolve and scale a time series
+#'
+#' This applies a lognormal convolution with given, potentially time-varying
+#' parameters representing the parameters of the lognormal distribution used for
+#' the convolution and an optional scaling factor. This is akin to the model
+#' used in [estimate_secondary()] and [simulate_secondary()].
+#'
+#' Up to version 1.4.0 this function was called [simulate_secondary()].
 #'
 #' @param data A `<data.frame>` containing the `date` of report and `primary`
 #' cases as a numeric vector.
@@ -420,7 +427,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' cases[, meanlog := 1.8][, sdlog := 0.5]
 #'
 #' # Simulate secondary cases
-#' cases <- simulate_secondary(cases, type = "incidence")
+#' cases <- convolve_and_scale(cases, type = "incidence")
 #' cases
 #' #### Prevalence data example ####
 #'
@@ -435,9 +442,9 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' cases[, meanlog := 1.6][, sdlog := 0.8]
 #'
 #' # Simulate secondary cases
-#' cases <- simulate_secondary(cases, type = "prevalence")
+#' cases <- convolve_and_scale(cases, type = "prevalence")
 #' cases
-simulate_secondary <- function(data, type = "incidence", family = "poisson",
+convolve_and_scale <- function(data, type = "incidence", family = "poisson",
                                delay_max = 30, ...) {
   type <- arg_match(type, values = c("incidence", "prevalence"))
   family <- arg_match(family, values = c("none", "poisson", "negbin"))

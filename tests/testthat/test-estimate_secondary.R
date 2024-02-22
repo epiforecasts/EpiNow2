@@ -13,7 +13,7 @@ inc_cases[, scaling := 0.4]
 inc_cases[, meanlog := 1.8][, sdlog := 0.5]
 
 # Simulate secondary cases
-inc_cases <- simulate_secondary(inc_cases, type = "incidence")
+inc_cases <- convolve_and_scale(inc_cases, type = "incidence")
 inc_cases[
   ,
   c("confirm", "scaling", "meanlog", "sdlog", "index", "scaled", "conv") :=
@@ -45,7 +45,7 @@ prev_cases[, scaling := 0.3]
 prev_cases[, meanlog := 1.6][, sdlog := 0.8]
 
 # Simulate secondary cases
-prev_cases <- simulate_secondary(prev_cases, type = "prevalence")
+prev_cases <- convolve_and_scale(prev_cases, type = "prevalence")
 
 # fit model to example prevalence data
 prev <- estimate_secondary(prev_cases[1:100],
