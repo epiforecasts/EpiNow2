@@ -318,10 +318,10 @@ estimate_infections <- function(reported_cases,
 init_cumulative_fit <- function(args, samples = 50, warmup = 50,
                                 id = "init", verbose = FALSE,
                                 backend = "rstan") {
-  lifecycle::deprecate_warn(
-    when = "2.0.0",
+  deprecate_warn(
+    when = "1.5.0",
     what = "init_cumulative_fit()",
-    details = "The function will be removed completely in version 2.1.0."
+    details = "The function will be removed completely in version 2.0.0."
   )
   futile.logger::flog.debug(
     "%s: Fitting to cumulative data to initialise chains", id,
