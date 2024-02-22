@@ -115,7 +115,7 @@
 <p>Forecasting is also supported for the time-varying reproduction number, infections, and reported cases using the same generative process approach as used for estimation.</p>
 <details><summary>
 More details
-</summary><p><a href="https://epiforecasts.io/EpiNow2/">EpiNow2</a> estimates the time-varying reproduction number on cases by date of infection (using a similar approach to that implemented in <a href="https://github.com/mrc-ide/EpiEstim" class="external-link"><code>{EpiEstim}</code></a>). Imputed infections are then mapped to observed data (for example cases by date of report) via a series of uncertain delay distributions (in the examples in the package documentation these are an incubation period and a reporting delay) and a reporting model that can include weekly periodicity.</p>
+</summary><p><a href="https://epiforecasts.io/EpiNow2/">EpiNow2</a> estimates the time-varying reproduction number on cases by date of infection (using a similar approach to that implemented in <a href="https://github.com/mrc-ide/EpiEstim" class="external-link"><code>{EpiEstim}</code></a>). True infections treated as latent and unobserved, estimated, and then mapped to observed data (for example cases by date of report) via a series of uncertain delay distributions (in the examples in the package documentation these are an incubation period and a reporting delay) and a reporting model that can include weekly periodicity.</p>
 <p>Uncertainty is propagated from all inputs into the final parameter estimates, helping to mitigate spurious findings. This is handled internally. The time-varying reproduction estimates and the uncertain generation time also give time-varying estimates of the rate of growth.</p>
 </details><details><summary>
 Models provided
