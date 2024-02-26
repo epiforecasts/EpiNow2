@@ -320,8 +320,7 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
                                 backend = "rstan") {
   deprecate_warn(
     when = "1.5.0",
-    what = "init_cumulative_fit()",
-    details = "The function will be removed completely in version 2.0.0."
+    what = "init_cumulative_fit()"
   )
   futile.logger::flog.debug(
     "%s: Fitting to cumulative data to initialise chains", id,
