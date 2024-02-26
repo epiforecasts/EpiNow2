@@ -853,12 +853,15 @@ rstan_opts <- function(object = NULL,
 #' national level fit to parametrise regional level fits. Optionally a
 #' character string can be passed with the currently supported option being
 #' "cumulative". This fits the model to cumulative cases and may be useful for
-#'  certain data sets where the sampler gets stuck or struggles to initialise.
+#' certain data sets where the sampler gets stuck or struggles to initialise.
 #' See [init_cumulative_fit()] for details.
 #'
 #' This implementation is based on the approach taken in
 #' [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) authored by
 #' James Scott.
+#'
+#' This argument is deprecated and the default (NULL) will be used from
+#' version 2.0.0.
 #'
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be
 #' returned.
@@ -915,6 +918,12 @@ stan_opts <- function(object = NULL,
     opts <- c(opts, stan_vb_opts(samples = samples, ...))
   }
   if (!is.null(init_fit)) {
+    deprecate_warn(
+      when = "1.5.0",
+      what = "stan_opts(init_fit)",
+      details = paste("This argument is deprecated and the default (NULL)",
+                      "will be used from version 2.0.0.")
+    )
     if (is.character(init_fit)) {
       init_fit <- arg_match(init_fit, values = "cumulative")
     }

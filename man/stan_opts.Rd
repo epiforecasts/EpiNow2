@@ -42,7 +42,10 @@ See \code{\link[=init_cumulative_fit]{init_cumulative_fit()}} for details.
 
 This implementation is based on the approach taken in
 \href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia} authored by
-James Scott.}
+James Scott.
+
+This argument is deprecated and the default (NULL) will be used from
+version 2.0.0.}
 
 \item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be
 returned.}
