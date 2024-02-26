@@ -287,8 +287,6 @@ estimate_infections <- function(reported_cases,
 #'
 #' @description `r lifecycle::badge("deprecated")`
 #'
-#' This function has been deprecated and will be removed in version 2.0.0.
-#'
 #' Fits a model to cumulative cases. This may be a useful approach to
 #' initialising a full model fit for certain data sets where the sampler gets
 #' stuck or cannot easily be initialised as fitting to cumulative cases changes
