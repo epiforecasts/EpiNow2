@@ -421,37 +421,6 @@ set_dt_single_thread <- function() {
   )
 }
 
-#' Apply truncation to a data set
-#'
-#' @param index Index from which to truncate
-#' @param data Data set
-#' @param dist Truncation distribution
-#'
-#' @return A truncated data set
-#' @keywords internal
-make_truncated_data <- function(index, data, dist) {
-  set.seed(index)
-  if (dist$dist == 0) {
-    dfunc <- dlnorm
-  } else {
-    dfunc <- dgamma
-  }
-  cmf <- cumsum(
-    dfunc(
-      1:(dist$max + 1),
-      rnorm(1, dist$mean_mean, dist$mean_sd),
-      rnorm(1, dist$sd_mean, dist$sd_sd)
-    )
-  )
-  cmf <- cmf / cmf[dist$max + 1]
-  cmf <- rev(cmf)[-1]
-  trunc_data <- data.table::copy(data)[1:(.N - index)]
-  trunc_data[
-    (.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)
-  ]
-  return(trunc_data)
-}
-
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
 #' @importFrom lifecycle deprecate_warn
 #' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
