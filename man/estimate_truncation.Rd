@@ -103,7 +103,8 @@ This approach assumes that:
 old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
-# get example data
+# get example data stored in the package
+# Run `?example_truncation_data` for more details
 example_data <- example_truncation_data
 
 # fit model to example data
