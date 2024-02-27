@@ -1,4 +1,5 @@
 library("EpiNow2")
+library("here")
 
 #' Apply truncation to a data set
 #'
@@ -53,8 +54,8 @@ example_truncation_data <- purrr::map(
   dist = trunc_dist
 )
 
-usethis::use_data(
+saveRDS(
   example_truncation_data,
-  overwrite = TRUE,
+  here("inst", "extdata", "example_truncation_data.rds"),
   compress = "xz"
 )
