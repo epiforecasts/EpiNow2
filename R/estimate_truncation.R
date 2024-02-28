@@ -83,12 +83,9 @@
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #'
-#' # get example data stored in the package
-#' # Run `?example_truncation_data` for more details
-#' example_data <- example_truncated
-#'
 #' # fit model to example data
-#' est <- estimate_truncation(example_data,
+#' # See [example_truncated] for more details
+#' est <- estimate_truncation(example_truncated,
 #'   verbose = interactive(),
 #'   chains = 2, iter = 2000
 #' )
