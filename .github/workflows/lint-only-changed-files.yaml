@@ -23,6 +23,8 @@ jobs:
         with:
           dependencies: NA
           extra-packages: |
+            here
+            uethis
             stan-dev/cmdstanr
             any::gh
             any::lintr
