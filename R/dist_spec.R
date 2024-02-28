@@ -1078,6 +1078,7 @@ new_dist_spec <- function(params, distribution) {
 #' mean and sd of natural parameters.
 #' @author Sebastian Funk
 #' @keywords internal
+#' @examples
 #' \dontrun{
 #' convert_to_natural(
 #'   params = list(mean = 2, sd = 1, max = Inf),

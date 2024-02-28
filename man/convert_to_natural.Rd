@@ -19,21 +19,15 @@ mean and sd of natural parameters.
 This is used for preprocessing before generating a \code{dist_spec} object
 from a given set of parameters and distribution
 }
+\examples{
+\dontrun{
+convert_to_natural(
+  params = list(mean = 2, sd = 1, max = Inf),
+  distribution = "gamma"
+)
+}
+}
 \author{
 Sebastian Funk
 }
-\keyword{"gamma"}
-\keyword{)}
-\keyword{1,}
-\keyword{2,}
-\keyword{=}
-\keyword{Inf),}
-\keyword{\dontrun{}
-\keyword{convert_to_natural(}
-\keyword{distribution}
 \keyword{internal}
-\keyword{list(mean}
-\keyword{max}
-\keyword{params}
-\keyword{sd}
-\keyword{}}
