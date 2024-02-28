@@ -105,7 +105,7 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 
 # get example data stored in the package
 # Run `?example_truncation_data` for more details
-example_data <- example_truncation_data
+example_data <- example_truncated
 
 # fit model to example data
 est <- estimate_truncation(example_data,

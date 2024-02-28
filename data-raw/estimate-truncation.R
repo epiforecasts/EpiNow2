@@ -47,7 +47,7 @@ trunc_dist <- dist_spec(
 
 # Use the make_truncated_data() function to generate example data for
 # an example using estimate_truncation()
-example_truncation_data <- purrr::map(
+example_truncated <- purrr::map(
   seq(20, 0, -5),
   apply_truncation,
   data = reported_cases,

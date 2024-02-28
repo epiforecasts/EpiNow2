@@ -60,4 +60,4 @@
 #'   \item{date}{Date of case report.}
 #'   \item{confirm}{Number of confirmed cases.}
 #' }
-"example_truncation_data"
+"example_truncated"
