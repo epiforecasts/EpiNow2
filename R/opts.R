@@ -615,9 +615,8 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                 max_execution_time = Inf,
                                 ...) {
   lifecycle::deprecate_warn(
-    "2.0.0", "rstan_sampling_opts()",
-    "stan_sampling_opts()",
-     "This function will be removed in version 2.1.0."
+    "1.5.0", "rstan_sampling_opts()",
+    "stan_sampling_opts()"
   )
   return(stan_sampling_opts(
     cores, warmup, samples, chains, control, save_warmup, seed, future,
@@ -735,9 +734,8 @@ rstan_vb_opts <- function(samples = 2000,
                           trials = 10,
                           iter = 10000, ...) {
   lifecycle::deprecate_warn(
-    "2.0.0", "rstan_vb_opts()",
-    "stan_vb_opts()",
-     "This function will be removed in version 2.1.0."
+    "1.5.0", "rstan_vb_opts()",
+    "stan_vb_opts()"
   )
   return(stan_vb_opts(samples, trials, iter, ...))
 }
@@ -802,9 +800,8 @@ rstan_opts <- function(object = NULL,
                        samples = 2000,
                        method = "sampling", ...) {
   lifecycle::deprecate_warn(
-    "2.0.0", "rstan_opts()",
-    "stan_opts()",
-     "This function will be removed in version 2.1.0."
+    "1.5.0", "rstan_opts()",
+    "stan_opts()"
   )
   method <- arg_match(method, values = c("sampling", "vb"))
   # shared everywhere opts

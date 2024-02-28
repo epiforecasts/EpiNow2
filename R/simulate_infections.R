@@ -63,7 +63,7 @@ simulate_infections <- function(estimates, R, initial_infections,
   ## deprecated usage
   if (!missing(estimates)) {
     deprecate_warn(
-      "2.0.0",
+      "1.5.0",
       "simulate_infections(estimates)",
       "forecast_infections()",
       details = paste0(

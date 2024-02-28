@@ -181,8 +181,7 @@ get_regional_results <- function(regional_output,
 #' @export
 get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
   lifecycle::deprecate_warn(
-    "2.0.0", "get_dist()", "dist_spec()",
-    "The function will be removed completely in version 2.1.0."
+    "1.5.0", "get_dist()", "dist_spec()"
   )
   target_disease <- disease
   target_source <- source
@@ -212,10 +211,9 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
 get_generation_time <- function(disease, source, max_value = 14,
                                 fixed = FALSE) {
   lifecycle::deprecate_warn(
-    "2.0.0", "get_generation_time()", "dist_spec()",
+    "1.5.0", "get_generation_time()", "dist_spec()",
     paste(
-      "The function will be removed completely in version 2.1.0. To obtain the",
-      "previous estimate by Ganyani et al. (2020) use ",
+      "To obtain the previous estimate by Ganyani et al. (2020) use ",
       "`example_generation_time`"
     )
   )
@@ -242,10 +240,9 @@ get_generation_time <- function(disease, source, max_value = 14,
 get_incubation_period <- function(disease, source, max_value = 14,
                                   fixed = FALSE) {
   lifecycle::deprecate_warn(
-    "2.0.0", "get_incubation_period()", "dist_spec()",
+    "1.5.0", "get_incubation_period()", "dist_spec()",
     paste(
-      "The function will be removed completely in version 2.1.0. To obtain the",
-      "previous estimate by Ganyani et al. (2020) use ",
+      "To obtain the previous estimate by Ganyani et al. (2020) use ",
       "`example_incubation_period`"
     )
   )
