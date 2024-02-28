@@ -1034,12 +1034,6 @@ new_dist_spec <- function(params, distribution) {
       ## convert any unnatural parameters
       unnatural_params <- setdiff(names(params), natural_params(distribution))
       if (length(unnatural_params) > 0) {
-        if (length(unnatural_params) < length(params)) {
-          stop(
-            "Incompatible combination of parameters of a ", distribution,
-            " distribution specified."
-          )
-        }
         ## sample parameters if they are uncertain
         if (any(vapply(params, sd_dist, numeric(1)) > 0)) {
           warning(
@@ -1098,17 +1092,36 @@ convert_to_natural <- function(params, distribution) {
   ## store natural parameters
   x <- list()
   if (distribution == "gamma") {
+    ## given as mean and sd
     if ("mean" %in% names(ux) && "sd" %in% names(ux)) {
       x$shape <- ux$mean**2 / ux$sd**2
       x$rate <- x$shape / ux$mean
-    } else if (!("rate" %in% names(ux)) && ("scale" %in% names(ux))) {
+    } else {
+      ## convert scale => rate
+      if ("scale" %in% names(ux)) {
+        x$rate <- 1 / ux$scale
+      } else {
+        x$rate <- ux$rate
+      }
       x$shape <- ux$shape
-      x$rate <- 1 / ux$scale
     }
-  } else if (distribution == "lognormal" &&
-             "mean" %in% names(params) && "sd" %in% names(params)) {
-    x$meanlog <- log(ux$mean^2 / sqrt(ux$sd^2 + ux$mean^2))
-    x$sdlog <- convert_to_logsd(ux$mean, ux$sd)
+  } else if (distribution == "lognormal") {
+    if ("mean" %in% names(params) && "sd" %in% names(params)) {
+      x$meanlog <- log(ux$mean^2 / sqrt(ux$sd^2 + ux$mean^2))
+      x$sdlog <- convert_to_logsd(ux$mean, ux$sd)
+    } else {
+      x$meanlog <- ux$meanlog
+      x$sdlog <- ux$sdlog
+    }
+  }
+  ## sort
+  x <- x[natural_params(distribution)]
+  if (anyNA(names(x))) {
+    stop(
+      "Incompatible combination of parameters of a ", distribution,
+      " distribution specified:\n    ", paste(names(params), collapse = ", "),
+      "."
+    )
   }
   if (rel_unc > 0) {
     params <- lapply(names(x), function(param_name) {
