@@ -1122,7 +1122,7 @@ convert_to_natural <- function(params, distribution) {
   if (anyNA(names(x))) {
     stop(
       "Incompatible combination of parameters of a ", distribution,
-      " distribution specified:\n    ", paste(names(params), collapse = ", "),
+      " distribution specified:\n    ", toString(names(params)),
       "."
     )
   }
