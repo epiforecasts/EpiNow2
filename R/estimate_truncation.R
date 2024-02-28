@@ -148,7 +148,8 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
                                 truncation = trunc_opts(
                                   LogNormal(
-                                    meanlog = Normal(0, 1), sdlog = Normal(1, 1),
+                                    meanlog = Normal(0, 1),
+                                    sdlog = Normal(1, 1),
                                     max = 10
                                   )
                                 ),
@@ -161,7 +162,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   if (!is.null(model)) {
     lifecycle::deprecate_stop(
-      "2.0.0",
+      "1.5.0",
       "estimate_truncation(model)",
       "estimate_truncation(stan)"
     )

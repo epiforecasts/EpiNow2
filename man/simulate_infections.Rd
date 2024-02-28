@@ -79,7 +79,7 @@ Uncertain parameters are not allowed.
 A previous function called \code{\link[=simulate_infections]{simulate_infections()}} that simulates from a
 given model fit has been renamed \code{\link[=forecast_infections]{forecast_infections()}}. Using
 \code{\link[=simulate_infections]{simulate_infections()}} with existing estimates is now deprecated. This
-option will be removed in version 2.1.0.
+option will be removed in version 2.0.0.
 }
 \examples{
 \donttest{

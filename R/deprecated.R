@@ -43,8 +43,8 @@ gamma_dist_def <- function(shape, shape_sd,
                            sd, sd_sd,
                            max_value, samples) {
   lifecycle::deprecate_warn(
-    "2.0.0", "gamma_dist_def()", "Gamma()",
-    "The function will be removed completely in version 2.1.0."
+    "1.5.0", "gamma_dist_def()", "Gamma()",
+    "The function will be removed completely in version 2.0.0."
   )
 
   if (missing(shape) && missing(scale) && !missing(mean) && !missing(sd)) {
@@ -132,8 +132,8 @@ lognorm_dist_def <- function(mean, mean_sd,
                              max_value, samples,
                              to_log = FALSE) {
   lifecycle::deprecate_warn(
-    "2.0.0", "lognorm_dist_def()", "LogNormal()",
-    "The function will be removed completely in version 2.1.0."
+    "1.5.0", "lognorm_dist_def()", "LogNormal()",
+    "The function will be removed completely in version 2.0.0."
   )
 
   transform_mean <- function(mu, sig) {
@@ -262,20 +262,20 @@ dist_spec <- function(distribution = c(
                       max = Inf, pmf = numeric(0), fixed = FALSE) {
 
   lifecycle::deprecate_warn(
-    "2.0.0",
+    "1.5.0",
     "dist_spec()",
     details = c(
       paste0(
         "Please use distribution functions such as `Gamma()` or `Lognormal()` ",
         "instead."
       ),
-      "The function will become internal only in version 2.1.0."
+      "The function will become internal only in version 2.0.0."
     )
   )
   ## check for deprecated parameters
   if (!missing(fixed)) {
     lifecycle::deprecate_warn(
-      "2.0.0",
+      "1.5.0",
       "dist_spec(fixed)",
       "fix_dist()"
     )
@@ -291,7 +291,7 @@ dist_spec <- function(distribution = c(
   ## check if distribution is given as empty and warn about deprecation if so
   if (distribution == "empty") {
     deprecate_warn(
-      "2.0.0",
+      "1.5.0",
       "dist_spec(distribution = 'must not be \"empty\"')",
       details = "Please use `Fixed(0)` instead."
     )

@@ -146,7 +146,7 @@ adjust_infection_to_report <- function(infections, delay_defs,
     }
   } else {
     deprecate_warn(
-      "2.0.0",
+      "1.5.0",
       "adjust_infection_to_report(delay_defs = 'should be a dist_spec')",
       details = "Specifying this as a list of data tables is deprecated."
     )
