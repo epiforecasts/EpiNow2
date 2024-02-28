@@ -53,8 +53,8 @@ example_truncated <- purrr::map(
   dist = trunc_dist
 )
 
-saveRDS(
-  example_truncation_data,
-  here("inst", "extdata", "example_truncation_data.rds"),
+usethis::use_data(
+  example_truncated,
+  overwrite = TRUE,
   compress = "xz"
 )
