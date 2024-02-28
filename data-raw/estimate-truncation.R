@@ -1,5 +1,4 @@
 library("EpiNow2")
-library("here")
 
 #' Apply truncation to a data set
 #'
