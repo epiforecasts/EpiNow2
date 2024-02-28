@@ -180,13 +180,13 @@ get_regional_results <- function(regional_output,
 #' @export
 get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
   lifecycle::deprecate_warn(
-    "2.0.0", "get_dist()",
+    "1.5.0", "get_dist()",
     details = c(
       paste(
         "Please use distribution functions such as `Gamma()` or `Lognormal()`",
         "instead."
       ),
-      "The function will be removed completely in version 2.1.0."
+      "The function will be removed completely in version 2.0.0."
     )
   )
   target_disease <- disease
@@ -226,13 +226,13 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
 get_generation_time <- function(disease, source, max_value = 14,
                                 fixed = FALSE) {
   lifecycle::deprecate_warn(
-    "2.0.0", "get_generation_time()",
+    "1.5.0", "get_generation_time()",
     details = c(
       paste(
         "Please use distribution functions such as `Gamma()` or `Lognormal()`",
         "instead."
       ),
-      "The function will be removed completely in version 2.1.0.",
+      "The function will be removed completely in version 2.0.0.",
       paste(
         "To obtain the previous estimate by Ganyani et al. (2020) use",
         "`example_generation_time`."
@@ -261,13 +261,13 @@ get_generation_time <- function(disease, source, max_value = 14,
 get_incubation_period <- function(disease, source, max_value = 14,
                                   fixed = FALSE) {
   lifecycle::deprecate_warn(
-    "2.0.0", "get_incubation_period()",
+    "1.5.0", "get_incubation_period()",
     details = c(
       paste(
         "Please use distribution functions such as `Gamma()` or `Lognormal()`",
         "instead."
       ),
-      "The function will be removed completely in version 2.1.0.",
+      "The function will be removed completely in version 2.0.0.",
      paste(
       "To obtain the previous estimate by Ganyani et al. (2020) use",
       "`example_incubation_period`."

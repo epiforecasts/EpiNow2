@@ -190,8 +190,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     deprecate_warn(
       "1.4.0",
       "estimate_truncation(trunc_max)",
-      "estimate_truncation(truncation)",
-      "The argument will be removed completely in version 2.0.0."
+      "estimate_truncation(truncation)"
     )
     construct_trunc <- TRUE
   }
@@ -204,8 +203,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     deprecate_warn(
       "1.4.0",
       "estimate_truncation(max_truncation)",
-      "estimate_truncation(truncation)",
-      "The argument will be removed completely in version 2.0.0."
+      "estimate_truncation(truncation)"
     )
     trunc_max <- max_truncation
     construct_trunc <- TRUE
@@ -220,8 +218,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     deprecate_warn(
       "1.4.0",
       "estimate_truncation(trunc_dist)",
-      "estimate_truncation(truncation)",
-      "The argument will be removed completely in version 2.0.0."
+      "estimate_truncation(truncation)"
     )
     construct_trunc <- TRUE
   }

@@ -277,8 +277,6 @@ estimate_infections <- function(reported_cases,
 #'
 #' @description `r lifecycle::badge("deprecated")`
 #'
-#' This function has been deprecated and will be removed in version 2.0.0.
-#'
 #' Fits a model to cumulative cases. This may be a useful approach to
 #' initialising a full model fit for certain data sets where the sampler gets
 #' stuck or cannot easily be initialised as fitting to cumulative cases changes
@@ -310,8 +308,7 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
                                 backend = "rstan") {
   deprecate_warn(
     when = "1.5.0",
-    what = "init_cumulative_fit()",
-    details = "The function will be removed completely in version 2.0.0."
+    what = "init_cumulative_fit()"
   )
   futile.logger::flog.debug(
     "%s: Fitting to cumulative data to initialise chains", id,
