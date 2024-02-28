@@ -411,8 +411,8 @@ create_gp_data <- function(gp = gp_opts(), data) {
 create_obs_model <- function(obs = obs_opts(), dates) {
   data <- list(
     model_type = as.numeric(obs$family == "negbin"),
-    phi_mean = obs$phi[1],
-    phi_sd = obs$phi[2],
+    phi_mean = obs$phi$mean,
+    phi_sd = obs$phi$sd,
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
     obs_scale = as.integer(obs$scale$sd > 0 || obs$scale$mean != 1),

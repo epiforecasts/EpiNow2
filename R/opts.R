@@ -105,6 +105,78 @@ generation_time_opts <- function(dist = Fixed(1), ...,
   return(dist)
 }
 
+#' Secondary Reports Options
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Returns a list of options defining the secondary model used in
+#' [estimate_secondary()]. This model is a combination of a convolution of
+#' previously observed primary reports combined with current primary reports
+#' (either additive or subtractive). It can optionally be cumulative. See the
+#' documentation of `type` for sensible options to cover most use cases and the
+#' returned values of [secondary_opts()] for all currently supported options.
+#'
+#' @param type A character string indicating the type of observation the
+#' secondary reports are. Options include:
+#'
+#' - "incidence": Assumes that secondary reports equal a convolution of
+#' previously observed primary reported cases. An example application is deaths
+#' from an infectious disease predicted by reported cases of that disease (or
+#' estimated infections).
+#'
+#' - "prevalence": Assumes that secondary reports are cumulative and are
+#' defined by currently observed primary reports minus a convolution of
+#' secondary reports. An example application is hospital bed usage predicted by
+#' hospital admissions.
+#'
+#' @param ... Overwrite options defined by type. See the returned values for all
+#' options that can be passed.
+#' @importFrom rlang arg_match
+#' @seealso [estimate_secondary()]
+#' @return A `<secondary_opts>` object of binary options summarising secondary
+#' model used in [estimate_secondary()]. Options returned are `cumulative`
+#' (should the secondary report be cumulative), `historic` (should a
+#' convolution of primary reported cases be used to predict secondary reported
+#' cases), `primary_hist_additive` (should the historic convolution of primary
+#' reported cases be additive or subtractive), `current` (should currently
+#' observed primary reported cases contribute to current secondary reported
+#' cases), `primary_current_additive` (should current primary reported cases be
+#' additive or subtractive).
+#'
+#' @export
+#' @author Sam Abbott
+#' @examples
+#' # incidence model
+#' secondary_opts("incidence")
+#'
+#' # prevalence model
+#' secondary_opts("prevalence")
+secondary_opts <- function(type = "incidence", ...) {
+  type <- arg_match(
+    type,
+    values = c("incidence", "prevalence")
+  )
+  if (type == "incidence") {
+    data <- list(
+      cumulative = 0,
+      historic = 1,
+      primary_hist_additive = 1,
+      current = 0,
+      primary_current_additive = 0
+    )
+  } else if (type == "prevalence") {
+    data <- list(
+      cumulative = 1,
+      historic = 1,
+      primary_hist_additive = 0,
+      current = 1,
+      primary_current_additive = 1
+    )
+  }
+  data <- modifyList(data, list(...))
+  attr(data, "class") <- c("secondary_opts", class(data))
+  return(data)
+}
+
 #' Delay Distribution Options
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -440,9 +512,11 @@ gp_opts <- function(basis_prop = 0.2,
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
 #'   Negative binomial ("negbin"), the default, and Poisson.
-#' @param phi A numeric vector of length 2, defaults to 0, 1. Indicates the mean
-#'   and standard deviation of the normal prior used for the observation
-#'   process.
+#' @param phi Overdispersion parameter of the reporting process, used only if
+#'   `familiy` is "negbin". Can be supplied either as a single numeric value
+#'   (fixed overdispersion) or a list with numeric elements mean (`mean`) and
+#'   standard deviation (`sd`) defining a normally distributed overdispersion.
+#'   Defaults to a list with elements `mean = 0` and `sd = 1`.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in the
 #'   log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week
@@ -482,7 +556,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' # Scale reported data
 #' obs_opts(scale = list(mean = 0.2, sd = 0.02))
 obs_opts <- function(family = "negbin",
-                     phi = c(0, 1),
+                     phi = list(mean = 0, sd = 1),
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
@@ -490,9 +564,6 @@ obs_opts <- function(family = "negbin",
                      na = c("missing", "accumulate"),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
-  if (length(phi) != 2 || !is.numeric(phi)) {
-    stop("phi be numeric and of length two")
-  }
   na <- arg_match(na)
   if (na == "accumulate") {
     message(
@@ -505,6 +576,13 @@ obs_opts <- function(family = "negbin",
     )
   }
 
+  if (length(phi) == 2 && is.numeric(phi)) {
+    warning(
+      "Specifying `phi` as a length 2 vector is deprecated. Mean and SD ",
+      "should be given as list elements."
+    )
+    phi <- list(mean = phi[1], sd = phi[2])
+  }
   obs <- list(
     family = arg_match(family, values = c("poisson", "negbin")),
     phi = phi,
@@ -517,11 +595,13 @@ obs_opts <- function(family = "negbin",
     return_likelihood = return_likelihood
   )
 
-  if (is.numeric(obs$scale)) {
-    obs$scale <- list(mean = obs$scale, sd = 0)
-  }
-  if (!(all(c("mean", "sd") %in% names(obs$scale)))) {
-    stop("If specifying a scale as list both a mean and sd are needed")
+  for (param in c("phi", "scale")) {
+    if (is.numeric(obs[[param]])) {
+      obs[[param]] <- list(mean = obs[[param]], sd = 0)
+    }
+    if (!(all(c("mean", "sd") %in% names(obs[[param]])))) {
+      stop("If specifying a ", param, " as list both a mean and sd are needed")
+    }
   }
 
   attr(obs, "class") <- c("obs_opts", class(obs))
@@ -785,12 +865,15 @@ rstan_opts <- function(object = NULL,
 #' national level fit to parametrise regional level fits. Optionally a
 #' character string can be passed with the currently supported option being
 #' "cumulative". This fits the model to cumulative cases and may be useful for
-#'  certain data sets where the sampler gets stuck or struggles to initialise.
+#' certain data sets where the sampler gets stuck or struggles to initialise.
 #' See [init_cumulative_fit()] for details.
 #'
 #' This implementation is based on the approach taken in
 #' [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) authored by
 #' James Scott.
+#'
+#' This argument is deprecated and the default (NULL) will be used from
+#' version 2.0.0.
 #'
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be
 #' returned.
@@ -847,6 +930,12 @@ stan_opts <- function(object = NULL,
     opts <- c(opts, stan_vb_opts(samples = samples, ...))
   }
   if (!is.null(init_fit)) {
+    deprecate_warn(
+      when = "1.5.0",
+      what = "stan_opts(init_fit)",
+      details = paste("This argument is deprecated and the default (NULL)",
+                      "will be used from version 2.0.0.")
+    )
     if (is.character(init_fit)) {
       init_fit <- arg_match(init_fit, values = "cumulative")
     }

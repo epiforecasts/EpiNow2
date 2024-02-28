@@ -1,19 +1,208 @@
-#' Deprecated; use [forecast_infections()] instead
+#' Simulate infections using the renewal equation
 #'
-#' Calling this function passes all arguments to [forecast_infections()]
-#' @description `r lifecycle::badge("deprecated")`
-#' @param ... Arguments to be passed to [forecast_infections()]
-#' @return the result of [forecast_infections()]
+#' Simulations are done from given initial infections and, potentially
+#' time-varying, reproduction numbers. Delays and parameters of the observation
+#' model can be specified using the same options as in [estimate_infections()].
+#'
+#' In order to simulate, all parameters that are specified such as the mean and
+#' standard deviation of delays or observation scaling, must be fixed.
+#' Uncertain parameters are not allowed.
+#'
+#' A previous function called [simulate_infections()] that simulates from a
+#' given model fit has been renamed [forecast_infections()]. Using
+#' [simulate_infections()] with existing estimates is now deprecated. This
+#' option will be removed in version 2.1.0.
+#' @param R a data frame of reproduction numbers (column `R`) by date (column
+#'   `date`). Column `R` must be numeric and `date` must be in date format. If
+#'   not all days between the first and last day in the `date` are present,
+#'   it will be assumed that R stays the same until the next given date.
+#' @param initial_infections numeric; the initial number of infections.
+#' @param day_of_week_effect either `NULL` (no day of the week effect) or a
+#'   numerical vector of length specified in [obs_opts()] as `week_length`
+#'   (default: 7) if `week_effect` is set to TRUE. Each element of the vector
+#'   gives the weight given to reporting on this day (normalised to 1).
+#'   The default is `NULL`.
+#' @param estimates deprecated; use [forecast_infections()] instead
+#' @param ... deprecated; only included for backward compatibility
+#' @inheritParams estimate_infections
+#' @inheritParams rt_opts
+#' @inheritParams stan_opts
+#' @importFrom lifecycle deprecate_warn
+#' @importFrom checkmate assert_data_frame assert_date assert_numeric
+#'   assert_subset
+#' @importFrom data.table data.table merge.data.table nafill rbindlist
+#' @return A data.table of simulated infections (variable `infections`) and
+#'   reported cases (variable `reported_cases`) by date.
+#' @author Sebastian Funk
 #' @export
-simulate_infections <- function(...) {
+#' @examples
+#' \donttest{
+#'   R <- data.frame(
+#'     date = seq.Date(as.Date("2023-01-01"), length.out = 14, by = "day"),
+#'     R = c(rep(1.2, 7), rep(0.8, 7))
+#'   )
+#'   sim <- simulate_infections(
+#'     R = R,
+#'     initial_infections = 100,
+#'     generation_time = generation_time_opts(
+#'       fix_dist(example_generation_time)
+#'     ),
+#'     delays = delay_opts(fix_dist(example_reporting_delay)),
+#'     obs = obs_opts(family = "poisson")
+#'   )
+#' }
+simulate_infections <- function(estimates, R, initial_infections,
+                                day_of_week_effect = NULL,
+                                generation_time = generation_time_opts(),
+                                delays = delay_opts(),
+                                truncation = trunc_opts(),
+                                obs = obs_opts(),
+                                CrIs = c(0.2, 0.5, 0.9),
+                                backend = "rstan",
+                                pop = 0, ...) {
+  ## deprecated usage
+  if (!missing(estimates)) {
     deprecate_warn(
       "2.0.0",
-      "simulate_infections()",
+      "simulate_infections(estimates)",
       "forecast_infections()",
-      "A new [simulate_infections()] function for simulating from given ",
-      "parameters is planned for implementation in the future."
+      details = paste0(
+        "This `estimates` option will be removed from [simulate_infections()] ",
+        "in version 2.1.0."
+      )
     )
-   forecast_infections(...)
+    return(forecast_infections(estimates = estimates, ...))
+  }
+
+  ## check inputs
+  assert_data_frame(R, any.missing = FALSE)
+  assert_subset(colnames(R), c("date", "R"))
+  assert_date(R$date)
+  assert_numeric(R$R, lower = 0)
+  assert_numeric(initial_infections, lower = 0)
+  assert_numeric(day_of_week_effect, lower = 0, null.ok = TRUE)
+  assert_numeric(pop, lower = 0)
+  assert_class(delays, "delay_opts")
+  assert_class(obs, "obs_opts")
+  assert_class(generation_time, "generation_time_opts")
+
+  ## create R for all dates modelled
+  all_dates <- data.table(date = seq.Date(min(R$date), max(R$date), by = "day"))
+  R <- merge.data.table(all_dates, R, by = "date", all.x = TRUE)
+  R <- R[, R := nafill(R, type = "locf")]
+  ## remove any initial NAs
+  R <- R[!is.na(R)]
+
+  seeding_time <- get_seeding_time(delays, generation_time)
+  if (seeding_time > 1) {
+    ## estimate initial growth from initial reproduction number if seeding time
+    ## is greater than 1
+    initial_growth <- (R$R[1] - 1) / mean(generation_time)
+  } else {
+    initial_growth <- numeric(0)
+  }
+
+  data <- list(
+    n = 1,
+    t = nrow(R) + seeding_time,
+    seeding_time = seeding_time,
+    future_time = 0,
+    initial_infections = array(log(initial_infections), dim = c(1, 1)),
+    initial_growth = array(initial_growth, dim = c(1, length(initial_growth))),
+    R = array(R$R, dim = c(1, nrow(R))),
+    pop = pop
+  )
+
+  data <- c(data, create_stan_delays(
+    gt = generation_time,
+    delay = delays,
+    trunc = truncation
+  ))
+
+  if ((length(data$delay_mean_sd) > 0 && any(data$delay_mean_sd > 0)) ||
+      (length(data$delay_sd_sd) > 0 && any(data$delay_sd_sd > 0))) {
+    stop(
+      "Cannot simulate from uncertain parameters. Use the [fix_dist()] ",
+      "function to set the parameters of uncertain distributions either the ",
+      "mean or a randomly sampled value"
+    )
+  }
+  data$delay_mean <- array(
+    data$delay_mean_mean, dim = c(1, length(data$delay_mean_mean))
+  )
+  data$delay_sd <- array(
+    data$delay_sd_mean, dim = c(1, length(data$delay_sd_mean))
+  )
+  data$delay_mean_sd <- NULL
+  data$delay_sd_sd <- NULL
+
+  data <- c(data, create_obs_model(
+    obs, dates = R$date
+  ))
+
+  if (data$obs_scale_sd > 0) {
+    stop(
+      "Cannot simulate from uncertain observation scaling; use fixed scaling ",
+      "instead."
+    )
+  }
+  if (data$obs_scale) {
+    data$frac_obs <- array(data$obs_scale_mean, dim = c(1, 1))
+  } else {
+    data$frac_obs <- array(dim = c(1, 0))
+  }
+  data$obs_scale_mean <- NULL
+  data$obs_scale_sd <- NULL
+
+  if (obs$family == "negbin") {
+    if (data$phi_sd > 0) {
+      stop(
+        "Cannot simulate from uncertain overdispersion; use fixed ",
+        "overdispersion instead."
+      )
+    }
+    data$rep_phi <- array(data$phi_mean, dim = c(1, 1))
+  } else {
+    data$rep_phi <- array(dim = c(1, 0))
+  }
+  data$phi_mean <- NULL
+  data$phi_sd <- NULL
+
+  ## day of week effect
+  if (is.null(day_of_week_effect)) {
+    day_of_week_effect <- rep(1, data$week_effect)
+  }
+
+  day_of_week_effect <- day_of_week_effect / sum(day_of_week_effect)
+  data$day_of_week_simplex <- array(
+    day_of_week_effect, dim = c(1, data$week_effect)
+  )
+
+  # Create stan arguments
+  stan <- stan_opts(backend = backend, chains = 1, samples = 1, warmup = 1)
+  args <- create_stan_args(
+    stan, data = data, fixed_param = TRUE, model = "simulate_infections",
+    verbose = FALSE
+  )
+
+  ## simulate
+  sim <- fit_model(args, id = "simulate_infections")
+
+  ## join batches
+  dates <- c(
+    seq(min(R$date) - seeding_time, min(R$date) - 1, by = "day"),
+    R$date
+  )
+  out <- extract_parameter_samples(sim, data,
+    reported_inf_dates = dates,
+    reported_dates = dates[-(1:seeding_time)],
+    drop_length_1 = TRUE
+  )
+
+  out <- rbindlist(out[c("infections", "reported_cases")], idcol = "variable")
+  out <- out[, c("sample", "parameter", "time") :=  NULL]
+
+  return(out[])
 }
 
 #' Forecast infections from a given fit and trajectory of the time-varying

@@ -146,9 +146,11 @@
 #' options(old_opts)
 estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
-                                truncation = LogNormal(
-                                  meanlog = Normal(0, 1), sdlog = Normal(1, 1),
-                                  max = 10
+                                truncation = trunc_opts(
+                                  LogNormal(
+                                    meanlog = Normal(0, 1), sdlog = Normal(1, 1),
+                                    max = 10
+                                  )
                                 ),
                                 model = NULL,
                                 stan = stan_opts(),

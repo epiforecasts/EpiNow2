@@ -6,7 +6,7 @@
 \usage{
 epinow(
   reported_cases,
-  generation_time = NULL,
+  generation_time = generation_time_opts(),
   delays = delay_opts(),
   truncation = trunc_opts(),
   rt = rt_opts(),
