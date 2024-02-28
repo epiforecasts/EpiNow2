@@ -73,8 +73,8 @@ test_that("c.dist_spec returns correct output for sum of two distributions", {
 })
 
 test_that("collapse returns correct output for sum of two nonparametric distributions", {
-  dist1 <- pmf(c(0.1, 0.2, 0.3, 0.4))
-  dist2 <- pmf(c(0.1, 0.2, 0.3, 0.4))
+  dist1 <- NonParametric(c(0.1, 0.2, 0.3, 0.4))
+  dist2 <- NonParametric(c(0.1, 0.2, 0.3, 0.4))
   result <- collapse(c(dist1, dist2))
   expect_null(result[[1]]$parameters)
   expect_equal(result[[1]]$distribution, "nonparametric")
@@ -263,9 +263,12 @@ test_that("delay distributions can be specified in different ways", {
   )
   expect_equal(discretise(Fixed(value = 3))[[1]]$pmf, c(0, 0, 0, 1))
   expect_equal(Fixed(value = 3.5)[[1]]$parameters$value, 3.5)
-  expect_equal(pmf(c(0.1, 0.3, 0.2, 0.4))[[1]]$pmf, c(0.1, 0.3, 0.2, 0.4))
   expect_equal(
-    round(pmf(c(0.1, 0.3, 0.2, 0.1, 0.1))[[1]]$pmf, 2),
+    NonParametric(c(0.1, 0.3, 0.2, 0.4))[[1]]$pmf,
+    c(0.1, 0.3, 0.2, 0.4)
+  )
+  expect_equal(
+    round(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))[[1]]$pmf, 2),
     c(0.12, 0.37, 0.25, 0.12, 0.12)
   )
 })

@@ -6,7 +6,7 @@
 \alias{Gamma}
 \alias{Normal}
 \alias{Fixed}
-\alias{pmf}
+\alias{NonParametric}
 \title{Probability distributions}
 \usage{
 LogNormal(meanlog, sdlog, mean, sd, max = Inf)
@@ -17,7 +17,7 @@ Normal(mean, sd, max = Inf)
 
 Fixed(value, max = Inf)
 
-pmf(mass)
+NonParametric(pmf)
 }
 \arguments{
 \item{meanlog, sdlog}{mean and standard deviation of the distribution
@@ -35,7 +35,7 @@ be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
 
 \item{value}{Value of the fixed (delta) distribution}
 
-\item{mass}{Probability mass of the given distribution; this is
+\item{pmf}{Probability mass of the given distribution; this is
 passed as a zero-indexed numeric vector (i.e. the fist entry represents
 the probability mass of zero). If not summing to one it will be normalised
 to sum to one internally.}
@@ -86,8 +86,8 @@ Normal(mean = 4, sd = 1)
 Normal(mean = 4, sd = 1, max = 10)
 Fixed(value = 3)
 Fixed(value = 3.5)
-pmf(c(0.1, 0.3, 0.2, 0.4))
-pmf(c(0.1, 0.3, 0.2, 0.1, 0.1))
+NonParametric(c(0.1, 0.3, 0.2, 0.4))
+NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))
 }
 \author{
 Sebastian Funk

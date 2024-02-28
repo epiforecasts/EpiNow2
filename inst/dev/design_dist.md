@@ -28,6 +28,6 @@ Gamma(shape = Normal(mean = 3, sd = 1), rate = Normal(mean = 2, sd = 0.5), max =
 Gamma(shape = 2, rate = 1, max = 14)
 LogNormal(meanlog = 1.5, sdlog = 1)
 LogNormal(mean = Normal(1.5, 0.1), sd = Normal(1, 0.1))
-pmf(c(0.2, 0.4, 0.4))
-pmf(c(0.2, 0.4, 0.2, 0.05))
+NonParametric(c(0.2, 0.4, 0.4))
+NonParametric(c(0.2, 0.4, 0.2, 0.05))
 ```

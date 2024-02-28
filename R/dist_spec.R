@@ -890,7 +890,7 @@ Fixed <- function(value, max = Inf) {
 
 #' Generates a nonparametric distribution.
 #'
-#' @param mass Probability mass of the given distribution; this is
+#' @param pmf Probability mass of the given distribution; this is
 #'   passed as a zero-indexed numeric vector (i.e. the fist entry represents
 #'   the probability mass of zero). If not summing to one it will be normalised
 #'   to sum to one internally.
@@ -899,10 +899,10 @@ Fixed <- function(value, max = Inf) {
 #' @order 5
 #' @export
 #' @examples
-#' pmf(c(0.1, 0.3, 0.2, 0.4))
-#' pmf(c(0.1, 0.3, 0.2, 0.1, 0.1))
-pmf <- function(mass) {
-  params <- list(pmf = mass / sum(mass))
+#' NonParametric(c(0.1, 0.3, 0.2, 0.4))
+#' NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))
+NonParametric <- function(pmf) {
+  params <- list(pmf = pmf / sum(pmf))
   return(new_dist_spec(params, "nonparametric"))
 }
 
