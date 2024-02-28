@@ -25,7 +25,7 @@ test_that("simulate_infections works as expected with additional parameters", {
   sim <- test_simulate_infections(
     generation_time = generation_time_opts(fix_dist(example_generation_time)),
     delays = delay_opts(fix_dist(example_reporting_delay)),
-    obs = obs_opts(family = "negbin", phi = c(0.5, 0))
+    obs = obs_opts(family = "negbin", phi = list(mean = 0.5, sd = 0))
   )
   expect_equal(nrow(sim), 2 * nrow(R))
   expect_snapshot_output(sim)
