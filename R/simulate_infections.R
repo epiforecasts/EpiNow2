@@ -119,22 +119,17 @@ simulate_infections <- function(estimates, R, initial_infections,
     trunc = truncation
   ))
 
-  if ((length(data$delay_mean_sd) > 0 && any(data$delay_mean_sd > 0)) ||
-      (length(data$delay_sd_sd) > 0 && any(data$delay_sd_sd > 0))) {
+  if (length(data$delay_params_sd) > 0 && any(data$delay_params_sd > 0)) {
     stop(
       "Cannot simulate from uncertain parameters. Use the [fix_dist()] ",
       "function to set the parameters of uncertain distributions either the ",
       "mean or a randomly sampled value"
     )
   }
-  data$delay_mean <- array(
-    data$delay_mean_mean, dim = c(1, length(data$delay_mean_mean))
+  data$delay_params <- array(
+    data$delay_params_mean, dim = c(1, length(data$delay_params_mean))
   )
-  data$delay_sd <- array(
-    data$delay_sd_mean, dim = c(1, length(data$delay_sd_mean))
-  )
-  data$delay_mean_sd <- NULL
-  data$delay_sd_sd <- NULL
+  data$delay_params_sd <- NULL
 
   data <- c(data, create_obs_model(
     obs, dates = R$date
