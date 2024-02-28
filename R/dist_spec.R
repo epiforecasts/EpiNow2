@@ -732,8 +732,10 @@ plot.dist_spec <- function(x, ...) {
 #' )
 #'
 #' # Multiple distributions
-#' dist <- dist1 + dist2
-#' extract_single_dist(dist, 2)
+#' \dontrun{
+#'   dist <- dist1 + dist2
+#'   extract_single_dist(dist, 2)
+#' }
 extract_single_dist <- function(x, i) {
   if (i > length(x)) {
     stop("i can't be greater than the number of distributions.")

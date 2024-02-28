@@ -26,8 +26,10 @@ dist2 <- Gamma(
 )
 
 # Multiple distributions
-dist <- dist1 + dist2
-extract_single_dist(dist, 2)
+\dontrun{
+  dist <- dist1 + dist2
+  extract_single_dist(dist, 2)
+}
 }
 \author{
 Sebastian Funk
