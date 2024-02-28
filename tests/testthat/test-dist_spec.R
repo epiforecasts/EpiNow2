@@ -24,6 +24,14 @@ test_that("dist_spec returns correct output for uncertain gamma distribution", {
   expect_equal(result[[1]]$max, 19)
 })
 
+test_that("dist_spec returns correct output for gamma distribution parameterised with scale", {
+  result <- Gamma(shape = 3, scale = 2)
+  expect_equal(result[[1]]$parameters$shape, 3)
+  expect_equal(result[[1]]$parameters$rate, 0.5)
+  expect_equal(result[[1]]$distribution, "gamma")
+  expect_true(is.infinite(result[[1]]$max))
+})
+
 test_that("dist_spec returns correct output for fixed distribution", {
   result <- discretise(
     fix_dist(LogNormal(meanlog = Normal(5, 3), sdlog = 1, max = 19))
