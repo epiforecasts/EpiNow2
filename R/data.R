@@ -45,3 +45,19 @@
 #' An example data frame of observed cases
 #' @format A data frame containing cases reported on each date.
 "example_confirmed"
+
+#' Example Case Data Set with Truncation
+#'
+#' @description `r lifecycle::badge("stable")`
+#' An example dataset of observed cases with truncation applied.
+#' This data is generated internally for use in the example of
+#' `estimate_truncation()`. For details on how the data is generated, see
+#' <https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/estimate-truncation.R> #nolint
+#' @format A list of `data.table`s containing cases reported on each date until
+#' a point of truncation.
+#' Each element of the list is a `data.table` with the following columns:
+#' \describe{
+#'   \item{date}{Date of case report.}
+#'   \item{confirm}{Number of confirmed cases.}
+#' }
+"example_truncated"
