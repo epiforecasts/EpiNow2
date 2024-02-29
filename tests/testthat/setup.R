@@ -1,3 +1,5 @@
+set.seed(123)
+
 library("data.table")
 library("lifecycle")
 
