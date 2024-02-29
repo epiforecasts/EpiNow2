@@ -136,6 +136,7 @@ reference:
       - example_incubation_period
       - example_reporting_delay
       - example_confirmed
+      - example_truncated
       - generation_times
       - incubation_periods
   - title: Get/Extract Data

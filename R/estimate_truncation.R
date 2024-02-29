@@ -83,53 +83,9 @@
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #'
-#' # get example case counts
-#' reported_cases <- example_confirmed[1:60]
-#'
-#' # define example truncation distribution (note not integer adjusted)
-#' trunc <- LogNormal(
-#'   meanlog = Normal(0.9, 0.1),
-#'   sdlog = Normal(0.6, 0.1),
-#'   max = 10
-#' )
-#'
-#' # apply truncation to example data
-#' construct_truncation <- function(index, cases, dist) {
-#'   set.seed(index)
-#'   if (dist[[1]]$distribution == 0) {
-#'     dfunc <- dlnorm
-#'   } else {
-#'     dfunc <- dgamma
-#'   }
-#'  cmf <- cumsum(
-#'    dlnorm(
-#'      seq_len(max(dist) + 1),
-#'      rnorm(1,
-#'        dist[[1]]$parameters$meanlog[[1]]$parameters$mean,
-#'        dist[[1]]$parameters$meanlog[[1]]$parameters$sd
-#'      ),
-#'      rnorm(1,
-#'        dist[[1]]$parameters$sdlog[[1]]$parameters$mean,
-#'        dist[[1]]$parameters$sdlog[[1]]$parameters$sd
-#'      )
-#'    )
-#'  )
-#'   cmf <- cmf / cmf[max(dist) + 1]
-#'   cmf <- rev(cmf)[-1]
-#'   trunc_cases <- data.table::copy(cases)[1:(.N - index)]
-#'   trunc_cases[
-#'     (.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)
-#'   ]
-#'   return(trunc_cases)
-#' }
-#' example_data <- purrr::map(c(20, 15, 10, 0),
-#'   construct_truncation,
-#'   cases = reported_cases,
-#'   dist = trunc
-#' )
-#'
 #' # fit model to example data
-#' est <- estimate_truncation(example_data,
+#' # See [example_truncated] for more details
+#' est <- estimate_truncation(example_truncated,
 #'   verbose = interactive(),
 #'   chains = 2, iter = 2000
 #' )
