@@ -129,6 +129,15 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
   expect_true(is.list(inc_weekly$data))
 })
 
+test_that("estimate_secondary works when only estimating scaling", {
+  inc <- estimate_secondary(inc_cases[1:60],
+    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+    delay = delay_opts(),
+    verbose = FALSE
+  )
+  expect_equal(names(inc), c("predictions", "posterior", "data", "fit"))
+})
+
 test_that("estimate_secondary can recover simulated parameters", {
   expect_equal(
     inc_posterior[, mean], c(1.8, 0.5, 0.4),
