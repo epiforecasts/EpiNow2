@@ -6,13 +6,10 @@ futile.logger::flog.threshold("FATAL")
 old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
-# get example truncated case counts
-example_data <- example_truncated
-
 test_that("estimate_truncation can return values from simulated data and plot
            them", {
   # fit model to example data
-  est <- estimate_truncation(example_data,
+  est <- estimate_truncation(example_truncated,
     verbose = FALSE, chains = 2, iter = 1000, warmup = 250
   )
   expect_equal(
@@ -28,7 +25,7 @@ test_that("estimate_truncation can return values from simulated data with the
   # fit model to example data
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
-    est <- estimate_truncation(example_data,
+    est <- estimate_truncation(example_truncated,
       verbose = FALSE, chains = 2, iter = 1000, warmup = 250,
       stan = stan_opts(backend = "cmdstanr")
   ))))
@@ -42,13 +39,13 @@ test_that("estimate_truncation can return values from simulated data with the
 
 test_that("deprecated arguments are recognised", {
   options(warn = 2)
-  expect_error(estimate_truncation(example_data,
+  expect_error(estimate_truncation(example_truncated,
     verbose = FALSE, trunc_max = 10
   ), "deprecated")
-  expect_error(estimate_truncation(example_data,
+  expect_error(estimate_truncation(example_truncated,
     verbose = FALSE, max_truncation = 10
   ), "deprecated")
-  expect_error(estimate_truncation(example_data,
+  expect_error(estimate_truncation(example_truncated,
     verbose = FALSE, trunc_dist = "lognormal"
   ), "deprecated")
 })
