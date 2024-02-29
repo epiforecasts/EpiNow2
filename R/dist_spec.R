@@ -483,6 +483,9 @@ discretise <- function(x, silent = TRUE) {
   attr(ret, "class") <- c("dist_spec", "list")
   return(ret)
 }
+#' @rdname discretise
+#' @export
+discretize <- discretise
 
 #' Collapse nonparametric distributions in a <dist_spec>
 #'

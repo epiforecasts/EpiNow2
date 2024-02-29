@@ -2,9 +2,12 @@
 % Please edit documentation in R/dist_spec.R
 \name{discretise}
 \alias{discretise}
+\alias{discretize}
 \title{Discretise a <dist_spec>}
 \usage{
 discretise(x, silent = TRUE)
+
+discretize(x, silent = TRUE)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}}
