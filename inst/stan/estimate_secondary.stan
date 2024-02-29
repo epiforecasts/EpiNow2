@@ -40,6 +40,15 @@ transformed parameters {
 
   {
     vector[delay_type_max[delay_id] + 1] delay_rev_pmf;
+    vector[t] scaled;
+    vector[t] convolved = rep_vector(1e-5, t);
+    // scaling of primary reports by fraction observed
+    if (obs_scale) {
+      scaled = scale_obs(primary, obs_scale_sd > 0 ? frac_obs[1] : obs_scale_mean);
+    } else {
+      scaled = primary;
+    }
+
     if (delay_id) {
       delay_rev_pmf = get_delay_rev_pmf(
         delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
@@ -50,9 +59,12 @@ transformed parameters {
     } else {
       delay_rev_pmf = to_vector({ 1 });
     }
+
+    convolved = convolved + convolve_to_report(scaled, delay_rev_pmf, 0);
+
     secondary = calculate_secondary(
-      primary, obs, frac_obs, delay_rev_pmf, cumulative, historic,
-      primary_hist_additive, current, primary_current_additive, t
+      scaled, convolved, obs, cumulative, historic, primary_hist_additive,
+      current, primary_current_additive, t
     );
   }
 
