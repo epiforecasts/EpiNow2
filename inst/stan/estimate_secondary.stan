@@ -39,9 +39,9 @@ transformed parameters {
   // calculate secondary reports from primary
 
   {
-    vector[delay_type_max[delay_id] + 1] delay_rev_pmf;
     vector[t] scaled;
     vector[t] convolved = rep_vector(1e-5, t);
+
     // scaling of primary reports by fraction observed
     if (obs_scale) {
       scaled = scale_obs(primary, obs_scale_sd > 0 ? frac_obs[1] : obs_scale_mean);
@@ -50,17 +50,16 @@ transformed parameters {
     }
 
     if (delay_id) {
-      delay_rev_pmf = get_delay_rev_pmf(
+      vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(
         delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
         delay_types_groups, delay_max, delay_np_pmf,
         delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,
         0, 1, 0
       );
+      convolved = convolved + convolve_to_report(scaled, delay_rev_pmf, 0);
     } else {
-      delay_rev_pmf = to_vector({ 1 });
+      convolved = convolved + scaled;
     }
-
-    convolved = convolved + convolve_to_report(scaled, delay_rev_pmf, 0);
 
     secondary = calculate_secondary(
       scaled, convolved, obs, cumulative, historic, primary_hist_additive,
