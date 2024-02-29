@@ -33,20 +33,33 @@ generated quantities {
   array[n, all_dates ? t : h] int sim_secondary;
   for (i in 1:n) {
     vector[t] secondary;
-    vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(
+    vector[t] scaled;
+    vector[t] convolved = rep_vector(1e-5, t);
+
+    if (obs_scale) {
+      scaled = scale_obs(to_vector(primary[i]), frac_obs[i, 1]);
+    } else {
+      scaled = to_vector(primary[i]);
+    }
+
+    if (delay_id) {
+      vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(
         delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
         delay_types_groups, delay_max, delay_np_pmf,
         delay_np_pmf_groups, delay_mean[i], delay_sd[i], delay_dist,
         0, 1, 0
-    );
+      );
+      convolved = convolved + convolve_to_report(scaled, delay_rev_pmf, 0);
+    } else {
+      convolved = convolved + scaled;
+    }
 
     // calculate secondary reports from primary
-    secondary =
-       calculate_secondary(
-        to_vector(primary[i]), obs, frac_obs[i], delay_rev_pmf, cumulative,
-        historic, primary_hist_additive, current, primary_current_additive,
-        t - h + 1
-      );
+    secondary = calculate_secondary(
+      scaled, convolved, obs, cumulative, historic, primary_hist_additive,
+      current, primary_current_additive, t - h + 1
+    );
+
     // weekly reporting effect
     if (week_effect > 1) {
       secondary = day_of_week_effect(secondary, day_of_week, to_vector(day_of_week_simplex[i]));
