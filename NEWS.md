@@ -27,6 +27,7 @@
 * Added the possibility of specifying a fixed observation scaling. By @sbfnk in #550 and reviewed by @seabbs.
 * Added the possibility of specifying fixed overdispersion. By @sbfnk in #560 and reviewed by @seabbs.
 * The example in `estimate_truncation()` has been simplified. The package now ships with a dataset `example_truncated`, which is used in the `estimate_truncation()` example and tests. The steps for creating the `example_truncated` is stored in `./data-raw/estimate-truncation.R`. By @jamesmbaazam in #584 and reviewed by @seabbs and @sbfnk.
+* Tests have been updated to only set random seeds before snapshot tests involving random number generation, and unset them subsequently. By @sbfnk in .
 
 ## Model changes
 
