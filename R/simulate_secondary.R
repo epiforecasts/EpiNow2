@@ -26,6 +26,8 @@
 #' @export
 #' @examples
 #' \donttest{
+#'   ## load data.table to manipulate `example_confirmed` below
+#'   library(data.table)
 #'   cases <- as.data.table(example_confirmed)[, primary := confirm]
 #'   sim <- simulate_secondary(
 #'     cases,
