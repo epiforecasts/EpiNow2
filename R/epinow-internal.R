@@ -29,8 +29,8 @@ save_input <- function(reported_cases, target_folder) {
   if (!is.null(target_folder)) {
     latest_date <- reported_cases[confirm > 0][date == max(date)]$date
 
-    saveRDS(latest_date, paste0(target_folder, "/latest_date.rds"))
-    saveRDS(reported_cases, paste0(target_folder, "/reported_cases.rds"))
+    saveRDS(latest_date, file.path(target_folder, "latest_date.rds"))
+    saveRDS(reported_cases, file.path(target_folder, "reported_cases.rds"))
   }
   return(invisible(NULL))
 }
