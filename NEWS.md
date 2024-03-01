@@ -28,7 +28,7 @@
 * Added the possibility of specifying fixed overdispersion. By @sbfnk in #560 and reviewed by @seabbs.
 * The example in `estimate_truncation()` has been simplified. The package now ships with a dataset `example_truncated`, which is used in the `estimate_truncation()` example and tests. The steps for creating the `example_truncated` is stored in `./data-raw/estimate-truncation.R`. By @jamesmbaazam in #584 and reviewed by @seabbs and @sbfnk.
 * Tests have been updated to only set random seeds before snapshot tests involving random number generation, and unset them subsequently. By @sbfnk in #590 and reviewed by @seabbs.
-* A function `simulate_secondary()` was added to simulate from parameters of the `estimate_secondary` model. A function of the same name that was previously based on a reimplementation of that model in R with potentially time-varying scalings and delays has been renamed to `convolve_and_scale()`. By @sbfnk in 591.
+* A function `simulate_secondary()` was added to simulate from parameters of the `estimate_secondary` model. A function of the same name that was previously based on a reimplementation of that model in R with potentially time-varying scalings and delays has been renamed to `convolve_and_scale()`. By @sbfnk in #591 and reviewed by @seabbs.
 
 ## Model changes
 

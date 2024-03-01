@@ -22,7 +22,6 @@
 #'   assert_subset
 #' @return A data.table of simulated secondary observations (column `secondary`)
 #'   by date.
-#' @author Sebastian Funk
 #' @export
 #' @examples
 #' \donttest{
