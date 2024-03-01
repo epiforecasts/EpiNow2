@@ -1,17 +1,15 @@
-#' Simulate infections using the renewal equation
+#' Simulate secondary observations from primary observations
 #'
-#' Simulations are done from given initial infections and, potentially
-#' time-varying, reproduction numbers. Delays and parameters of the observation
-#' model can be specified using the same options as in [estimate_infections()].
+#' Simulations are done from a given trajectory of primary observations by
+#' applying any given delays and observation parameters.
 #'
 #' In order to simulate, all parameters that are specified such as the mean and
 #' standard deviation of delays or observation scaling, must be fixed.
 #' Uncertain parameters are not allowed.
 #'
-#' A previous function called [simulate_infections()] that simulates from a
-#' given model fit has been renamed [forecast_infections()]. Using
-#' [simulate_infections()] with existing estimates is now deprecated. This
-#' option will be removed in version 2.1.0.
+#' A function of the same name that was previously based on a reimplementation
+#' of that model in R with potentially time-varying scalings and delays is
+#' available as `convolve_and_scale()
 #' @param primary a data frame of primary reports (column `primary`) by date
 #'   (column `date`). Column `primary` must be numeric and `date` must be in
 #'   date format.  it will be assumed that `primary` is zero on the missing

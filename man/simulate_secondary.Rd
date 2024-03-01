@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulate_secondary.R
 \name{simulate_secondary}
 \alias{simulate_secondary}
-\title{Simulate infections using the renewal equation}
+\title{Simulate secondary observations from primary observations}
 \usage{
 simulate_secondary(
   primary,
@@ -56,19 +56,17 @@ A data.table of simulated secondary observations (column \code{secondary})
 by date.
 }
 \description{
-Simulations are done from given initial infections and, potentially
-time-varying, reproduction numbers. Delays and parameters of the observation
-model can be specified using the same options as in \code{\link[=estimate_infections]{estimate_infections()}}.
+Simulations are done from a given trajectory of primary observations by
+applying any given delays and observation parameters.
 }
 \details{
 In order to simulate, all parameters that are specified such as the mean and
 standard deviation of delays or observation scaling, must be fixed.
 Uncertain parameters are not allowed.
 
-A previous function called \code{\link[=simulate_infections]{simulate_infections()}} that simulates from a
-given model fit has been renamed \code{\link[=forecast_infections]{forecast_infections()}}. Using
-\code{\link[=simulate_infections]{simulate_infections()}} with existing estimates is now deprecated. This
-option will be removed in version 2.1.0.
+A function of the same name that was previously based on a reimplementation
+of that model in R with potentially time-varying scalings and delays is
+available as `convolve_and_scale()
 }
 \examples{
 \donttest{
