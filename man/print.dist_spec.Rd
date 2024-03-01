@@ -32,6 +32,3 @@ gamma <- dist_spec(
 )
 print(gamma)
 }
-\author{
-Sebastian Funk
-}

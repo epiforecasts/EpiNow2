@@ -33,6 +33,3 @@ calculation method (see \code{\link[=backcalc_opts]{backcalc_opts()}}) is based.
 \examples{
 create_shifted_cases(example_confirmed, 7, 14, 7)
 }
-\author{
-Sam Abbott
-}

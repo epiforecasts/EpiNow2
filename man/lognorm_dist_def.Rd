@@ -49,6 +49,3 @@ def <- lognorm_dist_def(
 print(def)
 def$params[[1]]
 }
-\author{
-Sam Abbott
-}

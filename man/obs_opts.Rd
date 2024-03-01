@@ -76,6 +76,3 @@ obs_opts(week_effect = TRUE)
 # Scale reported data
 obs_opts(scale = list(mean = 0.2, sd = 0.02))
 }
-\author{
-Sam Abbott
-}

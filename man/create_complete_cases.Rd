@@ -19,7 +19,4 @@ A data frame without NA values, with two columns: confirm (number)
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Creates a complete data set without NA values and appropriate indices
 }
-\author{
-Sebastian Funk
-}
 \keyword{internal}

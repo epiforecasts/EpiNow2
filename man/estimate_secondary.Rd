@@ -162,6 +162,3 @@ plot(prev_preds, new_obs = cases, from = "2020-06-01")
 options(old_opts)
 }
 }
-\author{
-Sam Abbott
-}

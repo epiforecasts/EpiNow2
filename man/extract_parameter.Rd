@@ -23,6 +23,3 @@ sample value.
 Extracts a single from a list of stan output and returns it as a
 \verb{<data.table>}.
 }
-\author{
-Sam Abbott
-}

@@ -91,8 +91,3 @@ dist_spec(
   distribution = "gamma"
 )
 }
-\author{
-Sebastian Funk
-
-Sam Abbott
-}

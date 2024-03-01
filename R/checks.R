@@ -18,7 +18,6 @@
 #' assert_numeric
 #' @importFrom rlang arg_match
 #' @return Called for its side effects.
-#' @author James M. Azam
 #' @keywords internal
 check_reports_valid <- function(reports, model) {
   # Check that the case time series (reports) is a data frame

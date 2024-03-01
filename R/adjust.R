@@ -25,7 +25,6 @@
 #' @inheritParams sample_approx_dist
 #' @importFrom data.table setorder data.table data.table
 #' @importFrom lubridate wday
-#' @author Sam Abbott
 #' @examples
 #' \donttest{
 #' # define example cases

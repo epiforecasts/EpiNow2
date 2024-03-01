@@ -69,8 +69,3 @@ defaults.
 \examples{
 stan_sampling_opts(samples = 2000)
 }
-\author{
-Sam Abbott
-
-Sebastian Funk
-}

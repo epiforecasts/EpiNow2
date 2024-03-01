@@ -2,8 +2,7 @@
 // distributions up to the maximum observed delay.
 // If sigma is 0 all the probability mass is put on n.
 // Adapted from https://github.com/epiforecasts/epinowcast
-// @author Sam Abbott
-// @author Adrian Lison
+// (MIT License, copyright: epinowcast authors)
 vector discretised_pmf(real mu, real sigma, int n, int dist) {
   vector[n] lpmf;
   if (sigma > 0) {

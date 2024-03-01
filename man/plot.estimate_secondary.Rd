@@ -32,6 +32,3 @@ A \code{ggplot} object.
 \seealso{
 plot estimate_secondary
 }
-\author{
-Sam Abbott
-}

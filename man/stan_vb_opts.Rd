@@ -32,8 +32,3 @@ defaults.
 \examples{
 stan_vb_opts(samples = 1000)
 }
-\author{
-Sam Abbott
-
-Sebastian Funk
-}

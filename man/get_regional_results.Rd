@@ -45,6 +45,3 @@ regional_out <- readRDS(system.file(
 # from output
 results <- get_regional_results(regional_out$regional, samples = FALSE)
 }
-\author{
-Sam Abbott
-}

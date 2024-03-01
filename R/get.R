@@ -6,7 +6,6 @@
 #'  are stored (as produced by [regional_epinow()]).
 #'
 #' @return A named character vector containing the results to plot.
-#' @author Sam Abbott
 #' @export
 get_regions <- function(results_dir) {
   # regions to include - based on folder names
@@ -35,7 +34,6 @@ get_regions <- function(results_dir) {
 #' directory.
 #'
 #' @return An R object read in from the targeted `.rds` file
-#' @author Sam Abbott
 #' @export
 get_raw_result <- function(file, region, date,
                            result_dir) {
@@ -65,7 +63,6 @@ get_raw_result <- function(file, region, date,
 #' returned.
 #'
 #' @return A list of estimates, forecasts and estimated cases by date of report.
-#' @author Sam Abbott
 #' @export
 #' @importFrom purrr map safely
 #' @importFrom data.table rbindlist
@@ -176,7 +173,6 @@ get_regional_results <- function(regional_output,
 #'
 #' @return A list defining a distribution
 #'
-#' @author Sam Abbott
 #' @seealso [dist_spec()]
 #' @export
 get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
@@ -207,7 +203,6 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
 #' @inherit get_dist
 #' @export
 #' @seealso [dist_spec()]
-#' @author Sam Abbott
 get_generation_time <- function(disease, source, max_value = 14,
                                 fixed = FALSE) {
   lifecycle::deprecate_warn(
@@ -234,7 +229,6 @@ get_generation_time <- function(disease, source, max_value = 14,
 #'
 #' @inheritParams get_dist
 #' @inherit get_dist
-#' @author Sam Abbott
 #' @export
 #' @seealso [dist_spec()]
 get_incubation_period <- function(disease, source, max_value = 14,
@@ -268,7 +262,6 @@ get_incubation_period <- function(disease, source, max_value = 14,
 #'
 #' @return A character vector of regions with the highest reported cases
 #'
-#' @author Sam Abbott
 #' @importFrom data.table copy setorderv
 #' @importFrom lubridate days
 #' @export
@@ -299,7 +292,6 @@ get_regions_with_most_reports <- function(reported_cases,
 ##' @param delays Delays as specified using [dist_spec()]
 ##' @param generation_time Generation time as specified using [dist_spec()]
 ##' @return An integer seeding time
-##' @author Sebastian Funk
 get_seeding_time <- function(delays, generation_time) {
   # Estimate the mean delay -----------------------------------------------
   seeding_time <- sum(mean(delays))

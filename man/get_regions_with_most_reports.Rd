@@ -23,6 +23,3 @@ A character vector of regions with the highest reported cases
 Extract a vector of regions with the most reported cases in a set time
 window.
 }
-\author{
-Sam Abbott
-}

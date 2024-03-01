@@ -24,6 +24,3 @@ create_backcalc_data(backcalc = backcalc_opts())
 \seealso{
 backcalc_opts
 }
-\author{
-Sam Abbott
-}

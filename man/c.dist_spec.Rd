@@ -16,6 +16,3 @@ Combined delay distributions (with class \verb{<dist_spec>})
 This combines the parameters so that they can be fed as multiple delay
 distributions to \code{\link[=epinow]{epinow()}} or \code{\link[=estimate_infections]{estimate_infections()}}.
 }
-\author{
-Sebastian Funk
-}

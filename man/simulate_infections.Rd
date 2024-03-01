@@ -98,6 +98,3 @@ option will be removed in version 2.1.0.
   )
 }
 }
-\author{
-Sebastian Funk
-}

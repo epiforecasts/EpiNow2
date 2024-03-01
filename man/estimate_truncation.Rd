@@ -121,8 +121,3 @@ plot(est)
 
 options(old_opts)
 }
-\author{
-Sam Abbott
-
-Sebastian Funk
-}

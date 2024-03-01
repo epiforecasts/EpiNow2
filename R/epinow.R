@@ -22,7 +22,6 @@
 #'
 #' @return A list of output from estimate_infections with additional elements
 #'   summarising results and reporting errors if they have occurred.
-#' @author Sam Abbott
 #' @export
 #' @seealso [estimate_infections()] [forecast_infections()] [regional_epinow()]
 #' @inheritParams setup_target_folder
@@ -35,7 +34,6 @@
 #' @importFrom checkmate assert_string assert_path_for_output
 #' assert_date assert_logical
 #' @importFrom R.utils isDirectory
-#' @author Sam Abbott
 #' @examples
 #' \donttest{
 #' # set number of cores to use

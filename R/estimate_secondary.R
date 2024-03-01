@@ -57,7 +57,6 @@
 #' estimated secondary observations), `posterior` which contains a summary of
 #' the entire model posterior, `data` (a list of data used to fit the
 #' model), and `fit` (the `stanfit` object).
-#' @author Sam Abbott
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams update_secondary_args
@@ -252,7 +251,6 @@ estimate_secondary <- function(reports,
 #' variables: `variable`, `mean`, and `sd`.
 #'
 #' @return A list as produced by `create_stan_data()`.
-#' @author Sam Abbott
 #' @export
 #' @inheritParams create_stan_args
 #' @importFrom data.table as.data.table
@@ -319,7 +317,6 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #'
 #' @return A `ggplot` object.
 #'
-#' @author Sam Abbott
 #' @seealso plot estimate_secondary
 #' @method plot estimate_secondary
 #' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date
@@ -402,8 +399,6 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' @return A `<data.frame>` containing simulated data in the format required by
 #' [estimate_secondary()].
 #'
-#' @author Sam Abbott
-#' @author Sebastian Funk
 #' @seealso estimate_secondary
 #' @inheritParams secondary_opts
 #' @importFrom data.table as.data.table copy shift
@@ -537,7 +532,6 @@ convolve_and_scale <- function(data, type = "incidence", family = "poisson",
 #' of forecast secondary observation posterior samples, and `forecast` a summary
 #' of the forecast secondary observation posterior.
 #'
-#' @author Sam Abbott
 #' @importFrom rstan extract sampling
 #' @importFrom data.table rbindlist merge.data.table as.data.table setorderv
 #' @importFrom data.table setcolorder copy
