@@ -1,4 +1,5 @@
 test_that("report_cases can simulate infections forward", {
+  set.seed(123)
   # define example cases
   cases <- example_confirmed[1:10]
 
@@ -16,4 +17,5 @@ test_that("report_cases can simulate infections forward", {
   expect_equal(class(reported_cases$summarised), c("data.table", "data.frame"))
   expect_equal(nrow(reported_cases$summarised), 10)
   expect_equal(class(reported_cases$summarised$median), "numeric")
+  set.seed(Sys.time())
 })
