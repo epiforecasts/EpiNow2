@@ -15,7 +15,6 @@ test_that("convolve can combine two pmfs as expected", {
 })
 
 test_that("convolve performs the same as a numerical convolution", {
-  set.seed(123)
   # Sample and analytical PMFs for two Poisson distributions
   x <- rpois(10000, 3)
   xpmf <- dpois(0:20, 3)
