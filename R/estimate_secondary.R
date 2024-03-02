@@ -166,7 +166,9 @@ estimate_secondary <- function(reports,
 
   reports <- data.table::as.data.table(reports)
   secondary_reports <- reports[, list(date, confirm = secondary)]
-  secondary_reports <- create_clean_reported_cases(secondary_reports)
+  secondary_reports <- create_clean_reported_cases(
+    secondary_reports, filter_leading_zeros = FALSE
+  )
   ## fill in missing data (required if fitting to prevalence)
   complete_secondary <- create_complete_cases(secondary_reports)
 
