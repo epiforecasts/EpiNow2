@@ -27,6 +27,3 @@ dist2 <- LogNormal(mean = 3, sd = 2, max = 20)
 # The maxf the sum of two distributions
 collapse(discretise(dist1 + dist2))
 }
-\author{
-Sebastian Funk
-}

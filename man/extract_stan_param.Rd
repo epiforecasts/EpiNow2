@@ -34,6 +34,3 @@ Extracts summarised parameter posteriors from a \code{stanfit} object using
 \code{rstan::summary()} in a format consistent with other summary functions
 in \code{{EpiNow2}}.
 }
-\author{
-Sam Abbott
-}

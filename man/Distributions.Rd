@@ -89,6 +89,3 @@ Fixed(value = 3.5)
 NonParametric(c(0.1, 0.3, 0.2, 0.4))
 NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))
 }
-\author{
-Sebastian Funk
-}

@@ -34,6 +34,3 @@ mean(dist2)
 # The mean of the sum of two distributions
 mean(dist1 + dist2)
 }
-\author{
-Sebastian Funk
-}

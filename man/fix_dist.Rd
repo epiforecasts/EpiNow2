@@ -28,6 +28,3 @@ dist <- LogNormal(
 
 fix_dist(dist)
 }
-\author{
-Sebastian Funk
-}

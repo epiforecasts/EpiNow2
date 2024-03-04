@@ -58,7 +58,6 @@ package_model <- function(model = "estimate_infections",
 ##' @inheritParams package_model
 ##' @return A stan model object (either \code{rstan::stanmodel} or
 ##'   \code{cmdstanr::CmdStanModel}, depending on the backend)
-##' @author Sebastian Funk
 ##' @importFrom rlang arg_match
 ##' @keywords internal
 stan_model <- function(backend = c("rstan", "cmdstanr"),

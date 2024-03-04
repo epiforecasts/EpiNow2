@@ -27,7 +27,4 @@ new_dist_spec(
 )
 }
 }
-\author{
-Sebastian Funk
-}
 \keyword{internal}

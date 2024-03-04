@@ -29,6 +29,3 @@ dist2 <- Gamma(
 )
 c(dist1, dist2)
 }
-\author{
-Sebastian Funk
-}

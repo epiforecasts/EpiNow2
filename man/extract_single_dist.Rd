@@ -31,7 +31,4 @@ dist2 <- Gamma(
   extract_single_dist(dist, 2)
 }
 }
-\author{
-Sebastian Funk
-}
 \keyword{internal}

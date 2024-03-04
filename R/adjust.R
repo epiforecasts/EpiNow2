@@ -25,7 +25,6 @@
 #' @inheritParams sample_approx_dist
 #' @importFrom data.table setorder data.table data.table
 #' @importFrom lubridate wday
-#' @author Sam Abbott
 #' @examples
 #' \donttest{
 #' # define example cases
@@ -295,7 +294,7 @@ sample_approx_dist <- function(cases = NULL,
     draw <- dist_fn(0:max_value, dist = TRUE, cum = FALSE)
 
     # approximate cases
-    mapped_cases <- suppressMessages(purrr::map_dfc(
+    mapped_cases <- do.call(cbind, purrr::map(
       seq_along(reversed_cases),
       ~ c(
         rep(0, . - 1),

@@ -16,12 +16,15 @@ test_simulate_infections <- function(obs = obs_opts(family = "poisson"), ...) {
 }
 
 test_that("simulate_infections works as expected with standard parameters", {
+  set.seed(123)
   sim <- test_simulate_infections()
   expect_equal(nrow(sim), 2 * nrow(R))
   expect_snapshot_output(sim)
+  set.seed(Sys.time())
 })
 
 test_that("simulate_infections works as expected with additional parameters", {
+  set.seed(123)
   sim <- test_simulate_infections(
     generation_time = generation_time_opts(fix_dist(example_generation_time)),
     delays = delay_opts(fix_dist(example_reporting_delay)),
@@ -29,6 +32,7 @@ test_that("simulate_infections works as expected with additional parameters", {
   )
   expect_equal(nrow(sim), 2 * nrow(R))
   expect_snapshot_output(sim)
+  set.seed(Sys.time())
 })
 
 test_that("simulate_infections fails with uncertain parameters", {

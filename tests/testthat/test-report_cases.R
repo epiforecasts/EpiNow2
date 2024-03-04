@@ -1,4 +1,5 @@
 test_that("report_cases can simulate infections forward", {
+  set.seed(123)
   # define example cases
   cases <- example_confirmed[1:10]
 
@@ -6,7 +7,6 @@ test_that("report_cases can simulate infections forward", {
   # data for speed in this example.
   cases <- cases[, cases := as.integer(confirm)]
   cases <- cases[, confirm := NULL][, sample := 1]
-  set.seed(123)
   reported_cases <- report_cases(
     case_estimates = cases,
     delays = delay_opts(example_incubation_period + example_reporting_delay),
@@ -17,4 +17,5 @@ test_that("report_cases can simulate infections forward", {
   expect_equal(class(reported_cases$summarised), c("data.table", "data.frame"))
   expect_equal(nrow(reported_cases$summarised), 7)
   expect_equal(class(reported_cases$summarised$median), "numeric")
+  set.seed(Sys.time())
 })

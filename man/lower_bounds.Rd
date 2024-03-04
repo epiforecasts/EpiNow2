@@ -20,7 +20,4 @@ This is used to avoid sampling parameter values that have no support.
 lower_bounds("lognormal")
 }
 }
-\author{
-Sebastian Funk
-}
 \keyword{internal}

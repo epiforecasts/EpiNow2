@@ -34,8 +34,6 @@
 #'
 #' @return A vector of samples or a probability distribution.
 #' @export
-#' @author Sam Abbott
-#' @author Sebastian Funk
 #' @examples
 #'
 #' ## Exponential model
@@ -210,7 +208,6 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #'
 #' @param e2 The second delay distribution (of type [dist_spec()]) to
 #' combine.
-#' @author Sebastian Funk
 #' @method + dist_spec
 #' @export
 #' @examples
@@ -236,7 +233,6 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #'
 #' @param ... The delay distributions (from calls to [dist_spec()]) to combine
 #' @return Combined delay distributions (with class `<dist_spec>`)
-#' @author Sebastian Funk
 #' @method c dist_spec
 #' @export
 #' @examples
@@ -276,7 +272,6 @@ c.dist_spec <- function(...) {
 #' @param ignore_uncertainty Logical; whether to ignore any uncertainty in
 #'   parameters. If set to FALSE (the default) then the mean of any uncertain
 #'   parameters will be returned as NA.
-#' @author Sebastian Funk
 #' @method mean dist_spec
 #' @importFrom utils head
 #' @export
@@ -336,7 +331,6 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 #'
 #' @param x The [dist_spec()] to use
 #' @return A vector of standard deviations.
-#' @author Sebastian Funk
 #' @importFrom utils head
 #' @keywords internal
 #' @examples
@@ -396,7 +390,6 @@ sd_dist <- function(x) {
 #' @param x The [dist_spec()] to use
 #' @param ... Not used
 #' @return A vector of means.
-#' @author Sebastian Funk
 #' @method max dist_spec
 #' @export
 #' @examples
@@ -436,7 +429,6 @@ max.dist_spec <- function(x, ...) {
 #'   thrown.
 #' @return A `<dist_spec>` where all distributions with constant parameters are
 #'   nonparametric.
-#' @author Sebastian Funk
 #' @export
 #' @examples
 #' # A fixed gamma distribution with mean 5 and sd 1.
@@ -495,7 +487,6 @@ discretize <- discretise
 #' @return A `<dist_spec>` where consecutive nonparametric distributions
 #' have been convolved
 #' @importFrom stats convolve
-#' @author Sebastian Funk
 #' @export
 #' @examples
 #' # A fixed gamma distribution with mean 5 and sd 1.
@@ -544,7 +535,6 @@ collapse <- function(x) {
 #' @param tolerance Numeric; the desired tolerance level.
 #' @return A `<dist_spec>` where probability masses below the threshold level
 #' have been removed
-#' @author Sebastian Funk, Sam Abbott
 #' @export
 #' @examples
 #' dist <- discretise(Gamma(mean = 5, sd = 1, max = 20))
@@ -575,7 +565,6 @@ apply_tolerance <- function(x, tolerance) {
 #' @param x The `<dist_spec>` to use
 #' @param ... Not used
 #' @return invisible
-#' @author Sebastian Funk
 #' @method print dist_spec
 #' @export
 #' @examples
@@ -649,7 +638,6 @@ print.dist_spec <- function(x, ...) {
 #' @param ... Additional arguments to pass to `{ggplot}`.
 #' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
 #' @export
-#' @author Sam Abbott
 #' @examples
 #' #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' dist1 <- LogNormal(mean = 1.6, sd = 0.5, max = 20)
@@ -725,7 +713,6 @@ plot.dist_spec <- function(x, ...) {
 #' @param i The index to extract
 #' @return A single `dist_spec` object
 #' @keywords internal
-#' @author Sebastian Funk
 #' @examples
 #' dist1 <- LogNormal(mean = 1.6, sd = 0.5, max = 20)
 #'
@@ -753,7 +740,6 @@ extract_single_dist <- function(x, i) {
 #' If the given `<dist_spec>` has any uncertainty, it is removed and the
 #' corresponding distribution converted into a fixed one.
 #' @return A `<dist_spec>` object without uncertainty
-#' @author Sebastian Funk
 #' @export
 #' @param x A `<dist_spec>`
 #' @param strategy Character; either "mean" (use the mean estimates of the
@@ -836,7 +822,6 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
 #' be truncated at this value. Default: `Inf`, i.e. no maximum.
 #' @return A `dist_spec` representing a distribution of the given
 #'   specification.
-#' @author Sebastian Funk
 #' @export
 #' @rdname Distributions
 #' @name Distributions
@@ -851,7 +836,6 @@ LogNormal <- function(meanlog, sdlog, mean, sd, max = Inf) {
 }
 
 #' @inheritParams stats::GammaDist
-#' @author Sebastian Funk
 #' @rdname Distributions
 #' @title Probability distributions
 #' @order 2
@@ -868,7 +852,6 @@ Gamma <- function(shape, rate, scale, mean, sd, max = Inf) {
 
 #' @rdname Distributions
 #' @order 3
-#' @author Sebastian Funk
 #' @export
 #' @examples
 #' Normal(mean = 4, sd = 1)
@@ -881,7 +864,6 @@ Normal <- function(mean, sd, max = Inf) {
 #' @rdname Distributions
 #' @order 4
 #' @param value Value of the fixed (delta) distribution
-#' @author Sebastian Funk
 #' @export
 #' @examples
 #' Fixed(value = 3)
@@ -897,7 +879,6 @@ Fixed <- function(value, max = Inf) {
 #'   passed as a zero-indexed numeric vector (i.e. the fist entry represents
 #'   the probability mass of zero). If not summing to one it will be normalised
 #'   to sum to one internally.
-#' @author Sebastian Funk
 #' @rdname Distributions
 #' @order 5
 #' @export
@@ -916,7 +897,6 @@ NonParametric <- function(pmf) {
 #' being passed to the stan models.
 #' @param distribution Character; the distribution to use.
 #' @return A character vector, the natural parameters.
-#' @author Sebastian Funk
 #' @keywords internal
 #' @examples
 #' \dontrun{
@@ -940,7 +920,6 @@ natural_params <- function(distribution) {
 #' This is used to avoid sampling parameter values that have no support.
 #' @return A numeric vector, the lower bounds.
 #' @inheritParams natural_params
-#' @author Sebastian Funk
 #' @keywords internal
 #' @examples
 #' \dontrun{
@@ -965,7 +944,6 @@ lower_bounds <- function(distribution) {
 #' @param params Given parameters (obtained using `as.list(environment())`)
 #' @return A character vector of parameters and their values.
 #' @inheritParams natural_params
-#' @author Sebastian Funk
 #' @keywords internal
 extract_params <- function(params, distribution) {
   params <- params[!vapply(params, inherits, "name", FUN.VALUE = TRUE)]
@@ -988,7 +966,6 @@ extract_params <- function(params, distribution) {
 #' @inheritParams extract_params
 #' @importFrom purrr walk
 #' @return A `dist_spec` of the given specification.
-#' @author Sebastian Funk
 #' @keywords internal
 #' @examples
 #' \dontrun{
@@ -1081,7 +1058,6 @@ new_dist_spec <- function(params, distribution) {
 #' @inheritParams natural_params
 #' @return A list with two elements, `params_mean` and `params_sd`, containing
 #' mean and sd of natural parameters.
-#' @author Sebastian Funk
 #' @keywords internal
 #' @examples
 #' \dontrun{

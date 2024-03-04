@@ -60,6 +60,3 @@ A list of arguments to pass to \code{\link[rstan:stanmodel-method-sampling]{rsta
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Deprecated; use \code{\link[=stan_sampling_opts]{stan_sampling_opts()}} instead.
 }
-\author{
-Sam Abbott
-}

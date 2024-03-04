@@ -32,6 +32,3 @@ dist2 <- Gamma(
 )
 dist1 + dist2
 }
-\author{
-Sebastian Funk
-}

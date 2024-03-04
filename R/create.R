@@ -21,8 +21,6 @@
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases
-#' @author Sam Abbott
-#' @author Lloyd Chapman
 #' @export
 #' @examples
 #' create_clean_reported_cases(example_confirmed, 7)
@@ -84,7 +82,6 @@ create_clean_reported_cases <- function(reported_cases, horizon = 0,
 #' start of the time series be filtered out.
 #'
 #' @return A data frame without NA values, with two columns: confirm (number)
-#' @author Sebastian Funk
 #' @importFrom data.table setDT
 #' @keywords internal
 create_complete_cases <- function(cases) {
@@ -116,7 +113,6 @@ create_complete_cases <- function(cases) {
 #' @importFrom runner mean_run
 #' @return A `<data.frame>` for shifted reported cases
 #' @export
-#' @author Sam Abbott
 #' @examples
 #' create_shifted_cases(example_confirmed, 7, 14, 7)
 create_shifted_cases <- function(reported_cases, shift,
@@ -185,7 +181,6 @@ create_shifted_cases <- function(reported_cases, shift,
 #' @param delay Numeric mean delay
 #' @importFrom rlang arg_match
 #' @return A list containing a logical called fixed and an integer called from
-#' @author Sam Abbott
 create_future_rt <- function(future = "latest", delay = 0) {
   out <- list(fixed = FALSE, from = 0)
   if (is.character(future)) {
@@ -226,7 +221,6 @@ create_future_rt <- function(future = "latest", delay = 0) {
 #' @return A list of settings defining the time-varying reproduction number
 #' @inheritParams create_future_rt
 #' @export
-#' @author Sam Abbott
 #' @examples
 #' # default Rt data
 #' create_rt_data()
@@ -293,7 +287,6 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #' @importFrom data.table fcase
 #' @return A list of settings defining the Gaussian process
 #' @export
-#' @author Sam Abbott
 #' @examples
 #' create_backcalc_data(backcalc = backcalc_opts())
 create_backcalc_data <- function(backcalc = backcalc_opts()) {
@@ -322,7 +315,6 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
 #' @seealso [gp_opts()]
 #' @return A list of settings defining the Gaussian process
 #' @export
-#' @author Sam Abbott
 #' @examples
 #' # define input data required
 #' data <- list(
@@ -392,7 +384,6 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #' @return A list of settings ready to be passed to stan defining
 #' the Observation Model
 #' @export
-#' @author Sam Abbott
 #' @examples
 #' dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
 #' # default observation model data
@@ -448,8 +439,6 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @importFrom stats lm
 #' @importFrom purrr safely
 #' @return A list of stan data
-#' @author Sam Abbott
-#' @author Sebastian Funk
 #' @export
 #' @examples
 #' create_stan_data(
@@ -531,7 +520,6 @@ create_stan_data <- function(reported_cases, seeding_time,
 ##'
 ##' @inheritParams create_initial_conditions
 ##' @return A list of initial conditions for delays
-##' @author Sebastian Funk
 ##' @keywords internal
 create_delay_inits <- function(data) {
   out <- list()
@@ -558,8 +546,6 @@ create_delay_inits <- function(data) {
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom data.table fcase
 #' @export
-#  @author Sam Abbott
-#  @author Sebastian Funk
 create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- create_delay_inits(data)
@@ -659,7 +645,6 @@ create_initial_conditions <- function(data) {
 #' @importFrom utils modifyList
 #'
 #' @return A list of stan arguments
-#' @author Sam Abbott
 #' @export
 #' @examples
 #' # default settings
@@ -709,7 +694,6 @@ create_stan_args <- function(stan = stan_opts(),
 ##' @param weight Numeric, weight associated with delay priors; default: 1
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom purrr transpose map flatten
-##' @author Sebastian Funk
 create_stan_delays <- function(..., weight = 1) {
   ## discretise
   delays <- map(list(...), discretise)

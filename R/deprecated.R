@@ -18,7 +18,6 @@
 #' @export
 #' @inheritParams dist_skel
 #' @inheritParams lognorm_dist_def
-#' @author Sam Abbott
 #' @examples
 #' # using estimated shape and scale
 #' def <- gamma_dist_def(
@@ -106,7 +105,6 @@ gamma_dist_def <- function(shape, shape_sd,
 #' @param to_log Logical, should parameters be logged before use.
 #'
 #' @return A `<data.table>` defining the distribution as used by [dist_skel()]
-#' @author Sam Abbott
 #' @importFrom truncnorm rtruncnorm
 #' @export
 #' @inheritParams dist_skel
@@ -250,8 +248,6 @@ tune_inv_gamma <- function(lower = 2, upper = 21) {
 #' (using \code{params_mean}, and \code{params_sd}.
 #' @param fixed Deprecated, use [fix_dist()] instead.
 #' @return A list of distribution options.
-#' @author Sebastian Funk
-#' @author Sam Abbott
 #' @importFrom rlang warn arg_match
 #' @export
 dist_spec <- function(distribution = c(

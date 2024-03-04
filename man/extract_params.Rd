@@ -19,7 +19,4 @@ A character vector of parameters and their values.
 Internal function for extracting given parameter names of a distribution
 from the environment. Called by \code{new_dist_spec}
 }
-\author{
-Sebastian Funk
-}
 \keyword{internal}

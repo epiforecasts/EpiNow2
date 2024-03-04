@@ -60,6 +60,3 @@ out <- bootstrapped_dist_fit(delays,
 out
 }
 }
-\author{
-Sam Abbott
-}

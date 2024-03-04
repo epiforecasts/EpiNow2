@@ -22,7 +22,6 @@
 #' be printed.
 #'
 #' @return A stan fit of an interval censored distribution
-#' @author Sam Abbott
 #' @export
 #' @inheritParams stan_opts
 #' @examples
@@ -147,7 +146,6 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #' data. Maximum delay to  allow (added to output but does impact fitting).
 #'
 #' @return A `<dist_spec>` object summarising the bootstrapped distribution
-#' @author Sam Abbott
 #' @importFrom purrr list_transpose
 #' @importFrom future.apply future_lapply
 #' @importFrom rstan extract
@@ -251,7 +249,6 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #' @param ... Arguments to pass to internal methods.
 #'
 #' @return A `<dist_spec>` summarising the bootstrapped distribution
-#' @author Sam Abbott
 #' @export
 #' @seealso [bootstrapped_dist_fit()]
 #' @examples

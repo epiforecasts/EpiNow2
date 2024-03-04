@@ -34,6 +34,3 @@ This implementation is based on the approach taken in
 \href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia} authored by
 James Scott.
 }
-\author{
-Sam Abbott
-}

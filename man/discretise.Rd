@@ -37,6 +37,3 @@ dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
 # The maxf the sum of two distributions
 discretise(dist1 + dist2)
 }
-\author{
-Sebastian Funk
-}

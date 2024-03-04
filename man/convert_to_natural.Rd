@@ -27,7 +27,4 @@ convert_to_natural(
 )
 }
 }
-\author{
-Sebastian Funk
-}
 \keyword{internal}

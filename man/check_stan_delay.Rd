@@ -16,7 +16,4 @@ Called for its side effects.
 \code{check_stan_delay()} checks that the supplied data is a \verb{<dist_spec>},
 that it is lognormal or gamma, and that it has a finite maximum.
 }
-\author{
-Sebastian Funk
-}
 \keyword{internal}

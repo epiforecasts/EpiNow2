@@ -41,6 +41,3 @@ of cases. Only used if \code{rt = NULL}.
 # default settings
 backcalc_opts()
 }
-\author{
-Sam Abbott
-}

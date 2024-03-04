@@ -33,6 +33,3 @@ plot(dist1 + dist2 + dist1)
 # A combination of the two fixed distributions
 plot(dist1 + dist1)
 }
-\author{
-Sam Abbott
-}

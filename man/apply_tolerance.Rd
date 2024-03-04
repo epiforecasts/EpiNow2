@@ -23,6 +23,3 @@ This removes any part of the tail of the nonparametric distributions in the
 dist <- discretise(Gamma(mean = 5, sd = 1, max = 20))
 apply_tolerance(dist, 0.01)
 }
-\author{
-Sebastian Funk, Sam Abbott
-}

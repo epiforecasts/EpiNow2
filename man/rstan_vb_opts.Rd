@@ -26,6 +26,3 @@ A list of arguments to pass to \code{\link[rstan:stanmodel-method-vb]{rstan::vb(
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Deprecated; use \code{\link[=stan_vb_opts]{stan_vb_opts()}} instead.
 }
-\author{
-Sam Abbott
-}

@@ -33,7 +33,6 @@
 #' @importFrom data.table data.table merge.data.table nafill rbindlist
 #' @return A data.table of simulated infections (variable `infections`) and
 #'   reported cases (variable `reported_cases`) by date.
-#' @author Sebastian Funk
 #' @export
 #' @examples
 #' \donttest{

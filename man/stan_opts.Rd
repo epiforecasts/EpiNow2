@@ -73,8 +73,3 @@ stan_opts(method = "vb")
 \seealso{
 \code{\link[=stan_sampling_opts]{stan_sampling_opts()}} \code{\link[=stan_vb_opts]{stan_vb_opts()}}
 }
-\author{
-Sam Abbott
-
-Sebastian Funk
-}

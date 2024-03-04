@@ -57,7 +57,6 @@
 #' estimated secondary observations), `posterior` which contains a summary of
 #' the entire model posterior, `data` (a list of data used to fit the
 #' model), and `fit` (the `stanfit` object).
-#' @author Sam Abbott
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams update_secondary_args
@@ -88,7 +87,7 @@
 #' cases[, meanlog := 1.8][, sdlog := 0.5]
 #'
 #' # Simulate secondary cases
-#' cases <- simulate_secondary(cases, type = "incidence")
+#' cases <- convolve_and_scale(cases, type = "incidence")
 #' #
 #' # fit model to example data specifying a weak prior for fraction reported
 #' # with a secondary case
@@ -114,7 +113,7 @@
 #' cases[, meanlog := 1.6][, sdlog := 0.8]
 #'
 #' # Simulate secondary cases
-#' cases <- simulate_secondary(cases, type = "prevalence")
+#' cases <- convolve_and_scale(cases, type = "prevalence")
 #'
 #' # fit model to example prevalence data
 #' prev <- estimate_secondary(cases[1:100],
@@ -168,7 +167,9 @@ estimate_secondary <- function(reports,
 
   reports <- data.table::as.data.table(reports)
   secondary_reports <- reports[, list(date, confirm = secondary)]
-  secondary_reports <- create_clean_reported_cases(secondary_reports)
+  secondary_reports <- create_clean_reported_cases(
+    secondary_reports, filter_leading_zeros = FALSE
+  )
   ## fill in missing data (required if fitting to prevalence)
   complete_secondary <- create_complete_cases(secondary_reports)
 
@@ -238,22 +239,21 @@ estimate_secondary <- function(reports,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' This functions allows the user to more easily specify data driven or model
-#' based priors for [estimate_secondary()] from example from previous model fits
-#' using a `<data.frame>` to overwrite other default settings. Note that default
-#' settings are still required.
+#'   based priors for [estimate_secondary()] from example from previous model
+#'   fits using a `<data.frame>` to overwrite other default settings. Note that
+#'   default settings are still required.
 #'
 #' @param data A list of data and arguments as returned by `create_stan_data()`.
 #'
 #' @param priors A `<data.frame>` of named priors to be used in model fitting
-#' rather than the defaults supplied from other arguments. This is typically
-#' useful if wanting to inform a estimate from the posterior of another model
-#' fit. Priors that are currently use to update the defaults are the scaling
-#' fraction ("frac_obs"), the mean delay ("delay_mean"), and standard deviation
-#' of the delay ("delay_sd"). The `<data.frame>` should have the following
-#' variables: `variable`, `mean`, and `sd`.
+#'   rather than the defaults supplied from other arguments. This is typically
+#'   useful if wanting to inform a estimate from the posterior of another model
+#'   fit. Priors that are currently use to update the defaults are the scaling
+#'   fraction ("frac_obs"), and delay parameters ("delay_params"). The
+#'   `<data.frame>` should have the following variables: `variable`, `mean`, and
+#'   `sd`.
 #'
 #' @return A list as produced by `create_stan_data()`.
-#' @author Sam Abbott
 #' @export
 #' @inheritParams create_stan_args
 #' @importFrom data.table as.data.table
@@ -276,18 +276,15 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       data$obs_scale_sd <- as.array(signif(scale$sd, 3))
     }
     # replace delay parameters if present
-    delay_mean <- priors[grepl("delay_mean", variable, fixed = TRUE)]
-    delay_sd <- priors[grepl("delay_sd", variable, fixed = TRUE)]
-    if (nrow(delay_mean) > 0) {
-      if (is.null(data$delay_mean_mean)) {
+    delay_params <- priors[grepl("delay_params", variable, fixed = TRUE)]
+    if (nrow(delay_params) > 0) {
+      if (is.null(data$delay_params_mean)) {
         warning(
           "Cannot replace delay distribution parameters as no default has been set" # nolint
         )
       }
-      data$delay_mean_mean <- as.array(signif(delay_mean$mean, 3))
-      data$delay_mean_sd <- as.array(signif(delay_mean$sd, 3))
-      data$delay_sd_mean <- as.array(signif(delay_sd$mean, 3))
-      data$delay_sd_sd <- as.array(signif(delay_sd$sd, 3))
+      data$delay_params_mean <- as.array(signif(delay_params$mean, 3))
+      data$delay_params_sd <- as.array(signif(delay_params$sd, 3))
     }
     phi <- priors[grepl("rep_phi", variable, fixed = TRUE)]
     if (nrow(phi) > 0) {
@@ -320,7 +317,6 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #'
 #' @return A `ggplot` object.
 #'
-#' @author Sam Abbott
 #' @seealso plot estimate_secondary
 #' @method plot estimate_secondary
 #' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date
@@ -378,7 +374,14 @@ plot.estimate_secondary <- function(x, primary = FALSE,
   return(plot)
 }
 
-#' Simulate a secondary observation
+#' Convolve and scale a time series
+#'
+#' This applies a lognormal convolution with given, potentially time-varying
+#' parameters representing the parameters of the lognormal distribution used for
+#' the convolution and an optional scaling factor. This is akin to the model
+#' used in [estimate_secondary()] and [simulate_secondary()].
+#'
+#' Up to version 1.4.0 this function was called [simulate_secondary()].
 #'
 #' @param data A `<data.frame>` containing the `date` of report and `primary`
 #' cases as a numeric vector.
@@ -396,8 +399,6 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' @return A `<data.frame>` containing simulated data in the format required by
 #' [estimate_secondary()].
 #'
-#' @author Sam Abbott
-#' @author Sebastian Funk
 #' @seealso estimate_secondary
 #' @inheritParams secondary_opts
 #' @importFrom data.table as.data.table copy shift
@@ -421,7 +422,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' cases[, meanlog := 1.8][, sdlog := 0.5]
 #'
 #' # Simulate secondary cases
-#' cases <- simulate_secondary(cases, type = "incidence")
+#' cases <- convolve_and_scale(cases, type = "incidence")
 #' cases
 #' #### Prevalence data example ####
 #'
@@ -436,9 +437,9 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' cases[, meanlog := 1.6][, sdlog := 0.8]
 #'
 #' # Simulate secondary cases
-#' cases <- simulate_secondary(cases, type = "prevalence")
+#' cases <- convolve_and_scale(cases, type = "prevalence")
 #' cases
-simulate_secondary <- function(data, type = "incidence", family = "poisson",
+convolve_and_scale <- function(data, type = "incidence", family = "poisson",
                                delay_max = 30, ...) {
   type <- arg_match(type, values = c("incidence", "prevalence"))
   family <- arg_match(family, values = c("none", "poisson", "negbin"))
@@ -531,7 +532,6 @@ simulate_secondary <- function(data, type = "incidence", family = "poisson",
 #' of forecast secondary observation posterior samples, and `forecast` a summary
 #' of the forecast secondary observation posterior.
 #'
-#' @author Sam Abbott
 #' @importFrom rstan extract sampling
 #' @importFrom data.table rbindlist merge.data.table as.data.table setorderv
 #' @importFrom data.table setcolorder copy

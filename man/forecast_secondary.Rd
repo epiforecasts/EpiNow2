@@ -68,6 +68,3 @@ for an example of forecasting Covid-19 deaths from Covid-19 cases.
 \seealso{
 \code{\link[=estimate_secondary]{estimate_secondary()}}
 }
-\author{
-Sam Abbott
-}

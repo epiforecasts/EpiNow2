@@ -18,7 +18,6 @@
 #' assert_numeric
 #' @importFrom rlang arg_match
 #' @return Called for its side effects.
-#' @author James M. Azam
 #' @keywords internal
 check_reports_valid <- function(reports, model) {
   # Check that the case time series (reports) is a data frame
@@ -65,7 +64,6 @@ check_reports_valid <- function(reports, model) {
 #' @importFrom checkmate assert_class
 #' @importFrom rlang arg_match
 #' @return Called for its side effects.
-#' @author Sebastian Funk
 #' @keywords internal
 check_stan_delay <- function(dist) {
   # Check that `dist` is a `dist_spec`

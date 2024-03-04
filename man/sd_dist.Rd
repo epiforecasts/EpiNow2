@@ -30,7 +30,4 @@ sd_dist(dist2)
 sd_dist(dist1 + dist2)
 }
 }
-\author{
-Sebastian Funk
-}
 \keyword{internal}

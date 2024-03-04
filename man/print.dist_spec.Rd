@@ -29,6 +29,3 @@ dist2 <- Gamma(
 )
 print(dist2)
 }
-\author{
-Sebastian Funk
-}

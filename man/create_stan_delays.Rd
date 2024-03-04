@@ -17,6 +17,3 @@ A list of variables as expected by the stan model
 \description{
 Create delay variables for stan
 }
-\author{
-Sebastian Funk
-}

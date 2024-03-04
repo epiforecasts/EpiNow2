@@ -24,6 +24,3 @@ as dots and the truncation adjusted estimates as a ribbon.
 \seealso{
 plot estimate_truncation
 }
-\author{
-Sam Abbott
-}

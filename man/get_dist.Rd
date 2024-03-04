@@ -27,6 +27,6 @@ A list defining a distribution
 This function has been deprecated. Please specify a distribution
 using functions such as \code{\link[=Gamma]{Gamma()}} or \code{\link[=LogNormal]{LogNormal()}} instead.
 }
-\author{
-Sam Abbott
+\seealso{
+\code{\link[=dist_spec]{dist_spec()}}
 }

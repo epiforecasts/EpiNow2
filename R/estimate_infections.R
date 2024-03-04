@@ -50,7 +50,6 @@
 #' @return A list of output including: posterior samples, summarised posterior
 #' samples, data used to fit the model, and the fit object itself.
 #'
-#' @author Sam Abbott
 #' @seealso [epinow()] [regional_epinow()] [forecast_infections()]
 #' [estimate_truncation()]
 #' @inheritParams create_stan_args
@@ -302,7 +301,6 @@ estimate_infections <- function(reported_cases,
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams stan_opts
 #' @return A stanfit object
-#' @author Sam Abbott
 init_cumulative_fit <- function(args, samples = 50, warmup = 50,
                                 id = "init", verbose = FALSE,
                                 backend = "rstan") {
@@ -379,7 +377,6 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 #' @importFrom rstan sflist2stanfit sampling
 #' @importFrom rlang abort cnd_muffle
 #' @return A stan model object
-#' @author Sam Abbott
 fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
                                 id = "stan") {
   args$method <- NULL
@@ -518,7 +515,6 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 #' @importFrom rstan vb
 #' @importFrom rlang abort
 #' @return A stan model object
-#' @author Sam Abbott
 fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
   args$method <- NULL
   futile.logger::flog.debug(
@@ -602,7 +598,6 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
 #' @importFrom lubridate days
 #' @importFrom futile.logger flog.info
 #' @return A list of samples and summarised posterior parameter estimates.
-#' @author Sam Abbott
 format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
                        CrIs) {
   format_out <- list()

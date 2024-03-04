@@ -15,7 +15,4 @@ A list of initial conditions for delays
 \description{
 Create initial conditions for delays
 }
-\author{
-Sebastian Funk
-}
 \keyword{internal}

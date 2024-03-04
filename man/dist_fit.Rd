@@ -66,6 +66,3 @@ dist_fit(rlnorm(1:100, log(5), 0.2),
 )
 }
 }
-\author{
-Sam Abbott
-}

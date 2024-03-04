@@ -31,6 +31,3 @@ max(dist2)
 # The max the sum of two distributions
 max(dist1 + dist2)
 }
-\author{
-Sebastian Funk
-}

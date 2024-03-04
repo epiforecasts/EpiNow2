@@ -22,7 +22,4 @@ being passed to the stan models.
 natural_params("gamma")
 }
 }
-\author{
-Sebastian Funk
-}
 \keyword{internal}

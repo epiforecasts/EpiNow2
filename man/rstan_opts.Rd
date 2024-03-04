@@ -28,6 +28,3 @@ Deprecated; specify options in \code{\link[=stan_opts]{stan_opts()}} instead.
 \seealso{
 \code{\link[=rstan_sampling_opts]{rstan_sampling_opts()}} \code{\link[=rstan_vb_opts]{rstan_vb_opts()}}
 }
-\author{
-Sam Abbott
-}
