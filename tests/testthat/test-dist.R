@@ -26,3 +26,17 @@ test_that("distributions are the same in R and stan", {
   expect_equal(pmf_r_lognormal, pmf_stan_lognormal)
   expect_equal(pmf_r_gamma, pmf_stan_gamma)
 })
+
+test_that("deprecation warnins are caught", {
+  delay_fn <- function(n, dist, cum) {
+      pgamma(n + 0.9999, 2, 1) - pgamma(n - 1e-5, 2, 1)
+  }
+  expect_deprecated(
+    sample_approx_dist(
+      cases = example_confirmed[1:5],
+      dist_fn = delay_fn,
+      direction = "forwards",
+      type = "median"
+    )
+  )
+})

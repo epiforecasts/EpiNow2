@@ -614,7 +614,7 @@ estimate_delay <- function(delays, ...) {
 
 #' Approximate Sampling a Distribution using Counts
 #'
-#' @description `r lifecycle::badge("soft-deprecated")`
+#' @description `r lifecycle::badge("deprecated")`
 #' Convolves cases by a PMF function. This function will soon be removed or
 #' replaced with a more robust stan implementation.
 #'
@@ -645,6 +645,7 @@ estimate_delay <- function(delays, ...) {
 #' @export
 #' @importFrom data.table data.table setorder
 #' @importFrom lubridate days
+#' @importFrom lifecycle deprecate_warn
 #' @examples
 #' \donttest{
 #' cases <- example_confirmed
@@ -706,6 +707,10 @@ sample_approx_dist <- function(cases = NULL,
                                direction = "backwards",
                                type = "sample",
                                truncate_future = TRUE) {
+  deprecate_warn(
+    "1.5.0",
+    "sample_approx_dist()"
+  )
   if (type == "sample") {
     if (direction == "backwards") {
       direction_fn <- rev
