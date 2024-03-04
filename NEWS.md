@@ -9,7 +9,7 @@
 * `simulate_infections` has been renamed to `forecast_infections` in line with `simulate_secondary` and `forecast_secondary`. The terminology is: a forecast is done from a fit to existing data, a simulation from first principles. By @sbfnk in #544 and reviewed by @seabbs.
 * A new `simulate_infections` function has been added that can be used to simulate from the model from given initial conditions and parameters. By @sbfnk in #557 and reviewed by @jamesmbaazam.
 * The function `init_cumulative_fit()` has been deprecated. By @jamesmbaazam in #541 and reviewed by @sbfnk.
-* The functions `sample_approx_dist()`, `report_cases()`, and `adjust_infection_to_reports()` have been deprecated as the functionality they provide can now be achieved with `simulate_secondary()`. See <PR> by @jamesmbaazam and reviewed by <REVIEWER>.
+* The functions `sample_approx_dist()`, `report_cases()`, and `adjust_infection_reports()` have been deprecated as the functionality they provide can now be achieved with `simulate_secondary()`. See <PR> by @jamesmbaazam and reviewed by <REVIEWER>.
 
 ## Documentation
 
