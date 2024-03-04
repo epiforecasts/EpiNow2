@@ -17,7 +17,7 @@ create_stan_data(
 }
 \arguments{
 \item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
-(date). confirm must be integer and date must be in date format.}
+(date). confirm must be numeric and date must be in date format.}
 
 \item{seeding_time}{Integer; seeding time, usually obtained using
 \code{\link[=get_seeding_time]{get_seeding_time()}}.}

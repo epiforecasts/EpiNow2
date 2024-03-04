@@ -18,7 +18,7 @@
 #' estimate Rt for Covid-19 in a country from the ECDC data source.
 #'
 #' @param reported_cases A `<data.frame>` of confirmed cases (confirm) by date
-#' (date). confirm must be integer and date must be in date format.
+#' (date). confirm must be numeric and date must be in date format.
 #'
 #' @param generation_time A call to [generation_time_opts()] defining the
 #' generation time distribution used. For backwards compatibility a list of
