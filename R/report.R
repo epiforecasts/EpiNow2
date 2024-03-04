@@ -1,6 +1,6 @@
 #' Report case counts by date of report
 #'
-#' @description `r lifecycle::badge("soft-deprecated")`
+#' @description `r lifecycle::badge("deprecated")`
 #' Convolves latent infections to reported cases via an observation model.
 #' Likely to be removed/replaced in later releases by functionality drawing on
 #' the `stan` implementation.
@@ -27,6 +27,7 @@
 #' @inheritParams adjust_infection_to_report
 #' @importFrom data.table data.table rbindlist
 #' @importFrom future.apply future_lapply
+#' @importFrom lifecycle deprecate_warn
 #' @examples
 #' \donttest{
 #' # define example cases
@@ -51,6 +52,10 @@ report_cases <- function(case_estimates,
                          type = "sample",
                          reporting_effect,
                          CrIs = c(0.2, 0.5, 0.9)) {
+  deprecate_warn(
+    "1.5.0",
+    "report_cases()",
+  )
   samples <- length(unique(case_estimates$sample))
 
   # define delay distributions

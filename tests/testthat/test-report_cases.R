@@ -19,3 +19,19 @@ test_that("report_cases can simulate infections forward", {
   expect_equal(class(reported_cases$summarised$median), "numeric")
   set.seed(Sys.time())
 })
+
+test_that("deprecated warnings are caught", {
+  cases <- example_confirmed[1:40]
+  # get example delays
+  #' # Instead of running them model we use example
+  #' # data for speed in this example.
+  cases <- cases[, cases := as.integer(confirm)]
+  cases <- cases[, confirm := NULL][, sample := 1]
+  expect_deprecated(
+    report_cases(
+      case_estimates = cases,
+      delays = delay_opts(example_incubation_period + example_reporting_delay),
+      type = "sample"
+    )
+  )
+})

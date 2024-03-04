@@ -43,7 +43,7 @@ variables \code{sample}, \code{date} and \code{cases} with the second being summ
 across samples.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Convolves latent infections to reported cases via an observation model.
 Likely to be removed/replaced in later releases by functionality drawing on
 the \code{stan} implementation.
