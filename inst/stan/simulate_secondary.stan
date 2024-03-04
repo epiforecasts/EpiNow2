@@ -64,6 +64,20 @@ generated quantities {
     if (week_effect > 1) {
       secondary = day_of_week_effect(secondary, day_of_week, to_vector(day_of_week_simplex[i]));
     }
+
+    // truncate near time cases to observed reports
+    if (trunc_id) {
+      vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(
+        trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
+        delay_types_groups, delay_max, delay_np_pmf,
+        delay_np_pmf_groups, delay_mean[i], delay_sd[i], delay_dist,
+        0, 1, 1
+      );
+      secondary = truncate(
+        secondary, trunc_rev_cmf, 0
+      );
+    }
+
     // simulate secondary reports
     sim_secondary[i] = report_rng(
       tail(secondary, all_dates ? t : h), rep_phi[i], model_type

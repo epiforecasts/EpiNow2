@@ -115,7 +115,7 @@ cases[, scaling := 0.4]
 cases[, meanlog := 1.8][, sdlog := 0.5]
 
 # Simulate secondary cases
-cases <- simulate_secondary(cases, type = "incidence")
+cases <- convolve_and_scale(cases, type = "incidence")
 #
 # fit model to example data specifying a weak prior for fraction reported
 # with a secondary case
@@ -141,7 +141,7 @@ cases[, scaling := 0.3]
 cases[, meanlog := 1.6][, sdlog := 0.8]
 
 # Simulate secondary cases
-cases <- simulate_secondary(cases, type = "prevalence")
+cases <- convolve_and_scale(cases, type = "prevalence")
 
 # fit model to example prevalence data
 prev <- estimate_secondary(cases[1:100],
