@@ -38,3 +38,14 @@ test_that("adjust_infection_to_report can correctly handle a mapping with a day
   expect_true(all(!is.infinite(reports$cases)))
   expect_true(all(!is.na(reports$cases)))
 })
+
+test_that("deprecation warnings are caught", {
+  # define example cases
+  cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
+  expect_deprecated(
+    adjust_infection_to_report(
+      cases,
+      delay_defs = list(incubation_def, delay_def)
+    )
+  )
+})

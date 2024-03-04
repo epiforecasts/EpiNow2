@@ -1,6 +1,6 @@
 #' Adjust from Case Counts by Infection Date to Date of Report
 #'
-#' @description  `r lifecycle::badge("stable")`
+#' @description  `r lifecycle::badge("deprecated")`
 #' Maps from cases by date of infection to date of report via date of
 #' onset.
 #' @param infections `<data.table>` containing a `date` variable and a numeric
@@ -25,6 +25,7 @@
 #' @inheritParams sample_approx_dist
 #' @importFrom data.table setorder data.table data.table
 #' @importFrom lubridate wday
+#' @importFrom lifecycle deprecate_warn
 #' @examples
 #' \donttest{
 #' # define example cases
@@ -82,6 +83,10 @@ adjust_infection_to_report <- function(infections, delay_defs,
                                        reporting_model, reporting_effect,
                                        type = "sample",
                                        truncate_future = TRUE) {
+  deprecate_warn(
+    "1.5.0",
+    "adjust_infection_to_report()"
+  )
   # Reset DT Defaults on Exit
   set_dt_single_thread()
 
