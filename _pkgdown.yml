@@ -128,6 +128,7 @@ reference:
     contents:
       - simulate_infections
       - simulate_secondary
+      - convolve_and_scale
       - adjust_infection_to_report
   - title: Data
     desc: Package datasets that may be used to parameterise other functions or in examples
