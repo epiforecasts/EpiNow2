@@ -12,7 +12,8 @@ generation_time_opts(
   max = 14,
   fixed = FALSE,
   prior_weight,
-  tolerance = 0.001
+  tolerance = 0.001,
+  weight_prior = TRUE
 )
 }
 \arguments{
@@ -30,10 +31,16 @@ distribution is given a fixed generation time of 1 will be assumed.}
 \item{fixed}{deprecated; use \code{dist} instead}
 
 \item{prior_weight}{deprecated; prior weights are now specified as a
-model option. Use the \code{weigh_delay_priors} argument of
-\code{\link[=estimate_infections]{estimate_infections()}} instead.}
+model option. Use the \code{weight_prior} argument instead}
 
 \item{tolerance}{Numeric; the desired tolerance level.}
+
+\item{weight_prior}{Logical; if TRUE (default), the generation time prior
+will be weighted by the number of observation data points, in doing so
+approximately placing an independent prior at each time step and usually
+preventing the posteriors from shifting. If FALSE, no weight will be
+applied, i.e. the generation time distribution will be treated as a single
+parameter.}
 }
 \value{
 A \verb{<generation_time_opts>} object summarising the input delay

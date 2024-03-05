@@ -4,7 +4,7 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(dist = Fixed(0), tolerance = 0.001)
+trunc_opts(dist = Fixed(0), tolerance = 0.001, weight_prior = FALSE)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions reflecting
@@ -12,6 +12,12 @@ the truncation generated using \code{\link[=dist_spec]{dist_spec()}} or \code{\l
 Default is fixed distribution with maximum 0, i.e. no truncation}
 
 \item{tolerance}{Numeric; the desired tolerance level.}
+
+\item{weight_prior}{Logical; if TRUE, the truncation prior will be weighted
+by the number of observation data points, in doing so approximately placing
+an independent prior at each time step and usually preventing the
+posteriors from shifting. If FALSE (default), no weight will be applied,
+i.e. the truncation distribution will be treated as a single parameter.}
 }
 \value{
 A \verb{<trunc_opts>} object summarising the input truncation

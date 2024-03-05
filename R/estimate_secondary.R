@@ -140,7 +140,7 @@ estimate_secondary <- function(reports,
                                    meanlog = Normal(2.5, 0.5),
                                    sdlog = Normal(0.47, 0.25),
                                    max = 30
-                                 )
+                                 ), weight_prior = FALSE
                                ),
                                truncation = trunc_opts(),
                                obs = obs_opts(),
@@ -209,7 +209,7 @@ estimate_secondary <- function(reports,
   data <- c(data, create_stan_delays(
     delay = delays,
     trunc = truncation,
-    weight = ifelse(weigh_delay_priors, data$t, 1)
+    time_points = data$t
   ))
 
   # observation model data

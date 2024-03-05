@@ -8,7 +8,7 @@ estimate_secondary(
   reports,
   secondary = secondary_opts(),
   delays = delay_opts(LogNormal(meanlog = Normal(2.5, 0.5), sdlog = Normal(0.47, 0.25),
-    max = 30)),
+    max = 30), weight_prior = FALSE),
   truncation = trunc_opts(),
   obs = obs_opts(),
   stan = stan_opts(),

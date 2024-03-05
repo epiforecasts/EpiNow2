@@ -47,12 +47,8 @@
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
 #'
-#' @param weigh_delay_priors Logical. If TRUE, all delay distribution priors
-#' will be weighted by the number of observation data points, in doing so
-#' approximately placing an independent prior at each time step and usually
-#' preventing the posteriors from shifting. If FALSE (default), no weight will
-#' be applied, i.e. delay distributions will be treated as a single
-#' parameters.
+#' @param weigh_delay_priors Deprecated; use the `weight_prior` option in
+#'   [trunc_opts()] instead.
 #'
 #' @param verbose Logical, should model fitting progress be returned.
 #'
@@ -123,7 +119,15 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
       "estimate_truncation(stan)"
     )
   }
-  # Validate inputs
+  if (!missing(weigh_delay_priors)) {
+    lifecycle::deprecate_warn(
+      "1.5.0",
+      "estimate_truncation(weigh_delay_priors)",
+      "trunc_opts(weight_prior)",
+      detail = "This argument will be removed completely in version 2.0.0"
+    )
+  }
+   # Validate inputs
   walk(obs, check_reports_valid, model = "estimate_truncation")
   assert_class(truncation, "dist_spec")
   assert_class(model, "stanfit", null.ok = TRUE)
@@ -233,7 +237,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   data <- c(data, create_stan_delays(
     trunc = truncation,
-    weight = ifelse(weigh_delay_priors, data$t, 1)
+    time_points = data$t
   ))
 
   # initial conditions
