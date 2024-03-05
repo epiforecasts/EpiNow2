@@ -454,7 +454,8 @@ discretise <- function(x, silent = TRUE) {
       }
     }
   })
-  attr(ret, "class") <- c("dist_spec", "list")
+  ## preserve attributes
+  attributes(ret) <- attributes(x)
   return(ret)
 }
 #' @rdname discretise
@@ -525,7 +526,7 @@ apply_tolerance <- function(x, tolerance) {
   if (!is(x, "dist_spec")) {
     stop("Can only apply tolerance to distributions in a <dist_spec>.")
   }
-  x <- lapply(x, function(x) {
+  y <- lapply(x, function(x) {
     if (x$distribution == "nonparametric") {
       cmf <- cumsum(x$pmf)
       new_pmf <- x$pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= tolerance)]
@@ -536,8 +537,9 @@ apply_tolerance <- function(x, tolerance) {
     }
   })
 
-  attr(x, "class") <- c("dist_spec", "list")
-  return(x)
+  ## preserve attributes
+  attributes(y) <- attributes(x)
+  return(y)
 }
 
 #' Prints the parameters of one or more delay distributions
