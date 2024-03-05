@@ -83,12 +83,10 @@ adjust_infection_to_report <- function(infections, delay_defs,
                                        reporting_model, reporting_effect,
                                        type = "sample",
                                        truncate_future = TRUE) {
-  #nolint start: missing_argument_linter
   deprecate_warn(
     "1.5.0",
     "adjust_infection_to_report()"
   )
-  #nolint end
   # Reset DT Defaults on Exit
   set_dt_single_thread()
 

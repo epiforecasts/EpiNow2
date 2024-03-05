@@ -707,12 +707,10 @@ sample_approx_dist <- function(cases = NULL,
                                direction = "backwards",
                                type = "sample",
                                truncate_future = TRUE) {
-  #nolint start: missing_argument_linter
   deprecate_warn(
     "1.5.0",
     "sample_approx_dist()"
   )
-  #nolint end
   if (type == "sample") {
     if (direction == "backwards") {
       direction_fn <- rev
