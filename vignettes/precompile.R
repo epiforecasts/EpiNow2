@@ -1,15 +1,7 @@
 # Vignettes that have long run times
 
 library("knitr")
-knit(
-  "estimate_infections_options.Rmd.orig",
-  "estimate_infections_options.Rmd"
-)
-knit(
-  "estimate_infections_workflow.Rmd.orig",
-  "estimate_infections_workflow.Rmd"
-)
-knit(
-  "epinow.Rmd.orig",
-  "epinow.Rmd"
-)
+orig_files <- list.files(pattern = "Rmd.orig$")
+for (f in orig_files) {
+  knit(f, sub(".orig$", "", f))
+}
