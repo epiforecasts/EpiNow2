@@ -54,7 +54,8 @@ report_cases <- function(case_estimates,
                          CrIs = c(0.2, 0.5, 0.9)) {
   deprecate_warn(
     "1.5.0",
-    "report_cases()"
+    "report_cases()",
+    "The function will be removed completely in version 2.0.0."
   )
   samples <- length(unique(case_estimates$sample))
 
