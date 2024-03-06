@@ -710,7 +710,7 @@ sample_approx_dist <- function(cases = NULL,
   deprecate_warn(
     "1.5.0",
     "sample_approx_dist()",
-    "The function will be removed completely in version 2.0.0."
+    details = "The function will be removed completely in version 2.0.0."
   )
   if (type == "sample") {
     if (direction == "backwards") {
