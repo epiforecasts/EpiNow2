@@ -30,6 +30,7 @@ An example data set called `example_confirm`  is included in the package:
 ```r
 head(example_confirmed)
 #>          date confirm
+#>        <Date>   <num>
 #> 1: 2020-02-22      14
 #> 2: 2020-02-23      62
 #> 3: 2020-02-24      53
@@ -83,8 +84,11 @@ For example, to define a fixed gamma distribution with mean 3, standard deviatio
 
 ```r
 Gamma(mean = 3, sd = 1, max = 10)
-#> 
-#>   distribution with PMF [0.0038 0.15 0.39 0.3 0.12 0.03 0.006 0.00096 0.00013 1.6e-05 1.8e-06].
+#> - gamma distribution (max: 10):
+#>   shape:
+#>     9
+#>   rate:
+#>     3
 ```
 
 If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by _EpiNow2_, i.e. they are estimated as part of the inference.
@@ -93,13 +97,24 @@ For example, to define a variable gamma distribution where uncertainty in the me
 
 ```r
 Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
-#> Warning in generate_dist_spec(params, "gamma"): Uncertain gamma distribution
+#> Warning in new_dist_spec(params, "gamma"): Uncertain gamma distribution
 #> specified in terms of parameters that are not the "natural" parameters of the
 #> distribution (shape, rate). Converting using a crude and very approximate
 #> method that is likely to produce biased results. If possible, it is preferable
-#> to specify the distribution direclty in terms of the natural parameters.
-#> 
-#>   gamma distribution (max: 10) with uncertain shape (mean = 9, sd = 2.5) and uncertain rate (mean = 3, sd = 1.4).
+#> to specify the distribution directly in terms of the natural parameters.
+#> - gamma distribution (max: 10):
+#>   shape:
+#>     - normal distribution:
+#>       mean:
+#>         9
+#>       sd:
+#>         2.5
+#>   rate:
+#>     - normal distribution:
+#>       mean:
+#>         3
+#>       sd:
+#>         1.4
 ```
 
 Note the warning about parameters.
@@ -144,10 +159,25 @@ incubation_period <- LogNormal(
 )
 reporting_delay <- LogNormal(meanlog = 0.5, sdlog = 0.5, max = 10)
 incubation_period + reporting_delay
-#> 
-#> Composite delay distribution:
-#>   lognormal distribution (max: 14) with uncertain meanlog (mean = 1.6, sd = 0.05) and uncertain sdlog (mean = 0.5, sd = 0.05).
-#>   distribution with PMF [0.16 0.49 0.23 0.077 0.025 0.0084 0.003 0.0011 0.00045 0.00019 8.2e-05].
+#> Composite distribution:
+#> - lognormal distribution (max: 14):
+#>   meanlog:
+#>     - normal distribution:
+#>       mean:
+#>         1.6
+#>       sd:
+#>         0.05
+#>   sdlog:
+#>     - normal distribution:
+#>       mean:
+#>         0.5
+#>       sd:
+#>         0.05
+#> - lognormal distribution (max: 10):
+#>   meanlog:
+#>     0.5
+#>   sdlog:
+#>     0.5
 ```
 
 In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `LogNormal()`, `Gamma()` etc.).
