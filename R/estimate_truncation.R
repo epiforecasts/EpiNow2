@@ -34,7 +34,7 @@
 #'  - Truncation is log normally distributed.
 #'
 #' @param obs A list of `<data.frame>`s each containing a date variable
-#' and a confirm (integer) variable. Each data set should be a snapshot
+#' and a confirm (numeric) variable. Each data set should be a snapshot
 #' of the reported data over time. All data sets must contain a complete vector
 #' of dates.
 #'
