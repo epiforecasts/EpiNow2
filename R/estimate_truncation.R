@@ -110,6 +110,8 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 model = NULL,
                                 stan = stan_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
+                                filter_leading_zeros = FALSE,
+                                zero_threshold = Inf,
                                 weigh_delay_priors = FALSE,
                                 verbose = TRUE,
                                 ...) {
@@ -126,6 +128,8 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   assert_class(truncation, "dist_spec")
   assert_class(model, "stanfit", null.ok = TRUE)
   assert_numeric(CrIs, lower = 0, upper = 1)
+  assert_logical(filter_leading_zeros)
+  assert_numeric(zero_threshold, lower = 0)
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
