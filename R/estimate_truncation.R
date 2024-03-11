@@ -197,6 +197,14 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   # combine into ordered matrix
   dirty_obs <- purrr::map(obs, data.table::as.data.table)
+  dirty_obs <- purrr::map(dirty_obs, function(dt) {
+    create_clean_reported_cases(
+      dt,
+      horizon = 0,
+      filter_leading_zeros = filter_leading_zeros,
+      zero_threshold = zero_threshold
+    )
+  })
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
   obs <- purrr::map(dirty_obs, data.table::copy)
