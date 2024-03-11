@@ -14,6 +14,8 @@ estimate_secondary(
   stan = stan_opts(),
   burn_in = 14,
   CrIs = c(0.2, 0.5, 0.9),
+  filter_leading_zeros = FALSE,
+  zero_threshold = Inf,
   priors = NULL,
   model = NULL,
   weigh_delay_priors = FALSE,
@@ -52,6 +54,14 @@ use for estimation but not to fit to at the beginning of the time series.
 This must be less than the number of observations.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
+
+\item{filter_leading_zeros}{Logical, defaults to TRUE. Should zeros at the
+start of the time series be filtered out.}
+
+\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
+to Inf. Indicates if detected zero cases are meaningful by using a threshold
+number of cases based on the 7-day average. If the average is above this
+threshold then the zero is replaced using \code{fill}.}
 
 \item{priors}{A \verb{<data.frame>} of named priors to be used in model fitting
 rather than the defaults supplied from other arguments. This is typically
