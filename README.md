@@ -39,9 +39,9 @@ More details
 
 `{EpiNow2}` estimates the time-varying reproduction number on cases by
 date of infection (using a similar approach to that implemented in
-[`{EpiEstim}`](https://github.com/mrc-ide/EpiEstim)). True infections
-treated as latent and unobserved, estimated, and then mapped to observed
-data (for example cases by date of report) via a series of uncertain
+[`{EpiEstim}`](https://github.com/mrc-ide/EpiEstim)). True infections,
+treated as latent and unobserved, are estimated and then mapped to
+observed data (for example cases by date of report) via one or more
 delay distributions (in the examples in the package documentation these
 are an incubation period and a reporting delay) and a reporting model
 that can include weekly periodicity.
@@ -210,18 +210,6 @@ Example implementations
 A simple example of using the package to estimate a national Rt for
 Covid-19 can be found
 [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867).
-
-</details>
-<details>
-<summary>
-Reporting templates
-</summary>
-
-Rmarkdown templates are provided in the package (`templates`) for
-semi-automated reporting of estimates. If using these templates to
-report your results please highlight our
-[limitations](https://doi.org/10.12688/wellcomeopenres.16006.1) as these
-are key to understanding the results from `{EpiNow2}` .
 
 </details>
 
