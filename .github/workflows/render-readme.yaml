@@ -8,10 +8,11 @@ on:
 jobs:
   render-readme:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
+        with:
+          repository: epiforecasts/EpiNow2
+          token: ${{ secrets.EPIFORECASTS_TOKEN }}
 
       - uses: r-lib/actions/setup-pandoc@v2
 
