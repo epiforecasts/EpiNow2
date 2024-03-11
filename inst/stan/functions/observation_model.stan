@@ -77,7 +77,7 @@ void report_lp(array[] int cases, array[] int cases_time, vector reports,
     obs_cases = cases;
   }
   if (model_type) {
-    real dispersion = 1 / pow(phi_sd > 0 ? rep_phi[model_type] : phi_mean, 2);
+    real dispersion = inv_square(phi_sd > 0 ? rep_phi[model_type] : phi_mean);
     if (phi_sd > 0) {
       rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
     }
@@ -108,7 +108,7 @@ vector report_log_lik(array[] int cases, vector reports,
       log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;
     }
   } else {
-    real dispersion = 1 / pow(rep_phi[model_type], 2);
+    real dispersion = inv_square(rep_phi[model_type]);
     for (i in 1:t) {
       log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], dispersion) * weight;
     }
@@ -121,7 +121,7 @@ array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
   array[t] int sampled_reports;
   real dispersion = 1e5;
   if (model_type) {
-    dispersion = 1 / pow(rep_phi[model_type], 2);
+    dispersion = inv_square(rep_phi[model_type]);
   }
 
   for (s in 1:t) {
