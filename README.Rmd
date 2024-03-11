@@ -142,12 +142,6 @@ A simple example of using the package to estimate a national Rt for Covid-19 can
 
 </details>
 
-<details> <summary> Reporting templates </summary>
-
-Rmarkdown templates are provided in the package (`templates`) for semi-automated reporting of estimates. If using these templates to report your results please highlight our [limitations](https://doi.org/10.12688/wellcomeopenres.16006.1) as these are key to understanding the results from `{EpiNow2}` .
-
-</details>
-
 ## Contributing
 
 We welcome all contributions. If you have identified an issue with the package,
