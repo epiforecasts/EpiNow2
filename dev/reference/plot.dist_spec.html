@@ -68,7 +68,7 @@ Note that currently uncertainty in distributions is not plot."><meta property="o
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Plot PMF and CDF for a dist_spec object</h1>
-      <small class="dont-index">Source: <a href="https://github.com/epiforecasts/EpiNow2/blob/HEAD/R/dist.R" class="external-link"><code>R/dist.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/epiforecasts/EpiNow2/blob/HEAD/R/dist_spec.R" class="external-link"><code>R/dist_spec.R</code></a></small>
       <div class="d-none name"><code>plot.dist_spec.Rd</code></div>
     </div>
 
@@ -98,26 +98,24 @@ Note that currently uncertainty in distributions is not plot.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">#' # A fixed lognormal distribution with mean 5 and sd 1.</span></span></span>
-<span class="r-in"><span><span class="va">lognormal</span> <span class="op">&lt;-</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  mean <span class="op">=</span> <span class="fl">1.6</span>, sd <span class="op">=</span> <span class="fl">0.5</span>, max <span class="op">=</span> <span class="fl">20</span>, distribution <span class="op">=</span> <span class="st">"lognormal"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">lognormal</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dist1</span> <span class="op">&lt;-</span> <span class="fu"><a href="Distributions.html">LogNormal</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">1.6</span>, sd <span class="op">=</span> <span class="fl">0.5</span>, max <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">dist1</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot.dist_spec-1.png" alt="" width="864" height="864"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># An uncertain gamma distribution with mean 3 and sd 2</span></span></span>
-<span class="r-in"><span><span class="va">gamma</span> <span class="op">&lt;-</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">2</span>, mean_sd <span class="op">=</span> <span class="fl">0.5</span>, sd_sd <span class="op">=</span> <span class="fl">0.5</span>, max <span class="op">=</span> <span class="fl">20</span>,</span></span>
-<span class="r-in"><span>  distribution <span class="op">=</span> <span class="st">"gamma"</span></span></span>
+<span class="r-in"><span><span class="va">dist2</span> <span class="op">&lt;-</span> <span class="fu"><a href="Distributions.html">Gamma</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  mean <span class="op">=</span> <span class="fu"><a href="Distributions.html">Normal</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0.5</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fu"><a href="Distributions.html">Normal</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">0.5</span><span class="op">)</span>, max <span class="op">=</span> <span class="fl">20</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">gamma</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Uncertain gamma distribution specified in terms of parameters that are not the "natural" parameters of the distribution (shape, rate). Converting using a crude and very approximate method that is likely to produce biased results. If possible, it is preferable to specify the distribution directly in terms of the natural parameters.</span>
+<span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">dist2</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot.dist_spec-2.png" alt="" width="864" height="864"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Multiple distributions</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">lognormal</span> <span class="op">+</span> <span class="va">gamma</span> <span class="op">+</span> <span class="va">lognormal</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">dist1</span> <span class="op">+</span> <span class="va">dist2</span> <span class="op">+</span> <span class="va">dist1</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot.dist_spec-3.png" alt="" width="864" height="864"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A combination of the two fixed distributions</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">lognormal</span> <span class="op">+</span> <span class="va">lognormal</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">dist1</span> <span class="op">+</span> <span class="va">dist1</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot.dist_spec-4.png" alt="" width="864" height="864"></span>
 </code></pre></div>
     </div>

@@ -79,7 +79,7 @@ current case load."><meta property="og:image" content="epiforecasts.io/EpiNow2/r
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution
 Parameters</h1>
-      <small class="dont-index">Source: <a href="https://github.com/epiforecasts/EpiNow2/blob/HEAD/R/dist.R" class="external-link"><code>R/dist.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/epiforecasts/EpiNow2/blob/HEAD/R/estimate_delay.R" class="external-link"><code>R/estimate_delay.R</code></a></small>
       <div class="d-none name"><code>bootstrapped_dist_fit.Rd</code></div>
     </div>
 
@@ -179,12 +179,25 @@ printed.</p></dd>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`backend` option will be ignored as a stan model object has been passed.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`backend` option will be ignored as a stan model object has been passed.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The meaning of the 'max' argument has changed compared to previous versions. It now indicates the maximum of a distribution rather than the length of the probability mass function (including 0) that it represented previously. To replicate previous behaviour reduce max by 1.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`dist_spec()` was deprecated in EpiNow2 1.5.0.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Please use distribution functions such as `Gamma()` or `Lognormal()` instead.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The function will become internal only in version 2.0.0.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">EpiNow2</span> package.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   Please report the issue at <span style="color: #0000BB; font-style: italic;">&lt;https://github.com/epiforecasts/EpiNow2/issues&gt;</span>.</span>
 <span class="r-in"><span><span class="va">out</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Uncertain lognormal distribution with (untruncated) logmean 1.4 (SD 0.1) and logSD 1.2 (SD 0.079)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - lognormal distribution (max: 94):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   meanlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     - normal distribution:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       mean:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         1.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       sd:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sdlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     - normal distribution:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       mean:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         1.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       sd:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0.079</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

@@ -55,6 +55,9 @@
     <loc>epiforecasts.io/EpiNow2/dev/news/index.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/Distributions.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/EpiNow2-package.html</loc>
   </url>
   <url>
@@ -71,6 +74,9 @@
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/allocate_empty.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/apply_tolerance.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/backcalc_opts.html</loc>
@@ -97,10 +103,16 @@
     <loc>epiforecasts.io/EpiNow2/dev/reference/check_reports_valid.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/check_stan_delay.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/clean_nowcasts.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/clean_regions.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/collapse.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/construct_output.html</loc>
@@ -110,6 +122,9 @@
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/convert_to_logsd.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/convert_to_natural.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/convolve_and_scale.html</loc>
@@ -125,6 +140,9 @@
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/create_complete_cases.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/create_delay_inits.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/create_future_rt.html</loc>
@@ -157,6 +175,9 @@
     <loc>epiforecasts.io/EpiNow2/dev/reference/delay_opts.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/discretise.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/dist_fit.html</loc>
   </url>
   <url>
@@ -164,9 +185,6 @@
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/dist_spec.html</loc>
-  </url>
-  <url>
-    <loc>epiforecasts.io/EpiNow2/dev/reference/dist_spec_plus.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/epinow.html</loc>
@@ -217,7 +235,13 @@
     <loc>epiforecasts.io/EpiNow2/dev/reference/extract_parameter_samples.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/extract_params.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/extract_samples.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/extract_single_dist.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/extract_stan_param.html</loc>
@@ -301,6 +325,9 @@
     <loc>epiforecasts.io/EpiNow2/dev/reference/lognorm_dist_def.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/lower_bounds.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/make_conf.html</loc>
   </url>
   <url>
@@ -310,7 +337,16 @@
     <loc>epiforecasts.io/EpiNow2/dev/reference/match_output_arguments.html</loc>
   </url>
   <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/max.dist_spec.html</loc>
+  </url>
+  <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/mean.dist_spec.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/natural_params.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/new_dist_spec.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/obs_opts.html</loc>
@@ -398,6 +434,9 @@
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/save_input.html</loc>
+  </url>
+  <url>
+    <loc>epiforecasts.io/EpiNow2/dev/reference/sd_dist.html</loc>
   </url>
   <url>
     <loc>epiforecasts.io/EpiNow2/dev/reference/secondary_opts.html</loc>

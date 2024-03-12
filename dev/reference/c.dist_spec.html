@@ -66,7 +66,7 @@ distributions to epinow() or estimate_infections()."><meta property="og:image" c
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Combines multiple delay distributions for further processing</h1>
-      <small class="dont-index">Source: <a href="https://github.com/epiforecasts/EpiNow2/blob/HEAD/R/dist.R" class="external-link"><code>R/dist.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/epiforecasts/EpiNow2/blob/HEAD/R/dist_spec.R" class="external-link"><code>R/dist_spec.R</code></a></small>
       <div class="d-none name"><code>c.dist_spec.Rd</code></div>
     </div>
 
@@ -94,6 +94,52 @@ distributions to <code><a href="epinow.html">epinow()</a></code> or <code><a hre
 <p>Combined delay distributions (with class <code>&lt;dist_spec&gt;</code>)</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># A fixed lognormal distribution with mean 5 and sd 1.</span></span></span>
+<span class="r-in"><span><span class="va">dist1</span> <span class="op">&lt;-</span> <span class="fu"><a href="Distributions.html">LogNormal</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  meanlog <span class="op">=</span> <span class="fl">1.6</span>, sdlog <span class="op">=</span> <span class="fl">1</span>, max <span class="op">=</span> <span class="fl">20</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dist1</span> <span class="op">+</span> <span class="va">dist1</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Composite distribution:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - lognormal distribution (max: 20):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   meanlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sdlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - lognormal distribution (max: 20):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   meanlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sdlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># An uncertain gamma distribution with mean 3 and sd 2</span></span></span>
+<span class="r-in"><span><span class="va">dist2</span> <span class="op">&lt;-</span> <span class="fu"><a href="Distributions.html">Gamma</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  mean <span class="op">=</span> <span class="fu"><a href="Distributions.html">Normal</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0.5</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fu"><a href="Distributions.html">Normal</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">0.5</span><span class="op">)</span>, max <span class="op">=</span> <span class="fl">20</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Uncertain gamma distribution specified in terms of parameters that are not the "natural" parameters of the distribution (shape, rate). Converting using a crude and very approximate method that is likely to produce biased results. If possible, it is preferable to specify the distribution directly in terms of the natural parameters.</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">dist1</span>, <span class="va">dist2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Composite distribution:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - lognormal distribution (max: 20):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   meanlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sdlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - gamma distribution (max: 20):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   shape:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     - normal distribution:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       mean:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         2.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       sd:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0.48</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   rate:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     - normal distribution:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       mean:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0.75</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       sd:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0.28</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 

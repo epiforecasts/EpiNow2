@@ -188,36 +188,27 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // Calculate the daily probability of reporting using parametric</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // distributions up to the maximum observed delay.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // If sigma is 0 all the probability mass is put on n.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // Adapted from https://github.com/epiforecasts/epinowcast</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // (MIT License, copyright: epinowcast authors)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> vector discretised_pmf(real mu, real sigma, int n, int dist) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector discretised_pmf(vector params, int n, int dist) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[n] lpmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (sigma &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[n] upper_lcdf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (dist == 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:n) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_lcdf[i] = lognormal_lcdf(i | mu, sigma);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     } else if (dist == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       real alpha = mu^2 / sigma^2;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       real beta = mu / sigma^2;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:n) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_lcdf[i] = gamma_lcdf(i | alpha, beta);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reject("Unknown distribution function provided.");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[n] upper_lcdf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (dist == 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:n) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       upper_lcdf[i] = lognormal_lcdf(i | params[1], params[2]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // discretise</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[1] = upper_lcdf[1];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[2:n] = log_diff_exp(upper_lcdf[2:n], upper_lcdf[1:(n-1)]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // normalize</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf = lpmf - upper_lcdf[n];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else if (dist == 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:n) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       upper_lcdf[i] = gamma_lcdf(i | params[1], params[2]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // delta function</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf = rep_vector(negative_infinity(), n);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[n] = 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     reject("Unknown distribution function provided.");</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // discretise</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf[1] = upper_lcdf[1];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf[2:n] = log_diff_exp(upper_lcdf[2:n], upper_lcdf[1:(n-1)]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // normalize</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf = lpmf - upper_lcdf[n];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(exp(lpmf));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // reverse a mf</span>
@@ -271,7 +262,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[] int delay_types_groups, array[] int delay_max,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector delay_np_pmf, array[] int delay_np_pmf_groups,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[] real delay_mean, array[] real delay_sigma, array[] int delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector delay_params, array[] int delay_params_groups, array[] int delay_dist,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int left_truncate, int reverse_pmf, int cumulative</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // loop over delays</span>
@@ -280,10 +271,11 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int new_len;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in delay_types_groups[delay_id]:(delay_types_groups[delay_id + 1] - 1)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (delay_types_p[i]) { // parametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       int start = delay_params_groups[delay_types_id[i]];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       int end = delay_params_groups[delay_types_id[i] + 1] - 1;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       vector[delay_max[delay_types_id[i]] + 1] new_variable_pmf =</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         discretised_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_mean[delay_types_id[i]],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_sigma[delay_types_id[i]],</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_params[start:end],</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           delay_max[delay_types_id[i]] + 1,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           delay_dist[delay_types_id[i]]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
@@ -323,32 +315,42 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> void delays_lp(array[] real delay_mean, array[] real delay_mean_mean, array[] real delay_mean_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                array[] real delay_sd, array[] real delay_sd_mean, array[] real delay_sd_sd,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> void delays_lp(vector delay_params,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                vector delay_params_mean, vector delay_params_sd,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                array[] int delay_params_groups,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                array[] int delay_dist, array[] int weight) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     int mean_delays = num_elements(delay_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     int sd_delays = num_elements(delay_sd);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (mean_delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (s in 1:mean_delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         if (delay_mean_sd[s] &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           // uncertain mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight[s];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           // if a distribution with postive support only truncate the prior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           if (delay_dist[s]) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             target += -normal_lccdf(0 | delay_mean_mean[s], delay_mean_sd[s]) * weight[s];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_delays = num_elements(delay_params_groups) - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (n_delays == 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     return;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (d in 1:n_delays) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int start = delay_params_groups[d];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int end = delay_params_groups[d + 1] - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in start:end) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (delay_params_sd[s] &gt; 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         // uncertain mean</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         target += normal_lpdf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_params[s] | delay_params_mean[s], delay_params_sd[s]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ) * weight[d];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         // if a distribution with postive support only truncate the prior</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (delay_dist[d] == 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           target += -normal_lccdf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             0 | delay_params_mean[s], delay_params_sd[s]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           ) * weight[d];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (sd_delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (s in 1:sd_delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         if (delay_sd_sd[s] &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           // uncertain sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight[s];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += -normal_lccdf(0 | delay_sd_mean[s], delay_sd_sd[s]) * weight[s];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector normal_lb_rng(vector mu, vector sigma, vector lb) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int len = num_elements(mu);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] ret;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in 1:len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real p = normal_cdf(lb[i] | mu[i], sigma[i]);  // cdf for bounds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real u = uniform_rng(p, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ret[i] = (sigma[i] * inv_Phi(u)) + mu[i];  // inverse cdf for value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return ret;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // eigenvalues for approximate hilbert space gp</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // see here for details: https://arxiv.org/pdf/2004.11408.pdf</span>
@@ -767,16 +769,17 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n;                     // number of delay distributions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n_p;                   // number of parametric delay distributions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n_np;                  // number of nonparametric delay distributions</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real delay_mean_mean;            // prior mean of mean delay distribution</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real&lt;lower = 0&gt; delay_mean_sd;   // prior sd of mean delay distribution</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real&lt;lower = 0&gt; delay_sd_mean;   // prior sd of sd of delay distribution</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real&lt;lower = 0&gt; delay_sd_sd;     // prior sd of sd of delay distribution</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] int&lt;lower = 1&gt; delay_max;        // maximum delay distribution</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] int&lt;lower = 0&gt; delay_dist;       // 0 = lognormal; 1 = gamma</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_np_pmf_length;            // number of nonparametric pmf elements</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = 0, upper = 1&gt;[delay_np_pmf_length] delay_np_pmf; // ragged array of fixed PMFs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_np + 1] int&lt;lower = 1&gt; delay_np_pmf_groups;              // links to ragged array</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] int&lt;lower = 0&gt; delay_weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_params_length;            // number of parameters across all parametric delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[delay_params_length] delay_params_lower;   // ragged array of lower bounds of the parameters</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = delay_params_lower&gt;[delay_params_length] delay_params_mean;      // ragged array of mean parameters for parametric delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = 0&gt;[delay_params_length] delay_params_sd;   // ragged array of sd of parameters for parametric delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p + 1] int&lt;lower = 0&gt; delay_params_groups;  // links to ragged array</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] int&lt;lower = 0&gt; delay_weight; // delay weights</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_types;                     // number of delay types</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n] int&lt;lower = 0&gt; delay_types_p;          // whether delay types are parametric</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n] int&lt;lower = 0&gt; delay_types_id;          // whether delay types are parametric</span>
@@ -846,8 +849,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[bp_n &gt; 0 ? 1 : 0] real&lt;lower = 0&gt; bp_sd; // standard deviation of breakpoint effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[bp_n] real bp_effects;                   // Rt breakpoint effects</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observation model</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real delay_mean;         // mean of delays</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real&lt;lower = 0&gt; delay_sd;  // sd of delays</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = delay_params_lower&gt;[delay_params_length] delay_params; // delay parameters</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   simplex[week_effect] day_of_week_simplex;// day of week reporting effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[obs_scale_sd &gt; 0 ? 1 : 0] real&lt;lower = 0, upper = 1&gt; frac_obs;     // fraction of cases that are ultimately observed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[model_type] real&lt;lower = 0&gt; rep_phi;     // overdispersion of the reporting process</span>
@@ -868,7 +870,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gt_rev_pmf = get_delay_rev_pmf(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       1, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     R = update_Rt(</span>
@@ -889,7 +891,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);</span>
@@ -909,7 +911,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);</span>
@@ -926,8 +928,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // penalised priors for delay distributions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   delays_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean, delay_mean_mean,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_params, delay_params_mean, delay_params_sd, delay_params_groups,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     delay_dist, delay_weight</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r) {</span>
@@ -963,14 +964,13 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(R, gt_mean, gt_var);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // sample generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     array[delay_n_p] real delay_mean_sample =</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       normal_rng(delay_mean_mean, delay_mean_sd);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     array[delay_n_p] real delay_sd_sample =</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       normal_rng(delay_sd_mean, delay_sd_sd);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_params_mean, delay_params_sd, delay_params_lower</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[gt_id] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean_sample, delay_sd_sample,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params_sample, delay_params_groups,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_dist, 1, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);</span>
@@ -1078,36 +1078,27 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // Calculate the daily probability of reporting using parametric</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // distributions up to the maximum observed delay.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // If sigma is 0 all the probability mass is put on n.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // Adapted from https://github.com/epiforecasts/epinowcast</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // (MIT License, copyright: epinowcast authors)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> vector discretised_pmf(real mu, real sigma, int n, int dist) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector discretised_pmf(vector params, int n, int dist) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[n] lpmf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (sigma &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[n] upper_lcdf;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (dist == 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:n) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_lcdf[i] = lognormal_lcdf(i | mu, sigma);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     } else if (dist == 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       real alpha = mu^2 / sigma^2;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       real beta = mu / sigma^2;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (i in 1:n) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         upper_lcdf[i] = gamma_lcdf(i | alpha, beta);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reject("Unknown distribution function provided.");</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[n] upper_lcdf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (dist == 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:n) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       upper_lcdf[i] = lognormal_lcdf(i | params[1], params[2]);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // discretise</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[1] = upper_lcdf[1];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[2:n] = log_diff_exp(upper_lcdf[2:n], upper_lcdf[1:(n-1)]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // normalize</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf = lpmf - upper_lcdf[n];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else if (dist == 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     for (i in 1:n) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       upper_lcdf[i] = gamma_lcdf(i | params[1], params[2]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // delta function</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf = rep_vector(negative_infinity(), n);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[n] = 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     reject("Unknown distribution function provided.");</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // discretise</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf[1] = upper_lcdf[1];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf[2:n] = log_diff_exp(upper_lcdf[2:n], upper_lcdf[1:(n-1)]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // normalize</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf = lpmf - upper_lcdf[n];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(exp(lpmf));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // reverse a mf</span>
@@ -1161,7 +1152,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[] int delay_types_groups, array[] int delay_max,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector delay_np_pmf, array[] int delay_np_pmf_groups,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[] real delay_mean, array[] real delay_sigma, array[] int delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector delay_params, array[] int delay_params_groups, array[] int delay_dist,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int left_truncate, int reverse_pmf, int cumulative</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // loop over delays</span>
@@ -1170,10 +1161,11 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int new_len;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in delay_types_groups[delay_id]:(delay_types_groups[delay_id + 1] - 1)) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (delay_types_p[i]) { // parametric</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       int start = delay_params_groups[delay_types_id[i]];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       int end = delay_params_groups[delay_types_id[i] + 1] - 1;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       vector[delay_max[delay_types_id[i]] + 1] new_variable_pmf =</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         discretised_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_mean[delay_types_id[i]],</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_sigma[delay_types_id[i]],</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_params[start:end],</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           delay_max[delay_types_id[i]] + 1,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           delay_dist[delay_types_id[i]]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
@@ -1213,32 +1205,42 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> void delays_lp(array[] real delay_mean, array[] real delay_mean_mean, array[] real delay_mean_sd,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                array[] real delay_sd, array[] real delay_sd_mean, array[] real delay_sd_sd,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> void delays_lp(vector delay_params,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                vector delay_params_mean, vector delay_params_sd,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                array[] int delay_params_groups,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                array[] int delay_dist, array[] int weight) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     int mean_delays = num_elements(delay_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     int sd_delays = num_elements(delay_sd);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (mean_delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (s in 1:mean_delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         if (delay_mean_sd[s] &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           // uncertain mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight[s];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           // if a distribution with postive support only truncate the prior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           if (delay_dist[s]) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             target += -normal_lccdf(0 | delay_mean_mean[s], delay_mean_sd[s]) * weight[s];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int n_delays = num_elements(delay_params_groups) - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (n_delays == 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     return;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (d in 1:n_delays) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int start = delay_params_groups[d];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     int end = delay_params_groups[d + 1] - 1;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in start:end) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       if (delay_params_sd[s] &gt; 0) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         // uncertain mean</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         target += normal_lpdf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           delay_params[s] | delay_params_mean[s], delay_params_sd[s]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ) * weight[d];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         // if a distribution with postive support only truncate the prior</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         if (delay_dist[d] == 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           target += -normal_lccdf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             0 | delay_params_mean[s], delay_params_sd[s]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           ) * weight[d];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (sd_delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       for (s in 1:sd_delays) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         if (delay_sd_sd[s] &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           // uncertain sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight[s];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           target += -normal_lccdf(0 | delay_sd_mean[s], delay_sd_sd[s]) * weight[s];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector normal_lb_rng(vector mu, vector sigma, vector lb) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int len = num_elements(mu);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[len] ret;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   for (i in 1:len) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real p = normal_cdf(lb[i] | mu[i], sigma[i]);  // cdf for bounds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     real u = uniform_rng(p, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ret[i] = (sigma[i] * inv_Phi(u)) + mu[i];  // inverse cdf for value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return ret;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // eigenvalues for approximate hilbert space gp</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // see here for details: https://arxiv.org/pdf/2004.11408.pdf</span>
@@ -1657,16 +1659,17 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n;                     // number of delay distributions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n_p;                   // number of parametric delay distributions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_n_np;                  // number of nonparametric delay distributions</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real delay_mean_mean;            // prior mean of mean delay distribution</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real&lt;lower = 0&gt; delay_mean_sd;   // prior sd of mean delay distribution</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real&lt;lower = 0&gt; delay_sd_mean;   // prior sd of sd of delay distribution</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real&lt;lower = 0&gt; delay_sd_sd;     // prior sd of sd of delay distribution</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] int&lt;lower = 1&gt; delay_max;        // maximum delay distribution</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] int&lt;lower = 0&gt; delay_dist;       // 0 = lognormal; 1 = gamma</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_np_pmf_length;            // number of nonparametric pmf elements</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = 0, upper = 1&gt;[delay_np_pmf_length] delay_np_pmf; // ragged array of fixed PMFs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_np + 1] int&lt;lower = 1&gt; delay_np_pmf_groups;              // links to ragged array</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] int&lt;lower = 0&gt; delay_weight;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_params_length;            // number of parameters across all parametric delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[delay_params_length] delay_params_lower;   // ragged array of lower bounds of the parameters</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = delay_params_lower&gt;[delay_params_length] delay_params_mean;      // ragged array of mean parameters for parametric delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = 0&gt;[delay_params_length] delay_params_sd;   // ragged array of sd of parameters for parametric delay distributions</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p + 1] int&lt;lower = 0&gt; delay_params_groups;  // links to ragged array</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] int&lt;lower = 0&gt; delay_weight; // delay weights</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   int&lt;lower = 0&gt; delay_types;                     // number of delay types</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n] int&lt;lower = 0&gt; delay_types_p;          // whether delay types are parametric</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n] int&lt;lower = 0&gt; delay_types_id;          // whether delay types are parametric</span>
@@ -1736,8 +1739,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[bp_n &gt; 0 ? 1 : 0] real&lt;lower = 0&gt; bp_sd; // standard deviation of breakpoint effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[bp_n] real bp_effects;                   // Rt breakpoint effects</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observation model</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real delay_mean;         // mean of delays</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_n_p] real&lt;lower = 0&gt; delay_sd;  // sd of delays</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector&lt;lower = delay_params_lower&gt;[delay_params_length] delay_params; // delay parameters</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   simplex[week_effect] day_of_week_simplex;// day of week reporting effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[obs_scale_sd &gt; 0 ? 1 : 0] real&lt;lower = 0, upper = 1&gt; frac_obs;     // fraction of cases that are ultimately observed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[model_type] real&lt;lower = 0&gt; rep_phi;     // overdispersion of the reporting process</span>
@@ -1758,7 +1760,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gt_rev_pmf = get_delay_rev_pmf(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       1, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     R = update_Rt(</span>
@@ -1779,7 +1781,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);</span>
@@ -1799,7 +1801,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean, delay_sd, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);</span>
@@ -1816,8 +1818,7 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // penalised priors for delay distributions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   delays_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean, delay_mean_mean,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_mean_sd, delay_sd, delay_sd_mean, delay_sd_sd,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_params, delay_params_mean, delay_params_sd, delay_params_groups,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     delay_dist, delay_weight</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r) {</span>
@@ -1853,14 +1854,13 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(R, gt_mean, gt_var);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // sample generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     array[delay_n_p] real delay_mean_sample =</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       normal_rng(delay_mean_mean, delay_mean_sd);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     array[delay_n_p] real delay_sd_sample =</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       normal_rng(delay_sd_mean, delay_sd_sd);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_params_mean, delay_params_sd, delay_params_lower</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[gt_id] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_mean_sample, delay_sd_sample,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params_sample, delay_params_groups,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       delay_dist, 1, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);</span>

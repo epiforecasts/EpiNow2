@@ -80,14 +80,14 @@ functions.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">delay_opts</span><span class="op">(</span>dist <span class="op">=</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span>, fixed <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">delay_opts</span><span class="op">(</span>dist <span class="op">=</span> <span class="fu"><a href="Distributions.html">Fixed</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, <span class="va">...</span>, fixed <span class="op">=</span> <span class="cn">FALSE</span>, tolerance <span class="op">=</span> <span class="fl">0.001</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>dist</dt>
-<dd><p>A delay distribution or series of delay distributions generated
-using <code><a href="dist_spec.html">dist_spec()</a></code>. Default is an empty call to <code><a href="dist_spec.html">dist_spec()</a></code>, i.e. no delay</p></dd>
+<dd><p>A delay distribution or series of delay distributions. Default is
+a fixed distribution with all mass at 0, i.e. no delay.</p></dd>
 
 
 <dt>...</dt>
@@ -96,6 +96,10 @@ using <code><a href="dist_spec.html">dist_spec()</a></code>. Default is an empty
 
 <dt>fixed</dt>
 <dd><p>deprecated; use <code>dist</code> instead</p></dd>
+
+
+<dt>tolerance</dt>
+<dd><p>Numeric; the desired tolerance level.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -114,28 +118,49 @@ using <code><a href="dist_spec.html">dist_spec()</a></code>. Default is an empty
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># no delays</span></span></span>
 <span class="r-in"><span><span class="fu">delay_opts</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Empty `dist_spec` distribution.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - fixed value:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A single delay that has uncertainty</span></span></span>
-<span class="r-in"><span><span class="va">delay</span> <span class="op">&lt;-</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">1</span>, mean_sd <span class="op">=</span> <span class="fl">0.2</span>, sd <span class="op">=</span> <span class="fl">0.5</span>, sd_sd <span class="op">=</span> <span class="fl">0.1</span>, max <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">delay</span> <span class="op">&lt;-</span> <span class="fu"><a href="Distributions.html">LogNormal</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="Distributions.html">Normal</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0.2</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fu"><a href="Distributions.html">Normal</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.1</span><span class="op">)</span>, max <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Uncertain lognormal distribution specified in terms of parameters that are not the "natural" parameters of the distribution (meanlog, sdlog). Converting using a crude and very approximate method that is likely to produce biased results. If possible, it is preferable to specify the distribution directly in terms of the natural parameters.</span>
 <span class="r-in"><span><span class="fu">delay_opts</span><span class="op">(</span><span class="va">delay</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Uncertain lognormal distribution with (untruncated) logmean 1 (SD 0.2) and logSD 0.5 (SD 0.1)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - lognormal distribution (max: 14):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   meanlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     - normal distribution:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       mean:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         -0.11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       sd:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0.058</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sdlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     - normal distribution:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       mean:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0.47</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       sd:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0.12</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A single delay without uncertainty</span></span></span>
-<span class="r-in"><span><span class="va">delay</span> <span class="op">&lt;-</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">1</span>, sd <span class="op">=</span> <span class="fl">0.5</span>, max <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">delay</span> <span class="op">&lt;-</span> <span class="fu"><a href="Distributions.html">LogNormal</a></span><span class="op">(</span>meanlog <span class="op">=</span> <span class="fl">1</span>, sdlog <span class="op">=</span> <span class="fl">0.5</span>, max <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">delay_opts</span><span class="op">(</span><span class="va">delay</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Fixed distribution with PMF [0.023 0.25 0.31 0.2 0.11 0.055 0.027 0.014 0.0071 0.0037 0.002 0.0011 0.00062 0.00035 2e-04]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - lognormal distribution (max: 14):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   meanlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sdlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     0.5</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Multiple delays (in this case twice the same)</span></span></span>
 <span class="r-in"><span><span class="fu">delay_opts</span><span class="op">(</span><span class="va">delay</span> <span class="op">+</span> <span class="va">delay</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Fixed distribution with PMF [0.00052 0.011 0.075 0.16 0.2 0.18 0.14 0.092 0.058 0.035 0.021 0.012 0.0071 0.0042 0.0024 0.0014 0.00079]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Composite distribution:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - lognormal distribution (max: 14):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   meanlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sdlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     0.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - lognormal distribution (max: 14):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   meanlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sdlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     0.5</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

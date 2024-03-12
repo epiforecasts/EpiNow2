@@ -83,7 +83,7 @@ estimate these distributions.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">trunc_opts</span><span class="op">(</span>dist <span class="op">=</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">trunc_opts</span><span class="op">(</span>dist <span class="op">=</span> <span class="fu"><a href="Distributions.html">Fixed</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, tolerance <span class="op">=</span> <span class="fl">0.001</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -91,7 +91,11 @@ estimate these distributions.</p>
     <dl><dt>dist</dt>
 <dd><p>A delay distribution or series of delay distributions reflecting
 the truncation generated using <code><a href="dist_spec.html">dist_spec()</a></code> or <code><a href="estimate_truncation.html">estimate_truncation()</a></code>.
-Default is an empty call to <code><a href="dist_spec.html">dist_spec()</a></code>, i.e. no truncation</p></dd>
+Default is fixed distribution with maximum 0, i.e. no truncation</p></dd>
+
+
+<dt>tolerance</dt>
+<dd><p>Numeric; the desired tolerance level.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -111,14 +115,16 @@ distribution.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># no truncation</span></span></span>
 <span class="r-in"><span><span class="fu">trunc_opts</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Empty `dist_spec` distribution.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - fixed value:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># truncation dist</span></span></span>
-<span class="r-in"><span><span class="fu">trunc_opts</span><span class="op">(</span>dist <span class="op">=</span> <span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">2</span>, max <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Fixed distribution with PMF [0.18 0.15 0.12 0.1 0.088 0.077 0.069 0.062 0.056 0.051 0.047]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="fu">trunc_opts</span><span class="op">(</span>dist <span class="op">=</span> <span class="fu"><a href="Distributions.html">LogNormal</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">2</span>, max <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - lognormal distribution (max: 10):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   meanlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     0.91</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sdlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     0.61</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

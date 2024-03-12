@@ -68,7 +68,7 @@ Currently this function is a simple wrapper for bootstrapped_dist_fit()."><meta 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Estimate a Delay Distribution</h1>
-      <small class="dont-index">Source: <a href="https://github.com/epiforecasts/EpiNow2/blob/HEAD/R/dist.R" class="external-link"><code>R/dist.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/epiforecasts/EpiNow2/blob/HEAD/R/estimate_delay.R" class="external-link"><code>R/estimate_delay.R</code></a></small>
       <div class="d-none name"><code>estimate_delay.Rd</code></div>
     </div>
 
@@ -129,9 +129,19 @@ Currently this function is a simple wrapper for <code><a href="bootstrapped_dist
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`backend` option will be ignored as a stan model object has been passed.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`samples` must be at least 1000. Now setting it to 1000 internally.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`backend` option will be ignored as a stan model object has been passed.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Uncertain lognormal distribution with (untruncated) logmean 1.5 (SD 0.098) and logSD 1.1 (SD 0.073)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - lognormal distribution (max: 80):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   meanlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     - normal distribution:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       mean:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         1.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       sd:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0.098</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sdlog:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     - normal distribution:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       mean:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         1.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       sd:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0.073</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

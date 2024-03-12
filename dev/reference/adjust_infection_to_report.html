@@ -146,6 +146,9 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span>  mean <span class="op">=</span> <span class="fl">5</span>, mean_sd <span class="op">=</span> <span class="fl">1</span>, sd <span class="op">=</span> <span class="fl">3</span>, sd_sd <span class="op">=</span> <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>  max_value <span class="op">=</span> <span class="fl">30</span>, samples <span class="op">=</span> <span class="fl">1</span>, to_log <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`lognorm_dist_def()` was deprecated in EpiNow2 1.5.0.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Please use `LogNormal()` instead.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The function will be removed completely in version 2.0.0.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># define a single incubation period</span></span></span>
 <span class="r-in"><span><span class="va">incubation_def</span> <span class="op">&lt;-</span> <span class="fu"><a href="lognorm_dist_def.html">lognorm_dist_def</a></span><span class="op">(</span></span></span>
@@ -160,6 +163,9 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span><span class="va">report</span> <span class="op">&lt;-</span> <span class="fu">adjust_infection_to_report</span><span class="op">(</span></span></span>
 <span class="r-in"><span> <span class="va">cases</span>, delay_defs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">incubation_def</span>, <span class="va">delay_def</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The `delay_defs` argument of `adjust_infection_to_report()` should be a</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> dist_spec as of EpiNow2 1.5.0.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Specifying this as a list of data tables is deprecated.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">report</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            date cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;Date&gt; &lt;num&gt;</span>

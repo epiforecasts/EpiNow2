@@ -113,8 +113,8 @@ for an application forecasting Covid-19 deaths in Germany and Poland.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">estimate_secondary</span><span class="op">(</span></span>
 <span>  <span class="va">reports</span>,</span>
 <span>  secondary <span class="op">=</span> <span class="fu"><a href="secondary_opts.html">secondary_opts</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  delays <span class="op">=</span> <span class="fu"><a href="delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="fu"><a href="dist_spec.html">dist_spec</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">2.5</span>, mean_sd <span class="op">=</span> <span class="fl">0.5</span>, sd <span class="op">=</span> <span class="fl">0.47</span>, sd_sd <span class="op">=</span> <span class="fl">0.25</span>, max <span class="op">=</span></span>
-<span>    <span class="fl">30</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  delays <span class="op">=</span> <span class="fu"><a href="delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="fu"><a href="Distributions.html">LogNormal</a></span><span class="op">(</span>meanlog <span class="op">=</span> <span class="fu"><a href="Distributions.html">Normal</a></span><span class="op">(</span><span class="fl">2.5</span>, <span class="fl">0.5</span><span class="op">)</span>, sdlog <span class="op">=</span> <span class="fu"><a href="Distributions.html">Normal</a></span><span class="op">(</span><span class="fl">0.47</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
+<span>    max <span class="op">=</span> <span class="fl">30</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  truncation <span class="op">=</span> <span class="fu"><a href="trunc_opts.html">trunc_opts</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  obs <span class="op">=</span> <span class="fu"><a href="obs_opts.html">obs_opts</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  stan <span class="op">=</span> <span class="fu"><a href="stan_opts.html">stan_opts</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -272,9 +272,6 @@ model), and <code>fit</code> (the <code>stanfit</code> object).</p>
 <span class="r-in"><span><span class="va">inc</span> <span class="op">&lt;-</span> <span class="fu">estimate_secondary</span><span class="op">(</span><span class="va">cases</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">60</span><span class="op">]</span>,</span></span>
 <span class="r-in"><span>  obs <span class="op">=</span> <span class="fu"><a href="obs_opts.html">obs_opts</a></span><span class="op">(</span>scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">0.2</span>, sd <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span>, week_effect <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-03-11 19:08:06] estimate_secondary (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#tail-ess - </span>
 <span class="r-in"><span><span class="fu"><a href="plot.estimate_infections.html">plot</a></span><span class="op">(</span><span class="va">inc</span>, primary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="estimate_secondary-1.png" alt="" width="864" height="864"></span>
 <span class="r-in"><span></span></span>
