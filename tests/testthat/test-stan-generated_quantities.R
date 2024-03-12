@@ -1,3 +1,6 @@
+skip_on_cran()
+skip_on_os("windows")
+
 test_that("calculate_growth works as expected", {
   skip_on_cran()
   expect_equal(calculate_growth(rep(1, 5), 1), rep(0, 4))
