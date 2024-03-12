@@ -28,23 +28,6 @@ vector calculate_Rt(vector infections, int seeding_time,
   }
   return(sR);
 }
-// Convert an estimate of Rt to growth
-array[] real R_to_growth(vector R, real gt_mean, real gt_var) {
-  int t = num_elements(R);
-  array[t] real r;
-  if (gt_var > 0) {
-    real k = gt_var * inv_square(gt_mean);
-    for (s in 1:t) {
-      r[s] = (pow(R[s], k) - 1) / (k * gt_mean);
-    }
-  } else {
-    // limit as gt_sd -> 0
-    for (s in 1:t) {
-      r[s] = log(R[s]) / gt_mean;
-    }
-  }
-  return(r);
-}
 
 // Calculate growth rate
 array[] real calculate_growth(vector infections, int seeding_time) {
