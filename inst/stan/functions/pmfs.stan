@@ -1,35 +1,26 @@
 // Calculate the daily probability of reporting using parametric
 // distributions up to the maximum observed delay.
-// If sigma is 0 all the probability mass is put on n.
 // Adapted from https://github.com/epiforecasts/epinowcast
 // (MIT License, copyright: epinowcast authors)
-vector discretised_pmf(real mu, real sigma, int n, int dist) {
+vector discretised_pmf(vector params, int n, int dist) {
   vector[n] lpmf;
-  if (sigma > 0) {
-    vector[n] upper_lcdf;
-    if (dist == 0) {
-      for (i in 1:n) {
-        upper_lcdf[i] = lognormal_lcdf(i | mu, sigma);
-      }
-    } else if (dist == 1) {
-      real alpha = mu^2 / sigma^2;
-      real beta = mu / sigma^2;
-      for (i in 1:n) {
-        upper_lcdf[i] = gamma_lcdf(i | alpha, beta);
-      }
-    } else {
-      reject("Unknown distribution function provided.");
+  vector[n] upper_lcdf;
+  if (dist == 0) {
+    for (i in 1:n) {
+      upper_lcdf[i] = lognormal_lcdf(i | params[1], params[2]);
     }
-    // discretise
-    lpmf[1] = upper_lcdf[1];
-    lpmf[2:n] = log_diff_exp(upper_lcdf[2:n], upper_lcdf[1:(n-1)]);
-    // normalize
-    lpmf = lpmf - upper_lcdf[n];
+  } else if (dist == 1) {
+    for (i in 1:n) {
+      upper_lcdf[i] = gamma_lcdf(i | params[1], params[2]);
+    }
   } else {
-    // delta function
-    lpmf = rep_vector(negative_infinity(), n);
-    lpmf[n] = 0;
+    reject("Unknown distribution function provided.");
   }
+  // discretise
+  lpmf[1] = upper_lcdf[1];
+  lpmf[2:n] = log_diff_exp(upper_lcdf[2:n], upper_lcdf[1:(n-1)]);
+  // normalize
+  lpmf = lpmf - upper_lcdf[n];
   return(exp(lpmf));
 }
 

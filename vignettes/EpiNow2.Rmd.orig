@@ -24,9 +24,9 @@ library(EpiNow2)
 
 ### Reporting delays, incubation period and generation time
 
-Distributions can be supplied in two ways. First, by supplying delay data to `estimate_delay()`, where a subsampled bootstrapped lognormal will be fit to account for uncertainty in the observed data without being biased by changes in incidence (see `?EpiNow2::estimate_delay()`).
+Distributions can be supplied in two ways. First, one can supplying delay data to `estimate_delay()`, where a subsampled bootstrapped lognormal will be fit to account for uncertainty in the observed data without being biased by changes in incidence (see `?EpiNow2::estimate_delay()`).
 
-Second, by specifying predetermined delays with uncertainty using `dist_spec()`. An arbitrary number of delay distributions are supported in `dist_spec()` with the most common use case likely to be an incubation period followed by a reporting delay (see `?EpiNow2::dist_spec()`).
+Second, one can specify predetermined delays with uncertainty using the distribution functions such as `Gamma` or `Lognormal`. An arbitrary number of delay distributions are supported in `dist_spec()` with a common use case being an incubation period followed by a reporting delay. For more information on specifying distributions see (see `?EpiNow2::Distributions`).
 
 For example if data on the delay between onset and infection was available we could fit a distribution to it, using `estimate_delay()`, with appropriate uncertainty as follows (note this is a synthetic example),
 ```{r, eval = FALSE}
@@ -36,18 +36,11 @@ reporting_delay <- estimate_delay(
 )
 ```
 
-If data was not available we could instead specify an informed estimate of the likely delay
-using `dist_spec()`. To demonstrate, we choose a lognormal distribution with mean 2, standard deviation 1 (both with some uncertainty) and a maximum of 10. *This is just an example and unlikely to apply in any particular use case*.
+If data was not available we could instead specify an informed estimate of the likely delay using the distribution functions `Gamma` or `LogNormal`. 
+To demonstrate, we choose a lognormal distribution with mean 2, standard deviation 1 and a maximum of 10. *This is just an example and unlikely to apply in any particular use case*.
 
 ```{r}
-reporting_delay <- dist_spec(
-  mean = convert_to_logmean(2, 1),
-  mean_sd = 0.1,
-  sd = convert_to_logsd(2, 1),
-  sd_sd = 0.1,
-  max = 10,
-  distribution = "lognormal"
-)
+reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
 reporting_delay
 ```
 

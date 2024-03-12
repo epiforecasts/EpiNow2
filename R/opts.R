@@ -3,9 +3,8 @@
 #' @description `r lifecycle::badge("stable")`
 #' Returns generation time parameters in a format for lower level model use.
 #'
-#' @param dist A delay distribution or series of delay distributions generated
-#'   using [dist_spec()]. If no distribution is given a fixed generation time of
-#'   1 will be assumed.
+#' @param dist A delay distribution or series of delay distributions . If no
+#'   distribution is given a fixed generation time of 1 will be assumed.
 #'
 #' @param ... deprecated; use `dist` instead
 #' @param disease deprecated; use `dist` instead
@@ -15,28 +14,33 @@
 #' @param prior_weight deprecated; prior weights are now specified as a
 #' model option. Use the `weigh_delay_priors` argument of
 #' [estimate_infections()] instead.
+#' @inheritParams apply_tolerance
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] [dist_spec()]
+#' [bootstrapped_dist_fit()] [Gamma()] [LogNormal()] [Fixed()]
 #' @export
 #' @examples
 #' # default settings with a fixed generation time of 1
 #' generation_time_opts()
 #'
 #' # A fixed gamma distributed generation time
-#' generation_time_opts(dist_spec(mean = 3, sd = 2, max = 14))
+#' generation_time_opts(Gamma(mean = 3, sd = 2, max = 14))
 #'
 #' # An uncertain gamma distributed generation time
 #' generation_time_opts(
-#'  dist_spec(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5, max = 14)
+#'   Gamma(
+#'     mean = Normal(mean = 3, sd = 1),
+#'     sd = Normal(mean = 2, sd = 0.5),
+#'     max = 14
+#'   )
 #' )
 #'
 #' # An example generation time
 #' generation_time_opts(example_generation_time)
-generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
+generation_time_opts <- function(dist = Fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
-                                 prior_weight) {
+                                 prior_weight, tolerance = 0.001) {
   deprecated_options_given <- FALSE
   dot_options <- list(...)
 
@@ -84,8 +88,8 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
   }
   if (deprecated_options_given) {
     warning(
-      "The generation time distribution must be given to ",
-      "`generation_time_opts` using a call to `dist_spec`. ",
+      "The generation time distribution should be given to ",
+      "`generation_time_opts` using a `dist_spec`. ",
       "This behaviour has changed from previous versions of `EpiNow2` and ",
       "any code using it may need to be updated as any other ways of ",
       "specifying the generation time are deprecated and will be removed in ",
@@ -93,6 +97,8 @@ generation_time_opts <- function(dist = dist_spec(mean = 1), ...,
       "information, see the relevant documentation pages using ",
       "`?generation_time_opts`")
   }
+  check_stan_delay(dist)
+  attr(dist, "tolerance") <- tolerance
   attr(dist, "class") <- c("generation_time_opts", class(dist))
   return(dist)
 }
@@ -173,10 +179,11 @@ secondary_opts <- function(type = "incidence", ...) {
 #' @description `r lifecycle::badge("stable")`
 #' Returns delay distributions formatted for usage by downstream
 #' functions.
-#' @param dist A delay distribution or series of delay distributions generated
-#' using [dist_spec()]. Default is an empty call to [dist_spec()], i.e. no delay
+#' @param dist A delay distribution or series of delay distributions. Default is
+#'   a fixed distribution with all mass at 0, i.e. no delay.
 #' @param ... deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
+#' @inheritParams apply_tolerance
 #' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
 #' [bootstrapped_dist_fit()] [dist_spec()]
@@ -186,16 +193,16 @@ secondary_opts <- function(type = "incidence", ...) {
 #' delay_opts()
 #'
 #' # A single delay that has uncertainty
-#' delay <- dist_spec(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 14)
+#' delay <- LogNormal(mean = Normal(1, 0.2), sd = Normal(0.5, 0.1), max = 14)
 #' delay_opts(delay)
 #'
 #' # A single delay without uncertainty
-#' delay <- dist_spec(mean = 1, sd = 0.5, max = 14)
+#' delay <- LogNormal(meanlog = 1, sdlog = 0.5, max = 14)
 #' delay_opts(delay)
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
+delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec")) { ## could be old syntax
     if (is.list(dist)) {
@@ -226,6 +233,8 @@ delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
     ## can be removed once dot options are hard deprecated
     stop("Unknown named arguments passed to `delay_opts`")
   }
+  check_stan_delay(dist)
+  attr(dist, "tolerance") <- tolerance
   attr(dist, "class") <- c("delay_opts", class(dist))
   return(dist)
 }
@@ -239,7 +248,8 @@ delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
 #'
 #' @param dist A delay distribution or series of delay distributions reflecting
 #' the truncation generated using [dist_spec()] or [estimate_truncation()].
-#' Default is an empty call to [dist_spec()], i.e. no truncation
+#' Default is fixed distribution with maximum 0, i.e. no truncation
+#' @inheritParams apply_tolerance
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'
@@ -251,8 +261,8 @@ delay_opts <- function(dist = dist_spec(), ..., fixed = FALSE) {
 #' trunc_opts()
 #'
 #' # truncation dist
-#' trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = dist_spec()) {
+#' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
+trunc_opts <- function(dist = Fixed(0), tolerance = 0.001) {
   if (!is(dist, "dist_spec")) {
     if (is.list(dist)) {
       dist <- do.call(dist_spec, dist)
@@ -268,6 +278,8 @@ trunc_opts <- function(dist = dist_spec()) {
       "`?trunc_opts`"
     )
   }
+  check_stan_delay(dist)
+  attr(dist, "tolerance") <- tolerance
   attr(dist, "class") <- c("trunc_opts", class(dist))
   return(dist)
 }

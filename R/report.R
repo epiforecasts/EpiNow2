@@ -53,18 +53,6 @@ report_cases <- function(case_estimates,
                          CrIs = c(0.2, 0.5, 0.9)) {
   samples <- length(unique(case_estimates$sample))
 
-  # define delay distributions
-  delay_defs <- purrr::map(
-    seq_along(delays$mean_mean),
-    ~ EpiNow2::lognorm_dist_def(
-      mean = delays$mean_mean[.],
-      mean_sd = delays$mean_sd[.],
-      sd = delays$mean_mean[.],
-      sd_sd = delays$mean_sd[.],
-      max_value = delays$max[.],
-      samples = samples
-    )
-  )
   # add a null reporting effect if missing
   if (missing(reporting_effect)) {
     reporting_effect <- data.table::data.table(
@@ -91,7 +79,7 @@ report_cases <- function(case_estimates,
   report <- future.apply::future_lapply(1:max(infections$sample),
     function(id) {
       EpiNow2::adjust_infection_to_report(infections[sample == id],
-        delay_defs = purrr::map(delay_defs, ~ .[id, ]),
+        delay_defs = delays,
         type = type,
         reporting_effect = reporting_effect[sample == id, ]$effect
       )
@@ -213,7 +201,7 @@ report_summary <- function(summarised_estimates,
   }
 
   if (!is.null(target_folder)) {
-    saveRDS(summary, paste0(target_folder, "/summary.rds"))
+    saveRDS(summary, file.path(target_folder, "summary.rds"))
   }
   return(summary)
 }

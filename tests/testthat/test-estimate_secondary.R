@@ -29,7 +29,7 @@ inc <- estimate_secondary(inc_cases[1:60],
 
 # extract posterior variables of interest
 params <- c(
-  "meanlog" = "delay_mean[1]", "sdlog" = "delay_sd[1]",
+  "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
   "scaling" = "frac_obs[1]"
 )
 
@@ -82,10 +82,7 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
   cases_na[sample(1:60, 5), secondary := NA]
   inc_na <- estimate_secondary(cases_na[1:60],
     delays = delay_opts(
-      dist_spec(
-        mean = 1.8, mean_sd = 0,
-        sd = 0.5, sd_sd = 0, max = 30
-      )
+      LogNormal(meanlog = 1.8, sdlog = 0.5, max = 30)
     ),
     obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
     verbose = FALSE
@@ -95,10 +92,7 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
   prev_na <- estimate_secondary(prev_cases_na[1:60],
     secondary = secondary_opts(type = "prevalence"),
     delays = delay_opts(
-      dist_spec(
-        mean = 1.8, mean_sd = 0,
-        sd = 0.5, sd_sd = 0, max = 30
-      )
+      LogNormal(mean = 1.8, sd = 0.5, max = 30)
     ),
     obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
     verbose = FALSE
@@ -117,9 +111,8 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
   )
   inc_weekly <- estimate_secondary(cases_weekly,
     delays = delay_opts(
-      dist_spec(
-        mean = 1.8, mean_sd = 0,
-        sd = 0.5, sd_sd = 0, max = 30
+      LogNormal(
+        mean = 1.8, sd = 0.5, max = 30
       )
     ),
     obs = obs_opts(
@@ -197,8 +190,10 @@ test_that("forecast_secondary can return values from simulated data when using
 })
 
 test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
-  delays <- dist_spec(
-    mean = 2.5, mean_sd = 0.5, sd = 0.47, sd_sd = 0.25, max = 30
+  delays <- LogNormal(
+    meanlog = Normal(2.5, 0.5),
+    sdlog = Normal(0.47, 0.25),
+    max = 30
   )
   inc_weigh <- estimate_secondary(
     inc_cases[1:60], delays = delay_opts(delays),

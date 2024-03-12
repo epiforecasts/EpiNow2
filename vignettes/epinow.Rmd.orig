@@ -36,10 +36,7 @@ This should be replaced with parameters relevant to the system that is being stu
 library("EpiNow2")
 options(mc.cores = 4)
 reported_cases <- example_confirmed[1:60]
-reporting_delay <- dist_spec(
-  mean = convert_to_logmean(2, 1), mean_sd = 0,
-  sd = convert_to_logsd(2, 1), sd_sd = 0, max = 10
-)
+reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
 delay <- example_incubation_period + reporting_delay
 rt_prior <- list(mean = 2, sd = 0.1)
 ```

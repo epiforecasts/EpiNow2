@@ -42,30 +42,21 @@
 #'
 #' # set an example generation time. In practice this should use an estimate
 #' # from the literature or be estimated from data
-#' generation_time <- dist_spec(
-#'   mean = 3.6,
-#'   mean_sd = 0.7,
-#'   sd = 3.1,
-#'   sd_sd = 0.8,
+#' generation_time <- Gamma(
+#'   shape = Normal(1.3, 0.3),
+#'   rate = Normal(0.37, 0.09),
 #'   max = 14
 #' )
 #' # set an example incubation period. In practice this should use an estimate
 #' # from the literature or be estimated from data
-#' incubation_period <- dist_spec(
-#'    mean = 1.6,
-#'    mean_sd = 0.06,
-#'    sd = 0.4,
-#'    sd_sd = 0.07,
+#' incubation_period <- LogNormal(
+#'    meanlog = Normal(1.6, 0.06),
+#'    sdlog = Normal(0.4, 0.07),
 #'    max = 14
 #' )
 #' # set an example reporting delay. In practice this should use an estimate
 #' # from the literature or be estimated from data
-#' reporting_delay <- dist_spec(
-#'   mean = convert_to_logmean(2, 1),
-#'   sd = convert_to_logsd(2, 1),
-#'   max = 10,
-#'   dist = "lognormal"
-#' )
+#' reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
 #'
 #' # example case data
 #' reported_cases <- example_confirmed[1:40]

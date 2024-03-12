@@ -5,19 +5,19 @@
 \title{Generation Time Distribution Options}
 \usage{
 generation_time_opts(
-  dist = dist_spec(mean = 1),
+  dist = Fixed(1),
   ...,
   disease,
   source,
   max = 14,
   fixed = FALSE,
-  prior_weight
+  prior_weight,
+  tolerance = 0.001
 )
 }
 \arguments{
-\item{dist}{A delay distribution or series of delay distributions generated
-using \code{\link[=dist_spec]{dist_spec()}}. If no distribution is given a fixed generation time of
-1 will be assumed.}
+\item{dist}{A delay distribution or series of delay distributions . If no
+distribution is given a fixed generation time of 1 will be assumed.}
 
 \item{...}{deprecated; use \code{dist} instead}
 
@@ -32,6 +32,8 @@ using \code{\link[=dist_spec]{dist_spec()}}. If no distribution is given a fixed
 \item{prior_weight}{deprecated; prior weights are now specified as a
 model option. Use the \code{weigh_delay_priors} argument of
 \code{\link[=estimate_infections]{estimate_infections()}} instead.}
+
+\item{tolerance}{Numeric; the desired tolerance level.}
 }
 \value{
 A \verb{<generation_time_opts>} object summarising the input delay
@@ -46,11 +48,15 @@ Returns generation time parameters in a format for lower level model use.
 generation_time_opts()
 
 # A fixed gamma distributed generation time
-generation_time_opts(dist_spec(mean = 3, sd = 2, max = 14))
+generation_time_opts(Gamma(mean = 3, sd = 2, max = 14))
 
 # An uncertain gamma distributed generation time
 generation_time_opts(
- dist_spec(mean = 3, sd = 2, mean_sd = 1, sd_sd = 0.5, max = 14)
+  Gamma(
+    mean = Normal(mean = 3, sd = 1),
+    sd = Normal(mean = 2, sd = 0.5),
+    max = 14
+  )
 )
 
 # An example generation time
@@ -58,5 +64,5 @@ generation_time_opts(example_generation_time)
 }
 \seealso{
 \code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
-\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[=dist_spec]{dist_spec()}}
+\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[=Gamma]{Gamma()}} \code{\link[=LogNormal]{LogNormal()}} \code{\link[=Fixed]{Fixed()}}
 }

@@ -9,7 +9,8 @@ estimate_truncation(
   max_truncation,
   trunc_max = 10,
   trunc_dist = "lognormal",
-  truncation = trunc_opts(dist_spec(mean = 0, mean_sd = 1, sd = 0, sd_sd = 1, max = 10)),
+  truncation = trunc_opts(LogNormal(meanlog = Normal(0, 1), sdlog = Normal(1, 1), max =
+    10)),
   model = NULL,
   stan = stan_opts(),
   CrIs = c(0.2, 0.5, 0.9),

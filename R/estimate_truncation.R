@@ -101,11 +101,9 @@
 estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
                                 truncation = trunc_opts(
-                                  dist_spec(
-                                    mean = 0,
-                                    mean_sd = 1,
-                                    sd = 0,
-                                    sd_sd = 1,
+                                  LogNormal(
+                                    meanlog = Normal(0, 1),
+                                    sdlog = Normal(1, 1),
                                     max = 10
                                   )
                                 ),
@@ -118,7 +116,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   if (!is.null(model)) {
     lifecycle::deprecate_stop(
-      "2.0.0",
+      "1.5.0",
       "estimate_truncation(model)",
       "estimate_truncation(stan)"
     )
@@ -180,9 +178,16 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     construct_trunc <- TRUE
   }
   if (construct_trunc) {
-    truncation <- dist_spec(
-      mean = 0, mean_sd = 1, sd = 0, sd_sd = 1, distribution = trunc_dist,
-      max = trunc_max
+    params_mean <- c(0, 1)
+    params_sd <- c(1, 1)
+    parameters <- lapply(seq_along(params_mean), function(id) {
+      Normal(params_mean, params_sd)
+    })
+    names(parameters) <- natural_params(trunc_dist)
+    parameters$max <- trunc_max
+    truncation <- new_dist_spec(
+      params = parameters,
+      distribution = trunc_dist
     )
   }
 
@@ -214,18 +219,12 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     weight = ifelse(weigh_delay_priors, data$t, 1)
   ))
 
-  ## convert to integer
-  data$trunc_dist <-
-    which(eval(formals()[["trunc_dist"]]) == trunc_dist) - 1
-
   # initial conditions
   init_fn <- function() {
-    data <- list(
-      delay_mean = array(rnorm(1, 0, 1)),
-      delay_sd = array(abs(rnorm(1, 0, 1))) + 1,
+    data <- c(create_delay_inits(data), list(
       phi = abs(rnorm(1, 0, 1)),
       sigma = abs(rnorm(1, 0, 1))
-    )
+    ))
     return(data)
   }
 
@@ -237,16 +236,15 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   out <- list()
   # Summarise fit truncation distribution for downstream usage
-  delay_mean <- extract_stan_param(fit, params = "delay_mean")
-  delay_sd <- extract_stan_param(fit, params = "delay_sd")
-  out$dist <- dist_spec(
-    mean = round(delay_mean$mean, 3),
-    mean_sd = round(delay_mean$sd, 3),
-    sd = round(delay_sd$mean, 3),
-    sd_sd = round(delay_sd$sd, 3),
-    max = truncation$max
-  )
-  out$dist$dist <- truncation$dist
+  delay_params <- extract_stan_param(fit, params = "delay_params")
+  params_mean <- round(delay_params$mean, 3)
+  params_sd <- round(delay_params$sd, 3)
+  parameters <- purrr::map(seq_along(params_mean), function(id) {
+    Normal(params_mean[id], params_sd[id])
+  })
+  names(parameters) <- natural_params(truncation[[1]]$distribution)
+  out$dist <- truncation
+  out$dist[[1]]$parameters <- parameters
 
   # summarise reconstructed observations
   recon_obs <- extract_stan_param(fit, "recon_obs",

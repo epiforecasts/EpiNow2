@@ -4,7 +4,7 @@ skip_on_os("windows")
 # test primary reports and observations
 reports <- rep(10, 20)
 obs <- rep(4, 20)
-delay_rev_pmf <- reverse_mf(discretised_pmf(log(3), 0.1, 5, 0))
+delay_rev_pmf <- reverse_mf(discretised_pmf(c(log(3), 0.1), 5, 0))
 scaled <- reports * 0.1
 convolved <- rep(1e-5, 20) + convolve_to_report(scaled, delay_rev_pmf, 0)
 

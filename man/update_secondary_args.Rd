@@ -13,9 +13,9 @@ update_secondary_args(data, priors, verbose = TRUE)
 rather than the defaults supplied from other arguments. This is typically
 useful if wanting to inform a estimate from the posterior of another model
 fit. Priors that are currently use to update the defaults are the scaling
-fraction ("frac_obs"), the mean delay ("delay_mean"), and standard deviation
-of the delay ("delay_sd"). The \verb{<data.frame>} should have the following
-variables: \code{variable}, \code{mean}, and \code{sd}.}
+fraction ("frac_obs"), and delay parameters ("delay_params"). The
+\verb{<data.frame>} should have the following variables: \code{variable}, \code{mean}, and
+\code{sd}.}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress
 messages be returned.}
@@ -26,9 +26,9 @@ A list as produced by \code{create_stan_data()}.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This functions allows the user to more easily specify data driven or model
-based priors for \code{\link[=estimate_secondary]{estimate_secondary()}} from example from previous model fits
-using a \verb{<data.frame>} to overwrite other default settings. Note that default
-settings are still required.
+based priors for \code{\link[=estimate_secondary]{estimate_secondary()}} from example from previous model
+fits using a \verb{<data.frame>} to overwrite other default settings. Note that
+default settings are still required.
 }
 \examples{
 priors <- data.frame(variable = "frac_obs", mean = 3, sd = 1)
