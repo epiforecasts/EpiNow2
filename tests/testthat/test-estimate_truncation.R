@@ -49,7 +49,7 @@ test_that("estimate_truncation works with filter_leading_zeros set", {
                              filter_leading_zeros = TRUE
   )
   expect_named(out, c("dist", "obs", "last_obs", "cmf", "data", "fit"))
-  expect_s3_class(est$dist, "dist_spec")
+  expect_s3_class(out$dist, "dist_spec")
 })
 
 test_that("estimate_truncation works with zero_threshold set", {
@@ -64,7 +64,7 @@ test_that("estimate_truncation works with zero_threshold set", {
                              zero_threshold = 1
   )
   expect_named(out, c("dist", "obs", "last_obs", "cmf", "data", "fit"))
-  expect_s3_class(est$dist, "dist_spec")
+  expect_s3_class(out$dist, "dist_spec")
 })
 
 test_that("deprecated arguments are recognised", {
