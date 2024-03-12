@@ -195,7 +195,7 @@ model {
 generated quantities {
   array[ot_h] int imputed_reports;
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
-  array[ot_h - 1] real r;
+  vector[ot_h - 1] r;
   real gt_mean;
   real gt_var;
   vector[return_likelihood ? ot : 0] log_lik;
