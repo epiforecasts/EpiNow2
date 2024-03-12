@@ -58,7 +58,7 @@ check_reports_valid <- function(reports, model) {
 #'
 #' @description
 #' `check_stan_delay()` checks that the supplied data is a `<dist_spec>`,
-#' that it is lognormal or gamma, and that it has a finite maximum.
+#' that it is a supported distribution, and that is has a finite maximum.
 #'
 #' @param dist A `dist_spec` object.`
 #' @importFrom checkmate assert_class

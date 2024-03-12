@@ -17,7 +17,7 @@ This interface could be of potential use to other packages (e.g. `epinowcast`, `
 
 ## Proposed interface
 
-We are an proposing an dinterface similar to what is used in `{rstanarm}` and `{distributions3}`, where probability distributions are called according to their capitalised names. This avoids masking `base::gamma()` (although we still mask `stats::Gamma`). There is potential for integration especially with `{distributionS3}`. Parameters are nested according to the same syntax.
+We are an proposing an interface similar to what is used in `{rstanarm}` and `{distributions3}`, where probability distributions are called according to their capitalised names. This avoids masking `base::gamma()` (although we still mask `stats::Gamma`). There is potential for integration especially with `{distributionS3}`. Parameters are nested according to the same syntax.
 
 Examples:
 ```{r}
