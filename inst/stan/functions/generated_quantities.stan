@@ -33,7 +33,7 @@ array[] real R_to_growth(vector R, real gt_mean, real gt_var) {
   int t = num_elements(R);
   array[t] real r;
   if (gt_var > 0) {
-    real k = gt_var / pow(gt_mean, 2);
+    real k = gt_var * inv_square(gt_mean);
     for (s in 1:t) {
       r[s] = (pow(R[s], k) - 1) / (k * gt_mean);
     }

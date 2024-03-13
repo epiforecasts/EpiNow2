@@ -4,15 +4,17 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(dist = dist_spec(), ..., fixed = FALSE)
+delay_opts(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001)
 }
 \arguments{
-\item{dist}{A delay distribution or series of delay distributions generated
-using \code{\link[=dist_spec]{dist_spec()}}. Default is an empty call to \code{\link[=dist_spec]{dist_spec()}}, i.e. no delay}
+\item{dist}{A delay distribution or series of delay distributions. Default is
+a fixed distribution with all mass at 0, i.e. no delay.}
 
 \item{...}{deprecated; use \code{dist} instead}
 
 \item{fixed}{deprecated; use \code{dist} instead}
+
+\item{tolerance}{Numeric; the desired tolerance level.}
 }
 \value{
 A \verb{<delay_opts>} object summarising the input delay distributions.
@@ -27,11 +29,11 @@ functions.
 delay_opts()
 
 # A single delay that has uncertainty
-delay <- dist_spec(mean = 1, mean_sd = 0.2, sd = 0.5, sd_sd = 0.1, max = 14)
+delay <- LogNormal(mean = Normal(1, 0.2), sd = Normal(0.5, 0.1), max = 14)
 delay_opts(delay)
 
 # A single delay without uncertainty
-delay <- dist_spec(mean = 1, sd = 0.5, max = 14)
+delay <- LogNormal(meanlog = 1, sdlog = 0.5, max = 14)
 delay_opts(delay)
 
 # Multiple delays (in this case twice the same)

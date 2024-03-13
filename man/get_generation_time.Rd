@@ -24,7 +24,7 @@ A list defining a distribution
 
 Extracts a literature distribution from \code{generation_times}.
 This function has been deprecated. Please specify a distribution
-using \code{\link[=dist_spec]{dist_spec()}} instead.
+using functions such as \code{\link[=Gamma]{Gamma()}} or \code{\link[=LogNormal]{LogNormal()}} instead.
 }
 \seealso{
 \code{\link[=dist_spec]{dist_spec()}}

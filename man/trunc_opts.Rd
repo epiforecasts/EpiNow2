@@ -4,12 +4,14 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(dist = dist_spec())
+trunc_opts(dist = Fixed(0), tolerance = 0.001)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions reflecting
 the truncation generated using \code{\link[=dist_spec]{dist_spec()}} or \code{\link[=estimate_truncation]{estimate_truncation()}}.
-Default is an empty call to \code{\link[=dist_spec]{dist_spec()}}, i.e. no truncation}
+Default is fixed distribution with maximum 0, i.e. no truncation}
+
+\item{tolerance}{Numeric; the desired tolerance level.}
 }
 \value{
 A \verb{<trunc_opts>} object summarising the input truncation
@@ -26,7 +28,7 @@ estimate these distributions.
 trunc_opts()
 
 # truncation dist
-trunc_opts(dist = dist_spec(mean = 3, sd = 2, max = 10))
+trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
 }
 \seealso{
 \code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}

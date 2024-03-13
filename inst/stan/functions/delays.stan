@@ -21,7 +21,7 @@ vector get_delay_rev_pmf(
   int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id,
   array[] int delay_types_groups, array[] int delay_max,
   vector delay_np_pmf, array[] int delay_np_pmf_groups,
-  array[] real delay_mean, array[] real delay_sigma, array[] int delay_dist,
+  vector delay_params, array[] int delay_params_groups, array[] int delay_dist,
   int left_truncate, int reverse_pmf, int cumulative
 ) {
   // loop over delays
@@ -30,10 +30,11 @@ vector get_delay_rev_pmf(
   int new_len;
   for (i in delay_types_groups[delay_id]:(delay_types_groups[delay_id + 1] - 1)) {
     if (delay_types_p[i]) { // parametric
+      int start = delay_params_groups[delay_types_id[i]];
+      int end = delay_params_groups[delay_types_id[i] + 1] - 1;
       vector[delay_max[delay_types_id[i]] + 1] new_variable_pmf =
         discretised_pmf(
-          delay_mean[delay_types_id[i]],
-          delay_sigma[delay_types_id[i]],
+          delay_params[start:end],
           delay_max[delay_types_id[i]] + 1,
           delay_dist[delay_types_id[i]]
       );
@@ -75,30 +76,41 @@ vector get_delay_rev_pmf(
 }
 
 
-void delays_lp(array[] real delay_mean, array[] real delay_mean_mean, array[] real delay_mean_sd,
-               array[] real delay_sd, array[] real delay_sd_mean, array[] real delay_sd_sd,
+void delays_lp(vector delay_params,
+               vector delay_params_mean, vector delay_params_sd,
+               array[] int delay_params_groups,
                array[] int delay_dist, array[] int weight) {
-    int mean_delays = num_elements(delay_mean);
-    int sd_delays = num_elements(delay_sd);
-    if (mean_delays) {
-      for (s in 1:mean_delays) {
-        if (delay_mean_sd[s] > 0) {
-          // uncertain mean
-          target += normal_lpdf(delay_mean[s] | delay_mean_mean[s], delay_mean_sd[s]) * weight[s];
-          // if a distribution with postive support only truncate the prior
-          if (delay_dist[s]) {
-            target += -normal_lccdf(0 | delay_mean_mean[s], delay_mean_sd[s]) * weight[s];
-          }
+  int n_delays = num_elements(delay_params_groups) - 1;
+  if (n_delays == 0) {
+    return;
+  }
+  for (d in 1:n_delays) {
+    int start = delay_params_groups[d];
+    int end = delay_params_groups[d + 1] - 1;
+    for (s in start:end) {
+      if (delay_params_sd[s] > 0) {
+        // uncertain mean
+        target += normal_lpdf(
+          delay_params[s] | delay_params_mean[s], delay_params_sd[s]
+        ) * weight[d];
+        // if a distribution with postive support only truncate the prior
+        if (delay_dist[d] == 1) {
+          target += -normal_lccdf(
+            0 | delay_params_mean[s], delay_params_sd[s]
+          ) * weight[d];
         }
       }
     }
-    if (sd_delays) {
-      for (s in 1:sd_delays) {
-        if (delay_sd_sd[s] > 0) {
-          // uncertain sd
-          target += normal_lpdf(delay_sd[s] | delay_sd_mean[s], delay_sd_sd[s]) * weight[s];
-          target += -normal_lccdf(0 | delay_sd_mean[s], delay_sd_sd[s]) * weight[s];
-        }
-     }
   }
+}
+
+vector normal_lb_rng(vector mu, vector sigma, vector lb) {
+  int len = num_elements(mu);
+  vector[len] ret;
+  for (i in 1:len) {
+    real p = normal_cdf(lb[i] | mu[i], sigma[i]);  // cdf for bounds
+    real u = uniform_rng(p, 1);
+    ret[i] = (sigma[i] * inv_Phi(u)) + mu[i];  // inverse cdf for value
+  }
+  return ret;
 }

@@ -9,7 +9,8 @@
 * `simulate_infections` has been renamed to `forecast_infections` in line with `simulate_secondary` and `forecast_secondary`. The terminology is: a forecast is done from a fit to existing data, a simulation from first principles. By @sbfnk in #544 and reviewed by @seabbs.
 * A new `simulate_infections` function has been added that can be used to simulate from the model from given initial conditions and parameters. By @sbfnk in #557 and reviewed by @jamesmbaazam.
 * The function `init_cumulative_fit()` has been deprecated. By @jamesmbaazam in #541 and reviewed by @sbfnk.
-* The functions `sample_approx_dist()`, `report_cases()`, and `adjust_infection_reports()` have been deprecated as the functionality they provide can now be achieved with `simulate_secondary()`. See <PR> by @jamesmbaazam and reviewed by <REVIEWER>.
+* The interface to generating delay distributions has been completely overhauled. Instead of calling `dist_spec()` users now specify distributions using functions that represent the available distributions, i.e. `LogNormal()`, `Gamma()` and `Fixed()`. Uncertainty is specified using calls of the same nature, to `Normal()`. More information on the underlying design can be found in `inst/dev/design_dist.md` By @sbfnk in #504 and reviewed by @seabbs.
+* The functions `sample_approx_dist()`, `report_cases()`, and `adjust_infection_reports()` have been deprecated as the functionality they provide can now be achieved with `simulate_secondary()`. See #597 by @jamesmbaazam and reviewed by @sbfnk.
 
 ## Documentation
 
@@ -18,6 +19,7 @@
 * The contribution guide has been improved to include more detail on ways to contribute new features/enhancements, report bugs, and improve or suggest vignettes. By @jamesmbaazam in #464 and reviewed by @seabbs.
 * Updated the code in `inst/CITATION` and added a GitHub Actions workflow to auto-generate `citation.cff` so that the two citation files are always in sync with `DESCRIPTION`. By @jamesmbazam in #467, with contributions from @Bisaloo, and reviewed by @seabbs and @sbfnk.
 * Updated the documentation of the `reported_cases` argument in `estimate_infections()` and `confirm` column in the `obs` argument of `estimate_truncation()` to allow `numeric` types, not just `integer`. See #594, by @jamesmbaazam, and reviewed by @sbfnk.
+* Removed the reporting templates that were previously provided. See #604 by @jamesmbaazam, and reviewed by @sbfnk.
 
 ## Package
 

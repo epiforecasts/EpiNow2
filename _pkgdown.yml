@@ -122,6 +122,10 @@ reference:
   - title: Define, Fit and Parameterise Distributions
     desc: Functions to define, fit and parameterise distributions
     contents:
+      - Distributions
+      - apply_tolerance
+      - collapse
+      - discretise
       - contains("dist")
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases

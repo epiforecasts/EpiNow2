@@ -136,9 +136,10 @@
 estimate_secondary <- function(reports,
                                secondary = secondary_opts(),
                                delays = delay_opts(
-                                 dist_spec(
-                                   mean = 2.5, mean_sd = 0.5,
-                                   sd = 0.47, sd_sd = 0.25, max = 30
+                                 LogNormal(
+                                   meanlog = Normal(2.5, 0.5),
+                                   sdlog = Normal(0.47, 0.25),
+                                   max = 30
                                  )
                                ),
                                truncation = trunc_opts(),
@@ -238,19 +239,19 @@ estimate_secondary <- function(reports,
 #'
 #' @description `r lifecycle::badge("stable")`
 #' This functions allows the user to more easily specify data driven or model
-#' based priors for [estimate_secondary()] from example from previous model fits
-#' using a `<data.frame>` to overwrite other default settings. Note that default
-#' settings are still required.
+#'   based priors for [estimate_secondary()] from example from previous model
+#'   fits using a `<data.frame>` to overwrite other default settings. Note that
+#'   default settings are still required.
 #'
 #' @param data A list of data and arguments as returned by `create_stan_data()`.
 #'
 #' @param priors A `<data.frame>` of named priors to be used in model fitting
-#' rather than the defaults supplied from other arguments. This is typically
-#' useful if wanting to inform a estimate from the posterior of another model
-#' fit. Priors that are currently use to update the defaults are the scaling
-#' fraction ("frac_obs"), the mean delay ("delay_mean"), and standard deviation
-#' of the delay ("delay_sd"). The `<data.frame>` should have the following
-#' variables: `variable`, `mean`, and `sd`.
+#'   rather than the defaults supplied from other arguments. This is typically
+#'   useful if wanting to inform a estimate from the posterior of another model
+#'   fit. Priors that are currently use to update the defaults are the scaling
+#'   fraction ("frac_obs"), and delay parameters ("delay_params"). The
+#'   `<data.frame>` should have the following variables: `variable`, `mean`, and
+#'   `sd`.
 #'
 #' @return A list as produced by `create_stan_data()`.
 #' @export
@@ -275,18 +276,15 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       data$obs_scale_sd <- as.array(signif(scale$sd, 3))
     }
     # replace delay parameters if present
-    delay_mean <- priors[grepl("delay_mean", variable, fixed = TRUE)]
-    delay_sd <- priors[grepl("delay_sd", variable, fixed = TRUE)]
-    if (nrow(delay_mean) > 0) {
-      if (is.null(data$delay_mean_mean)) {
+    delay_params <- priors[grepl("delay_params", variable, fixed = TRUE)]
+    if (nrow(delay_params) > 0) {
+      if (is.null(data$delay_params_mean)) {
         warning(
           "Cannot replace delay distribution parameters as no default has been set" # nolint
         )
       }
-      data$delay_mean_mean <- as.array(signif(delay_mean$mean, 3))
-      data$delay_mean_sd <- as.array(signif(delay_mean$sd, 3))
-      data$delay_sd_mean <- as.array(signif(delay_sd$mean, 3))
-      data$delay_sd_sd <- as.array(signif(delay_sd$sd, 3))
+      data$delay_params_mean <- as.array(signif(delay_params$mean, 3))
+      data$delay_params_sd <- as.array(signif(delay_params$sd, 3))
     }
     phi <- priors[grepl("rep_phi", variable, fixed = TRUE)]
     if (nrow(phi) > 0) {
@@ -622,7 +620,7 @@ forecast_secondary <- function(estimate,
 
   # allocate empty parameters
   data <- allocate_empty(
-    data, c("frac_obs", "delay_mean", "delay_sd", "rep_phi"),
+    data, c("frac_obs", "delay_param", "rep_phi"),
     n = data$n
   )
   data$all_dates <- as.integer(all_dates)

@@ -42,7 +42,7 @@ generated quantities {
     gt_rev_pmf = get_delay_rev_pmf(
       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_mean[i], delay_sd[i], delay_dist,
+      delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
       1, 1, 0
     );
 
@@ -55,7 +55,7 @@ generated quantities {
       vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(
         delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
         delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_mean[i], delay_sd[i], delay_dist,
+        delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
         0, 1, 0
       );
      // convolve from latent infections to mean of observations
@@ -79,7 +79,7 @@ generated quantities {
       vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(
         trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
         delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_mean[i], delay_sd[i], delay_dist,
+        delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
         0, 1, 1
       );
       reports[i] = to_row_vector(truncate(

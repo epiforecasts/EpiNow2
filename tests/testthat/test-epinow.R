@@ -1,9 +1,9 @@
 skip_on_cran()
 
 # set example reporting delay
-reporting_delay <- dist_spec(
-  mean = convert_to_logmean(2, 1), mean_sd = 0.1,
-  sd = convert_to_logsd(2, 1), sd_sd = 0.1,
+reporting_delay <- LogNormal(
+  meanlog = Normal(0.6, 0.06),
+  sdlog = Normal(0.5, 0.1),
   max = 10
 )
 
@@ -20,7 +20,7 @@ test_that("epinow produces expected output when run with default settings", {
   out <- suppressWarnings(epinow(
     reported_cases = reported_cases,
     generation_time = generation_time_opts(example_generation_time),
-    delays = delay_opts(example_incubation_period + reporting_delay),
+    delays = delay_opts(c(example_incubation_period, reporting_delay)),
     stan = stan_opts(
       samples = 25, warmup = 25,
       cores = 1, chains = 2,

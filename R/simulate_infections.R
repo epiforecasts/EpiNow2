@@ -11,7 +11,7 @@
 #' A previous function called [simulate_infections()] that simulates from a
 #' given model fit has been renamed [forecast_infections()]. Using
 #' [simulate_infections()] with existing estimates is now deprecated. This
-#' option will be removed in version 2.1.0.
+#' option will be removed in version 2.0.0.
 #' @param R a data frame of reproduction numbers (column `R`) by date (column
 #'   `date`). Column `R` must be numeric and `date` must be in date format. If
 #'   not all days between the first and last day in the `date` are present,
@@ -66,8 +66,8 @@ simulate_infections <- function(estimates, R, initial_infections,
       "simulate_infections(estimates)",
       "forecast_infections()",
       details = paste0(
-        "This `estimates` option will be removed from [simulate_infections()] ",
-        "in version 2.1.0."
+        "The `estimates` option will be removed from [simulate_infections()] ",
+        "in version 2.0.0."
       )
     )
     return(forecast_infections(estimates = estimates, ...))
@@ -118,22 +118,17 @@ simulate_infections <- function(estimates, R, initial_infections,
     trunc = truncation
   ))
 
-  if ((length(data$delay_mean_sd) > 0 && any(data$delay_mean_sd > 0)) ||
-      (length(data$delay_sd_sd) > 0 && any(data$delay_sd_sd > 0))) {
+  if (length(data$delay_params_sd) > 0 && any(data$delay_params_sd > 0)) {
     stop(
       "Cannot simulate from uncertain parameters. Use the [fix_dist()] ",
       "function to set the parameters of uncertain distributions either the ",
       "mean or a randomly sampled value"
     )
   }
-  data$delay_mean <- array(
-    data$delay_mean_mean, dim = c(1, length(data$delay_mean_mean))
+  data$delay_params <- array(
+    data$delay_params_mean, dim = c(1, length(data$delay_params_mean))
   )
-  data$delay_sd <- array(
-    data$delay_sd_mean, dim = c(1, length(data$delay_sd_mean))
-  )
-  data$delay_mean_sd <- NULL
-  data$delay_sd_sd <- NULL
+  data$delay_params_sd <- NULL
 
   data <- c(data, create_obs_model(
     obs, dates = R$date
@@ -417,7 +412,7 @@ forecast_infections <- function(estimates,
 
     ## allocate empty parameters
     data <- allocate_empty(
-      data, c("frac_obs", "delay_mean", "delay_sd", "rep_phi"),
+      data, c("frac_obs", "delay_params", "rep_phi"),
       n = data$n
     )
 
