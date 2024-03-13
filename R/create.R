@@ -128,18 +128,18 @@ create_shifted_cases <- function(reported_cases, shift,
     confirm := runner::mean_run(
       confirm, k = smoothing_window, lag = -floor(smoothing_window / 2)
     )
-  ][
-    ,
-    confirm := data.table::fifelse(confirm == 0, 1, confirm) # nolint
   ]
 
   ## Forecast trend on reported cases using the last week of data
-  final_week <- data.table::data.table(
-  confirm = shifted_reported_cases[1:(.N - horizon - shift)][
-      max(1, .N - 6):.N]$confirm)[,
+  final_period <- data.table::data.table(
+    confirm =
+      shifted_reported_cases[!is.na(confirm)][
+        max(1, .N - smoothing_window):.N
+      ]$confirm
+  )[,
     t := seq_len(.N)
   ]
-  lm_model <- stats::lm(log(confirm) ~ t, data = final_week)
+  lm_model <- stats::lm(log(confirm + 1) ~ t, data = final_period)
   ## Estimate unreported future infections using a log linear model
   shifted_reported_cases <- shifted_reported_cases[
     ,
@@ -151,7 +151,7 @@ create_shifted_cases <- function(reported_cases, shift,
     ,
     confirm := data.table::fifelse(
       t >= 7,
-      exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t),
+      exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t) - 1,
       confirm
     )
   ][, t := NULL]
