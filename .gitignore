@@ -45,3 +45,7 @@ man/figures/*.png
 inst/stan/*
 !inst/stan/*/
 !inst/stan/*.stan
+
+# benchmarking
+inst/stan_main
+inst/dev/benchmark-results.md
