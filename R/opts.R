@@ -894,11 +894,22 @@ stan_opts <- function(object = NULL,
     )
   }
   opts <- list()
-  if (!is.null(object) && !missing(backend)) {
-    warning(
-      "`backend` option will be ignored as a stan model object has been passed."
-    )
+  if (!is.null(object)) {
+    if (!missing(backend)) {
+      warning(
+        "`backend` option will be ignored as a stan model object has been ",
+        "passed."
+      )
+    }
+    if (inherits(object, "stanmodel")) {
+      backend <- "rstan"
+    } else if (inherits(object, "CmdStanModel")) {
+      backend <- "cmdstanr"
+    } else {
+      stop("`object` must be a stan model object")
+    }
   } else {
+    backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
     opts <- c(opts, list(backend = backend))
   }
   opts <- c(opts, list(
