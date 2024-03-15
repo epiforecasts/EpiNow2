@@ -125,14 +125,14 @@ the package.
 
 <details> <summary> End-to-end workflows </summary>
 
-The [workflow vignette](articles/estimate_infections_workflow.html) provides guidance on the end-to-end process of estimating reproduction numbers and performing short-term forecasts for a disease spreading in a given setting.
+The [workflow vignette](./articles/estimate_infections_workflow.html) provides guidance on the end-to-end process of estimating reproduction numbers and performing short-term forecasts for a disease spreading in a given setting.
 
 </details>
 
 <details> <summary> Model definitions </summary>
 
 On the website, we provide the mathematical definition of each model.
-For example, the model definition vignette for `estimate_infections()` can be found [here](articles/estimate_infections.html).
+For example, the model definition vignette for `estimate_infections()` can be found [here](./articles/estimate_infections.html).
 
 </details>
 
