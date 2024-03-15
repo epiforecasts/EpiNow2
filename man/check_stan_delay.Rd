@@ -14,6 +14,6 @@ Called for its side effects.
 }
 \description{
 \code{check_stan_delay()} checks that the supplied data is a \verb{<dist_spec>},
-that it is lognormal or gamma, and that it has a finite maximum.
+that it is a supported distribution, and that is has a finite maximum.
 }
 \keyword{internal}
