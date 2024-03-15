@@ -70,7 +70,7 @@ report_cases <- function(case_estimates,
     with = "simulate_secondary()",
     details = c(
       "See equivalent examples using `simulate_secondary()`",
-      "in ?adjust_infection_to_report.",
+      "in ?report_cases.",
       "This function will be removed completely in version 2.0.0."
     )
   )
