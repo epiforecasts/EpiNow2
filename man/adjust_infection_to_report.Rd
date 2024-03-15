@@ -48,55 +48,40 @@ onset.
 }
 \examples{
 \donttest{
-# define example cases
-cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
+# This function is deprecated and its functionality can now be accessed
+# from [simulate_secondary()].
+# Here are some examples of how to use [simulate_secondary()] to replace
+# adjust_infection_to_report().
 
-# define a single report delay distribution
+# Old (using adjust_infection_to_report()):
+# Define example case data
+cases <- data.table::copy(example_confirmed)
+cases <- cases[, cases := as.integer(confirm)]
+# Define a simple reporting delay distribution
 delay_def <- lognorm_dist_def(
-  mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
-  max_value = 30, samples = 1, to_log = TRUE
+ mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
+ max_value = 30, samples = 1, to_log = TRUE
 )
-
-# define a single incubation period
-incubation_def <- lognorm_dist_def(
-  mean = incubation_periods[1, ]$mean,
-  mean_sd = incubation_periods[1, ]$mean_sd,
-  sd = incubation_periods[1, ]$sd,
-  sd_sd = incubation_periods[1, ]$sd_sd,
-  max_value = 30, samples = 1
-)
-
-# simple mapping
 report <- adjust_infection_to_report(
- cases, delay_defs = list(incubation_def, delay_def)
+ cases,
+ delay_defs = list(delay_def),
+ reporting_model = function(n) rpois(length(n), n)
 )
 print(report)
 
-# mapping with a weekly reporting effect
-report_weekly <- adjust_infection_to_report(
-  cases,
-  delay_defs = list(incubation_def, delay_def),
-  reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95)
+# New (using simulate_secondary()):
+cases <- data.table::copy(example_confirmed)
+cases <- cases[, primary := as.integer(confirm)]
+uncertain_delay <- LogNormal(
+ mean = Normal(5, 1), sd = Normal(3, 1),
+ max = 30
 )
-print(report_weekly)
-
-# map using a deterministic median shift for both delays
-report_median <- adjust_infection_to_report(cases,
-  delay_defs = list(incubation_def, delay_def),
-  type = "median"
+delay <- fix_dist(uncertain_delay, strategy = "sample")
+report <- simulate_secondary(
+ cases,
+ delays = delay_opts(delay),
+ obs = obs_opts(family = "poisson")
 )
-print(report_median)
-
-# map with a weekly reporting effect and stochastic reporting model
-report_stochastic <- adjust_infection_to_report(
-  cases,
-  delay_defs = list(incubation_def, delay_def),
-  reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
-  reporting_model = function(n) {
-    out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))
-    out <- ifelse(is.na(out), 0, out)
-  }
-)
-print(report_stochastic)
+print(report)
 }
 }
