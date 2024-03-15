@@ -106,7 +106,7 @@ Windows users will need a working installation of Rtools in order to build the p
 
 <details> <summary> Getting Started </summary>
 
-The [Getting Started vignette](EpiNow2.html)
+The [Getting Started vignette](./articles/EpiNow2.html)
 is your quickest entry point to the package. It provides a quick run through of
 the two main functions in the package and how to set up them up. It also
 discusses how to summarise and visualise the results after running the models.
