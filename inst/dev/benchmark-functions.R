@@ -19,11 +19,14 @@ create_profiles <- function(dir = file.path("inst", "stan"),
       delays = delay_opts(delays),
       rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
       stan = stan_opts(
-        samples = 1000, chains = 1, object = compiled_model
+        samples = 1000, chains = 2, object = compiled_model,
+        cores = 2
       ),
       verbose = FALSE
     )
-    return(as.data.table(fit$fit$profiles()))
+    df <- as.data.table(rbindlist(fit$fit$profiles(), idcol = "chain"))
+
+    return(df)
   }))
   return(data.table::rbindlist(profiles, idcol = "iter"))
 }
@@ -46,6 +49,5 @@ bootci <- function(x, n_boot = NULL) {
     lower = quantile(means, 0.05),
     higher = quantile(means, 0.95)
   )
-  dt <- dt[, lapply(.SD, signif, 2)]
   return(list(dt))
 }
