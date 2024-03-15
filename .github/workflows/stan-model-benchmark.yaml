@@ -43,7 +43,7 @@ jobs:
         run: |
           mv inst/stan inst/stan_branch
           git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin main
-          git checkout main inst/stan
+          git checkout origin/main inst/stan
           mv inst/stan inst/stan_main
           mv inst/stan_branch inst/stan
 
