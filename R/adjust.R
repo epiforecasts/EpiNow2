@@ -84,9 +84,14 @@ adjust_infection_to_report <- function(infections, delay_defs,
                                        type = "sample",
                                        truncate_future = TRUE) {
   deprecate_warn(
-    "1.5.0",
-    "adjust_infection_to_report()",
-    details = "The function will be removed completely in version 2.0.0."
+    when = "1.5.0",
+    what = "adjust_infection_to_report()",
+    with = "simulate_secondary()",
+    details = c(
+      "See equivalent examples using `simulate_secondary()`",
+      "in ?adjust_infection_to_report.",
+      "This function will be removed completely in version 2.0.0."
+    )
   )
   # Reset DT Defaults on Exit
   set_dt_single_thread()

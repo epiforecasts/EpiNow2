@@ -53,9 +53,14 @@ report_cases <- function(case_estimates,
                          reporting_effect,
                          CrIs = c(0.2, 0.5, 0.9)) {
   deprecate_warn(
-    "1.5.0",
-    "report_cases()",
-    details = "The function will be removed completely in version 2.0.0."
+    when = "1.5.0",
+    what = "report_cases()",
+    with = "simulate_secondary()",
+    details = c(
+      "See equivalent examples using `simulate_secondary()`",
+      "in ?adjust_infection_to_report.",
+      "This function will be removed completely in version 2.0.0."
+    )
   )
   samples <- length(unique(case_estimates$sample))
 
