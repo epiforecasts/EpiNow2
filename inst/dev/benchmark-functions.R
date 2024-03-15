@@ -11,7 +11,7 @@
 create_profiles <- function(dir = file.path("inst", "stan"),
                             seeds = sample(.Machine$integer.max, 1)) {
   compiled_model <- EpiNow2:::package_model(dir = dir)
-  profiles <- purrr::map(seeds, \(x) {
+  profiles <- suppressMessages(purrr::map(seeds, \(x) {
     set.seed(x)
     fit <- estimate_infections(
       reported_cases = reported_cases,
@@ -24,7 +24,7 @@ create_profiles <- function(dir = file.path("inst", "stan"),
       verbose = FALSE
     )
     return(as.data.table(fit$fit$profiles()))
-  })
+  }))
   return(data.table::rbindlist(profiles, idcol = "iter"))
 }
 ##' Calculate bootstrap mean and credible intervals
