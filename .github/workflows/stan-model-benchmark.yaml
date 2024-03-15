@@ -4,6 +4,8 @@ on:
     branches: main
     paths:
       - inst/stan/**
+      - .github/workflows/stan-model-benchmark.yaml
+      - inst/dev/benchmark*.R
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}
