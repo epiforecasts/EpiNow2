@@ -832,10 +832,13 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Rt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_types] int delay_type_max = get_delay_type_max(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_types, delay_types_p, delay_types_id,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_types_groups, delay_max, delay_np_pmf_groups</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_types] int delay_type_max;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profile("assign max") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_type_max = get_delay_type_max(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf_groups</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> parameters{</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // gaussian process</span>
@@ -862,92 +865,128 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] obs_reports;                                   // observed estimated reported cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r * (delay_type_max[gt_id] + 1)] gt_rev_pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // GP in noise - spectral densities</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (!fixed) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profile("update gp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!fixed) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Estimate latent infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_rev_pmf = get_delay_rev_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1, 1, 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     R = update_Rt(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     infections = generate_infections(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       future_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("gt") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         1, 1, 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("R") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       R = update_Rt(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("infections") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       infections = generate_infections(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         future_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // via deconvolution</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     infections = deconvolve_infections(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       shifted_cases, noise, fixed, backcalc_prior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("infections") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       infections = deconvolve_infections(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         shifted_cases, noise, fixed, backcalc_prior</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // convolve from latent infections to mean of observations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (delay_id) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[delay_id] + 1] delay_rev_pmf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("delays") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0, 1, 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("reports") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reports = infections[(seeding_time + 1):t];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // weekly reporting effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (week_effect &gt; 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("day of the week") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // scaling of reported cases by fraction observed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  if (obs_scale) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    reports = scale_obs(reports, obs_scale_sd &gt; 0 ? frac_obs[1] : obs_scale_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  // truncate near time cases to observed reports</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  if (trunc_id) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    obs_reports = reports[1:ot];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (obs_scale) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("scale") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       reports = scale_obs(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         reports, obs_scale_sd &gt; 0 ? frac_obs[1] : obs_scale_mean</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // truncate near time cases to observed reports</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (trunc_id) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("truncation") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       trunc_rev_cmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0, 1, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("truncate") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = reports[1:ot];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> model {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // priors for noise GP</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (!fixed) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gaussian_process_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       rho[1], alpha[1], eta, ls_meanlog, ls_sdlog, ls_min, ls_max, alpha_sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("gp lp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gaussian_process_lp(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         rho[1], alpha[1], eta, ls_meanlog, ls_sdlog, ls_min, ls_max, alpha_sd</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // penalised priors for delay distributions</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   delays_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_params, delay_params_mean, delay_params_sd, delay_params_groups,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_dist, delay_weight</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profile("delays lp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delays_lp(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_params, delay_params_mean, delay_params_sd, delay_params_groups,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_dist, delay_weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // priors on Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     rt_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       seeding_time, r_logmean, r_logsd, prior_infections, prior_growth</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("rt lp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       rt_lp(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seeding_time, r_logmean, r_logsd, prior_infections, prior_growth</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // prior observation scaling</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (obs_scale_sd &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("scale lp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observed reports from mean of reports (update likelihood)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (likelihood) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     report_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, cases_time, obs_reports, rep_phi, phi_mean, phi_sd, model_type,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_weight, accumulate</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("report lp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       report_lp(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cases, cases_time, obs_reports, rep_phi, phi_mean, phi_sd, model_type,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         obs_weight, accumulate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> generated quantities {</span>
@@ -957,38 +996,40 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_var;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[return_likelihood ? ot : 0] log_lik;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r){</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // estimate growth from estimated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean = rev_pmf_mean(gt_rev_pmf, 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(R, gt_mean, gt_var);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // sample generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_params_mean, delay_params_sd, delay_params_lower</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ));</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[gt_id] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params_sample, delay_params_groups,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_dist, 1, 1, 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // calculate Rt using infections and generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gen_R = calculate_Rt(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       infections, seeding_time, sampled_gt_rev_pmf, rt_half_window</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // estimate growth from calculated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(gen_R, gt_mean, gt_var);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // simulate reported cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   imputed_reports = report_rng(reports, rep_phi, model_type);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // log likelihood of model</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (return_likelihood) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     log_lik = report_log_lik(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports[cases_time], rep_phi, model_type, obs_weight</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profile("generated quantities") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (estimate_r){</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       // estimate growth from estimated Rt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_mean = rev_pmf_mean(gt_rev_pmf, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       r = R_to_growth(R, gt_mean, gt_var);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       // sample generation time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_params_mean, delay_params_sd, delay_params_lower</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       ));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       vector[delay_type_max[gt_id] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_np_pmf_groups, delay_params_sample, delay_params_groups,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_dist, 1, 1, 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       // calculate Rt using infections and generation time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gen_R = calculate_Rt(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         infections, seeding_time, sampled_gt_rev_pmf, rt_half_window</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       // estimate growth from calculated Rt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       r = R_to_growth(gen_R, gt_mean, gt_var);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     // simulate reported cases</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     imputed_reports = report_rng(reports, rep_phi, model_type);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     // log likelihood of model</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (return_likelihood) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik = report_log_lik(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cases, obs_reports[cases_time], rep_phi, model_type, obs_weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> } </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -1722,10 +1763,13 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Rt</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_types] int delay_type_max = get_delay_type_max(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_types, delay_types_p, delay_types_id,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_types_groups, delay_max, delay_np_pmf_groups</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   array[delay_types] int delay_type_max;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profile("assign max") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_type_max = get_delay_type_max(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf_groups</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> parameters{</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // gaussian process</span>
@@ -1752,92 +1796,128 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] obs_reports;                                   // observed estimated reported cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r * (delay_type_max[gt_id] + 1)] gt_rev_pmf;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // GP in noise - spectral densities</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (!fixed) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profile("update gp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (!fixed) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // Estimate latent infections</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_rev_pmf = get_delay_rev_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1, 1, 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     R = update_Rt(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     infections = generate_infections(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       future_time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("gt") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         1, 1, 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("R") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       R = update_Rt(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("infections") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       infections = generate_infections(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         future_time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // via deconvolution</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     infections = deconvolve_infections(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       shifted_cases, noise, fixed, backcalc_prior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("infections") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       infections = deconvolve_infections(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         shifted_cases, noise, fixed, backcalc_prior</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // convolve from latent infections to mean of observations</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (delay_id) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[delay_id] + 1] delay_rev_pmf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("delays") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0, 1, 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("reports") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reports = infections[(seeding_time + 1):t];</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // weekly reporting effect</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (week_effect &gt; 1) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("day of the week") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       reports = day_of_week_effect(reports, day_of_week, day_of_week_simplex);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // scaling of reported cases by fraction observed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  if (obs_scale) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    reports = scale_obs(reports, obs_scale_sd &gt; 0 ? frac_obs[1] : obs_scale_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  // truncate near time cases to observed reports</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  if (trunc_id) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       0, 1, 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    obs_reports = reports[1:ot];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (obs_scale) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("scale") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       reports = scale_obs(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         reports, obs_scale_sd &gt; 0 ? frac_obs[1] : obs_scale_mean</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   // truncate near time cases to observed reports</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (trunc_id) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("truncation") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       trunc_rev_cmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         0, 1, 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("truncate") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_reports = reports[1:ot];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> model {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // priors for noise GP</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (!fixed) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gaussian_process_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       rho[1], alpha[1], eta, ls_meanlog, ls_sdlog, ls_min, ls_max, alpha_sd</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("gp lp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gaussian_process_lp(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         rho[1], alpha[1], eta, ls_meanlog, ls_sdlog, ls_min, ls_max, alpha_sd</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // penalised priors for delay distributions</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   delays_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_params, delay_params_mean, delay_params_sd, delay_params_groups,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     delay_dist, delay_weight</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profile("delays lp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     delays_lp(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_params, delay_params_mean, delay_params_sd, delay_params_groups,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_dist, delay_weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r) {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // priors on Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     rt_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       seeding_time, r_logmean, r_logsd, prior_infections, prior_growth</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("rt lp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       rt_lp(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         seeding_time, r_logmean, r_logsd, prior_infections, prior_growth</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // prior observation scaling</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (obs_scale_sd &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("scale lp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // observed reports from mean of reports (update likelihood)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   if (likelihood) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     report_lp(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, cases_time, obs_reports, rep_phi, phi_mean, phi_sd, model_type,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       obs_weight, accumulate</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     profile("report lp") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       report_lp(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cases, cases_time, obs_reports, rep_phi, phi_mean, phi_sd, model_type,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         obs_weight, accumulate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> generated quantities {</span>
@@ -1847,38 +1927,40 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_var;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[return_likelihood ? ot : 0] log_lik;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (estimate_r){</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // estimate growth from estimated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean = rev_pmf_mean(gt_rev_pmf, 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(R, gt_mean, gt_var);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // sample generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_params_mean, delay_params_sd, delay_params_lower</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     ));</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     vector[delay_type_max[gt_id] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_types_groups, delay_max, delay_np_pmf,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_np_pmf_groups, delay_params_sample, delay_params_groups,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       delay_dist, 1, 1, 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // calculate Rt using infections and generation time</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     gen_R = calculate_Rt(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       infections, seeding_time, sampled_gt_rev_pmf, rt_half_window</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // estimate growth from calculated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     r = R_to_growth(gen_R, gt_mean, gt_var);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // simulate reported cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   imputed_reports = report_rng(reports, rep_phi, model_type);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // log likelihood of model</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (return_likelihood) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     log_lik = report_log_lik(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       cases, obs_reports[cases_time], rep_phi, model_type, obs_weight</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profile("generated quantities") {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (estimate_r){</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       // estimate growth from estimated Rt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_mean = rev_pmf_mean(gt_rev_pmf, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       r = R_to_growth(R, gt_mean, gt_var);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       // sample generation time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_params_mean, delay_params_sd, delay_params_lower</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       ));</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       vector[delay_type_max[gt_id] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_types_groups, delay_max, delay_np_pmf,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_np_pmf_groups, delay_params_sample, delay_params_groups,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         delay_dist, 1, 1, 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       // calculate Rt using infections and generation time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gen_R = calculate_Rt(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         infections, seeding_time, sampled_gt_rev_pmf, rt_half_window</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       // estimate growth from calculated Rt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       r = R_to_growth(gen_R, gt_mean, gt_var);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     // simulate reported cases</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     imputed_reports = report_rng(reports, rep_phi, model_type);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     // log likelihood of model</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (return_likelihood) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       log_lik = report_log_lik(</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         cases, obs_reports[cases_time], rep_phi, model_type, obs_weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> } </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
