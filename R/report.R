@@ -45,7 +45,7 @@
 #'  type = "sample"
 #' )
 #' print(reported_cases$samples)
-#' 
+#'
 #' # New (using simulate_secondary()):
 #' cases <- example_confirmed[1:40]
 #' cases <- cases[, primary := as.integer(confirm)]
