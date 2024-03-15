@@ -75,13 +75,14 @@ simulate_infections <- function(estimates, R, initial_infections,
 
   ## check inputs
   assert_data_frame(R, any.missing = FALSE)
-  assert_subset(colnames(R), c("date", "R"))
+  assert_subset(c("date", "R"), colnames(R))
   assert_date(R$date)
   assert_numeric(R$R, lower = 0)
   assert_numeric(initial_infections, lower = 0)
   assert_numeric(day_of_week_effect, lower = 0, null.ok = TRUE)
   assert_numeric(pop, lower = 0)
   assert_class(delays, "delay_opts")
+  assert_class(truncation, "trunc_opts")
   assert_class(obs, "obs_opts")
   assert_class(generation_time, "generation_time_opts")
 
