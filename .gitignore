@@ -47,5 +47,5 @@ inst/stan/*
 !inst/stan/*.stan
 
 # benchmarking
-inst/stan_main
+inst/stan-main
 inst/dev/benchmark-results.md

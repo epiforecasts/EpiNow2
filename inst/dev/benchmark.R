@@ -15,7 +15,7 @@ profiles <- list()
 
 ## generate profiles for different versions of the stan model
 profiles[["branch"]] <- create_profiles(file.path("inst", "stan"), seeds)
-profiles[["main"]] <- create_profiles(file.path("inst", "stan_main"), seeds)
+profiles[["main"]] <- create_profiles(file.path("inst", "stan-main"), seeds)
 
 ## merge profiles from the two chains into one, round total time and only keep
 ## name and total_time columns; then average across chains; sort by time from

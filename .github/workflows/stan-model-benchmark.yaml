@@ -41,11 +41,11 @@ jobs:
 
       - name: Checkout main branch in parallel and move to separate dir
         run: |
-          mv inst/stan inst/stan_branch
+          mv inst/stan inst/stan-branch
           git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin main
           git checkout origin/main inst/stan
-          mv inst/stan inst/stan_main
-          mv inst/stan_branch inst/stan
+          mv inst/stan inst/stan-main
+          mv inst/stan-branch inst/stan
 
       - name: Benchmark
         run: |
