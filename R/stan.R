@@ -32,7 +32,7 @@ package_model <- function(model = c(
   )
   if (verbose) {
     message(sprintf("Using model %s.", model))
-    message(sprintf("include is %s.", toString(include)))
+    message(sprintf("dir is %s.", toString(dir)))
   }
 
   monitor <- suppressMessages
