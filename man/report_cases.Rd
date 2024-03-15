@@ -50,20 +50,32 @@ the \code{stan} implementation.
 }
 \examples{
 \donttest{
-# define example cases
+# This function is deprecated and its functionality can now be accessed
+# from [simulate_secondary()].
+# Here are some examples of how to use [simulate_secondary()] to replace
+# report_cases().
+# Old (using report_cases()):
+# Define case data
 cases <- example_confirmed[1:40]
-
-# get example delays
-# Instead of running them model we use example
-# data for speed in this example.
 cases <- cases[, cases := as.integer(confirm)]
 cases <- cases[, confirm := NULL][, sample := 1]
-
 reported_cases <- report_cases(
-  case_estimates = cases,
-  delays = delay_opts(example_incubation_period + example_reporting_delay),
-  type = "sample"
+ case_estimates = cases,
+ delays = delay_opts(example_incubation_period + example_reporting_delay),
+ type = "sample"
 )
-print(reported_cases)
+print(reported_cases$samples)
+
+# New (using simulate_secondary()):
+cases <- example_confirmed[1:40]
+cases <- cases[, primary := as.integer(confirm)]
+report <- simulate_secondary(
+ cases,
+ delays = delay_opts(
+   fix_dist(example_incubation_period + example_reporting_delay)
+ ),
+ obs = obs_opts(family = "poisson")
+)
+print(report)
 }
 }
