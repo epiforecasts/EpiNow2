@@ -164,10 +164,11 @@ simple deployment/development a prebuilt docker image is also available
 Getting Started
 </summary>
 
-The [Getting Started vignette](EpiNow2.html) is your quickest entry
-point to the package. It provides a quick run through of the two main
-functions in the package and how to set up them up. It also discusses
-how to summarise and visualise the results after running the models.
+The [Getting Started vignette](./articles/EpiNow2.html) is your quickest
+entry point to the package. It provides a quick run through of the two
+main functions in the package and how to set up them up. It also
+discusses how to summarise and visualise the results after running the
+models.
 
 </details>
 <details>
@@ -186,7 +187,7 @@ and case studies or literature of applications of the package.
 End-to-end workflows
 </summary>
 
-The [workflow vignette](articles/estimate_infections_workflow.html)
+The [workflow vignette](./articles/estimate_infections_workflow.html)
 provides guidance on the end-to-end process of estimating reproduction
 numbers and performing short-term forecasts for a disease spreading in a
 given setting.
@@ -199,7 +200,7 @@ Model definitions
 
 On the website, we provide the mathematical definition of each model.
 For example, the model definition vignette for `estimate_infections()`
-can be found [here](articles/estimate_infections.html).
+can be found [here](./articles/estimate_infections.html).
 
 </details>
 <details>
