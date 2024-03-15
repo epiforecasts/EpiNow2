@@ -61,7 +61,7 @@ jobs:
       - name: Post comment
         uses: actions/github-script@v7
         env:
-          BENCHMARK: steps.output.outputs.BENCHMARK
+          BENCHMARK: ${{ steps.output.outputs.BENCHMARK }}
         with:
           script: |
             github.rest.issues.createComment({
