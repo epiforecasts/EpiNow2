@@ -136,9 +136,9 @@ numbers and performing short-term forecasts for a disease spreading in a
 
 <details> <summary> Model definitions </summary>
 
-On the websites, we provide the mathematical definition of each model.
+In different vignettes we provide the mathematical definition of each model.
 For example, the model definition vignette for `estimate_infections()` can be
-found in `vignettes("estimate_infections")`).
+found in `vignettes("estimate_infections")`.
 
 </details>
 
