@@ -3,7 +3,7 @@ library("EpiNow2")
 library("knitr")
 
 ## number of times to run estimate_infections
-n_iter <- 10
+n_iter <- 15
 
 ## random seeds
 seeds <- sample(.Machine$integer.max, n_iter)
