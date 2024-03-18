@@ -164,7 +164,7 @@ simple deployment/development a prebuilt docker image is also available
 Getting Started
 </summary>
 
-The [Getting Started vignette](./articles/EpiNow2.html) is your quickest
+The [Getting Started vignette](articles/EpiNow2.html) is your quickest
 entry point to the package. It provides a quick run through of the two
 main functions in the package and how to set up them up. It also
 discusses how to summarise and visualise the results after running the
@@ -176,10 +176,11 @@ models.
 Package website
 </summary>
 
-The [package website](index.html) provides various resources for
-learning about the package, including the function reference, details
-about each model (model definition), workflows for each model (usage),
-and case studies or literature of applications of the package.
+The [package website](https://epiforecasts.io/EpiNow2/) provides various
+resources for learning about the package, including the function
+reference, details about each model (model definition), workflows for
+each model (usage), and case studies or literature of applications of
+the package.
 
 </details>
 <details>
@@ -187,7 +188,7 @@ and case studies or literature of applications of the package.
 End-to-end workflows
 </summary>
 
-The [workflow vignette](./articles/estimate_infections_workflow.html)
+The [workflow vignette](articles/estimate_infections_workflow.html)
 provides guidance on the end-to-end process of estimating reproduction
 numbers and performing short-term forecasts for a disease spreading in a
 given setting.
