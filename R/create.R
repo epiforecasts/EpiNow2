@@ -17,6 +17,8 @@
 #' `zero_threshold`. If the default NA is used then dates with NA values or with
 #' 7-day averages above the `zero_threshold` will be skipped in model fitting.
 #' If this is set to 0 then the only effect is to replace NA values with 0.
+#' @param add_breakpoints Logical, defaults to TRUE. Should a breakpoint column
+#' be added to the data frame if it does not exist.
 #'
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
