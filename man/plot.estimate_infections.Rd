@@ -5,7 +5,11 @@
 \alias{plot}
 \title{Plot method for estimate_infections}
 \usage{
-\method{plot}{estimate_infections}(x, type = "summary", ...)
+\method{plot}{estimate_infections}(
+  x,
+  type = c("summary", "infections", "reports", "R", "growth_rate", "all"),
+  ...
+)
 }
 \arguments{
 \item{x}{A list of output as produced by \code{estimate_infections}}

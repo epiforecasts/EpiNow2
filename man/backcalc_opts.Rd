@@ -4,7 +4,11 @@
 \alias{backcalc_opts}
 \title{Back Calculation Options}
 \usage{
-backcalc_opts(prior = "reports", prior_window = 14, rt_window = 1)
+backcalc_opts(
+  prior = c("reports", "none", "infections"),
+  prior_window = 14,
+  rt_window = 1
+)
 }
 \arguments{
 \item{prior}{A character string defaulting to "reports". Defines the prior

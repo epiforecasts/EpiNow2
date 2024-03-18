@@ -7,8 +7,8 @@
 stan_opts(
   object = NULL,
   samples = 2000,
-  method = "sampling",
-  backend = "rstan",
+  method = c("sampling", "vb"),
+  backend = c("rstan", "cmdstanr"),
   init_fit = NULL,
   return_fit = TRUE,
   ...

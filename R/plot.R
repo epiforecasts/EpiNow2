@@ -114,7 +114,10 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' )
 plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
                            obs_as_col = TRUE, max_plot = 10,
-                           estimate_type = NULL) {
+                           estimate_type = c(
+                             "Estimate", "Estimate based on partial data",
+                             "Forecast")
+                           ) {
   # convert input to data.table
   estimate <- data.table::as.data.table(estimate)
   if (!missing(reported)) {
@@ -129,14 +132,7 @@ plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
   estimate <- estimate[, type := to_sentence(type)]
 
   orig_estimate <- copy(estimate)
-  if (!is.null(estimate_type)) {
-    estimate_type <- arg_match(
-      estimate_type,
-      values = c("Estimate", "Estimate based on partial data", "Forecast"),
-      multiple = TRUE
-    )
-    estimate <- estimate[type %in% estimate_type]
-  }
+  estimate_type <- arg_match(estimate_type, multiple = TRUE)
   # scale plot values based on reported cases
   if (!missing(reported) && !is.na(max_plot)) {
     sd_cols <- c(
@@ -382,15 +378,19 @@ plot_summary <- function(summary_results,
 #' @method plot estimate_infections
 #' @return List of plots as produced by [report_plots()]
 #' @export
-plot.estimate_infections <- function(x, type = "summary", ...) {
+plot.estimate_infections <- function(x,
+                                     type = c(
+                                       "summary", "infections", "reports", "R",
+                                       "growth_rate", "all"
+                                     ), ...) {
   out <- report_plots(
     summarised_estimates = x$summarised,
     reported = x$observations, ...
   )
-  choices <- c("infections", "reports", "R", "growth_rate", "summary", "all")
-  type <- arg_match(type, values = choices, multiple = TRUE)
+  choices <-
+  type <- arg_match(type, multiple = TRUE)
   if (type == "all") {
-    type <- choices[-length(choices)]
+    type <- c("summary", "infections", "reports", "R", "growth_rate")
   }
 
   if (!is.null(out)) {

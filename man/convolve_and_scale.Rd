@@ -6,8 +6,8 @@
 \usage{
 convolve_and_scale(
   data,
-  type = "incidence",
-  family = "poisson",
+  type = c("incidence", "prevalence"),
+  family = c("none", "poisson", "negbin"),
   delay_max = 30,
   ...
 )

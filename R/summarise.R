@@ -752,11 +752,14 @@ calc_summary_measures <- function(samples,
 #' @method summary epinow
 #' @return Returns a `<data.frame>` of summary output
 #' @export
-summary.epinow <- function(object, output = "estimates",
+summary.epinow <- function(object,
+                           output = c(
+                             "estimates", "forecast", "estimated_reported_cases"
+                           ),
                            date = NULL, params = NULL,
                            ...) {
-  choices <- c("estimates", "forecast", "estimated_reported_cases")
-  output <- arg_match(output, values = choices, multiple = FALSE)
+  choices <-
+  output <- arg_match(output)
   if (output == "estimates") {
     out <- summary(object$estimates,
       date = date,
@@ -800,10 +803,12 @@ summary.epinow <- function(object, output = "estimates",
 #' @method summary estimate_infections
 #' @return Returns a `<data.frame>` of summary output
 #' @export
-summary.estimate_infections <- function(object, type = "snapshot",
+summary.estimate_infections <- function(object,
+                                        type = c(
+                                          "snapshot", "parameters", "samples"
+                                        ),
                                         date = NULL, params = NULL, ...) {
-  choices <- c("snapshot", "parameters", "samples")
-  type <- arg_match(type, values = choices, multiple = FALSE)
+  type <- arg_match(type)
   if (is.null(date)) {
     target_date <- unique(
       object$summarised[type != "forecast"][date == max(date)]$date

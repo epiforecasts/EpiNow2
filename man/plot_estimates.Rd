@@ -11,7 +11,7 @@ plot_estimates(
   hline,
   obs_as_col = TRUE,
   max_plot = 10,
-  estimate_type = NULL
+  estimate_type = c("Estimate", "Estimate based on partial data", "Forecast")
 )
 }
 \arguments{

@@ -5,7 +5,13 @@
 \alias{summary}
 \title{Summary output from epinow}
 \usage{
-\method{summary}{epinow}(object, output = "estimates", date = NULL, params = NULL, ...)
+\method{summary}{epinow}(
+  object,
+  output = c("estimates", "forecast", "estimated_reported_cases"),
+  date = NULL,
+  params = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{A list of output as produced by "epinow".}
