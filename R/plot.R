@@ -306,7 +306,7 @@ plot_summary <- function(summary_results,
   upper_CrI <- paste0("upper_", max_CrI) # nolint
   max_upper <- max(
     summary_results[
-      metric == "New confirmed cases by infection date"][, ..upper_CrI],
+      metric == "New infections per day"][, ..upper_CrI],
       na.rm = TRUE
   )
   max_cases <- min(
@@ -319,7 +319,7 @@ plot_summary <- function(summary_results,
   # cases plot
   cases_plot <-
     inner_plot(
-      summary_results[metric == "New confirmed cases by infection date"]
+      summary_results[metric == "New infections per day"]
     ) +
     ggplot2::labs(x = x_lab, y = "") +
     ggplot2::expand_limits(y = 0) +

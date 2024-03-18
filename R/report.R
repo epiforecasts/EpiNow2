@@ -200,7 +200,7 @@ report_summary <- function(summarised_estimates,
   # regional summary
   summary <- data.table::data.table(
     measure = c(
-      "New confirmed cases by infection date",
+      "New infections per day",
       "Expected change in daily cases",
       "Effective reproduction no.",
       "Rate of growth",
