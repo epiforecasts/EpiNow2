@@ -27,7 +27,8 @@
 create_clean_reported_cases <- function(reported_cases, horizon = 0,
                                         filter_leading_zeros = TRUE,
                                         zero_threshold = Inf,
-                                        fill = NA_integer_) {
+                                        fill = NA_integer_,
+                                        add_breakpoints = TRUE) {
   reported_cases <- data.table::setDT(reported_cases)
   reported_cases_grid <- data.table::copy(reported_cases)[,
    .(date = seq(min(date), max(date) + horizon, by = "days"))
@@ -39,7 +40,9 @@ create_clean_reported_cases <- function(reported_cases, horizon = 0,
   )
 
   if (is.null(reported_cases$breakpoint)) {
-    reported_cases$breakpoint <- 0
+    if (add_breakpoints) {
+      reported_cases$breakpoint <- 0 
+    }
   }
   reported_cases[is.na(breakpoint), breakpoint := 0]
   reported_cases <- data.table::setorder(reported_cases, date)
