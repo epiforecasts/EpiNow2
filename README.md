@@ -164,9 +164,9 @@ simple deployment/development a prebuilt docker image is also available
 Getting Started
 </summary>
 
-The [Getting Started vignette](articles/EpiNow2.html) is your quickest
-entry point to the package. It provides a quick run through of the two
-main functions in the package and how to set up them up. It also
+The Getting Started vignette (see `vignette("EpiNow2")`) is your
+quickest entry point to the package. It provides a quick run through of
+the two main functions in the package and how to set up them up. It also
 discusses how to summarise and visualise the results after running the
 models.
 
@@ -176,11 +176,14 @@ models.
 Package website
 </summary>
 
-The [package website](https://epiforecasts.io/EpiNow2/) provides various
-resources for learning about the package, including the function
+The package has two websites: one for [the stable release version on
+CRAN](https://epiforecasts.io/EpiNow2/), and another for [the version in
+development](https://epiforecasts.io/EpiNow2/dev). These two provide
+various resources for learning about the package, including the function
 reference, details about each model (model definition), workflows for
 each model (usage), and case studies or literature of applications of
-the package.
+the package. However, the development website may contain experimental
+features and information not yet available in the stable release.
 
 </details>
 <details>
@@ -188,10 +191,9 @@ the package.
 End-to-end workflows
 </summary>
 
-The [workflow vignette](articles/estimate_infections_workflow.html)
+The workflow vignette (see `vignette("estimate_infections_workflow")`)
 provides guidance on the end-to-end process of estimating reproduction
 numbers and performing short-term forecasts for a disease spreading in a
-given setting.
 
 </details>
 <details>
@@ -199,9 +201,10 @@ given setting.
 Model definitions
 </summary>
 
-On the website, we provide the mathematical definition of each model.
-For example, the model definition vignette for `estimate_infections()`
-can be found [here](./articles/estimate_infections.html).
+In different vignettes we provide the mathematical definition of each
+model. For example, the model definition vignette for
+`estimate_infections()` can be found in
+`vignettes("estimate_infections")`.
 
 </details>
 <details>
