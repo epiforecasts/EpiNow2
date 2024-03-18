@@ -183,7 +183,7 @@ estimate_secondary <- function(reports,
   secondary_reports[, confirm := nafill(confirm, type = "locf")]
   ## fill any early data up
   secondary_reports[, confirm := nafill(confirm, type = "nocb")]
-  
+
   # Ensure that reports and secondary_reports are aligned
   reports <- merge.data.table(reports, secondary_reports, by = "date")
 
