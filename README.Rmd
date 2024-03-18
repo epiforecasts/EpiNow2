@@ -115,11 +115,14 @@ discusses how to summarise and visualise the results after running the models.
 
 <details> <summary> Package website </summary>
 
-The [package website](https://epiforecasts.io/EpiNow2/) provides
-various resources for learning about the package, including the function
-reference, details about each model (model definition), workflows for
-each model (usage), and case studies or literature of applications of
-the package.
+The package has two websites: one for
+[the stable release version on CRAN](https://epiforecasts.io/EpiNow2/), and
+another for [the version in development](https://epiforecasts.io/EpiNow2/dev).
+These two provide various resources for learning about the package, including
+the function reference, details about each model (model definition), workflows
+for each model (usage), and case studies or literature of applications of
+the package. However, the development website may contain experimental features
+and information not yet available in the stable release.
 
 </details>
 
