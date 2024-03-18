@@ -271,7 +271,7 @@ plot_summary <- function(summary_results,
   inner_plot <- function(df) {
     plot <- ggplot2::ggplot(df, ggplot2::aes(
       x = region,
-      col = `Expected change in daily cases`
+      col = `Expected change in daily reports`
     ))
     # plot CrIs
     index <- 1

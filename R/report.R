@@ -201,7 +201,7 @@ report_summary <- function(summarised_estimates,
   summary <- data.table::data.table(
     measure = c(
       "New infections per day",
-      "Expected change in daily cases",
+      "Expected change in daily reports",
       "Effective reproduction no.",
       "Rate of growth",
       "Doubling/halving time (days)" # nolint

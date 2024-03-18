@@ -90,10 +90,10 @@ summarise_results <- function(regions,
 
 
   numeric_estimates <- data.table::merge.data.table(numeric_estimates,
-    estimates[measure == "Expected change in daily cases"][
+    estimates[measure == "Expected change in daily reports"][
       ,
       .(region,
-       `Expected change in daily cases` = estimate,
+       `Expected change in daily reports` = estimate,
        prob_control = numeric_estimate
       )
     ],
@@ -113,7 +113,7 @@ summarise_results <- function(regions,
     ,
     measure := factor(measure, levels = c(
       "New infections per day",
-      "Expected change in daily cases",
+      "Expected change in daily reports",
       "Effective reproduction no.",
       "Rate of growth",
       "Doubling/halving time (days)" # nolint
@@ -260,8 +260,8 @@ regional_summary <- function(regional_output = NULL,
   )
 
   force_factor <- function(df) {
-    df[, `Expected change in daily cases` :=
-      factor(`Expected change in daily cases`,
+    df[, `Expected change in daily reports` :=
+      factor(`Expected change in daily reports`,
         levels = c(
           "Increasing", "Likely increasing", "Stable",
           "Likely decreasing", "Decreasing"

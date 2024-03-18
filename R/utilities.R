@@ -431,7 +431,7 @@ globalVariables(
     "date_onset_sample", "date_onset_symptoms", "date_onset.x", "date_onset.y",
     "date_report", "day", "doubling_time", "effect",
     "Effective reproduction no.", "estimates",
-    "Expected change in daily cases", "fit_meas", "goodness_of_fit",
+    "Expected change in daily reports", "fit_meas", "goodness_of_fit",
     "gt_sample", "import_status", "imported", "index", "latest", "little_r",
     "lower", "max_time", "mean_R", "Mean(R)", "metric", "mid_lower",
     "mid_upper", "min_time", "model", "modifier", "n", "New",
