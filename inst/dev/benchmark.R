@@ -46,17 +46,25 @@ changes <- format_summary[,
   max = max(change)
 ), by = "operation"
 ][, list(
+  mean = mean,
+  range = paste0("(", min, ", ", max, ")"),
+  trend = fcase(
+    min > 0, "slowdown",
+    max < 0, "speedup",
+    default = "no change"
+  )
+), by = "operation"
 ]
 
 format_summary <- merge(
   summary_means,
-  changes[, .(operation, mean, ci)],
+  changes[, .(operation, mean, range, trend)],
   by = "operation"
 )
 
 setorder(format_summary, -main)
 format_summary <- format_summary[, lapply(.SD, as.character)]
-setnames(format_summary, c("mean", "ci"), c("% change", "90% CI"))
+setnames(format_summary, "mean", "% change")
 
 sink(file = file.path("inst", "dev", "benchmark-results.md"))
 knitr::kable(
