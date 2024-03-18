@@ -40,12 +40,12 @@ format_summary <- dcast(
 )
 changes <- format_summary[,
   change := round((branch - main) / branch * 100)
-][,
-  rbindlist(bootci(change)), by = .(operation)
-][,
-  mean := round(mean)
-][,
-  ci := paste0("(", round(lower), ", ", round(higher), ")")
+][, list(
+  mean = round(mean(change)),
+  min = min(change),
+  max = max(change)
+), by = "operation"
+][, list(
 ]
 
 format_summary <- merge(

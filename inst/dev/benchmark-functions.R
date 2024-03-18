@@ -47,7 +47,9 @@ bootci <- function(x, n_boot = NULL) {
     low = quantile(means, 0.25),
     high = quantile(means, 0.75),
     lower = quantile(means, 0.05),
-    higher = quantile(means, 0.95)
+    higher = quantile(means, 0.95),
+    lowest = range(means)[1],
+    highest = range(means)[2]
   )
   return(list(dt))
 }
