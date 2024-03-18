@@ -204,7 +204,7 @@ test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
 })
 
 test_that("estimate_secondary works with filter_leading_zeros set", {
-  modified_data <- inc_cases[1:10, primary := 0]
+  modified_data <- inc_cases[1:10, secondary := 0]
   out <- estimate_secondary(
     modified_data,
     obs = obs_opts(scale = list(mean = 0.2, sd = 0.2),
