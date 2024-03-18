@@ -115,7 +115,7 @@ discusses how to summarise and visualise the results after running the models.
 
 <details> <summary> Package website </summary>
 
-The [package website](index.html) provides
+The [package website](https://epiforecasts.io/EpiNow2/) provides
 various resources for learning about the package, including the function
 reference, details about each model (model definition), workflows for
 each model (usage), and case studies or literature of applications of
