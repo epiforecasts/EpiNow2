@@ -84,10 +84,10 @@ fit_model <- function(args, id = "stan") {
       future = args$future,
       max_execution_time = args$max_execution_time, id = id
     )
-  } else if (args$method == "vb") {
-    fit <- fit_model_with_vb(args, id = id)
+  } else if (args$method %in% c("vb", "laplace")) {
+    fit <- fit_model_approximate(args, id = id)
   } else {
-    stop("args$method must be one of 'sampling' or 'vb'")
+    stop("args$method unknown")
   }
   return(fit)
 }

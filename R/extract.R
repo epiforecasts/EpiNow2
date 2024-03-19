@@ -72,8 +72,9 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     if (!is.null(pars)) args <- c(args, list(pars = pars))
     return(do.call(rstan::extract, args))
   }
-  if (!inherits(stan_fit, "CmdStanMCMC")) {
-    stop("stan_fit must be a <stanfit> or <CmdStanMCMC> object")
+  if (!inherits(stan_fit, "CmdStanMCMC") &&
+      !inherits(stan_fit, "CmdStanFit")) {
+    stop("stan_fit must be a <stanfit>, <CmdStanMCMC> or <CmdStanFit> object")
   }
 
   # extract sample from stan object
