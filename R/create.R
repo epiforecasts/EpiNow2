@@ -44,7 +44,9 @@ create_clean_reported_cases <- function(reported_cases, horizon = 0,
   if (is.null(reported_cases$breakpoint) && add_breakpoints) {
     reported_cases$breakpoint <- 0
   }
-  reported_cases[is.na(breakpoint), breakpoint := 0]
+  if (!is.null(reported_cases$breakpoint)) {
+    reported_cases[is.na(breakpoint), breakpoint := 0]
+  }
   reported_cases <- data.table::setorder(reported_cases, date)
   ## Filter out 0 reported cases from the beginning of the data
   if (filter_leading_zeros) {
