@@ -30,6 +30,17 @@ using a centred partial rolling average (with a period set by
 \code{\link[=estimate_infections]{estimate_infections()}} to generate the mean shifted prior on which the back
 calculation method (see \code{\link[=backcalc_opts]{backcalc_opts()}}) is based.
 }
+\details{
+The function first shifts all the data back in time by \code{shift} days (thus
+discarding the first \code{shift} days of data) and then applies a centred
+rolling mean of length \code{smoothing_window} to the shifted data except for
+the final period. The final period (the forecast horizon plus half the
+smoothing window) is instead replaced by a log-linear model fit (with 1
+added to the data for fitting to avoid zeroes and later subtracted again),
+projected to the end of the forecast horizon. The initial part of the data
+(corresponding to the length of the smoothing window) is then removed, and
+any non-integer resulting values rounded up.
+}
 \examples{
 create_shifted_cases(example_confirmed, 7, 14, 7)
 }

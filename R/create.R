@@ -101,6 +101,17 @@ create_complete_cases <- function(cases) {
 #' [estimate_infections()] to generate the mean shifted prior on which the back
 #' calculation method (see [backcalc_opts()]) is based.
 #'
+#' @details
+#' The function first shifts all the data back in time by `shift` days (thus
+#' discarding the first `shift` days of data) and then applies a centred
+#' rolling mean of length `smoothing_window` to the shifted data except for
+#' the final period. The final period (the forecast horizon plus half the
+#' smoothing window) is instead replaced by a log-linear model fit (with 1
+#' added to the data for fitting to avoid zeroes and later subtracted again),
+#' projected to the end of the forecast horizon. The initial part of the data
+#' (corresponding to the length of the smoothing window) is then removed, and
+#' any non-integer resulting values rounded up.
+#'
 #' @param smoothing_window Numeric, the rolling average smoothing window
 #' to apply. Must be odd in order to be defined as a centred average.
 #'
