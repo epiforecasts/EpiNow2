@@ -319,20 +319,14 @@ get_regions_with_most_reports <- function(reported_cases,
 ##'
 ##' The seeding time is set to the mean of the specified delays, constrained
 ##' to be at least the maximum generation time
-##' @param delays Delays specified using distribution functions such as
-##'   [Gamma()] or [LogNormal()]
-##' @param generation_time Generation specified using distribution functions
-##'   such as [Gamma()] or [LogNormal()]
+##' @inheritParams estimate_infections
 ##' @return An integer seeding time
-get_seeding_time <- function(delays, generation_time) {
+get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
   # Estimate the mean delay -----------------------------------------------
   seeding_time <- sum(mean(delays, ignore_uncertainty = TRUE))
-  if (seeding_time < 1) {
-    seeding_time <- 1
-  } else {
-    seeding_time <- round(seeding_time)
+  if (!is.null(rt)) {
+    ## make sure we have at least (length of total gt pmf - 1) seeding time
+    seeding_time <- max(seeding_time, sum(max(generation_time)))
   }
-  ## make sure we have at least (length of total gt pmf - 1) seeding time
-  seeding_time <- max(seeding_time, sum(max(generation_time)))
-  return(seeding_time)
+  return(max(round(seeding_time), 1))
 }
