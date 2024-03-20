@@ -204,7 +204,7 @@ Model definitions
 In different vignettes we provide the mathematical definition of each
 model. For example, the model definition vignette for
 `estimate_infections()` can be found in
-`vignettes("estimate_infections")`.
+`vignette("estimate_infections")`.
 
 </details>
 <details>
