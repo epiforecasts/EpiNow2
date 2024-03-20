@@ -1,7 +1,7 @@
-
-
-fit <- readRDS("test-models/regional_epinow/static.rds")
-cases <- readRDS("test-models/regional_epinow/cases.rds")
+fit <- readRDS(system.file(
+  package = "EpiNow2", "extdata", "example_regional_epinow.rds"
+))
+cases <- fit$summary$reported_cases
 
 test_that("regional_summary works with default settings", {
   out <- regional_summary(

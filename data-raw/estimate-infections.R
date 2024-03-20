@@ -3,6 +3,8 @@ library("here")
 
 options(mc.cores = 4)
 
+set.seed(12345)
+
 # get example case counts
 reported_cases <- example_confirmed[1:60]
 
@@ -24,8 +26,8 @@ cases <- data.table::rbindlist(list(
 
 example_regional_epinow <- regional_epinow(
   reported_cases = cases,
-  generation_time = generation_time_opts(generation_time),
-  delays = delay_opts(incubation_period + reporting_delay),
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
   stan = stan_opts(samples = 200, control = list(adapt_delta = 0.95))
 )
