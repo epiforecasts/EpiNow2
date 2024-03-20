@@ -73,7 +73,7 @@ replaced with a more robust stan implementation."><meta property="og:image" cont
     </div>
 
     <div class="ref-description section level2">
-    <p><a href="https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated" class="external-link"><img src="figures/lifecycle-soft-deprecated.svg" alt="[Soft-deprecated]"></a>
+    <p><a href="https://lifecycle.r-lib.org/articles/stages.html#deprecated" class="external-link"><img src="figures/lifecycle-deprecated.svg" alt="[Deprecated]"></a>
 Convolves cases by a PMF function. This function will soon be removed or
 replaced with a more robust stan implementation.</p>
     </div>
@@ -179,16 +179,16 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-out co"><span class="r-pr">#&gt;</span>            date cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;Date&gt; &lt;num&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-16     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-17     5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-18     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-19     4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-02-20    16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-17     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-18     5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-19     5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-02-20    18</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ---                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 132: 2020-06-26   246</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 133: 2020-06-27   161</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 134: 2020-06-28   128</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 135: 2020-06-29   109</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 136: 2020-06-30    38</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 132: 2020-06-26   213</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 133: 2020-06-27   193</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 134: 2020-06-28   129</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 135: 2020-06-29    95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 136: 2020-06-30    34</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># check that sum is equal to reported cases</span></span></span>
 <span class="r-in"><span><span class="va">total_onsets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span></span></span>
@@ -201,7 +201,7 @@ after the first date reported in the data. Defaults to <code>TRUE</code>.</p></d
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">total_onsets</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 240218.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 240363.5</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># map from onset cases to reported</span></span></span>

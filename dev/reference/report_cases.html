@@ -75,7 +75,7 @@ the stan implementation."><meta property="og:image" content="https://epiforecast
     </div>
 
     <div class="ref-description section level2">
-    <p><a href="https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated" class="external-link"><img src="figures/lifecycle-soft-deprecated.svg" alt="[Soft-deprecated]"></a>
+    <p><a href="https://lifecycle.r-lib.org/articles/stages.html#deprecated" class="external-link"><img src="figures/lifecycle-deprecated.svg" alt="[Deprecated]"></a>
 Convolves latent infections to reported cases via an observation model.
 Likely to be removed/replaced in later releases by functionality drawing on
 the <code>stan</code> implementation.</p>
@@ -142,148 +142,122 @@ across samples.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="co"># define example cases</span></span></span>
+<span class="r-in"><span><span class="co"># This function is deprecated and its functionality can now be accessed</span></span></span>
+<span class="r-in"><span><span class="co"># from [simulate_secondary()].</span></span></span>
+<span class="r-in"><span><span class="co"># Here are some examples of how to use [simulate_secondary()] to replace</span></span></span>
+<span class="r-in"><span><span class="co"># report_cases().</span></span></span>
+<span class="r-in"><span><span class="co"># Old (using report_cases()):</span></span></span>
+<span class="r-in"><span><span class="co"># Define case data</span></span></span>
 <span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="va">example_confirmed</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">40</span><span class="op">]</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># get example delays</span></span></span>
-<span class="r-in"><span><span class="co"># Instead of running them model we use example</span></span></span>
-<span class="r-in"><span><span class="co"># data for speed in this example.</span></span></span>
 <span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="va">cases</span><span class="op">[</span>, <span class="va">cases</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">confirm</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="va">cases</span><span class="op">[</span>, <span class="va">confirm</span> <span class="op">:=</span> <span class="cn">NULL</span><span class="op">]</span><span class="op">[</span>, <span class="va">sample</span> <span class="op">:=</span> <span class="fl">1</span><span class="op">]</span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">reported_cases</span> <span class="op">&lt;-</span> <span class="fu">report_cases</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  case_estimates <span class="op">=</span> <span class="va">cases</span>,</span></span>
-<span class="r-in"><span>  delays <span class="op">=</span> <span class="fu"><a href="delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">example_incubation_period</span> <span class="op">+</span> <span class="va">example_reporting_delay</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  type <span class="op">=</span> <span class="st">"sample"</span></span></span>
+<span class="r-in"><span> case_estimates <span class="op">=</span> <span class="va">cases</span>,</span></span>
+<span class="r-in"><span> delays <span class="op">=</span> <span class="fu"><a href="delay_opts.html">delay_opts</a></span><span class="op">(</span><span class="va">example_incubation_period</span> <span class="op">+</span> <span class="va">example_reporting_delay</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span> type <span class="op">=</span> <span class="st">"sample"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">reported_cases</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $samples</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`report_cases()` was deprecated in EpiNow2 1.5.0.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Please use `simulate_secondary()` instead.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> See equivalent examples using `simulate_secondary()`</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> in ?report_cases.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> This function will be removed completely in version 2.0.0.</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">reported_cases</span><span class="op">$</span><span class="va">samples</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     sample       date value</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;int&gt;     &lt;Date&gt; &lt;int&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1:      1 2020-02-24     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2:      1 2020-02-25     2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3:      1 2020-02-26    11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1:      1 2020-02-24     5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2:      1 2020-02-25     8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3:      1 2020-02-26    14</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  4:      1 2020-02-27    14</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5:      1 2020-02-28    26</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6:      1 2020-02-29    48</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7:      1 2020-03-01    66</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8:      1 2020-03-02    76</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9:      1 2020-03-03   107</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10:      1 2020-03-04   144</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11:      1 2020-03-05   199</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12:      1 2020-03-06   216</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13:      1 2020-03-07   300</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14:      1 2020-03-08   371</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5:      1 2020-02-28    34</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6:      1 2020-02-29    45</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7:      1 2020-03-01    57</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8:      1 2020-03-02   102</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9:      1 2020-03-03   133</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10:      1 2020-03-04   159</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11:      1 2020-03-05   225</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12:      1 2020-03-06   288</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13:      1 2020-03-07   313</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14:      1 2020-03-08   389</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 15:      1 2020-03-09   430</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16:      1 2020-03-10   483</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17:      1 2020-03-11   632</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18:      1 2020-03-12   775</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19:      1 2020-03-13   912</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20:      1 2020-03-14  1042</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21:      1 2020-03-15  1277</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22:      1 2020-03-16  1482</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23:      1 2020-03-17  1777</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24:      1 2020-03-18  2084</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25:      1 2020-03-19  2323</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26:      1 2020-03-20  2573</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27:      1 2020-03-21  2845</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16:      1 2020-03-10   566</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17:      1 2020-03-11   643</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18:      1 2020-03-12   811</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19:      1 2020-03-13  1026</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20:      1 2020-03-14  1199</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21:      1 2020-03-15  1368</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22:      1 2020-03-16  1621</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23:      1 2020-03-17  1869</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24:      1 2020-03-18  2107</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25:      1 2020-03-19  2468</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26:      1 2020-03-20  2667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27:      1 2020-03-21  2973</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 28:      1 2020-03-22  3202</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29:      1 2020-03-23  3481</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30:      1 2020-03-24  3864</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31:      1 2020-03-25  4446</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32:      1 2020-03-26  4813</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33:      1 2020-03-27  5232</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34:      1 2020-03-28  5160</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35:      1 2020-03-29  5220</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36:      1 2020-03-30  5342</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 37:      1 2020-03-31  5453</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38:      1 2020-04-01  5628</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29:      1 2020-03-23  3652</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30:      1 2020-03-24  4175</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31:      1 2020-03-25  4565</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32:      1 2020-03-26  4888</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33:      1 2020-03-27  4956</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34:      1 2020-03-28  5122</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35:      1 2020-03-29  5321</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36:      1 2020-03-30  5406</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37:      1 2020-03-31  5433</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38:      1 2020-04-01  5465</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     sample       date value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $summarised</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           date median  mean    sd lower_90 lower_50 lower_20 upper_20 upper_50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;Date&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 2020-02-24      1     1    NA        1        1        1        1        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 2020-02-25      2     2    NA        2        2        2        2        2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 2020-02-26     11    11    NA       11       11       11       11       11</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 2020-02-27     14    14    NA       14       14       14       14       14</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 2020-02-28     26    26    NA       26       26       26       26       26</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 2020-02-29     48    48    NA       48       48       48       48       48</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 2020-03-01     66    66    NA       66       66       66       66       66</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 2020-03-02     76    76    NA       76       76       76       76       76</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 2020-03-03    107   107    NA      107      107      107      107      107</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 2020-03-04    144   144    NA      144      144      144      144      144</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 2020-03-05    199   199    NA      199      199      199      199      199</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12: 2020-03-06    216   216    NA      216      216      216      216      216</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13: 2020-03-07    300   300    NA      300      300      300      300      300</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14: 2020-03-08    371   371    NA      371      371      371      371      371</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15: 2020-03-09    430   430    NA      430      430      430      430      430</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16: 2020-03-10    483   483    NA      483      483      483      483      483</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17: 2020-03-11    632   632    NA      632      632      632      632      632</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18: 2020-03-12    775   775    NA      775      775      775      775      775</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19: 2020-03-13    912   912    NA      912      912      912      912      912</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20: 2020-03-14   1042  1042    NA     1042     1042     1042     1042     1042</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21: 2020-03-15   1277  1277    NA     1277     1277     1277     1277     1277</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22: 2020-03-16   1482  1482    NA     1482     1482     1482     1482     1482</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23: 2020-03-17   1777  1777    NA     1777     1777     1777     1777     1777</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24: 2020-03-18   2084  2084    NA     2084     2084     2084     2084     2084</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25: 2020-03-19   2323  2323    NA     2323     2323     2323     2323     2323</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26: 2020-03-20   2573  2573    NA     2573     2573     2573     2573     2573</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27: 2020-03-21   2845  2845    NA     2845     2845     2845     2845     2845</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28: 2020-03-22   3202  3202    NA     3202     3202     3202     3202     3202</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29: 2020-03-23   3481  3481    NA     3481     3481     3481     3481     3481</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30: 2020-03-24   3864  3864    NA     3864     3864     3864     3864     3864</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31: 2020-03-25   4446  4446    NA     4446     4446     4446     4446     4446</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32: 2020-03-26   4813  4813    NA     4813     4813     4813     4813     4813</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33: 2020-03-27   5232  5232    NA     5232     5232     5232     5232     5232</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34: 2020-03-28   5160  5160    NA     5160     5160     5160     5160     5160</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35: 2020-03-29   5220  5220    NA     5220     5220     5220     5220     5220</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36: 2020-03-30   5342  5342    NA     5342     5342     5342     5342     5342</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 37: 2020-03-31   5453  5453    NA     5453     5453     5453     5453     5453</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38: 2020-04-01   5628  5628    NA     5628     5628     5628     5628     5628</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           date median  mean    sd lower_90 lower_50 lower_20 upper_20 upper_50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     upper_90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1:        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2:        2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3:       11</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4:       14</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5:       26</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6:       48</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7:       66</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8:       76</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9:      107</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10:      144</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11:      199</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12:      216</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13:      300</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14:      371</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15:      430</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16:      483</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17:      632</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18:      775</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19:      912</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20:     1042</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21:     1277</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22:     1482</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23:     1777</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24:     2084</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25:     2323</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26:     2573</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 27:     2845</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28:     3202</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29:     3481</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 30:     3864</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31:     4446</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32:     4813</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33:     5232</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34:     5160</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35:     5220</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 36:     5342</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 37:     5453</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38:     5628</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     upper_90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># New (using simulate_secondary()):</span></span></span>
+<span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="va">example_confirmed</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">40</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="va">cases</span><span class="op">[</span>, <span class="va">primary</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">confirm</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">report</span> <span class="op">&lt;-</span> <span class="fu"><a href="simulate_secondary.html">simulate_secondary</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span> <span class="va">cases</span>,</span></span>
+<span class="r-in"><span> delays <span class="op">=</span> <span class="fu"><a href="delay_opts.html">delay_opts</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>   <span class="fu"><a href="fix_dist.html">fix_dist</a></span><span class="op">(</span><span class="va">example_incubation_period</span> <span class="op">+</span> <span class="va">example_reporting_delay</span><span class="op">)</span></span></span>
+<span class="r-in"><span> <span class="op">)</span>,</span></span>
+<span class="r-in"><span> obs <span class="op">=</span> <span class="fu"><a href="obs_opts.html">obs_opts</a></span><span class="op">(</span>family <span class="op">=</span> <span class="st">"poisson"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">report</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      date.date secondary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;Date&gt;     &lt;num&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1: 2020-02-22         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2: 2020-02-23         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3: 2020-02-24         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4: 2020-02-25         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5: 2020-02-26         6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  6: 2020-02-27        14</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7: 2020-02-28        32</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8: 2020-02-29        35</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  9: 2020-03-01        57</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10: 2020-03-02        86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11: 2020-03-03       108</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12: 2020-03-04       152</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13: 2020-03-05       206</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14: 2020-03-06       229</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15: 2020-03-07       290</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16: 2020-03-08       329</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17: 2020-03-09       420</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18: 2020-03-10       487</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19: 2020-03-11       620</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20: 2020-03-12       747</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21: 2020-03-13       956</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22: 2020-03-14      1108</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23: 2020-03-15      1301</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24: 2020-03-16      1578</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25: 2020-03-17      1680</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26: 2020-03-18      1931</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27: 2020-03-19      2270</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28: 2020-03-20      2591</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29: 2020-03-21      2917</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30: 2020-03-22      3223</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31: 2020-03-23      3555</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32: 2020-03-24      3873</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33: 2020-03-25      4500</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34: 2020-03-26      4821</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35: 2020-03-27      5172</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36: 2020-03-28      5262</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37: 2020-03-29      5223</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38: 2020-03-30      5255</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39: 2020-03-31      5432</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40: 2020-04-01      5387</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      date.date secondary</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
