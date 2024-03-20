@@ -21,6 +21,17 @@ test_that("distributions are the same in R and stan", {
 })
 
 test_that("deprecated functions are deprecated", {
+  delay_fn <- function(n, dist, cum) {
+      pgamma(n + 0.9999, 2, 1) - pgamma(n - 1e-5, 2, 1)
+  }
+  expect_deprecated(
+    sample_approx_dist(
+      cases = example_confirmed[1:5],
+      dist_fn = delay_fn,
+      direction = "forwards",
+      type = "median"
+    )
+  )
   args <- list(mean = 3, mean_sd = 0, sd = 2, sd_sd = 0, max_value = 15)
   expect_deprecated(
     do.call(lognorm_dist_def, (c(args, list(samples = 1))))$params[[1]]

@@ -1,6 +1,6 @@
 #' Adjust from Case Counts by Infection Date to Date of Report
 #'
-#' @description  `r lifecycle::badge("stable")`
+#' @description  `r lifecycle::badge("deprecated")`
 #' Maps from cases by date of infection to date of report via date of
 #' onset.
 #' @param infections `<data.table>` containing a `date` variable and a numeric
@@ -25,63 +25,59 @@
 #' @inheritParams sample_approx_dist
 #' @importFrom data.table setorder data.table data.table
 #' @importFrom lubridate wday
+#' @importFrom lifecycle deprecate_warn
 #' @examples
 #' \donttest{
-#' # define example cases
-#' cases <- data.table::copy(example_confirmed)[, cases := as.integer(confirm)]
+#' # This function is deprecated and its functionality can now be accessed
+#' # from [simulate_secondary()].
+#' # Here are some examples of how to use [simulate_secondary()] to replace
+#' # adjust_infection_to_report().
 #'
-#' # define a single report delay distribution
+#' # Old (using adjust_infection_to_report()):
+#' # Define example case data
+#' cases <- data.table::copy(example_confirmed)
+#' cases <- cases[, cases := as.integer(confirm)]
+#' # Define a simple reporting delay distribution
 #' delay_def <- lognorm_dist_def(
-#'   mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
-#'   max_value = 30, samples = 1, to_log = TRUE
+#'  mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
+#'  max_value = 30, samples = 1, to_log = TRUE
 #' )
-#'
-#' # define a single incubation period
-#' incubation_def <- lognorm_dist_def(
-#'   mean = incubation_periods[1, ]$mean,
-#'   mean_sd = incubation_periods[1, ]$mean_sd,
-#'   sd = incubation_periods[1, ]$sd,
-#'   sd_sd = incubation_periods[1, ]$sd_sd,
-#'   max_value = 30, samples = 1
-#' )
-#'
-#' # simple mapping
 #' report <- adjust_infection_to_report(
-#'  cases, delay_defs = list(incubation_def, delay_def)
+#'  cases,
+#'  delay_defs = list(delay_def),
+#'  reporting_model = function(n) rpois(length(n), n)
 #' )
 #' print(report)
 #'
-#' # mapping with a weekly reporting effect
-#' report_weekly <- adjust_infection_to_report(
-#'   cases,
-#'   delay_defs = list(incubation_def, delay_def),
-#'   reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95)
+#' # New (using simulate_secondary()):
+#' cases <- data.table::copy(example_confirmed)
+#' cases <- cases[, primary := as.integer(confirm)]
+#' uncertain_delay <- LogNormal(
+#'  mean = Normal(5, 1), sd = Normal(3, 1),
+#'  max = 30
 #' )
-#' print(report_weekly)
-#'
-#' # map using a deterministic median shift for both delays
-#' report_median <- adjust_infection_to_report(cases,
-#'   delay_defs = list(incubation_def, delay_def),
-#'   type = "median"
+#' delay <- fix_dist(uncertain_delay, strategy = "sample")
+#' report <- simulate_secondary(
+#'  cases,
+#'  delays = delay_opts(delay),
+#'  obs = obs_opts(family = "poisson")
 #' )
-#' print(report_median)
-#'
-#' # map with a weekly reporting effect and stochastic reporting model
-#' report_stochastic <- adjust_infection_to_report(
-#'   cases,
-#'   delay_defs = list(incubation_def, delay_def),
-#'   reporting_effect = c(1.1, rep(1, 4), 0.95, 0.95),
-#'   reporting_model = function(n) {
-#'     out <- suppressWarnings(rnbinom(length(n), as.integer(n), 0.5))
-#'     out <- ifelse(is.na(out), 0, out)
-#'   }
-#' )
-#' print(report_stochastic)
+#' print(report)
 #' }
 adjust_infection_to_report <- function(infections, delay_defs,
                                        reporting_model, reporting_effect,
                                        type = "sample",
                                        truncate_future = TRUE) {
+  deprecate_warn(
+    when = "1.5.0",
+    what = "adjust_infection_to_report()",
+    with = "simulate_secondary()",
+    details = c(
+      "See equivalent examples using `simulate_secondary()`",
+      "in ?adjust_infection_to_report.",
+      "This function will be removed completely in version 2.0.0."
+    )
+  )
   # Reset DT Defaults on Exit
   set_dt_single_thread()
 
@@ -100,14 +96,14 @@ adjust_infection_to_report <- function(infections, delay_defs,
 
 
     ## Infection to onset
-    out <- EpiNow2::sample_approx_dist(
+    out <- suppressWarnings(EpiNow2::sample_approx_dist(
       cases = input,
       dist_fn = sample_delay_fn,
       max_value = delay_def$max_value,
       direction = "forwards",
       type = type,
       truncate_future = FALSE
-    )
+    ))
 
     return(out)
   }
@@ -124,14 +120,14 @@ adjust_infection_to_report <- function(infections, delay_defs,
     }
 
     ## Infection to onset
-    out <- EpiNow2::sample_approx_dist(
+    out <- suppressWarnings(EpiNow2::sample_approx_dist(
       cases = input,
       dist_fn = sample_delay_fn,
       max_value = max(delay_def),
       direction = "forwards",
       type = type,
       truncate_future = FALSE
-    )
+    ))
 
     return(out)
   }
@@ -186,7 +182,7 @@ adjust_infection_to_report <- function(infections, delay_defs,
 
 #' Approximate Sampling a Distribution using Counts
 #'
-#' @description `r lifecycle::badge("soft-deprecated")`
+#' @description `r lifecycle::badge("deprecated")`
 #' Convolves cases by a PMF function. This function will soon be removed or
 #' replaced with a more robust stan implementation.
 #'
@@ -218,6 +214,7 @@ adjust_infection_to_report <- function(infections, delay_defs,
 #' @importFrom purrr map_dfc
 #' @importFrom data.table data.table setorder
 #' @importFrom lubridate days
+#' @importFrom lifecycle deprecate_warn
 #' @examples
 #' \donttest{
 #' cases <- example_confirmed
@@ -279,6 +276,11 @@ sample_approx_dist <- function(cases = NULL,
                                direction = "backwards",
                                type = "sample",
                                truncate_future = TRUE) {
+  deprecate_warn(
+    "1.5.0",
+    "sample_approx_dist()",
+    details = "The function will be removed completely in version 2.0.0."
+  )
   if (type == "sample") {
     if (direction == "backwards") {
       direction_fn <- rev

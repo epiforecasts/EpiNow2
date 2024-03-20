@@ -1,6 +1,6 @@
 #' Report case counts by date of report
 #'
-#' @description `r lifecycle::badge("soft-deprecated")`
+#' @description `r lifecycle::badge("deprecated")`
 #' Convolves latent infections to reported cases via an observation model.
 #' Likely to be removed/replaced in later releases by functionality drawing on
 #' the `stan` implementation.
@@ -27,23 +27,36 @@
 #' @inheritParams adjust_infection_to_report
 #' @importFrom data.table data.table rbindlist
 #' @importFrom future.apply future_lapply
+#' @importFrom lifecycle deprecate_warn
 #' @examples
 #' \donttest{
-#' # define example cases
+#' # This function is deprecated and its functionality can now be accessed
+#' # from [simulate_secondary()].
+#' # Here are some examples of how to use [simulate_secondary()] to replace
+#' # report_cases().
+#' # Old (using report_cases()):
+#' # Define case data
 #' cases <- example_confirmed[1:40]
-#'
-#' # get example delays
-#' # Instead of running them model we use example
-#' # data for speed in this example.
 #' cases <- cases[, cases := as.integer(confirm)]
 #' cases <- cases[, confirm := NULL][, sample := 1]
-#'
 #' reported_cases <- report_cases(
-#'   case_estimates = cases,
-#'   delays = delay_opts(example_incubation_period + example_reporting_delay),
-#'   type = "sample"
+#'  case_estimates = cases,
+#'  delays = delay_opts(example_incubation_period + example_reporting_delay),
+#'  type = "sample"
 #' )
-#' print(reported_cases)
+#' print(reported_cases$samples)
+#'
+#' # New (using simulate_secondary()):
+#' cases <- example_confirmed[1:40]
+#' cases <- cases[, primary := as.integer(confirm)]
+#' report <- simulate_secondary(
+#'  cases,
+#'  delays = delay_opts(
+#'    fix_dist(example_incubation_period + example_reporting_delay)
+#'  ),
+#'  obs = obs_opts(family = "poisson")
+#' )
+#' print(report)
 #' }
 report_cases <- function(case_estimates,
                          case_forecast = NULL,
@@ -51,6 +64,16 @@ report_cases <- function(case_estimates,
                          type = "sample",
                          reporting_effect,
                          CrIs = c(0.2, 0.5, 0.9)) {
+  deprecate_warn(
+    when = "1.5.0",
+    what = "report_cases()",
+    with = "simulate_secondary()",
+    details = c(
+      "See equivalent examples using `simulate_secondary()`",
+      "in ?report_cases.",
+      "This function will be removed completely in version 2.0.0."
+    )
+  )
   samples <- length(unique(case_estimates$sample))
 
   # add a null reporting effect if missing

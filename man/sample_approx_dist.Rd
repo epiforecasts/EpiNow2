@@ -42,7 +42,7 @@ after the first date reported in the data. Defaults to \code{TRUE}.}
 A \verb{<data.table>} of cases by date of onset
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#soft-deprecated}{\figure{lifecycle-soft-deprecated.svg}{options: alt='[Soft-deprecated]'}}}{\strong{[Soft-deprecated]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Convolves cases by a PMF function. This function will soon be removed or
 replaced with a more robust stan implementation.
 }
