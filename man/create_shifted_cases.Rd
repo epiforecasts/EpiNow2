@@ -42,5 +42,22 @@ projected to the end of the forecast horizon. The initial part of the data
 any non-integer resulting values rounded up.
 }
 \examples{
-create_shifted_cases(example_confirmed, 7, 14, 7)
+shift <- 7
+horizon <- 7
+smoothing_window <- 14
+## add NAs for horizon
+cases <- create_clean_reported_cases(example_confirmed, horizon = horizon)
+## add zeroes initially
+cases <- data.table::rbindlist(list(
+   data.table::data.table(
+     date = seq(
+       min(cases$date) - smoothing_window,
+       min(cases$date) - 1,
+       by = "days"
+     ),
+     confirm = 0, breakpoint = 0
+   ),
+   cases
+ ))
+create_shifted_cases(cases, shift, smoothing_window, horizon)
 }

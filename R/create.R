@@ -125,7 +125,24 @@ create_complete_cases <- function(cases) {
 #' @return A `<data.frame>` for shifted reported cases
 #' @export
 #' @examples
-#' create_shifted_cases(example_confirmed, 7, 14, 7)
+#' shift <- 7
+#' horizon <- 7
+#' smoothing_window <- 14
+#' ## add NAs for horizon
+#' cases <- create_clean_reported_cases(example_confirmed, horizon = horizon)
+#' ## add zeroes initially
+#' cases <- data.table::rbindlist(list(
+#'    data.table::data.table(
+#'      date = seq(
+#'        min(cases$date) - smoothing_window,
+#'        min(cases$date) - 1,
+#'        by = "days"
+#'      ),
+#'      confirm = 0, breakpoint = 0
+#'    ),
+#'    cases
+#'  ))
+#' create_shifted_cases(cases, shift, smoothing_window, horizon)
 create_shifted_cases <- function(reported_cases, shift,
                                  smoothing_window, horizon) {
   shifted_reported_cases <- data.table::copy(reported_cases)[
