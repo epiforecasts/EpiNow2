@@ -285,14 +285,14 @@ report_plots <- function(summarised_estimates, reported,
   infections <- plot_estimates(
     estimate = summarised_estimates[variable == "infections"],
     reported = reported,
-    ylab = "Cases by \n date of infection",
+    ylab = "New infections \n per day",
     ...
   )
 
   # cases by report ---------------------------------------------------------
   reports <- plot_estimates(
     estimate = summarised_estimates[variable == "reported_cases"],
-    reported = reported, ylab = "Cases by \n date of report",
+    reported = reported, ylab = "New reports \n per day",
     ...
   )
 
