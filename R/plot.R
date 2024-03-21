@@ -54,7 +54,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' @param reported A `<data.table>` of reported cases with the following
 #' variables: date, confirm.
 #'
-#' @param ylab Character string, defaulting to "Cases". Title for the plot y
+#' @param ylab Character string. Title for the plot y
 #' axis.
 #'
 #' @param hline Numeric, if supplied gives the horizontal intercept for a
@@ -112,7 +112,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #'   ylab = "Effective Reproduction No.",
 #'   hline = 1, estimate_type = "Estimate"
 #' )
-plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
+plot_estimates <- function(estimate, reported, ylab, hline,
                            obs_as_col = TRUE, max_plot = 10,
                            estimate_type = NULL) {
   # convert input to data.table
