@@ -101,10 +101,12 @@ report_cases <- function(case_estimates,
   ## For each sample map to report date
   report <- future.apply::future_lapply(1:max(infections$sample),
     function(id) {
-      EpiNow2::adjust_infection_to_report(infections[sample == id],
-        delay_defs = delays,
-        type = type,
-        reporting_effect = reporting_effect[sample == id, ]$effect
+      suppressWarnings(
+        EpiNow2::adjust_infection_to_report(infections[sample == id],
+          delay_defs = delays,
+          type = type,
+          reporting_effect = reporting_effect[sample == id, ]$effect
+        )
       )
     },
     future.seed = TRUE
