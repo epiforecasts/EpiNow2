@@ -547,8 +547,10 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
     } else if (inherits(stan_args$object, "CmdStanModel")) {
       if (method == "vb") {
         sample_func <- stan_args$object$variational
-      } else {
+      } else if (method == "laplace") {
         sample_func <- stan_args$object$laplace
+      } else {
+        sample_func <- stan_args$object$pathfinder
       }
       stan_args$object <- NULL
     }
