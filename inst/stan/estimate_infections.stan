@@ -196,8 +196,6 @@ generated quantities {
   array[ot_h] int imputed_reports;
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
   vector[ot_h - 1] r;
-  real gt_mean;
-  real gt_var;
   vector[return_likelihood ? ot : 0] log_lik;
   profile("generated quantities") {
     if (estimate_r == 0){
@@ -211,8 +209,6 @@ generated quantities {
         delay_np_pmf_groups, delay_params_sample, delay_params_groups,
         delay_dist, 1, 1, 0
       );
-      gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);
-      gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);
       // calculate Rt using infections and generation time
       gen_R = calculate_Rt(
         infections, seeding_time, sampled_gt_rev_pmf, rt_half_window
