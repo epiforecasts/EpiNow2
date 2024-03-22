@@ -97,6 +97,14 @@ generation_time_opts <- function(dist = Fixed(1), ...,
       "information, see the relevant documentation pages using ",
       "`?generation_time_opts`")
   }
+  if (missing(dist)) {
+    warning(
+      "No generation time distribution given. Assuming a fixed generation ",
+      "time of 1 day, i.e. the reproduction number is the same as the daily ",
+      "growth rate. If this was intended then this warning can be silenced by ",
+      "setting `dist` explicitly to `Fixed(1)`."
+    )
+  }
   check_stan_delay(dist)
   attr(dist, "tolerance") <- tolerance
   attr(dist, "class") <- c("generation_time_opts", class(dist))
