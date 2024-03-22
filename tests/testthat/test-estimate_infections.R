@@ -4,7 +4,8 @@ futile.logger::flog.threshold("FATAL")
 
 reported_cases <- EpiNow2::example_confirmed[1:30]
 
-default_estimate_infections <- function(..., add_stan = list(), delay = TRUE) {
+default_estimate_infections <- function(..., add_stan = list(), gt = TRUE,
+                                        delay = TRUE) {
   futile.logger::flog.threshold("FATAL")
 
   def_stan <- list(
@@ -15,7 +16,9 @@ default_estimate_infections <- function(..., add_stan = list(), delay = TRUE) {
   stan_args <- do.call(stan_opts, def_stan)
 
   suppressWarnings(estimate_infections(...,
-    generation_time = generation_time_opts(example_generation_time),
+    generation_time = fifelse(
+      gt, generation_time_opts(example_generation_time), generation_time_opts()
+    ),
     delays = ifelse(delay, list(delay_opts(example_reporting_delay)), list(delay_opts()))[[1]],
     stan = stan_args, verbose = FALSE
   ))
@@ -27,6 +30,7 @@ test_estimate_infections <- function(...) {
   expect_true(nrow(out$samples) > 0)
   expect_true(nrow(out$summarised) > 0)
   expect_true(nrow(out$observations) > 0)
+  invisible(out)
 }
 
 # Test functionality ------------------------------------------------------
@@ -87,6 +91,20 @@ test_that("estimate_infections successfully returns estimates using a single bre
 test_that("estimate_infections successfully returns estimates using a random walk", {
   skip_on_cran()
   test_estimate_infections(reported_cases, gp = NULL, rt = rt_opts(rw = 7))
+})
+
+test_that("estimate_infections works without setting a generation time", {
+  skip_on_cran()
+  df <- test_estimate_infections(reported_cases, gt = FALSE, delay = FALSE)
+  ## check exp(r) == R
+  growth_rate <- df$samples[variable == "growth_rate"][,
+    list(date, sample, growth_rate = value)
+  ]
+  R <- df$samples[variable == "R"][,
+    list(date, sample, R = value)
+  ]
+  combined <- merge(growth_rate, R, by = c("date", "sample"), all = FALSE)
+  expect_equal(exp(combined$growth_rate), combined$R)
 })
 
 test_that("estimate_infections fails as expected when given a very short timeout", {
