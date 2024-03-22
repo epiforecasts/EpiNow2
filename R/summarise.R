@@ -758,7 +758,6 @@ summary.epinow <- function(object,
                            ),
                            date = NULL, params = NULL,
                            ...) {
-  choices <-
   output <- arg_match(output)
   if (output == "estimates") {
     out <- summary(object$estimates,
