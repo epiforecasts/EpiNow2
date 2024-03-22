@@ -366,9 +366,10 @@ plot_summary <- function(summary_results,
 #'
 #' @param x A list of output as produced by `estimate_infections`
 #'
-#' @param type A character vector indicating the name of plots to return.
+#' @param type A character vector indicating the name of the plot to return.
 #' Defaults to  "summary" with supported options being "infections", "reports",
-#' "R", "growth_rate", "summary", "all".
+#' "R", "growth_rate", "summary", "all". If "all" is supplied all plots are
+#' generated.
 #'
 #' @param ... Pass additional arguments to report_plots
 #' @importFrom rlang arg_match
@@ -387,8 +388,7 @@ plot.estimate_infections <- function(x,
     summarised_estimates = x$summarised,
     reported = x$observations, ...
   )
-  choices <-
-  type <- arg_match(type, multiple = TRUE)
+  type <- arg_match(type)
   if (type == "all") {
     type <- c("summary", "infections", "reports", "R", "growth_rate")
   }
