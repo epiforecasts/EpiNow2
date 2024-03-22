@@ -85,8 +85,8 @@ used in <code><a href="estimate_secondary.html">estimate_secondary()</a></code> 
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">convolve_and_scale</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  type <span class="op">=</span> <span class="st">"incidence"</span>,</span>
-<span>  family <span class="op">=</span> <span class="st">"poisson"</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"incidence"</span>, <span class="st">"prevalence"</span><span class="op">)</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"poisson"</span>, <span class="st">"negbin"</span><span class="op">)</span>,</span>
 <span>  delay_max <span class="op">=</span> <span class="fl">30</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -205,17 +205,17 @@ the convolution model.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 130: 2020-06-30     126     126     0.4     1.8   0.5   130   50.4 109.029626</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      secondary</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;int&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1:         9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2:         9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3:        10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4:        17</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5:        17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   1:         5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   2:         5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   3:         8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   4:        12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   5:        16</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ---          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 126:        95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 127:        94</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 126:        91</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 127:        95</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 128:       103</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 129:       103</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 130:       113</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 129:       109</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 130:       109</span>
 <span class="r-in"><span><span class="co">#### Prevalence data example ####</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># make some example prevalence data</span></span></span>
@@ -272,17 +272,17 @@ the convolution model.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 130: 2020-06-30     126     126     0.3     1.6   0.8   130   37.8 75.330670</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      secondary</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;int&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1:         6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2:        16</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3:        28</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4:        35</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5:        48</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   1:         4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   2:        18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   3:        23</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   4:        38</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   5:        49</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ---          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 126:       292</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 127:       251</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 128:       241</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 129:       193</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 130:       178</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 126:       273</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 127:       266</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 128:       235</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 129:       207</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 130:       170</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
