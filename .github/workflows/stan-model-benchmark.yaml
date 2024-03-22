@@ -53,12 +53,14 @@ jobs:
 
       - id: output
         name: Output to environment variable
+        if: ${{ hashFiles('inst/dev/benchmark-results.md') != '' }}
         run: |
           echo 'BENCHMARK<<EOF' > $GITHUB_OUTPUT
           cat inst/dev/benchmark-results.md >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
 
       - name: Post comment
+        if: ${{ hashFiles('inst/dev/benchmark-results.md') != '' }}
         uses: actions/github-script@v7
         env:
           BENCHMARK: ${{ steps.output.outputs.BENCHMARK }}

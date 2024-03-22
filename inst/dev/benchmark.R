@@ -56,18 +56,20 @@ changes <- format_summary[,
 ), by = "operation"
 ]
 
-format_summary <- merge(
-  summary_means,
-  changes[, .(operation, mean, range, trend)],
-  by = "operation"
-)
+if (any(changes_trend != "no change")) {
+  format_summary <- merge(
+    summary_means,
+    changes[, .(operation, mean, range, trend)],
+    by = "operation"
+  )
 
-setorder(format_summary, -main)
-format_summary <- format_summary[, lapply(.SD, as.character)]
-setnames(format_summary, "mean", "% change")
+  setorder(format_summary, -main)
+  format_summary <- format_summary[, lapply(.SD, as.character)]
+  setnames(format_summary, "mean", "% change")
 
-sink(file = file.path("inst", "dev", "benchmark-results.md"))
-knitr::kable(
-  format_summary, align = "lrrrr",
-  caption = "Benchmarking results (mean time in seconds)."
-)
+  sink(file = file.path("inst", "dev", "benchmark-results.md"))
+  knitr::kable(
+    format_summary, align = "lrrrr",
+    caption = "Benchmarking results (mean time in seconds)."
+  )
+}
