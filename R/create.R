@@ -181,17 +181,11 @@ create_shifted_cases <- function(reported_cases, shift,
 #' @param delay Numeric mean delay
 #' @importFrom rlang arg_match
 #' @return A list containing a logical called fixed and an integer called from
-create_future_rt <- function(future = "latest", delay = 0) {
+create_future_rt <- function(future = c("latest", "project", "estimate"),
+                             delay = 0) {
   out <- list(fixed = FALSE, from = 0)
   if (is.character(future)) {
-    future <- arg_match(
-      future,
-      values = c(
-        "project",
-        "latest",
-        "estimate"
-      )
-    )
+    future <- arg_match(future)
     if (!(future == "project")) {
       out$fixed <- TRUE
       out$from <- ifelse(future == "latest", 0, -delay)

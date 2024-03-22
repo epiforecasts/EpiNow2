@@ -10,7 +10,7 @@ rt_opts(
   rw = 0,
   use_breakpoints = TRUE,
   future = "latest",
-  gp_on = "R_t-1",
+  gp_on = c("R_t-1", "R0"),
   pop = 0
 )
 }

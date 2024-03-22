@@ -4,7 +4,7 @@
 \alias{secondary_opts}
 \title{Secondary Reports Options}
 \usage{
-secondary_opts(type = "incidence", ...)
+secondary_opts(type = c("incidence", "prevalence"), ...)
 }
 \arguments{
 \item{type}{A character string indicating the type of observation the

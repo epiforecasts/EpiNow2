@@ -18,17 +18,15 @@
 #' @importFrom rlang arg_match
 #' @return A `cmdstanr` model.
 #' @export
-package_model <- function(model = "estimate_infections",
+package_model <- function(model = c(
+                            "estimate_infections", "simulate_infections",
+                            "estimate_secondary", "simulate_secondary",
+                            "estimate_truncation", "dist_fit"
+                          ),
                           include = system.file("stan", package = "EpiNow2"),
                           verbose = FALSE,
                           ...) {
-  model <- arg_match(
-    model,
-    c(
-      "estimate_infections", "simulate_infections", "estimate_secondary",
-      "simulate_secondary", "estimate_truncation", "dist_fit"
-    )
-  )
+  model <- arg_match(model)
   model_file <- system.file(
     "stan", paste0(model, ".stan"),
     package = "EpiNow2"

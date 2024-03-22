@@ -14,7 +14,7 @@ stan_sampling_opts(
   seed = as.integer(runif(1, 1, 1e+08)),
   future = FALSE,
   max_execution_time = Inf,
-  backend = "rstan",
+  backend = c("rstan", "cmdstanr"),
   ...
 )
 }

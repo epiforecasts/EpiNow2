@@ -439,10 +439,11 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' # Simulate secondary cases
 #' cases <- convolve_and_scale(cases, type = "prevalence")
 #' cases
-convolve_and_scale <- function(data, type = "incidence", family = "poisson",
+convolve_and_scale <- function(data, type = c("incidence", "prevalence"),
+                               family = c("none", "poisson", "negbin"),
                                delay_max = 30, ...) {
-  type <- arg_match(type, values = c("incidence", "prevalence"))
-  family <- arg_match(family, values = c("none", "poisson", "negbin"))
+  type <- arg_match(type)
+  family <- arg_match(family)
   data <- data.table::as.data.table(data)
   data <- data.table::copy(data)
   data <- data[, index := seq_len(.N)]

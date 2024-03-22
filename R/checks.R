@@ -19,18 +19,16 @@
 #' @importFrom rlang arg_match
 #' @return Called for its side effects.
 #' @keywords internal
-check_reports_valid <- function(reports, model) {
+check_reports_valid <- function(reports,
+                                model = c(
+                                  "estimate_infections",
+                                  "estimate_truncation",
+                                  "estimate_secondary"
+                                )) {
   # Check that the case time series (reports) is a data frame
   assert_data_frame(reports)
   # Perform checks depending on the model to the data is meant to be used with
-  model <- arg_match(
-  model,
-  values = c(
-    "estimate_infections",
-    "estimate_truncation",
-    "estimate_secondary"
-    )
-  )
+  model <- arg_match(model)
 
   if (model == "estimate_secondary") {
     # Check that reports has the right column names
