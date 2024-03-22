@@ -739,22 +739,13 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(sR);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // Convert an estimate of Rt to growth</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> array[] real R_to_growth(vector R, real gt_mean, real gt_var) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(R);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[t] real r;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (gt_var &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real k = gt_var * inv_square(gt_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in 1:t) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       r[s] = (pow(R[s], k) - 1) / (k * gt_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // limit as gt_sd -&gt; 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in 1:t) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       r[s] = log(R[s]) / gt_mean;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   return(r);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // Calculate growth rate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector calculate_growth(vector infections, int seeding_time) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(infections);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int ot = t - seeding_time;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] log_inf = log(infections);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] growth = log_inf[(seeding_time + 1):t] - log_inf[seeding_time:(t - 1)];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return(growth);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> data {</span>
@@ -992,17 +983,12 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> generated quantities {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[ot_h] int imputed_reports;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r &gt; 0 ? 0: ot_h] gen_R;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[ot_h] real r;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot_h - 1] r;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_var;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[return_likelihood ? ot : 0] log_lik;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   profile("generated quantities") {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (estimate_r){</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       // estimate growth from estimated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_mean = rev_pmf_mean(gt_rev_pmf, 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       r = R_to_growth(R, gt_mean, gt_var);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (estimate_r == 0){</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       // sample generation time</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         delay_params_mean, delay_params_sd, delay_params_lower</span>
@@ -1019,9 +1005,9 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       gen_R = calculate_Rt(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         infections, seeding_time, sampled_gt_rev_pmf, rt_half_window</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       // estimate growth from calculated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       r = R_to_growth(gen_R, gt_mean, gt_var);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     // estimate growth from infections</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     r = calculate_growth(infections, seeding_time + 1);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // simulate reported cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     imputed_reports = report_rng(reports, rep_phi, model_type);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // log likelihood of model</span>
@@ -1670,22 +1656,13 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(sR);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> // Convert an estimate of Rt to growth</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> array[] real R_to_growth(vector R, real gt_mean, real gt_var) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(R);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[t] real r;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   if (gt_var &gt; 0) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     real k = gt_var * inv_square(gt_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in 1:t) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       r[s] = (pow(R[s], k) - 1) / (k * gt_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     // limit as gt_sd -&gt; 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     for (s in 1:t) {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       r[s] = log(R[s]) / gt_mean;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   return(r);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> // Calculate growth rate</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> vector calculate_growth(vector infections, int seeding_time) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int t = num_elements(infections);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   int ot = t - seeding_time;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[t] log_inf = log(infections);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot] growth = log_inf[(seeding_time + 1):t] - log_inf[seeding_time:(t - 1)];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   return(growth);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> data {</span>
@@ -1923,17 +1900,12 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> generated quantities {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[ot_h] int imputed_reports;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r &gt; 0 ? 0: ot_h] gen_R;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   array[ot_h] real r;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot_h - 1] r;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_var;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[return_likelihood ? ot : 0] log_lik;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   profile("generated quantities") {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (estimate_r){</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       // estimate growth from estimated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_mean = rev_pmf_mean(gt_rev_pmf, 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_var = rev_pmf_var(gt_rev_pmf, 1, gt_mean);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       r = R_to_growth(R, gt_mean, gt_var);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (estimate_r == 0){</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       // sample generation time</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         delay_params_mean, delay_params_sd, delay_params_lower</span>
@@ -1950,9 +1922,9 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       gen_R = calculate_Rt(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         infections, seeding_time, sampled_gt_rev_pmf, rt_half_window</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       // estimate growth from calculated Rt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       r = R_to_growth(gen_R, gt_mean, gt_var);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     // estimate growth from infections</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     r = calculate_growth(infections, seeding_time + 1);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // simulate reported cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     imputed_reports = report_rng(reports, rep_phi, model_type);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     // log likelihood of model</span>
