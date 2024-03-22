@@ -143,6 +143,7 @@ distributions.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># default settings with a fixed generation time of 1</span></span></span>
 <span class="r-in"><span><span class="fu">generation_time_opts</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>No generation time distribution given. Assuming a fixed generation time of 1 day, i.e. the reproduction number is the same as the daily growth rate. If this was intended then this warning can be silenced by setting `dist` explicitly to `Fixed(1)`.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - fixed value:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   1</span>
 <span class="r-in"><span></span></span>
