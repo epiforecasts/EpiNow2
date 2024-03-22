@@ -781,8 +781,8 @@ stan_vb_opts <- function(samples = 2000,
 
 #' Stan Laplace algorithm Options
 #'
-#' @description `r lifecycle::badge("stable")` Defines a list specifying the
-#'   arguments passed to [cmdstanr::laplace()].
+#' @description `r lifecycle::badge("experimental")`
+#' Defines a list specifying the arguments passed to [cmdstanr::laplace()].
 #'
 #' @inheritParams stan_opts
 #' @inheritParams stan_vb_opts
@@ -806,8 +806,8 @@ stan_laplace_opts <- function(backend = "cmdstanr",
 
 #' Stan pathfinder algorithm Options
 #'
-#' @description `r lifecycle::badge("stable")` Defines a list specifying the
-#'   arguments passed to [cmdstanr::laplace()].
+#' @description `r lifecycle::badge("experimental")`
+#' Defines a list specifying the arguments passed to [cmdstanr::laplace()].
 #'
 #' @inheritParams stan_opts
 #' @inheritParams stan_vb_opts
@@ -894,9 +894,9 @@ rstan_opts <- function(object = NULL,
 #'
 #' @param method A character string, defaulting to sampling. Currently supports
 #' MCMC sampling ("sampling") or approximate posterior sampling via
-#' variational inference ("vb") and, if the "cmdstanr" backend is used,
-#' approximate posterior sampling with the laplaces algorithm ("laplace") or
-#' pathfinder ("pathfinder").
+#' variational inference ("vb") and, as experimental features if the
+#' "cmdstanr" backend is used, approximate posterior sampling with the
+#' laplace algorithm ("laplace") or pathfinder ("pathfinder").
 #'
 #' @param backend Character string indicating the backend to use for fitting
 #' stan models. Supported arguments are "rstan" (default) or "cmdstanr".
