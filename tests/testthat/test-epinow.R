@@ -35,7 +35,7 @@ test_that("epinow produces expected output when run with default settings", {
   df_non_zero(out$estimated_reported_cases$samples)
   df_non_zero(out$estimated_reported_cases$summarised)
   df_non_zero(out$summary)
-  expect_equal(names(out$plots), c("infections", "reports", "R", "growth_rate", "summary"))
+  expect_equal(names(out$plots), c("summary", "infections", "reports", "R", "growth_rate"))
 })
 
 test_that("epinow produces expected output when run with the
@@ -63,7 +63,7 @@ test_that("epinow produces expected output when run with the
   df_non_zero(out$estimated_reported_cases$summarised)
   df_non_zero(out$summary)
   expect_equal(
-    names(out$plots), c("infections", "reports", "R", "growth_rate", "summary")
+    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
   )
 })
 
