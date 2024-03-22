@@ -17,7 +17,9 @@ test_simulate_infections <- function(obs = obs_opts(family = "poisson"), ...) {
 
 test_that("simulate_infections works as expected with standard parameters", {
   set.seed(123)
-  sim <- test_simulate_infections()
+  sim <- test_simulate_infections(
+    generation_time = generation_time_opts(Fixed(1))
+  )
   expect_equal(nrow(sim), 2 * nrow(R))
   expect_snapshot_output(sim)
   set.seed(Sys.time())
@@ -37,17 +39,22 @@ test_that("simulate_infections works as expected with additional parameters", {
 
 test_that("simulate_infections fails with uncertain parameters", {
   expect_error(
-    test_simulate_infections(obs = obs_opts(family = "negbin")),
+    test_simulate_infections(
+      generation_time = generation_time_opts(Fixed(1)),
+      obs = obs_opts(family = "negbin")
+    ),
     "uncertain"
   )
   expect_error(
     test_simulate_infections(
+      generation_time = generation_time_opts(Fixed(1)),
       obs = obs_opts(scale = list(mean = 1, sd = 1))
     ),
     "uncertain"
   )
   expect_error(
     test_simulate_infections(
+      generation_time = generation_time_opts(Fixed(1)),
       delays = delay_opts(example_incubation_period)
     ),
     "uncertain"
