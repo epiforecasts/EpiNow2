@@ -84,10 +84,10 @@ fit_model <- function(args, id = "stan") {
       future = args$future,
       max_execution_time = args$max_execution_time, id = id
     )
-  } else if (args$method %in% c("vb", "laplace")) {
+  } else if (args$method %in% c("vb", "laplace", "pathfinder")) {
     fit <- fit_model_approximate(args, id = id)
   } else {
-    stop("args$method unknown")
+    stop("method ", args$method, " unknown")
   }
   return(fit)
 }

@@ -26,7 +26,9 @@ When using multiple chains iterations per chain is samples / chains.}
 
 \item{method}{A character string, defaulting to sampling. Currently supports
 MCMC sampling ("sampling") or approximate posterior sampling via
-variational inference ("vb").}
+variational inference ("vb") and, if the "cmdstanr" backend is used,
+approximate posterior sampling with the laplaces algorithm ("laplace") or
+pathfinder ("pathfinder").}
 
 \item{backend}{Character string indicating the backend to use for fitting
 stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
