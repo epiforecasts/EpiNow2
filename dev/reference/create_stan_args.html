@@ -984,8 +984,6 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[ot_h] int imputed_reports;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r &gt; 0 ? 0: ot_h] gen_R;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot_h - 1] r;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_var;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[return_likelihood ? ot : 0] log_lik;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   profile("generated quantities") {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (estimate_r == 0){</span>
@@ -999,8 +997,6 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         delay_np_pmf_groups, delay_params_sample, delay_params_groups,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         delay_dist, 1, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       // calculate Rt using infections and generation time</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       gen_R = calculate_Rt(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         infections, seeding_time, sampled_gt_rev_pmf, rt_half_window</span>
@@ -1901,8 +1897,6 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   array[ot_h] int imputed_reports;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[estimate_r &gt; 0 ? 0: ot_h] gen_R;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[ot_h - 1] r;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_mean;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   real gt_var;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   vector[return_likelihood ? ot : 0] log_lik;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   profile("generated quantities") {</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     if (estimate_r == 0){</span>
@@ -1916,8 +1910,6 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         delay_np_pmf_groups, delay_params_sample, delay_params_groups,</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         delay_dist, 1, 1, 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       );</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_mean = rev_pmf_mean(sampled_gt_rev_pmf, 1);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gt_var = rev_pmf_var(sampled_gt_rev_pmf, 1, gt_mean);</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       // calculate Rt using infections and generation time</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       gen_R = calculate_Rt(</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         infections, seeding_time, sampled_gt_rev_pmf, rt_half_window</span>
