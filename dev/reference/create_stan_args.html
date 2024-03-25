@@ -205,10 +205,17 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reject("Unknown distribution function provided.");</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // discretise</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf[1] = upper_lcdf[1];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf[2:n] = log_diff_exp(upper_lcdf[2:n], upper_lcdf[1:(n-1)]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // normalize</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf = lpmf - upper_lcdf[n];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (n &gt; 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[1] = upper_lcdf[1];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[2] = upper_lcdf[2];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (n &gt; 2) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       lpmf[3:n] = log_diff_exp(upper_lcdf[3:n], upper_lcdf[1:(n - 2)]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     // normalize</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf = lpmf - log_sum_exp(upper_lcdf[(n - 1):n]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[1] = 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(exp(lpmf));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // reverse a mf</span>
@@ -1118,10 +1125,17 @@ messages be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reject("Unknown distribution function provided.");</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   // discretise</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf[1] = upper_lcdf[1];</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf[2:n] = log_diff_exp(upper_lcdf[2:n], upper_lcdf[1:(n-1)]);</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   // normalize</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lpmf = lpmf - upper_lcdf[n];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   if (n &gt; 1) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[1] = upper_lcdf[1];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[2] = upper_lcdf[2];</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     if (n &gt; 2) {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       lpmf[3:n] = log_diff_exp(upper_lcdf[3:n], upper_lcdf[1:(n - 2)]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     // normalize</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf = lpmf - log_sum_exp(upper_lcdf[(n - 1):n]);</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   } else {</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     lpmf[1] = 0;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   return(exp(lpmf));</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> // reverse a mf</span>
