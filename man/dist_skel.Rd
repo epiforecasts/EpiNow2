@@ -30,10 +30,12 @@ options are exponential ("exp"), gamma ("gamma"), and log normal
 
 \item{discrete}{Logical,  defaults to \code{FALSE}. Should the probability
 distribution be discretised. In this case each entry of the probability
-mass function corresponds to the 1-length interval ending at the entry,
-i.e. the probability mass function is a vector where the first entry
-corresponds to the integral over the (0,1] interval of the continuous
-distribution, the second entry corresponds to the (1,2] interval etc.}
+mass function corresponds to the 2-length interval ending at the entry
+except for the first interval that covers (0, 1).  That is, the probability
+mass function is a vector where the first entry corresponds to the integral
+over the (0,1] interval of the continuous distribution, the second entry
+corresponds to the (0,2] interval, the third entry corresponds to the (1,
+3] interval etc.}
 
 \item{params}{A list of parameters values (by name) required for each model.
 For the exponential model this is a rate parameter and for the gamma model

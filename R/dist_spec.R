@@ -20,10 +20,12 @@
 #'
 #' @param discrete Logical,  defaults to `FALSE`. Should the probability
 #'   distribution be discretised. In this case each entry of the probability
-#'   mass function corresponds to the 1-length interval ending at the entry,
-#'   i.e. the probability mass function is a vector where the first entry
-#'   corresponds to the integral over the (0,1] interval of the continuous
-#'   distribution, the second entry corresponds to the (1,2] interval etc.
+#'   mass function corresponds to the 2-length interval ending at the entry
+#'   except for the first interval that covers (0, 1).  That is, the probability
+#'   mass function is a vector where the first entry corresponds to the integral
+#'   over the (0,1] interval of the continuous distribution, the second entry
+#'   corresponds to the (0,2] interval, the third entry corresponds to the (1,
+#'   3] interval etc.
 #'
 #' @param params A list of parameters values (by name) required for each model.
 #' For the exponential model this is a rate parameter and for the gamma model
@@ -84,74 +86,34 @@
 #' )
 dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
                       discrete = FALSE, params, max_value = 120) {
+  ## define unnormalised support function
   if (model == "exp") {
-    # define support functions for exponential dist
-    rdist <- function(n) {
-      rexp(n, params[["rate"]])
-    }
-    pdist <- function(n) {
-      pexp(n, params[["rate"]]) / pexp(max_value, params[["rate"]])
-    }
-    ddist <- function(n) {
-      (pexp(n + 1, params[["rate"]]) -
-        pexp(n, params[["rate"]])) /
-        pexp(max_value + 1, params[["rate"]])
+    updist <- function(n) {
+      pexp(n, params[["rate"]])
     }
   } else if (model == "gamma") {
-    rdist <- function(n) {
-      rgamma(n = n, shape = params[["shape"]], rate = params[["rate"]])
-    }
-    pdist <- function(n) {
-      pgamma(q = n, shape = params[["shape"]], rate = params[["rate"]]) /
-        pgamma(
-          q = max_value + 1, shape = params[["shape"]], rate = params[["rate"]]
-        )
-    }
-    ddist <- function(n) {
-      (pgamma(q = n + 1, shape = params[["shape"]], rate = params[["rate"]]) -
-        pgamma(q = n, shape = params[["shape"]], rate = params[["rate"]])) /
-        pgamma(q = max_value + 1, params[["shape"]], rate = params[["rate"]])
+    updist <- function(n) {
+      pgamma(n, params[["shape"]], params[["rate"]])
     }
   } else if (model == "lognormal") {
-    rdist <- function(n) {
-      rlnorm(n, params[["meanlog"]], params[["sdlog"]])
-    }
-    pdist <- function(n) {
-      plnorm(n, params[["meanlog"]], params[["sdlog"]]) /
-        plnorm(max_value + 1, params[["meanlog"]], params[["sdlog"]])
-    }
-    ddist <- function(n) {
-      (plnorm(n + 1, params[["meanlog"]], params[["sdlog"]]) -
-        plnorm(n, params[["meanlog"]], params[["sdlog"]])) /
-        plnorm(max_value + 1, params[["meanlog"]], params[["sdlog"]])
+    updist <- function(n) {
+      plnorm(n, params[["meanlog"]], params[["sdlog"]])
     }
   } else if (model == "normal") {
-    rdist <- function(n) {
-      rnorm(n, params[["mean"]], params[["sd"]])
-    }
-    pdist <- function(n) {
-      pnorm(n, params[["mean"]], params[["sd"]]) /
-        pnorm(max_value + 1, params[["mean"]], params[["sd"]])
-    }
-    ddist <- function(n) {
-      (pnorm(n + 1, params[["mean"]], params[["sd"]]) -
-        pnorm(n, params[["mean"]], params[["sd"]])) /
-        pnorm(max_value + 1, params[["mean"]], params[["sd"]])
+    updist <- function(n) {
+      pnorm(n, params[["mean"]], params[["sd"]])
     }
   } else if (model == "fixed") {
-    rdist <- function(n) {
-      rep(params[["value"]], n)
-    }
-    pdist <- function(n) {
+    updist <- function(n) {
       as.integer(n > params[["value"]])
-    }
-    ddist <- function(n) {
-      as.integer(n == params[["value"]])
     }
   }
 
   if (discrete) {
-    cmf <- c(0, pdist(seq_len(max_value + 1)))
+    cmf <- c(0, updist(1),
+      updist(seq_len(max_value)) + updist(seq_len(max_value) + 1)
+    ) /
+      (updist(max_value) + updist(max_value + 1))
     pmf <- diff(cmf)
     rdist <- function(n) {
       sample(
@@ -163,6 +125,26 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
     }
     ddist <- function(n) {
       pmf[n + 1]
+    }
+  } else {
+    pdist <- function(n) {
+      updist(n) / updist(max_value + 1)
+    }
+    ddist <- function(n) {
+      pdist(n + 1) - pdist(n)
+    }
+    if (model == "exp") {
+      rdist <- function(n) {
+        rexp(n, params[["rate"]])
+      }
+    } else if (model == "gamma") {
+      rdist <- function(n) {
+        rgamma(n, params[["shape"]], params[["rate"]])
+      }
+    } else if (model == "lognormal") {
+      rdist <- function(n) {
+        rlnorm(n, params[["meanlog"]], params[["sdlog"]])
+      }
     }
   }
 

@@ -33,7 +33,7 @@ test_that("generation times can be specified in different ways", {
       ),
       params = delay_params
     ), digits = 2),
-    c(0.02, 0.11, 0.22, 0.30, 0.35, 1.00, 1.00)
+    c(0.01, 0.08, 0.20, 0.32, 0.40, 1.00, 1.00)
   )
 })
 
@@ -52,7 +52,7 @@ test_that("delay parameters can be specified in different ways", {
       ),
       params = delay_params
     ), digits = 2), n = -2),
-    c(0.02, 0.11, 0.22, 0.30, 0.35, 1.00)
+    c(0.01, 0.08, 0.20, 0.32, 0.40, 1.00)
   )
 })
 
@@ -64,7 +64,7 @@ test_that("truncation parameters can be specified in different ways", {
       ),
       params = delay_params
     ), digits = 2), n = -2),
-    c(1.00, 0.02, 0.11, 0.22, 0.30, 0.35)
+    c(1.00, 0.01, 0.08, 0.20, 0.32, 0.40)
   )
 })
 
