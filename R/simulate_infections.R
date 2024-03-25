@@ -16,7 +16,10 @@
 #'   `date`). Column `R` must be numeric and `date` must be in date format. If
 #'   not all days between the first and last day in the `date` are present,
 #'   it will be assumed that R stays the same until the next given date.
-#' @param initial_infections numeric; the initial number of infections.
+#' @param initial_infections numeric; the initial number of infections (i.e.
+#'   before `R` applies). Note that results returned start the day after, i.e.
+#'   the initial number of infections is not reported again. See also
+#'   `seeding_time`
 #' @param day_of_week_effect either `NULL` (no day of the week effect) or a
 #'   numerical vector of length specified in [obs_opts()] as `week_length`
 #'   (default: 7) if `week_effect` is set to TRUE. Each element of the vector
@@ -115,8 +118,12 @@ simulate_infections <- function(estimates, R, initial_infections,
     ## estimate initial growth from initial reproduction number if seeding time
     ## is greater than 1
     initial_growth <- (R$R[1] - 1) / mean(generation_time)
+    ## adjust initial infections for initial exponential growth
+    log_initial_infections <- log(initial_infections) -
+      (seeding_time - 1) * initial_growth
   } else {
     initial_growth <- numeric(0)
+    log_initial_infections <- log(initial_infections)
   }
 
   data <- list(
@@ -124,7 +131,7 @@ simulate_infections <- function(estimates, R, initial_infections,
     t = nrow(R) + seeding_time,
     seeding_time = seeding_time,
     future_time = 0,
-    initial_infections = array(log(initial_infections), dim = c(1, 1)),
+    initial_infections = array(log_initial_infections, dim = c(1, 1)),
     initial_growth = array(initial_growth, dim = c(1, length(initial_growth))),
     R = array(R$R, dim = c(1, nrow(R))),
     pop = pop

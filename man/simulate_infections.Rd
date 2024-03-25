@@ -28,7 +28,10 @@ simulate_infections(
 not all days between the first and last day in the \code{date} are present,
 it will be assumed that R stays the same until the next given date.}
 
-\item{initial_infections}{numeric; the initial number of infections.}
+\item{initial_infections}{numeric; the initial number of infections (i.e.
+before \code{R} applies). Note that results returned start the day after, i.e.
+the initial number of infections is not reported again. See also
+\code{seeding_time}}
 
 \item{day_of_week_effect}{either \code{NULL} (no day of the week effect) or a
 numerical vector of length specified in \code{\link[=obs_opts]{obs_opts()}} as \code{week_length}
