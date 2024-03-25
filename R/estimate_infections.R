@@ -504,7 +504,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   return(fit)
 }
 
-#' Fit a Stan Model using Variational Inference
+#' Fit a Stan Model using an approximate method
 #'
 #' @description `r lifecycle::badge("maturing")`
 #' Fits a stan model using variational inference.
@@ -515,7 +515,8 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 #' @importFrom rstan vb
 #' @importFrom rlang abort
 #' @return A stan model object
-fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
+fit_model_approximate <- function(args, future = FALSE, id = "stan") {
+  method <- args$method
   args$method <- NULL
   futile.logger::flog.debug(
     paste0(
@@ -536,11 +537,21 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
     trials <- 1
   }
 
-  fit_vb <- function(stan_args) {
+  fit_approximate <- function(stan_args) {
     if (inherits(stan_args$object, "stanmodel")) {
-      sample_func <- rstan::vb
+      if (method == "vb") {
+        sample_func <- rstan::vb
+      } else {
+        stop("Laplace approximation only available in the cmdstanr backend")
+      }
     } else if (inherits(stan_args$object, "CmdStanModel")) {
-      sample_func <- stan_args$object$variational
+      if (method == "vb") {
+        sample_func <- stan_args$object$variational
+      } else if (method == "laplace") {
+        sample_func <- stan_args$object$laplace
+      } else {
+        sample_func <- stan_args$object$pathfinder
+      }
       stan_args$object <- NULL
     }
     fit <- do.call(sample_func, stan_args)
@@ -552,30 +563,35 @@ fit_model_with_vb <- function(args, future = FALSE, id = "stan") {
     }
     return(fit)
   }
-  safe_vb <- purrr::safely(fit_vb) # nolint
+  safe_fit <- purrr::safely(fit_approximate) # nolint
   fit <- NULL
   current_trials <- 0
 
   while (current_trials <= trials && is.null(fit)) {
-    fit <- safe_vb(args)
+    fit <- safe_fit(args)
 
     error <- fit[[2]]
     fit <- fit[[1]]
+    if (is(fit, "CmdStanFit") && fit$return_codes() > 0) {
+      error <- tail(capture.output(fit$output()), 1)
+      fit <- NULL
+    }
     current_trials <- current_trials + 1
   }
 
   if (is.null(fit)) {
     futile.logger::flog.error(
-      "%s: Fitting failed - try increasing stan_args$trials or inspecting",
-      " the model input",
+      paste(
+        "%s: Fitting failed - try increasing stan_args$trials or inspecting",
+        "the model input"
+      ),
       id,
       name = "EpiNow2.epinow.estimate_infections.fit"
     )
-    rlang::abort("Variational Inference failed due to: ", error)
+    rlang::abort(paste("Approximate inference failed due to:", error))
   }
   return(fit)
 }
-
 
 #' Format Posterior Samples
 #'
