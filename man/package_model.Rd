@@ -7,7 +7,7 @@
 package_model(
   model = c("estimate_infections", "simulate_infections", "estimate_secondary",
     "simulate_secondary", "estimate_truncation", "dist_fit"),
-  include = system.file("stan", package = "EpiNow2"),
+  dir = system.file("stan", package = "EpiNow2"),
   verbose = FALSE,
   ...
 )
@@ -17,7 +17,7 @@ package_model(
 "estimate_infections" (default), "simulate_infections", "estimate_secondary",
 "simulate_secondary", "estimate_truncation" or "dist_fit".}
 
-\item{include}{A character string specifying the path to any stan
+\item{dir}{A character string specifying the path to any stan
 files to include in the model. If missing the package default is used.}
 
 \item{verbose}{Logical, defaults to \code{TRUE}. Should verbose

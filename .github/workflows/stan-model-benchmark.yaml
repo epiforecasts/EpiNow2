@@ -1,0 +1,74 @@
+name: stan model benchmark
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: main
+    paths:
+      - inst/stan/**
+      - .github/workflows/stan-model-benchmark.yaml
+      - inst/dev/benchmark*.R
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  stan-model-benchmark:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            local::.
+            here
+            purrr
+            stan-dev/cmdstanr
+
+      - name: Install cmdstan
+        run: |
+          cmdstanr::check_cmdstan_toolchain(fix = TRUE)
+          cmdstanr::install_cmdstan(cores = 2, quiet = TRUE)
+        shell: Rscript {0}
+
+      - name: Checkout main branch in parallel and move to separate dir
+        run: |
+          mv inst/stan inst/stan-branch
+          git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin main
+          git checkout origin/main inst/stan
+          mv inst/stan inst/stan-main
+          mv inst/stan-branch inst/stan
+
+      - name: Benchmark
+        run: |
+          Rscript inst/dev/benchmark.R
+
+      - id: output
+        name: Output to environment variable
+        if: ${{ hashFiles('inst/dev/benchmark-results.md') != '' }}
+        run: |
+          echo 'BENCHMARK<<EOF' > $GITHUB_OUTPUT
+          cat inst/dev/benchmark-results.md >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+      - name: Post comment
+        if: ${{ hashFiles('inst/dev/benchmark-results.md') != '' }}
+        uses: actions/github-script@v7
+        env:
+          BENCHMARK: ${{ steps.output.outputs.BENCHMARK }}
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: process.env.BENCHMARK
+            })

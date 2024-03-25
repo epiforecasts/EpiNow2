@@ -7,7 +7,7 @@
 #' "estimate_infections" (default), "simulate_infections", "estimate_secondary",
 #'   "simulate_secondary", "estimate_truncation" or "dist_fit".
 #'
-#' @param include A character string specifying the path to any stan
+#' @param dir A character string specifying the path to any stan
 #' files to include in the model. If missing the package default is used.
 #'
 #' @param verbose Logical, defaults to `TRUE`. Should verbose
@@ -23,17 +23,16 @@ package_model <- function(model = c(
                             "estimate_secondary", "simulate_secondary",
                             "estimate_truncation", "dist_fit"
                           ),
-                          include = system.file("stan", package = "EpiNow2"),
+                          dir = system.file("stan", package = "EpiNow2"),
                           verbose = FALSE,
                           ...) {
   model <- arg_match(model)
-  model_file <- system.file(
-    "stan", paste0(model, ".stan"),
-    package = "EpiNow2"
+  model_file <- file.path(
+    dir, paste0(model, ".stan")
   )
   if (verbose) {
     message(sprintf("Using model %s.", model))
-    message(sprintf("include is %s.", toString(include)))
+    message(sprintf("dir is %s.", toString(dir)))
   }
 
   monitor <- suppressMessages
@@ -44,7 +43,7 @@ package_model <- function(model = c(
   }
   model <- monitor(cmdstanr::cmdstan_model(
     model_file,
-    include_paths = include,
+    include_paths = dir,
     ...
   ))
   return(model)
