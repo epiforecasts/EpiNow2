@@ -15,6 +15,7 @@ simulate_infections(
   obs = obs_opts(),
   CrIs = c(0.2, 0.5, 0.9),
   backend = "rstan",
+  seeding_time = NULL,
   pop = 0,
   ...
 )
@@ -54,6 +55,18 @@ observation model. Defaults to \code{\link[=obs_opts]{obs_opts()}}.}
 
 \item{backend}{Character string indicating the backend to use for fitting
 stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
+
+\item{seeding_time}{Integer; the number of days before the first time point
+of \code{R}; default is \code{NULL}, in which case it is set to the maximum of the
+generation time. The minimum is 1 , i.e. the first reproduction number
+given applies on the day after the index cases given by
+\code{initial_infections}. If the generation time of longer than 1 day on
+average, a seeding time of 1 will always lead to an initial decline (as
+there are no infections before the initial ones). Instead, if this is
+greater than 1, an initial part of the epidemic (before the first value of
+R given) of \code{seeding_time} days is assumed to have followed exponential
+growth roughly in line with the growth rate implied by the first value of
+R.}
 
 \item{pop}{Integer, defaults to 0. Susceptible population initially present.
 Used to adjust Rt estimates when otherwise fixed based on the proportion of

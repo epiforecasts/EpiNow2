@@ -23,13 +23,24 @@
 #'   gives the weight given to reporting on this day (normalised to 1).
 #'   The default is `NULL`.
 #' @param estimates deprecated; use [forecast_infections()] instead
+#' @param seeding_time Integer; the number of days before the first time point
+#'   of `R`; default is `NULL`, in which case it is set to the maximum of the
+#'   generation time. The minimum is 1 , i.e. the first reproduction number
+#'   given applies on the day after the index cases given by
+#'   `initial_infections`. If the generation time of longer than 1 day on
+#'   average, a seeding time of 1 will always lead to an initial decline (as
+#'   there are no infections before the initial ones). Instead, if this is
+#'   greater than 1, an initial part of the epidemic (before the first value of
+#'   R given) of `seeding_time` days is assumed to have followed exponential
+#'   growth roughly in line with the growth rate implied by the first value of
+#'   R.
 #' @param ... deprecated; only included for backward compatibility
 #' @inheritParams estimate_infections
 #' @inheritParams rt_opts
 #' @inheritParams stan_opts
 #' @importFrom lifecycle deprecate_warn
 #' @importFrom checkmate assert_data_frame assert_date assert_numeric
-#'   assert_subset
+#'   assert_subset assert_integer
 #' @importFrom data.table data.table merge.data.table nafill rbindlist
 #' @return A data.table of simulated infections (variable `infections`) and
 #'   reported cases (variable `reported_cases`) by date.
@@ -58,6 +69,7 @@ simulate_infections <- function(estimates, R, initial_infections,
                                 obs = obs_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
                                 backend = "rstan",
+                                seeding_time = NULL,
                                 pop = 0, ...) {
   ## deprecated usage
   if (!missing(estimates)) {
@@ -81,6 +93,9 @@ simulate_infections <- function(estimates, R, initial_infections,
   assert_numeric(initial_infections, lower = 0)
   assert_numeric(day_of_week_effect, lower = 0, null.ok = TRUE)
   assert_numeric(pop, lower = 0)
+  if (!is.null(seeding_time)) {
+    assert_integerish(seeding_time, lower = 1)
+  }
   assert_class(delays, "delay_opts")
   assert_class(truncation, "trunc_opts")
   assert_class(obs, "obs_opts")
@@ -93,7 +108,9 @@ simulate_infections <- function(estimates, R, initial_infections,
   ## remove any initial NAs
   R <- R[!is.na(R)]
 
-  seeding_time <- get_seeding_time(delays, generation_time)
+  if (missing(seeding_time)) {
+    seeding_time <- sum(max(generation_time))
+  }
   if (seeding_time > 1) {
     ## estimate initial growth from initial reproduction number if seeding time
     ## is greater than 1
