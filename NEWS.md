@@ -34,7 +34,7 @@
 * Tests have been updated to only set random seeds before snapshot tests involving random number generation, and unset them subsequently. By @sbfnk in #590 and reviewed by @seabbs.
 * A function `simulate_secondary()` was added to simulate from parameters of the `estimate_secondary` model. A function of the same name that was previously based on a reimplementation of that model in R with potentially time-varying scalings and delays has been renamed to `convolve_and_scale()`. By @sbfnk in #591 and reviewed by @seabbs.
 * Fixed broken links in the README. By @jamesmbaazam in #617 and reviewed by @sbfnk.
-* Replaced descriptions and plot labels in an attempt to be more general and clearer. By @sbfnk in # and reviweed by.
+* Replaced descriptions and plot labels to be more general and clearer. By @sbfnk in #621 and reviewed by @jamesmbaazam.
 
 ## Model changes
 
