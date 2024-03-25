@@ -214,7 +214,7 @@ test_that("estimate_secondary works with filter_leading_zeros set", {
   )
   expect_s3_class(out, "estimate_secondary")
   expect_named(out, c("predictions", "posterior", "data", "fit"))
-  expect_equal(out$predictions$primary, modified_data$primary)
+  expect_equal(out$predictions$primary, modified_data$primary[-(1:10)])
 })
 
 test_that("estimate_secondary works with zero_threshold set", {
