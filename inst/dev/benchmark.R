@@ -56,7 +56,7 @@ changes <- format_summary[,
 ), by = "operation"
 ]
 
-if (any(changes_trend != "no change")) {
+if (any(changes$trend != "no change")) {
   format_summary <- merge(
     summary_means,
     changes[, .(operation, mean, range, trend)],
