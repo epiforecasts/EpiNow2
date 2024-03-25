@@ -5,7 +5,7 @@
 \title{Observation Model Options}
 \usage{
 obs_opts(
-  family = "negbin",
+  family = c("negbin", "poisson"),
   phi = list(mean = 0, sd = 1),
   weight = 1,
   week_effect = TRUE,

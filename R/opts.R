@@ -97,6 +97,14 @@ generation_time_opts <- function(dist = Fixed(1), ...,
       "information, see the relevant documentation pages using ",
       "`?generation_time_opts`")
   }
+  if (missing(dist)) {
+    warning(
+      "No generation time distribution given. Assuming a fixed generation ",
+      "time of 1 day, i.e. the reproduction number is the same as the daily ",
+      "growth rate. If this was intended then this warning can be silenced by ",
+      "setting `dist` explicitly to `Fixed(1)`."
+    )
+  }
   check_stan_delay(dist)
   attr(dist, "tolerance") <- tolerance
   attr(dist, "class") <- c("generation_time_opts", class(dist))
@@ -147,11 +155,8 @@ generation_time_opts <- function(dist = Fixed(1), ...,
 #'
 #' # prevalence model
 #' secondary_opts("prevalence")
-secondary_opts <- function(type = "incidence", ...) {
-  type <- arg_match(
-    type,
-    values = c("incidence", "prevalence")
-  )
+secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
+  type <- arg_match(type)
   if (type == "incidence") {
     data <- list(
       cumulative = 0,
@@ -341,7 +346,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
                     rw = 0,
                     use_breakpoints = TRUE,
                     future = "latest",
-                    gp_on = "R_t-1",
+                    gp_on = c("R_t-1", "R0"),
                     pop = 0) {
   rt <- list(
     prior = prior,
@@ -350,7 +355,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
     use_breakpoints = use_breakpoints,
     future = future,
     pop = pop,
-    gp_on = arg_match(gp_on, values = c("R_t-1", "R0"))
+    gp_on = arg_match(gp_on)
   )
 
   # replace default settings with those specified by user
@@ -399,9 +404,10 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' @examples
 #' # default settings
 #' backcalc_opts()
-backcalc_opts <- function(prior = "reports", prior_window = 14, rt_window = 1) {
+backcalc_opts <- function(prior = c("reports", "none", "infections"),
+                          prior_window = 14, rt_window = 1) {
   backcalc <- list(
-    prior = arg_match(prior, values = c("reports", "none", "infections")),
+    prior = arg_match(prior),
     prior_window = prior_window,
     rt_window = as.integer(rt_window)
   )
@@ -474,7 +480,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_min = 0,
                     ls_max = 60,
                     alpha_sd = 0.05,
-                    kernel = "matern_3/2",
+                    kernel = c("matern_3/2", "se"),
                     matern_type = 3 / 2) {
   gp <- list(
     basis_prop = basis_prop,
@@ -484,7 +490,7 @@ gp_opts <- function(basis_prop = 0.2,
     ls_min = ls_min,
     ls_max = ls_max,
     alpha_sd = alpha_sd,
-    kernel = arg_match(kernel, values = c("se", "matern_3/2")),
+    kernel = arg_match(kernel),
     matern_type = matern_type
   )
 
@@ -544,7 +550,7 @@ gp_opts <- function(basis_prop = 0.2,
 #'
 #' # Scale reported data
 #' obs_opts(scale = list(mean = 0.2, sd = 0.02))
-obs_opts <- function(family = "negbin",
+obs_opts <- function(family = c("negbin", "poisson"),
                      phi = list(mean = 0, sd = 1),
                      weight = 1,
                      week_effect = TRUE,
@@ -573,7 +579,7 @@ obs_opts <- function(family = "negbin",
     phi <- list(mean = phi[1], sd = phi[2])
   }
   obs <- list(
-    family = arg_match(family, values = c("poisson", "negbin")),
+    family = arg_match(family),
     phi = phi,
     weight = weight,
     week_effect = week_effect,
@@ -681,10 +687,10 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                seed = as.integer(runif(1, 1, 1e8)),
                                future = FALSE,
                                max_execution_time = Inf,
-                               backend = "rstan",
+                               backend = c("rstan", "cmdstanr"),
                                ...) {
   dot_args <- list(...)
-  backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
+  backend <- arg_match(backend)
   opts <- list(
     chains = chains,
     save_warmup = save_warmup,
@@ -792,12 +798,12 @@ stan_vb_opts <- function(samples = 2000,
 #' @seealso [rstan_sampling_opts()] [rstan_vb_opts()]
 rstan_opts <- function(object = NULL,
                        samples = 2000,
-                       method = "sampling", ...) {
+                       method = c("sampling", "vb"), ...) {
   lifecycle::deprecate_warn(
     "1.5.0", "rstan_opts()",
     "stan_opts()"
   )
-  method <- arg_match(method, values = c("sampling", "vb"))
+  method <- arg_match(method)
   # shared everywhere opts
   if (is.null(object)) {
     object <- stanmodels$estimate_infections
@@ -874,13 +880,13 @@ rstan_opts <- function(object = NULL,
 #' stan_opts(method = "vb")
 stan_opts <- function(object = NULL,
                       samples = 2000,
-                      method = "sampling",
-                      backend = "rstan",
+                      method = c("sampling", "vb"),
+                      backend = c("rstan", "cmdstanr"),
                       init_fit = NULL,
                       return_fit = TRUE,
                       ...) {
-  method <- arg_match(method, values = c("sampling", "vb"))
-  backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
+  method <- arg_match(method)
+  backend <- arg_match(backend)
   if (backend == "cmdstanr" && !requireNamespace("cmdstanr", quietly = TRUE)) {
     stop(
       "The `cmdstanr` package needs to be installed for using the ",

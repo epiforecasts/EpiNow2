@@ -4,7 +4,10 @@
 \alias{check_reports_valid}
 \title{Validate data input}
 \usage{
-check_reports_valid(reports, model)
+check_reports_valid(
+  reports,
+  model = c("estimate_infections", "estimate_truncation", "estimate_secondary")
+)
 }
 \arguments{
 \item{reports}{A data frame with either:

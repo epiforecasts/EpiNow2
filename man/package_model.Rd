@@ -5,7 +5,8 @@
 \title{Load and compile the nowcasting model}
 \usage{
 package_model(
-  model = "estimate_infections",
+  model = c("estimate_infections", "simulate_infections", "estimate_secondary",
+    "simulate_secondary", "estimate_truncation", "dist_fit"),
   include = system.file("stan", package = "EpiNow2"),
   verbose = FALSE,
   ...

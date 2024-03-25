@@ -35,11 +35,13 @@
 * A function `simulate_secondary()` was added to simulate from parameters of the `estimate_secondary` model. A function of the same name that was previously based on a reimplementation of that model in R with potentially time-varying scalings and delays has been renamed to `convolve_and_scale()`. By @sbfnk in #591 and reviewed by @seabbs.
 * Fixed broken links in the README. By @jamesmbaazam in #617 and reviewed by @sbfnk.
 * Replaced descriptions and plot labels to be more general and clearer. By @sbfnk in #621 and reviewed by @jamesmbaazam.
+* Argument choices have been moved into default arguments. By @sbfnk in #622 and reviewed by @seabbs.
 
 ## Model changes
 
 * Updated the parameterisation of the dispersion term `phi` to be `phi = 1 / sqrt_phi ^ 2` rather than the previous parameterisation `phi = 1 / sqrt(sqrt_phi)` based on the suggested prior [here](https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations#story-when-the-generic-prior-fails-the-case-of-the-negative-binomial) and the performance benefits seen in the `epinowcast` package (see [here](https://github.com/epinowcast/epinowcast/blob/8eff560d1fd8305f5fb26c21324b2bfca1f002b4/inst/stan/epinowcast.stan#L314)). By @seabbs in #487 and reviewed by @sbfnk.
 * Added an `na` argument to `obs_opts()` that allows the user to specify whether NA values in the data should be interpreted as missing or accumulated in the next non-NA data point. By @sbfnk in #534 and reviewed by @seabbs.
+* Growth rates are now calculated directly from the infection trajectory as `log I(t) - log I(t - 1)`. Originally by @seabbs in #213, finished by @sbfnk in #610 and reviewed by @seabbs.
 
 # EpiNow2 1.4.0
 

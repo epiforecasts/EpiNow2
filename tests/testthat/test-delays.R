@@ -1,4 +1,4 @@
-test_stan_delays <- function(generation_time = generation_time_opts(),
+test_stan_delays <- function(generation_time = generation_time_opts(Fixed(1)),
                              delays = delay_opts(),
                              truncation = trunc_opts(),
                              params = c()) {

@@ -9,9 +9,10 @@
 \arguments{
 \item{x}{A list of output as produced by \code{\link[=epinow]{epinow()}}.}
 
-\item{type}{A character vector indicating the name of plots to return.
+\item{type}{A character vector indicating the name of the plot to return.
 Defaults to  "summary" with supported options being "infections", "reports",
-"R", "growth_rate", "summary", "all".}
+"R", "growth_rate", "summary", "all". If "all" is supplied all plots are
+generated.}
 
 \item{...}{Pass additional arguments to report_plots}
 }
