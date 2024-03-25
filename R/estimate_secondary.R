@@ -367,7 +367,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
   )
   plot <- plot +
     ggplot2::theme_bw() +
-    ggplot2::labs(y = "Confirmed Cases", x = "Date") +
+    ggplot2::labs(y = "Reports per day", x = "Date") +
     ggplot2::scale_x_date(date_breaks = "week", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))

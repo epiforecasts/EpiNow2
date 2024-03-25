@@ -54,7 +54,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' @param reported A `<data.table>` of reported cases with the following
 #' variables: date, confirm.
 #'
-#' @param ylab Character string, defaulting to "Cases". Title for the plot y
+#' @param ylab Character string. Title for the plot y
 #' axis.
 #'
 #' @param hline Numeric, if supplied gives the horizontal intercept for a
@@ -112,7 +112,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #'   ylab = "Effective Reproduction No.",
 #'   hline = 1, estimate_type = "Estimate"
 #' )
-plot_estimates <- function(estimate, reported, ylab = "Cases", hline,
+plot_estimates <- function(estimate, reported, ylab, hline,
                            obs_as_col = TRUE, max_plot = 10,
                            estimate_type = c(
                              "Estimate", "Estimate based on partial data",
@@ -267,7 +267,7 @@ plot_summary <- function(summary_results,
   inner_plot <- function(df) {
     plot <- ggplot2::ggplot(df, ggplot2::aes(
       x = region,
-      col = `Expected change in daily cases`
+      col = `Expected change in daily reports`
     ))
     # plot CrIs
     index <- 1
@@ -302,7 +302,7 @@ plot_summary <- function(summary_results,
   upper_CrI <- paste0("upper_", max_CrI) # nolint
   max_upper <- max(
     summary_results[
-      metric == "New confirmed cases by infection date"][, ..upper_CrI],
+      metric == "New infections per day"][, ..upper_CrI],
       na.rm = TRUE
   )
   max_cases <- min(
@@ -315,7 +315,7 @@ plot_summary <- function(summary_results,
   # cases plot
   cases_plot <-
     inner_plot(
-      summary_results[metric == "New confirmed cases by infection date"]
+      summary_results[metric == "New infections per day"]
     ) +
     ggplot2::labs(x = x_lab, y = "") +
     ggplot2::expand_limits(y = 0) +

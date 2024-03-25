@@ -72,7 +72,7 @@ summarise_results <- function(regions,
   estimates <- data.table::rbindlist(estimates, idcol = "region", fill = TRUE)
   numeric_estimates <-
     data.table::copy(estimates)[measure %in% c(
-      "New confirmed cases by infection date",
+      "New infections per day",
       "Effective reproduction no."
     )][
       ,
@@ -83,17 +83,17 @@ summarise_results <- function(regions,
     ][
       ,
       metric := factor(measure, levels = c(
-        "New confirmed cases by infection date",
+        "New infections per day",
         "Effective reproduction no."
       ))
     ][, measure := NULL]
 
 
   numeric_estimates <- data.table::merge.data.table(numeric_estimates,
-    estimates[measure == "Expected change in daily cases"][
+    estimates[measure == "Expected change in daily reports"][
       ,
       .(region,
-       `Expected change in daily cases` = estimate,
+       `Expected change in daily reports` = estimate,
        prob_control = numeric_estimate
       )
     ],
@@ -112,8 +112,8 @@ summarise_results <- function(regions,
   estimates <- estimates[, numeric_estimate := NULL][
     ,
     measure := factor(measure, levels = c(
-      "New confirmed cases by infection date",
-      "Expected change in daily cases",
+      "New infections per day",
+      "Expected change in daily reports",
       "Effective reproduction no.",
       "Rate of growth",
       "Doubling/halving time (days)" # nolint
@@ -260,8 +260,8 @@ regional_summary <- function(regional_output = NULL,
   )
 
   force_factor <- function(df) {
-    df[, `Expected change in daily cases` :=
-      factor(`Expected change in daily cases`,
+    df[, `Expected change in daily reports` :=
+      factor(`Expected change in daily reports`,
         levels = c(
           "Increasing", "Likely increasing", "Stable",
           "Likely decreasing", "Decreasing"
@@ -282,7 +282,7 @@ regional_summary <- function(regional_output = NULL,
 
   # adaptive add a logscale to the summary plot based on range of observed cases
   current_inf <- summarised_results$data[
-    metric == "New confirmed cases by infection date"
+    metric == "New infections per day"
   ]
   uppers <- grepl("upper_", colnames(current_inf), fixed = TRUE) # nolint
   lowers <- grepl("lower_", colnames(current_inf), fixed = TRUE) # nolint

@@ -7,7 +7,7 @@
 plot_estimates(
   estimate,
   reported,
-  ylab = "Cases",
+  ylab,
   hline,
   obs_as_col = TRUE,
   max_plot = 10,
@@ -22,7 +22,7 @@ data" and optionally "forecast").}
 \item{reported}{A \verb{<data.table>} of reported cases with the following
 variables: date, confirm.}
 
-\item{ylab}{Character string, defaulting to "Cases". Title for the plot y
+\item{ylab}{Character string. Title for the plot y
 axis.}
 
 \item{hline}{Numeric, if supplied gives the horizontal intercept for a

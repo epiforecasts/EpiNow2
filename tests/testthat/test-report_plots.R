@@ -1,7 +1,7 @@
-
-
-fit <- readRDS("test-models/estimate_infections/static.rds")
-cases <- EpiNow2::example_confirmed[1:30]
+fit <- readRDS(system.file(
+  package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+))
+cases <- fit$observations
 
 test_that("report_plots works with  default settings", {
   expect_error(
