@@ -1,6 +1,10 @@
 # EpiNow2 1.4.9000
 
-## Breaking changes
+## Major changes
+
+* Delay discretisation is now based on a two-day censoring window (with uniform probability in between), based on recommendations in [Park et al, medRxiv, 2024](https://doi.org/10.1101/2024.01.12.24301247). By @sbfnk in #518 and reviewed by @jamesmbaazam.
+
+## OTher breaking changes
 
 * The functions `get_dist`, `get_generation_time`, `get_incubation_period` have been deprecated and replaced with examples. By @sbfnk in #481 and reviewed by @seabbs.
 * The utility function `update_list()` has been deprecated in favour of `utils::modifyList()` because it comes with an installation of R. By @jamesmbaazam in #491 and reviewed by @seabbs.

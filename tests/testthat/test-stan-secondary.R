@@ -20,28 +20,28 @@ check_equal <- function(args, target, dof = 0, dev = FALSE) {
 test_that("calculate_secondary can calculate prevalence as expected", {
   check_equal(
     args = list(scaled, convolved, obs, 1, 1, 1, 1, 1, 20),
-    target = c(1, 5, 5.5, rep(6, 17)), dof = 1
+    target = c(1, 5, 5.3, 5.7, rep(6, 16)), dof = 1
   )
 })
 
 test_that("calculate_secondary can calculate incidence as expected", {
   check_equal(
     args = list(scaled, convolved, obs, 0, 1, 1, 1, 1, 20),
-    target = c(1, 1, 1.5, rep(2.0, 17)), dof = 1
+    target = c(1, 1, 1.3, 1.7, rep(2.0, 16)), dof = 1
   )
 })
 
 test_that("calculate_secondary can calculate incidence as expected", {
   check_equal(
     args = list(scaled, convolved, obs, 0, 1, 1, 1, 1, 20),
-    target = c(1, 1, 1.5, rep(2.0, 17)), dof = 1
+    target = c(1, 1, 1.3, 1.7, rep(2.0, 16)), dof = 1
   )
 })
 
 test_that("calculate_secondary can calculate incidence using only historic reports", {
   check_equal(
     args = list(scaled, convolved, obs, 0, 1, 1, 0, 1, 20),
-    target = c(0, 0, rep(1, 18)), dof = 0
+    target = c(0, 0, 0, rep(1, 17)), dof = 0
   )
 })
 

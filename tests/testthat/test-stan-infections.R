@@ -26,34 +26,34 @@ gt_rev_pmf <- get_delay_rev_pmf(
 test_that("generate_infections works as expected", {
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 0), 0),
-    c(rep(1000, 10), 996, rep(997, 3), rep(998, 6))
+    c(rep(1000, 10), 995, 996, rep(997, 8))
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(20), 0.03, 0, 0), 0),
-    c(20, 21, 21, 22, 23, 23, 24, 25, 25, 26, 25, 27, 28, 29, 30, 31, 32, 33, 35, 36)
+    c(20, 21, 21, 22, 23, 23, 24, 25, 25, 26, 24, 27, 28, 29, 30, 30, 31, 32, 33, 34)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(100), 0, 0, 0), 0),
-    c(rep(100, 11), 110, 113, 116, 120, 125, 129, 133, 138, 143)
+    c(rep(100, 10), 99, 110, 112, 115, 119, 122, 126, 130, 134, 138)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 4, gt_rev_pmf, log(500), -0.02, 0, 0), 0),
-    c(500, 490, 480, 471, 402, 413, 417, 417, rep(418, 6))
+    c(500, 490, 480, 471, 382, 403, 408, rep(409, 7))
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 0), 0),
-    c(rep(500, 4), 417, 473, 490, 507, 525, 543, 562, 581, 601, 622)
+    c(rep(500, 4), 394, 460, 475, 489, 505, 520, 536, 553, 570, 588)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 1, gt_rev_pmf, log(40), numeric(0), 0, 0), 0),
-    c(40, 11, 13, rep(14, 8))
+    c(40, 8, 11, 12, 12, rep(13, 6))
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 1, gt_rev_pmf, log(100), 0.01, 0, 0), 0),
-    c(100, 28, 36, 39, 41, 42, 44, 45, 47, 48, 50)
+    c(100, 20, 31, 35, 36, 37, 38, 39, 41, 42, 43)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 0, 100000, 4), 0),
-    c(rep(1000, 10), 996, rep(997, 3), rep(998, 2), 980, 964, 944, 921)
+    c(rep(1000, 10), 995, 996, rep(997, 4), 980, 965, 947, 926)
   )
 })
