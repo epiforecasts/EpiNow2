@@ -40,6 +40,7 @@
 * Fixed broken links in the README. By @jamesmbaazam in #617 and reviewed by @sbfnk.
 * Replaced descriptions and plot labels to be more general and clearer. By @sbfnk in #621 and reviewed by @jamesmbaazam.
 * Argument choices have been moved into default arguments. By @sbfnk in #622 and reviewed by @seabbs.
+* An argument to change the seeding time has been added to `simulate_infections`, and the documentation improved. By @sbfnk in .
 
 ## Model changes
 
