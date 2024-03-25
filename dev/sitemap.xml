@@ -256,10 +256,10 @@
     <loc>https://epiforecasts.io/EpiNow2/dev/reference/fit_model.html</loc>
   </url>
   <url>
-    <loc>https://epiforecasts.io/EpiNow2/dev/reference/fit_model_with_nuts.html</loc>
+    <loc>https://epiforecasts.io/EpiNow2/dev/reference/fit_model_approximate.html</loc>
   </url>
   <url>
-    <loc>https://epiforecasts.io/EpiNow2/dev/reference/fit_model_with_vb.html</loc>
+    <loc>https://epiforecasts.io/EpiNow2/dev/reference/fit_model_with_nuts.html</loc>
   </url>
   <url>
     <loc>https://epiforecasts.io/EpiNow2/dev/reference/fix_dist.html</loc>
@@ -466,10 +466,16 @@
     <loc>https://epiforecasts.io/EpiNow2/dev/reference/simulate_secondary.html</loc>
   </url>
   <url>
+    <loc>https://epiforecasts.io/EpiNow2/dev/reference/stan_laplace_opts.html</loc>
+  </url>
+  <url>
     <loc>https://epiforecasts.io/EpiNow2/dev/reference/stan_model.html</loc>
   </url>
   <url>
     <loc>https://epiforecasts.io/EpiNow2/dev/reference/stan_opts.html</loc>
+  </url>
+  <url>
+    <loc>https://epiforecasts.io/EpiNow2/dev/reference/stan_pathfinder_opts.html</loc>
   </url>
   <url>
     <loc>https://epiforecasts.io/EpiNow2/dev/reference/stan_sampling_opts.html</loc>
