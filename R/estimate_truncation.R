@@ -206,7 +206,12 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   )
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
-  obs <- purrr::map(dirty_obs, data.table::copy)
+  earliest_date <- max(
+    as.Date(
+      purrr::map_chr(dirty_obs, function(x) x[, as.character(min(date))])
+    )
+  )
+  dirty_obs <- purrr::map(dirty_obs, function(x) x[date >= earliest_date])
   obs <- purrr::map(seq_along(obs), ~ obs[[.]][, (as.character(.)) := confirm][
     ,
     confirm := NULL
