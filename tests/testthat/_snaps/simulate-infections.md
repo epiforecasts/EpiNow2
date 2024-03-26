@@ -36,33 +36,33 @@
 
               variable       date     value
                 <char>     <Date>     <num>
-     1:     infections 2023-01-01 103.70120
-     2:     infections 2023-01-02 109.09432
-     3:     infections 2023-01-03 114.68801
-     4:     infections 2023-01-04 120.54794
-     5:     infections 2023-01-05 126.69880
-     6:     infections 2023-01-06 133.15925
-     7:     infections 2023-01-07 139.94656
-     8:     infections 2023-01-08  98.05198
-     9:     infections 2023-01-09  95.15452
-    10:     infections 2023-01-10  90.99730
-    11:     infections 2023-01-11  86.65452
-    12:     infections 2023-01-12  82.36294
-    13:     infections 2023-01-13  78.20356
-    14:     infections 2023-01-14  74.20485
+     1:     infections 2023-01-01 101.60082
+     2:     infections 2023-01-02 107.29011
+     3:     infections 2023-01-03 113.03527
+     4:     infections 2023-01-04 119.01464
+     5:     infections 2023-01-05 125.28049
+     6:     infections 2023-01-06 131.63823
+     7:     infections 2023-01-07 138.33602
+     8:     infections 2023-01-08  96.91916
+     9:     infections 2023-01-09  94.05215
+    10:     infections 2023-01-10  89.94060
+    11:     infections 2023-01-11  85.64594
+    12:     infections 2023-01-12  81.40206
+    13:     infections 2023-01-13  77.28891
+    14:     infections 2023-01-14  73.33458
     15: reported_cases 2023-01-01  75.00000
-    16: reported_cases 2023-01-02  68.00000
-    17: reported_cases 2023-01-03  74.00000
-    18: reported_cases 2023-01-04  64.00000
-    19: reported_cases 2023-01-05 280.00000
-    20: reported_cases 2023-01-06 123.00000
-    21: reported_cases 2023-01-07 217.00000
-    22: reported_cases 2023-01-08  85.00000
-    23: reported_cases 2023-01-09 102.00000
-    24: reported_cases 2023-01-10   6.00000
-    25: reported_cases 2023-01-11 114.00000
-    26: reported_cases 2023-01-12  78.00000
-    27: reported_cases 2023-01-13 122.00000
-    28: reported_cases 2023-01-14  42.00000
+    16: reported_cases 2023-01-02  67.00000
+    17: reported_cases 2023-01-03  73.00000
+    18: reported_cases 2023-01-04  63.00000
+    19: reported_cases 2023-01-05 276.00000
+    20: reported_cases 2023-01-06 121.00000
+    21: reported_cases 2023-01-07 215.00000
+    22: reported_cases 2023-01-08  84.00000
+    23: reported_cases 2023-01-09 116.00000
+    24: reported_cases 2023-01-10 132.00000
+    25: reported_cases 2023-01-11  91.00000
+    26: reported_cases 2023-01-12  77.00000
+    27: reported_cases 2023-01-13 120.00000
+    28: reported_cases 2023-01-14  41.00000
               variable       date     value
 
