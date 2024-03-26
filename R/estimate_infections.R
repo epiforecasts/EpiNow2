@@ -164,7 +164,7 @@ estimate_infections <- function(reported_cases,
   # Record earliest date with data
   start_date <- min(reported_cases$date, na.rm = TRUE)
 
-  seeding_time <- get_seeding_time(delays, generation_time)
+  seeding_time <- get_seeding_time(delays, generation_time, rt)
 
   # Create mean shifted reported cases as prior
   reported_cases <- data.table::rbindlist(list(

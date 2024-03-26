@@ -101,6 +101,17 @@ create_complete_cases <- function(cases) {
 #' [estimate_infections()] to generate the mean shifted prior on which the back
 #' calculation method (see [backcalc_opts()]) is based.
 #'
+#' @details
+#' The function first shifts all the data back in time by `shift` days (thus
+#' discarding the first `shift` days of data) and then applies a centred
+#' rolling mean of length `smoothing_window` to the shifted data except for
+#' the final period. The final period (the forecast horizon plus half the
+#' smoothing window) is instead replaced by a log-linear model fit (with 1
+#' added to the data for fitting to avoid zeroes and later subtracted again),
+#' projected to the end of the forecast horizon. The initial part of the data
+#' (corresponding to the length of the smoothing window) is then removed, and
+#' any non-integer resulting values rounded up.
+#'
 #' @param smoothing_window Numeric, the rolling average smoothing window
 #' to apply. Must be odd in order to be defined as a centred average.
 #'
@@ -114,7 +125,24 @@ create_complete_cases <- function(cases) {
 #' @return A `<data.frame>` for shifted reported cases
 #' @export
 #' @examples
-#' create_shifted_cases(example_confirmed, 7, 14, 7)
+#' shift <- 7
+#' horizon <- 7
+#' smoothing_window <- 14
+#' ## add NAs for horizon
+#' cases <- create_clean_reported_cases(example_confirmed, horizon = horizon)
+#' ## add zeroes initially
+#' cases <- data.table::rbindlist(list(
+#'    data.table::data.table(
+#'      date = seq(
+#'        min(cases$date) - smoothing_window,
+#'        min(cases$date) - 1,
+#'        by = "days"
+#'      ),
+#'      confirm = 0, breakpoint = 0
+#'    ),
+#'    cases
+#'  ))
+#' create_shifted_cases(cases, shift, smoothing_window, horizon)
 create_shifted_cases <- function(reported_cases, shift,
                                  smoothing_window, horizon) {
   shifted_reported_cases <- data.table::copy(reported_cases)[
@@ -128,18 +156,18 @@ create_shifted_cases <- function(reported_cases, shift,
     confirm := runner::mean_run(
       confirm, k = smoothing_window, lag = -floor(smoothing_window / 2)
     )
-  ][
-    ,
-    confirm := data.table::fifelse(confirm == 0, 1, confirm) # nolint
   ]
 
   ## Forecast trend on reported cases using the last week of data
-  final_week <- data.table::data.table(
-  confirm = shifted_reported_cases[1:(.N - horizon - shift)][
-      max(1, .N - 6):.N]$confirm)[,
+  final_period <- data.table::data.table(
+    confirm =
+      shifted_reported_cases[!is.na(confirm)][
+        max(1, .N - smoothing_window):.N
+      ]$confirm
+  )[,
     t := seq_len(.N)
   ]
-  lm_model <- stats::lm(log(confirm) ~ t, data = final_week)
+  lm_model <- stats::lm(log(confirm + 1) ~ t, data = final_period)
   ## Estimate unreported future infections using a log linear model
   shifted_reported_cases <- shifted_reported_cases[
     ,
@@ -151,7 +179,7 @@ create_shifted_cases <- function(reported_cases, shift,
     ,
     confirm := data.table::fifelse(
       t >= 7,
-      exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t),
+      exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t) - 1,
       confirm
     )
   ][, t := NULL]
