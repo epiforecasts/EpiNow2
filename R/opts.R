@@ -779,6 +779,61 @@ stan_vb_opts <- function(samples = 2000,
   return(opts)
 }
 
+#' Stan Laplace algorithm Options
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Defines a list specifying the arguments passed to [cmdstanr::laplace()].
+#'
+#' @inheritParams stan_opts
+#' @inheritParams stan_vb_opts
+#' @param ... Additional parameters to pass to [cmdstanr::laplace()].
+#' @return A list of arguments to pass to [cmdstanr::laplace()].
+#' @export
+#' @examples
+#' stan_laplace_opts()
+stan_laplace_opts <- function(backend = "cmdstanr",
+                              trials = 10,
+                              ...) {
+  if (backend != "cmdstanr") {
+    stop(
+      "The Laplace algorithm is only available with the \"cmdstanr\" backend."
+    )
+  }
+  opts <- list(trials = trials)
+  opts <- c(opts, ...)
+  return(opts)
+}
+
+#' Stan pathfinder algorithm Options
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Defines a list specifying the arguments passed to [cmdstanr::laplace()].
+#'
+#' @inheritParams stan_opts
+#' @inheritParams stan_vb_opts
+#' @param ... Additional parameters to pass to [cmdstanr::laplace()].
+#' @return A list of arguments to pass to [cmdstanr::laplace()].
+#' @export
+#' @examples
+#' stan_laplace_opts()
+stan_pathfinder_opts <- function(backend = "cmdstanr",
+                                 samples = 2000,
+                                 trials = 10,
+                                 ...) {
+  if (backend != "cmdstanr") {
+    stop(
+      "The pathfinder algorithm is only available with the \"cmdstanr\" ",
+      "backend."
+    )
+  }
+  opts <- list(
+    trials = trials,
+    draws = samples
+  )
+  opts <- c(opts, ...)
+  return(opts)
+}
+
 #' Rstan Options
 #'
 #' @description `r lifecycle::badge("deprecated")`
@@ -788,7 +843,7 @@ stan_vb_opts <- function(samples = 2000,
 #' default.
 #'
 #' @param method A character string, defaulting to sampling. Currently supports
-#' [rstan::sampling()] ("sampling") or [rstan::vb()] ("vb").
+#' [rstan::sampling()] ("sampling") or [rstan::vb()].
 #'
 #' @param ... Additional parameters to pass  underlying option functions.
 #' @importFrom rlang arg_match
@@ -839,7 +894,9 @@ rstan_opts <- function(object = NULL,
 #'
 #' @param method A character string, defaulting to sampling. Currently supports
 #' MCMC sampling ("sampling") or approximate posterior sampling via
-#' variational inference ("vb").
+#' variational inference ("vb") and, as experimental features if the
+#' "cmdstanr" backend is used, approximate posterior sampling with the
+#' laplace algorithm ("laplace") or pathfinder ("pathfinder").
 #'
 #' @param backend Character string indicating the backend to use for fitting
 #' stan models. Supported arguments are "rstan" (default) or "cmdstanr".
@@ -880,7 +937,7 @@ rstan_opts <- function(object = NULL,
 #' stan_opts(method = "vb")
 stan_opts <- function(object = NULL,
                       samples = 2000,
-                      method = c("sampling", "vb"),
+                      method = c("sampling", "vb", "laplace", "pathfinder"),
                       backend = c("rstan", "cmdstanr"),
                       init_fit = NULL,
                       return_fit = TRUE,
@@ -922,7 +979,16 @@ stan_opts <- function(object = NULL,
     )
   } else if (method == "vb") {
     opts <- c(opts, stan_vb_opts(samples = samples, ...))
+  } else if (method == "laplace") {
+    opts <- c(
+      opts, stan_laplace_opts(backend = backend, ...)
+    )
+  } else if (method == "pathfinder") {
+    opts <- c(
+      opts, stan_pathfinder_opts(samples = samples, backend = backend, ...)
+    )
   }
+
   if (!is.null(init_fit)) {
     deprecate_warn(
       when = "1.5.0",

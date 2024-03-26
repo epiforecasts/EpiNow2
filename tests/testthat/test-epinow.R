@@ -46,16 +46,57 @@ test_that("epinow produces expected output when run with the
       reported_cases = reported_cases,
       generation_time = generation_time_opts(example_generation_time),
       delays = delay_opts(example_incubation_period + reporting_delay),
-      stan = stan_opts(
-        samples = 25, warmup = 25,
-        cores = 1, chains = 2,
-        control = list(adapt_delta = 0.8),
-        backend = "cmdstanr"
-      ),
+      stan = stan_opts(backend = "cmdstanr"),
       logs = NULL, verbose = FALSE
     )
   )))
 
+  expect_equal(names(out), expected_out)
+  df_non_zero(out$estimates$samples)
+  df_non_zero(out$estimates$summarised)
+  df_non_zero(out$estimated_reported_cases$samples)
+  df_non_zero(out$estimated_reported_cases$summarised)
+  df_non_zero(out$summary)
+  expect_equal(
+    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+  )
+})
+
+test_that("epinow produces expected output when run with the
+           laplace algorithm", {
+  skip_on_os("windows")
+  output <- capture.output(suppressMessages(suppressWarnings(
+    out <- epinow(
+      reported_cases = reported_cases,
+      generation_time = generation_time_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      stan = stan_opts(method = "laplace", backend = "cmdstanr"),
+      logs = NULL, verbose = FALSE
+    )
+  )))
+  expect_equal(names(out), expected_out)
+  df_non_zero(out$estimates$samples)
+  df_non_zero(out$estimates$summarised)
+  df_non_zero(out$estimated_reported_cases$samples)
+  df_non_zero(out$estimated_reported_cases$summarised)
+  df_non_zero(out$summary)
+  expect_equal(
+    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+  )
+})
+
+test_that("epinow produces expected output when run with the
+           pathfinder algorithm", {
+  skip_on_os("windows")
+  output <- capture.output(suppressMessages(suppressWarnings(
+    out <- epinow(
+      reported_cases = reported_cases,
+      generation_time = generation_time_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      stan = stan_opts(method = "pathfinder", backend = "cmdstanr"),
+      logs = NULL, verbose = FALSE
+    )
+  )))
   expect_equal(names(out), expected_out)
   df_non_zero(out$estimates$samples)
   df_non_zero(out$estimates$summarised)

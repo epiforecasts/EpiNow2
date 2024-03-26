@@ -14,7 +14,7 @@ default.}
 When using multiple chains iterations per chain is samples / chains.}
 
 \item{method}{A character string, defaulting to sampling. Currently supports
-\code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} ("sampling") or \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}} ("vb").}
+\code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} ("sampling") or \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}}.}
 
 \item{...}{Additional parameters to pass  underlying option functions.}
 }
