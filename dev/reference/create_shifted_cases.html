@@ -119,23 +119,52 @@ forecast.</p></dd>
 
 <p>A <code>&lt;data.frame&gt;</code> for shifted reported cases</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The function first shifts all the data back in time by <code>shift</code> days (thus
+discarding the first <code>shift</code> days of data) and then applies a centred
+rolling mean of length <code>smoothing_window</code> to the shifted data except for
+the final period. The final period (the forecast horizon plus half the
+smoothing window) is instead replaced by a log-linear model fit (with 1
+added to the data for fitting to avoid zeroes and later subtracted again),
+projected to the end of the forecast horizon. The initial part of the data
+(corresponding to the length of the smoothing window) is then removed, and
+any non-integer resulting values rounded up.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">create_shifted_cases</span><span class="op">(</span><span class="va">example_confirmed</span>, <span class="fl">7</span>, <span class="fl">14</span>, <span class="fl">7</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            date confirm</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;Date&gt;   &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-03-07    3028</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-03-08    3407</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-03-09    3698</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-03-10    3912</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-03-11    4217</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ---                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 112: 2020-06-26     224</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 113: 2020-06-27     222</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 114: 2020-06-28     219</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 115: 2020-06-29     217</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 116: 2020-06-30     215</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">shift</span> <span class="op">&lt;-</span> <span class="fl">7</span></span></span>
+<span class="r-in"><span><span class="va">horizon</span> <span class="op">&lt;-</span> <span class="fl">7</span></span></span>
+<span class="r-in"><span><span class="va">smoothing_window</span> <span class="op">&lt;-</span> <span class="fl">14</span></span></span>
+<span class="r-in"><span><span class="co">## add NAs for horizon</span></span></span>
+<span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="fu"><a href="create_clean_reported_cases.html">create_clean_reported_cases</a></span><span class="op">(</span><span class="va">example_confirmed</span>, horizon <span class="op">=</span> <span class="va">horizon</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co">## add zeroes initially</span></span></span>
+<span class="r-in"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/rbindlist.html" class="external-link">rbindlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>   <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>     date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>       <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">cases</span><span class="op">$</span><span class="va">date</span><span class="op">)</span> <span class="op">-</span> <span class="va">smoothing_window</span>,</span></span>
+<span class="r-in"><span>       <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">cases</span><span class="op">$</span><span class="va">date</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>       by <span class="op">=</span> <span class="st">"days"</span></span></span>
+<span class="r-in"><span>     <span class="op">)</span>,</span></span>
+<span class="r-in"><span>     confirm <span class="op">=</span> <span class="fl">0</span>, breakpoint <span class="op">=</span> <span class="fl">0</span></span></span>
+<span class="r-in"><span>   <span class="op">)</span>,</span></span>
+<span class="r-in"><span>   <span class="va">cases</span></span></span>
+<span class="r-in"><span> <span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">create_shifted_cases</span><span class="op">(</span><span class="va">cases</span>, <span class="va">shift</span>, <span class="va">smoothing_window</span>, <span class="va">horizon</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            date confirm breakpoint</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;Date&gt;   &lt;num&gt;      &lt;num&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   1: 2020-02-22     330          0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   2: 2020-02-23     415          0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   3: 2020-02-24     518          0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   4: 2020-02-25     639          0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   5: 2020-02-26     702          0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ---                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 133: 2020-07-03     157          0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 134: 2020-07-04     152          0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 135: 2020-07-05     146          0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 136: 2020-07-06     141          0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 137: 2020-07-07     136          0</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
