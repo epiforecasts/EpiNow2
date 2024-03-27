@@ -88,7 +88,8 @@ which point 0 cases are replaced with a user supplied value (defaults to
 <span>  horizon <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  filter_leading_zeros <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  zero_threshold <span class="op">=</span> <span class="cn">Inf</span>,</span>
-<span>  fill <span class="op">=</span> <span class="cn">NA_integer_</span></span>
+<span>  fill <span class="op">=</span> <span class="cn">NA_integer_</span>,</span>
+<span>  add_breakpoints <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -122,6 +123,11 @@ zeroes that are flagged because the 7-day average is above the
 <code>zero_threshold</code>. If the default NA is used then dates with NA values or with
 7-day averages above the <code>zero_threshold</code> will be skipped in model fitting.
 If this is set to 0 then the only effect is to replace NA values with 0.</p></dd>
+
+
+<dt>add_breakpoints</dt>
+<dd><p>Logical, defaults to TRUE. Should a breakpoint column
+be added to the data frame if it does not exist.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -120,6 +120,8 @@ for an application forecasting Covid-19 deaths in Germany and Poland.</p>
 <span>  stan <span class="op">=</span> <span class="fu"><a href="stan_opts.html">stan_opts</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  burn_in <span class="op">=</span> <span class="fl">14</span>,</span>
 <span>  CrIs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span><span class="op">)</span>,</span>
+<span>  filter_leading_zeros <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  zero_threshold <span class="op">=</span> <span class="cn">Inf</span>,</span>
 <span>  priors <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weigh_delay_priors <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -175,6 +177,18 @@ This must be less than the number of observations.</p></dd>
 
 <dt>CrIs</dt>
 <dd><p>Numeric vector of credible intervals to calculate.</p></dd>
+
+
+<dt>filter_leading_zeros</dt>
+<dd><p>Logical, defaults to TRUE. Should zeros at the
+start of the time series be filtered out.</p></dd>
+
+
+<dt>zero_threshold</dt>
+<dd><p><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="figures/lifecycle-experimental.svg" alt="[Experimental]"></a> Numeric defaults
+to Inf. Indicates if detected zero cases are meaningful by using a threshold
+number of cases based on the 7-day average. If the average is above this
+threshold then the zero is replaced using <code>fill</code>.</p></dd>
 
 
 <dt>priors</dt>

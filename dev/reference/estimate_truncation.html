@@ -165,6 +165,8 @@ overdispersion and additive noise term.</p>
 <span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stan <span class="op">=</span> <span class="fu"><a href="stan_opts.html">stan_opts</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  CrIs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span><span class="op">)</span>,</span>
+<span>  filter_leading_zeros <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  zero_threshold <span class="op">=</span> <span class="cn">Inf</span>,</span>
 <span>  weigh_delay_priors <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -213,6 +215,18 @@ settings if desired.</p></dd>
 <dd><p>Numeric vector of credible intervals to calculate.</p></dd>
 
 
+<dt>filter_leading_zeros</dt>
+<dd><p>Logical, defaults to TRUE. Should zeros at the
+start of the time series be filtered out.</p></dd>
+
+
+<dt>zero_threshold</dt>
+<dd><p><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="figures/lifecycle-experimental.svg" alt="[Experimental]"></a> Numeric defaults
+to Inf. Indicates if detected zero cases are meaningful by using a threshold
+number of cases based on the 7-day average. If the average is above this
+threshold then the zero is replaced using <code>fill</code>.</p></dd>
+
+
 <dt>weigh_delay_priors</dt>
 <dd><p>Logical. If TRUE, all delay distribution priors
 will be weighted by the number of observation data points, in doing so
@@ -255,10 +269,10 @@ used for fitting (<code>data</code>) and the fit object (<code>fit</code>).</p>
 <span class="r-in"><span>  verbose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">2000</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-03-26 09:44:57] estimate_truncation (chain: 1): There were 25 divergent transitions after warmup. See</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-03-27 12:36:29] estimate_truncation (chain: 1): There were 25 divergent transitions after warmup. See</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them. - </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-03-26 09:44:57] estimate_truncation (chain: 1): Examine the pairs() plot to diagnose sampling problems</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> WARN [2024-03-27 12:36:29] estimate_truncation (chain: 1): Examine the pairs() plot to diagnose sampling problems</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># summary of the distribution</span></span></span>
