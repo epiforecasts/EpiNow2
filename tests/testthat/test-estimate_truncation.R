@@ -48,14 +48,12 @@ test_that("estimate_truncation works with filter_leading_zeros set", {
   modified_data_fit <- estimate_truncation(
     modified_data,
     verbose = FALSE, chains = 2, iter = 1000, warmup = 250,
-    stan = stan_opts(backend = "cmdstanr"),
     filter_leading_zeros = TRUE
   )
   # fit model to original dataset
   original_data_fit <- estimate_truncation(
     example_truncated,
-    verbose = FALSE, chains = 2, iter = 1000, warmup = 250,
-    stan = stan_opts(backend = "cmdstanr")
+    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
   )
   expect_named(
     modified_data_fit,
