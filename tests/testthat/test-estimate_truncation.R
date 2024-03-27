@@ -78,7 +78,6 @@ test_that("estimate_truncation works with zero_threshold set", {
   modified_data <- purrr::map(modified_data, function(x) x[sample(1:10, 6), confirm := 0])
   out <- estimate_truncation(modified_data,
                              verbose = FALSE, chains = 2, iter = 1000, warmup = 250,
-                             stan = stan_opts(backend = "cmdstanr"),
                              zero_threshold = 1
   )
   expect_named(out, c("dist", "obs", "last_obs", "cmf", "data", "fit"))
