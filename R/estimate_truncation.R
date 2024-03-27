@@ -110,6 +110,8 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 model = NULL,
                                 stan = stan_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
+                                filter_leading_zeros = FALSE,
+                                zero_threshold = Inf,
                                 weigh_delay_priors = FALSE,
                                 verbose = TRUE,
                                 ...) {
@@ -126,6 +128,8 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   assert_class(truncation, "dist_spec")
   assert_class(model, "stanfit", null.ok = TRUE)
   assert_numeric(CrIs, lower = 0, upper = 1)
+  assert_logical(filter_leading_zeros)
+  assert_numeric(zero_threshold, lower = 0)
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
@@ -193,6 +197,19 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   # combine into ordered matrix
   dirty_obs <- purrr::map(obs, data.table::as.data.table)
+  dirty_obs <- purrr::map(dirty_obs,
+    create_clean_reported_cases,
+      horizon = 0,
+      filter_leading_zeros = filter_leading_zeros,
+      zero_threshold = zero_threshold,
+      add_breakpoints = FALSE
+  )
+  earliest_date <- max(
+    as.Date(
+      purrr::map_chr(dirty_obs, function(x) x[, as.character(min(date))])
+    )
+  )
+  dirty_obs <- purrr::map(dirty_obs, function(x) x[date >= earliest_date])
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
   obs <- purrr::map(dirty_obs, data.table::copy)

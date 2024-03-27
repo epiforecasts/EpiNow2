@@ -47,6 +47,7 @@
 * Added an `na` argument to `obs_opts()` that allows the user to specify whether NA values in the data should be interpreted as missing or accumulated in the next non-NA data point. By @sbfnk in #534 and reviewed by @seabbs.
 * Growth rates are now calculated directly from the infection trajectory as `log I(t) - log I(t - 1)`. Originally by @seabbs in #213, finished by @sbfnk in #610 and reviewed by @seabbs.
 * Fixed a bug when using the nonmechanistic model that could lead to explosive growth. By @sbfnk in #612 and reviewed by @jamesmbaazam.
+* Added the arguments `filter_leading_zeros` and `zero_threshold` to `estimate_secondary()` and `estimate_truncation()` to allow the user to specify whether to filter leading zeros in the data and the threshold for replacing zero cases. These arguments were already used in `estimate_infections()`, `epinow()`, and `regional_epinow()`. See `?estimate_secondary` and `?estimate_truncation` for more details. By @jamesmbaazam in #608 and reviewed by @sbfnk.
 
 # EpiNow2 1.4.0
 

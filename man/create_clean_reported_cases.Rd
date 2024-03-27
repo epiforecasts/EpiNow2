@@ -9,7 +9,8 @@ create_clean_reported_cases(
   horizon = 0,
   filter_leading_zeros = TRUE,
   zero_threshold = Inf,
-  fill = NA_integer_
+  fill = NA_integer_,
+  add_breakpoints = TRUE
 )
 }
 \arguments{
@@ -32,6 +33,9 @@ zeroes that are flagged because the 7-day average is above the
 \code{zero_threshold}. If the default NA is used then dates with NA values or with
 7-day averages above the \code{zero_threshold} will be skipped in model fitting.
 If this is set to 0 then the only effect is to replace NA values with 0.}
+
+\item{add_breakpoints}{Logical, defaults to TRUE. Should a breakpoint column
+be added to the data frame if it does not exist.}
 }
 \value{
 A cleaned data frame of reported cases

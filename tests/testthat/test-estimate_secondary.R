@@ -202,3 +202,30 @@ test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
   )
   expect_s3_class(inc_weigh, "estimate_secondary")
 })
+
+test_that("estimate_secondary works with filter_leading_zeros set", {
+  modified_data <- inc_cases[1:10, secondary := 0]
+  out <- estimate_secondary(
+    modified_data,
+    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2),
+    week_effect = FALSE),
+    filter_leading_zeros = TRUE,
+    verbose = FALSE
+  )
+  expect_s3_class(out, "estimate_secondary")
+  expect_named(out, c("predictions", "posterior", "data", "fit"))
+  expect_equal(out$predictions$primary, modified_data$primary[-(1:10)])
+})
+
+test_that("estimate_secondary works with zero_threshold set", {
+  modified_data <- inc_cases[sample(1:30, 10), primary := 0]
+  out <- estimate_secondary(
+    modified_data,
+    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2),
+                   week_effect = FALSE),
+    zero_threshold = 10,
+    verbose = FALSE
+  )
+  expect_s3_class(out, "estimate_secondary")
+  expect_named(out, c("predictions", "posterior", "data", "fit"))
+})

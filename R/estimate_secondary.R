@@ -147,6 +147,8 @@ estimate_secondary <- function(reports,
                                stan = stan_opts(),
                                burn_in = 14,
                                CrIs = c(0.2, 0.5, 0.9),
+                               filter_leading_zeros = FALSE,
+                               zero_threshold = Inf,
                                priors = NULL,
                                model = NULL,
                                weigh_delay_priors = FALSE,
@@ -160,6 +162,8 @@ estimate_secondary <- function(reports,
   assert_class(obs, "obs_opts")
   assert_numeric(burn_in, lower = 0)
   assert_numeric(CrIs, lower = 0, upper = 1)
+  assert_logical(filter_leading_zeros)
+  assert_numeric(zero_threshold, lower = 0)
   assert_data_frame(priors, null.ok = TRUE)
   assert_class(model, "stanfit", null.ok = TRUE)
   assert_logical(weigh_delay_priors)
@@ -168,7 +172,9 @@ estimate_secondary <- function(reports,
   reports <- data.table::as.data.table(reports)
   secondary_reports <- reports[, list(date, confirm = secondary)]
   secondary_reports <- create_clean_reported_cases(
-    secondary_reports, filter_leading_zeros = FALSE
+    secondary_reports,
+    filter_leading_zeros = filter_leading_zeros,
+    zero_threshold = zero_threshold
   )
   ## fill in missing data (required if fitting to prevalence)
   complete_secondary <- create_complete_cases(secondary_reports)
@@ -177,6 +183,11 @@ estimate_secondary <- function(reports,
   secondary_reports[, confirm := nafill(confirm, type = "locf")]
   ## fill any early data up
   secondary_reports[, confirm := nafill(confirm, type = "nocb")]
+
+  # Ensure that reports and secondary_reports are aligned
+  reports <- merge.data.table(
+    reports, secondary_reports[, list(date)], by = "date"
+  )
 
   if (burn_in >= nrow(reports)) {
     stop("burn_in is greater or equal to the number of observations.

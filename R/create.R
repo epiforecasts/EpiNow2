@@ -17,6 +17,8 @@
 #' `zero_threshold`. If the default NA is used then dates with NA values or with
 #' 7-day averages above the `zero_threshold` will be skipped in model fitting.
 #' If this is set to 0 then the only effect is to replace NA values with 0.
+#' @param add_breakpoints Logical, defaults to TRUE. Should a breakpoint column
+#' be added to the data frame if it does not exist.
 #'
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
@@ -27,7 +29,8 @@
 create_clean_reported_cases <- function(reported_cases, horizon = 0,
                                         filter_leading_zeros = TRUE,
                                         zero_threshold = Inf,
-                                        fill = NA_integer_) {
+                                        fill = NA_integer_,
+                                        add_breakpoints = TRUE) {
   reported_cases <- data.table::setDT(reported_cases)
   reported_cases_grid <- data.table::copy(reported_cases)[,
    .(date = seq(min(date), max(date) + horizon, by = "days"))
@@ -38,10 +41,12 @@ create_clean_reported_cases <- function(reported_cases, horizon = 0,
     by = "date", all.y = TRUE
   )
 
-  if (is.null(reported_cases$breakpoint)) {
+  if (is.null(reported_cases$breakpoint) && add_breakpoints) {
     reported_cases$breakpoint <- 0
   }
-  reported_cases[is.na(breakpoint), breakpoint := 0]
+  if (!is.null(reported_cases$breakpoint)) {
+    reported_cases[is.na(breakpoint), breakpoint := 0]
+  }
   reported_cases <- data.table::setorder(reported_cases, date)
   ## Filter out 0 reported cases from the beginning of the data
   if (filter_leading_zeros) {
