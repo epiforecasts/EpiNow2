@@ -63,7 +63,7 @@ stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 of \code{R}; default is \code{NULL}, in which case it is set to the maximum of the
 generation time. The minimum is 1 , i.e. the first reproduction number
 given applies on the day after the index cases given by
-\code{initial_infections}. If the generation time of longer than 1 day on
+\code{initial_infections}. If the generation time is longer than 1 day on
 average, a seeding time of 1 will always lead to an initial decline (as
 there are no infections before the initial ones). Instead, if this is
 greater than 1, an initial part of the epidemic (before the first value of
