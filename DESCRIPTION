@@ -133,7 +133,6 @@ Suggests:
     precommit,
     rmarkdown,
     spelling,
-    styler,
     testthat,
     tidyr,
     usethis,
