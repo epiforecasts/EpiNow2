@@ -135,14 +135,14 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 #' @return Numeric number of cores to use per worker. If greater than 1 pass to
 #' `stan_args = list(cores = "output from setup future")` or use
 #' `future = TRUE`. If only a single strategy is used then nothing is returned.
-setup_future <- function(reported_cases,
+setup_future <- function(data,
                          strategies = c("multisession", "multisession"),
                          min_cores_per_worker = 4) {
   if (length(strategies) > 2 || length(strategies) == 0) {
     futile.logger::flog.error("1 or 2 strategies should be used")
     stop("1 or 2 strategies should be used")
   }
-  if (is.null(reported_cases$region)) {
+  if (is.null(data$region)) {
     futile.logger::flog.error("Reported cases must contain a region")
     stop("Exactly 2 strategies should be used")
   }
@@ -159,7 +159,7 @@ setup_future <- function(reported_cases,
     cores_per_worker <- 1
     return(invisible(NULL))
   } else {
-    jobs <- length(unique(reported_cases$region))
+    jobs <- length(unique(data$region))
     workers <- min(
       ceiling(future::availableCores() / min_cores_per_worker), jobs
     )
@@ -188,10 +188,10 @@ setup_future <- function(reported_cases,
 #' @inheritParams estimate_infections
 #' @return A data table
 #' @export
-setup_dt <- function(reported_cases) {
+setup_dt <- function(data) {
   suppressMessages(data.table::setDTthreads(threads = 1))
-  reported_cases <- data.table::setDT(reported_cases)
-  return(reported_cases)
+  data <- data.table::setDT(data)
+  return(data)
 }
 
 #' Setup Target Folder for Saving

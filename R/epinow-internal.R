@@ -7,10 +7,10 @@
 #' @inheritParams estimate_infections
 #' @return Numeric forecast horizon adjusted for the users intention
 #' @export
-update_horizon <- function(horizon, target_date, reported_cases) {
+update_horizon <- function(horizon, target_date, data) {
   if (horizon != 0) {
     horizon <- horizon + as.numeric(
-      as.Date(target_date) - max(reported_cases$date)
+      as.Date(target_date) - max(data$date)
     )
   }
   return(horizon)
@@ -25,12 +25,12 @@ update_horizon <- function(horizon, target_date, reported_cases) {
 #' @inheritParams epinow
 #' @return No return value, called for side effects
 #' @export
-save_input <- function(reported_cases, target_folder) {
+save_input <- function(data, target_folder) {
   if (!is.null(target_folder)) {
-    latest_date <- reported_cases[confirm > 0][date == max(date)]$date
+    latest_date <- data[confirm > 0][date == max(date)]$date
 
     saveRDS(latest_date, file.path(target_folder, "latest_date.rds"))
-    saveRDS(reported_cases, file.path(target_folder, "reported_cases.rds"))
+    saveRDS(data, file.path(target_folder, "reported_cases.rds"))
   }
   return(invisible(NULL))
 }

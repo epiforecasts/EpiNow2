@@ -26,12 +26,12 @@
 #' @export
 #' @examples
 #' create_clean_reported_cases(example_confirmed, 7)
-create_clean_reported_cases <- function(reported_cases, horizon = 0,
+create_clean_reported_cases <- function(data, horizon = 0,
                                         filter_leading_zeros = TRUE,
                                         zero_threshold = Inf,
                                         fill = NA_integer_,
                                         add_breakpoints = TRUE) {
-  reported_cases <- data.table::setDT(reported_cases)
+  reported_cases <- data.table::setDT(data)
   reported_cases_grid <- data.table::copy(reported_cases)[,
    .(date = seq(min(date), max(date) + horizon, by = "days"))
   ]
@@ -148,9 +148,9 @@ create_complete_cases <- function(cases) {
 #'    cases
 #'  ))
 #' create_shifted_cases(cases, shift, smoothing_window, horizon)
-create_shifted_cases <- function(reported_cases, shift,
+create_shifted_cases <- function(data, shift,
                                  smoothing_window, horizon) {
-  shifted_reported_cases <- data.table::copy(reported_cases)[
+  shifted_reported_cases <- data.table::copy(data)[
     ,
     confirm := data.table::shift(confirm,
       n = shift,
@@ -476,7 +476,7 @@ create_stan_data <- function(reported_cases, seeding_time,
                              rt, gp, obs, horizon,
                              backcalc, shifted_cases) {
 
-  cases <- reported_cases[(seeding_time + 1):(.N - horizon)]
+  cases <- data[(seeding_time + 1):(.N - horizon)]
   complete_cases <- create_complete_cases(cases)
   cases <- cases$confirm
 

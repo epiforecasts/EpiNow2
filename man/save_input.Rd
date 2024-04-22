@@ -4,11 +4,11 @@
 \alias{save_input}
 \title{Save Observed Data}
 \usage{
-save_input(reported_cases, target_folder)
+save_input(data, target_folder)
 }
 \arguments{
-\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
-(date). confirm must be numeric and date must be in date format.}
+\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+(date). \code{confirm} must be numeric and \code{date} must be in date format.}
 
 \item{target_folder}{Character string specifying where to save results (will
 create if not present).}

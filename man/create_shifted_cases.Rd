@@ -4,11 +4,11 @@
 \alias{create_shifted_cases}
 \title{Create Delay Shifted Cases}
 \usage{
-create_shifted_cases(reported_cases, shift, smoothing_window, horizon)
+create_shifted_cases(data, shift, smoothing_window, horizon)
 }
 \arguments{
-\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
-(date). confirm must be numeric and date must be in date format.}
+\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+(date). \code{confirm} must be numeric and \code{date} must be in date format.}
 
 \item{shift}{Numeric, mean delay shift to apply.}
 

@@ -5,13 +5,13 @@
 \title{Set up Future Backend}
 \usage{
 setup_future(
-  reported_cases,
+  data,
   strategies = c("multisession", "multisession"),
   min_cores_per_worker = 4
 )
 }
 \arguments{
-\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
 (date), and region (\code{region}).}
 
 \item{strategies}{A vector length 1 to 2 of strategies to pass to
