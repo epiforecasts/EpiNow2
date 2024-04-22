@@ -12,8 +12,13 @@
 #' @param max deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
 #' @param prior_weight deprecated; prior weights are now specified as a
-#' model option. Use the `weigh_delay_priors` argument of
-#' [estimate_infections()] instead.
+#' model option. Use the `weight_prior` argument instead
+#' @param weight_prior Logical; if TRUE (default), any priors given in `dist`
+#'   will be weighted by the number of observation data points, in doing so
+#'   approximately placing an independent prior at each time step and usually
+#'   preventing the posteriors from shifting. If FALSE, no weight will be
+#'   applied, i.e. any parameters in `dist` will be treated as a single
+#'    parameters.
 #' @inheritParams apply_tolerance
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
@@ -40,7 +45,8 @@
 #' generation_time_opts(example_generation_time)
 generation_time_opts <- function(dist = Fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
-                                 prior_weight, tolerance = 0.001) {
+                                 prior_weight, tolerance = 0.001,
+                                 weight_prior = TRUE) {
   deprecated_options_given <- FALSE
   dot_options <- list(...)
 
@@ -82,7 +88,7 @@ generation_time_opts <- function(dist = Fixed(1), ...,
   if (!missing(prior_weight)) {
     deprecate_warn(
       "1.4.0", "generation_time_opts(prior_weight)",
-      "estimate_infections(weigh_delay_prior)",
+      "generation_time_opts(weight_prior)",
       "This argument will be removed in version 2.0.0."
     )
   }
@@ -107,6 +113,7 @@ generation_time_opts <- function(dist = Fixed(1), ...,
   }
   check_stan_delay(dist)
   attr(dist, "tolerance") <- tolerance
+  attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("generation_time_opts", class(dist))
   return(dist)
 }
@@ -189,6 +196,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' @param ... deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
 #' @inheritParams apply_tolerance
+#' @inheritParams generation_time_opts
 #' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
 #' [bootstrapped_dist_fit()] [dist_spec()]
@@ -207,7 +215,8 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001) {
+delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
+                       weight_prior = TRUE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec")) { ## could be old syntax
     if (is.list(dist)) {
@@ -240,6 +249,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001) {
   }
   check_stan_delay(dist)
   attr(dist, "tolerance") <- tolerance
+  attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("delay_opts", class(dist))
   return(dist)
 }
@@ -254,6 +264,12 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001) {
 #' @param dist A delay distribution or series of delay distributions reflecting
 #' the truncation generated using [dist_spec()] or [estimate_truncation()].
 #' Default is fixed distribution with maximum 0, i.e. no truncation
+#' @param weight_prior Logical; if TRUE, the truncation prior will be weighted
+#'   by the number of observation data points, in doing so approximately placing
+#'   an independent prior at each time step and usually preventing the
+#'   posteriors from shifting. If FALSE (default), no weight will be applied,
+#'   i.e. the truncation distribution will be treated as a single parameter.
+#'
 #' @inheritParams apply_tolerance
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
@@ -267,7 +283,8 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001) {
 #'
 #' # truncation dist
 #' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = Fixed(0), tolerance = 0.001) {
+trunc_opts <- function(dist = Fixed(0), tolerance = 0.001,
+                       weight_prior = FALSE) {
   if (!is(dist, "dist_spec")) {
     if (is.list(dist)) {
       dist <- do.call(dist_spec, dist)
@@ -285,6 +302,7 @@ trunc_opts <- function(dist = Fixed(0), tolerance = 0.001) {
   }
   check_stan_delay(dist)
   attr(dist, "tolerance") <- tolerance
+  attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("trunc_opts", class(dist))
   return(dist)
 }

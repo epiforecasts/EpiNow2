@@ -125,7 +125,9 @@ test_that("epinow runs without error when saving to disk", {
 test_that("epinow can produce partial output as specified", {
   out <- suppressWarnings(epinow(
     reported_cases = reported_cases,
-    generation_time = generation_time_opts(example_generation_time),
+    generation_time = generation_time_opts(
+      example_generation_time, weight_prior = FALSE
+    ),
     delays = delay_opts(example_incubation_period + reporting_delay),
     stan = stan_opts(
       samples = 25, warmup = 25,

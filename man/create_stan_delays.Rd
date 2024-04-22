@@ -4,12 +4,13 @@
 \alias{create_stan_delays}
 \title{Create delay variables for stan}
 \usage{
-create_stan_delays(..., weight = 1)
+create_stan_delays(..., time_points = 1L)
 }
 \arguments{
 \item{...}{Named delay distributions. The names are assigned to IDs}
 
-\item{weight}{Numeric, weight associated with delay priors; default: 1}
+\item{time_points}{Integer, the number of time points in the data;
+determines weight associated with weighted delay priors; default: 1}
 }
 \value{
 A list of variables as expected by the stan model

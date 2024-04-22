@@ -54,12 +54,8 @@ to Inf. Indicates if detected zero cases are meaningful by using a threshold
 number of cases based on the 7-day average. If the average is above this
 threshold then the zero is replaced using \code{fill}.}
 
-\item{weigh_delay_priors}{Logical. If TRUE, all delay distribution priors
-will be weighted by the number of observation data points, in doing so
-approximately placing an independent prior at each time step and usually
-preventing the posteriors from shifting. If FALSE (default), no weight will
-be applied, i.e. delay distributions will be treated as a single
-parameters.}
+\item{weigh_delay_priors}{Deprecated; use the \code{weight_prior} option in
+\code{\link[=trunc_opts]{trunc_opts()}} instead.}
 
 \item{verbose}{Logical, should model fitting progress be returned.}
 

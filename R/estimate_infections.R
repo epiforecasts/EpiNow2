@@ -203,9 +203,7 @@ estimate_infections <- function(reported_cases,
     gt = generation_time,
     delay = delays,
     trunc = truncation,
-    weight = ifelse(
-      weigh_delay_priors, data$t - data$seeding_time - data$horizon, 1
-    )
+    time_points = data$t - data$seeding_time - data$horizon
   ))
 
   # Set up default settings

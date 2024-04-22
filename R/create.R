@@ -718,10 +718,12 @@ create_stan_args <- function(stan = stan_opts(),
 ##' Create delay variables for stan
 ##'
 ##' @param ... Named delay distributions. The names are assigned to IDs
-##' @param weight Numeric, weight associated with delay priors; default: 1
+##' @param time_points Integer, the number of time points in the data;
+##'   determines weight associated with weighted delay priors; default: 1
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom purrr transpose map flatten
-create_stan_delays <- function(..., weight = 1) {
+create_stan_delays <- function(..., time_points = 1L) {
+  delays <- list(...)
   ## discretise
   delays <- map(list(...), discretise)
   ## convolve where appropriate
@@ -739,23 +741,23 @@ create_stan_delays <- function(..., weight = 1) {
   ids[type_n > 0] <- seq_len(sum(type_n > 0))
   names(ids) <- paste(names(type_n), "id", sep = "_")
 
-  delays <- flatten(delays)
-  parametric <- unname(
-    vapply(delays, function(x) x$distribution != "nonparametric", logical(1))
-  )
-  param_length <- unname(vapply(delays[parametric], function(x) {
+  flat_delays <- flatten(delays)
+  parametric <- unname(vapply(
+    flat_delays, function(x) x$distribution != "nonparametric", logical(1)
+  ))
+  param_length <- unname(vapply(flat_delays[parametric], function(x) {
     length(x$parameters)
   }, numeric(1)))
-  nonparam_length <- unname(vapply(delays[!parametric], function(x) {
+  nonparam_length <- unname(vapply(flat_delays[!parametric], function(x) {
     length(x$pmf)
   }, numeric(1)))
   distributions <- unname(as.character(
-    map(delays[parametric], ~ .x$distribution)
+    map(flat_delays[parametric], ~ .x$distribution)
   ))
 
   ## create stan object
   ret <- list(
-    n = length(delays),
+    n = length(flat_delays),
     n_p = sum(parametric),
     n_np = sum(!parametric),
     types = sum(type_n > 0),
@@ -771,15 +773,15 @@ create_stan_delays <- function(..., weight = 1) {
   ret$types_groups <- array(c(0, cumsum(unname(type_n[type_n > 0]))) + 1)
 
   ret$params_mean <- array(unname(as.numeric(
-    map(flatten(map(delays[parametric], ~ .x$parameters)), mean)
+    map(flatten(map(flat_delays[parametric], ~ .x$parameters)), mean)
   )))
   ret$params_sd <- array(unname(as.numeric(
-    map(flatten(map(delays[parametric], ~ .x$parameters)), sd_dist)
+    map(flatten(map(flat_delays[parametric], ~ .x$parameters)), sd_dist)
   )))
   ret$max <- array(max_delay[parametric])
 
   ret$np_pmf <- array(unname(as.numeric(
-    flatten(map(delays[!parametric], ~ .x$pmf))
+    flatten(map(flat_delays[!parametric], ~ .x$pmf))
   )))
   ## get non zero length delay pmf lengths
   ret$np_pmf_groups <- array(c(0, cumsum(nonparam_length)) + 1)
@@ -791,12 +793,16 @@ create_stan_delays <- function(..., weight = 1) {
   ret$params_length <- sum(param_length)
   ## set lower bounds
   ret$params_lower <- array(unname(as.numeric(flatten(
-    map(delays[parametric], function(x) {
+    map(flat_delays[parametric], function(x) {
       lower_bounds(x$distribution)[names(x$parameters)]
     })
   ))))
   ## assign prior weights
-  ret$weight <- array(rep(weight, ret$n_p))
+  weight_priors <- vapply(
+    delays[parametric], attr, "weight_prior", FUN.VALUE = logical(1)
+  )
+  ret$weight <- array(rep(1, ret$n_p))
+  ret$weight[weight_priors] <- time_points
   ## assign distribution
   ret$dist <- array(match(distributions, c("lognormal", "gamma")) - 1L)
 

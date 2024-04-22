@@ -4,7 +4,13 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001)
+delay_opts(
+  dist = Fixed(0),
+  ...,
+  fixed = FALSE,
+  tolerance = 0.001,
+  weight_prior = TRUE
+)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions. Default is
@@ -15,6 +21,13 @@ a fixed distribution with all mass at 0, i.e. no delay.}
 \item{fixed}{deprecated; use \code{dist} instead}
 
 \item{tolerance}{Numeric; the desired tolerance level.}
+
+\item{weight_prior}{Logical; if TRUE (default), any priors given in \code{dist}
+will be weighted by the number of observation data points, in doing so
+approximately placing an independent prior at each time step and usually
+preventing the posteriors from shifting. If FALSE, no weight will be
+applied, i.e. any parameters in \code{dist} will be treated as a single
+parameters.}
 }
 \value{
 A \verb{<delay_opts>} object summarising the input delay distributions.
