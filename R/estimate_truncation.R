@@ -33,10 +33,12 @@
 #'  - Truncation is a multiplicative scaling of underlying reported cases.
 #'  - Truncation is log normally distributed.
 #'
-#' @param obs A list of `<data.frame>`s each containing a date variable
+#' @param data  A list of `<data.frame>`s each containing a date variable
 #' and a confirm (numeric) variable. Each data set should be a snapshot
 #' of the reported data over time. All data sets must contain a complete vector
 #' of dates.
+#'
+#' @param obs Deprecated; use `data` instead.
 #'
 #' @param max_truncation Deprecated; use `truncation` instead.
 #'
@@ -94,7 +96,8 @@
 #' plot(est)
 #'
 #' options(old_opts)
-estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
+estimate_truncation <- function(data,
+                                obs, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
                                 truncation = trunc_opts(
                                   LogNormal(
@@ -112,6 +115,15 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 verbose = TRUE,
                                 ...) {
 
+  if (!missing(obs)) {
+    lifecycle::deprecate_stop(
+      "1.5.0",
+      "estimate_truncation(obs)",
+      "estimate_truncation(data)",
+      "The argument will be removed completely in version 2.0.0."
+    )
+    data <- obs
+  }
   if (!is.null(model)) {
     lifecycle::deprecate_stop(
       "1.5.0",
@@ -200,7 +212,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   }
 
   # combine into ordered matrix
-  dirty_obs <- purrr::map(obs, data.table::as.data.table)
+  dirty_obs <- purrr::map(data, data.table::as.data.table)
   dirty_obs <- purrr::map(dirty_obs,
     create_clean_reported_cases,
       horizon = 0,

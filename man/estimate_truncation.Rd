@@ -5,6 +5,7 @@
 \title{Estimate Truncation of Observed Data}
 \usage{
 estimate_truncation(
+  data,
   obs,
   max_truncation,
   trunc_max = 10,
@@ -22,10 +23,12 @@ estimate_truncation(
 )
 }
 \arguments{
-\item{obs}{A list of \verb{<data.frame>}s each containing a date variable
+\item{data}{A list of \verb{<data.frame>}s each containing a date variable
 and a confirm (numeric) variable. Each data set should be a snapshot
 of the reported data over time. All data sets must contain a complete vector
 of dates.}
+
+\item{obs}{Deprecated; use \code{data} instead.}
 
 \item{max_truncation}{Deprecated; use \code{truncation} instead.}
 
