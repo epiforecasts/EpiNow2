@@ -187,3 +187,10 @@ test_that("epinow fails if given variational inference arguments when using NUTs
     logs = NULL, verbose = FALSE
   )))
 })
+
+test_that("deprecated arguments are recognised", {
+  options(warn = 2)
+  expect_error(epinow(reported_cases = reported_cases),
+               "deprecated"
+  )
+})
