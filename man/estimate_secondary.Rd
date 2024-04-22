@@ -5,6 +5,7 @@
 \title{Estimate a Secondary Observation from a Primary Observation}
 \usage{
 estimate_secondary(
+  data,
   reports,
   secondary = secondary_opts(),
   delays = delay_opts(LogNormal(meanlog = Normal(2.5, 0.5), sdlog = Normal(0.47, 0.25),
@@ -24,8 +25,10 @@ estimate_secondary(
 )
 }
 \arguments{
-\item{reports}{A \verb{<data.frame>} containing the \code{date} of report and both
+\item{data}{A \verb{<data.frame>} containing the \code{date} of report and both
 \code{primary} and \code{secondary} reports.}
+
+\item{reports}{Deprecated; use \code{data} instead.}
 
 \item{secondary}{A call to \code{\link[=secondary_opts]{secondary_opts()}} or a list containing the
 following  binary variables: cumulative, historic, primary_hist_additive,

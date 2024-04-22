@@ -25,8 +25,10 @@
 #' and standard deviation of 7 days (with a standard deviation of 0.5 and 0.25
 #' respectively on the log scale).
 #'
-#' @param reports A `<data.frame>` containing the `date` of report and both
+#' @param data A `<data.frame>` containing the `date` of report and both
 #' `primary` and `secondary` reports.
+#'
+#' @param reports Deprecated; use `data` instead.
 #'
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
@@ -133,7 +135,8 @@
 #'
 #' options(old_opts)
 #' }
-estimate_secondary <- function(reports,
+estimate_secondary <- function(data,
+                               reports,
                                secondary = secondary_opts(),
                                delays = delay_opts(
                                  LogNormal(
@@ -154,8 +157,18 @@ estimate_secondary <- function(reports,
                                weigh_delay_priors = FALSE,
                                verbose = interactive(),
                                ...) {
+  # Deprecate reported_cases in favour of data
+  if (!missing(reports)) {
+    lifecycle::deprecate_warn(
+      "1.5.0",
+      "estimate_secondary(reports)",
+      "estimate_secondary(data)",
+      "The argument will be removed completely in version 2.0.0."
+    )
+    data <- reports
+  }
   # Validate the inputs
-  check_reports_valid(reports, model = "estimate_secondary")
+  check_reports_valid(data, model = "estimate_secondary")
   assert_class(secondary, "secondary_opts")
   assert_class(delays, "delay_opts")
   assert_class(truncation, "trunc_opts")
@@ -169,7 +182,7 @@ estimate_secondary <- function(reports,
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
-  reports <- data.table::as.data.table(reports)
+  reports <- data.table::as.data.table(data)
   secondary_reports <- reports[, list(date, confirm = secondary)]
   secondary_reports <- create_clean_reported_cases(
     secondary_reports,
