@@ -20,8 +20,10 @@
 #' using [progressr::handlers()] and enable it in batch by setting
 #' `R_PROGRESSR_ENABLE=TRUE` as an environment variable.
 #'
-#' @param reported_cases A `<data.frame>` of confirmed cases (confirm) by date
+#' @param data A `<data.frame>` of confirmed cases (confirm) by date
 #' (date), and region (`region`).
+#'
+#' @param reported_cases Deprecated; use `data` instead.
 #'
 #' @param non_zero_points Numeric, the minimum number of time points with
 #' non-zero cases in a region required for that region to be evaluated.
@@ -76,7 +78,7 @@
 #' # samples and warmup have been reduced for this example
 #' # for more examples, see the "estimate_infections examples" vignette
 #' def <- regional_epinow(
-#'   reported_cases = cases,
+#'   data = cases,
 #'   generation_time = generation_time_opts(example_generation_time),
 #'   delays = delay_opts(example_incubation_period + example_reporting_delay),
 #'   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
@@ -88,7 +90,8 @@
 #' )
 #' options(old_opts)
 #' }
-regional_epinow <- function(reported_cases,
+regional_epinow <- function(data,
+                            reported_cases,
                             generation_time = generation_time_opts(),
                             delays = delay_opts(),
                             truncation = trunc_opts(),
@@ -110,6 +113,16 @@ regional_epinow <- function(reported_cases,
                             summary_args = list(),
                             verbose = FALSE,
                             logs = tempdir(check = TRUE), ...) {
+  # Warning for deprecated arguments
+  if (!missing(reported_cases)) {
+    lifecycle::deprecate_warn(
+      "1.5.0",
+      "regional_epinow(reported_cases)",
+      "regional_epinow(data)",
+      "The argument will be removed completely in version 2.0.0."
+    )
+    data <- reported_cases
+  }
   # supported output
   output <- match_output_arguments(output,
     supported_args = c(
@@ -122,7 +135,7 @@ regional_epinow <- function(reported_cases,
   # make timing compulsory
   output["timing"] <- TRUE
   if (missing(target_date)) {
-    target_date <- as.character(max(reported_cases$date))
+    target_date <- as.character(max(data$date))
   }
 
   # setup logging -----------------------------------------------------------
@@ -144,7 +157,7 @@ regional_epinow <- function(reported_cases,
   }
 
   # clean regions
-  reported_cases <- clean_regions(reported_cases, non_zero_points)
+  reported_cases <- clean_regions(data, non_zero_points)
   regions <- unique(reported_cases$region)
 
   # run regions (make parallel using future::plan)
@@ -166,7 +179,7 @@ regional_epinow <- function(reported_cases,
       stan = stan,
       horizon = horizon,
       CrIs = CrIs,
-      reported_cases = reported_cases,
+      data = reported_cases,
       target_folder = target_folder,
       target_date = target_date,
       output = output,
@@ -252,8 +265,8 @@ regional_epinow <- function(reported_cases,
 #' @importFrom data.table copy setDT
 #' @importFrom futile.logger flog.info
 #' @return A dataframe of cleaned regional data
-clean_regions <- function(reported_cases, non_zero_points) {
-  reported_cases <- data.table::setDT(reported_cases)
+clean_regions <- function(data, non_zero_points) {
+  reported_cases <- data.table::setDT(data)
   # check for regions more than required time points with cases
   eval_regions <- data.table::copy(reported_cases)[,
     .(confirm = confirm > 0), by = c("region", "date")][,
@@ -322,7 +335,7 @@ run_region <- function(target_region,
                        stan,
                        horizon,
                        CrIs,
-                       reported_cases,
+                       data,
                        target_folder,
                        target_date,
                        return_output,
@@ -343,7 +356,7 @@ run_region <- function(target_region,
     "filtering data for target region %s", target_region,
     name = "EpiNow2.epinow"
   )
-  regional_cases <- reported_cases[region %in% target_region][, region := NULL]
+  regional_cases <- data[region %in% target_region][, region := NULL]
 
   futile.logger::flog.trace(
     "calling epinow2::epinow to process data for %s", target_region,
@@ -361,7 +374,7 @@ run_region <- function(target_region,
     stan = filter_opts(stan, target_region),
     horizon = horizon,
     CrIs = CrIs,
-    reported_cases = regional_cases,
+    data = regional_cases,
     target_folder = target_folder,
     target_date = target_date,
     return_output = TRUE,

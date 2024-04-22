@@ -5,6 +5,7 @@
 \title{Real-time Rt Estimation, Forecasting and Reporting by Region}
 \usage{
 regional_epinow(
+  data,
   reported_cases,
   generation_time = generation_time_opts(),
   delays = delay_opts(),
@@ -28,8 +29,10 @@ regional_epinow(
 )
 }
 \arguments{
-\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
 (date), and region (\code{region}).}
+
+\item{reported_cases}{Deprecated; use \code{data} instead.}
 
 \item{generation_time}{A call to \code{\link[=generation_time_opts]{generation_time_opts()}} defining the
 generation time distribution used. For backwards compatibility a list of
@@ -145,7 +148,7 @@ cases <- data.table::rbindlist(list(
 # samples and warmup have been reduced for this example
 # for more examples, see the "estimate_infections examples" vignette
 def <- regional_epinow(
-  reported_cases = cases,
+  data = cases,
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + example_reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),

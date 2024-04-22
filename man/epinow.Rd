@@ -5,6 +5,7 @@
 \title{Real-time Rt Estimation, Forecasting and Reporting}
 \usage{
 epinow(
+  data,
   reported_cases,
   generation_time = generation_time_opts(),
   delays = delay_opts(),
@@ -29,8 +30,10 @@ epinow(
 )
 }
 \arguments{
-\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
-(date). confirm must be numeric and date must be in date format.}
+\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+(date). \code{confirm} must be numeric and \code{date} must be in date format.}
+
+\item{reported_cases}{Deprecated; use \code{data} instead.}
 
 \item{generation_time}{A call to \code{\link[=generation_time_opts]{generation_time_opts()}} defining the
 generation time distribution used. For backwards compatibility a list of
