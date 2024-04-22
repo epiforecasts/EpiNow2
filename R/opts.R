@@ -13,12 +13,12 @@
 #' @param fixed deprecated; use `dist` instead
 #' @param prior_weight deprecated; prior weights are now specified as a
 #' model option. Use the `weight_prior` argument instead
-#' @param weight_prior Logical; if TRUE (default), the generation time prior
+#' @param weight_prior Logical; if TRUE (default), any priors given in `dist`
 #'   will be weighted by the number of observation data points, in doing so
 #'   approximately placing an independent prior at each time step and usually
 #'   preventing the posteriors from shifting. If FALSE, no weight will be
-#'   applied, i.e. the generation time distribution will be treated as a single
-#'   parameter.
+#'   applied, i.e. any parameters in `dist` will be treated as a single
+#'    parameters.
 #' @inheritParams apply_tolerance
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.

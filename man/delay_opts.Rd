@@ -22,12 +22,12 @@ a fixed distribution with all mass at 0, i.e. no delay.}
 
 \item{tolerance}{Numeric; the desired tolerance level.}
 
-\item{weight_prior}{Logical; if TRUE (default), the generation time prior
+\item{weight_prior}{Logical; if TRUE (default), any priors given in \code{dist}
 will be weighted by the number of observation data points, in doing so
 approximately placing an independent prior at each time step and usually
 preventing the posteriors from shifting. If FALSE, no weight will be
-applied, i.e. the generation time distribution will be treated as a single
-parameter.}
+applied, i.e. any parameters in \code{dist} will be treated as a single
+parameters.}
 }
 \value{
 A \verb{<delay_opts>} object summarising the input delay distributions.
