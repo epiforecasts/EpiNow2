@@ -472,7 +472,7 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #'  example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
 #'  backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
 #' )
-create_stan_data <- function(reported_cases, seeding_time,
+create_stan_data <- function(data, seeding_time,
                              rt, gp, obs, horizon,
                              backcalc, shifted_cases) {
 
@@ -485,7 +485,7 @@ create_stan_data <- function(reported_cases, seeding_time,
     cases_time = complete_cases$lookup,
     lt = nrow(complete_cases),
     shifted_cases = shifted_cases,
-    t = length(reported_cases$date),
+    t = length(data$date),
     horizon = horizon,
     burn_in = 0,
     seeding_time = seeding_time
@@ -494,7 +494,7 @@ create_stan_data <- function(reported_cases, seeding_time,
   data <- c(
     data,
     create_rt_data(rt,
-      breakpoints = reported_cases[(data$seeding_time + 1):.N]$breakpoint,
+      breakpoints = data[(stan_data$seeding_time + 1):.N]$breakpoint,
       delay = data$seeding_time, horizon = data$horizon
     )
   )
@@ -528,7 +528,7 @@ create_stan_data <- function(reported_cases, seeding_time,
     data,
     create_obs_model(
       obs,
-      dates = reported_cases[(data$seeding_time + 1):.N]$date
+      dates = data[(stan_data$seeding_time + 1):.N]$date
     )
   )
 
