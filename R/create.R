@@ -458,11 +458,11 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @param seeding_time Integer; seeding time, usually obtained using
 #' [get_seeding_time()].
 #'
+#' @inheritParams estimate_infections
 #' @inheritParams create_gp_data
 #' @inheritParams create_obs_model
 #' @inheritParams create_rt_data
 #' @inheritParams create_backcalc_data
-#' @inheritParams estimate_infections
 #' @importFrom stats lm
 #' @importFrom purrr safely
 #' @return A list of stan data
