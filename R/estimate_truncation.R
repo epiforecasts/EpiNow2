@@ -116,7 +116,7 @@ estimate_truncation <- function(data,
                                 ...) {
 
   if (!missing(obs)) {
-    lifecycle::deprecate_stop(
+    lifecycle::deprecate_warn(
       "1.5.0",
       "estimate_truncation(obs)",
       "estimate_truncation(data)",
