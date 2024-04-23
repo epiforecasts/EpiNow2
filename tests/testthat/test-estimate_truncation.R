@@ -95,7 +95,9 @@ test_that("deprecated arguments are recognised", {
   expect_error(estimate_truncation(example_truncated,
     verbose = FALSE, trunc_dist = "lognormal"
   ), "deprecated")
-  expect_error(estimate_truncation(obs = example_truncated), "deprecated")
+  expect_error(estimate_truncation(obs = example_truncated,
+    verbose = FALSE
+  ), "deprecated")
 })
 
 options(old_opts)
