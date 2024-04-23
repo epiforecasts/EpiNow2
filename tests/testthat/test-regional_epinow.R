@@ -112,7 +112,5 @@ test_that("regional_epinow produces expected output when run with region specifi
 
 test_that("deprecated arguments are recognised", {
   options(warn = 2)
-  expect_error(regional_epinow(data = cases),
-                      "deprecated"
-  )
+  expect_error(regional_epinow(reported_cases = cases), "deprecated")
 })
