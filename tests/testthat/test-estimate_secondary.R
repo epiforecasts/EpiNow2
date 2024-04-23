@@ -232,7 +232,7 @@ test_that("estimate_secondary works with zero_threshold set", {
 
 test_that("deprecated arguments are recognised", {
   options(warn = 2)
-  expect_error(estimate_secondary(reports = cases),
+  expect_error(estimate_secondary(data = cases),
                "deprecated"
   )
 })
