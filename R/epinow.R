@@ -78,6 +78,7 @@
 #'
 #' options(old_opts)
 #' }
+# nolint start: cyclocomp_linter
 epinow <- function(data,
                    reported_cases,
                    generation_time = generation_time_opts(),
@@ -307,3 +308,4 @@ epinow <- function(data,
     return(invisible(NULL))
   }
 }
+# nolint end: cyclocomp_linter
