@@ -216,7 +216,7 @@ regional_epinow <- function(data,
       c(
         list(
           regional_output = sucessful_regional_out,
-          reported_cases = reported_cases,
+          data = reported_cases,
           return_output = return_output
         ),
         summary_args
