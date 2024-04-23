@@ -140,7 +140,7 @@ estimate_truncation <- function(data,
     )
   }
    # Validate inputs
-  walk(obs, check_reports_valid, model = "estimate_truncation")
+  walk(data, check_reports_valid, model = "estimate_truncation")
   assert_class(truncation, "dist_spec")
   assert_class(model, "stanfit", null.ok = TRUE)
   assert_numeric(CrIs, lower = 0, upper = 1)
