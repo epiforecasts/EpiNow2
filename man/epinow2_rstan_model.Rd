@@ -4,11 +4,12 @@
 \alias{epinow2_rstan_model}
 \title{Load an EpiNow2 rstan model.}
 \usage{
-epinow2_rstan_model(model)
+epinow2_rstan_model(model = "estimate_infections")
 }
 \arguments{
 \item{model}{A character string indicating the model to use. Needs to be
-amongst the compiled models shipped with "EpiNow2".}
+amongst the compiled models shipped with "EpiNow2" (see the \code{stan} directory
+for a list). Defaults to "estimate_infections".}
 }
 \value{
 An \code{rstan} model.

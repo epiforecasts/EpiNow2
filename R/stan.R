@@ -4,7 +4,7 @@
 #' package (Copyright holder: epinowcast authors, under MIT License).
 #'
 #' @param model A character string indicating the model to use. Needs to be
-#' present in `dir`. Defaults to "estimate_infections".
+#' present in `dir` (with extension `.stan`). Defaults to "estimate_infections".
 #'
 #' @param dir A character string specifying the path to any stan
 #' files to include in the model. If missing the package default is used.
@@ -49,11 +49,12 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
 #' The models are pre-compiled upon package install and is returned here.
 #'
 #' @param model A character string indicating the model to use. Needs to be
-#' amongst the compiled models shipped with "EpiNow2".
+#' amongst the compiled models shipped with "EpiNow2" (see the `stan` directory
+#' for a list). Defaults to "estimate_infections".
 #'
 #' @return An `rstan` model.
 #' @keywords internal
-epinow2_rstan_model <- function(model) {
+epinow2_rstan_model <- function(model = "estimate_infections") {
   return(stanmodels[[model]])
 }
 
