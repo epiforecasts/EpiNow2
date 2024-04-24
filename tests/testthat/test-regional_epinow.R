@@ -114,7 +114,6 @@ test_that("deprecated arguments are recognised", {
   expect_deprecated(
     regional_epinow(
       reported_cases = reported_cases,
-      generation_time = generation_time_opts(Fixed(1)
-    )
-  )
+      generation_time = generation_time_opts(Fixed(1))
+  ))
 })
