@@ -116,6 +116,9 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
                                 obs) {
 
   if (!missing(obs)) {
+     if (!missing(data)) {
+      stop("Can't have `obs` and `data` arguments. Use `data` instead.")
+    }
     lifecycle::deprecate_warn(
       "1.5.0",
       "estimate_truncation(obs)",
