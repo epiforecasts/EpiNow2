@@ -63,8 +63,6 @@ epinow2_rstan_model <- function(model) {
 ##' "estimate_infections" (default), "simulate_infections",
 ##' "estimate_secondary", "simulate_secondary", "estimate_truncation" or
 ##' "dist_fit".
-##' @param ... Additional arguments passed to [epinow2_cmdstan_model()] or
-##' [epinow2_rstan_model()], depending on the backend.
 ##' @inheritParams stan_opts
 ##' @return A stan model object (either \code{rstan::stanmodel} or
 ##'   \code{cmdstanr::CmdStanModel}, depending on the backend)
@@ -76,14 +74,13 @@ epinow2_stan_model <- function(backend = c("rstan", "cmdstanr"),
                                          "estimate_secondary",
                                          "simulate_secondary",
                                          "estimate_truncation",
-                                         "dist_fit"),
-                              ...) {
+                                         "dist_fit")) {
   backend <- arg_match(backend)
   model <- arg_match(model)
   if (backend == "cmdstanr") {
-    object <- epinow2_cmdstan_model(model = model, ...)
+    object <- epinow2_cmdstan_model(model = model)
   } else {
-    object <- epinow2_rstan_model(model = model, ...)
+    object <- epinow2_rstan_model(model = model)
   }
   return(object)
 }

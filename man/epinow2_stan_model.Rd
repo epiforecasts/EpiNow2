@@ -7,8 +7,7 @@
 epinow2_stan_model(
   backend = c("rstan", "cmdstanr"),
   model = c("estimate_infections", "simulate_infections", "estimate_secondary",
-    "simulate_secondary", "estimate_truncation", "dist_fit"),
-  ...
+    "simulate_secondary", "estimate_truncation", "dist_fit")
 )
 }
 \arguments{
@@ -19,9 +18,6 @@ stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 "estimate_infections" (default), "simulate_infections",
 "estimate_secondary", "simulate_secondary", "estimate_truncation" or
 "dist_fit".}
-
-\item{...}{Additional arguments passed to \code{\link[=epinow2_cmdstan_model]{epinow2_cmdstan_model()}} or
-\code{\link[=epinow2_rstan_model]{epinow2_rstan_model()}}, depending on the backend.}
 }
 \value{
 A stan model object (either \code{rstan::stanmodel} or

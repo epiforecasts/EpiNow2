@@ -10,8 +10,7 @@ create_stan_args(
   init = "random",
   model = "estimate_infections",
   fixed_param = FALSE,
-  verbose = FALSE,
-  ...
+  verbose = FALSE
 )
 }
 \arguments{
@@ -33,10 +32,6 @@ created to sample from fixed parameters (used by simulation functions).}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should verbose progress
 messages be returned.}
-
-\item{...}{Additional arguments to be passed to the
-\code{cmdstanr::cmdstan_model()} function if using the "cmdstanr" backend.
-Otherwise unused.}
 }
 \value{
 A list of stan arguments
