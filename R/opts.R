@@ -692,7 +692,8 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 #'
 #' @param ... Additional parameters to pass to [rstan::sampling()].
 #' @importFrom utils modifyList
-#' @return A list of arguments to pass to [rstan::sampling()].
+#' @return A list of arguments to pass to [rstan::sampling()] or
+#' [cmdstanr::sample().
 #' @export
 #' @examples
 #' stan_sampling_opts(samples = 2000)
