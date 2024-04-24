@@ -983,11 +983,13 @@ stan_opts <- function(object = NULL,
     } else {
       stop("`object` must be a stan model object")
     }
+  } else {
+    backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
+    opts <- c(opts, list(backend = backend))
   }
   opts <- c(opts, list(
     object = object,
-    method = method,
-    backend = backend
+    method = method
   ))
   if (method == "sampling") {
     opts <- c(
