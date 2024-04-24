@@ -101,8 +101,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
       warmup = 1000,
       control = list(adapt_delta = adapt_delta),
       chains = chains,
-      cores = cores,
-      backend = backend
+      cores = cores
     ),
     data = data, verbose = verbose, model = "dist_fit"
   )
