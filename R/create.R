@@ -511,7 +511,7 @@ create_stan_data <- function(data, seeding_time,
   if (stan_data$seeding_time > 1 && nrow(first_week) > 1) {
     safe_lm <- purrr::safely(stats::lm)
     stan_data$prior_growth <- safe_lm(log(confirm) ~ t,
-                                      stan_data = first_week
+      stan_data = first_week
     )[[1]]
     stan_data$prior_growth <- ifelse(is.null(stan_data$prior_growth), 0,
       stan_data$prior_growth$coefficients[2]
