@@ -80,7 +80,6 @@
 #' }
 # nolint start: cyclocomp_linter
 epinow <- function(data,
-                   reported_cases,
                    generation_time = generation_time_opts(),
                    delays = delay_opts(),
                    truncation = trunc_opts(),
@@ -97,7 +96,8 @@ epinow <- function(data,
                    output = c("samples", "plots", "latest", "fit", "timing"),
                    plot_args = list(),
                    target_folder = NULL, target_date,
-                   logs = tempdir(), id = "epinow", verbose = interactive()) {
+                   logs = tempdir(), id = "epinow", verbose = interactive(),
+                   reported_cases) {
   # Warning for deprecated arguments
   if (!missing(reported_cases)) {
     lifecycle::deprecate_warn(

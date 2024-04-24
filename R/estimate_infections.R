@@ -108,7 +108,6 @@
 #' options(old_opts)
 #' }
 estimate_infections <- function(data,
-                                reported_cases,
                                 generation_time = generation_time_opts(),
                                 delays = delay_opts(),
                                 truncation = trunc_opts(),
@@ -123,7 +122,8 @@ estimate_infections <- function(data,
                                 zero_threshold = Inf,
                                 weigh_delay_priors = TRUE,
                                 id = "estimate_infections",
-                                verbose = interactive()) {
+                                verbose = interactive(),
+                                reported_cases) {
   # Deprecate reported_cases in favour of data
   if (!missing(reported_cases)) {
     lifecycle::deprecate_warn(

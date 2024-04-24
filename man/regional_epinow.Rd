@@ -6,7 +6,6 @@
 \usage{
 regional_epinow(
   data,
-  reported_cases,
   generation_time = generation_time_opts(),
   delays = delay_opts(),
   truncation = trunc_opts(),
@@ -25,14 +24,13 @@ regional_epinow(
   summary_args = list(),
   verbose = FALSE,
   logs = tempdir(check = TRUE),
-  ...
+  ...,
+  reported_cases
 )
 }
 \arguments{
 \item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
 (date), and region (\code{region}).}
-
-\item{reported_cases}{Deprecated; use \code{data} instead.}
 
 \item{generation_time}{A call to \code{\link[=generation_time_opts]{generation_time_opts()}} defining the
 generation time distribution used. For backwards compatibility a list of
@@ -105,6 +103,8 @@ logging setup then the code for \code{\link[=setup_default_logging]{setup_defaul
 
 \item{...}{Pass additional arguments to \code{\link[=epinow]{epinow()}}. See the documentation for
 \code{\link[=epinow]{epinow()}} for details.}
+
+\item{reported_cases}{Deprecated; use \code{data} instead.}
 }
 \value{
 A list of output stratified at the top level into regional output

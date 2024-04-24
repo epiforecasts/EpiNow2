@@ -91,7 +91,6 @@
 #' options(old_opts)
 #' }
 regional_epinow <- function(data,
-                            reported_cases,
                             generation_time = generation_time_opts(),
                             delays = delay_opts(),
                             truncation = trunc_opts(),
@@ -112,7 +111,8 @@ regional_epinow <- function(data,
                             return_output = FALSE,
                             summary_args = list(),
                             verbose = FALSE,
-                            logs = tempdir(check = TRUE), ...) {
+                            logs = tempdir(check = TRUE), ...,
+                            reported_cases) {
   # Warning for deprecated arguments
   if (!missing(reported_cases)) {
     lifecycle::deprecate_warn(

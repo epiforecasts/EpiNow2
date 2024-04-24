@@ -136,7 +136,6 @@
 #' options(old_opts)
 #' }
 estimate_secondary <- function(data,
-                               reports,
                                secondary = secondary_opts(),
                                delays = delay_opts(
                                  LogNormal(
@@ -156,7 +155,8 @@ estimate_secondary <- function(data,
                                model = NULL,
                                weigh_delay_priors = FALSE,
                                verbose = interactive(),
-                               ...) {
+                               ...,
+                               reports) {
   # Deprecate reported_cases in favour of data
   if (!missing(reports)) {
     lifecycle::deprecate_warn(

@@ -96,8 +96,7 @@
 #' plot(est)
 #'
 #' options(old_opts)
-estimate_truncation <- function(data,
-                                obs, max_truncation, trunc_max = 10,
+estimate_truncation <- function(data, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
                                 truncation = trunc_opts(
                                   LogNormal(
@@ -113,7 +112,8 @@ estimate_truncation <- function(data,
                                 zero_threshold = Inf,
                                 weigh_delay_priors = FALSE,
                                 verbose = TRUE,
-                                ...) {
+                                ...,
+                                obs) {
 
   if (!missing(obs)) {
     lifecycle::deprecate_warn(
