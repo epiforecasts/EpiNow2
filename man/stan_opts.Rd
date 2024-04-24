@@ -17,9 +17,7 @@ stan_opts(
 \arguments{
 \item{object}{Stan model object. By default uses the compiled package
 default if using the "rstan" backend, and the default model obtained using
-\code{\link[=package_model]{package_model()}} if using the "cmdstanr" backend. If wanting alternative
-options to the default with the "cmdstanr" backend, pass the result of
-a call to \code{\link[=package_model]{package_model()}} with desired arguments instead.}
+\code{\link[=epinow2_cmdstan_model]{epinow2_cmdstan_model()}} if using the "cmdstanr" backend.}
 
 \item{samples}{Numeric, default 2000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}

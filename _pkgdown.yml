@@ -170,4 +170,3 @@ reference:
       - add_day_of_week
       - update_secondary_args
       - update_list
-      - package_model

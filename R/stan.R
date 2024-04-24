@@ -1,11 +1,10 @@
-#' Load and compile the nowcasting model
+#' Load and compile an EpiNow2 cmdstanr model
 #'
 #' The function has been adapted from a similar function in the epinowcast
 #' package (Copyright holder: epinowcast authors, under MIT License).
 #'
-#' @param model A character string indicating the model to use. One of
-#' "estimate_infections" (default), "simulate_infections", "estimate_secondary",
-#'   "simulate_secondary", "estimate_truncation" or "dist_fit".
+#' @param model A character string indicating the model to use. Needs to be
+#' present in `dir`
 #'
 #' @param dir A character string specifying the path to any stan
 #' files to include in the model. If missing the package default is used.
@@ -15,18 +14,14 @@
 #'
 #' @param ... Additional arguments passed to [cmdstanr::cmdstan_model()].
 #'
-#' @importFrom rlang arg_match
 #' @return A `cmdstanr` model.
-#' @export
-package_model <- function(model = c(
-                            "estimate_infections", "simulate_infections",
-                            "estimate_secondary", "simulate_secondary",
-                            "estimate_truncation", "dist_fit"
-                          ),
-                          dir = system.file("stan", package = "EpiNow2"),
-                          verbose = FALSE,
-                          ...) {
-  model <- arg_match(model)
+#' @keywords internal
+epinow2_cmdstan_model <- function(model,
+                                  dir = system.file(
+                                    "stan", package = "EpiNow2"
+                                  ),
+                                  verbose = FALSE,
+                                  ...) {
   model_file <- file.path(
     dir, paste0(model, ".stan")
   )
@@ -49,24 +44,46 @@ package_model <- function(model = c(
   return(model)
 }
 
+#' Load an EpiNow2 rstan model.
+#'
+#' The models are pre-compiled upon package install and is returned here.
+#'
+#' @param model A character string indicating the model to use. Needs to be
+#' amongst the compiled models shipped with "EpiNow2".
+#'
+#' @return An `rstan` model.
+#' @keywords internal
+epinow2_rstan_model <- function(model) {
+  return(stanmodels[[model]])
+}
+
 ##' Return a stan model object for the appropriate backend
 ##'
+##' @param model A character string indicating the model to use. One of
+##' "estimate_infections" (default), "simulate_infections",
+##' "estimate_secondary", "simulate_secondary", "estimate_truncation" or
+##' "dist_fit".
+##' @param ... Additional arguments passed to [epinow2_cmdstan_model()] or
+##' [epinow2_rstan_model()], depending on the backend.
 ##' @inheritParams stan_opts
-##' @inheritParams package_model
 ##' @return A stan model object (either \code{rstan::stanmodel} or
 ##'   \code{cmdstanr::CmdStanModel}, depending on the backend)
 ##' @importFrom rlang arg_match
 ##' @keywords internal
-stan_model <- function(backend = c("rstan", "cmdstanr"),
-                       model = c("estimate_infections", "simulate_infections",
-                                 "estimate_secondary", "simulate_secondary",
-                                 "estimate_truncation", "dist_fit")) {
+epinow2_stan_model <- function(backend = c("rstan", "cmdstanr"),
+                               model = c("estimate_infections",
+                                         "simulate_infections",
+                                         "estimate_secondary",
+                                         "simulate_secondary",
+                                         "estimate_truncation",
+                                         "dist_fit"),
+                              ...) {
   backend <- arg_match(backend)
   model <- arg_match(model)
   if (backend == "cmdstanr") {
-    object <- package_model(model = model)
+    object <- epinow2_cmdstan_model(model = model, ...)
   } else {
-    object <- stanmodels[[model]]
+    object <- epinow2_rstan_model(model = model, ...)
   }
   return(object)
 }

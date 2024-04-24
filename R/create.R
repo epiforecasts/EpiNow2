@@ -669,6 +669,10 @@ create_initial_conditions <- function(data) {
 #' @param verbose Logical, defaults to `FALSE`. Should verbose progress
 #' messages be returned.
 #'
+#' @param ... Additional arguments to be passed to the
+#'   `cmdstanr::cmdstan_model()` function if using the "cmdstanr" backend.
+#'   Otherwise unused.
+#'
 #' @importFrom utils modifyList
 #'
 #' @return A list of stan arguments
@@ -684,7 +688,8 @@ create_stan_args <- function(stan = stan_opts(),
                              init = "random",
                              model = "estimate_infections",
                              fixed_param = FALSE,
-                             verbose = FALSE) {
+                             verbose = FALSE,
+                             ...) {
   if (fixed_param) {
     if (stan$backend == "rstan") {
       stan$algorithm <- "Fixed_param"
@@ -696,7 +701,7 @@ create_stan_args <- function(stan = stan_opts(),
   }
   ## generate stan model
   if (is.null(stan$object)) {
-    stan$object <- stan_model(stan$backend, model)
+    stan$object <- epinow2_stan_model(stan$backend, model, ...)
     stan$backend <- NULL
   }
   # cmdstanr doesn't have an init = "random" argument

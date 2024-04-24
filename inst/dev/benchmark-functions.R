@@ -10,7 +10,7 @@
 ##'   `iter`
 create_profiles <- function(dir = file.path("inst", "stan"),
                             seeds = sample(.Machine$integer.max, 1)) {
-  compiled_model <- EpiNow2:::package_model(dir = dir)
+  compiled_model <- EpiNow2:::epinow2_cmdstan_model(dir = dir)
   profiles <- suppressMessages(purrr::map(seeds, \(x) {
     set.seed(x)
     fit <- estimate_infections(
