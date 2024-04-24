@@ -101,7 +101,9 @@ epinow <- function(data,
   # Warning for deprecated arguments
   if (!missing(reported_cases)) {
     if (!missing(data)) {
-      stop("Can't have `reported_cases` and `data` arguments. Use `data` instead.")
+      stop("Can't have `reported_cases` and `data` arguments. ",
+           "Use `data` instead."
+      )
     }
     lifecycle::deprecate_warn(
       "1.5.0",
