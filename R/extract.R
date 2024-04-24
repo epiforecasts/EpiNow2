@@ -177,7 +177,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
   out$reported_cases <- extract_parameter(
     "imputed_reports",
     samples,
-    reported_dates
+    reported_dates[data$cases_time[-1]]
   )
   if ("estimate_r" %in% names(data)) {
     if (data$estimate_r == 1) {

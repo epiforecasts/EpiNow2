@@ -9,7 +9,7 @@ functions {
 data {
   int t;                             // time of observations
   int lt;                             // time of observations
-  array[t] int<lower = 0> obs;             // observed secondary data
+  array[t] int<lower = 0> obs;        // observed secondary data
   array[lt] int obs_time;             // observed secondary data
   vector[t] primary;                 // observed primary data
   int burn_in;                       // time period to not use for fitting
@@ -35,6 +35,7 @@ parameters{
 
 transformed parameters {
   vector<lower=0>[t] secondary;
+  vector<lower=0>[lt - accumulate] obs_secondary;
   // calculate secondary reports from primary
 
   {
@@ -79,7 +80,10 @@ transformed parameters {
       0, 1, 1
     );
     secondary = truncate(secondary, trunc_rev_cmf, 0);
- }
+  }
+  obs_secondary = assign_reports(
+     obs_time, secondary[(burn_in + 1):t], accumulate
+  );
 }
 
 model {
@@ -96,8 +100,8 @@ model {
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
     report_lp(
-      obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
-      rep_phi, phi_mean, phi_sd, model_type, 1, accumulate
+      obs[(burn_in + 1):t][obs_time], obs_secondary, rep_phi, phi_mean, phi_sd,
+      model_type, 1
     );
   }
 }
