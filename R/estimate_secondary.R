@@ -210,7 +210,7 @@ estimate_secondary <- function(data,
          Some observations must be used in fitting")
   }
   # observation and control data
-  data <- list(
+  stan_data <- list(
     t = nrow(reports),
     primary = reports$primary,
     obs = secondary_reports$confirm,
@@ -220,27 +220,29 @@ estimate_secondary <- function(data,
     seeding_time = 0
   )
   # secondary model options
-  data <- c(data, secondary)
+  stan_data <- c(stan_data, secondary)
   # delay data
-  data <- c(data, create_stan_delays(
+  stan_data <- c(stan_data, create_stan_delays(
     delay = delays,
     trunc = truncation,
-    time_points = data$t
+    time_points = stan_data$t
   ))
 
   # observation model data
-  data <- c(data, create_obs_model(obs, dates = reports$date))
+  stan_data <- c(stan_data, create_obs_model(obs, dates = reports$date))
 
   # update data to use specified priors rather than defaults
-  data <- update_secondary_args(data, priors = priors, verbose = verbose)
+  stan_data <- update_secondary_args(stan_data,
+    priors = priors, verbose = verbose
+  )
 
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(
-    c(data, list(estimate_r = 0, fixed = 1, bp_n = 0))
+    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0))
   )
   # fit
   args <- create_stan_args(
-    stan = stan, data = data, init = inits, model = "estimate_secondary"
+    stan = stan, data = stan_data, init = inits, model = "estimate_secondary"
   )
   fit <- fit_model(args, id = "estimate_secondary")
 
@@ -256,7 +258,7 @@ estimate_secondary <- function(data,
     fit,
     CrIs = CrIs
   )
-  out$data <- data
+  out$data <- stan_data
   out$fit <- fit
   class(out) <- c("estimate_secondary", class(out))
   return(out)

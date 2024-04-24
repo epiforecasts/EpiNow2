@@ -206,7 +206,7 @@ estimate_infections <- function(data,
   reported_cases <- reported_cases[-(1:backcalc$prior_window)]
 
   # Define stan model parameters
-  data <- create_stan_data(
+  stan_data <- create_stan_data(
     reported_cases,
     seeding_time = seeding_time,
     rt = rt,
@@ -217,18 +217,18 @@ estimate_infections <- function(data,
     horizon = horizon
   )
 
-  data <- c(data, create_stan_delays(
+  stan_data <- c(stan_data, create_stan_delays(
     gt = generation_time,
     delay = delays,
     trunc = truncation,
-    time_points = data$t - data$seeding_time - data$horizon
+    time_points = stan_data$t - stan_data$seeding_time - stan_data$horizon
   ))
 
   # Set up default settings
   args <- create_stan_args(
     stan = stan,
-    data = data,
-    init = create_initial_conditions(data),
+    data = stan_data,
+    init = create_initial_conditions(stan_data),
     verbose = verbose
   )
 
@@ -252,9 +252,9 @@ estimate_infections <- function(data,
   fit <- fit_model(args, id = id)
 
   # Extract parameters of interest from the fit
-  out <- extract_parameter_samples(fit, data,
+  out <- extract_parameter_samples(fit, stan_data,
     reported_inf_dates = reported_cases$date,
-    reported_dates = reported_cases$date[-(1:data$seeding_time)]
+    reported_dates = reported_cases$date[-(1:stan_data$seeding_time)]
   )
 
   ## Add prior infections
@@ -271,7 +271,7 @@ estimate_infections <- function(data,
   format_out <- format_fit(
     posterior_samples = out,
     horizon = horizon,
-    shift = data$seeding_time,
+    shift = stan_data$seeding_time,
     burn_in = 0,
     start_date = start_date,
     CrIs = CrIs
@@ -280,7 +280,7 @@ estimate_infections <- function(data,
   ## Join stan fit if required
   if (stan$return_fit) {
     format_out$fit <- fit
-    format_out$args <- data
+    format_out$args <- stan_data
   }
   format_out$observations <- dirty_reported_cases
   class(format_out) <- c("estimate_infections", class(format_out))

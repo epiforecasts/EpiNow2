@@ -243,21 +243,21 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
   obs_data <- as.matrix(obs_data[obs_start:.N])
 
   # convert to stan list
-  data <- list(
+  stan_data <- list(
     obs = obs_data,
     obs_dist = obs_dist,
     t = nrow(obs_data),
     obs_sets = ncol(obs_data)
   )
 
-  data <- c(data, create_stan_delays(
+  stan_data <- c(stan_data, create_stan_delays(
     trunc = truncation,
-    time_points = data$t
+    time_points = stan_data$t
   ))
 
   # initial conditions
   init_fn <- function() {
-    data <- c(create_delay_inits(data), list(
+    data <- c(create_delay_inits(stan_data), list(
       phi = abs(rnorm(1, 0, 1)),
       sigma = abs(rnorm(1, 0, 1))
     ))
@@ -266,7 +266,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
 
   # fit
   args <- create_stan_args(
-    stan = stan, data = data, init = init_fn, model = "estimate_truncation"
+    stan = stan, data = stan_data, init = init_fn, model = "estimate_truncation"
   )
   fit <- fit_model(args, id = "estimate_truncation")
 
@@ -290,9 +290,9 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
   recon_obs <- recon_obs[, id := variable][, variable := NULL]
   recon_obs <- recon_obs[, dataset := seq_len(.N)][
     ,
-    dataset := dataset %% data$obs_sets
+    dataset := dataset %% stan_data$obs_sets
   ][
-    dataset == 0, dataset := data$obs_sets
+    dataset == 0, dataset := stan_data$obs_sets
   ]
   # link reconstructed observations to observed
   last_obs <-
@@ -325,14 +325,14 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
     target_obs <- target_obs[order(date)][, index := NULL]
     return(target_obs)
   }
-  out$obs <- purrr::map(1:(data$obs_sets), link_obs)
+  out$obs <- purrr::map(1:(stan_data$obs_sets), link_obs)
   out$obs <- data.table::rbindlist(out$obs)
   out$last_obs <- last_obs
   # summarise estimated cmf of the truncation distribution
   out$cmf <- extract_stan_param(fit, "trunc_rev_cmf", CrIs = CrIs)
   out$cmf <- data.table::as.data.table(out$cmf)[, index := seq_len(.N)]
   data.table::setcolorder(out$cmf, "index")
-  out$data <- data
+  out$data <- stan_data
   out$fit <- fit
 
   class(out) <- c("estimate_truncation", class(out))
