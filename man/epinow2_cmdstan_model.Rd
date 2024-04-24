@@ -5,7 +5,7 @@
 \title{Load and compile an EpiNow2 cmdstanr model}
 \usage{
 epinow2_cmdstan_model(
-  model,
+  model = "estimate_infections",
   dir = system.file("stan", package = "EpiNow2"),
   verbose = FALSE,
   ...
@@ -13,7 +13,7 @@ epinow2_cmdstan_model(
 }
 \arguments{
 \item{model}{A character string indicating the model to use. Needs to be
-present in \code{dir}}
+present in \code{dir}. Defaults to "estimate_infections".}
 
 \item{dir}{A character string specifying the path to any stan
 files to include in the model. If missing the package default is used.}
