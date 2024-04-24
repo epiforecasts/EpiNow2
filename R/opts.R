@@ -960,6 +960,8 @@ stan_opts <- function(object = NULL,
                       return_fit = TRUE,
                       ...) {
   method <- arg_match(method)
+  backend_passed <- !missing(backend)
+  backend <- arg_match(backend)
   if (backend == "cmdstanr" && !requireNamespace("cmdstanr", quietly = TRUE)) {
     stop(
       "The `cmdstanr` package needs to be installed for using the ",
@@ -967,10 +969,8 @@ stan_opts <- function(object = NULL,
     )
   }
   opts <- list()
-  if (is.null(object)) {
-    backend <- arg_match(backend)
-  } else {
-    if (!missing(backend)) {
+  if (!is.null(object)) {
+    if (backend_passed) {
       warning(
         "`backend` option will be ignored as a stan model object has been ",
         "passed."
