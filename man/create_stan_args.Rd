@@ -38,9 +38,9 @@ A list of stan arguments
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Generates a list of arguments as required by \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} or
-\code{\link[rstan:stanmodel-method-vb]{rstan::vb()}} by combining the required options, with data, and type of
-initialisation. Initialisation defaults to random but it is expected that
+Generates a list of arguments as required by the stan sampling functions by
+combining the required options with data, and type of initialisation.
+Initialisation defaults to random but it is expected that
 \code{\link[=create_initial_conditions]{create_initial_conditions()}} will be used.
 }
 \examples{

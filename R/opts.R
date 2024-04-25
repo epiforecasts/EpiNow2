@@ -692,7 +692,8 @@ rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 #'
 #' @param ... Additional parameters to pass to [rstan::sampling()].
 #' @importFrom utils modifyList
-#' @return A list of arguments to pass to [rstan::sampling()].
+#' @return A list of arguments to pass to [rstan::sampling()] or
+#' [cmdstanr::sample().
 #' @export
 #' @examples
 #' stan_sampling_opts(samples = 2000)
@@ -906,9 +907,7 @@ rstan_opts <- function(object = NULL,
 #'
 #' @param object Stan model object. By default uses the compiled package
 #' default if using the "rstan" backend, and the default model obtained using
-#' [package_model()] if using the "cmdstanr" backend. If wanting alternative
-#' options to the default with the "cmdstanr" backend, pass the result of
-#' a call to [package_model()] with desired arguments instead.
+#' [epinow2_cmdstan_model()] if using the "cmdstanr" backend.
 #'
 #' @param method A character string, defaulting to sampling. Currently supports
 #' MCMC sampling ("sampling") or approximate posterior sampling via
@@ -961,6 +960,7 @@ stan_opts <- function(object = NULL,
                       return_fit = TRUE,
                       ...) {
   method <- arg_match(method)
+  backend_passed <- !missing(backend)
   backend <- arg_match(backend)
   if (backend == "cmdstanr" && !requireNamespace("cmdstanr", quietly = TRUE)) {
     stop(
@@ -970,7 +970,7 @@ stan_opts <- function(object = NULL,
   }
   opts <- list()
   if (!is.null(object)) {
-    if (!missing(backend)) {
+    if (backend_passed) {
       warning(
         "`backend` option will be ignored as a stan model object has been ",
         "passed."

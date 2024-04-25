@@ -70,7 +70,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
     par_sigma = numeric(0)
   )
 
-  model <- stan_model(backend, "dist_fit")
+  model <- epinow2_stan_model(backend, "dist_fit")
 
   if (dist == "exp") {
     data$dist <- 0
@@ -101,8 +101,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
       warmup = 1000,
       control = list(adapt_delta = adapt_delta),
       chains = chains,
-      cores = cores,
-      backend = backend
+      cores = cores
     ),
     data = data, verbose = verbose, model = "dist_fit"
   )

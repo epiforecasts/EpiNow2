@@ -58,7 +58,8 @@ stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 \item{...}{Additional parameters to pass to \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}.}
 }
 \value{
-A list of arguments to pass to \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}.
+A list of arguments to pass to \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} or
+[cmdstanr::sample().
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
