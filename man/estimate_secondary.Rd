@@ -5,7 +5,7 @@
 \title{Estimate a Secondary Observation from a Primary Observation}
 \usage{
 estimate_secondary(
-  reports,
+  data,
   secondary = secondary_opts(),
   delays = delay_opts(LogNormal(meanlog = Normal(2.5, 0.5), sdlog = Normal(0.47, 0.25),
     max = 30), weight_prior = FALSE),
@@ -20,11 +20,12 @@ estimate_secondary(
   model = NULL,
   weigh_delay_priors = FALSE,
   verbose = interactive(),
-  ...
+  ...,
+  reports
 )
 }
 \arguments{
-\item{reports}{A \verb{<data.frame>} containing the \code{date} of report and both
+\item{data}{A \verb{<data.frame>} containing the \code{date} of report and both
 \code{primary} and \code{secondary} reports.}
 
 \item{secondary}{A call to \code{\link[=secondary_opts]{secondary_opts()}} or a list containing the
@@ -82,6 +83,8 @@ parameters.}
 to \code{\link[=interactive]{interactive()}}.}
 
 \item{...}{Additional parameters to pass to \code{\link[=stan_opts]{stan_opts()}}.}
+
+\item{reports}{Deprecated; use \code{data} instead.}
 }
 \value{
 A list containing: \code{predictions} (a \verb{<data.frame>} ordered by date

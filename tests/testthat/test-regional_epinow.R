@@ -18,7 +18,7 @@ df_non_zero <- function(df) {
 test_that("regional_epinow produces expected output when run with default settings", {
   out <- suppressWarnings(
     regional_epinow(
-      reported_cases = cases,
+      data = cases,
       generation_time = generation_time_opts(example_generation_time),
       delays = delay_opts(example_reporting_delay),
       rt = rt_opts(rw = 10), gp = NULL,
@@ -48,7 +48,7 @@ test_that("regional_epinow produces expected output when run with default settin
 test_that("regional_epinow runs without error when given a very short timeout", {
   output <- capture.output(suppressMessages(
     out <- regional_epinow(
-      reported_cases = cases,
+      data = cases,
       generation_time = generation_time_opts(example_generation_time),
       delays = delay_opts(example_reporting_delay),
       stan = stan_opts(
@@ -62,7 +62,7 @@ test_that("regional_epinow runs without error when given a very short timeout", 
   expect_true(all(vapply(out$regional, function(x) !is.null(x$error), TRUE)))
   output <- capture.output(suppressMessages(
     out <- regional_epinow(
-      reported_cases = cases,
+      data = cases,
       generation_time = generation_time_opts(example_generation_time),
       delays = delay_opts(example_reporting_delay),
       stan = stan_opts(
@@ -83,7 +83,7 @@ test_that("regional_epinow produces expected output when run with region specifi
   rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
   out <- suppressWarnings(
     regional_epinow(
-      reported_cases = cases,
+      data = cases,
       generation_time = generation_time_opts(example_generation_time),
       delays = delay_opts(example_reporting_delay),
       rt = rt, gp = gp,
@@ -108,4 +108,12 @@ test_that("regional_epinow produces expected output when run with region specifi
   df_non_zero(out$regional$realland$estimated_reported_cases$summarised)
   df_non_zero(out$regional$realland$summary)
   expect_equal(names(out$regional$realland$plots), c("summary", "infections", "reports", "R", "growth_rate"))
+})
+
+test_that("deprecated arguments are recognised", {
+  expect_deprecated(
+    regional_epinow(
+      reported_cases = cases,
+      generation_time = generation_time_opts(Fixed(1))
+  ))
 })

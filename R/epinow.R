@@ -78,7 +78,8 @@
 #'
 #' options(old_opts)
 #' }
-epinow <- function(reported_cases,
+# nolint start: cyclocomp_linter
+epinow <- function(data,
                    generation_time = generation_time_opts(),
                    delays = delay_opts(),
                    truncation = trunc_opts(),
@@ -95,7 +96,23 @@ epinow <- function(reported_cases,
                    output = c("samples", "plots", "latest", "fit", "timing"),
                    plot_args = list(),
                    target_folder = NULL, target_date,
-                   logs = tempdir(), id = "epinow", verbose = interactive()) {
+                   logs = tempdir(), id = "epinow", verbose = interactive(),
+                   reported_cases) {
+  # Warning for deprecated arguments
+  if (!missing(reported_cases)) {
+    if (!missing(data)) {
+      stop("Can't have `reported_cases` and `data` arguments. ",
+           "Use `data` instead."
+      )
+    }
+    lifecycle::deprecate_warn(
+      "1.5.0",
+      "epinow(reported_cases)",
+      "epinow(data)",
+      "The argument will be removed completely in version 2.0.0."
+    )
+    data <- reported_cases
+  }
   # Check inputs
   assert_logical(return_output)
   stopifnot("target_folder is not a directory" =
@@ -127,7 +144,7 @@ epinow <- function(reported_cases,
   }
   # target data -------------------------------------------------------------
   if (missing(target_date)) {
-    target_date <- max(reported_cases$date, na.rm = TRUE)
+    target_date <- max(data$date, na.rm = TRUE)
   }
 
   # setup logging -----------------------------------------------------------
@@ -163,7 +180,7 @@ epinow <- function(reported_cases,
     }
 
     # convert input to DT -----------------------------------------------------
-    reported_cases <- setup_dt(reported_cases)
+    reported_cases <- setup_dt(data)
 
     # save input data ---------------------------------------------------------
     save_input(reported_cases, target_folder)
@@ -173,7 +190,7 @@ epinow <- function(reported_cases,
 
     # estimate infections and Reproduction no ---------------------------------
     estimates <- estimate_infections(
-      reported_cases = reported_cases,
+      data = reported_cases,
       generation_time = generation_time,
       delays = delays,
       truncation = truncation,
@@ -296,3 +313,4 @@ epinow <- function(reported_cases,
     return(invisible(NULL))
   }
 }
+# nolint end: cyclocomp_linter

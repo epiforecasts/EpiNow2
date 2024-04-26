@@ -4,11 +4,11 @@
 \alias{setup_dt}
 \title{Convert to Data Table}
 \usage{
-setup_dt(reported_cases)
+setup_dt(data)
 }
 \arguments{
-\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
-(date). confirm must be numeric and date must be in date format.}
+\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+(date). \code{confirm} must be numeric and \code{date} must be in date format.}
 }
 \value{
 A data table

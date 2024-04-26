@@ -11,7 +11,7 @@ df_non_zero <- function(df) {
 }
 
 out <- suppressWarnings(regional_epinow(
-  reported_cases = cases,
+  data = cases,
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(example_reporting_delay),
   stan = stan_opts(

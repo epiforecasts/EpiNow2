@@ -143,3 +143,11 @@ test_that("estimate_infections works as expected with failing chains", {
     )
   ))
 })
+
+test_that("deprecated arguments are recognised", {
+  expect_deprecated(
+    estimate_infections(
+      reported_cases = reported_cases,
+      generation_time = generation_time_opts(Fixed(1))
+  ))
+})

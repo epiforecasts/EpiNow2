@@ -5,7 +5,7 @@
 \title{Real-time Rt Estimation, Forecasting and Reporting by Region}
 \usage{
 regional_epinow(
-  reported_cases,
+  data,
   generation_time = generation_time_opts(),
   delays = delay_opts(),
   truncation = trunc_opts(),
@@ -24,11 +24,12 @@ regional_epinow(
   summary_args = list(),
   verbose = FALSE,
   logs = tempdir(check = TRUE),
-  ...
+  ...,
+  reported_cases
 )
 }
 \arguments{
-\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
 (date), and region (\code{region}).}
 
 \item{generation_time}{A call to \code{\link[=generation_time_opts]{generation_time_opts()}} defining the
@@ -102,6 +103,8 @@ logging setup then the code for \code{\link[=setup_default_logging]{setup_defaul
 
 \item{...}{Pass additional arguments to \code{\link[=epinow]{epinow()}}. See the documentation for
 \code{\link[=epinow]{epinow()}} for details.}
+
+\item{reported_cases}{Deprecated; use \code{data} instead.}
 }
 \value{
 A list of output stratified at the top level into regional output
@@ -145,7 +148,7 @@ cases <- data.table::rbindlist(list(
 # samples and warmup have been reduced for this example
 # for more examples, see the "estimate_infections examples" vignette
 def <- regional_epinow(
-  reported_cases = cases,
+  data = cases,
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + example_reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),

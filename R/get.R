@@ -295,10 +295,10 @@ get_incubation_period <- function(disease, source, max_value = 14,
 #' @importFrom data.table copy setorderv
 #' @importFrom lubridate days
 #' @export
-get_regions_with_most_reports <- function(reported_cases,
+get_regions_with_most_reports <- function(data,
                                           time_window = 7,
                                           no_regions = 6) {
-  most_reports <- data.table::copy(reported_cases)
+  most_reports <- data.table::copy(data)
   most_reports <-
     most_reports[,
       .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(time_window))

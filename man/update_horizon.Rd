@@ -4,7 +4,7 @@
 \alias{update_horizon}
 \title{Updates Forecast Horizon Based on Input Data and Target}
 \usage{
-update_horizon(horizon, target_date, reported_cases)
+update_horizon(horizon, target_date, data)
 }
 \arguments{
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to
@@ -13,8 +13,8 @@ forecast.}
 \item{target_date}{Date, defaults to maximum found in the data if not
 specified.}
 
-\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
-(date). confirm must be numeric and date must be in date format.}
+\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+(date). \code{confirm} must be numeric and \code{date} must be in date format.}
 }
 \value{
 Numeric forecast horizon adjusted for the users intention

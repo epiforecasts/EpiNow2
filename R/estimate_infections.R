@@ -17,8 +17,10 @@
 #' for an example of using `estimate_infections` within the `epinow` wrapper to
 #' estimate Rt for Covid-19 in a country from the ECDC data source.
 #'
-#' @param reported_cases A `<data.frame>` of confirmed cases (confirm) by date
-#' (date). confirm must be numeric and date must be in date format.
+#' @param data A `<data.frame>` of confirmed cases (confirm) by date
+#' (date). `confirm` must be numeric and `date` must be in date format.
+#'
+#' @param reported_cases Deprecated; use `data` instead.
 #'
 #' @param generation_time A call to [generation_time_opts()] defining the
 #' generation time distribution used. For backwards compatibility a list of
@@ -105,7 +107,7 @@
 #' plot(def)
 #' options(old_opts)
 #' }
-estimate_infections <- function(reported_cases,
+estimate_infections <- function(data,
                                 generation_time = generation_time_opts(),
                                 delays = delay_opts(),
                                 truncation = trunc_opts(),
@@ -120,9 +122,25 @@ estimate_infections <- function(reported_cases,
                                 zero_threshold = Inf,
                                 weigh_delay_priors = TRUE,
                                 id = "estimate_infections",
-                                verbose = interactive()) {
+                                verbose = interactive(),
+                                reported_cases) {
+  # Deprecate reported_cases in favour of data
+  if (!missing(reported_cases)) {
+     if (!missing(data)) {
+      stop("Can't have `reported_cases` and `data` arguments. ",
+           "Use `data` instead."
+      )
+     }
+    lifecycle::deprecate_warn(
+      "1.5.0",
+      "estimate_infections(reported_cases)",
+      "estimate_infections(data)",
+      "The argument will be removed completely in version 2.0.0."
+    )
+    data <- reported_cases
+  }
   # Validate inputs
-  check_reports_valid(reported_cases, model = "estimate_infections")
+  check_reports_valid(data, model = "estimate_infections")
   assert_class(generation_time, "generation_time_opts")
   assert_class(delays, "delay_opts")
   assert_class(truncation, "trunc_opts")
@@ -142,7 +160,7 @@ estimate_infections <- function(reported_cases,
   set_dt_single_thread()
 
   # store dirty reported case data
-  dirty_reported_cases <- data.table::copy(reported_cases)
+  dirty_reported_cases <- data.table::copy(data)
 
   if (!is.null(rt) && !rt$use_rt) {
     rt <- NULL
@@ -156,7 +174,7 @@ estimate_infections <- function(reported_cases,
   }
   # Order cases
   reported_cases <- create_clean_reported_cases(
-    reported_cases, horizon,
+    data, horizon,
     filter_leading_zeros = filter_leading_zeros,
     zero_threshold = zero_threshold
   )
@@ -188,8 +206,8 @@ estimate_infections <- function(reported_cases,
   reported_cases <- reported_cases[-(1:backcalc$prior_window)]
 
   # Define stan model parameters
-  data <- create_stan_data(
-    reported_cases = reported_cases,
+  stan_data <- create_stan_data(
+    reported_cases,
     seeding_time = seeding_time,
     rt = rt,
     gp = gp,
@@ -199,18 +217,18 @@ estimate_infections <- function(reported_cases,
     horizon = horizon
   )
 
-  data <- c(data, create_stan_delays(
+  stan_data <- c(stan_data, create_stan_delays(
     gt = generation_time,
     delay = delays,
     trunc = truncation,
-    time_points = data$t - data$seeding_time - data$horizon
+    time_points = stan_data$t - stan_data$seeding_time - stan_data$horizon
   ))
 
   # Set up default settings
   args <- create_stan_args(
     stan = stan,
-    data = data,
-    init = create_initial_conditions(data),
+    data = stan_data,
+    init = create_initial_conditions(stan_data),
     verbose = verbose
   )
 
@@ -234,9 +252,9 @@ estimate_infections <- function(reported_cases,
   fit <- fit_model(args, id = id)
 
   # Extract parameters of interest from the fit
-  out <- extract_parameter_samples(fit, data,
+  out <- extract_parameter_samples(fit, stan_data,
     reported_inf_dates = reported_cases$date,
-    reported_dates = reported_cases$date[-(1:data$seeding_time)]
+    reported_dates = reported_cases$date[-(1:stan_data$seeding_time)]
   )
 
   ## Add prior infections
@@ -253,7 +271,7 @@ estimate_infections <- function(reported_cases,
   format_out <- format_fit(
     posterior_samples = out,
     horizon = horizon,
-    shift = data$seeding_time,
+    shift = stan_data$seeding_time,
     burn_in = 0,
     start_date = start_date,
     CrIs = CrIs
@@ -262,7 +280,7 @@ estimate_infections <- function(reported_cases,
   ## Join stan fit if required
   if (stan$return_fit) {
     format_out$fit <- fit
-    format_out$args <- data
+    format_out$args <- stan_data
   }
   format_out$observations <- dirty_reported_cases
   class(format_out) <- c("estimate_infections", class(format_out))

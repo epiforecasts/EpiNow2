@@ -5,7 +5,7 @@
 \title{Real-time Rt Estimation, Forecasting and Reporting}
 \usage{
 epinow(
-  reported_cases,
+  data,
   generation_time = generation_time_opts(),
   delays = delay_opts(),
   truncation = trunc_opts(),
@@ -25,12 +25,13 @@ epinow(
   target_date,
   logs = tempdir(),
   id = "epinow",
-  verbose = interactive()
+  verbose = interactive(),
+  reported_cases
 )
 }
 \arguments{
-\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
-(date). confirm must be numeric and date must be in date format.}
+\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+(date). \code{confirm} must be numeric and \code{date} must be in date format.}
 
 \item{generation_time}{A call to \code{\link[=generation_time_opts]{generation_time_opts()}} defining the
 generation time distribution used. For backwards compatibility a list of
@@ -106,6 +107,8 @@ run with error catching.}
 otherwise \code{FALSE}. Should verbose debug progress messages be printed.
 Corresponds to the "DEBUG" level from \code{futile.logger}. See \code{setup_logging}
 for more detailed logging options.}
+
+\item{reported_cases}{Deprecated; use \code{data} instead.}
 }
 \value{
 A list of output from estimate_infections with additional elements

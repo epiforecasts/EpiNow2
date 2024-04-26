@@ -33,10 +33,12 @@
 #'  - Truncation is a multiplicative scaling of underlying reported cases.
 #'  - Truncation is log normally distributed.
 #'
-#' @param obs A list of `<data.frame>`s each containing a date variable
+#' @param data  A list of `<data.frame>`s each containing a date variable
 #' and a confirm (numeric) variable. Each data set should be a snapshot
 #' of the reported data over time. All data sets must contain a complete vector
 #' of dates.
+#'
+#' @param obs Deprecated; use `data` instead.
 #'
 #' @param max_truncation Deprecated; use `truncation` instead.
 #'
@@ -94,7 +96,7 @@
 #' plot(est)
 #'
 #' options(old_opts)
-estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
+estimate_truncation <- function(data, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
                                 truncation = trunc_opts(
                                   LogNormal(
@@ -110,8 +112,21 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 zero_threshold = Inf,
                                 weigh_delay_priors = FALSE,
                                 verbose = TRUE,
-                                ...) {
+                                ...,
+                                obs) {
 
+  if (!missing(obs)) {
+     if (!missing(data)) {
+      stop("Can't have `obs` and `data` arguments. Use `data` instead.")
+    }
+    lifecycle::deprecate_warn(
+      "1.5.0",
+      "estimate_truncation(obs)",
+      "estimate_truncation(data)",
+      "The argument will be removed completely in version 2.0.0."
+    )
+    data <- obs
+  }
   if (!is.null(model)) {
     lifecycle::deprecate_stop(
       "1.5.0",
@@ -128,7 +143,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     )
   }
    # Validate inputs
-  walk(obs, check_reports_valid, model = "estimate_truncation")
+  walk(data, check_reports_valid, model = "estimate_truncation")
   assert_class(truncation, "dist_spec")
   assert_class(model, "stanfit", null.ok = TRUE)
   assert_numeric(CrIs, lower = 0, upper = 1)
@@ -200,7 +215,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   }
 
   # combine into ordered matrix
-  dirty_obs <- purrr::map(obs, data.table::as.data.table)
+  dirty_obs <- purrr::map(data, data.table::as.data.table)
   dirty_obs <- purrr::map(dirty_obs,
     create_clean_reported_cases,
       horizon = 0,
@@ -228,21 +243,21 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   obs_data <- as.matrix(obs_data[obs_start:.N])
 
   # convert to stan list
-  data <- list(
+  stan_data <- list(
     obs = obs_data,
     obs_dist = obs_dist,
     t = nrow(obs_data),
     obs_sets = ncol(obs_data)
   )
 
-  data <- c(data, create_stan_delays(
+  stan_data <- c(stan_data, create_stan_delays(
     trunc = truncation,
-    time_points = data$t
+    time_points = stan_data$t
   ))
 
   # initial conditions
   init_fn <- function() {
-    data <- c(create_delay_inits(data), list(
+    data <- c(create_delay_inits(stan_data), list(
       phi = abs(rnorm(1, 0, 1)),
       sigma = abs(rnorm(1, 0, 1))
     ))
@@ -251,7 +266,7 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
 
   # fit
   args <- create_stan_args(
-    stan = stan, data = data, init = init_fn, model = "estimate_truncation"
+    stan = stan, data = stan_data, init = init_fn, model = "estimate_truncation"
   )
   fit <- fit_model(args, id = "estimate_truncation")
 
@@ -275,9 +290,9 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
   recon_obs <- recon_obs[, id := variable][, variable := NULL]
   recon_obs <- recon_obs[, dataset := seq_len(.N)][
     ,
-    dataset := dataset %% data$obs_sets
+    dataset := dataset %% stan_data$obs_sets
   ][
-    dataset == 0, dataset := data$obs_sets
+    dataset == 0, dataset := stan_data$obs_sets
   ]
   # link reconstructed observations to observed
   last_obs <-
@@ -310,14 +325,14 @@ estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
     target_obs <- target_obs[order(date)][, index := NULL]
     return(target_obs)
   }
-  out$obs <- purrr::map(1:(data$obs_sets), link_obs)
+  out$obs <- purrr::map(1:(stan_data$obs_sets), link_obs)
   out$obs <- data.table::rbindlist(out$obs)
   out$last_obs <- last_obs
   # summarise estimated cmf of the truncation distribution
   out$cmf <- extract_stan_param(fit, "trunc_rev_cmf", CrIs = CrIs)
   out$cmf <- data.table::as.data.table(out$cmf)[, index := seq_len(.N)]
   data.table::setcolorder(out$cmf, "index")
-  out$data <- data
+  out$data <- stan_data
   out$fit <- fit
 
   class(out) <- c("estimate_truncation", class(out))

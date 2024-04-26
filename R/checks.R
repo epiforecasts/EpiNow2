@@ -6,7 +6,7 @@
 #' that the date column is in date format and does not contain NA's, and that
 #' the other columns are numeric.
 #'
-#' @param reports A data frame with either:
+#' @param data A data frame with either:
 #' * a minimum of two columns: `date` and `confirm`, if to be
 #'  used by [estimate_infections()] or [estimate_truncation()], or
 #' * a minimum of three columns: `date`, `primary`, and `secondary`, if to be
@@ -19,36 +19,36 @@
 #' @importFrom rlang arg_match
 #' @return Called for its side effects.
 #' @keywords internal
-check_reports_valid <- function(reports,
+check_reports_valid <- function(data,
                                 model = c(
                                   "estimate_infections",
                                   "estimate_truncation",
                                   "estimate_secondary"
                                 )) {
   # Check that the case time series (reports) is a data frame
-  assert_data_frame(reports)
+  assert_data_frame(data)
   # Perform checks depending on the model to the data is meant to be used with
   model <- arg_match(model)
 
   if (model == "estimate_secondary") {
-    # Check that reports has the right column names
+    # Check that data has the right column names
     assert_names(
-      names(reports),
+      names(data),
       must.include = c("date", "primary", "secondary")
     )
-    # Check that the reports data.frame has the right column types
-    assert_date(reports$date, any.missing = FALSE)
-    assert_numeric(reports$primary, lower = 0)
-    assert_numeric(reports$secondary, lower = 0)
+    # Check that the data data.frame has the right column types
+    assert_date(data$date, any.missing = FALSE)
+    assert_numeric(data$primary, lower = 0)
+    assert_numeric(data$secondary, lower = 0)
   } else {
-    # Check that reports has the right column names
+    # Check that data has the right column names
     assert_names(
-      names(reports),
+      names(data),
       must.include = c("date", "confirm")
     )
-    # Check that the reports data.frame has the right column types
-    assert_date(reports$date, any.missing = FALSE)
-    assert_numeric(reports$confirm, lower = 0)
+    # Check that the data data.frame has the right column types
+    assert_date(data$date, any.missing = FALSE)
+    assert_numeric(data$confirm, lower = 0)
   }
 }
 
