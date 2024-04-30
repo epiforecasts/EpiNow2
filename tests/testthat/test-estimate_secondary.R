@@ -229,3 +229,9 @@ test_that("estimate_secondary works with zero_threshold set", {
   expect_s3_class(out, "estimate_secondary")
   expect_named(out, c("predictions", "posterior", "data", "fit"))
 })
+
+test_that("deprecated arguments are recognised", {
+  expect_deprecated(
+    estimate_secondary(reports = inc_cases)
+  )
+})

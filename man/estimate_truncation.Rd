@@ -5,7 +5,7 @@
 \title{Estimate Truncation of Observed Data}
 \usage{
 estimate_truncation(
-  obs,
+  data,
   max_truncation,
   trunc_max = 10,
   trunc_dist = "lognormal",
@@ -18,11 +18,12 @@ estimate_truncation(
   zero_threshold = Inf,
   weigh_delay_priors = FALSE,
   verbose = TRUE,
-  ...
+  ...,
+  obs
 )
 }
 \arguments{
-\item{obs}{A list of \verb{<data.frame>}s each containing a date variable
+\item{data}{A list of \verb{<data.frame>}s each containing a date variable
 and a confirm (numeric) variable. Each data set should be a snapshot
 of the reported data over time. All data sets must contain a complete vector
 of dates.}
@@ -65,6 +66,8 @@ threshold then the zero is replaced using \code{fill}.}
 \item{verbose}{Logical, should model fitting progress be returned.}
 
 \item{...}{Additional parameters to pass to \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}.}
+
+\item{obs}{Deprecated; use \code{data} instead.}
 }
 \value{
 A list containing: the summary parameters of the truncation

@@ -26,12 +26,12 @@
 #' @export
 #' @examples
 #' create_clean_reported_cases(example_confirmed, 7)
-create_clean_reported_cases <- function(reported_cases, horizon = 0,
+create_clean_reported_cases <- function(data, horizon = 0,
                                         filter_leading_zeros = TRUE,
                                         zero_threshold = Inf,
                                         fill = NA_integer_,
                                         add_breakpoints = TRUE) {
-  reported_cases <- data.table::setDT(reported_cases)
+  reported_cases <- data.table::setDT(data)
   reported_cases_grid <- data.table::copy(reported_cases)[,
    .(date = seq(min(date), max(date) + horizon, by = "days"))
   ]
@@ -148,9 +148,9 @@ create_complete_cases <- function(cases) {
 #'    cases
 #'  ))
 #' create_shifted_cases(cases, shift, smoothing_window, horizon)
-create_shifted_cases <- function(reported_cases, shift,
+create_shifted_cases <- function(data, shift,
                                  smoothing_window, horizon) {
-  shifted_reported_cases <- data.table::copy(reported_cases)[
+  shifted_reported_cases <- data.table::copy(data)[
     ,
     confirm := data.table::shift(confirm,
       n = shift,
@@ -458,11 +458,11 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @param seeding_time Integer; seeding time, usually obtained using
 #' [get_seeding_time()].
 #'
+#' @inheritParams estimate_infections
 #' @inheritParams create_gp_data
 #' @inheritParams create_obs_model
 #' @inheritParams create_rt_data
 #' @inheritParams create_backcalc_data
-#' @inheritParams estimate_infections
 #' @importFrom stats lm
 #' @importFrom purrr safely
 #' @return A list of stan data
@@ -472,30 +472,30 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #'  example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
 #'  backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
 #' )
-create_stan_data <- function(reported_cases, seeding_time,
+create_stan_data <- function(data, seeding_time,
                              rt, gp, obs, horizon,
                              backcalc, shifted_cases) {
 
-  cases <- reported_cases[(seeding_time + 1):(.N - horizon)]
+  cases <- data[(seeding_time + 1):(.N - horizon)]
   complete_cases <- create_complete_cases(cases)
   cases <- cases$confirm
 
-  data <- list(
+  stan_data <- list(
     cases = complete_cases$confirm,
     cases_time = complete_cases$lookup,
     lt = nrow(complete_cases),
     shifted_cases = shifted_cases,
-    t = length(reported_cases$date),
+    t = length(data$date),
     horizon = horizon,
     burn_in = 0,
     seeding_time = seeding_time
   )
   # add Rt data
-  data <- c(
-    data,
+  stan_data <- c(
+    stan_data,
     create_rt_data(rt,
-      breakpoints = reported_cases[(data$seeding_time + 1):.N]$breakpoint,
-      delay = data$seeding_time, horizon = data$horizon
+      breakpoints = data[(stan_data$seeding_time + 1):.N]$breakpoint,
+      delay = stan_data$seeding_time, horizon = stan_data$horizon
     )
   )
   # initial estimate of growth
@@ -503,44 +503,47 @@ create_stan_data <- function(reported_cases, seeding_time,
     confirm = cases[seq_len(min(7, length(cases)))],
     t = seq_len(min(7, length(cases)))
   )[!is.na(confirm)]
-  data$prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
-  data$prior_infections <- ifelse(
-    is.na(data$prior_infections) || is.null(data$prior_infections),
-    0, data$prior_infections
+  stan_data$prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
+  stan_data$prior_infections <- ifelse(
+    is.na(stan_data$prior_infections) || is.null(stan_data$prior_infections),
+    0, stan_data$prior_infections
   )
-  if (data$seeding_time > 1 && nrow(first_week) > 1) {
+  if (stan_data$seeding_time > 1 && nrow(first_week) > 1) {
     safe_lm <- purrr::safely(stats::lm)
-    data$prior_growth <- safe_lm(log(confirm) ~ t, data = first_week)[[1]]
-    data$prior_growth <- ifelse(is.null(data$prior_growth), 0,
-      data$prior_growth$coefficients[2]
+    stan_data$prior_growth <- safe_lm(log(confirm) ~ t,
+      stan_data = first_week
+    )[[1]]
+    stan_data$prior_growth <- ifelse(is.null(stan_data$prior_growth), 0,
+      stan_data$prior_growth$coefficients[2]
     )
   } else {
-    data$prior_growth <- 0
+    stan_data$prior_growth <- 0
   }
 
   # backcalculation settings
-  data <- c(data, create_backcalc_data(backcalc))
+  stan_data <- c(stan_data, create_backcalc_data(backcalc))
   # gaussian process data
-  data <- create_gp_data(gp, data)
+  stan_data <- create_gp_data(gp, stan_data)
 
   # observation model data
-  data <- c(
-    data,
+  stan_data <- c(
+    stan_data,
     create_obs_model(
       obs,
-      dates = reported_cases[(data$seeding_time + 1):.N]$date
+      dates = data[(stan_data$seeding_time + 1):.N]$date
     )
   )
 
   # rescale mean shifted prior for back calculation if observation scaling is
   # used
-  if (data$obs_scale == 1) {
-    data$shifted_cases <- data$shifted_cases / data$obs_scale_mean
-    data$prior_infections <- log(
-      exp(data$prior_infections) / data$obs_scale_mean
+  if (stan_data$obs_scale == 1) {
+    stan_data$shifted_cases <-
+      stan_data$shifted_cases / stan_data$obs_scale_mean
+    stan_data$prior_infections <- log(
+      exp(stan_data$prior_infections) / stan_data$obs_scale_mean
     )
   }
-  return(data)
+  return(stan_data)
 }
 
 ##' Create initial conditions for delays

@@ -44,6 +44,7 @@
 * `simulate_infections()` gained the argument `seeding_time` to change the seeding time. Additionally, the documentation was improved. By @sbfnk in #627 and reviewed by @jamesmbaazam.
 * The model-specific `weigh_delay_priors` argument has been deprecated in favour of delay-specific prior weighting using `weight_priors`. See `generation_time_opts()`, `delay_opts()`, and `trunc_opts()`. By @sbfnk in #630 and reviewed by @jamesmbaazam.
 * A `cmdstanr` backend has been added. By @sbfnk in #537 and #642 and reviewed by @seabbs.
+* All functions now use a `data` argument to pass data. The existing `reported_cases`, `reports`, and `obs` arguments are deprecated and will be removed in v2.0.0. By @jamesmbaazam in #638 and reviewed by @sbfnk.
 
 ## Model changes
 

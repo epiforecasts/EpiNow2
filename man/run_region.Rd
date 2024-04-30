@@ -16,7 +16,7 @@ run_region(
   stan,
   horizon,
   CrIs,
-  reported_cases,
+  data,
   target_folder,
   target_date,
   return_output,
@@ -70,7 +70,7 @@ forecast.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{reported_cases}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
 (date), and region (\code{region}).}
 
 \item{target_folder}{Character string specifying where to save results (will

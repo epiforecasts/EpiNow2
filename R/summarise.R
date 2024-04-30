@@ -172,10 +172,10 @@ summarise_results <- function(regions,
 #'
 #' regional_summary(
 #'   regional_output = regional_out$regional,
-#'   reported_cases = regional_out$summary$reported_cases
+#'   data = regional_out$summary$reported_cases
 #' )
 regional_summary <- function(regional_output = NULL,
-                             reported_cases,
+                             data,
                              results_dir = NULL,
                              summary_dir = NULL,
                              target_date = NULL,
@@ -185,7 +185,7 @@ regional_summary <- function(regional_output = NULL,
                              plot = TRUE,
                              max_plot = 10,
                              ...) {
-  reported_cases <- data.table::setDT(reported_cases)
+  reported_cases <- data.table::setDT(data)
   if (is.null(summary_dir)) {
     futile.logger::flog.info(
       "No summary directory specified so returning summary output"

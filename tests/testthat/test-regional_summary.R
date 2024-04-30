@@ -6,7 +6,7 @@ cases <- fit$summary$reported_cases
 test_that("regional_summary works with default settings", {
   out <- regional_summary(
     regional_output = fit$regional,
-    reported_cases = cases
+    data = cases
   )
   expect_equal(
     names(out),
@@ -22,7 +22,7 @@ test_that("regional_summary works with default settings", {
 test_that("regional_summary works when no plots are requested", {
   out <- regional_summary(
     regional_output = fit$regional,
-    reported_cases = cases,
+    data = cases,
     plot = FALSE
   )
   expect_equal(
@@ -52,7 +52,7 @@ test_that("regional_summary works with a lower and upper bound of 0", {
   })
   out <- regional_summary(
     regional_output = regional_zero_fit,
-    reported_cases = cases,
+    data = cases,
     plot = TRUE
   )
   expect_equal(
