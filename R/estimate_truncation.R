@@ -2,10 +2,12 @@
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Estimates a truncation distribution from multiple snapshots of the same
-#' data source over time. This distribution can then be used in
-#' [regional_epinow()], [epinow()], and [estimate_infections()] to adjust for
-#' truncated data. See
-#' [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)
+#' data source over time. This distribution can then be used passed to the
+#' `truncation` argument in [regional_epinow()], [epinow()], and
+#' [estimate_infections()] to adjust for truncated data and propagage the
+#' uncertainty associated with data truncation into the estimates.
+#'
+#' See [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)
 #' for an example of using this approach on Covid-19 data in England. The
 #' functionality offered by this function is now available in a more principled
 #' manner in the [`epinowcast` R package](https://package.epinowcast.org/).
@@ -55,9 +57,11 @@
 #' @param ... Additional parameters to pass to [rstan::sampling()].
 #'
 #' @return A list containing: the summary parameters of the truncation
-#'  distribution (`dist`), the estimated CMF of the truncation distribution
-#' (`cmf`, can be used to adjusted new data), a `<data.frame>` containing the
-#' observed truncated data, latest observed data and the adjusted for
+#' distribution (`dist`), which could be passed to the `truncation` argument
+#' of [epinow()], [regional_epinow()], and [estimate_infections()], the
+#' estimated CMF of the truncation distribution (`cmf`, can be used to
+#' adjusted new data), a `<data.frame>` containing the observed truncated
+#' data, latest observed data and the adjusted for
 #' truncation observations (`obs`), a `<data.frame>` containing the last
 #' observed data (`last_obs`, useful for plotting and validation), the data
 #' used for fitting (`data`) and the fit object (`fit`).
@@ -93,6 +97,15 @@
 #' # validation plot of observations vs estimates
 #' plot(est)
 #'
+#' # Pass the truncation distribution to `epinow()`.
+#' # Note, we're using the last snapshot as the observed data as it contains
+#' # all the previous snapshots. Also, we're using the default options for
+#' # illustrative purposes only.
+#' out <- epinow(
+#'   example_truncated[[5]],
+#'   truncation = est$dist
+#' )
+#' plot(out)
 #' options(old_opts)
 estimate_truncation <- function(obs, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",

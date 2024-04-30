@@ -29,8 +29,13 @@
 #' details.
 #'
 #' @param truncation A call to [trunc_opts()] defining the truncation of
-#'   observed data.  Defaults to [trunc_opts()]. See [estimate_truncation()] for
-#'   an approach to estimating truncation from data.
+#' the observed data. Defaults to [trunc_opts()]. Truncation can also be
+#' estimated from data. See [estimate_truncation()] for an approach. If using
+#' [estimate_truncation()], the `dist` list element in the output should be
+#' passed to this `truncation` argument here. This will apply the reporting
+#' delay to your data using the estimated posterior (`dist`) as a prior, thereby
+#' propagating the uncertainty associated with data truncation into the
+#' estimates. See an example workflow in the [estimate_truncation()] help file.
 #'
 #' @param horizon Numeric, defaults to 7. Number of days into the future to
 #' forecast.
