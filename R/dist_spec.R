@@ -584,7 +584,7 @@ print.dist_spec <- function(x, ...) {
       if (is.numeric(get_parameters(x, i)$value)) {
         cat(indent_str, "  ", get_parameters(x, i)$value, "\n", sep = "")
       } else {
-        .print.dist_spec(x[[i]]$parameters$value, indent = indent + 4)
+        .print.dist_spec(get_parameters(x, i)$value, indent = indent + 4)
       }
     } else {
       ## parametric
@@ -594,18 +594,18 @@ print.dist_spec <- function(x, ...) {
       }
       cat(":\n")
       ## loop over natural parameters and print
-      for (param in names(x[[i]]$parameters)) {
+      for (param in names(get_parameters(x, i))) {
         cat(
           indent_str, "  ", param, ":\n", sep = ""
         )
-        if (is.numeric(x[[i]]$parameters[[param]])) {
+        if (is.numeric(get_parameters(x, i)[[param]])) {
           cat(
             indent_str, "    ",
-            signif(x[[i]]$parameters[[param]], digits = 2), "\n",
+            signif(get_parameters(x, i)[[param]], digits = 2), "\n",
             sep = ""
           )
         } else {
-          .print.dist_spec(x[[i]]$parameters[[param]], indent = indent + 4)
+          .print.dist_spec(get_parameters(x, i)[[param]], indent = indent + 4)
         }
       }
     }
@@ -950,14 +950,12 @@ extract_params <- function(params, distribution) {
 #' @inheritParams extract_params
 #' @importFrom purrr walk
 #' @return A `dist_spec` of the given specification.
-#' @keywords internal
+#' @export
 #' @examples
-#' \dontrun{
 #' new_dist_spec(
 #'   params = list(mean = 2, sd = 1, max = Inf),
 #'   distribution = "normal"
 #' )
-#' }
 new_dist_spec <- function(params, distribution) {
   if (distribution == "nonparametric") {
     ## nonparametric distribution
