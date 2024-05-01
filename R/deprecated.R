@@ -218,6 +218,7 @@ adjust_infection_to_report <- function(infections, delay_defs,
 #' @return A list of distribution options.
 #' @importFrom rlang warn arg_match
 #' @export
+#' @keywords internal
 dist_spec <- function(distribution = c(
                         "lognormal", "normal", "gamma", "fixed", "empty"
                       ),
@@ -322,6 +323,7 @@ dist_spec <- function(distribution = c(
 #'
 #' @importFrom truncnorm rtruncnorm
 #' @return A `<data.table>` defining the distribution as used by [dist_skel()]
+#' @keywords internal
 #' @export
 #' @inheritParams dist_skel
 #' @inheritParams lognorm_dist_def
@@ -414,6 +416,7 @@ gamma_dist_def <- function(shape, shape_sd,
 #' @return A `<data.table>` defining the distribution as used by [dist_skel()]
 #' @importFrom truncnorm rtruncnorm
 #' @export
+#' @keywords internal
 #' @inheritParams dist_skel
 #' @examples
 #' def <- lognorm_dist_def(
