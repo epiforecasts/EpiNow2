@@ -11,8 +11,6 @@
 #' @param source deprecated; use `dist` instead
 #' @param max deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
-#' @param prior_weight deprecated; prior weights are now specified as a
-#' model option. Use the `weight_prior` argument instead
 #' @param weight_prior Logical; if TRUE (default), any priors given in `dist`
 #'   will be weighted by the number of observation data points, in doing so
 #'   approximately placing an independent prior at each time step and usually
@@ -45,8 +43,7 @@
 #' generation_time_opts(example_generation_time)
 generation_time_opts <- function(dist = Fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
-                                 prior_weight, tolerance = 0.001,
-                                 weight_prior = TRUE) {
+                                 tolerance = 0.001, weight_prior = TRUE) {
   deprecated_options_given <- FALSE
   dot_options <- list(...)
 
@@ -84,13 +81,6 @@ generation_time_opts <- function(dist = Fixed(1), ...,
       dist <- do.call(dist_spec, dist)
     }
     deprecated_options_given <- TRUE
-  }
-  if (!missing(prior_weight)) {
-    deprecate_warn(
-      "1.4.0", "generation_time_opts(prior_weight)",
-      "generation_time_opts(weight_prior)",
-      "This argument will be removed in the next version."
-    )
   }
   if (deprecated_options_given) {
     warning(
