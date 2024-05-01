@@ -14,7 +14,8 @@ test_that("dist_spec returns correct output for fixed lognormal distribution", {
 
 test_that("dist_spec returns correct output for uncertain gamma distribution", {
   result <- discretise(
-    Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19)
+    Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19),
+    strict = FALSE
   )
   expect_equal(result[[1]]$parameters$shape[[1]]$parameters$mean, 3)
   expect_equal(result[[1]]$parameters$shape[[1]]$parameters$sd, 0.5)

@@ -406,9 +406,10 @@ max.dist_spec <- function(x, ...) {
 #' (i.e. those with finite support and constant parameters).
 #' @title Discretise a <dist_spec>
 #' @param x A `<dist_spec>`
-#' @param silent Logical; if `TRUE` then any distribution that can't be
-#'   discretised will be returned as is. If `FALSE` then an error will be
-#'   thrown.
+#' @param strict Logical; If `TRUE` (default) an error will be thrown if a
+#' distribution cannot be discretised (e.g., because no finite maximum has been
+#' specified or parameters are uncertain). If if `FALSE` then any distribution
+#' that cannot be discretised will be returned as is.
 #' @return A `<dist_spec>` where all distributions with constant parameters are
 #'   nonparametric.
 #' @export
@@ -421,13 +422,13 @@ max.dist_spec <- function(x, ...) {
 #'
 #' # The maxf the sum of two distributions
 #' discretise(dist1 + dist2)
-discretise <- function(x, silent = TRUE) {
+discretise <- function(x, strict = TRUE) {
   if (!is(x, "dist_spec")) {
     stop("Can only discretise a <dist_spec>.")
   }
   ## check max
   max_x <- max(x)
-  if (any(is.infinite(max_x)) && !silent) {
+  if (any(is.infinite(max_x)) && strict) {
     stop("Cannot discretise a distribution with infinite support.")
   }
   ## discretise
@@ -445,12 +446,12 @@ discretise <- function(x, silent = TRUE) {
         ))
         z$distribution <- "nonparametric"
         return(z)
-      } else if (silent) {
-        return(y)
-      } else {
+      } else if (strict) {
         stop(
           "Cannot discretise a distribution with uncertain parameters."
         )
+      } else {
+        return(y)
       }
     }
   })
