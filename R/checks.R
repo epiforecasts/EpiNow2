@@ -1,6 +1,6 @@
 #' Validate data input
 #'
-#' @description
+#' @description `r lifecycle::badge("stable")`
 #' `check_reports_valid()` checks that the supplied data is a `<data.frame>`,
 #' and that it has the right column names and types. In particular, it checks
 #' that the date column is in date format and does not contain NA's, and that
@@ -54,7 +54,7 @@ check_reports_valid <- function(data,
 
 #' Validate probability distribution for passing to stan
 #'
-#' @description
+#' @description `r lifecycle::badge("stable")`
 #' `check_stan_delay()` checks that the supplied data is a `<dist_spec>`,
 #' that it is a supported distribution, and that is has a finite maximum.
 #'
