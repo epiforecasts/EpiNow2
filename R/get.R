@@ -91,7 +91,7 @@ get_regional_results <- function(regional_output,
     # find all regions
     regions <- get_regions(results_dir)
 
-    load_data <- purrr::safely(EpiNow2::get_raw_result) # nolint
+    load_data <- purrr::safely(get_raw_result) # nolint
 
     # get estimates
     get_estimates_file <- function(samples_path, summarised_path) {
