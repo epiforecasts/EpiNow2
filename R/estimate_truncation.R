@@ -105,7 +105,7 @@
 #' # illustrative purposes only.
 #' out <- epinow(
 #'   example_truncated[[5]],
-#'   truncation = est$dist
+#'   truncation = trunc_opts(est$dist)
 #' )
 #' plot(out)
 #' options(old_opts)
