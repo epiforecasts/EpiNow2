@@ -28,7 +28,7 @@ test_that("epinow produces expected output when run with default settings", {
         control = list(adapt_delta = 0.8)
       ),
       logs = NULL, verbose = FALSE
-      )
+    )
   )))
 
   expect_equal(names(out), expected_out)
