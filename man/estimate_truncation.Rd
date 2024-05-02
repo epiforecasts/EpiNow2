@@ -35,13 +35,11 @@ of dates.}
 \item{trunc_dist}{Deprecated; use \code{truncation} instead.}
 
 \item{truncation}{A call to \code{\link[=trunc_opts]{trunc_opts()}} defining the truncation of
-the observed data. Defaults to \code{\link[=trunc_opts]{trunc_opts()}}. Truncation can also be
-estimated from data. See \code{\link[=estimate_truncation]{estimate_truncation()}} for an approach. If using
-\code{\link[=estimate_truncation]{estimate_truncation()}}, the \code{dist} list element in the output should be
-passed to this \code{truncation} argument here. This will apply the reporting
-delay to your data using the estimated posterior (\code{dist}) as a prior, thereby
-propagating the uncertainty associated with data truncation into the
-estimates. See an example workflow in the \code{\link[=estimate_truncation]{estimate_truncation()}} help file.}
+the observed data. Defaults to \code{\link[=trunc_opts]{trunc_opts()}}, i.e. no truncation.  See the
+\code{\link[=estimate_truncation]{estimate_truncation()}} help file for an approach to estimating this from
+data where the \code{dist} list element returned by \code{\link[=estimate_truncation]{estimate_truncation()}} is
+used as the \code{truncation} argument here, thereby propagating the uncertainty
+in the estimate.}
 
 \item{model}{A compiled stan model to override the default model. May be
 useful for package developers or those developing extensions.}
