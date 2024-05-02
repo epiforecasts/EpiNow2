@@ -1,6 +1,6 @@
 #' Real-time Rt Estimation, Forecasting and Reporting
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("stable")`
 #' This function wraps the functionality of [estimate_infections()] in order
 #' to estimate Rt and cases by date of infection and forecast these infections
 #' into the future. In addition to the functionality of
