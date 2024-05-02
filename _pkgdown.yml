@@ -145,3 +145,41 @@ reference:
       - growth_to_R
       - R_to_growth
       - update_secondary_args
+  - title: internal
+    contents:
+      - add_day_of_week
+      - adjust_infection_to_report
+      - allocate_delays
+      - allocate_empty
+      - calc_CrI
+      - calc_CrIs
+      - calc_summary_measures
+      - calc_summary_stats
+      - construct_output
+      - copy_results_to_latest
+      - create_backcalc_data
+      - create_future_rt
+      - create_gp_data
+      - create_initial_conditions
+      - create_obs_model
+      - create_rt_data
+      - create_shifted_cases
+      - create_stan_args
+      - create_stan_data
+      - create_stan_delays
+      - estimates_by_report_date
+      - fit_model_approximate
+      - fit_model_with_nuts
+      - format_fit
+      - init_cumulative_fit
+      - make_conf
+      - match_output_arguments
+      - process_region
+      - process_regions
+      - report_cases
+      - save_estimate_infections
+      - save_input
+      - summarise_key_measures
+      - summarise_results
+      - update_horizon
+      - update_list
