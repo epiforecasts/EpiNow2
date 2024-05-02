@@ -1104,7 +1104,7 @@ convert_to_natural <- function(params, distribution) {
 
 ##' Perform checks for `<dist_spec>` `get_...` functions
 ##'
-##' @param x A ``<dist_spec>``.
+##' @param x A `<dist_spec>`.
 ##' @param id Integer; the id of the distribution to get parameters of (if x is
 ##' a composite distribution). If `x` is a single distribution this is ignored
 ##' and can be left as `NULL`.
@@ -1130,7 +1130,7 @@ get_dist_spec_id <- function(x, id) {
 
 ##' Get parameters of a parametric distribution
 ##'
-##' @inheritParams check_get_dist_spec
+##' @inheritParams get_dist_spec_id
 ##' @description `r lifecycle::badge("experimental")`
 ##' @return A list of parameters of the distribution.
 ##' @export
@@ -1150,9 +1150,7 @@ get_parameters <- function(x, id = NULL) {
 
 ##' Get the probability mass function of a nonparametric distribution
 ##'
-##' @param x A `<dist_spec>`
-##' @param id of the distribution to get parameters of (if x is a composite
-##'   distribution)
+##' @inheritParams get_dist_spec_id
 ##' @description `r lifecycle::badge("experimental")`
 ##' @return The pmf of the distribution
 ##' @export
@@ -1172,9 +1170,7 @@ get_pmf <- function(x, id = NULL) {
 
 ##' Get the distribution of a [dist_spec()]
 ##'
-##' @param x A `<dist_spec>`
-##' @param id of the distribution to get parameters of (if x is a composite
-##'   distribution)
+##' @inheritParams get_dist_spec_id
 ##' @description `r lifecycle::badge("experimental")`
 ##' @return A character string naming the distribution (or "nonparametric")
 ##' @export

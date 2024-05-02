@@ -7,10 +7,7 @@
 create_complete_cases(cases)
 }
 \arguments{
-\item{cases;}{data frame with a column "confirm" that may contain NA values}
-
-\item{burn_in;}{integer (default 0). Number of days to remove from the
-start of the time series be filtered out.}
+\item{cases}{data frame with a column "confirm" that may contain NA values}
 }
 \value{
 A data frame without NA values, with two columns: confirm (number)

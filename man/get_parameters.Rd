@@ -6,6 +6,13 @@
 \usage{
 get_parameters(x, id = NULL)
 }
+\arguments{
+\item{x}{A \verb{<dist_spec>}.}
+
+\item{id}{Integer; the id of the distribution to get parameters of (if x is
+a composite distribution). If \code{x} is a single distribution this is ignored
+and can be left as \code{NULL}.}
+}
 \value{
 A list of parameters of the distribution.
 }
