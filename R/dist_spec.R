@@ -1111,10 +1111,7 @@ convert_to_natural <- function(params, distribution) {
 ##' @return The id to use.
 ##' @keywords internal
 ##' @author Sebastian Funk
-check_get_dist_spec <- function(x, id) {
-  if (!is(x, "dist_spec")) {
-    stop("Can only get parameters of a <dist_spec>.")
-  }
+get_dist_spec_id <- function(x, id) {
   if (!is.null(id) && id > length(x)) {
     stop(
       "`id` can't be greater than the number of distributions (", length(x),
@@ -1141,7 +1138,10 @@ check_get_dist_spec <- function(x, id) {
 ##' dist <- Gamma(shape = 3, rate = 2)
 ##' get_parameters(dist)
 get_parameters <- function(x, id = NULL) {
-  id <- check_get_dist_spec(x, id)
+  if (!is(x, "dist_spec")) {
+    stop("Can only get parameters of a <dist_spec>.")
+  }
+  id <- get_dist_spec_id(x, id)
   if (x[[id]]$distribution == "nonparametric") {
     stop("Cannot get parameters of a nonparametric distribution.")
   }
@@ -1160,7 +1160,10 @@ get_parameters <- function(x, id = NULL) {
 ##' dist <- discretise(Gamma(shape = 3, rate = 2, max = 10))
 ##' get_pmf(dist)
 get_pmf <- function(x, id = NULL) {
-  id <- check_get_dist_spec(x, id)
+  if (!is(x, "dist_spec")) {
+    stop("Can only get pmf of a <dist_spec>.")
+  }
+  id <- get_dist_spec_id(x, id)
   if (x[[id]]$distribution != "nonparametric") {
     stop("Cannot get pmf of a parametric distribution.")
   }
@@ -1179,6 +1182,9 @@ get_pmf <- function(x, id = NULL) {
 ##' dist <- Gamma(shape = 3, rate = 2, max = 10)
 ##' get_distribution(dist)
 get_distribution <- function(x, id = NULL) {
-  id <- check_get_dist_spec(x, id)
+  if (!is(x, "dist_spec")) {
+    stop("Can only get distribution of a <dist_spec>.")
+  }
+  id <- get_dist_spec_id(x, id)
   return(x[[id]]$distribution)
 }
