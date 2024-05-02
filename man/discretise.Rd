@@ -5,16 +5,17 @@
 \alias{discretize}
 \title{Discretise a <dist_spec>}
 \usage{
-discretise(x, silent = TRUE)
+discretise(x, strict = TRUE)
 
-discretize(x, silent = TRUE)
+discretize(x, strict = TRUE)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}}
 
-\item{silent}{Logical; if \code{TRUE} then any distribution that can't be
-discretised will be returned as is. If \code{FALSE} then an error will be
-thrown.}
+\item{strict}{Logical; If \code{TRUE} (default) an error will be thrown if a
+distribution cannot be discretised (e.g., because no finite maximum has been
+specified or parameters are uncertain). If if \code{FALSE} then any distribution
+that cannot be discretised will be returned as is.}
 }
 \value{
 A \verb{<dist_spec>} where all distributions with constant parameters are
@@ -35,5 +36,5 @@ dist1 <- Gamma(mean = 5, sd = 1, max = 20)
 dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
 
 # The maxf the sum of two distributions
-discretise(dist1 + dist2)
+discretise(dist1 + dist2, strict = FALSE)
 }
