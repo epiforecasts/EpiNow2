@@ -18,9 +18,6 @@ A list of settings defining the Gaussian process
 Takes the output of \code{\link[=backcalc_opts]{backcalc_opts()}} and converts it into a list understood
 by stan.
 }
-\examples{
-create_backcalc_data(backcalc = backcalc_opts())
-}
 \seealso{
 backcalc_opts
 }

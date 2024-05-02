@@ -42,6 +42,7 @@ projected to the end of the forecast horizon. The initial part of the data
 any non-integer resulting values rounded up.
 }
 \examples{
+\dontrun{
 shift <- 7
 horizon <- 7
 smoothing_window <- 14
@@ -60,5 +61,6 @@ cases <- data.table::rbindlist(list(
    cases
  ))
 create_shifted_cases(cases, shift, smoothing_window, horizon)
+}
 }
 \keyword{internal}

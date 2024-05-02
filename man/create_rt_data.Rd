@@ -27,6 +27,7 @@ Takes the output from \code{\link[=rt_opts]{rt_opts()}} and converts it into a l
 stan.
 }
 \examples{
+\dontrun{
 # default Rt data
 create_rt_data()
 
@@ -35,6 +36,7 @@ create_rt_data(rt = NULL)
 
 # using breakpoints
 create_rt_data(rt_opts(use_breakpoints = TRUE), breakpoints = rep(1, 10))
+}
 }
 \seealso{
 rt_settings

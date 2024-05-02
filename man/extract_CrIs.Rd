@@ -26,4 +26,3 @@ summarised <- calc_CrIs(samples,
 )
 extract_CrIs(summarised)
 }
-\keyword{internal}

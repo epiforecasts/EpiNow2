@@ -28,4 +28,3 @@ calc_CrIs(samples)
 # add 90\% credible interval grouped by type
 calc_CrIs(samples, summarise_by = "type")
 }
-\keyword{internal}

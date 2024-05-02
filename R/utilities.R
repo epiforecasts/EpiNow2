@@ -51,7 +51,7 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 #' credible interval be switched.
 #'
 #' @return A character vector formatted for reporting
-#' @keywords internal
+#' @export
 #' @examples
 #' value <- list(median = 2, lower_90 = 1, upper_90 = 3)
 #' make_conf(value)
@@ -352,12 +352,14 @@ discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
 #' @keywords internal
 #' @importFrom lubridate wday
 #' @examples
+#' \dontrun{
 #' dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
 #' # Add date based day of week
 #' add_day_of_week(dates, 7)
 #'
 #' # Add shorter week
 #' add_day_of_week(dates, 4)
+#' }
 add_day_of_week <- function(dates, week_effect = 7) {
   if (week_effect == 7) {
     day_of_week <- lubridate::wday(dates, week_start = 1)

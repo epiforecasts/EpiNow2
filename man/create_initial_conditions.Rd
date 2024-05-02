@@ -19,3 +19,4 @@ used to sample from the prior distributions (or as close as possible) for
 parameters. Used in order to initialise each stan chain within a range of
 plausible values.
 }
+\keyword{internal}

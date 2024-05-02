@@ -566,7 +566,7 @@ regional_runtimes <- function(regional_output = NULL,
 #' return values. Defaults to 0.9.
 #' @return A data.table containing the upper and lower bounds for the specified
 #' credible interval.
-#' @keywords internal
+#' @export
 #' @importFrom data.table copy setDT
 #' @importFrom stats quantile
 #' @examples
@@ -606,7 +606,7 @@ calc_CrI <- function(samples, summarise_by = NULL, CrI = 0.9) {
 #'
 #' @importFrom purrr map
 #' @importFrom data.table rbindlist dcast
-#' @keywords internal
+#' @export
 #' @examples
 #' samples <- data.frame(value = 1:10, type = "car")
 #' # add credible intervals
@@ -643,7 +643,7 @@ calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
 #' @param summarised A `<data.frame>` as processed by `calc_CrIs`
 #' @return A numeric vector of credible intervals detected in
 #' the `<data.frame>`.
-#' @keywords internal
+#' @export
 #' @examples
 #' samples <- data.frame(value = 1:10, type = "car")
 #' summarised <- calc_CrIs(samples,
@@ -665,7 +665,7 @@ extract_CrIs <- function(summarised) {
 #' Currently supports the mean, median and standard deviation.
 #' @return A data.table containing the upper and lower bounds for the specified
 #' credible interval
-#' @keywords internal
+#' @export
 #' @inheritParams calc_CrI
 #' @importFrom data.table copy setDT
 #' @examples
@@ -698,7 +698,7 @@ calc_summary_stats <- function(samples, summarise_by = NULL) {
 #'
 #' @return A data.table containing summary statistics by group.
 #'
-#' @keywords internal
+#' @export
 #' @inheritParams calc_CrIs
 #' @importFrom data.table setorderv
 #' @examples

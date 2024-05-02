@@ -44,10 +44,12 @@ Initialisation defaults to random but it is expected that
 \code{\link[=create_initial_conditions]{create_initial_conditions()}} will be used.
 }
 \examples{
+\dontrun{
 # default settings
 create_stan_args()
 
 # increasing warmup
 create_stan_args(stan = stan_opts(warmup = 1000))
+}
 }
 \keyword{internal}
