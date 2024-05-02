@@ -41,7 +41,6 @@
 #' @inheritParams estimate_infections
 #' @inheritParams rt_opts
 #' @inheritParams stan_opts
-#' @importFrom lifecycle deprecate_warn
 #' @importFrom checkmate assert_data_frame assert_date assert_numeric
 #'   assert_subset assert_integer
 #' @importFrom data.table data.table merge.data.table nafill rbindlist

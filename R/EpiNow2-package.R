@@ -11,5 +11,6 @@
 ## usethis namespace: start
 #' @importFrom lifecycle deprecate_soft
 #' @importFrom lifecycle deprecate_warn
+#' @importFrom lifecycle deprecate_stop
 ## usethis namespace: end
 NULL

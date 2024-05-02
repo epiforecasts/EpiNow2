@@ -404,7 +404,6 @@ set_dt_single_thread <- function() {
 }
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
-#' @importFrom lifecycle deprecate_warn
 #' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
 globalVariables(
   c(
