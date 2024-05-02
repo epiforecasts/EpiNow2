@@ -23,7 +23,7 @@
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases
-#' @export
+#' @keywords internal
 #' @examples
 #' create_clean_reported_cases(example_confirmed, 7)
 create_clean_reported_cases <- function(data, horizon = 0,
@@ -128,7 +128,7 @@ create_complete_cases <- function(cases) {
 #' @importFrom stats lm
 #' @importFrom runner mean_run
 #' @return A `<data.frame>` for shifted reported cases
-#' @export
+#' @keywords internal
 #' @examples
 #' shift <- 7
 #' horizon <- 7
@@ -213,6 +213,7 @@ create_shifted_cases <- function(data, shift,
 #'
 #' @param delay Numeric mean delay
 #' @importFrom rlang arg_match
+#' @keywords internal
 #' @return A list containing a logical called fixed and an integer called from
 create_future_rt <- function(future = c("latest", "project", "estimate"),
                              delay = 0) {
@@ -247,7 +248,7 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' @seealso rt_settings
 #' @return A list of settings defining the time-varying reproduction number
 #' @inheritParams create_future_rt
-#' @export
+#' @keywords internal
 #' @examples
 #' # default Rt data
 #' create_rt_data()
@@ -313,7 +314,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #' @seealso backcalc_opts
 #' @importFrom data.table fcase
 #' @return A list of settings defining the Gaussian process
-#' @export
+#' @keywords internal
 #' @examples
 #' create_backcalc_data(backcalc = backcalc_opts())
 create_backcalc_data <- function(backcalc = backcalc_opts()) {
@@ -341,7 +342,7 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
 #' @importFrom data.table fcase
 #' @seealso [gp_opts()]
 #' @return A list of settings defining the Gaussian process
-#' @export
+#' @keywords internal
 #' @examples
 #' # define input data required
 #' data <- list(
@@ -410,7 +411,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #' @seealso [obs_opts()]
 #' @return A list of settings ready to be passed to stan defining
 #' the Observation Model
-#' @export
+#' @keywords internal
 #' @examples
 #' dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
 #' # default observation model data
@@ -466,7 +467,7 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @importFrom stats lm
 #' @importFrom purrr safely
 #' @return A list of stan data
-#' @export
+#' @keywords internal
 #' @examples
 #' create_stan_data(
 #'  example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
@@ -675,7 +676,7 @@ create_initial_conditions <- function(data) {
 #' @importFrom utils modifyList
 #'
 #' @return A list of stan arguments
-#' @export
+#' @keywords internal
 #' @examples
 #' # default settings
 #' create_stan_args()

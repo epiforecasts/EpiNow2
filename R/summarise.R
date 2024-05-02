@@ -22,7 +22,7 @@
 #' @importFrom purrr safely map_chr map_dbl map_chr
 #' @importFrom data.table setorderv melt merge.data.table dcast
 #' @return A list of summary data
-#' @export
+#' @keywords internal
 summarise_results <- function(regions,
                               summaries = NULL,
                               results_dir = NULL,
@@ -429,7 +429,7 @@ regional_summary <- function(regional_output = NULL,
 #' @seealso regional_summary
 #' @return A list of summarised Rt, cases by date of infection and cases by
 #' date of report
-#' @export
+#' @keywords internal
 #' @importFrom data.table setnames fwrite setorderv
 summarise_key_measures <- function(regional_results = NULL,
                                    results_dir = NULL, summary_dir = NULL,
@@ -491,6 +491,7 @@ summarise_key_measures <- function(regional_results = NULL,
   save_variable(out$cases_by_report, "cases_by_report")
   return(out)
 }
+
 #' Summarise Regional Runtimes
 #'
 #' @description `r lifecycle::badge("maturing")`
@@ -503,6 +504,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @export
 #' @importFrom data.table data.table fwrite
 #' @importFrom purrr map safely
+#' @keywords internal
 #' @examples
 #' regional_out <- readRDS(system.file(
 #'     package = "EpiNow2", "extdata", "example_regional_epinow.rds"
@@ -564,7 +566,7 @@ regional_runtimes <- function(regional_output = NULL,
 #' return values. Defaults to 0.9.
 #' @return A data.table containing the upper and lower bounds for the specified
 #' credible interval.
-#' @export
+#' @keywords internal
 #' @importFrom data.table copy setDT
 #' @importFrom stats quantile
 #' @examples
@@ -604,7 +606,7 @@ calc_CrI <- function(samples, summarise_by = NULL, CrI = 0.9) {
 #'
 #' @importFrom purrr map
 #' @importFrom data.table rbindlist dcast
-#' @export
+#' @keywords internal
 #' @examples
 #' samples <- data.frame(value = 1:10, type = "car")
 #' # add credible intervals
@@ -641,7 +643,7 @@ calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
 #' @param summarised A `<data.frame>` as processed by `calc_CrIs`
 #' @return A numeric vector of credible intervals detected in
 #' the `<data.frame>`.
-#' @export
+#' @keywords internal
 #' @examples
 #' samples <- data.frame(value = 1:10, type = "car")
 #' summarised <- calc_CrIs(samples,
@@ -663,7 +665,7 @@ extract_CrIs <- function(summarised) {
 #' Currently supports the mean, median and standard deviation.
 #' @return A data.table containing the upper and lower bounds for the specified
 #' credible interval
-#' @export
+#' @keywords internal
 #' @inheritParams calc_CrI
 #' @importFrom data.table copy setDT
 #' @examples
@@ -696,7 +698,7 @@ calc_summary_stats <- function(samples, summarise_by = NULL) {
 #'
 #' @return A data.table containing summary statistics by group.
 #'
-#' @export
+#' @keywords internal
 #' @inheritParams calc_CrIs
 #' @importFrom data.table setorderv
 #' @examples

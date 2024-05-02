@@ -630,6 +630,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
 #' @importFrom lubridate days
 #' @importFrom futile.logger flog.info
 #' @return A list of samples and summarised posterior parameter estimates.
+#' @keywords internal
 format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
                        CrIs) {
   format_out <- list()

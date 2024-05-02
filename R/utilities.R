@@ -51,7 +51,7 @@ clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
 #' credible interval be switched.
 #'
 #' @return A character vector formatted for reporting
-#' @export
+#' @keywords internal
 #' @examples
 #' value <- list(median = 2, lower_90 = 1, upper_90 = 3)
 #' make_conf(value)
@@ -150,6 +150,7 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 #' @param delay_var List of numeric delays
 #' @param no_delays Numeric, number of delays
 #' @return A numeric array
+#' @keywords internal
 allocate_delays <- function(delay_var, no_delays) {
   if (no_delays > 0) {
     out <- unlist(delay_var)
@@ -169,6 +170,7 @@ allocate_delays <- function(delay_var, no_delays) {
 #' empty if missing.
 #' @param n Numeric, number of samples to assign an empty array
 #' @return A list of parameters some allocated to be empty
+#' @keywords internal
 allocate_empty <- function(data, params, n = 0) {
   for (param in params) {
     if (!exists(param, data)) {
@@ -196,6 +198,7 @@ allocate_empty <- function(data, params, n = 0) {
 #'
 #' @return A logical vector of named output arguments
 #' @importFrom  futile.logger flog.info flog.debug
+#' @keywords internal
 match_output_arguments <- function(input_args = NULL,
                                    supported_args = NULL,
                                    logger = NULL,
@@ -366,7 +369,7 @@ update_list <- function(defaults = list(), optional = list()) {
 #' @param week_effect Numeric from 1 to 7 defaults to 7
 #'
 #' @return A numeric vector containing the period day of the week index
-#' @export
+#' @keywords internal
 #' @importFrom lubridate wday
 #' @examples
 #' dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)

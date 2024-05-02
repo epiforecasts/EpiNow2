@@ -418,6 +418,7 @@ run_region <- function(target_region,
 #' @seealso [regional_epinow()]
 #' @importFrom futile.logger flog.info
 #' @return A list of processed output
+#' @keywords internal
 process_region <- function(out, target_region, timing,
                            return_output = TRUE, return_timing = TRUE,
                            complete_logger = "EpiNow2.epinow") {
@@ -453,6 +454,7 @@ process_region <- function(out, target_region, timing,
 #' @importFrom futile.logger flog.trace flog.info
 #' @seealso [regional_epinow()] [epinow()]
 #' @return A list of all regional estimates and successful regional estimates
+#' @keywords internal
 process_regions <- function(regional_out, regions) {
   # names on regional_out
   names(regional_out) <- regions

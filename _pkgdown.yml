@@ -73,27 +73,11 @@ reference:
       - forecast_secondary
       - estimate_delay
       - estimate_truncation
-  - title: Internal epinow Functions
-    desc: Functions used internally by epinow
-    contents:
-      - update_horizon
-      - contains("save_")
-      - estimates_by_report_date
-      - copy_results_to_latest
-      - construct_output
-  - title: Internal estimate_infections Functions
+  - title: Option functions
     desc: Functions used by estimate_infections
     contents:
       - contains("_opts")
       - opts_list
-      - contains("create_")
-      - allocate_delays
-      - allocate_empty
-  - title: Model Fitting
-    desc: Functions for model fitting
-    contents:
-      - contains("fit_")
-      - init_cumulative_fit
   - title: Summarise Across Regions
     desc: Functions used for summarising across regions (designed for use with regional_epinow)
     contents:
@@ -103,11 +87,6 @@ reference:
     desc: Functions from summarising results
     contents:
       - contains("summary.")
-      - contains("summarise")
-      - contains("calc_")
-      - contains("process_")
-      - format_fit
-      - make_conf
       - map_prob_change
   - title: Plot Results
     desc: Plot generated results
@@ -158,13 +137,10 @@ reference:
   - title: Utilities
     desc: Utility functions
     contents:
-      - match_output_arguments
       - run_region
       - expose_stan_fns
       - convert_to_logmean
       - convert_to_logsd
       - growth_to_R
       - R_to_growth
-      - add_day_of_week
       - update_secondary_args
-      - update_list

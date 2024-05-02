@@ -564,7 +564,7 @@ apply_tolerance <- function(x, tolerance) {
 print.dist_spec <- function(x, ...) {
   .print.dist_spec(x, indent = 0, ...)
 }
-
+#' @keywords internal
 .print.dist_spec <- function(x, indent, ...) {
   indent_str <- strrep(" ", indent)
   if (length(x) > 1) {

@@ -152,6 +152,7 @@ get_regional_results <- function(regional_output,
   }
   return(out)
 }
+
 #' Get a Literature Distribution
 #'
 #'
@@ -175,6 +176,7 @@ get_regional_results <- function(regional_output,
 #'
 #' @seealso [dist_spec()]
 #' @export
+#' @keywords internal
 get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
   lifecycle::deprecate_warn(
     "1.5.0", "get_dist()",
@@ -220,6 +222,7 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
 #' @inherit get_dist
 #' @export
 #' @seealso [dist_spec()]
+#' @keywords internal
 get_generation_time <- function(disease, source, max_value = 14,
                                 fixed = FALSE) {
   lifecycle::deprecate_warn(
@@ -254,6 +257,7 @@ get_generation_time <- function(disease, source, max_value = 14,
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @export
+#' @keywords internal
 get_incubation_period <- function(disease, source, max_value = 14,
                                   fixed = FALSE) {
   lifecycle::deprecate_warn(
@@ -321,6 +325,7 @@ get_regions_with_most_reports <- function(data,
 ##' to be at least the maximum generation time
 ##' @inheritParams estimate_infections
 ##' @return An integer seeding time
+##' @keywords internal
 get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
   # Estimate the mean delay -----------------------------------------------
   seeding_time <- sum(mean(delays, ignore_uncertainty = TRUE))
