@@ -3,21 +3,24 @@
 ## Major changes
 
 * Delay discretisation is now based on a two-day censoring window (with uniform probability in between), based on recommendations in [Park et al, medRxiv, 2024](https://doi.org/10.1101/2024.01.12.24301247). By @sbfnk in #518 and reviewed by @jamesmbaazam.
+* The interface to generating delay distributions has been completely overhauled. Instead of calling `dist_spec()` users now specify distributions using functions that represent the available distributions, i.e. `LogNormal()`, `Gamma()` and `Fixed()`. Uncertainty is specified using calls of the same nature, to `Normal()`. More information on the underlying design can be found in `inst/dev/design_dist.md` By @sbfnk in #504 and reviewed by @seabbs.
 
 ## Deprecations
 
 * The functions `sample_approx_dist()`, `report_cases()`, and `adjust_infection_reports()` have been deprecated as the functionality they provide can now be achieved with `simulate_secondary()`. See #597 by @jamesmbaazam and reviewed by @sbfnk.
+* The utility function `update_list()` has been deprecated in favour of `utils::modifyList()` because it comes with an installation of R. By @jamesmbaazam in #491 and reviewed by @seabbs.
+* The `fixed` argument to `dist_spec` has been deprecated and replaced by a `fix_dist()` function. By @sbfnk in #503 and reviewed by @seabbs.
+* The functions `get_dist`, `get_generation_time`, `get_incubation_period` have been deprecated and replaced with examples. By @sbfnk in #481 and reviewed by @seabbs.
+* The function `init_cumulative_fit()` has been deprecated. By @jamesmbaazam in #541 and reviewed by @sbfnk.
+* The model-specific `weigh_delay_priors` argument has been deprecated in favour of delay-specific prior weighting using `weight_priors`. See `generation_time_opts()`, `delay_opts()`, and `trunc_opts()`. By @sbfnk in #630 and reviewed by @jamesmbaazam.
+* All functions now use a `data` argument to pass data. The existing `reported_cases`, `reports`, and `obs` arguments are deprecated and will be removed in v2.0.0. By @jamesmbaazam in #638 and reviewed by @sbfnk.
 
 ## Other breaking changes
 
-* The functions `get_dist`, `get_generation_time`, `get_incubation_period` have been deprecated and replaced with examples. By @sbfnk in #481 and reviewed by @seabbs.
-* The utility function `update_list()` has been deprecated in favour of `utils::modifyList()` because it comes with an installation of R. By @jamesmbaazam in #491 and reviewed by @seabbs.
-* The `fixed` argument to `dist_spec` has been deprecated and replaced by a `fix_dist()` function. By @sbfnk in #503 and reviewed by @seabbs.
 * Updated `estimate_infections()` so that rather than imputing missing data, it now skips these data points in the likelihood. This is a breaking change as it alters the behaviour of the model when dates are missing from a time series but are known to be zero. We recommend that users check their results when updating to this version but expect this to in most cases improve performance. By @seabbs in #528 and reviewed by @sbfnk.
 * `simulate_infections` has been renamed to `forecast_infections` in line with `simulate_secondary` and `forecast_secondary`. The terminology is: a forecast is done from a fit to existing data, a simulation from first principles. By @sbfnk in #544 and reviewed by @seabbs.
 * A new `simulate_infections` function has been added that can be used to simulate from the model from given initial conditions and parameters. By @sbfnk in #557 and reviewed by @jamesmbaazam.
-* The function `init_cumulative_fit()` has been deprecated. By @jamesmbaazam in #541 and reviewed by @sbfnk.
-* The interface to generating delay distributions has been completely overhauled. Instead of calling `dist_spec()` users now specify distributions using functions that represent the available distributions, i.e. `LogNormal()`, `Gamma()` and `Fixed()`. Uncertainty is specified using calls of the same nature, to `Normal()`. More information on the underlying design can be found in `inst/dev/design_dist.md` By @sbfnk in #504 and reviewed by @seabbs.
+
 ## Documentation
 
 * Two new vignettes have been added to cover the workflow and example uses. By @sbfnk in #458 and reviewed by @jamesmbaazam.
@@ -43,9 +46,7 @@
 * Replaced descriptions and plot labels to be more general and clearer. By @sbfnk in #621 and reviewed by @jamesmbaazam.
 * Argument choices have been moved into default arguments. By @sbfnk in #622 and reviewed by @seabbs.
 * `simulate_infections()` gained the argument `seeding_time` to change the seeding time. Additionally, the documentation was improved. By @sbfnk in #627 and reviewed by @jamesmbaazam.
-* The model-specific `weigh_delay_priors` argument has been deprecated in favour of delay-specific prior weighting using `weight_priors`. See `generation_time_opts()`, `delay_opts()`, and `trunc_opts()`. By @sbfnk in #630 and reviewed by @jamesmbaazam.
 * A `cmdstanr` backend has been added. By @sbfnk in #537 and #642 and reviewed by @seabbs.
-* All functions now use a `data` argument to pass data. The existing `reported_cases`, `reports`, and `obs` arguments are deprecated and will be removed in v2.0.0. By @jamesmbaazam in #638 and reviewed by @sbfnk.
 
 ## Model changes
 
