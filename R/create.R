@@ -742,7 +742,7 @@ create_stan_args <- function(stan = stan_opts(),
 create_stan_delays <- function(..., time_points = 1L) {
   delays <- list(...)
   ## discretise
-  delays <- map(list(...), discretise)
+  delays <- map(delays, discretise, strict = FALSE)
   ## convolve where appropriate
   delays <- map(delays, collapse)
   ## apply tolerance
