@@ -8,8 +8,11 @@ trunc_opts(dist = Fixed(0), tolerance = 0.001, weight_prior = FALSE)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions reflecting
-the truncation generated using \code{\link[=dist_spec]{dist_spec()}} or \code{\link[=estimate_truncation]{estimate_truncation()}}.
-Default is fixed distribution with maximum 0, i.e. no truncation}
+the truncation. It can be specified using the probability distributions
+interface in \code{EpiNow2} (See \code{?EpiNow2::Distributions}) or estimated using
+\code{\link[=estimate_truncation]{estimate_truncation()}}, which returns a \code{dist} object, suited
+for use here out-of-box. Default is a fixed distribution with maximum 0, i.e.
+no truncation.}
 
 \item{tolerance}{Numeric; the desired tolerance level.}
 

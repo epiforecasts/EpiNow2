@@ -35,8 +35,11 @@ of dates.}
 \item{trunc_dist}{Deprecated; use \code{truncation} instead.}
 
 \item{truncation}{A call to \code{\link[=trunc_opts]{trunc_opts()}} defining the truncation of
-observed data.  Defaults to \code{\link[=trunc_opts]{trunc_opts()}}. See \code{\link[=estimate_truncation]{estimate_truncation()}} for
-an approach to estimating truncation from data.}
+the observed data. Defaults to \code{\link[=trunc_opts]{trunc_opts()}}, i.e. no truncation.  See the
+\code{\link[=estimate_truncation]{estimate_truncation()}} help file for an approach to estimating this from
+data where the \code{dist} list element returned by \code{\link[=estimate_truncation]{estimate_truncation()}} is
+used as the \code{truncation} argument here, thereby propagating the uncertainty
+in the estimate.}
 
 \item{model}{A compiled stan model to override the default model. May be
 useful for package developers or those developing extensions.}
@@ -66,9 +69,11 @@ threshold then the zero is replaced using \code{fill}.}
 }
 \value{
 A list containing: the summary parameters of the truncation
-distribution (\code{dist}), the estimated CMF of the truncation distribution
-(\code{cmf}, can be used to adjusted new data), a \verb{<data.frame>} containing the
-observed truncated data, latest observed data and the adjusted for
+distribution (\code{dist}), which could be passed to the \code{truncation} argument
+of \code{\link[=epinow]{epinow()}}, \code{\link[=regional_epinow]{regional_epinow()}}, and \code{\link[=estimate_infections]{estimate_infections()}}, the
+estimated CMF of the truncation distribution (\code{cmf}, can be used to
+adjusted new data), a \verb{<data.frame>} containing the observed truncated
+data, latest observed data and the adjusted for
 truncation observations (\code{obs}), a \verb{<data.frame>} containing the last
 observed data (\code{last_obs}, useful for plotting and validation), the data
 used for fitting (\code{data}) and the fit object (\code{fit}).
@@ -76,10 +81,12 @@ used for fitting (\code{data}) and the fit object (\code{fit}).
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Estimates a truncation distribution from multiple snapshots of the same
-data source over time. This distribution can then be used in
-\code{\link[=regional_epinow]{regional_epinow()}}, \code{\link[=epinow]{epinow()}}, and \code{\link[=estimate_infections]{estimate_infections()}} to adjust for
-truncated data. See
-\href{https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a}{here}
+data source over time. This distribution can then be used passed to the
+\code{truncation} argument in \code{\link[=regional_epinow]{regional_epinow()}}, \code{\link[=epinow]{epinow()}}, and
+\code{\link[=estimate_infections]{estimate_infections()}} to adjust for truncated data and propagage the
+uncertainty associated with data truncation into the estimates.
+
+See \href{https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a}{here}
 for an example of using this approach on Covid-19 data in England. The
 functionality offered by this function is now available in a more principled
 manner in the \href{https://package.epinowcast.org/}{\code{epinowcast} R package}.
@@ -129,5 +136,14 @@ print(est$obs)
 # validation plot of observations vs estimates
 plot(est)
 
+# Pass the truncation distribution to `epinow()`.
+# Note, we're using the last snapshot as the observed data as it contains
+# all the previous snapshots. Also, we're using the default options for
+# illustrative purposes only.
+out <- epinow(
+  example_truncated[[5]],
+  truncation = est$dist
+)
+plot(out)
 options(old_opts)
 }
