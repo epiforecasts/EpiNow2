@@ -73,7 +73,7 @@ reference:
       - forecast_secondary
       - estimate_delay
       - estimate_truncation
-  - title: Option functions
+  - title: Specify an Argument
     desc: Functions used by estimate_infections
     contents:
       - contains("_opts")
