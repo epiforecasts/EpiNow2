@@ -29,6 +29,7 @@
 * Updated the code in `inst/CITATION` and added a GitHub Actions workflow to auto-generate `citation.cff` so that the two citation files are always in sync with `DESCRIPTION`. By @jamesmbazam in #467, with contributions from @Bisaloo, and reviewed by @seabbs and @sbfnk.
 * Updated the documentation of the `reported_cases` argument in `estimate_infections()` and `confirm` column in the `obs` argument of `estimate_truncation()` to allow `numeric` types, not just `integer`. See #594, by @jamesmbaazam, and reviewed by @sbfnk.
 * Removed the reporting templates that were previously provided. See #604 by @jamesmbaazam, and reviewed by @sbfnk.
+* Internal functions have been tagged as such and will no longer appear in the pkgdown index. By @sbfnk in.
 
 ## Package
 
