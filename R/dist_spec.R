@@ -965,8 +965,12 @@ new_dist_spec <- function(params, distribution) {
     )
   } else {
     ## process min/max first
-    max <- params$max
-    params$max <- NULL
+    if (is.null(params$max)) {
+      max <- Inf
+    } else {
+      max <- params$max
+      params$max <- NULL
+    }
     ## extract parameters and convert all to dist_spec
     params <- extract_params(params, distribution)
     ## fixed distribution
