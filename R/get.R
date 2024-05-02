@@ -6,7 +6,7 @@
 #'  are stored (as produced by [regional_epinow()]).
 #'
 #' @return A named character vector containing the results to plot.
-#' @export
+#' @keywords internal
 get_regions <- function(results_dir) {
   # regions to include - based on folder names
   regions <- list.dirs(results_dir,
@@ -20,6 +20,7 @@ get_regions <- function(results_dir) {
   names(regions) <- regions
   return(regions)
 }
+
 #' Get a Single Raw Result
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -34,7 +35,7 @@ get_regions <- function(results_dir) {
 #' directory.
 #'
 #' @return An R object read in from the targeted `.rds` file
-#' @export
+#' @keywords internal
 get_raw_result <- function(file, region, date,
                            result_dir) {
   file_path <- file.path(result_dir, region, date, file)
@@ -298,7 +299,7 @@ get_incubation_period <- function(disease, source, max_value = 14,
 #'
 #' @importFrom data.table copy setorderv
 #' @importFrom lubridate days
-#' @export
+#' @keywords internal
 get_regions_with_most_reports <- function(data,
                                           time_window = 7,
                                           no_regions = 6) {

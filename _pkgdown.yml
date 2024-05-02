@@ -83,6 +83,7 @@ reference:
     contents:
       - regional_summary
       - regional_runtimes
+      - get_regional_results
   - title: Summarise results
     desc: Functions from summarising results
     contents:
