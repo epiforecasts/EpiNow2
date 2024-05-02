@@ -85,7 +85,6 @@ test_that("estimate_truncation works with zero_threshold set", {
 })
 
 test_that("deprecated arguments are recognised", {
-  options(warn = 2)
   expect_error(estimate_truncation(example_truncated,
     verbose = FALSE, trunc_max = 10
   ), "deprecated")
