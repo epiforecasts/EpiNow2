@@ -35,8 +35,6 @@ save_input <- function(data, target_folder) {
   return(invisible(NULL))
 }
 
-
-
 #' Save Estimated Infections
 #'
 #' @description `r lifecycle::badge("stable")`

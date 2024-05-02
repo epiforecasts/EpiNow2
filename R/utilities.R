@@ -390,7 +390,6 @@ add_day_of_week <- function(dates, week_effect = 7) {
 #' data.table::getDTthreads()
 #' }
 #' @export
-
 set_dt_single_thread <- function() {
   a <- list2env(x = list(dt_previous_threads = data.table::getDTthreads()))
 
