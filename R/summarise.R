@@ -202,7 +202,7 @@ regional_summary <- function(regional_output = NULL,
   if (is.null(regional_output)) {
     if (!is.null(results_dir)) {
       futile.logger::flog.info("Extracting results from: %s", results_dir)
-      regions <- EpiNow2::get_regions(results_dir)
+      regions <- get_regions(results_dir)
       if (is.null(target_date)) {
         target_date <- "latest"
       }
