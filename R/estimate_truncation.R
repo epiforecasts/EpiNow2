@@ -292,6 +292,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
     Normal(params_mean[id], params_sd[id])
   })
   names(parameters) <- natural_params(get_distribution(truncation))
+  parameters$max <- max(truncation)
   out$dist <- new_dist_spec(
     params = parameters,
     distribution = get_distribution(truncation)
