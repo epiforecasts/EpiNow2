@@ -2,8 +2,7 @@
 % Please edit documentation in R/dist_spec.R
 \name{extract_params}
 \alias{extract_params}
-\title{Internal function for extracting given parameter names of a distribution
-from the environment. Called by \code{new_dist_spec}}
+\title{Extract parameter names}
 \usage{
 extract_params(params, distribution)
 }
@@ -16,6 +15,7 @@ extract_params(params, distribution)
 A character vector of parameters and their values.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 Internal function for extracting given parameter names of a distribution
 from the environment. Called by \code{new_dist_spec}
 }

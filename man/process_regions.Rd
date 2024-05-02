@@ -23,3 +23,4 @@ adds summary logging information.
 \seealso{
 \code{\link[=regional_epinow]{regional_epinow()}} \code{\link[=epinow]{epinow()}}
 }
+\keyword{internal}

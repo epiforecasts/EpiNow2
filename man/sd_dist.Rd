@@ -13,6 +13,7 @@ sd_dist(x)
 A vector of standard deviations.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This works out the standard deviation of all the (parametric /
 nonparametric) delay distributions combined in the passed \code{\link[=dist_spec]{dist_spec()}}.
 }

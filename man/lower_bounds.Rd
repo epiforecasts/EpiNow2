@@ -13,6 +13,7 @@ lower_bounds(distribution)
 A numeric vector, the lower bounds.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This is used to avoid sampling parameter values that have no support.
 }
 \examples{

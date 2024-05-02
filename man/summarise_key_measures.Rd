@@ -41,3 +41,4 @@ Used internally by \code{regional_summary}.
 \seealso{
 regional_summary
 }
+\keyword{internal}

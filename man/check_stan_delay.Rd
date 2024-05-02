@@ -13,6 +13,7 @@ check_stan_delay(dist)
 Called for its side effects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 \code{check_stan_delay()} checks that the supplied data is a \verb{<dist_spec>},
 that it is a supported distribution, and that is has a finite maximum.
 }

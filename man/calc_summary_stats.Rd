@@ -27,3 +27,4 @@ calc_summary_stats(samples)
 #  by type
 calc_summary_stats(samples, summarise_by = "type")
 }
+\keyword{internal}

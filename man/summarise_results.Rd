@@ -36,3 +36,4 @@ A list of summary data
 Used internally by \code{regional_summary} to produce a summary table of results.
 May be streamlined in later releases.
 }
+\keyword{internal}

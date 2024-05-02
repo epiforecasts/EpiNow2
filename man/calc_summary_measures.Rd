@@ -36,3 +36,4 @@ calc_summary_measures(samples)
 #  by type
 calc_summary_measures(samples, summarise_by = "type")
 }
+\keyword{internal}

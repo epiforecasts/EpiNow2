@@ -16,6 +16,7 @@ A \verb{<dist_spec>} where probability masses below the threshold level
 have been removed
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This removes any part of the tail of the nonparametric distributions in the
 <dist_spec> where the probability mass is below the threshold level.
 }

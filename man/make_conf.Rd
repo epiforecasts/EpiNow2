@@ -26,3 +26,4 @@ Combines a list of values into formatted credible intervals.
 value <- list(median = 2, lower_90 = 1, upper_90 = 3)
 make_conf(value)
 }
+\keyword{internal}

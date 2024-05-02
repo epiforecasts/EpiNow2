@@ -18,3 +18,4 @@ A numeric array
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Allocate delays for stan. Used in \code{\link[=delay_opts]{delay_opts()}}.
 }
+\keyword{internal}

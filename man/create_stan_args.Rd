@@ -50,3 +50,4 @@ create_stan_args()
 # increasing warmup
 create_stan_args(stan = stan_opts(warmup = 1000))
 }
+\keyword{internal}

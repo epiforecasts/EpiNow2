@@ -115,7 +115,7 @@ A list of output from estimate_infections with additional elements
 summarising results and reporting errors if they have occurred.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This function wraps the functionality of \code{\link[=estimate_infections]{estimate_infections()}} in order
 to estimate Rt and cases by date of infection and forecast these infections
 into the future. In addition to the functionality of

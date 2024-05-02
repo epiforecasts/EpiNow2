@@ -40,3 +40,4 @@ create_obs_model(obs_opts(week_length = 3), dates = dates)
 \seealso{
 \code{\link[=obs_opts]{obs_opts()}}
 }
+\keyword{internal}

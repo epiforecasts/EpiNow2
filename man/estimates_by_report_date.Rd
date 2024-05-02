@@ -30,3 +30,4 @@ date of report.
 Either extracts or converts reported cases from an input data table. For
 output from \code{estimate_infections} this is a simple filtering step.
 }
+\keyword{internal}

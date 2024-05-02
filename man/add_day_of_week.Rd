@@ -25,3 +25,4 @@ add_day_of_week(dates, 7)
 # Add shorter week
 add_day_of_week(dates, 4)
 }
+\keyword{internal}

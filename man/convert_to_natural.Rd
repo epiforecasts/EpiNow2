@@ -16,6 +16,7 @@ A list with two elements, \code{params_mean} and \code{params_sd}, containing
 mean and sd of natural parameters.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This is used for preprocessing before generating a \code{dist_spec} object
 from a given set of parameters and distribution
 }

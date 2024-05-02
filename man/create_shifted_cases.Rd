@@ -61,3 +61,4 @@ cases <- data.table::rbindlist(list(
  ))
 create_shifted_cases(cases, shift, smoothing_window, horizon)
 }
+\keyword{internal}

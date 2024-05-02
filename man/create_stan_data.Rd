@@ -57,3 +57,4 @@ create_stan_data(
  backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
 )
 }
+\keyword{internal}

@@ -39,3 +39,4 @@ create_rt_data(rt_opts(use_breakpoints = TRUE), breakpoints = rep(1, 10))
 \seealso{
 rt_settings
 }
+\keyword{internal}

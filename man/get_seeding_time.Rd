@@ -26,3 +26,4 @@ An integer seeding time
 The seeding time is set to the mean of the specified delays, constrained
 to be at least the maximum generation time
 }
+\keyword{internal}

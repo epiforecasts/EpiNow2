@@ -49,3 +49,4 @@ which point 0 cases are replaced with a user supplied value (defaults to
 \examples{
 create_clean_reported_cases(example_confirmed, 7)
 }
+\keyword{internal}
