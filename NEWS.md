@@ -29,6 +29,7 @@
 * Updated the code in `inst/CITATION` and added a GitHub Actions workflow to auto-generate `citation.cff` so that the two citation files are always in sync with `DESCRIPTION`. By @jamesmbazam in #467, with contributions from @Bisaloo, and reviewed by @seabbs and @sbfnk.
 * Updated the documentation of the `data` argument in `estimate_infections()` and `confirm` column in the `obs` argument of `estimate_truncation()` to allow `numeric` types, not just `integer`. See #594, by @jamesmbaazam, and reviewed by @sbfnk.
 * Removed the reporting templates that were previously provided. See #604 by @jamesmbaazam, and reviewed by @sbfnk.
+* Clarified how estimated or specified uncertainty around data truncation can be passed to `epinow()`, `regional_epinow()`, and `estimate_infections()` using the `truncation` argument. By @jamesmbaazam in #644 and reviewed by @sbnfk.
 * Internal functions have been removed from the pkgdown index. By @sbfnk in #735.
 
 ## Package

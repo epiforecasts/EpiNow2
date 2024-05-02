@@ -252,8 +252,11 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
 #' estimate these distributions.
 #'
 #' @param dist A delay distribution or series of delay distributions reflecting
-#' the truncation generated using [dist_spec()] or [estimate_truncation()].
-#' Default is fixed distribution with maximum 0, i.e. no truncation
+#' the truncation. It can be specified using the probability distributions
+#' interface in `EpiNow2` (See `?EpiNow2::Distributions`) or estimated using
+#' [estimate_truncation()], which returns a `dist` object, suited
+#' for use here out-of-box. Default is a fixed distribution with maximum 0, i.e.
+#' no truncation.
 #' @param weight_prior Logical; if TRUE, the truncation prior will be weighted
 #'   by the number of observation data points, in doing so approximately placing
 #'   an independent prior at each time step and usually preventing the
