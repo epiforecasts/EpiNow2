@@ -3,14 +3,14 @@
 ## Major changes
 
 * Delay discretisation is now based on a two-day censoring window (with uniform probability in between), based on recommendations in [Park et al, medRxiv, 2024](https://doi.org/10.1101/2024.01.12.24301247). By @sbfnk in #518 and reviewed by @jamesmbaazam.
-* The interface to generating delay distributions has been completely overhauled. Instead of calling `dist_spec()` users now specify distributions using functions that represent the available distributions, i.e. `LogNormal()`, `Gamma()` and `Fixed()`. Uncertainty is specified using calls of the same nature, to `Normal()`. More information on the underlying design can be found in `inst/dev/design_dist.md` By @sbfnk in #504 and reviewed by @seabbs.
+* The interface to generating delay distributions has been completely overhauled. Instead of calling `dist_spec()` users now specify distributions using functions that represent the available distributions, i.e. `LogNormal()`, `Gamma()` and `Fixed()`. See `?EpiNow2::Distributions`. Uncertainty is specified using calls of the same nature, to `Normal()`. More information on the underlying design can be found in `inst/dev/design_dist.md` By @sbfnk in #504 and reviewed by @seabbs.
 
 ## Deprecations
 
 * The functions `sample_approx_dist()`, `report_cases()`, and `adjust_infection_reports()` have been deprecated as the functionality they provide can now be achieved with `simulate_secondary()`. See #597 by @jamesmbaazam and reviewed by @sbfnk.
 * The utility function `update_list()` has been deprecated in favour of `utils::modifyList()` because it comes with an installation of R. By @jamesmbaazam in #491 and reviewed by @seabbs.
 * The `fixed` argument to `dist_spec` has been deprecated and replaced by a `fix_dist()` function. By @sbfnk in #503 and reviewed by @seabbs.
-* The functions `get_dist`, `get_generation_time`, `get_incubation_period` have been deprecated and replaced with examples. By @sbfnk in #481 and reviewed by @seabbs.
+* The functions `get_dist()`, `get_generation_time()`, `get_incubation_period()` have been deprecated and replaced with examples. By @sbfnk in #481 and reviewed by @seabbs.
 * The function `init_cumulative_fit()` has been deprecated. By @jamesmbaazam in #541 and reviewed by @sbfnk.
 * The model-specific `weigh_delay_priors` argument has been deprecated in favour of delay-specific prior weighting using `weight_priors`. See `generation_time_opts()`, `delay_opts()`, and `trunc_opts()`. By @sbfnk in #630 and reviewed by @jamesmbaazam.
 * All functions now use a `data` argument to pass data. The existing `reported_cases`, `reports`, and `obs` arguments are deprecated and will be removed in v2.0.0. By @jamesmbaazam in #638 and reviewed by @sbfnk.
@@ -27,9 +27,9 @@
 * Removed references to the no longer existing `forecast_infections` function. By @sbfnk in #460 and reviewed by @seabbs.
 * The contribution guide has been improved to include more detail on ways to contribute new features/enhancements, report bugs, and improve or suggest vignettes. By @jamesmbaazam in #464 and reviewed by @seabbs.
 * Updated the code in `inst/CITATION` and added a GitHub Actions workflow to auto-generate `citation.cff` so that the two citation files are always in sync with `DESCRIPTION`. By @jamesmbazam in #467, with contributions from @Bisaloo, and reviewed by @seabbs and @sbfnk.
-* Updated the documentation of the `reported_cases` argument in `estimate_infections()` and `confirm` column in the `obs` argument of `estimate_truncation()` to allow `numeric` types, not just `integer`. See #594, by @jamesmbaazam, and reviewed by @sbfnk.
+* Updated the documentation of the `data` argument in `estimate_infections()` and `confirm` column in the `obs` argument of `estimate_truncation()` to allow `numeric` types, not just `integer`. See #594, by @jamesmbaazam, and reviewed by @sbfnk.
 * Removed the reporting templates that were previously provided. See #604 by @jamesmbaazam, and reviewed by @sbfnk.
-* Internal functions have been tagged as such and will no longer appear in the pkgdown index. By @sbfnk in #735.
+* Internal functions have been removed from the pkgdown index. By @sbfnk in #735.
 
 ## Package
 
