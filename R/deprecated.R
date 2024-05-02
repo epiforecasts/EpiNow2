@@ -234,7 +234,7 @@ dist_spec <- function(distribution = c(
         "Please use distribution functions such as `Gamma()` or `Lognormal()` ",
         "instead."
       ),
-      "The function will become internal only in version 2.0.0."
+      "The function will become internal only in the next version."
     )
   )
   ## check for deprecated parameters
@@ -352,7 +352,7 @@ gamma_dist_def <- function(shape, shape_sd,
                            max_value, samples) {
   lifecycle::deprecate_warn(
     "1.5.0", "gamma_dist_def()", "Gamma()",
-    "The function will be removed completely in version 2.0.0."
+    "The function will be removed completely in the next version."
   )
 
   if (missing(shape) && missing(scale) && !missing(mean) && !missing(sd)) {
@@ -520,7 +520,7 @@ lognorm_dist_def <- function(mean, mean_sd,
                              to_log = FALSE) {
   lifecycle::deprecate_warn(
     "1.5.0", "lognorm_dist_def()", "LogNormal()",
-    "The function will be removed completely in version 2.0.0."
+    "The function will be removed completely in the next version."
   )
 
   transform_mean <- function(mu, sig) {
@@ -641,7 +641,7 @@ report_cases <- function(case_estimates,
     details = c(
       "See equivalent examples using `simulate_secondary()`",
       "in ?report_cases.",
-      "This function will be removed completely in version 2.0.0."
+      "This function will be removed completely in the next version."
     )
   )
   samples <- length(unique(case_estimates$sample))

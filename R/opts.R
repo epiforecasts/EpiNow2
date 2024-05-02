@@ -89,7 +89,7 @@ generation_time_opts <- function(dist = Fixed(1), ...,
     deprecate_warn(
       "1.4.0", "generation_time_opts(prior_weight)",
       "generation_time_opts(weight_prior)",
-      "This argument will be removed in version 2.0.0."
+      "This argument will be removed in the next version."
     )
   }
   if (deprecated_options_given) {
@@ -99,7 +99,7 @@ generation_time_opts <- function(dist = Fixed(1), ...,
       "This behaviour has changed from previous versions of `EpiNow2` and ",
       "any code using it may need to be updated as any other ways of ",
       "specifying the generation time are deprecated and will be removed in ",
-      "version 2.0.0. For examples and more ",
+      "the next version. For examples and more ",
       "information, see the relevant documentation pages using ",
       "`?generation_time_opts`")
   }
@@ -239,7 +239,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
       "This behaviour has changed from previous versions of `EpiNow2` and ",
       "any code using it may need to be updated as any other ways of ",
       "specifying delays are deprecated and will be removed in ",
-      "version 2.0.0. For examples and more ",
+      "the next version. For examples and more ",
       "information, see the relevant documentation pages using ",
       "`?delay_opts`."
     )
@@ -295,7 +295,7 @@ trunc_opts <- function(dist = Fixed(0), tolerance = 0.001,
       "This behaviour has changed from previous versions of `EpiNow2` and ",
       "any code using it may need to be updated as any other ways of ",
       "specifying delays are deprecated and will be removed in ",
-      "version 2.0.0. For examples and more ",
+      "the next version. For examples and more ",
       "information, see the relevant documentation pages using ",
       "`?trunc_opts`"
     )
@@ -932,7 +932,7 @@ rstan_opts <- function(object = NULL,
 #' James Scott.
 #'
 #' This argument is deprecated and the default (NULL) will be used from
-#' version 2.0.0.
+#' the next version.
 #'
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be
 #' returned.
@@ -1012,7 +1012,7 @@ stan_opts <- function(object = NULL,
       when = "1.5.0",
       what = "stan_opts(init_fit)",
       details = paste("This argument is deprecated and the default (NULL)",
-                      "will be used from version 2.0.0.")
+                      "will be used from the next version.")
     )
     if (is.character(init_fit)) {
       init_fit <- arg_match(init_fit, values = "cumulative")

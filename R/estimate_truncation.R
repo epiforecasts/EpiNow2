@@ -123,7 +123,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
       "1.5.0",
       "estimate_truncation(obs)",
       "estimate_truncation(data)",
-      "The argument will be removed completely in version 2.0.0."
+      "The argument will be removed completely in the next version."
     )
     data <- obs
   }
@@ -139,7 +139,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
       "1.5.0",
       "estimate_truncation(weigh_delay_priors)",
       "trunc_opts(weight_prior)",
-      detail = "This argument will be removed completely in version 2.0.0"
+      detail = "This argument will be removed completely in the next version"
     )
   }
    # Validate inputs

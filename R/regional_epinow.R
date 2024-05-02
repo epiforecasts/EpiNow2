@@ -124,7 +124,7 @@ regional_epinow <- function(data,
       "1.5.0",
       "regional_epinow(reported_cases)",
       "regional_epinow(data)",
-      "The argument will be removed completely in version 2.0.0."
+      "The argument will be removed completely in the next version."
     )
     data <- reported_cases
   }

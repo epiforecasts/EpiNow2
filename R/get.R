@@ -185,7 +185,7 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
         "Please use distribution functions such as `Gamma()` or `Lognormal()`",
         "instead."
       ),
-      "The function will be removed completely in version 2.0.0."
+      "The function will be removed completely in the next version."
     )
   )
   target_disease <- disease
@@ -232,7 +232,7 @@ get_generation_time <- function(disease, source, max_value = 14,
         "Please use distribution functions such as `Gamma()` or `Lognormal()`",
         "instead."
       ),
-      "The function will be removed completely in version 2.0.0.",
+      "The function will be removed completely in the next version.",
       paste(
         "To obtain the previous estimate by Ganyani et al. (2020) use",
         "`example_generation_time`."
@@ -267,7 +267,7 @@ get_incubation_period <- function(disease, source, max_value = 14,
         "Please use distribution functions such as `Gamma()` or `Lognormal()`",
         "instead."
       ),
-      "The function will be removed completely in version 2.0.0.",
+      "The function will be removed completely in the next version.",
      paste(
       "To obtain the previous estimate by Ganyani et al. (2020) use",
       "`example_incubation_period`."
