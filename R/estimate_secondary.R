@@ -166,7 +166,7 @@ estimate_secondary <- function(data,
       "1.5.0",
       "estimate_secondary(reports)",
       "estimate_secondary(data)",
-      "The argument will be removed completely in version 2.0.0."
+      "The argument will be removed completely in the next version."
     )
     data <- reports
   }

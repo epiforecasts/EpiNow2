@@ -18,3 +18,4 @@ A data table
 Convenience function that sets the number of \code{{data.table}} cores to 1 and
 maps input to be a \code{{data.table}}
 }
+\keyword{internal}

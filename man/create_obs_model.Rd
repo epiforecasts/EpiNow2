@@ -22,6 +22,7 @@ Takes the output of \code{\link[=obs_opts]{obs_opts()}} and converts it into a l
 by stan.
 }
 \examples{
+\dontrun{
 dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
 # default observation model data
 create_obs_model(dates = dates)
@@ -37,6 +38,8 @@ create_obs_model(
 # Apply a custom week week length
 create_obs_model(obs_opts(week_length = 3), dates = dates)
 }
+}
 \seealso{
 \code{\link[=obs_opts]{obs_opts()}}
 }
+\keyword{internal}

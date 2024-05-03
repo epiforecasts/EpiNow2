@@ -136,7 +136,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
       "1.5.0",
       "estimate_truncation(obs)",
       "estimate_truncation(data)",
-      "The argument will be removed completely in version 2.0.0."
+      "The argument will be removed completely in the next version."
     )
     data <- obs
   }
@@ -152,7 +152,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
       "1.5.0",
       "estimate_truncation(weigh_delay_priors)",
       "trunc_opts(weight_prior)",
-      detail = "This argument will be removed completely in version 2.0.0"
+      detail = "This argument will be removed completely in the next version"
     )
   }
    # Validate inputs
@@ -165,7 +165,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
-  ## code block to remove in EpiNow2 2.0.0
+  ## code block to remove in next EpiNow2 version
   construct_trunc <- FALSE
   if (!missing(trunc_max)) {
     if (!missing(truncation)) {
@@ -178,7 +178,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
         "`max_truncation` and `trunc_max` arguments are both given. ",
         "Use only `truncation` instead.")
     }
-    deprecate_warn(
+    deprecate_stop(
       "1.4.0",
       "estimate_truncation(trunc_max)",
       "estimate_truncation(truncation)"
@@ -191,7 +191,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
         "`max_truncation` and `truncation` arguments are both given. ",
         "Use only `truncation` instead.")
     }
-    deprecate_warn(
+    deprecate_stop(
       "1.4.0",
       "estimate_truncation(max_truncation)",
       "estimate_truncation(truncation)"
@@ -206,7 +206,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
         "`trunc_dist` and `truncation` arguments are both given. ",
         "Use only `truncation` instead.")
     }
-    deprecate_warn(
+    deprecate_stop(
       "1.4.0",
       "estimate_truncation(trunc_dist)",
       "estimate_truncation(truncation)"
@@ -250,7 +250,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
     confirm := NULL
   ])
   obs <- purrr::reduce(obs, merge, all = TRUE)
-  obs_start <- max(nrow(obs) - trunc_max - sum(is.na(obs$`1`)) + 1, 1)
+  obs_start <- max(nrow(obs) - max(truncation) - sum(is.na(obs$`1`)) + 1, 1)
   obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
   obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
   obs_data <- as.matrix(obs_data[obs_start:.N])
@@ -318,7 +318,7 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
     ]
   link_obs <- function(index) {
     target_obs <- dirty_obs[[index]][, index := .N - 0:(.N - 1)]
-    target_obs <- target_obs[index < trunc_max]
+    target_obs <- target_obs[index < max(truncation)]
     estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
     estimates <- estimates[, lapply(.SD, as.integer)]
     estimates <- estimates[, index := .N - 0:(.N - 1)]

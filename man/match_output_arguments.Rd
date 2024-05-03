@@ -31,3 +31,4 @@ A logical vector of named output arguments
 Match user supplied arguments with supported options and return a logical
 list for internal usage.
 }
+\keyword{internal}

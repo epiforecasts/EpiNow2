@@ -13,6 +13,7 @@
 Combined delay distributions (with class \verb{<dist_spec>})
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This combines the parameters so that they can be fed as multiple delay
 distributions to \code{\link[=epinow]{epinow()}} or \code{\link[=estimate_infections]{estimate_infections()}}.
 }

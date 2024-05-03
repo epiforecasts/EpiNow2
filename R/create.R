@@ -23,9 +23,11 @@
 #' @inheritParams estimate_infections
 #' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases
-#' @export
+#' @keywords internal
 #' @examples
+#' \dontrun{
 #' create_clean_reported_cases(example_confirmed, 7)
+#' }
 create_clean_reported_cases <- function(data, horizon = 0,
                                         filter_leading_zeros = TRUE,
                                         zero_threshold = Inf,
@@ -126,8 +128,9 @@ create_complete_cases <- function(cases) {
 #' @importFrom stats lm
 #' @importFrom runner mean_run
 #' @return A `<data.frame>` for shifted reported cases
-#' @export
+#' @keywords internal
 #' @examples
+#' \dontrun{
 #' shift <- 7
 #' horizon <- 7
 #' smoothing_window <- 14
@@ -146,6 +149,7 @@ create_complete_cases <- function(cases) {
 #'    cases
 #'  ))
 #' create_shifted_cases(cases, shift, smoothing_window, horizon)
+#' }
 create_shifted_cases <- function(data, shift,
                                  smoothing_window, horizon) {
   shifted_reported_cases <- data.table::copy(data)[
@@ -211,6 +215,7 @@ create_shifted_cases <- function(data, shift,
 #'
 #' @param delay Numeric mean delay
 #' @importFrom rlang arg_match
+#' @keywords internal
 #' @return A list containing a logical called fixed and an integer called from
 create_future_rt <- function(future = c("latest", "project", "estimate"),
                              delay = 0) {
@@ -245,8 +250,9 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' @seealso rt_settings
 #' @return A list of settings defining the time-varying reproduction number
 #' @inheritParams create_future_rt
-#' @export
+#' @keywords internal
 #' @examples
+#' \dontrun{
 #' # default Rt data
 #' create_rt_data()
 #'
@@ -255,6 +261,7 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #'
 #' # using breakpoints
 #' create_rt_data(rt_opts(use_breakpoints = TRUE), breakpoints = rep(1, 10))
+#' }
 create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
                            delay = 0, horizon = 0) {
   # Define if GP is on or off
@@ -311,9 +318,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #' @seealso backcalc_opts
 #' @importFrom data.table fcase
 #' @return A list of settings defining the Gaussian process
-#' @export
-#' @examples
-#' create_backcalc_data(backcalc = backcalc_opts())
+#' @keywords internal
 create_backcalc_data <- function(backcalc = backcalc_opts()) {
   data <- list(
    rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
@@ -339,8 +344,9 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
 #' @importFrom data.table fcase
 #' @seealso [gp_opts()]
 #' @return A list of settings defining the Gaussian process
-#' @export
+#' @keywords internal
 #' @examples
+#' \dontrun{
 #' # define input data required
 #' data <- list(
 #'   t = 30,
@@ -356,6 +362,7 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
 #'
 #' # custom lengthscale
 #' create_gp_data(gp_opts(ls_mean = 14), data)
+#' }
 create_gp_data <- function(gp = gp_opts(), data) {
   # Define if GP is on or off
   if (is.null(gp)) {
@@ -408,8 +415,9 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #' @seealso [obs_opts()]
 #' @return A list of settings ready to be passed to stan defining
 #' the Observation Model
-#' @export
+#' @keywords internal
 #' @examples
+#' \dontrun{
 #' dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
 #' # default observation model data
 #' create_obs_model(dates = dates)
@@ -424,6 +432,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #'
 #' # Apply a custom week week length
 #' create_obs_model(obs_opts(week_length = 3), dates = dates)
+#' }
 create_obs_model <- function(obs = obs_opts(), dates) {
   data <- list(
     model_type = as.numeric(obs$family == "negbin"),
@@ -464,12 +473,14 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @importFrom stats lm
 #' @importFrom purrr safely
 #' @return A list of stan data
-#' @export
+#' @keywords internal
 #' @examples
+#' \dontrun{
 #' create_stan_data(
 #'  example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
 #'  backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
 #' )
+#' }
 create_stan_data <- function(data, seeding_time,
                              rt, gp, obs, horizon,
                              backcalc, shifted_cases) {
@@ -573,7 +584,7 @@ create_delay_inits <- function(data) {
 #' @importFrom purrr map2_dbl
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom data.table fcase
-#' @export
+#' @keywords internal
 create_initial_conditions <- function(data) {
   init_fun <- function() {
     out <- create_delay_inits(data)
@@ -673,13 +684,15 @@ create_initial_conditions <- function(data) {
 #' @importFrom utils modifyList
 #'
 #' @return A list of stan arguments
-#' @export
+#' @keywords internal
 #' @examples
+#' \dontrun{
 #' # default settings
 #' create_stan_args()
 #'
 #' # increasing warmup
 #' create_stan_args(stan = stan_opts(warmup = 1000))
+#' }
 create_stan_args <- function(stan = stan_opts(),
                              data = NULL,
                              init = "random",
@@ -723,6 +736,7 @@ create_stan_args <- function(stan = stan_opts(),
 ##'   determines weight associated with weighted delay priors; default: 1
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom purrr transpose map flatten
+##' @keywords internal
 create_stan_delays <- function(..., time_points = 1L) {
   delays <- list(...)
   ## discretise

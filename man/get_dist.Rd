@@ -30,3 +30,4 @@ using functions such as \code{\link[=Gamma]{Gamma()}} or \code{\link[=LogNormal]
 \seealso{
 \code{\link[=dist_spec]{dist_spec()}}
 }
+\keyword{internal}

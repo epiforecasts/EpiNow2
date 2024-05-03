@@ -11,7 +11,7 @@
 #' A previous function called [simulate_infections()] that simulates from a
 #' given model fit has been renamed [forecast_infections()]. Using
 #' [simulate_infections()] with existing estimates is now deprecated. This
-#' option will be removed in version 2.0.0.
+#' option will be removed in the next version.
 #' @param R a data frame of reproduction numbers (column `R`) by date (column
 #'   `date`). Column `R` must be numeric and `date` must be in date format. If
 #'   not all days between the first and last day in the `date` are present,
@@ -41,7 +41,6 @@
 #' @inheritParams estimate_infections
 #' @inheritParams rt_opts
 #' @inheritParams stan_opts
-#' @importFrom lifecycle deprecate_warn
 #' @importFrom checkmate assert_data_frame assert_date assert_numeric
 #'   assert_subset assert_integer
 #' @importFrom data.table data.table merge.data.table nafill rbindlist
@@ -82,7 +81,7 @@ simulate_infections <- function(estimates, R, initial_infections,
       "forecast_infections()",
       details = paste0(
         "The `estimates` option will be removed from [simulate_infections()] ",
-        "in version 2.0.0."
+        "in the next version."
       )
     )
     return(forecast_infections(estimates = estimates, ...))

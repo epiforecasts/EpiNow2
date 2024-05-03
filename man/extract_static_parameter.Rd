@@ -18,3 +18,4 @@ value
 \description{
 Extract Samples from a Parameter with a Single Dimension
 }
+\keyword{internal}

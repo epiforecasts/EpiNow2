@@ -45,7 +45,7 @@ This implementation is based on the approach taken in
 James Scott.
 
 This argument is deprecated and the default (NULL) will be used from
-version 2.0.0.}
+the next version.}
 
 \item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be
 returned.}

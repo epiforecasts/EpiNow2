@@ -65,3 +65,4 @@ def <- gamma_dist_def(
 print(def)
 def$params[[1]]
 }
+\keyword{internal}

@@ -16,6 +16,7 @@ new_dist_spec(params, distribution)
 A \code{dist_spec} of the given specification.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This will convert all parameters to natural parameters before generating
 a \code{dist_spec}. If they have uncertainty this will be done using sampling.
 }

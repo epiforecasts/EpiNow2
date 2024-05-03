@@ -22,3 +22,4 @@ A list of parameters some allocated to be empty
 Allocate missing parameters to be empty two dimensional arrays. Used
 internally by \code{\link[=forecast_infections]{forecast_infections()}}.
 }
+\keyword{internal}

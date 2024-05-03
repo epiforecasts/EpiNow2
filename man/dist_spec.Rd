@@ -57,3 +57,4 @@ functionality is still used internally). Construct distributions using
 the corresponding distribution function such as \code{\link[=Gamma]{Gamma()}}, \code{\link[=LogNormal]{LogNormal()}},
 \code{\link[=Normal]{Normal()}} or \code{\link[=Fixed]{Fixed()}} instead.
 }
+\keyword{internal}

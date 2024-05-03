@@ -183,8 +183,8 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 
 #' Creates a delay distribution as the sum of two other delay distributions.
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' @return A delay distribution representing the sum of the two delays
-
 #' @param e1 The first delay distribution (of type [dist_spec()]) to
 #' combine.
 #'
@@ -210,6 +210,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 
 #' Combines multiple delay distributions for further processing
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' This combines the parameters so that they can be fed as multiple delay
 #' distributions to [epinow()] or [estimate_infections()].
 #'
@@ -245,6 +246,7 @@ c.dist_spec <- function(...) {
 
 #' Returns the mean of one or more delay distribution
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' This works out the mean of all the (parametric / nonparametric) delay
 #' distributions combined in the passed [dist_spec()] (ignoring any uncertainty
 #' in parameters)
@@ -308,6 +310,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 
 #' Returns the standard deviation of one or more delay distribution
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' This works out the standard deviation of all the (parametric /
 #' nonparametric) delay distributions combined in the passed [dist_spec()].
 #'
@@ -365,6 +368,7 @@ sd_dist <- function(x) {
 
 #' Returns the maximum of one or more delay distribution
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' This works out the maximum of all the (parametric / nonparametric) delay
 #' distributions combined in the passed [dist_spec()] (ignoring any uncertainty
 #' in parameters)
@@ -402,6 +406,7 @@ max.dist_spec <- function(x, ...) {
 
 #' Discretise a <dist_spec>
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' By default it will discretise all the distributions it can discretise
 #' (i.e. those with finite support and constant parameters).
 #' @title Discretise a <dist_spec>
@@ -465,6 +470,7 @@ discretize <- discretise
 
 #' Collapse nonparametric distributions in a <dist_spec>
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' This convolves any consecutive nonparametric distributions contained
 #' in the <dist_spec>.
 #' @param x A `<dist_spec>`
@@ -513,6 +519,7 @@ collapse <- function(x) {
 
 #' Applies a threshold to all nonparametric distributions in a <dist_spec>
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' This removes any part of the tail of the nonparametric distributions in the
 #' <dist_spec> where the probability mass is below the threshold level.
 #' @param x A `<dist_spec>`
@@ -545,6 +552,7 @@ apply_tolerance <- function(x, tolerance) {
 
 #' Prints the parameters of one or more delay distributions
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' This displays the parameters of the uncertain and probability mass
 #' functions of fixed delay distributions combined in the passed [dist_spec()].
 #' @param x The `<dist_spec>` to use
@@ -565,7 +573,7 @@ apply_tolerance <- function(x, tolerance) {
 print.dist_spec <- function(x, ...) {
   .print.dist_spec(x, indent = 0, ...)
 }
-
+#' @keywords internal
 .print.dist_spec <- function(x, indent, ...) {
   indent_str <- strrep(" ", indent)
   if (length(x) > 1) {
@@ -615,6 +623,7 @@ print.dist_spec <- function(x, ...) {
 
 #' Plot PMF and CDF for a dist_spec object
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' This function takes a `<dist_spec>` object and plots its probability mass
 #' function (PMF) and cumulative distribution function (CDF) using `{ggplot2}`.
 #' Note that currently uncertainty in distributions is not plot.
@@ -694,6 +703,7 @@ plot.dist_spec <- function(x, ...) {
 
 #' Extract a single element of a composite `<dist_spec>`
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' @param x A composite `dist_spec` object
 #' @param i The index to extract
 #' @return A single `dist_spec` object
@@ -722,6 +732,7 @@ extract_single_dist <- function(x, i) {
 
 #' Fix the parameters of a `<dist_spec>`
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' If the given `<dist_spec>` has any uncertainty, it is removed and the
 #' corresponding distribution converted into a fixed one.
 #' @return A `<dist_spec>` object without uncertainty
@@ -877,6 +888,7 @@ NonParametric <- function(pmf) {
 
 #' Get the names of the natural parameters of a distribution
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' These are the parameters used in the stan models. All other parameter
 #' representations are converted to these using [convert_to_natural()] before
 #' being passed to the stan models.
@@ -902,6 +914,7 @@ natural_params <- function(distribution) {
 
 #' Get the lower bounds of the parameters of a distribution
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' This is used to avoid sampling parameter values that have no support.
 #' @return A numeric vector, the lower bounds.
 #' @inheritParams natural_params
@@ -923,6 +936,8 @@ lower_bounds <- function(distribution) {
   return(ret)
 }
 
+#' Extract parameter names
+#' @description `r lifecycle::badge("experimental")`
 #' Internal function for extracting given parameter names of a distribution
 #' from the environment. Called by `new_dist_spec`
 #'
@@ -945,6 +960,7 @@ extract_params <- function(params, distribution) {
 #' Internal function for generating a `dist_spec` given parameters and a
 #' distribution.
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' This will convert all parameters to natural parameters before generating
 #' a `dist_spec`. If they have uncertainty this will be done using sampling.
 #' @param params Parameters of the distribution (including `max`)
@@ -1039,6 +1055,7 @@ new_dist_spec <- function(params, distribution) {
 
 #' Internal function for converting parameters to natural parameters.
 #'
+#' @description `r lifecycle::badge("experimental")`
 #' This is used for preprocessing before generating a `dist_spec` object
 #' from a given set of parameters and distribution
 #' @param params A numerical named parameter vector

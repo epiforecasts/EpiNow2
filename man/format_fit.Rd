@@ -27,3 +27,4 @@ A list of samples and summarised posterior parameter estimates.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Summaries posterior samples and adds additional custom variables.
 }
+\keyword{internal}

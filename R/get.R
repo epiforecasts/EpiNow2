@@ -6,7 +6,7 @@
 #'  are stored (as produced by [regional_epinow()]).
 #'
 #' @return A named character vector containing the results to plot.
-#' @export
+#' @keywords internal
 get_regions <- function(results_dir) {
   # regions to include - based on folder names
   regions <- list.dirs(results_dir,
@@ -20,6 +20,7 @@ get_regions <- function(results_dir) {
   names(regions) <- regions
   return(regions)
 }
+
 #' Get a Single Raw Result
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -34,7 +35,7 @@ get_regions <- function(results_dir) {
 #' directory.
 #'
 #' @return An R object read in from the targeted `.rds` file
-#' @export
+#' @keywords internal
 get_raw_result <- function(file, region, date,
                            result_dir) {
   file_path <- file.path(result_dir, region, date, file)
@@ -90,7 +91,7 @@ get_regional_results <- function(regional_output,
     # find all regions
     regions <- get_regions(results_dir)
 
-    load_data <- purrr::safely(EpiNow2::get_raw_result) # nolint
+    load_data <- purrr::safely(get_raw_result) # nolint
 
     # get estimates
     get_estimates_file <- function(samples_path, summarised_path) {
@@ -152,6 +153,7 @@ get_regional_results <- function(regional_output,
   }
   return(out)
 }
+
 #' Get a Literature Distribution
 #'
 #'
@@ -175,6 +177,7 @@ get_regional_results <- function(regional_output,
 #'
 #' @seealso [dist_spec()]
 #' @export
+#' @keywords internal
 get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
   lifecycle::deprecate_warn(
     "1.5.0", "get_dist()",
@@ -183,7 +186,7 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
         "Please use distribution functions such as `Gamma()` or `Lognormal()`",
         "instead."
       ),
-      "The function will be removed completely in version 2.0.0."
+      "The function will be removed completely in the next version."
     )
   )
   target_disease <- disease
@@ -220,6 +223,7 @@ get_dist <- function(data, disease, source, max_value = 14, fixed = FALSE) {
 #' @inherit get_dist
 #' @export
 #' @seealso [dist_spec()]
+#' @keywords internal
 get_generation_time <- function(disease, source, max_value = 14,
                                 fixed = FALSE) {
   lifecycle::deprecate_warn(
@@ -229,7 +233,7 @@ get_generation_time <- function(disease, source, max_value = 14,
         "Please use distribution functions such as `Gamma()` or `Lognormal()`",
         "instead."
       ),
-      "The function will be removed completely in version 2.0.0.",
+      "The function will be removed completely in the next version.",
       paste(
         "To obtain the previous estimate by Ganyani et al. (2020) use",
         "`example_generation_time`."
@@ -254,6 +258,7 @@ get_generation_time <- function(disease, source, max_value = 14,
 #' @inheritParams get_dist
 #' @inherit get_dist
 #' @export
+#' @keywords internal
 get_incubation_period <- function(disease, source, max_value = 14,
                                   fixed = FALSE) {
   lifecycle::deprecate_warn(
@@ -263,7 +268,7 @@ get_incubation_period <- function(disease, source, max_value = 14,
         "Please use distribution functions such as `Gamma()` or `Lognormal()`",
         "instead."
       ),
-      "The function will be removed completely in version 2.0.0.",
+      "The function will be removed completely in the next version.",
      paste(
       "To obtain the previous estimate by Ganyani et al. (2020) use",
       "`example_incubation_period`."
@@ -294,7 +299,7 @@ get_incubation_period <- function(disease, source, max_value = 14,
 #'
 #' @importFrom data.table copy setorderv
 #' @importFrom lubridate days
-#' @export
+#' @keywords internal
 get_regions_with_most_reports <- function(data,
                                           time_window = 7,
                                           no_regions = 6) {
@@ -321,6 +326,7 @@ get_regions_with_most_reports <- function(data,
 ##' to be at least the maximum generation time
 ##' @inheritParams estimate_infections
 ##' @return An integer seeding time
+##' @keywords internal
 get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
   # Estimate the mean delay -----------------------------------------------
   seeding_time <- sum(mean(delays, ignore_uncertainty = TRUE))

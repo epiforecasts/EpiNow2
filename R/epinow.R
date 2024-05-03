@@ -1,6 +1,6 @@
 #' Real-time Rt Estimation, Forecasting and Reporting
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("stable")`
 #' This function wraps the functionality of [estimate_infections()] in order
 #' to estimate Rt and cases by date of infection and forecast these infections
 #' into the future. In addition to the functionality of
@@ -109,7 +109,7 @@ epinow <- function(data,
       "1.5.0",
       "epinow(reported_cases)",
       "epinow(data)",
-      "The argument will be removed completely in version 2.0.0."
+      "The argument will be removed completely in the next version."
     )
     data <- reported_cases
   }

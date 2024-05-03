@@ -11,7 +11,6 @@ generation_time_opts(
   source,
   max = 14,
   fixed = FALSE,
-  prior_weight,
   tolerance = 0.001,
   weight_prior = TRUE
 )
@@ -29,9 +28,6 @@ distribution is given a fixed generation time of 1 will be assumed.}
 \item{max}{deprecated; use \code{dist} instead}
 
 \item{fixed}{deprecated; use \code{dist} instead}
-
-\item{prior_weight}{deprecated; prior weights are now specified as a
-model option. Use the \code{weight_prior} argument instead}
 
 \item{tolerance}{Numeric; the desired tolerance level.}
 

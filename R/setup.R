@@ -187,7 +187,7 @@ setup_future <- function(data,
 #' maps input to be a `{data.table}`
 #' @inheritParams estimate_infections
 #' @return A data table
-#' @export
+#' @keywords internal
 setup_dt <- function(data) {
   suppressMessages(data.table::setDTthreads(threads = 1))
   data <- data.table::setDT(data)
@@ -205,7 +205,7 @@ setup_dt <- function(data) {
 #' create if not present).
 #'
 #' @return A list containing the path to the dated folder and the latest folder
-#' @export
+#' @keywords internal
 setup_target_folder <- function(target_folder = NULL, target_date) {
   if (!is.null(target_folder)) {
     latest_folder <- file.path(target_folder, "latest")

@@ -23,6 +23,7 @@ Takes the output of \code{\link[=gp_opts]{gp_opts()}} and converts it into a lis
 stan.
 }
 \examples{
+\dontrun{
 # define input data required
 data <- list(
   t = 30,
@@ -39,6 +40,8 @@ create_gp_data(NULL, data)
 # custom lengthscale
 create_gp_data(gp_opts(ls_mean = 14), data)
 }
+}
 \seealso{
 \code{\link[=gp_opts]{gp_opts()}}
 }
+\keyword{internal}

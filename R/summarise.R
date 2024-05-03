@@ -22,7 +22,7 @@
 #' @importFrom purrr safely map_chr map_dbl map_chr
 #' @importFrom data.table setorderv melt merge.data.table dcast
 #' @return A list of summary data
-#' @export
+#' @keywords internal
 summarise_results <- function(regions,
                               summaries = NULL,
                               results_dir = NULL,
@@ -202,7 +202,7 @@ regional_summary <- function(regional_output = NULL,
   if (is.null(regional_output)) {
     if (!is.null(results_dir)) {
       futile.logger::flog.info("Extracting results from: %s", results_dir)
-      regions <- EpiNow2::get_regions(results_dir)
+      regions <- get_regions(results_dir)
       if (is.null(target_date)) {
         target_date <- "latest"
       }
@@ -429,7 +429,7 @@ regional_summary <- function(regional_output = NULL,
 #' @seealso regional_summary
 #' @return A list of summarised Rt, cases by date of infection and cases by
 #' date of report
-#' @export
+#' @keywords internal
 #' @importFrom data.table setnames fwrite setorderv
 summarise_key_measures <- function(regional_results = NULL,
                                    results_dir = NULL, summary_dir = NULL,
@@ -491,6 +491,7 @@ summarise_key_measures <- function(regional_results = NULL,
   save_variable(out$cases_by_report, "cases_by_report")
   return(out)
 }
+
 #' Summarise Regional Runtimes
 #'
 #' @description `r lifecycle::badge("maturing")`
@@ -503,6 +504,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @export
 #' @importFrom data.table data.table fwrite
 #' @importFrom purrr map safely
+#' @keywords internal
 #' @examples
 #' regional_out <- readRDS(system.file(
 #'     package = "EpiNow2", "extdata", "example_regional_epinow.rds"

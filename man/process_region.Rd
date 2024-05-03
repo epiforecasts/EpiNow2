@@ -39,3 +39,4 @@ logging information.
 \seealso{
 \code{\link[=regional_epinow]{regional_epinow()}}
 }
+\keyword{internal}

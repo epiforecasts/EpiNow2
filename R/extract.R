@@ -14,6 +14,7 @@
 #' @return A `<data.frame>` containing the parameter name, date, sample id and
 #' sample value.
 #' @importFrom data.table melt as.data.table
+#' @keywords internal
 extract_parameter <- function(param, samples, dates) {
   param_df <- data.table::as.data.table(
     t(
@@ -43,6 +44,7 @@ extract_parameter <- function(param, samples, dates) {
 #' @inheritParams extract_parameter
 #' @return A `<data.frame>` containing the parameter name, sample id and sample
 #' value
+#' @keywords internal
 extract_static_parameter <- function(param, samples) {
   data.table::data.table(
     parameter = param,
@@ -145,6 +147,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
 #' parameter
 #' @importFrom rstan extract
 #' @importFrom data.table data.table
+#' @keywords internal
 extract_parameter_samples <- function(stan_fit, data, reported_dates,
                                       reported_inf_dates,
                                       drop_length_1 = FALSE, merge = FALSE) {

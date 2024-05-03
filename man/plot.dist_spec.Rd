@@ -12,6 +12,7 @@
 \item{...}{Additional arguments to pass to \code{{ggplot}}.}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This function takes a \verb{<dist_spec>} object and plots its probability mass
 function (PMF) and cumulative distribution function (CDF) using \code{{ggplot2}}.
 Note that currently uncertainty in distributions is not plot.

@@ -22,11 +22,12 @@ A \verb{<dist_spec>} where all distributions with constant parameters are
 nonparametric.
 }
 \description{
-Discretise a <dist_spec>
-}
-\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 By default it will discretise all the distributions it can discretise
 (i.e. those with finite support and constant parameters).
+}
+\details{
+Discretise a <dist_spec>
 }
 \examples{
 # A fixed gamma distribution with mean 5 and sd 1.

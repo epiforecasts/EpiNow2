@@ -14,6 +14,7 @@ A \verb{<dist_spec>} where consecutive nonparametric distributions
 have been convolved
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This convolves any consecutive nonparametric distributions contained
 in the <dist_spec>.
 }

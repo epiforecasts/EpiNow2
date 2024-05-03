@@ -150,6 +150,7 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 #' @param delay_var List of numeric delays
 #' @param no_delays Numeric, number of delays
 #' @return A numeric array
+#' @keywords internal
 allocate_delays <- function(delay_var, no_delays) {
   if (no_delays > 0) {
     out <- unlist(delay_var)
@@ -169,6 +170,7 @@ allocate_delays <- function(delay_var, no_delays) {
 #' empty if missing.
 #' @param n Numeric, number of samples to assign an empty array
 #' @return A list of parameters some allocated to be empty
+#' @keywords internal
 allocate_empty <- function(data, params, n = 0) {
   for (param in params) {
     if (!exists(param, data)) {
@@ -196,6 +198,7 @@ allocate_empty <- function(data, params, n = 0) {
 #'
 #' @return A logical vector of named output arguments
 #' @importFrom  futile.logger flog.info flog.debug
+#' @keywords internal
 match_output_arguments <- function(input_args = NULL,
                                    supported_args = NULL,
                                    logger = NULL,
@@ -340,41 +343,23 @@ discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
   return(pmf)
 }
 
-#' Update a List
-#'
-#' @description `r lifecycle::badge("deprecated")`
-#' Used to handle updating settings in a list. For example when making
-#' changes to [opts_list()] output.
-#' @param defaults A list of default settings
-#' @param optional A list of optional settings to override defaults
-#' @importFrom lifecycle deprecate_stop
-#' @return A list
-#' @export
-update_list <- function(defaults = list(), optional = list()) {
-  deprecate_stop(
-    when = "1.4.1",
-    what = "update_list()",
-    with = "utils::modifyList()",
-    details = "Please file an issue if deprecating this \
-      function has caused any issues."
-    )
-}
-
 #' Adds a day of the week vector
 #'
 #' @param dates Vector of dates
 #' @param week_effect Numeric from 1 to 7 defaults to 7
 #'
 #' @return A numeric vector containing the period day of the week index
-#' @export
+#' @keywords internal
 #' @importFrom lubridate wday
 #' @examples
+#' \dontrun{
 #' dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
 #' # Add date based day of week
 #' add_day_of_week(dates, 7)
 #'
 #' # Add shorter week
 #' add_day_of_week(dates, 4)
+#' }
 add_day_of_week <- function(dates, week_effect = 7) {
   if (week_effect == 7) {
     day_of_week <- lubridate::wday(dates, week_start = 1)
@@ -407,7 +392,6 @@ add_day_of_week <- function(dates, week_effect = 7) {
 #' data.table::getDTthreads()
 #' }
 #' @export
-
 set_dt_single_thread <- function() {
   a <- list2env(x = list(dt_previous_threads = data.table::getDTthreads()))
 
@@ -422,7 +406,6 @@ set_dt_single_thread <- function() {
 }
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
-#' @importFrom lifecycle deprecate_warn
 #' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
 globalVariables(
   c(
