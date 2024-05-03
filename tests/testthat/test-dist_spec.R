@@ -1,4 +1,3 @@
-
 test_that("dist_spec returns correct output for fixed lognormal distribution", {
   result <- discretise(LogNormal(meanlog = 5, sdlog = 1, max = 19))
   expect_null(result[[1]]$parameters)
@@ -219,16 +218,16 @@ test_that("composite delay distributions can be disassembled", {
 
 test_that("delay distributions can be specified in different ways", {
   expect_equal(
-    unname(as.numeric(LogNormal(mean = 4, sd = 1)[[1]]$parameters)),
+    unname(as.numeric(get_parameters(LogNormal(mean = 4, sd = 1)))),
     c(1.4, 0.25),
     tolerance = 0.1
   )
   expect_equal(
-    round(discretise(LogNormal(mean = 4, sd = 1, max = 10))[[1]]$pmf, 2),
+    round(get_pmf(discretise(LogNormal(mean = 4, sd = 1, max = 10))), 2),
     c(0.00, 0.00, 0.07, 0.27, 0.35, 0.21, 0.07, 0.02, 0.00, 0.00, 0.00)
   )
   expect_equal(
-    unname(as.numeric(Gamma(mean = 4, sd = 1)[[1]]$parameters)),
+    unname(as.numeric(get_parameters(Gamma(mean = 4, sd = 1)))),
     c(16, 4),
     tolerance = 0.1
   )
@@ -238,37 +237,62 @@ test_that("delay distributions can be specified in different ways", {
   )
   expect_equal(
     unname(as.numeric(
-      Gamma(
-        shape = Normal(16, 2), rate = Normal(4, 1)
-      )[[1]]$parameters$shape[[1]]$parameters
+      get_parameters(get_parameters(
+        c(
+          Gamma(
+            shape = Normal(12, 3), rate = Normal(3, 0.5)
+          ),
+          Gamma(
+            shape = Normal(16, 2), rate = Normal(4, 1)
+          )
+        ), 2
+      )$shape)
     )),
     c(16, 2)
   )
   expect_equal(
     unname(as.numeric(
-      Gamma(
-        shape = Normal(16, 2), rate = Normal(4, 1)
-      )[[1]]$parameters$rate[[1]]$parameters
+      get_parameters(get_parameters(
+        Gamma(
+          shape = Normal(16, 2), rate = Normal(4, 1)
+        )
+      )$rate)
     )),
     c(4, 1)
   )
   expect_equal(
-    unname(as.numeric(Normal(mean = 4, sd = 1)[[1]]$parameters)), c(4, 1)
+    unname(as.numeric(get_parameters(Normal(mean = 4, sd = 1)))), c(4, 1)
   )
   expect_equal(
     round(discretise(Normal(mean = 4, sd = 1, max = 5))[[1]]$pmf, 2),
     c(0.00, 0.01, 0.09, 0.26, 0.38, 0.26)
   )
   expect_equal(discretise(Fixed(value = 3))[[1]]$pmf, c(0, 0, 0, 1))
-  expect_equal(Fixed(value = 3.5)[[1]]$parameters$value, 3.5)
+  expect_equal(get_parameters(Fixed(value = 3.5))$value, 3.5)
   expect_equal(
-    NonParametric(c(0.1, 0.3, 0.2, 0.4))[[1]]$pmf,
+    get_pmf(NonParametric(c(0.1, 0.3, 0.2, 0.4))),
     c(0.1, 0.3, 0.2, 0.4)
   )
   expect_equal(
-    round(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))[[1]]$pmf, 2),
+    round(get_pmf(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))), 2),
     c(0.12, 0.37, 0.25, 0.12, 0.12)
   )
+  expect_equal(
+    get_distribution(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))),
+    "nonparametric"
+  )})
+
+test_that("get functions report errors", {
+  expect_error(get_parameters("test"), "only get parameters")
+  expect_error(get_distribution(Gamma(mean = 4, sd = 1), 2), "can't be greater")
+  expect_error(get_pmf(Gamma(mean = 4, sd = 1)), "parametric")
+  expect_error(
+    get_parameters(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))),
+    "nonparametric"
+  )
+  expect_error(get_parameters(c(
+    Gamma(mean = 4, sd = 1), Gamma(mean = 4, sd = 1)
+  )), "must be specified")
 })
 
 test_that("deprecated functions are deprecated", {

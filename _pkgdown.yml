@@ -126,7 +126,11 @@ reference:
       - apply_tolerance
       - collapse
       - discretise
-      - contains("dist")
+      - contains("_dist")
+      - contains("dist_")
+      - get_parameters
+      - get_pmf
+      - get_distribution
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases
     contents:

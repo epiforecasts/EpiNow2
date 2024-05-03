@@ -11,7 +11,7 @@ library("EpiNow2")
 #' @keywords internal
 apply_truncation <- function(index, data, dist) {
   set.seed(index)
-  if (dist[[1]]$distribution == 0) {
+  if (get_distribution(dist) == "lognormal") {
     dfunc <- dlnorm
   } else {
     dfunc <- dgamma
@@ -20,12 +20,12 @@ apply_truncation <- function(index, data, dist) {
     dfunc(
       seq_len(max(dist) + 1),
       rnorm(1,
-        dist[[1]]$parameters$meanlog[[1]]$parameters$mean,
-        dist[[1]]$parameters$meanlog[[1]]$parameters$sd
+        get_parameters(get_parameters(dist)$meanlog)$mean,
+        get_parameters(get_parameters(dist)$meanlog)$sd
       ),
       rnorm(1,
-        dist[[1]]$parameters$sdlog[[1]]$parameters$mean,
-        dist[[1]]$parameters$sdlog[[1]]$parameters$sd
+        get_parameters(get_parameters(dist)$sdlog)$mean,
+        get_parameters(get_parameters(dist)$sdlog)$sd
       )
     )
   )
