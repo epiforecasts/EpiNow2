@@ -7,8 +7,8 @@ test_that("distributions are the same in R and stan", {
   lognormal_dist <- do.call(LogNormal, args)
   gamma_dist <- do.call(Gamma, args)
 
-  lognormal_params <- unname(as.numeric(lognormal_dist[[1]]$parameters))
-  gamma_params <- unname(as.numeric(gamma_dist[[1]]$parameters))
+  lognormal_params <- unname(as.numeric(get_parameters(lognormal_dist)))
+  gamma_params <- unname(as.numeric(get_parameters(gamma_dist)))
 
   pmf_r_lognormal <- discretise(lognormal_dist)[[1]]$pmf
   pmf_r_gamma <- discretise(gamma_dist)[[1]]$pmf

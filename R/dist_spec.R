@@ -590,10 +590,10 @@ print.dist_spec <- function(x, ...) {
     } else if (x[[i]]$distribution == "fixed") {
       ## fixed
       cat(indent_str, "- fixed value:\n", sep = "")
-      if (is.numeric(x[[i]]$parameters$value)) {
-        cat(indent_str, "  ", x[[i]]$parameters$value, "\n", sep = "")
+      if (is.numeric(get_parameters(x, i)$value)) {
+        cat(indent_str, "  ", get_parameters(x, i)$value, "\n", sep = "")
       } else {
-        .print.dist_spec(x[[i]]$parameters$value, indent = indent + 4)
+        .print.dist_spec(get_parameters(x, i)$value, indent = indent + 4)
       }
     } else {
       ## parametric
@@ -603,18 +603,18 @@ print.dist_spec <- function(x, ...) {
       }
       cat(":\n")
       ## loop over natural parameters and print
-      for (param in names(x[[i]]$parameters)) {
+      for (param in names(get_parameters(x, i))) {
         cat(
           indent_str, "  ", param, ":\n", sep = ""
         )
-        if (is.numeric(x[[i]]$parameters[[param]])) {
+        if (is.numeric(get_parameters(x, i)[[param]])) {
           cat(
             indent_str, "    ",
-            signif(x[[i]]$parameters[[param]], digits = 2), "\n",
+            signif(get_parameters(x, i)[[param]], digits = 2), "\n",
             sep = ""
           )
         } else {
-          .print.dist_spec(x[[i]]$parameters[[param]], indent = indent + 4)
+          .print.dist_spec(get_parameters(x, i)[[param]], indent = indent + 4)
         }
       }
     }
@@ -663,12 +663,12 @@ plot.dist_spec <- function(x, ...) {
   for (i in seq_along(x)) {
     if (x[[i]]$distribution == "nonparametric") {
       # Fixed distribution
-      pmf <- x[[i]]$pmf
+      pmf <- get_pmf(x, i)
       dist_name <- paste0("Nonparametric", " (ID: ", i, ")")
     } else {
       # Uncertain distribution
       c_dist <- discretise(fix_dist(extract_single_dist(x, i)))
-      pmf <- c_dist[[1]]$pmf
+      pmf <- get_pmf(c_dist)
       dist_name <- paste0(
         ifelse(is.na(dist_sd[i]), "Uncertain ", ""),
         x[[i]]$distribution, " (ID: ", i, ")"
@@ -967,14 +967,12 @@ extract_params <- function(params, distribution) {
 #' @inheritParams extract_params
 #' @importFrom purrr walk
 #' @return A `dist_spec` of the given specification.
-#' @keywords internal
+#' @export
 #' @examples
-#' \dontrun{
 #' new_dist_spec(
 #'   params = list(mean = 2, sd = 1, max = Inf),
 #'   distribution = "normal"
 #' )
-#' }
 new_dist_spec <- function(params, distribution) {
   if (distribution == "nonparametric") {
     ## nonparametric distribution
@@ -984,8 +982,12 @@ new_dist_spec <- function(params, distribution) {
     )
   } else {
     ## process min/max first
-    max <- params$max
-    params$max <- NULL
+    if (is.null(params$max)) {
+      max <- Inf
+    } else {
+      max <- params$max
+      params$max <- NULL
+    }
     ## extract parameters and convert all to dist_spec
     params <- extract_params(params, distribution)
     ## fixed distribution
@@ -1116,4 +1118,87 @@ convert_to_natural <- function(params, distribution) {
     params <- x
   }
   return(params)
+}
+
+##' Perform checks for `<dist_spec>` `get_...` functions
+##'
+##' @param x A `<dist_spec>`.
+##' @param id Integer; the id of the distribution to get parameters of (if x is
+##' a composite distribution). If `x` is a single distribution this is ignored
+##' and can be left as `NULL`.
+##' @return The id to use.
+##' @keywords internal
+##' @author Sebastian Funk
+get_dist_spec_id <- function(x, id) {
+  if (!is.null(id) && id > length(x)) {
+    stop(
+      "`id` can't be greater than the number of distributions (", length(x),
+      ")."
+    )
+  }
+  if (length(x) > 1) {
+    if (is.null(id)) {
+      stop("`id` must be specified when `x` is a composite distribution.")
+    }
+  } else {
+    id <- 1
+  }
+  return(id)
+}
+
+##' Get parameters of a parametric distribution
+##'
+##' @inheritParams get_dist_spec_id
+##' @description `r lifecycle::badge("experimental")`
+##' @return A list of parameters of the distribution.
+##' @export
+##' @examples
+##' dist <- Gamma(shape = 3, rate = 2)
+##' get_parameters(dist)
+get_parameters <- function(x, id = NULL) {
+  if (!is(x, "dist_spec")) {
+    stop("Can only get parameters of a <dist_spec>.")
+  }
+  id <- get_dist_spec_id(x, id)
+  if (x[[id]]$distribution == "nonparametric") {
+    stop("Cannot get parameters of a nonparametric distribution.")
+  }
+  return(x[[id]]$parameters)
+}
+
+##' Get the probability mass function of a nonparametric distribution
+##'
+##' @inheritParams get_dist_spec_id
+##' @description `r lifecycle::badge("experimental")`
+##' @return The pmf of the distribution
+##' @export
+##' @examples
+##' dist <- discretise(Gamma(shape = 3, rate = 2, max = 10))
+##' get_pmf(dist)
+get_pmf <- function(x, id = NULL) {
+  if (!is(x, "dist_spec")) {
+    stop("Can only get pmf of a <dist_spec>.")
+  }
+  id <- get_dist_spec_id(x, id)
+  if (x[[id]]$distribution != "nonparametric") {
+    stop("Cannot get pmf of a parametric distribution.")
+  }
+  return(x[[id]]$pmf)
+}
+
+##' Get the distribution of a [dist_spec()]
+##'
+##' @inheritParams get_dist_spec_id
+##' @description `r lifecycle::badge("experimental")`
+##' @return A character string naming the distribution (or "nonparametric")
+##' @export
+##' @examples
+##' dist <- Gamma(shape = 3, rate = 2, max = 10)
+##' get_distribution(dist)
+get_distribution <- function(x, id = NULL) {
+  if (!is(x, "dist_spec")) {
+    stop("Can only get distribution of a <dist_spec>.")
+  }
+  id <- get_dist_spec_id(x, id)
+  return(x[[id]]$distribution)
 }

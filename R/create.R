@@ -84,9 +84,7 @@ create_clean_reported_cases <- function(data, horizon = 0,
 #' @description `r lifecycle::badge("stable")`
 #' Creates a complete data set without NA values and appropriate indices
 #'
-#' @param cases; data frame with a column "confirm" that may contain NA values
-#' @param burn_in; integer (default 0). Number of days to remove from the
-#' start of the time series be filtered out.
+#' @param cases data frame with a column "confirm" that may contain NA values
 #'
 #' @return A data frame without NA values, with two columns: confirm (number)
 #' @importFrom data.table setDT

@@ -275,8 +275,8 @@ dist_spec <- function(distribution = c(
         mean = Normal(mean, mean_sd),
         sd = Normal(sd, sd_sd)
       )
-      params_mean <- vapply(temp_dist[[1]]$parameters, mean, numeric(1))
-      params_sd <- vapply(temp_dist[[1]]$parameters, sd_dist, numeric(1))
+      params_mean <- vapply(get_parameters(temp_dist), mean, numeric(1))
+      params_sd <- vapply(get_parameters(temp_dist), sd_dist, numeric(1))
     } else if (distribution == "normal") {
       params_mean <- c(mean = mean, sd = sd)
       params_sd <- c(mean = mean_sd, sd = sd_sd)

@@ -105,7 +105,7 @@
 #' # illustrative purposes only.
 #' out <- epinow(
 #'   example_truncated[[5]],
-#'   truncation = est$dist
+#'   truncation = trunc_opts(est$dist)
 #' )
 #' plot(out)
 #' options(old_opts)
@@ -291,9 +291,12 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
   parameters <- purrr::map(seq_along(params_mean), function(id) {
     Normal(params_mean[id], params_sd[id])
   })
-  names(parameters) <- natural_params(truncation[[1]]$distribution)
-  out$dist <- truncation
-  out$dist[[1]]$parameters <- parameters
+  names(parameters) <- natural_params(get_distribution(truncation))
+  parameters$max <- max(truncation)
+  out$dist <- new_dist_spec(
+    params = parameters,
+    distribution = get_distribution(truncation)
+  )
 
   # summarise reconstructed observations
   recon_obs <- extract_stan_param(fit, "recon_obs",
