@@ -153,3 +153,5 @@ A simple example of using the package to estimate a national Rt for Covid-19 can
 We welcome all contributions. If you have identified an issue with the package,
 you can file an issue [here](https://github.com/epiforecasts/EpiNow2/issues). We also welcome additions and extensions to the underlying model either in the form of options or improvements. If you wish to contribute in any form, please follow the
 [package contributing guide](https://github.com/epiforecasts/EpiNow2/blob/main/.github/CONTRIBUTING.md).
+
+## Contributors
