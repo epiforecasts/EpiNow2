@@ -6,7 +6,7 @@ Version: 1.4.9000
 Authors@R: 
     c(person(given = "Sam",
              family = "Abbott",
-             role = c("aut", "cre"),
+             role = c("aut"),
              email = "sam.abbott@lshtm.ac.uk",
              comment = c(ORCID = "0000-0001-8057-8037")),
       person(given = "Joel",
@@ -80,7 +80,7 @@ Authors@R:
              role = "aut"),
       person(given = "Sebastian",
              family = "Funk",
-             role = "aut",
+             role = c("aut", "cre"),
              email = "sebastian.funk@lshtm.ac.uk",
              comment = c(ORCID = "0000-0002-2842-3406"))
     )
