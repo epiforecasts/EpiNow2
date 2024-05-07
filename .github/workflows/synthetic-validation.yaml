@@ -28,8 +28,6 @@ jobs:
           install-pandoc: false
           extra-packages: |
             here
-            dplyr
-            tidyr
             scoringutils
             loo
             matrixStats

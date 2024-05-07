@@ -1,25 +1,24 @@
 ## to be run following rt.R
-library(dplyr)
-library(loo)
-library(tidyr)
+library(data.table)
 library(scoringutils)
 library(ggplot2)
+library(rstan)
 source(here::here("inst", "dev", "recover-synthetic", "plot.R"))
 
 synthetic <- readRDS("synthetic.rds")
 
 looic <- lapply(synthetic$models, function(x) {
   est <- loo(x$fit, save_psis = TRUE)$estimates
-  return(as_tibble(est, rownames = "metric"))
+  dt <- data.table(est, keep.rownames = TRUE)
+  setnames(dt, "rn", "metric")
+  return(dt)
 })
 names(looic) <- synthetic$model_names
 
-dl <- bind_rows(looic, .id = "model") %>%
-  filter(metric == "looic") %>%
-  mutate(
-    model = sub("^(.*)_([^_]+)$", "\\1|\\2", model)
-  ) %>%
-  separate(model, c("model", "method"), sep = "\\|")
+dl <- rbindlist(looic, idcol = "model")
+dl <- dl[metric == "looic"]
+dl[, model := sub("^(.*)_([^_]+)$", "\\1|\\2", model)]
+dl[, c("model", "moethod") := tstrsplit(model, "\\|")]
 
 R_samples <- lapply(synthetic$models, function(x) {
   if ("R[1]" %in% names(x$fit)) {
@@ -44,10 +43,10 @@ names(rcrps) <- synthetic$model_names
 icrps <- lapply(inf_samples, calc_crps, truth = synthetic$truth$sim_inf)
 names(icrps) <- synthetic$model_names
 
-rdf <- bind_rows(rcrps) %>%
-  mutate(metric = "CRPS") %>%
-  mutate(time = 1:n()) %>%
-  pivot_longer(names_to = "model", c(-time, -metric))
+rdf <- as.data.table(rcrps)
+rdf[, metric := "CRPS"]
+rdf[, time := 1:.N]
+rdf <- melt(rdf, id.vars = c("metric", "time"), variable.name = "model")
 
 p <- ggplot(rdf, aes(x = time, y = value, colour = model)) +
   geom_line() +
@@ -58,17 +57,14 @@ p <- ggplot(rdf, aes(x = time, y = value, colour = model)) +
   ggtitle("Reconstructing R")
 save_ggplot(p, "CRPS", "rt")
 
-rdf %>%
-  select(-time) %>%
-  group_by(metric, model) %>%
-  summarise_all(mean) %>%
-  pivot_wider(names_from = "metric") %>%
-  arrange(CRPS)
+rmeans <- rdf[, list(mean_crps = mean(value)), by = c("metric", "model")]
+setorder(rmeans, mean_crps)
+rmeans
 
-idf <- bind_rows(icrps) %>%
-  mutate(metric = "CRPS") %>%
-  mutate(time = 1:n()) %>%
-  pivot_longer(names_to = "model", c(-time, -metric))
+idf <- as.data.table(icrps)
+idf[, metric := "CRPS"]
+idf[, time := 1:.N]
+idf <- melt(idf, id.vars = c("metric", "time"), variable.name = "model")
 
 p <- ggplot(idf, aes(x = time, y = value, colour = model)) +
   geom_line() +
@@ -79,10 +75,6 @@ p <- ggplot(idf, aes(x = time, y = value, colour = model)) +
   ggtitle("Reconstructing infections")
 save_ggplot(p, "CRPS", "inf")
 
-idf %>%
-  select(-time) %>%
-  group_by(metric, model) %>%
-  summarise_all(mean) %>%
-  pivot_wider(names_from = "metric") %>%
-  arrange(CRPS)
-
+imeans <- idf[, list(mean_crps = mean(value)), by = c("metric", "model")]
+setorder(imeans, mean_crps)
+imeans

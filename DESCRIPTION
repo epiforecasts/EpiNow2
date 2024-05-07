@@ -125,16 +125,12 @@ Imports:
 Suggests:
     cmdstanr,
     covr,
-    dplyr,
     here,
-    kableExtra,
     knitr,
-    magrittr,
     precommit,
     rmarkdown,
     spelling,
     testthat,
-    tidyr,
     usethis,
     withr
 LinkingTo: 
