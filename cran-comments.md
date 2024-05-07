@@ -1,9 +1,9 @@
+This issue is submitted by a new maintainer.
+
 ## R CMD check results
 
 There is a new NOTE because an additional repository has been specified in order
-to suggest cmdstan.
-
-This is the same approach used in brms:
+to suggest cmdstan.  This is the same approach used in brms:
 https://cran.r-project.org/web/packages/brms/index.html
 
 # CRAN status issues
