@@ -1,4 +1,4 @@
-# EpiNow2 1.4.9000
+# EpiNow2 1.5.0
 
 This release comes with a change of maintainer, from @seabbs to @sbfnk.
 This is to reflect who will handle the upcoming CRAN submission, but is not expected to lead to a change in workflows.
