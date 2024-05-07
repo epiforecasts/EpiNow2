@@ -29,7 +29,7 @@ See other vignettes for a more thorough exploration of [alternative model varian
 Obtaining a good and full understanding of the data being used is an important first step in any inference procedure such as the one applied here. 
 _EpiNow2_ expects data in the format of a data frame with two columns, `date` and `confirm`, where `confirm` stands for the number of confirmed counts - although in reality this can be applied to any data including suspected cases and lab-confirmed outcomes.
 The user might already have the data as such a time series provided, for example, on public dashboards or directly from public health authorities.
-Alternatively, they can be constructed from individual-level data, for example using the [incidence2](https://cran.r-project.org/web/packages/incidence2/index.html) R package.
+Alternatively, they can be constructed from individual-level data, for example using the [incidence2](https://CRAN.R-project.org/package=incidence2) R package.
 An example data set called `example_confirm`  is included in the package:
 
 ```{r}
@@ -92,7 +92,7 @@ We used the mean and standard deviation to define this distribution with uncerta
 There are various ways the specific delay distributions mentioned below might be obtained.
 Often, they will come directly from the existing literature reviewed by the user and studies conducted elsewhere.
 Sometimes it might be possible to obtain them from existing databases, e.g. using the [epiparameter](https://github.com/epiverse-trace/epiparameter) R package.
-Alternatively they might be obtainable from raw data, e.g. linelists.
+Alternatively they might be obtainable from raw data, e.g. line-listed individual-level records.
 The _EpiNow2_ package contains functionality for estimating delay distributions from observed delays in the `estimate_delays()` function.
 For a more comprehensive treatment of delays and their estimation avoiding common biases one can consider, for example, the [dynamicaltruncation](https://github.com/parksw3/epidist-paper) R package and associated paper.
 
