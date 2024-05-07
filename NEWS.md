@@ -1,5 +1,8 @@
 # EpiNow2 1.4.9000
 
+This release comes with a change of maintainer, from @seabbs to @sbfnk.
+This is to reflect who will handle the upcoming CRAN submission, but is not expected to lead to a change in workflows.
+
 ## Major changes
 
 * Delay discretisation is now based on a two-day censoring window (with uniform probability in between), based on recommendations in [Park et al, medRxiv, 2024](https://doi.org/10.1101/2024.01.12.24301247). By @sbfnk in #518 and reviewed by @jamesmbaazam.
