@@ -4,7 +4,7 @@
 #' Estimates a truncation distribution from multiple snapshots of the same
 #' data source over time. This distribution can then be used passed to the
 #' `truncation` argument in [regional_epinow()], [epinow()], and
-#' [estimate_infections()] to adjust for truncated data and propagage the
+#' [estimate_infections()] to adjust for truncated data and propagate the
 #' uncertainty associated with data truncation into the estimates.
 #'
 #' See [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)

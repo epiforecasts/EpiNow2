@@ -83,7 +83,7 @@ used for fitting (\code{data}) and the fit object (\code{fit}).
 Estimates a truncation distribution from multiple snapshots of the same
 data source over time. This distribution can then be used passed to the
 \code{truncation} argument in \code{\link[=regional_epinow]{regional_epinow()}}, \code{\link[=epinow]{epinow()}}, and
-\code{\link[=estimate_infections]{estimate_infections()}} to adjust for truncated data and propagage the
+\code{\link[=estimate_infections]{estimate_infections()}} to adjust for truncated data and propagate the
 uncertainty associated with data truncation into the estimates.
 
 See \href{https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a}{here}
