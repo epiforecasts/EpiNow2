@@ -79,6 +79,7 @@
 #' @importFrom checkmate assert_character assert_numeric assert_class
 #' assert_logical
 #' @examples
+#' \donttest{
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
@@ -109,6 +110,7 @@
 #' )
 #' plot(out)
 #' options(old_opts)
+#' }
 estimate_truncation <- function(data, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
                                 truncation = trunc_opts(

@@ -116,6 +116,7 @@ This approach assumes that:
 }
 }
 \examples{
+\donttest{
 # set number of cores to use
 old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
@@ -146,4 +147,5 @@ out <- epinow(
 )
 plot(out)
 options(old_opts)
+}
 }
