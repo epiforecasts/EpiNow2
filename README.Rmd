@@ -155,3 +155,4 @@ you can file an issue [here](https://github.com/epiforecasts/EpiNow2/issues). We
 [package contributing guide](https://github.com/epiforecasts/EpiNow2/blob/main/.github/CONTRIBUTING.md).
 
 ## Contributors
+
