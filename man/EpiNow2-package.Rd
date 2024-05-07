@@ -19,10 +19,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Sam Abbott \email{sam.abbott@lshtm.ac.uk} (\href{https://orcid.org/0000-0001-8057-8037}{ORCID})
+\strong{Maintainer}: Sebastian Funk \email{sebastian.funk@lshtm.ac.uk} (\href{https://orcid.org/0000-0002-2842-3406}{ORCID})
 
 Authors:
 \itemize{
+  \item Sam Abbott \email{sam.abbott@lshtm.ac.uk} (\href{https://orcid.org/0000-0001-8057-8037}{ORCID})
   \item Joel Hellewell \email{joel.hellewell@lshtm.ac.uk} (\href{https://orcid.org/0000-0003-2683-0849}{ORCID})
   \item Katharine Sherratt \email{katharine.sherratt@lshtm.ac.uk}
   \item Katelyn Gostic \email{kgostic@uchicago.edu}
@@ -31,7 +32,6 @@ Authors:
   \item Michael DeWitt \email{me.dewitt.jr@gmail.com} (\href{https://orcid.org/0000-0001-8940-1967}{ORCID})
   \item James M. Azam \email{james.azam@lshtm.ac.uk} (\href{https://orcid.org/0000-0001-5782-7330}{ORCID})
   \item EpiForecasts
-  \item Sebastian Funk \email{sebastian.funk@lshtm.ac.uk} (\href{https://orcid.org/0000-0002-2842-3406}{ORCID})
 }
 
 Other contributors:
