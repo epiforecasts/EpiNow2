@@ -5,8 +5,8 @@ This is to reflect who will handle the upcoming CRAN submission, but is not expe
 
 ## Major changes
 
-* Delay discretisation is now based on a two-day censoring window (with uniform probability in between), based on recommendations in [Park et al, medRxiv, 2024](https://doi.org/10.1101/2024.01.12.24301247). By @sbfnk in #518 and reviewed by @jamesmbaazam.
 * The interface to generating delay distributions has been completely overhauled. Instead of calling `dist_spec()` users now specify distributions using functions that represent the available distributions, i.e. `LogNormal()`, `Gamma()` and `Fixed()`. See `?EpiNow2::Distributions`. Uncertainty is specified using calls of the same nature, to `Normal()`. More information on the underlying design can be found in `inst/dev/design_dist.md` By @sbfnk in #504 and reviewed by @seabbs.
+* Delay discretisation is now based on a two-day censoring window (with uniform probability in between), based on recommendations in [Park et al, medRxiv, 2024](https://doi.org/10.1101/2024.01.12.24301247). By @sbfnk in #518 and reviewed by @jamesmbaazam.
 
 ## Deprecations
 
