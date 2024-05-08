@@ -12,6 +12,15 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6.5,
+  fig.height = 6.5,
+  fig.path = "EpiNow2-"
+)
+```
 ## Quick start
 
 In the following section we give an overview of the simple use case for `epinow()` and `regional_epinow()`.

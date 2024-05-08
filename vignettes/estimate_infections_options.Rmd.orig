@@ -17,7 +17,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.width = 6.5, 
-  fig.height = 6.5
+  fig.height = 6.5,
+  fig.path = "estimate_infections_options-"
 )
 ```
 
