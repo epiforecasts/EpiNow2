@@ -19,7 +19,7 @@ extract_samples(stan_fit, pars = NULL, include = TRUE)
 List of data.tables with samples
 }
 \description{
-If the \code{object} argument is a \verb{<stanfit>} object, it simply returns the result
-of \code{\link[rstan:stanfit-method-extract]{rstan::extract()}}. If it is a \verb{<CmdStanMCMC>} it returns samples
+If the \code{object} argument is a \verb{<stanfit>} object, it simply returns the
+result of \code{\link[rstan:stanfit-method-extract]{rstan::extract()}}. If it is a \verb{<CmdStanMCMC>} it returns samples
 in the same format as \code{\link[rstan:stanfit-method-extract]{rstan::extract()}} does for \verb{<stanfit>} objects.
 }
