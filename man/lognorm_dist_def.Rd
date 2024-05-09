@@ -23,7 +23,8 @@ Samples outside of this range are resampled.}
 \item{to_log}{Logical, should parameters be logged before use.}
 }
 \value{
-A \verb{<data.table>} defining the distribution as used by \code{\link[=dist_skel]{dist_skel()}}
+A \verb{<data.table>} defining the distribution as used by
+\code{\link[=discrete_pmf]{discrete_pmf()}}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}

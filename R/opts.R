@@ -43,7 +43,7 @@
 #' generation_time_opts(example_generation_time)
 generation_time_opts <- function(dist = Fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
-                                 tolerance = 0.001, weight_prior = TRUE) {
+                                 tolerance = 0.01, weight_prior = TRUE) {
   deprecated_options_given <- FALSE
   dot_options <- list(...)
 
@@ -101,10 +101,10 @@ generation_time_opts <- function(dist = Fixed(1), ...,
       "setting `dist` explicitly to `Fixed(1)`."
     )
   }
-  check_stan_delay(dist)
   attr(dist, "tolerance") <- tolerance
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("generation_time_opts", class(dist))
+  check_stan_delay(dist)
   return(dist)
 }
 
@@ -205,7 +205,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
+delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.01,
                        weight_prior = TRUE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec")) { ## could be old syntax
@@ -237,10 +237,10 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
     ## can be removed once dot options are hard deprecated
     stop("Unknown named arguments passed to `delay_opts`")
   }
-  check_stan_delay(dist)
   attr(dist, "tolerance") <- tolerance
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("delay_opts", class(dist))
+  check_stan_delay(dist)
   return(dist)
 }
 
@@ -276,7 +276,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
 #'
 #' # truncation dist
 #' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = Fixed(0), tolerance = 0.001,
+trunc_opts <- function(dist = Fixed(0), tolerance = 0.01,
                        weight_prior = FALSE) {
   if (!is(dist, "dist_spec")) {
     if (is.list(dist)) {
@@ -293,10 +293,10 @@ trunc_opts <- function(dist = Fixed(0), tolerance = 0.001,
       "`?trunc_opts`"
     )
   }
-  check_stan_delay(dist)
   attr(dist, "tolerance") <- tolerance
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("trunc_opts", class(dist))
+  check_stan_delay(dist)
   return(dist)
 }
 

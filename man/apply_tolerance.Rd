@@ -9,7 +9,9 @@ apply_tolerance(x, tolerance)
 \arguments{
 \item{x}{A \verb{<dist_spec>}}
 
-\item{tolerance}{Numeric; the desired tolerance level.}
+\item{tolerance}{Numeric; the desired tolerance level. Any part of the
+cumulative distribution function beyond 1 minus this tolerance level is
+removed.}
 }
 \value{
 A \verb{<dist_spec>} where probability masses below the threshold level

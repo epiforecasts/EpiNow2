@@ -81,33 +81,6 @@ adjust_infection_to_report <- function(infections, delay_defs,
   # Reset DT Defaults on Exit
   set_dt_single_thread()
 
-  ## deprecated
-  sample_single_dist <- function(input, delay_def) {
-    ## Define sample delay fn
-    sample_delay_fn <- function(n, ...) {
-      EpiNow2::dist_skel(
-        n = n,
-        model = delay_def$model[[1]],
-        params = delay_def$params[[1]],
-        max_value = delay_def$max_value[[1]],
-        ...
-      )
-    }
-
-
-    ## Infection to onset
-    out <- suppressWarnings(EpiNow2::sample_approx_dist(
-      cases = input,
-      dist_fn = sample_delay_fn,
-      max_value = delay_def$max_value,
-      direction = "forwards",
-      type = type,
-      truncate_future = FALSE
-    ))
-
-    return(out)
-  }
-
   sample_dist_spec <- function(input, delay_def) {
     ## Define sample delay fn
     sample_delay_fn <- function(n, dist, cum, ...) {
@@ -140,17 +113,11 @@ adjust_infection_to_report <- function(infections, delay_defs,
       }
     }
   } else {
-    deprecate_warn(
+    deprecate_stop(
       "1.5.0",
       "adjust_infection_to_report(delay_defs = 'should be a dist_spec')",
       details = "Specifying this as a list of data tables is deprecated."
     )
-    report <- sample_single_dist(infections, delay_defs[[1]])
-    if (length(delay_defs) > 1) {
-      for (def in 2:length(delay_defs)) {
-        report <- sample_single_dist(report, delay_defs[[def]])
-      }
-    }
   }
   ## Add a weekly reporting effect if present
   if (!missing(reporting_effect)) {
@@ -322,10 +289,11 @@ dist_spec <- function(distribution = c(
 #' @param samples Numeric, number of sample distributions to generate.
 #'
 #' @importFrom truncnorm rtruncnorm
-#' @return A `<data.table>` defining the distribution as used by [dist_skel()]
+#' @return A `<data.table>` defining the distribution as used by
+#' [discrete_pmf()]
 #' @keywords internal
 #' @export
-#' @inheritParams dist_skel
+#' @inheritParams discrete_pmf
 #' @inheritParams lognorm_dist_def
 #' @examples
 #' # using estimated shape and scale
@@ -492,11 +460,12 @@ init_cumulative_fit <- function(args, samples = 50, warmup = 50,
 #'
 #' @param to_log Logical, should parameters be logged before use.
 #'
-#' @return A `<data.table>` defining the distribution as used by [dist_skel()]
+#' @return A `<data.table>` defining the distribution as used by
+#' [discrete_pmf()]
 #' @importFrom truncnorm rtruncnorm
 #' @export
 #' @keywords internal
-#' @inheritParams dist_skel
+#' @inheritParams discrete_pmf
 #' @examples
 #' def <- lognorm_dist_def(
 #'   mean = 1.621, mean_sd = 0.0640,
