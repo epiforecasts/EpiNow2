@@ -42,12 +42,6 @@
 #'
 #' @param obs Deprecated; use `data` instead.
 #'
-#' @param max_truncation Deprecated; use `truncation` instead.
-#'
-#' @param trunc_max Deprecated; use `truncation` instead.
-#'
-#' @param trunc_dist Deprecated; use `truncation` instead.
-#'
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
 #'
@@ -111,8 +105,7 @@
 #' plot(out)
 #' options(old_opts)
 #' }
-estimate_truncation <- function(data, max_truncation, trunc_max = 10,
-                                trunc_dist = "lognormal",
+estimate_truncation <- function(data,
                                 truncation = trunc_opts(
                                   LogNormal(
                                     meanlog = Normal(0, 1),
@@ -131,16 +124,11 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
                                 obs) {
 
   if (!missing(obs)) {
-     if (!missing(data)) {
-      stop("Can't have `obs` and `data` arguments. Use `data` instead.")
-    }
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.5.0",
       "estimate_truncation(obs)",
-      "estimate_truncation(data)",
-      "The argument will be removed completely in the next version."
+      "estimate_truncation(data)"
     )
-    data <- obs
   }
   if (!is.null(model)) {
     lifecycle::deprecate_stop(
@@ -150,11 +138,10 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
     )
   }
   if (!missing(weigh_delay_priors)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.5.0",
       "estimate_truncation(weigh_delay_priors)",
-      "trunc_opts(weight_prior)",
-      detail = "This argument will be removed completely in the next version"
+      "trunc_opts(weight_prior)"
     )
   }
    # Validate inputs
@@ -169,65 +156,6 @@ estimate_truncation <- function(data, max_truncation, trunc_max = 10,
 
   ## code block to remove in next EpiNow2 version
   construct_trunc <- FALSE
-  if (!missing(trunc_max)) {
-    if (!missing(truncation)) {
-      stop(
-        "`trunc_max` and `truncation` arguments are both given. ",
-        "Use only `truncation` instead.")
-    }
-    if (!missing(max_truncation)) {
-      stop(
-        "`max_truncation` and `trunc_max` arguments are both given. ",
-        "Use only `truncation` instead.")
-    }
-    deprecate_stop(
-      "1.4.0",
-      "estimate_truncation(trunc_max)",
-      "estimate_truncation(truncation)"
-    )
-    construct_trunc <- TRUE
-  }
-  if (!missing(max_truncation)) {
-    if (!missing(truncation)) {
-      stop(
-        "`max_truncation` and `truncation` arguments are both given. ",
-        "Use only `truncation` instead.")
-    }
-    deprecate_stop(
-      "1.4.0",
-      "estimate_truncation(max_truncation)",
-      "estimate_truncation(truncation)"
-    )
-    trunc_max <- max_truncation
-    construct_trunc <- TRUE
-  }
-  if (!missing(trunc_dist)) {
-    trunc_dist <- arg_match(trunc_dist)
-    if (!missing(truncation)) {
-      stop(
-        "`trunc_dist` and `truncation` arguments are both given. ",
-        "Use only `truncation` instead.")
-    }
-    deprecate_stop(
-      "1.4.0",
-      "estimate_truncation(trunc_dist)",
-      "estimate_truncation(truncation)"
-    )
-    construct_trunc <- TRUE
-  }
-  if (construct_trunc) {
-    params_mean <- c(0, 1)
-    params_sd <- c(1, 1)
-    parameters <- lapply(seq_along(params_mean), function(id) {
-      Normal(params_mean, params_sd)
-    })
-    names(parameters) <- natural_params(trunc_dist)
-    parameters$max <- trunc_max
-    truncation <- new_dist_spec(
-      params = parameters,
-      distribution = trunc_dist
-    )
-  }
 
   # combine into ordered matrix
   dirty_obs <- purrr::map(data, data.table::as.data.table)

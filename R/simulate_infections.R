@@ -8,10 +8,6 @@
 #' standard deviation of delays or observation scaling, must be fixed.
 #' Uncertain parameters are not allowed.
 #'
-#' A previous function called [simulate_infections()] that simulates from a
-#' given model fit has been renamed [forecast_infections()]. Using
-#' [simulate_infections()] with existing estimates is now deprecated. This
-#' option will be removed in the next version.
 #' @param R a data frame of reproduction numbers (column `R`) by date (column
 #'   `date`). Column `R` must be numeric and `date` must be in date format. If
 #'   not all days between the first and last day in the `date` are present,
@@ -75,16 +71,11 @@ simulate_infections <- function(estimates, R, initial_infections,
                                 pop = 0, ...) {
   ## deprecated usage
   if (!missing(estimates)) {
-    deprecate_warn(
+    deprecate_stop(
       "1.5.0",
       "simulate_infections(estimates)",
-      "forecast_infections()",
-      details = paste0(
-        "The `estimates` option will be removed from [simulate_infections()] ",
-        "in the next version."
-      )
+      "forecast_infections()"
     )
-    return(forecast_infections(estimates = estimates, ...))
   }
 
   ## check inputs

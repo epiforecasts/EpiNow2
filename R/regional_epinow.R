@@ -113,20 +113,12 @@ regional_epinow <- function(data,
                             verbose = FALSE,
                             logs = tempdir(check = TRUE), ...,
                             reported_cases) {
-  # Warning for deprecated arguments
   if (!missing(reported_cases)) {
-     if (!missing(data)) {
-       stop("Can't have `reported_cases` and `data` arguments. ",
-            "Use `data` instead."
-       )
-    }
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.5.0",
       "regional_epinow(reported_cases)",
-      "regional_epinow(data)",
-      "The argument will be removed completely in the next version."
+      "regional_epinow(data)"
     )
-    data <- reported_cases
   }
   # supported output
   output <- match_output_arguments(output,

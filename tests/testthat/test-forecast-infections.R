@@ -78,9 +78,3 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
   sims_sample <- forecast_infections(out, R_samples)
   expect_equal(names(sims_sample), c("samples", "summarised", "observations"))
 })
-
-test_that("simulate_infections with a given estimate is deprecated", {
-  expect_deprecated(
-    sims <- simulate_infections(out)
-  )
-})

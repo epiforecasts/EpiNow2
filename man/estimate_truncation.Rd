@@ -6,9 +6,6 @@
 \usage{
 estimate_truncation(
   data,
-  max_truncation,
-  trunc_max = 10,
-  trunc_dist = "lognormal",
   truncation = trunc_opts(LogNormal(meanlog = Normal(0, 1), sdlog = Normal(1, 1), max =
     10)),
   model = NULL,
@@ -27,12 +24,6 @@ estimate_truncation(
 and a confirm (numeric) variable. Each data set should be a snapshot
 of the reported data over time. All data sets must contain a complete vector
 of dates.}
-
-\item{max_truncation}{Deprecated; use \code{truncation} instead.}
-
-\item{trunc_max}{Deprecated; use \code{truncation} instead.}
-
-\item{trunc_dist}{Deprecated; use \code{truncation} instead.}
 
 \item{truncation}{A call to \code{\link[=trunc_opts]{trunc_opts()}} defining the truncation of
 the observed data. Defaults to \code{\link[=trunc_opts]{trunc_opts()}}, i.e. no truncation.  See the

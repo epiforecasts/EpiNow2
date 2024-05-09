@@ -46,43 +46,4 @@ A \code{data.table} containing a \code{date} variable (date of report) and a
 Maps from cases by date of infection to date of report via date of
 onset.
 }
-\examples{
-\donttest{
-# This function is deprecated and its functionality can now be accessed
-# from [simulate_secondary()].
-# Here are some examples of how to use [simulate_secondary()] to replace
-# adjust_infection_to_report().
-
-# Old (using adjust_infection_to_report()):
-# Define example case data
-cases <- data.table::copy(example_confirmed)
-cases <- cases[, cases := as.integer(confirm)]
-# Define a simple reporting delay distribution
-delay_def <- lognorm_dist_def(
- mean = 5, mean_sd = 1, sd = 3, sd_sd = 1,
- max_value = 30, samples = 1, to_log = TRUE
-)
-report <- adjust_infection_to_report(
- cases,
- delay_defs = list(delay_def),
- reporting_model = function(n) rpois(length(n), n)
-)
-print(report)
-
-# New (using simulate_secondary()):
-cases <- data.table::copy(example_confirmed)
-cases <- cases[, primary := as.integer(confirm)]
-uncertain_delay <- LogNormal(
- mean = Normal(5, 1), sd = Normal(3, 1),
- max = 30
-)
-delay <- fix_dist(uncertain_delay, strategy = "sample")
-report <- simulate_secondary(
- cases,
- delays = delay_opts(delay),
- obs = obs_opts(family = "poisson")
-)
-print(report)
-}
-}
 \keyword{internal}

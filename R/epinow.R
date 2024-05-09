@@ -98,20 +98,12 @@ epinow <- function(data,
                    target_folder = NULL, target_date,
                    logs = tempdir(), id = "epinow", verbose = interactive(),
                    reported_cases) {
-  # Warning for deprecated arguments
   if (!missing(reported_cases)) {
-    if (!missing(data)) {
-      stop("Can't have `reported_cases` and `data` arguments. ",
-           "Use `data` instead."
-      )
-    }
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.5.0",
       "epinow(reported_cases)",
-      "epinow(data)",
-      "The argument will be removed completely in the next version."
+      "epinow(data)"
     )
-    data <- reported_cases
   }
   # Check inputs
   assert_logical(return_output)
