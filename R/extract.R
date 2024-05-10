@@ -55,8 +55,8 @@ extract_static_parameter <- function(param, samples) {
 
 #' Extract all samples from a stan fit
 #'
-#' If the `object` argument is a <stanfit> object, it simply returns the result
-#' of [rstan::extract()]. If it is a `<CmdStanMCMC>` it returns samples
+#' If the `object` argument is a `<stanfit>` object, it simply returns the
+#' result of [rstan::extract()]. If it is a `<CmdStanMCMC>` it returns samples
 #' in the same format as [rstan::extract()] does for `<stanfit>` objects.
 #' @param stan_fit A `<stanfit>` or `<CmdStanMCMC>` object as returned by
 #'   [fit_model()].
