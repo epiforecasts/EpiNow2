@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
   fig.height = 6.5,
   fig.path = "epinow-"
 )
+set.seed(9876)
 ```
 
 The _EpiNow2_ package contains functionality to run `estimate_infections()` in production mode, i.e. with full logging and saving all relevant outputs and plots to dedicated folders in the hard drive.

@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
   fig.height = 6.5,
   fig.path = "estimate_infections_workflow-"
 )
+set.seed(9876)
 ```
 
 This vignette describes the typical workflow for estimating reproduction numbers and performing short-term forecasts for a disease spreading in a given setting using _EpiNow2_.

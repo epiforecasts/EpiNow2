@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
   fig.height = 6.5,
   fig.path = "estimate_infections_options-"
 )
+set.seed(9876)
 ```
 
 The `estimate_infections()` function encodes a range of different model options.
