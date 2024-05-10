@@ -47,8 +47,7 @@ We can then run the `epinow()` function with the same arguments as `estimate_inf
 res <- epinow(reported_cases,
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
-  target_folder = "results"
+  rt = rt_opts(prior = rt_prior)
 )
 #> Logging threshold set at INFO for the EpiNow2 logger
 #> Writing EpiNow2 logs to the console and: /var/folders/n9/h_419gjj2mg3d208nplgvbg40000gp/T//RtmpV4gG8k/regional-epinow/2020-04-21.log
@@ -63,7 +62,10 @@ res$plots$R
 #> NULL
 ```
 
-The initial messages here indicate where log files can be found, and summarised results and plots are in the folder given by `target_folder` (here: `results/`).
+![plot of chunk epinow](epinow-epinow-1.png)
+
+The initial messages here indicate where log files can be found.
+If you want summarised results and plots to be written out where they can be accessed later you can use the `target_folder` argument.
 
 # Running the model simultaneously on multiple regions
 

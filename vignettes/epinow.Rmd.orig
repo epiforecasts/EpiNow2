@@ -48,13 +48,13 @@ We can then run the `epinow()` function with the same arguments as `estimate_inf
 res <- epinow(reported_cases,
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
-  target_folder = "results"
+  rt = rt_opts(prior = rt_prior)
 )
 res$plots$R
 ```
 
-The initial messages here indicate where log files can be found, and summarised results and plots are in the folder given by `target_folder` (here: `results/`).
+The initial messages here indicate where log files can be found.
+If you want summarised results and plots to be written out where they can be accessed later you can use the `target_folder` argument.
 
 # Running the model simultaneously on multiple regions
 
