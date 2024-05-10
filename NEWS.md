@@ -1,3 +1,5 @@
+# EpiNow2 (development version)
+
 # EpiNow2 1.5.0
 
 This release comes with a change of maintainer, from @seabbs to @sbfnk.
