@@ -850,7 +850,7 @@ stan_opts <- function(object = NULL,
   if (!is.null(init_fit)) {
     deprecate_stop(
       when = "1.5.0",
-      what = "stan_opts(init_fit)",
+      what = "stan_opts(init_fit)"
     )
   }
   opts <- c(opts, list(return_fit = return_fit))

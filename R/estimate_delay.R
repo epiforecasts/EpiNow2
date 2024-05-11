@@ -183,16 +183,13 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 
     fit <- EpiNow2::dist_fit(values, samples = samples, dist = dist)
 
-
     out <- list()
     if (dist == "lognormal") {
-      out$mean_samples <- sample(extract(fit)$mu, samples)
-      out$sd_samples <- sample(extract(fit)$sigma, samples)
+      out$meanlog <- sample(extract(fit)$mu, samples)
+      out$sdlog <- sample(extract(fit)$sigma, samples)
     } else if (dist == "gamma") {
-      alpha_samples <- sample(extract(fit)$alpha, samples)
-      beta_samples <- sample(extract(fit)$beta, samples)
-      out$mean_samples <- alpha_samples / beta_samples
-      out$sd_samples <- sqrt(alpha_samples) / beta_samples
+      out$shape <- sample(extract(fit)$alpha, samples)
+      out$rate <- sample(extract(fit)$beta, samples)
     }
     return(out)
   }
@@ -224,17 +221,16 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
     dist_samples <- purrr::map(dist_samples, unlist)
   }
 
-  out <- list()
-  out$mean <- mean(dist_samples$mean_samples)
-  out$mean_sd <- sd(dist_samples$mean_samples)
-  out$sd <- mean(dist_samples$sd_sample)
-  out$sd_sd <- sd(dist_samples$sd_samples)
+  params <- lapply(dist_samples, function(x) {
+    Normal(mean = mean(x), sd = sd(x))
+  })
+
   if (!missing(max_value)) {
-    out$max <- max_value
+    params$max <- max_value
   } else {
-    out$max <- max(values)
+    params$max <- max(values)
   }
-  return(do.call(dist_spec, out))
+  return(new_dist_spec(params = params, distribution = dist))
 }
 
 #' Estimate a Delay Distribution

@@ -154,9 +154,6 @@ estimate_truncation <- function(data,
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
-  ## code block to remove in next EpiNow2 version
-  construct_trunc <- FALSE
-
   # combine into ordered matrix
   dirty_obs <- purrr::map(data, data.table::as.data.table)
   dirty_obs <- purrr::map(dirty_obs,
