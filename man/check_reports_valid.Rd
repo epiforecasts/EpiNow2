@@ -29,7 +29,7 @@ Called for its side effects.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 \code{check_reports_valid()} checks that the supplied data is a \verb{<data.frame>},
 and that it has the right column names and types. In particular, it checks
-that the date column is in date format and does not contain NA's, and that
+that the date column is in date format and does not contain NAs, and that
 the other columns are numeric.
 }
 \keyword{internal}

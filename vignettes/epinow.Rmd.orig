@@ -17,8 +17,10 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.width = 6.5,
-  fig.height = 6.5
+  fig.height = 6.5,
+  fig.path = "epinow-"
 )
+set.seed(9876)
 ```
 
 The _EpiNow2_ package contains functionality to run `estimate_infections()` in production mode, i.e. with full logging and saving all relevant outputs and plots to dedicated folders in the hard drive.
@@ -47,13 +49,13 @@ We can then run the `epinow()` function with the same arguments as `estimate_inf
 res <- epinow(reported_cases,
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
-  target_folder = "results"
+  rt = rt_opts(prior = rt_prior)
 )
 res$plots$R
 ```
 
-The initial messages here indicate where log files can be found, and summarised results and plots are in the folder given by `target_folder` (here: `results/`).
+The initial messages here indicate where log files can be found.
+If you want summarised results and plots to be written out where they can be accessed later you can use the `target_folder` argument.
 
 # Running the model simultaneously on multiple regions
 

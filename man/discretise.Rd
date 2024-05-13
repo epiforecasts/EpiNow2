@@ -14,7 +14,7 @@ discretize(x, strict = TRUE)
 
 \item{strict}{Logical; If \code{TRUE} (default) an error will be thrown if a
 distribution cannot be discretised (e.g., because no finite maximum has been
-specified or parameters are uncertain). If if \code{FALSE} then any distribution
+specified or parameters are uncertain). If \code{FALSE} then any distribution
 that cannot be discretised will be returned as is.}
 }
 \value{

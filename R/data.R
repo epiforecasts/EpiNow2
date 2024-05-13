@@ -52,7 +52,7 @@
 #' An example dataset of observed cases with truncation applied.
 #' This data is generated internally for use in the example of
 #' `estimate_truncation()`. For details on how the data is generated, see
-#' <https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/estimate-truncation.R> #nolint
+#' <https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/truncated.R> #nolint
 #' @format A list of `data.table`s containing cases reported on each date until
 #' a point of truncation.
 #' Each element of the list is a `data.table` with the following columns:

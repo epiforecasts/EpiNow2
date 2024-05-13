@@ -39,6 +39,7 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
   model <- monitor(cmdstanr::cmdstan_model(
     model_file,
     include_paths = dir,
+    dir = tempdir(),
     ...
   ))
   return(model)

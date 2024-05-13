@@ -4,7 +4,7 @@
 #' Estimates a truncation distribution from multiple snapshots of the same
 #' data source over time. This distribution can then be used passed to the
 #' `truncation` argument in [regional_epinow()], [epinow()], and
-#' [estimate_infections()] to adjust for truncated data and propagage the
+#' [estimate_infections()] to adjust for truncated data and propagate the
 #' uncertainty associated with data truncation into the estimates.
 #'
 #' See [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)
@@ -79,6 +79,7 @@
 #' @importFrom checkmate assert_character assert_numeric assert_class
 #' assert_logical
 #' @examples
+#' \donttest{
 #' # set number of cores to use
 #' old_opts <- options()
 #' options(mc.cores = ifelse(interactive(), 4, 1))
@@ -109,6 +110,7 @@
 #' )
 #' plot(out)
 #' options(old_opts)
+#' }
 estimate_truncation <- function(data, max_truncation, trunc_max = 10,
                                 trunc_dist = "lognormal",
                                 truncation = trunc_opts(
