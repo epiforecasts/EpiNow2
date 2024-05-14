@@ -30,10 +30,10 @@ jobs:
         with:
           packages: any::rmarkdown, any::allcontributors
 
-      - name: Update contributors
-        if: github.ref == 'refs/heads/main'
-        run: allcontributors::add_contributors(format = "text")
-        shell: Rscript {0}
+      # - name: Update contributors
+      #   if: github.ref == 'refs/heads/main'
+      #   run: allcontributors::add_contributors(format = "text")
+      #   shell: Rscript {0}
 
       - name: Compile the readme
         run: |
