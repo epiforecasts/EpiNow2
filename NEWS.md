@@ -1,3 +1,5 @@
+# EpiNow2 (development version)
+
 # EpiNow2 1.5.1
 
 A patch release to fix an issue with the date in the package citation.
