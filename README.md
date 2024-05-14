@@ -228,85 +228,79 @@ guide](https://github.com/epiforecasts/EpiNow2/blob/main/.github/CONTRIBUTING.md
 
 ## Contributors
 
-
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 
-All contributions to this project are gratefully acknowledged using the [`allcontributors` package](https://github.com/ropenscilabs/allcontributors) following the [all-contributors](https://allcontributors.org) specification. Contributions of any kind are welcome!
+All contributions to this project are gratefully acknowledged using the
+[`allcontributors`
+package](https://github.com/ropenscilabs/allcontributors) following the
+[all-contributors](https://allcontributors.org) specification.
+Contributions of any kind are welcome!
 
 ### Code
 
-
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=seabbs">seabbs</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=sbfnk">sbfnk</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=jamesmbaazam">jamesmbaazam</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=joeHickson">joeHickson</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=hsbadr">hsbadr</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=pitmonticone">pitmonticone</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=actions-user">actions-user</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=dependabot[bot]">dependabot[bot]</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=ellisp">ellisp</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=jdmunday">jdmunday</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=JAllen42">JAllen42</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=andrjohns">andrjohns</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=pearsonca">pearsonca</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=LloydChapman">LloydChapman</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=medewitt">medewitt</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=nikosbosse">nikosbosse</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=sophiemeakin">sophiemeakin</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=github-actions[bot]">github-actions[bot]</a>
-
-
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=seabbs">seabbs</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=sbfnk">sbfnk</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=jamesmbaazam">jamesmbaazam</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=joeHickson">joeHickson</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=hsbadr">hsbadr</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=pitmonticone">pitmonticone</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=actions-user">actions-user</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=dependabot[bot]">dependabot\[bot\]</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=ellisp">ellisp</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=jdmunday">jdmunday</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=JAllen42">JAllen42</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=andrjohns">andrjohns</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=pearsonca">pearsonca</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=LloydChapman">LloydChapman</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=medewitt">medewitt</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=nikosbosse">nikosbosse</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=sophiemeakin">sophiemeakin</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=github-actions[bot]">github-actions\[bot\]</a>
 
 ### Issue Authors
 
-
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Araulfernandezn">raulfernandezn</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Apcarbo">pcarbo</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ajohnaponte">johnaponte</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Asophie-schiller">sophie-schiller</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amunozedg">munozedg</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Akathsherratt">kathsherratt</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ayungwai">yungwai</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Akgostic">kgostic</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Afkrauer">fkrauer</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aphilturk">philturk</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Akrageth">krageth</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Atony352">tony352</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ausername-rp">username-rp</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AHAKGH">HAKGH</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AAndrewRiceMGW">AndrewRiceMGW</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Abrynhayder">brynhayder</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3ARichardMN">RichardMN</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aandrybicio">andrybicio</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Arhamoonga">rhamoonga</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Afurqan915">furqan915</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AMFZaini1984">MFZaini1984</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Afabsig">fabsig</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aaffans">affans</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AGauriSaran">GauriSaran</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Adavidvilanova">davidvilanova</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3ABisaloo">Bisaloo</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ajrcpulliam">jrcpulliam</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Adajmcdon">dajmcdon</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ajoshwlambert">joshwlambert</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aavallecam">avallecam</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aathowes">athowes</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Araulfernandezn">raulfernandezn</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Apcarbo">pcarbo</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ajohnaponte">johnaponte</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Asophie-schiller">sophie-schiller</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amunozedg">munozedg</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Akathsherratt">kathsherratt</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ayungwai">yungwai</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Akgostic">kgostic</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Afkrauer">fkrauer</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aphilturk">philturk</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Akrageth">krageth</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Atony352">tony352</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ausername-rp">username-rp</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AHAKGH">HAKGH</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AAndrewRiceMGW">AndrewRiceMGW</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Abrynhayder">brynhayder</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3ARichardMN">RichardMN</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aandrybicio">andrybicio</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Arhamoonga">rhamoonga</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Afurqan915">furqan915</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AMFZaini1984">MFZaini1984</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Afabsig">fabsig</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aaffans">affans</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AGauriSaran">GauriSaran</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Adavidvilanova">davidvilanova</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3ABisaloo">Bisaloo</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ajrcpulliam">jrcpulliam</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Adajmcdon">dajmcdon</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ajoshwlambert">joshwlambert</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aavallecam">avallecam</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aathowes">athowes</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Alorenzwalthert">lorenzwalthert</a>
-
-
 
 ### Issue Contributors
 
-
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Ajhellewell14">jhellewell14</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Athlytras">thlytras</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3ALizaHadley">LizaHadley</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Ajhellewell14">jhellewell14</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Athlytras">thlytras</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3ALizaHadley">LizaHadley</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Antorresd">ntorresd</a>
-
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
