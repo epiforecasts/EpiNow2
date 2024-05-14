@@ -8,7 +8,7 @@ message: 'To cite package "EpiNow2" in publications use:'
 type: software
 license: MIT
 title: 'EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters'
-version: 1.5.0
+version: 1.5.1.9000
 doi: 10.5281/zenodo.3957489
 abstract: Estimates the time-varying reproduction number, rate of spread, and doubling
   time using a range of open-source tools (Abbott et al. (2020) <https://doi.org/10.12688/wellcomeopenres.16006.1>),
@@ -508,10 +508,7 @@ references:
     email: rok.cesnovar@fri.uni-lj.si
   - family-names: Johnson
     given-names: Andrew
-    email: andrew.johnson@arjohnsonau.com
     orcid: https://orcid.org/0000-0001-7000-8065
-  - family-names: Bronder
-    given-names: Steve
   year: '2024'
 - type: software
   title: covr
@@ -525,18 +522,6 @@ references:
     email: james.f.hester@gmail.com
   year: '2024'
 - type: software
-  title: here
-  abstract: 'here: A Simpler Way to Find Your Files'
-  notes: Suggests
-  url: https://here.r-lib.org/
-  repository: https://CRAN.R-project.org/package=here
-  authors:
-  - family-names: Müller
-    given-names: Kirill
-    email: krlmlr+r@mailbox.org
-    orcid: https://orcid.org/0000-0002-1416-3412
-  year: '2024'
-- type: software
   title: knitr
   abstract: 'knitr: A General-Purpose Package for Dynamic Report Generation in R'
   notes: Suggests
@@ -547,16 +532,6 @@ references:
     given-names: Yihui
     email: xie@yihui.name
     orcid: https://orcid.org/0000-0003-0645-5666
-  year: '2024'
-- type: software
-  title: precommit
-  abstract: 'precommit: Pre-Commit Hooks'
-  notes: Suggests
-  url: https://lorenzwalthert.github.io/precommit/
-  repository: https://CRAN.R-project.org/package=precommit
-  authors:
-  - family-names: Walthert
-    given-names: Lorenz
   year: '2024'
 - type: software
   title: rmarkdown
@@ -602,21 +577,6 @@ references:
     orcid: https://orcid.org/0000-0003-3925-190X
   year: '2024'
 - type: software
-  title: spelling
-  abstract: 'spelling: Tools for Spell Checking in R'
-  notes: Suggests
-  url: https://ropensci.r-universe.dev/spelling
-  repository: https://CRAN.R-project.org/package=spelling
-  authors:
-  - family-names: Ooms
-    given-names: Jeroen
-    email: jeroen@berkeley.edu
-    orcid: https://orcid.org/0000-0002-4035-0289
-  - family-names: Hester
-    given-names: Jim
-    email: james.hester@rstudio.com
-  year: '2024'
-- type: software
   title: testthat
   abstract: 'testthat: Unit Testing for R'
   notes: Suggests
@@ -626,30 +586,6 @@ references:
   - family-names: Wickham
     given-names: Hadley
     email: hadley@posit.co
-  year: '2024'
-- type: software
-  title: usethis
-  abstract: 'usethis: Automate Package and Project Setup'
-  notes: Suggests
-  url: https://usethis.r-lib.org
-  repository: https://CRAN.R-project.org/package=usethis
-  authors:
-  - family-names: Wickham
-    given-names: Hadley
-    email: hadley@posit.co
-    orcid: https://orcid.org/0000-0003-4757-117X
-  - family-names: Bryan
-    given-names: Jennifer
-    email: jenny@posit.co
-    orcid: https://orcid.org/0000-0002-6983-2759
-  - family-names: Barrett
-    given-names: Malcolm
-    email: malcolmbarrett@gmail.com
-    orcid: https://orcid.org/0000-0003-0299-5825
-  - family-names: Teucher
-    given-names: Andy
-    email: andy.teucher@posit.co
-    orcid: https://orcid.org/0000-0002-7840-692X
   year: '2024'
 - type: software
   title: withr
