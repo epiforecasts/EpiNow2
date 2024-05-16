@@ -1,4 +1,4 @@
-# EpiNow2 (development version)
+# EpiNow2 1.5.2
 
 # EpiNow2 1.5.1
 
