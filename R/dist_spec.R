@@ -185,10 +185,10 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' @return A delay distribution representing the sum of the two delays
-#' @param e1 The first delay distribution (of type [dist_spec()]) to
+#' @param e1 The first delay distribution (of type <dist_spec>) to
 #' combine.
 #'
-#' @param e2 The second delay distribution (of type [dist_spec()]) to
+#' @param e2 The second delay distribution (of type <dist_spec>) to
 #' combine.
 #' @method + dist_spec
 #' @export
@@ -214,7 +214,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' This combines the parameters so that they can be fed as multiple delay
 #' distributions to [epinow()] or [estimate_infections()].
 #'
-#' @param ... The delay distributions (from calls to [dist_spec()]) to combine
+#' @param ... The delay distributions to combine
 #' @return Combined delay distributions (with class `<dist_spec>`)
 #' @method c dist_spec
 #' @export
@@ -248,7 +248,7 @@ c.dist_spec <- function(...) {
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' This works out the mean of all the (parametric / nonparametric) delay
-#' distributions combined in the passed [dist_spec()] (ignoring any uncertainty
+#' distributions combined in the passed <dist_spec> (ignoring any uncertainty
 #' in parameters)
 #'
 #' @param x The `<dist_spec>` to use
@@ -312,9 +312,9 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' This works out the standard deviation of all the (parametric /
-#' nonparametric) delay distributions combined in the passed [dist_spec()].
+#' nonparametric) delay distributions combined in the passed <dist_spec>.
 #'
-#' @param x The [dist_spec()] to use
+#' @param x The <dist_spec> to use
 #' @return A vector of standard deviations.
 #' @importFrom utils head
 #' @keywords internal
@@ -370,10 +370,10 @@ sd_dist <- function(x) {
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' This works out the maximum of all the (parametric / nonparametric) delay
-#' distributions combined in the passed [dist_spec()] (ignoring any uncertainty
+#' distributions combined in the passed <dist_spec> (ignoring any uncertainty
 #' in parameters)
 #'
-#' @param x The [dist_spec()] to use
+#' @param x The <dist_spec> to use
 #' @param ... Not used
 #' @return A vector of means.
 #' @method max dist_spec
@@ -554,7 +554,7 @@ apply_tolerance <- function(x, tolerance) {
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' This displays the parameters of the uncertain and probability mass
-#' functions of fixed delay distributions combined in the passed [dist_spec()].
+#' functions of fixed delay distributions combined in the passed <dist_spec>.
 #' @param x The `<dist_spec>` to use
 #' @param ... Not used
 #' @return invisible
@@ -1186,7 +1186,7 @@ get_pmf <- function(x, id = NULL) {
   return(x[[id]]$pmf)
 }
 
-##' Get the distribution of a [dist_spec()]
+##' Get the distribution of a <dist_spec>
 ##'
 ##' @inheritParams get_dist_spec_id
 ##' @description `r lifecycle::badge("experimental")`

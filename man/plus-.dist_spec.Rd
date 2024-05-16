@@ -7,10 +7,10 @@
 \method{+}{dist_spec}(e1, e2)
 }
 \arguments{
-\item{e1}{The first delay distribution (of type \code{\link[=dist_spec]{dist_spec()}}) to
+\item{e1}{The first delay distribution (of type <dist_spec>) to
 combine.}
 
-\item{e2}{The second delay distribution (of type \code{\link[=dist_spec]{dist_spec()}}) to
+\item{e2}{The second delay distribution (of type <dist_spec>) to
 combine.}
 }
 \value{

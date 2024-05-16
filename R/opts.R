@@ -155,7 +155,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' @inheritParams generation_time_opts
 #' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] [dist_spec()]
+#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
 #' @export
 #' @examples
 #' # no delays
@@ -221,7 +221,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
 #' distribution.
 #'
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] [dist_spec()]
+#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
 #' @export
 #' @examples
 #' # no truncation
