@@ -294,7 +294,3 @@ test_that("get functions report errors", {
     Gamma(mean = 4, sd = 1), Gamma(mean = 4, sd = 1)
   )), "must be specified")
 })
-
-test_that("deprecated functions are deprecated", {
-  expect_deprecated(dist_spec(params_mean = c(1.6, 0.6), max = 19))
-})

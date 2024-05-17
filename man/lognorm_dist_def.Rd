@@ -31,22 +31,4 @@ Generates a distribution definition when only parameter estimates
 are available for log normal distributed parameters. See \code{\link[=rlnorm]{rlnorm()}} for
 distribution information.
 }
-\examples{
-def <- lognorm_dist_def(
-  mean = 1.621, mean_sd = 0.0640,
-  sd = 0.418, sd_sd = 0.0691,
-  max_value = 20, samples = 10
-)
-print(def)
-def$params[[1]]
-
-def <- lognorm_dist_def(
-  mean = 5, mean_sd = 1,
-  sd = 3, sd_sd = 1,
-  max_value = 20, samples = 10,
-  to_log = TRUE
-)
-print(def)
-def$params[[1]]
-}
 \keyword{internal}

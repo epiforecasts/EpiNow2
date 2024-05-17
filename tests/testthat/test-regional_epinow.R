@@ -109,11 +109,3 @@ test_that("regional_epinow produces expected output when run with region specifi
   df_non_zero(out$regional$realland$summary)
   expect_equal(names(out$regional$realland$plots), c("summary", "infections", "reports", "R", "growth_rate"))
 })
-
-test_that("deprecated arguments are recognised", {
-  expect_deprecated(
-    regional_epinow(
-      reported_cases = cases,
-      generation_time = generation_time_opts(Fixed(1))
-  ))
-})

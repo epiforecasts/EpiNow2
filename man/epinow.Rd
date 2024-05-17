@@ -156,7 +156,7 @@ reported_cases <- example_confirmed[1:40]
 
 # estimate Rt and nowcast/forecast cases by date of infection
 out <- epinow(
-  reported_cases = reported_cases,
+  data = reported_cases,
   generation_time = generation_time_opts(generation_time),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
   delays = delay_opts(incubation_period + reporting_delay)

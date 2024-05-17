@@ -41,7 +41,6 @@ simulate_secondary <- function(primary,
                                CrIs = c(0.2, 0.5, 0.9),
                                backend = "rstan",
                                ...) {
-  ## deprecated usage
   assert_data_frame(primary, any.missing = FALSE)
   assert_subset(c("date", "primary"), colnames(primary))
   assert_date(primary$date)

@@ -67,10 +67,3 @@ test_that("create_obs_model can be used with a user set phi", {
   expect_equal(obs$phi_sd, 0)
   expect_error(obs_opts(phi = c("Hi", "World")))
 })
-
-test_that("using a vector for phi in create_obs_model is deprecated", {
-  expect_warning(
-    create_obs_model(dates = dates, obs = obs_opts(phi = c(10, 0.1))),
-    "deprecated"
-  )
-})

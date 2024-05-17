@@ -43,62 +43,6 @@ A \verb{<data.table>} of cases by date of onset
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
-Convolves cases by a PMF function. This function will soon be removed or
-replaced with a more robust stan implementation.
-}
-\examples{
-\donttest{
-cases <- example_confirmed
-cases <- cases[, cases := as.integer(confirm)]
-print(cases)
-
-# total cases
-sum(cases$cases)
-
-delay_fn <- function(n, dist, cum) {
-  if (dist) {
-    pgamma(n + 0.9999, 2, 1) - pgamma(n - 1e-5, 2, 1)
-  } else {
-    as.integer(rgamma(n, 2, 1))
-  }
-}
-
-onsets <- sample_approx_dist(
-  cases = cases,
-  dist_fn = delay_fn
-)
-
-# estimated onset distribution
-print(onsets)
-
-# check that sum is equal to reported cases
-total_onsets <- median(
-  purrr::map_dbl(
-    1:10,
-    ~ sum(sample_approx_dist(
-      cases = cases,
-      dist_fn = delay_fn
-    )$cases)
-  )
-)
-total_onsets
-
-
-# map from onset cases to reported
-reports <- sample_approx_dist(
-  cases = cases,
-  dist_fn = delay_fn,
-  direction = "forwards"
-)
-
-
-# map from onset cases to reported using a mean shift
-reports <- sample_approx_dist(
-  cases = cases,
-  dist_fn = delay_fn,
-  direction = "forwards",
-  type = "median"
-)
-}
+Deprecated; Convolves cases by a PMF function.
 }
 \keyword{internal}

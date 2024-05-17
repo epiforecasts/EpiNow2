@@ -94,11 +94,6 @@ model can be specified using the same options as in \code{\link[=estimate_infect
 In order to simulate, all parameters that are specified such as the mean and
 standard deviation of delays or observation scaling, must be fixed.
 Uncertain parameters are not allowed.
-
-A previous function called \code{\link[=simulate_infections]{simulate_infections()}} that simulates from a
-given model fit has been renamed \code{\link[=forecast_infections]{forecast_infections()}}. Using
-\code{\link[=simulate_infections]{simulate_infections()}} with existing estimates is now deprecated. This
-option will be removed in the next version.
 }
 \examples{
 \donttest{

@@ -44,52 +44,18 @@
 generation_time_opts <- function(dist = Fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
                                  tolerance = 0.001, weight_prior = TRUE) {
-  deprecated_options_given <- FALSE
   dot_options <- list(...)
 
-  ## check consistent options are given
-  type_options <- (length(dot_options) > 0) + ## distributional parameters
-    (!missing(disease) && !missing(source)) ## from included distributions
-  if (type_options > 1) {
+  if ((length(dot_options) > 0) ||
+      (!missing(disease) && !missing(source)) ||
+      (!is(dist, "dist_spec"))) {
     stop(
-      "Generation time can be given either as distributional options ",
-      "or as a combination of disease and source, but not both."
-    )
-  }
-  if (length(dot_options) > 0) {
-    if (is(dist, "dist_spec")) { ## dist not specified
-      dot_options$distribution <- "gamma"
-    }
-    ## set max
-    if (!("max" %in% names(dot_options))) {
-      dot_options$max <- max
-    }
-    ## set default of mean=1 for backwards compatibility
-    if (!("mean" %in% names(dot_options))) {
-      dot_options$mean <- 1
-    }
-    dist <- do.call(dist_spec, dot_options)
-    if (fixed) dist <- fix_dist(dist)
-    deprecated_options_given <- TRUE
-  } else if (!missing(disease) && !missing(source)) {
-    dist <- get_generation_time(disease, source, max, fixed)
-    dist$fixed <- fixed
-    deprecated_options_given <- TRUE
-  }
-  if (!is(dist, "dist_spec")) {
-    if (is.list(dist) && length(dot_options) == 0) {
-      dist <- do.call(dist_spec, dist)
-    }
-    deprecated_options_given <- TRUE
-  }
-  if (deprecated_options_given) {
-    warning(
       "The generation time distribution should be given to ",
       "`generation_time_opts` using a `dist_spec`. ",
       "This behaviour has changed from previous versions of `EpiNow2` and ",
       "any code using it may need to be updated as any other ways of ",
-      "specifying the generation time are deprecated and will be removed in ",
-      "the next version. For examples and more ",
+      "specifying the generation time are deprecated.",
+      "For examples and more ",
       "information, see the relevant documentation pages using ",
       "`?generation_time_opts`")
   }
@@ -189,7 +155,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' @inheritParams generation_time_opts
 #' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] [dist_spec()]
+#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
 #' @export
 #' @examples
 #' # no delays
@@ -209,27 +175,14 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
                        weight_prior = TRUE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec")) { ## could be old syntax
-    if (is.list(dist)) {
-      ## combine lists if more than one given
-      dot_options <- c(list(dist), dot_options)
-      dist <- lapply(dot_options, do.call, what = dist_spec)
-      if (length(dist) > 1) {
-        for (i in seq(2, length(dist))) {
-          dist[[1]] <- dist[[1]] + dist[[i]]
-        }
-      }
-      dist <- dist[[1]]
-    } else {
-      stop("`dist` should be given as result of a call to `dist_spec`.")
-    }
-    warning(
+    stop(
       "Delay distributions must be of given either using a call to ",
       "`dist_spec` or one of the `get_...` functions such as ",
       "`get_incubation_period`. ",
       "This behaviour has changed from previous versions of `EpiNow2` and ",
       "any code using it may need to be updated as any other ways of ",
-      "specifying delays are deprecated and will be removed in ",
-      "the next version. For examples and more ",
+      "specifying delays are deprecated. ",
+      "For examples and more ",
       "information, see the relevant documentation pages using ",
       "`?delay_opts`."
     )
@@ -268,7 +221,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
 #' distribution.
 #'
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] [dist_spec()]
+#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
 #' @export
 #' @examples
 #' # no truncation
@@ -279,10 +232,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
 trunc_opts <- function(dist = Fixed(0), tolerance = 0.001,
                        weight_prior = FALSE) {
   if (!is(dist, "dist_spec")) {
-    if (is.list(dist)) {
-      dist <- do.call(dist_spec, dist)
-    }
-    warning(
+    stop(
       "Truncation distributions must be of given either using a call to ",
       "`dist_spec` or one of the `get_...` functions. ",
       "This behaviour has changed from previous versions of `EpiNow2` and ",
@@ -583,11 +533,10 @@ obs_opts <- function(family = c("negbin", "poisson"),
   }
 
   if (length(phi) == 2 && is.numeric(phi)) {
-    warning(
+    stop(
       "Specifying `phi` as a length 2 vector is deprecated. Mean and SD ",
       "should be given as list elements."
     )
-    phi <- list(mean = phi[1], sd = phi[2])
   }
   obs <- list(
     family = arg_match(family),
@@ -612,33 +561,6 @@ obs_opts <- function(family = c("negbin", "poisson"),
 
   attr(obs, "class") <- c("obs_opts", class(obs))
   return(obs)
-}
-
-#' Rstan Sampling Options
-#'
-#' @description `r lifecycle::badge("deprecated")`
-#' Deprecated; use [stan_sampling_opts()] instead.
-#' @inheritParams stan_sampling_opts
-#' @return A list of arguments to pass to [rstan::sampling()].
-#' @export
-rstan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
-                                warmup = 250,
-                                samples = 2000,
-                                chains = 4,
-                                control = list(),
-                                save_warmup = FALSE,
-                                seed = as.integer(runif(1, 1, 1e8)),
-                                future = FALSE,
-                                max_execution_time = Inf,
-                                ...) {
-  lifecycle::deprecate_warn(
-    "1.5.0", "rstan_sampling_opts()",
-    "stan_sampling_opts()"
-  )
-  return(stan_sampling_opts(
-    cores, warmup, samples, chains, control, save_warmup, seed, future,
-    max_execution_time, backend = "rstan", ...
-  ))
 }
 
 #' Stan Sampling Options
@@ -738,23 +660,6 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
   return(opts)
 }
 
-#' Rstan Variational Bayes Options
-#'
-#' @description `r lifecycle::badge("deprecated")`
-#' Deprecated; use [stan_vb_opts()] instead.
-#' @inheritParams stan_vb_opts
-#' @return A list of arguments to pass to [rstan::vb()].
-#' @export
-rstan_vb_opts <- function(samples = 2000,
-                          trials = 10,
-                          iter = 10000, ...) {
-  lifecycle::deprecate_warn(
-    "1.5.0", "rstan_vb_opts()",
-    "stan_vb_opts()"
-  )
-  return(stan_vb_opts(samples, trials, iter, ...))
-}
-
 #' Stan Variational Bayes Options
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -846,51 +751,6 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
   return(opts)
 }
 
-#' Rstan Options
-#'
-#' @description `r lifecycle::badge("deprecated")`
-#' Deprecated; specify options in [stan_opts()] instead.
-#'
-#' @param object Stan model object. By default uses the compiled package
-#' default.
-#'
-#' @param method A character string, defaulting to sampling. Currently supports
-#' [rstan::sampling()] ("sampling") or [rstan::vb()].
-#'
-#' @param ... Additional parameters to pass  underlying option functions.
-#' @importFrom rlang arg_match
-#' @return A list of arguments to pass to the appropriate rstan functions.
-#' @export
-#' @inheritParams rstan_sampling_opts
-#' @seealso [rstan_sampling_opts()] [rstan_vb_opts()]
-rstan_opts <- function(object = NULL,
-                       samples = 2000,
-                       method = c("sampling", "vb"), ...) {
-  lifecycle::deprecate_warn(
-    "1.5.0", "rstan_opts()",
-    "stan_opts()"
-  )
-  method <- arg_match(method)
-  # shared everywhere opts
-  if (is.null(object)) {
-    object <- stanmodels$estimate_infections
-  }
-  opts <- list(
-    object = object,
-    method = method
-  )
-  if (method == "sampling") {
-    opts <- c(
-      opts, stan_sampling_opts(samples = samples, backend = "rstan", ...)
-    )
-  } else if (method == "vb") {
-    opts <- c(
-      opts, stan_vb_opts(samples = samples, ...)
-    )
-  }
-  return(opts)
-}
-
 #' Stan Options
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -911,21 +771,8 @@ rstan_opts <- function(object = NULL,
 #' @param backend Character string indicating the backend to use for fitting
 #' stan models. Supported arguments are "rstan" (default) or "cmdstanr".
 #'
-#' @param init_fit `r lifecycle::badge("experimental")`
-#' Character string or `stanfit` object, defaults to NULL. Should an initial
-#' fit be used to initialise the full fit. An example scenario would be using a
-#' national level fit to parametrise regional level fits. Optionally a
-#' character string can be passed with the currently supported option being
-#' "cumulative". This fits the model to cumulative cases and may be useful for
-#' certain data sets where the sampler gets stuck or struggles to initialise.
-#' See [init_cumulative_fit()] for details.
-#'
-#' This implementation is based on the approach taken in
-#' [epidemia](https://github.com/ImperialCollegeLondon/epidemia/) authored by
-#' James Scott.
-#'
-#' This argument is deprecated and the default (NULL) will be used from
-#' the next version.
+#' @param init_fit `r lifecycle::badge("deprecated")`
+#' This argument is deprecated.
 #'
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be
 #' returned.
@@ -1001,16 +848,10 @@ stan_opts <- function(object = NULL,
   }
 
   if (!is.null(init_fit)) {
-    deprecate_warn(
+    deprecate_stop(
       when = "1.5.0",
-      what = "stan_opts(init_fit)",
-      details = paste("This argument is deprecated and the default (NULL)",
-                      "will be used from the next version.")
+      what = "stan_opts(init_fit)"
     )
-    if (is.character(init_fit)) {
-      init_fit <- arg_match(init_fit, values = "cumulative")
-    }
-    opts$init_fit <- init_fit
   }
   opts <- c(opts, list(return_fit = return_fit))
   attr(opts, "class") <- c("stan_opts", class(opts))

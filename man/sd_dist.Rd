@@ -7,7 +7,7 @@
 sd_dist(x)
 }
 \arguments{
-\item{x}{The \code{\link[=dist_spec]{dist_spec()}} to use}
+\item{x}{The <dist_spec> to use}
 }
 \value{
 A vector of standard deviations.
@@ -15,7 +15,7 @@ A vector of standard deviations.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This works out the standard deviation of all the (parametric /
-nonparametric) delay distributions combined in the passed \code{\link[=dist_spec]{dist_spec()}}.
+nonparametric) delay distributions combined in the passed <dist_spec>.
 }
 \examples{
 \dontrun{

@@ -159,16 +159,11 @@ estimate_secondary <- function(data,
                                reports) {
   # Deprecate reported_cases in favour of data
   if (!missing(reports)) {
-     if (!missing(data)) {
-      stop("Can't have `reported` and `data` arguments. Use `data` instead.")
-    }
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.5.0",
       "estimate_secondary(reports)",
-      "estimate_secondary(data)",
-      "The argument will be removed completely in the next version."
+      "estimate_secondary(data)"
     )
-    data <- reports
   }
   # Validate the inputs
   check_reports_valid(data, model = "estimate_secondary")

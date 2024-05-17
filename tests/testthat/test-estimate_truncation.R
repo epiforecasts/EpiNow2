@@ -84,21 +84,4 @@ test_that("estimate_truncation works with zero_threshold set", {
   expect_s3_class(out$dist, "dist_spec")
 })
 
-test_that("deprecated arguments are recognised", {
-  expect_error(estimate_truncation(example_truncated,
-    verbose = FALSE, trunc_max = 10
-  ), "deprecated")
-  expect_error(estimate_truncation(example_truncated,
-    verbose = FALSE, max_truncation = 10
-  ), "deprecated")
-  expect_error(estimate_truncation(example_truncated,
-    verbose = FALSE, trunc_dist = "lognormal"
-  ), "deprecated")
-  expect_deprecated(
-    estimate_truncation(obs = example_truncated,
-      verbose = FALSE
-    )
-  )
-})
-
 options(old_opts)

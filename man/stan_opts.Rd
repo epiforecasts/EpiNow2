@@ -31,21 +31,8 @@ laplace algorithm ("laplace") or pathfinder ("pathfinder").}
 \item{backend}{Character string indicating the backend to use for fitting
 stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 
-\item{init_fit}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-Character string or \code{stanfit} object, defaults to NULL. Should an initial
-fit be used to initialise the full fit. An example scenario would be using a
-national level fit to parametrise regional level fits. Optionally a
-character string can be passed with the currently supported option being
-"cumulative". This fits the model to cumulative cases and may be useful for
-certain data sets where the sampler gets stuck or struggles to initialise.
-See \code{\link[=init_cumulative_fit]{init_cumulative_fit()}} for details.
-
-This implementation is based on the approach taken in
-\href{https://github.com/ImperialCollegeLondon/epidemia/}{epidemia} authored by
-James Scott.
-
-This argument is deprecated and the default (NULL) will be used from
-the next version.}
+\item{init_fit}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+This argument is deprecated.}
 
 \item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be
 returned.}

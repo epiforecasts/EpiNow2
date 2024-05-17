@@ -129,18 +129,11 @@ estimate_infections <- function(data,
                                 reported_cases) {
   # Deprecate reported_cases in favour of data
   if (!missing(reported_cases)) {
-     if (!missing(data)) {
-      stop("Can't have `reported_cases` and `data` arguments. ",
-           "Use `data` instead."
-      )
-     }
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.5.0",
       "estimate_infections(reported_cases)",
-      "estimate_infections(data)",
-      "The argument will be removed completely in the next version."
+      "estimate_infections(data)"
     )
-    data <- reported_cases
   }
   # Validate inputs
   check_reports_valid(data, model = "estimate_infections")

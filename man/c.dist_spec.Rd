@@ -7,7 +7,7 @@
 \method{c}{dist_spec}(...)
 }
 \arguments{
-\item{...}{The delay distributions (from calls to \code{\link[=dist_spec]{dist_spec()}}) to combine}
+\item{...}{The delay distributions to combine}
 }
 \value{
 Combined delay distributions (with class \verb{<dist_spec>})

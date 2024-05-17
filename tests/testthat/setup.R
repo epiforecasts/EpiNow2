@@ -16,6 +16,3 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
 }
 
 withr::defer(future::plan("sequential"), teardown_env())
-
-## process warning once as previous behaviour has been deprecated
-dummy <- suppressWarnings(dist_spec(mean = 0, sd = 1, max = 5))

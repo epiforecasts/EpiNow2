@@ -7,7 +7,7 @@
 \method{max}{dist_spec}(x, ...)
 }
 \arguments{
-\item{x}{The \code{\link[=dist_spec]{dist_spec()}} to use}
+\item{x}{The <dist_spec> to use}
 
 \item{...}{Not used}
 }
@@ -17,7 +17,7 @@ A vector of means.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This works out the maximum of all the (parametric / nonparametric) delay
-distributions combined in the passed \code{\link[=dist_spec]{dist_spec()}} (ignoring any uncertainty
+distributions combined in the passed <dist_spec> (ignoring any uncertainty
 in parameters)
 }
 \examples{
