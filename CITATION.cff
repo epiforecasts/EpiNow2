@@ -8,8 +8,7 @@ message: 'To cite package "EpiNow2" in publications use:'
 type: software
 license: MIT
 title: 'EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters'
-version: 1.5.1.9000
-doi: 10.5281/zenodo.3957489
+version: 1.5.2.9000
 abstract: Estimates the time-varying reproduction number, rate of spread, and doubling
   time using a range of open-source tools (Abbott et al. (2020) <https://doi.org/10.12688/wellcomeopenres.16006.1>),
   and current best practices (Gostic et al. (2020) <https://doi.org/10.1101/2020.06.18.20134858>).
@@ -50,47 +49,6 @@ authors:
   given-names: Sebastian
   email: sebastian.funk@lshtm.ac.uk
   orcid: https://orcid.org/0000-0002-2842-3406
-preferred-citation:
-  type: manual
-  title: 'EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological
-    Parameters'
-  authors:
-  - family-names: Abbott
-    given-names: Sam
-    email: sam.abbott@lshtm.ac.uk
-    orcid: https://orcid.org/0000-0001-8057-8037
-  - family-names: Hellewell
-    given-names: Joel
-    email: joel.hellewell@lshtm.ac.uk
-    orcid: https://orcid.org/0000-0003-2683-0849
-  - family-names: Sherratt
-    given-names: Katharine
-    email: katharine.sherratt@lshtm.ac.uk
-  - family-names: Gostic
-    given-names: Katelyn
-    email: kgostic@uchicago.edu
-  - family-names: Hickson
-    given-names: Joe
-    email: joseph.hickson@metoffice.gov.uk
-  - family-names: Badr
-    given-names: Hamada S.
-    email: badr@jhu.edu
-    orcid: https://orcid.org/0000-0002-9808-2344
-  - family-names: DeWitt
-    given-names: Michael
-    email: me.dewitt.jr@gmail.com
-    orcid: https://orcid.org/0000-0001-8940-1967
-  - family-names: Azam
-    given-names: James M.
-    email: james.azam@lshtm.ac.uk
-    orcid: https://orcid.org/0000-0001-5782-7330
-  - name: EpiForecasts
-  - family-names: Funk
-    given-names: Sebastian
-    email: sebastian.funk@lshtm.ac.uk
-    orcid: https://orcid.org/0000-0002-2842-3406
-  year: '2024'
-  doi: 10.5281/zenodo.3957489
 repository: https://CRAN.R-project.org/package=EpiNow2
 repository-code: https://github.com/epiforecasts/EpiNow2
 url: https://epiforecasts.io/EpiNow2/
