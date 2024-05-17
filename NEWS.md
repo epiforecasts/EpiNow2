@@ -1,4 +1,6 @@
-# EpiNow2 (development version)
+# EpiNow2 1.5.2
+
+A patch release to further fix an issue with the date in the package citation. This has now been addressed by removing `inst/CITATION`.
 
 # EpiNow2 1.5.1
 
