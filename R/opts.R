@@ -43,7 +43,7 @@
 #' generation_time_opts(example_generation_time)
 generation_time_opts <- function(dist = Fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
-                                 tolerance = 0.001, weight_prior = TRUE) {
+                                 tolerance = 0.01, weight_prior = TRUE) {
   dot_options <- list(...)
 
   if ((length(dot_options) > 0) ||
@@ -172,7 +172,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
+delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.01,
                        weight_prior = TRUE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec") || !missing(fixed)) { ## could be old syntax
@@ -230,7 +230,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
 #'
 #' # truncation dist
 #' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = Fixed(0), tolerance = 0.001,
+trunc_opts <- function(dist = Fixed(0), tolerance = 0.01,
                        weight_prior = FALSE) {
   if (!is(dist, "dist_spec")) {
     stop(
