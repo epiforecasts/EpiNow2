@@ -47,7 +47,8 @@ generation_time_opts <- function(dist = Fixed(1), ...,
   dot_options <- list(...)
 
   if ((length(dot_options) > 0) ||
-      (!missing(disease) && !missing(source)) ||
+      !missing(disease) || !missing(source) || !missing(fixed) ||
+      !missing(max) ||
       (!is(dist, "dist_spec"))) {
     stop(
       "The generation time distribution should be given to ",
@@ -174,7 +175,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
                        weight_prior = TRUE) {
   dot_options <- list(...)
-  if (!is(dist, "dist_spec")) { ## could be old syntax
+  if (!is(dist, "dist_spec") || !missing(fixed)) { ## could be old syntax
     stop(
       "Delay distributions must be of given either using a call to ",
       "`dist_spec` or one of the `get_...` functions such as ",
