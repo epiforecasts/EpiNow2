@@ -68,10 +68,10 @@ generation_time_opts <- function(dist = Fixed(1), ...,
       "setting `dist` explicitly to `Fixed(1)`."
     )
   }
-  check_stan_delay(dist)
   attr(dist, "tolerance") <- tolerance
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("generation_time_opts", class(dist))
+  check_stan_delay(dist)
   return(dist)
 }
 
@@ -191,10 +191,10 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.01,
     ## can be removed once dot options are hard deprecated
     stop("Unknown named arguments passed to `delay_opts`")
   }
-  check_stan_delay(dist)
   attr(dist, "tolerance") <- tolerance
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("delay_opts", class(dist))
+  check_stan_delay(dist)
   return(dist)
 }
 
@@ -244,10 +244,10 @@ trunc_opts <- function(dist = Fixed(0), tolerance = 0.01,
       "`?trunc_opts`"
     )
   }
-  check_stan_delay(dist)
   attr(dist, "tolerance") <- tolerance
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("trunc_opts", class(dist))
+  check_stan_delay(dist)
   return(dist)
 }
 
