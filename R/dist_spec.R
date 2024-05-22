@@ -18,7 +18,7 @@
 #' For the exponential model this is a rate parameter and for the gamma model
 #' this is alpha and beta.
 #'
-#' @param max_value Numeric, the maximum value to allow. Defaults to 120.
+#' @param max_value Numeric, the maximum value to allow.
 #' Samples outside of this range are resampled.
 #'
 #' @return A vector representing a probability distribution.
