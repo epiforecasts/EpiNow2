@@ -15,7 +15,7 @@
 #' @param ... Additional arguments passed to [cmdstanr::cmdstan_model()].
 #'
 #' @return A `cmdstanr` model.
-#' @keywords internal
+#' @export
 epinow2_cmdstan_model <- function(model = "estimate_infections",
                                   dir = system.file(
                                     "stan", package = "EpiNow2"
