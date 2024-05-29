@@ -15,7 +15,7 @@
 #' @param ... Additional arguments passed to [cmdstanr::cmdstan_model()].
 #'
 #' @return A `cmdstanr` model.
-#' @keywords internal
+#' @export
 epinow2_cmdstan_model <- function(model = "estimate_infections",
                                   dir = system.file(
                                     "stan", package = "EpiNow2"
@@ -63,8 +63,8 @@ epinow2_rstan_model <- function(model = "estimate_infections") {
 ##'
 ##' @param model A character string indicating the model to use. One of
 ##' "estimate_infections" (default), "simulate_infections",
-##' "estimate_secondary", "simulate_secondary", "estimate_truncation" or
-##' "dist_fit".
+##' "estimate_secondary", "simulate_secondary",
+##' "estimate_truncation", or "dist_fit".
 ##' @inheritParams stan_opts
 ##' @return A stan model object (either \code{rstan::stanmodel} or
 ##'   \code{cmdstanr::CmdStanModel}, depending on the backend)
