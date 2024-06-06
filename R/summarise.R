@@ -530,7 +530,8 @@ regional_runtimes <- function(regional_output = NULL,
   if (!is.null(regional_output)) {
     timings <- data.table::data.table(
       region = names(regional_output),
-      time = unlist(purrr::map(regional_output, ~ .$timing))
+      # purrr::map_vec will preserve the difftime class
+      time = unlist(purrr::map_vec(regional_output, ~ .$timing))
     )
   } else {
     if (is.null(target_date)) {
