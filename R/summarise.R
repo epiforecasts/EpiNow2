@@ -503,7 +503,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @return A data.table of region run times
 #' @export
 #' @importFrom data.table data.table fwrite
-#' @importFrom purrr map safely
+#' @importFrom purrr map safely map_vec
 #' @keywords internal
 #' @examples
 #' regional_out <- readRDS(system.file(
