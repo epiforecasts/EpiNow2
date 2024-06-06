@@ -2,7 +2,7 @@
 
 ## Model changes
 
-- `epinow()` now returns the "timing" output in a "time difference"" format that is easier to understand and work with. By @jamesmbaazam in #688 and reviewed by @.
+- `epinow()` now returns the "timing" output in a "time difference"" format that is easier to understand and work with. By @jamesmbaazam in #688 and reviewed by @sbfnk.
 
 # EpiNow2 1.5.2
 
