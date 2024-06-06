@@ -27,5 +27,5 @@ test_that("regional_runtimes produces expected output when with input", {
   runtimes <- regional_runtimes(out$regional)
   expect_equal(names(runtimes), c("region", "time"))
   df_non_zero(runtimes)
-  expect_type(runtimes$time, "character")
+  expect_s3_class(runtimes$time, "difftime")
 })
