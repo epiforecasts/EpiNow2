@@ -246,11 +246,12 @@ Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=joeHickson">joeHickson</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=hsbadr">hsbadr</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pitmonticone">pitmonticone</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=actions-user">actions-user</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=dependabot[bot]">dependabot\[bot\]</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=actions-user">actions-user</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=ellisp">ellisp</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jdmunday">jdmunday</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=JAllen42">JAllen42</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=adamkucharski">adamkucharski</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=andrjohns">andrjohns</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pearsonca">pearsonca</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=LloydChapman">LloydChapman</a>,
@@ -292,7 +293,8 @@ Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ajoshwlambert">joshwlambert</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aavallecam">avallecam</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aathowes">athowes</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Alorenzwalthert">lorenzwalthert</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Alorenzwalthert">lorenzwalthert</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Anlinton">nlinton</a>
 
 ### Issue Contributors
 
