@@ -503,7 +503,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @return A data.table of region run times
 #' @export
 #' @importFrom data.table data.table fwrite
-#' @importFrom purrr map safely
+#' @importFrom purrr map safely map_vec
 #' @keywords internal
 #' @examples
 #' regional_out <- readRDS(system.file(
@@ -530,7 +530,8 @@ regional_runtimes <- function(regional_output = NULL,
   if (!is.null(regional_output)) {
     timings <- data.table::data.table(
       region = names(regional_output),
-      time = unlist(purrr::map(regional_output, ~ .$timing))
+      # purrr::map_vec will preserve the difftime class
+      time = unlist(purrr::map_vec(regional_output, ~ .$timing))
     )
   } else {
     if (is.null(target_date)) {

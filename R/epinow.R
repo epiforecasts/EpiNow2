@@ -286,7 +286,7 @@ epinow <- function(data,
 
   # log timing if specified
   if (output["timing"]) {
-    out$timing <- round(as.numeric(end_time - start_time), 1)
+    out$timing <- difftime(end_time, start_time)
     if (!is.null(target_folder)) {
       saveRDS(out$timing, file.path(target_folder, "runtime.rds"))
     }

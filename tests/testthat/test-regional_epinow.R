@@ -36,7 +36,7 @@ test_that("regional_epinow produces expected output when run with default settin
     "summarised_measures", "reported_cases", "high_plots", "plots"
   ))
   expect_equal(names(out$regional$realland), c("estimates", "estimated_reported_cases", "summary", "plots", "timing"))
-  expect_type(out$regional$realland$timing, "double")
+  expect_s3_class(out$regional$realland$timing, "difftime")
   df_non_zero(out$regional$realland$estimates$samples)
   df_non_zero(out$regional$realland$estimates$summarised)
   df_non_zero(out$regional$realland$estimated_reported_cases$samples)
@@ -101,7 +101,7 @@ test_that("regional_epinow produces expected output when run with region specifi
     "summarised_measures", "reported_cases", "high_plots", "plots"
   ))
   expect_equal(names(out$regional$realland), c("estimates", "estimated_reported_cases", "summary", "plots", "timing"))
-  expect_type(out$regional$realland$timing, "double")
+  expect_s3_class(out$regional$realland$timing, "difftime")
   df_non_zero(out$regional$realland$estimates$samples)
   df_non_zero(out$regional$realland$estimates$summarised)
   df_non_zero(out$regional$realland$estimated_reported_cases$samples)
