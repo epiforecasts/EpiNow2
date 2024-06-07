@@ -32,7 +32,7 @@ jobs:
 
       - name: Update contributors
         if: github.ref == 'refs/heads/main'
-        run: allcontributors::add_contributors(format = "text")
+        run: allcontributors::add_contributors(format = "text", check_urls = FALSE)
         shell: Rscript {0}
 
       - name: Compile the readme
