@@ -241,11 +241,23 @@ Let's see how long each model took to run. Note that the run time measured here 
 ```{r runtimes}
 # Extract the run times
 models <- names(models)
-runtimes <- sapply(
+runtimes <- vapply(
   results,
-  function(x) x$timing
+  function(x) x$timing,
+  double(1)
 )
-knitr::kable(runtimes, col.names = c("models", "Run time"), caption = "Run times (seconds)")
+# Extracting the difftime objects drops the units, so we need to extract them separately
+runtimes_units <- vapply(
+  results,
+  function(x) attr(x$timing, "units"),
+  character(1)
+)
+# We then recompose the runtimes with the units
+runtimes_vec <- paste(round(runtimes), runtimes_units)
+# Add the model names
+names(runtimes_vec) <- models
+# Print table
+knitr::kable(runtimes_vec, col.names = c("models", "Run time"), caption = "Run times")
 ```
 
 ### Forecast evaluation
