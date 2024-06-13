@@ -88,7 +88,7 @@ estimates <- estimate_infections(
 ```
 
 ```
-#> DEBUG [2024-06-13 20:04:09] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 114 time steps of which 0 are a forecast
+#> DEBUG [2024-06-13 20:11:11] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 114 time steps of which 0 are a forecast
 ```
 
 For the `R` data, we will set up an arbitrary trajectory and add some Gaussian noise.
@@ -111,7 +111,7 @@ forecast <- forecast_infections(estimates, R = R_noisy, samples = 10)
 ```
 
 ```
-#> DEBUG [2024-06-13 20:04:39] simulate_infections: Running in exact mode for 1 samples (across 1 chains each with a warm up of 1 iterations each) and 154 time steps of which 40 are a forecast
+#> DEBUG [2024-06-13 20:11:46] simulate_infections: Running in exact mode for 1 samples (across 1 chains each with a warm up of 1 iterations each) and 154 time steps of which 40 are a forecast
 ```
 
 We will now extract the benchamrking data:
@@ -151,36 +151,36 @@ We will use the following models:
 
 ``` r
 models <- list(
-  # gp = list(
-  #   rt = rt_opts(prior = list(mean = 2, sd = 0.1))
-  # )
-  # ,
+  gp = list(
+    rt = rt_opts(prior = list(mean = 2, sd = 0.1))
+  )
+  ,
   # The non-mechanistic model
   non_mechanistic = list(rt = NULL),
   # The model with a 1-day random walk and Gaussian process turned off
-  # rw1_no_gp = list(
-  #   rt = rt_opts(
-  #     prior = list(mean = 2, sd = 0.1),
-  #       rw = 1
-  #     ),
-  #   gp = NULL
-  # ),
+  rw1_no_gp = list(
+    rt = rt_opts(
+      prior = list(mean = 2, sd = 0.1),
+        rw = 1
+      ),
+    gp = NULL
+  ),
   # The model with a 7-day random walk and Gaussian process turned off
-  # rw7_no_gp = list(
-  #   rt = rt_opts(
-  #     prior = list(mean = 2, sd = 0.1),
-  #       rw = 7
-  #     ),
-  #   gp = NULL
-  # ),
-  # # The model with a 7-day random walk and Gaussian process (default)
-  # rw7_gp = list(
-  #   rt = rt_opts(
-  #     prior = list(mean = 2, sd = 0.1),
-  #     rw = 7,
-  #     gp_on = "R0"
-  #   )
-  # ),
+  rw7_no_gp = list(
+    rt = rt_opts(
+      prior = list(mean = 2, sd = 0.1),
+        rw = 7
+      ),
+    gp = NULL
+  ),
+  # The model with a 7-day random walk and Gaussian process (default)
+  rw7_gp = list(
+    rt = rt_opts(
+      prior = list(mean = 2, sd = 0.1),
+      rw = 7,
+      gp_on = "R0"
+    )
+  ),
   # Model that uses the variational inference method instead of MCMC
   vb = list(
     stan = stan_opts(
@@ -238,14 +238,46 @@ results <- lapply(
 ```
 
 ```
-#> WARN [2024-06-13 20:04:39] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
-#> WARN [2024-06-13 20:04:39] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
-#> WARN [2024-06-13 20:04:39] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
-#> DEBUG [2024-06-13 20:04:39] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 147 time steps of which 0 are a forecast
-#> WARN [2024-06-13 20:04:51] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
-#> WARN [2024-06-13 20:04:51] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
-#> WARN [2024-06-13 20:04:51] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
-#> DEBUG [2024-06-13 20:04:51] epinow: Running in approximate mode for 10000 iterations (with 5 attempts). Extracting 2000 approximate posterior samples for 154 time steps of which 0 are a forecast
+#> WARN [2024-06-13 20:11:46] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:11:46] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:11:46] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> DEBUG [2024-06-13 20:11:46] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 154 time steps of which 0 are a forecast
+#> WARN [2024-06-13 20:16:43] epinow: There were 37 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them. - 
+#> WARN [2024-06-13 20:16:43] epinow: Examine the pairs() plot to diagnose sampling problems
+#>  - 
+#> WARN [2024-06-13 20:16:46] epinow: NAs introduced by coercion to integer range - .f, .x[[i]], ...
+#> WARN [2024-06-13 20:16:46] epinow: NAs introduced by coercion to integer range - .f, .x[[i]], ...
+#> WARN [2024-06-13 20:16:47] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:16:47] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:16:47] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> DEBUG [2024-06-13 20:16:47] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 147 time steps of which 0 are a forecast
+#> WARN [2024-06-13 20:17:00] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:17:00] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:17:00] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> DEBUG [2024-06-13 20:17:00] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 154 time steps of which 0 are a forecast
+#> WARN [2024-06-13 20:22:57] epinow: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#bulk-ess - 
+#> WARN [2024-06-13 20:22:57] epinow: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#tail-ess - 
+#> WARN [2024-06-13 20:22:58] epinow: NAs introduced by coercion to integer range - .f, .x[[i]], ...
+#> WARN [2024-06-13 20:22:59] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:22:59] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:22:59] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> DEBUG [2024-06-13 20:22:59] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 154 time steps of which 0 are a forecast
+#> WARN [2024-06-13 20:25:23] epinow: NAs introduced by coercion to integer range - .f, .x[[i]], ...
+#> WARN [2024-06-13 20:25:23] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:25:23] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:25:23] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> DEBUG [2024-06-13 20:25:23] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 154 time steps of which 0 are a forecast
+#> WARN [2024-06-13 20:31:38] epinow: NAs introduced by coercion to integer range - .f, .x[[i]], ...
+#> WARN [2024-06-13 20:31:39] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:31:39] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:31:39] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> DEBUG [2024-06-13 20:31:39] epinow: Running in approximate mode for 10000 iterations (with 5 attempts). Extracting 2000 approximate posterior samples for 154 time steps of which 0 are a forecast
 #> Chain 1: ------------------------------------------------------------
 #> Chain 1: EXPERIMENTAL ALGORITHM:
 #> Chain 1:   This procedure has not been thoroughly tested and may be unstable
@@ -254,8 +286,8 @@ results <- lapply(
 #> Chain 1: 
 #> Chain 1: 
 #> Chain 1: 
-#> Chain 1: Gradient evaluation took 0.000147 seconds
-#> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.47 seconds.
+#> Chain 1: Gradient evaluation took 0.000129 seconds
+#> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.29 seconds.
 #> Chain 1: Adjust your expectations accordingly!
 #> Chain 1: 
 #> Chain 1: 
@@ -269,49 +301,30 @@ results <- lapply(
 #> Chain 1: 
 #> Chain 1: Begin stochastic gradient ascent.
 #> Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
-#> Chain 1:    100      -579019.403             1.000            1.000
-#> Chain 1:    200       -42010.589             6.891           12.783
-#> Chain 1:    300        -1765.230            12.194           12.783
-#> Chain 1:    400        -1532.261             9.183           12.783
-#> Chain 1:    500        -1441.657             7.359            1.000
-#> Chain 1:    600        -1451.699             6.134            1.000
-#> Chain 1:    700        -1316.190             5.272            0.152
-#> Chain 1:    800        -1243.534             4.621            0.152
-#> Chain 1:    900        -1193.091             4.112            0.103
-#> Chain 1:   1000        -1218.553             3.703            0.103
-#> Chain 1:   1100        -1153.465             3.608            0.063   MAY BE DIVERGING... INSPECT ELBO
-#> Chain 1:   1200        -1168.177             2.331            0.058   MAY BE DIVERGING... INSPECT ELBO
-#> Chain 1:   1300        -1156.719             0.053            0.056
-#> Chain 1:   1400        -1201.547             0.041            0.042
-#> Chain 1:   1500        -1162.847             0.038            0.037
-#> Chain 1:   1600        -1176.656             0.039            0.037
-#> Chain 1:   1700        -1153.839             0.030            0.033
-#> Chain 1:   1800        -1167.787             0.026            0.021
-#> Chain 1:   1900        -1298.298             0.031            0.021
-#> Chain 1:   2000        -1155.899             0.042            0.033
-#> Chain 1:   2100        -1148.349             0.037            0.020
-#> Chain 1:   2200        -1168.287             0.037            0.020
-#> Chain 1:   2300        -1147.215             0.038            0.020
-#> Chain 1:   2400        -1212.261             0.040            0.020
-#> Chain 1:   2500        -1154.181             0.041            0.020
-#> Chain 1:   2600        -1182.885             0.043            0.024
-#> Chain 1:   2700        -1147.512             0.044            0.031
-#> Chain 1:   2800        -1146.729             0.043            0.031
-#> Chain 1:   2900        -1181.801             0.035            0.030
-#> Chain 1:   3000        -1147.941             0.026            0.029
-#> Chain 1:   3100        -1156.345             0.026            0.029
-#> Chain 1:   3200        -1160.267             0.025            0.029
-#> Chain 1:   3300        -1152.493             0.024            0.029
-#> Chain 1:   3400        -1156.977             0.019            0.024
-#> Chain 1:   3500        -1202.479             0.017            0.024
-#> Chain 1:   3600        -1146.741             0.020            0.029
-#> Chain 1:   3700        -1147.768             0.017            0.007   MEDIAN ELBO CONVERGED
+#> Chain 1:    100      -268499.784             1.000            1.000
+#> Chain 1:    200        -7761.034            17.298           33.596
+#> Chain 1:    300        -2335.360            12.306            2.323
+#> Chain 1:    400        -1532.517             9.361            2.323
+#> Chain 1:    500        -1347.813             7.516            1.000
+#> Chain 1:    600        -1288.467             6.271            1.000
+#> Chain 1:    700        -1177.122             5.389            0.524
+#> Chain 1:    800        -1158.795             4.717            0.524
+#> Chain 1:    900        -1154.629             4.193            0.137
+#> Chain 1:   1000        -1148.537             3.775            0.137
+#> Chain 1:   1100        -1231.497             3.681            0.095   MAY BE DIVERGING... INSPECT ELBO
+#> Chain 1:   1200        -1149.984             0.329            0.071
+#> Chain 1:   1300        -1143.163             0.097            0.067
+#> Chain 1:   1400        -1154.361             0.046            0.046
+#> Chain 1:   1500        -1165.635             0.033            0.016
+#> Chain 1:   1600        -1196.434             0.031            0.016
+#> Chain 1:   1700        -1148.639             0.026            0.016
+#> Chain 1:   1800        -1150.040             0.024            0.010   MEDIAN ELBO CONVERGED
 #> Chain 1: 
 #> Chain 1: Drawing a sample of size 2000 from the approximate posterior... 
 #> Chain 1: COMPLETED.
-#> WARN [2024-06-13 20:04:52] epinow: partial match of 'log_p' to 'log_p__' - $, diagnostics, log_p
-#> WARN [2024-06-13 20:04:52] epinow: partial match of 'log_g' to 'log_g__' - $, diagnostics, log_g
-#> WARN [2024-06-13 20:04:53] epinow: Pareto k diagnostic value is 1.21. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead. -
+#> WARN [2024-06-13 20:31:40] epinow: partial match of 'log_p' to 'log_p__' - $, diagnostics, log_p
+#> WARN [2024-06-13 20:31:40] epinow: partial match of 'log_g' to 'log_g__' - $, diagnostics, log_g
+#> WARN [2024-06-13 20:31:40] epinow: Pareto k diagnostic value is 2. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead. -
 ```
 
 ## Evaluating performance
@@ -324,11 +337,23 @@ Let's see how long each model took to run. Note that the run time measured here 
 ``` r
 # Extract the run times
 models <- names(models)
-runtimes <- sapply(
+runtimes <- vapply(
   results,
-  function(x) x$timing
+  function(x) x$timing,
+  double(1)
 )
-knitr::kable(runtimes, col.names = c("models", "Run time"), caption = "Run times (seconds)")
+# Extracting the difftime objects drops the units, so we need to extract them separately
+runtimes_units <- vapply(
+  results,
+  function(x) attr(x$timing, "units"),
+  character(1)
+)
+# We then recompose the runtimes with the units
+runtimes_vec <- paste(round(runtimes), runtimes_units)
+# Add the model names
+names(runtimes_vec) <- models
+# Print in table
+knitr::kable(runtimes_vec, col.names = c("models", "Run time"), caption = "Run times")
 ```
 
 
@@ -337,8 +362,12 @@ Table: Run times (seconds)
 
 |models          |  Run time|
 |:---------------|---------:|
-|non_mechanistic | 11.789461|
-|vb              |  3.043279|
+|gp              |  5.011109|
+|non_mechanistic | 13.676094|
+|rw1_no_gp       |  5.972183|
+|rw7_no_gp       |  2.413113|
+|rw7_gp          |  6.252660|
+|vb              |  2.673222|
 
 ### Forecast evaluation
 
