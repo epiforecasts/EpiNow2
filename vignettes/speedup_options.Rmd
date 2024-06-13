@@ -1,0 +1,458 @@
+---
+title: "Speeding up model runs"
+output:
+  rmarkdown::html_vignette   
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Speeding up model runs}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+
+
+
+``` r
+library(EpiNow2)
+library(scoringutils)
+library(data.table)
+library(rstan)
+library(cmdstanr)
+library(ggplot2)
+```
+
+This vignette outlines available options for speeding up model runtimes in _EpiNow2_. We will compare the models by run time, quantitative, and qualitative performance of fit against the "true" trajectory of the data.
+
+## The benchmarking data
+
+We will simulate the "true" infections and Rt data using for benchmarking using `forecast_infections()`. 
+
+`forecast_infections()` requires a fitted estimates object from `estimate_infections()` or `epinow()`, the trajectory of the reproduction number, `R`, and the number of samples to simulate. So, we will set these up first.
+
+To obtain the `estimates` object, we have to fit the `estimate_infections()` model to observed data to recover realistic parameter values for the simulation. To do this, we will use the first 100 observations of the `example_confirmed` dataset vendored with this package. This dataset provides a time series of cases by reporting date. We will also use the `example_generation_time`, `example_incubation_period`, and `example_reporting_delay` values that come with the package. 
+
+Several of the parameters we will use through out this vignette will have the same value, so we will set these up first.
+
+``` r
+# Set the number of cores to use
+options(mc.cores = 4)
+
+# Generation time
+generation_time <- Gamma(
+  shape = Normal(1.3, 0.3),
+  rate = Normal(0.37, 0.09),
+  max = 14
+)
+
+# Incubation period
+incubation_period <- LogNormal(
+  meanlog = Normal(1.6, 0.05),
+  sdlog = Normal(0.5, 0.05),
+  max = 14
+)
+
+# Reporting delay
+reporting_delay <- LogNormal(
+  meanlog = 0.5,
+  sdlog = 0.5,
+  max = 10
+)
+
+# Combine the incubation period and reporting delay into one delay
+delay <- incubation_period + reporting_delay
+
+# Observation model options
+obs <- obs_opts(
+  scale = list(mean = 0.1, sd = 0.025),
+  return_likelihood = TRUE
+)
+
+# Forecast horizon
+horizon <- 0
+```
+
+Now, let's generate the `estimates` object.
+
+``` r
+estimates <- estimate_infections(
+  example_confirmed[1:100],
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(example_incubation_period + example_reporting_delay),
+  rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 14),
+  gp = NULL,
+  obs = obs,
+  horizon = horizon
+)
+```
+
+```
+#> DEBUG [2024-06-13 20:04:09] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 114 time steps of which 0 are a forecast
+```
+
+For the `R` data, we will set up an arbitrary trajectory and add some Gaussian noise.
+
+``` r
+# Arbitrary reproduction number trajectory
+R <- c(
+  rep(2, 40), rep(0.5, 10), rep(1, 10), 1 + 0.04 * 1:20, rep(1.4, 5),
+  1.4 - 0.02 * 1:20, rep(1.4, 10), rep(0.8, 5), 0.8 + 0.02 * 1:20
+)
+# Add Gaussian noise
+R_noisy <- R * rnorm(length(R), 1, 0.05)
+```
+
+Now, we will simulate the true infections and $Rt$ data by sampling from $10$ posterior samples.
+
+``` r
+# Forecast infections and the trajectory of Rt
+forecast <- forecast_infections(estimates, R = R_noisy, samples = 10)
+```
+
+```
+#> DEBUG [2024-06-13 20:04:39] simulate_infections: Running in exact mode for 1 samples (across 1 chains each with a warm up of 1 iterations each) and 154 time steps of which 40 are a forecast
+```
+
+We will now extract the benchamrking data:
+- `R_true`: the median of the simulated Rts, and
+- `infections_true`: the infections by date of infection
+
+
+``` r
+R_true <- forecast$summarised[variable == "R"]$median
+
+# Get the posterior samples from which to extract the simulated infections and reported cases
+posterior_sample <- forecast$samples[sample == 1]
+
+# Extract the simulated infections
+infections_true <- posterior_sample[variable == "infections"]$value
+
+# Extract the simulated reported cases
+reported_cases_true <- posterior_sample[
+  variable == "reported_cases", .(date, confirm = value)
+]
+```
+
+Now, to the main part of this vignette: we will compare the run times of different models in _EpiNow2_.
+
+## Model options
+
+We will use the following models:
+- _gp_: A Gaussian process prior on the reproduction number $R_t$ and no random walk, using _MCMC sampling_.
+- _vb_: A Gaussian process prior on the reproduction number $R_t$ and no random walk, using the _variational inference_ algorithm.
+- _non_mechanistic_: A model with that uses _back calculation_.
+- _rw1_no_gp_: A model with a 1-day random walk and Gaussian process turned off.
+- _rw7_no_gp_: A model with a 7-day random walk and Gaussian process turned off.
+- _rw7_gp_: A model with a 7-day random walk and Gaussian process turned on.
+- _pf_: A model that uses the "pathfinder" algorithm (from the `{cmdstanr}` package) for sampling.
+- _lp_: A model that uses the "Laplace" algorithm (from the `{cmdstanr}` package) for sampling.
+
+
+``` r
+models <- list(
+  # gp = list(
+  #   rt = rt_opts(prior = list(mean = 2, sd = 0.1))
+  # )
+  # ,
+  # The non-mechanistic model
+  non_mechanistic = list(rt = NULL),
+  # The model with a 1-day random walk and Gaussian process turned off
+  # rw1_no_gp = list(
+  #   rt = rt_opts(
+  #     prior = list(mean = 2, sd = 0.1),
+  #       rw = 1
+  #     ),
+  #   gp = NULL
+  # ),
+  # The model with a 7-day random walk and Gaussian process turned off
+  # rw7_no_gp = list(
+  #   rt = rt_opts(
+  #     prior = list(mean = 2, sd = 0.1),
+  #       rw = 7
+  #     ),
+  #   gp = NULL
+  # ),
+  # # The model with a 7-day random walk and Gaussian process (default)
+  # rw7_gp = list(
+  #   rt = rt_opts(
+  #     prior = list(mean = 2, sd = 0.1),
+  #     rw = 7,
+  #     gp_on = "R0"
+  #   )
+  # ),
+  # Model that uses the variational inference method instead of MCMC
+  vb = list(
+    stan = stan_opts(
+      method = "vb",
+      trials = 5,
+      samples = 2000
+    )
+  )#,
+  # The model that uses "pathfinder" approximate sampling from `cmdstanr` package
+  # pathfinder = list(
+  #   stan = stan_opts(
+  #     method = "pathfinder",
+  #     backend = "cmdstanr",
+  #     trials = 5,
+  #     samples = 2000
+  #   )
+  # ),
+  # # The model that uses Laplace approximate sampling from `cmdstanr` package
+  # laplace = list(
+  #   stan = stan_opts(
+  #     method = "laplace",
+  #     backend = "cmdstanr",
+  #     trials = 5,
+  #     samples = 2000
+  #   )
+  # )
+)
+```
+
+## Running the models
+
+Let's run the models and gather the results. We will sweep across the list of models `models` and shared model options `model_inputs`. We will use the `epinow()` function which is a wrapper around `estimate_infections()` and returns useful outputs like the timing of model runs.
+
+``` r
+model_inputs <- list(
+  data = reported_cases_true,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  obs = obs,
+  horizon = horizon
+)
+# Run the models
+results <- lapply(
+  models,
+  function(model) {
+    do.call(
+      epinow,
+      c(
+        model_inputs,
+        model
+      )
+    )
+  }
+)
+```
+
+```
+#> WARN [2024-06-13 20:04:39] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:04:39] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:04:39] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> DEBUG [2024-06-13 20:04:39] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 147 time steps of which 0 are a forecast
+#> WARN [2024-06-13 20:04:51] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:04:51] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> WARN [2024-06-13 20:04:51] epinow: partial match of 'length' to 'lengths' - $, consecutive, length
+#> DEBUG [2024-06-13 20:04:51] epinow: Running in approximate mode for 10000 iterations (with 5 attempts). Extracting 2000 approximate posterior samples for 154 time steps of which 0 are a forecast
+#> Chain 1: ------------------------------------------------------------
+#> Chain 1: EXPERIMENTAL ALGORITHM:
+#> Chain 1:   This procedure has not been thoroughly tested and may be unstable
+#> Chain 1:   or buggy. The interface is subject to change.
+#> Chain 1: ------------------------------------------------------------
+#> Chain 1: 
+#> Chain 1: 
+#> Chain 1: 
+#> Chain 1: Gradient evaluation took 0.000147 seconds
+#> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.47 seconds.
+#> Chain 1: Adjust your expectations accordingly!
+#> Chain 1: 
+#> Chain 1: 
+#> Chain 1: Begin eta adaptation.
+#> Chain 1: Iteration:   1 / 250 [  0%]  (Adaptation)
+#> Chain 1: Iteration:  50 / 250 [ 20%]  (Adaptation)
+#> Chain 1: Iteration: 100 / 250 [ 40%]  (Adaptation)
+#> Chain 1: Iteration: 150 / 250 [ 60%]  (Adaptation)
+#> Chain 1: Iteration: 200 / 250 [ 80%]  (Adaptation)
+#> Chain 1: Success! Found best value [eta = 1] earlier than expected.
+#> Chain 1: 
+#> Chain 1: Begin stochastic gradient ascent.
+#> Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
+#> Chain 1:    100      -579019.403             1.000            1.000
+#> Chain 1:    200       -42010.589             6.891           12.783
+#> Chain 1:    300        -1765.230            12.194           12.783
+#> Chain 1:    400        -1532.261             9.183           12.783
+#> Chain 1:    500        -1441.657             7.359            1.000
+#> Chain 1:    600        -1451.699             6.134            1.000
+#> Chain 1:    700        -1316.190             5.272            0.152
+#> Chain 1:    800        -1243.534             4.621            0.152
+#> Chain 1:    900        -1193.091             4.112            0.103
+#> Chain 1:   1000        -1218.553             3.703            0.103
+#> Chain 1:   1100        -1153.465             3.608            0.063   MAY BE DIVERGING... INSPECT ELBO
+#> Chain 1:   1200        -1168.177             2.331            0.058   MAY BE DIVERGING... INSPECT ELBO
+#> Chain 1:   1300        -1156.719             0.053            0.056
+#> Chain 1:   1400        -1201.547             0.041            0.042
+#> Chain 1:   1500        -1162.847             0.038            0.037
+#> Chain 1:   1600        -1176.656             0.039            0.037
+#> Chain 1:   1700        -1153.839             0.030            0.033
+#> Chain 1:   1800        -1167.787             0.026            0.021
+#> Chain 1:   1900        -1298.298             0.031            0.021
+#> Chain 1:   2000        -1155.899             0.042            0.033
+#> Chain 1:   2100        -1148.349             0.037            0.020
+#> Chain 1:   2200        -1168.287             0.037            0.020
+#> Chain 1:   2300        -1147.215             0.038            0.020
+#> Chain 1:   2400        -1212.261             0.040            0.020
+#> Chain 1:   2500        -1154.181             0.041            0.020
+#> Chain 1:   2600        -1182.885             0.043            0.024
+#> Chain 1:   2700        -1147.512             0.044            0.031
+#> Chain 1:   2800        -1146.729             0.043            0.031
+#> Chain 1:   2900        -1181.801             0.035            0.030
+#> Chain 1:   3000        -1147.941             0.026            0.029
+#> Chain 1:   3100        -1156.345             0.026            0.029
+#> Chain 1:   3200        -1160.267             0.025            0.029
+#> Chain 1:   3300        -1152.493             0.024            0.029
+#> Chain 1:   3400        -1156.977             0.019            0.024
+#> Chain 1:   3500        -1202.479             0.017            0.024
+#> Chain 1:   3600        -1146.741             0.020            0.029
+#> Chain 1:   3700        -1147.768             0.017            0.007   MEDIAN ELBO CONVERGED
+#> Chain 1: 
+#> Chain 1: Drawing a sample of size 2000 from the approximate posterior... 
+#> Chain 1: COMPLETED.
+#> WARN [2024-06-13 20:04:52] epinow: partial match of 'log_p' to 'log_p__' - $, diagnostics, log_p
+#> WARN [2024-06-13 20:04:52] epinow: partial match of 'log_g' to 'log_g__' - $, diagnostics, log_g
+#> WARN [2024-06-13 20:04:53] epinow: Pareto k diagnostic value is 1.21. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead. -
+```
+
+## Evaluating performance
+
+### Run times
+
+Let's see how long each model took to run. Note that the run time measured here uses a crude method that compares the start and end times of each simulation. It is meant to be approximate and may not be accurate. For accurate run times, we recommend using a more sophisticated benchmarking tool like `bench` or `microbenchmark`.
+
+
+``` r
+# Extract the run times
+models <- names(models)
+runtimes <- sapply(
+  results,
+  function(x) x$timing
+)
+knitr::kable(runtimes, col.names = c("models", "Run time"), caption = "Run times (seconds)")
+```
+
+
+
+Table: Run times (seconds)
+
+|models          |  Run time|
+|:---------------|---------:|
+|non_mechanistic | 11.789461|
+|vb              |  3.043279|
+
+### Forecast evaluation
+
+Now, we will compare the estimated and true values using the continuous ranked probability score (CRPS). The CRPS is a proper scoring rule that measures the accuracy of probabilistic forecasts. We will use the `crps()` function from the `{scoringutils}` package.
+
+To calculate the CRPS for the estimated Rt and infections, we will first set up a function that makes sure the data and estimates are of the same length and calls the `crps_sample()` function from the `{scoringutils}` package.
+
+``` r
+# A function to calculate the CRPS
+calc_crps <- function(x, truth) {
+  shortest_obs_length <- min(ncol(x), length(truth))
+  reduced_truth <- tail(truth, shortest_obs_length)
+  reduced_x <- tail(t(x), shortest_obs_length)
+  return(crps_sample(reduced_truth, reduced_x))
+}
+```
+
+Now, we can calculate CRPS for the Rt and infection estimates of the various models and using `calc_crps()`.
+
+
+``` r
+# Get the Rt samples
+Rt_estimated <- lapply(results, function(x) {
+  if ("R[1]" %in% names(x$estimates$fit)) {
+    extract(x$estimates$fit, "R")$R
+  } else {
+    extract(x$estimates$fit, "gen_R")$gen_R
+  }
+})
+# CRPS for the Rt estimates
+rt_crps <- lapply(
+  Rt_estimated,
+  calc_crps,
+  truth = R
+)
+
+# Get the infection samples
+infections_estimated <- lapply(results, function(x) {
+  extract(x$estimates$fit, "infections")$infections
+})
+
+# CRPS for the infections estimates
+infections_crps <- lapply(
+  infections_estimated,
+  calc_crps,
+  truth = infections_true
+)
+```
+
+We will now post-process the CRPS results to make them easier to visualise.
+
+
+``` r
+# Post-processing the CRPS results of the Rt estimates
+rt_df <- as.data.table(rt_crps)
+rt_df[, metric := "CRPS"]
+rt_df[, time := 1:.N]
+rt_df <- melt(
+  rt_df,
+  id.vars = c("metric", "time"),
+  variable.name = "model"
+)
+
+# Post-processing the CRPS results of the infection estimates
+infections_df <- as.data.table(infections_crps)
+infections_df[, metric := "CRPS"]
+infections_df[, time := 1:.N]
+infections_df <- melt(
+  infections_df,
+  id.vars = c("metric", "time"),
+  variable.name = "model"
+)
+```
+
+Let's visualise the CRPS results for the Rt and infection estimates.
+
+
+``` r
+rt_plot <- ggplot(rt_df, aes(x = time, y = value, colour = model)) +
+  geom_line() +
+  scale_colour_brewer("Model", palette = "Dark2") +
+  xlab("Time") +
+  ylab("CRPS") +
+  ggplot2::theme_bw() +
+  ggtitle("Reconstructing R")
+plot(rt_plot)
+```
+
+![plot of chunk rt_plot](figure/rt_plot-1.png)
+
+
+``` r
+infections_plot <- ggplot(infections_df, aes(x = time, y = value, colour = model)) +
+  geom_line() +
+  scale_colour_brewer("Model", palette = "Dark2") +
+  xlab("Time") +
+  ylab("CRPS") +
+  ggplot2::theme_bw() +
+  ggtitle("Reconstructing infections")
+plot(infections_plot)
+```
+
+![plot of chunk infections_plot](figure/infections_plot-1.png)
+
+## Some considerations
+
+### Mechanistic vs non-mechanistic models
+
+- Estimation in _EpiNow2_ using the mechanistic approaches (prior on Rt) is often much slower than the non- mechanistic approach. The mechanistic model is slower because it models intricate details about the processes and mechanisms that drive $Rt$ estimates. The nonmechanistic model, on the other hand, is faster because it does not model these intricate details. If performing a retrospective analysis, the _non-mechanistic model_ (where `rt = NULL`) is better suited and a faster alternative to the mechanistic $Rt$ model.
+
+### Exact vs approximate methods
+
+- The default method is `method = "sampling"`, which performs MCMC sampling. The MCMC sampling method is accurate but can often be slow. The Laplace, Pathfinder, and variational inference methods are the fastest because they are approximate methods. The first two require having the `cmdstanr` package installed. Also note that the methods are experimental and may not be as reliable as the default MCMC sampling method. For details on the Laplace and Pathfinder approximation methods, see respectively, [here](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html) and [here](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html).
+
+### Granularity of estimates
+
+- The random walk method reduces granularity in estimates, compared to the other methods.
