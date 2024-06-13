@@ -147,36 +147,36 @@ We will use the following models:
 
 ```{r models}
 models <- list(
-  # gp = list(
-  #   rt = rt_opts(prior = list(mean = 2, sd = 0.1))
-  # )
-  # ,
+  gp = list(
+    rt = rt_opts(prior = list(mean = 2, sd = 0.1))
+  )
+  ,
   # The non-mechanistic model
   non_mechanistic = list(rt = NULL),
   # The model with a 1-day random walk and Gaussian process turned off
-  # rw1_no_gp = list(
-  #   rt = rt_opts(
-  #     prior = list(mean = 2, sd = 0.1),
-  #       rw = 1
-  #     ),
-  #   gp = NULL
-  # ),
+  rw1_no_gp = list(
+    rt = rt_opts(
+      prior = list(mean = 2, sd = 0.1),
+        rw = 1
+      ),
+    gp = NULL
+  ),
   # The model with a 7-day random walk and Gaussian process turned off
-  # rw7_no_gp = list(
-  #   rt = rt_opts(
-  #     prior = list(mean = 2, sd = 0.1),
-  #       rw = 7
-  #     ),
-  #   gp = NULL
-  # ),
-  # # The model with a 7-day random walk and Gaussian process (default)
-  # rw7_gp = list(
-  #   rt = rt_opts(
-  #     prior = list(mean = 2, sd = 0.1),
-  #     rw = 7,
-  #     gp_on = "R0"
-  #   )
-  # ),
+  rw7_no_gp = list(
+    rt = rt_opts(
+      prior = list(mean = 2, sd = 0.1),
+        rw = 7
+      ),
+    gp = NULL
+  ),
+  # The model with a 7-day random walk and Gaussian process (default)
+  rw7_gp = list(
+    rt = rt_opts(
+      prior = list(mean = 2, sd = 0.1),
+      rw = 7,
+      gp_on = "R0"
+    )
+  ),
   # Model that uses the variational inference method instead of MCMC
   vb = list(
     stan = stan_opts(
