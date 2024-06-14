@@ -12,7 +12,8 @@ create_stan_data(
   obs,
   horizon,
   backcalc,
-  shifted_cases
+  shifted_cases,
+  process_model
 )
 }
 \arguments{

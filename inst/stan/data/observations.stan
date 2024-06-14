@@ -1,6 +1,6 @@
   int t;                                            // unobserved time
   int lt;                          // timepoints in the likelihood
-  int seeding_time;                                 // time period used for seeding and not observed
+  int<lower = 1> seeding_time;                                 // time period used for seeding and not observed
   int horizon;                                      // forecast horizon
   int future_time;                                  // time in future for Rt
   array[lt] int<lower = 0> cases; // observed cases

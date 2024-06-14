@@ -3,7 +3,6 @@ functions {
 #include functions/pmfs.stan
 #include functions/delays.stan
 #include functions/gaussian_process.stan
-#include functions/rt.stan
 #include functions/infections.stan
 #include functions/observation_model.stan
 #include functions/generated_quantities.stan
@@ -36,6 +35,7 @@ generated quantities {
   matrix[n, t - seeding_time] reports; // observed cases
   array[n, t - seeding_time] int imputed_reports;
   matrix[n, t - seeding_time - 1] r;
+  vector[seeding_time] uobs_inf;
   for (i in 1:n) {
     // generate infections from Rt trace
     vector[delay_type_max[gt_id] + 1] gt_rev_pmf;
@@ -46,11 +46,10 @@ generated quantities {
       1, 1, 0
     );
 
-    infections[i] = to_row_vector(generate_infections(
-      to_vector(R[i]), seeding_time, gt_rev_pmf, initial_infections[i],
-      initial_growth[i], pop, future_time
-    ));
-
+    uobs_inf = generate_seed(initial_infections[i], initial_growth[i], seeding_time);
+     // generate infections from Rt trace
+    infections[i] = renewal_model(R[i], uobs_inf, gt_rev_pmf, pop, future_time);
+    // convolve from latent infections to mean of observations
     if (delay_id) {
       vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(
         delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
@@ -58,21 +57,18 @@ generated quantities {
         delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
         0, 1, 0
       );
-     // convolve from latent infections to mean of observations
-      reports[i] = to_row_vector(convolve_to_report(
-        to_vector(infections[i]), delay_rev_pmf, seeding_time)
-      );
+      reports[i] = convolve_to_report(infections[i], delay_rev_pmf, seeding_time);
     } else {
       reports[i] = to_row_vector(
         infections[i, (seeding_time + 1):t]
       );
+      reports[i] = infections[(seeding_time + 1):t];
     }
-
     // weekly reporting effect
     if (week_effect > 1) {
-      reports[i] = to_row_vector(
-        day_of_week_effect(to_vector(reports[i]), day_of_week,
-                           to_vector(day_of_week_simplex[i])));
+      reports[i] = day_of_week_effect(
+        reports[i], day_of_week, to_vector(day_of_week_simplex[i])
+      );
     }
     // truncate near time cases to observed reports
     if (trunc_id) {
@@ -88,14 +84,14 @@ generated quantities {
     }
     // scale observations
     if (obs_scale) {
-      reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i, 1]));
+      reports[i] = scale_obs(reports[i], frac_obs[i, 1]);
     }
     // simulate reported cases
     imputed_reports[i] = report_rng(
-      to_vector(reports[i]), rep_phi[i], model_type
+      to_vector(reports[i]), rep_phi[i], obs_dist
     );
     r[i] = to_row_vector(
-      calculate_growth(to_vector(infections[i]), seeding_time + 1)
+      calculate_growth(to_vector(infections[i]), seeding_time)
     );
   }
 }

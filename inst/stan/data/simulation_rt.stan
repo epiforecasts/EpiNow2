@@ -1,4 +1,4 @@
-  array[n, 1] real initial_infections; // initial logged infections
+  array[n, seeding_time ? 1 : 0] real initial_infections; // initial logged infections
   array[n, seeding_time > 1 ? 1 : 0] real initial_growth; //initial growth
 
   matrix[n, t - seeding_time] R; // reproduction number
