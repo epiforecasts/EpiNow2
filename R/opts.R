@@ -609,7 +609,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
 #' @param ... Additional parameters to pass to [rstan::sampling()].
 #' @importFrom utils modifyList
 #' @return A list of arguments to pass to [rstan::sampling()] or
-#' [cmdstanr::sample().
+#' [cmdstanr::sample()].
 #' @export
 #' @examples
 #' stan_sampling_opts(samples = 2000)
