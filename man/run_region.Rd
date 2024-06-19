@@ -30,7 +30,8 @@ run_region(
 \arguments{
 \item{target_region}{Character string indicating the region being evaluated}
 
-\item{generation_time}{A call to \code{\link[=generation_time_opts]{generation_time_opts()}} defining the
+\item{generation_time}{A call to \code{\link[=gt_opts]{gt_opts()}} or \code{\link[=generation_time_opts]{generation_time_opts()}}
+defining the
 generation time distribution used. For backwards compatibility a list of
 summary parameters can also be passed.}
 

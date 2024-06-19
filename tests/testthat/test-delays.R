@@ -1,4 +1,4 @@
-test_stan_delays <- function(generation_time = generation_time_opts(Fixed(1)),
+test_stan_delays <- function(generation_time = gt_opts(Fixed(1)),
                              delays = delay_opts(),
                              truncation = trunc_opts(),
                              params = c()) {
@@ -21,14 +21,14 @@ test_that("generation times can be specified in different ways", {
   )
   expect_equal(
     test_stan_delays(
-      generation_time = generation_time_opts(Fixed(value = 3)),
+      generation_time = gt_opts(Fixed(value = 3)),
       params = delay_params
     ),
     c(0, 0, 0, 1, 1, 1)
   )
   expect_equal(
     round(test_stan_delays(
-      generation_time = generation_time_opts(
+      generation_time = gt_opts(
         LogNormal(meanlog = 3, sdlog = 1, max = 4)
       ),
       params = delay_params
@@ -69,7 +69,7 @@ test_that("truncation parameters can be specified in different ways", {
 })
 
 test_that("distributions incompatible with stan models are caught", {
-  expect_error(generation_time_opts(
+  expect_error(gt_opts(
     Gamma(2, 2)
   ), "maximum")
   expect_error(delay_opts(

@@ -22,7 +22,8 @@
 #'
 #' @param reported_cases Deprecated; use `data` instead.
 #'
-#' @param generation_time A call to [generation_time_opts()] defining the
+#' @param generation_time A call to [gt_opts()] or [generation_time_opts()]
+#' defining the
 #' generation time distribution used. For backwards compatibility a list of
 #' summary parameters can also be passed.
 #'
@@ -99,7 +100,7 @@
 #'
 #' # for more examples, see the "estimate_infections examples" vignette
 #' def <- estimate_infections(reported_cases,
-#'   generation_time = generation_time_opts(generation_time),
+#'   generation_time = gt_opts(generation_time),
 #'   delays = delay_opts(incubation_period + reporting_delay),
 #'   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
 #'   stan = stan_opts(control = list(adapt_delta = 0.95))
@@ -111,7 +112,7 @@
 #' options(old_opts)
 #' }
 estimate_infections <- function(data,
-                                generation_time = generation_time_opts(),
+                                generation_time = gt_opts(),
                                 delays = delay_opts(),
                                 truncation = trunc_opts(),
                                 rt = rt_opts(),

@@ -15,7 +15,7 @@ create_profiles <- function(dir = file.path("inst", "stan"),
     set.seed(x)
     fit <- estimate_infections(
       data = reported_cases,
-      generation_time = generation_time_opts(fixed_generation_time),
+      generation_time = gt_opts(fixed_generation_time),
       delays = delay_opts(delays),
       rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
       stan = stan_opts(
