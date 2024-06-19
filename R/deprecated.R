@@ -386,6 +386,7 @@ get_incubation_period <- function(disease, source, max_value = 14,
 #'
 #' @description `r lifecycle::badge("deprecated")`
 #' Deprecated; use [stan_sampling_opts()] instead.
+#' @param ... Additional parameters to pass to [rstan::sampling()].
 #' @inheritParams stan_sampling_opts
 #' @return A list of arguments to pass to [rstan::sampling()].
 #' @export
