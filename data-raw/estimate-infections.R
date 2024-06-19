@@ -25,7 +25,7 @@ cases <- data.table::rbindlist(list(
 ))
 
 example_regional_epinow <- regional_epinow(
-  reported_cases = cases,
+  data = cases,
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
