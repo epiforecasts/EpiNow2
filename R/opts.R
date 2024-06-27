@@ -447,7 +447,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_min = 0,
                     ls_max = 60,
                     alpha_sd = 0.05,
-                    kernel = c("matern_3/2", "se"),
+                    kernel = c("matern_3/2", "se", "ou"),
                     matern_order = 3 / 2,
                     spacing = 1L) {
   if (kernel == "se") {
