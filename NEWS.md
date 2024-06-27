@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Documentation
+
+- The installation guide in the README has been updated to provide instructions for configuring the C toolchain of Windows, MacOS, and Linux. By @jamesmbaazam in #707 and reviewed by @<REVIEWER>.
+
 ## Model changes
 
 - `epinow()` now returns the "timing" output in a "time difference"" format that is easier to understand and work with. By @jamesmbaazam in #688 and reviewed by @sbfnk.
