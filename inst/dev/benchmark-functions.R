@@ -14,7 +14,7 @@ create_profiles <- function(dir = file.path("inst", "stan"),
   profiles <- suppressMessages(purrr::map(seeds, \(x) {
     set.seed(x)
     fit <- estimate_infections(
-      reported_cases = reported_cases,
+      data = reported_cases,
       generation_time = generation_time_opts(fixed_generation_time),
       delays = delay_opts(delays),
       rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
