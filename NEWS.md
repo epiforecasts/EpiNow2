@@ -6,7 +6,7 @@
 
 ## Documentation
 
-- Updated the documentation of the dots argument of the `stan_sampling_opts()` to add that the dots are passed to `cmdstanr::sample()`. By @jamesmbaazam in # and reviewed by @<REVIEWER>.
+- Updated the documentation of the dots argument of the `stan_sampling_opts()` to add that the dots are passed to `cmdstanr::sample()`. By @jamesmbaazam in #699 and reviewed by @sbfnk.
 
 # EpiNow2 1.5.2
 
