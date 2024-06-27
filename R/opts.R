@@ -469,13 +469,13 @@ gp_opts <- function(basis_prop = 0.2,
     matern_order <- Inf
   } else if (kernel == "ou") {
     if (!missing(matern_order) && matern_order != 1 / 2) {
-      stop("Ornstein-Uhlenbeck kernel must have matern order unset of `1/2`.")
+      stop("Ornstein-Uhlenbeck kernel must have matern order unset of `1 / 2`.")
     }
     matern_order <- 1 / 2
   } else if (!(is.infinite(matern_order) ||
-               matern_order %in% c(1 / 2, 3 / 2,  5 / 2))) {
+                 matern_order %in% c(1 / 2, 3 / 2,  5 / 2))) {
     stop(
-      "only the Matern kernels of order 1/2, 3/2, 5/2 or Inf ",
+      "only the Matern kernels of order `1 / 2`, `3 / 2`, `5 / 2` or `Inf` ",
       "are currently supported"
     )
   }
