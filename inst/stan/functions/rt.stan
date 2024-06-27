@@ -19,7 +19,7 @@ vector rep_each(vector vec, int times, int max_id, int pad_zero) {
 
 // update a vector of Rts
 vector update_Rt(int t, real log_R, vector noise, array[] int bps,
-                 array[] real bp_effects, int stationary, int gp_spacing) {
+                 array[] real bp_effects, int stationary) {
   // define control parameters
   int bp_n = num_elements(bp_effects);
   int bp_c = 0;
@@ -46,7 +46,7 @@ vector update_Rt(int t, real log_R, vector noise, array[] int bps,
     } else {
       gp_noise = cumulative_sum(noise);
     }
-    gp = rep_each(gp_noise, gp_spacing, t, !stationary);
+    gp = rep_each(gp_noise, t, !stationary);
   }
   // Calculate Rt
   R = rep_vector(log_R, t) + bp + gp;

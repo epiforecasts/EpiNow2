@@ -46,30 +46,19 @@ real spd_matern52(real alpha, real rho, real w) {
 
 // get the length of period to which the GP applies
 int get_noise_time(int ot_h, int t, int horizon, int estimate_r,
-                   int stationary, int future_fixed, int fixed_from,
-                   int gp_spacing) {
-  int noise_time = estimate_r > 0 ? (stationary > 0 ? ot_h : ot_h - gp_spacing) : t;
+                   int stationary, int future_fixed, int fixed_from) {
+  int noise_time = estimate_r > 0 ? (stationary > 0 ? ot_h : ot_h) : t;
   noise_time = future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
   return(noise_time);
 }
 
-// get number of noise terms at appropriate spacing
-int get_noise_terms(int noise_time, int spacing) {
-  int spaced_noise_terms = noise_time / spacing;
-  // round up
-  if (spaced_noise_terms * spacing < noise_time) {
-    spaced_noise_terms += 1;
-  }
-  return(spaced_noise_terms);
-}
-
 // setup approximate gaussian process
-matrix setup_gp(int M, real L, int dimension, int spacing) {
+matrix setup_gp(int M, real L, int dimension) {
   vector[dimension] time;
   matrix[dimension, M] PHI;
-  real half_dim = dimension * spacing / 2.0;
+  real half_dim = dimension / 2.0;
   for (s in 1:dimension) {
-    time[s] = (1 + (s - 1) * spacing - half_dim) / half_dim;
+    time[s] = (1 + (s - 1) - half_dim) / half_dim;
   }
   for (m in 1:M){
     PHI[,m] = phi(L, m, time);

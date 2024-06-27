@@ -428,9 +428,6 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' approximate Gaussian process. See (Riutort-Mayol et al. 2020
 #' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
 #'
-#' @param spacing Integer, defaults to 1. Spacing of GP points; increase this number
-#' to update the GP at longer intervals, e.g. 7 for every week.
-#'
 #' @importFrom rlang arg_match
 #' @return A `<gp_opts>` object of settings defining the Gaussian process
 #' @export
@@ -448,8 +445,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_max = 60,
                     alpha_sd = 0.05,
                     kernel = c("matern_3/2", "se", "ou"),
-                    matern_order = 3 / 2,
-                    spacing = 1L) {
+                    matern_order = 3 / 2) {
   if (kernel == "se") {
     matern_order <- Inf
   } else if (kernel == "ou") {
@@ -471,7 +467,6 @@ gp_opts <- function(basis_prop = 0.2,
     ls_max = ls_max,
     alpha_sd = alpha_sd,
     kernel = arg_match(kernel),
-    spacing = spacing,
     matern_order = matern_order
   )
 
