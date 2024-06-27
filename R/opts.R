@@ -455,7 +455,7 @@ gp_opts <- function(basis_prop = 0.2,
   } else if (kernel == "ou") {
     matern_order <- 1 / 2
   } else if (!(is.infinite(matern_order) ||
-               matern_order %in% c(1 / 2, 3 / 2,  5 / 2))) {
+                 matern_order %in% c(1 / 2, 3 / 2,  5 / 2))) {
     stop(
       "only the Matern kernels of order 1/2, 3/2, 5/2 or Inf ",
       "are currently supported"
