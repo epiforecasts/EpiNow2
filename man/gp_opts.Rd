@@ -12,7 +12,7 @@ gp_opts(
   ls_min = 0,
   ls_max = 60,
   alpha_sd = 0.05,
-  kernel = c("matern_3/2", "se"),
+  kernel = c("matern", "se", "ou"),
   matern_order = 3/2
 )
 }

@@ -459,11 +459,18 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_min = 0,
                     ls_max = 60,
                     alpha_sd = 0.05,
-                    kernel = c("matern_3/2", "se"),
+                    kernel = c("matern", "se", "ou"),
                     matern_order = 3 / 2) {
+  kernel <- arg_match(kernel)
   if (kernel == "se") {
+    if (!missing(matern_order) && is.finite(matern_order)) {
+      stop("Squared exponential kernel must have matern order unset of `Inf`.")
+    }
     matern_order <- Inf
   } else if (kernel == "ou") {
+    if (!missing(matern_order) && matern_order != 1 / 2) {
+      stop("Ornstein-Uhlenbeck kernel must have matern order unset of `1/2`.")
+    }
     matern_order <- 1 / 2
   } else if (!(is.infinite(matern_order) ||
                matern_order %in% c(1 / 2, 3 / 2,  5 / 2))) {
@@ -481,7 +488,7 @@ gp_opts <- function(basis_prop = 0.2,
     ls_min = ls_min,
     ls_max = ls_max,
     alpha_sd = alpha_sd,
-    kernel = arg_match(kernel),
+    kernel = kernel,
     matern_order = matern_order
   )
 
