@@ -102,14 +102,14 @@ For a more comprehensive treatment of delays and their estimation avoiding commo
 ### Generation intervals
 
 The generation interval is a delay distribution that describes the amount of time that passes between an individual becoming infected and infecting someone else.
-In _EpiNow2_, the generation time distribution is defined by a call to `generation_time_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by the function corresponding to the probability distribution, i.e. `LogNormal()`, `Gamma()`, etc.).
+In _EpiNow2_, the generation time distribution is defined by a call to `gt_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by the function corresponding to the probability distribution, i.e. `LogNormal()`, `Gamma()`, etc.).
 For example, to define the generation time as gamma distributed with uncertain mean centered on 3 and sd centered on 1 with some uncertainty, a maximum value of 10 and weighted by the number of case data points we could use the shape and rate parameters suggested above (though notes that this will only very approximately produce the uncertainty in mean and standard deviation stated there):
 
 ```{r, results = 'hide'}
 generation_time <- Gamma(
   shape = Normal(9, 2.5), rate = Normal(3, 1.4), max = 10
 )
-generation_time_opts(generation_time)
+gt_opts(generation_time)
 ```
 
 ### Reporting delays
@@ -206,7 +206,7 @@ For example, using some of the options described above one could call
 ```{r}
 def <- estimate_infections(
   example_confirmed, 
-  generation_time = generation_time_opts(generation_time),
+  generation_time = gt_opts(generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior)
 )

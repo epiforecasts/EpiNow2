@@ -17,7 +17,7 @@ default_estimate_infections <- function(..., add_stan = list(), gt = TRUE,
 
   suppressWarnings(estimate_infections(...,
     generation_time = fifelse(
-      gt, generation_time_opts(example_generation_time), generation_time_opts()
+      gt, gt_opts(example_generation_time), gt_opts()
     ),
     delays = ifelse(delay, list(delay_opts(example_reporting_delay)), list(delay_opts()))[[1]],
     stan = stan_args, verbose = FALSE

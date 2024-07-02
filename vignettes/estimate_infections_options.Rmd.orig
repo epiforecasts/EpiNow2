@@ -111,7 +111,7 @@ Putting all the data and parameters together and tweaking the Gaussian Process t
 
 ```{r default}
 def <- estimate_infections(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior)
 )
@@ -129,7 +129,7 @@ To speed up the calculation of the Gaussian Process we could decrease its accura
 
 ```{r lower_accuracy}
 agp <- estimate_infections(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
   gp = gp_opts(basis_prop = 0.1)
@@ -150,7 +150,7 @@ Note that this only affects the forecasts and is done using a crude adjustment (
 
 ```{r susceptible_depletion}
 dep <- estimate_infections(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(
     prior = rt_prior,
@@ -183,7 +183,7 @@ We can then use this in the `esimtate_infections()` function using the `truncati
 
 ```{r truncation}
 trunc <- estimate_infections(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   truncation = trunc_opts(trunc_dist),
   rt = rt_opts(prior = rt_prior)
@@ -203,7 +203,7 @@ This will lead to wider uncertainty, and the researcher should check whether thi
 
 ```{r gp_projection}
 project_rt <- estimate_infections(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(
     prior = rt_prior, future = "project"
@@ -223,7 +223,7 @@ We might want to estimate a fixed reproduction number, i.e. assume that it does 
 
 ```{r fixed}
 fixed <- estimate_infections(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   gp = NULL
 )
@@ -252,7 +252,7 @@ We then use this instead of `reported_cases` in the `estimate_infections()` func
 
 ```{r bp}
 bkp <- estimate_infections(bp_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
   gp = NULL
@@ -272,7 +272,7 @@ This can be achieved using the `rw` option which defines the length of the time 
 
 ```{r weekly_rw}
 rw <- estimate_infections(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior, rw = 7),
   gp = NULL
@@ -292,7 +292,7 @@ Whilst _EpiNow2_ allows the user to specify delays, it can also run directly on 
 ```{r no_delays}
 no_delay <- estimate_infections(
   reported_cases,
-  generation_time = generation_time_opts(example_generation_time)
+  generation_time = gt_opts(example_generation_time)
 )
 # summarise results
 summary(no_delay)
@@ -311,7 +311,7 @@ It also means that the model is questionable for forecasting, which is why were 
 
 ```{r nonparametric}
 non_parametric <- estimate_infections(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = NULL,
   backcalc = backcalc_opts(),
