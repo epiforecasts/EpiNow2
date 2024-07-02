@@ -22,10 +22,9 @@
 #'
 #' @param reported_cases Deprecated; use `data` instead.
 #'
-#' @param generation_time A call to [gt_opts()] (or its alias [generation_time_opts()])
-#' defining the
-#' generation time distribution used. For backwards compatibility a list of
-#' summary parameters can also be passed.
+#' @param generation_time A call to [gt_opts()] (or its alias
+#' [generation_time_opts()]) defining the generation time distribution used.
+#' For backwards compatibility a list of summary parameters can also be passed.
 #'
 #' @param delays A call to [delay_opts()] defining delay distributions and
 #' options. See the documentation of [delay_opts()] and the examples below for
