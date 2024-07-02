@@ -7,7 +7,7 @@ Growth}
 \usage{
 estimate_infections(
   data,
-  generation_time = generation_time_opts(),
+  generation_time = gt_opts(),
   delays = delay_opts(),
   truncation = trunc_opts(),
   rt = rt_opts(),
@@ -29,9 +29,9 @@ estimate_infections(
 \item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
 (date). \code{confirm} must be numeric and \code{date} must be in date format.}
 
-\item{generation_time}{A call to \code{\link[=generation_time_opts]{generation_time_opts()}} defining the
-generation time distribution used. For backwards compatibility a list of
-summary parameters can also be passed.}
+\item{generation_time}{A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
+\code{\link[=generation_time_opts]{generation_time_opts()}}) defining the generation time distribution used.
+For backwards compatibility a list of summary parameters can also be passed.}
 
 \item{delays}{A call to \code{\link[=delay_opts]{delay_opts()}} defining delay distributions and
 options. See the documentation of \code{\link[=delay_opts]{delay_opts()}} and the examples below for
@@ -142,7 +142,7 @@ reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
 
 # for more examples, see the "estimate_infections examples" vignette
 def <- estimate_infections(reported_cases,
-  generation_time = generation_time_opts(generation_time),
+  generation_time = gt_opts(generation_time),
   delays = delay_opts(incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
   stan = stan_opts(control = list(adapt_delta = 0.95))

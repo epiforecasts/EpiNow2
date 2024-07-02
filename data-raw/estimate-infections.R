@@ -12,7 +12,7 @@ reported_cases <- example_confirmed[1:60]
 reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10L)
 
 example_estimate_infections <- estimate_infections(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
   stan = stan_opts(samples = 200, control = list(adapt_delta = 0.95))
@@ -25,8 +25,8 @@ cases <- data.table::rbindlist(list(
 ))
 
 example_regional_epinow <- regional_epinow(
+  generation_time = gt_opts(example_generation_time),
   data = cases,
-  generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
   stan = stan_opts(samples = 200, control = list(adapt_delta = 0.95))

@@ -4,7 +4,7 @@ futile.logger::flog.threshold("FATAL")
 reported_cases <- EpiNow2::example_confirmed[1:50]
 
 out <- suppressWarnings(estimate_infections(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_reporting_delay),
   gp = NULL, rt = rt_opts(rw = 14),
   stan = stan_opts(

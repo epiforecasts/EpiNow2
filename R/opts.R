@@ -3,6 +3,7 @@
 #' @description `r lifecycle::badge("stable")`
 #' Returns generation time parameters in a format for lower level model use.
 #'
+#' @rdname generation_time_opts
 #' @param dist A delay distribution or series of delay distributions . If no
 #'   distribution is given a fixed generation time of 1 will be assumed.
 #'
@@ -40,8 +41,8 @@
 #' )
 #'
 #' # An example generation time
-#' generation_time_opts(example_generation_time)
-generation_time_opts <- function(dist = Fixed(1), ...,
+#' gt_opts(example_generation_time)
+gt_opts <- function(dist = Fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
                                  tolerance = 0.001, weight_prior = TRUE) {
   dot_options <- list(...)
@@ -74,6 +75,10 @@ generation_time_opts <- function(dist = Fixed(1), ...,
   attr(dist, "class") <- c("generation_time_opts", class(dist))
   return(dist)
 }
+
+#' @rdname generation_time_opts
+#' @export
+generation_time_opts <- gt_opts
 
 #' Secondary Reports Options
 #'

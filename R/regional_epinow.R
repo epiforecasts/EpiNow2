@@ -79,7 +79,7 @@
 #' # for more examples, see the "estimate_infections examples" vignette
 #' def <- regional_epinow(
 #'   data = cases,
-#'   generation_time = generation_time_opts(example_generation_time),
+#'   generation_time = gt_opts(example_generation_time),
 #'   delays = delay_opts(example_incubation_period + example_reporting_delay),
 #'   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
 #'   stan = stan_opts(
@@ -91,7 +91,7 @@
 #' options(old_opts)
 #' }
 regional_epinow <- function(data,
-                            generation_time = generation_time_opts(),
+                            generation_time = gt_opts(),
                             delays = delay_opts(),
                             truncation = trunc_opts(),
                             rt = rt_opts(),

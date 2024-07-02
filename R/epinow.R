@@ -64,7 +64,7 @@
 #' # estimate Rt and nowcast/forecast cases by date of infection
 #' out <- epinow(
 #'   data = reported_cases,
-#'   generation_time = generation_time_opts(generation_time),
+#'   generation_time = gt_opts(generation_time),
 #'   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
 #'   delays = delay_opts(incubation_period + reporting_delay)
 #' )
@@ -80,7 +80,7 @@
 #' }
 # nolint start: cyclocomp_linter
 epinow <- function(data,
-                   generation_time = generation_time_opts(),
+                   generation_time = gt_opts(),
                    delays = delay_opts(),
                    truncation = trunc_opts(),
                    rt = rt_opts(),

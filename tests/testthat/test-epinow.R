@@ -20,7 +20,7 @@ test_that("epinow produces expected output when run with default settings", {
   outputs <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
-      generation_time = generation_time_opts(example_generation_time),
+      generation_time = gt_opts(example_generation_time),
       delays = delay_opts(c(example_incubation_period, reporting_delay)),
       stan = stan_opts(
         samples = 25, warmup = 25,
@@ -46,7 +46,7 @@ test_that("epinow produces expected output when run with the
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
-      generation_time = generation_time_opts(example_generation_time),
+      generation_time = gt_opts(example_generation_time),
       delays = delay_opts(example_incubation_period + reporting_delay),
       stan = stan_opts(backend = "cmdstanr"),
       logs = NULL, verbose = FALSE
@@ -70,7 +70,7 @@ test_that("epinow produces expected output when run with the
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
-      generation_time = generation_time_opts(example_generation_time),
+      generation_time = gt_opts(example_generation_time),
       delays = delay_opts(example_incubation_period + reporting_delay),
       stan = stan_opts(method = "laplace", backend = "cmdstanr"),
       logs = NULL, verbose = FALSE
@@ -93,7 +93,7 @@ test_that("epinow produces expected output when run with the
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
-      generation_time = generation_time_opts(example_generation_time),
+      generation_time = gt_opts(example_generation_time),
       delays = delay_opts(example_incubation_period + reporting_delay),
       stan = stan_opts(method = "pathfinder", backend = "cmdstanr"),
       logs = NULL, verbose = FALSE
@@ -114,7 +114,7 @@ test_that("epinow runs without error when saving to disk", {
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
-      generation_time = generation_time_opts(example_generation_time),
+      generation_time = gt_opts(example_generation_time),
       delays = delay_opts(example_incubation_period + reporting_delay),
       stan = stan_opts(
         samples = 25, warmup = 25, cores = 1, chains = 2,
@@ -131,7 +131,7 @@ test_that("epinow can produce partial output as specified", {
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
-      generation_time = generation_time_opts(
+      generation_time = gt_opts(
         example_generation_time, weight_prior = FALSE
       ),
       delays = delay_opts(example_incubation_period + reporting_delay),
@@ -157,7 +157,7 @@ test_that("epinow can produce partial output as specified", {
 test_that("epinow fails as expected when given a short timeout", {
   expect_error(suppressWarnings(x = epinow(
     data = reported_cases,
-    generation_time = generation_time_opts(example_generation_time),
+    generation_time = gt_opts(example_generation_time),
     delays = delay_opts(example_incubation_period + reporting_delay),
     stan = stan_opts(
       samples = 100, warmup = 100,
@@ -174,7 +174,7 @@ test_that("epinow fails if given NUTs arguments when using variational inference
   expect_error(capture.output(suppressMessages(suppressWarnings(
     epinow(
       data = reported_cases,
-      generation_time = generation_time_opts(example_generation_time),
+      generation_time = gt_opts(example_generation_time),
       delays = delay_opts(example_incubation_period + reporting_delay),
       stan = stan_opts(
         samples = 100, warmup = 100,
@@ -191,7 +191,7 @@ test_that("epinow fails if given variational inference arguments when using NUTs
   expect_error(capture.output(suppressMessages(suppressWarnings(
     epinow(
       data = reported_cases,
-      generation_time = generation_time_opts(example_generation_time),
+      generation_time = gt_opts(example_generation_time),
       delays = delay_opts(example_incubation_period + reporting_delay),
       stan = stan_opts(method = "sampling", tol_rel_obj = 1),
       logs = NULL, verbose = FALSE

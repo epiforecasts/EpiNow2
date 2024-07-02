@@ -6,7 +6,7 @@
 \usage{
 epinow(
   data,
-  generation_time = generation_time_opts(),
+  generation_time = gt_opts(),
   delays = delay_opts(),
   truncation = trunc_opts(),
   rt = rt_opts(),
@@ -33,9 +33,9 @@ epinow(
 \item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
 (date). \code{confirm} must be numeric and \code{date} must be in date format.}
 
-\item{generation_time}{A call to \code{\link[=generation_time_opts]{generation_time_opts()}} defining the
-generation time distribution used. For backwards compatibility a list of
-summary parameters can also be passed.}
+\item{generation_time}{A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
+\code{\link[=generation_time_opts]{generation_time_opts()}}) defining the generation time distribution used.
+For backwards compatibility a list of summary parameters can also be passed.}
 
 \item{delays}{A call to \code{\link[=delay_opts]{delay_opts()}} defining delay distributions and
 options. See the documentation of \code{\link[=delay_opts]{delay_opts()}} and the examples below for
@@ -157,7 +157,7 @@ reported_cases <- example_confirmed[1:40]
 # estimate Rt and nowcast/forecast cases by date of infection
 out <- epinow(
   data = reported_cases,
-  generation_time = generation_time_opts(generation_time),
+  generation_time = gt_opts(generation_time),
   rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
   delays = delay_opts(incubation_period + reporting_delay)
 )

@@ -12,7 +12,7 @@ df_non_zero <- function(df) {
 
 out <- suppressWarnings(regional_epinow(
   data = cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_reporting_delay),
   stan = stan_opts(
     samples = 25, warmup = 25,
