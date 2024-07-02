@@ -22,7 +22,7 @@
 #'
 #' @param reported_cases Deprecated; use `data` instead.
 #'
-#' @param generation_time A call to [gt_opts()] or [generation_time_opts()]
+#' @param generation_time A call to [gt_opts()] (or its alias [generation_time_opts()])
 #' defining the
 #' generation time distribution used. For backwards compatibility a list of
 #' summary parameters can also be passed.
