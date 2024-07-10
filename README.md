@@ -121,7 +121,7 @@ install.packages("EpiNow2")
 Install the development version of the package with:
 
 ``` r
-install.packages("EpiNow2", repos = "https://epiforecasts.r-universe.dev")
+install.packages("EpiNow2", repos = c("https://epiforecasts.r-universe.dev", getOption("repos")))
 ```
 
 Alternatively, install the development version of the package with
