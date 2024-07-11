@@ -10,7 +10,7 @@
 
 ## Bug fixes
 
-- a bug was fixed where `forecast_secondary()` did not work with fixed delays. By @sbfnk.
+- a bug was fixed where `forecast_secondary()` did not work with fixed delays. By @sbfnk in #717 and reviewed by @sbfnk.
 
 ## Documentation
 
