@@ -20,7 +20,9 @@ a fixed distribution with all mass at 0, i.e. no delay.}
 
 \item{fixed}{deprecated; use \code{dist} instead}
 
-\item{tolerance}{Numeric; the desired tolerance level.}
+\item{tolerance}{Numeric; the desired tolerance level. Any part of the
+cumulative distribution function beyond 1 minus this tolerance level is
+removed.}
 
 \item{weight_prior}{Logical; if TRUE (default), any priors given in \code{dist}
 will be weighted by the number of observation data points, in doing so
