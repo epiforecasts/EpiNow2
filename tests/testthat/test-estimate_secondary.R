@@ -35,6 +35,12 @@ params <- c(
 
 inc_posterior <- inc$posterior[variable %in% params]
 
+# fit model to example data with a fixed delay
+inc_fixed <- estimate_secondary(inc_cases[1:60],
+  delays = delay_opts(Gamma(mean = 15, sd = 5, max = 30)),
+  verbose = FALSE
+)
+
 #### Prevalence data example ####
 
 # make some example prevalence data
@@ -172,6 +178,15 @@ test_that("forecast_secondary can return values from simulated data and plot
            them", {
   inc_preds <- forecast_secondary(
     inc, inc_cases[seq(61, .N)][, value := primary]
+  )
+  expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
+  # validation plot of observations vs estimates
+  expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
+})
+
+test_that("forecast_secondary works with fixed delays", {
+  inc_preds <- forecast_secondary(
+    inc_fixed, inc_cases[seq(61, .N)][, value := primary]
   )
   expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
   # validation plot of observations vs estimates
