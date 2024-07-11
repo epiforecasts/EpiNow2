@@ -8,6 +8,10 @@
 
 - `epinow()` now returns the "timing" output in a "time difference"" format that is easier to understand and work with. By @jamesmbaazam in #688 and reviewed by @sbfnk.
 
+## Bug fixes
+
+- a bug was fixed where `forecast_secondary()` did not work with fixed delays. By @sbfnk.
+
 ## Documentation
 
 - Updated the documentation of the dots argument of the `stan_sampling_opts()` to add that the dots are passed to `cmdstanr::sample()`. By @jamesmbaazam in #699 and reviewed by @sbfnk.
