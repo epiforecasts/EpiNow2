@@ -27,7 +27,7 @@ This vignette explores available forecasting model options in _EpiNow2_ and how 
 
 ## The benchmarking data
 
-We will simulate the "true" infections and Rt data using for benchmarking using `forecast_infections()`. 
+To compare the model options, we will need a dataset for which we know the "true" values and trajectories. So, we will start by generating the "true" infections and Rt data using _EpiNow2_'s `forecast_infections()` function. 
 
 `forecast_infections()` requires a fitted estimates object from `estimate_infections()` or `epinow()`, the trajectory of the reproduction number, `R`, and the number of samples to simulate. So, we will set these up first.
 
