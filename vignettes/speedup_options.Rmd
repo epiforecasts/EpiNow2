@@ -23,7 +23,7 @@ library(cmdstanr)
 library(ggplot2)
 ```
 
-This vignette outlines available options for speeding up model runtimes in _EpiNow2_. We will compare the models by run time, quantitative, and qualitative performance of fit against the "true" trajectory of the data.
+This vignette explores available forecasting model options in _EpiNow2_ and how they vary by speed and forecast performance. We will compare the models by run time and forecast performance (quantitatively and qualitatively) against the "true" trajectory of the data.
 
 ## The benchmarking data
 
