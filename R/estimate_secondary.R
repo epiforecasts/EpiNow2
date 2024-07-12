@@ -645,7 +645,7 @@ forecast_secondary <- function(estimate,
 
   # allocate empty parameters
   data <- allocate_empty(
-    data, c("frac_obs", "delay_param", "rep_phi"),
+    data, c("frac_obs", "delay_params", "rep_phi"),
     n = data$n
   )
   data$all_dates <- as.integer(all_dates)

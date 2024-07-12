@@ -11,6 +11,7 @@
 ## Bug fixes
 
 - a bug was fixed that caused delay option functions to report an error if only the tolerance was specified. By @sbfnk.
+- a bug was fixed where `forecast_secondary()` did not work with fixed delays. By @sbfnk in #717 and reviewed by @seabbs.
 
 ## Documentation
 
