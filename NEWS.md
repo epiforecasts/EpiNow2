@@ -2,7 +2,7 @@
 
 ## Documentation
 
-- The installation guide in the README has been updated to provide instructions for configuring the C toolchain of Windows, MacOS, and Linux. By @jamesmbaazam in #707 and reviewed by @<REVIEWER>.
+- The installation guide in the README has been updated to provide instructions for configuring the C toolchain of Windows, MacOS, and Linux. By @jamesmbaazam in #707 and reviewed by @sbfnk.
 
 ## Model changes
 
