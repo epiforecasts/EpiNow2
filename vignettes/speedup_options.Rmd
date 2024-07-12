@@ -31,9 +31,9 @@ To compare the model options, we will need a dataset for which we know the "true
 
 `forecast_infections()` requires a fitted estimates object from `estimate_infections()` or `epinow()`, the trajectory of the reproduction number, `R`, and the number of samples to simulate. So, we will set these up first.
 
-To obtain the `estimates` object, we have to fit the `estimate_infections()` model to observed data to recover realistic parameter values for the simulation. To do this, we will use the first 100 observations of the `example_confirmed` dataset vendored with this package. This dataset provides a time series of cases by reporting date. We will also use the `example_generation_time`, `example_incubation_period`, and `example_reporting_delay` values that come with the package. 
+To obtain the `estimates` object, we will run the `estimate_infections()` model using real-world observed data and delay distributions to recover realistic parameter values. We will use the first 100 observations of the `example_confirmed` data set, the `example_generation_time`, `example_incubation_period`, and `example_reporting_delay` values that come with _EpiNow2_.
 
-Several of the parameters we will use through out this vignette will have the same value, so we will set these up first.
+Several of the parameters we will use throughout this vignette will have the same value, so we will set them up here in one place.
 
 ``` r
 # Set the number of cores to use
@@ -115,7 +115,7 @@ forecast <- forecast_infections(estimates, R = R_noisy, samples = 10)
 ```
 
 We will now extract the benchamrking data:
-- `R_true`: the median of the simulated Rts, and
+- `R_true`: the median of the simulated $Rt$, and
 - `infections_true`: the infections by date of infection
 
 
@@ -128,25 +128,25 @@ posterior_sample <- forecast$samples[sample == 1]
 # Extract the simulated infections
 infections_true <- posterior_sample[variable == "infections"]$value
 
-# Extract the simulated reported cases
+# Extract the simulated reported cases and rename the "value" column to "confirm" (to match EpiNow2 requirements)
 reported_cases_true <- posterior_sample[
   variable == "reported_cases", .(date, confirm = value)
 ]
 ```
 
-Now, to the main part of this vignette: we will compare the run times of different models in _EpiNow2_.
+Now, to the main part of this vignette: we will compare the run times of different model options.
 
 ## Model options
 
 We will use the following models:
 - _gp_: A Gaussian process prior on the reproduction number $R_t$ and no random walk, using _MCMC sampling_.
 - _vb_: A Gaussian process prior on the reproduction number $R_t$ and no random walk, using the _variational inference_ algorithm.
-- _non_mechanistic_: A model with that uses _back calculation_.
+- _non_mechanistic_: A model with that uses _back calculation and sets no prior on $R_t$.
 - _rw1_no_gp_: A model with a 1-day random walk and Gaussian process turned off.
 - _rw7_no_gp_: A model with a 7-day random walk and Gaussian process turned off.
 - _rw7_gp_: A model with a 7-day random walk and Gaussian process turned on.
-- _pf_: A model that uses the "pathfinder" algorithm (from the `{cmdstanr}` package) for sampling.
-- _lp_: A model that uses the "Laplace" algorithm (from the `{cmdstanr}` package) for sampling.
+- _pf_: A model that uses the "pathfinder" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package) for sampling.
+- _lp_: A model that uses the "Laplace" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package) for sampling.
 
 
 ``` r
@@ -373,7 +373,7 @@ Table: Run times (seconds)
 
 Now, we will compare the estimated and true values using the continuous ranked probability score (CRPS). The CRPS is a proper scoring rule that measures the accuracy of probabilistic forecasts. We will use the `crps()` function from the `{scoringutils}` package.
 
-To calculate the CRPS for the estimated Rt and infections, we will first set up a function that makes sure the data and estimates are of the same length and calls the `crps_sample()` function from the `{scoringutils}` package.
+To calculate the CRPS for the estimated $R_t$ and infections, we will first set up a function that makes sure the data and estimates are of the same length and calls the `crps_sample()` function from the `{scoringutils}` package.
 
 ``` r
 # A function to calculate the CRPS
@@ -385,7 +385,7 @@ calc_crps <- function(x, truth) {
 }
 ```
 
-Now, we can calculate CRPS for the Rt and infection estimates of the various models and using `calc_crps()`.
+Now, we can calculate CRPS for the $R_t$ and infection estimates of the various models using `calc_crps()`.
 
 
 ``` r
@@ -472,7 +472,7 @@ plot(infections_plot)
 
 ![plot of chunk infections_plot](figure/infections_plot-1.png)
 
-## Some considerations
+## Some considerations when using the model options
 
 ### Mechanistic vs non-mechanistic models
 
