@@ -1,10 +1,9 @@
 test_that("dist_spec returns correct output for fixed lognormal distribution", {
   result <- discretise(LogNormal(meanlog = 5, sdlog = 1, max = 19))
-  expect_null(result[[1]]$parameters)
-  expect_equal(result[[1]]$distribution, "nonparametric")
-  expect_null(result[[1]]$max)
+  expect_equal(get_distribution(result), "nonparametric")
+  expect_equal(max(result), 19)
   expect_equal(
-    as.vector(round(result[[1]]$pmf, 2)),
+    as.vector(round(get_pmf(result), 2)),
     c(0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03,
       0.03, 0.04, 0.05, 0.06, 0.07, 0.07, 0.08, 0.09,
       0.10, 0.11, 0.11, 0.12)
@@ -16,31 +15,30 @@ test_that("dist_spec returns correct output for uncertain gamma distribution", {
     Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19),
     strict = FALSE
   )
-  expect_equal(result[[1]]$parameters$shape[[1]]$parameters$mean, 3)
-  expect_equal(result[[1]]$parameters$shape[[1]]$parameters$sd, 0.5)
-  expect_equal(result[[1]]$parameters$rate[[1]]$parameters$mean, 2)
-  expect_equal(result[[1]]$parameters$rate[[1]]$parameters$sd, 0.5)
-  expect_equal(result[[1]]$distribution, "gamma")
-  expect_equal(result[[1]]$max, 19)
+  expect_equal(get_parameters(result)$shape$parameters$mean, 3)
+  expect_equal(get_parameters(result)$shape$parameters$sd, 0.5)
+  expect_equal(get_parameters(result)$rate$parameters$mean, 2)
+  expect_equal(get_parameters(result)$rate$parameters$sd, 0.5)
+  expect_equal(get_distribution(result), "gamma")
+  expect_equal(max(result), 19)
 })
 
 test_that("dist_spec returns correct output for gamma distribution parameterised with scale", {
   result <- Gamma(shape = 3, scale = 2)
-  expect_equal(result[[1]]$parameters$shape, 3)
-  expect_equal(result[[1]]$parameters$rate, 0.5)
-  expect_equal(result[[1]]$distribution, "gamma")
-  expect_true(is.infinite(result[[1]]$max))
+  expect_equal(get_parameters(result)$shape, 3)
+  expect_equal(get_parameters(result)$rate, 0.5)
+  expect_equal(get_distribution(result), "gamma")
+  expect_true(is.infinite(max(result)))
 })
 
 test_that("dist_spec returns correct output for fixed distribution", {
   result <- discretise(
     fix_dist(LogNormal(meanlog = Normal(5, 3), sdlog = 1, max = 19))
   )
-  expect_null(result[[1]]$parameters)
-  expect_equal(result[[1]]$distribution, "nonparametric")
-  expect_null(result[[1]]$max)
+  expect_equal(get_distribution(result), "nonparametric")
+  expect_equal(max(result), 19)
   expect_equal(
-    as.vector(round(result[[1]]$pmf, 2)),
+    as.vector(round(get_pmf(result), 2)),
     c(0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03,
       0.03, 0.04, 0.05, 0.06, 0.07, 0.07, 0.08, 0.09,
       0.10, 0.11, 0.11, 0.12)
@@ -63,12 +61,12 @@ test_that("c.dist_spec returns correct output for sum of two distributions", {
   dist1 <- LogNormal(meanlog = 5, sdlog = 1, max = 19)
   dist2 <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 20)
   result <- dist1 + dist2
-  expect_equal(result[[1]]$parameters$meanlog, 5)
-  expect_equal(result[[1]]$parameters$sdlog, 1)
-  expect_equal(result[[2]]$parameters$shape[[1]]$parameters$mean, 3)
-  expect_equal(result[[2]]$parameters$shape[[1]]$parameters$sd, 0.5)
-  expect_equal(result[[2]]$parameters$rate[[1]]$parameters$mean, 2)
-  expect_equal(result[[2]]$parameters$rate[[1]]$parameters$sd, 0.5)
+  expect_equal(get_parameters(result, 1)$meanlog, 5)
+  expect_equal(get_parameters(result, 1)$sdlog, 1)
+  expect_equal(get_parameters(get_parameters(result, 2)$shape)$mean, 3)
+  expect_equal(get_parameters(get_parameters(result, 2)$shape)$sd, 0.5)
+  expect_equal(get_parameters(get_parameters(result, 2)$rate)$mean, 2)
+  expect_equal(get_parameters(get_parameters(result, 2)$rate)$sd, 0.5)
   expect_equal(length(result), 2)
 })
 
@@ -76,17 +74,16 @@ test_that("collapse returns correct output for sum of two nonparametric distribu
   dist1 <- NonParametric(c(0.1, 0.2, 0.3, 0.4))
   dist2 <- NonParametric(c(0.1, 0.2, 0.3, 0.4))
   result <- collapse(c(dist1, dist2))
-  expect_null(result[[1]]$parameters)
-  expect_equal(result[[1]]$distribution, "nonparametric")
-  expect_null(result[[1]]$max)
-  expect_equal(length(result), 1)
+  expect_equal(get_distribution(result), "nonparametric")
+  expect_equal(max(result), 6)
+  expect_equal(ndist(result), 1)
   expect_equal(
-    round(result[[1]]$pmf, 2),
+    round(get_pmf(result), 2),
     c(0.01, 0.04, 0.10, 0.20, 0.25, 0.24, 0.16)
   )
 })
 
-test_that("Testing `apply_tolerance` function applied to a convolution", {
+test_that("`bound_dist` function can be applied to a convolution", {
   # Create distributions
   dist1 <- LogNormal(meanlog = 1.6, sdlog = 1, max = 19)
   dist2 <- Gamma(mean = 3, sd = 2, max = 19)
@@ -95,51 +92,54 @@ test_that("Testing `apply_tolerance` function applied to a convolution", {
   combined <- collapse(discretise(c(dist1, dist2)))
   
   # Compute combined distribution with larger tolerance
-  combined_tolerance <- apply_tolerance(combined, tolerance = 0.001)
+  combined_tolerance <- bound_dist(combined, tolerance = 0.001)
+
+  combined_pmf <- get_pmf(combined)
+  combined_tolerance_pmf <- get_pmf(combined_tolerance)
 
   # The length of the combined PMF should be greater with default tolerance
-  expect_true(length(combined[[1]]$pmf) > length(combined_tolerance[[1]]$pmf))
+  expect_true(length(combined_pmf) > length(combined_tolerance_pmf))
   # Both should sum to 1
-  expect_equal(sum(combined[[1]]$pmf), 1)
-  expect_equal(sum(combined_tolerance[[1]]$pmf), 1)
+  expect_equal(sum(combined_pmf), 1)
+  expect_equal(sum(combined_tolerance_pmf), 1)
   # The first 5 entries should be within 0.01 of each other
   expect_equal(
-    combined[[1]]$pmf[1:5], combined_tolerance[[1]]$pmf[1:5], tolerance = 0.01
+    combined_pmf[1:5], combined_tolerance_pmf[1:5], tolerance = 0.01
   )
   expect_equal(mean(combined), mean(combined_tolerance), tolerance = 0.1)
 })
 
 test_that("summary functions return correct output for fixed lognormal distribution", {
   dist <- discretise(LogNormal(mean = 3, sd = 1, max = 19))
-  expect_equal(EpiNow2:::mean.dist_spec(dist), 3.0, tolerance = 0.01)
-  expect_equal(EpiNow2:::sd_dist(dist), 1.34, tolerance = 0.01)
-  expect_equal(EpiNow2:::max.dist_spec(dist), 19L)
+  expect_equal(mean(dist), 3.0, tolerance = 0.01)
+  expect_equal(EpiNow2:::sd(dist), 1.34, tolerance = 0.01)
+  expect_equal(max(dist), 19L)
 })
 
 test_that("summary functions return correct output for uncertain gamma distribution", {
   dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19)
-  expect_equal(EpiNow2:::mean.dist_spec(dist, ignore_uncertainty = TRUE), 1.5)
-  expect_equal(EpiNow2:::max.dist_spec(dist), 19L)
+  expect_equal(mean(dist, ignore_uncertainty = TRUE), 1.5)
+  expect_equal(max(dist), 19L)
 })
 
-test_that("mean.dist_spec returns correct output for sum of two distributions", {
+test_that("mean returns correct output for sum of two distributions", {
   dist1 <- LogNormal(meanlog = 1, sdlog = 1, max = 19)
   dist2 <- Gamma(mean = 3, sd = 2, max = 19)
   dist <- dist1 + dist2
-  expect_equal(EpiNow2:::mean.dist_spec(dist), c(4.48, 3), tolerance = 0.001)
-  expect_equal(EpiNow2:::sd_dist(dist), c(5.87, 2), tolerance = 0.001)
+  expect_equal(mean(dist), c(4.48, 3), tolerance = 0.001)
+  expect_equal(EpiNow2:::sd(dist), c(5.87, 2), tolerance = 0.001)
   ## shortened due to tolerance level
-  expect_equal(EpiNow2:::max.dist_spec(dist), c(19L, 19L))
+  expect_equal(max(dist), c(19L, 19L))
 })
 
 test_that("mean returns NA when applied to uncertain distributions", {
   dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19)
-  expect_true(is.na(EpiNow2:::mean.dist_spec(dist)))
+  expect_true(is.na(mean(dist)))
 })
 
-test_that("sd_dist returns NA when applied to uncertain distributions", {
+test_that("sd returns NA when applied to uncertain distributions", {
   dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19)
-  expect_true(is.na(EpiNow2:::sd_dist(dist)))
+  expect_true(is.na(EpiNow2:::sd(dist)))
 })
 
 test_that("print.dist_spec correctly prints the parameters of the fixed lognormal", {
@@ -205,7 +205,7 @@ test_that("fix_dist works with composite delay distributions", {
   dist1 <- LogNormal(meanlog = Normal(1, 0.1), sdlog = 1, max = 19)
   dist2 <- Gamma(mean = 3, sd = 2, max = 19)
   dist <- dist1 + dist2
-  expect_equal(length(collapse(discretise(fix_dist(dist)))), 1L)
+  expect_equal(ndist(collapse(discretise(fix_dist(dist)))), 1L)
 })
 
 test_that("composite delay distributions can be disassembled", {
@@ -232,7 +232,7 @@ test_that("delay distributions can be specified in different ways", {
     tolerance = 0.1
   )
   expect_equal(
-    round(discretise(Gamma(mean = 4, sd = 1, max = 7))[[1]]$pmf, 2),
+    round(get_pmf(discretise(Gamma(mean = 4, sd = 1, max = 7))), 2),
     c(0.00, 0.00, 0.08, 0.26, 0.35, 0.22, 0.08, 0.02)
   )
   expect_equal(
@@ -264,10 +264,10 @@ test_that("delay distributions can be specified in different ways", {
     unname(as.numeric(get_parameters(Normal(mean = 4, sd = 1)))), c(4, 1)
   )
   expect_equal(
-    round(discretise(Normal(mean = 4, sd = 1, max = 5))[[1]]$pmf, 2),
+    round(get_pmf(discretise(Normal(mean = 4, sd = 1, max = 5))), 2),
     c(0.00, 0.01, 0.09, 0.26, 0.38, 0.26)
   )
-  expect_equal(discretise(Fixed(value = 3))[[1]]$pmf, c(0, 0, 0, 1))
+  expect_equal(get_pmf(discretise(Fixed(value = 3))), c(0, 0, 0, 1))
   expect_equal(get_parameters(Fixed(value = 3.5))$value, 3.5)
   expect_equal(
     get_pmf(NonParametric(c(0.1, 0.3, 0.2, 0.4))),

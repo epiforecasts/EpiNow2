@@ -20,7 +20,7 @@ used (one of "exp", "gamma", "lognormal", "normal" or "fixed")}
 For the exponential model this is a rate parameter and for the gamma model
 this is alpha and beta.}
 
-\item{max_value}{Numeric, the maximum value to allow. Defaults to 120.
+\item{max_value}{Numeric, the maximum value to allow.
 Samples outside of this range are resampled.}
 
 \item{tolerance}{Numeric; the desired tolerance level. Any part of the

@@ -741,33 +741,33 @@ create_stan_delays <- function(..., time_points = 1L) {
   delays <- list(...)
   ## discretise
   delays <- map(delays, discretise, strict = FALSE)
-  ## convolve where appropriate
-  delays <- map(delays, collapse)
-  ## apply tolerance
-  delays <- map(delays, function(x) {
-    apply_tolerance(x, tolerance = attr(x, "tolerance"))
-  })
   ## get maximum delays
   max_delay <- unname(as.numeric(flatten(map(delays, max))))
   ## number of different non-empty types
-  type_n <- lengths(delays)
+  type_n <- vapply(delays, ndist, integer(1))
   ## assign ID values to each type
   ids <- rep(0L, length(type_n))
   ids[type_n > 0] <- seq_len(sum(type_n > 0))
   names(ids) <- paste(names(type_n), "id", sep = "_")
 
-  flat_delays <- flatten(delays)
+  ## create "flat version" of delays, i.e. a list of all the delays (including
+  ## elements of composite delays)
+  if (length(delays) > 1) {
+    flat_delays <- do.call(c, delays)
+  } else {
+    flat_delays <- delays
+  }
   parametric <- unname(vapply(
-    flat_delays, function(x) x$distribution != "nonparametric", logical(1)
+    flat_delays, function(x) get_distribution(x) != "nonparametric", logical(1)
   ))
   param_length <- unname(vapply(flat_delays[parametric], function(x) {
-    length(x$parameters)
+    length(get_parameters(x))
   }, numeric(1)))
   nonparam_length <- unname(vapply(flat_delays[!parametric], function(x) {
     length(x$pmf)
   }, numeric(1)))
   distributions <- unname(as.character(
-    map(flat_delays[parametric], ~ .x$distribution)
+    map(flat_delays[parametric], ~ get_distribution(.x))
   ))
 
   ## create stan object
@@ -788,15 +788,16 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret$types_groups <- array(c(0, cumsum(unname(type_n[type_n > 0]))) + 1)
 
   ret$params_mean <- array(unname(as.numeric(
-    map(flatten(map(flat_delays[parametric], ~ .x$parameters)), mean)
+    map(flatten(map(flat_delays[parametric], ~ get_parameters(.x))), mean)
   )))
   ret$params_sd <- array(unname(as.numeric(
-    map(flatten(map(flat_delays[parametric], ~ .x$parameters)), sd_dist)
+    map(flatten(map(flat_delays[parametric], ~ get_parameters(.x))), sd)
   )))
+  ret$params_sd[is.na(ret$params_sd)] <- 0
   ret$max <- array(max_delay[parametric])
 
   ret$np_pmf <- array(unname(as.numeric(
-    flatten(map(flat_delays[!parametric], ~ .x$pmf))
+    flatten(map(flat_delays[!parametric], ~ get_pmf(.x)))
   )))
   ## get non zero length delay pmf lengths
   ret$np_pmf_groups <- array(c(0, cumsum(nonparam_length)) + 1)
@@ -809,7 +810,7 @@ create_stan_delays <- function(..., time_points = 1L) {
   ## set lower bounds
   ret$params_lower <- array(unname(as.numeric(flatten(
     map(flat_delays[parametric], function(x) {
-      lower_bounds(x$distribution)[names(x$parameters)]
+      lower_bounds(get_distribution(x))[names(get_parameters(x))]
     })
   ))))
   ## assign prior weights

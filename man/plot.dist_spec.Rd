@@ -4,12 +4,18 @@
 \alias{plot.dist_spec}
 \title{Plot PMF and CDF for a dist_spec object}
 \usage{
-\method{plot}{dist_spec}(x, ...)
+\method{plot}{dist_spec}(x, samples = 50L, res = 1, cumulative = TRUE)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>} object}
 
-\item{...}{Additional arguments to pass to \code{{ggplot}}.}
+\item{samples}{Integer; Number of samples to generate for distributions
+with uncertain parameters (default: 50).}
+
+\item{res}{Numeric; Resolution of the PMF and CDF (default: 0.01).}
+
+\item{max}{Numeric; Maximum value to plot for distributions that aren't
+bounded}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}

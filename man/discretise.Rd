@@ -2,12 +2,16 @@
 % Please edit documentation in R/dist_spec.R
 \name{discretise}
 \alias{discretise}
+\alias{discretise.dist_spec}
+\alias{discretise.multi_dist_spec}
 \alias{discretize}
 \title{Discretise a <dist_spec>}
 \usage{
-discretise(x, strict = TRUE)
+\method{discretise}{dist_spec}(x, strict = TRUE)
 
-discretize(x, strict = TRUE)
+\method{discretise}{multi_dist_spec}(x, strict = TRUE)
+
+discretize(x, ...)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}}

@@ -633,3 +633,37 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
   sample <- truncated_skel(n, dist = dist, cum = cum, max_value = max_value)
   return(sample)
 }
+
+#' Applies a threshold to all nonparametric distributions in a <dist_spec>
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' This function is deprecated. Use `bound_dist()` instead.
+#' @param x A `<dist_spec>`
+#' @param tolerance Numeric; the desired tolerance level. Any part of the
+#' cumulative distribution function beyond 1 minus this tolerance level is
+#' removed.
+#' @return A `<dist_spec>` where probability masses below the threshold level
+#' have been removed
+#' @keywords internal
+apply_tolerance <- function(x, tolerance) {
+  lifecycle::deprecate_warn(
+    "1.6.0", "dist_skel()", "bound_dist()"
+  )
+  if (!is(x, "dist_spec")) {
+    stop("Can only apply tolerance to distributions in a <dist_spec>.")
+  }
+  y <- lapply(x, function(x) {
+    if (x$distribution == "nonparametric") {
+      cmf <- cumsum(x$pmf)
+      new_pmf <- x$pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= tolerance)]
+      x$pmf <- new_pmf / sum(new_pmf)
+      return(x)
+    } else {
+      return(x)
+    }
+  })
+
+  ## preserve attributes
+  attributes(y) <- attributes(x)
+  return(y)
+}

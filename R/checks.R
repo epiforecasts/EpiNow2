@@ -67,7 +67,9 @@ check_stan_delay <- function(dist) {
   # Check that `dist` is a `dist_spec`
   assert_class(dist, "dist_spec")
   # Check that `dist` is lognormal or gamma or nonparametric
-  distributions <- vapply(dist, function(x) x$distribution, character(1))
+  distributions <- vapply(
+    seq_len(ndist(dist)), get_distribution, x = dist, FUN.VALUE = character(1)
+  )
   if (
     !all(distributions %in% c("lognormal", "gamma", "fixed", "nonparametric"))
   ) {
@@ -78,18 +80,15 @@ check_stan_delay <- function(dist) {
   }
   # Check that `dist` has parameters that are either numeric or normal
   # distributions with numeric parameters and infinite maximum
-  numeric_parameters <- vapply(dist$parameters, is.numeric, logical(1))
-  normal_parameters <- vapply(
-    dist$parameters,
-    function(x) {
-      is(x, "dist_spec") &&
-        x$distribution == "normal" &&
-        all(vapply(x$parameters, is.numeric, logical(1))) &&
-        is.infinite(x$max)
-    },
-    logical(1)
-  )
-  if (!all(numeric_parameters | normal_parameters)) {
+  numeric_or_normal <- unlist(lapply(seq_len(ndist(dist)), function(id) {
+    params <- get_parameters(dist, id)
+    vapply(params, function(x) {
+      is.numeric(x) ||
+        (is(x, "dist_spec") && get_distribution(x) == "normal" &&
+           is.infinite(max(x)))
+    }, logical(1))
+  }))
+  if (!all(numeric_or_normal)) {
     stop(
       "Delay distributions passed to the model need to have parameters that ",
       "are either numeric or normally distributed with numeric parameters ",

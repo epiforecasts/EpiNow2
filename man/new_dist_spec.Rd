@@ -5,7 +5,7 @@
 \title{Internal function for generating a \code{dist_spec} given parameters and a
 distribution.}
 \usage{
-new_dist_spec(params, distribution)
+new_dist_spec(params, distribution, ...)
 }
 \arguments{
 \item{params}{Parameters of the distribution (including \code{max})}

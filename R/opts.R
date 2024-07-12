@@ -18,7 +18,7 @@
 #'   preventing the posteriors from shifting. If FALSE, no weight will be
 #'   applied, i.e. any parameters in `dist` will be treated as a single
 #'    parameters.
-#' @inheritParams apply_tolerance
+#' @inheritParams bound_dist
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
@@ -157,7 +157,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #'   a fixed distribution with all mass at 0, i.e. no delay.
 #' @param ... deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
-#' @inheritParams apply_tolerance
+#' @inheritParams bound_dist
 #' @inheritParams generation_time_opts
 #' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
@@ -222,7 +222,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
 #'   posteriors from shifting. If FALSE (default), no weight will be applied,
 #'   i.e. the truncation distribution will be treated as a single parameter.
 #'
-#' @inheritParams apply_tolerance
+#' @inheritParams bound_dist
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'

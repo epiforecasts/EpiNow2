@@ -2,7 +2,7 @@
 % Please edit documentation in R/dist_spec.R
 \name{get_distribution}
 \alias{get_distribution}
-\title{Get the distribution of a <dist_spec>}
+\title{Get the distribution of a \verb{<dist_spec>}}
 \usage{
 get_distribution(x, id = NULL)
 }
