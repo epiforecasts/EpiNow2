@@ -96,8 +96,12 @@ check_stan_delay <- function(dist) {
       "and infinite maximum."
     )
   }
+  assert_numeric(attr(dist, "tolerance"), lower = 0, upper = 1)
   # Check that `dist` has a finite maximum
-  if (any(is.infinite(max(dist)))) {
-    stop("All distribution passed to the model need to have a finite maximum")
+  if (any(is.infinite(max(dist))) && !(attr(dist, "tolerance") > 0)) {
+    stop(
+      "All distribution passed to the model need to have a finite maximum,",
+      "which can be achieved either by setting `max` or non-zero `tolerance`."
+    )
   }
 }

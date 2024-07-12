@@ -70,7 +70,7 @@ test_that("truncation parameters can be specified in different ways", {
 
 test_that("distributions incompatible with stan models are caught", {
   expect_error(gt_opts(
-    Gamma(2, 2)
+    Gamma(2, 2), tolerance = 0
   ), "maximum")
   expect_error(delay_opts(
     Normal(2, 2, max = 10)
