@@ -1,7 +1,8 @@
 ---
 title: "Speeding up model runs"
 output:
-  rmarkdown::html_vignette   
+  rmarkdown::html_vignette:
+    toc: true
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
 vignette: >
   %\VignetteIndexEntry{Speeding up model runs}
@@ -9,26 +10,49 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
-```{r setup, include=FALSE}
- knitr::opts_chunk$set(
-  echo = TRUE,
-  cache = FALSE,
-  message = FALSE,
-  warning = FALSE,
-  collapse = FALSE,
-  comment = "#>",
-  fig.height = 6,
-  fig.width = 6
-)
-```
 
-```{r packages}
+
+
+``` r
 library(EpiNow2)
+#> 
+#> Attaching package: 'EpiNow2'
+#> The following object is masked from 'package:stats':
+#> 
+#>     Gamma
 library(scoringutils)
+#> Note: scoringutils is currently undergoing major development changes (with an update planned for the first quarter of 2024). We would very much appreciate your opinions and feedback on what should be included in this major update: https://github.com/epiforecasts/scoringutils/discussions/333
 library(data.table)
+#> data.table 1.15.99 IN DEVELOPMENT built 2024-07-12 14:08:30 UTC; lshja16 using 4 threads (see
+#> ?getDTthreads).
+#> Latest news: r-datatable.com
 library(rstan)
+#> Loading required package: StanHeaders
+#> 
+#> rstan version 2.35.0.9000 (Stan version 2.35.0)
+#> For execution on a local, multicore CPU with excess RAM we recommend calling
+#> options(mc.cores = parallel::detectCores()).
+#> To avoid recompilation of unchanged Stan programs, we recommend calling
+#> rstan_options(auto_write = TRUE)
+#> For within-chain threading using `reduce_sum()` or `map_rect()` Stan functions,
+#> change `threads_per_chain` option:
+#> rstan_options(threads_per_chain = 1)
 library(cmdstanr)
+#> This is cmdstanr version 0.8.1
+#> - CmdStanR documentation and vignettes: mc-stan.org/cmdstanr
+#> - CmdStan path: /Users/lshja16/.cmdstan/cmdstan-2.35.0
+#> - CmdStan version: 2.35.0
 library(ggplot2)
+library(lubridate)
+#> 
+#> Attaching package: 'lubridate'
+#> The following objects are masked from 'package:data.table':
+#> 
+#>     hour, isoweek, mday, minute, month, quarter, second, wday, week, yday, year
+#> The following objects are masked from 'package:base':
+#> 
+#>     date, intersect, setdiff, union
+library(scales)
 ```
 
 This vignette explores available model options in _EpiNow2_ and how they vary by speed and accuracy of estimates. We will compare the models by run time and accuracy of estimates (quantitatively and qualitatively) against the "true" trajectory of the data.
@@ -42,7 +66,8 @@ To compare the model options, we will need a dataset for which we know the "true
 To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. We will use the first $100$ observations of the `example_confirmed` data set, the `example_generation_time`, `example_incubation_period`, and `example_reporting_delay` values that come with _EpiNow2_.
 
 Several of the argument values we will use here will be kept the same for all the model runs, so we will set them up here. These include the generation time, incubation period, reporting delay, observation model options, and the forecast horizon.
-```{r, shared_inputs}
+
+``` r
 # Set the number of cores to use
 options(mc.cores = 4)
 
@@ -81,7 +106,8 @@ horizon <- 0
 ```
 
 Now, let's generate the `estimates` object from `epinow()`.
-```{r estimates}
+
+``` r
 estimates <- epinow(
   data = example_confirmed[1:100],
   generation_time = generation_time_opts(example_generation_time),
@@ -92,10 +118,16 @@ estimates <- epinow(
   horizon = horizon,
   output = "fit"
 )
+#> Logging threshold set at INFO for the EpiNow2 logger
+#> Writing EpiNow2 logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/regional-epinow/2020-05-31.log
+#> Logging threshold set at INFO for the EpiNow2.epinow logger
+#> Writing EpiNow2.epinow logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/epinow/2020-05-31.log
+#> DEBUG [2024-07-15 11:59:26] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 114 time steps of which 0 are a forecast
 ```
 
 For the `R` data, we will set up an arbitrary trajectory and add some Gaussian noise.
-```{r R-data}
+
+``` r
 # Arbitrary reproduction number trajectory
 R <- c(
   rep(2, 40), rep(0.5, 10), rep(1, 10), 1 + 0.04 * 1:20, rep(1.4, 5),
@@ -106,20 +138,23 @@ R_noisy <- R * rnorm(length(R), 1, 0.05)
 ```
 
 Now, we are ready to simulate the true infections and $R_t$ data by sampling from $10$ posterior samples.
-```{r true-data}
+
+``` r
 # Forecast infections and the trajectory of Rt
 forecast <- forecast_infections(
   estimates$estimates,
   R = R_noisy,
   samples = 10
 )
+#> DEBUG [2024-07-15 12:00:01] simulate_infections: Running in exact mode for 1 samples (across 1 chains each with a warm up of 1 iterations each) and 154 time steps of which 40 are a forecast
 ```
 
 We will now extract the required data:
 - `R_true`: the median of the simulated $R_t$ values,
 - `infections_true`: the infections by date of infection, and
 - `reported_cases_true`: the reported cases by date of report.
-```{r extract-true-data}
+
+``` r
 R_true <- forecast$summarised[variable == "R"]$median
 
 # Get the posterior samples from which to extract the simulated infections and reported cases
@@ -138,43 +173,68 @@ Now, to the main part of this vignette: we will define and run the different mod
 
 ## Model options
 
-```{r model-options}
-models <- data.table(
+
+``` r
+model_descriptions <- data.table(
   model = c(
+    "non_mechanistic",
     "gp",
     "gp_stationary",
-    "non_mechanistic",
     "rw1_no_gp",
     "rw1_gp",
     "rw7_no_gp",
     "rw7_gp",
+    "vb",
     "pathfinder",
     "laplace"
   ),
   description = c(
-    "The model with the Gaussian process turned on and a non-stationary prior on $R_t$ (default)",
-    "The model with the Gaussian process turned on and the stationary Gaussian process prior on $R_t$",
-    "The non-mechanistic model",
-    "The model with a 1-day random walk, the Gaussian process turned off and a non-stationary prior on $R_t$ (default)",
-    "The model with a 1-day random walk, the Gaussian process turned on, and a non-stationary prior on $R_t$ (default)",
-    "The model with a 7-day random walk, the Gaussian process turned off, and a non-stationary prior on $R_t$ (default)",
-    "The model with a 7-day random walk, the Gaussian process turned on, and a non-stationary prior on $R_t$ (default)",
-    "A model that uses the \"pathfinder\" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package) for sampling",
-    "A model that uses the \"Laplace\" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package) for sampling."
+    "The model with no priors on Rt",
+    "Gaussian process turned on and with a non-stationary prior on $R_t$ (default)",
+    "Gaussian process turned on and with a stationary Gaussian process prior on $R_t$",
+    "1-day random walk, Gaussian process turned off, and a non-stationary prior on $R_t$ (default)",
+    "1-day random walk, Gaussian process turned on, and a non-stationary prior on $R_t$ (default)",
+    "7-day random walk, Gaussian process turned off, and a non-stationary prior on $R_t$ (default)",
+    "7-day random walk, Gaussian process turned on, and a non-stationary prior on $R_t$ (default)",
+    "Variational inference method instead of MCMC for sampling using [`{rstan}`]",
+    "Approximate sampling with the \"pathfinder\" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package)",
+    "Approximate sampling with the \"Laplace\" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package) for sampling."
   )
 )
   
-knitr::kable(models, caption = "Model options")
+knitr::kable(model_descriptions, caption = "Model options")
 ```
 
-```{r models}
-models <- list(
+
+
+Table: Model options
+
+|model           |description                                                                                     |
+|:---------------|:-----------------------------------------------------------------------------------------------|
+|non_mechanistic |The model with no priors on Rt                                                                  |
+|gp              |Gaussian process turned on and with a non-stationary prior on $R_t$ (default)                   |
+|gp_stationary   |Gaussian process turned on and with a stationary Gaussian process prior on $R_t$                |
+|rw1_no_gp       |1-day random walk, Gaussian process turned off, and a non-stationary prior on $R_t$ (default)   |
+|rw1_gp          |1-day random walk, Gaussian process turned on, and a non-stationary prior on $R_t$ (default)    |
+|rw7_no_gp       |7-day random walk, Gaussian process turned off, and a non-stationary prior on $R_t$ (default)   |
+|rw7_gp          |7-day random walk, Gaussian process turned on, and a non-stationary prior on $R_t$ (default)    |
+|vb              |Variational inference method instead of MCMC for sampling using [`{rstan}`]                     |
+|pathfinder      |Approximate sampling with the "pathfinder" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package)|
+|laplace         |Approximate sampling with the "Laplace" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package) for sampling.|
+
+
+
+
+``` r
+models_configs <- list(
+  # The non-mechanistic model
+  non_mechanistic = list(rt = NULL),
   # The model with the Gaussian process turned on and a non-stationary prior on R_t (default)
-  # gp = list(
-  #   rt = rt_opts(
-  #     prior = list(mean = 2, sd = 0.1)
-  #   )
-  # ),
+  gp = list(
+    rt = rt_opts(
+      prior = list(mean = 2, sd = 0.1)
+    )
+  ),
   # The model with the Gaussian process turned on and the stationary Gaussian process prior on R_t
   gp_stationary = list(
     rt = rt_opts(
@@ -182,38 +242,36 @@ models <- list(
       gp_on = "R0"
     )
   ),
-  # The non-mechanistic model
-  non_mechanistic = list(rt = NULL)#,
   # The model with a 1-day random walk, the Gaussian process turned off and a non-stationary prior on R_t (default)
-  # rw1_no_gp = list(
-  #   rt = rt_opts(
-  #     prior = list(mean = 2, sd = 0.1),
-  #       rw = 1
-  #     ),
-  #   gp = NULL
-  # ),
+  rw1_no_gp = list(
+    rt = rt_opts(
+      prior = list(mean = 2, sd = 0.1),
+        rw = 1
+      ),
+    gp = NULL
+  ),
    # The model with a 1-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
-  # rw1_gp = list(
-  #   rt = rt_opts(
-  #     prior = list(mean = 2, sd = 0.1),
-  #       rw = 1
-  #     )
-  # ),
+  rw1_gp = list(
+    rt = rt_opts(
+      prior = list(mean = 2, sd = 0.1),
+        rw = 1
+      )
+  ),
   # The model with a 7-day random walk, the Gaussian process turned off, and a non-stationary prior on R_t (default)
-  # rw7_no_gp = list(
-  #   rt = rt_opts(
-  #     prior = list(mean = 2, sd = 0.1),
-  #       rw = 7
-  #     ),
-  #   gp = NULL
-  # ),
+  rw7_no_gp = list(
+    rt = rt_opts(
+      prior = list(mean = 2, sd = 0.1),
+        rw = 7
+      ),
+    gp = NULL
+  ),
   # The model with a 7-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
-  # rw7_gp = list(
-  #   rt = rt_opts(
-  #     prior = list(mean = 2, sd = 0.1),
-  #     rw = 7
-  #   )
-  # ),
+  rw7_gp = list(
+    rt = rt_opts(
+      prior = list(mean = 2, sd = 0.1),
+      rw = 7
+    )
+  )#,
   # Model that uses the variational inference method instead of MCMC
   # vb = list(
   #   stan = stan_opts(
@@ -248,7 +306,8 @@ models <- list(
 Let's run the models and gather the results.
 
 Let's combine the shared model inputs into a list for use across all the models.
-```{r model_inputs}
+
+``` r
 model_inputs <- list(
   data = reported_cases_true,
   generation_time = generation_time_opts(generation_time),
@@ -260,10 +319,11 @@ model_inputs <- list(
 ```
 
 To run the models, we will sweep across the list of models `models` and shared model inputs `model_inputs`. We will use the `epinow()` function and return useful outputs like the timing of model runs.
-```{r run-models}
+
+``` r
 # Run the models
 results <- lapply(
-  models,
+  models_configs,
   function(model) {
     do.call(
       epinow,
@@ -274,6 +334,98 @@ results <- lapply(
     )
   }
 )
+#> Logging threshold set at INFO for the EpiNow2 logger
+#> Writing EpiNow2 logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/regional-epinow/2020-07-10.log
+#> Logging threshold set at INFO for the EpiNow2.epinow logger
+#> Writing EpiNow2.epinow logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/epinow/2020-07-10.log
+#> DEBUG [2024-07-15 12:00:01] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 147 time steps of which 0 are a forecast
+#> Logging threshold set at INFO for the EpiNow2 logger
+#> Writing EpiNow2 logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/regional-epinow/2020-07-10.log
+#> Logging threshold set at INFO for the EpiNow2.epinow logger
+#> Writing EpiNow2.epinow logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/epinow/2020-07-10.log
+#> DEBUG [2024-07-15 12:00:16] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 154 time steps of which 0 are a forecast
+#> WARN [2024-07-15 12:11:04] epinow: There were 4 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them. - 
+#> WARN [2024-07-15 12:11:04] epinow: Examine the pairs() plot to diagnose sampling problems
+#>  -
+#> Logging threshold set at INFO for the EpiNow2 logger
+#> Writing EpiNow2 logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/regional-epinow/2020-07-10.log
+#> Logging threshold set at INFO for the EpiNow2.epinow logger
+#> Writing EpiNow2.epinow logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/epinow/2020-07-10.log
+#> DEBUG [2024-07-15 12:11:07] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 154 time steps of which 0 are a forecast
+#> Logging threshold set at INFO for the EpiNow2 logger
+#> Writing EpiNow2 logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/regional-epinow/2020-07-10.log
+#> Logging threshold set at INFO for the EpiNow2.epinow logger
+#> Writing EpiNow2.epinow logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/epinow/2020-07-10.log
+#> DEBUG [2024-07-15 12:12:23] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 154 time steps of which 0 are a forecast
+#> WARN [2024-07-15 12:30:17] epinow: There were 493 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 15. See
+#> https://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded - 
+#> WARN [2024-07-15 12:30:17] epinow: There were 1 chains where the estimated Bayesian Fraction of Missing Information was low. See
+#> https://mc-stan.org/misc/warnings.html#bfmi-low - 
+#> WARN [2024-07-15 12:30:17] epinow: Examine the pairs() plot to diagnose sampling problems
+#>  - 
+#> WARN [2024-07-15 12:30:18] epinow: The largest R-hat is NA, indicating chains have not mixed.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#r-hat - 
+#> WARN [2024-07-15 12:30:18] epinow: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#bulk-ess - 
+#> WARN [2024-07-15 12:30:19] epinow: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#tail-ess -
+#> Logging threshold set at INFO for the EpiNow2 logger
+#> Writing EpiNow2 logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/regional-epinow/2020-07-10.log
+#> Logging threshold set at INFO for the EpiNow2.epinow logger
+#> Writing EpiNow2.epinow logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/epinow/2020-07-10.log
+#> DEBUG [2024-07-15 12:30:20] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 154 time steps of which 0 are a forecast
+#> WARN [2024-07-15 12:43:04] epinow: There were 63 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them. - 
+#> WARN [2024-07-15 12:43:04] epinow: There were 1 chains where the estimated Bayesian Fraction of Missing Information was low. See
+#> https://mc-stan.org/misc/warnings.html#bfmi-low - 
+#> WARN [2024-07-15 12:43:04] epinow: Examine the pairs() plot to diagnose sampling problems
+#>  - 
+#> WARN [2024-07-15 12:43:05] epinow: The largest R-hat is NA, indicating chains have not mixed.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#r-hat - 
+#> WARN [2024-07-15 12:43:06] epinow: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#bulk-ess - 
+#> WARN [2024-07-15 12:43:07] epinow: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#tail-ess -
+#> Logging threshold set at INFO for the EpiNow2 logger
+#> Writing EpiNow2 logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/regional-epinow/2020-07-10.log
+#> Logging threshold set at INFO for the EpiNow2.epinow logger
+#> Writing EpiNow2.epinow logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/epinow/2020-07-10.log
+#> DEBUG [2024-07-15 12:43:08] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 154 time steps of which 0 are a forecast
+#> WARN [2024-07-15 12:50:08] epinow: There were 1 chains where the estimated Bayesian Fraction of Missing Information was low. See
+#> https://mc-stan.org/misc/warnings.html#bfmi-low - 
+#> WARN [2024-07-15 12:50:08] epinow: Examine the pairs() plot to diagnose sampling problems
+#>  - 
+#> WARN [2024-07-15 12:50:09] epinow: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#bulk-ess -
+#> Logging threshold set at INFO for the EpiNow2 logger
+#> Writing EpiNow2 logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/regional-epinow/2020-07-10.log
+#> Logging threshold set at INFO for the EpiNow2.epinow logger
+#> Writing EpiNow2.epinow logs to the console and: /var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpA22eC2/epinow/2020-07-10.log
+#> DEBUG [2024-07-15 12:50:11] epinow: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 154 time steps of which 0 are a forecast
+#> WARN [2024-07-15 12:56:56] epinow: There were 85 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them. - 
+#> WARN [2024-07-15 12:56:56] epinow: Examine the pairs() plot to diagnose sampling problems
+#>  - 
+#> WARN [2024-07-15 12:56:57] epinow: The largest R-hat is NA, indicating chains have not mixed.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#r-hat - 
+#> WARN [2024-07-15 12:56:58] epinow: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#bulk-ess - 
+#> WARN [2024-07-15 12:56:58] epinow: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#tail-ess -
 ```
 
 ## Evaluating performance
@@ -284,34 +436,55 @@ Let's see how long each model took to run. Note that the run time measured here 
 
 Another thing to note is that here, we used `r `getOption("mc.cores", 1L)` cores and so using more or fewer cores might change the runtime results. To speed up the model runs, we recommend checking the number of cores available on your machine using `parallel::detectCores()` and setting a high enough number of cores in `options()`. See the \ref{shared_inputs} chunk above for an example.
 
-```{r runtimes}
+
+``` r
 # Extract the run times
-model_names <- names(models)
-runtimes <- vapply(
+runtimes <- lapply(
   results,
-  function(x) x$timing,
-  double(1)
+  function(x) round(as.duration(x$timing), 1)
 )
-# Extracting the difftime objects drops the units, so we need to extract them separately
-runtimes_units <- vapply(
-  results,
-  function(x) attr(x$timing, "units"),
-  character(1)
-)
-# We then recompose the runtimes with the units
-runtimes_vec <- paste(round(runtimes), runtimes_units)
-# Add the model names
-names(runtimes_vec) <- model_names
+
+# Convert to a table format
+
+runtimes_dt <- melt(as.data.table(runtimes), measure.vars = names(models_configs), variable.name = "model", value.name = "runtime")
+
+# Add model descriptions
+
+runtimes_dt <- merge(runtimes_dt, model_descriptions, by = "model")
+
+setcolorder(runtimes_dt, c("model", "description", "runtime"))
+
+# Order by run time
+
+runtimes_dt <- runtimes_dt[order(runtime), ]
+ 
 # Print table
-knitr::kable(runtimes_vec, col.names = c("models", "Run time"), caption = "Run times for various _EpiNow2_ models")
+knitr::kable(runtimes_dt, caption = "Run times for various _EpiNow2_ models")
 ```
+
+
+
+Table: Run times for various _EpiNow2_ models
+
+|model           |description                                                                                   |                  runtime|
+|:---------------|:---------------------------------------------------------------------------------------------|------------------------:|
+|non_mechanistic |The model with no priors on Rt                                                                |                      15s|
+|gp_stationary   |Gaussian process turned on and with a stationary Gaussian process prior on $R_t$              |    76.2s (~1.27 minutes)|
+|rw7_gp          |7-day random walk, Gaussian process turned on, and a non-stationary prior on $R_t$ (default)  |    408.2s (~6.8 minutes)|
+|rw7_no_gp       |7-day random walk, Gaussian process turned off, and a non-stationary prior on $R_t$ (default) |   423.1s (~7.05 minutes)|
+|gp              |Gaussian process turned on and with a non-stationary prior on $R_t$ (default)                 |  650.9s (~10.85 minutes)|
+|rw1_gp          |1-day random walk, Gaussian process turned on, and a non-stationary prior on $R_t$ (default)  |   767.9s (~12.8 minutes)|
+|rw1_no_gp       |1-day random walk, Gaussian process turned off, and a non-stationary prior on $R_t$ (default) | 1076.8s (~17.95 minutes)|
+
+
 
 ### Estimation performance
 
 Now, we will compare the estimated and true values using the continuous ranked probability score (CRPS). The CRPS is a proper scoring rule that measures the accuracy of probabilistic forecasts. We will use the `crps()` function from the `{scoringutils}` package.
 
 To calculate the CRPS for the estimated R_t and infections, we will first set up a function that makes sure the true data and estimates are of the same length and calls the `crps_sample()` function from the `{scoringutils}` package.
-```{r crps-func}
+
+``` r
 # A function to calculate the CRPS
 calc_crps <- function(x, truth) {
   shortest_obs_length <- min(ncol(x), length(truth))
@@ -323,7 +496,8 @@ calc_crps <- function(x, truth) {
 
 Now, we will extract the $R_t$ and infection estimates and calculate the CRPS using the `calc_crps()` function above.
 
-```{r fit_crps}
+
+``` r
 # Get the Rt samples
 Rt_estimated <- lapply(results, function(x) {
   if ("R[1]" %in% names(x$estimates$fit)) {
@@ -352,9 +526,10 @@ infections_crps <- lapply(
 )
 ```
 
-We will now post-process the CRPS results to make them easier to visualise by adding a "metric" and "time" column and reshape the data to long format.
+We will now post-process the CRPS results to make them easier to visualise by adding a  "time" column and reshaping the data to long format.
 
-```{r fit_postprocessing}
+
+``` r
 # Post-processing the CRPS results of the Rt estimates
 rt_df <- as.data.table(rt_crps)
 rt_df[, time := 1:.N]
@@ -376,31 +551,37 @@ infections_df <- melt(
 
 Let's visualise the CRPS results for the $R_t$ and infection estimates.
 
-```{r rt_plot}
+
+``` r
 rt_plot <- ggplot(rt_df, aes(x = time, y = value, colour = model)) +
   geom_line() +
   scale_colour_brewer("Model", palette = "Dark2") +
-    scale_y_continuous(labels = scales::label_number_auto()) +
-  labs(x = "Time", y = "CRPS", title = "Reconstructing Rt") +
+    scale_y_continuous(labels = label_number_auto()) +
+  labs(x = "Time", y = "CRPS", title = "Estimating Rt with various model options") +
   ggplot2::theme_bw()
 plot(rt_plot)
 ```
 
-```{r infections_plot}
+![plot of chunk rt_plot](speedup-options-rt_plot-1.png)
+
+
+``` r
 infections_plot <- ggplot(infections_df, aes(x = time, y = value, colour = model)) +
   geom_line() +
   scale_colour_brewer("Model", palette = "Dark2") +
-  scale_y_continuous(labels = scales::comma) +
-  labs(x = "Time", y = "CRPS", title = "Reconstructing infections") +
+  scale_y_continuous(labels = label_comma()) +
+  labs(x = "Time", y = "CRPS", title = "Estimating infections with various model options") +
   ggplot2::theme_bw()
 plot(infections_plot)
 ```
+
+![plot of chunk infections_plot](speedup-options-infections_plot-1.png)
 
 ## Some considerations when using the model options
 
 ### Mechanistic vs non-mechanistic models
 
-- Estimation in _EpiNow2_ using the mechanistic approaches (prior on R_t) is often much slower than the non- mechanistic approach. The mechanistic model is slower because it models intricate details about the processes and mechanisms that drive $R_t$ estimates. The nonmechanistic model, on the other hand, is faster because it does not model these intricate details. If performing a retrospective analysis, the _non-mechanistic model_ (where `rt = NULL`) is better suited and a faster alternative to the mechanistic $R_t$ model.
+- Estimation in _EpiNow2_ using the mechanistic approaches (prior on $R_t$) is often much slower than the non-mechanistic approach. The mechanistic model is slower because it models intricate details about the processes and mechanisms that drive $R_t$ estimates using the renewal equation. The non-mechanistic model, on the other hand, runs much faster but does not use the renewal equation to generate infections. Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting flexibility. It also means that the model is questionable for forecasting. If performing a retrospective analysis, the _non-mechanistic model_ (where `rt = NULL`) is better suited and a faster alternative to the mechanistic $R_t$ model.
 
 ### Exact vs approximate methods
 
