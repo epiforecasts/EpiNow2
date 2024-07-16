@@ -1,7 +1,7 @@
 #' Discretised probability mass function
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' This function returns the probability mass function of a discretsied and
+#' This function returns the probability mass function of a discretised and
 #' truncated distribution defined by distribution type, maximum value and model
 #' parameters.
 #'
