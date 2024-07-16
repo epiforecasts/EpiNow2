@@ -34,7 +34,7 @@ A vector representing a probability distribution.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
-This function returns the probability mass function of a discretsied and
+This function returns the probability mass function of a discretised and
 truncated distribution defined by distribution type, maximum value and model
 parameters.
 }
@@ -44,9 +44,9 @@ a vector where the first entry corresponds to the integral over the (0,1]
 interval of the corresponding continuous distribution (probability of
 integer 0), the second entry corresponds to the (0,2] interval (probability
 mass of integer 1), the third entry corresponds to the (1, 3] interval
-(probability mass of integer 2) etc. This approximates the true probability
-mass function of a double censored distribution which arises from the
-difference of two censored events.
+(probability mass of integer 2), etc. This approximates the true
+probability mass function of a double censored distribution which arises
+from the difference of two censored events.
 }
 
 \references{
