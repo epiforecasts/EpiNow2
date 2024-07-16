@@ -5,12 +5,25 @@
 #' truncated distribution defined by distribution type, maximum value and model
 #' parameters.
 #'
-#' Each entry of the probability mass function corresponds to the 2-length
-#' interval ending at the entry except for the first interval that covers (0,
-#' 1).  That is, the probability mass function is a vector where the first
-#' entry corresponds to the integral over the (0,1] interval of the continuous
-#' distribution, the second entry corresponds to the (0,2] interval, the third
-#' entry corresponds to the (1, 3] interval etc.
+#' # Methodological details
+#'
+#' The probability mass function of the discretised probability distribution is
+#'   a vector where the first entry corresponds to the integral over the (0,1]
+#'   interval of the corresponding continuous distribution (probability of
+#'   integer 0), the second entry corresponds to the (0,2] interval (probability
+#'   mass of integer 1), the third entry corresponds to the (1, 3] interval
+#'   (probability mass of integer 2) etc. This approximates the true probability
+#'   mass function of a double censored distribution which arises from the
+#'   difference of two censored events.
+#'
+#' @references
+#' Charniga, K., et al. “Best practices for estimating and reporting
+#'   epidemiological delay distributions of infectious diseases using public
+#'   health surveillance and healthcare data”, *arXiv e-prints*, 2024.
+#'   <https://doi.org/10.48550/arXiv.2405.08841>
+#' Park,  S. W.,  et al.,  "Estimating epidemiological delay distributions for
+#'   infectious diseases", *medRxiv*, 2024.
+#'   <https://doi.org/10.1101/2024.01.12.24301247>
 #'
 #' @param distribution A character string representing the distribution to be
 #'   used (one of "exp", "gamma", "lognormal", "normal" or "fixed")
@@ -311,9 +324,8 @@ max.dist_spec <- function(x, ...) {
 #' Discretise a <dist_spec>
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' By default it will discretise all the distributions it can discretise
-#' (i.e. those with finite support and constant parameters).
-#' @title Discretise a <dist_spec>
+#'
+#' @inherit discrete_pmf sections references
 #' @param x A `<dist_spec>`
 #' @param strict Logical; If `TRUE` (default) an error will be thrown if a
 #' distribution cannot be discretised (e.g., because no finite maximum has been
