@@ -12,9 +12,9 @@
 #'   interval of the corresponding continuous distribution (probability of
 #'   integer 0), the second entry corresponds to the (0,2] interval (probability
 #'   mass of integer 1), the third entry corresponds to the (1, 3] interval
-#'   (probability mass of integer 2), etc. This approximates the true probability
-#'   mass function of a double censored distribution which arises from the
-#'   difference of two censored events.
+#'   (probability mass of integer 2), etc. This approximates the true
+#'   probability mass function of a double censored distribution which arises
+#'   from the difference of two censored events.
 #'
 #' @references
 #' Charniga, K., et al. “Best practices for estimating and reporting
