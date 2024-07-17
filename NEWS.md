@@ -7,6 +7,8 @@
 ## Model changes
 
 - `epinow()` now returns the "timing" output in a "time difference"" format that is easier to understand and work with. By @jamesmbaazam in #688 and reviewed by @sbfnk.
+- The interface for defining delay distributions has been generalised to also cater for continuous distributions
+- When defining probability distributions these can now be truncated using the `tolerance` argument
 
 ## Bug fixes
 
