@@ -457,6 +457,7 @@ references:
   abstract: 'cmdstanr: R Interface to ''CmdStan'''
   notes: Suggests
   url: https://mc-stan.org/cmdstanr/
+  repository: https://bbsbayes.r-universe.dev
   authors:
   - family-names: Gabry
     given-names: Jonah
@@ -466,7 +467,10 @@ references:
     email: rok.cesnovar@fri.uni-lj.si
   - family-names: Johnson
     given-names: Andrew
+    email: andrew.johnson@arjohnsonau.com
     orcid: https://orcid.org/0000-0001-7000-8065
+  - family-names: Bronder
+    given-names: Steve
   year: '2024'
 - type: software
   title: covr
