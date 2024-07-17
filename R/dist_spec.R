@@ -601,7 +601,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       values <- seq_along(pmf) - 1
       dist_name <- paste0("Nonparametric", " (ID: ", i, ")")
       pmf_dt <- data.table(
-        sample = 1, x = values, y = pmf, distribution = dist_name
+        sample = 1, x = values, p = pmf, distribution = dist_name
       )
     } else {
       # parametric
