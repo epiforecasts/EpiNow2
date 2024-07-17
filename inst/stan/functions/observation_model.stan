@@ -50,30 +50,18 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
     }
   }
 }
+
 // update log density for reported cases
-void report_lp(array[] int cases, array[] int cases_time, vector reports,
+void report_lp(array[] int cases, vector obs_reports,
                array[] real rep_phi, real phi_mean, real phi_sd,
-               int model_type, real weight, int accumulate) {
-  int n = num_elements(cases_time) - accumulate; // number of observations
-  vector[n] obs_reports; // reports at observation time
-  array[n] int obs_cases; // observed cases at observation time
-  if (accumulate) {
-    int t = num_elements(reports);
-    int i = 0;
-    int current_obs = 0;
-    obs_reports = rep_vector(0, n);
-    while (i <= t && current_obs <= n) {
-      if (current_obs > 0) { // first observation gets ignored when accumulating
-        obs_reports[current_obs] += reports[i];
-      }
-      if (i == cases_time[current_obs + 1]) {
-        current_obs += 1;
-      }
-      i += 1;
-    }
-    obs_cases = cases[2:(n + 1)];
-  } else {
-    obs_reports = reports[cases_time];
+               int model_type, real weight) {
+  int n = num_elements(obs_reports);
+  int n_cases = num_elements(cases);
+  // if accumulating shift cases
+  array[n] int obs_cases;
+  if (n_cases > n) {
+    obs_cases = cases[(n_cases - n + 1):n_cases];
+  }  else {
     obs_cases = cases;
   }
   if (model_type) {
@@ -137,4 +125,27 @@ array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
     }
   }
   return(sampled_reports);
+}
+
+vector assign_reports(array[] int cases_time, vector reports, int accumulate) {
+  int n = num_elements(cases_time) - accumulate; // number of observations
+  vector[n] obs_reports; // reports at observation time
+  if (accumulate) {
+    int t = num_elements(reports);
+    int i = 0;
+    int current_obs = 0;
+    obs_reports = rep_vector(0, n);
+    while (i <= t && current_obs <= n) {
+      if (current_obs > 0) { // first observation gets ignored when accumulating
+        obs_reports[current_obs] += reports[i];
+      }
+      if (i == cases_time[current_obs + 1]) {
+        current_obs += 1;
+      }
+      i += 1;
+    }
+  } else {
+    obs_reports = reports[cases_time];
+  }
+  return(obs_reports);
 }

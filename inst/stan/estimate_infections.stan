@@ -63,7 +63,7 @@ transformed parameters {
   vector<lower = 0>[estimate_r > 0 ? ot_h : 0] R; // reproduction number
   vector[t] infections;                                     // latent infections
   vector[ot_h] reports;                                     // estimated reported cases
-  vector[ot] obs_reports;                                   // observed estimated reported cases
+  vector[lt - accumulate] obs_reports;                      // observed estimated reported cases
   vector[estimate_r * (delay_type_max[gt_id] + 1)] gt_rev_pmf;
   // GP in noise - spectral densities
   profile("update gp") {
@@ -131,22 +131,28 @@ transformed parameters {
       );
     }
   }
-  // truncate near time cases to observed reports
-  if (trunc_id) {
-    vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf;
-    profile("truncation") {
-      trunc_rev_cmf = get_delay_rev_pmf(
-        trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
-        delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-        0, 1, 1
-      );
+  {
+    vector[ot] truncated_reports;
+    // truncate near time cases to observed reports
+    if (trunc_id) {
+      vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf;
+      profile("truncation") {
+        trunc_rev_cmf = get_delay_rev_pmf(
+          trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
+          delay_types_groups, delay_max, delay_np_pmf,
+          delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
+          0, 1, 1
+        );
+      }
+      profile("truncate") {
+        truncated_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);
+      }
+    } else {
+      truncated_reports = reports[1:ot];
     }
-    profile("truncate") {
-      obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);
+    profile("assign") {
+      obs_reports = assign_reports(cases_time, truncated_reports, accumulate);
     }
-  } else {
-    obs_reports = reports[1:ot];
   }
 }
 
@@ -185,15 +191,14 @@ model {
   if (likelihood) {
     profile("report lp") {
       report_lp(
-        cases, cases_time, obs_reports, rep_phi, phi_mean, phi_sd, model_type,
-        obs_weight, accumulate
+        cases, obs_reports, rep_phi, phi_mean, phi_sd, model_type, obs_weight
       );
     }
   }
 }
 
 generated quantities {
-  array[ot_h] int imputed_reports;
+  array[lt - accumulate] int imputed_reports;
   vector[estimate_r > 0 ? 0: ot_h] gen_R;
   vector[ot_h - 1] r;
   vector[return_likelihood ? ot : 0] log_lik;
@@ -217,11 +222,11 @@ generated quantities {
     // estimate growth from infections
     r = calculate_growth(infections, seeding_time + 1);
     // simulate reported cases
-    imputed_reports = report_rng(reports, rep_phi, model_type);
+    imputed_reports = report_rng(obs_reports, rep_phi, model_type);
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
-        cases, obs_reports[cases_time], rep_phi, model_type, obs_weight
+        cases, obs_reports, rep_phi, model_type, obs_weight
       );
     }
   }
