@@ -12,12 +12,13 @@
 \item{samples}{Integer; Number of samples to generate for distributions
 with uncertain parameters (default: 50).}
 
-\item{res}{Numeric; Resolution of the PMF and CDF (default: 0.01).}
+\item{res}{Numeric; Resolution of the PMF and CDF (default: 1, i.e. integer
+discretisation).}
+
+\item{cumulative}{Logical; whether to plot the cumulative distribution in
+addition to the probability mass function}
 
 \item{...}{ignored}
-
-\item{max}{Numeric; Maximum value to plot for distributions that aren't
-bounded}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}

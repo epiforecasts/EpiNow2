@@ -568,9 +568,10 @@ print.dist_spec <- function(x, ...) {
 #' @param x A `<dist_spec>` object
 #' @param samples Integer; Number of samples to generate for distributions
 #' with uncertain parameters (default: 50).
-#' @param res Numeric; Resolution of the PMF and CDF (default: 0.01).
-#' @param max Numeric; Maximum value to plot for distributions that aren't
-#' bounded
+#' @param res Numeric; Resolution of the PMF and CDF (default: 1, i.e. integer
+#'   discretisation).
+#' @param cumulative Logical; whether to plot the cumulative distribution in
+#'   addition to the probability mass function
 #' @param ... ignored
 #' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
 #' @export
