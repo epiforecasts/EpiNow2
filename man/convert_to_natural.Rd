@@ -23,7 +23,7 @@ from a given set of parameters and distribution
 \examples{
 \dontrun{
 convert_to_natural(
-  params = list(mean = 2, sd = 1, max = Inf),
+  params = list(mean = 2, sd = 1),
   distribution = "gamma"
 )
 }

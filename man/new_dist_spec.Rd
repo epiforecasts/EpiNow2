@@ -29,7 +29,7 @@ a \code{dist_spec}. If they have uncertainty this will be done using sampling.
 }
 \examples{
 new_dist_spec(
-  params = list(mean = 2, sd = 1, max = Inf),
+  params = list(mean = 2, sd = 1),
   distribution = "normal"
 )
 }
