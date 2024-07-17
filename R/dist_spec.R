@@ -1,31 +1,32 @@
-#' Distribution Skeleton
+#' Discretised probability mass function
 #'
 #' @description `r lifecycle::badge("questioning")`
-#' This function acts as a skeleton for a truncated distribution defined by
-#' model type, maximum value and model parameters. It is designed to be used
-#' with the output from [get_dist()].
+#' This function returns the probability mass function of a discretised and
+#' truncated distribution defined by distribution type, maximum value and model
+#' parameters.
 #'
-#' @param n Numeric vector, number of samples to take (or days for the
-#' probability density).
+#' # Methodological details
 #'
-#' @param dist Logical, defaults to `FALSE`. Should the probability density be
-#' returned rather than a number of samples.
+#' The probability mass function of the discretised probability distribution is
+#'   a vector where the first entry corresponds to the integral over the (0,1]
+#'   interval of the corresponding continuous distribution (probability of
+#'   integer 0), the second entry corresponds to the (0,2] interval (probability
+#'   mass of integer 1), the third entry corresponds to the (1, 3] interval
+#'   (probability mass of integer 2), etc. This approximates the true
+#'   probability mass function of a double censored distribution which arises
+#'   from the difference of two censored events.
 #'
-#' @param cum Logical, defaults to `TRUE`. If `dist = TRUE` should the returned
-#' distribution be cumulative.
+#' @references
+#' Charniga, K., et al. “Best practices for estimating and reporting
+#'   epidemiological delay distributions of infectious diseases using public
+#'   health surveillance and healthcare data”, *arXiv e-prints*, 2024.
+#'   <https://doi.org/10.48550/arXiv.2405.08841>
+#' Park,  S. W.,  et al.,  "Estimating epidemiological delay distributions for
+#'   infectious diseases", *medRxiv*, 2024.
+#'   <https://doi.org/10.1101/2024.01.12.24301247>
 #'
-#' @param model Character string, defining the model to be used. Supported
-#'   options are exponential ("exp"), gamma ("gamma"), and log normal
-#'   ("lognormal")
-#'
-#' @param discrete Logical,  defaults to `FALSE`. Should the probability
-#'   distribution be discretised. In this case each entry of the probability
-#'   mass function corresponds to the 2-length interval ending at the entry
-#'   except for the first interval that covers (0, 1).  That is, the probability
-#'   mass function is a vector where the first entry corresponds to the integral
-#'   over the (0,1] interval of the continuous distribution, the second entry
-#'   corresponds to the (0,2] interval, the third entry corresponds to the (1,
-#'   3] interval etc.
+#' @param distribution A character string representing the distribution to be
+#'   used (one of "exp", "gamma", "lognormal", "normal" or "fixed")
 #'
 #' @param params A list of parameters values (by name) required for each model.
 #' For the exponential model this is a rate parameter and for the gamma model
@@ -34,151 +35,67 @@
 #' @param max_value Numeric, the maximum value to allow. Defaults to 120.
 #' Samples outside of this range are resampled.
 #'
-#' @return A vector of samples or a probability distribution.
-#' @export
-#' @examples
-#'
-#' ## Exponential model
-#' # sample
-#' dist_skel(10, model = "exp", params = list(rate = 1))
-#'
-#' # cumulative prob density
-#' dist_skel(1:10, model = "exp", dist = TRUE, params = list(rate = 1))
-#'
-#' # probability density
-#' dist_skel(1:10,
-#'   model = "exp", dist = TRUE,
-#'   cum = FALSE, params = list(rate = 1)
-#' )
-#'
-#' ## Gamma model
-#' # sample
-#' dist_skel(10, model = "gamma", params = list(shape = 1, rate = 0.5))
-#'
-#' # cumulative prob density
-#' dist_skel(0:10,
-#'   model = "gamma", dist = TRUE,
-#'   params = list(shape = 1, rate = 0.5)
-#' )
-#'
-#' # probability density
-#' dist_skel(0:10,
-#'   model = "gamma", dist = TRUE,
-#'   cum = FALSE, params = list(shape = 2, rate = 0.5)
-#' )
-#'
-#' ## Log normal model
-#' # sample
-#' dist_skel(10,
-#'   model = "lognormal", params = list(meanlog = log(5), sdlog = log(2))
-#' )
-#'
-#' # cumulative prob density
-#' dist_skel(0:10,
-#'   model = "lognormal", dist = TRUE,
-#'   params = list(meanlog = log(5), sdlog = log(2))
-#' )
-#'
-#' # probability density
-#' dist_skel(0:10,
-#'   model = "lognormal", dist = TRUE, cum = FALSE,
-#'   params = list(meanlog = log(5), sdlog = log(2))
-#' )
-dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
-                      discrete = FALSE, params, max_value = 120) {
-  ## define unnormalised support function
-  if (model == "exp") {
+#' @param width Numeric, the width of each discrete bin.
+#
+#' @return A vector representing a probability distribution.
+#' @keywords internal
+#' @inheritParams apply_tolerance
+#' @importFrom stats pexp pgamma plnorm pnorm qexp qgamma qlnorm qnorm
+#' @importFrom rlang arg_match
+discrete_pmf <- function(distribution =
+                           c("exp", "gamma", "lognormal", "normal", "fixed"),
+                         params, max_value, tolerance, width) {
+  distribution <- arg_match(distribution)
+  ## define unnormalised support function and cumulative density function
+  if (distribution == "exp") {
     updist <- function(n) {
       pexp(n, params[["rate"]])
     }
-  } else if (model == "gamma") {
+    qdist <- qexp
+  } else if (distribution == "gamma") {
     updist <- function(n) {
       pgamma(n, params[["shape"]], params[["rate"]])
     }
-  } else if (model == "lognormal") {
+    qdist <- qgamma
+  } else if (distribution == "lognormal") {
     updist <- function(n) {
       plnorm(n, params[["meanlog"]], params[["sdlog"]])
     }
-  } else if (model == "normal") {
+    qdist <- qlnorm
+  } else if (distribution == "normal") {
     updist <- function(n) {
       pnorm(n, params[["mean"]], params[["sd"]])
     }
-  } else if (model == "fixed") {
+    qdist <- qnorm
+  } else if (distribution == "fixed") {
     updist <- function(n) {
       as.integer(n > params[["value"]])
     }
+    qdist <- function(p, value) return(value)
   }
 
-  if (discrete) {
-    cmf <- c(0, updist(1),
-      updist(seq_len(max_value)) + updist(seq_len(max_value) + 1)
-    ) /
-      (updist(max_value) + updist(max_value + 1))
-    pmf <- diff(cmf)
-    rdist <- function(n) {
-      sample(
-        x = seq_len(max_value + 1) - 1, size = n, prob = pmf, replace = TRUE
-      )
+  ## apply tolerance if given
+  if (!missing(tolerance)) {
+    ## tolerance_max
+    tol_max <- do.call(qdist, c(list(p = 1 - tolerance), params))
+    if (missing(max_value) || tol_max < max_value) {
+      max_value <- tol_max
     }
-    pdist <- function(n) {
-      cmf[n + 1]
-    }
-    ddist <- function(n) {
-      pmf[n + 1]
-    }
+  }
+
+  ## determine pmf
+  max_value <- ceiling(max_value)
+  if (max_value < width) {
+    cmf <- c(0, 1)
   } else {
-    pdist <- function(n) {
-      updist(n) / updist(max_value + 1)
-    }
-    ddist <- function(n) {
-      pdist(n + 1) - pdist(n)
-    }
-    if (model == "exp") {
-      rdist <- function(n) {
-        rexp(n, params[["rate"]])
-      }
-    } else if (model == "gamma") {
-      rdist <- function(n) {
-        rgamma(n, params[["shape"]], params[["rate"]])
-      }
-    } else if (model == "lognormal") {
-      rdist <- function(n) {
-        rlnorm(n, params[["meanlog"]], params[["sdlog"]])
-      }
-    }
+    x <- seq(width, max_value, by = width)
+    cmf <- c(0, updist(width), (updist(x) + updist(x + width))) /
+      (updist(max_value) + updist(max_value + width))
   }
 
-  # define internal sampling function
-  inner_skel <- function(n, dist = FALSE, cum = TRUE, max_value = NULL) {
-    if (dist) {
-      if (cum) {
-        ret <- pdist(n)
-      } else {
-        ret <- ddist(n)
-      }
-      ret[ret > 1] <- NA_real_
-      return(ret)
-    } else {
-      rdist(n)
-    }
-  }
+  pmf <- diff(cmf)
 
-  # define truncation wrapper
-  truncated_skel <- function(n, dist, cum, max_value) {
-    n <- inner_skel(n, dist, cum, max_value)
-    if (!dist) {
-      while (any(!is.na(n) & n >= max_value)) {
-        n <- ifelse(n >= max_value, inner_skel(n), n)
-      }
-
-      n <- as.integer(n)
-    }
-    return(n)
-  }
-
-  # call function
-  sample <- truncated_skel(n, dist = dist, cum = cum, max_value = max_value)
-  return(sample)
+  return(pmf)
 }
 
 #' Creates a delay distribution as the sum of two other delay distributions.
@@ -407,9 +324,8 @@ max.dist_spec <- function(x, ...) {
 #' Discretise a <dist_spec>
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' By default it will discretise all the distributions it can discretise
-#' (i.e. those with finite support and constant parameters).
-#' @title Discretise a <dist_spec>
+#'
+#' @inherit discrete_pmf sections references
 #' @param x A `<dist_spec>`
 #' @param strict Logical; If `TRUE` (default) an error will be thrown if a
 #' distribution cannot be discretised (e.g., because no finite maximum has been
@@ -431,9 +347,12 @@ discretise <- function(x, strict = TRUE) {
   if (!is(x, "dist_spec")) {
     stop("Can only discretise a <dist_spec>.")
   }
-  ## check max
+  tolerance <- attr(x, "tolerance")
+  if (is.null(tolerance)) {
+    tolerance <- 0
+  }
   max_x <- max(x)
-  if (any(is.infinite(max_x)) && strict) {
+  if (any(is.infinite(max_x)) && !(tolerance > 0) && strict) {
     stop("Cannot discretise a distribution with infinite support.")
   }
   ## discretise
@@ -442,13 +361,12 @@ discretise <- function(x, strict = TRUE) {
     if (y$distribution == "nonparametric") {
       return(y)
     } else {
-      if (all(vapply(y$parameters, is.numeric, logical(1))) &&
-          is.finite(max_x[id])) {
-        z <- list(pmf = dist_skel(
-          n = seq_len(max_x[id] + 1) - 1, dist = TRUE, cum = FALSE,
-          model = y$distribution, params = y$parameters,
-          max_value = max_x[id], discrete = TRUE
-        ))
+      if (all(vapply(y$parameters, is.numeric, logical(1)))) {
+        z <- list(
+          pmf = discrete_pmf(
+            y$distribution, y$parameters, y$max, tolerance, width = 1
+          )
+        )
         z$distribution <- "nonparametric"
         return(z)
       } else if (strict) {
@@ -523,7 +441,9 @@ collapse <- function(x) {
 #' This removes any part of the tail of the nonparametric distributions in the
 #' <dist_spec> where the probability mass is below the threshold level.
 #' @param x A `<dist_spec>`
-#' @param tolerance Numeric; the desired tolerance level.
+#' @param tolerance Numeric; the desired tolerance level. Any part of the
+#' cumulative distribution function beyond 1 minus this tolerance level is
+#' removed.
 #' @return A `<dist_spec>` where probability masses below the threshold level
 #' have been removed
 #' @export
