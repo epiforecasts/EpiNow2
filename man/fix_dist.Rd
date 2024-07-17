@@ -5,7 +5,7 @@
 \alias{fix_dist.dist_spec}
 \title{Fix the parameters of a \verb{<dist_spec>}}
 \usage{
-\method{fix_dist}{dist_spec}(x, strategy = c("mean", "sample"))
+\method{fix_dist}{dist_spec}(x, strategy = c("mean", "sample"), ...)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}}
@@ -13,6 +13,8 @@
 \item{strategy}{Character; either "mean" (use the mean estimates of the
 mean and standard deviation) or "sample" (randomly sample mean and
 standard deviation from uncertainty given in the \verb{<dist_spec>}}
+
+\item{...}{ignored}
 }
 \value{
 A \verb{<dist_spec>} object without uncertainty

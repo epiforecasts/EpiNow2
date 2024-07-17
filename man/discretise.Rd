@@ -6,7 +6,7 @@
 \alias{discretize}
 \title{Discretise a <dist_spec>}
 \usage{
-\method{discretise}{dist_spec}(x, strict = TRUE)
+\method{discretise}{dist_spec}(x, strict = TRUE, ...)
 
 discretize(x, ...)
 }
@@ -17,6 +17,8 @@ discretize(x, ...)
 distribution cannot be discretised (e.g., because no finite maximum has been
 specified or parameters are uncertain). If \code{FALSE} then any distribution
 that cannot be discretised will be returned as is.}
+
+\item{...}{ignored}
 }
 \value{
 A \verb{<dist_spec>} where all distributions with constant parameters are

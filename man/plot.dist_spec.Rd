@@ -4,7 +4,7 @@
 \alias{plot.dist_spec}
 \title{Plot PMF and CDF for a dist_spec object}
 \usage{
-\method{plot}{dist_spec}(x, samples = 50L, res = 1, cumulative = TRUE)
+\method{plot}{dist_spec}(x, samples = 50L, res = 1, cumulative = TRUE, ...)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>} object}
@@ -13,6 +13,8 @@
 with uncertain parameters (default: 50).}
 
 \item{res}{Numeric; Resolution of the PMF and CDF (default: 0.01).}
+
+\item{...}{ignored}
 
 \item{max}{Numeric; Maximum value to plot for distributions that aren't
 bounded}

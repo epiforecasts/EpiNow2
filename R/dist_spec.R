@@ -371,6 +371,7 @@ discretise <- function(x, ...) {
 #' distribution cannot be discretised (e.g., because no finite maximum has been
 #' specified or parameters are uncertain). If `FALSE` then any distribution
 #' that cannot be discretised will be returned as is.
+#' @param ... ignored
 #' @return A `<dist_spec>` where all distributions with constant parameters are
 #'   nonparametric.
 #' @export
@@ -384,7 +385,7 @@ discretise <- function(x, ...) {
 #'
 #' # The maxf the sum of two distributions
 #' discretise(dist1 + dist2, strict = FALSE)
-discretise.dist_spec <- function(x, strict = TRUE) {
+discretise.dist_spec <- function(x, strict = TRUE, ...) {
   if (!is(x, "dist_spec")) {
     stop("Can only discretise a <dist_spec>.")
   }
@@ -425,7 +426,7 @@ discretise.dist_spec <- function(x, strict = TRUE) {
 }
 #' @method discretise multi_dist_spec
 #' @export
-discretise.multi_dist_spec <- function(x, strict = TRUE) {
+discretise.multi_dist_spec <- function(x, strict = TRUE, ...) {
   ret <- lapply(x, discretise, strict = strict)
   attributes(ret) <- attributes(x)
   return(ret)
@@ -570,6 +571,7 @@ print.dist_spec <- function(x, ...) {
 #' @param res Numeric; Resolution of the PMF and CDF (default: 0.01).
 #' @param max Numeric; Maximum value to plot for distributions that aren't
 #' bounded
+#' @param ... ignored
 #' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
 #' @export
 #' @examples
@@ -588,7 +590,7 @@ print.dist_spec <- function(x, ...) {
 #'
 #' # A combination of the two fixed distributions
 #' plot(dist1 + dist1)
-plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE) {
+plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
   distribution <- cdf <- NULL
   # Get the PMF and CDF data
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
@@ -712,6 +714,7 @@ fix_dist <- function(x, ...) {
 #' @param strategy Character; either "mean" (use the mean estimates of the
 #'   mean and standard deviation) or "sample" (randomly sample mean and
 #'   standard deviation from uncertainty given in the `<dist_spec>`
+#' @param ... ignored
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom rlang arg_match
 #' @method fix_dist dist_spec
@@ -722,7 +725,7 @@ fix_dist <- function(x, ...) {
 #' )
 #'
 #' fix_dist(dist)
-fix_dist.dist_spec <- function(x, strategy = c("mean", "sample")) {
+fix_dist.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
   if (!is(x, "dist_spec")) {
     stop("Can only fix parameters in a `<dist_spec>`.")
   }
@@ -755,7 +758,7 @@ fix_dist.dist_spec <- function(x, strategy = c("mean", "sample")) {
 
 #' @export
 #' @method fix_dist multi_dist_spec
-fix_dist.multi_dist_spec <- function(x, strategy = c("mean", "sample")) {
+fix_dist.multi_dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
   for (i in seq_len(ndist(x))) {
     x[[i]] <- fix_dist(x[[i]])
   }
