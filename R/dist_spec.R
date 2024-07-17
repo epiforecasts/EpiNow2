@@ -591,7 +591,6 @@ print.dist_spec <- function(x, ...) {
 #' # A combination of the two fixed distributions
 #' plot(dist1 + dist1)
 plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
-  distribution <- cdf <- NULL
   # Get the PMF and CDF data
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
     if (get_distribution(x, i) == "nonparametric") {
