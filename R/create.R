@@ -767,7 +767,7 @@ create_stan_delays <- function(..., time_points = 1L) {
     length(x$pmf)
   }, numeric(1)))
   distributions <- unname(as.character(
-    map(flat_delays[parametric], ~ get_distribution(.x))
+    map(flat_delays[parametric], get_distribution)
   ))
 
   ## create stan object
@@ -788,16 +788,16 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret$types_groups <- array(c(0, cumsum(unname(type_n[type_n > 0]))) + 1)
 
   ret$params_mean <- array(unname(as.numeric(
-    map(flatten(map(flat_delays[parametric], ~ get_parameters(.x))), mean)
+    map(flatten(map(flat_delays[parametric], get_parameters)), mean)
   )))
   ret$params_sd <- array(unname(as.numeric(
-    map(flatten(map(flat_delays[parametric], ~ get_parameters(.x))), sd)
+    map(flatten(map(flat_delays[parametric], get_parameters)), sd)
   )))
   ret$params_sd[is.na(ret$params_sd)] <- 0
   ret$max <- array(max_delay[parametric])
 
   ret$np_pmf <- array(unname(as.numeric(
-    flatten(map(flat_delays[!parametric], ~ get_pmf(.x)))
+    flatten(map(flat_delays[!parametric], get_pmf))
   )))
   ## get non zero length delay pmf lengths
   ret$np_pmf_groups <- array(c(0, cumsum(nonparam_length)) + 1)
