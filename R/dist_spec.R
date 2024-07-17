@@ -235,8 +235,8 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
       stop("Don't know how to calculate mean of ", dist, " distribution.")
     }
   }
-  return(ret)
 }
+
 #' @method mean multi_dist_spec
 #' @export
 mean.multi_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
@@ -347,7 +347,6 @@ max.dist_spec <- function(x, ...) {
       return(attr(x, "max"))
     }
   }
-  return(ret)
 }
 
 #' @export
@@ -696,7 +695,6 @@ extract_single_dist <- function(x, i) {
   } else {
     return(x[[i]])
   }
-  return(ret)
 }
 
 #' @export
