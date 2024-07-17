@@ -984,7 +984,7 @@ extract_params <- function(params, distribution) {
 #' @export
 #' @examples
 #' new_dist_spec(
-#'   params = list(mean = 2, sd = 1, max = Inf),
+#'   params = list(mean = 2, sd = 1),
 #'   distribution = "normal"
 #' )
 new_dist_spec <- function(params, distribution, max = Inf, tolerance = 0) {
@@ -1072,7 +1072,7 @@ new_dist_spec <- function(params, distribution, max = Inf, tolerance = 0) {
 #' @examples
 #' \dontrun{
 #' convert_to_natural(
-#'   params = list(mean = 2, sd = 1, max = Inf),
+#'   params = list(mean = 2, sd = 1),
 #'   distribution = "gamma"
 #' )
 #' }
