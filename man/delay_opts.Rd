@@ -22,7 +22,7 @@ a fixed distribution with all mass at 0, i.e. no delay.}
 
 \item{tolerance}{Numeric; the desired tolerance level. Any part of the
 cumulative distribution function beyond 1 minus this tolerance level is
-removed.}
+removed. Default: \code{0}, i.e. use the full distribution.}
 
 \item{weight_prior}{Logical; if TRUE (default), any priors given in \code{dist}
 will be weighted by the number of observation data points, in doing so

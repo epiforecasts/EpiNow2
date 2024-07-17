@@ -25,7 +25,7 @@ Samples outside of this range are resampled.}
 
 \item{tolerance}{Numeric; the desired tolerance level. Any part of the
 cumulative distribution function beyond 1 minus this tolerance level is
-removed.}
+removed. Default: \code{0}, i.e. use the full distribution.}
 
 \item{width}{Numeric, the width of each discrete bin.}
 }

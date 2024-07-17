@@ -5,12 +5,19 @@
 \title{Internal function for generating a \code{dist_spec} given parameters and a
 distribution.}
 \usage{
-new_dist_spec(params, distribution, ...)
+new_dist_spec(params, distribution, max = Inf, tolerance = 0)
 }
 \arguments{
 \item{params}{Parameters of the distribution (including \code{max})}
 
 \item{distribution}{Character; the distribution to use.}
+
+\item{max}{Numeric, maximum value of the distribution. The distribution will
+be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
+
+\item{tolerance}{Numeric; the desired tolerance level. Any part of the
+cumulative distribution function beyond 1 minus this tolerance level is
+removed. Default: \code{0}, i.e. use the full distribution.}
 }
 \value{
 A \code{dist_spec} of the given specification.

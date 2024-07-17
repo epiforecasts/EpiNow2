@@ -16,7 +16,7 @@ no truncation.}
 
 \item{tolerance}{Numeric; the desired tolerance level. Any part of the
 cumulative distribution function beyond 1 minus this tolerance level is
-removed.}
+removed. Default: \code{0}, i.e. use the full distribution.}
 
 \item{weight_prior}{Logical; if TRUE, the truncation prior will be weighted
 by the number of observation data points, in doing so approximately placing

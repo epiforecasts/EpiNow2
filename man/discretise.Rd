@@ -3,13 +3,10 @@
 \name{discretise}
 \alias{discretise}
 \alias{discretise.dist_spec}
-\alias{discretise.multi_dist_spec}
 \alias{discretize}
 \title{Discretise a <dist_spec>}
 \usage{
 \method{discretise}{dist_spec}(x, strict = TRUE)
-
-\method{discretise}{multi_dist_spec}(x, strict = TRUE)
 
 discretize(x, ...)
 }

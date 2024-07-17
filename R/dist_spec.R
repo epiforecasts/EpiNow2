@@ -921,27 +921,27 @@ lower_bounds <- function(distribution) {
 #' be truncated at this value. Default: `Inf`, i.e. no maximum.
 #' @param tolerance Numeric; the desired tolerance level. Any part of the
 #' cumulative distribution function beyond 1 minus this tolerance level is
-#' removed.
+#' removed. Default: `0`, i.e. use the full distribution.
 #' @return a `<dist_spec>` with relevant attributes set that define its bounds
 #' @export
-bound_dist <- function(x, max, tolerance) {
+bound_dist <- function(x, max = Inf, tolerance = 0) {
   if (!is(x, "dist_spec")) {
     stop("Can only get limit a <dist_spec>.")
   }
   ## if it is a single nonparametric distribution we apply the bounds directly
   if (ndist(x) == 1 && get_distribution(x) == "nonparametric") {
     pmf <- get_pmf(x)
-    if (!missing(tolerance)) {
+    if (tolerance > 0) {
       cmf <- cumsum(pmf)
       pmf <- pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= tolerance)]
     }
-    if (!missing(max) && (max + 1) > length(x$pmf)) {
+    if (is.finite(max) && (max + 1) > length(x$pmf)) {
       pmf <- pmf[seq(1, max + 1)]
     }
     x$pmf <- pmf / sum(pmf)
   } else {
-    if (!missing(max)) attr(x, "max") <- max
-    if (!missing(tolerance)) attr(x, "tolerance") <- tolerance
+    if (is.finite(max)) attr(x, "max") <- max
+    if (tolerance > 0) attr(x, "tolerance") <- tolerance
   }
   return(x)
 }
@@ -975,6 +975,7 @@ extract_params <- function(params, distribution) {
 #' a `dist_spec`. If they have uncertainty this will be done using sampling.
 #' @param params Parameters of the distribution (including `max`)
 #' @inheritParams extract_params
+#' @inheritParams bound_dist
 #' @importFrom purrr walk
 #' @return A `dist_spec` of the given specification.
 #' @export
@@ -983,7 +984,7 @@ extract_params <- function(params, distribution) {
 #'   params = list(mean = 2, sd = 1, max = Inf),
 #'   distribution = "normal"
 #' )
-new_dist_spec <- function(params, distribution, ...) {
+new_dist_spec <- function(params, distribution, max = Inf, tolerance = 0) {
   if (distribution == "nonparametric") {
     ## nonparametric distribution
     ret <- list(
@@ -1049,7 +1050,7 @@ new_dist_spec <- function(params, distribution, ...) {
   attr(ret, "class") <- c("dist_spec", "list")
 
   ## apply bounds
-  ret <- bound_dist(ret, ...)
+  ret <- bound_dist(ret, max, tolerance)
 
   ## now we have a distribution with natural parameters - return dist_spec
   return(ret)

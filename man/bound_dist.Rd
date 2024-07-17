@@ -4,7 +4,7 @@
 \alias{bound_dist}
 \title{Define bounds of a \verb{<dist_spec>}}
 \usage{
-bound_dist(x, max, tolerance)
+bound_dist(x, max = Inf, tolerance = 0)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}.}
@@ -14,7 +14,7 @@ be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
 
 \item{tolerance}{Numeric; the desired tolerance level. Any part of the
 cumulative distribution function beyond 1 minus this tolerance level is
-removed.}
+removed. Default: \code{0}, i.e. use the full distribution.}
 }
 \value{
 a \verb{<dist_spec>} with relevant attributes set that define its bounds
