@@ -174,7 +174,7 @@ knitr::kable(model_descriptions, caption = "Model options")
 ```
 
 ```{r model-configs}
-models_configs <- list(
+model_configs <- list(
   # The non-mechanistic model
   non_mechanistic = list(rt = NULL),
   # The model with the Gaussian process turned on and a non-stationary prior on R_t (default)
@@ -274,7 +274,7 @@ To run the models, we will sweep across the list of models `models` and shared m
 ```{r run-models}
 # Run the models
 results <- lapply(
-  models_configs,
+  model_configs,
   function(model) {
     do.call(
       epinow,
@@ -305,6 +305,7 @@ runtimes <- lapply(
 # Convert to a table format
 
 runtimes_dt <- melt(as.data.table(runtimes), measure.vars = names(models_configs), variable.name = "model", value.name = "runtime")
+  measure.vars = names(model_configs),
 
 # Add model descriptions
 
