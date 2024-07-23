@@ -272,12 +272,14 @@ model_inputs <- list(
 
 To run the models, we will sweep across the list of models `models` and shared model inputs `model_inputs`. We will use the `epinow()` function and return useful outputs like the timing of model runs.
 ```{r run-models}
+# Create a version of epinow() that works like base::try() and works even if some models fail.
+safe_epinow <- purrr::safely(epinow)
 # Run the models
 results <- lapply(
   model_configs,
   function(model) {
     do.call(
-      epinow,
+      safe_epinow,
       c(
         model_inputs,
         model
