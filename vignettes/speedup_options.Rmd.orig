@@ -349,12 +349,23 @@ calc_crps <- function(x, truth) {
 Now, we will extract the $R_t$ and infection estimates and calculate the CRPS using the `calc_crps()` function above.
 
 ```{r fit_crps}
-# Get the Rt samples
+# Function to extract Rt estimates
 Rt_estimated <- lapply(results, function(x) {
-  if ("R[1]" %in% names(x$estimates$fit)) {
-    extract(x$estimates$fit, "R")$R
+  if (is.null(x$error)) {
+    obj <- x$result$estimates$fit
+    if (inherits(obj, "stanfit")) {
+      if ("R[1]" %in% names(obj)) {
+        extract(obj, "R")$R
+      } else {
+        extract(obj, "gen_R")$gen_R
+      }
+    } else {
+      obj |>
+        as_draws_matrix() |> 
+        subset_draws(variable = "R")
+    }
   } else {
-    extract(x$estimates$fit, "gen_R")$gen_R
+    NA
   }
 })
 # CRPS for the Rt estimates
@@ -364,9 +375,20 @@ rt_crps <- lapply(
   truth = R
 )
 
-# Get the infection samples
+# Function to extract infection estimates
 infections_estimated <- lapply(results, function(x) {
-  extract(x$estimates$fit, "infections")$infections
+  if (is.null(x$error)) {
+  obj <- x$result$estimates$fit
+  if (inherits(obj, "stanfit")) {
+  extract(obj, "infections")$infections
+  } else {
+    obj |>
+      as_draws_matrix() |> 
+      subset_draws(variable = "infections")
+    }
+  } else {
+    NA
+  }
 })
 
 # CRPS for the infections estimates
