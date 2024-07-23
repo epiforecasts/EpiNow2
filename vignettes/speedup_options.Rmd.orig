@@ -306,12 +306,20 @@ runtimes <- lapply(
 
 # Convert to a table format
 
-runtimes_dt <- melt(as.data.table(runtimes), measure.vars = names(models_configs), variable.name = "model", value.name = "runtime")
+runtimes_dt <- melt(
+  as.data.table(runtimes),
   measure.vars = names(model_configs),
+  variable.name = "model",
+  value.name = "runtime"
+)
 
 # Add model descriptions
 
-runtimes_dt <- merge(runtimes_dt, model_descriptions, by = "model")
+runtimes_dt <- merge(
+  runtimes_dt,
+  model_descriptions,
+  by = "model"
+)
 
 setcolorder(runtimes_dt, c("model", "description", "runtime"))
 
