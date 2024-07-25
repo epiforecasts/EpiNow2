@@ -108,7 +108,7 @@ regional_epinow <- function(data,
                               "regions", "summary", "samples",
                               "plots", "latest"
                             ),
-                            return_output = FALSE,
+                            return_output = is.null(target_folder),
                             summary_args = list(),
                             verbose = FALSE,
                             logs = tempdir(check = TRUE), ...,
@@ -148,7 +148,6 @@ regional_epinow <- function(data,
     futile.logger::flog.info(
       "No target directory specified so returning output"
     )
-    return_output <- TRUE
   } else {
     futile.logger::flog.info("Saving estimates to : %s", target_folder)
   }

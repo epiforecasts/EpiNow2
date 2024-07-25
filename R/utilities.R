@@ -13,10 +13,7 @@
 #' @importFrom futile.logger flog.info
 #' @return No return value, called for side effects
 #' @export
-clean_nowcasts <- function(date = NULL, nowcast_dir = ".") {
-  if (is.null(date)) {
-    date <- Sys.Date()
-  }
+clean_nowcasts <- function(date = Sys.Date(), nowcast_dir = ".") {
   dirs <- list.dirs(nowcast_dir, recursive = FALSE)
   purrr::walk(
     dirs,
