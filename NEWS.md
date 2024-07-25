@@ -2,6 +2,7 @@
 
 ## Documentation
 
+- Some implicit argument defaults have been made explicit in the function definition. By @Bisaloo in #729.
 - The installation guide in the README has been updated to provide instructions for configuring the C toolchain of Windows, MacOS, and Linux. By @jamesmbaazam in #707 and reviewed by @sbfnk.
 
 ## Model changes
