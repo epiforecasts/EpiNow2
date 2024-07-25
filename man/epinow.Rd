@@ -18,7 +18,7 @@ epinow(
   CrIs = c(0.2, 0.5, 0.9),
   filter_leading_zeros = TRUE,
   zero_threshold = Inf,
-  return_output = FALSE,
+  return_output = is.null(target_folder),
   output = c("samples", "plots", "latest", "fit", "timing"),
   plot_args = list(),
   target_folder = NULL,

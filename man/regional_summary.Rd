@@ -12,7 +12,7 @@ regional_summary(
   target_date = NULL,
   region_scale = "Region",
   all_regions = TRUE,
-  return_output = FALSE,
+  return_output = is.null(summary_dir),
   plot = TRUE,
   max_plot = 10,
   ...
