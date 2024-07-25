@@ -52,7 +52,7 @@ test_that("dist_spec returns error when mixed natural and unnatural parameters a
   )
 })
 
-test_that("dist_spec returns error when the wrong number of paramters are given", {
+test_that("dist_spec returns error when the wrong number of parameters are given", {
   expect_error(LogNormal(sd = 1, max = 20), "must be specified")
   expect_error(Gamma(shape = 1, rate = 2, mean = 3), "must be specified")
 })
@@ -227,6 +227,10 @@ test_that("delay distributions can be specified in different ways", {
     c(0.00, 0.00, 0.07, 0.27, 0.35, 0.21, 0.07, 0.02, 0.00, 0.00, 0.00)
   )
   expect_equal(
+    round(get_pmf(discretise(LogNormal(mean = 4, sd = 1, tolerance = 0.1))), 2),
+    c(0.00, 0.00, 0.08, 0.28, 0.36, 0.21, 0.07)
+  )
+   expect_equal(
     unname(as.numeric(get_parameters(Gamma(mean = 4, sd = 1)))),
     c(16, 4),
     tolerance = 0.1
@@ -234,6 +238,10 @@ test_that("delay distributions can be specified in different ways", {
   expect_equal(
     round(get_pmf(discretise(Gamma(mean = 4, sd = 1, max = 7))), 2),
     c(0.00, 0.00, 0.08, 0.26, 0.35, 0.22, 0.08, 0.02)
+  )
+  expect_equal(
+    round(get_pmf(discretise(Gamma(mean = 4, sd = 1, tolerance = 0.1))), 2),
+    c(0.00, 0.00, 0.08, 0.27, 0.35, 0.22, 0.08)
   )
   expect_equal(
     unname(as.numeric(
@@ -266,6 +274,10 @@ test_that("delay distributions can be specified in different ways", {
   expect_equal(
     round(get_pmf(discretise(Normal(mean = 4, sd = 1, max = 5))), 2),
     c(0.00, 0.01, 0.09, 0.26, 0.38, 0.26)
+  )
+  expect_equal(
+    round(get_pmf(discretise(Normal(mean = 4, sd = 1, tolerance = 0.1))), 2),
+    c(0.00, 0.01, 0.08, 0.24, 0.35, 0.24, 0.08)
   )
   expect_equal(get_pmf(discretise(Fixed(value = 3))), c(0, 0, 0, 1))
   expect_equal(get_parameters(Fixed(value = 3.5))$value, 3.5)
