@@ -573,23 +573,25 @@ print.dist_spec <- function(x, ...) {
 #'   addition to the probability mass function
 #' @param ... ignored
 #' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
+#' @importFrom data.table data.table rbindlist
 #' @export
 #' @examples
-#' #' # A fixed lognormal distribution with mean 5 and sd 1.
+#' # A fixed lognormal distribution with mean 5 and sd 1.
 #' dist1 <- LogNormal(mean = 1.6, sd = 0.5, max = 20)
+#' # Plot discretised distribution with 1 day discretisation window
 #' plot(dist1)
+#' # Plot discretised distribution with 0.01 day discretisation window
+#' plot(dist1, res = 0.01, cumulative = FALSE)
 #'
-#' # An uncertain gamma distribution with mean 3 and sd 2
+#' An uncertain gamma distribution with mean 3 and sd 2
 #' dist2 <- Gamma(
 #'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
 #' )
 #' plot(dist2)
 #'
-#' # Multiple distributions
-#' plot(dist1 + dist2 + dist1)
-#'
-#' # A combination of the two fixed distributions
-#' plot(dist1 + dist1)
+#' # Multiple distributions with 0.1 discretisation window and do not plot the
+#' # cumulative distribution
+#' plot(dist1 + dist2, res = 0.1, cumulative = FALSE)
 plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
   # Get the PMF and CDF data
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
