@@ -629,7 +629,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
           distribution = get_distribution(x, i), params = get_parameters(y),
           max_value = attr(y, "max"), tolerance = tolerance, width = res
         )
-        return(data.table(x = seq_along(x) - 1, p = x))
+        return(data.table(x = (seq_along(x) - 1) * res, p = x))
       })
       pmf_dt <- rbindlist(pmf_dt, idcol = "sample")
 
