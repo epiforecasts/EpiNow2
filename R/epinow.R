@@ -92,7 +92,7 @@ epinow <- function(data,
                    CrIs = c(0.2, 0.5, 0.9),
                    filter_leading_zeros = TRUE,
                    zero_threshold = Inf,
-                   return_output = FALSE,
+                   return_output = is.null(target_folder),
                    output = c("samples", "plots", "latest", "fit", "timing"),
                    plot_args = list(),
                    target_folder = NULL, target_date,
@@ -115,10 +115,6 @@ epinow <- function(data,
   }
   assert_string(id)
   assert_logical(verbose)
-
-  if (is.null(target_folder)) {
-    return_output <- TRUE
-  }
 
   if (is.null(CrIs) || length(CrIs) == 0 || !is.numeric(CrIs)) {
     futile.logger::flog.fatal(

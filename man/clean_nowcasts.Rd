@@ -4,7 +4,7 @@
 \alias{clean_nowcasts}
 \title{Clean Nowcasts for a Supplied Date}
 \usage{
-clean_nowcasts(date = NULL, nowcast_dir = ".")
+clean_nowcasts(date = Sys.Date(), nowcast_dir = ".")
 }
 \arguments{
 \item{date}{Date object. Defaults to today's date}

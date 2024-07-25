@@ -8,7 +8,7 @@ summarise_results(
   regions,
   summaries = NULL,
   results_dir = NULL,
-  target_date = NULL,
+  target_date = "latest",
   region_scale = "Region"
 )
 }

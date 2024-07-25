@@ -20,7 +20,7 @@ regional_epinow(
   target_date,
   non_zero_points = 2,
   output = c("regions", "summary", "samples", "plots", "latest"),
-  return_output = FALSE,
+  return_output = is.null(target_folder),
   summary_args = list(),
   verbose = FALSE,
   logs = tempdir(check = TRUE),

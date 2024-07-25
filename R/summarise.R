@@ -26,12 +26,8 @@
 summarise_results <- function(regions,
                               summaries = NULL,
                               results_dir = NULL,
-                              target_date = NULL,
+                              target_date = "latest",
                               region_scale = "Region") {
-  if (is.null(target_date)) {
-    target_date <- "latest"
-  }
-
   if (is.null(results_dir)) {
     if (is.null(summaries)) {
       stop(
@@ -181,7 +177,7 @@ regional_summary <- function(regional_output = NULL,
                              target_date = NULL,
                              region_scale = "Region",
                              all_regions = TRUE,
-                             return_output = FALSE,
+                             return_output = is.null(summary_dir),
                              plot = TRUE,
                              max_plot = 10,
                              ...) {
@@ -190,7 +186,6 @@ regional_summary <- function(regional_output = NULL,
     futile.logger::flog.info(
       "No summary directory specified so returning summary output"
     )
-    return_output <- TRUE
   } else {
     futile.logger::flog.info("Saving summary to : %s", summary_dir)
   }
