@@ -34,7 +34,7 @@ plot(dist1)
 # Plot discretised distribution with 0.01 day discretisation window
 plot(dist1, res = 0.01, cumulative = FALSE)
 
-An uncertain gamma distribution with mean 3 and sd 2
+# An uncertain gamma distribution with mean 3 and sd 2
 dist2 <- Gamma(
   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
 )
