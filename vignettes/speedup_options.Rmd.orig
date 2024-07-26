@@ -342,7 +342,7 @@ knitr::kable(runtimes_dt, caption = "Run times for various _EpiNow2_ models")
 
 Now, we will compare the estimated and true values using the continuous ranked probability score (CRPS). The CRPS is a proper scoring rule that measures the accuracy of probabilistic forecasts. We will use the `crps()` function from the `{scoringutils}` package.
 
-To calculate the CRPS for the estimated R_t and infections, we will first set up a function that makes sure the true data and estimates are of the same length and calls the `crps_sample()` function from the `{scoringutils}` package.
+To calculate the CRPS for the estimated $R_t$ and infections, we will first set up a function that makes sure the true data and estimates are of the same length and calls the `crps_sample()` function from the `{scoringutils}` package.
 ```{r crps-func}
 # A function to calculate the CRPS
 calc_crps <- function(x, truth) {
