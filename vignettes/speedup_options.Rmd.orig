@@ -302,7 +302,13 @@ Another thing to note is that here, we used `r `getOption("mc.cores", 1L)` cores
 # Extract the run times
 runtimes <- lapply(
   results,
-  function(x) ifelse(is.null(x$error), round(as.duration(x$result$timing), 1), NA)
+  function(x) {
+    if (is.null(x$error)) {
+      return(round(as.duration(x$result$timing), 1))
+    } else {
+      return(as.duration("NA"))
+    }
+  }
 )
 
 # Convert to a table format
