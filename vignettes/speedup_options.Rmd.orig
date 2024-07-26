@@ -1,11 +1,11 @@
 ---
-title: "Speeding up model runs"
+title: "Model options: speed versus forecast accuracy tradeoffs"
 output:
-  rmarkdown::html_vignette:
+  bookdown::html_vignette2:
     toc: true
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
 vignette: >
-  %\VignetteIndexEntry{Speeding up model runs}
+  %\VignetteIndexEntry{Model options: speed versus forecast accuracy tradeoffs}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
@@ -14,9 +14,10 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 7.5, 
-  fig.height = 7.5,
-  fig.path = "vignettes/speedup-options-"
+  message = FALSE,
+  fig.height = 6.5,
+  fig.width = 6.5,
+  fig.path = "vignettes/speedup_options-"
 )
 set.seed(9876)
 ```
@@ -140,7 +141,7 @@ Now, to the main part of this vignette: we will define and run the different mod
 
 ## Model options
 
-```{r model-descriptions}
+```{r model-descriptions,echo = FALSE}
 model_descriptions <- data.table(
   model = c(
     "non_mechanistic",
@@ -173,7 +174,7 @@ model_descriptions <- data.table(
 knitr::kable(model_descriptions, caption = "Model options")
 ```
 
-```{r model-configs}
+```{r model-configs, results = 'hide'}
 model_configs <- list(
   # The non-mechanistic model
   non_mechanistic = list(rt = NULL),
@@ -271,7 +272,7 @@ model_inputs <- list(
 ```
 
 To run the models, we will sweep across the list of models `models` and shared model inputs `model_inputs`. We will use the `epinow()` function and return useful outputs like the timing of model runs.
-```{r run-models}
+```{r run-models, results = 'hide'}
 # Create a version of epinow() that works like base::try() and works even if some models fail.
 safe_epinow <- purrr::safely(epinow)
 # Run the models
