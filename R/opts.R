@@ -970,4 +970,3 @@ apply_default_tolerance <- function(dist, default_tolerance, tolerance_set) {
   }
   return(dist)
 }
- 
