@@ -4,16 +4,16 @@
 \alias{get_element}
 \title{Extracts an element of a \verb{<dist_spec>}}
 \usage{
-get_element(x, id, element)
+get_element(x, id = NULL, element)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}.}
 
-\item{id}{Integer; the id of the distribution to get parameters of (if x is
+\item{id}{Integer; the id of the distribution to get extract (if x is
 a composite distribution). If \code{x} is a single distribution this is ignored
 and can be left as \code{NULL}.}
 
-\item{element}{The element, i.e. "parameters", "pmf" or "distribution.}
+\item{element}{The element, i.e. "parameters", "pmf" or "distribution".}
 }
 \value{
 The id to use.
