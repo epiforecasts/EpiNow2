@@ -18,7 +18,7 @@
 #'   preventing the posteriors from shifting. If FALSE, no weight will be
 #'   applied, i.e. any parameters in `dist` will be treated as a single
 #'    parameters.
-#' @inheritParams bound_dist
+#' @inheritParams apply_default_tolerance
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
@@ -44,7 +44,8 @@
 #' gt_opts(example_generation_time)
 gt_opts <- function(dist = Fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
-                                 tolerance = 0.001, weight_prior = TRUE) {
+                                 default_tolerance = 0.001,
+                                 weight_prior = TRUE) {
   dot_options <- list(...)
 
   if ((length(dot_options) > 0) ||
@@ -69,7 +70,10 @@ gt_opts <- function(dist = Fixed(1), ...,
       "setting `dist` explicitly to `Fixed(1)`."
     )
   }
-  attr(dist, "tolerance") <- tolerance
+  ## apply default tolerance if `dist` is unconstrained
+  dist <- apply_default_tolerance(
+    dist, default_tolerance, !missing(default_tolerance)
+  )
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("generation_time_opts", class(dist))
   check_stan_delay(dist)
@@ -157,7 +161,6 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #'   a fixed distribution with all mass at 0, i.e. no delay.
 #' @param ... deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
-#' @inheritParams bound_dist
 #' @inheritParams generation_time_opts
 #' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
@@ -177,8 +180,8 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
-                       weight_prior = TRUE) {
+delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
+                       default_tolerance = 0.001, weight_prior = TRUE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec") || !missing(fixed)) { ## could be old syntax
     stop(
@@ -196,7 +199,10 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
     ## can be removed once dot options are hard deprecated
     stop("Unknown named arguments passed to `delay_opts`")
   }
-  attr(dist, "tolerance") <- tolerance
+  ## apply default tolerance if `dist` is unconstrained
+  dist <- apply_default_tolerance(
+    dist, default_tolerance, !missing(default_tolerance)
+  )
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("delay_opts", class(dist))
   check_stan_delay(dist)
@@ -222,7 +228,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
 #'   posteriors from shifting. If FALSE (default), no weight will be applied,
 #'   i.e. the truncation distribution will be treated as a single parameter.
 #'
-#' @inheritParams bound_dist
+#' @inheritParams gt_opts
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'
@@ -235,7 +241,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE, tolerance = 0.001,
 #'
 #' # truncation dist
 #' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = Fixed(0), tolerance = 0.001,
+trunc_opts <- function(dist = Fixed(0), default_tolerance = 0.001,
                        weight_prior = FALSE) {
   if (!is(dist, "dist_spec")) {
     stop(
@@ -249,7 +255,10 @@ trunc_opts <- function(dist = Fixed(0), tolerance = 0.001,
       "`?trunc_opts`"
     )
   }
-  attr(dist, "tolerance") <- tolerance
+  ## apply default tolerance if `dist` is unconstrained
+  dist <- apply_default_tolerance(
+    dist, default_tolerance, !missing(default_tolerance)
+  )
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("trunc_opts", class(dist))
   check_stan_delay(dist)
@@ -934,3 +943,31 @@ filter_opts <- function(opts, region) {
   }
   return(out)
 }
+
+#' Apply default tolerance to a <dist_spec> if it is unconstrained
+#'
+#' @param dist A <dist_spec>
+#' @param default_tolerance Numeric; default tolerance to be used if an
+#'   unconstrained distribution is passed as `dist`. If `dist` is already
+#'   constrained by having a maximum or tolerance this is ignored.
+#' @param tolerance_set Logical; whether the default tolerance has been set by
+#'   the user; if yes and `dist` is constrained a warning is issued
+#'
+#' @return A <dist_spec> with the default tolerance set if previously not
+#'   constrained
+#' @keywords internal
+apply_default_tolerance <- function(dist, default_tolerance, tolerance_set) {
+  if (!is_constrained(dist)) {
+    message(
+      "Unconstrained distributon passed as a delay. ",
+      "Constraining with default tolerance ", default_tolerance
+    )
+    attr(dist, "tolerance") <- default_tolerance
+  } else if (tolerance_set) {
+    warning(
+      "Ignoring given default tolerance as distribution is already ",
+      "constrained.")
+  }
+  return(dist)
+}
+ 

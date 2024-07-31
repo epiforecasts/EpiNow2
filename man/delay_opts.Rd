@@ -8,7 +8,7 @@ delay_opts(
   dist = Fixed(0),
   ...,
   fixed = FALSE,
-  tolerance = 0.001,
+  default_tolerance = 0.001,
   weight_prior = TRUE
 )
 }
@@ -20,9 +20,9 @@ a fixed distribution with all mass at 0, i.e. no delay.}
 
 \item{fixed}{deprecated; use \code{dist} instead}
 
-\item{tolerance}{Numeric; the desired tolerance level. Any part of the
-cumulative distribution function beyond 1 minus this tolerance level is
-removed. Default: \code{0}, i.e. use the full distribution.}
+\item{default_tolerance}{Numeric; default tolerance to be used if an
+unconstrained distribution is passed as \code{dist}. If \code{dist} is already
+constrained by having a maximum or tolerance this is ignored.}
 
 \item{weight_prior}{Logical; if TRUE (default), any priors given in \code{dist}
 will be weighted by the number of observation data points, in doing so

@@ -95,6 +95,9 @@ check_stan_delay <- function(dist) {
       "and infinite maximum."
     )
   }
+  if (is.null(attr(dist, "tolerance"))) {
+    attr(dist, "tolerance") <- 0
+  }
   assert_numeric(attr(dist, "tolerance"), lower = 0, upper = 1)
   # Check that `dist` has a finite maximum
   if (any(is.infinite(max(dist))) && !(attr(dist, "tolerance") > 0)) {
