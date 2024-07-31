@@ -1078,6 +1078,12 @@ new_dist_spec <- function(params, distribution, max = Inf, tolerance = 0) {
 convert_to_natural <- function(params, distribution) {
   ## unnatural parameter means
   ux <- lapply(params, mean)
+  if (anyNA(ux)) {
+    stop(
+      "Cannot nest uncertainty in a distributions that is not specified with ",
+      "its natural parameters."
+    )
+  }
   ## estimate relative uncertainty of parameters
   sds <- vapply(params, sd, numeric(1))
   sds[is.na(sds)] <- 0
