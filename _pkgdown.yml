@@ -100,18 +100,24 @@ reference:
     contents:
       - report_plots
       - report_summary  
-  - title: Define, Fit and Parameterise Distributions
-    desc: Functions to define, fit and parameterise distributions
+  - title: Define and Parameterise Distributions
+    desc: Functions to define and parameterise distributions
     contents:
       - Distributions
-      - apply_tolerance
+      - contains("dist_spec")
+      - bound_dist
       - collapse
       - discretise
-      - contains("_dist")
-      - contains("dist_")
+      - fix_dist
       - get_parameters
       - get_pmf
       - get_distribution
+      - is_constrained
+  - title: Fit delay Distributions
+    desc: Functions to fit delay distributions
+    contents:
+      - bootstrapped_dist_fit
+      - dist_fit
   - title: Simulate
     desc: Functions to help with simulating data or mapping to reported cases
     contents:
