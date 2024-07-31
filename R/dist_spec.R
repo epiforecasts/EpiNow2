@@ -252,6 +252,7 @@ sd <- function(x, ...) {
 #' @description `r lifecycle::badge("experimental")`
 #' This works out the standard deviation of all the (parametric /
 #' nonparametric) delay distributions combined in the passed <dist_spec>.
+#' If any of the parameters are themselves uncertain then `NA` is returned.
 #'
 #' @param x The <dist_spec> to use
 #' @return A vector of standard deviations.

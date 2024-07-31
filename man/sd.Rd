@@ -17,6 +17,7 @@ A vector of standard deviations.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This works out the standard deviation of all the (parametric /
 nonparametric) delay distributions combined in the passed <dist_spec>.
+If any of the parameters are themselves uncertain then \code{NA} is returned.
 }
 \examples{
 \dontrun{
