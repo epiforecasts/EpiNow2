@@ -561,7 +561,6 @@ print.dist_spec <- function(x, ...) {
 #' @description `r lifecycle::badge("experimental")`
 #' This function takes a `<dist_spec>` object and plots its probability mass
 #' function (PMF) and cumulative distribution function (CDF) using `{ggplot2}`.
-#' Note that currently uncertainty in distributions is not plot.
 #'
 #' @param x A `<dist_spec>` object
 #' @param samples Integer; Number of samples to generate for distributions
