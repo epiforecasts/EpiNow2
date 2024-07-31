@@ -156,8 +156,7 @@ c.dist_spec <- function(...) {
   if (length(dist_specs) == 1) return(dist_specs[[1]])
   if (!(all(vapply(dist_specs, is, "dist_spec", FUN.VALUE = logical(1))))) {
     stop(
-      "Distribution can only be concatenated with other delay ",
-      "distributions."
+      "All distributions must be of class `<dist_spec>`."
     )
   }
   convolutions <- vapply(
