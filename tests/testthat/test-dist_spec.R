@@ -216,6 +216,20 @@ test_that("composite delay distributions can be disassembled", {
   expect_equal(EpiNow2:::extract_single_dist(dist, 2), dist2)
 })
 
+test_that("constrained distributions are correctly identified", {
+  expect_false(is_constrained(Gamma(shape = 3, scale = 2)))
+  expect_true(is_constrained(Gamma(shape = 3, scale = 2, max = 10)))
+  expect_true(is_constrained(Gamma(shape = 3, scale = 2, tolerance = 0.1)))
+  expect_false(is_constrained(
+    Gamma(shape = 3, scale = 2) +
+    Gamma(shape = 3, scale = 2, max = 10)
+  ))
+  expect_true(is_constrained(
+    Gamma(shape = 3, scale = 2, max = 10) +
+    Gamma(shape = 3, scale = 2, max = 10)
+  ))
+})
+
 test_that("delay distributions can be specified in different ways", {
   expect_equal(
     unname(as.numeric(get_parameters(LogNormal(mean = 4, sd = 1)))),

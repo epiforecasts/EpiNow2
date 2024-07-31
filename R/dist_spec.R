@@ -763,6 +763,44 @@ fix_dist.multi_dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
   return(x)
 }
 
+#' @export
+is_constrained <- function(x, ...) {
+  UseMethod("is_constrained")
+}
+#' Check if a <dist_spec> is constrained, i.e. has a finite maximum or nonzero
+#' tolerance.
+#'
+#' @name is_constrained
+#' @description `r lifecycle::badge("experimental")`
+#'
+#' @param x A `<dist_spec>`
+#' @param ... ignored
+#' @return Logical; TRUE if `x` is constrained
+#' @export
+#' @method is_constrained dist_spec
+#' @examples
+#' # A fixed gamma distribution with mean 5 and sd 1.
+#' dist1 <- Gamma(mean = 5, sd = 1, max = 20)
+#'
+#' # An uncertain lognormal distribution with mean 3 and sd 2
+#' dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
+#'
+#' # both distributions are constrained and therefore so is the sum
+#' is_constrained(dist1 + dist2)
+is_constrained.dist_spec <- function(x, ...) {
+  tolerance <- attr(x, "tolerance")
+  tol_constrained <- !is.null(tolerance) && tolerance > 0
+  max <- attr(x, "max")
+  max_constrained <- !is.null(max) && is.finite(max)
+  return(tol_constrained || max_constrained)
+}
+#' @method is_constrained multi_dist_spec
+#' @export
+is_constrained.multi_dist_spec <- function(x, ...) {
+  constrained <- vapply(x, is_constrained, logical(1))
+  return(all(constrained))
+}
+
 #' @details
 #' Probability distributions are ubiquitous in EpiNow2, usually representing
 #' epidemiological delays (e.g., the generation time for delays between
