@@ -384,9 +384,6 @@ discretise <- function(x, ...) {
 #' # The maxf the sum of two distributions
 #' discretise(dist1 + dist2, strict = FALSE)
 discretise.dist_spec <- function(x, strict = TRUE, ...) {
-  if (!is(x, "dist_spec")) {
-    stop("Can only discretise a <dist_spec>.")
-  }
   ## discretise
   tolerance <- attr(x, "tolerance")
   if (is.null(tolerance)) {
@@ -724,9 +721,6 @@ fix_dist <- function(x, ...) {
 #'
 #' fix_dist(dist)
 fix_dist.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
-  if (!is(x, "dist_spec")) {
-    stop("Can only fix parameters in a `<dist_spec>`.")
-  }
   ## match strategy argument to options
   strategy <- arg_match(strategy)
 
