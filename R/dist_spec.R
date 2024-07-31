@@ -183,8 +183,7 @@ c.dist_spec <- function(...) {
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' This works out the mean of all the (parametric / nonparametric) delay
-#' distributions combined in the passed <dist_spec> (ignoring any uncertainty
-#' in parameters)
+#' distributions combined in the passed <dist_spec>.
 #'
 #' @param x The `<dist_spec>` to use
 #' @param ... Not used

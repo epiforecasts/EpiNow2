@@ -18,8 +18,7 @@ parameters will be returned as NA.}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This works out the mean of all the (parametric / nonparametric) delay
-distributions combined in the passed <dist_spec> (ignoring any uncertainty
-in parameters)
+distributions combined in the passed <dist_spec>.
 }
 \examples{
 # A fixed lognormal distribution with mean 5 and sd 1.
