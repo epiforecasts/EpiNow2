@@ -530,8 +530,17 @@ print.dist_spec <- function(x, ...) {
     } else {
       ## parametric
       cat(indent_str, "- ",  get_distribution(x, i), " distribution", sep = "")
-      if (is.finite(max(x)[[i]])) {
-        cat(" (max: ", max(x)[[i]], ")", sep = "")
+      dist <- extract_single_dist(x, i)
+      constrain_str <- character(0)
+      if (is.finite(max(dist))) {
+        constrain_str["max"] <- paste("max:", max(dist))
+      }
+      if (!is.null(attr(dist, "tolerance"))) {
+        constrain_str["tolerance"] <-
+          paste("tolerance:", attr(dist, "tolerance"))
+      }
+      if (length(constrain_str) > 0) {
+        cat(" (", toString(constrain_str), ")", sep = "")
       }
       cat(":\n")
       ## loop over natural parameters and print
