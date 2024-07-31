@@ -14,6 +14,7 @@ on:
       - main
       - master
       - develop
+  merge_group:
   workflow_dispatch:
 
 name: R-CMD-check
