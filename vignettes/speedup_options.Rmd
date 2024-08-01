@@ -450,6 +450,9 @@ infections_plot <- ggplot(infections_df, aes(x = time, y = value, colour = model
 plot(infections_plot)
 ```
 
+
+As we can see, the fastest running models do not necessarily have the best CRPS score. This, therefore, requires a careful consideration of one's use case and appropriate compromises. Below are a few considerations.
+
 ## Some considerations when using the model options
 
 ### Mechanistic vs non-mechanistic models
