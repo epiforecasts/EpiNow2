@@ -454,7 +454,7 @@ plot(infections_plot)
 
 ### Mechanistic vs non-mechanistic models
 
-- Estimation in _EpiNow2_ using the mechanistic approaches (prior on $R_t$) is often much slower than the non-mechanistic approach. The mechanistic model is slower because it models intricate details about the processes and mechanisms that drive $R_t$ estimates using the renewal equation. The non-mechanistic model, on the other hand, runs much faster but does not use the renewal equation to generate infections. Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting flexibility. It also means that the model is questionable for forecasting. If performing a retrospective analysis, the _non-mechanistic model_ (where `rt = NULL`) is better suited and a faster alternative to the mechanistic $R_t$ model.
+- Estimation in _EpiNow2_ using the mechanistic approaches (prior on $R_t$) is often much slower than the non-mechanistic approach. The mechanistic model is slower because it models aspects of the processes and mechanisms that drive $R_t$ estimates using the renewal equation. The non-mechanistic model, on the other hand, runs much faster but does not use the renewal equation to generate infections. Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting flexibility. It also means that the model is questionable for forecasting.
 
 ### Exact vs approximate methods
 
