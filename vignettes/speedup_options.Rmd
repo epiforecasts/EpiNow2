@@ -416,7 +416,48 @@ infections_df <- melt(
 )
 ```
 
-Let's visualise the CRPS results for the $R_t$ and infection estimates.
+Let's first look at the total CRPS for each model and the real-time CRPS (CRPS at the last time point) alongside the run times.
+
+```{r crps-summaries}
+# Get total CRPS for Rt estimates
+rt_crps_total <- rt_df[, sum(value), by = .(model)] |> setnames("V1", "rt_crps_total")
+# Get CRPS at the final time point for Rt estimates
+rt_crps_real_time <- rt_df[, .SD[.N], by = "model"][, time := NULL] |> setnames("value", "rt_crps_real_time")
+# Combine the total and real-time CRPS for the Rt estimates
+rt_crps_summaries <- merge.data.frame(rt_crps_total, rt_crps_real_time)
+
+
+# Get total CRPS for infection estimates
+infections_crps_total <- infections_df[, sum(value), by = .(model)] |> setnames("V1", "infections_crps_total")
+# Get CRPS at the final time point for infection estimates
+infections_crps_real_time <- infections_df[, .SD[.N], by = "model"][, time := NULL] |> setnames("value", "infections_crps_real_time")
+# Combine the total and real-time CRPS for the infection estimates
+infections_crps_summaries <- merge.data.frame(infections_crps_total, infections_crps_real_time)
+
+# Combine the CRPS summaries for Rt and infection estimates
+all_crps_summaries <- merge.data.table(rt_crps_summaries, infections_crps_summaries)
+
+# Combine CRPS summaries with the run times
+model_summaries <- merge.data.table(runtimes_dt, all_crps_summaries)
+
+# Order by run time
+model_summaries <- model_summaries[order(runtime), ]
+
+# Print table
+knitr::kable(
+  model_summaries,
+  caption = "Run times, total CRPS, and real-time CRPS (CRPS at the last time point) for various _EpiNow2_ models (ordered by run times)",
+  format.args = list(
+    big.mark = ",",
+    scientific = FALSE,
+    digits = 2
+  ),
+  col.names = c("Model", "Description", "Run time (s)", "Total CRPS (Rt)", "Real-time CRPS (Rt)", "Total CRPS (Infections)", "Real-time CRPS (Infections)")
+)
+```
+
+
+Let's visualise the CRPS results for the $R_t$ and infection estimates over time. This will help us see how the models performed over time.
 
 ```{r rt_plot}
 rt_plot <- ggplot(rt_df, aes(x = time, y = value, colour = model)) +
