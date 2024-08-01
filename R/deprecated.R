@@ -598,7 +598,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' @keywords internal
 apply_tolerance <- function(x, tolerance) {
   lifecycle::deprecate_warn(
-    "1.6.0", "dist_skel()", "bound_dist()"
+    "1.6.0", "apply_tolerance()", "bound_dist()"
   )
   if (!is(x, "dist_spec")) {
     stop("Can only apply tolerance to distributions in a <dist_spec>.")
