@@ -9,9 +9,9 @@ get_element(x, id = NULL, element)
 \arguments{
 \item{x}{A \verb{<dist_spec>}.}
 
-\item{id}{Integer; the id of the distribution to get extract (if x is
-a composite distribution). If \code{x} is a single distribution this is ignored
-and can be left as \code{NULL}.}
+\item{id}{Integer; the id of the distribution to use (if x is a composite
+distribution). If \code{x} is a single distribution this is ignored and can be
+left at its default value of \code{NULL}.}
 
 \item{element}{The element, i.e. "parameters", "pmf" or "distribution".}
 }

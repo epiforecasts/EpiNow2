@@ -1176,9 +1176,9 @@ convert_to_natural <- function(params, distribution) {
 ##' Extracts an element of a `<dist_spec>`
 ##'
 ##' @param x A `<dist_spec>`.
-##' @param id Integer; the id of the distribution to get extract (if x is
-##' a composite distribution). If `x` is a single distribution this is ignored
-##' and can be left as `NULL`.
+##' @param id Integer; the id of the distribution to use (if x is a composite
+##' distribution). If `x` is a single distribution this is ignored and can be
+##' left at its default value of `NULL`.
 ##' @param element The element, i.e. "parameters", "pmf" or "distribution".
 ##' @return The id to use.
 ##' @keywords internal
