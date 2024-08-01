@@ -1,11 +1,11 @@
 ---
-title: "Model options: speed versus forecast accuracy tradeoffs"
+title: "Model benchmarks: speed versus forecast accuracy tradeoffs"
 output:
   bookdown::html_vignette2:
     toc: true
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
 vignette: >
-  %\VignetteIndexEntry{Model options: speed versus forecast accuracy tradeoffs}
+  %\VignetteIndexEntry{Model benchmarks: speed versus forecast accuracy tradeoffs}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
@@ -34,15 +34,15 @@ library(scales)
 library(posterior)
 ```
 
-This vignette explores available model options in _EpiNow2_ and how they vary by speed and accuracy of estimates. We will compare the models by run time and accuracy of estimates (quantitatively and qualitatively) against the "true" trajectory of the data.
+This vignette explores available model options in `{EpiNow2}` and how they vary by speed and accuracy of estimates. We will compare the models by run time and accuracy of estimates (quantitatively and qualitatively) against the "true" trajectory of the data.
 
 ## The benchmarking data
 
-To compare the model options, we will need a dataset for which we know the "true" values and trajectories. So, we will start by generating the "true" infections and $R_t$ data using _EpiNow2_'s `forecast_infections()` function. 
+To compare the model options, we will need a dataset for which we know the "true" values and trajectories. So, we will start by generating the "true" infections and $R_t$ data using `{EpiNow2}`'s `forecast_infections()` function. 
 
 `forecast_infections()` requires a fitted estimates object from `epinow()` with `output` set to "fit", the trajectory of the reproduction number, `R`, and the number of samples to simulate. So, we will set these up first.
 
-To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. We will use the first $100$ observations of the `example_confirmed` data set, the `example_generation_time`, `example_incubation_period`, and `example_reporting_delay` values that come with _EpiNow2_.
+To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. We will use the first $100$ observations of the `example_confirmed` data set, the `example_generation_time`, `example_incubation_period`, and `example_reporting_delay` values that come with `{EpiNow2}`.
 
 Several of the argument values we will use here will be kept the same for all the model runs, so we will set them up here. These include the generation time, incubation period, reporting delay, observation model options, and the forecast horizon.
 ```{r, shared_inputs}
@@ -152,9 +152,7 @@ model_descriptions <- data.table(
     "rw7_no_gp",
     "rw7_gp",
     "vb_rstan",
-    "vb_cmdstanr",
-    "pathfinder",
-    "laplace"
+    "vb_cmdstanr"
   ),
   description = c(
     "The model with no priors on Rt",
@@ -165,9 +163,7 @@ model_descriptions <- data.table(
     "7-day random walk, Gaussian process turned off, and a non-stationary prior on $R_t$ (default)",
     "7-day random walk, Gaussian process turned on, and a non-stationary prior on $R_t$ (default)",
     "Variational inference method instead of MCMC for sampling using [`{rstan}`]",
-    "Variational inference method instead of MCMC for sampling using [`{cmdstanr}`]",
-    "Approximate sampling with the \"pathfinder\" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package)",
-    "Approximate sampling with the \"Laplace\" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package) for sampling."
+    "Variational inference method instead of MCMC for sampling using [`{cmdstanr}`]"
   )
 )
   
@@ -184,14 +180,14 @@ model_configs <- list(
       prior = list(mean = 2, sd = 0.1)
     )
   ),
-  # The model with the Gaussian process turned on and the stationary Gaussian process prior on R_t
+  # # The model with the Gaussian process turned on and the stationary Gaussian process prior on R_t
   gp_stationary = list(
     rt = rt_opts(
       prior = list(mean = 2, sd = 0.1),
       gp_on = "R0"
     )
   ),
-  # The model with a 1-day random walk, the Gaussian process turned off and a non-stationary prior on R_t (default)
+  # # The model with a 1-day random walk, the Gaussian process turned off and a non-stationary prior on R_t (default)
   rw1_no_gp = list(
     rt = rt_opts(
       prior = list(mean = 2, sd = 0.1),
@@ -199,14 +195,14 @@ model_configs <- list(
       ),
     gp = NULL
   ),
-   # The model with a 1-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
+  #  # The model with a 1-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
   rw1_gp = list(
     rt = rt_opts(
       prior = list(mean = 2, sd = 0.1),
         rw = 1
       )
   ),
-  # The model with a 7-day random walk, the Gaussian process turned off, and a non-stationary prior on R_t (default)
+  # # The model with a 7-day random walk, the Gaussian process turned off, and a non-stationary prior on R_t (default)
   rw7_no_gp = list(
     rt = rt_opts(
       prior = list(mean = 2, sd = 0.1),
@@ -214,7 +210,7 @@ model_configs <- list(
       ),
     gp = NULL
   ),
-  # The model with a 7-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
+  # # The model with a 7-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
   rw7_gp = list(
     rt = rt_opts(
       prior = list(mean = 2, sd = 0.1),
@@ -233,25 +229,7 @@ model_configs <- list(
       method = "vb",
       backend = "cmdstanr"
     )
-  )#,
-  # The model that uses "pathfinder" approximate sampling from `cmdstanr` package
-  # pathfinder = list(
-  #   stan = stan_opts(
-  #     method = "pathfinder",
-  #     backend = "cmdstanr",
-  #     trials = 5,
-  #     samples = 2000
-  #   )
-  # ),
-  # # The model that uses Laplace approximate sampling from `cmdstanr` package
-  # laplace = list(
-  #   stan = stan_opts(
-  #     method = "laplace",
-  #     backend = "cmdstanr",
-  #     trials = 5,
-  #     samples = 2000
-  #   )
-  # )
+  )
 )
 ```
 
@@ -296,7 +274,7 @@ results <- lapply(
 
 Let's see how long each model took to run. Note that the run time measured here uses a crude method that compares the start and end times of each simulation. It only measures the time taken for one model run and may not be accurate. For more accurate run time measurements, we recommend using a more sophisticated approach like those provided by packages like [`{bench}`](https://cran.r-project.org/web/packages/bench/index.html) and [`{microbenchmark}`](https://cran.r-project.org/web/packages/microbenchmark/index.html).
 
-Another thing to note is that here, we used `r `getOption("mc.cores", 1L)` cores and so using more or fewer cores might change the runtime results. To speed up the model runs, we recommend checking the number of cores available on your machine using `parallel::detectCores()` and setting a high enough number of cores in `options()`. See the \ref{shared_inputs} chunk above for an example.
+Another thing to note is that here, we used `r getOption("mc.cores", 1L)` cores and so using more or fewer cores might change the runtime results but we expect the relative rankings to be the same or similar. To speed up the model runs, we recommend checking the number of cores available on your machine using `parallel::detectCores()` and setting a high enough number of cores in `options()`. See the \ref{shared_inputs} chunk above for an example.
 
 ```{r runtimes}
 # Extract the run times
@@ -340,7 +318,7 @@ knitr::kable(runtimes_dt, caption = "Run times for various _EpiNow2_ models")
 
 ### Estimation performance
 
-Now, we will compare the estimated and true values using the continuous ranked probability score (CRPS). The CRPS is a proper scoring rule that measures the accuracy of probabilistic forecasts. We will use the `crps()` function from the `{scoringutils}` package.
+Now, we will compare the estimated and true values using the continuous ranked probability score (CRPS). The CRPS is a proper scoring rule that measures the accuracy of probabilistic forecasts. The smaller the CRPS, the better. We will use the `crps()` function from the `{scoringutils}` package.
 
 To calculate the CRPS for the estimated $R_t$ and infections, we will first set up a function that makes sure the true data and estimates are of the same length and calls the `crps_sample()` function from the `{scoringutils}` package.
 ```{r crps-func}
@@ -375,7 +353,7 @@ Rt_estimated <- lapply(results, function(x) {
     NA
   }
 })
-# CRPS for the Rt estimates
+# Apply function above to calculate CRPS for the Rt estimates
 rt_crps <- lapply(
   Rt_estimated,
   function (x) {
@@ -403,20 +381,20 @@ infections_estimated <- lapply(results, function(x) {
   }
 })
 
-# CRPS for the infections estimates
+# Apply function above to calculate CRPS for the infections estimates
 infections_crps <- lapply(
   infections_estimated,
-  function (x) {
-  if (all(!is.na(x))) {
-    calc_crps(x = x, truth = infections_true)
-  } else {
-    NA
+  function(x) {
+    if (all(!is.na(x))) {
+      calc_crps(x = x, truth = infections_true)
+    } else {
+      NA
     }
   }
 )
 ```
 
-We will now post-process the CRPS results to make them easier to visualise by adding a  "time" column and reshaping the data to long format.
+We will now post-process the CRPS results to make them easier to visualise by adding a "time" column and reshaping the data to long format.
 
 ```{r fit_postprocessing}
 # Post-processing the CRPS results of the Rt estimates
@@ -441,25 +419,28 @@ infections_df <- melt(
 Let's first look at the total CRPS for each model and the real-time CRPS (CRPS at the last time point) alongside the run times.
 
 ```{r crps-summaries}
-# Total and final CRPS for Rt by model 
-rt_crps_total <- rt_df[, sum(value), by = .(model)]
-setnames(rt_crps_total, "V1", "rt_crps_total")
-rt_crps_real_time <- rt_df[, .SD[.N], by="model"][, time := NULL]
-setnames(rt_crps_real_time, "value", "rt_crps_real_time")
+# Get total CRPS for Rt estimates
+rt_crps_total <- rt_df[, sum(value), by = .(model)] |> setnames("V1", "rt_crps_total")
+# Get CRPS at the final time point for Rt estimates
+rt_crps_real_time <- rt_df[, .SD[.N], by = "model"][, time := NULL] |> setnames("value", "rt_crps_real_time")
+# Combine the total and real-time CRPS for the Rt estimates
 rt_crps_summaries <- merge.data.frame(rt_crps_total, rt_crps_real_time)
-# Total and final CRPS for reported cases by model
-infections_crps_total <- infections_df[, sum(value), by = .(model)]
-setnames(infections_crps_total, "V1", "infections_crps_total")
-infections_crps_real_time <- infections_df[, .SD[.N], by="model"][, time := NULL]
-setnames(infections_crps_real_time, "value", "infections_crps_real_time")
+
+
+# Get total CRPS for infection estimates
+infections_crps_total <- infections_df[, sum(value), by = .(model)] |> setnames("V1", "infections_crps_total")
+# Get CRPS at the final time point for infection estimates
+infections_crps_real_time <- infections_df[, .SD[.N], by = "model"][, time := NULL] |> setnames("value", "infections_crps_real_time")
+# Combine the total and real-time CRPS for the infection estimates
 infections_crps_summaries <- merge.data.frame(infections_crps_total, infections_crps_real_time)
+
+# Combine the CRPS summaries for Rt and infection estimates
 all_crps_summaries <- merge.data.table(rt_crps_summaries, infections_crps_summaries)
 
-# Combine the CRPS measures with the run times
+# Combine CRPS summaries with the run times
 model_summaries <- merge.data.table(runtimes_dt, all_crps_summaries)
 
 # Order by run time
-
 model_summaries <- model_summaries[order(runtime), ]
 
 # Print table
@@ -471,12 +452,12 @@ knitr::kable(
     scientific = FALSE,
     digits = 2
   ),
-  col.names = gsub("[_]", " ", names(model_summaries))
+  col.names = c("Model", "Description", "Run time (s)", "Total CRPS (Rt)", "Real-time CRPS (Rt)", "Total CRPS (Infections)", "Real-time CRPS (Infections)")
 )
 ```
 
 
-Let's visualise the CRPS results for the $R_t$ and infection estimates over time.
+Let's visualise the CRPS results for the $R_t$ and infection estimates over time. This will help us see how the models performed over time.
 
 ```{r rt_plot}
 rt_plot <- ggplot(rt_df, aes(x = time, y = value, colour = model)) +
@@ -498,18 +479,17 @@ infections_plot <- ggplot(infections_df, aes(x = time, y = value, colour = model
 plot(infections_plot)
 ```
 
-
 As we can see, the fastest running models do not necessarily have the best CRPS score. This, therefore, requires a careful consideration of one's use case and appropriate compromises. Below are a few considerations.
 
 ## Some considerations when using the model options
 
 ### Mechanistic vs non-mechanistic models
 
-- Estimation in _EpiNow2_ using the mechanistic approaches (prior on $R_t$) is often much slower than the non-mechanistic approach. The mechanistic model is slower because it models intricate details about the processes and mechanisms that drive $R_t$ estimates using the renewal equation. The non-mechanistic model, on the other hand, runs much faster but does not use the renewal equation to generate infections. Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting flexibility. It also means that the model is questionable for forecasting. If performing a retrospective analysis, the _non-mechanistic model_ (where `rt = NULL`) is better suited and a faster alternative to the mechanistic $R_t$ model.
+- Estimation in `{EpiNow2}` using the mechanistic approaches (prior on $R_t$) is often much slower than the non-mechanistic approach. The mechanistic model is slower because it models aspects of the processes and mechanisms that drive $R_t$ estimates using the renewal equation. The non-mechanistic model, on the other hand, runs much faster but does not use the renewal equation to generate infections. Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting flexibility. It also means that the model is questionable for forecasting. The non-mechanistic model in `{EpiNow2}` is equivalent to that used in the [`{EpiEstim}`](https://mrc-ide.github.io/EpiEstim/index.html) R package as they both use a Renewal equation to estimate $R_t$ from case time series and the generation interval distribution.
 
-### Exact vs approximate methods
+### Exact vs approximate sampling methods
 
-- The default method is `method = "sampling"`, which performs MCMC sampling. The MCMC sampling method is accurate but can often be slow. The Laplace, Pathfinder, and variational inference methods are the fastest because they are approximate methods. The first two require having the `cmdstanr` package installed. Also note that the methods are experimental and may not be as reliable as the default MCMC sampling method. For details on the Laplace and Pathfinder approximation methods, see respectively, [here](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html) and [here](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html).
+- The default sampling method, set through `stan_opts()`, performs [MCMC sampling](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) using [`{rstan}`](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html). The MCMC sampling method is accurate but is often slow. The variational inference method is faster because it is an [approximate method](https://arxiv.org/abs/1506.03431). In `{EpiNow2}`, you can use this method with an `{rstan}` or [`{cmdstanr}`](https://mc-stan.org/cmdstanr/) backend but you will have to install the latter to access its functionalities. Additionally, `{EpiNow2}` supports using the [Laplace](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html) and [Pathfinder](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html) approximate samplers through `{cmdstanr}` but these two methods are currently experimental in `{cmdstanr}` and have not been well tested here. Future enhancements to this vignette will include their benchmarks as well but initial tests show they are extremely fast but with varied estimation performance depending on the data. Moreover, they may not be as reliable as the default MCMC sampling method and we do not recommend using them in real-world inference.
 
 ### Granularity of estimates
 
