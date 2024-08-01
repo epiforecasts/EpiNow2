@@ -152,9 +152,7 @@ model_descriptions <- data.table(
     "rw7_no_gp",
     "rw7_gp",
     "vb_rstan",
-    "vb_cmdstanr",
-    "pathfinder",
-    "laplace"
+    "vb_cmdstanr"
   ),
   description = c(
     "The model with no priors on Rt",
@@ -165,9 +163,7 @@ model_descriptions <- data.table(
     "7-day random walk, Gaussian process turned off, and a non-stationary prior on $R_t$ (default)",
     "7-day random walk, Gaussian process turned on, and a non-stationary prior on $R_t$ (default)",
     "Variational inference method instead of MCMC for sampling using [`{rstan}`]",
-    "Variational inference method instead of MCMC for sampling using [`{cmdstanr}`]",
-    "Approximate sampling with the \"pathfinder\" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package)",
-    "Approximate sampling with the \"Laplace\" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package) for sampling."
+    "Variational inference method instead of MCMC for sampling using [`{cmdstanr}`]"
   )
 )
   
@@ -233,25 +229,7 @@ model_configs <- list(
       method = "vb",
       backend = "cmdstanr"
     )
-  )#,
-  # The model that uses "pathfinder" approximate sampling from `cmdstanr` package
-  # pathfinder = list(
-  #   stan = stan_opts(
-  #     method = "pathfinder",
-  #     backend = "cmdstanr",
-  #     trials = 5,
-  #     samples = 2000
-  #   )
-  # ),
-  # # The model that uses Laplace approximate sampling from `cmdstanr` package
-  # laplace = list(
-  #   stan = stan_opts(
-  #     method = "laplace",
-  #     backend = "cmdstanr",
-  #     trials = 5,
-  #     samples = 2000
-  #   )
-  # )
+  )
 )
 ```
 
