@@ -126,6 +126,7 @@ Imports:
     truncnorm,
     utils
 Suggests:
+    bookdown,
     cmdstanr,
     covr,
     future,
@@ -135,6 +136,7 @@ Suggests:
     precommit,
     progressr,
     rmarkdown,
+    scoringutils,
     spelling,
     testthat,
     usethis,
