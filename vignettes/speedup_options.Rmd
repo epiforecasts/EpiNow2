@@ -170,7 +170,7 @@ model_descriptions <- data.table(
     "Approximate sampling with the \"Laplace\" algorithm (from the [`{cmdstanr}`](https://github.com/stan-dev/cmdstanr) package) for sampling."
   )
 )
-
+  
 knitr::kable(model_descriptions, caption = "Model options")
 ```
 
@@ -195,23 +195,23 @@ model_configs <- list(
   rw1_no_gp = list(
     rt = rt_opts(
       prior = list(mean = 2, sd = 0.1),
-      rw = 1
-    ),
+        rw = 1
+      ),
     gp = NULL
   ),
-  # The model with a 1-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
+   # The model with a 1-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
   rw1_gp = list(
     rt = rt_opts(
       prior = list(mean = 2, sd = 0.1),
-      rw = 1
-    )
+        rw = 1
+      )
   ),
   # The model with a 7-day random walk, the Gaussian process turned off, and a non-stationary prior on R_t (default)
   rw7_no_gp = list(
     rt = rt_opts(
       prior = list(mean = 2, sd = 0.1),
-      rw = 7
-    ),
+        rw = 7
+      ),
     gp = NULL
   ),
   # The model with a 7-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
@@ -221,19 +221,19 @@ model_configs <- list(
       rw = 7
     )
   ),
-  # Model that uses the variational inference method instead of MCMC (from rstan)
+  # Model that uses the variational inference method instead of MCMC (from rstan) 
   vb_rstan = list(
     stan = stan_opts(
       method = "vb"
     )
   ),
-  # Model that uses the variational inference method instead of MCMC (from cmdstanr)
+  # Model that uses the variational inference method instead of MCMC (from cmdstanr) 
   vb_cmdstanr = list(
     stan = stan_opts(
       method = "vb",
       backend = "cmdstanr"
     )
-  ) # ,
+  )#,
   # The model that uses "pathfinder" approximate sampling from `cmdstanr` package
   # pathfinder = list(
   #   stan = stan_opts(
@@ -333,7 +333,7 @@ setcolorder(runtimes_dt, c("model", "description", "runtime"))
 # Order by run time
 
 runtimes_dt <- runtimes_dt[order(runtime), ]
-
+ 
 # Print table
 knitr::kable(runtimes_dt, caption = "Run times for various _EpiNow2_ models")
 ```
@@ -342,7 +342,7 @@ knitr::kable(runtimes_dt, caption = "Run times for various _EpiNow2_ models")
 
 Now, we will compare the estimated and true values using the continuous ranked probability score (CRPS). The CRPS is a proper scoring rule that measures the accuracy of probabilistic forecasts. We will use the `crps()` function from the `{scoringutils}` package.
 
-To calculate the CRPS for the estimated R_t and infections, we will first set up a function that makes sure the true data and estimates are of the same length and calls the `crps_sample()` function from the `{scoringutils}` package.
+To calculate the CRPS for the estimated $R_t$ and infections, we will first set up a function that makes sure the true data and estimates are of the same length and calls the `crps_sample()` function from the `{scoringutils}` package.
 ```{r crps-func}
 # A function to calculate the CRPS
 calc_crps <- function(x, truth) {
@@ -368,7 +368,7 @@ Rt_estimated <- lapply(results, function(x) {
       }
     } else {
       obj |>
-        as_draws_matrix() |>
+        as_draws_matrix() |> 
         subset_draws(variable = "R")
     }
   } else {
@@ -434,7 +434,7 @@ Let's visualise the CRPS results for the $R_t$ and infection estimates.
 rt_plot <- ggplot(rt_df, aes(x = time, y = value, colour = model)) +
   geom_line() +
   scale_colour_brewer("Model", palette = "Dark2") +
-  scale_y_continuous(labels = label_number_auto()) +
+    scale_y_continuous(labels = label_number_auto()) +
   labs(x = "Time", y = "CRPS", title = "Estimating Rt with various model options") +
   ggplot2::theme_bw()
 plot(rt_plot)
