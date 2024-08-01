@@ -479,7 +479,11 @@ infections_plot <- ggplot(infections_df, aes(x = time, y = value, colour = model
 plot(infections_plot)
 ```
 
-As we can see, the fastest running models do not necessarily have the best CRPS score. This, therefore, requires a careful consideration of one's use case and appropriate compromises. Below are a few considerations.
+From the table of run times and CRPS measures, we can see that the various models have a trade-off between speed and accuracy. For example, the `vb_stan` model was the fastest but had the second worst total CRPS score after `vb_cmdstanr` when predicting $R_t$. This same model has the worst score for predicting $R_t$ and infections in real-time and overall. The non-mechanistic model was the second fastest but had a good total CRPS score for predicting $R_t$. It however had one of the worst aggregate scores for predicting the infection trajectory.
+
+The daily random walk model with no Gaussian process (`rw1_no_gp`) on the other hand is the slowest but has one of the best total CRPS for predicting $R_t$ but does not do very well in the other measures. The 7-day random walk with a Gaussian process(`rw7_gp`), though slow, produced the most desirable aggregate scores for predicting both the $R_t$ and infections.
+
+These results show that choosing an appropriate model requires a careful consideration of one's use case and appropriate tradeoff. Below are a few considerations.
 
 ## Some considerations when using the model options
 
