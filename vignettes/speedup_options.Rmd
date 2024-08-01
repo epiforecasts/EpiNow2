@@ -406,11 +406,11 @@ infections_estimated <- lapply(results, function(x) {
 # CRPS for the infections estimates
 infections_crps <- lapply(
   infections_estimated,
-  function (x) {
-  if (all(!is.na(x))) {
-    calc_crps(x = x, truth = infections_true)
-  } else {
-    NA
+  function(x) {
+    if (all(!is.na(x))) {
+      calc_crps(x = x, truth = infections_true)
+    } else {
+      NA
     }
   }
 )
