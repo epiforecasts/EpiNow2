@@ -426,6 +426,6 @@ globalVariables(
     "central_lower", "central_upper", "mean_sd", "sd_sd", "average_7_day",
     "..lowers", "..upper_CrI", "..uppers", "timing", "dataset", "last_confirm",
     "report_date", "secondary", "id", "conv", "meanlog", "primary", "scaled",
-    "scaling", "sdlog", "lookup", "new_draw", ".draw"
+    "scaling", "sdlog", "lookup", "new_draw", ".draw", "p", "distribution"
   )
 )

@@ -2,16 +2,16 @@
 % Please edit documentation in R/dist_spec.R
 \name{get_distribution}
 \alias{get_distribution}
-\title{Get the distribution of a <dist_spec>}
+\title{Get the distribution of a \verb{<dist_spec>}}
 \usage{
 get_distribution(x, id = NULL)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}.}
 
-\item{id}{Integer; the id of the distribution to get parameters of (if x is
-a composite distribution). If \code{x} is a single distribution this is ignored
-and can be left as \code{NULL}.}
+\item{id}{Integer; the id of the distribution to use (if x is a composite
+distribution). If \code{x} is a single distribution this is ignored and can be
+left at its default value of \code{NULL}.}
 }
 \value{
 A character string naming the distribution (or "nonparametric")

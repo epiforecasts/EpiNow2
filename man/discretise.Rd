@@ -2,12 +2,13 @@
 % Please edit documentation in R/dist_spec.R
 \name{discretise}
 \alias{discretise}
+\alias{discretise.dist_spec}
 \alias{discretize}
 \title{Discretise a <dist_spec>}
 \usage{
-discretise(x, strict = TRUE)
+\method{discretise}{dist_spec}(x, strict = TRUE, ...)
 
-discretize(x, strict = TRUE)
+discretize(x, ...)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}}
@@ -16,6 +17,8 @@ discretize(x, strict = TRUE)
 distribution cannot be discretised (e.g., because no finite maximum has been
 specified or parameters are uncertain). If \code{FALSE} then any distribution
 that cannot be discretised will be returned as is.}
+
+\item{...}{ignored}
 }
 \value{
 A \verb{<dist_spec>} where all distributions with constant parameters are

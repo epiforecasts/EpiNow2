@@ -4,23 +4,34 @@
 \alias{plot.dist_spec}
 \title{Plot PMF and CDF for a dist_spec object}
 \usage{
-\method{plot}{dist_spec}(x, ...)
+\method{plot}{dist_spec}(x, samples = 50L, res = 1, cumulative = TRUE, ...)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>} object}
 
-\item{...}{Additional arguments to pass to \code{{ggplot}}.}
+\item{samples}{Integer; Number of samples to generate for distributions
+with uncertain parameters (default: 50).}
+
+\item{res}{Numeric; Resolution of the PMF and CDF (default: 1, i.e. integer
+discretisation).}
+
+\item{cumulative}{Logical; whether to plot the cumulative distribution in
+addition to the probability mass function}
+
+\item{...}{ignored}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This function takes a \verb{<dist_spec>} object and plots its probability mass
 function (PMF) and cumulative distribution function (CDF) using \code{{ggplot2}}.
-Note that currently uncertainty in distributions is not plot.
 }
 \examples{
-#' # A fixed lognormal distribution with mean 5 and sd 1.
+# A fixed lognormal distribution with mean 5 and sd 1.
 dist1 <- LogNormal(mean = 1.6, sd = 0.5, max = 20)
+# Plot discretised distribution with 1 day discretisation window
 plot(dist1)
+# Plot discretised distribution with 0.01 day discretisation window
+plot(dist1, res = 0.01, cumulative = FALSE)
 
 # An uncertain gamma distribution with mean 3 and sd 2
 dist2 <- Gamma(
@@ -28,9 +39,7 @@ dist2 <- Gamma(
 )
 plot(dist2)
 
-# Multiple distributions
-plot(dist1 + dist2 + dist1)
-
-# A combination of the two fixed distributions
-plot(dist1 + dist1)
+# Multiple distributions with 0.1 discretisation window and do not plot the
+# cumulative distribution
+plot(dist1 + dist2, res = 0.1, cumulative = FALSE)
 }

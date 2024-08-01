@@ -54,6 +54,15 @@ test_that("delay parameters can be specified in different ways", {
     ), digits = 2), n = -2),
     c(0.01, 0.08, 0.20, 0.32, 0.40, 1.00)
   )
+  expect_equal(
+    tail(round(test_stan_delays(
+      delays = delay_opts(
+        LogNormal(meanlog = 0.5, sdlog = 0.5)
+      ),
+      params = delay_params
+    ), digits = 2), n = -2),
+    c(0.08, 0.33, 0.36, 0.16, 0.05, 0.02, 0.01, 0.00, 0.00, 1.00)
+  )
 })
 
 test_that("truncation parameters can be specified in different ways", {
@@ -70,7 +79,7 @@ test_that("truncation parameters can be specified in different ways", {
 
 test_that("distributions incompatible with stan models are caught", {
   expect_error(gt_opts(
-    Gamma(2, 2), tolerance = 0
+    Gamma(2, 2), default_tolerance = 0
   ), "maximum")
   expect_error(delay_opts(
     Normal(2, 2, max = 10)

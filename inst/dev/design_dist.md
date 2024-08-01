@@ -31,3 +31,41 @@ LogNormal(mean = Normal(1.5, 0.1), sd = Normal(1, 0.1))
 NonParametric(c(0.2, 0.4, 0.4))
 NonParametric(c(0.2, 0.4, 0.2, 0.05))
 ```
+
+## Implementation details
+
+The objects representing probability distributions are a list with two elements, `parameters` (a list of parameters, which can be probability distributions themselves), and `distribution` (the type of distribution). It has class membership `dist_spec`.
+
+```{r, eval = FALSE}
+str(LogNormal(3, 1))
+#> List of 2
+#>  $ parameters  :List of 2
+#>  ..$ meanlog: num 3
+#>  ..$ sdlog  : num 1
+#> $ distribution: chr "lognormal"
+#> - attr(*, "class")= chr [1:2] "dist_spec" "list"
+```
+
+The objects can have additional attributes, especially `tolerance` (1 - the proportion of the cumulative distribution to be represented) and `max` (an absolute maximum).
+
+### Representing convolutions
+
+Convolutions are represented as a list of `dist_spec`s, themselves a `dist_spec` so that the attributes of `max` and `cutoff` can be represented at either the individual or convolved `dist_spec` level.
+
+```{r, eval = FALSE}
+str(LogNormal(3, 1) + Gamma(2, 3))
+#> List of 2
+#>  $ :List of 2
+#>   ..$ parameters  :List of 2
+#>   .. ..$ meanlog: num 3
+#>   .. ..$ sdlog  : num 1
+#>   ..$ distribution: chr "lognormal"
+#>   ..- attr(*, "class")= chr [1:2] "dist_spec" "list"
+#>  $ :List of 2
+#>   ..$ parameters  :List of 2
+#>   .. ..$ shape: num 2
+#>   .. ..$ rate : num 3
+#>   ..$ distribution: chr "gamma"
+#>   ..- attr(*, "class")= chr [1:2] "dist_spec" "list"
+#>  - attr(*, "class")= chr [1:2] "multi_dist_spec" "dist_spec" "list"
+```

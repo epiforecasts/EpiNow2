@@ -20,12 +20,12 @@ used (one of "exp", "gamma", "lognormal", "normal" or "fixed")}
 For the exponential model this is a rate parameter and for the gamma model
 this is alpha and beta.}
 
-\item{max_value}{Numeric, the maximum value to allow. Defaults to 120.
+\item{max_value}{Numeric, the maximum value to allow.
 Samples outside of this range are resampled.}
 
 \item{tolerance}{Numeric; the desired tolerance level. Any part of the
 cumulative distribution function beyond 1 minus this tolerance level is
-removed.}
+removed. Default: \code{0}, i.e. use the full distribution.}
 
 \item{width}{Numeric, the width of each discrete bin.}
 }

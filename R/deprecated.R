@@ -70,7 +70,6 @@ adjust_infection_to_report <- function(infections, delay_defs,
 #' @param fixed Deprecated, use [fix_dist()] instead.
 #' @return A list of distribution options.
 #' @importFrom rlang warn arg_match
-#' @export
 #' @keywords internal
 dist_spec <- function(distribution = c(
                         "lognormal", "normal", "gamma", "fixed", "empty"
@@ -485,55 +484,7 @@ rstan_opts <- function(object = NULL,
 #' Samples outside of this range are resampled.
 #'
 #' @return A vector of samples or a probability distribution.
-#' @export
-#' @examples
-#'
-#' ## Exponential model
-#' # sample
-#' dist_skel(10, model = "exp", params = list(rate = 1))
-#'
-#' # cumulative prob density
-#' dist_skel(1:10, model = "exp", dist = TRUE, params = list(rate = 1))
-#'
-#' # probability density
-#' dist_skel(1:10,
-#'   model = "exp", dist = TRUE,
-#'   cum = FALSE, params = list(rate = 1)
-#' )
-#'
-#' ## Gamma model
-#' # sample
-#' dist_skel(10, model = "gamma", params = list(shape = 1, rate = 0.5))
-#'
-#' # cumulative prob density
-#' dist_skel(0:10,
-#'   model = "gamma", dist = TRUE,
-#'   params = list(shape = 1, rate = 0.5)
-#' )
-#'
-#' # probability density
-#' dist_skel(0:10,
-#'   model = "gamma", dist = TRUE,
-#'   cum = FALSE, params = list(shape = 2, rate = 0.5)
-#' )
-#'
-#' ## Log normal model
-#' # sample
-#' dist_skel(10,
-#'   model = "lognormal", params = list(meanlog = log(5), sdlog = log(2))
-#' )
-#'
-#' # cumulative prob density
-#' dist_skel(0:10,
-#'   model = "lognormal", dist = TRUE,
-#'   params = list(meanlog = log(5), sdlog = log(2))
-#' )
-#'
-#' # probability density
-#' dist_skel(0:10,
-#'   model = "lognormal", dist = TRUE, cum = FALSE,
-#'   params = list(meanlog = log(5), sdlog = log(2))
-#' )
+#' @keywords internal
 dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
                       discrete = FALSE, params, max_value = 120) {
   lifecycle::deprecate_warn(
@@ -632,4 +583,38 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
   # call function
   sample <- truncated_skel(n, dist = dist, cum = cum, max_value = max_value)
   return(sample)
+}
+
+#' Applies a threshold to all nonparametric distributions in a <dist_spec>
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' This function is deprecated. Use `bound_dist()` instead.
+#' @param x A `<dist_spec>`
+#' @param tolerance Numeric; the desired tolerance level. Any part of the
+#' cumulative distribution function beyond 1 minus this tolerance level is
+#' removed.
+#' @return A `<dist_spec>` where probability masses below the threshold level
+#' have been removed
+#' @keywords internal
+apply_tolerance <- function(x, tolerance) {
+  lifecycle::deprecate_warn(
+    "1.6.0", "apply_tolerance()", "bound_dist()"
+  )
+  if (!is(x, "dist_spec")) {
+    stop("Can only apply tolerance to distributions in a <dist_spec>.")
+  }
+  y <- lapply(x, function(x) {
+    if (x$distribution == "nonparametric") {
+      cmf <- cumsum(x$pmf)
+      new_pmf <- x$pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= tolerance)]
+      x$pmf <- new_pmf / sum(new_pmf)
+      return(x)
+    } else {
+      return(x)
+    }
+  })
+
+  ## preserve attributes
+  attributes(y) <- attributes(x)
+  return(y)
 }

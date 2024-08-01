@@ -9,15 +9,15 @@
 \alias{NonParametric}
 \title{Probability distributions}
 \usage{
-LogNormal(meanlog, sdlog, mean, sd, max = Inf)
+LogNormal(meanlog, sdlog, mean, sd, ...)
 
-Gamma(shape, rate, scale, mean, sd, max = Inf)
+Gamma(shape, rate, scale, mean, sd, ...)
 
-Normal(mean, sd, max = Inf)
+Normal(mean, sd, ...)
 
-Fixed(value, max = Inf)
+Fixed(value, ...)
 
-NonParametric(pmf)
+NonParametric(pmf, ...)
 }
 \arguments{
 \item{meanlog, sdlog}{mean and standard deviation of the distribution
@@ -25,8 +25,8 @@ NonParametric(pmf)
 
 \item{mean, sd}{mean and standard deviation of the distribution}
 
-\item{max}{Numeric, maximum value of the distribution. The distribution will
-be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
+\item{...}{arguments to define the limits of the distribution that will be
+passed to \code{\link[=bound_dist]{bound_dist()}}}
 
 \item{shape, scale}{shape and scale parameters.  Must be positive,
     \code{scale} strictly.}

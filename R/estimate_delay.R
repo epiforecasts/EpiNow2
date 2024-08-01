@@ -226,11 +226,11 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
   })
 
   if (!missing(max_value)) {
-    params$max <- max_value
+    max <- max_value
   } else {
-    params$max <- max(values)
+    max <- max(values)
   }
-  return(new_dist_spec(params = params, distribution = dist))
+  return(new_dist_spec(params = params, max = max, distribution = dist))
 }
 
 #' Estimate a Delay Distribution
