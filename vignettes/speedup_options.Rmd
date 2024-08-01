@@ -14,9 +14,10 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 7.5,
-  fig.height = 7.5,
-  fig.path = "vignettes/speedup-options-"
+  message = FALSE,
+  fig.height = 6.5,
+  fig.width = 6.5,
+  fig.path = "vignettes/speedup_options-"
 )
 set.seed(9876)
 ```
