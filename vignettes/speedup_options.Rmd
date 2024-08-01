@@ -1,11 +1,11 @@
 ---
-title: "Speeding up model runs"
+title: "Model benchmarks: speed versus forecast accuracy tradeoffs"
 output:
-  rmarkdown::html_vignette:
+  bookdown::html_vignette2:
     toc: true
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
 vignette: >
-  %\VignetteIndexEntry{Speeding up model runs}
+  %\VignetteIndexEntry{Model benchmarks: speed versus forecast accuracy tradeoffs}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
