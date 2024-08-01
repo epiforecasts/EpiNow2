@@ -123,12 +123,14 @@ Imports:
     truncnorm,
     utils
 Suggests:
+    bookdown,
     cmdstanr,
     covr,
     here,
     knitr,
     precommit,
     rmarkdown,
+    scoringutils,
     spelling,
     testthat,
     usethis,
