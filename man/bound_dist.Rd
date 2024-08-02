@@ -4,7 +4,7 @@
 \alias{bound_dist}
 \title{Define bounds of a \verb{<dist_spec>}}
 \usage{
-bound_dist(x, max = Inf, tolerance = 0)
+bound_dist(x, max = Inf, cdf_cutoff = 0)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}.}
@@ -12,8 +12,8 @@ bound_dist(x, max = Inf, tolerance = 0)
 \item{max}{Numeric, maximum value of the distribution. The distribution will
 be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
 
-\item{tolerance}{Numeric; the desired tolerance level. Any part of the
-cumulative distribution function beyond 1 minus this tolerance level is
+\item{cdf_cutoff}{Numeric; the desired CDF cutoff. Any part of the
+cumulative distribution function beyond 1 minus the value of this argument is
 removed. Default: \code{0}, i.e. use the full distribution.}
 }
 \value{

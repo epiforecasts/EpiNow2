@@ -4,7 +4,7 @@
 \alias{is_constrained}
 \alias{is_constrained.dist_spec}
 \title{Check if a <dist_spec> is constrained, i.e. has a finite maximum or nonzero
-tolerance.}
+CDF cutoff.}
 \usage{
 \method{is_constrained}{dist_spec}(x, ...)
 }

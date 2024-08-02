@@ -18,7 +18,7 @@
 #'   preventing the posteriors from shifting. If FALSE, no weight
 #'   will be applied, i.e. any parameters in `dist` will be treated as a single
 #'   parameters.
-#' @inheritParams apply_default_tolerance
+#' @inheritParams apply_default_cdf_cutoff
 #' @importFrom cli cli_warn cli_abort col_blue
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
@@ -44,9 +44,8 @@
 #' # An example generation time
 #' gt_opts(example_generation_time)
 gt_opts <- function(dist = Fixed(1), ...,
-                                 disease, source, max = 14, fixed = FALSE,
-                                 default_tolerance = 0.001,
-                                 weight_prior = TRUE) {
+                    disease, source, max = 14, fixed = FALSE,
+                    default_cdf_cutoff = 0.001, weight_prior = TRUE) {
   dot_options <- list(...)
 
   if ((length(dot_options) > 0) ||
@@ -78,9 +77,9 @@ gt_opts <- function(dist = Fixed(1), ...,
       #nolint end
     )
   }
-  ## apply default tolerance if `dist` is unconstrained
-  dist <- apply_default_tolerance(
-    dist, default_tolerance, !missing(default_tolerance)
+  ## apply default CDF cutoff if `dist` is unconstrained
+  dist <- apply_default_cdf_cutoff(
+    dist, default_cdf_cutoff, !missing(default_cdf_cutoff)
   )
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("generation_time_opts", class(dist))
@@ -190,7 +189,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
 delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
-                       default_tolerance = 0.001, weight_prior = TRUE) {
+                       default_cdf_cutoff = 0.001, weight_prior = TRUE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec") || !missing(fixed)) { ## could be old syntax
     #nolint start: duplicate_argument_linter
@@ -214,9 +213,9 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
       )
     )
   }
-  ## apply default tolerance if `dist` is unconstrained
-  dist <- apply_default_tolerance(
-    dist, default_tolerance, !missing(default_tolerance)
+  ## apply default CDF cutoff if `dist` is unconstrained
+  dist <- apply_default_cdf_cutoff(
+    dist, default_cdf_cutoff, !missing(default_cdf_cutoff)
   )
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("delay_opts", class(dist))
@@ -257,7 +256,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
 #'
 #' # truncation dist
 #' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = Fixed(0), default_tolerance = 0.001,
+trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
                        weight_prior = FALSE) {
   if (!is(dist, "dist_spec")) {
     #nolint start: duplicate_argument_linter
@@ -274,9 +273,9 @@ trunc_opts <- function(dist = Fixed(0), default_tolerance = 0.001,
     #nolint end
     )
   }
-  ## apply default tolerance if `dist` is unconstrained
-  dist <- apply_default_tolerance(
-    dist, default_tolerance, !missing(default_tolerance)
+  ## apply default CDF cutoff if `dist` is unconstrained
+  dist <- apply_default_cdf_cutoff(
+    dist, default_cdf_cutoff, !missing(default_cdf_cutoff)
   )
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("trunc_opts", class(dist))
@@ -1068,36 +1067,36 @@ filter_opts <- function(opts, region) {
   return(out)
 }
 
-#' Apply default tolerance to a <dist_spec> if it is unconstrained
+#' Apply default CDF cutoff to a <dist_spec> if it is unconstrained
 #'
 #' @param dist A <dist_spec>
-#' @param default_tolerance Numeric; default tolerance to be used if an
+#' @param default_cdf_cutoff Numeric; default CDF cutoff to be used if an
 #'   unconstrained distribution is passed as `dist`. If `dist` is already
-#'   constrained by having a maximum or tolerance this is ignored.
-#' @param tolerance_set Logical; whether the default tolerance has been set by
+#'   constrained by having a maximum or CDF cutoff this is ignored.
+#' @param cdf_cutoff_set Logical; whether the default CDF cutoff has been set by
 #'   the user; if yes and `dist` is constrained a warning is issued
 #' @importFrom cli cli_inform cli_warn
 #'
-#' @return A <dist_spec> with the default tolerance set if previously not
+#' @return A <dist_spec> with the default CDF cutoff set if previously not
 #'   constrained
 #' @keywords internal
-apply_default_tolerance <- function(dist, default_tolerance, tolerance_set) {
+apply_default_cdf_cutoff <- function(dist, default_cdf_cutoff, cdf_cutoff_set) {
   if (!is_constrained(dist)) {
     #nolint start: duplicate_argument_linter
     cli_inform(
       c(
         "i" = "Unconstrained distributon passed as a delay. ",
-        "i" = "Constraining with default tolerance {default_tolerance}",
+        "i" = "Constraining with default CDF cutoff {default_cdf_cutoff}.",
         "i" = "To silence this message, specify delay distributions
       with {.var max} or {.var tolerance}."
       )
     )
     #nolint end
-    attr(dist, "tolerance") <- default_tolerance
-  } else if (tolerance_set) {
+    attr(dist, "cdf_cutoff") <- default_cdf_cutoff
+  } else if (cdf_cutoff_set) {
     cli_warn(
       c(
-        "!" = "Ignoring given default tolerance.",
+        "!" = "Ignoring given default CDF cutoff.",
         "i" = "Distribution is already constrained."
       )
     )

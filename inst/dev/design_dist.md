@@ -46,7 +46,7 @@ str(LogNormal(3, 1))
 #> - attr(*, "class")= chr [1:2] "dist_spec" "list"
 ```
 
-The objects can have additional attributes, especially `tolerance` (1 - the proportion of the cumulative distribution to be represented) and `max` (an absolute maximum).
+The objects can have additional attributes, especially `cdf_cutoff` (1 - the proportion of the cumulative distribution to be represented) and `max` (an absolute maximum).
 
 ### Representing convolutions
 
