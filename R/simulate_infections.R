@@ -53,9 +53,9 @@
 #'     R = R,
 #'     initial_infections = 100,
 #'     generation_time = generation_time_opts(
-#'       fix_dist(example_generation_time)
+#'       fix_parameters(example_generation_time)
 #'     ),
-#'     delays = delay_opts(fix_dist(example_reporting_delay)),
+#'     delays = delay_opts(fix_parameters(example_reporting_delay)),
 #'     obs = obs_opts(family = "poisson")
 #'   )
 #' }
@@ -135,7 +135,7 @@ simulate_infections <- function(estimates, R, initial_infections,
 
   if (length(data$delay_params_sd) > 0 && any(data$delay_params_sd > 0)) {
     stop(
-      "Cannot simulate from uncertain parameters. Use the [fix_dist()] ",
+      "Cannot simulate from uncertain parameters. Use the [fix_parameters()] ",
       "function to set the parameters of uncertain distributions either the ",
       "mean or a randomly sampled value"
     )
