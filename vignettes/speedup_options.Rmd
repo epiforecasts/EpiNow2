@@ -1,8 +1,9 @@
 ---
 title: "Model benchmarks: speed versus forecast accuracy tradeoffs"
 output:
-  bookdown::html_vignette2:
+  rmarkdown::html_vignette:
     toc: true
+    number_sections: true
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
 vignette: >
   %\VignetteIndexEntry{Model benchmarks: speed versus forecast accuracy tradeoffs}
