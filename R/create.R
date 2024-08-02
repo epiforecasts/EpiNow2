@@ -742,7 +742,8 @@ create_stan_delays <- function(..., time_points = 1L) {
   ## discretise
   delays <- map(delays, discretise, strict = FALSE)
   ## get maximum delays
-  max_delay <- unname(as.numeric(flatten(map(delays, max))))
+  bounded_delays <- map(delays, function(x) discretise(fix_dist(x)))
+  max_delay <- unname(as.numeric(flatten(map(bounded_delays, max))))
   ## number of different non-empty types
   type_n <- vapply(delays, ndist, integer(1))
   ## assign ID values to each type
