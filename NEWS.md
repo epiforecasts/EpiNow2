@@ -24,6 +24,10 @@
 - Switch to broadcasting the day of the week effect. By @seabbs in #746 and reviewed by @jamesmbaazam.
 - A warning is now thrown if nonparametric PMFs passed to delay options have consecutive tail values that are below a certain low threshold as these lead to loss in speed with little gain in accuracy. By @jamesmbaazam in #752 and reviewed by @seabbs.
 
+## Package changes
+
+- `fix_dist()` has been renamed to `fix_parameters()`. By @sbfnk in and reviewed by.
+
 ## Bug fixes
 
 - a bug was fixed that caused delay option functions to report an error if only the tolerance was specified. By @sbfnk in #716 and reviewed by @jamesmbaazam.

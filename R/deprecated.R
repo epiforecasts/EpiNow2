@@ -67,7 +67,7 @@ adjust_infection_to_report <- function(infections, delay_defs,
 #' probability mass function of the delay (starting with 0); defaults to an
 #' empty vector corresponding to a parametric specification of the distribution
 #' (using \code{params_mean}, and \code{params_sd}.
-#' @param fixed Deprecated, use [fix_dist()] instead.
+#' @param fixed Deprecated, use [fix_parameters()] instead.
 #' @return A list of distribution options.
 #' @importFrom rlang warn arg_match
 #' @keywords internal
@@ -622,4 +622,24 @@ apply_tolerance <- function(x, tolerance) {
   ## preserve attributes
   attributes(y) <- attributes(x)
   return(y)
+}
+
+#' Fix the parameters of a `<dist_spec>`
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' This function has been renamed to [fix_parameters()].
+#' @return A `<dist_spec>` object without uncertainty
+#' @keywords internal
+#' @param x A `<dist_spec>`
+#' @param strategy Character; either "mean" (use the mean estimates of the
+#'   mean and standard deviation) or "sample" (randomly sample mean and
+#'   standard deviation from uncertainty given in the `<dist_spec>`
+fix_parameters <- function(x, strategy = c("mean", "sample")) {
+  lifecycle::deprecate_warn(
+    "1.6.0", "fix_parameters()", "fix_parameters()"
+  )
+  if (!is(x, "dist_spec")) {
+    stop("Can only fix distributions in a <dist_spec>.")
+  }
+  fix_parameters(x, strategy)
 }

@@ -33,7 +33,7 @@ probability mass function of the delay (starting with 0); defaults to an
 empty vector corresponding to a parametric specification of the distribution
 (using \code{params_mean}, and \code{params_sd}.}
 
-\item{fixed}{Deprecated, use \code{\link[=fix_dist]{fix_dist()}} instead.}
+\item{fixed}{Deprecated, use \code{\link[=fix_parameters]{fix_parameters()}} instead.}
 }
 \value{
 A list of distribution options.

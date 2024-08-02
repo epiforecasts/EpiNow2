@@ -108,7 +108,8 @@ reference:
       - bound_dist
       - collapse
       - discretise
-      - fix_dist
+      - fix_parameters
+      - fix_parameters
       - get_parameters
       - get_pmf
       - get_distribution

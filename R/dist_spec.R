@@ -648,7 +648,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
         samples <- 1 ## only need 1 sample if fixed
       }
       dists <- lapply(seq_len(samples), function(y) {
-        fix_dist(extract_single_dist(x, i), strategy = "sample")
+        fix_parameters(extract_single_dist(x, i), strategy = "sample")
       })
       tolerance <- attr(x, "tolerance")
       if (is.null(tolerance)) {
@@ -743,12 +743,12 @@ extract_single_dist <- function(x, i) {
 }
 
 #' @export
-fix_dist <- function(x, ...) {
-  UseMethod("fix_dist")
+fix_parameters <- function(x, ...) {
+  UseMethod("fix_parameters")
 }
 #' Fix the parameters of a `<dist_spec>`
 #'
-#' @name fix_dist
+#' @name fix_parameters
 #' @description `r lifecycle::badge("experimental")`
 #' If the given `<dist_spec>` has any uncertainty, it is removed and the
 #' corresponding distribution converted into a fixed one.
@@ -761,15 +761,15 @@ fix_dist <- function(x, ...) {
 #' @param ... ignored
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom rlang arg_match
-#' @method fix_dist dist_spec
+#' @method fix_parameters dist_spec
 #' @examples
 #' # An uncertain gamma distribution with mean 3 and sd 2
 #' dist <- LogNormal(
 #'   meanlog = Normal(3, 0.5), sdlog = Normal(2, 0.5), max = 20
 #' )
 #'
-#' fix_dist(dist)
-fix_dist.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
+#' fix_parameters(dist)
+fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
   ## match strategy argument to options
   strategy <- arg_match(strategy)
 
@@ -798,10 +798,11 @@ fix_dist.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 }
 
 #' @export
-#' @method fix_dist multi_dist_spec
-fix_dist.multi_dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
+#' @method fix_parameters multi_dist_spec
+fix_parameters.multi_dist_spec <- function(x, strategy =
+                                                c("mean", "sample"), ...) {
   for (i in seq_len(ndist(x))) {
-    x[[i]] <- fix_dist(x[[i]])
+    x[[i]] <- fix_parameters(x[[i]])
   }
   return(x)
 }
