@@ -529,11 +529,13 @@ The daily random walk model with no Gaussian process (`rw1_no_gp`) on the other 
 
 These results show that choosing an appropriate model requires a careful consideration of one's use case and appropriate trade-off. Below are a few considerations.
 
-## Some considerations when using the model options
+## Things to consider when interpreting these benchmarks
 
 ### Mechanistic vs non-mechanistic models
 
 - Estimation in `{EpiNow2}` using the mechanistic approaches (prior on $R_t$) is often much slower than the non-mechanistic approach. The mechanistic model is slower because it models aspects of the processes and mechanisms that drive $R_t$ estimates using the renewal equation. The non-mechanistic model, on the other hand, runs much faster but does not use the renewal equation to generate infections. Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting flexibility. It also means that the model is questionable for forecasting. The non-mechanistic model in `{EpiNow2}` is equivalent to that used in the [`{EpiEstim}`](https://mrc-ide.github.io/EpiEstim/index.html) R package as they both use a Renewal equation to estimate $R_t$ from case time series and the generation interval distribution.
+
+- The `R` trajectory used to generate the data for benchmarking only represents one scenario. Here, it is non-stationary and drawn from different data generating processes (i.e stepwise changes, linear changes, etc). This potentially biases the experiement towards the less mechanistic model options (more because there is less room for mechanistic choices to do well as none of the latent process models are well defined to fit to this data).
 
 ### Exact vs approximate sampling methods
 
