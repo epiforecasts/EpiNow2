@@ -80,8 +80,8 @@ obs <- obs_opts(
   return_likelihood = TRUE
 )
 
-# No forecasting; just estimation
-horizon <- 0
+# 7-day forecast window
+horizon <- 7
 
 # Rt default prior
 rt_prior_default <- list(mean = 2, sd = 0.1)
