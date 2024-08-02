@@ -26,7 +26,7 @@ library(scales)
 library(posterior)
 ```
 
-This vignette explores available model options in `{EpiNow2}` and how they vary by speed and accuracy of estimates. We will compare the models by run time and accuracy of estimates (quantitatively and qualitatively) against the "true" trajectory of the data.
+This vignette benchmarks available model options in `{EpiNow2}` and compares the models based on their speed (run time) and accuracy of estimates relative to data with known trajectories.
 
 ## The benchmarking data
 
@@ -36,7 +36,7 @@ To compare the model options, we will need a dataset for which we know the "true
 
 To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. We will use the first $100$ observations of the `example_confirmed` data set, the `example_generation_time`, `example_incubation_period`, and `example_reporting_delay` values that come with `{EpiNow2}`.
 
-Several of the argument values we will use here will be kept the same for all the model runs, so we will set them up here. These include the generation time, incubation period, reporting delay, observation model options, and the forecast horizon.
+Throughout this vignette, several of the argument values be maintained (not varied), so we will define them here. These include the generation time, incubation period, reporting delay, observation model options, and the forecast horizon.
 
 ``` r
 # Set the number of cores to use
