@@ -126,7 +126,6 @@ Imports:
     truncnorm,
     utils
 Suggests:
-    bookdown,
     cmdstanr,
     covr,
     future,
