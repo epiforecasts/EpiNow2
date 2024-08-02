@@ -12,7 +12,7 @@ gt_opts(
   source,
   max = 14,
   fixed = FALSE,
-  default_tolerance = 0.001,
+  default_cdf_cutoff = 0.001,
   weight_prior = TRUE
 )
 
@@ -23,7 +23,7 @@ generation_time_opts(
   source,
   max = 14,
   fixed = FALSE,
-  default_tolerance = 0.001,
+  default_cdf_cutoff = 0.001,
   weight_prior = TRUE
 )
 }
@@ -41,9 +41,9 @@ distribution is given a fixed generation time of 1 will be assumed.}
 
 \item{fixed}{deprecated; use \code{dist} instead}
 
-\item{default_tolerance}{Numeric; default tolerance to be used if an
+\item{default_cdf_cutoff}{Numeric; default CDF cutoff to be used if an
 unconstrained distribution is passed as \code{dist}. If \code{dist} is already
-constrained by having a maximum or tolerance this is ignored.}
+constrained by having a maximum or CDF cutoff this is ignored.}
 
 \item{weight_prior}{Logical; if TRUE (default), any priors given in \code{dist}
 will be weighted by the number of observation data points, in doing so
