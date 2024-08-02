@@ -11,6 +11,10 @@
 - The interface for defining delay distributions has been generalised to also cater for continuous distributions
 - When defining probability distributions these can now be truncated using the `tolerance` argument
 
+## Package changes
+
+- `fix_dist()` has been renamed to `fix_parameters()`. By @sbfnk in and reviewed by.
+
 ## Bug fixes
 
 - a bug was fixed that caused delay option functions to report an error if only the tolerance was specified. By @sbfnk in #716 and reviewed by @jamesmbaazam.
