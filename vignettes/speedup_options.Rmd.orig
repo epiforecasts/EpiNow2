@@ -82,6 +82,9 @@ obs <- obs_opts(
 
 # No forecasting; just estimation
 horizon <- 0
+
+# Rt default prior
+rt_prior_default <- list(mean = 2, sd = 0.1)
 ```
 
 Now, let's generate the `estimates` object from `epinow()`.
@@ -90,7 +93,7 @@ estimates <- epinow(
   data = example_confirmed[1:100],
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + example_reporting_delay),
-  rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 14),
+  rt = rt_opts(prior = rt_prior_default, rw = 14),
   gp = NULL,
   obs = obs,
   horizon = horizon,
@@ -178,20 +181,20 @@ model_configs <- list(
   # The model with the Gaussian process turned on and a non-stationary prior on R_t (default)
   gp = list(
     rt = rt_opts(
-      prior = list(mean = 2, sd = 0.1)
+      prior = rt_prior_default
     )
   ),
   # # The model with the Gaussian process turned on and the stationary Gaussian process prior on R_t
   gp_stationary = list(
     rt = rt_opts(
-      prior = list(mean = 2, sd = 0.1),
+      prior = rt_prior_default,
       gp_on = "R0"
     )
   ),
   # # The model with a 1-day random walk, the Gaussian process turned off and a non-stationary prior on R_t (default)
   rw1_no_gp = list(
     rt = rt_opts(
-      prior = list(mean = 2, sd = 0.1),
+      prior = rt_prior_default,
         rw = 1
       ),
     gp = NULL
@@ -199,14 +202,14 @@ model_configs <- list(
   #  # The model with a 1-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
   rw1_gp = list(
     rt = rt_opts(
-      prior = list(mean = 2, sd = 0.1),
+      prior = rt_prior_default,
         rw = 1
       )
   ),
   # # The model with a 7-day random walk, the Gaussian process turned off, and a non-stationary prior on R_t (default)
   rw7_no_gp = list(
     rt = rt_opts(
-      prior = list(mean = 2, sd = 0.1),
+      prior = rt_prior_default,
         rw = 7
       ),
     gp = NULL
@@ -214,7 +217,7 @@ model_configs <- list(
   # # The model with a 7-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
   rw7_gp = list(
     rt = rt_opts(
-      prior = list(mean = 2, sd = 0.1),
+      prior = rt_prior_default,
       rw = 7
     )
   ),
