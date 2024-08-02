@@ -88,25 +88,25 @@ test_that("`bound_dist` function can be applied to a convolution", {
   dist1 <- LogNormal(meanlog = 1.6, sdlog = 1, max = 19)
   dist2 <- Gamma(mean = 3, sd = 2, max = 19)
 
-  # Compute combined distribution with default tolerance
+  # Compute combined distribution with default CDF cutoff
   combined <- collapse(discretise(c(dist1, dist2)))
   
-  # Compute combined distribution with larger tolerance
-  combined_tolerance <- bound_dist(combined, tolerance = 0.001)
+  # Compute combined distribution with larger CDF cutoff
+  combined_cdf_cutoff <- bound_dist(combined, cdf_cutoff = 0.001)
 
   combined_pmf <- get_pmf(combined)
-  combined_tolerance_pmf <- get_pmf(combined_tolerance)
+  combined_cdf_cutoff_pmf <- get_pmf(combined_cdf_cutoff)
 
-  # The length of the combined PMF should be greater with default tolerance
-  expect_true(length(combined_pmf) > length(combined_tolerance_pmf))
+  # The length of the combined PMF should be greater with default CDF cutoff
+  expect_true(length(combined_pmf) > length(combined_cdf_cutoff_pmf))
   # Both should sum to 1
   expect_equal(sum(combined_pmf), 1)
-  expect_equal(sum(combined_tolerance_pmf), 1)
+  expect_equal(sum(combined_cdf_cutoff_pmf), 1)
   # The first 5 entries should be within 0.01 of each other
   expect_equal(
-    combined_pmf[1:5], combined_tolerance_pmf[1:5], tolerance = 0.01
+    combined_pmf[1:5], combined_cdf_cutoff_pmf[1:5], tolerance = 0.01
   )
-  expect_equal(mean(combined), mean(combined_tolerance), tolerance = 0.1)
+  expect_equal(mean(combined), mean(combined_cdf_cutoff), tolerance = 0.1)
 })
 
 test_that("summary functions return correct output for fixed lognormal distribution", {
@@ -219,7 +219,7 @@ test_that("composite delay distributions can be disassembled", {
 test_that("constrained distributions are correctly identified", {
   expect_false(is_constrained(Gamma(shape = 3, scale = 2)))
   expect_true(is_constrained(Gamma(shape = 3, scale = 2, max = 10)))
-  expect_true(is_constrained(Gamma(shape = 3, scale = 2, tolerance = 0.1)))
+  expect_true(is_constrained(Gamma(shape = 3, scale = 2, cdf_cutoff = 0.1)))
   expect_false(is_constrained(
     Gamma(shape = 3, scale = 2) +
     Gamma(shape = 3, scale = 2, max = 10)
@@ -241,7 +241,9 @@ test_that("delay distributions can be specified in different ways", {
     c(0.00, 0.00, 0.07, 0.27, 0.35, 0.21, 0.07, 0.02, 0.00, 0.00, 0.00)
   )
   expect_equal(
-    round(get_pmf(discretise(LogNormal(mean = 4, sd = 1, tolerance = 0.1))), 2),
+    round(
+      get_pmf(discretise(LogNormal(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2
+    ),
     c(0.00, 0.00, 0.08, 0.28, 0.36, 0.21, 0.07)
   )
    expect_equal(
@@ -254,7 +256,7 @@ test_that("delay distributions can be specified in different ways", {
     c(0.00, 0.00, 0.08, 0.26, 0.35, 0.22, 0.08, 0.02)
   )
   expect_equal(
-    round(get_pmf(discretise(Gamma(mean = 4, sd = 1, tolerance = 0.1))), 2),
+    round(get_pmf(discretise(Gamma(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2),
     c(0.00, 0.00, 0.08, 0.27, 0.35, 0.22, 0.08)
   )
   expect_equal(
@@ -290,7 +292,7 @@ test_that("delay distributions can be specified in different ways", {
     c(0.00, 0.01, 0.09, 0.26, 0.38, 0.26)
   )
   expect_equal(
-    round(get_pmf(discretise(Normal(mean = 4, sd = 1, tolerance = 0.1))), 2),
+    round(get_pmf(discretise(Normal(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2),
     c(0.00, 0.01, 0.08, 0.24, 0.35, 0.24, 0.08)
   )
   expect_equal(get_pmf(discretise(Fixed(value = 3))), c(0, 0, 0, 1))
