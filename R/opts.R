@@ -960,7 +960,9 @@ apply_default_tolerance <- function(dist, default_tolerance, tolerance_set) {
   if (!is_constrained(dist)) {
     message(
       "Unconstrained distributon passed as a delay. ",
-      "Constraining with default tolerance ", default_tolerance
+      "Constraining with default tolerance ", default_tolerance,  ".\n",
+      "To silence this message, specify delay distributions with `max` or ",
+      "`tolerance`."
     )
     attr(dist, "tolerance") <- default_tolerance
   } else if (tolerance_set) {
