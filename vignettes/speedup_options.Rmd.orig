@@ -96,7 +96,7 @@ estimates <- epinow(
   rt = rt_opts(prior = rt_prior_default, rw = 14),
   gp = NULL,
   obs = obs,
-  horizon = horizon,
+  horizon = 0, # no forecasting
   output = "fit"
 )
 ```
