@@ -1,4 +1,14 @@
-// apply day of the week effect
+/**
+ * Apply day of the week effect to reports
+ *
+ * This function applies a day of the week effect to a vector of reports.
+ *
+ * @param reports Vector of reports to be adjusted.
+ * @param day_of_week Array of integers representing the day of the week for each report.
+ * @param effect Vector of day of week effects.
+ *
+ * @return A vector of reports adjusted for day of the week effects.
+ */
 vector day_of_week_effect(vector reports, array[] int day_of_week, vector effect) {
   int t = num_elements(reports);
   int wl = num_elements(effect);
@@ -11,15 +21,35 @@ vector day_of_week_effect(vector reports, array[] int day_of_week, vector effect
    }
   return(scaled_reports);
 }
-// Scale observations by fraction reported and update log density of
-// fraction reported
+
+/**
+ * Scale observations by fraction reported
+ *
+ * This function scales a vector of reports by a fraction observed.
+ *
+ * @param reports Vector of reports to be scaled.
+ * @param frac_obs Real value representing the fraction observed.
+ *
+ * @return A vector of scaled reports.
+ */
 vector scale_obs(vector reports, real frac_obs) {
   int t = num_elements(reports);
   vector[t] scaled_reports;
   scaled_reports = reports * frac_obs;
   return(scaled_reports);
 }
-// Truncate observed data by some truncation distribution
+
+/**
+ * Truncate observed data by a truncation distribution
+ *
+ * This function truncates a vector of reports based on a truncation distribution.
+ *
+ * @param reports Vector of reports to be truncated.
+ * @param trunc_rev_cmf Vector representing the reverse cumulative mass function of the truncation distribution.
+ * @param reconstruct Integer flag indicating whether to reconstruct (1) or truncate (0) the data.
+ *
+ * @return A vector of truncated reports.
+ */
 vector truncate(vector reports, vector trunc_rev_cmf, int reconstruct) {
   int t = num_elements(reports);
   int trunc_max = num_elements(trunc_rev_cmf);
@@ -37,7 +67,19 @@ vector truncate(vector reports, vector trunc_rev_cmf, int reconstruct) {
   }
   return(trunc_reports);
 }
-// Truncation distribution priors
+
+/**
+ * Update log density for truncation distribution priors
+ *
+ * This function updates the log density for truncation distribution priors.
+ *
+ * @param truncation_mean Array of real values for truncation mean.
+ * @param truncation_sd Array of real values for truncation standard deviation.
+ * @param trunc_mean_mean Array of real values for mean of truncation mean prior.
+ * @param trunc_mean_sd Array of real values for standard deviation of truncation mean prior.
+ * @param trunc_sd_mean Array of real values for mean of truncation standard deviation prior.
+ * @param trunc_sd_sd Array of real values for standard deviation of truncation standard deviation prior.
+ */
 void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
                    array[] real trunc_mean_mean, array[] real trunc_mean_sd,
                    array[] real trunc_sd_mean, array[] real trunc_sd_sd) {
@@ -53,7 +95,22 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
     }
   }
 }
-// update log density for reported cases
+
+/**
+ * Update log density for reported cases
+ *
+ * This function updates the log density for reported cases based on the specified model type.
+ *
+ * @param cases Array of integer observed cases.
+ * @param cases_time Array of integer time indices for observed cases.
+ * @param reports Vector of expected reports.
+ * @param rep_phi Array of real values for reporting overdispersion.
+ * @param phi_mean Real value for mean of reporting overdispersion prior.
+ * @param phi_sd Real value for standard deviation of reporting overdispersion prior.
+ * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
+ * @param weight Real value for weighting the log density contribution.
+ * @param accumulate Integer flag indicating whether to accumulate reports (1) or not (0).
+ */
 void report_lp(array[] int cases, array[] int cases_time, vector reports,
                array[] real rep_phi, real phi_mean, real phi_sd,
                int model_type, real weight, int accumulate) {
@@ -99,7 +156,20 @@ void report_lp(array[] int cases, array[] int cases_time, vector reports,
     }
   }
 }
-// update log likelihood (as above but not vectorised and returning log likelihood)
+
+/**
+ * Calculate log likelihood for reported cases
+ *
+ * This function calculates the log likelihood for reported cases based on the specified model type.
+ *
+ * @param cases Array of integer observed cases.
+ * @param reports Vector of expected reports.
+ * @param rep_phi Array of real values for reporting overdispersion.
+ * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
+ * @param weight Real value for weighting the log likelihood contribution.
+ *
+ * @return A vector of log likelihoods for each time point.
+ */
 vector report_log_lik(array[] int cases, vector reports,
                       array[] real rep_phi, int model_type, real weight) {
   int t = num_elements(reports);
@@ -118,7 +188,18 @@ vector report_log_lik(array[] int cases, vector reports,
   }
   return(log_lik);
 }
-// sample reported cases from the observation model
+
+/**
+ * Generate random samples of reported cases
+ *
+ * This function generates random samples of reported cases based on the specified model type.
+ *
+ * @param reports Vector of expected reports.
+ * @param rep_phi Array of real values for reporting overdispersion.
+ * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
+ *
+ * @return An array of integer sampled reports.
+ */
 array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
   int t = num_elements(reports);
   array[t] int sampled_reports;
