@@ -22,15 +22,18 @@ vector scale_obs(vector reports, real frac_obs) {
 // Truncate observed data by some truncation distribution
 vector truncate(vector reports, vector trunc_rev_cmf, int reconstruct) {
   int t = num_elements(reports);
+  int trunc_max = num_elements(trunc_rev_cmf);
   vector[t] trunc_reports = reports;
   // Calculate cmf of truncation delay
-  int trunc_max = min(t, num_elements(trunc_rev_cmf));
-  int first_t = t - trunc_max + 1;
+  int joint_max = min(t, trunc_max);
+  int first_t = t - joint_max + 1;
+  int first_trunc = trunc_max - joint_max + 1;
+
   // Apply cdf of truncation delay to truncation max last entries in reports
   if (reconstruct) {
-    trunc_reports[first_t:t] ./= trunc_rev_cmf[1:trunc_max];
+    trunc_reports[first_t:t] ./= trunc_rev_cmf[first_trunc:trunc_max];
   } else {
-    trunc_reports[first_t:t] .*= trunc_rev_cmf[1:trunc_max];
+    trunc_reports[first_t:t] .*= trunc_rev_cmf[first_trunc:trunc_max];
   }
   return(trunc_reports);
 }
