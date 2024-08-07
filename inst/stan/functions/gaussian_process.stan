@@ -17,13 +17,29 @@ vector phi(real L, int m, vector x) {
 // spectral density of the exponential quadratic kernal
 real spd_se(real alpha, real rho, real w) {
   real S;
-  S = (alpha^2) * sqrt(2 * pi()) * rho * exp(-0.5 * (rho^2) * (w^2));
+  // S = (alpha^2) * sqrt(2 * pi()) * rho * exp(-0.5 * (rho^2) * (w^2));
+  S = 2.506628 * alpha * rho * exp(-0.5 * (rho^2) * (w^2));
+  return S;
+}
+
+// spectral density of the Ornstein-Uhlenbeck kernal
+real spd_ou(real alpha, real rho, real w) {
+  real S;
+  S = 2 * alpha * rho / (1 + rho^2 * w^2);
   return S;
 }
 // spectral density of the Matern 3/2 kernel
-real spd_matern(real alpha, real rho, real w) {
+real spd_matern32(real alpha, real rho, real w) {
   real S;
-  S = 4 * alpha^2 * (sqrt(3) / rho)^3 * 1 / ((sqrt(3) / rho)^2 + w^2)^2;
+  // S = 4 * alpha^2 * (sqrt(3) / rho)^3 * 1 / ((sqrt(3) / rho)^2 + w^2)^2;
+  S = 20.78461 * alpha / (rho^3 * (3 / rho^2 + w^2)^2);
+  return S;
+}
+
+real spd_matern52(real alpha, real rho, real w) {
+  real S;
+  // S = 16/3 * alpha^2 * (sqrt(5) / rho)^5 * 1 / ((sqrt(5) / rho)^2 + w^2)^3
+  S = 298.1424 * alpha / (rho^5 * (5 / rho^2 + w^2)^3);
   return S;
 }
 
@@ -31,9 +47,11 @@ real spd_matern(real alpha, real rho, real w) {
 int setup_noise(int ot_h, int t, int horizon, int estimate_r,
                 int stationary, int future_fixed, int fixed_from) {
   int noise_time = estimate_r > 0 ? (stationary > 0 ? ot_h : ot_h - 1) : t;
-  int noise_terms =  future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
+  int noise_terms =
+    future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
   return(noise_terms);
 }
+
 // setup approximate gaussian process
 matrix setup_gp(int M, real L, int dimension) {
   vector[dimension] time;
@@ -63,7 +81,15 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
     }
   } else if (type == 1) {
     for(m in 1:M){
-      diagSPD[m] =  sqrt(spd_matern(alpha, unit_rho, sqrt(lambda(L, m))));
+      diagSPD[m] =  sqrt(spd_ou(alpha, unit_rho, sqrt(lambda(L, m))));
+    }
+  } else if (type == 2) {
+    for(m in 1:M){
+      diagSPD[m] =  sqrt(spd_matern32(alpha, unit_rho, sqrt(lambda(L, m))));
+    }
+  } else if (type == 3) {
+    for(m in 1:M){
+      diagSPD[m] =  sqrt(spd_matern52(alpha, unit_rho, sqrt(lambda(L, m))));
     }
   }
   SPD_eta = diagSPD .* eta;
@@ -80,6 +106,6 @@ void gaussian_process_lp(real rho, real alpha, vector eta,
   } else {
     rho ~ inv_gamma(1.499007, 0.057277 * ls_max) T[ls_min, ls_max];
   }
-  alpha ~ normal(0, alpha_sd);
+  alpha ~ normal(0, alpha_sd) T[0,];
   eta ~ std_normal();
 }

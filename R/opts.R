@@ -422,12 +422,15 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' the expected standard deviation of the logged Rt.
 #'
 #' @param kernel Character string, the type of kernel required. Currently
-#' supporting the squared exponential kernel ("se") and the 3 over 2 Matern
-#' kernel ("matern", with `matern_type = 3/2`). Defaulting to the Matern 3 over
-#' 2 kernel as discontinuities are expected  in Rt and infections.
+#' supporting the squared exponential kernel ("se", or "matern" with
+#' 'matern_order = Inf'), 3 over 2 oder 5 over 2 Matern kernel ("matern", with
+#' `matern_order = 3/2` (default) or `matern_order = 5/2`, respectively), or
+#' Orstein-Uhlenbeck ("ou", or "matern" with 'matern_order = 1/2'). Defaulting
+#' to the Matern 3 over 2 kernel for a balance of smoothness and
+#' discontinuities.
 #'
-#' @param matern_type Numeric, defaults to 3/2. Type of Matern Kernel to use.
-#' Currently only the Matern 3/2 kernel is supported.
+#' @param matern_order Numeric, defaults to 3/2. Order of Matern Kernel to use.
+#' Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
 #'
 #' @param basis_prop Numeric, proportion of time points to use as basis
 #' functions. Defaults to 0.2. Decreasing this value results in a decrease in
@@ -457,7 +460,19 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_max = 60,
                     alpha_sd = 0.05,
                     kernel = c("matern_3/2", "se"),
-                    matern_type = 3 / 2) {
+                    matern_order = 3 / 2) {
+  if (kernel == "se") {
+    matern_order <- Inf
+  } else if (kernel == "ou") {
+    matern_order <- 1 / 2
+  } else if (!(is.infinite(matern_order) ||
+               matern_order %in% c(1 / 2, 3 / 2,  5 / 2))) {
+    stop(
+      "only the Matern kernels of order 1/2, 3/2, 5/2 or Inf ",
+      "are currently supported"
+    )
+  }
+
   gp <- list(
     basis_prop = basis_prop,
     boundary_scale = boundary_scale,
@@ -467,12 +482,9 @@ gp_opts <- function(basis_prop = 0.2,
     ls_max = ls_max,
     alpha_sd = alpha_sd,
     kernel = arg_match(kernel),
-    matern_type = matern_type
+    matern_order = matern_order
   )
 
-  if (gp$matern_type != 3 / 2) {
-    stop("only the Matern 3/2 kernel is currently supported") # nolint
-  }
   attr(gp, "class") <- c("gp_opts", class(gp))
   return(gp)
 }
