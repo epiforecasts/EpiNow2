@@ -791,6 +791,9 @@ is_constrained <- function(x, ...) {
 #' # both distributions are constrained and therefore so is the sum
 #' is_constrained(dist1 + dist2)
 is_constrained.dist_spec <- function(x, ...) {
+  if (get_distribution(x) %in% c("nonparametric", "fixed")) {
+    return(TRUE)
+  }
   tolerance <- attr(x, "tolerance")
   tol_constrained <- !is.null(tolerance) && tolerance > 0
   max <- attr(x, "max")
