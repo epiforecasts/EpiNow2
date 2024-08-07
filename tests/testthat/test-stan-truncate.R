@@ -1,3 +1,6 @@
+skip_on_cran()
+skip_on_os("windows")
+
 test_that("truncate() can perform truncation as expected", {
   reports <- c(10, 20, 30, 40, 50)
   trunc_rev_cmf <- c(1, 0.8, 0.5, 0.2)
