@@ -105,6 +105,14 @@ test_that("estimate_infections works without setting a generation time", {
   expect_equal(exp(combined$growth_rate), combined$R)
 })
 
+test_that("estimate_infections works with different kernels", {
+  skip_on_cran()
+  test_estimate_infections(reported_cases, gp = gp_opts(kernel = "se"))
+  test_estimate_infections(reported_cases, gp = gp_opts(kernel = "ou"))
+  test_estimate_infections(reported_cases, gp = gp_opts(matern_order = 5 / 2))
+  expect_error(gp_opts(matern_order = 4))
+})
+
 test_that("estimate_infections fails as expected when given a very short timeout", {
   skip_on_cran()
   expect_error(output <- capture.output(suppressMessages(
