@@ -14,7 +14,7 @@ gp_opts(
   alpha_sd = 0.05,
   kernel = c("matern", "se", "ou"),
   matern_order = 3/2,
-  matern_type = 3/2
+  matern_type
 )
 }
 \arguments{
@@ -52,13 +52,13 @@ supporting the squared exponential kernel ("se", or "matern" with
 'matern_order = Inf'), 3 over 2 oder 5 over 2 Matern kernel ("matern", with
 \code{matern_order = 3/2} (default) or \code{matern_order = 5/2}, respectively), or
 Orstein-Uhlenbeck ("ou", or "matern" with 'matern_order = 1/2'). Defaulting
-to the Matern 3 over 2 kernel for a balance of smoothness and
+to the Matérn 3 over 2 kernel for a balance of smoothness and
 discontinuities.}
 
-\item{matern_order}{Numeric, defaults to 3/2. Order of Matern Kernel to use.
+\item{matern_order}{Numeric, defaults to 3/2. Order of Matérn Kernel to use.
 Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
 
-\item{matern_type}{Deprated; Numeric, defaults to 3/2. Order of Matern Kernel
+\item{matern_type}{Deprated; Numeric, defaults to 3/2. Order of Matérn Kernel
 to use.  Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
 }
 \value{

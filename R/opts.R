@@ -426,13 +426,13 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' 'matern_order = Inf'), 3 over 2 oder 5 over 2 Matern kernel ("matern", with
 #' `matern_order = 3/2` (default) or `matern_order = 5/2`, respectively), or
 #' Orstein-Uhlenbeck ("ou", or "matern" with 'matern_order = 1/2'). Defaulting
-#' to the Matern 3 over 2 kernel for a balance of smoothness and
+#' to the Matérn 3 over 2 kernel for a balance of smoothness and
 #' discontinuities.
 #'
-#' @param matern_order Numeric, defaults to 3/2. Order of Matern Kernel to use.
+#' @param matern_order Numeric, defaults to 3/2. Order of Matérn Kernel to use.
 #' Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
 #'
-#' @param matern_type Deprated; Numeric, defaults to 3/2. Order of Matern Kernel
+#' @param matern_type Deprated; Numeric, defaults to 3/2. Order of Matérn Kernel
 #'   to use.  Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
 #'
 #' @param basis_prop Numeric, proportion of time points to use as basis

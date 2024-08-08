@@ -10,7 +10,7 @@
 - `epinow()` now returns the "timing" output in a "time difference"" format that is easier to understand and work with. By @jamesmbaazam in #688 and reviewed by @sbfnk.
 - The interface for defining delay distributions has been generalised to also cater for continuous distributions
 - When defining probability distributions these can now be truncated using the `tolerance` argument
-- Ornstein-Uhlenbeck and 5 / 2 matern kernels have been added. By @sbfnk in # and reviewed by @.
+- Ornstein-Uhlenbeck and 5 / 2 Matérn kernels have been added. By @sbfnk in # and reviewed by @.
 
 ## Bug fixes
 

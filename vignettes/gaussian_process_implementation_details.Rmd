@@ -41,7 +41,7 @@ k(t,t') = k(|t - t'|) = k(\Delta t)
 
 with the following choices available for the kernel $k$
 
-## Matern 3/2 covariance kernel (the default)
+## Matérn 3/2 covariance kernel (the default)
 
 \begin{equation}
 k(\Delta t) = \alpha \left( 1 + \frac{\sqrt{3} \Delta t}{l} \right) \exp \left( - \frac{\sqrt{3} \Delta t}{l}\right)
@@ -55,13 +55,13 @@ with $l>0$ and $\alpha > 0$ the length scale and magnitude, respectively, of the
 k(\Delta t) = \alpha \exp \left( - \frac{1}{2} \frac{(\Delta t^2)}{l^2} \right)
 \end{equation}
 
-## Ornstein-Uhlenbeck (Matern 1/2) kernel
+## Ornstein-Uhlenbeck (Matérn 1/2) kernel
 
 \begin{equation}
 k(\Delta t) = \alpha \exp{\left( - \frac{\Delta t}{2 l^2}  \right)}
 \end{equation}
 
-## Matern 5/2 covariance kernel
+## Matérn 5/2 covariance kernel
 
 \begin{equation}
 k(\Delta t) = \alpha \left( 1 + \frac{\sqrt{5} \Delta t}{l} + \frac{5}{3} \left(\frac{\Delta t}{l} \right)^2 \right) \exp \left( - \frac{\sqrt{5} \Delta t}{l}\right)
@@ -93,7 +93,7 @@ where $L$ is a positive number termed boundary condition, and $\beta_{j}$ are re
 \beta_j \sim \mathcal{Normal}(0, 1)
 \end{equation}
 
-The function $S_k(x)$ is the spectral density relating to a particular covariance function $k$. In the case of the Matern 3/2 kernel (the default in `EpiNow2`) this is given by
+The function $S_k(x)$ is the spectral density relating to a particular covariance function $k$. In the case of the Matérn 3/2 kernel (the default in `EpiNow2`) this is given by
 
 \begin{equation}
 S_k(x) = 4 \alpha^2 \left( \frac{\sqrt{3}}{\rho}\right)^3 \left(\left( \frac{\sqrt{3}}{\rho} \right)^2 + w^2 \right)^{-2}
