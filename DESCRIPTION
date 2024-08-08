@@ -129,6 +129,7 @@ Suggests:
     knitr,
     precommit,
     rmarkdown,
+    scoringutils,
     spelling,
     testthat,
     usethis,
