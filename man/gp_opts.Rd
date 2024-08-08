@@ -13,7 +13,8 @@ gp_opts(
   ls_max = 60,
   alpha_sd = 0.05,
   kernel = c("matern", "se", "ou"),
-  matern_order = 3/2
+  matern_order = 3/2,
+  matern_type = 3/2
 )
 }
 \arguments{
@@ -56,6 +57,9 @@ discontinuities.}
 
 \item{matern_order}{Numeric, defaults to 3/2. Order of Matern Kernel to use.
 Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
+
+\item{matern_type}{Deprated; Numeric, defaults to 3/2. Order of Matern Kernel
+to use.  Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
 }
 \value{
 A \verb{<gp_opts>} object of settings defining the Gaussian process

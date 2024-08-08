@@ -395,8 +395,8 @@ create_gp_data <- function(gp = gp_opts(), data) {
     alpha_sd = gp$alpha_sd,
     gp_type = data.table::fcase(
       is.infinite(gp$matern_order), 0,
-      gp$matern_order == 1/2, 1,
-      gp$matern_order == 3/2, 2,
+      gp$matern_order == 1 / 2, 1,
+      gp$matern_order == 3 / 2, 2,
       default = 3
     )
   )

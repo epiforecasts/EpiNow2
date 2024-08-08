@@ -432,6 +432,9 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' @param matern_order Numeric, defaults to 3/2. Order of Matern Kernel to use.
 #' Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
 #'
+#' @param matern_type Deprated; Numeric, defaults to 3/2. Order of Matern Kernel
+#'   to use.  Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
+#'
 #' @param basis_prop Numeric, proportion of time points to use as basis
 #' functions. Defaults to 0.2. Decreasing this value results in a decrease in
 #' accuracy but a faster compute time (with increasing it having the first
@@ -460,22 +463,36 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_max = 60,
                     alpha_sd = 0.05,
                     kernel = c("matern", "se", "ou"),
-                    matern_order = 3 / 2) {
+                    matern_order = 3 / 2,
+                    matern_type) {
+  lifecycle::deprecate_warn(
+    "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
+  )
+  if (!missing(matern_type)) {
+    if (!missing(matern_order) && matern_type == matern_order) {
+      stop(
+        "Incompatible `matern_order` and `matern_type`. ",
+        "Use `matern_order` only."
+      )
+    }
+    matern_order <- matern_type
+  }
+
   kernel <- arg_match(kernel)
   if (kernel == "se") {
     if (!missing(matern_order) && is.finite(matern_order)) {
-      stop("Squared exponential kernel must have matern order unset of `Inf`.")
+      stop("Squared exponential kernel must have matern order unset or `Inf`.")
     }
     matern_order <- Inf
   } else if (kernel == "ou") {
     if (!missing(matern_order) && matern_order != 1 / 2) {
-      stop("Ornstein-Uhlenbeck kernel must have matern order unset of `1 / 2`.")
+      stop("Ornstein-Uhlenbeck kernel must have matern order unset or `1 / 2`.") ## nolint: nonportable_path_linter
     }
     matern_order <- 1 / 2
   } else if (!(is.infinite(matern_order) ||
                  matern_order %in% c(1 / 2, 3 / 2,  5 / 2))) {
     stop(
-      "only the Matern kernels of order `1 / 2`, `3 / 2`, `5 / 2` or `Inf` ",
+      "only the Matern kernels of order `1 / 2`, `3 / 2`, `5 / 2` or `Inf` ", ## nolint: nonportable_path_linter
       "are currently supported"
     )
   }
