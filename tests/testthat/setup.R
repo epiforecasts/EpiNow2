@@ -12,8 +12,6 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
         target_dir = system.file("stan/functions", package = "EpiNow2")
       )
     )
-    # avoid problems due to base::truncate
-    stan_truncate <- truncate
   }
 }
 

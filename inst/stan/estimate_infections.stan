@@ -143,7 +143,7 @@ transformed parameters {
       );
     }
     profile("truncate") {
-      obs_reports = truncate(reports[1:ot], trunc_rev_cmf, 0);
+      obs_reports = truncate_obs(reports[1:ot], trunc_rev_cmf, 0);
     }
   } else {
     obs_reports = reports[1:ot];

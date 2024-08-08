@@ -82,7 +82,7 @@ generated quantities {
         delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
         0, 1, 1
       );
-      reports[i] = to_row_vector(truncate(
+      reports[i] = to_row_vector(truncate_obs(
         to_vector(reports[i]), trunc_rev_cmf, 0)
       );
     }

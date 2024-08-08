@@ -78,7 +78,7 @@ transformed parameters {
       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
       0, 1, 1
     );
-    secondary = truncate(secondary, trunc_rev_cmf, 0);
+    secondary = truncate_obs(secondary, trunc_rev_cmf, 0);
  }
 }
 

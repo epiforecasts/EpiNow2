@@ -50,7 +50,7 @@ vector scale_obs(vector reports, real frac_obs) {
  *
  * @return A vector of truncated reports.
  */
-vector truncate(vector reports, vector trunc_rev_cmf, int reconstruct) {
+vector truncate_obs(vector reports, vector trunc_rev_cmf, int reconstruct) {
   int t = num_elements(reports);
   int trunc_max = num_elements(trunc_rev_cmf);
   vector[t] trunc_reports = reports;
