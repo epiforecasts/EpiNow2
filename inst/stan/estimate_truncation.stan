@@ -47,12 +47,12 @@ transformed parameters{
   vector[t] last_obs;
   // reconstruct latest data without truncation
 
-  last_obs = truncate(to_vector(obs[, obs_sets]), trunc_rev_cmf, 1);
+  last_obs = truncate_obs(to_vector(obs[, obs_sets]), trunc_rev_cmf, 1);
   // apply truncation to latest dataset to map back to previous data sets and
   // add noise term
   for (i in 1:(obs_sets - 1)) {
     trunc_obs[1:(end_t[i] - start_t[i] + 1), i] =
-      truncate(last_obs[start_t[i]:end_t[i]], trunc_rev_cmf, 0) + sigma;
+      truncate_obs(last_obs[start_t[i]:end_t[i]], trunc_rev_cmf, 0) + sigma;
    }
   }
 }
@@ -80,7 +80,7 @@ generated quantities {
   matrix[delay_type_max[trunc_id] + 1, obs_sets - 1] gen_obs;
   // reconstruct all truncated datasets using posterior of the truncation distribution
   for (i in 1:obs_sets) {
-    recon_obs[1:(end_t[i] - start_t[i] + 1), i] = truncate(
+    recon_obs[1:(end_t[i] - start_t[i] + 1), i] = truncate_obs(
       to_vector(obs[start_t[i]:end_t[i], i]), trunc_rev_cmf, 1
     );
   }
