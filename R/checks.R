@@ -107,3 +107,27 @@ check_stan_delay <- function(dist) {
     )
   }
 }
+
+#' Check that PMF tail is not sparse
+#'
+#' @description Checks the tail of a PMF to see if more than `span` consecutive
+#' indices in the PMF are smaller than `tol`. If so, a warning is thrown.
+#' @param pmf A probability mass function
+#' @param span The number of consecutive indices in the tail to check
+#' @param tol The tolerance for the tail values
+#'
+#' @return Called for its side effects.
+#' @keywords internal
+check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
+  if (all(pmf[(length(pmf) - span + 1):length(pmf)] < tol)) {
+    warning(
+      sprintf(
+        "The PMF tail has %s consecutive values smaller than %s.",
+        span, tol
+      ),
+      " This will drastically increase run time with very small increases ",
+      "in accuracy. Consider increasing the tail values of the PMF.",
+      call. = FALSE
+    )
+  }
+}
