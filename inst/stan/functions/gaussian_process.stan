@@ -1,106 +1,168 @@
-// eigenvalues for approximate hilbert space gp
-// see here for details: https://arxiv.org/pdf/2004.11408.pdf
-real lambda(real L, int m) {
-  real lam;
-  lam = ((m * pi())/(2 * L))^2;
-  return lam;
+/**
+ * These functions implemente approximuate Gaussian processes for Stan using
+ * Hilbert space methods. The functions are based on the following:
+ * - https://avehtari.github.io/casestudies/Motorcycle/motorcycle_gpcourse.html#4_Heteroskedastic_GP_with_Hilbert_basis_functions
+ * - https://arxiv.org/abs/2004.11408
+ */
+ 
+/**
+  * Spectral density for Exponentiated Quadratic kernel
+  *
+  * @param alpha Scaling parameter
+  * @param rho Length scale parameter
+  * @param L Length of the interval
+  * @param M Number of basis functions
+  * @return A vector of spectral densities
+  */
+vector diagSPD_EQ(real alpha, real rho, real L, int M) {
+  vector[M] indices = linspaced_vector(M, 1, M);
+  real factor = alpha * sqrt(sqrt(2 * pi()) * rho);
+  real exponent = -0.25 * (rho * pi() / (2 * L))^2;
+  return factor * exp(exponent * square(indices));
 }
 
-// eigenfunction for approximate hilbert space gp
-// see here for details: https://arxiv.org/pdf/2004.11408.pdf
-vector phi(real L, int m, vector x) {
-  vector[rows(x)] fi;
-  fi = 1/sqrt(L) * sin(m * pi()/(2 * L) * (x + L));
-  return fi;
+/**
+  * Spectral density for Matern kernel
+  *
+  * @param nu Smoothness parameter (1/2, 3/2, or 5/2)
+  * @param alpha Scaling parameter
+  * @param rho Length scale parameter
+  * @param L Length of the interval
+  * @param M Number of basis functions
+  * @return A vector of spectral densities
+  */
+vector diagSPD_Matern(real nu, real alpha, real rho, real L, int M) {
+  vector[M] indices = linspaced_vector(M, 1, M);
+  real factor = 2 * alpha * (sqrt(2 * nu) / rho)^(nu + 0.5);
+  vector[M] denom = (sqrt(2 * nu) / rho)^2 + square(pi() / (2 * L) * indices);
+  return factor * inv(pow(denom, nu + 0.5));
 }
 
-// spectral density of the exponential quadratic kernal
-real spd_se(real alpha, real rho, real w) {
-  real S;
-  // S = (alpha^2) * sqrt(2 * pi()) * rho * exp(-0.5 * (rho^2) * (w^2));
-  S = 2.506628 * alpha * rho * exp(-0.5 * (rho^2) * (w^2));
-  return S;
+/**
+  * Spectral density for periodic kernel
+  *
+  * @param alpha Scaling parameter
+  * @param rho Length scale parameter
+  * @param M Number of basis functions
+  * @return A vector of spectral densities
+  */
+vector diagSPD_periodic(real alpha, real rho, int M) {
+  real a = 1 / rho^2;
+  vector[M] indices = linspaced_vector(M, 1, M);
+  vector[M] q = exp(log(alpha) + 0.5 * (log(2) - a + to_vector(log_modified_bessel_first_kind(indices, a))));
+  return append_row(q, q);
 }
 
-// spectral density of the Ornstein-Uhlenbeck kernal
-real spd_ou(real alpha, real rho, real w) {
-  real S;
-  S = 2 * alpha * rho / (1 + rho^2 * w^2);
-  return S;
-}
-// spectral density of the Matern 3/2 kernel
-real spd_matern32(real alpha, real rho, real w) {
-  real S;
-  // S = 4 * alpha^2 * (sqrt(3) / rho)^3 * 1 / ((sqrt(3) / rho)^2 + w^2)^2;
-  S = 20.78461 * alpha / (rho^3 * (3 / rho^2 + w^2)^2);
-  return S;
-}
-
-real spd_matern52(real alpha, real rho, real w) {
-  real S;
-  // S = 16/3 * alpha^2 * (sqrt(5) / rho)^5 * 1 / ((sqrt(5) / rho)^2 + w^2)^3
-  S = 298.1424 * alpha / (rho^5 * (5 / rho^2 + w^2)^3);
-  return S;
+/**
+  * Basis functions for Gaussian Process
+  *
+  * @param N Number of data points
+  * @param M Number of basis functions
+  * @param L Length of the interval
+  * @param x Vector of input data
+  * @return A matrix of basis functions
+  */
+matrix PHI(int N, int M, real L, vector x) {
+  matrix[N, M] phi = sin(diag_post_multiply(rep_matrix(pi() / (2 * L) * (x + L), M), linspaced_vector(M, 1, M))) / sqrt(L);
+  return phi;
 }
 
-// setup gaussian process noise dimensions
+/**
+  * Basis functions for periodic Gaussian Process
+  *
+  * @param N Number of data points
+  * @param M Number of basis functions
+  * @param w0 Fundamental frequency
+  * @param x Vector of input data
+  * @return A matrix of basis functions
+  */
+matrix PHI_periodic(int N, int M, real w0, vector x) {
+  matrix[N, M] mw0x = diag_post_multiply(rep_matrix(w0 * x, M), linspaced_vector(M, 1, M));
+  return append_col(cos(mw0x), sin(mw0x));
+}
+
+/**
+  * Setup Gaussian process noise dimensions
+  *
+  * @param ot_h Observation time horizon
+  * @param t Total time points
+  * @param horizon Forecast horizon
+  * @param estimate_r Indicator if estimating r
+  * @param stationary Indicator if stationary
+  * @param future_fixed Indicator if future is fixed
+  * @param fixed_from Fixed point from
+  * @return Number of noise terms
+  */
 int setup_noise(int ot_h, int t, int horizon, int estimate_r,
                 int stationary, int future_fixed, int fixed_from) {
   int noise_time = estimate_r > 0 ? (stationary > 0 ? ot_h : ot_h - 1) : t;
-  int noise_terms =
-    future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
-  return(noise_terms);
+  int noise_terms = future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
+  return noise_terms;
 }
 
-// setup approximate gaussian process
-matrix setup_gp(int M, real L, int dimension) {
-  vector[dimension] time;
-  matrix[dimension, M] PHI;
-  real half_dim = dimension / 2.0;
-  for (s in 1:dimension) {
-    time[s] = (s - half_dim) / half_dim;
+/**
+  * Setup approximate Gaussian process
+  *
+  * @param M Number of basis functions
+  * @param L Length of the interval
+  * @param dimension Dimension of the process
+  * @param is_periodic Indicator if the process is periodic
+  * @param w0 Fundamental frequency for periodic process
+  * @param x Vector of input data
+  * @return A matrix of basis functions
+  */
+matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0, vector x) {
+  if (is_periodic) {
+    return PHI_periodic(dimension, M, w0, x);
+  } else {
+    return PHI(dimension, M, L, x);
   }
-  for (m in 1:M){
-    PHI[,m] = phi(L, m, time);
-  }
-  return(PHI);
 }
 
-// update gaussian process using spectral densities
+/**
+  * Update Gaussian process using spectral densities
+  *
+  * @param PHI Basis functions matrix
+  * @param M Number of basis functions
+  * @param L Length of the interval
+  * @param alpha Scaling parameter
+  * @param rho Length scale parameter
+  * @param eta Vector of noise terms
+  * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern)
+  * @param nu Smoothness parameter for Matern kernel
+  * @return A vector of updated noise terms
+  */
 vector update_gp(matrix PHI, int M, real L, real alpha,
-                 real rho, vector eta, int type) {
+                  real rho, vector eta, int type, real nu) {
   vector[M] diagSPD;    // spectral density
-  vector[M] SPD_eta;    // spectral density * noise
-  int noise_terms = rows(PHI);
-  vector[noise_terms] noise = rep_vector(1e-6, noise_terms);
-  real unit_rho = rho / noise_terms;
+
   // GP in noise - spectral densities
   if (type == 0) {
-    for(m in 1:M){
-      diagSPD[m] =  sqrt(spd_se(alpha, unit_rho, sqrt(lambda(L, m))));
-    }
+    diagSPD = diagSPD_EQ(alpha, rho, L, M);
   } else if (type == 1) {
-    for(m in 1:M){
-      diagSPD[m] =  sqrt(spd_ou(alpha, unit_rho, sqrt(lambda(L, m))));
-    }
+    diagSPD = diagSPD_periodic(alpha, rho, M);
   } else if (type == 2) {
-    for(m in 1:M){
-      diagSPD[m] =  sqrt(spd_matern32(alpha, unit_rho, sqrt(lambda(L, m))));
-    }
-  } else if (type == 3) {
-    for(m in 1:M){
-      diagSPD[m] =  sqrt(spd_matern52(alpha, unit_rho, sqrt(lambda(L, m))));
-    }
+    diagSPD = diagSPD_Matern(nu, alpha, rho, L, M);
   }
-  SPD_eta = diagSPD .* eta;
-  noise = noise + PHI[,] * SPD_eta;
-  return(noise);
+
+  return PHI * (diagSPD .* eta);
 }
 
-// priors for gaussian process
+/**
+  * Priors for Gaussian process
+  *
+  * @param rho Length scale parameter
+  * @param alpha Scaling parameter
+  * @param eta Vector of noise terms
+  * @param ls_meanlog Mean of the log of the length scale
+  * @param ls_sdlog Standard deviation of the log of the length scale
+  * @param ls_min Minimum length scale
+  * @param ls_max Maximum length scale
+  * @param alpha_sd Standard deviation of alpha
+  */
 void gaussian_process_lp(real rho, real alpha, vector eta,
-                         real ls_meanlog, real ls_sdlog,
-                         real ls_min, real ls_max, real alpha_sd) {
+                          real ls_meanlog, real ls_sdlog,
+                          real ls_min, real ls_max, real alpha_sd) {
   if (ls_sdlog > 0) {
     rho ~ lognormal(ls_meanlog, ls_sdlog) T[ls_min, ls_max];
   } else {
