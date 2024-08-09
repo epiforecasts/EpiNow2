@@ -24,7 +24,9 @@ transformed data{
   int ot = t - seeding_time - horizon;  // observed time
   int ot_h = ot + horizon;  // observed time + forecast horizon
   // gaussian process
-  int noise_terms = setup_noise(ot_h, t, horizon, estimate_r, stationary, future_fixed, fixed_from);
+  int noise_terms = setup_noise(
+    ot_h, t, horizon, estimate_r, stationary, future_fixed, fixed_from
+  );
   matrix[noise_terms, M] PHI = setup_gp(M, L, noise_terms);  // basis function
   // Rt
   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));

@@ -422,12 +422,18 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' the expected standard deviation of the logged Rt.
 #'
 #' @param kernel Character string, the type of kernel required. Currently
-#' supporting the squared exponential kernel ("se") and the 3 over 2 Matern
-#' kernel ("matern", with `matern_type = 3/2`). Defaulting to the Matern 3 over
-#' 2 kernel as discontinuities are expected  in Rt and infections.
+#' supporting the squared exponential kernel ("se", or "matern" with
+#' 'matern_order = Inf'), 3 over 2 oder 5 over 2 Matern kernel ("matern", with
+#' `matern_order = 3/2` (default) or `matern_order = 5/2`, respectively), or
+#' Orstein-Uhlenbeck ("ou", or "matern" with 'matern_order = 1/2'). Defaulting
+#' to the Matérn 3 over 2 kernel for a balance of smoothness and
+#' discontinuities.
 #'
-#' @param matern_type Numeric, defaults to 3/2. Type of Matern Kernel to use.
-#' Currently only the Matern 3/2 kernel is supported.
+#' @param matern_order Numeric, defaults to 3/2. Order of Matérn Kernel to use.
+#' Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
+#'
+#' @param matern_type Deprated; Numeric, defaults to 3/2. Order of Matérn Kernel
+#'   to use.  Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
 #'
 #' @param basis_prop Numeric, proportion of time points to use as basis
 #' functions. Defaults to 0.2. Decreasing this value results in a decrease in
@@ -456,8 +462,41 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_min = 0,
                     ls_max = 60,
                     alpha_sd = 0.05,
-                    kernel = c("matern_3/2", "se"),
-                    matern_type = 3 / 2) {
+                    kernel = c("matern", "se", "ou"),
+                    matern_order = 3 / 2,
+                    matern_type) {
+  lifecycle::deprecate_warn(
+    "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
+  )
+  if (!missing(matern_type)) {
+    if (!missing(matern_order) && matern_type == matern_order) {
+      stop(
+        "Incompatible `matern_order` and `matern_type`. ",
+        "Use `matern_order` only."
+      )
+    }
+    matern_order <- matern_type
+  }
+
+  kernel <- arg_match(kernel)
+  if (kernel == "se") {
+    if (!missing(matern_order) && is.finite(matern_order)) {
+      stop("Squared exponential kernel must have matern order unset or `Inf`.")
+    }
+    matern_order <- Inf
+  } else if (kernel == "ou") {
+    if (!missing(matern_order) && matern_order != 1 / 2) {
+      stop("Ornstein-Uhlenbeck kernel must have matern order unset or `1 / 2`.") ## nolint: nonportable_path_linter
+    }
+    matern_order <- 1 / 2
+  } else if (!(is.infinite(matern_order) ||
+                 matern_order %in% c(1 / 2, 3 / 2,  5 / 2))) {
+    stop(
+      "only the Matern kernels of order `1 / 2`, `3 / 2`, `5 / 2` or `Inf` ", ## nolint: nonportable_path_linter
+      "are currently supported"
+    )
+  }
+
   gp <- list(
     basis_prop = basis_prop,
     boundary_scale = boundary_scale,
@@ -466,13 +505,10 @@ gp_opts <- function(basis_prop = 0.2,
     ls_min = ls_min,
     ls_max = ls_max,
     alpha_sd = alpha_sd,
-    kernel = arg_match(kernel),
-    matern_type = matern_type
+    kernel = kernel,
+    matern_order = matern_order
   )
 
-  if (gp$matern_type != 3 / 2) {
-    stop("only the Matern 3/2 kernel is currently supported") # nolint
-  }
   attr(gp, "class") <- c("gp_opts", class(gp))
   return(gp)
 }

@@ -12,8 +12,9 @@ gp_opts(
   ls_min = 0,
   ls_max = 60,
   alpha_sd = 0.05,
-  kernel = c("matern_3/2", "se"),
-  matern_type = 3/2
+  kernel = c("matern", "se", "ou"),
+  matern_order = 3/2,
+  matern_type
 )
 }
 \arguments{
@@ -47,12 +48,18 @@ magnitude parameter of the Gaussian process kernel. Should be approximately
 the expected standard deviation of the logged Rt.}
 
 \item{kernel}{Character string, the type of kernel required. Currently
-supporting the squared exponential kernel ("se") and the 3 over 2 Matern
-kernel ("matern", with \code{matern_type = 3/2}). Defaulting to the Matern 3 over
-2 kernel as discontinuities are expected  in Rt and infections.}
+supporting the squared exponential kernel ("se", or "matern" with
+'matern_order = Inf'), 3 over 2 oder 5 over 2 Matern kernel ("matern", with
+\code{matern_order = 3/2} (default) or \code{matern_order = 5/2}, respectively), or
+Orstein-Uhlenbeck ("ou", or "matern" with 'matern_order = 1/2'). Defaulting
+to the Matérn 3 over 2 kernel for a balance of smoothness and
+discontinuities.}
 
-\item{matern_type}{Numeric, defaults to 3/2. Type of Matern Kernel to use.
-Currently only the Matern 3/2 kernel is supported.}
+\item{matern_order}{Numeric, defaults to 3/2. Order of Matérn Kernel to use.
+Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
+
+\item{matern_type}{Deprated; Numeric, defaults to 3/2. Order of Matérn Kernel
+to use.  Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
 }
 \value{
 A \verb{<gp_opts>} object of settings defining the Gaussian process

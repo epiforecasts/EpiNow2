@@ -27,7 +27,7 @@ vector update_Rt(int t, real log_R, vector noise, array[] int bps,
       if (t > gp_n) {
         gp[(gp_n + 1):t] = rep_vector(noise[gp_n], t - gp_n);
       }
-    }else{
+    } else {
       gp[2:(gp_n + 1)] = noise;
       gp = cumulative_sum(gp);
     }
