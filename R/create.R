@@ -331,6 +331,7 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
  )
  return(data)
 }
+
 #' Create Gaussian Process Data
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -394,11 +395,13 @@ create_gp_data <- function(gp = gp_opts(), data) {
     ls_max = data$t - data$seeding_time - data$horizon,
     alpha_sd = gp$alpha_sd,
     gp_type = data.table::fcase(
-      is.infinite(gp$matern_order), 0,
-      gp$matern_order == 1 / 2, 1,
-      gp$matern_order == 3 / 2, 2,
-      default = 3
-    )
+      gp$kernel == "se", 0,
+      gp$kernel == "periodic", 1,
+      gp$kernel == "matern" || gp$kernel == "ou", 2,
+      default = 2
+    ),
+    nu = gp$matern_order,
+    w0 = gp$w0
   )
 
   gp_data <- c(data, gp_data)

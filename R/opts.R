@@ -401,7 +401,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Defines a list specifying the structure of the approximate Gaussian
-#'  process. Custom settings can be supplied which override the defaults.
+#' process. Custom settings can be supplied which override the defaults.
 #'
 #' @param ls_mean Numeric, defaults to 21 days. The mean of the lognormal
 #' length scale.
@@ -418,22 +418,20 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' @param ls_min Numeric, defaults to 0. The minimum value of the length scale.
 #'
 #' @param alpha_sd Numeric, defaults to 0.05. The standard deviation of the
-#'  magnitude parameter of the Gaussian process kernel. Should be approximately
+#' magnitude parameter of the Gaussian process kernel. Should be approximately
 #' the expected standard deviation of the logged Rt.
 #'
 #' @param kernel Character string, the type of kernel required. Currently
-#' supporting the squared exponential kernel ("se", or "matern" with
-#' 'matern_order = Inf'), 3 over 2 oder 5 over 2 Matern kernel ("matern", with
-#' `matern_order = 3/2` (default) or `matern_order = 5/2`, respectively), or
-#' Orstein-Uhlenbeck ("ou", or "matern" with 'matern_order = 1/2'). Defaulting
-#' to the Matérn 3 over 2 kernel for a balance of smoothness and
-#' discontinuities.
+#' supporting the squared exponential kernel ("se"), periodic kernel
+#' ("periodic"), Ornstein-Uhlenbeck kernel ("ou"), and Matern kernel ("matern").
 #'
 #' @param matern_order Numeric, defaults to 3/2. Order of Matérn Kernel to use.
-#' Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
+#' Common choices are 1/2, 3/2, and 5/2. If `kernel` is set
+#' to "ou", `matern_order` will be automatically set to 1/2. Only used if
+#' the kernel is set to "matern".
 #'
-#' @param matern_type Deprated; Numeric, defaults to 3/2. Order of Matérn Kernel
-#'   to use.  Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
+#' @param matern_type Deprecated; Numeric, defaults to 3/2. Order of Matérn Kernel
+#' to use. Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
 #'
 #' @param basis_prop Numeric, proportion of time points to use as basis
 #' functions. Defaults to 0.2. Decreasing this value results in a decrease in
@@ -445,6 +443,9 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' @param boundary_scale Numeric, defaults to 1.5. Boundary scale of the
 #' approximate Gaussian process. See (Riutort-Mayol et al. 2020
 #' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
+#'
+#' @param w0 Numeric, defaults to 1.0. Fundamental frequency for periodic
+#' kernel. Only used if `kernel` is set to "periodic".
 #'
 #' @importFrom rlang arg_match
 #' @return A `<gp_opts>` object of settings defining the Gaussian process
@@ -462,9 +463,10 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_min = 0,
                     ls_max = 60,
                     alpha_sd = 0.05,
-                    kernel = c("matern", "se", "ou"),
+                    kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
-                    matern_type) {
+                    matern_type,
+                    w0 = 1.0) {
   lifecycle::deprecate_warn(
     "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
   )
@@ -480,20 +482,15 @@ gp_opts <- function(basis_prop = 0.2,
 
   kernel <- arg_match(kernel)
   if (kernel == "se") {
-    if (!missing(matern_order) && is.finite(matern_order)) {
-      stop("Squared exponential kernel must have matern order unset or `Inf`.")
-    }
     matern_order <- Inf
   } else if (kernel == "ou") {
-    if (!missing(matern_order) && matern_order != 1 / 2) {
-      stop("Ornstein-Uhlenbeck kernel must have matern order unset or `1 / 2`.") ## nolint: nonportable_path_linter
-    }
     matern_order <- 1 / 2
-  } else if (!(is.infinite(matern_order) ||
-                 matern_order %in% c(1 / 2, 3 / 2,  5 / 2))) {
-    stop(
-      "only the Matern kernels of order `1 / 2`, `3 / 2`, `5 / 2` or `Inf` ", ## nolint: nonportable_path_linter
-      "are currently supported"
+  } else if (
+      !(is.infinite(matern_order) || matern_order %in% c(1 / 2, 3 / 2, 5 / 2))
+    ) {
+    warning(
+      "Uncommon Matern kernel order. Common orders are `1 / 2`, `3 / 2`,",
+      " and `5 / 2`"
     )
   }
 
@@ -506,7 +503,8 @@ gp_opts <- function(basis_prop = 0.2,
     ls_max = ls_max,
     alpha_sd = alpha_sd,
     kernel = kernel,
-    matern_order = matern_order
+    matern_order = matern_order,
+    w0 = w0
   )
 
   attr(gp, "class") <- c("gp_opts", class(gp))
