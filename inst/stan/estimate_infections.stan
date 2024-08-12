@@ -26,7 +26,7 @@ transformed data {
   int noise_terms = setup_noise(
     ot_h, t, horizon, estimate_r, stationary, future_fixed, fixed_from
   );
-  matrix[noise_terms, M] PHI = setup_gp(M, L, noise_terms, gp_type == 1, w0, to_vector(1:noise_terms));  // basis function
+  matrix[noise_terms, M] PHI = setup_gp(M, L, noise_terms, gp_type == 1, w0);  // basis function
   // Rt
   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));

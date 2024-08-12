@@ -47,7 +47,7 @@ vector diagSPD_Matern(real nu, real alpha, real rho, real L, int M) {
   * @return A vector of spectral densities
   */
 vector diagSPD_periodic(real alpha, real rho, int M) {
-  real a = 1 / rho^2;
+  real a = inv_square(rho);
   vector[M] indices = linspaced_vector(M, 1, M);
   vector[M] q = exp(log(alpha) + 0.5 * (log(2) - a + to_vector(log_modified_bessel_first_kind(indices, a))));
   return append_row(q, q);
@@ -108,10 +108,10 @@ int setup_noise(int ot_h, int t, int horizon, int estimate_r,
   * @param dimension Dimension of the process
   * @param is_periodic Indicator if the process is periodic
   * @param w0 Fundamental frequency for periodic process
-  * @param x Vector of input data
   * @return A matrix of basis functions
   */
-matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0, vector x) {
+matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
+  vector[dimension] x = linspaced_vector(dimension, 1, dimension);
   if (is_periodic) {
     return PHI_periodic(dimension, M, w0, x);
   } else {
