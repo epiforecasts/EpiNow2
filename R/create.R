@@ -388,7 +388,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
   gp_data <- list(
     fixed = as.numeric(fixed),
     M = M,
-    L = gp$boundary_scale,
+    L = gp$boundary_scale * (data$t - data$seeding_time - data$horizon),
     ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
     ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
     ls_min = gp$ls_min,
