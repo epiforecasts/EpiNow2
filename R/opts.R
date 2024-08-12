@@ -471,7 +471,7 @@ gp_opts <- function(basis_prop = 0.2,
     "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
   )
   if (!missing(matern_type)) {
-    if (!missing(matern_order) && matern_type == matern_order) {
+    if (!missing(matern_order) && matern_type != matern_order) {
       stop(
         "Incompatible `matern_order` and `matern_type`. ",
         "Use `matern_order` only."
