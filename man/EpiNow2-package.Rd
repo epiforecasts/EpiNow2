@@ -43,7 +43,7 @@ Other contributors:
   \item Paul Mee \email{paul.mee@lshtm.ac.uk} [contributor]
   \item Peter Ellis \email{peter.ellis2013nz@gmail.com} [contributor]
   \item Pietro Monticone \email{pietro.monticone@edu.unito.it} [contributor]
-  \item Lloyd Chapman \email{lloyd.chapman1@lshtm.ac.uk} [contributor]
+  \item Lloyd Chapman \email{lloyd.chapman1@lshtm.ac.uk } [contributor]
   \item Andrew Johnson \email{andrew.johnson@arjohnsonau.com} [contributor]
 }
 
