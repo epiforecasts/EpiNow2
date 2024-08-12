@@ -33,7 +33,7 @@ vector diagSPD_EQ(real alpha, real rho, real L, int M) {
   */
 vector diagSPD_Matern(real nu, real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
-  real factor = 2 * alpha * (sqrt(2 * nu) / rho)^(nu);
+  real factor = 2 * alpha * pow(sqrt(2 * nu) / rho, nu);
   vector[M] denom = (sqrt(2 * nu) / rho)^2 + pow((pi() / 2 / L) * indices, nu + 0.5);
   return factor * inv(denom);
 }
@@ -144,7 +144,6 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   } else if (type == 2) {
     diagSPD = diagSPD_Matern(nu, alpha, rho, L, M);
   }
-
   return PHI * (diagSPD .* eta);
 }
 
