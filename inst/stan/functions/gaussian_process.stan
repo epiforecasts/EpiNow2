@@ -17,7 +17,7 @@
 vector diagSPD_EQ(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
   real factor = alpha * sqrt(sqrt(2 * pi()) * rho);
-  real exponent = -0.25 * (rho * pi() / (2 * L))^2;
+  real exponent = -0.25 * (rho * pi() / 2 / L)^2;
   return factor * exp(exponent * square(indices));
 }
 
@@ -33,9 +33,9 @@ vector diagSPD_EQ(real alpha, real rho, real L, int M) {
   */
 vector diagSPD_Matern(real nu, real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
-  real factor = 2 * alpha * (sqrt(2 * nu) / rho)^(nu + 0.5);
-  vector[M] denom = (sqrt(2 * nu) / rho)^2 + square(pi() / (2 * L) * indices);
-  return factor * inv(pow(denom, nu + 0.5));
+  real factor = 2 * alpha * (sqrt(2 * nu) / rho)^(nu);
+  vector[M] denom = (sqrt(2 * nu) / rho)^2 + pow((pi() / 2 / L) * indices, nu + 0.5);
+  return factor * inv(denom);
 }
 
 /**
