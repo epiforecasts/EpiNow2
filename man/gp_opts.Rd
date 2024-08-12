@@ -12,9 +12,10 @@ gp_opts(
   ls_min = 0,
   ls_max = 60,
   alpha_sd = 0.05,
-  kernel = c("matern", "se", "ou"),
+  kernel = c("matern", "se", "ou", "periodic"),
   matern_order = 3/2,
-  matern_type
+  matern_type,
+  w0 = 1
 )
 }
 \arguments{
@@ -48,18 +49,19 @@ magnitude parameter of the Gaussian process kernel. Should be approximately
 the expected standard deviation of the logged Rt.}
 
 \item{kernel}{Character string, the type of kernel required. Currently
-supporting the squared exponential kernel ("se", or "matern" with
-'matern_order = Inf'), 3 over 2 oder 5 over 2 Matern kernel ("matern", with
-\code{matern_order = 3/2} (default) or \code{matern_order = 5/2}, respectively), or
-Orstein-Uhlenbeck ("ou", or "matern" with 'matern_order = 1/2'). Defaulting
-to the Matérn 3 over 2 kernel for a balance of smoothness and
-discontinuities.}
+supporting the squared exponential kernel ("se"), periodic kernel
+("periodic"), Ornstein-Uhlenbeck kernel ("ou"), and Matern kernel ("matern").}
 
 \item{matern_order}{Numeric, defaults to 3/2. Order of Matérn Kernel to use.
-Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
+Common choices are 1/2, 3/2, and 5/2. If \code{kernel} is set
+to "ou", \code{matern_order} will be automatically set to 1/2. Only used if
+the kernel is set to "matern".}
 
-\item{matern_type}{Deprated; Numeric, defaults to 3/2. Order of Matérn Kernel
-to use.  Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
+\item{matern_type}{Deprecated; Numeric, defaults to 3/2. Order of Matérn Kernel
+to use. Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
+
+\item{w0}{Numeric, defaults to 1.0. Fundamental frequency for periodic
+kernel. Only used if \code{kernel} is set to "periodic".}
 }
 \value{
 A \verb{<gp_opts>} object of settings defining the Gaussian process
