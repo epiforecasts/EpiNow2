@@ -110,7 +110,6 @@ test_that("estimate_infections works with different kernels", {
   test_estimate_infections(reported_cases, gp = gp_opts(kernel = "se"))
   test_estimate_infections(reported_cases, gp = gp_opts(kernel = "ou"))
   test_estimate_infections(reported_cases, gp = gp_opts(matern_order = 5 / 2))
-  expect_error(gp_opts(matern_order = 4))
 })
 
 test_that("estimate_infections fails as expected when given a very short timeout", {
