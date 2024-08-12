@@ -38,3 +38,7 @@ test_that("gp_opts stops for incompatible matern_order and matern_type", {
     "Incompatible `matern_order` and `matern_type`"
   )
 })
+
+test_that("gp_opts warns about uncommon Matern kernel orders", {
+  expect_warning(gp_opts(matern_order = 2), "Uncommon Matern kernel order")
+})
