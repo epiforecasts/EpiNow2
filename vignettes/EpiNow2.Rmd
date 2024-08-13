@@ -118,93 +118,95 @@ estimates <- epinow(
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-  stan = stan_opts(cores = 4, control = list(adapt_delta = 0.99), backend = "cmdstanr"),
+  stan = stan_opts(cores = 4, control = list(adapt_delta = 0.95), backend = "cmdstanr", save_warmup = TRUE),
 
   verbose = interactive()
 )
-#> WARN [2024-08-13 10:17:16] epinow: The `matern_type` argument of `gp_opts()` is deprecated as of EpiNow2 1.6.0. - 
-#> DEBUG [2024-08-13 10:17:57] epinow: Running in exact mode for  samples (across 4 chains each with a warm up of  iterations each) and 81 time steps of which 7 are a forecast
+#> WARN [2024-08-13 13:41:30] epinow: The `matern_type` argument of `gp_opts()` is deprecated as of EpiNow2 1.6.0. - 
+#> DEBUG [2024-08-13 13:42:12] epinow: Running in exact mode for  samples (across 4 chains each with a warm up of  iterations each) and 81 time steps of which 7 are a forecast
 #> Running MCMC with 4 parallel chains...
 #> 
 #> Chain 1 Iteration:   1 / 750 [  0%]  (Warmup) 
 #> Chain 2 Iteration:   1 / 750 [  0%]  (Warmup) 
 #> Chain 3 Iteration:   1 / 750 [  0%]  (Warmup) 
 #> Chain 4 Iteration:   1 / 750 [  0%]  (Warmup) 
+#> Chain 1 Iteration:  50 / 750 [  6%]  (Warmup) 
+#> Chain 3 Iteration:  50 / 750 [  6%]  (Warmup) 
 #> Chain 2 Iteration:  50 / 750 [  6%]  (Warmup) 
 #> Chain 4 Iteration:  50 / 750 [  6%]  (Warmup) 
-#> Chain 3 Iteration:  50 / 750 [  6%]  (Warmup) 
-#> Chain 1 Iteration:  50 / 750 [  6%]  (Warmup) 
 #> Chain 1 Iteration: 100 / 750 [ 13%]  (Warmup) 
-#> Chain 4 Iteration: 100 / 750 [ 13%]  (Warmup) 
-#> Chain 2 Iteration: 100 / 750 [ 13%]  (Warmup) 
 #> Chain 3 Iteration: 100 / 750 [ 13%]  (Warmup) 
-#> Chain 2 Iteration: 150 / 750 [ 20%]  (Warmup) 
-#> Chain 4 Iteration: 150 / 750 [ 20%]  (Warmup) 
-#> Chain 1 Iteration: 150 / 750 [ 20%]  (Warmup) 
-#> Chain 2 Iteration: 200 / 750 [ 26%]  (Warmup) 
-#> Chain 4 Iteration: 200 / 750 [ 26%]  (Warmup) 
-#> Chain 1 Iteration: 200 / 750 [ 26%]  (Warmup) 
+#> Chain 2 Iteration: 100 / 750 [ 13%]  (Warmup) 
+#> Chain 4 Iteration: 100 / 750 [ 13%]  (Warmup) 
 #> Chain 3 Iteration: 150 / 750 [ 20%]  (Warmup) 
-#> Chain 1 Iteration: 250 / 750 [ 33%]  (Warmup) 
-#> Chain 1 Iteration: 251 / 750 [ 33%]  (Sampling) 
-#> Chain 2 Iteration: 250 / 750 [ 33%]  (Warmup) 
-#> Chain 2 Iteration: 251 / 750 [ 33%]  (Sampling) 
-#> Chain 1 Iteration: 300 / 750 [ 40%]  (Sampling) 
+#> Chain 2 Iteration: 150 / 750 [ 20%]  (Warmup) 
+#> Chain 1 Iteration: 150 / 750 [ 20%]  (Warmup) 
+#> Chain 4 Iteration: 150 / 750 [ 20%]  (Warmup) 
 #> Chain 3 Iteration: 200 / 750 [ 26%]  (Warmup) 
-#> Chain 1 Iteration: 350 / 750 [ 46%]  (Sampling) 
-#> Chain 2 Iteration: 300 / 750 [ 40%]  (Sampling) 
+#> Chain 2 Iteration: 200 / 750 [ 26%]  (Warmup) 
+#> Chain 1 Iteration: 200 / 750 [ 26%]  (Warmup) 
+#> Chain 4 Iteration: 200 / 750 [ 26%]  (Warmup) 
 #> Chain 3 Iteration: 250 / 750 [ 33%]  (Warmup) 
 #> Chain 3 Iteration: 251 / 750 [ 33%]  (Sampling) 
-#> Chain 1 Iteration: 400 / 750 [ 53%]  (Sampling) 
+#> Chain 2 Iteration: 250 / 750 [ 33%]  (Warmup) 
+#> Chain 2 Iteration: 251 / 750 [ 33%]  (Sampling) 
 #> Chain 4 Iteration: 250 / 750 [ 33%]  (Warmup) 
-#> Chain 4 Iteration: 251 / 750 [ 33%]  (Sampling) 
-#> Chain 2 Iteration: 350 / 750 [ 46%]  (Sampling) 
 #> Chain 3 Iteration: 300 / 750 [ 40%]  (Sampling) 
-#> Chain 1 Iteration: 450 / 750 [ 60%]  (Sampling) 
-#> Chain 2 Iteration: 400 / 750 [ 53%]  (Sampling) 
-#> Chain 1 Iteration: 500 / 750 [ 66%]  (Sampling) 
+#> Chain 4 Iteration: 251 / 750 [ 33%]  (Sampling) 
+#> Chain 1 Iteration: 250 / 750 [ 33%]  (Warmup) 
+#> Chain 1 Iteration: 251 / 750 [ 33%]  (Sampling) 
+#> Chain 2 Iteration: 300 / 750 [ 40%]  (Sampling) 
 #> Chain 3 Iteration: 350 / 750 [ 46%]  (Sampling) 
+#> Chain 1 Iteration: 300 / 750 [ 40%]  (Sampling) 
+#> Chain 2 Iteration: 350 / 750 [ 46%]  (Sampling) 
 #> Chain 4 Iteration: 300 / 750 [ 40%]  (Sampling) 
-#> Chain 2 Iteration: 450 / 750 [ 60%]  (Sampling) 
-#> Chain 1 Iteration: 550 / 750 [ 73%]  (Sampling) 
 #> Chain 3 Iteration: 400 / 750 [ 53%]  (Sampling) 
-#> Chain 2 Iteration: 500 / 750 [ 66%]  (Sampling) 
-#> Chain 1 Iteration: 600 / 750 [ 80%]  (Sampling) 
-#> Chain 3 Iteration: 450 / 750 [ 60%]  (Sampling) 
+#> Chain 1 Iteration: 350 / 750 [ 46%]  (Sampling) 
+#> Chain 2 Iteration: 400 / 750 [ 53%]  (Sampling) 
 #> Chain 4 Iteration: 350 / 750 [ 46%]  (Sampling) 
-#> Chain 1 Iteration: 650 / 750 [ 86%]  (Sampling) 
-#> Chain 2 Iteration: 550 / 750 [ 73%]  (Sampling) 
-#> Chain 3 Iteration: 500 / 750 [ 66%]  (Sampling) 
-#> Chain 1 Iteration: 700 / 750 [ 93%]  (Sampling) 
-#> Chain 2 Iteration: 600 / 750 [ 80%]  (Sampling) 
-#> Chain 3 Iteration: 550 / 750 [ 73%]  (Sampling) 
-#> Chain 1 Iteration: 750 / 750 [100%]  (Sampling) 
-#> Chain 1 finished in 102.6 seconds.
+#> Chain 3 Iteration: 450 / 750 [ 60%]  (Sampling) 
+#> Chain 1 Iteration: 400 / 750 [ 53%]  (Sampling) 
+#> Chain 2 Iteration: 450 / 750 [ 60%]  (Sampling) 
 #> Chain 4 Iteration: 400 / 750 [ 53%]  (Sampling) 
-#> Chain 2 Iteration: 650 / 750 [ 86%]  (Sampling) 
-#> Chain 3 Iteration: 600 / 750 [ 80%]  (Sampling) 
-#> Chain 2 Iteration: 700 / 750 [ 93%]  (Sampling) 
-#> Chain 3 Iteration: 650 / 750 [ 86%]  (Sampling) 
+#> Chain 3 Iteration: 500 / 750 [ 66%]  (Sampling) 
+#> Chain 1 Iteration: 450 / 750 [ 60%]  (Sampling) 
+#> Chain 2 Iteration: 500 / 750 [ 66%]  (Sampling) 
 #> Chain 4 Iteration: 450 / 750 [ 60%]  (Sampling) 
-#> Chain 2 Iteration: 750 / 750 [100%]  (Sampling) 
-#> Chain 2 finished in 122.8 seconds.
-#> Chain 3 Iteration: 700 / 750 [ 93%]  (Sampling) 
-#> Chain 3 Iteration: 750 / 750 [100%]  (Sampling) 
-#> Chain 3 finished in 130.5 seconds.
+#> Chain 3 Iteration: 550 / 750 [ 73%]  (Sampling) 
+#> Chain 1 Iteration: 500 / 750 [ 66%]  (Sampling) 
+#> Chain 2 Iteration: 550 / 750 [ 73%]  (Sampling) 
 #> Chain 4 Iteration: 500 / 750 [ 66%]  (Sampling) 
+#> Chain 3 Iteration: 600 / 750 [ 80%]  (Sampling) 
+#> Chain 1 Iteration: 550 / 750 [ 73%]  (Sampling) 
+#> Chain 2 Iteration: 600 / 750 [ 80%]  (Sampling) 
+#> Chain 3 Iteration: 650 / 750 [ 86%]  (Sampling) 
 #> Chain 4 Iteration: 550 / 750 [ 73%]  (Sampling) 
+#> Chain 1 Iteration: 600 / 750 [ 80%]  (Sampling) 
+#> Chain 2 Iteration: 650 / 750 [ 86%]  (Sampling) 
+#> Chain 3 Iteration: 700 / 750 [ 93%]  (Sampling) 
+#> Chain 1 Iteration: 650 / 750 [ 86%]  (Sampling) 
+#> Chain 2 Iteration: 700 / 750 [ 93%]  (Sampling) 
 #> Chain 4 Iteration: 600 / 750 [ 80%]  (Sampling) 
+#> Chain 3 Iteration: 750 / 750 [100%]  (Sampling) 
+#> Chain 3 finished in 38.2 seconds.
+#> Chain 1 Iteration: 700 / 750 [ 93%]  (Sampling) 
+#> Chain 2 Iteration: 750 / 750 [100%]  (Sampling) 
+#> Chain 2 finished in 38.8 seconds.
 #> Chain 4 Iteration: 650 / 750 [ 86%]  (Sampling) 
+#> Chain 1 Iteration: 750 / 750 [100%]  (Sampling) 
+#> Chain 1 finished in 40.5 seconds.
 #> Chain 4 Iteration: 700 / 750 [ 93%]  (Sampling) 
 #> Chain 4 Iteration: 750 / 750 [100%]  (Sampling) 
-#> Chain 4 finished in 208.3 seconds.
+#> Chain 4 finished in 43.7 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 141.0 seconds.
-#> Total execution time: 208.7 seconds.
+#> Mean chain execution time: 40.3 seconds.
+#> Total execution time: 43.9 seconds.
 names(estimates)
-#> [1] "estimates"                "estimated_reported_cases"
-#> [3] "summary"                  "plots"                   
+#> [1] "estimates"               
+#> [2] "estimated_reported_cases"
+#> [3] "summary"                 
+#> [4] "plots"                   
 #> [5] "timing"
 ```
 
@@ -219,11 +221,11 @@ knitr::kable(summary(estimates))
 
 |measure                          |estimate                |
 |:--------------------------------|:-----------------------|
-|New infections per day           |2276 (1125 -- 4662)     |
+|New infections per day           |2285 (1119 -- 4498)     |
 |Expected change in daily reports |Likely decreasing       |
 |Effective reproduction no.       |0.89 (0.63 -- 1.2)      |
-|Rate of growth                   |-0.029 (-0.13 -- 0.071) |
-|Doubling/halving time (days)     |-24 (9.8 -- -5.2)       |
+|Rate of growth                   |-0.029 (-0.13 -- 0.068) |
+|Doubling/halving time (days)     |-24 (10 -- -5.4)        |
 
 
 
@@ -232,22 +234,30 @@ Summarised parameter estimates can also easily be returned, either filtered for 
 
 ``` r
 head(summary(estimates, type = "parameters", params = "R"))
-#>          date variable  strat     type   median     mean         sd lower_90
-#>        <Date>   <char> <char>   <char>    <num>    <num>      <num>    <num>
-#> 1: 2020-02-22        R   <NA> estimate 2.314950 2.314372 0.15659162 2.061193
-#> 2: 2020-02-23        R   <NA> estimate 2.272880 2.272799 0.13615634 2.052232
-#> 3: 2020-02-24        R   <NA> estimate 2.226925 2.230318 0.12053862 2.034902
-#> 4: 2020-02-25        R   <NA> estimate 2.183665 2.186754 0.10924886 2.016409
-#> 5: 2020-02-26        R   <NA> estimate 2.138235 2.141966 0.10155039 1.984355
-#> 6: 2020-02-27        R   <NA> estimate 2.091515 2.095857 0.09653899 1.945354
-#>    lower_50 lower_20 upper_20 upper_50 upper_90
-#>       <num>    <num>    <num>    <num>    <num>
-#> 1: 2.207427 2.273568 2.350796 2.415752 2.575467
-#> 2: 2.176872 2.237228 2.306866 2.359965 2.501917
-#> 3: 2.145145 2.198456 2.258324 2.307582 2.436319
-#> 4: 2.110685 2.156090 2.212208 2.257317 2.369971
-#> 5: 2.071240 2.112756 2.163654 2.207558 2.318536
-#> 6: 2.030285 2.067240 2.115690 2.158193 2.268549
+#>          date variable  strat     type   median
+#>        <Date>   <char> <char>   <char>    <num>
+#> 1: 2020-02-22        R   <NA> estimate 2.305690
+#> 2: 2020-02-23        R   <NA> estimate 2.266345
+#> 3: 2020-02-24        R   <NA> estimate 2.226705
+#> 4: 2020-02-25        R   <NA> estimate 2.182145
+#> 5: 2020-02-26        R   <NA> estimate 2.135860
+#> 6: 2020-02-27        R   <NA> estimate 2.087685
+#>        mean         sd lower_90 lower_50 lower_20
+#>       <num>      <num>    <num>    <num>    <num>
+#> 1: 2.307947 0.15652085 2.051218 2.203410 2.265188
+#> 2: 2.269273 0.13818189 2.046821 2.174620 2.233354
+#> 3: 2.228239 0.12346127 2.029178 2.143153 2.196634
+#> 4: 2.184933 0.11224345 2.004175 2.109062 2.154020
+#> 5: 2.139509 0.10412225 1.977201 2.068745 2.109970
+#> 6: 2.092181 0.09845059 1.940454 2.023725 2.065264
+#>    upper_20 upper_50 upper_90
+#>       <num>    <num>    <num>
+#> 1: 2.345032 2.405930 2.569175
+#> 2: 2.300724 2.358983 2.501329
+#> 3: 2.256744 2.307270 2.430609
+#> 4: 2.211492 2.255525 2.372134
+#> 5: 2.161736 2.206467 2.315514
+#> 6: 2.110806 2.155740 2.256757
 ```
 
 Reported cases are returned in a separate data frame in order to streamline the reporting of forecasts and for model evaluation.
@@ -255,22 +265,22 @@ Reported cases are returned in a separate data frame in order to streamline the 
 
 ``` r
 head(summary(estimates, output = "estimated_reported_cases"))
-#>          date   type median     mean       sd lower_90 lower_50 lower_20
-#>        <Date> <char>  <num>    <num>    <num>    <num>    <num>    <num>
-#> 1: 2020-02-22  gp_rt     75  77.9840 21.78672       46    63.00       71
-#> 2: 2020-02-23  gp_rt     87  89.2080 24.62169       54    72.00       81
-#> 3: 2020-02-24  gp_rt     85  88.4625 23.78015       54    72.75       80
-#> 4: 2020-02-25  gp_rt     80  81.4975 21.76400       49    66.00       75
-#> 5: 2020-02-26  gp_rt     79  81.2370 22.72486       48    65.00       74
-#> 6: 2020-02-27  gp_rt    108 110.3415 29.28892       67    90.00      101
-#>    upper_20 upper_50 upper_90
-#>       <num>    <num>    <num>
-#> 1:       80       91      119
-#> 2:       94      104      133
-#> 3:       92      103      132
-#> 4:       86       95      120
-#> 5:       85       95      121
-#> 6:      115      128      163
+#>          date   type median     mean       sd lower_90
+#>        <Date> <char>  <num>    <num>    <num>    <num>
+#> 1: 2020-02-22  gp_rt   75.0  76.7935 21.29241       46
+#> 2: 2020-02-23  gp_rt   86.0  89.8205 25.12005       54
+#> 3: 2020-02-24  gp_rt   86.5  88.7905 24.66807       53
+#> 4: 2020-02-25  gp_rt   78.0  81.3125 23.04282       49
+#> 5: 2020-02-26  gp_rt   79.0  80.9300 22.37900       49
+#> 6: 2020-02-27  gp_rt  108.0 110.3395 29.51303       65
+#>    lower_50 lower_20 upper_20 upper_50 upper_90
+#>       <num>    <num>    <num>    <num>    <num>
+#> 1:       62       70       80       89   115.00
+#> 2:       72       81       93      105   134.00
+#> 3:       71       80       93      103   133.00
+#> 4:       66       73       84       95   122.00
+#> 5:       65       73       85       94   121.00
+#> 6:       89      101      116      129   162.05
 ```
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
@@ -319,26 +329,26 @@ estimates <- regional_epinow(
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
 )
-#> INFO [2024-08-13 10:21:32] Producing following optional outputs: regions, summary, samples, plots, latest
-#> INFO [2024-08-13 10:21:32] Reporting estimates using data up to: 2020-04-21
-#> INFO [2024-08-13 10:21:32] No target directory specified so returning output
-#> INFO [2024-08-13 10:21:32] Producing estimates for: testland, realland
-#> INFO [2024-08-13 10:21:32] Regions excluded: none
+#> INFO [2024-08-13 13:43:02] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2024-08-13 13:43:02] Reporting estimates using data up to: 2020-04-21
+#> INFO [2024-08-13 13:43:02] No target directory specified so returning output
+#> INFO [2024-08-13 13:43:02] Producing estimates for: testland, realland
+#> INFO [2024-08-13 13:43:02] Regions excluded: none
 #> Error in eval(expr, envir, enclos) : 
 #>   Exception: variable does not exist; processing stage=data initialization; variable name=delay_mean_mean; base type=double (in 'estimate_infections', line 613, column 2 to column 40)
 #> Error in eval(expr, envir, enclos) : 
 #>   Exception: variable does not exist; processing stage=data initialization; variable name=delay_mean_mean; base type=double (in 'estimate_infections', line 613, column 2 to column 40)
-#> DEBUG [2024-08-13 10:21:33] testland: Running in exact mode for 1000 samples (across 4 chains each with a warm up of 250 iterations each) and 81 time steps of which 7 are a forecast
-#> DEBUG [2024-08-13 10:21:33] realland: Running in exact mode for 1000 samples (across 4 chains each with a warm up of 250 iterations each) and 81 time steps of which 7 are a forecast
-#> INFO [2024-08-13 10:21:33] Completed regional estimates
-#> INFO [2024-08-13 10:21:33] Regions with estimates: 0
-#> INFO [2024-08-13 10:21:33] Regions with runtime errors: 2
-#> INFO [2024-08-13 10:21:33] Producing summary
-#> INFO [2024-08-13 10:21:33] No summary directory specified so returning summary output
-#> INFO [2024-08-13 10:21:33] Errors caught whilst generating summary statistics: 
-#> INFO [2024-08-13 10:21:33] Error: Object 'variable' not found amongst []
+#> DEBUG [2024-08-13 13:43:02] testland: Running in exact mode for 1000 samples (across 4 chains each with a warm up of 250 iterations each) and 81 time steps of which 7 are a forecast
+#> DEBUG [2024-08-13 13:43:03] realland: Running in exact mode for 1000 samples (across 4 chains each with a warm up of 250 iterations each) and 81 time steps of which 7 are a forecast
+#> INFO [2024-08-13 13:43:03] Completed regional estimates
+#> INFO [2024-08-13 13:43:03] Regions with estimates: 0
+#> INFO [2024-08-13 13:43:03] Regions with runtime errors: 2
+#> INFO [2024-08-13 13:43:03] Producing summary
+#> INFO [2024-08-13 13:43:03] No summary directory specified so returning summary output
+#> INFO [2024-08-13 13:43:03] Errors caught whilst generating summary statistics: 
+#> INFO [2024-08-13 13:43:03] Error: Object 'variable' not found amongst []
 #> 
-#> INFO [2024-08-13 10:21:33] No target directory specified so returning timings
+#> INFO [2024-08-13 13:43:03] No target directory specified so returning timings
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = TRUE) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the `{future}` package for details on nested futures.

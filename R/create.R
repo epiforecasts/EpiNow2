@@ -625,7 +625,7 @@ create_initial_conditions <- function(data) {
       )
     } else {
       out$eta <- array(numeric(0))
-      out$rho <- array(numeric(0))
+      out$rescaled_rho <- array(numeric(0))
       out$alpha <- array(numeric(0))
     }
     if (data$model_type == 1) {

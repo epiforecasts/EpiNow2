@@ -273,7 +273,6 @@ simulate_infections <- function(estimates, R, initial_infections,
 #'   generation_time = generation_time_opts(example_generation_time),
 #'   delays = delay_opts(example_incubation_period + example_reporting_delay),
 #'   rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7),
-#'   stan = stan_opts(control = list(adapt_delta = 0.9)),
 #'   obs = obs_opts(scale = list(mean = 0.1, sd = 0.01)),
 #'   gp = NULL, horizon = 0
 #' )

@@ -156,8 +156,7 @@ def <- regional_epinow(
   delays = delay_opts(example_incubation_period + example_reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
   stan = stan_opts(
-    samples = 100, warmup = 200,
-    control = list(adapt_delta = 0.95)
+    samples = 100, warmup = 200
   ),
   verbose = interactive()
 )
