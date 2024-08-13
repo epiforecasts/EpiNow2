@@ -6,7 +6,7 @@ test_that("gp_opts returns correct default values", {
   expect_equal(gp$ls_sd, 7)
   expect_equal(gp$ls_min, 0)
   expect_equal(gp$ls_max, 60)
-  expect_equal(gp$alpha_sd, 0.05)
+  expect_equal(gp$alpha_sd, 0.01)
   expect_equal(gp$kernel, "matern")
   expect_equal(gp$matern_order, 3 / 2)
   expect_equal(gp$w0, 1.0)

@@ -1,11 +1,13 @@
 test_that("create_gp_data returns correct default values when GP is disabled", {
   data <- list(t = 30, seeding_time = 7, horizon = 7, future_fixed = 0, fixed_from = 0)
+  restricted_time <- 30 - 7 - 7
+  times <- 1:restricted_time
   gp_data <- create_gp_data(NULL, data)
   expect_equal(gp_data$fixed, 1)
   expect_equal(gp_data$stationary, 1)
   expect_equal(gp_data$M, 5)  # (30 - 7) * 0.2
-  expect_equal(gp_data$L, 1.5)
-  expect_equal(gp_data$ls_meanlog, convert_to_logmean(21, 7))
+  expect_equal(gp_data$L, 2.43, tolerance = 0.01)
+  expect_equal(gp_data$ls_meanlog, convert_to_logmean(21 / sd(times), 7 / sd(times)))
   expect_equal(gp_data$ls_sdlog, convert_to_logsd(21, 7))
   expect_equal(gp_data$ls_min, 0)
   expect_equal(gp_data$ls_max, 16)
