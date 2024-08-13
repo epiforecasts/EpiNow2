@@ -11,7 +11,8 @@ gp_opts(
   ls_sd = 7,
   ls_min = 0,
   ls_max = 60,
-  alpha_sd = 0.025,
+  alpha_mean = 0,
+  alpha_sd = 0.01,
   kernel = c("matern", "se", "ou", "periodic"),
   matern_order = 3/2,
   matern_type,
@@ -44,7 +45,11 @@ process length scale will be used with recommended parameters
 scale. Updated in \code{\link[=create_gp_data]{create_gp_data()}} to be the length of the input data if
 this is smaller.}
 
-\item{alpha_sd}{Numeric, defaults to 0.05. The standard deviation of the
+\item{alpha_mean}{Numeric, defaults to 0. The mean of the magnitude parameter
+of the Gaussian process kernel. Should be approximately the expected variance
+of the logged Rt.}
+
+\item{alpha_sd}{Numeric, defaults to 0.01. The standard deviation of the
 magnitude parameter of the Gaussian process kernel. Should be approximately
 the expected standard deviation of the logged Rt.}
 
