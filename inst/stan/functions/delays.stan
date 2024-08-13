@@ -89,10 +89,11 @@ void delays_lp(vector delay_params,
     int end = delay_params_groups[d + 1] - 1;
     for (s in start:end) {
       if (delay_params_sd[s] > 0) {
-        // uncertain mean
-        target += normal_lupdf(
-          delay_params[s] | delay_params_mean[s], delay_params_sd[s]
-        ) * weight[d];
+        if (weight[d] > 1) {
+          target += weight[d] * normal_lpdf(delay_params[s] | delay_params_mean[s], delay_params_sd[s]);
+        }else {
+          delay_params[s] ~ normal(delay_params_mean[s], delay_params_sd[s]);
+        }
       }
     }
   }
