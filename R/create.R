@@ -373,26 +373,40 @@ create_gp_data <- function(gp = gp_opts(), data) {
   } else {
     fixed <- FALSE
   }
-  # reset ls_max if larger than observed time
-  time <- data$t - data$seeding_time - data$horizon
-  if (gp$ls_max > time) {
-    gp$ls_max <- time
+
+  time <- data$t - data$seeding_time
+  if (data$fixed_from > 0) {
+    time <- time + data$fixed_from - data$horizon
+  }
+  if (data$stationary == 1) {
+    time <- time - 1
   }
 
+  obs_time <- data$t - data$seeding_time
+  if (gp$ls_max > obs_time) {
+    gp$ls_max <- obs_time
+  }
+
+  times <- 1:time
+
+  rescaled_times <- (times - mean(times)) / sd(times)
+  gp$ls_mean <- gp$ls_mean / sd(times)
+  gp$ls_sd <- gp$ls_sd / sd(times)
+  gp$ls_min <- gp$ls_min / sd(times)
+  gp$ls_max <- gp$ls_max /  sd(times)
+
   # basis functions
-  M <- data$t - data$seeding_time
-  M <- ifelse(data$future_fixed == 1, M - (data$horizon - data$fixed_from), M)
-  M <- ceiling(M * gp$basis_prop)
+  M <- ceiling(time * gp$basis_prop)
 
   # map settings to underlying gp stan requirements
   gp_data <- list(
     fixed = as.numeric(fixed),
     M = M,
-    L = gp$boundary_scale * (data$t - data$seeding_time - data$horizon),
+    L = gp$boundary_scale * max(rescaled_times),
     ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
     ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
     ls_min = gp$ls_min,
-    ls_max = data$t - data$seeding_time - data$horizon,
+    ls_max = gp$ls_max,
     alpha_sd = gp$alpha_sd,
     gp_type = data.table::fcase(
       gp$kernel == "se", 0,
@@ -595,15 +609,15 @@ create_initial_conditions <- function(data) {
 
     if (data$fixed == 0) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
-      out$rho <- array(rlnorm(1,
+      out$rescaled_rho <- array(rlnorm(1,
         meanlog = data$ls_meanlog,
         sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog * 0.1, 0.01)
       ))
 
-      out$rho <- array(data.table::fcase(
-        out$rho > data$ls_max, data$ls_max - 0.001,
-        out$rho < data$ls_min, data$ls_min + 0.001,
-        default = out$rho
+      out$rescaled_rho <- array(data.table::fcase(
+        out$rescaled_rho > data$ls_max, data$ls_max - 0.001,
+        out$rescaled_rho < data$ls_min, data$ls_min + 0.001,
+        default = out$rescaled_rho
         ))
 
       out$alpha <- array(

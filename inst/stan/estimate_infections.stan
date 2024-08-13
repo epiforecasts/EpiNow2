@@ -42,7 +42,7 @@ transformed data {
 
 parameters {
   // gaussian process
-  array[fixed ? 0 : 1] real<lower = ls_min, upper = ls_max> rho;  // length scale of noise GP
+  array[fixed ? 0 : 1] real<lower = ls_min, upper = ls_max> rescaled_rho;  // length scale of noise GP
   array[fixed ? 0 : 1] real<lower = 0> alpha;    // scale of noise GP
   vector[fixed ? 0 : M] eta;               // unconstrained noise
   // Rt
@@ -69,7 +69,7 @@ transformed parameters {
   // GP in noise - spectral densities
   profile("update gp") {
     if (!fixed) {
-      noise = update_gp(PHI, M, L, alpha[1], rho[1], eta, gp_type, nu);
+      noise = update_gp(PHI, M, L, alpha[1], rescaled_rho[1], eta, gp_type, nu);
     }
   }
 
@@ -161,7 +161,7 @@ model {
   if (!fixed) {
     profile("gp lp") {
       gaussian_process_lp(
-        rho[1], alpha[1], eta, ls_meanlog, ls_sdlog, ls_min, ls_max, alpha_sd
+        rescaled_rho[1], alpha[1], eta, ls_meanlog, ls_sdlog, ls_min, ls_max, alpha_sd
       );
     }
   }
@@ -207,8 +207,14 @@ generated quantities {
   vector[estimate_r > 0 ? 0 : ot_h] gen_R;
   vector[ot_h - 1] r;
   vector[return_likelihood ? ot : 0] log_lik;
+  vector[fixed ? 0 : 1] rho;
 
   profile("generated quantities") {
+    if (!fixed) {
+      vector[noise_terms] x = linspaced_vector(noise_terms, 1, noise_terms);
+      rho[1] = rescaled_rho[1] * sd(x);
+    }
+
     if (estimate_r == 0) {
       // sample generation time
       vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(

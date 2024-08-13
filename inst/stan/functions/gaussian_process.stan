@@ -112,6 +112,7 @@ int setup_noise(int ot_h, int t, int horizon, int estimate_r,
   */
 matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
   vector[dimension] x = linspaced_vector(dimension, 1, dimension);
+  x = (x - mean(x)) / sd(x);
   if (is_periodic) {
     return PHI_periodic(dimension, M, w0, x);
   } else {
