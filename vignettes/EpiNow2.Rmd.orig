@@ -70,7 +70,7 @@ This function represents the core functionality of the package and includes resu
 Load example case data from `{EpiNow2}`.
 
 ```{r}
-reported_cases <- example_confirmed[1:60]
+reported_cases <- example_confirmed[1:90]
 head(reported_cases)
 ```
 
@@ -82,7 +82,8 @@ estimates <- epinow(
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
-  stan = stan_opts(cores = 4, backend = "cmdstanr", save_warmup = TRUE),
+  stan = stan_opts(cores = 4, backend = "cmdstanr", save_warmup = TRUE, control = list(adapt_delta = 0.8)),
+  gp = gp_opts(alpha_sd = 0.01),
   verbose = interactive()
 )
 names(estimates)

@@ -407,6 +407,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
     ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
     ls_min = gp$ls_min,
     ls_max = gp$ls_max,
+    alpha_mean = gp$alpha_mean,
     alpha_sd = gp$alpha_sd,
     gp_type = data.table::fcase(
       gp$kernel == "se", 0,
@@ -621,7 +622,9 @@ create_initial_conditions <- function(data) {
         ))
 
       out$alpha <- array(
-        truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd)
+        truncnorm::rtruncnorm(
+          1, a = 0, mean = data$alpha_mean, sd = data$alpha_sd
+        )
       )
     } else {
       out$eta <- array(numeric(0))
@@ -632,7 +635,7 @@ create_initial_conditions <- function(data) {
       out$rep_phi <- array(
         truncnorm::rtruncnorm(
           1,
-          a = 0, mean = data$phi_mean, sd = data$phi_sd / 10
+          a = 0, mean = data$phi_mean, sd = data$phi_sd
         )
       )
     }
@@ -643,7 +646,7 @@ create_initial_conditions <- function(data) {
       }
       out$log_R <- array(rnorm(
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
-        sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
+        sd = convert_to_logsd(data$r_mean, data$r_sd)
       ))
     }
 
@@ -658,7 +661,7 @@ create_initial_conditions <- function(data) {
       out$frac_obs <- array(truncnorm::rtruncnorm(1,
         a = 0, b = 1,
         mean = data$obs_scale_mean,
-        sd = data$obs_scale_sd * 0.1
+        sd = data$obs_scale_sd
       ))
     } else {
       out$frac_obs <- array(numeric(0))

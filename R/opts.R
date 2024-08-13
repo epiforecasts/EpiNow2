@@ -417,6 +417,10 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #'
 #' @param ls_min Numeric, defaults to 0. The minimum value of the length scale.
 #'
+#' @param alpha_mean Numeric, defaults to 0. The mean of the magnitude parameter
+#' of the Gaussian process kernel. Should be approximately the expected variance
+#' of the logged Rt.
+#'
 #' @param alpha_sd Numeric, defaults to 0.05. The standard deviation of the
 #' magnitude parameter of the Gaussian process kernel. Should be approximately
 #' the expected standard deviation of the logged Rt.
@@ -462,6 +466,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_sd = 7,
                     ls_min = 0,
                     ls_max = 60,
+                    alpha_mean = 0,
                     alpha_sd = 0.025,
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
@@ -501,6 +506,7 @@ gp_opts <- function(basis_prop = 0.2,
     ls_sd = ls_sd,
     ls_min = ls_min,
     ls_max = ls_max,
+    alpha_mean = alpha_mean,
     alpha_sd = alpha_sd,
     kernel = kernel,
     matern_order = matern_order,
