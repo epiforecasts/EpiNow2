@@ -9,7 +9,7 @@ delay_opts(
   ...,
   fixed = FALSE,
   default_tolerance = 0.001,
-  weight_prior = FALSE
+  weight_prior = TRUE
 )
 }
 \arguments{
@@ -24,10 +24,10 @@ a fixed distribution with all mass at 0, i.e. no delay.}
 unconstrained distribution is passed as \code{dist}. If \code{dist} is already
 constrained by having a maximum or tolerance this is ignored.}
 
-\item{weight_prior}{Logical; if TRUE, any priors given in \code{dist}
+\item{weight_prior}{Logical; if TRUE (default), any priors given in \code{dist}
 will be weighted by the number of observation data points, in doing so
 approximately placing an independent prior at each time step and usually
-preventing the posteriors from shifting. If FALSE (default), no weight
+preventing the posteriors from shifting. If FALSE, no weight
 will be applied, i.e. any parameters in \code{dist} will be treated as a single
 parameters.}
 }
