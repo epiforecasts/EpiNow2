@@ -47,7 +47,7 @@ void rt_lp(vector log_R, array[] real initial_infections, array[] real initial_g
   //breakpoint effects on Rt
   if (bp_n > 0) {
     bp_sd[1] ~ normal(0, 0.1) T[0,];
-    bp_effects ~ normal(, bp_sd[1]);
+    bp_effects ~ normal(0, bp_sd[1]);
   }
   // initial infections
   initial_infections ~ normal(prior_infections, 0.2);
