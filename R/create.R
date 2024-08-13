@@ -375,7 +375,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
   }
 
   time <- data$t - data$seeding_time
-  if (data$fixed_from > 0) {
+  if (data$future_fixed > 0) {
     time <- time + data$fixed_from - data$horizon
   }
   if (data$stationary == 1) {
