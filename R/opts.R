@@ -421,7 +421,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' of the Gaussian process kernel. Should be approximately the expected variance
 #' of the logged Rt.
 #'
-#' @param alpha_sd Numeric, defaults to 0.05. The standard deviation of the
+#' @param alpha_sd Numeric, defaults to 0.01. The standard deviation of the
 #' magnitude parameter of the Gaussian process kernel. Should be approximately
 #' the expected standard deviation of the logged Rt.
 #'
@@ -467,7 +467,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_min = 0,
                     ls_max = 60,
                     alpha_mean = 0,
-                    alpha_sd = 0.025,
+                    alpha_sd = 0.01,
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
                     matern_type,
@@ -527,8 +527,10 @@ gp_opts <- function(basis_prop = 0.2,
 #' @param phi Overdispersion parameter of the reporting process, used only if
 #'   `familiy` is "negbin". Can be supplied either as a single numeric value
 #'   (fixed overdispersion) or a list with numeric elements mean (`mean`) and
-#'   standard deviation (`sd`) defining a normally distributed overdispersion.
-#'   Defaults to a list with elements `mean = 0` and `sd = 1`.
+#'   standard deviation (`sd`) defining a normally distributed prior.
+#'   Internally parametersed such that the overedispersion is one over the
+#'   square of this prior overdispersion. Defaults to a list with elements
+#'   `mean = 0` and `sd = 0.1`.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in the
 #'   log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week
@@ -567,7 +569,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' # Scale reported data
 #' obs_opts(scale = list(mean = 0.2, sd = 0.02))
 obs_opts <- function(family = c("negbin", "poisson"),
-                     phi = list(mean = 0, sd = 1),
+                     phi = list(mean = 0, sd = 0.1),
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
