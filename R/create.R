@@ -611,7 +611,7 @@ create_initial_conditions <- function(data) {
       out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
       out$rescaled_rho <- array(rlnorm(1,
         meanlog = data$ls_meanlog,
-        sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog * 0.1, 0.01)
+        sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog, 0.01)
       ))
 
       out$rescaled_rho <- array(data.table::fcase(
