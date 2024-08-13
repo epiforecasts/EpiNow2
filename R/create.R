@@ -584,7 +584,7 @@ create_delay_inits <- function(data) {
   if (data$delay_n_p > 0) {
     out$delay_params <- array(truncnorm::rtruncnorm(
       n = data$delay_params_length, a = data$delay_params_lower,
-      mean = data$delay_params_mean, sd = data$delay_params_sd * 0.1
+      mean = data$delay_params_mean, sd = data$delay_params_sd
     ))
   } else {
     out$delay_params <- array(numeric(0))
@@ -640,9 +640,9 @@ create_initial_conditions <- function(data) {
       )
     }
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rnorm(1, data$prior_infections, 0.02))
+      out$initial_infections <- array(rnorm(1, data$prior_infections, 0.2))
       if (data$seeding_time > 1) {
-        out$initial_growth <- array(rnorm(1, data$prior_growth, 0.01))
+        out$initial_growth <- array(rnorm(1, data$prior_growth, 0.02))
       }
       out$log_R <- array(rnorm(
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
