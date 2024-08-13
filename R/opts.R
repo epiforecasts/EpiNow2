@@ -530,7 +530,7 @@ gp_opts <- function(basis_prop = 0.2,
 #'   standard deviation (`sd`) defining a normally distributed prior.
 #'   Internally parametersed such that the overedispersion is one over the
 #'   square of this prior overdispersion. Defaults to a list with elements
-#'   `mean = 0` and `sd = 0.1`.
+#'   `mean = 0` and `sd = 0.25`.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in the
 #'   log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week
@@ -569,7 +569,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' # Scale reported data
 #' obs_opts(scale = list(mean = 0.2, sd = 0.02))
 obs_opts <- function(family = c("negbin", "poisson"),
-                     phi = list(mean = 0, sd = 0.1),
+                     phi = list(mean = 0, sd = 0.25),
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
