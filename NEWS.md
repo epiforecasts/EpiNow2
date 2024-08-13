@@ -10,7 +10,12 @@
 - `epinow()` now returns the "timing" output in a "time difference"" format that is easier to understand and work with. By @jamesmbaazam in #688 and reviewed by @sbfnk.
 - The interface for defining delay distributions has been generalised to also cater for continuous distributions
 - When defining probability distributions these can now be truncated using the `tolerance` argument
-- Ornstein-Uhlenbeck and 5 / 2 Matérn kernels have been added. By @sbfnk in # and reviewed by @.
+- Ornstein-Uhlenbeck and 5 / 2 Matérn kernels have been added. By @sbfnk in #741 and reviewed by @seabbs.
+- Gaussian processes have been vectorised and the `gp_opts()` function has been updated to allow for the specification of a periodic kernel. By @seabbs in #742 and reviewed by @jamesmbaazam.
+- Prior predictive checks have been used to update the following priors: the prior on the magnitude of the Gaussian process (from HalfNormal(0, 1) to HalfNormal(0, 0.1)), and the prior on the overdispersion (from 1 / HalfNormal(0, 1)^2 to 1 / HalfNormal(0, 0.25)). By @seabbs in #742 and reviewed by @jamesmbaazam.
+- The default stan control options have been updated from `list(adapt_delta = 0.95, max_treedepth = 15)` to `list(adapt_delta = 0.9, max_treedepth = 12)` due to improved performance and to reduce the runtime of the default parameterisations. By @seabbs in #742 and reviewed by @jamesmbaazam.
+- Initialisation has been simplified by sampling directly from the priors rather than from a constrained space (excluding the Gaussian process noise terms). By @seabbs in #742 and reviewed by @jamesmbaazam.
+- Unnecessary normalisation of delay priors has been removed. By @seabbs in #742 and reviewed by @jamesmbaazam.
 
 ## Bug fixes
 
