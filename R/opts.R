@@ -12,12 +12,12 @@
 #' @param source deprecated; use `dist` instead
 #' @param max deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
-#' @param weight_prior Logical; if TRUE (default), any priors given in `dist`
+#' @param weight_prior Logical; if TRUE, any priors given in `dist`
 #'   will be weighted by the number of observation data points, in doing so
 #'   approximately placing an independent prior at each time step and usually
-#'   preventing the posteriors from shifting. If FALSE, no weight will be
-#'   applied, i.e. any parameters in `dist` will be treated as a single
-#'    parameters.
+#'   preventing the posteriors from shifting. If FALSE (default), no weight
+#'   will be applied, i.e. any parameters in `dist` will be treated as a single
+#'   parameters.
 #' @inheritParams apply_default_tolerance
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
@@ -45,7 +45,7 @@
 gt_opts <- function(dist = Fixed(1), ...,
                                  disease, source, max = 14, fixed = FALSE,
                                  default_tolerance = 0.001,
-                                 weight_prior = TRUE) {
+                                 weight_prior = FALSE) {
   dot_options <- list(...)
 
   if ((length(dot_options) > 0) ||
@@ -181,7 +181,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
 delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
-                       default_tolerance = 0.001, weight_prior = TRUE) {
+                       default_tolerance = 0.001, weight_prior = FALSE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec") || !missing(fixed)) { ## could be old syntax
     stop(
