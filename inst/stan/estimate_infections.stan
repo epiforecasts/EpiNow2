@@ -87,8 +87,7 @@ transformed parameters {
     }
     profile("R") {
       R = update_Rt(
-        ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, bp_sd,
-        stationary
+        ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary
       );
     }
     profile("infections") {
