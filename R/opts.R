@@ -462,7 +462,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_sd = 7,
                     ls_min = 0,
                     ls_max = 60,
-                    alpha_sd = 0.05,
+                    alpha_sd = 0.025,
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
                     matern_type,
@@ -632,8 +632,8 @@ obs_opts <- function(family = c("negbin", "poisson"),
 #' @param chains Numeric, defaults to 4. Number of MCMC chains to use.
 #'
 #' @param control List, defaults to empty. control parameters to pass to
-#' underlying `rstan` function. By default `adapt_delta = 0.95` and
-#' `max_treedepth = 15` though these settings can be overwritten.
+#' underlying `rstan` function. By default `adapt_delta = 0.9` and
+#' `max_treedepth = 12` though these settings can be overwritten.
 #'
 #' @param save_warmup Logical, defaults to FALSE. Should warmup progress be
 #' saved.
@@ -682,7 +682,7 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
     future = future,
     max_execution_time = max_execution_time
   )
-  control_def <- list(adapt_delta = 0.95, max_treedepth = 15)
+  control_def <- list(adapt_delta = 0.9, max_treedepth = 12)
   control_def <- modifyList(control_def, control)
   if (any(c("iter", "iter_sampling") %in% names(dot_args))) {
     warning(

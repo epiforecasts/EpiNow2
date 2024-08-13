@@ -69,7 +69,9 @@ transformed parameters {
   // GP in noise - spectral densities
   profile("update gp") {
     if (!fixed) {
-      noise = update_gp(PHI, M, L, alpha[1], rescaled_rho[1], eta, gp_type, nu);
+      noise = update_gp(
+        PHI, M, L, alpha[1], rescaled_rho[1], eta, gp_type, nu
+      );
     }
   }
 
@@ -161,7 +163,8 @@ model {
   if (!fixed) {
     profile("gp lp") {
       gaussian_process_lp(
-        rescaled_rho[1], alpha[1], eta, ls_meanlog, ls_sdlog, ls_min, ls_max, alpha_sd
+        rescaled_rho[1], alpha[1], eta, ls_meanlog, ls_sdlog, ls_min,
+        ls_max, alpha_sd
       );
     }
   }
