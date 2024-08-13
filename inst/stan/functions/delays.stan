@@ -90,15 +90,9 @@ void delays_lp(vector delay_params,
     for (s in start:end) {
       if (delay_params_sd[s] > 0) {
         // uncertain mean
-        target += normal_lpdf(
+        target += normal_lupdf(
           delay_params[s] | delay_params_mean[s], delay_params_sd[s]
         ) * weight[d];
-        // if a distribution with postive support only truncate the prior
-        if (delay_dist[d] == 1) {
-          target += -normal_lccdf(
-            0 | delay_params_mean[s], delay_params_sd[s]
-          ) * weight[d];
-        }
       }
     }
   }

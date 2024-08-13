@@ -144,7 +144,7 @@ void report_lp(array[] int cases, array[] int cases_time, vector reports,
     if (weight == 1) {
       obs_cases ~ neg_binomial_2(obs_reports, dispersion);
     } else {
-      target += neg_binomial_2_lpmf(
+      target += neg_binomial_2_lupmf(
         obs_cases | obs_reports, dispersion
       ) * weight;
     }
@@ -152,7 +152,7 @@ void report_lp(array[] int cases, array[] int cases_time, vector reports,
     if (weight == 1) {
       obs_cases ~ poisson(obs_reports);
     } else {
-      target += poisson_lpmf(obs_cases | obs_reports) * weight;
+      target += poisson_lupmf(obs_cases | obs_reports) * weight;
     }
   }
 }
