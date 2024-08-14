@@ -18,7 +18,7 @@ test_that("create_gp_data returns correct default values when GP is disabled", {
 })
 
 test_that("create_gp_data sets correct gp_type and nu for different kernels", {
-  data <- list(t = 30, seeding_time = 7, horizon = 7, future_fixed = 0, fixed_from = 0)
+  data <- list(t = 30, seeding_time = 7, horizon = 7, future_fixed = 0, fixed_from = 0, stationary = 0)
 
   gp <- gp_opts(kernel = "se")
   gp_data <- create_gp_data(gp, data)
