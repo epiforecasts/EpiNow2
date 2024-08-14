@@ -472,9 +472,13 @@ gp_opts <- function(basis_prop = 0.2,
                     matern_order = 3 / 2,
                     matern_type,
                     w0 = 1.0) {
-  lifecycle::deprecate_warn(
-    "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
-  )
+
+  if (!missing(matern_type)) {
+    lifecycle::deprecate_warn(
+      "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
+    )
+  }
+
   if (!missing(matern_type)) {
     if (!missing(matern_order) && matern_type != matern_order) {
       stop(
