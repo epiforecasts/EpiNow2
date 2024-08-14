@@ -6,10 +6,11 @@
  * @param ylen Length of the y vector
  * @return An array of integers: {start_x, end_x, start_y, end_y}
  */
-int[] calc_conv_indices_xlen(int s, int xlen, int ylen) {
-  int start_x = max(1, s - ylen + 1);
+array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
+  int s_minus_ylen = s - ylen;
+  int start_x = max(1, s_minus_ylen + 1);
   int end_x = s;
-  int start_y = max(1, ylen - s + 1);
+  int start_y = max(1, 1 - s_minus_ylen);
   int end_y = ylen;
   return {start_x, end_x, start_y, end_y};
 }
@@ -22,11 +23,12 @@ int[] calc_conv_indices_xlen(int s, int xlen, int ylen) {
  * @param ylen Length of the y vector
  * @return An array of integers: {start_x, end_x, start_y, end_y}
  */
-int[] calc_conv_indices_len(int s, int xlen, int ylen) {
-  int start_x = min(1, s - ylen + 1);
+array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
+  int s_minus_ylen = s - ylen;
+  int start_x = max(1, s_minus_ylen + 1);
   int end_x = xlen;
-  int start_y = 1;
-  int end_y = ylen - (s - xlen);
+  int start_y = max(1, 1 - s_minus_ylen);;
+  int end_y = ylen + xlen - s;
   return {start_x, end_x, start_y, end_y};
 }
 
@@ -45,22 +47,24 @@ int[] calc_conv_indices_len(int s, int xlen, int ylen) {
 vector convolve_with_rev_pmf(vector x, vector y, int len) {
   int xlen = num_elements(x);
   int ylen = num_elements(y);
-  vector[len] z = rep_vector(0, len);
+  vector[len] z;
   
   if (xlen + ylen - 1 < len) {
     reject("convolve_with_rev_pmf: len is longer than x and y convolved");
   }
   
-  int max_s = min(len, xlen);
+  if (xlen > len) {
+    reject("convolve_with_rev_pmf: len is shorter than x");
+  }
   
-  for (s in 1:max_s) {
-    int[] indices = calc_conv_indices_xlen(s, xlen, ylen);
+  for (s in 1:xlen) {
+    array[4] int indices = calc_conv_indices_xlen(s, xlen, ylen);
     z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
   }
   
   if (len > xlen) {
     for (s in (xlen + 1):len) {
-      int[] indices = calc_conv_indices_len(s, xlen, ylen);
+      array[4] int indices = calc_conv_indices_len(s, xlen, ylen);
       z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
     }
   }
