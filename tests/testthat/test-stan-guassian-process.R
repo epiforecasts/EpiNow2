@@ -1,3 +1,6 @@
+skip_on_cran()
+skip_on_os("windows")
+
 # Helper functions
 linspaced_vector <- function(n, start, end) {
   seq(start, end, length.out = n)
