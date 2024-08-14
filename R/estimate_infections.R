@@ -101,7 +101,7 @@
 #' def <- estimate_infections(reported_cases,
 #'   generation_time = gt_opts(generation_time),
 #'   delays = delay_opts(incubation_period + reporting_delay),
-#'   rt = rt_opts(prior = list(mean = 2, sd = 0.1)))
+#'   rt = rt_opts(prior = list(mean = 2, sd = 0.1))
 #' )
 #' # real time estimates
 #' summary(def)

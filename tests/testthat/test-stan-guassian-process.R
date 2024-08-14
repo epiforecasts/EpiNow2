@@ -1,3 +1,16 @@
+# Helper functions
+linspaced_vector <- function(n, start, end) {
+  seq(start, end, length.out = n)
+}
+
+to_vector <- function(x) {
+  as.vector(x)
+}
+
+log_modified_bessel_first_kind <- function(v, z) {
+  besselI(z, v, expon.scaled = TRUE)
+}
+
 test_that("diagSPD_EQ returns correct dimensions and values", {
   alpha <- 1.0
   rho <- 2.0
@@ -7,7 +20,8 @@ test_that("diagSPD_EQ returns correct dimensions and values", {
   expect_equal(length(result), M)
   expect_true(all(result > 0))  # Expect spectral density to be positive
   # Check specific values for known inputs
-  expected_result <- alpha * sqrt(sqrt(2 * pi) * rho) * exp(-0.25 * (rho * pi / (2 * L))^2 * (1:M)^2)
+  indices <- linspaced_vector(M, 1, M)
+  expected_result <- alpha * sqrt(sqrt(2 * pi) * rho) * exp(-0.25 * (rho * pi / (2 * L))^2 * indices^2)
   expect_equal(result, expected_result, tolerance = 1e-8)
 })
 
@@ -21,9 +35,10 @@ test_that("diagSPD_Matern returns correct dimensions and values", {
   expect_equal(length(result), M)
   expect_true(all(result > 0))  # Expect spectral density to be positive
   # Check specific values for known inputs
-  factor <- 2 * alpha * (sqrt(2 * nu) / rho)^(nu + 0.5)
-  denom <- (sqrt(2 * nu) / rho)^2 + (pi / (2 * L) * (1:M))^2
-  expected_result <- factor * (1 / denom)^(nu + 0.5)
+  indices <- linspaced_vector(M, 1, M)
+  factor <- 2 * alpha * (sqrt(2 * nu) / rho)^nu
+  denom <- (sqrt(2 * nu) / rho)^2 + (pi / (2 * L) * indices)^2
+  expected_result <- factor / denom^(nu + 0.5)
   expect_equal(result, expected_result, tolerance = 1e-8)
 })
 
@@ -34,6 +49,12 @@ test_that("diagSPD_periodic returns correct dimensions and values", {
   result <- diagSPD_periodic(alpha, rho, M)
   expect_equal(length(result), 2 * M)  # Expect double the dimensions due to append_row
   expect_true(all(result > 0))  # Expect spectral density to be positive
+  # Check specific values for known inputs
+  a <- 1 / rho^2
+  indices <- linspaced_vector(M, 1, M)
+  q <- exp(log(alpha) + 0.5 * (log(2) - a + log(besselI(indices, a, expon.scaled = TRUE))))
+  expected_result <- c(q, q)
+  expect_equal(result, expected_result, tolerance = 1e-8)
 })
 
 test_that("PHI returns correct dimensions and values", {
@@ -86,10 +107,11 @@ test_that("setup_gp returns correct dimensions and values", {
   dimension <- 5
   is_periodic <- 0
   w0 <- 1.0
-  x <- 1:dimension
   result <- setup_gp(M, L, dimension, is_periodic, w0)
   expect_equal(dim(result), c(dimension, M))
   # Compare with direct PHI call
+  x <- linspaced_vector(dimension, 1, dimension)
+  x <- (x - mean(x)) / sd(x)
   expected_result <- PHI(dimension, M, L, x)
   expect_equal(result, expected_result, tolerance = 1e-8)
 })
@@ -100,10 +122,11 @@ test_that("setup_gp with periodic basis functions returns correct dimensions and
   dimension <- 5
   is_periodic <- 1
   w0 <- 1.0
-  x <- 1:dimension
   result <- setup_gp(M, L, dimension, is_periodic, w0)
   expect_equal(dim(result), c(dimension, 2 * M))  # Cosine and sine terms
   # Compare with direct PHI_periodic call
+  x <- linspaced_vector(dimension, 1, dimension)
+  x <- (x - mean(x)) / sd(x)
   expected_result <- PHI_periodic(dimension, M, w0, x)
   expect_equal(result, expected_result, tolerance = 1e-8)
 })
