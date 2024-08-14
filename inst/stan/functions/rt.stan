@@ -1,22 +1,22 @@
 // update a vector of Rts
 vector update_Rt(int t, real log_R, vector noise, array[] int bps,
-                 array[] real bp_effects, int stationary) {
+                 vector bp_effects, int stationary) {
   // define control parameters
   int bp_n = num_elements(bp_effects);
   int gp_n = num_elements(noise);
-  // define result vectors
-  vector[t] bp = rep_vector(0, t);
-  vector[t] gp;
-  vector[t] R;
+  // Set up Rt intercept
+  vector[t] R = rep_vector(log_R, t);
+  
   // initialise breakpoints
   if (bp_n) {
-    vector[t] bp = rep_vector(0, t);
-    if (bp_n) {
-      bp = cumulative_sum({0, bp_effects}[bps + 1]);
-    }
+    vector[bp_n + 1] bp0;
+    bp0[1] = 0;
+    bp0[2:(bp_n + 1)] = bp_effects;
+    R = R + cumulative_sum(bp0[bps]);
   }
   //initialise gaussian process
   if (gp_n) {
+    vector[t] gp;
     if (stationary) {
       gp[1:gp_n] = noise;
       // fix future gp based on last estimated
@@ -24,15 +24,17 @@ vector update_Rt(int t, real log_R, vector noise, array[] int bps,
         gp[(gp_n + 1):t] = rep_vector(noise[gp_n], t - gp_n);
       }
     } else {
+      gp[1] = 0;
       gp[2:(gp_n + 1)] = noise;
       gp = cumulative_sum(gp);
     }
+    R = R + gp;
   }
-  return(exp(rep_vector(log_R, t) + bp + gp));
+  return(exp(R));
 }
 // Rt priors
 void rt_lp(vector log_R, array[] real initial_infections, array[] real initial_growth,
-           array[] real bp_effects, array[] real bp_sd, int bp_n, int seeding_time,
+           vector bp_effects, array[] real bp_sd, int bp_n, int seeding_time,
            real r_logmean, real r_logsd, real prior_infections,
            real prior_growth) {
   // prior on R

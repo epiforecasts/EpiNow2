@@ -31,6 +31,11 @@ transformed data{
   // Rt
   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
+  // Setup RW
+  array[bp_n] int breakpoints_;
+  for (i in 1:bp_n) {
+    breakpoints_[i] = breakpoints[i] + 1;
+  }
 
   array[delay_types] int delay_type_max;
   profile("assign max") {
@@ -51,7 +56,7 @@ parameters{
   array[estimate_r] real initial_infections ;    // seed infections
   array[estimate_r && seeding_time > 1 ? 1 : 0] real initial_growth; // seed growth rate
   array[bp_n > 0 ? 1 : 0] real<lower = 0> bp_sd; // standard deviation of breakpoint effect
-  array[bp_n] real bp_effects;                   // Rt breakpoint effects
+  vector[bp_n] bp_effects;                   // Rt breakpoint effects
   // observation model
 
   vector<lower = delay_params_lower>[delay_params_length] delay_params; // delay parameters
@@ -85,7 +90,7 @@ transformed parameters {
     }
     profile("R") {
       R = update_Rt(
-        ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary
+        ot_h, log_R[estimate_r], noise, breakpoints_, bp_effects, stationary
       );
     }
     profile("infections") {
