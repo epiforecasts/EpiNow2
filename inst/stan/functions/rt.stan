@@ -3,21 +3,17 @@ vector update_Rt(int t, real log_R, vector noise, array[] int bps,
                  array[] real bp_effects, int stationary) {
   // define control parameters
   int bp_n = num_elements(bp_effects);
-  int bp_c = 0;
   int gp_n = num_elements(noise);
   // define result vectors
   vector[t] bp = rep_vector(0, t);
-  vector[t] gp = rep_vector(0, t);
+  vector[t] gp;
   vector[t] R;
   // initialise breakpoints
   if (bp_n) {
-    for (s in 1:t) {
-      if (bps[s]) {
-        bp_c += bps[s];
-        bp[s] = bp_effects[bp_c];
-      }
+    vector[t] bp = rep_vector(0, t);
+    if (bp_n) {
+      bp = cumulative_sum({0, bp_effects}[bps + 1]);
     }
-    bp = cumulative_sum(bp);
   }
   //initialise gaussian process
   if (gp_n) {
@@ -32,10 +28,7 @@ vector update_Rt(int t, real log_R, vector noise, array[] int bps,
       gp = cumulative_sum(gp);
     }
   }
-  // Calculate Rt
-  R = rep_vector(log_R, t) + bp + gp;
-  R = exp(R);
-  return(R);
+  return(exp(rep_vector(log_R, t) + bp + gp));
 }
 // Rt priors
 void rt_lp(vector log_R, array[] real initial_infections, array[] real initial_growth,
