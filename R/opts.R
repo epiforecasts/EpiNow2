@@ -434,8 +434,8 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' to "ou", `matern_order` will be automatically set to 1/2. Only used if
 #' the kernel is set to "matern".
 #'
-#' @param matern_type Deprecated; Numeric, defaults to 3/2. Order of Matérn Kernel
-#' to use. Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
+#' @param matern_type Deprecated; Numeric, defaults to 3/2. Order of Matérn
+#' Kernel to use. Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
 #'
 #' @param basis_prop Numeric, proportion of time points to use as basis
 #' functions. Defaults to 0.2. Decreasing this value results in a decrease in
@@ -495,7 +495,7 @@ gp_opts <- function(basis_prop = 0.2,
     ) {
     warning(
       "Uncommon Matern kernel order. Common orders are `1 / 2`, `3 / 2`,",
-      " and `5 / 2`"
+      " and `5 / 2`" # nolint
     )
   }
 
