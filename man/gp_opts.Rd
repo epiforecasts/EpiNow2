@@ -62,8 +62,8 @@ Common choices are 1/2, 3/2, and 5/2. If \code{kernel} is set
 to "ou", \code{matern_order} will be automatically set to 1/2. Only used if
 the kernel is set to "matern".}
 
-\item{matern_type}{Deprecated; Numeric, defaults to 3/2. Order of Matérn Kernel
-to use. Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
+\item{matern_type}{Deprecated; Numeric, defaults to 3/2. Order of Matérn
+Kernel to use. Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
 
 \item{w0}{Numeric, defaults to 1.0. Fundamental frequency for periodic
 kernel. Only used if \code{kernel} is set to "periodic".}
