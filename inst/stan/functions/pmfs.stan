@@ -30,36 +30,3 @@ vector discretised_pmf(vector params, int n, int dist) {
   }
   return(exp(lpmf));
 }
-
-// reverse a mf
-vector reverse_mf(vector pmf) {
-  int pmf_length = num_elements(pmf);
-  vector[pmf_length] rev_pmf;
-  for (d in 1:pmf_length) {
-    rev_pmf[d] = pmf[pmf_length - d + 1];
-  }
-  return rev_pmf;
-}
-
-vector rev_seq(int base, int len) {
-  vector[len] seq;
-  for (i in 1:len) {
-    seq[i] = len + base - i;
-  }
-  return(seq);
-}
-
-real rev_pmf_mean(vector rev_pmf, int base) {
-  int len = num_elements(rev_pmf);
-  vector[len] rev_pmf_seq = rev_seq(base, len);
-  return(dot_product(rev_pmf_seq, rev_pmf));
-}
-
-real rev_pmf_var(vector rev_pmf, int base, real mean) {
-  int len = num_elements(rev_pmf);
-  vector[len] rev_pmf_seq = rev_seq(base, len);
-  for (i in 1:len) {
-    rev_pmf_seq[i] = pow(rev_pmf_seq[i], 2);
-  }
-  return(dot_product(rev_pmf_seq, rev_pmf) - pow(mean, 2));
-}
