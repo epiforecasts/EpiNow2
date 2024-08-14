@@ -1,14 +1,3 @@
-/**
- * Get the maximum delay length for each delay type.
- *
- * @param delay_types The number of delay types.
- * @param delay_types_p Array indicating if each delay is parametric (1) or non-parametric (0).
- * @param delay_types_id Array mapping each delay to its corresponding ID.
- * @param delay_types_groups Array of indices defining the grouping of delays by type.
- * @param delay_max Array of maximum delay lengths for parametric delays.
- * @param delay_np_pmf_groups Array of indices defining the grouping of non-parametric PMFs.
- * @return An array of maximum delay lengths for each delay type.
- */
 array[] int get_delay_type_max(
   int delay_types, array[] int delay_types_p, array[] int delay_types_id,
   array[] int delay_types_groups, array[] int delay_max, array[] int delay_np_pmf_groups
@@ -28,25 +17,6 @@ array[] int get_delay_type_max(
   return ret;
 }
 
-/**
- * Get the reversed probability mass function (PMF) for a specific delay.
- *
- * @param delay_id The ID of the delay.
- * @param len The desired length of the output PMF.
- * @param delay_types_p Array indicating if each delay is parametric (1) or non-parametric (0).
- * @param delay_types_id Array mapping each delay to its corresponding ID.
- * @param delay_types_groups Array of indices defining the grouping of delays by type.
- * @param delay_max Array of maximum delay lengths for parametric delays.
- * @param delay_np_pmf Array of non-parametric PMF values.
- * @param delay_np_pmf_groups Array of indices defining the grouping of non-parametric PMFs.
- * @param delay_params Array of parameters for parametric delays.
- * @param delay_params_groups Array of indices defining the grouping of parametric delay parameters.
- * @param delay_dist Array of distribution types for parametric delays.
- * @param left_truncate The number of time steps to left-truncate the PMF.
- * @param reverse_pmf Flag indicating whether to reverse the output PMF.
- * @param cumulative Flag indicating whether to return the cumulative PMF.
- * @return A vector representing the reversed PMF for the specified delay.
- */
 vector get_delay_rev_pmf(
   int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id,
   array[] int delay_types_groups, array[] int delay_max,
@@ -54,39 +24,42 @@ vector get_delay_rev_pmf(
   vector delay_params, array[] int delay_params_groups, array[] int delay_dist,
   int left_truncate, int reverse_pmf, int cumulative
 ) {
+  // loop over delays
   vector[len] pmf = rep_vector(0, len);
   int current_len = 1;
-  
+  int new_len;
   for (i in delay_types_groups[delay_id]:(delay_types_groups[delay_id + 1] - 1)) {
-    vector[delay_max[delay_types_id[i]] + 1] new_variable_pmf;
-    int new_len;
-    
-    if (delay_types_p[i]) {
+    if (delay_types_p[i]) { // parametric
       int start = delay_params_groups[delay_types_id[i]];
       int end = delay_params_groups[delay_types_id[i] + 1] - 1;
-      new_variable_pmf = discretised_pmf(
-        delay_params[start:end],
-        delay_max[delay_types_id[i]] + 1,
-        delay_dist[delay_types_id[i]]
+      vector[delay_max[delay_types_id[i]] + 1] new_variable_pmf =
+        discretised_pmf(
+          delay_params[start:end],
+          delay_max[delay_types_id[i]] + 1,
+          delay_dist[delay_types_id[i]]
       );
       new_len = current_len + delay_max[delay_types_id[i]];
-    } else {
+      if (current_len == 1) { // first delay
+        pmf[1:new_len] = new_variable_pmf;
+      } else { // subsequent delay to be convolved
+        pmf[1:new_len] = convolve_with_rev_pmf(
+          pmf[1:current_len], reverse_mf(new_variable_pmf), new_len
+        );
+      }
+    } else { // nonparametric
       int start = delay_np_pmf_groups[delay_types_id[i]];
       int end = delay_np_pmf_groups[delay_types_id[i] + 1] - 1;
-      new_variable_pmf = delay_np_pmf[start:end];
       new_len = current_len + end - start;
-    }
-    
-    if (current_len == 1) {
-      pmf[1:new_len] = new_variable_pmf;
-    } else {
-      pmf[1:new_len] = convolve_with_rev_pmf(
-        pmf[1:current_len], reverse(new_variable_pmf), new_len
-      );
+      if (current_len == 1) { // first delay
+        pmf[1:new_len] = delay_np_pmf[start:end];
+      } else { // subsequent delay to be convolved
+        pmf[1:new_len] = convolve_with_rev_pmf(
+          pmf[1:current_len], reverse_mf(delay_np_pmf[start:end]), new_len
+        );
+      }
     }
     current_len = new_len;
   }
-  
   if (left_truncate) {
     pmf = append_row(
       rep_vector(0, left_truncate),
@@ -99,9 +72,9 @@ vector get_delay_rev_pmf(
   if (reverse_pmf) {
     pmf = reverse(pmf);
   }
-  
   return pmf;
 }
+
 
 void delays_lp(vector delay_params,
                vector delay_params_mean, vector delay_params_sd,
