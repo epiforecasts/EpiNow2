@@ -273,7 +273,8 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     rt <- rt_opts(
       use_rt = FALSE,
       future = "project",
-      gp_on = "R0"
+      gp_on = "R0",
+      rw = 0
     )
   }
   # define future Rt arguments
@@ -283,6 +284,10 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   )
   # apply random walk
   if (rt$rw != 0) {
+    if (is.null(breakpoints)) {
+      stop("breakpoints must be supplied when using random walk")
+    }
+
     breakpoints <- seq_along(breakpoints)
     breakpoints <- floor(breakpoints / rt$rw)
     if (!(rt$future == "project")) {
@@ -292,10 +297,11 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
       }
     }
   }else {
-    if (is.null(breakpoints) || sum(breakpoints) == 0) {
-      rt$use_breakpoints <- FALSE
-    }
     breakpoints <- cumsum(breakpoints)
+  }
+
+  if (sum(breakpoints) == 0) {
+    rt$use_breakpoints <- FALSE
   }
   # add a shift for 0 effect in breakpoints
   breakpoints <- breakpoints + 1
