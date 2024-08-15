@@ -11,6 +11,7 @@
 - The interface for defining delay distributions has been generalised to also cater for continuous distributions
 - When defining probability distributions these can now be truncated using the `tolerance` argument
 - Ornstein-Uhlenbeck and 5 / 2 Matérn kernels have been added. By @sbfnk in # and reviewed by @.
+- Switch to broadcasting the day of the week effect. By @seabbs in #746 and reviewed by @jamesmbaazam.
 
 ## Bug fixes
 
