@@ -42,7 +42,7 @@ transformed data {
 
 parameters {
   // gaussian process
-  array[fixed ? 0 : 1] real<lower = ls_min, upper = ls_max> rescaled_rho;  // length scale of noise GP
+  array[fixed || gp_type == 3 ? 0 : 1] real<lower = ls_min, upper = ls_max> rescaled_rho;  // length scale of noise GP
   array[fixed ? 0 : 1] real<lower = 0> alpha;    // scale of noise GP
   vector[fixed ? 0 : M] eta;               // unconstrained noise
   // Rt
@@ -70,7 +70,7 @@ transformed parameters {
   profile("update gp") {
     if (!fixed) {
       noise = update_gp(
-        PHI, M, L, alpha[1], rescaled_rho[1], eta, gp_type, nu
+        PHI, M, L, alpha[1], rescaled_rho, eta, gp_type, nu
       );
     }
   }
@@ -162,10 +162,10 @@ model {
   // priors for noise GP
   if (!fixed) {
     profile("gp lp") {
-      gaussian_process_lp(
-        rescaled_rho[1], alpha[1], eta, ls_meanlog, ls_sdlog, ls_min,
-        ls_max, alpha_sd
-      );
+      gaussian_process_lp(alpha[1], eta, alpha_mean, alpha_sd);
+      if (gp_type != 3) {
+        lengthscale_lp(rescaled_rho[1], ls_meanlog, ls_sdlog, ls_min, ls_max);
+      }
     }
   }
 

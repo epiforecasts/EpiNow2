@@ -46,11 +46,24 @@ vector diagSPD_Matern(real nu, real alpha, real rho, real L, int M) {
   * @param M Number of basis functions
   * @return A vector of spectral densities
   */
-vector diagSPD_periodic(real alpha, real rho, int M) {
+vector diagSPD_Periodic(real alpha, real rho, int M) {
   real a = inv_square(rho);
   vector[M] indices = linspaced_vector(M, 1, M);
   vector[M] q = exp(log(alpha) + 0.5 * (log(2) - a + to_vector(log_modified_bessel_first_kind(indices, a))));
   return append_row(q, q);
+}
+
+/**
+  * Spectral density for Linear kernel
+  *
+  * @param alpha Scaling parameter
+  * @param L Length of the interval
+  * @param M Number of basis functions
+  * @return A vector of spectral densities
+  */
+vector diagSPD_Linear(real alpha, real L, int M) {
+  vector[M] indices = linspaced_vector(M, 1, M);
+  return alpha * square(L) / (square(pi()) * square(indices));
 }
 
 /**
@@ -129,45 +142,55 @@ matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
   * @param alpha Scaling parameter
   * @param rho Length scale parameter
   * @param eta Vector of noise terms
-  * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern)
+  * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern, 3: Linear)
   * @param nu Smoothness parameter for Matern kernel
   * @return A vector of updated noise terms
   */
 vector update_gp(matrix PHI, int M, real L, real alpha,
-                  real rho, vector eta, int type, real nu) {
+                  array[] real rho, vector eta, int type, real nu) {
   vector[M] diagSPD;    // spectral density
 
   // GP in noise - spectral densities
   if (type == 0) {
-    diagSPD = diagSPD_EQ(alpha, rho, L, M);
+    diagSPD = diagSPD_EQ(alpha, rho[1], L, M);
   } else if (type == 1) {
-    diagSPD = diagSPD_periodic(alpha, rho, M);
+    diagSPD = diagSPD_Periodic(alpha, rho[1], M);
   } else if (type == 2) {
-    diagSPD = diagSPD_Matern(nu, alpha, rho, L, M);
+    diagSPD = diagSPD_Matern(nu, alpha, rho[1], L, M);
+  } else if (type == 3) {
+    diagSPD = diagSPD_Linear(alpha, L, M);
   }
   return PHI * (diagSPD .* eta);
 }
 
 /**
-  * Priors for Gaussian process
+  * Prior for Gaussian process length scale
   *
   * @param rho Length scale parameter
-  * @param alpha Scaling parameter
-  * @param eta Vector of noise terms
   * @param ls_meanlog Mean of the log of the length scale
   * @param ls_sdlog Standard deviation of the log of the length scale
   * @param ls_min Minimum length scale
   * @param ls_max Maximum length scale
-  * @param alpha_sd Standard deviation of alpha
   */
-void gaussian_process_lp(real rho, real alpha, vector eta,
-                          real ls_meanlog, real ls_sdlog,
-                          real ls_min, real ls_max, real alpha_sd) {
+void lengthscale_lp(real rho, real ls_meanlog, real ls_sdlog,
+                    real ls_min, real ls_max) {
   if (ls_sdlog > 0) {
     rho ~ lognormal(ls_meanlog, ls_sdlog) T[ls_min, ls_max];
   } else {
     rho ~ inv_gamma(1.499007, 0.057277 * ls_max) T[ls_min, ls_max];
   }
-  alpha ~ normal(0, alpha_sd) T[0,];
+}
+
+/**
+  * Priors for Gaussian process (excluding length scale)
+  *
+  * @param alpha Scaling parameter
+  * @param eta Vector of noise terms
+  * @param alpha_sd Standard deviation of alpha
+  */
+void gaussian_process_lp(real alpha, vector eta, real alpha_mean, 
+                         real alpha_sd) {
+  alpha ~ normal(alpha_mean, alpha_sd) T[0,];
   eta ~ std_normal();
 }
+

@@ -42,3 +42,28 @@ test_that("gp_opts stops for incompatible matern_order and matern_type", {
 test_that("gp_opts warns about uncommon Matern kernel orders", {
   expect_warning(gp_opts(matern_order = 2), "Uncommon Matern kernel order")
 })
+
+test_that("gp_opts handles linear kernel correctly", {
+  expect_silent(gp_opts(kernel = "linear"))
+  expect_warning(
+    gp_opts(kernel = "linear", ls_mean = 30),
+    "Length scale parameters are not used for the linear kernel"
+  )
+  expect_warning(
+    gp_opts(kernel = "linear", ls_sd = 10),
+    "Length scale parameters are not used for the linear kernel"
+  )
+  expect_warning(
+    gp_opts(kernel = "linear", ls_min = 1),
+    "Length scale parameters are not used for the linear kernel"
+  )
+  expect_warning(
+    gp_opts(kernel = "linear", ls_max = 100),
+    "Length scale parameters are not used for the linear kernel"
+  )
+  
+  linear_gp <- gp_opts(kernel = "linear")
+  expect_true(all(c("ls_mean", "ls_sd", "ls_min", "ls_max") %in% names(linear_gp)))
+
+  expect_equal(linear_gp$kernel, "linear")
+})

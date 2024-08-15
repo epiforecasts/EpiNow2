@@ -4,6 +4,7 @@
   real ls_sdlog;                     // sdlog for gp lengthscale prior
   real<lower=0> ls_min;              // Lower bound for the lengthscale
   real<lower=0> ls_max;              // Upper bound for the lengthscale
+  real alpha_mean;                   // mean of the alpha gp kernal parameter
   real alpha_sd;                     // standard deviation of the alpha gp kernal parameter
   int gp_type;                       // type of gp, 0 = squared exponential, 1 = periodic, 2 = Matern
   real nu;                           // smoothness parameter for Matern kernel (used if gp_type = 2)

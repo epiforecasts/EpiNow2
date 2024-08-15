@@ -413,6 +413,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
       gp$kernel == "se", 0,
       gp$kernel == "periodic", 1,
       gp$kernel == "matern" || gp$kernel == "ou", 2,
+      gp$kernel == "linear", 3,
       default = 2
     ),
     nu = gp$matern_order,

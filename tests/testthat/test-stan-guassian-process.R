@@ -41,15 +41,27 @@ test_that("diagSPD_Matern returns correct dimensions and values", {
   expect_equal(result, expected_result, tolerance = 1e-8)
 })
 
-test_that("diagSPD_periodic returns correct dimensions and values", {
+test_that("diagSPD_Periodic returns correct dimensions and values", {
   alpha <- 1.0
   rho <- 2.0
   M <- 5
-  result <- diagSPD_periodic(alpha, rho, M)
+  result <- diagSPD_Periodic(alpha, rho, M)
   expect_equal(length(result), 2 * M)  # Expect double the dimensions due to append_row
   expect_true(all(result > 0))  # Expect spectral density to be positive
 })
 
+test_that("diagSPD_Linear returns correct dimensions and values", {
+  alpha <- 1.0
+  L <- 1.0
+  M <- 5
+  result <- diagSPD_Linear(alpha, L, M)
+  expect_equal(length(result), M)
+  expect_true(all(result > 0))  # Expect spectral density to be positive
+  # Check specific values for known inputs
+  indices <- linspaced_vector(M, 1, M)
+  expected_result <- alpha * L^2 / (pi^2 * indices^2)
+  expect_equal(result, expected_result, tolerance = 1e-8)
+})
 
 test_that("PHI returns correct dimensions and values", {
   N <- 5
@@ -140,4 +152,47 @@ test_that("update_gp returns correct dimensions and values", {
   diagSPD <- diagSPD_EQ(alpha, rho, L, M)
   expected_result <- PHI %*% (diagSPD * eta)
   expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
+})
+
+test_that("update_gp with linear kernel returns correct dimensions and values", {
+  M <- 3
+  L <- 1.0
+  alpha <- 1.0
+  rho <- c(1.0)  # Not used for linear kernel
+  eta <- rep(1, M)
+  PHI <- matrix(runif(15), nrow = 5)  # 5 observations, 3 basis functions
+  type <- 3  # Linear kernel
+  nu <- 1.5  # Not used for linear kernel
+  result <- update_gp(PHI, M, L, alpha, rho, eta, type, nu)
+  expect_equal(length(result), nrow(PHI))  # Should match number of observations
+  # Check specific values for known inputs
+  diagSPD <- diagSPD_Linear(alpha, L, M)
+  expected_result <- PHI %*% (diagSPD * eta)
+  expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
+})
+
+test_that("Linear kernel produces a linear GP", {
+  N <- 100
+  M <- 50
+  L <- 10.0
+  alpha <- 2.0
+  x <- seq(-L, L, length.out = N)
+  
+  # Setup GP
+  PHI <- PHI(N, M, L, x)
+  
+  # Generate random eta
+  set.seed(123)
+  eta <- rnorm(M)
+  
+  # Compute GP
+  diagSPD <- diagSPD_Linear(alpha, L, M)
+  gp <- PHI %*% (diagSPD * eta)
+  
+  # Fit a linear model
+  lm_fit <- lm(gp ~ x)
+  
+  # Check if the GP is approximately linear
+  expect_gt(summary(lm_fit)$r.squared, 0.99)  # R-squared should be very close to 1
+  expect_lt(summary(lm_fit)$sigma, 0.1)  # Residual standard error should be small
 })

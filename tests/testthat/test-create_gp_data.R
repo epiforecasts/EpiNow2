@@ -49,3 +49,12 @@ test_that("create_gp_data correctly handles future_fixed", {
   gp_data <- create_gp_data(gp_opts(), data)
   expect_equal(gp_data$M, 4) 
 })
+
+test_that("create_gp_data correctly handles linear kernel", {
+  data <- list(t = 30, seeding_time = 7, horizon = 7, future_fixed = 0, fixed_from = 0, stationary = 0)
+  linear_gp_opts <- gp_opts(kernel = "linear")
+  gp_data <- create_gp_data(linear_gp_opts, data)
+  
+  # Check that gp_type is set to 3 for linear kernel
+  expect_equal(gp_data$gp_type, 3)
+})

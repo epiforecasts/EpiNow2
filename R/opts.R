@@ -404,18 +404,19 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' process. Custom settings can be supplied which override the defaults.
 #'
 #' @param ls_mean Numeric, defaults to 21 days. The mean of the lognormal
-#' length scale.
+#' length scale. Not used for linear kernel.
 #'
 #' @param ls_sd Numeric, defaults to 7 days. The standard deviation of the log
 #' normal length scale. If \code{ls_sd = 0}, inverse-gamma prior on Gaussian
 #' process length scale will be used with recommended parameters
-#' \code{inv_gamma(1.499007, 0.057277 * ls_max)}.
+#' \code{inv_gamma(1.499007, 0.057277 * ls_max)}. Not used for linear kernel.
+#'
+#' @param ls_min Numeric, defaults to 0. The minimum value of the length scale.
+#' Not used for linear kernel.
 #'
 #' @param ls_max Numeric, defaults to 60. The maximum value of the length
 #' scale. Updated in [create_gp_data()] to be the length of the input data if
-#' this is smaller.
-#'
-#' @param ls_min Numeric, defaults to 0. The minimum value of the length scale.
+#' this is smaller. Not used for linear kernel.
 #'
 #' @param alpha_mean Numeric, defaults to 0. The mean of the magnitude parameter
 #' of the Gaussian process kernel. Should be approximately the expected variance
@@ -427,7 +428,8 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #'
 #' @param kernel Character string, the type of kernel required. Currently
 #' supporting the squared exponential kernel ("se"), periodic kernel
-#' ("periodic"), Ornstein-Uhlenbeck kernel ("ou"), and Matern kernel ("matern").
+#' ("periodic"), Ornstein-Uhlenbeck kernel ("ou"), Matern kernel ("matern"),
+#' and linear kernel ("linear").
 #'
 #' @param matern_order Numeric, defaults to 3/2. Order of Matérn Kernel to use.
 #' Common choices are 1/2, 3/2, and 5/2. If `kernel` is set
@@ -460,6 +462,9 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #'
 #' # add a custom length scale
 #' gp_opts(ls_mean = 4)
+#'
+#' # use linear kernel
+#' gp_opts(kernel = "linear")
 gp_opts <- function(basis_prop = 0.2,
                     boundary_scale = 1.5,
                     ls_mean = 21,
@@ -468,7 +473,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_max = 60,
                     alpha_mean = 0,
                     alpha_sd = 0.01,
-                    kernel = c("matern", "se", "ou", "periodic"),
+                    kernel = c("matern", "se", "ou", "periodic", "linear"),
                     matern_order = 3 / 2,
                     matern_type,
                     w0 = 1.0) {
@@ -494,6 +499,10 @@ gp_opts <- function(basis_prop = 0.2,
     matern_order <- Inf
   } else if (kernel == "ou") {
     matern_order <- 1 / 2
+  } else if (kernel == "linear") {
+    if (ls_mean != 21 || ls_sd != 7 || ls_min != 0 || ls_max != 60) {
+      warning("Length scale parameters are not used for the linear kernel.")
+    }
   } else if (
       !(is.infinite(matern_order) || matern_order %in% c(1 / 2, 3 / 2, 5 / 2))
     ) {
