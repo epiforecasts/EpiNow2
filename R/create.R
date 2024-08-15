@@ -261,9 +261,13 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #'
 #' # using breakpoints
 #' create_rt_data(rt_opts(use_breakpoints = TRUE), breakpoints = rep(1, 10))
+#'
+#' # using random walk
+#' create_rt_data(rt_opts(rw = 7), breakpoints = rep(1, 10))
 #' }
 create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
                            delay = 0, horizon = 0) {
+
   # Define if GP is on or off
   if (is.null(rt)) {
     rt <- rt_opts(
@@ -279,24 +283,29 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   )
   # apply random walk
   if (rt$rw != 0) {
-    breakpoints <- as.integer(seq_along(breakpoints) %% rt$rw == 0)
+    breakpoints <- seq_along(breakpoints)
+    breakpoints <- floor(breakpoints / rt$rw)
     if (!(rt$future == "project")) {
       max_bps <- length(breakpoints) - horizon + future_rt$from
       if (max_bps < length(breakpoints)) {
-        breakpoints[(max_bps + 1):length(breakpoints)] <- 0
+        breakpoints[(max_bps + 1):length(breakpoints)] <- breakpoints[max_bps]
       }
     }
+  }else {
+    if (is.null(breakpoints) || sum(breakpoints) == 0) {
+      rt$use_breakpoints <- FALSE
+    }
+    breakpoints <- cumsum(breakpoints)
   }
-  # check breakpoints
-  if (is.null(breakpoints) || sum(breakpoints) == 0) {
-    rt$use_breakpoints <- FALSE
-  }
+  # add a shift for 0 effect in breakpoints
+  breakpoints <- breakpoints + 1
+
   # map settings to underlying gp stan requirements
   rt_data <- list(
     r_mean = rt$prior$mean,
     r_sd = rt$prior$sd,
     estimate_r = as.numeric(rt$use_rt),
-    bp_n = ifelse(rt$use_breakpoints, sum(breakpoints, na.rm = TRUE), 0),
+    bp_n = ifelse(rt$use_breakpoints, max(breakpoints) - 1, 0),
     breakpoints = breakpoints,
     future_fixed =  as.numeric(future_rt$fixed),
     fixed_from = future_rt$from,

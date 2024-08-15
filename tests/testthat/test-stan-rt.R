@@ -32,29 +32,29 @@ test_that("update_Rt works when Rt is fixed", {
 })
 test_that("update_Rt works when Rt is fixed but a breakpoint is present", {
   expect_equal(
-    round(update_Rt(5, log(1.2), numeric(0), c(0, 0, 1, 0, 0), 0.1, 0), 2),
+    round(update_Rt(5, log(1.2), numeric(0), c(1, 1, 2, 2, 2), 0.1, 0), 2),
     c(1.2, 1.2, rep(1.33, 3))
   )
   expect_equal(
-    round(update_Rt(5, log(1.2), numeric(0), c(0, 0, 1, 0, 0), 0.1, 1), 2),
+    round(update_Rt(5, log(1.2), numeric(0), c(1, 1, 2, 2, 2), 0.1, 1), 2),
     c(1.2, 1.2, rep(1.33, 3))
   )
   expect_equal(
-    round(update_Rt(5, log(1.2), numeric(0), c(0, 1, 1, 0, 0), rep(0.1, 2), 0), 2),
+    round(update_Rt(5, log(1.2), numeric(0), c(1, 2, 3, 3, 3), rep(0.1, 2), 0), 2),
     c(1.2, 1.33, rep(1.47, 3))
   )
 })
 test_that("update_Rt works when Rt is variable and a breakpoint is present", {
   expect_equal(
-    round(update_Rt(5, log(1.2), rep(0, 4), c(0, 0, 1, 0, 0), 0.1, 0), 2),
+    round(update_Rt(5, log(1.2), rep(0, 4), c(1, 1, 2, 2, 2), 0.1, 0), 2),
     c(1.2, 1.2, rep(1.33, 3))
   )
   expect_equal(
-    round(update_Rt(5, log(1.2), rep(0, 5), c(0, 0, 1, 0, 0), 0.1, 1), 2),
+    round(update_Rt(5, log(1.2), rep(0, 5), c(1, 1, 2, 2, 2), 0.1, 1), 2),
     c(1.2, 1.2, rep(1.33, 3))
   )
   expect_equal(
-    round(update_Rt(5, log(1.2), rep(0.1, 4), c(0, 0, 1, 0, 0), 0.1, 0), 2),
+    round(update_Rt(5, log(1.2), rep(0.1, 4), c(1, 1, 2, 2, 2), 0.1, 0), 2),
     c(1.20, 1.33, 1.62, 1.79, 1.98)
   )
 })
