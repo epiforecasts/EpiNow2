@@ -213,7 +213,7 @@ generated quantities {
   vector[fixed ? 0 : 1] rho;
 
   profile("generated quantities") {
-    if (!fixed) {
+    if (!fixed && gp_type != 3) {
       vector[noise_terms] x = linspaced_vector(noise_terms, 1, noise_terms);
       rho[1] = rescaled_rho[1] * sd(x);
     }

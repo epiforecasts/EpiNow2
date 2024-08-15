@@ -38,6 +38,20 @@ test_that("estimate_infections successfully returns estimates using default sett
   test_estimate_infections(reported_cases)
 })
 
+test_that("estimate_infections successfully returns estimates using a Matern 5/2 kernel", {
+  skip_on_cran()
+  test_estimate_infections(
+    reported_cases, gp = gp_opts(kernel = "matern", matern_order = 5 / 2)
+  )
+})
+
+test_that("estimate_infections successfully returns estimates using a Linear kernel", {
+  skip_on_cran()
+  test_estimate_infections(
+    reported_cases, gp = gp_opts(kernel = "linear")
+  )
+})
+
 test_that("estimate_infections successfully returns estimates when passed NA values", {
   skip_on_cran()
   reported_cases_na <- data.table::copy(reported_cases)
@@ -84,7 +98,6 @@ test_that("estimate_infections successfully returns estimates using a single bre
     gp = NULL
   )
 })
-
 
 test_that("estimate_infections successfully returns estimates using a random walk", {
   skip_on_cran()
