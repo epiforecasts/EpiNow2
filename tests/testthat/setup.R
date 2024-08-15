@@ -9,7 +9,7 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
   if (!(tolower(Sys.info()[["sysname"]]) %in% "windows")) {
     suppressMessages(
       expose_stan_fns(files,
-        target_dir = system.file("stan/functions", package = "EpiNow2")
+        target_dir = "inst/stan/functions"
       )
     )
   }
