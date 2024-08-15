@@ -610,7 +610,8 @@ create_initial_conditions <- function(data) {
     out <- create_delay_inits(data)
 
     if (data$fixed == 0) {
-      out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
+      out$eta <- array(rnorm(
+        ifelse(data$gp_type == 1, data$M * 2, data$M), mean = 0, sd = 0.1))
       out$rescaled_rho <- array(rlnorm(1,
         meanlog = data$ls_meanlog,
         sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog, 0.01)
@@ -621,7 +622,7 @@ create_initial_conditions <- function(data) {
           out$rescaled_rho < data$ls_min, data$ls_min + 0.001,
           default = out$rescaled_rho
           ))
-      }else{
+      }else {
         out$rescaled_rho <- array(numeric(0))
       }
 

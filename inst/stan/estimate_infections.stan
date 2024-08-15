@@ -26,7 +26,7 @@ transformed data {
   int noise_terms = setup_noise(
     ot_h, t, horizon, estimate_r, stationary, future_fixed, fixed_from
   );
-  matrix[noise_terms, M] PHI = setup_gp(M, L, noise_terms, gp_type == 1, w0);  // basis function
+  matrix[noise_terms, gp_type == 1 ? 2*M : M] PHI = setup_gp(M, L, noise_terms, gp_type == 1, w0);  // basis function
   // Rt
   real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
   real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
@@ -44,7 +44,7 @@ parameters {
   // gaussian process
   array[fixed || gp_type == 3 ? 0 : 1] real<lower = ls_min, upper = ls_max> rescaled_rho;  // length scale of noise GP
   array[fixed ? 0 : 1] real<lower = 0> alpha;    // scale of noise GP
-  vector[fixed ? 0 : M] eta;               // unconstrained noise
+  vector[fixed ? 0 : gp_type == 1 ? 2*M : M] eta;               // unconstrained noise
   // Rt
   vector[estimate_r] log_R;                // baseline reproduction number estimate (log)
   array[estimate_r] real initial_infections;    // seed infections

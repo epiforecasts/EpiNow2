@@ -52,6 +52,13 @@ test_that("estimate_infections successfully returns estimates using a Linear ker
   )
 })
 
+test_that("estimate_infections successfully returns estimates using a periodic kernel", {
+  skip_on_cran()
+  test_estimate_infections(
+    reported_cases, gp = gp_opts(kernel = "periodic")
+  )
+})
+
 test_that("estimate_infections successfully returns estimates when passed NA values", {
   skip_on_cran()
   reported_cases_na <- data.table::copy(reported_cases)
