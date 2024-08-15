@@ -498,7 +498,7 @@ gp_opts <- function(basis_prop = 0.2,
       !(is.infinite(matern_order) || matern_order %in% c(1 / 2, 3 / 2, 5 / 2))
     ) {
     warning(
-      "Uncommon Matern kernel order. Common orders are `1 / 2`, `3 / 2`,",
+      "Uncommon Matern kernel order. Common orders are `1 / 2`, `3 / 2`,", # nolint
       " and `5 / 2`" # nolint
     )
   }
