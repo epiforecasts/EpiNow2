@@ -51,7 +51,7 @@ parameters{
   array[estimate_r] real initial_infections ;    // seed infections
   array[estimate_r && seeding_time > 1 ? 1 : 0] real initial_growth; // seed growth rate
   array[bp_n > 0 ? 1 : 0] real<lower = 0> bp_sd; // standard deviation of breakpoint effect
-  array[bp_n] real bp_effects;                   // Rt breakpoint effects
+  array[bp_n] real<multiplier = bp_sd[bp_n > 0 ? 1 : 0]> bp_effects;                   // Rt breakpoint effects
   // observation model
 
   vector<lower = delay_params_lower>[delay_params_length] delay_params; // delay parameters
