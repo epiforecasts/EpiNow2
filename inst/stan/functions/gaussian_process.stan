@@ -54,19 +54,6 @@ vector diagSPD_Periodic(real alpha, real rho, int M) {
 }
 
 /**
-  * Spectral density for Linear kernel
-  *
-  * @param alpha Scaling parameter
-  * @param L Length of the interval
-  * @param M Number of basis functions
-  * @return A vector of spectral densities
-  */
-vector diagSPD_Linear(real alpha, real L, int M) {
-  vector[M] indices = linspaced_vector(M, 1, M);
-  return alpha * square(L) / (square(pi()) * square(indices));
-}
-
-/**
   * Basis functions for Gaussian Process
   *
   * @param N Number of data points
@@ -142,7 +129,7 @@ matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
   * @param alpha Scaling parameter
   * @param rho Length scale parameter
   * @param eta Vector of noise terms
-  * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern, 3: Linear)
+  * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern)
   * @param nu Smoothness parameter for Matern kernel
   * @return A vector of updated noise terms
   */
@@ -157,8 +144,6 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
     diagSPD = diagSPD_Periodic(alpha, rho[1], M);
   } else if (type == 2) {
     diagSPD = diagSPD_Matern(nu, alpha, rho[1], L, M);
-  } else if (type == 3) {
-    diagSPD = diagSPD_Linear(alpha, L, M);
   }
   return PHI * (diagSPD .* eta);
 }
@@ -186,6 +171,7 @@ void lengthscale_lp(real rho, real ls_meanlog, real ls_sdlog,
   *
   * @param alpha Scaling parameter
   * @param eta Vector of noise terms
+  * @param alpha_mean Mean of alpha
   * @param alpha_sd Standard deviation of alpha
   */
 void gaussian_process_lp(real alpha, vector eta, real alpha_mean, 
@@ -193,4 +179,3 @@ void gaussian_process_lp(real alpha, vector eta, real alpha_mean,
   alpha ~ normal(alpha_mean, alpha_sd) T[0,];
   eta ~ std_normal();
 }
-

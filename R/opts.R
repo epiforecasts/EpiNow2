@@ -428,8 +428,8 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #'
 #' @param kernel Character string, the type of kernel required. Currently
 #' supporting the squared exponential kernel ("se"), periodic kernel
-#' ("periodic"), Ornstein-Uhlenbeck kernel ("ou"), Matern kernel ("matern"),
-#' and linear kernel ("linear").
+#' ("periodic"), Ornstein-Uhlenbeck kernel ("ou"), and the 
+#' Matern kernel ("matern").
 #'
 #' @param matern_order Numeric, defaults to 3/2. Order of Matérn Kernel to use.
 #' Common choices are 1/2, 3/2, and 5/2. If `kernel` is set
@@ -473,7 +473,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_max = 60,
                     alpha_mean = 0,
                     alpha_sd = 0.01,
-                    kernel = c("matern", "se", "ou", "periodic", "linear"),
+                    kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
                     matern_type,
                     w0 = 1.0) {
