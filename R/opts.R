@@ -464,7 +464,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' gp_opts(ls_mean = 4)
 #'
 #' # use linear kernel
-#' gp_opts(kernel = "linear")
+#' gp_opts(kernel = "periodic")
 gp_opts <- function(basis_prop = 0.2,
                     boundary_scale = 1.5,
                     ls_mean = 21,

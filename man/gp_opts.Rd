@@ -86,5 +86,5 @@ gp_opts()
 gp_opts(ls_mean = 4)
 
 # use linear kernel
-gp_opts(kernel = "linear")
+gp_opts(kernel = "periodic")
 }

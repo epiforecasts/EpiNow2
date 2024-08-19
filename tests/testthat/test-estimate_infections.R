@@ -45,13 +45,6 @@ test_that("estimate_infections successfully returns estimates using a Matern 5/2
   )
 })
 
-test_that("estimate_infections successfully returns estimates using a Linear kernel", {
-  skip_on_cran()
-  test_estimate_infections(
-    reported_cases, gp = gp_opts(kernel = "linear")
-  )
-})
-
 test_that("estimate_infections successfully returns estimates using a periodic kernel", {
   skip_on_cran()
   test_estimate_infections(
