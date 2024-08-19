@@ -95,6 +95,22 @@ matrix PHI_periodic(int N, int M, real w0, vector x) {
 }
 
 /**
+  * Basis functions for Linear Gaussian Process
+  *
+  * @param N Number of data points
+  * @param M Number of basis functions
+  * @param x Vector of input data
+  * @return A matrix of basis functions
+  */
+matrix PHI_linear(int N, int M, vector x) {
+  matrix[N, M] phi;
+  for (m in 1:M) {
+    phi[, m] = pow(x, m - 1);
+  }
+  return phi;
+}
+
+/**
   * Setup Gaussian process noise dimensions
   *
   * @param ot_h Observation time horizon
@@ -119,19 +135,21 @@ int setup_noise(int ot_h, int t, int horizon, int estimate_r,
   * @param M Number of basis functions
   * @param L Length of the interval
   * @param dimension Dimension of the process
-  * @param is_periodic Indicator if the process is periodic
+  * @param gp_type Type of Gaussian process (0: SE, 1: Periodic, 2: Matern, 3: Linear)
   * @param w0 Fundamental frequency for periodic process
   * @return A matrix of basis functions
   */
-matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
-  vector[dimension] x = linspaced_vector(dimension, 1, dimension);
-  x = (x - mean(x)) / sd(x);
-  if (is_periodic) {
-    return PHI_periodic(dimension, M, w0, x);
-  } else {
-    return PHI(dimension, M, L, x);
+  matrix setup_gp(int M, real L, int dimension, int gp_type, real w0) {
+    vector[dimension] x = linspaced_vector(dimension, 1, dimension);
+    x = (x - mean(x)) / sd(x);
+    if (gp_type == 1) {
+      return PHI_periodic(dimension, M, w0, x);
+    } else if (gp_type == 3) {
+      return PHI_linear(dimension, M, x);
+    } else {
+      return PHI(dimension, M, L, x);
+    }
   }
-}
 
 /**
   * Update Gaussian process using spectral densities

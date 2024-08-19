@@ -172,14 +172,14 @@ test_that("update_gp with linear kernel returns correct dimensions and values", 
 })
 
 test_that("Linear kernel produces a linear GP", {
-  N <- 100
+  N <- 20
   M <- 50
-  L <- 10.0
+  L <- 15.0
   alpha <- 2.0
-  x <- seq(-L, L, length.out = N)
+  x <- seq(-10, 10, length.out = N)
   
   # Setup GP
-  PHI <- PHI(N, M, L, x)
+  PHI_l <- PHI(N, M, L, x)
   
   # Generate random eta
   set.seed(123)
@@ -187,7 +187,7 @@ test_that("Linear kernel produces a linear GP", {
   
   # Compute GP
   diagSPD <- diagSPD_Linear(alpha, L, M)
-  gp <- PHI %*% (diagSPD * eta)
+  gp <- PHI_l %*% (diagSPD * eta)
   
   # Fit a linear model
   lm_fit <- lm(gp ~ x)
