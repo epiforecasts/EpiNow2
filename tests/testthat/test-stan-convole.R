@@ -16,9 +16,9 @@ test_that("convolve can combine two pmfs as expected", {
 
 test_that("convolve performs the same as a numerical convolution", {
   # Sample and analytical PMFs for two Poisson distributions
-  x <- rpois(10000, 3)
+  x <- rpois(100000, 3)
   xpmf <- dpois(0:20, 3)
-  y <- rpois(10000, 5)
+  y <- rpois(100000, 5)
   ypmf <- dpois(0:20, 5)
   # Add sampled Poisson distributions up to get combined distribution
   z <- x + y
