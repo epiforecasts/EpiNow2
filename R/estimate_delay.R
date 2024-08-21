@@ -138,13 +138,14 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #' bootstrapped posteriors.
 #'
 #' @param bootstraps Numeric, defaults to 1. The number of bootstrap samples
-#' (with replacement) of the delay distribution to take.
+#' (with replacement) of the delay distribution to take. If `samples` is less
+#' than `bootstraps`, `samples` takes the value of `bootstraps`.
 #'
-#' @param bootstrap_samples Numeric, defaults to 100. The number of samples to
-#' take in each bootstrap. When the sample size of the supplied delay
-#' distribution is less than 100 this is used instead.
+#' @param bootstrap_samples Numeric, defaults to 250. The number of samples to
+#' take in each bootstrap if the sample size of the supplied delay
+#' distribution is less than its value.
 #'
-#' @param max_value Numeric, defaults to  the maximum value in the observed
+#' @param max_value Numeric, defaults to the maximum value in the observed
 #' data. Maximum delay to  allow (added to output but does impact fitting).
 #'
 #' @return A `<dist_spec>` object summarising the bootstrapped distribution

@@ -25,13 +25,14 @@ lognormal (\code{"lognormal"}) but gamma (\code{"gamma"}) is also supported.}
 bootstrapped posteriors.}
 
 \item{bootstraps}{Numeric, defaults to 1. The number of bootstrap samples
-(with replacement) of the delay distribution to take.}
+(with replacement) of the delay distribution to take. If \code{samples} is less
+than \code{bootstraps}, \code{samples} takes the value of \code{bootstraps}.}
 
-\item{bootstrap_samples}{Numeric, defaults to 100. The number of samples to
-take in each bootstrap. When the sample size of the supplied delay
-distribution is less than 100 this is used instead.}
+\item{bootstrap_samples}{Numeric, defaults to 250. The number of samples to
+take in each bootstrap if the sample size of the supplied delay
+distribution is less than its value.}
 
-\item{max_value}{Numeric, defaults to  the maximum value in the observed
+\item{max_value}{Numeric, defaults to the maximum value in the observed
 data. Maximum delay to  allow (added to output but does impact fitting).}
 
 \item{verbose}{Logical, defaults to \code{FALSE}. Should progress messages be
