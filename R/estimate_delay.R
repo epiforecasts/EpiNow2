@@ -214,7 +214,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
             min(length(values), bootstrap_samples),
             replace = TRUE
           ),
-          samples = ceiling(samples / bootstraps)
+          samples = samples
         )
       },
       future.scheduling = Inf,
