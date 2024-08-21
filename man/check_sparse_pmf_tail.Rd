@@ -7,17 +7,17 @@
 check_sparse_pmf_tail(pmf, span = 5, tol = 1e-06)
 }
 \arguments{
-\item{pmf}{A probability mass function}
+\item{pmf}{A probability mass function vector}
 
 \item{span}{The number of consecutive indices in the tail to check}
 
-\item{tol}{The tolerance for the tail values}
+\item{tol}{The value which to consider the tail as sparse}
 }
 \value{
 Called for its side effects.
 }
 \description{
-Checks the tail of a PMF to see if more than \code{span} consecutive
-indices in the PMF are smaller than \code{tol}. If so, a warning is thrown.
+Checks if the tail of a PMF vector has more than \code{span}
+consecutive values smaller than \code{tol} and throws a warning if so.
 }
 \keyword{internal}
