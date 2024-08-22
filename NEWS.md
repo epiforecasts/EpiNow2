@@ -11,7 +11,7 @@
 - The interface for defining delay distributions has been generalised to also cater for continuous distributions
 - When defining probability distributions these can now be truncated using the `tolerance` argument
 - Ornstein-Uhlenbeck and 5 / 2 Matérn kernels have been added. By @sbfnk in # and reviewed by @.
-- A warning is now thrown if nonparametric PMFs passed to delay options have consecutive tail values that are below a certain low threshold as these lead to loss in speed with little gain in accuracy. By @jamesmbaazam in #752 and reviewed by @<REVIEWER>.
+- A warning is now thrown if nonparametric PMFs passed to delay options have consecutive tail values that are below a certain low threshold as these lead to loss in speed with little gain in accuracy. By @jamesmbaazam in #752 and reviewed by @seabbs.
 
 ## Bug fixes
 
