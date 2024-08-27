@@ -116,6 +116,8 @@ is your quickest entry point to the package. It provides a quick run through of
 the two main functions in the package and how to set up them up. It also
 discusses how to summarise and visualise the results after running the models.
 
+More broadly, users can also learn the details of estimating delay distributions, nowcasting, and forecasting in a structured way through the free and open short-course, ["Nowcasting and forecasting infectious disease dynamics"](https://nfidd.github.io/nfidd/), developed by some authors of this package.
+
 </details>
 
 <details> <summary> Package website </summary>
