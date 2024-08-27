@@ -23,6 +23,7 @@
 - Optimised convolution code to take into account the relative length of the vectors being convolved. See #745 by @seabbs and reviewed by @jamesmbaazam.
 - Switch to broadcasting the day of the week effect. By @seabbs in #746 and reviewed by @jamesmbaazam.
 - A warning is now thrown if nonparametric PMFs passed to delay options have consecutive tail values that are below a certain low threshold as these lead to loss in speed with little gain in accuracy. By @jamesmbaazam in #752 and reviewed by @seabbs.
+- Fixed the number of samples drawn per bootstrap in `bootstrapped_dist_fit()` in #751 by @jamesmbaazam and reviewed by @seabbs.
 
 ## Bug fixes
 
