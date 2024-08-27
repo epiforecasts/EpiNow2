@@ -2,6 +2,7 @@
 
 ## Documentation
 
+- The README has been updated to link to the free course on nowcasting and forecasting. The availability of variational inference, Laplace approximation, and Pathfinder through `cmdstanr` has also be surfaced. By @jamesmbaazam in #753 and reviewed by @seabbs.
 - Some implicit argument defaults have been made explicit in the function definition. By @Bisaloo in #729.
 - The installation guide in the README has been updated to provide instructions for configuring the C toolchain of Windows, MacOS, and Linux. By @jamesmbaazam in #707 and reviewed by @sbfnk.
 
@@ -16,6 +17,8 @@
 - The default stan control options have been updated from `list(adapt_delta = 0.95, max_treedepth = 15)` to `list(adapt_delta = 0.9, max_treedepth = 12)` due to improved performance and to reduce the runtime of the default parameterisations. By @seabbs in #742 and reviewed by @jamesmbaazam.
 - Initialisation has been simplified by sampling directly from the priors, where possible, rather than from a constrained space. By @seabbs in #742 and reviewed by @jamesmbaazam.
 - Unnecessary normalisation of delay priors has been removed. By @seabbs in #742 and reviewed by @jamesmbaazam.
+- Switch to broadcasting the day of the week effect. By @seabbs in #746 and reviewed by @jamesmbaazam.
+- A warning is now thrown if nonparametric PMFs passed to delay options have consecutive tail values that are below a certain low threshold as these lead to loss in speed with little gain in accuracy. By @jamesmbaazam in #752 and reviewed by @seabbs.
 
 ## Bug fixes
 
