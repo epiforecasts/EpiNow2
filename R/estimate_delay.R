@@ -188,24 +188,28 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
   ## Filter out negative values
   values <- values[values >= 0]
 
-  get_single_dist <- function(values, samples = 1) {
+  get_single_dist <- function(values, samples = samples,
+                              single_sample_size = 1) {
     set_dt_single_thread()
 
     fit <- EpiNow2::dist_fit(values, samples = samples, dist = dist)
 
     out <- list()
     if (dist == "lognormal") {
-      out$meanlog <- sample(extract(fit)$mu, samples)
-      out$sdlog <- sample(extract(fit)$sigma, samples)
+      out$meanlog <- sample(extract(fit)$mu, single_sample_size)
+      out$sdlog <- sample(extract(fit)$sigma, single_sample_size)
     } else if (dist == "gamma") {
-      out$shape <- sample(extract(fit)$alpha, samples)
-      out$rate <- sample(extract(fit)$beta, samples)
+      out$shape <- sample(extract(fit)$alpha, single_sample_size)
+      out$rate <- sample(extract(fit)$beta, single_sample_size)
     }
     return(out)
   }
 
   if (bootstraps == 1) {
-    dist_samples <- get_single_dist(values, samples = samples)
+    dist_samples <- get_single_dist(values,
+                                    samples = samples,
+                                    single_sample_size = samples
+    )
   } else {
     ## Fit each sub sample
     dist_samples <- future.apply::future_lapply(1:bootstraps,
@@ -215,7 +219,8 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
             min(length(values), bootstrap_samples),
             replace = TRUE
           ),
-          samples = samples
+          samples = samples,
+          single_sample_size = ceiling(samples/bootstraps)
         )
       },
       future.scheduling = Inf,
