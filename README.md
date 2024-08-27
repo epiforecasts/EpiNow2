@@ -90,6 +90,20 @@ cost of the granularity of estimates or real-time performance, include:
 - Adjustment for the remaining susceptible population beyond the
   forecast horizon.
 
+By default, all these models are fit with [MCMC
+sampling](https://mc-stan.org/docs/reference-manual/mcmc.html) using the
+[`rstan`](https://mc-stan.org/users/interfaces/rstan) R package as the
+backend. Users can, however, switch to use approximate algorithms like
+[variational
+inference](https://en.wikipedia.org/wiki/Variational_Bayesian_methods),
+the
+[pathfinder](https://mc-stan.org/docs/reference-manual/pathfinder.html)
+algorithm, or [Laplace
+approximation](https://mc-stan.org/docs/reference-manual/laplace.html)
+especially for quick prototyping. The latter two methods are provided
+through the [`cmdstanr`](https://mc-stan.org/cmdstanr/) R package, so
+users will have to install that separately.
+
 The documentation for `estimate_infections` provides examples of the
 implementation of the different options available.
 
@@ -174,6 +188,12 @@ quickest entry point to the package. It provides a quick run through of
 the two main functions in the package and how to set up them up. It also
 discusses how to summarise and visualise the results after running the
 models.
+
+More broadly, users can also learn the details of estimating delay
+distributions, nowcasting, and forecasting in a structured way through
+the free and open short-course, [“Nowcasting and forecasting infectious
+disease dynamics”](https://nfidd.github.io/nfidd/), developed by some
+authors of this package.
 
 </details>
 <details>
