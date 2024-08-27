@@ -387,7 +387,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
     gp$ls_max <- obs_time
   }
 
-  times <- 1:time
+  times <- seq_len(time)
 
   rescaled_times <- (times - mean(times)) / sd(times)
   gp$ls_mean <- gp$ls_mean / sd(times)
