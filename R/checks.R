@@ -85,7 +85,7 @@ check_stan_delay <- function(dist) {
     params <- get_parameters(dist, id)
     vapply(params, function(x) {
       is.numeric(x) ||
-        (is(x, "dist_spec") && get_distribution(x, id) == "normal" &&
+        (is(x, "dist_spec") && get_distribution(x) == "normal" &&
            is.infinite(max(x)))
     }, logical(1))}
   }))
