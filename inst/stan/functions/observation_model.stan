@@ -10,16 +10,9 @@
  * @return A vector of reports adjusted for day of the week effects.
  */
 vector day_of_week_effect(vector reports, array[] int day_of_week, vector effect) {
-  int t = num_elements(reports);
   int wl = num_elements(effect);
-  // scale day of week effect
   vector[wl] scaled_effect = wl * effect;
-  vector[t] scaled_reports;
-  for (s in 1:t) {
-    // add reporting effects (adjust for simplex scale)
-    scaled_reports[s] = reports[s] * scaled_effect[day_of_week[s]];
-   }
-  return(scaled_reports);
+  return reports .* scaled_effect[day_of_week];
 }
 
 /**

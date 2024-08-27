@@ -903,6 +903,7 @@ Fixed <- function(value, ...) {
 #' NonParametric(c(0.1, 0.3, 0.2, 0.4))
 #' NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))
 NonParametric <- function(pmf, ...) {
+  check_sparse_pmf_tail(pmf)
   params <- list(pmf = pmf / sum(pmf))
   return(new_dist_spec(params, "nonparametric"))
 }
