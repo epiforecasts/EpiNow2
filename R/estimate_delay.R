@@ -220,7 +220,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
             replace = TRUE
           ),
           samples = samples,
-          single_sample_size = ceiling(samples/bootstraps)
+          single_sample_size = ceiling(samples / bootstraps)
         )
       },
       future.scheduling = Inf,
