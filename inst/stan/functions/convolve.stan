@@ -42,7 +42,7 @@ array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
  * @param y The already reversed probability mass function vector.
  * @param len The desired length of the output vector.
  * @return A vector of length `len` containing the convolution result.
- * @throws If `len` is longer than the sum of lengths of `x` and `y`.
+ * @throws If `len` is not of equal length to the sum of the lengths of `x` and `y`.
  */
 vector convolve_with_rev_pmf(vector x, vector y, int len) {
   int xlen = num_elements(x);
