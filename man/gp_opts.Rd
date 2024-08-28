@@ -20,7 +20,7 @@ gp_opts(
 )
 }
 \arguments{
-\item{basis_prop}{Numeric, proportion of time points to use as basis
+\item{basis_prop}{Numeric, the proportion of time points to use as basis
 functions. Defaults to 0.2. Decreasing this value results in a decrease in
 accuracy but a faster compute time (with increasing it having the first
 effect). In general smaller posterior length scales require a higher
@@ -32,19 +32,18 @@ approximate Gaussian process. See (Riutort-Mayol et al. 2020
 \url{https://arxiv.org/abs/2004.11408}) for advice on updating this default.}
 
 \item{ls_mean}{Numeric, defaults to 21 days. The mean of the lognormal
-length scale. Not used for linear kernel.}
+length scale.}
 
 \item{ls_sd}{Numeric, defaults to 7 days. The standard deviation of the log
 normal length scale. If \code{ls_sd = 0}, inverse-gamma prior on Gaussian
 process length scale will be used with recommended parameters
-\code{inv_gamma(1.499007, 0.057277 * ls_max)}. Not used for linear kernel.}
+\code{inv_gamma(1.499007, 0.057277 * ls_max)}.}
 
-\item{ls_min}{Numeric, defaults to 0. The minimum value of the length scale.
-Not used for linear kernel.}
+\item{ls_min}{Numeric, defaults to 0. The minimum value of the length scale.}
 
 \item{ls_max}{Numeric, defaults to 60. The maximum value of the length
 scale. Updated in \code{\link[=create_gp_data]{create_gp_data()}} to be the length of the input data if
-this is smaller. Not used for linear kernel.}
+this is smaller.}
 
 \item{alpha_mean}{Numeric, defaults to 0. The mean of the magnitude parameter
 of the Gaussian process kernel. Should be approximately the expected variance
@@ -55,9 +54,9 @@ magnitude parameter of the Gaussian process kernel. Should be approximately
 the expected standard deviation of the logged Rt.}
 
 \item{kernel}{Character string, the type of kernel required. Currently
-supporting the squared exponential kernel ("se"), periodic kernel
-("periodic"), Ornstein-Uhlenbeck kernel ("ou"), and the
-Matern kernel ("matern").}
+supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
+periodic kernel, Ornstein-Uhlenbeck #' kernel ("ou"), and the periodic
+kernel ("periodic").}
 
 \item{matern_order}{Numeric, defaults to 3/2. Order of Matérn Kernel to use.
 Common choices are 1/2, 3/2, and 5/2. If \code{kernel} is set
@@ -65,10 +64,10 @@ to "ou", \code{matern_order} will be automatically set to 1/2. Only used if
 the kernel is set to "matern".}
 
 \item{matern_type}{Deprecated; Numeric, defaults to 3/2. Order of Matérn
-Kernel to use. Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
+Kernel to use. Currently, the orders 1/2, 3/2, 5/2 and Inf are supported.}
 
 \item{w0}{Numeric, defaults to 1.0. Fundamental frequency for periodic
-kernel. Only used if \code{kernel} is set to "periodic".}
+kernel. They are only used if \code{kernel} is set to "periodic".}
 }
 \value{
 A \verb{<gp_opts>} object of settings defining the Gaussian process
