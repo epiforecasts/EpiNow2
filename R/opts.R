@@ -499,10 +499,6 @@ gp_opts <- function(basis_prop = 0.2,
     matern_order <- Inf
   } else if (kernel == "ou") {
     matern_order <- 1 / 2
-  } else if (kernel == "linear") {
-    if (ls_mean != 21 || ls_sd != 7 || ls_min != 0 || ls_max != 60) {
-      warning("Length scale parameters are not used for the linear kernel.")
-    }
   } else if (
       !(is.infinite(matern_order) || matern_order %in% c(1 / 2, 3 / 2, 5 / 2))
     ) {
