@@ -615,15 +615,11 @@ create_initial_conditions <- function(data) {
         meanlog = data$ls_meanlog,
         sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog, 0.01)
       ))
-      if (data$gp_type != 3) {
-        out$rescaled_rho <- array(data.table::fcase(
-          out$rescaled_rho > data$ls_max, data$ls_max - 0.001,
-          out$rescaled_rho < data$ls_min, data$ls_min + 0.001,
-          default = out$rescaled_rho
-          ))
-      }else {
-        out$rescaled_rho <- array(numeric(0))
-      }
+      out$rescaled_rho <- array(data.table::fcase(
+        out$rescaled_rho > data$ls_max, data$ls_max - 0.001,
+        out$rescaled_rho < data$ls_min, data$ls_min + 0.001,
+        default = out$rescaled_rho
+      ))
 
       out$alpha <- array(
         truncnorm::rtruncnorm(
