@@ -1,36 +1,100 @@
-// convolve two vectors as a backwards dot product
-// y vector should be reversed
-// limited to the length of x and backwards looking for x indexes
+/**
+ * Calculate convolution indices for the case where s <= xlen
+ *
+ * @param s Current position in the output vector
+ * @param xlen Length of the x vector
+ * @param ylen Length of the y vector
+ * @return An array of integers: {start_x, end_x, start_y, end_y}
+ */
+array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
+  int s_minus_ylen = s - ylen;
+  int start_x = max(1, s_minus_ylen + 1);
+  int end_x = s;
+  int start_y = max(1, 1 - s_minus_ylen);
+  int end_y = ylen;
+  return {start_x, end_x, start_y, end_y};
+}
+
+/**
+ * Calculate convolution indices for the case where s > xlen
+ *
+ * @param s Current position in the output vector
+ * @param xlen Length of the x vector
+ * @param ylen Length of the y vector
+ * @return An array of integers: {start_x, end_x, start_y, end_y}
+ */
+array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
+  int s_minus_ylen = s - ylen;
+  int start_x = max(1, s_minus_ylen + 1);
+  int end_x = xlen;
+  int start_y = max(1, 1 - s_minus_ylen);;
+  int end_y = ylen + xlen - s;
+  return {start_x, end_x, start_y, end_y};
+}
+
+/**
+ * Convolve a vector with a reversed probability mass function.
+ *
+ * This function performs a discrete convolution of two vectors, where the second vector
+ * is assumed to be an already reversed probability mass function.
+ *
+ * @param x The input vector to be convolved.
+ * @param y The already reversed probability mass function vector.
+ * @param len The desired length of the output vector.
+ * @return A vector of length `len` containing the convolution result.
+ * @throws If `len` is not of equal length to the sum of the lengths of `x` and `y`.
+ */
 vector convolve_with_rev_pmf(vector x, vector y, int len) {
-    int xlen = num_elements(x);
-    int ylen = num_elements(y);
-    vector[len] z;
-    if (xlen + ylen <= len) {
-      reject("convolve_with_rev_pmf: len is longer then x and y combined");
-    }
-    for (s in 1:len) {
-      z[s] = dot_product(
-        x[max(1, (s - ylen + 1)):min(s, xlen)],
-        y[max(1, ylen - s + 1):min(ylen, ylen + xlen - s)]
-      );
-    }
-   return(z);
+  int xlen = num_elements(x);
+  int ylen = num_elements(y);
+  vector[len] z;
+  
+  if (xlen + ylen - 1 < len) {
+    reject("convolve_with_rev_pmf: len is longer than x and y convolved");
   }
+  
+  if (xlen > len) {
+    reject("convolve_with_rev_pmf: len is shorter than x");
+  }
+  
+  for (s in 1:xlen) {
+    array[4] int indices = calc_conv_indices_xlen(s, xlen, ylen);
+    z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
+  }
+  
+  if (len > xlen) {
+    for (s in (xlen + 1):len) {
+      array[4] int indices = calc_conv_indices_len(s, xlen, ylen);
+      z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
+    }
+  }
+  
+  return z;
+}
 
-
-// convolve latent infections to reported (but still unobserved) cases
+/**
+ * Convolve infections to reported cases.
+ *
+ * This function convolves a vector of infections with a reversed delay
+ * distribution to produce a vector of reported cases.
+ *
+ * @param infections A vector of infection counts.
+ * @param delay_rev_pmf A vector representing the reversed probability mass
+ * function of the delay distribution.
+ * @param seeding_time The number of initial time steps to exclude from the
+ * output.
+ * @return A vector of reported cases, starting from `seeding_time + 1`.
+ */
 vector convolve_to_report(vector infections,
                           vector delay_rev_pmf,
                           int seeding_time) {
   int t = num_elements(infections);
-  vector[t - seeding_time] reports;
-  vector[t] unobs_reports = infections;
   int delays = num_elements(delay_rev_pmf);
-  if (delays) {
-    unobs_reports = convolve_with_rev_pmf(unobs_reports, delay_rev_pmf, t);
-    reports = unobs_reports[(seeding_time + 1):t];
-  } else {
-    reports = infections[(seeding_time + 1):t];
+  
+  if (delays == 0) {
+    return infections[(seeding_time + 1):t];
   }
-  return(reports);
+  
+  vector[t] unobs_reports = convolve_with_rev_pmf(infections, delay_rev_pmf, t);
+  return unobs_reports[(seeding_time + 1):t];
 }
