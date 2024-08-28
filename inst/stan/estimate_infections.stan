@@ -42,7 +42,7 @@ transformed data {
 
 parameters {
   // gaussian process
-  array[fixed || gp_type == 3 ? 0 : 1] real<lower = ls_min, upper = ls_max> rescaled_rho;  // length scale of noise GP
+  array[fixed ? 0 : 1] real<lower = ls_min, upper = ls_max> rescaled_rho;  // length scale of noise GP
   array[fixed ? 0 : 1] real<lower = 0> alpha;    // scale of noise GP
   vector[fixed ? 0 : gp_type == 1 ? 2*M : M] eta;               // unconstrained noise
   // Rt
