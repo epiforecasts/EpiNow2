@@ -426,9 +426,8 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' the expected standard deviation of the logged Rt.
 #'
 #' @param kernel Character string, the type of kernel required. Currently
-#' supporting the squared exponential kernel ("se"), periodic kernel
-#' ("periodic"), Ornstein-Uhlenbeck kernel ("ou"), and the
-#' Matern kernel ("matern").
+#' supporting the Matern kernel ("matern"), squared exponential kernel ("se"), periodic kernel, Ornstein-Uhlenbeck #' kernel ("ou"), and the periodic kernel ("periodic").
+#' 
 #'
 #' @param matern_order Numeric, defaults to 3/2. Order of Matérn Kernel to use.
 #' Common choices are 1/2, 3/2, and 5/2. If `kernel` is set
