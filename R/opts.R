@@ -426,7 +426,9 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' the expected standard deviation of the logged Rt.
 #'
 #' @param kernel Character string, the type of kernel required. Currently
-#' supporting the Matern kernel ("matern"), squared exponential kernel ("se"), periodic kernel, Ornstein-Uhlenbeck #' kernel ("ou"), and the periodic kernel ("periodic").
+#' supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
+#' periodic kernel, Ornstein-Uhlenbeck #' kernel ("ou"), and the periodic
+#' kernel ("periodic").
 #' 
 #'
 #' @param matern_order Numeric, defaults to 3/2. Order of Matérn Kernel to use.
@@ -435,9 +437,9 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' the kernel is set to "matern".
 #'
 #' @param matern_type Deprecated; Numeric, defaults to 3/2. Order of Matérn
-#' Kernel to use. Currently the orders 1/2, 3/2, 5/2 and Inf are supported.
+#' Kernel to use. Currently, the orders 1/2, 3/2, 5/2 and Inf are supported.
 #'
-#' @param basis_prop Numeric, proportion of time points to use as basis
+#' @param basis_prop Numeric, the proportion of time points to use as basis
 #' functions. Defaults to 0.2. Decreasing this value results in a decrease in
 #' accuracy but a faster compute time (with increasing it having the first
 #' effect). In general smaller posterior length scales require a higher
@@ -449,7 +451,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
 #'
 #' @param w0 Numeric, defaults to 1.0. Fundamental frequency for periodic
-#' kernel. Only used if `kernel` is set to "periodic".
+#' kernel. They are only used if `kernel` is set to "periodic".
 #'
 #' @importFrom rlang arg_match
 #' @return A `<gp_opts>` object of settings defining the Gaussian process
