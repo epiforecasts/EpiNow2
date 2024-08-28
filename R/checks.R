@@ -81,12 +81,14 @@ check_stan_delay <- function(dist) {
   # Check that `dist` has parameters that are either numeric or normal
   # distributions with numeric parameters and infinite maximum
   numeric_or_normal <- unlist(lapply(seq_len(ndist(dist)), function(id) {
-    params <- get_parameters(dist, id)
-    vapply(params, function(x) {
-      is.numeric(x) ||
-        (is(x, "dist_spec") && get_distribution(x) == "normal" &&
-           is.infinite(max(x)))
-    }, logical(1))
+    if (get_distribution(dist, id) != "nonparametric") {
+      params <- get_parameters(dist, id)
+      vapply(params, function(x) {
+        is.numeric(x) ||
+          (is(x, "dist_spec") && get_distribution(x) == "normal" &&
+             is.infinite(max(x)))
+      }, logical(1))
+    }
   }))
   if (!all(numeric_or_normal)) {
     stop(

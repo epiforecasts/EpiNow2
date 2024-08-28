@@ -26,6 +26,7 @@
 - a bug was fixed where `forecast_secondary()` did not work with fixed delays. By @sbfnk in #717 and reviewed by @seabbs.
 - a bug was fixed that caused delay option functions to report an error if only the tolerance was specified. By @sbfnk.
 - a bug was fixed that led to the truncation PMF being shortened from the wrong side when the truncation PMF was longer than the supplied data. By @seabbs in #736 and reviewed by @sbfnk and @jamesmbaazam.
+- a bug was fixed that caused internal validation checks on delay distributions to fail if they contained non-parametric distributions. By @jamesmbaazam in #750 and reviewed by @seabbs.
 
 ## Documentation
 
