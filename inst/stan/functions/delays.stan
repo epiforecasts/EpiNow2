@@ -43,7 +43,7 @@ vector get_delay_rev_pmf(
         pmf[1:new_len] = new_variable_pmf;
       } else { // subsequent delay to be convolved
         pmf[1:new_len] = convolve_with_rev_pmf(
-          pmf[1:current_len], reverse_mf(new_variable_pmf), new_len
+          pmf[1:current_len], reverse(new_variable_pmf), new_len
         );
       }
     } else { // nonparametric
@@ -54,7 +54,7 @@ vector get_delay_rev_pmf(
         pmf[1:new_len] = delay_np_pmf[start:end];
       } else { // subsequent delay to be convolved
         pmf[1:new_len] = convolve_with_rev_pmf(
-          pmf[1:current_len], reverse_mf(delay_np_pmf[start:end]), new_len
+          pmf[1:current_len], reverse(delay_np_pmf[start:end]), new_len
         );
       }
     }
@@ -70,7 +70,7 @@ vector get_delay_rev_pmf(
     pmf = cumulative_sum(pmf);
   }
   if (reverse_pmf) {
-    pmf = reverse_mf(pmf);
+    pmf = reverse(pmf);
   }
   return pmf;
 }
