@@ -11,14 +11,16 @@ gp_opts(
   ls_sd = 7,
   ls_min = 0,
   ls_max = 60,
-  alpha_sd = 0.05,
-  kernel = c("matern", "se", "ou"),
+  alpha_mean = 0,
+  alpha_sd = 0.01,
+  kernel = c("matern", "se", "ou", "periodic"),
   matern_order = 3/2,
-  matern_type
+  matern_type,
+  w0 = 1
 )
 }
 \arguments{
-\item{basis_prop}{Numeric, proportion of time points to use as basis
+\item{basis_prop}{Numeric, the proportion of time points to use as basis
 functions. Defaults to 0.2. Decreasing this value results in a decrease in
 accuracy but a faster compute time (with increasing it having the first
 effect). In general smaller posterior length scales require a higher
@@ -43,23 +45,29 @@ process length scale will be used with recommended parameters
 scale. Updated in \code{\link[=create_gp_data]{create_gp_data()}} to be the length of the input data if
 this is smaller.}
 
-\item{alpha_sd}{Numeric, defaults to 0.05. The standard deviation of the
+\item{alpha_mean}{Numeric, defaults to 0. The mean of the magnitude parameter
+of the Gaussian process kernel. Should be approximately the expected variance
+of the logged Rt.}
+
+\item{alpha_sd}{Numeric, defaults to 0.01. The standard deviation of the
 magnitude parameter of the Gaussian process kernel. Should be approximately
 the expected standard deviation of the logged Rt.}
 
 \item{kernel}{Character string, the type of kernel required. Currently
-supporting the squared exponential kernel ("se", or "matern" with
-'matern_order = Inf'), 3 over 2 oder 5 over 2 Matern kernel ("matern", with
-\code{matern_order = 3/2} (default) or \code{matern_order = 5/2}, respectively), or
-Orstein-Uhlenbeck ("ou", or "matern" with 'matern_order = 1/2'). Defaulting
-to the Matérn 3 over 2 kernel for a balance of smoothness and
-discontinuities.}
+supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
+periodic kernel, Ornstein-Uhlenbeck #' kernel ("ou"), and the periodic
+kernel ("periodic").}
 
 \item{matern_order}{Numeric, defaults to 3/2. Order of Matérn Kernel to use.
-Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
+Common choices are 1/2, 3/2, and 5/2. If \code{kernel} is set
+to "ou", \code{matern_order} will be automatically set to 1/2. Only used if
+the kernel is set to "matern".}
 
-\item{matern_type}{Deprated; Numeric, defaults to 3/2. Order of Matérn Kernel
-to use.  Currently the orders 1/2, 3/2, 5/2 and Inf are supported.}
+\item{matern_type}{Deprecated; Numeric, defaults to 3/2. Order of Matérn
+Kernel to use. Currently, the orders 1/2, 3/2, 5/2 and Inf are supported.}
+
+\item{w0}{Numeric, defaults to 1.0. Fundamental frequency for periodic
+kernel. They are only used if \code{kernel} is set to "periodic".}
 }
 \value{
 A \verb{<gp_opts>} object of settings defining the Gaussian process
@@ -75,4 +83,7 @@ gp_opts()
 
 # add a custom length scale
 gp_opts(ls_mean = 4)
+
+# use linear kernel
+gp_opts(kernel = "periodic")
 }

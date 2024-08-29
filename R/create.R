@@ -346,6 +346,7 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
  )
  return(data)
 }
+
 #' Create Gaussian Process Data
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -387,33 +388,50 @@ create_gp_data <- function(gp = gp_opts(), data) {
   } else {
     fixed <- FALSE
   }
-  # reset ls_max if larger than observed time
-  time <- data$t - data$seeding_time - data$horizon
-  if (gp$ls_max > time) {
-    gp$ls_max <- time
+
+  time <- data$t - data$seeding_time
+  if (data$future_fixed > 0) {
+    time <- time + data$fixed_from - data$horizon
+  }
+  if (data$stationary == 1) {
+    time <- time - 1
   }
 
+  obs_time <- data$t - data$seeding_time
+  if (gp$ls_max > obs_time) {
+    gp$ls_max <- obs_time
+  }
+
+  times <- seq_len(time)
+
+  rescaled_times <- (times - mean(times)) / sd(times)
+  gp$ls_mean <- gp$ls_mean / sd(times)
+  gp$ls_sd <- gp$ls_sd / sd(times)
+  gp$ls_min <- gp$ls_min / sd(times)
+  gp$ls_max <- gp$ls_max /  sd(times)
+
   # basis functions
-  M <- data$t - data$seeding_time
-  M <- ifelse(data$future_fixed == 1, M - (data$horizon - data$fixed_from), M)
-  M <- ceiling(M * gp$basis_prop)
+  M <- ceiling(time * gp$basis_prop)
 
   # map settings to underlying gp stan requirements
   gp_data <- list(
     fixed = as.numeric(fixed),
     M = M,
-    L = gp$boundary_scale,
+    L = gp$boundary_scale * max(rescaled_times),
     ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
     ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
     ls_min = gp$ls_min,
-    ls_max = data$t - data$seeding_time - data$horizon,
+    ls_max = gp$ls_max,
+    alpha_mean = gp$alpha_mean,
     alpha_sd = gp$alpha_sd,
     gp_type = data.table::fcase(
-      is.infinite(gp$matern_order), 0,
-      gp$matern_order == 1 / 2, 1,
-      gp$matern_order == 3 / 2, 2,
-      default = 3
-    )
+      gp$kernel == "se", 0,
+      gp$kernel == "periodic", 1,
+      gp$kernel == "matern" || gp$kernel == "ou", 2,
+      default = 2
+    ),
+    nu = gp$matern_order,
+    w0 = gp$w0
   )
 
   gp_data <- c(data, gp_data)
@@ -606,42 +624,44 @@ create_initial_conditions <- function(data) {
     out <- create_delay_inits(data)
 
     if (data$fixed == 0) {
-      out$eta <- array(rnorm(data$M, mean = 0, sd = 0.1))
-      out$rho <- array(rlnorm(1,
+      out$eta <- array(rnorm(
+        ifelse(data$gp_type == 1, data$M * 2, data$M), mean = 0, sd = 0.1))
+      out$rescaled_rho <- array(rlnorm(1,
         meanlog = data$ls_meanlog,
-        sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog * 0.1, 0.01)
+        sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog, 0.01)
+      ))
+      out$rescaled_rho <- array(data.table::fcase(
+        out$rescaled_rho > data$ls_max, data$ls_max - 0.001,
+        out$rescaled_rho < data$ls_min, data$ls_min + 0.001,
+        default = out$rescaled_rho
       ))
 
-      out$rho <- array(data.table::fcase(
-        out$rho > data$ls_max, data$ls_max - 0.001,
-        out$rho < data$ls_min, data$ls_min + 0.001,
-        default = out$rho
-        ))
-
       out$alpha <- array(
-        truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = data$alpha_sd)
+        truncnorm::rtruncnorm(
+          1, a = 0, mean = data$alpha_mean, sd = data$alpha_sd
+        )
       )
     } else {
       out$eta <- array(numeric(0))
-      out$rho <- array(numeric(0))
+      out$rescaled_rho <- array(numeric(0))
       out$alpha <- array(numeric(0))
     }
     if (data$model_type == 1) {
       out$rep_phi <- array(
         truncnorm::rtruncnorm(
           1,
-          a = 0, mean = data$phi_mean, sd = data$phi_sd / 10
+          a = 0, mean = data$phi_mean, sd = data$phi_sd
         )
       )
     }
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rnorm(1, data$prior_infections, 0.02))
+      out$initial_infections <- array(rnorm(1, data$prior_infections, 0.2))
       if (data$seeding_time > 1) {
-        out$initial_growth <- array(rnorm(1, data$prior_growth, 0.01))
+        out$initial_growth <- array(rnorm(1, data$prior_growth, 0.02))
       }
       out$log_R <- array(rnorm(
         n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
-        sd = convert_to_logsd(data$r_mean, data$r_sd) * 0.1
+        sd = convert_to_logsd(data$r_mean, data$r_sd)
       ))
     }
 
@@ -656,7 +676,7 @@ create_initial_conditions <- function(data) {
       out$frac_obs <- array(truncnorm::rtruncnorm(1,
         a = 0, b = 1,
         mean = data$obs_scale_mean,
-        sd = data$obs_scale_sd * 0.1
+        sd = data$obs_scale_sd
       ))
     } else {
       out$frac_obs <- array(numeric(0))

@@ -38,6 +38,20 @@ test_that("estimate_infections successfully returns estimates using default sett
   test_estimate_infections(reported_cases)
 })
 
+test_that("estimate_infections successfully returns estimates using a Matern 5/2 kernel", {
+  skip_on_cran()
+  test_estimate_infections(
+    reported_cases, gp = gp_opts(kernel = "matern", matern_order = 5 / 2)
+  )
+})
+
+test_that("estimate_infections successfully returns estimates using a periodic kernel", {
+  skip_on_cran()
+  test_estimate_infections(
+    reported_cases, gp = gp_opts(kernel = "periodic")
+  )
+})
+
 test_that("estimate_infections successfully returns estimates when passed NA values", {
   skip_on_cran()
   reported_cases_na <- data.table::copy(reported_cases)
@@ -85,7 +99,6 @@ test_that("estimate_infections successfully returns estimates using a single bre
   )
 })
 
-
 test_that("estimate_infections successfully returns estimates using a random walk", {
   skip_on_cran()
   test_estimate_infections(reported_cases, gp = NULL, rt = rt_opts(rw = 7))
@@ -110,7 +123,6 @@ test_that("estimate_infections works with different kernels", {
   test_estimate_infections(reported_cases, gp = gp_opts(kernel = "se"))
   test_estimate_infections(reported_cases, gp = gp_opts(kernel = "ou"))
   test_estimate_infections(reported_cases, gp = gp_opts(matern_order = 5 / 2))
-  expect_error(gp_opts(matern_order = 4))
 })
 
 test_that("estimate_infections fails as expected when given a very short timeout", {

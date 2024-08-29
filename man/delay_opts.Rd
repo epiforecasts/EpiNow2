@@ -27,8 +27,8 @@ constrained by having a maximum or tolerance this is ignored.}
 \item{weight_prior}{Logical; if TRUE (default), any priors given in \code{dist}
 will be weighted by the number of observation data points, in doing so
 approximately placing an independent prior at each time step and usually
-preventing the posteriors from shifting. If FALSE, no weight will be
-applied, i.e. any parameters in \code{dist} will be treated as a single
+preventing the posteriors from shifting. If FALSE, no weight
+will be applied, i.e. any parameters in \code{dist} will be treated as a single
 parameters.}
 }
 \value{
