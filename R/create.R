@@ -246,6 +246,7 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' breakpoints.
 #'
 #' @param horizon Numeric, forecast horizon.
+#' @importFrom cli cli_abort
 #'
 #' @seealso rt_settings
 #' @return A list of settings defining the time-varying reproduction number
@@ -285,7 +286,11 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   # apply random walk
   if (rt$rw != 0) {
     if (is.null(breakpoints)) {
-      stop("breakpoints must be supplied when using random walk")
+      cli_abort(
+        c(
+          "!" = "breakpoints must be supplied when using random walk."
+        )
+      )
     }
 
     breakpoints <- seq_along(breakpoints)

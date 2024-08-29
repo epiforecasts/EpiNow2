@@ -483,7 +483,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' kernel. They are only used if `kernel` is set to "periodic".
 #'
 #' @importFrom rlang arg_match
-#' @importFrom cli cli_abort
+#' @importFrom cli cli_abort cli_warn
 #' @return A `<gp_opts>` object of settings defining the Gaussian process
 #' @export
 #' @examples
@@ -516,9 +516,12 @@ gp_opts <- function(basis_prop = 0.2,
 
   if (!missing(matern_type)) {
     if (!missing(matern_order) && matern_type != matern_order) {
-      stop(
-        "Incompatible `matern_order` and `matern_type`. ",
-        "Use `matern_order` only."
+      cli_abort(
+        c(
+          "!" = "{.var matern_order} and {.var matern_type} must be the same, if
+          both are supplied.",
+          "i" = "Rather only use {.var matern_order} only."
+        )
       )
     }
     matern_order <- matern_type
@@ -532,9 +535,11 @@ gp_opts <- function(basis_prop = 0.2,
   } else if (
       !(is.infinite(matern_order) || matern_order %in% c(1 / 2, 3 / 2, 5 / 2))
     ) {
-    warning(
-      "Uncommon Matern kernel order. Common orders are `1 / 2`, `3 / 2`,", # nolint
-      " and `5 / 2`" # nolint
+    cli_warn(
+      c(
+        "!" = "Uncommon Matern kernel order supplied.",
+        "i" = "Use one of `1 / 2`, `3 / 2`, or `5 / 2`" # nolint
+      )
     )
   }
 
