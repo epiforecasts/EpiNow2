@@ -61,6 +61,7 @@ check_reports_valid <- function(data,
 #' @param dist A `dist_spec` object.`
 #' @importFrom checkmate assert_class
 #' @importFrom rlang arg_match
+#' @importFrom cli cli_abort col_blue
 #' @return Called for its side effects.
 #' @keywords internal
 check_stan_delay <- function(dist) {
@@ -73,9 +74,12 @@ check_stan_delay <- function(dist) {
   if (
     !all(distributions %in% c("lognormal", "gamma", "fixed", "nonparametric"))
   ) {
-    stop(
-      "Distributions passed to the model need to be lognormal, gamma, fixed ",
-      "or nonparametric."
+    cli_abort(
+      c(
+       "!" = "Distributions passed to the model need to be
+        {col_blue(\"lognormal\")}, {col_blue(\"gamma\")},
+        {col_blue(\"fixed\")}, or {col_blue(\"nonparametric\")}."
+      )
     )
   }
   # Check that `dist` has parameters that are either numeric or normal
@@ -91,10 +95,13 @@ check_stan_delay <- function(dist) {
     }
   }))
   if (!all(numeric_or_normal)) {
-    stop(
-      "Delay distributions passed to the model need to have parameters that ",
-      "are either numeric or normally distributed with numeric parameters ",
-      "and infinite maximum."
+    cli_abort(
+      c(
+        "!" = "Delay distributions passed to the model need to have parameters
+        that are either {col_blue(\"numeric\")} or
+        {col_blue(\"normally distributed\")} with {col_blue(\"numeric\")}
+        parameters and {col_blue(\"infinite maximum\")}."
+      )
     )
   }
   if (is.null(attr(dist, "tolerance"))) {
@@ -103,9 +110,12 @@ check_stan_delay <- function(dist) {
   assert_numeric(attr(dist, "tolerance"), lower = 0, upper = 1)
   # Check that `dist` has a finite maximum
   if (any(is.infinite(max(dist))) && !(attr(dist, "tolerance") > 0)) {
-    stop(
-      "All distribution passed to the model need to have a finite maximum,",
-      "which can be achieved either by setting `max` or non-zero `tolerance`."
+    cli_abort(
+      c(
+        "i" = "All distribution passed to the model need to have a
+      {col_blue(\"finite maximum\")}, which can be achieved either by
+      setting {.var max} or non-zero {.var tolerance}."
+      )
     )
   }
 }
@@ -117,19 +127,21 @@ check_stan_delay <- function(dist) {
 #' @param pmf A probability mass function vector
 #' @param span The number of consecutive indices in the tail to check
 #' @param tol The value which to consider the tail as sparse
+#' @importFrom cli cli_warn col_blue
 #'
 #' @return Called for its side effects.
 #' @keywords internal
 check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
   if (all(pmf[(length(pmf) - span + 1):length(pmf)] < tol)) {
-    warning(
-      sprintf(
-        "The PMF tail has %s consecutive values smaller than %s.",
-        span, tol
+    cli_warn(
+      c(
+        "!" = "The PMF tail has {col_blue(span)} consecutive value{?s} smaller
+        than {col_blue(tol)}.",
+        "i" = "This will drastically increase run times with very small
+        increases in accuracy. Consider increasing the tail values of the PMF."
       ),
-      " This will drastically increase run time with very small increases ",
-      "in accuracy. Consider increasing the tail values of the PMF.",
-      call. = FALSE
+      .frequency = "regularly",
+      .frequency_id = "sparse_pmf_tail"
     )
   }
 }

@@ -21,6 +21,7 @@
 #'
 #' @importFrom purrr safely map_chr map_dbl map_chr
 #' @importFrom data.table setorderv melt merge.data.table dcast
+#' @importFrom cli cli_abort
 #' @return A list of summary data
 #' @keywords internal
 summarise_results <- function(regions,
@@ -30,16 +31,21 @@ summarise_results <- function(regions,
                               region_scale = "Region") {
   if (is.null(results_dir)) {
     if (is.null(summaries)) {
-      stop(
-        "Either a results directory or a list of summary data frames must be",
-        " supplied"
+      cli_abort(
+        c(
+          "!" = "One of a {.var results_dir} or {.var summary}
+          must be supplied."
+        )
       )
     }
   } else {
     if (!is.null(summaries)) {
-      stop(
-        "Both a results directory and a list of summary data frames have been",
-        " supplied."
+      cli_abort(
+        c(
+          "!" = "Cannot supply both {.var results_dir} and {.var summary}.",
+          "i" = "Only one of {.var results_dir} or {.var summary} should be
+        supplied."
+        )
       )
     }
   }
@@ -160,6 +166,7 @@ summarise_results <- function(regions,
 #' @importFrom ggplot2 coord_cartesian guides guide_legend ggsave ggplot_build
 #' @importFrom data.table setDT fcase
 #' @importFrom futile.logger flog.info
+#' @importFrom cli cli_abort
 #' @examples
 #' # get example output from regional_epinow model
 #' regional_out <- readRDS(system.file(
@@ -191,7 +198,14 @@ regional_summary <- function(regional_output = NULL,
   }
 
   if (!is.null(results_dir) && !is.null(regional_output)) {
-    stop("Only one of results_dir and regional_output should be specified")
+    cli_abort(
+      c(
+        "!" = "Both {.var results_dir} and {.var regional_output} cannot be
+        specified.",
+        "i" = "Only supply one of {.var results_dir} or
+        {.var regional_output}."
+      )
+    )
   }
 
   if (is.null(regional_output)) {
@@ -421,6 +435,7 @@ regional_summary <- function(regional_output = NULL,
 #' region).
 #'
 #' @inheritParams get_regional_results
+#' @importFrom cli cli_abort
 #' @seealso regional_summary
 #' @return A list of summarised Rt, cases by date of infection and cases by
 #' date of report
@@ -431,7 +446,11 @@ summarise_key_measures <- function(regional_results = NULL,
                                    type = "region", date = "latest") {
   if (is.null(regional_results)) {
     if (is.null(results_dir)) {
-      stop("Missing results directory")
+      cli_abort(
+        c(
+          "!" = "{.var results_dir} must be specified."
+        )
+      )
     }
     timeseries <- EpiNow2::get_regional_results(
       results_dir = results_dir,
@@ -499,6 +518,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @export
 #' @importFrom data.table data.table fwrite
 #' @importFrom purrr map safely map_vec
+#' @importFrom cli cli_abort
 #' @keywords internal
 #' @examples
 #' regional_out <- readRDS(system.file(
@@ -510,7 +530,12 @@ regional_runtimes <- function(regional_output = NULL,
                               target_date = NULL,
                               return_output = FALSE) {
   if (is.null(target_folder) && is.null(regional_output)) {
-    stop("Either an output should be passed in or a target folder specified")
+    cli_abort(
+      c(
+        "i" = "Either an output should be passed in or a target folder
+        specified."
+      )
+    )
   }
   if (is.null(target_folder)) {
     futile.logger::flog.info(

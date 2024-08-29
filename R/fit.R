@@ -163,6 +163,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 #' @importFrom purrr safely
 #' @importFrom rstan vb
 #' @importFrom rlang abort
+#' @importFrom cli cli_abort
 #' @return A stan model object
 #' @keywords internal
 fit_model_approximate <- function(args, future = FALSE, id = "stan") {
@@ -192,7 +193,13 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
       if (method == "vb") {
         sample_func <- rstan::vb
       } else {
-        stop("Laplace approximation only available in the cmdstanr backend")
+        cli_abort(
+          c(
+            "!" = "Laplace approximation only available in the cmdstanr
+            backend.",
+            "i" = "You've supplied {.strong {method}}."
+          )
+        )
       }
     } else if (inherits(stan_args$object, "CmdStanModel")) {
       if (method == "vb") {

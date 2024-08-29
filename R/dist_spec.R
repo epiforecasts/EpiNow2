@@ -135,6 +135,7 @@ discrete_pmf <- function(distribution =
 #' cannot be combined with other combinations of distributions.
 #'
 #' @param ... The delay distributions to combine
+#' @importFrom cli cli_abort
 #' @return Combined delay distributions (with class `<dist_spec>`)
 #' @method c dist_spec
 #' @export
@@ -155,8 +156,10 @@ c.dist_spec <- function(...) {
   dist_specs <- list(...)
   if (length(dist_specs) == 1) return(dist_specs[[1]])
   if (!(all(vapply(dist_specs, is, "dist_spec", FUN.VALUE = logical(1))))) {
-    stop(
-      "All distributions must be of class `<dist_spec>`."
+    cli_abort(
+      c(
+        "!" = "All distributions must be of class {.cls dist_spec}."
+      )
     )
   }
   convolutions <- vapply(
@@ -165,7 +168,11 @@ c.dist_spec <- function(...) {
   ## can only have one `multi_dist_spec`
   if (sum(convolutions) > 0) {
     if (sum(convolutions) > 1) {
-      stop("Can't convolve convolutions with other convolutions")
+      cli_abort(
+        c(
+          "!" = "Can't convolve convolutions with other convolutions"
+        )
+      )
     }
     ## preserve convolution attribute
     convolution_attributes <- attributes(dist_specs[[which(convolutions)]])
@@ -190,6 +197,7 @@ c.dist_spec <- function(...) {
 #' @param ignore_uncertainty Logical; whether to ignore any uncertainty in
 #'   parameters. If set to FALSE (the default) then the mean of any uncertain
 #'   parameters will be returned as NA.
+#' @importFrom cli cli_abort
 #' @method mean dist_spec
 #' @importFrom utils head
 #' @export
@@ -230,7 +238,11 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
     } else if (dist == "fixed") {
       return(params$value)
     } else {
-      stop("Don't know how to calculate mean of ", dist, " distribution.")
+      cli_abort(
+        c(
+          "!" = "Don't know how to calculate mean of {dist} distribution."
+        )
+      )
     }
   }
 }
@@ -257,6 +269,7 @@ sd <- function(x, ...) {
 #' @param x The <dist_spec> to use
 #' @return A vector of standard deviations.
 #' @importFrom utils head
+#' @importFrom cli cli_abort
 #' @keywords internal
 #' @export
 #' @examples
@@ -292,9 +305,11 @@ sd.dist_spec <- function(x, ...) {
     } else if (x$distribution == "fixed") {
       0
     } else {
-      stop(
-        "Don't know how to calculate standard deviation of ",
-        x$distribution, " distribution."
+      cli_abort(
+        c(
+          "!" = "Don't know how to calculate standard deviation of
+        {x$distribution} distribution."
+        )
       )
     }
   }
@@ -370,6 +385,7 @@ discretise <- function(x, ...) {
 #' specified or parameters are uncertain). If `FALSE` then any distribution
 #' that cannot be discretised will be returned as is.
 #' @param ... ignored
+#' @importFrom cli cli_abort
 #' @return A `<dist_spec>` where all distributions with constant parameters are
 #'   nonparametric.
 #' @export
@@ -391,7 +407,12 @@ discretise.dist_spec <- function(x, strict = TRUE, ...) {
   }
   max_x <- max(x)
   if (is.infinite(max_x) && !(tolerance > 0) && strict) {
-    stop("Cannot discretise a distribution with infinite support.")
+    cli_abort(
+      c(
+        "!" = "Cannot discretise a distribution with infinite support.",
+        "i" = "Either set a finite maximum or a tolerance greater than 0."
+      )
+    )
   }
   if (get_distribution(x) == "nonparametric") {
     return(x)
@@ -411,8 +432,10 @@ discretise.dist_spec <- function(x, strict = TRUE, ...) {
       }
       return(y)
     } else if (strict) {
-      stop(
-        "Cannot discretise a distribution with uncertain parameters."
+      cli_abort(
+        c(
+          "!" = "Cannot discretise a distribution with uncertain parameters."
+        )
       )
     } else {
       return(x)
@@ -439,6 +462,7 @@ discretize <- discretise
 #' @return A `<dist_spec>` where consecutive nonparametric distributions
 #' have been convolved
 #' @importFrom stats convolve
+#' @importFrom cli cli_abort
 #' @export
 #' @examples
 #' # A fixed gamma distribution with mean 5 and sd 1.
@@ -451,7 +475,11 @@ discretize <- discretise
 #' collapse(discretise(dist1 + dist2))
 collapse <- function(x) {
   if (!is(x, "dist_spec")) {
-    stop("Can only convolve distributions in a <dist_spec>.")
+    cli_abort(
+      c(
+        "!" = "Can only convolve distributions in a {.cls dist_spec}."
+      )
+    )
   }
   ## get nonparametric distributions
   nonparametric <- vapply(
@@ -489,6 +517,7 @@ collapse <- function(x) {
 #' functions of fixed delay distributions combined in the passed <dist_spec>.
 #' @param x The `<dist_spec>` to use
 #' @param ... Not used
+#' @importFrom cli cli_abort
 #' @return invisible
 #' @method print dist_spec
 #' @export
@@ -578,6 +607,7 @@ print.dist_spec <- function(x, ...) {
 #' @param ... ignored
 #' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
 #' @importFrom data.table data.table rbindlist
+#' @importFrom cli cli_abort
 #' @export
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
@@ -626,9 +656,13 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       }
       pmf_dt <- lapply(dists, function(y) {
         if (is.infinite(attr(y, "max"))) {
-          stop(
-            "Need to set a finite maximum, either as an argument to `plot()`",
-            "or when defining the distribution."
+          cli_abort(
+            c(
+              "!" = "All distributions in {.var x} must have a finite
+              maximum value.",
+              "i" = "You can set a finite maximum either as an
+              argument to {.fn plot} or when defining the distribution."
+            )
           )
         }
         x <- discrete_pmf(
@@ -676,6 +710,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
 #' @description `r lifecycle::badge("experimental")`
 #' @param x A composite `dist_spec` object
 #' @param i The index to extract
+#' @importFrom cli cli_abort
 #' @return A single `dist_spec` object
 #' @keywords internal
 #' @examples
@@ -693,7 +728,12 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
 #' }
 extract_single_dist <- function(x, i) {
   if (i > ndist(x)) {
-    stop("i can't be greater than the number of distributions.")
+    cli_abort(
+      c(
+        "!" = "i must be less than the number of distributions.",
+        "i" = "The number of distributions is {ndist(x)} whiles i is {i}."
+      )
+    )
   }
   if (ndist(x) == 1) {
     return(x)
@@ -968,11 +1008,17 @@ lower_bounds <- function(distribution) {
 #' @param tolerance Numeric; the desired tolerance level. Any part of the
 #' cumulative distribution function beyond 1 minus this tolerance level is
 #' removed. Default: `0`, i.e. use the full distribution.
+#' @importFrom cli cli_abort
 #' @return a `<dist_spec>` with relevant attributes set that define its bounds
 #' @export
 bound_dist <- function(x, max = Inf, tolerance = 0) {
   if (!is(x, "dist_spec")) {
-    stop("Can only get limit a <dist_spec>.")
+    cli_abort(
+      c(
+        "!" = "{.var x} must be of class {.cls dist_spec}.",
+        "i" = "It is currently of class {.cls class(x)}."
+      )
+    )
   }
   ## if it is a single nonparametric distribution we apply the bounds directly
   if (ndist(x) == 1 && get_distribution(x) == "nonparametric") {
@@ -1000,14 +1046,19 @@ bound_dist <- function(x, max = Inf, tolerance = 0) {
 #' @param params Given parameters (obtained using `as.list(environment())`)
 #' @return A character vector of parameters and their values.
 #' @inheritParams natural_params
+#' @importFrom cli cli_abort
 #' @keywords internal
 extract_params <- function(params, distribution) {
   params <- params[!vapply(params, inherits, "name", FUN.VALUE = TRUE)]
   n_params <- length(natural_params(distribution))
   if (length(params) != n_params) {
-    stop(
-      "Exactly ", n_params, " parameters of the ", distribution,
-      " distribution must be specified."
+    cli_abort(
+      c(
+        "!" = "Exactly {n_params} parameters of the {distribution}
+        distribution must be specified.",
+        "i" = "You have specified {length(params)} parameters, which is not
+        equal to {n_params}."
+      )
     )
   }
   return(params)
@@ -1023,6 +1074,7 @@ extract_params <- function(params, distribution) {
 #' @inheritParams extract_params
 #' @inheritParams bound_dist
 #' @importFrom purrr walk
+#' @importFrom cli cli_abort cli_warn
 #' @return A `dist_spec` of the given specification.
 #' @export
 #' @examples
@@ -1052,9 +1104,12 @@ new_dist_spec <- function(params, distribution, max = Inf, tolerance = 0) {
       for (param_name in names(params)) {
         lb <- lower_bounds(distribution)[param_name]
         if (is.numeric(params[[param_name]]) && params[[param_name]] < lb) {
-          stop(
-            "Parameter ", param_name, " is less than its lower bound ", lb,
-            "."
+          cli_abort(
+            c(
+              "!" = "Parameter {param_name} must be greater than its
+              lower bound {lb}.",
+              "i" = "It is currently set to less than the lower bound."
+            )
           )
         }
       }
@@ -1069,15 +1124,19 @@ new_dist_spec <- function(params, distribution, max = Inf, tolerance = 0) {
           return(is.na(sd_dist) || sd_dist > 0)
         }, logical(1))
         if (any(uncertain)) {
-          warning(
-            "Uncertain ", distribution, " distribution specified in terms of ",
-            "parameters that are not the \"natural\" parameters of the ",
-            "distribution (", toString(natural_params(distribution)),
-            "). Converting using a crude and very approximate method ",
-            "that is likely to produce biased results. If possible, ",
-            "it is preferable to specify the distribution directly ",
-            "in terms of the natural parameters."
+          #nolint start: duplicate_argument_linter
+          cli_warn(
+            c(
+              "!" = "Uncertain {distribution} distribution specified in
+              terms of parameters that are not the \"natural\" parameters of
+              the distribution {natural_params(distribution)}.",
+              "i" = "Converting using a crude and very approximate method
+            that is likely to produce biased results.",
+              "i" = "If possible it is preferable to specify the
+            distribution directly in terms of the natural parameters."
+            )
           )
+          #nolint end
         }
         ## generate natural parameters
         params <- convert_to_natural(params, distribution)
@@ -1109,6 +1168,7 @@ new_dist_spec <- function(params, distribution, max = Inf, tolerance = 0) {
 #' from a given set of parameters and distribution
 #' @param params A numerical named parameter vector
 #' @inheritParams natural_params
+#' @importFrom cli cli_abort
 #' @return A list with two elements, `params_mean` and `params_sd`, containing
 #' mean and sd of natural parameters.
 #' @keywords internal
@@ -1123,9 +1183,13 @@ convert_to_natural <- function(params, distribution) {
   ## unnatural parameter means
   ux <- lapply(params, mean)
   if (anyNA(ux)) {
-    stop(
-      "Cannot nest uncertainty in a distributions that is not specified with ",
-      "its natural parameters."
+    cli_abort(
+      c(
+        "!" = "Cannot nest uncertainty in a distributions that is not
+      specified with its natural parameters.",
+        "i" = "Specify the distribution in terms of its natural
+      parameters if you want to nest uncertainty."
+      )
     )
   }
   ## estimate relative uncertainty of parameters
@@ -1160,10 +1224,11 @@ convert_to_natural <- function(params, distribution) {
   ## sort
   x <- x[natural_params(distribution)]
   if (anyNA(names(x))) {
-    stop(
-      "Incompatible combination of parameters of a ", distribution,
-      " distribution specified:\n    ", toString(names(params)),
-      "."
+    cli_abort(
+      c(
+        "!" = "Incompatible combination of parameters of a {distribution}
+      distribution specified: {names(params)}."
+      )
     )
   }
   if (rel_unc > 0) {
@@ -1184,18 +1249,27 @@ convert_to_natural <- function(params, distribution) {
 ##' distribution). If `x` is a single distribution this is ignored and can be
 ##' left at its default value of `NULL`.
 ##' @param element The element, i.e. "parameters", "pmf" or "distribution".
+##' @importFrom cli cli_abort
 ##' @return The id to use.
 ##' @keywords internal
 get_element <- function(x, id = NULL, element) {
   if (!is.null(id) && id > ndist(x)) {
-    stop(
-      "`id` can't be greater than the number of distributions (", length(x),
-      ")."
+    cli_abort(
+      c(
+        "!" = "{.var id} cannot be greater than the number of distributions
+      ({length(x)}).",
+        "i" = "{.var id} currently has length {length(id)}."
+      )
     )
   }
   if (ndist(x) > 1) {
     if (is.null(id)) {
-      stop("`id` must be specified when `x` is a composite distribution.")
+      cli_abort(
+        c(
+         "!" = "{.var id} must be specified when {.var x} is a composite
+          distribution."
+        )
+      )
     }
     return(x[[id]][[element]])
   } else {
@@ -1207,6 +1281,7 @@ get_element <- function(x, id = NULL, element) {
 ##'
 ##' @inheritParams get_element
 ##' @description `r lifecycle::badge("experimental")`
+##' @importFrom cli cli_abort
 ##' @return A list of parameters of the distribution.
 ##' @export
 ##' @examples
@@ -1214,10 +1289,23 @@ get_element <- function(x, id = NULL, element) {
 ##' get_parameters(dist)
 get_parameters <- function(x, id = NULL) {
   if (!is(x, "dist_spec")) {
-    stop("Can only get parameters of a <dist_spec>.")
+    cli_abort(
+      c(
+        "!" = "Object must be of class {.cls dist_spec}",
+        "i" = "You have supplied an object of class {.cls {class(x)}}."
+      )
+    )
   }
   if (get_distribution(x, id) == "nonparametric") {
-    stop("Cannot get parameters of a nonparametric distribution.")
+    cli_abort(
+      c(
+        "!" = "To get parameters, distribution cannot not be
+        \"nonparametric\".",
+        "i" = "Distribution must be one of
+        {col_blue(\"gamma\")}, {col_blue(\"lognormal\")},
+        {col_blue(\"normal\")} or {col_blue(\"fixed\")}."
+      )
+    )
   }
   return(get_element(x, id, "parameters"))
 }
@@ -1227,16 +1315,26 @@ get_parameters <- function(x, id = NULL) {
 ##' @inheritParams get_element
 ##' @description `r lifecycle::badge("experimental")`
 ##' @return The pmf of the distribution
+##' @importFrom cli cli_abort
 ##' @export
 ##' @examples
 ##' dist <- discretise(Gamma(shape = 3, rate = 2, max = 10))
 ##' get_pmf(dist)
 get_pmf <- function(x, id = NULL) {
   if (!is(x, "dist_spec")) {
-    stop("Can only get pmf of a <dist_spec>.")
+    cli_abort(
+      c(
+        "!" = "Can only get pmf of a {.cls dist_spec}.",
+        "i" = "You have supplied an object of class {.cls {class(x)}}."
+      )
+    )
   }
   if (get_distribution(x, id) != "nonparametric") {
-    stop("Cannot get pmf of a parametric distribution.")
+    cli_abort(
+      c(
+        "!" = "To get PMF, distribution must be \"nonparametric\"."
+      )
+    )
   }
   return(get_element(x, id, "pmf"))
 }
@@ -1245,6 +1343,7 @@ get_pmf <- function(x, id = NULL) {
 ##'
 ##' @inheritParams get_element
 ##' @description `r lifecycle::badge("experimental")`
+##' @importFrom cli cli_abort
 ##' @return A character string naming the distribution (or "nonparametric")
 ##' @export
 ##' @examples
@@ -1252,7 +1351,12 @@ get_pmf <- function(x, id = NULL) {
 ##' get_distribution(dist)
 get_distribution <- function(x, id = NULL) {
   if (!is(x, "dist_spec")) {
-    stop("Can only get distribution of a <dist_spec>.")
+    cli_abort(
+      c(
+        "!" = "To get distribution of x, it must be a {.cls dist_spec}.",
+        "i" = "You have supplied an object of class {.cls {class(x)}}."
+      )
+    )
   }
   return(get_element(x, id, "distribution"))
 }

@@ -275,6 +275,7 @@ clean_regions <- function(data, non_zero_points) {
       "Producing estimates for: %s regions",
       length(eval_regions)
     )
+    #nolint start: undesirable_function_linter
     message <- ifelse(length(orig_regions) == 0, 0,
       length(orig_regions)
     )
@@ -282,11 +283,13 @@ clean_regions <- function(data, non_zero_points) {
       "Regions excluded: %s regions",
       message
     )
+    #nolint end
   } else {
     futile.logger::flog.info(
       "Producing estimates for: %s",
       toString(eval_regions)
     )
+    #nolint start: undesirable_function_linter
     message <- ifelse(length(orig_regions) == 0, "none",
       toString(orig_regions)
     )
@@ -294,6 +297,7 @@ clean_regions <- function(data, non_zero_points) {
       "Regions excluded: %s",
       message
     )
+    #nolint end
   }
   # exclude zero regions
   reported_cases <- reported_cases[!is.na(region)][region %in% eval_regions]
