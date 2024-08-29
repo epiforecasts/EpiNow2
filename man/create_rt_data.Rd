@@ -36,6 +36,9 @@ create_rt_data(rt = NULL)
 
 # using breakpoints
 create_rt_data(rt_opts(use_breakpoints = TRUE), breakpoints = rep(1, 10))
+
+# using random walk
+create_rt_data(rt_opts(rw = 7), breakpoints = rep(1, 10))
 }
 }
 \seealso{
