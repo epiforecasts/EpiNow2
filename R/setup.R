@@ -41,14 +41,14 @@ setup_logging <- function(threshold = "INFO", file = NULL,
   if (!is.null(file)) {
     if (mirror_to_console) {
       cli_inform(
-        "Writing {col_blue(\"name\")} logs to the console and: {.file file}."
+        "Writing {col_blue(name)} logs to the console and: {.file {file}}."
       )
       futile.logger::flog.appender(
         futile.logger::appender.tee(file), name = name
       )
     } else {
       cli_inform(
-        "Writing {col_blue(\"name\"} logs to: {.file file}."
+        "Writing {col_blue(name)} logs to: {.file {file}}."
       )
       futile.logger::flog.appender(
         futile.logger::appender.file(file), name = name
@@ -56,7 +56,7 @@ setup_logging <- function(threshold = "INFO", file = NULL,
     }
   } else {
     cli_inform(
-      "Writing {col_blue(\"name\"} logs to the console."
+      "Writing {col_blue(name)} logs to the console."
     )
     futile.logger::flog.appender(futile.logger::appender.console(), name = name)
   }
