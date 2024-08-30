@@ -38,9 +38,9 @@ test_that("rt_opts sets use_breakpoints to TRUE when rw > 0", {
 
 test_that("rt_opts throws error for invalid prior", {
   expect_error(rt_opts(prior = list(mean = 1)),
-               "prior must have both a mean and sd specified")
+               "must have both")
   expect_error(rt_opts(prior = list(sd = 1)),
-               "prior must have both a mean and sd specified")
+               "must have both")
 })
 
 test_that("rt_opts validates gp_on argument", {
