@@ -309,8 +309,11 @@ test_that("delay distributions can be specified in different ways", {
   )})
 
 test_that("get functions report errors", {
-  expect_error(get_parameters("test"), "only get parameters")
-  expect_error(get_distribution(Gamma(mean = 4, sd = 1), 2), "can't be greater")
+  expect_error(get_parameters("test"), "Object must be of class")
+  expect_error(
+    get_distribution(Gamma(mean = 4, sd = 1), 2),
+    "cannot be greater than the number of distributions"
+  )
   expect_error(get_pmf(Gamma(mean = 4, sd = 1)), "parametric")
   expect_error(
     get_parameters(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))),
