@@ -322,8 +322,8 @@ forecast_infections <- function(estimates,
   ## check inputs
   assert_class(estimates, "estimate_infections")
   assert_names(names(estimates), must.include = "fit")
-  if (!test_numeric(R, lower = 0, null.ok = TRUE) ||
-    !test_data_frame(R, null.ok = TRUE)) {
+  if (!(test_numeric(R, lower = 0, null.ok = TRUE) ||
+    test_data_frame(R, null.ok = TRUE))) {
     cli_abort(
       c(
         "!" = "R must either be a {.cls numeric} vector or
