@@ -25,7 +25,7 @@
 #'
 #' @importFrom futile.logger flog.threshold flog.appender appender.tee
 #' @importFrom futile.logger appender.file flog.info
-#' @importFrom cli cli_inform
+#' @importFrom cli cli_inform col_blue
 #' @return Nothing
 #' @export
 setup_logging <- function(threshold = "INFO", file = NULL,
