@@ -24,6 +24,7 @@
 #' @return A stan fit of an interval censored distribution
 #' @export
 #' @inheritParams stan_opts
+#' @importFrom cli cli_warn col_blue
 #' @examples
 #' \donttest{
 #' # integer adjusted exponential model
@@ -50,10 +51,12 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
                      backend = "rstan") {
   if (samples < 1000) {
     samples <- 1000
-    warning(sprintf("%s %s", "`samples` must be at least 1000.",
-                    "Now setting it to 1000 internally."
-                    )
-            )
+    cli_warn(
+      c(
+        "!" = "{.var samples} must be at least {col_blue(\"1000\")}.",
+        "i" = "Now setting it to {col_blue(\"1000\")} internally."
+      )
+    )
   }
   # model parameters
   lows <- values - 1
@@ -149,6 +152,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #' @importFrom future.apply future_lapply
 #' @importFrom rstan extract
 #' @importFrom data.table data.table rbindlist
+#' @importFrom cli cli_abort col_blue
 #' @export
 #' @examples
 #' \donttest{
@@ -165,9 +169,14 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
                                   bootstrap_samples = 250, max_value,
                                   verbose = FALSE) {
   if (!dist %in% c("gamma", "lognormal")) {
-    stop("Only lognormal and gamma distributions are supported")
+    cli_abort(
+      c(
+        "x" = "Unsupported distribution.",
+        "i" = "Only {col_blue(\"lognormal\")} and {col_blue(\"gamma\")}
+      distributions are supported"
+      )
+    )
   }
-
   if (samples < bootstraps) {
     samples <- bootstraps
   }

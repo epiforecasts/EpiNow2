@@ -595,13 +595,18 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' removed.
 #' @return A `<dist_spec>` where probability masses below the threshold level
 #' have been removed
+#' @importFrom cli cli_abort
 #' @keywords internal
 apply_tolerance <- function(x, tolerance) {
   lifecycle::deprecate_warn(
     "1.6.0", "apply_tolerance()", "bound_dist()"
   )
   if (!is(x, "dist_spec")) {
-    stop("Can only apply tolerance to distributions in a <dist_spec>.")
+    cli_abort(
+      c(
+        "!" = "Can only apply tolerance to distributions in a {.cls dist_spec}."
+      )
+    )
   }
   y <- lapply(x, function(x) {
     if (x$distribution == "nonparametric") {

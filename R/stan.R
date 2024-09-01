@@ -14,6 +14,7 @@
 #'
 #' @param ... Additional arguments passed to [cmdstanr::cmdstan_model()].
 #'
+#' @importFrom cli cli_inform col_blue
 #' @return A `cmdstanr` model.
 #' @export
 epinow2_cmdstan_model <- function(model = "estimate_infections",
@@ -26,8 +27,8 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
     dir, paste0(model, ".stan")
   )
   if (verbose) {
-    message(sprintf("Using model %s.", model))
-    message(sprintf("dir is %s.", toString(dir)))
+    cli_inform("Using model {col_blue(model)}.")
+    cli_inform("{.var dir} is {.file {dir}}.")
   }
 
   monitor <- suppressMessages
@@ -91,6 +92,7 @@ epinow2_stan_model <- function(backend = c("rstan", "cmdstanr"),
 #'
 #' Internal function for dispatch to fitting with NUTS or VB.
 #' @inheritParams fit_model_with_nuts
+#' @importFrom cli cli_abort
 #' @keywords internal
 fit_model <- function(args, id = "stan") {
   if (args$method == "sampling") {
@@ -102,7 +104,13 @@ fit_model <- function(args, id = "stan") {
   } else if (args$method %in% c("vb", "laplace", "pathfinder")) {
     fit <- fit_model_approximate(args, id = id)
   } else {
-    stop("method ", args$method, " unknown")
+    cli_abort(
+      c(
+        "!" = "You supplied method {args$method}, which is unknown.",
+        "i" = "Use one of {col_blue(\"sampling\")}, {col_blue(\"vb\")},
+      {col_blue(\"laplace\")}, or {col_blue(\"pathfinder\")}."
+      )
+    )
   }
   return(fit)
 }

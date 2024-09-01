@@ -40,6 +40,7 @@
 #' @importFrom checkmate assert_data_frame assert_date assert_numeric
 #'   assert_subset assert_integer
 #' @importFrom data.table data.table merge.data.table nafill rbindlist
+#' @importFrom cli cli_abort
 #' @return A data.table of simulated infections (variable `infections`) and
 #'   reported cases (variable `reported_cases`) by date.
 #' @export
@@ -134,10 +135,12 @@ simulate_infections <- function(estimates, R, initial_infections,
   ))
 
   if (length(data$delay_params_sd) > 0 && any(data$delay_params_sd > 0)) {
-    stop(
-      "Cannot simulate from uncertain parameters. Use the [fix_dist()] ",
-      "function to set the parameters of uncertain distributions either the ",
-      "mean or a randomly sampled value"
+    cli_abort(
+      c(
+        "!" = "Cannot simulate from uncertain parameters.",
+        "i" = "Use {.fn fix_dist} to set the parameters of uncertain
+        distributions using either the mean or a randomly sampled value."
+      )
     )
   }
   data$delay_params <- array(
@@ -150,9 +153,11 @@ simulate_infections <- function(estimates, R, initial_infections,
   ))
 
   if (data$obs_scale_sd > 0) {
-    stop(
-      "Cannot simulate from uncertain observation scaling; use fixed scaling ",
-      "instead."
+    cli_abort(
+      c(
+        "!" = "Cannot simulate from uncertain observation scaling.",
+        "i" = "Use fixed scaling instead."
+      )
     )
   }
   if (data$obs_scale) {
@@ -165,9 +170,11 @@ simulate_infections <- function(estimates, R, initial_infections,
 
   if (obs$family == "negbin") {
     if (data$phi_sd > 0) {
-      stop(
-        "Cannot simulate from uncertain overdispersion; use fixed ",
-        "overdispersion instead."
+      cli_abort(
+        c(
+          "!" = "Cannot simulate from uncertain overdispersion.",
+          "i" = "Use fixed overdispersion instead."
+        )
       )
     }
     data$rep_phi <- array(data$phi_mean, dim = c(1, 1))
@@ -253,6 +260,7 @@ simulate_infections <- function(estimates, R, initial_infections,
 #' @importFrom lubridate days
 #' @importFrom checkmate assert_class assert_names test_numeric test_data_frame
 #' assert_numeric assert_integerish assert_logical
+#' @importFrom cli cli_abort
 #' @return A list of output as returned by [estimate_infections()] but based on
 #' results from the specified scenario rather than fitting.
 #' @seealso [dist_spec()] [generation_time_opts()] [delay_opts()] [rt_opts()]
@@ -314,11 +322,15 @@ forecast_infections <- function(estimates,
   ## check inputs
   assert_class(estimates, "estimate_infections")
   assert_names(names(estimates), must.include = "fit")
-  stopifnot(
-    "R must either be a numeric vector or a data.frame" =
-    test_numeric(R, lower = 0, null.ok = TRUE) ||
-    test_data_frame(R, null.ok = TRUE)
-  )
+  if (!(test_numeric(R, lower = 0, null.ok = TRUE) ||
+    test_data_frame(R, null.ok = TRUE))) {
+    cli_abort(
+      c(
+        "!" = "R must either be a {.cls numeric} vector or
+        a {.cls data.frame}."
+      )
+    )
+  }
   if (test_data_frame(R)) {
     assert_names(names(R), must.include = c("date", "value"))
     assert_numeric(R$value, lower = 0)

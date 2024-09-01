@@ -63,6 +63,7 @@ extract_static_parameter <- function(param, samples) {
 #' @param pars Any selection of parameters to extract
 #' @param include whether the parameters specified in `pars` should be included
 #' (`TRUE`, the default) or excluded (`FALSE`)
+#' @importFrom cli cli_abort
 #' @return List of data.tables with samples
 #' @export
 #'
@@ -76,7 +77,10 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
   }
   if (!inherits(stan_fit, "CmdStanMCMC") &&
       !inherits(stan_fit, "CmdStanFit")) {
-    stop("stan_fit must be a <stanfit>, <CmdStanMCMC> or <CmdStanFit> object")
+    cli_abort(
+      "{.var stan_fit} must be a {.cls stanfit}, {.cls CmdStanMCMC} or
+      {.cls CmdStanFit} object."
+    )
   }
 
   # extract sample from stan object

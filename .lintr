@@ -2,7 +2,16 @@ linters: linters_with_tags(
     tags = NULL, # include all linters
     implicit_integer_linter = NULL,
     extraction_operator_linter = NULL,
-    undesirable_function_linter = NULL,
+    keyword_quote_linter = NULL,
+    undesirable_function_linter(
+      fun = c(
+         # Base messaging
+         "message" = "use cli::cli_inform()",
+         "warning" = "use cli::cli_warn()",
+         "stop" = "use cli::cli_abort()",
+         "stopifnot" = "use cli::cli_abort()"
+      )
+    ),
     function_argument_linter = NULL,
     indentation_linter = NULL,
     object_name_linter = NULL,

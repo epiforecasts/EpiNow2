@@ -144,5 +144,5 @@ test_that("check_reports_valid errors for bad 'secondary' specifications", {
 
 test_that("check_sparse_pmf_tail throws a warning as expected", {
   pmf <- c(0.4, 0.30, 0.20, 0.05,  0.049995, 4.5e-06, rep(1e-7, 5))
-  expect_warning(check_sparse_pmf_tail(pmf), "consecutive values smaller than")
+  expect_warning(check_sparse_pmf_tail(pmf), "PMF tail has")
 })

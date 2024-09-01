@@ -28,14 +28,14 @@ test_that("gp_opts warns for uncommon Matern kernel orders", {
 
 test_that("gp_opts handles deprecated matern_type parameter", {
   lifecycle::expect_deprecated(gp_opts(matern_type = 5 / 2))
-  gp <- gp_opts(matern_type = 5 / 2)
+  gp <- suppressWarnings(gp_opts(matern_type = 5 / 2))
   expect_equal(gp$matern_order, 5 / 2)
 })
 
 test_that("gp_opts stops for incompatible matern_order and matern_type", {
   expect_error(
-    gp_opts(matern_order = 3 / 2, matern_type = 5 / 2),
-    "Incompatible `matern_order` and `matern_type`"
+    suppressWarnings(gp_opts(matern_order = 3 / 2, matern_type = 5 / 2)),
+    "must be the same, if both are supplied."
   )
 })
 

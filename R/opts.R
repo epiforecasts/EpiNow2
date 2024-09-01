@@ -19,6 +19,7 @@
 #'   will be applied, i.e. any parameters in `dist` will be treated as a single
 #'   parameters.
 #' @inheritParams apply_default_tolerance
+#' @importFrom cli cli_warn cli_abort col_blue
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
@@ -52,22 +53,29 @@ gt_opts <- function(dist = Fixed(1), ...,
       !missing(disease) || !missing(source) || !missing(fixed) ||
       !missing(max) ||
       (!is(dist, "dist_spec"))) {
-    stop(
-      "The generation time distribution should be given to ",
-      "`generation_time_opts` using a `dist_spec`. ",
-      "This behaviour has changed from previous versions of `EpiNow2` and ",
-      "any code using it may need to be updated as any other ways of ",
-      "specifying the generation time are deprecated.",
-      "For examples and more ",
-      "information, see the relevant documentation pages using ",
-      "`?generation_time_opts`")
+    cli_abort(
+      c(
+        "!" = "The generation time distribution must be passed through
+      {.fn gt_opts} or {.fn generation_time_opts}. ",
+        "i" = "This behaviour has changed from previous versions of `EpiNow2`
+      and any code using it must be updated as any other ways of
+      specifying the generation time are deprecated. {col_blue(\"For
+      examples and more information, see the relevant documentation
+      pages using ?gt_opts\")}"
+      )
+    )
   }
   if (missing(dist)) {
-    warning(
-      "No generation time distribution given. Assuming a fixed generation ",
-      "time of 1 day, i.e. the reproduction number is the same as the daily ",
-      "growth rate. If this was intended then this warning can be silenced by ",
-      "setting `dist` explicitly to `Fixed(1)`."
+    #nolint start: duplicate_argument_linter
+    cli_warn(
+      c(
+        "!" = "No generation time distribution given.",
+        "i" = "Now using a fixed generation time of 1 day, i.e. the
+        reproduction number is the same as the daily growth rate.",
+        "i" = "If this was intended then this warning can be
+        silenced by setting {.var dist = Fixed(1)}'."
+      )
+      #nolint end
     )
   }
   ## apply default tolerance if `dist` is unconstrained
@@ -162,6 +170,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' @param ... deprecated; use `dist` instead
 #' @param fixed deprecated; use `dist` instead
 #' @inheritParams generation_time_opts
+#' @importFrom cli cli_abort
 #' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
 #' [bootstrapped_dist_fit()] \code{\link{Distributions}}
@@ -184,20 +193,26 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
                        default_tolerance = 0.001, weight_prior = TRUE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec") || !missing(fixed)) { ## could be old syntax
-    stop(
-      "Delay distributions must be of given either using a call to ",
-      "`dist_spec` or one of the `get_...` functions such as ",
-      "`get_incubation_period`. ",
-      "This behaviour has changed from previous versions of `EpiNow2` and ",
-      "any code using it may need to be updated as any other ways of ",
-      "specifying delays are deprecated. ",
-      "For examples and more ",
-      "information, see the relevant documentation pages using ",
-      "`?delay_opts`."
+    #nolint start: duplicate_argument_linter
+    cli_abort(
+      c(
+        "!" = "Delay distributions must be given using a call to
+        {.fn delay_opts}",
+        "i" = "This behaviour has changed from previous versions of `EpiNow2`
+      and any code using it must be updated as any other ways of specifying
+      delays are deprecated.",
+        "i" = "For examples and more information, see the relevant
+        documentation pages using {.code ?delay_opts}."
+      )
     )
+    #nolint end
   } else if (length(dot_options) > 0) {
     ## can be removed once dot options are hard deprecated
-    stop("Unknown named arguments passed to `delay_opts`")
+    cli_abort(
+      c(
+        "!" = "Unknown named arguments passed to {.fn delay_opts}."
+      )
+    )
   }
   ## apply default tolerance if `dist` is unconstrained
   dist <- apply_default_tolerance(
@@ -229,6 +244,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
 #'   i.e. the truncation distribution will be treated as a single parameter.
 #'
 #' @inheritParams gt_opts
+#' @importFrom cli cli_abort
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'
@@ -244,15 +260,18 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
 trunc_opts <- function(dist = Fixed(0), default_tolerance = 0.001,
                        weight_prior = FALSE) {
   if (!is(dist, "dist_spec")) {
-    stop(
-      "Truncation distributions must be of given either using a call to ",
-      "`dist_spec` or one of the `get_...` functions. ",
-      "This behaviour has changed from previous versions of `EpiNow2` and ",
-      "any code using it may need to be updated as any other ways of ",
-      "specifying delays are deprecated and will be removed in ",
-      "the next version. For examples and more ",
-      "information, see the relevant documentation pages using ",
-      "`?trunc_opts`"
+    #nolint start: duplicate_argument_linter
+    cli_abort(
+      c(
+        "!" = "Truncation distributions must be given using a call to
+        {.fn trunc_opts}.",
+        "i" = "This behaviour has changed from previous versions of `EpiNow2`
+      and any code using it must be updated as any other ways of specifying
+      delays are deprecated.",
+        "i" = "For examples and more information, see the relevant
+        documentation pages using {.code ?trunc_opts}."
+      )
+    #nolint end
     )
   }
   ## apply default tolerance if `dist` is unconstrained
@@ -307,6 +326,7 @@ trunc_opts <- function(dist = Fixed(0), default_tolerance = 0.001,
 #' reproduction number.
 #' @inheritParams create_future_rt
 #' @importFrom rlang arg_match
+#' @importFrom cli cli_abort
 #' @export
 #' @examples
 #' # default settings
@@ -340,7 +360,13 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
   }
 
   if (!("mean" %in% names(rt$prior) && "sd" %in% names(rt$prior))) {
-    stop("prior must have both a mean and sd specified")
+    cli_abort(
+      c(
+        "!" = "{.var prior} must have both {.var mean} and {.var sd}
+        specified.",
+        "i" = "Did you forget to specify {.var mean} and/or {.var sd}?"
+      )
+    )
   }
   attr(rt, "class") <- c("rt_opts", class(rt))
   return(rt)
@@ -374,6 +400,7 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
 #' average to use when estimating Rt. This must be odd so that the central
 #' estimate is included.
 #' @importFrom rlang arg_match
+#' @importFrom cli cli_abort
 #'
 #' @return A `<backcalc_opts>` object of back calculation settings.
 #' @export
@@ -388,9 +415,12 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
     rt_window = as.integer(rt_window)
   )
   if (backcalc$rt_window %% 2 == 0) {
-    stop(
-      "Rt rolling average window must be odd in order to include the current
-       estimate"
+    cli_abort(
+      c(
+        "!" = "{.var rt_window} must be odd in order to
+        include the current estimate.",
+        "i" = "You have supplied an even number."
+      )
     )
   }
   attr(backcalc, "class") <- c("backcalc_opts", class(backcalc))
@@ -453,6 +483,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' kernel. They are only used if `kernel` is set to "periodic".
 #'
 #' @importFrom rlang arg_match
+#' @importFrom cli cli_abort cli_warn
 #' @return A `<gp_opts>` object of settings defining the Gaussian process
 #' @export
 #' @examples
@@ -485,9 +516,12 @@ gp_opts <- function(basis_prop = 0.2,
 
   if (!missing(matern_type)) {
     if (!missing(matern_order) && matern_type != matern_order) {
-      stop(
-        "Incompatible `matern_order` and `matern_type`. ",
-        "Use `matern_order` only."
+      cli_abort(
+        c(
+          "!" = "{.var matern_order} and {.var matern_type} must be the same, if
+          both are supplied.",
+          "i" = "Rather only use {.var matern_order} only."
+        )
       )
     }
     matern_order <- matern_type
@@ -501,9 +535,11 @@ gp_opts <- function(basis_prop = 0.2,
   } else if (
       !(is.infinite(matern_order) || matern_order %in% c(1 / 2, 3 / 2, 5 / 2))
     ) {
-    warning(
-      "Uncommon Matern kernel order. Common orders are `1 / 2`, `3 / 2`,", # nolint
-      " and `5 / 2`" # nolint
+    cli_warn(
+      c(
+        "!" = "Uncommon Matern kernel order supplied.",
+        "i" = "Use one of `1 / 2`, `3 / 2`, or `5 / 2`" # nolint
+      )
     )
   }
 
@@ -565,6 +601,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #'   be returned by the model.
 #' @importFrom rlang arg_match
+#' @importFrom cli cli_inform cli_abort
 #' @return An `<obs_opts>` object of observation model settings.
 #' @export
 #' @examples
@@ -587,20 +624,29 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      return_likelihood = FALSE) {
   na <- arg_match(na)
   if (na == "accumulate") {
-    message(
-      "Accumulating modelled values that correspond to NA values in the data ",
-      "by adding them to the next non-NA data point. This means that the ",
-      "first data point is not included in the likelihood but used only to ",
-      "reset modelled observations to zero. If the first data point should be ",
-      "included in the likelihood this can be achieved by adding a data point ",
-      "of arbitrary value before the first data point."
+    #nolint start: duplicate_argument_linter
+    cli_inform(
+      c(
+        "i" = "Accumulating modelled values that correspond to NA values in the
+      data by adding them to the next non-NA data point.",
+        "i" = "This means that the first data point is not included in the
+      likelihood but used only to reset modelled observations to zero.",
+        "i" = "{col_red('If the first data point should be included in the
+        likelihood this can be achieved by adding a data point of arbitrary
+        value before the first data point.')}"
+      ),
+      .frequency = "regularly",
+      .frequency_id = "obs_opts"
     )
+  #nolint end
   }
 
   if (length(phi) == 2 && is.numeric(phi)) {
-    stop(
-      "Specifying `phi` as a length 2 vector is deprecated. Mean and SD ",
-      "should be given as list elements."
+    cli_abort(
+      c(
+        "!" = "Specifying {.var phi} as a vector of length 2 is deprecated.",
+        "i" = "Mean and SD should be given as list elements."
+      )
     )
   }
   obs <- list(
@@ -620,7 +666,13 @@ obs_opts <- function(family = c("negbin", "poisson"),
       obs[[param]] <- list(mean = obs[[param]], sd = 0)
     }
     if (!(all(c("mean", "sd") %in% names(obs[[param]])))) {
-      stop("If specifying a ", param, " as list both a mean and sd are needed")
+      cli_abort(
+        c(
+          "!" = "Both a {.var mean} and {.var sd} are needed if specifying
+        {.strong {param}} as list.",
+          "i" = "Did you forget to specify {.var mean} and/or {.var sd}?"
+        )
+      )
     }
   }
 
@@ -673,6 +725,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
 #' @param ... Additional parameters to pass to [rstan::sampling()] or
 #' [cmdstanr::sample()].
 #' @importFrom utils modifyList
+#' @importFrom cli cli_warn
 #' @return A list of arguments to pass to [rstan::sampling()] or
 #' [cmdstanr::sample()].
 #' @export
@@ -701,9 +754,11 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
   control_def <- list(adapt_delta = 0.9, max_treedepth = 12)
   control_def <- modifyList(control_def, control)
   if (any(c("iter", "iter_sampling") %in% names(dot_args))) {
-    warning(
-      "Number of samples should be specified using the `samples` and `warmup`",
-      "arguments rather than `iter` or `iter_sampliing` which will be ignored."
+    cli_warn(
+      "!" = "Number of samples must be specified using the {.var samples}
+      and {.var warmup} arguments rather than {.var iter} or
+      {.var iter_sampliing}.",
+      "i" = "Supplied {.var iter} or {.var iter_sampliing} will be ignored."
     )
   }
   dot_args$iter <- NULL
@@ -770,6 +825,7 @@ stan_vb_opts <- function(samples = 2000,
 #' @inheritParams stan_opts
 #' @inheritParams stan_vb_opts
 #' @param ... Additional parameters to pass to [cmdstanr::laplace()].
+#' @importFrom cli cli_abort col_blue
 #' @return A list of arguments to pass to [cmdstanr::laplace()].
 #' @export
 #' @examples
@@ -778,8 +834,12 @@ stan_laplace_opts <- function(backend = "cmdstanr",
                               trials = 10,
                               ...) {
   if (backend != "cmdstanr") {
-    stop(
-      "The Laplace algorithm is only available with the \"cmdstanr\" backend."
+    cli_abort(
+      c(
+        "!" = "Backend must be set to {col_blue(\"cmdstanr\")} to use
+        the Laplace algorithm.",
+        "i" = "Change {.var backend} to col_blue(\"cmdstanr\")}."
+      )
     )
   }
   opts <- list(trials = trials)
@@ -795,6 +855,7 @@ stan_laplace_opts <- function(backend = "cmdstanr",
 #' @inheritParams stan_opts
 #' @inheritParams stan_vb_opts
 #' @param ... Additional parameters to pass to [cmdstanr::laplace()].
+#' @importFrom cli cli_abort col_blue
 #' @return A list of arguments to pass to [cmdstanr::laplace()].
 #' @export
 #' @examples
@@ -804,9 +865,12 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
                                  trials = 10,
                                  ...) {
   if (backend != "cmdstanr") {
-    stop(
-      "The pathfinder algorithm is only available with the \"cmdstanr\" ",
-      "backend."
+    cli_abort(
+      c(
+        "!" = "Backend must be set to {col_blue(\"cmdstanr\")} to use
+        the pathfinder algorithm.",
+        "i" = "Change {.var backend} to col_blue(\"cmdstanr\")}."
+      )
     )
   }
   opts <- list(
@@ -847,6 +911,7 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 #'   [stan_sampling_opts()] or [stan_vb_opts()], depending on the method
 #'
 #' @importFrom rlang arg_match
+#' @importFrom cli cli_abort cli_warn col_blue
 #' @return A `<stan_opts>` object of arguments to pass to the appropriate
 #' rstan functions.
 #' @export
@@ -869,17 +934,22 @@ stan_opts <- function(object = NULL,
   backend_passed <- !missing(backend)
   backend <- arg_match(backend)
   if (backend == "cmdstanr" && !requireNamespace("cmdstanr", quietly = TRUE)) {
-    stop(
-      "The `cmdstanr` package needs to be installed for using the ",
-      "\"cmdstanr\" backend."
+    cli_abort(
+      c(
+        "x" = "The {col_blue('cmdstanr')} R package is not installed.",
+        "i" = "Install it from {.url https://github.com/stan-dev/cmdstanr}
+        to use the {col_blue('cmdstanr')} backend."
+      )
     )
   }
   opts <- list()
   if (!is.null(object)) {
     if (backend_passed) {
-      warning(
-        "`backend` option will be ignored as a stan model object has been ",
-        "passed."
+      cli_warn(
+        c(
+          "!" = "{.var backend} option will be ignored as a stan model
+        object has been passed."
+        )
       )
     }
     if (inherits(object, "stanmodel")) {
@@ -887,7 +957,11 @@ stan_opts <- function(object = NULL,
     } else if (inherits(object, "CmdStanModel")) {
       backend <- "cmdstanr"
     } else {
-      stop("`object` must be a stan model object")
+      cli_abort(
+        c(
+          "!" = "{.var object} must be a stan model object."
+        )
+      )
     }
   } else {
     backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
@@ -1002,23 +1076,31 @@ filter_opts <- function(opts, region) {
 #'   constrained by having a maximum or tolerance this is ignored.
 #' @param tolerance_set Logical; whether the default tolerance has been set by
 #'   the user; if yes and `dist` is constrained a warning is issued
+#' @importFrom cli cli_inform cli_warn
 #'
 #' @return A <dist_spec> with the default tolerance set if previously not
 #'   constrained
 #' @keywords internal
 apply_default_tolerance <- function(dist, default_tolerance, tolerance_set) {
   if (!is_constrained(dist)) {
-    message(
-      "Unconstrained distributon passed as a delay. ",
-      "Constraining with default tolerance ", default_tolerance,  ".\n",
-      "To silence this message, specify delay distributions with `max` or ",
-      "`tolerance`."
+    #nolint start: duplicate_argument_linter
+    cli_inform(
+      c(
+        "i" = "Unconstrained distributon passed as a delay. ",
+        "i" = "Constraining with default tolerance {default_tolerance}",
+        "i" = "To silence this message, specify delay distributions
+      with {.var max} or {.var tolerance}."
+      )
     )
+    #nolint end
     attr(dist, "tolerance") <- default_tolerance
   } else if (tolerance_set) {
-    warning(
-      "Ignoring given default tolerance as distribution is already ",
-      "constrained.")
+    cli_warn(
+      c(
+        "!" = "Ignoring given default tolerance.",
+        "i" = "Distribution is already constrained."
+      )
+    )
   }
   return(dist)
 }
