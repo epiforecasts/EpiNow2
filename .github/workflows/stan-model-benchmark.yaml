@@ -35,10 +35,10 @@ jobs:
             cmdstanr
 
       - name: Install cmdstan
-        run: |
-          cmdstanr::check_cmdstan_toolchain(fix = TRUE)
-          cmdstanr::install_cmdstan(cores = 2, quiet = TRUE)
-        shell: Rscript {0}
+        uses: epinowcast/actions/install-cmdstan@v1
+        with:
+          cmdstan-version: 'latest'
+          num-cores: 2
 
       - name: Checkout main branch in parallel and move to separate dir
         run: |

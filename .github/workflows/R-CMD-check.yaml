@@ -55,7 +55,7 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
-          extra-repositories: https://mc-stan.org/r-packages/
+          extra-repositories: https://stan-dev.r-universe.dev
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -68,10 +68,10 @@ jobs:
 
       - name: Install cmdstan
         if: runner.os != 'Windows'
-        run: |
-          cmdstanr::check_cmdstan_toolchain(fix = TRUE)
-          cmdstanr::install_cmdstan(cores = 2, quiet = TRUE)
-        shell: Rscript {0}
+        uses: epinowcast/actions/install-cmdstan@v1
+        with:
+          cmdstan-version: 'latest'
+          num-cores: 2
 
       - uses: r-lib/actions/check-r-package@v2
         with:
