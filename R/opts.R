@@ -644,9 +644,23 @@ obs_opts <- function(family = c("negbin", "poisson"),
       .frequency = "regularly",
       .frequency_id = "obs_opts"
     )
-  #nolint end
+  } else {
+    cli_inform(
+      c(
+        "i" = "{col_red(\"Explicit NA values will be treated as missing as
+        compared to being treated as zero observations in previous
+        versions.\")}",
+        "i" = "If you prefer for NA's to be treated as zero observations, see
+        solutions in {.url https://github.com/epiforecasts/EpiNow2/issues/767#issuecomment-2348805272}", #nolint
+        "i" = "If your data is reported at less regular intervals (for example
+        weekly), see the \"accumulate\" option.",
+        "i"  = "This behaviour was introduced in version 1.5.0."
+      ),
+      .frequency = "regularly",
+      .frequency_id = "obs_opts"
+    )
   }
-
+  #nolint end
   if (length(phi) == 2 && is.numeric(phi)) {
     cli_abort(
       c(
