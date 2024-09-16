@@ -33,6 +33,8 @@ jobs:
             loo
             matrixStats
             local::.
+            cran::rstan
+
       - name: Run synthetic validation
         run: |
           source("inst/dev/recover-synthetic/rt.R")

@@ -65,6 +65,7 @@ jobs:
             rcmdcheck
             cmdstanr
             testthat
+            cran::rstan
 
       - name: Install cmdstan
         if: runner.os != 'Windows'

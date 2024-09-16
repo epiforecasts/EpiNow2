@@ -33,6 +33,7 @@ jobs:
             covr
             cmdstanr
             testthat
+            cran::rstan
 
       - name: Install cmdstan
         run: |

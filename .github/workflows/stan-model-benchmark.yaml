@@ -33,6 +33,7 @@ jobs:
             here
             purrr
             cmdstanr
+            cran::rstan
 
       - name: Install cmdstan
         uses: epinowcast/actions/install-cmdstan@v1

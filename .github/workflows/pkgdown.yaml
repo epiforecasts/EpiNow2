@@ -29,7 +29,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: NA
-          extra-packages: pkgdown local::.
+          extra-packages: pkgdown local::. cran::rstan
 
       - name: Build site
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
