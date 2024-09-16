@@ -644,7 +644,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
       .frequency = "regularly",
       .frequency_id = "obs_opts"
     )
-  } else {
+  } else if (missing(na)) {
     cli_inform(
       c(
         "i" = "{col_red(\"As of version 1.5.0 missing dates or dates with `NA`
