@@ -79,7 +79,7 @@
 #' options(old_opts)
 #' }
 # nolint start: cyclocomp_linter
-epinow <- function(data,
+epinow <- function(data, 
                    generation_time = gt_opts(),
                    delays = delay_opts(),
                    truncation = trunc_opts(),
