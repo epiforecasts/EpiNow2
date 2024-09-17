@@ -196,7 +196,7 @@ test_data_complete <- function(data) {
     "date",
     intersect(c("confirm", "primary", "secondary"), names(data))
   )
-  if (any(sapply(data[, ..columns_to_check], anyNA))) {
+  if (any(sapply(data[, columns_to_check, with = FALSE], anyNA))) {
     return(FALSE)
   }
 
@@ -225,6 +225,7 @@ test_data_complete <- function(data) {
 #'
 #' @param obs A call to [obs_opts()]
 #' @param data The raw data
+#' @importFrom cli cli_inform col_red
 #'
 #' @return Called for its side effects
 #' @keywords internal
