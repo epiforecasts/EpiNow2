@@ -212,3 +212,43 @@ test_data_complete <- function(data) {
 
   return(TRUE) # Return TRUE if no missing values or gaps in date sequence
 }
+
+#' Check the na settings in obs_opts() with the data and throw messages
+#' where necessary
+#'
+#' @details
+#' This function checks the data to see if it is complete or not and then
+#' checks if the user specified na to be treated as missing. If the latter is
+#' false, it does nothing. If TRUE, it informs the user about how the implicit
+#' or explicit missingness is treated. This function is necessary because
+#' the data argument and observation model do not interact internally.
+#'
+#' @param obs A call to [obs_opts()]
+#' @param data The raw data
+#'
+#' @return Called for its side effects
+#' @keywords internal
+check_na_setting_against_data <- function(data, obs) {
+  # If users are using the default treatment of NA's and their data has
+  # implicit or explicit NA's, inform them of what's happening and alternatives
+  if (!obs$accumulate &&
+      obs$na_as_missing_default_used &&
+      !test_data_complete(data)) {
+    #nolint start: duplicate_argument_linter
+    cli_inform(
+      c(
+        "i" = "{col_red(\"As of version 1.5.0 missing dates or dates with `NA`
+          cases are treated as missing. This is in contrast to previous versions
+          where these were interpreted as dates with zero cases. \")}",
+        "i" = "In order to treat missing or `NA` cases as zeroes, see
+        solutions in {.url https://github.com/epiforecasts/EpiNow2/issues/767#issuecomment-2348805272}", #nolint
+        "i" = "If the data is reported at non-daily intervals (for example
+        weekly), consider using `obs_opts(na=\"accumulate\")`.",
+        "i"  = "For more information on these options, see `?obs_opts`."
+      ),
+      .frequency = "regularly",
+      .frequency_id = "check_na_setting_against_data"
+    )
+    #nolint end
+  }
+}
