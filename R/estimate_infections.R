@@ -167,6 +167,15 @@ estimate_infections <- function(data,
       name = "EpiNow2.epinow.estimate_infections"
     )
   }
+
+  # If the user is using the default treatment of NA's as missing and
+  # their data has implicit or explicit NA's, inform them of what's
+  # happening and alternatives.
+  check_na_setting_against_data(obs = obs, data = dirty_reported_cases)
+  # Remove "na_as_missing_default_used" after using it above
+  obs$na_as_missing_default_used <- NULL
+
+  # Create clean and complete cases
   # Order cases
   reported_cases <- create_clean_reported_cases(
     data, horizon,
@@ -199,6 +208,8 @@ estimate_infections <- function(data,
     horizon
   )
   reported_cases <- reported_cases[-(1:backcalc$prior_window)]
+
+
 
   # Define stan model parameters
   stan_data <- create_stan_data(
