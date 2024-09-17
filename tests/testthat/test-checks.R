@@ -170,3 +170,30 @@ test_that("test_data_complete detects complete and incomplete data", {
   expect_false(test_data_complete(es_missing_secondary))
   expect_false(test_data_complete(ec_implicit_missing))
 })
+
+test_that("check_na_setting_against_data works as expected", {
+  # If data is incomplete and the default na = "missing" is being used,
+  # expect a message
+  expect_message(
+    check_na_setting_against_data(
+      obs = obs_opts(),
+      data = copy(example_confirmed)[c(1, 3), confirm := NA]
+    ),
+    "cases are treated as missing"
+  )
+  # If data is incomplete but the user set na = "missing", then expect no
+  # message
+  expect_no_message(
+    check_na_setting_against_data(
+      obs = obs_opts(na = "missing"),
+      data = copy(example_confirmed)[c(1, 3), confirm := NA]
+    )
+  )
+  # If data is complete, expect no message
+  expect_no_message(
+    check_na_setting_against_data(
+      obs = obs_opts(),
+      data = example_confirmed
+    )
+  )
+})
