@@ -652,7 +652,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
           where these were interpreted as dates with zero cases. \")}",
         "i" = "In order to treat missing or `NA` cases as zeroes, see
         solutions in {.url https://github.com/epiforecasts/EpiNow2/issues/767#issuecomment-2348805272}", #nolint
-        "i" = "If the data is reported at less regular intervals (for example
+        "i" = "If the data is reported at non-daily intervals (for example
         weekly), consider using `obs_opts(na=\"accumulate\")`.",
         "i"  = "For more information on these options, see `?obs_opts`."
       ),
