@@ -179,3 +179,35 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
     )
   }
 }
+
+#' Check if data has either explicit NA values or implicit missing dates.
+#'
+#' @data The data to be checked
+#'
+#' @return FALSE, if data is incomplete
+#' @keywords internal
+test_data_complete <- function(data) {
+  data <- setDT(data) # Convert data to data.table
+
+  # Check for explicit missingness in required columns
+  # (date, confirm, primary, secondary)
+  columns_to_check <- c(
+    "date",
+    intersect(c("confirm", "primary", "secondary"), names(data))
+  )
+  if (any(sapply(data[, ..columns_to_check], anyNA))) {
+    return(FALSE)
+  }
+
+  # Check for implicit missingness by comparing the expected full date sequence
+  complete_dates <- seq(
+    min(data$date, na.rm = TRUE),
+    max(data$date, na.rm = TRUE),
+    by = "1 day"
+  )
+  if (length(complete_dates) > length(unique(data$date))) {
+    return(FALSE)
+  }
+
+  return(TRUE) # Return TRUE if no missing values or gaps in date sequence
+}
