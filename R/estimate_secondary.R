@@ -182,9 +182,9 @@ estimate_secondary <- function(data,
   assert_logical(verbose)
 
   reports <- data.table::as.data.table(data)
-  secondary_reports <- reports[, list(date, confirm = secondary)]
+  secondary_reports_dirty <- reports[, list(date, confirm = secondary)]
   secondary_reports <- create_clean_reported_cases(
-    secondary_reports,
+    secondary_reports_dirty,
     filter_leading_zeros = filter_leading_zeros,
     zero_threshold = zero_threshold
   )
@@ -198,7 +198,6 @@ estimate_secondary <- function(data,
 
   ## fill in missing data (required if fitting to prevalence)
   complete_secondary <- create_complete_cases(secondary_reports)
-
   ## fill down
   secondary_reports[, confirm := nafill(confirm, type = "locf")]
   ## fill any early data up
