@@ -182,9 +182,10 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 
 #' Check if data has either explicit NA values or implicit missing dates.
 #'
-#' @data The data to be checked
+#' @param data The data to be checked
 #'
-#' @return FALSE, if data is incomplete
+#' @return `TRUE` if data is complete, else if data has implicit or explicit
+#' missingness, `FALSE`.
 #' @keywords internal
 test_data_complete <- function(data) {
   data <- setDT(data) # Convert data to data.table
