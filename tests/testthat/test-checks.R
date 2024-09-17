@@ -155,7 +155,11 @@ test_that("test_data_complete detects complete and incomplete data", {
   # example_confirmed with implicit missing (missing entries)
   ec_implicit_missing <- copy(example_confirmed)[-c(1,3,5), ]
   # Create a hypothetical complete example_secondary
-  es <- example_confirmed[, primary := confirm][, secondary := primary * 0.4]
+  es <- copy(example_confirmed)[
+    , primary := confirm
+  ][
+    , secondary := primary * 0.4
+  ]
   # example_secondary with explicit missing primary
   es_missing_primary <- copy(es)[c(1, 3), primary := NA]
   # example_secondary with explicit missing secondary
