@@ -146,3 +146,27 @@ test_that("check_sparse_pmf_tail throws a warning as expected", {
   pmf <- c(0.4, 0.30, 0.20, 0.05,  0.049995, 4.5e-06, rep(1e-7, 5))
   expect_warning(check_sparse_pmf_tail(pmf), "PMF tail has")
 })
+
+test_that("test_data_complete detects complete and incomplete data", {
+  # example_confirmed with explicit missing dates
+  ec_missing_date <- copy(example_confirmed)[c(1, 3), date := NA]
+  # example_confirmed with explicit missing confirm
+  ec_missing_confirm <- copy(example_confirmed)[c(1, 3), confirm := NA]
+  # example_confirmed with implicit missing (missing entries)
+  ec_implicit_missing <- copy(example_confirmed)[-c(1,3,5), ]
+  # Create a hypothetical complete example_secondary
+  es <- example_confirmed[, primary := confirm][, secondary := primary * 0.4]
+  # example_secondary with explicit missing primary
+  es_missing_primary <- copy(es)[c(1, 3), primary := NA]
+  # example_secondary with explicit missing secondary
+  es_missing_secondary <- copy(es)[c(1, 3), secondary := NA]
+  
+  # Expectations
+  expect_true(test_data_complete(example_confirmed))
+  expect_true(test_data_complete(es))
+  expect_false(test_data_complete(ec_missing_date))
+  expect_false(test_data_complete(ec_missing_confirm))
+  expect_false(test_data_complete(es_missing_primary))
+  expect_false(test_data_complete(es_missing_secondary))
+  expect_false(test_data_complete(ec_implicit_missing))
+})
