@@ -628,6 +628,10 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      na = c("missing", "accumulate"),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
+  # Check if the user explicitly specified the "na" argument.
+  # NB: This has to be checked first before the na argument is used anywhere.
+  # See ?missing for more details.
+  na_default_used <- missing(na)
   na <- arg_match(na)
   if (na == "accumulate") {
     #nolint start: duplicate_argument_linter
@@ -640,21 +644,6 @@ obs_opts <- function(family = c("negbin", "poisson"),
         "i" = "{col_red('If the first data point should be included in the
         likelihood this can be achieved by adding a data point of arbitrary
         value before the first data point.')}"
-      ),
-      .frequency = "regularly",
-      .frequency_id = "obs_opts"
-    )
-  } else if (missing(na)) {
-    cli_inform(
-      c(
-        "i" = "{col_red(\"As of version 1.5.0 missing dates or dates with `NA`
-          cases are treated as missing. This is in contrast to previous versions
-          where these were interpreted as dates with zero cases. \")}",
-        "i" = "In order to treat missing or `NA` cases as zeroes, see
-        solutions in {.url https://github.com/epiforecasts/EpiNow2/issues/767#issuecomment-2348805272}", #nolint
-        "i" = "If the data is reported at non-daily intervals (for example
-        weekly), consider using `obs_opts(na=\"accumulate\")`.",
-        "i"  = "For more information on these options, see `?obs_opts`."
       ),
       .frequency = "regularly",
       .frequency_id = "obs_opts"
@@ -678,7 +667,8 @@ obs_opts <- function(family = c("negbin", "poisson"),
     scale = scale,
     accumulate = as.integer(na == "accumulate"),
     likelihood = likelihood,
-    return_likelihood = return_likelihood
+    return_likelihood = return_likelihood,
+    na_as_missing_default_used = na_default_used
   )
 
   for (param in c("phi", "scale")) {
