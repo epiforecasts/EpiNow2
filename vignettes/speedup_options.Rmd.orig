@@ -38,7 +38,11 @@ library(scales)
 library(posterior)
 ```
 
-This vignette benchmarks available model options in `{EpiNow2}` and compares the models based on their speed (run time) and accuracy of estimates relative to data with known trajectories. Thoughout, we compare various models to the default model as it is the first model most users encounter.
+`{EpiNow2}` provides a range of customisations of the default model to suit different use cases. hence, users will often be faced with two decision points that will guide their choice of an appropriate model: (i) use case: retrospective vs real-time analysis, and (ii) limited computing resources.
+
+The aim of this vignette is to benchmarks four (4) `{EpiNow2}` model options chosen to cover a range of real-life use cases. We will analyse the trade-offs of using available options to speed them up via approxiamte fitting methods instead of the default MCMC algorithm. 
+
+We will compare the models based on the accuracy of estimates relative to data with known trajectories.
 
 ## The benchmarking data
 
