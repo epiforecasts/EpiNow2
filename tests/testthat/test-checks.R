@@ -143,8 +143,16 @@ test_that("check_reports_valid errors for bad 'secondary' specifications", {
 })
 
 test_that("check_sparse_pmf_tail throws a warning as expected", {
+  # NB: The warning is set to be thrown once every 8 hours, so hard to test
+  # regularly. The fix is to change the local setting here to throw the
+  # warning on demand for the sake of multiple runs of the test within
+  # 8 hours. That's what the rlang call below does
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   pmf <- c(0.4, 0.30, 0.20, 0.05,  0.049995, 4.5e-06, rep(1e-7, 5))
-  expect_warning(check_sparse_pmf_tail(pmf), "PMF tail has")
+  expect_warning(
+    check_sparse_pmf_tail(pmf),
+    "PMF tail has"
+  )
 })
 
 test_that("test_data_complete detects complete and incomplete data", {
@@ -177,23 +185,28 @@ test_that("test_data_complete detects complete and incomplete data", {
 
 test_that("check_na_setting_against_data works as expected", {
   # If data is incomplete and the default na = "missing" is being used,
-  # expect a message
+  # expect a message thrown once every 8 hours.
+  # NB: We change the local setting here to throw the message on demand, rather
+  # than every 8 hours, for the sake of multiple runs of the test within
+  # 8 hours.
+  rlang::local_options(rlib_message_verbosity = "verbose")
   expect_message(
     check_na_setting_against_data(
       obs = obs_opts(),
       data = copy(example_confirmed)[c(1, 3), confirm := NA]
     ),
-    "cases are treated as missing"
+    "version 1.5.0 missing dates or dates"
   )
-  # If data is incomplete but the user set na = "missing", then expect no
-  # message
+  # If data is incomplete but the user explicitly set na = "missing", then
+  # expect no message
   expect_no_message(
     check_na_setting_against_data(
       obs = obs_opts(na = "missing"),
       data = copy(example_confirmed)[c(1, 3), confirm := NA]
     )
   )
-  # If data is complete, expect no message
+  # If data is complete, expect no message even when using default na as
+  # missing setting
   expect_no_message(
     check_na_setting_against_data(
       obs = obs_opts(),
