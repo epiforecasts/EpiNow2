@@ -13,6 +13,12 @@ test_that("obs_opts returns expected default values", {
 })
 
 test_that("obs_opts returns expected messages", {
+  # The option na = "accumulate" informs the user of what is
+  # going to be done once every 8 hours, so hard to test regularly.
+  # NB: We change the local setting here to throw the message on demand, rather
+  # than every 8 hours, for the sake of multiple runs of the test within
+  # 8 hours.
+  rlang::local_options(rlib_message_verbosity = "verbose")
   expect_message(
     obs_opts(),
     "NA values will be treated as missing"
