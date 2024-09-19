@@ -782,6 +782,7 @@ create_stan_delays <- function(..., time_points = 1L) {
   delays <- list(...)
   ## discretise
   delays <- map(delays, discretise, strict = FALSE)
+  delays <- map(delays, collapse)
   ## get maximum delays
   bounded_delays <- map(delays, function(x) discretise(fix_dist(x)))
   max_delay <- unname(as.numeric(flatten(map(bounded_delays, max))))
