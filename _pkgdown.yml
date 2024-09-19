@@ -109,7 +109,6 @@ reference:
       - collapse
       - discretise
       - fix_parameters
-      - fix_parameters
       - get_parameters
       - get_pmf
       - get_distribution

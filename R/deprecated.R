@@ -634,7 +634,7 @@ apply_tolerance <- function(x, tolerance) {
 #' @param strategy Character; either "mean" (use the mean estimates of the
 #'   mean and standard deviation) or "sample" (randomly sample mean and
 #'   standard deviation from uncertainty given in the `<dist_spec>`
-fix_parameters <- function(x, strategy = c("mean", "sample")) {
+fix_dist <- function(x, strategy = c("mean", "sample")) {
   lifecycle::deprecate_warn(
     "1.6.0", "fix_parameters()", "fix_parameters()"
   )
