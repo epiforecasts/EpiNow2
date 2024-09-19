@@ -323,3 +323,7 @@ test_that("get functions report errors", {
     Gamma(mean = 4, sd = 1), Gamma(mean = 4, sd = 1)
   )), "must be specified")
 })
+
+test_that("fix_dist() is deprecated", {
+  expect_deprecated(fix_dist(LogNormal(meanlog = Normal(4, 1), sdlog = 1)))
+})
