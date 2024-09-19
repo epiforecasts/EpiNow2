@@ -403,12 +403,7 @@ discretise <- function(x, ...) {
 #' discretise(dist1 + dist2, strict = FALSE)
 discretise.dist_spec <- function(x, strict = TRUE, ...) {
   ## discretise
-  cdf_cutoff <- attr(x, "cdf_cutoff")
-  if (is.null(cdf_cutoff)) {
-    cdf_cutoff <- 0
-  }
-  max_x <- max(x)
-  if (is.infinite(max_x) && !(cdf_cutoff > 0) && strict) {
+  if (!is_constrained(x) && strict) {
     cli_abort(
       c(
         "!" = "Cannot discretise a distribution with infinite support.",
@@ -419,10 +414,18 @@ discretise.dist_spec <- function(x, strict = TRUE, ...) {
   if (get_distribution(x) == "nonparametric") {
     return(x)
   } else {
-    if (all(vapply(get_parameters(x), is.numeric, logical(1)))) {
+    if (!is.na(sd(x)) && is_constrained(x)) {
+        cdf_cutoff <- attr(x, "cdf_cutoff")
+        if (is.null(cdf_cutoff)) {
+          cdf_cutoff <- 0
+        }
+        max <- attr(x, "max")
+        if (is.null(max)) {
+          max <- Inf
+        }
       y <- list(
         pmf = discrete_pmf(
-          get_distribution(x), get_parameters(x), max_x, cdf_cutoff, width = 1
+          get_distribution(x), get_parameters(x), max, cdf_cutoff, width = 1
         )
       )
       y$distribution <- "nonparametric"
