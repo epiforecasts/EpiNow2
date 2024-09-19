@@ -27,7 +27,7 @@ Alternatively, they can be constructed from individual-level data, for example u
 An example data set called `example_confirm`  is included in the package:
 
 
-```r
+``` r
 head(example_confirmed)
 #>          date confirm
 #>        <Date>   <num>
@@ -49,14 +49,14 @@ Some of these can be mitigated using the routines available in _EpiNow2_ as desc
 We first load the _EpiNow2_ package.
 
 
-```r
+``` r
 library("EpiNow2")
 ```
 
 We then set the number of cores to use. We will want to run 4 MCMC chains in parallel so we set this to 4. 
 
 
-```r
+``` r
 options(mc.cores = 4)
 ```
 
@@ -74,7 +74,7 @@ They are defined using a common interface that involves functions that are named
 For help with this function, see its manual page
 
 
-```r
+``` r
 ?EpiNow2::Distributions
 ```
 
@@ -82,7 +82,7 @@ In all cases, the distributions given can be *fixed* (i.e. have no uncertainty) 
 For example, to define a fixed gamma distribution with mean 3, standard deviation (sd) 1 and maximum value 10, you would write
 
 
-```r
+``` r
 Gamma(mean = 3, sd = 1, max = 10)
 #> - gamma distribution (max: 10):
 #>   shape:
@@ -91,17 +91,27 @@ Gamma(mean = 3, sd = 1, max = 10)
 #>     3
 ```
 
+which looks like this when plotted
+
+
+``` r
+plot(Gamma(mean = 3, sd = 1, max = 10))
+```
+
+![plot of chunk unnamed-chunk-9](estimate_infections_workflow-unnamed-chunk-9-1.png)
+
 If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by _EpiNow2_, i.e. they are estimated as part of the inference.
 For example, to define a variable gamma distribution where uncertainty in the mean is given by a normal distribution with mean 3 and sd 2, and uncertainty in the standard deviation is given by a normal distribution with mean 1 and sd 0.1, with a maximum value 10, you would write
 
 
-```r
+``` r
 Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
-#> Warning in new_dist_spec(params, "gamma"): Uncertain gamma distribution
-#> specified in terms of parameters that are not the "natural" parameters of the
-#> distribution (shape, rate). Converting using a crude and very approximate
-#> method that is likely to produce biased results. If possible, it is preferable
-#> to specify the distribution directly in terms of the natural parameters.
+#> Warning: ! Uncertain gamma distribution specified in terms of parameters that are not the
+#>   "natural" parameters of the distribution shape and rate.
+#> ℹ Converting using a crude and very approximate method that is likely to produce
+#>   biased results.
+#> ℹ If possible it is preferable to specify the distribution directly in terms of the
+#>   natural parameters.
 #> - gamma distribution (max: 10):
 #>   shape:
 #>     - normal distribution:
@@ -116,6 +126,19 @@ Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
 #>       sd:
 #>         1.4
 ```
+
+which looks like this when plotted
+
+
+``` r
+suppressWarnings(
+  plot(
+    Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
+  )
+)
+```
+
+![plot of chunk unnamed-chunk-11](estimate_infections_workflow-unnamed-chunk-11-1.png)
 
 Note the warning about parameters.
 We used the mean and standard deviation to define this distribution with uncertain parameters, but it would be better to use the "natural" parameters of the gamma distribution, shape and rate, for example using the values estimate and reported back after calling the previous command.
@@ -134,7 +157,7 @@ In _EpiNow2_, the generation time distribution is defined by a call to `gt_opts(
 For example, to define the generation time as gamma distributed with uncertain mean centered on 3 and sd centered on 1 with some uncertainty, a maximum value of 10 and weighted by the number of case data points we could use the shape and rate parameters suggested above (though notes that this will only very approximately produce the uncertainty in mean and standard deviation stated there):
 
 
-```r
+``` r
 generation_time <- Gamma(
   shape = Normal(9, 2.5), rate = Normal(3, 1.4), max = 10
 )
@@ -151,7 +174,7 @@ Often, such counts are composed of multiple delays for which we only have separa
 In this case, we can combine multiple delays with the plus (`+`) operator, e.g.
 
 
-```r
+``` r
 incubation_period <- LogNormal(
   meanlog = Normal(1.6, 0.05),
   sdlog = Normal(0.5, 0.05),
@@ -180,18 +203,27 @@ incubation_period + reporting_delay
 #>     0.5
 ```
 
+We can visualise this combined delay
+
+
+``` r
+plot(incubation_period + reporting_delay)
+```
+
+![plot of chunk unnamed-chunk-14](estimate_infections_workflow-unnamed-chunk-14-1.png)
+
 In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `LogNormal()`, `Gamma()` etc.).
 For example, if our observations were by symptom onset we would use
 
 
-```r
+``` r
 delay_opts(incubation_period)
 ```
 
 If they were by date of lab confirmation that happens with a delay given by `reporting_delay`, we would use
 
 
-```r
+``` r
 delay <- incubation_period + reporting_delay
 delay_opts(delay)
 ```
@@ -209,7 +241,7 @@ In _EpiNow2_, this can be done using the `estimate_truncation()` method which re
 For more details on the model used for this, see the [estimate_truncation](estimate_truncation.html) vignette.
 
 
-```r
+``` r
 ?estimate_truncation
 ```
 
@@ -227,7 +259,7 @@ In _EpiNow2_ we can specify the proportion of infections that we expect to be ob
 For example, if we think that 40% (with standard deviation 1%) of infections end up in the data as observations we could specify.
 
 
-```r
+``` r
 obs_scale <- list(mean = 0.4, sd = 0.01)
 obs_opts(scale = obs_scale)
 ```
@@ -241,7 +273,7 @@ It can be changed using the `rt_opts()` function.
 For example, if the user believes that at the very start of the data the reproduction number was 2, with uncertainty in this belief represented by a standard deviation of 1, they would use
 
 
-```r
+``` r
 rt_prior <- list(mean =  2, sd = 1)
 rt_opts(prior = rt_prior)
 ```
@@ -258,14 +290,15 @@ All the options are combined in a call to the `estimate_infections()` function.
 For example, using some of the options described above one could call
 
 
-```r
+``` r
 def <- estimate_infections(
   example_confirmed, 
   generation_time = gt_opts(generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior)
 )
-#> Warning: There were 3 divergent transitions after warmup. See
+#> DEBUG [2024-09-19 14:46:51] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 147 time steps of which 7 are a forecast
+#> Warning: There were 1 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
@@ -284,7 +317,7 @@ The package contains functionality to estimate the delay and scaling between mul
 To visualise the results one can use the `plot()` function that comes with the package
 
 
-```r
+``` r
 plot(def)
 ```
 
