@@ -349,6 +349,8 @@ sd.default <- function(x, ...) {
 #' # The max the sum of two distributions
 #' max(dist1 + dist2)
 max.dist_spec <- function(x, ...) {
+  ## try to discretise (which applies cdf cutoff and max)
+  x <- discretise(x, strict = FALSE)
   if (get_distribution(x) == "nonparametric") {
     ## nonparametric
     return(length(get_pmf(x)) - 1)
