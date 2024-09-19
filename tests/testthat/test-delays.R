@@ -78,9 +78,9 @@ test_that("truncation parameters can be specified in different ways", {
 })
 
 test_that("distributions incompatible with stan models are caught", {
-  expect_error(gt_opts(
+  expect_error(suppressMessages(gt_opts(
     Gamma(2, 2), default_cdf_cutoff = 0
-  ), "maximum")
+  )), "maximum")
   expect_error(delay_opts(
     Normal(2, 2, max = 10)
   ), "lognormal")
