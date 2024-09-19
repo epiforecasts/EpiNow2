@@ -570,7 +570,7 @@ print.dist_spec <- function(x, ...) {
       cat(indent_str, "- ",  get_distribution(x, i), " distribution", sep = "")
       dist <- extract_single_dist(x, i)
       constrain_str <- character(0)
-      if (is.finite(max(dist))) {
+      if (!is.null(attr(dist, "max")) && is.finite(attr(dist, "max"))) {
         constrain_str["max"] <- paste("max:", max(dist))
       }
       if (!is.null(attr(dist, "cdf_cutoff"))) {
