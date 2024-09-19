@@ -455,12 +455,17 @@ discretise.multi_dist_spec <- function(x, strict = TRUE, ...) {
 #' @export
 discretize <- discretise
 
-#' Collapse nonparametric distributions in a <dist_spec>
+#' @export
+collapse <- function(x, ...) {
+  UseMethod("collapse")
+}
+##' Collapse nonparametric distributions in a <dist_spec>
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' This convolves any consecutive nonparametric distributions contained
 #' in the <dist_spec>.
 #' @param x A `<dist_spec>`
+#' @param ... ignored
 #' @return A `<dist_spec>` where consecutive nonparametric distributions
 #' have been convolved
 #' @importFrom stats convolve
@@ -475,14 +480,12 @@ discretize <- discretise
 #'
 #' # The maxf the sum of two distributions
 #' collapse(discretise(dist1 + dist2))
-collapse <- function(x) {
-  if (!is(x, "dist_spec")) {
-    cli_abort(
-      c(
-        "!" = "Can only convolve distributions in a {.cls dist_spec}."
-      )
-    )
-  }
+collapse.dist_spec <- function(x, ...) {
+  return(x)
+}
+#' @method collapse multi_dist_spec
+#' @export
+collapse.multi_dist_spec <- function(x) {
   ## get nonparametric distributions
   nonparametric <- vapply(
     seq_along(x), get_distribution, x = x, character(1)
@@ -507,6 +510,7 @@ collapse <- function(x) {
   }
   ## remove collapsed pmfs
   x[unlist(next_ids)] <- NULL
+  ## if wev have collapsed all we turn into a single dist_spec
   if ((length(x) == 1) && is(x[[1]], "dist_spec")) x <- x[[1]]
 
   return(x)
