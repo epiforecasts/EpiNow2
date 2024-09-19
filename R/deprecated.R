@@ -636,7 +636,7 @@ apply_tolerance <- function(x, tolerance) {
 #'   standard deviation from uncertainty given in the `<dist_spec>`
 fix_dist <- function(x, strategy = c("mean", "sample")) {
   lifecycle::deprecate_warn(
-    "1.6.0", "fix_parameters()", "fix_parameters()"
+    "1.6.0", "fix_dist()", "fix_parameters()"
   )
   if (!is(x, "dist_spec")) {
     stop("Can only fix distributions in a <dist_spec>.")
