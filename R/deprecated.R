@@ -630,6 +630,7 @@ apply_tolerance <- function(x, tolerance) {
 #' This function has been renamed to [fix_parameters()].
 #' @return A `<dist_spec>` object without uncertainty
 #' @keywords internal
+#' @importFrom cli cli_abort
 #' @param x A `<dist_spec>`
 #' @param strategy Character; either "mean" (use the mean estimates of the
 #'   mean and standard deviation) or "sample" (randomly sample mean and
@@ -639,7 +640,7 @@ fix_dist <- function(x, strategy = c("mean", "sample")) {
     "1.6.0", "fix_dist()", "fix_parameters()"
   )
   if (!is(x, "dist_spec")) {
-    stop("Can only fix distributions in a <dist_spec>.")
+    cli_abort("!" = "Can only fix distributions in a <dist_spec>.")
   }
   fix_parameters(x, strategy)
 }
