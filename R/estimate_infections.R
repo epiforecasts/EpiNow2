@@ -209,8 +209,6 @@ estimate_infections <- function(data,
   )
   reported_cases <- reported_cases[-(1:backcalc$prior_window)]
 
-
-
   # Define stan model parameters
   stan_data <- create_stan_data(
     reported_cases,
