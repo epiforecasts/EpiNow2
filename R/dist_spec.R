@@ -681,9 +681,10 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
     }
     return(pmf_dt)
   })
-  pmf_data <- rbindlist(pmf_data)[,
-    type := factor("pmf", levels = c("pmf", "cmf"))
-  ]
+  pmf_data <- rbindlist(pmf_data)[, `:=`(
+    type = factor("pmf", levels = c("pmf", "cmf")),
+    distribution = factor(distribution, levels = unique(distribution))
+  )]
 
   # Plot PMF and CDF as facets in the same plot
   plot <- ggplot(
