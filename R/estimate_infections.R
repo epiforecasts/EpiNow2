@@ -170,11 +170,11 @@ estimate_infections <- function(data,
 
   # If the user is using the default treatment of NA's as missing and
   # their data has implicit or explicit NA's, inform them of what's
-  # happening and alternatives.
-  check_na_setting_against_data(obs = obs, data = dirty_reported_cases)
-  # Remove "na_as_missing_default_used" after using it above
-  obs$na_as_missing_default_used <- NULL
-
+  # happening and provide alternatives.
+  obs <- check_na_setting_against_data(
+    obs = obs,
+    data = dirty_reported_cases
+  )
   # Create clean and complete cases
   # Order cases
   reported_cases <- create_clean_reported_cases(
