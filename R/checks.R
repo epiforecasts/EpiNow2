@@ -196,7 +196,7 @@ test_data_complete <- function(data) {
     "date",
     intersect(c("confirm", "primary", "secondary"), names(data))
   )
-  if (any(sapply(data[, columns_to_check, with = FALSE], anyNA))) {
+  if (any(vapply(data[, columns_to_check, with = FALSE], anyNA, logical(1)))) {
     return(FALSE)
   }
 
@@ -252,4 +252,5 @@ check_na_setting_against_data <- function(data, obs) {
     )
     #nolint end
   }
+  obs$na_as_missing_default_used <- NULL
 }
