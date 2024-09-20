@@ -2,6 +2,8 @@
 
 S3method("+",dist_spec)
 S3method(c,dist_spec)
+S3method(collapse,dist_spec)
+S3method(collapse,multi_dist_spec)
 S3method(discretise,dist_spec)
 S3method(discretise,multi_dist_spec)
 S3method(fix_dist,dist_spec)

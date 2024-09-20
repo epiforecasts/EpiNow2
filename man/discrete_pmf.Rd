@@ -8,7 +8,7 @@ discrete_pmf(
   distribution = c("exp", "gamma", "lognormal", "normal", "fixed"),
   params,
   max_value,
-  tolerance,
+  cdf_cutoff,
   width
 )
 }
@@ -23,8 +23,8 @@ this is alpha and beta.}
 \item{max_value}{Numeric, the maximum value to allow.
 Samples outside of this range are resampled.}
 
-\item{tolerance}{Numeric; the desired tolerance level. Any part of the
-cumulative distribution function beyond 1 minus this tolerance level is
+\item{cdf_cutoff}{Numeric; the desired CDF cutoff. Any part of the
+cumulative distribution function beyond 1 minus the value of this argument is
 removed. Default: \code{0}, i.e. use the full distribution.}
 
 \item{width}{Numeric, the width of each discrete bin.}

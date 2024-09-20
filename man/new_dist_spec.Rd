@@ -5,7 +5,7 @@
 \title{Internal function for generating a \code{dist_spec} given parameters and a
 distribution.}
 \usage{
-new_dist_spec(params, distribution, max = Inf, tolerance = 0)
+new_dist_spec(params, distribution, max = Inf, cdf_cutoff = 0)
 }
 \arguments{
 \item{params}{Parameters of the distribution (including \code{max})}
@@ -15,8 +15,8 @@ new_dist_spec(params, distribution, max = Inf, tolerance = 0)
 \item{max}{Numeric, maximum value of the distribution. The distribution will
 be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
 
-\item{tolerance}{Numeric; the desired tolerance level. Any part of the
-cumulative distribution function beyond 1 minus this tolerance level is
+\item{cdf_cutoff}{Numeric; the desired CDF cutoff. Any part of the
+cumulative distribution function beyond 1 minus the value of this argument is
 removed. Default: \code{0}, i.e. use the full distribution.}
 }
 \value{

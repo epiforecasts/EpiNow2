@@ -44,7 +44,7 @@
 #' @importFrom rlang arg_match
 discrete_pmf <- function(distribution =
                            c("exp", "gamma", "lognormal", "normal", "fixed"),
-                         params, max_value, tolerance, width) {
+                         params, max_value, cdf_cutoff, width) {
   distribution <- arg_match(distribution)
   ## define unnormalised support function and cumulative density function
   if (distribution == "exp") {
@@ -74,12 +74,12 @@ discrete_pmf <- function(distribution =
     qdist <- function(p, value) return(value)
   }
 
-  ## apply tolerance if given
-  if (!missing(tolerance)) {
-    ## tolerance_max
-    tol_max <- do.call(qdist, c(list(p = 1 - tolerance), params))
-    if (missing(max_value) || tol_max < max_value) {
-      max_value <- tol_max
+  ## apply CDF cutoff if given
+  if (!missing(cdf_cutoff)) {
+    ## max from CDF cutoff
+    cdf_cutoff_max <- do.call(qdist, c(list(p = 1 - cdf_cutoff), params))
+    if (missing(max_value) || cdf_cutoff_max < max_value) {
+      max_value <- cdf_cutoff_max
     }
   }
 
@@ -349,6 +349,8 @@ sd.default <- function(x, ...) {
 #' # The max the sum of two distributions
 #' max(dist1 + dist2)
 max.dist_spec <- function(x, ...) {
+  ## try to discretise (which applies cdf cutoff and max)
+  x <- discretise(x, strict = FALSE)
   if (get_distribution(x) == "nonparametric") {
     ## nonparametric
     return(length(get_pmf(x)) - 1)
@@ -401,12 +403,7 @@ discretise <- function(x, ...) {
 #' discretise(dist1 + dist2, strict = FALSE)
 discretise.dist_spec <- function(x, strict = TRUE, ...) {
   ## discretise
-  tolerance <- attr(x, "tolerance")
-  if (is.null(tolerance)) {
-    tolerance <- 0
-  }
-  max_x <- max(x)
-  if (is.infinite(max_x) && !(tolerance > 0) && strict) {
+  if (!is_constrained(x) && strict) {
     cli_abort(
       c(
         "!" = "Cannot discretise a distribution with infinite support.",
@@ -417,15 +414,23 @@ discretise.dist_spec <- function(x, strict = TRUE, ...) {
   if (get_distribution(x) == "nonparametric") {
     return(x)
   } else {
-    if (all(vapply(get_parameters(x), is.numeric, logical(1)))) {
+    if (!is.na(sd(x)) && is_constrained(x)) {
+        cdf_cutoff <- attr(x, "cdf_cutoff")
+        if (is.null(cdf_cutoff)) {
+          cdf_cutoff <- 0
+        }
+        max <- attr(x, "max")
+        if (is.null(max)) {
+          max <- Inf
+        }
       y <- list(
         pmf = discrete_pmf(
-          get_distribution(x), get_parameters(x), max_x, tolerance, width = 1
+          get_distribution(x), get_parameters(x), max, cdf_cutoff, width = 1
         )
       )
       y$distribution <- "nonparametric"
       preserve_attributes <- setdiff(
-        names(attributes(x)), c("tolerance", "max", "names")
+        names(attributes(x)), c("cdf_cutoff", "max", "names")
       )
       for (attribute in preserve_attributes) {
         attributes(y)[attribute] <- attributes(x)[attribute]
@@ -453,16 +458,23 @@ discretise.multi_dist_spec <- function(x, strict = TRUE, ...) {
 #' @export
 discretize <- discretise
 
+#' @export
+collapse <- function(x, ...) {
+  UseMethod("collapse")
+}
 #' Collapse nonparametric distributions in a <dist_spec>
 #'
+#' @name collapse
 #' @description `r lifecycle::badge("experimental")`
 #' This convolves any consecutive nonparametric distributions contained
 #' in the <dist_spec>.
 #' @param x A `<dist_spec>`
+#' @param ... ignored
 #' @return A `<dist_spec>` where consecutive nonparametric distributions
 #' have been convolved
 #' @importFrom stats convolve
 #' @importFrom cli cli_abort
+#' @method collapse dist_spec
 #' @export
 #' @examples
 #' # A fixed gamma distribution with mean 5 and sd 1.
@@ -473,14 +485,12 @@ discretize <- discretise
 #'
 #' # The maxf the sum of two distributions
 #' collapse(discretise(dist1 + dist2))
-collapse <- function(x) {
-  if (!is(x, "dist_spec")) {
-    cli_abort(
-      c(
-        "!" = "Can only convolve distributions in a {.cls dist_spec}."
-      )
-    )
-  }
+collapse.dist_spec <- function(x, ...) {
+  return(x)
+}
+#' @method collapse multi_dist_spec
+#' @export
+collapse.multi_dist_spec <- function(x, ...) {
   ## get nonparametric distributions
   nonparametric <- vapply(
     seq_along(x), get_distribution, x = x, character(1)
@@ -505,6 +515,7 @@ collapse <- function(x) {
   }
   ## remove collapsed pmfs
   x[unlist(next_ids)] <- NULL
+  ## if wev have collapsed all we turn into a single dist_spec
   if ((length(x) == 1) && is(x[[1]], "dist_spec")) x <- x[[1]]
 
   return(x)
@@ -561,12 +572,12 @@ print.dist_spec <- function(x, ...) {
       cat(indent_str, "- ",  get_distribution(x, i), " distribution", sep = "")
       dist <- extract_single_dist(x, i)
       constrain_str <- character(0)
-      if (is.finite(max(dist))) {
+      if (!is.null(attr(dist, "max")) && is.finite(attr(dist, "max"))) {
         constrain_str["max"] <- paste("max:", max(dist))
       }
-      if (!is.null(attr(dist, "tolerance"))) {
-        constrain_str["tolerance"] <-
-          paste("tolerance:", attr(dist, "tolerance"))
+      if (!is.null(attr(dist, "cdf_cutoff"))) {
+        constrain_str["cdf_cutoff"] <-
+          paste("cdf_cutoff:", attr(dist, "cdf_cutoff"))
       }
       if (length(constrain_str) > 0) {
         cat(" (", toString(constrain_str), ")", sep = "")
@@ -650,9 +661,9 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       dists <- lapply(seq_len(samples), function(y) {
         fix_dist(extract_single_dist(x, i), strategy = "sample")
       })
-      tolerance <- attr(x, "tolerance")
-      if (is.null(tolerance)) {
-        tolerance <- 0
+      cdf_cutoff <- attr(x, "cdf_cutoff")
+      if (is.null(cdf_cutoff)) {
+        cdf_cutoff <- 0
       }
       pmf_dt <- lapply(dists, function(y) {
         if (is.infinite(attr(y, "max"))) {
@@ -667,7 +678,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
         }
         x <- discrete_pmf(
           distribution = get_distribution(x, i), params = get_parameters(y),
-          max_value = attr(y, "max"), tolerance = tolerance, width = res
+          max_value = attr(y, "max"), cdf_cutoff = cdf_cutoff, width = res
         )
         return(data.table(x = (seq_along(x) - 1) * res, p = x))
       })
@@ -811,7 +822,7 @@ is_constrained <- function(x, ...) {
   UseMethod("is_constrained")
 }
 #' Check if a <dist_spec> is constrained, i.e. has a finite maximum or nonzero
-#' tolerance.
+#' CDF cutoff.
 #'
 #' @name is_constrained
 #' @description `r lifecycle::badge("experimental")`
@@ -834,8 +845,8 @@ is_constrained.dist_spec <- function(x, ...) {
   if (get_distribution(x) %in% c("nonparametric", "fixed")) {
     return(TRUE)
   }
-  tolerance <- attr(x, "tolerance")
-  tol_constrained <- !is.null(tolerance) && tolerance > 0
+  cdf_cutoff <- attr(x, "cdf_cutoff")
+  tol_constrained <- !is.null(cdf_cutoff) && cdf_cutoff > 0
   max <- attr(x, "max")
   max_constrained <- !is.null(max) && is.finite(max)
   return(tol_constrained || max_constrained)
@@ -1005,13 +1016,13 @@ lower_bounds <- function(distribution) {
 #' @param x A `<dist_spec>`.
 #' @param max Numeric, maximum value of the distribution. The distribution will
 #' be truncated at this value. Default: `Inf`, i.e. no maximum.
-#' @param tolerance Numeric; the desired tolerance level. Any part of the
-#' cumulative distribution function beyond 1 minus this tolerance level is
+#' @param cdf_cutoff Numeric; the desired CDF cutoff. Any part of the
+#' cumulative distribution function beyond 1 minus the value of this argument is
 #' removed. Default: `0`, i.e. use the full distribution.
 #' @importFrom cli cli_abort
 #' @return a `<dist_spec>` with relevant attributes set that define its bounds
 #' @export
-bound_dist <- function(x, max = Inf, tolerance = 0) {
+bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
   if (!is(x, "dist_spec")) {
     cli_abort(
       c(
@@ -1023,9 +1034,9 @@ bound_dist <- function(x, max = Inf, tolerance = 0) {
   ## if it is a single nonparametric distribution we apply the bounds directly
   if (ndist(x) == 1 && get_distribution(x) == "nonparametric") {
     pmf <- get_pmf(x)
-    if (tolerance > 0) {
+    if (cdf_cutoff > 0) {
       cmf <- cumsum(pmf)
-      pmf <- pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= tolerance)]
+      pmf <- pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= cdf_cutoff)]
     }
     if (is.finite(max) && (max + 1) > length(x$pmf)) {
       pmf <- pmf[seq(1, max + 1)]
@@ -1033,7 +1044,7 @@ bound_dist <- function(x, max = Inf, tolerance = 0) {
     x$pmf <- pmf / sum(pmf)
   } else {
     if (is.finite(max)) attr(x, "max") <- max
-    if (tolerance > 0) attr(x, "tolerance") <- tolerance
+    if (cdf_cutoff > 0) attr(x, "cdf_cutoff") <- cdf_cutoff
   }
   return(x)
 }
@@ -1082,7 +1093,7 @@ extract_params <- function(params, distribution) {
 #'   params = list(mean = 2, sd = 1),
 #'   distribution = "normal"
 #' )
-new_dist_spec <- function(params, distribution, max = Inf, tolerance = 0) {
+new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
   if (distribution == "nonparametric") {
     ## nonparametric distribution
     ret <- list(
@@ -1155,7 +1166,7 @@ new_dist_spec <- function(params, distribution, max = Inf, tolerance = 0) {
   attr(ret, "class") <- c("dist_spec", "list")
 
   ## apply bounds
-  ret <- bound_dist(ret, max, tolerance)
+  ret <- bound_dist(ret, max, cdf_cutoff)
 
   ## now we have a distribution with natural parameters - return dist_spec
   return(ret)

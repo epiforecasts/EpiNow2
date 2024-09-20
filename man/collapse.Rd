@@ -2,12 +2,15 @@
 % Please edit documentation in R/dist_spec.R
 \name{collapse}
 \alias{collapse}
+\alias{collapse.dist_spec}
 \title{Collapse nonparametric distributions in a <dist_spec>}
 \usage{
-collapse(x)
+\method{collapse}{dist_spec}(x, ...)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}}
+
+\item{...}{ignored}
 }
 \value{
 A \verb{<dist_spec>} where consecutive nonparametric distributions
