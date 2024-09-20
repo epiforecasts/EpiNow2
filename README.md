@@ -272,11 +272,11 @@ Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jamesmbaazam">jamesmbaazam</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=joeHickson">joeHickson</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=hsbadr">hsbadr</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=pitmonticone">pitmonticone</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=dependabot[bot]">dependabot\[bot\]</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=pitmonticone">pitmonticone</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=actions-user">actions-user</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=ellisp">ellisp</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=github-actions[bot]">github-actions\[bot\]</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=ellisp">ellisp</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jdmunday">jdmunday</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pearsonca">pearsonca</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=JAllen42">JAllen42</a>,
@@ -321,7 +321,9 @@ Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aavallecam">avallecam</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aathowes">athowes</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Alorenzwalthert">lorenzwalthert</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Anlinton">nlinton</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Anlinton">nlinton</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amartinamcm">martinamcm</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aadrian-lison">adrian-lison</a>
 
 ### Issue Contributors
 
