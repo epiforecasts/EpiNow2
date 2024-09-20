@@ -206,7 +206,7 @@ test_data_complete <- function(data) {
     max(data$date, na.rm = TRUE),
     by = "1 day"
   )
-  if (length(complete_dates) > length(unique(data$date))) {
+  if (!setequal(complete_dates, unique(data$date))) {
     return(FALSE)
   }
 
