@@ -256,4 +256,5 @@ check_na_setting_against_data <- function(data, obs) {
     #nolint end
   }
   obs$na_as_missing_default_used <- NULL
+  return(obs)
 }
