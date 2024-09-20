@@ -462,8 +462,9 @@ discretize <- discretise
 collapse <- function(x, ...) {
   UseMethod("collapse")
 }
-##' Collapse nonparametric distributions in a <dist_spec>
+#' Collapse nonparametric distributions in a <dist_spec>
 #'
+#' @name collapse
 #' @description `r lifecycle::badge("experimental")`
 #' This convolves any consecutive nonparametric distributions contained
 #' in the <dist_spec>.
@@ -473,6 +474,7 @@ collapse <- function(x, ...) {
 #' have been convolved
 #' @importFrom stats convolve
 #' @importFrom cli cli_abort
+#' @method collapse dist_spec
 #' @export
 #' @examples
 #' # A fixed gamma distribution with mean 5 and sd 1.
@@ -488,7 +490,7 @@ collapse.dist_spec <- function(x, ...) {
 }
 #' @method collapse multi_dist_spec
 #' @export
-collapse.multi_dist_spec <- function(x) {
+collapse.multi_dist_spec <- function(x, ...) {
   ## get nonparametric distributions
   nonparametric <- vapply(
     seq_along(x), get_distribution, x = x, character(1)
