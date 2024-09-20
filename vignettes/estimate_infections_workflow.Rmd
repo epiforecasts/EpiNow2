@@ -51,6 +51,11 @@ We first load the _EpiNow2_ package.
 
 ``` r
 library("EpiNow2")
+#> 
+#> Attaching package: 'EpiNow2'
+#> The following object is masked from 'package:stats':
+#> 
+#>     Gamma
 ```
 
 We then set the number of cores to use. We will want to run 4 MCMC chains in parallel so we set this to 4. 
@@ -83,7 +88,8 @@ For example, to define a fixed gamma distribution with mean 3, standard deviatio
 
 
 ``` r
-Gamma(mean = 3, sd = 1, max = 10)
+fixed_gamma <- Gamma(mean = 3, sd = 1, max = 10)
+fixed_gamma
 #> - gamma distribution (max: 10):
 #>   shape:
 #>     9
@@ -95,23 +101,24 @@ which looks like this when plotted
 
 
 ``` r
-plot(Gamma(mean = 3, sd = 1, max = 10))
+plot(fixed_gamma)
 ```
 
-![plot of chunk unnamed-chunk-9](estimate_infections_workflow-unnamed-chunk-9-1.png)
+![plot of chunk plot_fixed_gamma](estimate_infections_workflow-plot_fixed_gamma-1.png)
 
 If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by _EpiNow2_, i.e. they are estimated as part of the inference.
 For example, to define a variable gamma distribution where uncertainty in the mean is given by a normal distribution with mean 3 and sd 2, and uncertainty in the standard deviation is given by a normal distribution with mean 1 and sd 0.1, with a maximum value 10, you would write
 
 
 ``` r
-Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
-#> Warning: ! Uncertain gamma distribution specified in terms of parameters that are not the
-#>   "natural" parameters of the distribution shape and rate.
-#> ℹ Converting using a crude and very approximate method that is likely to produce
-#>   biased results.
-#> ℹ If possible it is preferable to specify the distribution directly in terms of the
-#>   natural parameters.
+uncertain_gamma <- Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
+#> Warning: ! Uncertain gamma distribution specified in terms of parameters that are not the "natural"
+#>   parameters of the distribution shape and rate.
+#> ℹ Converting using a crude and very approximate method that is likely to produce biased
+#>   results.
+#> ℹ If possible it is preferable to specify the distribution directly in terms of the natural
+#>   parameters.
+uncertain_gamma
 #> - gamma distribution (max: 10):
 #>   shape:
 #>     - normal distribution:
@@ -131,14 +138,10 @@ which looks like this when plotted
 
 
 ``` r
-suppressWarnings(
-  plot(
-    Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
-  )
-)
+plot(uncertain_gamma)
 ```
 
-![plot of chunk unnamed-chunk-11](estimate_infections_workflow-unnamed-chunk-11-1.png)
+![plot of chunk plot_uncertain_gamma](estimate_infections_workflow-plot_uncertain_gamma-1.png)
 
 Note the warning about parameters.
 We used the mean and standard deviation to define this distribution with uncertain parameters, but it would be better to use the "natural" parameters of the gamma distribution, shape and rate, for example using the values estimate and reported back after calling the previous command.
@@ -181,7 +184,8 @@ incubation_period <- LogNormal(
   max = 14
 )
 reporting_delay <- LogNormal(meanlog = 0.5, sdlog = 0.5, max = 10)
-incubation_period + reporting_delay
+combined_delays <- incubation_period + reporting_delay
+combined_delays
 #> Composite distribution:
 #> - lognormal distribution (max: 14):
 #>   meanlog:
@@ -207,10 +211,10 @@ We can visualise this combined delay
 
 
 ``` r
-plot(incubation_period + reporting_delay)
+plot(combined_delays)
 ```
 
-![plot of chunk unnamed-chunk-14](estimate_infections_workflow-unnamed-chunk-14-1.png)
+![plot of chunk plot_combined_delay](estimate_infections_workflow-plot_combined_delay-1.png)
 
 In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `LogNormal()`, `Gamma()` etc.).
 For example, if our observations were by symptom onset we would use
@@ -297,7 +301,7 @@ def <- estimate_infections(
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior)
 )
-#> DEBUG [2024-09-19 14:46:51] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 147 time steps of which 7 are a forecast
+#> DEBUG [2024-09-20 13:57:07] estimate_infections: Running in exact mode for 2000 samples (across 4 chains each with a warm up of 250 iterations each) and 147 time steps of which 7 are a forecast
 #> Warning: There were 1 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
