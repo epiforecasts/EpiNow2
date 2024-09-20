@@ -79,30 +79,28 @@ In all cases, the distributions given can be *fixed* (i.e. have no uncertainty) 
 For example, to define a fixed gamma distribution with mean 3, standard deviation (sd) 1 and maximum value 10, you would write
 
 ```{r}
-Gamma(mean = 3, sd = 1, max = 10)
+fixed_gamma <- Gamma(mean = 3, sd = 1, max = 10)
+fixed_gamma
 ```
 
 which looks like this when plotted
 
-```{r}
-suppressWarnings(
-  plot(
-    Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
-  )
-)
+```{r plot_fixed_gamma}
+plot(fixed_gamma)
 ```
 
 If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by _EpiNow2_, i.e. they are estimated as part of the inference.
 For example, to define a variable gamma distribution where uncertainty in the mean is given by a normal distribution with mean 3 and sd 2, and uncertainty in the standard deviation is given by a normal distribution with mean 1 and sd 0.1, with a maximum value 10, you would write
 
 ```{r}
-Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
+uncertain_gamma <- Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
+uncertain_gamma
 ```
 
 which looks like this when plotted
 
-```{r}
-plot(Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10))
+```{r plot_uncertain_gamma}
+plot(uncertain_gamma)
 ```
 
 Note the warning about parameters.
@@ -144,13 +142,14 @@ incubation_period <- LogNormal(
   max = 14
 )
 reporting_delay <- LogNormal(meanlog = 0.5, sdlog = 0.5, max = 10)
-incubation_period + reporting_delay
+combined_delays <- incubation_period + reporting_delay
+combined_delays
 ```
 
 We can visualise this combined delay
 
-```{r}
-plot(incubation_period + reporting_delay)
+```{r plot_combined_delay}
+plot(combined_delays)
 ```
 
 In _EpiNow2_, the reporting delay distribution is defined by a call to `delay_opts()`, a function that takes a single argument defined as a `dist_spec` object (returned by `LogNormal()`, `Gamma()` etc.).
