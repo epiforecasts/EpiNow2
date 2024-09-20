@@ -16,8 +16,8 @@ check_na_setting_against_data(data, obs)
 Called for its side effects
 }
 \description{
-Check the na settings in obs_opts() with the data and throw messages
-where necessary
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 }
 \details{
 This function checks the data to see if it is complete or not and then
