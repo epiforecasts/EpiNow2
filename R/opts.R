@@ -628,9 +628,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      na = c("missing", "accumulate"),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
-  # Check if the user explicitly specified the "na" argument.
-  # NB: This has to be checked first before the na argument is used anywhere.
-  # See ?missing for more details.
+  # NB: This has to be checked first before the na argument is touched anywhere.
   na_default_used <- missing(na)
   na <- arg_match(na)
   if (na == "accumulate") {
