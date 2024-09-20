@@ -191,11 +191,11 @@ estimate_secondary <- function(data,
 
   # If the user is using the default treatment of NA's as missing and
   # their data has implicit or explicit NA's, inform them of what's
-  # happening and alternatives.
-  check_na_setting_against_data(obs = obs, data = secondary_reports_dirty)
-  # Remove "na_as_missing_default_used" after using it above
-  obs$na_as_missing_default_used <- NULL
-
+  # happening and provide alternatives.
+  obs <- check_na_setting_against_data(
+    obs = obs,
+    data = secondary_reports_dirty
+  )
   ## fill in missing data (required if fitting to prevalence)
   complete_secondary <- create_complete_cases(secondary_reports)
   ## fill down
