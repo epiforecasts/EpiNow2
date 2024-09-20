@@ -26,7 +26,7 @@
 
 ## Package changes
 
-- `fix_dist()` has been renamed to `fix_parameters()`. By @sbfnk in #733 and reviewed by @jamesmbaazam.
+- `fix_dist()` has been renamed to `fix_parameters()` because it removes the uncertainty in a distribution's parameters. By @sbfnk in #733 and reviewed by @jamesmbaazam.
 
 ## Bug fixes
 
