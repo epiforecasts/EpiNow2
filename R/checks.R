@@ -213,21 +213,24 @@ test_data_complete <- function(data) {
   return(TRUE) # Return TRUE if no missing values or gaps in date sequence
 }
 
-#' Check the na settings in obs_opts() with the data and throw messages
-#' where necessary
+#' Cross-check treatment of `NA` in obs_opts() against input data
+#'
 #' @description `r lifecycle::badge("experimental")`
 #'
-#' This function checks the data to see if it is complete or not and then
-#' checks if the user specified na to be treated as missing. If the latter is
-#' false, it does nothing. If TRUE, it informs the user about how the implicit
-#' or explicit missingness is treated. This function is necessary because
-#' the data argument and observation model do not interact internally.
+#' This function checks the input data for implicit and/or explicit missingness
+#' and checks if the user specified `na = "missing"` in [obs_opts()].
+#' If the two are TRUE, it throws a message about how the model treats
+#' missingness and provides alternatives. It returns an unmodified [obs_opts()].
+#' 
+#' This function is necessary because the data and observation model
+#' do not currently interact internally. It will be deprecated in future
+#' versions when the data specification interface is enhanced.
 #'
 #' @param obs A call to [obs_opts()]
 #' @param data The raw data
 #' @importFrom cli cli_inform col_red
 #'
-#' @return Called for its side effects
+#' @return [obs_opts()]
 #' @keywords internal
 check_na_setting_against_data <- function(data, obs) {
   # If users are using the default treatment of NA's and their data has
