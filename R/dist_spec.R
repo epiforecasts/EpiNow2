@@ -617,6 +617,7 @@ print.dist_spec <- function(x, ...) {
 #'   addition to the probability mass function
 #' @param ... ignored
 #' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
+#' scale_color_brewer
 #' @importFrom data.table data.table rbindlist
 #' @importFrom cli cli_abort
 #' @export
@@ -699,11 +700,12 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
 
   # Plot PMF and CDF as facets in the same plot
   plot <- ggplot(
-    pmf_data, mapping = aes(x = x, y = p, group = sample, linetype = type)
+    pmf_data, mapping = aes(x = x, y = p, group = sample, color = type)
   ) +
     geom_line() +
     facet_wrap(vars(distribution)) +
     labs(x = "x", y = "Probability") +
+    scale_color_brewer(palette = "Set1") +
     theme_bw()
   if (cumulative) {
     cmf_data <- pmf_data[,
