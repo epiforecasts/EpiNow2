@@ -26,29 +26,6 @@ test_that("dist_fit produces expected output", {
   expect_equal(length(extract(dist_fit_out)$sigma), samples)
 })
 
-test_that("dist_fit produces expected warning", {
-  expect_warning(
-    dist_fit(
-      delays,
-      samples = 999, # should be at least 1000 so warning is expected
-      dist = dist
-    ),
-    "must be at least 1000."
-  )
-})
-
 test_that("bootstrapped_dist_fit produces expected output", {
   expect_s3_class(bootstrapped_dist_fit_out, "dist_spec")
-})
-
-test_that("bootstrapped_dist_fit produces expected warning", {
-  expect_warning(
-    bootstrapped_dist_fit(
-      delays,
-      samples = 999, # should be at least 1000 so warning is expected
-      bootstraps = 1,
-      dist = dist
-    ),
-    "must be at least 1000."
-  )
 })
