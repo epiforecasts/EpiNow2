@@ -215,8 +215,8 @@ test_data_complete <- function(data) {
 
 #' Check the na settings in obs_opts() with the data and throw messages
 #' where necessary
+#' @description `r lifecycle::badge("experimental")`
 #'
-#' @details
 #' This function checks the data to see if it is complete or not and then
 #' checks if the user specified na to be treated as missing. If the latter is
 #' false, it does nothing. If TRUE, it informs the user about how the implicit
