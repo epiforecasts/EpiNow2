@@ -2,8 +2,7 @@
 % Please edit documentation in R/checks.R
 \name{check_na_setting_against_data}
 \alias{check_na_setting_against_data}
-\title{Check the na settings in obs_opts() with the data and throw messages
-where necessary}
+\title{Cross-check treatment of \code{NA} in obs_opts() against input data}
 \usage{
 check_na_setting_against_data(data, obs)
 }
@@ -13,17 +12,18 @@ check_na_setting_against_data(data, obs)
 \item{obs}{A call to \code{\link[=obs_opts]{obs_opts()}}}
 }
 \value{
-Called for its side effects
+\code{\link[=obs_opts]{obs_opts()}}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 
-}
-\details{
-This function checks the data to see if it is complete or not and then
-checks if the user specified na to be treated as missing. If the latter is
-false, it does nothing. If TRUE, it informs the user about how the implicit
-or explicit missingness is treated. This function is necessary because
-the data argument and observation model do not interact internally.
+This function checks the input data for implicit and/or explicit missingness
+and checks if the user specified \code{na = "missing"} in \code{\link[=obs_opts]{obs_opts()}}.
+If the two are TRUE, it throws a message about how the model treats
+missingness and provides alternatives. It returns an unmodified \code{\link[=obs_opts]{obs_opts()}}.
+
+This function is necessary because the data and observation model
+do not currently interact internally. It will be deprecated in future
+versions when the data specification interface is enhanced.
 }
 \keyword{internal}
