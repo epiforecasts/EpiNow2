@@ -627,7 +627,8 @@ apply_tolerance <- function(x, tolerance) {
 #' Remove uncertainty in the parameters of a `<dist_spec>`
 #'
 #' @description `r lifecycle::badge("deprecated")`
-#' This function has been renamed to [fix_parameters()] as the former was a misnomer.
+#' This function has been renamed to [fix_parameters()] as a more appropriate
+#'   name.
 #' @return A `<dist_spec>` object without uncertainty
 #' @keywords internal
 #' @importFrom cli cli_abort
