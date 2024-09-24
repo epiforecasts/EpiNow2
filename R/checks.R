@@ -221,7 +221,7 @@ test_data_complete <- function(data) {
 #' and checks if the user specified `na = "missing"` in [obs_opts()].
 #' If the two are TRUE, it throws a message about how the model treats
 #' missingness and provides alternatives. It returns an unmodified [obs_opts()].
-#' 
+#'
 #' This function is necessary because the data and observation model
 #' do not currently interact internally. It will be deprecated in future
 #' versions when the data specification interface is enhanced.
