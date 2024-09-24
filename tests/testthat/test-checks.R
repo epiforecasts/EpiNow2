@@ -213,4 +213,18 @@ test_that("check_na_setting_against_data works as expected", {
       data = example_confirmed
     )
   )
+  expect_identical(
+    setdiff(
+      names(
+        obs_opts()
+      ),
+      names(
+        check_na_setting_against_data(
+          obs = obs_opts(),
+          data = example_confirmed
+        )
+      )
+    ),
+    "na_as_missing_default_used"
+  )
 })
