@@ -2,6 +2,7 @@
 
 ## Documentation
 
+- The documentation of the `rt` argument has been expanded in the case where `rt = NULL` to make explicit the settings that are applied in that case. By @jamesmbaazam in #779 and reviewed by @sbfnk.
 - The README has been updated to link to the free course on nowcasting and forecasting. The availability of variational inference, Laplace approximation, and Pathfinder through `cmdstanr` has also be surfaced. By @jamesmbaazam in #753 and reviewed by @seabbs.
 - Some implicit argument defaults have been made explicit in the function definition. By @Bisaloo in #729.
 - The installation guide in the README has been updated to provide instructions for configuring the C toolchain of Windows, MacOS, and Linux. By @jamesmbaazam in #707 and reviewed by @sbfnk.
