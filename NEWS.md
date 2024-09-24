@@ -9,7 +9,6 @@
 
 ## Model changes
 
-- `plot.dist_spec` now uses color instead of line types to display pmfs vs cmfs. By @jamesmbaazam in #788 and reviewed by @sbfnk .
 - All functions now use the `{cli}` R package to signal errors, warnings, and messages. By @jamesmbaazam in #762 and reviewed by @seabbs.
 - `epinow()` now returns the "timing" output in a "time difference"" format that is easier to understand and work with. By @jamesmbaazam in #688 and reviewed by @sbfnk.
 - The interface for defining delay distributions has been generalised to also cater for continuous distributions
@@ -30,6 +29,7 @@
 ## Package changes
 
 - `fix_dist()` has been renamed to `fix_parameters()` because it removes the uncertainty in a distribution's parameters. By @sbfnk in #733 and reviewed by @jamesmbaazam.
+- `plot.dist_spec` now uses color instead of line types to display pmfs vs cmfs. By @jamesmbaazam in #788 and reviewed by @sbfnk.
 
 ## Bug fixes
 
