@@ -705,7 +705,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
     geom_line() +
     facet_wrap(vars(distribution)) +
     labs(x = "x", y = "Probability") +
-    scale_color_brewer(palette = "Set1") +
+    scale_color_brewer(palette = "Dark2") +
     theme_bw()
   if (cumulative) {
     cmf_data <- pmf_data[,
