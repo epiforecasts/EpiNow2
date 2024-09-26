@@ -105,9 +105,9 @@ Uncertain parameters are not allowed.
     R = R,
     initial_infections = 100,
     generation_time = generation_time_opts(
-      fix_dist(example_generation_time)
+      fix_parameters(example_generation_time)
     ),
-    delays = delay_opts(fix_dist(example_reporting_delay)),
+    delays = delay_opts(fix_parameters(example_reporting_delay)),
     obs = obs_opts(family = "poisson")
   )
 }

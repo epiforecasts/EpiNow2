@@ -2,6 +2,7 @@
 
 ## Documentation
 
+- The documentation of the `rt` argument has been expanded in the case where `rt = NULL` to make explicit the settings that are applied in that case. By @jamesmbaazam in #779 and reviewed by @sbfnk.
 - The README has been updated to link to the free course on nowcasting and forecasting. The availability of variational inference, Laplace approximation, and Pathfinder through `cmdstanr` has also be surfaced. By @jamesmbaazam in #753 and reviewed by @seabbs.
 - Some implicit argument defaults have been made explicit in the function definition. By @Bisaloo in #729.
 - The installation guide in the README has been updated to provide instructions for configuring the C toolchain of Windows, MacOS, and Linux. By @jamesmbaazam in #707 and reviewed by @sbfnk.
@@ -25,6 +26,11 @@
 - A warning is now thrown if nonparametric PMFs passed to delay options have consecutive tail values that are below a certain low threshold as these lead to loss in speed with little gain in accuracy. By @jamesmbaazam in #752 and reviewed by @seabbs.
 - `dist_fit()` can now accept any number of `samples` without throwing a warning when `samples` < 1000 in #751 by @jamesmbaazam and reviewed by @seabbs and @sbfnk.
 
+## Package changes
+
+- `fix_dist()` has been renamed to `fix_parameters()` because it removes the uncertainty in a distribution's parameters. By @sbfnk in #733 and reviewed by @jamesmbaazam.
+- `plot.dist_spec` now uses color instead of line types to display pmfs vs cmfs. By @jamesmbaazam in #788 and reviewed by @sbfnk.
+
 ## Bug fixes
 
 - a bug was fixed that caused delay option functions to report an error if only the CDF cutoff was specified. By @sbfnk in #716 and reviewed by @jamesmbaazam.
@@ -32,6 +38,7 @@
 - a bug was fixed that caused delay option functions to report an error if only the CDF cutoff was specified. By @sbfnk.
 - a bug was fixed that led to the truncation PMF being shortened from the wrong side when the truncation PMF was longer than the supplied data. By @seabbs in #736 and reviewed by @sbfnk and @jamesmbaazam.
 - a bug was fixed that caused internal validation checks on delay distributions to fail if they contained non-parametric distributions. By @jamesmbaazam in #750 and reviewed by @seabbs.
+- a bug was fixed where combined distributions where shown in alphabetical order, rather than the order in which they were combined. By @sbfnk in #784 and reviewed by @jamesmbaazam.
 
 ## Documentation
 

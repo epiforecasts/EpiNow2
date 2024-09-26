@@ -78,7 +78,7 @@ available as `convolve_and_scale()
   cases <- as.data.table(example_confirmed)[, primary := confirm]
   sim <- simulate_secondary(
     cases,
-    delays = delay_opts(fix_dist(example_reporting_delay)),
+    delays = delay_opts(fix_parameters(example_reporting_delay)),
     obs = obs_opts(family = "poisson")
   )
 }

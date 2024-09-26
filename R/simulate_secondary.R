@@ -29,7 +29,7 @@
 #'   cases <- as.data.table(example_confirmed)[, primary := confirm]
 #'   sim <- simulate_secondary(
 #'     cases,
-#'     delays = delay_opts(fix_dist(example_reporting_delay)),
+#'     delays = delay_opts(fix_parameters(example_reporting_delay)),
 #'     obs = obs_opts(family = "poisson")
 #'   )
 #' }
@@ -80,7 +80,7 @@ simulate_secondary <- function(primary,
     cli_abort(
       c(
         "!" = "Cannot simulate from uncertain parameters.",
-        "i" = "Use {.fn fix_dist} to set the parameters of uncertain
+        "i" = "Use {.fn fix_parameters} to set the parameters of uncertain
         distributions either using the mean or a randomly sampled value."
       )
     )

@@ -33,7 +33,7 @@ test_that("dist_spec returns correct output for gamma distribution parameterised
 
 test_that("dist_spec returns correct output for fixed distribution", {
   result <- discretise(
-    fix_dist(LogNormal(meanlog = Normal(5, 3), sdlog = 1, max = 19))
+    fix_parameters(LogNormal(meanlog = Normal(5, 3), sdlog = 1, max = 19))
   )
   expect_equal(get_distribution(result), "nonparametric")
   expect_equal(max(result), 19)
@@ -201,11 +201,11 @@ test_that("plot.dist_spec correctly plots a combination of fixed distributions",
   expect_equal(length(plot$facet$params$facets), 1)
 })
 
-test_that("fix_dist works with composite delay distributions", {
+test_that("fix_parameters works with composite delay distributions", {
   dist1 <- LogNormal(meanlog = Normal(1, 0.1), sdlog = 1, max = 19)
   dist2 <- Gamma(mean = 3, sd = 2, max = 19)
   dist <- dist1 + dist2
-  expect_equal(ndist(collapse(discretise(fix_dist(dist)))), 1L)
+  expect_equal(ndist(collapse(discretise(fix_parameters(dist)))), 1L)
 })
 
 test_that("composite delay distributions can be disassembled", {
@@ -324,4 +324,8 @@ test_that("get functions report errors", {
   expect_error(get_parameters(c(
     Gamma(mean = 4, sd = 1), Gamma(mean = 4, sd = 1)
   )), "must be specified")
+})
+
+test_that("fix_dist() is deprecated", {
+  expect_deprecated(fix_dist(LogNormal(meanlog = Normal(4, 1), sdlog = 1)))
 })

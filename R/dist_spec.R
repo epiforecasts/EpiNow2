@@ -617,6 +617,7 @@ print.dist_spec <- function(x, ...) {
 #'   addition to the probability mass function
 #' @param ... ignored
 #' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
+#' scale_color_brewer
 #' @importFrom data.table data.table rbindlist
 #' @importFrom cli cli_abort
 #' @export
@@ -659,7 +660,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
         samples <- 1 ## only need 1 sample if fixed
       }
       dists <- lapply(seq_len(samples), function(y) {
-        fix_dist(extract_single_dist(x, i), strategy = "sample")
+        fix_parameters(extract_single_dist(x, i), strategy = "sample")
       })
       cdf_cutoff <- attr(x, "cdf_cutoff")
       if (is.null(cdf_cutoff)) {
@@ -692,17 +693,19 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
     }
     return(pmf_dt)
   })
-  pmf_data <- rbindlist(pmf_data)[,
-    type := factor("pmf", levels = c("pmf", "cmf"))
-  ]
+  pmf_data <- rbindlist(pmf_data)[, `:=`(
+    type = factor("pmf", levels = c("pmf", "cmf")),
+    distribution = factor(distribution, levels = unique(distribution))
+  )]
 
   # Plot PMF and CDF as facets in the same plot
   plot <- ggplot(
-    pmf_data, mapping = aes(x = x, y = p, group = sample, linetype = type)
+    pmf_data, mapping = aes(x = x, y = p, group = sample, color = type)
   ) +
     geom_line() +
     facet_wrap(vars(distribution)) +
     labs(x = "x", y = "Probability") +
+    scale_color_brewer(palette = "Dark2") +
     theme_bw()
   if (cumulative) {
     cmf_data <- pmf_data[,
@@ -754,12 +757,12 @@ extract_single_dist <- function(x, i) {
 }
 
 #' @export
-fix_dist <- function(x, ...) {
-  UseMethod("fix_dist")
+fix_parameters <- function(x, ...) {
+  UseMethod("fix_parameters")
 }
 #' Fix the parameters of a `<dist_spec>`
 #'
-#' @name fix_dist
+#' @name fix_parameters
 #' @description `r lifecycle::badge("experimental")`
 #' If the given `<dist_spec>` has any uncertainty, it is removed and the
 #' corresponding distribution converted into a fixed one.
@@ -772,15 +775,15 @@ fix_dist <- function(x, ...) {
 #' @param ... ignored
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom rlang arg_match
-#' @method fix_dist dist_spec
+#' @method fix_parameters dist_spec
 #' @examples
 #' # An uncertain gamma distribution with mean 3 and sd 2
 #' dist <- LogNormal(
 #'   meanlog = Normal(3, 0.5), sdlog = Normal(2, 0.5), max = 20
 #' )
 #'
-#' fix_dist(dist)
-fix_dist.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
+#' fix_parameters(dist)
+fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
   ## match strategy argument to options
   strategy <- arg_match(strategy)
 
@@ -809,10 +812,11 @@ fix_dist.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 }
 
 #' @export
-#' @method fix_dist multi_dist_spec
-fix_dist.multi_dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
+#' @method fix_parameters multi_dist_spec
+fix_parameters.multi_dist_spec <- function(x, strategy =
+                                                c("mean", "sample"), ...) {
   for (i in seq_len(ndist(x))) {
-    x[[i]] <- fix_dist(x[[i]])
+    x[[i]] <- fix_parameters(x[[i]])
   }
   return(x)
 }
