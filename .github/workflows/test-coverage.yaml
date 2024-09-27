@@ -45,7 +45,6 @@ jobs:
         with:
           cmdstan-version: 'latest'
           num-cores: 2
-        shell: Rscript {0}
 
       - name: Test coverage
         run: covr::codecov(quiet = FALSE)
