@@ -249,13 +249,12 @@ simulate_infections <- function(estimates, R, initial_infections,
 #' simulate. May decrease run times due to reduced IO costs but this is still
 #' being evaluated. If set to NULL then all simulations are done at once.
 #'
-#' @param verbose Logical defaults to [interactive()]. Should a progress bar
-#' (from `progressr`) be shown.
+#' @param verbose Logical defaults to [interactive()]. If the `progressr`
+#' package is available, a progress bar will be shown.
 #' @inheritParams stan_opts
 #' @importFrom rstan extract sampling
 #' @importFrom purrr list_transpose map safely compact
 #' @importFrom future.apply future_lapply
-#' @importFrom progressr with_progress progressor
 #' @importFrom data.table rbindlist as.data.table
 #' @importFrom lubridate days
 #' @importFrom checkmate assert_class assert_names test_numeric test_data_frame
@@ -480,12 +479,12 @@ forecast_infections <- function(estimates,
 
   ## simulate in batches
   with_progress({
-    if (verbose) {
-      p <- progressor(along = batches)
+    if (verbose && requireNamespace("progressr", quietly = TRUE)) {
+      p <- progressr::progressor(along = batches)
     }
     out <- lapply_func(batches,
       function(batch) {
-        if (verbose) {
+        if (verbose && requireNamespace("progressr", quietly = TRUE)) {
           p()
         }
         safe_batch(

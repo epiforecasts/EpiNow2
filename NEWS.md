@@ -28,6 +28,7 @@
 ## Package changes
 
 - `fix_dist()` has been renamed to `fix_parameters()` because it removes the uncertainty in a distribution's parameters. By @sbfnk in #733 and reviewed by @jamesmbaazam.
+- The use of the `{progressr}` package for displaying progress bars is now optional
 
 ## Bug fixes
 

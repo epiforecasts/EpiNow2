@@ -23,7 +23,7 @@ run_region(
   output,
   complete_logger,
   verbose,
-  progress_fn,
+  progress_fn = NULL,
   ...
 )
 }
@@ -96,7 +96,7 @@ the completion of estimation to.}
 to the console from \code{\link[=epinow]{epinow()}}.}
 
 \item{progress_fn}{Function as returned by \code{\link[progressr:progressor]{progressr::progressor()}}. Allows
-the use of a  progress bar.}
+the use of a  progress bar. If NULL (default), no progress bar is used.}
 
 \item{...}{Pass additional arguments to \code{\link[=epinow]{epinow()}}. See the documentation for
 \code{\link[=epinow]{epinow()}} for details.}

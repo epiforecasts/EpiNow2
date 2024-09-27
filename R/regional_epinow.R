@@ -16,7 +16,7 @@
 #'
 #' Regions can be estimated in parallel using the `{future}` package (see
 #' [setup_future()]). The progress of producing estimates across multiple
-#' regions is tracked using the `{progressr}` package. Modify this behaviour
+#' regions can be tracked using the `{progressr}` package. Modify this behaviour
 #' using [progressr::handlers()] and enable it in batch by setting
 #' `R_PROGRESSR_ENABLE=TRUE` as an environment variable.
 #'
@@ -60,7 +60,6 @@
 #' @importFrom futile.logger flog.info flog.warn flog.trace
 #' @importFrom R.utils withTimeout
 #' @importFrom rlang cnd_muffle
-#' @importFrom progressr with_progress progressor
 #' @examples
 #' \donttest{
 #' # set number of cores to use
@@ -161,9 +160,8 @@ regional_epinow <- function(data,
     " function"
   )
 
-  progressr::with_progress({
-    progress_fn <- progressr::progressor(along = regions)
-    regional_out <- future.apply::future_lapply(regions, run_region,
+  run_regions <- function(progress_fn = NULL) {
+    future.apply::future_lapply(regions, run_region,
       generation_time = generation_time,
       delays = delays,
       truncation = truncation,
@@ -189,7 +187,14 @@ regional_epinow <- function(data,
       future.scheduling = Inf,
       future.seed = TRUE
     )
-  })
+  }
+  if (requireNamespace("progressr", quietly = TRUE)) {
+    progressr::with_progress({
+      regional_out <- run_regions(progressr::progressor(along = regions))
+    })
+  } else {
+    regional_out <- run_regions()
+  }
 
   out <- process_regions(regional_out, regions)
   regional_out <- out$all
@@ -313,7 +318,7 @@ clean_regions <- function(data, non_zero_points) {
 #'
 #' @param target_region Character string indicating the region being evaluated
 #' @param progress_fn Function as returned by [progressr::progressor()]. Allows
-#' the use of a  progress bar.
+#' the use of a  progress bar. If NULL (default), no progress bar is used.
 #'
 #' @param complete_logger Character string indicating the logger to output
 #' the completion of estimation to.
@@ -341,7 +346,7 @@ run_region <- function(target_region,
                        output,
                        complete_logger,
                        verbose,
-                       progress_fn,
+                       progress_fn = NULL,
                        ...) {
   futile.logger::flog.info("Initialising estimates for: %s", target_region,
     name = "EpiNow2.epinow"
@@ -390,7 +395,7 @@ run_region <- function(target_region,
     complete_logger
   )
 
-  if (!missing(progress_fn)) {
+  if (!is.null(progress_fn)) {
     progress_fn(sprintf("Region: %s", target_region))
   }
   return(out)

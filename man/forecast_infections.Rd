@@ -38,8 +38,8 @@ being evaluated. If set to NULL then all simulations are done at once.}
 \item{backend}{Character string indicating the backend to use for fitting
 stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 
-\item{verbose}{Logical defaults to \code{\link[=interactive]{interactive()}}. Should a progress bar
-(from \code{progressr}) be shown.}
+\item{verbose}{Logical defaults to \code{\link[=interactive]{interactive()}}. If the \code{progressr}
+package is available, a progress bar will be shown.}
 }
 \value{
 A list of output as returned by \code{\link[=estimate_infections]{estimate_infections()}} but based on
