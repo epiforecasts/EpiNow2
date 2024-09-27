@@ -54,7 +54,6 @@
 #' @export
 #' @seealso [epinow()] [estimate_infections()] [setup_future()]
 #' [regional_summary()]
-#' @importFrom future.apply future_lapply
 #' @importFrom data.table as.data.table setDT copy setorder
 #' @importFrom purrr safely map compact keep
 #' @importFrom futile.logger flog.info flog.warn flog.trace
@@ -161,7 +160,7 @@ regional_epinow <- function(data,
   )
 
   run_regions <- function(progress_fn = NULL) {
-    future.apply::future_lapply(regions, run_region,
+    lapply_func(regions, run_region,
       generation_time = generation_time,
       delays = delays,
       truncation = truncation,
@@ -184,8 +183,10 @@ regional_epinow <- function(data,
       progress_fn = progress_fn,
       verbose = verbose,
       ...,
-      future.scheduling = Inf,
-      future.seed = TRUE
+      future.opts = list(
+        future.scheduling = Inf,
+        future.seed = TRUE
+      )
     )
   }
   if (requireNamespace("progressr", quietly = TRUE)) {

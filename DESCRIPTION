@@ -103,8 +103,6 @@ Imports:
     cli,
     data.table,
     futile.logger (>= 1.4),
-    future,
-    future.apply,
     ggplot2,
     lifecycle,
     lubridate,
@@ -125,6 +123,8 @@ Imports:
 Suggests:
     cmdstanr,
     covr,
+    future,
+    future.apply,
     here,
     knitr,
     precommit,

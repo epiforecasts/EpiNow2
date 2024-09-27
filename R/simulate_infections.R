@@ -254,7 +254,6 @@ simulate_infections <- function(estimates, R, initial_infections,
 #' @inheritParams stan_opts
 #' @importFrom rstan extract sampling
 #' @importFrom purrr list_transpose map safely compact
-#' @importFrom future.apply future_lapply
 #' @importFrom data.table rbindlist as.data.table
 #' @importFrom lubridate days
 #' @importFrom checkmate assert_class assert_names test_numeric test_data_frame
@@ -471,12 +470,6 @@ forecast_infections <- function(estimates,
 
   safe_batch <- safely(batch_simulate)
 
-  if (backend == "cmdstanr") {
-    lapply_func <- lapply ## future_lapply can't handle cmdstanr
-  } else {
-    lapply_func <- function(...) future_lapply(future.seed = TRUE, ...)
-  }
-
   ## simulate in batches
   with_progress({
     if (verbose && requireNamespace("progressr", quietly = TRUE)) {
@@ -492,7 +485,11 @@ forecast_infections <- function(estimates,
           shift, dates, batch[[1]],
           batch[[2]]
         )[[1]]
-      }
+      },
+      future.opts = list(
+        future.seed = TRUE
+      ),
+      backend = backend
     )
   })
 
