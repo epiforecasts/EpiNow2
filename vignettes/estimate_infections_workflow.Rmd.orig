@@ -33,10 +33,10 @@ Obtaining a good and full understanding of the data being used is an important f
 _EpiNow2_ expects data in the format of a data frame with two columns, `date` and `confirm`, where `confirm` stands for the number of confirmed counts - although in reality this can be applied to any data including suspected cases and lab-confirmed outcomes.
 The user might already have the data as such a time series provided, for example, on public dashboards or directly from public health authorities.
 Alternatively, they can be constructed from individual-level data, for example using the [incidence2](https://CRAN.R-project.org/package=incidence2) R package.
-An example data set called `example_confirm`  is included in the package:
+An example data set called `example_confirmed`  is included in the package:
 
 ```{r}
-head(example_confirmed)
+head(EpiNow2::example_confirmed)
 ```
 
 Any estimation procedure is only as good as the data that feeds into it.
