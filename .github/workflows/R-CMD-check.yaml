@@ -55,7 +55,6 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
-          extra-repositories: https://stan-dev.r-universe.dev
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -63,9 +62,8 @@ jobs:
           extra-packages: |
             rmarkdown
             rcmdcheck
-            cmdstanr
+            stan-dev/cmdstanr
             testthat
-            cran::rstan
 
       - name: Install cmdstan
         if: runner.os != 'Windows'
