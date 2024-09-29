@@ -26,7 +26,7 @@ library(EpiNow2)
 
 ### Reporting delays, incubation period and generation time
 
-Distributions can be supplied in two ways. First, one can supplying delay data to `estimate_delay()`, where a subsampled bootstrapped lognormal will be fit to account for uncertainty in the observed data without being biased by changes in incidence (see `?EpiNow2::estimate_delay()`).
+Distributions can be supplied in two ways. First, one can supply delay data to `estimate_delay()`, where a subsampled bootstrapped lognormal will be fit to account for uncertainty in the observed data without being biased by changes in incidence (see `?EpiNow2::estimate_delay()`).
 
 Second, one can specify predetermined delays with uncertainty using the distribution functions such as `Gamma` or `Lognormal`. An arbitrary number of delay distributions are supported in `dist_spec()` with a common use case being an incubation period followed by a reporting delay. For more information on specifying distributions see (see `?EpiNow2::Distributions`).
 
@@ -87,6 +87,23 @@ example_incubation_period
 #>         0.069
 ```
 
+Users can also pass a non-parametric delay distribution vector using the `NonParametric` option 
+for both the generation interval and the reporting delays. It is important to note that if doing so,
+the generation interval vector is indexed starting at day 1, as the renewal approach assumes
+there is 0 probability of onward infection on the day an individual is infected, whereas
+the reporting delay vectors should be indexed starting at day 0, as for example there can be
+some probability of showing symptoms or being reported on day 0 of an individual's infection.
+```r
+#Example 1-indexed generation interval
+example_non_parametric_gi <-  NonParametric(pmf = c(0.3, 0.5, 0.2))
+# Example 0-indexed delay from infection to reporting
+example_non_parametric_delay <- NonParametric(pmf = c(0.01, 0.1, 0.5, 0.3, 0.09))
+```
+These distributions are passed to downstream functions in the same way that the 
+parametric distributions are. The difference in the `NonParametric` cases is that 
+these will be treated as fixed rather thann estimated with the specified parametric priors. 
+
+
 Now, to the functions.
 
 ### [epinow()](https://epiforecasts.io/EpiNow2/reference/epinow.html)
@@ -128,7 +145,6 @@ names(estimates)
 ```
 
 Both summary measures and posterior samples are returned for all parameters in an easily explored format which can be accessed using `summary`. The default is to return a summary table of estimates for key parameters at the latest date partially supported by data. 
-
 
 ```r
 knitr::kable(summary(estimates))
