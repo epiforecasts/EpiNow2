@@ -208,7 +208,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
           samples = ceiling(samples / bootstraps)
         )
       },
-      future_opts = list(
+      future.opts = list(
         future.scheduling = Inf,
         future.globals = c(
           "values", "bootstraps", "samples",
