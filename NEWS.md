@@ -1,4 +1,6 @@
-# EpiNow2 (development version)
+# EpiNow2 1.6.0
+
+A release that introduces model improvements to the Gaussian Process models, alongside a number of other improvements and bug fixes.
 
 ## Documentation
 
@@ -9,8 +11,6 @@
 
 ## Model changes
 
-- All functions now use the `{cli}` R package to signal errors, warnings, and messages. By @jamesmbaazam in #762 and reviewed by @seabbs.
-- `epinow()` now returns the "timing" output in a "time difference"" format that is easier to understand and work with. By @jamesmbaazam in #688 and reviewed by @sbfnk.
 - The interface for defining delay distributions has been generalised to also cater for continuous distributions
 - When defining probability distributions these can now be truncated using the `tolerance` argument
 - Ornstein-Uhlenbeck and 5 / 2 Matérn kernels have been added. By @sbfnk in #741 and reviewed by @seabbs.
@@ -19,7 +19,7 @@
 - The default stan control options have been updated from `list(adapt_delta = 0.95, max_treedepth = 15)` to `list(adapt_delta = 0.9, max_treedepth = 12)` due to improved performance and to reduce the runtime of the default parameterisations. By @seabbs in #742 and reviewed by @jamesmbaazam.
 - Initialisation has been simplified by sampling directly from the priors, where possible, rather than from a constrained space. By @seabbs in #742 and reviewed by @jamesmbaazam.
 - Unnecessary normalisation of delay priors has been removed. By @seabbs in #742 and reviewed by @jamesmbaazam.
-- Ornstein-Uhlenbeck and 5 / 2 Matérn kernels have been added. By @sbfnk in # and reviewed by @.
+- Ornstein-Uhlenbeck and 5 / 2 Matérn kernels have been added. By @sbfnk in #741 and reviewed by @seabbs.
 - Switch to broadcasting from random walks and added unit tests. By @seabbs in #747 and reviewed by @jamesmbaazam.
 - Optimised convolution code to take into account the relative length of the vectors being convolved. See #745 by @seabbs and reviewed by @jamesmbaazam.
 - Switch to broadcasting the day of the week effect. By @seabbs in #746 and reviewed by @jamesmbaazam.
@@ -28,6 +28,8 @@
 
 ## Package changes
 
+- `epinow()` now returns the "timing" output in a "time difference"" format that is easier to understand and work with. By @jamesmbaazam in #688 and reviewed by @sbfnk.
+- All functions now use the `{cli}` R package to signal errors, warnings, and messages. By @jamesmbaazam in #762 and reviewed by @seabbs.
 - `fix_dist()` has been renamed to `fix_parameters()` because it removes the uncertainty in a distribution's parameters. By @sbfnk in #733 and reviewed by @jamesmbaazam.
 - `plot.dist_spec` now uses color instead of line types to display pmfs vs cmfs. By @jamesmbaazam in #788 and reviewed by @sbfnk.
 

@@ -52,8 +52,8 @@ discretise(dist1 + dist2, strict = FALSE)
 Charniga, K., et al. “Best practices for estimating and reporting
 epidemiological delay distributions of infectious diseases using public
 health surveillance and healthcare data”, \emph{arXiv e-prints}, 2024.
-\url{https://doi.org/10.48550/arXiv.2405.08841}
+\doi{10.48550/arXiv.2405.08841}
 Park,  S. W.,  et al.,  "Estimating epidemiological delay distributions for
 infectious diseases", \emph{medRxiv}, 2024.
-\url{https://doi.org/10.1101/2024.01.12.24301247}
+\doi{<https://doi.org/10.1101/2024.01.12.24301247}
 }
