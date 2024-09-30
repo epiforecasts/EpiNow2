@@ -286,7 +286,8 @@ Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=LloydChapman">LloydChapman</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=medewitt">medewitt</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=nikosbosse">nikosbosse</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=sophiemeakin">sophiemeakin</a>
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=sophiemeakin">sophiemeakin</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=github-merge-queue[bot]">github-merge-queue\[bot\]</a>
 
 ### Issue Authors
 
