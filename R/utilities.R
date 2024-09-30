@@ -411,7 +411,7 @@ set_dt_single_thread <- function() {
 #' @inheritParams stan_opts
 lapply_func <- function(..., backend = "rstan", future.opts = list()) {
   if (requireNamespace("future.apply", quietly = TRUE) && backend == "rstan") {
-    future.lapply::future_lapply(c(..., future.opts))
+    future.apply::future_lapply(c(..., future.opts))
   } else {
     lapply(...)
   }
