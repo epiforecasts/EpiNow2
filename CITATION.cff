@@ -148,32 +148,6 @@ references:
   doi: 10.32614/CRAN.package.futile.logger
   version: '>= 1.4'
 - type: software
-  title: future
-  abstract: 'future: Unified Parallel and Distributed Processing in R for Everyone'
-  notes: Imports
-  url: https://future.futureverse.org
-  repository: https://CRAN.R-project.org/package=future
-  authors:
-  - family-names: Bengtsson
-    given-names: Henrik
-    email: henrikb@braju.com
-    orcid: https://orcid.org/0000-0002-7579-5165
-  year: '2024'
-  doi: 10.32614/CRAN.package.future
-- type: software
-  title: future.apply
-  abstract: 'future.apply: Apply Function to Elements in Parallel using Futures'
-  notes: Imports
-  url: https://future.apply.futureverse.org
-  repository: https://CRAN.R-project.org/package=future.apply
-  authors:
-  - family-names: Bengtsson
-    given-names: Henrik
-    email: henrikb@braju.com
-    orcid: https://orcid.org/0000-0002-7579-5165
-  year: '2024'
-  doi: 10.32614/CRAN.package.future.apply
-- type: software
   title: ggplot2
   abstract: 'ggplot2: Create Elegant Data Visualisations Using the Grammar of Graphics'
   notes: Imports
@@ -289,18 +263,6 @@ references:
     email: Aki.Vehtari@aalto.fi
   year: '2024'
   doi: 10.32614/CRAN.package.posterior
-- type: software
-  title: progressr
-  abstract: 'progressr: An Inclusive, Unifying API for Progress Updates'
-  notes: Imports
-  url: https://progressr.futureverse.org
-  repository: https://CRAN.R-project.org/package=progressr
-  authors:
-  - family-names: Bengtsson
-    given-names: Henrik
-    email: henrikb@braju.com
-  year: '2024'
-  doi: 10.32614/CRAN.package.progressr
 - type: software
   title: purrr
   abstract: 'purrr: Functional Programming Tools'
@@ -514,6 +476,32 @@ references:
     given-names: Steve
   year: '2024'
 - type: software
+  title: future
+  abstract: 'future: Unified Parallel and Distributed Processing in R for Everyone'
+  notes: Suggests
+  url: https://future.futureverse.org
+  repository: https://CRAN.R-project.org/package=future
+  authors:
+  - family-names: Bengtsson
+    given-names: Henrik
+    email: henrikb@braju.com
+    orcid: https://orcid.org/0000-0002-7579-5165
+  year: '2024'
+  doi: 10.32614/CRAN.package.future
+- type: software
+  title: future.apply
+  abstract: 'future.apply: Apply Function to Elements in Parallel using Futures'
+  notes: Suggests
+  url: https://future.apply.futureverse.org
+  repository: https://CRAN.R-project.org/package=future.apply
+  authors:
+  - family-names: Bengtsson
+    given-names: Henrik
+    email: henrikb@braju.com
+    orcid: https://orcid.org/0000-0002-7579-5165
+  year: '2024'
+  doi: 10.32614/CRAN.package.future.apply
+- type: software
   title: knitr
   abstract: 'knitr: A General-Purpose Package for Dynamic Report Generation in R'
   notes: Suggests
@@ -526,6 +514,18 @@ references:
     orcid: https://orcid.org/0000-0003-0645-5666
   year: '2024'
   doi: 10.32614/CRAN.package.knitr
+- type: software
+  title: progressr
+  abstract: 'progressr: An Inclusive, Unifying API for Progress Updates'
+  notes: Suggests
+  url: https://progressr.futureverse.org
+  repository: https://CRAN.R-project.org/package=progressr
+  authors:
+  - family-names: Bengtsson
+    given-names: Henrik
+    email: henrikb@braju.com
+  year: '2024'
+  doi: 10.32614/CRAN.package.progressr
 - type: software
   title: rmarkdown
   abstract: 'rmarkdown: Dynamic Documents for R'
