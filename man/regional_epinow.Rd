@@ -132,7 +132,7 @@ available to facilitate building this list.
 
 Regions can be estimated in parallel using the \code{{future}} package (see
 \code{\link[=setup_future]{setup_future()}}). The progress of producing estimates across multiple
-regions is tracked using the \code{{progressr}} package. Modify this behaviour
+regions can be tracked using the \code{{progressr}} package. Modify this behaviour
 using \code{\link[progressr:handlers]{progressr::handlers()}} and enable it in batch by setting
 \code{R_PROGRESSR_ENABLE=TRUE} as an environment variable.
 }

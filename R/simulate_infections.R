@@ -249,13 +249,11 @@ simulate_infections <- function(estimates, R, initial_infections,
 #' simulate. May decrease run times due to reduced IO costs but this is still
 #' being evaluated. If set to NULL then all simulations are done at once.
 #'
-#' @param verbose Logical defaults to [interactive()]. Should a progress bar
-#' (from `progressr`) be shown.
+#' @param verbose Logical defaults to [interactive()]. If the `progressr`
+#' package is available, a progress bar will be shown.
 #' @inheritParams stan_opts
 #' @importFrom rstan extract sampling
 #' @importFrom purrr list_transpose map safely compact
-#' @importFrom future.apply future_lapply
-#' @importFrom progressr with_progress progressor
 #' @importFrom data.table rbindlist as.data.table
 #' @importFrom lubridate days
 #' @importFrom checkmate assert_class assert_names test_numeric test_data_frame
@@ -472,20 +470,10 @@ forecast_infections <- function(estimates,
 
   safe_batch <- safely(batch_simulate)
 
-  if (backend == "cmdstanr") {
-    lapply_func <- lapply ## future_lapply can't handle cmdstanr
-  } else {
-    lapply_func <- function(...) future_lapply(future.seed = TRUE, ...)
-  }
-
-  ## simulate in batches
-  with_progress({
-    if (verbose) {
-      p <- progressor(along = batches)
-    }
-    out <- lapply_func(batches,
+  process_batches <- function(p = NULL) {
+    lapply_func(batches,
       function(batch) {
-        if (verbose) {
+        if (!is.null(p)) {
           p()
         }
         safe_batch(
@@ -493,18 +481,32 @@ forecast_infections <- function(estimates,
           shift, dates, batch[[1]],
           batch[[2]]
         )[[1]]
-      }
+      },
+      future.opts = list(
+        future.seed = TRUE
+      ),
+      backend = backend
     )
-  })
+  }
+
+  ## simulate in batches
+  if (verbose && requireNamespace("progressr", quietly = TRUE)) {
+    p <- progressr::progressor(along = batches)
+    progressr::with_progress({
+      regional_out <- process_batches(p)
+    })
+  } else {
+    regional_out <- process_batches()
+  }
 
   ## join batches
-  out <- compact(out)
-  out <- list_transpose(out, simplify = FALSE)
-  out <- map(out, rbindlist)
+  regional_out <- compact(regional_out)
+  regional_out <- list_transpose(regional_out, simplify = FALSE)
+  regional_out <- map(regional_out, rbindlist)
 
   ## format output
   format_out <- format_fit(
-    posterior_samples = out,
+    posterior_samples = regional_out,
     horizon = estimates$args$horizon,
     shift = shift,
     burn_in = 0,

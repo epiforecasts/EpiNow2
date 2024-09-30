@@ -121,7 +121,8 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 #' A utility function that aims to streamline the set up
 #' of the required future backend with sensible defaults for most users of
 #' [regional_epinow()]. More advanced users are recommended to setup their own
-#' `{future}` backend based on their available resources.
+#' `{future}` backend based on their available resources. Running this requires
+#' the `{future}` package to be installed.
 #'
 #' @param strategies A vector length 1 to 2 of strategies to pass to
 #' [future::plan()]. Nesting of parallelisation is from the top level down.
@@ -136,7 +137,6 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 #'
 #' @inheritParams regional_epinow
 #' @importFrom futile.logger flog.error flog.info flog.debug
-#' @importFrom future availableCores plan tweak
 #' @importFrom cli cli_abort
 #' @export
 #' @return Numeric number of cores to use per worker. If greater than 1 pass to
@@ -145,6 +145,16 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 setup_future <- function(data,
                          strategies = c("multisession", "multisession"),
                          min_cores_per_worker = 4) {
+  if (!requireNamespace("future", quietly = TRUE)) {
+    futile.logger::flog.error(
+      "The future package is required for parallelisation"
+                   )
+    cli_abort(
+      c(
+        "!" = "The future package is required for parallelisation."
+      )
+    )
+  }
   if (length(strategies) > 2 || length(strategies) == 0) {
     futile.logger::flog.error("1 or 2 strategies should be used")
     cli_abort(

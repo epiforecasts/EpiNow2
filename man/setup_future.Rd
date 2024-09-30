@@ -35,5 +35,6 @@ Numeric number of cores to use per worker. If greater than 1 pass to
 A utility function that aims to streamline the set up
 of the required future backend with sensible defaults for most users of
 \code{\link[=regional_epinow]{regional_epinow()}}. More advanced users are recommended to setup their own
-\code{{future}} backend based on their available resources.
+\code{{future}} backend based on their available resources. Running this requires
+the \code{{future}} package to be installed.
 }

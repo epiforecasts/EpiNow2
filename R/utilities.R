@@ -402,6 +402,21 @@ set_dt_single_thread <- function() {
   )
 }
 
+#' Choose a parallel or sequential apply function
+#'
+#' Internal function that chooses an appropriate "apply"-type function (either
+#' [lapply()] or [future.apply::future_lapply()])
+#' @return A function that can be used to apply a function to a list
+#' @keywords internal
+#' @inheritParams stan_opts
+lapply_func <- function(..., backend = "rstan", future.opts = list()) {
+  if (requireNamespace("future.apply", quietly = TRUE) && backend == "rstan") {
+    do.call(future.apply::future_lapply, c(list(...), future.opts))
+  } else {
+    lapply(...)
+  }
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
 #' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
 globalVariables(
