@@ -470,14 +470,10 @@ forecast_infections <- function(estimates,
 
   safe_batch <- safely(batch_simulate)
 
-  ## simulate in batches
-  with_progress({
-    if (verbose && requireNamespace("progressr", quietly = TRUE)) {
-      p <- progressr::progressor(along = batches)
-    }
-    out <- lapply_func(batches,
+  process_batches <- function(p = NULL) {
+    lapply_func(batches,
       function(batch) {
-        if (verbose && requireNamespace("progressr", quietly = TRUE)) {
+        if (!is.null(p)) {
           p()
         }
         safe_batch(
@@ -491,7 +487,17 @@ forecast_infections <- function(estimates,
       ),
       backend = backend
     )
-  })
+  }
+
+  ## simulate in batches
+  if (verbose && requireNamespace("progressr", quietly = TRUE)) {
+    p <- progressr::progressor(along = batches)
+    progressr::with_progress({
+      regional_out <- process_batches(p)
+    })
+  } else {
+    regional_out <- process_batches()
+  }
 
   ## join batches
   out <- compact(out)
