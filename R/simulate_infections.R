@@ -500,13 +500,13 @@ forecast_infections <- function(estimates,
   }
 
   ## join batches
-  out <- compact(out)
-  out <- list_transpose(out, simplify = FALSE)
-  out <- map(out, rbindlist)
+  regional_out <- compact(regional_out)
+  regional_out <- list_transpose(regional_out, simplify = FALSE)
+  regional_out <- map(regional_out, rbindlist)
 
   ## format output
   format_out <- format_fit(
-    posterior_samples = out,
+    posterior_samples = regional_out,
     horizon = estimates$args$horizon,
     shift = shift,
     burn_in = 0,
