@@ -63,6 +63,13 @@ test_that("delay parameters can be specified in different ways", {
     ), digits = 2), n = -2),
     c(0.08, 0.33, 0.36, 0.16, 0.05, 0.02, 0.01, 0.00, 0.00, 1.00)
   )
+  expect_equal(
+    test_stan_delays(
+      delays = delay_opts(NonParametric(pmf = c(0.1, 0.6, 0.3))),
+      params = delay_params
+    ),
+    c(0.0, 1.0, 0.1, 0.6, 0.3, 1.0)
+  )
 })
 
 test_that("truncation parameters can be specified in different ways", {
