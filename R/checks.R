@@ -132,7 +132,7 @@ check_stan_delay <- function(dist) {
 #' @return Called for its side effects.
 #' @keywords internal
 check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
-  if (all(pmf[(length(pmf) - span + 1):length(pmf)] < tol)) {
+  if (all(tail(pmf, span) < tol)) {
     cli_warn(
       c(
         "!" = "The PMF tail has {col_blue(span)} consecutive value{?s} smaller

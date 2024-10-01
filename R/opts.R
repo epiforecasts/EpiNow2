@@ -571,7 +571,7 @@ gp_opts <- function(basis_prop = 0.2,
 #'   `familiy` is "negbin". Can be supplied either as a single numeric value
 #'   (fixed overdispersion) or a list with numeric elements mean (`mean`) and
 #'   standard deviation (`sd`) defining a normally distributed prior.
-#'   Internally parametersed such that the overedispersion is one over the
+#'   Internally parameterised such that the overdispersion is one over the
 #'   square of this prior overdispersion. Defaults to a list with elements
 #'   `mean = 0` and `sd = 0.25`.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in the

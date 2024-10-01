@@ -141,7 +141,6 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #'
 #' @return A `<dist_spec>` object summarising the bootstrapped distribution
 #' @importFrom purrr list_transpose
-#' @importFrom future.apply future_lapply
 #' @importFrom rstan extract
 #' @importFrom data.table data.table rbindlist
 #' @importFrom cli cli_abort col_blue
@@ -199,7 +198,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
     dist_samples <- get_single_dist(values, samples = samples)
   } else {
     ## Fit each sub sample
-    dist_samples <- future.apply::future_lapply(1:bootstraps,
+    dist_samples <- lapply_func(1:bootstraps,
       function(boot) {
         get_single_dist(
           sample(values,
@@ -209,12 +208,15 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
           samples = ceiling(samples / bootstraps)
         )
       },
-      future.scheduling = Inf,
-      future.globals = c(
-        "values", "bootstraps", "samples",
-        "bootstrap_samples", "get_single_dist"
-      ),
-      future.packages = "data.table", future.seed = TRUE
+      future.opts = list(
+        future.scheduling = Inf,
+        future.globals = c(
+          "values", "bootstraps", "samples",
+          "bootstrap_samples", "get_single_dist"
+        ),
+        future.packages = "data.table",
+        future.seed = TRUE
+      )
     )
 
 

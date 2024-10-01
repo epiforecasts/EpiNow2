@@ -221,7 +221,6 @@ lognorm_dist_def <- function(mean, mean_sd,
 #' @inheritParams estimate_infections
 #' @inheritParams adjust_infection_to_report
 #' @importFrom data.table data.table rbindlist
-#' @importFrom future.apply future_lapply
 report_cases <- function(case_estimates,
                          case_forecast = NULL,
                          delays,

@@ -24,7 +24,7 @@ Negative binomial ("negbin"), the default, and Poisson.}
 \code{familiy} is "negbin". Can be supplied either as a single numeric value
 (fixed overdispersion) or a list with numeric elements mean (\code{mean}) and
 standard deviation (\code{sd}) defining a normally distributed prior.
-Internally parametersed such that the overedispersion is one over the
+Internally parameterised such that the overdispersion is one over the
 square of this prior overdispersion. Defaults to a list with elements
 \code{mean = 0} and \code{sd = 0.25}.}
 
