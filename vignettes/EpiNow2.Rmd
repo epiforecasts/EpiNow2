@@ -99,9 +99,7 @@ example_non_parametric_gi <-  NonParametric(pmf = c(0, 0.3, 0.5, 0.2))
 example_non_parametric_delay <- NonParametric(pmf = c(0.01, 0.1, 0.5, 0.3, 0.09))
 ```
 These distributions are passed to downstream functions in the same way that the 
-parametric distributions are. The difference in the `NonParametric` case is that 
-these will be treated as fixed rather than estimated with the specified parametric priors. 
-
+parametric distributions are. 
 
 Now, to the functions.
 
