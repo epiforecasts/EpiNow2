@@ -88,11 +88,13 @@ example_incubation_period
 ```
 
 Users can also pass a non-parametric delay distribution vector using the `NonParametric` option 
-for both the generation interval and the reporting delays. It is important to note that if doing so,
-the generation interval vector is indexed starting at day 1 of an individual's infection, as the renewal approach assumes there is 0 probability of onward infection on the day an individual is
-infected, whereas the reporting delay vectors should be indexed starting at day 0, as for example there can be some probability of showing symptoms or being reported on day 0 of an individual's infection.
+for both the generation interval and reporting delays. It is important to note that if doing so,
+both delay distributions are 0-indexed, meaning the first element corresponds to the probability mass
+at day 0 of an individual's infection. Because the discretised renewal equation doesn't support mass on day 0, the generation interval should be passed in as a 0-indexed vector with a mass of zero on day 0. 
+If this is not the case, a warning will indicate that the vector is being left-truncated and renormalized.
+
 ```r
-example_non_parametric_gi <-  NonParametric(pmf = c(0.3, 0.5, 0.2))
+example_non_parametric_gi <-  NonParametric(pmf = c(0, 0.3, 0.5, 0.2))
 
 example_non_parametric_delay <- NonParametric(pmf = c(0.01, 0.1, 0.5, 0.3, 0.09))
 ```
