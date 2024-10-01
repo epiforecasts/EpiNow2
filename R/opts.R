@@ -3,9 +3,16 @@
 #' @description `r lifecycle::badge("stable")`
 #' Returns generation time parameters in a format for lower level model use.
 #'
+#' @details Because the discretised renewal equation used in the package does
+#'   not support zero generation times, any distribution specified here will be
+#'   left-truncated at one, i.e. the first element of the nonparametric or
+#'   discretised probability distribution used for the generation time is set to
+#'   zero and the resulting distribution renormalised.
 #' @rdname generation_time_opts
 #' @param dist A delay distribution or series of delay distributions . If no
-#'   distribution is given a fixed generation time of 1 will be assumed.
+#'   distribution is given a fixed generation time of 1 will be assumed.  If
+#'   passing a nonparametric distribution the first element should be zero (see
+#'   *Details* section)
 #'
 #' @param ... deprecated; use `dist` instead
 #' @param disease deprecated; use `dist` instead
@@ -83,7 +90,7 @@ gt_opts <- function(dist = Fixed(1), ...,
   )
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("generation_time_opts", class(dist))
-  check_stan_delay(dist)
+  check_generation_time(dist)
   return(dist)
 }
 

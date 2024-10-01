@@ -33,6 +33,7 @@ A release that introduces model improvements to the Gaussian Process models, alo
 - `fix_dist()` has been renamed to `fix_parameters()` because it removes the uncertainty in a distribution's parameters. By @sbfnk in #733 and reviewed by @jamesmbaazam.
 - `plot.dist_spec` now uses color instead of line types to display pmfs vs cmfs. By @jamesmbaazam in #788 and reviewed by @sbfnk.
 - The use of the `{progressr}` package for displaying progress bars is now optional, as is the use of `{future}` and `{future.apply}` for parallelisation. By @sbfnk in #798 and reviewed by @seabbs.
+- Specifying nonparametric generation time intervals with a nonzero first element (corresponding to the zero bin) is being deprecated as the current behaviour of setting it to zero internally was not well exposed. By @sbfnk in #.
 
 ## Bug fixes
 
