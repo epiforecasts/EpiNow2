@@ -83,7 +83,7 @@ gt_opts <- function(dist = Fixed(1), ...,
   )
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("generation_time_opts", class(dist))
-  check_stan_delay(dist)
+  check_generation_time(dist)
   return(dist)
 }
 
