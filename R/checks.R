@@ -120,6 +120,39 @@ check_stan_delay <- function(dist) {
   }
 }
 
+#' Validate probability distribution for using as generation time
+#'
+#' @description `r lifecycle::badge("stable")`
+#' does all the checks in`check_stan_delay()` and additionally makes sure
+#' that if `dist` is nonparametric,  its first element is zero.
+#'
+#' @importFrom lifecycle deprecate_warn
+#' @inheritParams check_stan_delay dist
+#' @return Called for its side effects.
+#' @keywords internal
+check_generation_time <- function(dist) {
+  # Do the standard delay checks
+  check_stan_delay(dist)
+  ## check for nonparametric with nonzero first element
+  nonzero_first_element <- vapply(seq_len(ndist(dist)), function(i) {
+    get_distribution(dist, i) == "nonparametric" && get_pmf(dist, i)[1] > 0
+  }, logical(1))
+  if (all(nonzero_first_element)) {
+    deprecate_warn(
+      "1.6.0",
+      I(
+        "Specifying nonparametric generation times with nonzero first element"
+      ),
+      details = c(
+        "Since zero generation times are not supported by the model, the
+         generation time will be left-truncated at one. ",
+        "In future versions this will cause an error. Please ensure that the
+         first element of the nonparametric generation interval is zero."
+      )
+    )
+  }
+}
+
 #' Check that PMF tail is not sparse
 #'
 #' @description Checks if the tail of a PMF vector has more than `span`

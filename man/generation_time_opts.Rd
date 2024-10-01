@@ -29,7 +29,9 @@ generation_time_opts(
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions . If no
-distribution is given a fixed generation time of 1 will be assumed.}
+distribution is given a fixed generation time of 1 will be assumed.  If
+passing a nonparametric distribution the first element should be zero (see
+\emph{Details} section)}
 
 \item{...}{deprecated; use \code{dist} instead}
 
@@ -59,6 +61,13 @@ distributions.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Returns generation time parameters in a format for lower level model use.
+}
+\details{
+Because the discretised renewal equation used in the package does
+not support zero generation times, any distribution specified here will be
+left-truncated at one, i.e. the first element of the nonparametric or
+discretised probability distribution used for the generation time is set to
+zero and the resulting distribution renormalised.
 }
 \examples{
 # default settings with a fixed generation time of 1
