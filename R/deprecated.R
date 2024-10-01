@@ -484,6 +484,7 @@ rstan_opts <- function(object = NULL,
 #'
 #' @return A vector of samples or a probability distribution.
 #' @keywords internal
+#' @export
 dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
                       discrete = FALSE, params, max_value = 120) {
   lifecycle::deprecate_warn(
@@ -596,6 +597,7 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
 #' have been removed
 #' @importFrom cli cli_abort
 #' @keywords internal
+#' @export
 apply_tolerance <- function(x, tolerance) {
   lifecycle::deprecate_warn(
     "1.6.0", "apply_tolerance()", "bound_dist()"
@@ -630,6 +632,7 @@ apply_tolerance <- function(x, tolerance) {
 #'   name.
 #' @return A `<dist_spec>` object without uncertainty
 #' @keywords internal
+#' @export
 #' @importFrom cli cli_abort
 #' @param x A `<dist_spec>`
 #' @param strategy Character; either "mean" (use the mean estimates of the
