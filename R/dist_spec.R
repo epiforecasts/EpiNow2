@@ -23,7 +23,7 @@
 #'   \doi{10.48550/arXiv.2405.08841}
 #' Park,  S. W.,  et al.,  "Estimating epidemiological delay distributions for
 #'   infectious diseases", *medRxiv*, 2024.
-#'   \doi{<https://doi.org/10.1101/2024.01.12.24301247}
+#'   \doi{https://doi.org/10.1101/2024.01.12.24301247}
 #'
 #' @param distribution A character string representing the distribution to be
 #'   used (one of "exp", "gamma", "lognormal", "normal" or "fixed")
