@@ -8,7 +8,7 @@ message: 'To cite package "EpiNow2" in publications use:'
 type: software
 license: MIT
 title: 'EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters'
-version: 1.5.2.9000
+version: 1.6.0.9000
 doi: 10.32614/CRAN.package.EpiNow2
 identifiers:
 - type: url
