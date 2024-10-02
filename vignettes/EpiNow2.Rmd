@@ -20,7 +20,7 @@ In the following section we give an overview of the simple use case for `epinow(
 The first step to using the package is to load it as follows.
 
 
-```r
+``` r
 library(EpiNow2)
 ```
 
@@ -32,7 +32,7 @@ Second, one can specify predetermined delays with uncertainty using the distribu
 
 For example if data on the delay between onset and infection was available we could fit a distribution to it, using `estimate_delay()`, with appropriate uncertainty as follows (note this is a synthetic example),
 
-```r
+``` r
 reporting_delay <- estimate_delay(
   rlnorm(1000, log(2), 1),
   max_value = 14, bootstraps = 1
@@ -43,7 +43,7 @@ If data was not available we could instead specify an informed estimate of the l
 To demonstrate, we choose a lognormal distribution with mean 2, standard deviation 1 and a maximum of 10. *This is just an example and unlikely to apply in any particular use case*.
 
 
-```r
+``` r
 reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
 reporting_delay
 #> - lognormal distribution (max: 10):
@@ -56,7 +56,7 @@ reporting_delay
 For the rest of this vignette, we will use inbuilt example literature estimates for the incubation period and generation time of Covid-19 (see [here](https://github.com/epiforecasts/EpiNow2/tree/main/data-raw) for the code that generates these estimates). *These distributions are unlikely to be applicable for your use case. We strongly recommend investigating what might be the best distributions to use in any given use case.*
 
 
-```r
+``` r
 example_generation_time
 #> - gamma distribution (max: 14):
 #>   shape:
@@ -93,7 +93,8 @@ both delay distributions are 0-indexed, meaning the first element corresponds to
 at day 0 of an individual's infection. Because the discretised renewal equation doesn't support mass on day 0, the generation interval should be passed in as a 0-indexed vector with a mass of zero on day 0. 
 If this is not the case, a warning will indicate that the vector is being left-truncated and renormalized.
 
-```r
+
+``` r
 example_non_parametric_gi <-  NonParametric(pmf = c(0, 0.3, 0.5, 0.2))
 
 example_non_parametric_delay <- NonParametric(pmf = c(0.01, 0.1, 0.5, 0.3, 0.09))
@@ -110,7 +111,7 @@ This function represents the core functionality of the package and includes resu
 Load example case data from `{EpiNow2}`.
 
 
-```r
+``` r
 reported_cases <- example_confirmed[1:60]
 head(reported_cases)
 #>          date confirm
@@ -126,7 +127,7 @@ head(reported_cases)
 Estimate cases by date of infection, the time-varying reproduction number, the rate of growth, and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). Here we use the default model parameterisation that prioritises real-time performance over run-time or other considerations. For other formulations see the documentation for `estimate_infections()`.
 
 
-```r
+``` r
 estimates <- epinow(
   data = reported_cases,
   generation_time = gt_opts(example_generation_time),
@@ -143,76 +144,77 @@ names(estimates)
 
 Both summary measures and posterior samples are returned for all parameters in an easily explored format which can be accessed using `summary`. The default is to return a summary table of estimates for key parameters at the latest date partially supported by data. 
 
-```r
+
+``` r
 knitr::kable(summary(estimates))
 ```
 
 
 
-|measure                          |estimate                |
-|:--------------------------------|:-----------------------|
-|New infections per day           |2199 (962 -- 4757)      |
-|Expected change in daily reports |Likely decreasing       |
-|Effective reproduction no.       |0.88 (0.58 -- 1.2)      |
-|Rate of growth                   |-0.034 (-0.15 -- 0.076) |
-|Doubling/halving time (days)     |-20 (9.1 -- -4.6)       |
+|measure                          |estimate               |
+|:--------------------------------|:----------------------|
+|New infections per day           |2235 (1258 -- 4079)    |
+|Expected change in daily reports |Likely decreasing      |
+|Effective reproduction no.       |0.89 (0.69 -- 1.1)     |
+|Rate of growth                   |-0.029 (-0.1 -- 0.049) |
+|Doubling/halving time (days)     |-24 (14 -- -6.9)       |
 
 
 
 Summarised parameter estimates can also easily be returned, either filtered for a single parameter or for all parameters.
 
 
-```r
+``` r
 head(summary(estimates, type = "parameters", params = "R"))
-#>          date variable  strat     type   median     mean        sd lower_90
-#>        <Date>   <char> <char>   <char>    <num>    <num>     <num>    <num>
-#> 1: 2020-02-22        R   <NA> estimate 2.288484 2.293707 0.1613209 2.044132
-#> 2: 2020-02-23        R   <NA> estimate 2.254878 2.259642 0.1403568 2.040359
-#> 3: 2020-02-24        R   <NA> estimate 2.217611 2.222709 0.1251234 2.026980
-#> 4: 2020-02-25        R   <NA> estimate 2.174854 2.182984 0.1150322 2.002758
-#> 5: 2020-02-26        R   <NA> estimate 2.132196 2.140643 0.1089983 1.974475
-#> 6: 2020-02-27        R   <NA> estimate 2.088958 2.095945 0.1056741 1.933753
+#>          date variable  strat     type   median     mean         sd lower_90
+#>        <Date>   <char> <char>   <char>    <num>    <num>      <num>    <num>
+#> 1: 2020-02-22        R   <NA> estimate 2.295630 2.300011 0.14226384 2.072498
+#> 2: 2020-02-23        R   <NA> estimate 2.254414 2.260309 0.12775375 2.058350
+#> 3: 2020-02-24        R   <NA> estimate 2.213859 2.218421 0.11582310 2.039173
+#> 4: 2020-02-25        R   <NA> estimate 2.167609 2.174463 0.10645004 2.011138
+#> 5: 2020-02-26        R   <NA> estimate 2.119388 2.128587 0.09939624 1.977938
+#> 6: 2020-02-27        R   <NA> estimate 2.072939 2.080978 0.09424020 1.942162
 #>    lower_50 lower_20 upper_20 upper_50 upper_90
 #>       <num>    <num>    <num>    <num>    <num>
-#> 1: 2.181696 2.246458 2.328439 2.398968 2.574407
-#> 2: 2.162459 2.217716 2.289158 2.349965 2.508728
-#> 3: 2.136181 2.184912 2.247679 2.303535 2.440930
-#> 4: 2.101307 2.148035 2.204825 2.256175 2.381675
-#> 5: 2.064946 2.108764 2.160005 2.207901 2.331636
-#> 6: 2.023783 2.062603 2.114298 2.159626 2.285821
+#> 1: 2.199171 2.257930 2.331979 2.393862 2.536167
+#> 2: 2.170840 2.220883 2.287825 2.346032 2.475402
+#> 3: 2.137291 2.182338 2.242451 2.297515 2.410503
+#> 4: 2.099378 2.138842 2.196990 2.246167 2.354895
+#> 5: 2.058774 2.094525 2.147410 2.192443 2.298576
+#> 6: 2.014358 2.047728 2.098028 2.142222 2.244473
 ```
 
 Reported cases are returned in a separate data frame in order to streamline the reporting of forecasts and for model evaluation.
 
 
-```r
+``` r
 head(summary(estimates, output = "estimated_reported_cases"))
 #>          date   type median     mean       sd lower_90 lower_50 lower_20
 #>        <Date> <char>  <num>    <num>    <num>    <num>    <num>    <num>
-#> 1: 2020-02-22  gp_rt   74.0  76.9430 21.47422       46       62     70.0
-#> 2: 2020-02-23  gp_rt   87.0  89.5820 24.71017       54       72     82.0
-#> 3: 2020-02-24  gp_rt   86.0  88.6670 24.76764       53       71     80.6
-#> 4: 2020-02-25  gp_rt   81.0  82.6625 22.56520       49       66     75.0
-#> 5: 2020-02-26  gp_rt   79.0  81.8240 23.31905       48       65     75.0
-#> 6: 2020-02-27  gp_rt  107.5 111.2375 30.27595       69       89    101.0
+#> 1: 2020-02-22  gp_rt     75  77.7545 22.45421       46    62.00       70
+#> 2: 2020-02-23  gp_rt     87  89.3255 24.15807       53    73.00       82
+#> 3: 2020-02-24  gp_rt     86  88.5850 23.75963       54    72.00       81
+#> 4: 2020-02-25  gp_rt     80  82.0745 22.36889       49    66.00       75
+#> 5: 2020-02-26  gp_rt     81  82.8155 22.64243       50    67.75       76
+#> 6: 2020-02-27  gp_rt    107 110.9325 29.73030       66    90.00      101
 #>    upper_20 upper_50 upper_90
 #>       <num>    <num>    <num>
-#> 1:       79       89   116.00
-#> 2:       92      104   135.00
-#> 3:       92      103   133.00
-#> 4:       87       96   121.00
-#> 5:       85       96   121.05
-#> 6:      115      129   166.00
+#> 1:       81       91      118
+#> 2:       93      104      132
+#> 3:       92      103      132
+#> 4:       86       96      120
+#> 5:       86       96      124
+#> 6:      115      129      163
 ```
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
 
 
-```r
+``` r
 plot(estimates)
 ```
 
-![plot of chunk unnamed-chunk-11](EpiNow2-unnamed-chunk-11-1.png)
+![plot of chunk unnamed-chunk-12](EpiNow2-unnamed-chunk-12-1.png)
 
 
 ### [regional_epinow()](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html)
@@ -223,7 +225,7 @@ an efficient manner.
 Define cases in multiple regions delineated by the region variable.
 
 
-```r
+``` r
 reported_cases <- data.table::rbindlist(list(
   data.table::copy(reported_cases)[, region := "testland"],
   reported_cases[, region := "realland"]
@@ -242,7 +244,7 @@ head(reported_cases)
 Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week.
 
 
-```r
+``` r
 estimates <- regional_epinow(
   data = reported_cases,
   generation_time = gt_opts(example_generation_time),
@@ -251,19 +253,19 @@ estimates <- regional_epinow(
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
 )
-#> INFO [2024-05-10 07:58:14] Producing following optional outputs: regions, summary, samples, plots, latest
-#> INFO [2024-05-10 07:58:14] Reporting estimates using data up to: 2020-04-21
-#> INFO [2024-05-10 07:58:14] No target directory specified so returning output
-#> INFO [2024-05-10 07:58:14] Producing estimates for: testland, realland
-#> INFO [2024-05-10 07:58:14] Regions excluded: none
-#> INFO [2024-05-10 07:58:29] Completed estimates for: testland
-#> INFO [2024-05-10 07:58:41] Completed estimates for: realland
-#> INFO [2024-05-10 07:58:41] Completed regional estimates
-#> INFO [2024-05-10 07:58:41] Regions with estimates: 2
-#> INFO [2024-05-10 07:58:41] Regions with runtime errors: 0
-#> INFO [2024-05-10 07:58:41] Producing summary
-#> INFO [2024-05-10 07:58:41] No summary directory specified so returning summary output
-#> INFO [2024-05-10 07:58:41] No target directory specified so returning timings
+#> INFO [2024-10-02 09:23:20] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2024-10-02 09:23:20] Reporting estimates using data up to: 2020-04-21
+#> INFO [2024-10-02 09:23:20] No target directory specified so returning output
+#> INFO [2024-10-02 09:23:20] Producing estimates for: testland, realland
+#> INFO [2024-10-02 09:23:20] Regions excluded: none
+#> INFO [2024-10-02 09:23:42] Completed estimates for: testland
+#> INFO [2024-10-02 09:24:06] Completed estimates for: realland
+#> INFO [2024-10-02 09:24:06] Completed regional estimates
+#> INFO [2024-10-02 09:24:06] Regions with estimates: 2
+#> INFO [2024-10-02 09:24:06] Regions with runtime errors: 0
+#> INFO [2024-10-02 09:24:06] Producing summary
+#> INFO [2024-10-02 09:24:06] No summary directory specified so returning summary output
+#> INFO [2024-10-02 09:24:06] No target directory specified so returning timings
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = TRUE) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the `{future}` package for details on nested futures.
@@ -271,7 +273,7 @@ Results from each region are stored in a `regional` list with across region summ
 Summary measures that are returned include a table formatted for reporting (along with raw results for further processing). Futures updated will extend the S3 methods used above to smooth access to this output.
 
 
-```r
+``` r
 knitr::kable(estimates$summary$summarised_results$table)
 ```
 
@@ -279,16 +281,16 @@ knitr::kable(estimates$summary$summarised_results$table)
 
 |Region   |New infections per day |Expected change in daily reports |Effective reproduction no. |Rate of growth          |Doubling/halving time (days) |
 |:--------|:----------------------|:--------------------------------|:--------------------------|:-----------------------|:----------------------------|
-|realland |2060 (1007 -- 4579)    |Likely decreasing                |0.86 (0.59 -- 1.2)         |-0.039 (-0.12 -- 0.056) |-18 (12 -- -5.9)             |
-|testland |2136 (1050 -- 4356)    |Likely decreasing                |0.86 (0.62 -- 1.2)         |-0.036 (-0.11 -- 0.048) |-19 (14 -- -6.4)             |
+|realland |2107 (1035 -- 4584)    |Likely decreasing                |0.87 (0.62 -- 1.2)         |-0.037 (-0.11 -- 0.049) |-19 (14 -- -6.2)             |
+|testland |2084 (1062 -- 4392)    |Likely decreasing                |0.85 (0.61 -- 1.2)         |-0.04 (-0.11 -- 0.048)  |-18 (15 -- -6.4)             |
 
 
 
 A range of plots are again returned (with the single summary plot shown below).
 
 
-```r
+``` r
 estimates$summary$summary_plot
 ```
 
-![plot of chunk unnamed-chunk-15](EpiNow2-unnamed-chunk-15-1.png)
+![plot of chunk unnamed-chunk-16](EpiNow2-unnamed-chunk-16-1.png)
