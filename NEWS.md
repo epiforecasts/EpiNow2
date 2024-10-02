@@ -1,3 +1,5 @@
+# EpiNow2 (development version)
+
 # EpiNow2 1.6.0
 
 A release that introduces model improvements to the Gaussian Process models, alongside a number of other improvements and bug fixes.
