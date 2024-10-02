@@ -24,8 +24,13 @@ For mathematical detail on the model please consult the [model definition](estim
 We first load the _EpiNow2_ package and also the _rstan_ package that we will use later to show the differences in run times between different model options.
 
 
-```r
+``` r
 library("EpiNow2")
+#> 
+#> Attaching package: 'EpiNow2'
+#> The following object is masked from 'package:stats':
+#> 
+#>     Gamma
 library("rstan")
 #> Loading required package: StanHeaders
 #> 
@@ -42,7 +47,7 @@ library("rstan")
 In this examples we set the number of cores to use to 4 but the optimal value here will depend on the computing resources available.
 
 
-```r
+``` r
 options(mc.cores = 4)
 ```
 
@@ -51,7 +56,7 @@ options(mc.cores = 4)
 We will use an example data set that is included in the package, representing an outbreak of COVID-19 with an initial rapid increase followed by decreasing incidence.
 
 
-```r
+``` r
 library("ggplot2")
 reported_cases <- example_confirmed[1:60]
 ggplot(reported_cases, aes(x =  date, y = confirm)) +
@@ -72,7 +77,7 @@ Before running the model we need to decide on some parameter values, in particul
 Delays reflect the time that passes between infection and reporting, if these exist. In this example, we assume two delays, an _incubation period_ (i.e. delay from infection to symptom onset) and a _reporting delay_ (i.e. the delay from symptom onset to being recorded as a symptomatic case). These delays are usually not the same for everyone and are instead characterised by a distribution. For the incubation period we use an example from the literature that is included in the package.
 
 
-```r
+``` r
 example_incubation_period
 #> - lognormal distribution (max: 14):
 #>   meanlog:
@@ -93,7 +98,7 @@ For the reporting delay, we use a lognormal distribution with mean of 2 days and
 Note that the mean and standard deviation must be converted to the log scale, which can be done using the `convert_log_logmean()` function.
 
 
-```r
+``` r
 reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
 reporting_delay
 #> - lognormal distribution (max: 10):
@@ -106,7 +111,7 @@ reporting_delay
 _EpiNow2_ provides a feature that allows us to combine these delays into one by summing them up
 
 
-```r
+``` r
 delay <- example_incubation_period + reporting_delay
 delay
 #> Composite distribution:
@@ -135,7 +140,7 @@ delay
 If we want to estimate the reproduction number we need to provide a distribution of generation times. Here again we use an example from the literature that is included with the package.
 
 
-```r
+``` r
 example_generation_time
 #> - gamma distribution (max: 14):
 #>   shape:
@@ -157,7 +162,7 @@ example_generation_time
 Lastly we need to choose a prior for the initial value of the reproduction number. This is assumed by the model to be normally distributed and we can set the mean and the standard deviation. We decide to set the mean to 2 and the standard deviation to 1.
 
 
-```r
+``` r
 rt_prior <- list(mean = 2, sd = 0.1)
 ```
 
@@ -171,32 +176,28 @@ By default the model uses a renewal equation for infections and a Gaussian Proce
 Putting all the data and parameters together and tweaking the Gaussian Process to have a shorter length scale prior than the default we run.
 
 
-```r
+``` r
 def <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior)
 )
-#> Warning: There were 11 divergent transitions after warmup. See
-#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-#> to find out why this is a problem and how to eliminate them.
-#> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(def)
-#>                             measure                estimate
-#>                              <char>                  <char>
-#> 1:           New infections per day      2237 (956 -- 4859)
-#> 2: Expected change in daily reports       Likely decreasing
-#> 3:       Effective reproduction no.      0.88 (0.58 -- 1.3)
-#> 4:                   Rate of growth -0.034 (-0.16 -- 0.085)
-#> 5:     Doubling/halving time (days)       -21 (8.2 -- -4.4)
+#>                             measure              estimate
+#>                              <char>                <char>
+#> 1:           New infections per day   2248 (1257 -- 4197)
+#> 2: Expected change in daily reports     Likely decreasing
+#> 3:       Effective reproduction no.     0.89 (0.7 -- 1.1)
+#> 4:                   Rate of growth -0.029 (-0.1 -- 0.05)
+#> 5:     Doubling/halving time (days)      -24 (14 -- -6.9)
 # elapsed time (in seconds)
 get_elapsed_time(def$fit)
 #>         warmup sample
-#> chain:1 22.546 17.871
-#> chain:2 43.610 35.665
-#> chain:3 21.929 18.197
-#> chain:4 18.185 17.063
+#> chain:1 39.295 14.837
+#> chain:2 30.967 17.867
+#> chain:3 19.880 20.187
+#> chain:4 30.845 17.029
 # summary plot
 plot(def)
 ```
@@ -208,33 +209,29 @@ plot(def)
 To speed up the calculation of the Gaussian Process we could decrease its accuracy, e.g. decrease the proportion of time points to use as basis functions from the default of 0.2 to 0.1.
 
 
-```r
+``` r
 agp <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
   gp = gp_opts(basis_prop = 0.1)
 )
-#> Warning: There were 19 divergent transitions after warmup. See
-#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-#> to find out why this is a problem and how to eliminate them.
-#> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(agp)
-#>                             measure                estimate
-#>                              <char>                  <char>
-#> 1:           New infections per day     2229 (1060 -- 4985)
-#> 2: Expected change in daily reports       Likely decreasing
-#> 3:       Effective reproduction no.      0.88 (0.61 -- 1.2)
-#> 4:                   Rate of growth -0.036 (-0.15 -- 0.076)
-#> 5:     Doubling/halving time (days)       -19 (9.1 -- -4.8)
+#>                             measure              estimate
+#>                              <char>                <char>
+#> 1:           New infections per day   2237 (1219 -- 4117)
+#> 2: Expected change in daily reports     Likely decreasing
+#> 3:       Effective reproduction no.      0.9 (0.7 -- 1.1)
+#> 4:                   Rate of growth -0.027 (-0.1 -- 0.05)
+#> 5:     Doubling/halving time (days)      -25 (14 -- -6.7)
 # elapsed time (in seconds)
 get_elapsed_time(agp$fit)
 #>         warmup sample
-#> chain:1 14.264 17.067
-#> chain:2 14.501 16.719
-#> chain:3 17.512 24.243
-#> chain:4 16.937 17.436
+#> chain:1 29.162 17.576
+#> chain:2 25.503 16.575
+#> chain:3 30.866 20.561
+#> chain:4 16.315 19.859
 # summary plot
 plot(agp)
 ```
@@ -248,7 +245,7 @@ Here, we do so by setting the population to 1000000 and projecting the reproduct
 Note that this only affects the forecasts and is done using a crude adjustment (see the [model definition](estimate_infections.html)).
 
 
-```r
+``` r
 dep <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
@@ -257,26 +254,26 @@ dep <- estimate_infections(reported_cases,
     pop = 1000000, future = "latest"
   )
 )
-#> Warning: There were 9 divergent transitions after warmup. See
+#> Warning: There were 1 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(dep)
-#>                             measure                estimate
-#>                              <char>                  <char>
-#> 1:           New infections per day      2219 (934 -- 4735)
-#> 2: Expected change in daily reports       Likely decreasing
-#> 3:       Effective reproduction no.      0.88 (0.57 -- 1.2)
-#> 4:                   Rate of growth -0.034 (-0.16 -- 0.076)
-#> 5:     Doubling/halving time (days)       -20 (9.1 -- -4.3)
+#>                             measure                 estimate
+#>                              <char>                   <char>
+#> 1:           New infections per day      2281 (1272 -- 4202)
+#> 2: Expected change in daily reports        Likely decreasing
+#> 3:       Effective reproduction no.         0.9 (0.7 -- 1.2)
+#> 4:                   Rate of growth -0.027 (-0.099 -- 0.053)
+#> 5:     Doubling/halving time (days)           -26 (13 -- -7)
 # elapsed time (in seconds)
 get_elapsed_time(dep$fit)
 #>         warmup sample
-#> chain:1 24.086 18.080
-#> chain:2 25.069 31.131
-#> chain:3 24.617 25.153
-#> chain:4 21.874 18.766
+#> chain:1 38.446 17.392
+#> chain:2 35.284 25.287
+#> chain:3 37.985 14.862
+#> chain:4 19.169 21.754
 # summary plot
 plot(dep)
 ```
@@ -289,17 +286,18 @@ We might further want to adjust for right-truncation of recent data estimated us
 Here, instead of doing so we assume that we know about truncation with mean of 1/2 day, sd 1/2 day, following a lognormal distribution and with a maximum of three days.
 
 
-```r
+``` r
 trunc_dist <- LogNormal(
   mean = Normal(0.5, 0.1),
   sd = Normal(0.5, 0.1),
   max = 3
 )
-#> Warning in new_dist_spec(params, "lognormal"): Uncertain lognormal distribution
-#> specified in terms of parameters that are not the "natural" parameters of the
-#> distribution (meanlog, sdlog). Converting using a crude and very approximate
-#> method that is likely to produce biased results. If possible, it is preferable
-#> to specify the distribution directly in terms of the natural parameters.
+#> Warning: ! Uncertain lognormal distribution specified in terms of parameters that are
+#>   not the "natural" parameters of the distribution meanlog and sdlog.
+#> ℹ Converting using a crude and very approximate method that is likely to
+#>   produce biased results.
+#> ℹ If possible it is preferable to specify the distribution directly in terms of
+#>   the natural parameters.
 trunc_dist
 #> - lognormal distribution (max: 3):
 #>   meanlog:
@@ -319,7 +317,7 @@ trunc_dist
 We can then use this in the `esimtate_infections()` function using the `truncation` option.
 
 
-```r
+``` r
 trunc <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
@@ -346,7 +344,7 @@ Instead of keeping the reproduction number fixed from a certain time point we mi
 This will lead to wider uncertainty, and the researcher should check whether this or fixing the reproduction number from an earlier is desirable.
 
 
-```r
+``` r
 project_rt <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
@@ -354,7 +352,7 @@ project_rt <- estimate_infections(reported_cases,
     prior = rt_prior, future = "project"
   )
 )
-#> Warning: There were 8 divergent transitions after warmup. See
+#> Warning: There were 1 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
@@ -362,18 +360,18 @@ project_rt <- estimate_infections(reported_cases,
 summary(project_rt)
 #>                             measure               estimate
 #>                              <char>                 <char>
-#> 1:           New infections per day    2200 (1010 -- 4815)
+#> 1:           New infections per day    2259 (1269 -- 4270)
 #> 2: Expected change in daily reports      Likely decreasing
-#> 3:       Effective reproduction no.     0.87 (0.59 -- 1.2)
-#> 4:                   Rate of growth -0.036 (-0.15 -- 0.08)
-#> 5:     Doubling/halving time (days)      -19 (8.6 -- -4.5)
+#> 3:       Effective reproduction no.       0.9 (0.7 -- 1.2)
+#> 4:                   Rate of growth -0.028 (-0.1 -- 0.053)
+#> 5:     Doubling/halving time (days)       -25 (13 -- -6.9)
 # elapsed time (in seconds)
 get_elapsed_time(project_rt$fit)
 #>         warmup sample
-#> chain:1 23.881 34.602
-#> chain:2 18.612 18.302
-#> chain:3 26.161 28.837
-#> chain:4 21.156 29.987
+#> chain:1 38.457 21.569
+#> chain:2 37.331 31.316
+#> chain:3 41.696 20.026
+#> chain:4 36.001 29.542
 # summary plot
 plot(project_rt)
 ```
@@ -385,7 +383,7 @@ plot(project_rt)
 We might want to estimate a fixed reproduction number, i.e. assume that it does not change.
 
 
-```r
+``` r
 fixed <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
@@ -393,20 +391,20 @@ fixed <- estimate_infections(reported_cases,
 )
 # summarise results
 summary(fixed)
-#>                             measure              estimate
-#>                              <char>                <char>
-#> 1:           New infections per day 16780 (9407 -- 30551)
-#> 2: Expected change in daily reports            Increasing
-#> 3:       Effective reproduction no.      1.2 (1.1 -- 1.3)
-#> 4:                   Rate of growth 0.05 (0.035 -- 0.065)
-#> 5:     Doubling/halving time (days)         14 (11 -- 20)
+#>                             measure               estimate
+#>                              <char>                 <char>
+#> 1:           New infections per day  16388 (9713 -- 29178)
+#> 2: Expected change in daily reports             Increasing
+#> 3:       Effective reproduction no.       1.2 (1.1 -- 1.3)
+#> 4:                   Rate of growth 0.049 (0.035 -- 0.064)
+#> 5:     Doubling/halving time (days)          14 (11 -- 20)
 # elapsed time (in seconds)
 get_elapsed_time(fixed$fit)
 #>         warmup sample
-#> chain:1  1.270  0.951
-#> chain:2  1.109  0.804
-#> chain:3  1.151  0.893
-#> chain:4  1.242  0.926
+#> chain:1  2.980  1.299
+#> chain:2  2.341  1.762
+#> chain:3  1.905  1.488
+#> chain:4  2.371  1.124
 # summary plot
 plot(fixed)
 ```
@@ -420,7 +418,7 @@ This can be done by adding a `breakpoint` column to the reported case data set.
 e.g. if we think that the reproduction number was constant but would like to allow it to change on the 16th of March 2020 we would define a new case data set using
 
 
-```r
+``` r
 bp_cases <- data.table::copy(reported_cases)
 bp_cases <- bp_cases[,
  breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)
@@ -430,7 +428,7 @@ bp_cases <- bp_cases[,
 We then use this instead of `reported_cases` in the `estimate_infections()` function:
 
 
-```r
+``` r
 bkp <- estimate_infections(bp_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
@@ -441,18 +439,18 @@ bkp <- estimate_infections(bp_cases,
 summary(bkp)
 #>                             measure                 estimate
 #>                              <char>                   <char>
-#> 1:           New infections per day      2356 (1932 -- 2898)
+#> 1:           New infections per day      2332 (1913 -- 2873)
 #> 2: Expected change in daily reports               Decreasing
 #> 3:       Effective reproduction no.      0.89 (0.86 -- 0.92)
-#> 4:                   Rate of growth -0.027 (-0.034 -- -0.02)
+#> 4:                   Rate of growth -0.027 (-0.035 -- -0.02)
 #> 5:     Doubling/halving time (days)         -25 (-35 -- -20)
 # elapsed time (in seconds)
 get_elapsed_time(bkp$fit)
 #>         warmup sample
-#> chain:1  1.819  2.313
-#> chain:2  1.927  2.225
-#> chain:3  2.038  3.406
-#> chain:4  2.024  2.143
+#> chain:1  4.038  4.143
+#> chain:2  4.717  4.175
+#> chain:3  3.792  4.339
+#> chain:4  4.155  4.375
 # summary plot
 plot(bkp)
 ```
@@ -465,7 +463,7 @@ Instead of a smooth Gaussian Process we might want the reproduction number to ch
 This can be achieved using the `rw` option which defines the length of the time step in a random walk that the reproduction number is assumed to follow.
 
 
-```r
+``` r
 rw <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
@@ -476,18 +474,18 @@ rw <- estimate_infections(reported_cases,
 summary(rw)
 #>                             measure                estimate
 #>                              <char>                  <char>
-#> 1:           New infections per day     2136 (1056 -- 4315)
+#> 1:           New infections per day     2105 (1056 -- 4290)
 #> 2: Expected change in daily reports       Likely decreasing
 #> 3:       Effective reproduction no.      0.87 (0.63 -- 1.2)
-#> 4:                   Rate of growth -0.035 (-0.11 -- 0.044)
-#> 5:     Doubling/halving time (days)        -20 (16 -- -6.3)
+#> 4:                   Rate of growth -0.038 (-0.11 -- 0.043)
+#> 5:     Doubling/halving time (days)        -18 (16 -- -6.3)
 # elapsed time (in seconds)
 get_elapsed_time(rw$fit)
 #>         warmup sample
-#> chain:1  4.182  6.196
-#> chain:2  4.202  6.631
-#> chain:3  4.999  7.652
-#> chain:4  4.127  4.635
+#> chain:1  8.861 11.035
+#> chain:2 10.882 14.697
+#> chain:3 10.258 14.744
+#> chain:4  9.483 11.982
 # summary plot
 plot(rw)
 ```
@@ -499,37 +497,27 @@ plot(rw)
 Whilst _EpiNow2_ allows the user to specify delays, it can also run directly on the data as does e.g. the [EpiEstim](https://CRAN.R-project.org/package=EpiEstim) package.
 
 
-```r
+``` r
 no_delay <- estimate_infections(
   reported_cases,
   generation_time = gt_opts(example_generation_time)
 )
-#> Warning: There were 32 divergent transitions after warmup. See
-#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-#> to find out why this is a problem and how to eliminate them.
-#> Warning: Examine the pairs() plot to diagnose sampling problems
-#> Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess
-#> Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess
 # summarise results
 summary(no_delay)
-#>                             measure                  estimate
-#>                              <char>                    <char>
-#> 1:           New infections per day       2759 (2325 -- 3311)
-#> 2: Expected change in daily reports                Decreasing
-#> 3:       Effective reproduction no.       0.87 (0.76 -- 0.98)
-#> 4:                   Rate of growth -0.042 (-0.098 -- 0.0045)
-#> 5:     Doubling/halving time (days)         -17 (150 -- -7.1)
+#>                             measure                   estimate
+#>                              <char>                     <char>
+#> 1:           New infections per day        2788 (2410 -- 3253)
+#> 2: Expected change in daily reports                 Decreasing
+#> 3:       Effective reproduction no.        0.89 (0.81 -- 0.97)
+#> 4:                   Rate of growth -0.031 (-0.06 -- -0.00082)
+#> 5:     Doubling/halving time (days)          -22 (-850 -- -11)
 # elapsed time (in seconds)
 get_elapsed_time(no_delay$fit)
 #>         warmup sample
-#> chain:1 34.378 41.249
-#> chain:2 24.455 27.261
-#> chain:3 28.171 43.757
-#> chain:4 32.226 33.559
+#> chain:1 49.555 43.752
+#> chain:2 47.479 30.349
+#> chain:3 45.951 42.126
+#> chain:4 36.484 33.659
 # summary plot
 plot(no_delay)
 ```
@@ -544,7 +532,7 @@ Because of this none of the options defining the behaviour of the reproduction n
 It also means that the model is questionable for forecasting, which is why were here set the predictive horizon to 0.
 
 
-```r
+``` r
 non_parametric <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
@@ -554,20 +542,20 @@ non_parametric <- estimate_infections(reported_cases,
 )
 # summarise results
 summary(non_parametric)
-#>                             measure                   estimate
-#>                              <char>                     <char>
-#> 1:           New infections per day        2539 (2066 -- 3083)
-#> 2: Expected change in daily reports                 Decreasing
-#> 3:       Effective reproduction no.         0.92 (0.8 -- 0.99)
-#> 4:                   Rate of growth -0.023 (-0.044 -- -0.0015)
-#> 5:     Doubling/halving time (days)          -30 (-460 -- -16)
+#>                             measure                  estimate
+#>                              <char>                    <char>
+#> 1:           New infections per day       2730 (2691 -- 2771)
+#> 2: Expected change in daily reports                Decreasing
+#> 3:       Effective reproduction no.       0.92 (0.86 -- 0.96)
+#> 4:                   Rate of growth -0.024 (-0.025 -- -0.022)
+#> 5:     Doubling/halving time (days)          -29 (-31 -- -28)
 # elapsed time (in seconds)
 get_elapsed_time(non_parametric$fit)
 #>         warmup sample
-#> chain:1  1.631  0.451
-#> chain:2  1.862  0.363
-#> chain:3  1.969  0.454
-#> chain:4  2.113  0.539
+#> chain:1  4.566  0.667
+#> chain:2  4.359  0.797
+#> chain:3  4.592  0.604
+#> chain:4  4.892  0.565
 # summary plot
 plot(non_parametric)
 ```
