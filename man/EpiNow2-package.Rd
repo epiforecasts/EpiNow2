@@ -45,6 +45,7 @@ Other contributors:
   \item Pietro Monticone \email{pietro.monticone@edu.unito.it} [contributor]
   \item Lloyd Chapman \email{lloyd.chapman1@lshtm.ac.uk} [contributor]
   \item Andrew Johnson \email{andrew.johnson@arjohnsonau.com} [contributor]
+  \item Kaitlyn Johnson \email{johnsonkaitlyne9@gmail.com} (\href{https://orcid.org/0000-0001-8011-0012}{ORCID}) [contributor]
 }
 
 }
