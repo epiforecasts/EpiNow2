@@ -122,7 +122,7 @@ head(summary(estimates, output = "estimated_reported_cases"))
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
 
-```{r, dpi = 330, fig.width = 12, fig.height = 12, message = FALSE, warning = FALSE}
+```{r plot_estimates, message = FALSE, warning = FALSE}
 plot(estimates)
 ```
 
@@ -165,6 +165,6 @@ knitr::kable(estimates$summary$summarised_results$table)
 
 A range of plots are again returned (with the single summary plot shown below).
 
-```{r, dpi = 330, fig.width = 12, fig.height = 12, message = FALSE, warning = FALSE}
+```{r plot_regional_epinow_summary, message = FALSE, warning = FALSE}
 estimates$summary$summary_plot
 ```
