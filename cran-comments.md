@@ -1,7 +1,5 @@
-# R CMD check
+# Resubmission comments
 
-No errors or warnings, and no new notes.
+DOI typo has been fixed.
 
-# Reverse dependencies
-
-No issues found.
+Build size has been reduced to 4.1 Mb.
