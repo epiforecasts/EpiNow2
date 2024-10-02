@@ -55,5 +55,5 @@ health surveillance and healthcare data”, \emph{arXiv e-prints}, 2024.
 \doi{10.48550/arXiv.2405.08841}
 Park,  S. W.,  et al.,  "Estimating epidemiological delay distributions for
 infectious diseases", \emph{medRxiv}, 2024.
-\doi{<https://doi.org/10.1101/2024.01.12.24301247}
+\doi{https://doi.org/10.1101/2024.01.12.24301247}
 }
