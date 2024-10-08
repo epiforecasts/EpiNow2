@@ -4,10 +4,12 @@
 \alias{test_data_complete}
 \title{Check if data has either explicit NA values or implicit missing dates.}
 \usage{
-test_data_complete(data)
+test_data_complete(data, cols_to_check)
 }
 \arguments{
 \item{data}{The data to be checked}
+
+\item{cols_to_check}{A character vector of the columns to check}
 }
 \value{
 \code{TRUE} if data is complete, else if data has implicit or explicit

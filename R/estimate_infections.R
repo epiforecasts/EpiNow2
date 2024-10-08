@@ -173,7 +173,8 @@ estimate_infections <- function(data,
   # happening and provide alternatives.
   obs <- check_na_setting_against_data(
     obs = obs,
-    data = dirty_reported_cases
+    data = dirty_reported_cases,
+    cols_to_check = c("date", "confirm")
   )
   # Create clean and complete cases
   # Order cases

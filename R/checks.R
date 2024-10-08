@@ -183,11 +183,11 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 #' Check if data has either explicit NA values or implicit missing dates.
 #'
 #' @param data The data to be checked
-#'
+#' @param cols_to_check A character vector of the columns to check
 #' @return `TRUE` if data is complete, else if data has implicit or explicit
 #' missingness, `FALSE`.
 #' @keywords internal
-test_data_complete <- function(data) {
+test_data_complete <- function(data, cols_to_check) {
   data <- setDT(data) # Convert data to data.table
 
   # Check for explicit missingness in required columns
@@ -232,7 +232,7 @@ test_data_complete <- function(data) {
 #'
 #' @return [obs_opts()]
 #' @keywords internal
-check_na_setting_against_data <- function(data, obs) {
+check_na_setting_against_data <- function(data, cols_to_check, obs) {
   # If users are using the default treatment of NA's and their data has
   # implicit or explicit NA's, inform them of what's happening and alternatives
   if (!obs$accumulate &&
