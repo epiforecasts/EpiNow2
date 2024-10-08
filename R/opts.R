@@ -628,6 +628,8 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      na = c("missing", "accumulate"),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
+  # NB: This has to be checked first before the na argument is touched anywhere.
+  na_default_used <- missing(na)
   na <- arg_match(na)
   if (na == "accumulate") {
     #nolint start: duplicate_argument_linter
@@ -644,9 +646,8 @@ obs_opts <- function(family = c("negbin", "poisson"),
       .frequency = "regularly",
       .frequency_id = "obs_opts"
     )
-  #nolint end
   }
-
+  #nolint end
   if (length(phi) == 2 && is.numeric(phi)) {
     cli_abort(
       c(
@@ -664,7 +665,8 @@ obs_opts <- function(family = c("negbin", "poisson"),
     scale = scale,
     accumulate = as.integer(na == "accumulate"),
     likelihood = likelihood,
-    return_likelihood = return_likelihood
+    return_likelihood = return_likelihood,
+    na_as_missing_default_used = na_default_used
   )
 
   for (param in c("phi", "scale")) {
