@@ -4,10 +4,12 @@
 \alias{check_na_setting_against_data}
 \title{Cross-check treatment of \code{NA} in obs_opts() against input data}
 \usage{
-check_na_setting_against_data(data, obs)
+check_na_setting_against_data(data, cols_to_check, obs)
 }
 \arguments{
 \item{data}{The raw data}
+
+\item{cols_to_check}{A character vector of the columns to check}
 
 \item{obs}{A call to \code{\link[=obs_opts]{obs_opts()}}}
 }

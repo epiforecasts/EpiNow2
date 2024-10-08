@@ -194,7 +194,8 @@ estimate_secondary <- function(data,
   # happening and provide alternatives.
   obs <- check_na_setting_against_data(
     obs = obs,
-    data = secondary_reports_dirty
+    data = secondary_reports_dirty,
+    cols_to_check = c("date", "primary", "secondary")
   )
   ## fill in missing data (required if fitting to prevalence)
   complete_secondary <- create_complete_cases(secondary_reports)

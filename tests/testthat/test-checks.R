@@ -173,14 +173,17 @@ test_that("test_data_complete detects complete and incomplete data", {
   # example_secondary with explicit missing secondary
   es_missing_secondary <- copy(es)[c(1, 3), secondary := NA]
   
+  # cols to check
+  ep_cols <- c("date", "confirm")
+  es_cols <- c("date", "primary", "secondary")
   # Expectations
-  expect_true(test_data_complete(example_confirmed))
-  expect_true(test_data_complete(es))
-  expect_false(test_data_complete(ec_missing_date))
-  expect_false(test_data_complete(ec_missing_confirm))
-  expect_false(test_data_complete(es_missing_primary))
-  expect_false(test_data_complete(es_missing_secondary))
-  expect_false(test_data_complete(ec_implicit_missing))
+  expect_true(test_data_complete(example_confirmed, ep_cols))
+  expect_true(test_data_complete(es, es_cols))
+  expect_false(test_data_complete(ec_missing_date, ep_cols))
+  expect_false(test_data_complete(ec_missing_confirm, ep_cols))
+  expect_false(test_data_complete(es_missing_primary, es_cols))
+  expect_false(test_data_complete(es_missing_secondary, es_cols))
+  expect_false(test_data_complete(ec_implicit_missing, ep_cols))
 })
 
 test_that("check_na_setting_against_data works as expected", {
@@ -193,7 +196,8 @@ test_that("check_na_setting_against_data works as expected", {
   expect_message(
     check_na_setting_against_data(
       obs = obs_opts(),
-      data = copy(example_confirmed)[c(1, 3), confirm := NA]
+      data = copy(example_confirmed)[c(1, 3), confirm := NA],
+      cols_to_check = c("date", "confirm")
     ),
     "version 1.5.0 missing dates or dates"
   )
@@ -202,7 +206,8 @@ test_that("check_na_setting_against_data works as expected", {
   expect_no_message(
     check_na_setting_against_data(
       obs = obs_opts(na = "missing"),
-      data = copy(example_confirmed)[c(1, 3), confirm := NA]
+      data = copy(example_confirmed)[c(1, 3), confirm := NA],
+      cols_to_check = c("date", "confirm")
     )
   )
   # If data is complete, expect no message even when using default na as
@@ -210,7 +215,8 @@ test_that("check_na_setting_against_data works as expected", {
   expect_no_message(
     check_na_setting_against_data(
       obs = obs_opts(),
-      data = example_confirmed
+      data = example_confirmed,
+      cols_to_check = c("date", "confirm")
     )
   )
   expect_identical(
@@ -221,7 +227,8 @@ test_that("check_na_setting_against_data works as expected", {
       names(
         check_na_setting_against_data(
           obs = obs_opts(),
-          data = example_confirmed
+          data = example_confirmed,
+          cols_to_check = c("date", "confirm")
         )
       )
     ),
