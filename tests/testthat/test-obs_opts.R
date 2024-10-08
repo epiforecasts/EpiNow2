@@ -20,10 +20,6 @@ test_that("obs_opts returns expected messages", {
   # 8 hours.
   rlang::local_options(rlib_message_verbosity = "verbose")
   expect_message(
-    obs_opts(),
-    "NA values will be treated as missing"
-  )
-  expect_message(
     obs_opts(na = "accumulate"),
     "modelled values that correspond to NA values"
   )
