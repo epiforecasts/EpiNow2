@@ -186,17 +186,21 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 #' @param cols_to_check A character vector of the columns to check
 #' @return `TRUE` if data is complete, else if data has implicit or explicit
 #' missingness, `FALSE`.
+#' @importFrom cli cli_abort col_blue
 #' @keywords internal
 test_data_complete <- function(data, cols_to_check) {
   data <- setDT(data) # Convert data to data.table
 
-  # Check for explicit missingness in required columns
-  # (date, confirm, primary, secondary)
-  columns_to_check <- c(
-    "date",
-    intersect(c("confirm", "primary", "secondary"), names(data))
-  )
-  if (any(vapply(data[, columns_to_check, with = FALSE], anyNA, logical(1)))) {
+  if (!all(cols_to_check %in% names(data))) {
+    cli_abort(
+      c(
+        "x" = "{.var cols_to_check} must be present in the data.",
+        "i" = "{.var data} has columns: {col_blue(names(data))} but you
+        specified {.var cols_to_expect}: {col_blue(cols_to_check)}."
+      )
+    )
+  }
+  # Check for explicit missingness in the specified columns
     return(FALSE)
   }
 
