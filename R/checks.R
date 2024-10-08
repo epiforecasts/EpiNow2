@@ -201,6 +201,10 @@ test_data_complete <- function(data, cols_to_check) {
     )
   }
   # Check for explicit missingness in the specified columns
+  data_has_explicit_na <- any(
+    vapply(data[, cols_to_check, with = FALSE], anyNA, logical(1))
+  )
+  if (data_has_explicit_na) {
     return(FALSE)
   }
 
@@ -210,7 +214,8 @@ test_data_complete <- function(data, cols_to_check) {
     max(data$date, na.rm = TRUE),
     by = "1 day"
   )
-  if (!setequal(complete_dates, unique(data$date))) {
+  data_has_implicit_na <- !all(complete_dates %in% data$date)
+  if (data_has_implicit_na) {
     return(FALSE)
   }
 
@@ -232,6 +237,7 @@ test_data_complete <- function(data, cols_to_check) {
 #'
 #' @param obs A call to [obs_opts()]
 #' @param data The raw data
+#' @inheritParams test_data_complete
 #' @importFrom cli cli_inform col_red
 #'
 #' @return [obs_opts()]
@@ -239,9 +245,10 @@ test_data_complete <- function(data, cols_to_check) {
 check_na_setting_against_data <- function(data, cols_to_check, obs) {
   # If users are using the default treatment of NA's and their data has
   # implicit or explicit NA's, inform them of what's happening and alternatives
+  data_is_complete <- test_data_complete(data, cols_to_check)
   if (!obs$accumulate &&
       obs$na_as_missing_default_used &&
-      !test_data_complete(data)) {
+      !data_is_complete) {
     #nolint start: duplicate_argument_linter
     cli_inform(
       c(
