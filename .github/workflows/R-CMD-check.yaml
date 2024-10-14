@@ -64,6 +64,8 @@ jobs:
             rcmdcheck
             stan-dev/cmdstanr
             testthat
+            future
+            future.apply
 
       - name: Install cmdstan
         if: runner.os != 'Windows'
