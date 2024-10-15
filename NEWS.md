@@ -1,9 +1,5 @@
 # EpiNow2 (development version)
 
-## Package
-
-- The `future` and `future.apply` packages are now installed in the `R CMD CHECK` workflow to ensure that the `test-coverage` workflow runs without errors. By @jamesmbaazam in #827 and reviewed by @<REVIEWER>.
-
 # EpiNow2 1.6.0
 
 A release that introduces model improvements to the Gaussian Process models, alongside a number of other improvements and bug fixes.
