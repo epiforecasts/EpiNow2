@@ -91,7 +91,6 @@ Users can also pass a non-parametric delay distribution vector using the `NonPar
 for both the generation interval and reporting delays. It is important to note that if doing so,
 both delay distributions are 0-indexed, meaning the first element corresponds to the probability mass
 at day 0 of an individual's infection. Because the discretised renewal equation doesn't support mass on day 0, the generation interval should be passed in as a 0-indexed vector with a mass of zero on day 0. 
-If this is not the case, a warning will indicate that the vector is being left-truncated and renormalized.
 
 
 ``` r
@@ -253,19 +252,19 @@ estimates <- regional_epinow(
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
 )
-#> INFO [2024-10-02 12:26:54] Producing following optional outputs: regions, summary, samples, plots, latest
-#> INFO [2024-10-02 12:26:54] Reporting estimates using data up to: 2020-04-21
-#> INFO [2024-10-02 12:26:54] No target directory specified so returning output
-#> INFO [2024-10-02 12:26:54] Producing estimates for: testland, realland
-#> INFO [2024-10-02 12:26:54] Regions excluded: none
-#> INFO [2024-10-02 12:27:15] Completed estimates for: testland
-#> INFO [2024-10-02 12:27:37] Completed estimates for: realland
-#> INFO [2024-10-02 12:27:37] Completed regional estimates
-#> INFO [2024-10-02 12:27:37] Regions with estimates: 2
-#> INFO [2024-10-02 12:27:37] Regions with runtime errors: 0
-#> INFO [2024-10-02 12:27:37] Producing summary
-#> INFO [2024-10-02 12:27:37] No summary directory specified so returning summary output
-#> INFO [2024-10-02 12:27:37] No target directory specified so returning timings
+#> INFO [2024-10-15 17:53:24] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2024-10-15 17:53:24] Reporting estimates using data up to: 2020-04-21
+#> INFO [2024-10-15 17:53:24] No target directory specified so returning output
+#> INFO [2024-10-15 17:53:24] Producing estimates for: testland, realland
+#> INFO [2024-10-15 17:53:24] Regions excluded: none
+#> INFO [2024-10-15 17:53:46] Completed estimates for: testland
+#> INFO [2024-10-15 17:54:09] Completed estimates for: realland
+#> INFO [2024-10-15 17:54:09] Completed regional estimates
+#> INFO [2024-10-15 17:54:09] Regions with estimates: 2
+#> INFO [2024-10-15 17:54:09] Regions with runtime errors: 0
+#> INFO [2024-10-15 17:54:09] Producing summary
+#> INFO [2024-10-15 17:54:09] No summary directory specified so returning summary output
+#> INFO [2024-10-15 17:54:10] No target directory specified so returning timings
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = TRUE) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the `{future}` package for details on nested futures.
