@@ -143,6 +143,95 @@ test_that("check_reports_valid errors for bad 'secondary' specifications", {
 })
 
 test_that("check_sparse_pmf_tail throws a warning as expected", {
+  # NB: The warning is set to be thrown once every 8 hours, so hard to test
+  # regularly. The fix is to change the local setting here to throw the
+  # warning on demand for the sake of multiple runs of the test within
+  # 8 hours. That's what the rlang call below does
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   pmf <- c(0.4, 0.30, 0.20, 0.05,  0.049995, 4.5e-06, rep(1e-7, 5))
-  expect_warning(check_sparse_pmf_tail(pmf), "PMF tail has")
+  expect_warning(
+    check_sparse_pmf_tail(pmf),
+    "PMF tail has"
+  )
+})
+
+test_that("test_data_complete detects complete and incomplete data", {
+  # example_confirmed with explicit missing dates
+  ec_missing_date <- copy(example_confirmed)[c(1, 3), date := NA]
+  # example_confirmed with explicit missing confirm
+  ec_missing_confirm <- copy(example_confirmed)[c(1, 3), confirm := NA]
+  # example_confirmed with implicit missing (missing entries)
+  ec_implicit_missing <- copy(example_confirmed)[-c(1,3,5), ]
+  # Create a hypothetical complete example_secondary
+  es <- copy(example_confirmed)[
+    , primary := confirm
+  ][
+    , secondary := primary * 0.4
+  ]
+  # example_secondary with explicit missing primary
+  es_missing_primary <- copy(es)[c(1, 3), primary := NA]
+  # example_secondary with explicit missing secondary
+  es_missing_secondary <- copy(es)[c(1, 3), secondary := NA]
+  
+  # cols to check
+  ep_cols <- c("date", "confirm")
+  es_cols <- c("date", "primary", "secondary")
+  # Expectations
+  expect_true(test_data_complete(example_confirmed, ep_cols))
+  expect_true(test_data_complete(es, es_cols))
+  expect_false(test_data_complete(ec_missing_date, ep_cols))
+  expect_false(test_data_complete(ec_missing_confirm, ep_cols))
+  expect_false(test_data_complete(es_missing_primary, es_cols))
+  expect_false(test_data_complete(es_missing_secondary, es_cols))
+  expect_false(test_data_complete(ec_implicit_missing, ep_cols))
+})
+
+test_that("check_na_setting_against_data works as expected", {
+  # If data is incomplete and the default na = "missing" is being used,
+  # expect a message thrown once every 8 hours.
+  # NB: We change the local setting here to throw the message on demand, rather
+  # than every 8 hours, for the sake of multiple runs of the test within
+  # 8 hours.
+  rlang::local_options(rlib_message_verbosity = "verbose")
+  expect_message(
+    check_na_setting_against_data(
+      obs = obs_opts(),
+      data = copy(example_confirmed)[c(1, 3), confirm := NA],
+      cols_to_check = c("date", "confirm")
+    ),
+    "version 1.5.0 missing dates or dates"
+  )
+  # If data is incomplete but the user explicitly set na = "missing", then
+  # expect no message
+  expect_no_message(
+    check_na_setting_against_data(
+      obs = obs_opts(na = "missing"),
+      data = copy(example_confirmed)[c(1, 3), confirm := NA],
+      cols_to_check = c("date", "confirm")
+    )
+  )
+  # If data is complete, expect no message even when using default na as
+  # missing setting
+  expect_no_message(
+    check_na_setting_against_data(
+      obs = obs_opts(),
+      data = example_confirmed,
+      cols_to_check = c("date", "confirm")
+    )
+  )
+  expect_identical(
+    setdiff(
+      names(
+        obs_opts()
+      ),
+      names(
+        check_na_setting_against_data(
+          obs = obs_opts(),
+          data = example_confirmed,
+          cols_to_check = c("date", "confirm")
+        )
+      )
+    ),
+    "na_as_missing_default_used"
+  )
 })

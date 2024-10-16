@@ -27,6 +27,8 @@ A release that introduces model improvements to the Gaussian Process models, alo
 - Switch to broadcasting the day of the week effect. By @seabbs in #746 and reviewed by @jamesmbaazam.
 - A warning is now thrown if nonparametric PMFs passed to delay options have consecutive tail values that are below a certain low threshold as these lead to loss in speed with little gain in accuracy. By @jamesmbaazam in #752 and reviewed by @seabbs, with a subsequent bug fix in #802.
 - `dist_fit()` can now accept any number of `samples` without throwing a warning when `samples` < 1000 in #751 by @jamesmbaazam and reviewed by @seabbs and @sbfnk.
+- `obs_opts()` now informs users about how NA observations are treated to help them decide on existing alternatives. By @jamesmbaazam in #774 and reviewed by @sbfnk. 
+- Users are now informed that `NA` observations will be treated as missing instead of zero when using the default `obs_opts()`. Options to treat `NA` as zeros or accumulate them are also provided. By @jamesmbaazam in #774 and reviewed by @sbfnk.
 
 ## Package changes
 
