@@ -44,21 +44,22 @@ with the following choices available for the kernel $k$
 ## Matérn 3/2 covariance kernel (the default)
 
 \begin{equation}
-k(\Delta t) = \alpha \left( 1 + \frac{\sqrt{3} \Delta t}{l} \right) \exp \left( - \frac{\sqrt{3} \Delta t}{l}\right)
+k(\Delta t) = \alpha^2 \left( 1 + \frac{\sqrt{3} \Delta t}{l} \right) \exp \left( - \frac{\sqrt{3} \Delta t}{l}\right)
 \end{equation}
 
 with $l>0$ and $\alpha > 0$ the length scale and magnitude, respectively, of the kernel.
+Note that here and later we use a slightly different definition of $\alpha$ compared to Riutort-Mayol et al. [@approxGP], where this is defined as our $\alpha^2$.
 
 ## Squared exponential kernel
 
 \begin{equation}
-k(\Delta t) = \alpha \exp \left( - \frac{1}{2} \frac{(\Delta t^2)}{l^2} \right)
+k(\Delta t) = \alpha^2 \exp \left( - \frac{1}{2} \frac{(\Delta t^2)}{l^2} \right)
 \end{equation}
 
 ## Ornstein-Uhlenbeck (Matérn 1/2) kernel
 
 \begin{equation}
-k(\Delta t) = \alpha \exp{\left( - \frac{\Delta t}{2 l^2}  \right)}
+k(\Delta t) = \alpha^2 \exp{\left( - \frac{\Delta t}{2 l^2}  \right)}
 \end{equation}
 
 ## Matérn 5/2 covariance kernel
