@@ -127,7 +127,7 @@ check_stan_delay <- function(dist) {
 #' that if `dist` is nonparametric,  its first element is zero.
 #'
 #' @importFrom lifecycle deprecate_warn
-#' @inheritParams check_stan_delay dist
+#' @inheritParams check_stan_delay
 #' @return Called for its side effects.
 #' @keywords internal
 check_generation_time <- function(dist) {

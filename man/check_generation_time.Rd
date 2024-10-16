@@ -6,6 +6,9 @@
 \usage{
 check_generation_time(dist)
 }
+\arguments{
+\item{dist}{A \code{dist_spec} object.`}
+}
 \value{
 Called for its side effects.
 }
