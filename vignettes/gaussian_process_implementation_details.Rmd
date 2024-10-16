@@ -120,7 +120,7 @@ t^* = \frac{t - \frac{1}{2}t_\mathrm{GP}}{\frac{1}{2}t_\mathrm{GP}}
 Relevant priors are
 
 \begin{align}
-\alpha &\sim \mathcal{Normal}(0, \sigma_{\alpha}) \\
+\alpha &\sim \mathcal{Normal}(\mu_\alpha, \sigma_{\alpha}) \\
 \rho   &\sim \mathcal{LogNormal} (\mu_\rho, \sigma_\rho)\\
 \end{align}
 
@@ -133,7 +133,8 @@ m_\rho &= 21 \\
 s_\rho &= 7 \\
 \rho_\mathrm{min} &= 0\\
 \rho_\mathrm{max} &= 60\\
-\sigma_\alpha &= 0.05\\
+\mu_\alpha &= 0\\
+\sigma_\alpha &= 0.1
 \end{align}
 
 # References
