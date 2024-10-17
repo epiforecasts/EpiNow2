@@ -1,6 +1,6 @@
 # EpiNow2 (development version)
 
-## Model changes
+## Package changes
 
 - Users are now informed that `NA` observations (if present implicitly or explicitly) will be treated as missing instead of zero when using the default `obs_opts()`. Options to treat `NA` as zeros or accumulate them are also provided in the message. By @jamesmbaazam in #774 and reviewed by @sbfnk.
 
