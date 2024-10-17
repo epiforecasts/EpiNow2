@@ -135,7 +135,7 @@ s_\rho &= 7 \\
 \rho_\mathrm{min} &= 0\\
 \rho_\mathrm{max} &= 60\\
 \mu_\alpha &= 0\\
-\sigma_\alpha &= 0.1
+\sigma_\alpha &= 0.01
 \end{align}
 
 # References
