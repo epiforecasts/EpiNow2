@@ -38,25 +38,254 @@ library(scales)
 library(posterior)
 ```
 
-`{EpiNow2}` provides a range of customisations of the default model to suit different use cases. hence, users will often be faced with two decision points that will guide their choice of an appropriate model: (i) use case: retrospective vs real-time analysis, and (ii) limited computing resources.
+In using `{EpiNow2}`, users will often be faced with two decision points that will guide their choice of an appropriate model: (i) use case: retrospective vs real-time analysis, and (ii) limited computing resources. `{EpiNow2}` provides a range of customisations of the default model to suit these decision points.
 
-The aim of this vignette is to benchmarks four (4) `{EpiNow2}` model options chosen to cover a range of real-life use cases. We will analyse the trade-offs of using available options to speed them up via approxiamte fitting methods instead of the default MCMC algorithm. 
+The aim of this vignette is to benchmarks four (4) `{EpiNow2}` model options chosen to cover a range of use cases. We will benchmark the default model, the model with the 7-day random walk prior on $R_t$, the non-mechanistic model, which has no explicit prior on $R_t$, and the non-residual $R_t$ model, which assumes a stationary prior on $R_t$.
 
-We will compare the models based on the accuracy of estimates relative to data with known trajectories.
+We will analyse the estimation and forecasting performance of these models when used with MCMC sampling as well as three (3) approximate sampling methods: variational bayes, pathfinder, and laplace approximation. To achieve this, we will compare the models based on the accuracy of estimates given complete and partial data at 3 time points of a simulated epidemic: (i) epidemic growth phase, (ii) epidemic peak, and (iii) epidemic decline phase.
 
 ## The benchmarking data
 
-To compare the model options, we will need a dataset for which we know the "true" values and trajectories. So, we will start by generating the "true" infections and $R_t$ data using `{EpiNow2}`'s `forecast_infections()` function. 
+We will start by setting up the "true" dataset with known trajectories of $R_t$ and infections using `{EpiNow2}`'s `forecast_infections()` function.
 
 `forecast_infections()` requires a fitted estimates object from `epinow()` with `output` set to "fit", the trajectory of the reproduction number, `R`, and the number of samples to simulate. So, we will set these up first.
 
-To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. We will use the first $100$ observations of the `example_confirmed` data set, the `example_generation_time`, `example_incubation_period`, and `example_reporting_delay` values that come with `{EpiNow2}`.
+To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. For the `data`, we will use the first $60$ observations of the `example_confirmed` data set. We will use the `example_generation_time` for the generation time, and the `example_incubation_period`, and `example_reporting_delay` to specify  and delays. These come with the package. For the `rt` model, we will use a 14-day random walk prior, with a mean of $2$ and standard deviation of $0.1$. As we only want to generate estimates, we will turn off forecasting by setting `horizon = 0`.
 
-Throughout this vignette, several of the argument values be maintained (not varied), so we will define them here. These include the generation time, incubation period, reporting delay, observation model options, and the forecast horizon.
-```{r, shared_inputs}
-# Set the number of cores to use
-options(mc.cores = 4)
+Throughout this vignette, several argument values, including the observation model options, the rt model prior will be maintained, so we will define them here.
 
+```{r share_inputs}
+# Observation model options
+obs <- obs_opts(
+  scale = list(mean = 0.1, sd = 0.025),
+  return_likelihood = TRUE
+)
+
+rt_prior_default <- list(mean = 2, sd = 0.1)
+```
+
+Now, we can generate the `estimates` object.
+```{r estimates}
+estimates <- epinow(
+  data = example_confirmed[1:60],
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(example_incubation_period + example_reporting_delay),
+  rt = rt_opts(prior = rt_prior_default, rw = 14),
+  gp = NULL,
+  obs = obs,
+  horizon = 0, # no forecasting
+  output = "fit"
+)
+```
+
+For the `R` data, we will set up an arbitrary trajectory and add some Gaussian noise.
+```{r R-data}
+# Arbitrary reproduction number trajectory
+R <- c(
+  rep(2, 40), rep(0.5, 10), rep(1, 10), 1 + 0.04 * 1:20, rep(1.4, 5),
+  1.4 - 0.02 * 1:20, rep(1.4, 10), rep(0.8, 5), 0.8 + 0.02 * 1:20
+)
+# Add Gaussian noise
+R_noisy <- R * rnorm(length(R), 1, 0.05)
+```
+
+Let's proceed to simulate the true infections and $R_t$ data by sampling from $10$ posterior samples.
+```{r true-data}
+# Forecast infections and the trajectory of Rt
+forecast <- forecast_infections(
+  estimates$estimates,
+  R = R_noisy,
+  samples = 10
+)
+```
+
+Let's now extract the true data for benchmarking:
+- `R_true`: the median of the simulated $R_t$ values,
+- `infections_true`: the infections by date of infection, and
+- `reported_cases_true`: the reported cases by date of report.
+```{r extract-true-data}
+R_true <- forecast$summarised[variable == "R"]$median
+
+# Get the posterior samples from which to extract the simulated infections and reported cases
+posterior_sample <- forecast$samples[sample == 1]
+
+# Extract the simulated infections
+infections_true <- posterior_sample[variable == "infections"]$value
+
+# Extract the simulated reported cases and rename the "value" column to "confirm" (to match EpiNow2 requirements)
+reported_cases_true <- posterior_sample[
+  variable == "reported_cases", .(date, confirm = value)
+]
+```
+
+We will now proceed to define and run the different model options and evaluate their estimation and forecasting performance alongside their run times using the four sampling methods and time points described in the introduction.
+
+## Models
+
+### Descriptions
+
+Below we describe each model.
+```{r model-descriptions,echo = FALSE}
+model_descriptions <- dplyr::tribble(
+  ~model,  ~description,
+  "default_mcmc",      "Default model (non-stationary prior on $R_t$); fitting with mcmc",
+  "default_vb",  "Default model (non-stationary prior on $R_t$); fitting with variational bayes",
+  "default_pathfinder",  "Default model (non-stationary prior on $R_t$); fitting with pathfinder algorithm",
+  "default_laplace",  "Default model (non-stationary prior on $R_t$); fitting with laplace approximation",
+  "non_mechanistic_mcmc",        "no mechanistic prior on $R_t$; fitting with mcmc",
+  "non_mechanistic_vb",        "no mechanistic prior on $R_t$; fitting with variational bayes",
+  "non_mechanistic_pathfinder",        "no mechanistic prior on $R_t$; fitting with pathfinder algorithm",
+  "non_mechanistic_laplace",        "no mechanistic prior on $R_t$; fitting with laplace approximation",
+  "rw7_mcmc",    "7-day random walk prior on $R_t$; fitting with mcmc",
+  "rw7_vb",    "7-day random walk prior on $R_t$; fitting with variational bayes",
+  "rw7_pathfinder",    "7-day random walk prior on $R_t$; fitting with pathfinder algorithm",
+  "rw7_laplace",    "7-day random walk prior on $R_t$; fitting with laplace approximation",
+  "non_residual_mcmc",    "Stationary prior on $R_t$; fitting with mcmc",
+  "non_residual_vb",    "Stationary prior on $R_t$; fitting with variational bayes",
+  "non_residual_pathfinder",    "Stationary prior on $R_t$; fitting with pathfinder algorithm",
+  "non_residual_laplace",    "Stationary prior on $R_t$; fitting with laplace algorithm"
+)
+  
+knitr::kable(model_descriptions, caption = "Model options")
+```
+
+```{r model-components,echo = FALSE}
+model_components <- dplyr::tribble(
+  ~model,                              ~rt_model_gp,                       ~fitting,                 ~package,
+  "default_mcmc",                        "non_stationary",                  "MCMC",                     "rstan", 
+  "default_vb",                           "non_stationary",                 "variational_bayes",         "rstan", 
+  "default_pathfinder",                    "non_stationary",                "pathfinder",                 "cmdstanr",
+  "default_laplace",                        "non_stationary",               "laplace",                    "cmdstanr",
+  "non_mechanistic_mcmc",                     "None",                       "MCMC",                        "rstan",
+  "non_mechanistic_vb",                       "None",                       "variational_bayes",            "rstan",
+  "non_mechanistic_pathfinder",               "None",                       "pathfinder",                   "cmdstanr",
+  "non_mechanistic_laplace",                   "None",                      "laplace",                      "cmdstanr",
+  "rw7_mcmc",                                  "non_stationary",            "mcmc",                          "rstan",
+  "rw7_vb",                                     "non_stationary",            "variational_bayes",             "rstan",
+  "rw7_pathfinder",                              "non_stationary",            "pathfinder",                   "cmdstanr",
+  "rw7_laplace",                                  "non_stationary",            "laplace",                     "cmdstanr",
+  "non_residual_mcmc",                             "stationary",               "mcmc",                        "rstan",
+  "non_residual_vb",                                 "stationary",            "variational_bayes",             "rstan",
+  "non_residual_pathfinder",                           "stationary",            "pathfinder",                  "rstan",
+  "non_residual_laplace",                               "stationary",            "laplace",                     "cmdstanr"
+  )
+  
+knitr::kable(model_components, caption = "Model components")
+```
+
+### Configurations
+
+These are the accompanying configurations for each model, which are modifications of the default model.
+```{r model-configs, results = 'hide'}
+model_configs <- list(
+  # The default model with MCMC fitting
+  default_mcmc = list(
+    rt = rt_opts()
+  ),
+  # The default model with variational bayes fitting
+  default_vb = list(
+    rt = rt_opts(),
+    stan = stan_opts(method = "vb", backend = "rstan")
+  )#,
+  # The default model with pathfinder fitting
+  # default_pathfinder = list(
+  #   rt = rt_opts(),
+  #   stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
+  # ),
+  # # The default model with laplace fitting
+  # default_laplace = list(
+  #   rt = rt_opts(),
+  #   stan = stan_opts(method = "laplace", backend = "cmdstanr")
+  # ),
+  # # The non-mechanistic model with MCMC fitting
+  # non_mechanistic_mcmc = list(
+  #   rt = NULL
+  # ),
+  # # The non-mechanistic model with variational bayes fitting
+  # non_mechanistic_vb = list(
+  #   rt = NULL,
+  #   stan = stan_opts(method = "vb", backend = "rstan")
+  # ),
+  # # The non-mechanistic model with pathfinder fitting
+  # non_mechanistic_pathfinder = list(
+  #   rt = NULL,
+  #   stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
+  # ),
+  # # The non-mechanistic model with laplace fitting
+  # non_mechanistic_laplace = list(
+  #   rt = NULL,
+  #   stan = stan_opts(method = "laplace", backend = "cmdstanr")
+  # ),
+  # # The 7-day RW Rt model with MCMC fitting
+  # rw7_mcmc = list(
+  #   rt = rt_opts(
+  #     prior = rt_prior_default,
+  #     rw = 7
+  #   )
+  # ),
+  # # The 7-day RW Rt model with variational bayes fitting
+  # rw7_vb = list(
+  #   rt = rt_opts(
+  #     prior = rt_prior_default,
+  #     rw = 7
+  #   ),
+  #   stan = stan_opts(method = "vb", backend = "rstan")
+  # ),
+  # # The 7-day RW Rt model with pathfinder fitting
+  # rw7_pathfinder = list(
+  #   rt = rt_opts(
+  #     prior = rt_prior_default,
+  #     rw = 7
+  #   ),
+  #   stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
+  # ),
+  # # The 7-day RW Rt model with laplace fitting
+  # rw7_laplace = list(
+  #   rt = rt_opts(
+  #     prior = rt_prior_default,
+  #     rw = 7
+  #   ),
+  #   stan = stan_opts(method = "laplace", backend = "cmdstanr")
+  # ),
+  # # The non_residual model with MCMC fitting
+  # non_residual_mcmc = list(
+  #   rt = rt_opts(
+  #     prior = rt_prior_default,
+  #     gp_on = "R0"
+  #   )
+  # ),
+  # # The non_residual model with variational bayes fitting
+  # non_residual_vb = list(
+  #   rt = rt_opts(
+  #     prior = rt_prior_default,
+  #     gp_on = "R0"
+  #   ),
+  #   stan = stan_opts(method = "vb", backend = "rstan")
+  # ),
+  # # The non_residual model with pathfinder fitting
+  # non_residual_pathfinder = list(
+  #   rt = rt_opts(
+  #     prior = rt_prior_default,
+  #     gp_on = "R0"
+  #   ),
+  #   stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
+  # ),
+  # # The non_residual model with laplace fitting
+  # non_residual_laplace = list(
+  #   rt = rt_opts(
+  #     prior = rt_prior_default,
+  #     gp_on = "R0"
+  #   ),
+  #   stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
+  # )
+)
+```
+
+## Running the models
+
+All the models will share the configuration for the generation time, incubation period, reporting delay, and the forecast horizon, so we will define once and pass them to the models.
+
+```{r, constant_inputs}
 # Generation time
 generation_time <- Gamma(
   shape = Normal(1.3, 0.3),
@@ -81,184 +310,13 @@ reporting_delay <- LogNormal(
 # Combine the incubation period and reporting delay into one delay
 delay <- incubation_period + reporting_delay
 
-# Observation model options
-obs <- obs_opts(
-  scale = list(mean = 0.1, sd = 0.025),
-  return_likelihood = TRUE
-)
-
 # 7-day forecast window
 horizon <- 7
-
-# Rt default prior
-rt_prior_default <- list(mean = 2, sd = 0.1)
 ```
-
-Now, let's generate the `estimates` object from `epinow()`.
-```{r estimates}
-estimates <- epinow(
-  data = example_confirmed[1:100],
-  generation_time = generation_time_opts(example_generation_time),
-  delays = delay_opts(example_incubation_period + example_reporting_delay),
-  rt = rt_opts(prior = rt_prior_default, rw = 14),
-  gp = NULL,
-  obs = obs,
-  horizon = 0, # no forecasting
-  output = "fit"
-)
-```
-
-For the `R` data, we will set up an arbitrary trajectory and add some Gaussian noise.
-```{r R-data}
-# Arbitrary reproduction number trajectory
-R <- c(
-  rep(2, 40), rep(0.5, 10), rep(1, 10), 1 + 0.04 * 1:20, rep(1.4, 5),
-  1.4 - 0.02 * 1:20, rep(1.4, 10), rep(0.8, 5), 0.8 + 0.02 * 1:20
-)
-# Add Gaussian noise
-R_noisy <- R * rnorm(length(R), 1, 0.05)
-```
-
-Now, we are ready to simulate the true infections and $R_t$ data by sampling from $10$ posterior samples.
-```{r true-data}
-# Forecast infections and the trajectory of Rt
-forecast <- forecast_infections(
-  estimates$estimates,
-  R = R_noisy,
-  samples = 10
-)
-```
-
-We will now extract the required data:
-- `R_true`: the median of the simulated $R_t$ values,
-- `infections_true`: the infections by date of infection, and
-- `reported_cases_true`: the reported cases by date of report.
-```{r extract-true-data}
-R_true <- forecast$summarised[variable == "R"]$median
-
-# Get the posterior samples from which to extract the simulated infections and reported cases
-posterior_sample <- forecast$samples[sample == 1]
-
-# Extract the simulated infections
-infections_true <- posterior_sample[variable == "infections"]$value
-
-# Extract the simulated reported cases and rename the "value" column to "confirm" (to match EpiNow2 requirements)
-reported_cases_true <- posterior_sample[
-  variable == "reported_cases", .(date, confirm = value)
-]
-```
-
-Now, to the main part of this vignette: we will define and run the different model options and evaluate their runtimes and estimation and forecasting performance.
-
-## Model options
-
-Below we describe each model.
-```{r model-descriptions,echo = FALSE}
-model_descriptions <- dplyr::tribble(
-  ~model,  ~description,
-  "default_mcmc_rstan",      "Default model; Gaussian process on new infection and with a non-stationary prior on $R_t$",
-  "non_mechanistic",        "Gaussian process on new infection and with no mechanistic process on $R_t$",
-  "no_rw_gp",    "Gaussian process on new infection and with a stationary Gaussian process prior on $R_t$",
-  "rw1_no_gp",    "No Gaussian process on new infections, and $R_t$ modelled with 1-day random walk and a non-stationary Gaussian process",
-  "rw1_gp",     "Gaussian process on new infection, and $R_t$ modelled with 1-day random walk and a non-stationary Gaussian process",
-  "rw7_no_gp",   "No Gaussian process on new infection, and $R_t$ modelled with 7-day random walk and a non-stationary process",
-  "rw7_gp",      "Gaussian process on new infection, and $R_t$ modelled with 7-day random walk and a non-stationary Gaussian process",
-  "default_vb_rstan",  "Default model; Variational algorithm for sampling instead of MCMC and using [`{rstan}`]",
-  "default_vb_cmdstanr",  "Default model; Variational algorithm for sampling instead of MCMC and using [`{cmdstanr}`]"
-)
-  
-knitr::kable(model_descriptions, caption = "Model options")
-```
-
-```{r model-components,echo = FALSE}
-model_components <- dplyr::tribble(
-  ~model,                  ~gaussian_process,      ~rt_model_rw,                ~rt_model_gp,        ~sampling,                 ~package,
-  "default_mcmc_rstan",     "on",                    "None",                    "non_stationary",   "MCMC",                     "rstan", 
-  "non_mechanistic",        "on",                           "None",             "None",             "MCMC",                     "rstan", 
-  "no_rw_gp",                "on",                           "None",             "stationary",       "MCMC",                     "rstan",
-  "rw1_no_gp",              "off",                          "1-day",            "non_stationary",   "MCMC",                     "rstan",
-  "rw1_gp",                 "on",                           "1-day",            "non_stationary",   "MCMC",                     "rstan",
-  "rw7_no_gp",              "off",                          "7-days",           "non_stationary",   "MCMC",                     "rstan",
-  "rw7_gp",                 "on",                           "7-days",           "non_stationary",   "MCMC",                     "rstan",
-  "default_vb_rstan",       "on",                           "None",             "non_stationary",   "variational_algorithm",    "rstan",
-  "default_vb_cmdstanr",    "on",                           "None",             "non_stationary",   "variational_algorithm",    "cmdstanr"
-)
-  
-knitr::kable(model_components, caption = "Model components")
-```
-
-This is how we set up each model in EpiNow2.
-```{r model-configs, results = 'hide'}
-model_configs <- list(
-  # The non-mechanistic model
-  non_mechanistic = list(rt = NULL),
-  # The model with the Gaussian process turned on and a non-stationary prior on R_t (default)
-  default_mcmc_rstan = list(
-    rt = rt_opts(
-      prior = rt_prior_default
-    )
-  ),
-  # The model with the Gaussian process turned on and the stationary Gaussian process prior on R_t
-  no_rw_gp = list(
-    rt = rt_opts(
-      prior = rt_prior_default,
-      gp_on = "R0"
-    )
-  ),
-  # The model with a 1-day random walk, the Gaussian process turned off and a non-stationary prior on R_t (default)
-  rw1_no_gp = list(
-    rt = rt_opts(
-      prior = rt_prior_default,
-        rw = 1
-      ),
-    gp = NULL
-  ),
-  # The model with a 1-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
-  rw1_gp = list(
-    rt = rt_opts(
-      prior = rt_prior_default,
-        rw = 1
-      )
-  ),
-  # The model with a 7-day random walk, the Gaussian process turned off, and a non-stationary prior on R_t (default)
-  rw7_no_gp = list(
-    rt = rt_opts(
-      prior = rt_prior_default,
-        rw = 7
-      ),
-    gp = NULL
-  ),
-  # The model with a 7-day random walk, the Gaussian process turned on, and a non-stationary prior on R_t (default)
-  rw7_gp = list(
-    rt = rt_opts(
-      prior = rt_prior_default,
-      rw = 7
-    )
-  ),
-  # Model that uses the variational inference method instead of MCMC (from rstan) 
-  default_vb_rstan = list(
-    stan = stan_opts(
-      method = "vb"
-    )
-  ),
-  # Model that uses the variational inference method instead of MCMC (from cmdstanr) 
-  default_vb_cmdstanr = list(
-    stan = stan_opts(
-      method = "vb",
-      backend = "cmdstanr"
-    )
-  )
-)
-```
-
-## Running the models
-
-Let's run the models and gather the results.
 
 Let's combine the shared model inputs into a list for use across all the models.
 ```{r model_inputs}
 model_inputs <- list(
-  data = reported_cases_true[1:(.N - horizon),],
   generation_time = generation_time_opts(generation_time),
   delays = delay_opts(delay),
   obs = obs,
@@ -267,22 +325,43 @@ model_inputs <- list(
 )
 ```
 
-To run the models, we will sweep across the list of models `models` and shared model inputs `model_inputs`. We will use the `epinow()` function and return useful outputs like the timing of model runs.
+Additionally, from the benchmarking data, we choose the following dates to represent the periods of growth, peak, and decline.
+```{r snapshot_dates}
+snapshot_dates <- as.Date(c("2020-06-03", "2020-06-21", "2020-06-28"))
+```
 
-Note that we will run the model using `r nrow(reported_cases_true[1:(.N - horizon),])` observations so that we can compare the forecast performance over the full set of observations.
+Using the chosen dates, we'll create the data snapshots for fitting.
+```{r data-snapshots}
+data_snaps <- lapply(
+  snapshot_dates,
+  function(snap_date) {
+    reported_cases_true[date <= snap_date]
+  }
+)
+names(data_snaps) <- snapshot_dates
+```
+
+Now, we're ready to run the models. We will use the `epinow()` function and return useful outputs like the timing of model runs.
 ```{r run-models, results = 'hide'}
 # Create a version of epinow() that works like base::try() and works even if some models fail.
 safe_epinow <- purrr::safely(epinow)
-# Run the models
+# Run the models over the different dates
 results <- lapply(
-  model_configs,
-  function(model) {
-    do.call(
-      safe_epinow,
-      c(
-        model_inputs,
-        model
-      )
+  data_snaps, function(data) {
+    lapply(
+      model_configs,
+      function(model) {
+        # Use subset of the data
+        data_to_fit <- data[1:(.N - model_inputs$horizon)]
+        model_inputs <- c(model_inputs, data = list(data_to_fit))
+        do.call(
+          safe_epinow,
+          c(
+            model_inputs,
+            model
+          )
+        )
+      }
     )
   }
 )
