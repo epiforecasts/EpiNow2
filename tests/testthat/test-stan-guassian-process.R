@@ -24,21 +24,43 @@ test_that("diagSPD_EQ returns correct dimensions and values", {
   expect_equal(result, expected_result, tolerance = 1e-8)
 })
 
-test_that("diagSPD_Matern returns correct dimensions and values", {
-  nu <- 1.5
+test_that("diagSPD_Matern functions return correct dimensions and values", {
   alpha <- 1.0
   rho <- 2.0
   L <- 1.0
   M <- 5
-  result <- diagSPD_Matern(nu, alpha, rho, L, M)
-  expect_equal(length(result), M)
-  expect_true(all(result > 0))  # Expect spectral density to be positive
+  result12 <- diagSPD_Matern12(alpha, rho, L, M)
+  expect_equal(length(result12), M)
+  expect_true(all(result12 > 0))  # Expect spectral density to be positive
+
   # Check specific values for known inputs
   indices <- linspaced_vector(M, 1, M)
-  factor <- 2 * alpha * (sqrt(2 * nu) / rho)^nu
-  denom <- (sqrt(2 * nu) / rho)^2 + (pi / (2 * L) * indices)^(nu + 0.5)
-  expected_result <- factor / denom
-  expect_equal(result, expected_result, tolerance = 1e-8)
+  factor12 <- 2
+  denom12 <- rho * ((1 / rho)^2 + (pi / (2 * L)) * indices)
+  expected_result12 <- alpha * sqrt(factor / denom)
+  expect_equal(result, expected_result12, tolerance = 1e-8)
+
+  result32 <- diagSPD_Matern32(alpha, rho, L, M)
+  expect_equal(length(result32), M)
+  expect_true(all(result32 > 0))  # Expect spectral density to be positive
+
+  # Check specific values for known inputs
+  indices <- linspaced_vector(M, 1, M)
+  factor32 <- 2 * alpha * (sqrt(2 * nu) / rho)^nu
+  denom32 <- (sqrt(2 * nu) / rho)^2 + (pi / (2 * L) * indices)^(nu + 0.5)
+  expected_result32 <- factor / denom
+  expect_equal(result32, expected_result32, tolerance = 1e-8)
+
+  result52 <- diagSPD_Matern52(alpha, rho, L, M)
+  expect_equal(length(result52), M)
+  expect_true(all(result52 > 0))  # Expect spectral density to be positive
+
+  # Check specific values for known inputs
+  indices <- linspaced_vector(M, 1, M)
+  factor52 <- 3 * (sqrt(5) / rho)^5
+  denom52 <- 2 * (sqrt(5) / rho)^2 + ((pi / (2 * L)) * indices)^3
+  expected_result52 <- alpha * sqrt(factor / denom)
+  expect_equal(result52, expected_result52, tolerance = 1e-8)
 })
 
 test_that("diagSPD_Periodic returns correct dimensions and values", {
