@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Model changes
+
+- A bug in the spectral densities of Matern kernels of order other than 3/2 has been fixed and the vignette updated accordingly. By @sbfnk in #.
+
 ## Package changes
 
 - Users are now informed that `NA` observations (if present implicitly or explicitly) will be treated as missing instead of zero when using the default `obs_opts()`. Options to treat `NA` as zeros or accumulate them are also provided in the message. By @jamesmbaazam in #774 and reviewed by @sbfnk.
