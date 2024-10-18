@@ -93,13 +93,35 @@ where $L$ is a positive number termed boundary condition, and $\beta_{j}$ are re
 \beta_j \sim \mathcal{Normal}(0, 1)
 \end{equation}
 
-The function $S_k(x)$ is the spectral density relating to a particular covariance function $k$. In the case of the Matérn 3/2 kernel (the default in `EpiNow2`) this is given by
+The function $S_k(x)$ is the spectral density relating to a particular covariance function $k$.
+In the case of the Matérn kernel of order $\nu$ this is given by
 
 \begin{equation}
-S_k(x) = 4 \alpha^2 \left( \frac{\sqrt{3}}{\rho}\right)^3 \left(\left( \frac{\sqrt{3}}{\rho} \right)^2 + w^2 \right)^{-2}
+S_k(x) = \alpha^2 \frac{2 \sqrt{\pi} \Gamma(\nu + 1/2) (2\nu)^\nu}{\Gamma(\nu) \rho^{2 \nu}} \left( \frac{2 \nu}{\rho^2} + \omega^2 \right)^{-\left( \nu + \frac{1}{2}\right )}
 \end{equation}
 
-and in the case of a squared exponential kernel by
+For $\nu = 3 / 2$ (the default in `EpiNow2`) this simplifies to
+
+\begin{equation}
+    S_k(x) =
+    \alpha^2 \frac{4 \left(\sqrt{3} / \rho \right)^3}{\left(\left(\sqrt{3} / \rho\right)^2 + \omega^2\right)^2} = 
+    \left(\frac{2 \alpha \left(\sqrt{3} / \rho \right)^{\frac{3}{2}}}{\left(\sqrt{3} / \rho\right)^2 + \omega^2} \right)^2
+\end{equation}
+
+For $\nu = 1 / 2$ it is
+
+\begin{equation}
+S_k(x) = \alpha^2 \frac{2}{\rho \left(1 / \rho^2 + \omega^2\right)}
+\end{equation}
+
+and for $\nu = 5 / 2$ it is
+
+\begin{equation}
+S_k(x) =
+    \alpha^2 \frac{3 \left(\sqrt{5} / \rho \right)^5}{2 \left(\left(\sqrt{5} / \rho\right)^2 + \omega^2\right)^3}
+\end{equation}
+
+In the case of a squared exponential the spectral kernel density is given by
 
 \begin{equation}
 S_k(x) = \alpha^2 \sqrt{2\pi} \rho \exp \left( -\frac{1}{2} \rho^2 w^2 \right)
