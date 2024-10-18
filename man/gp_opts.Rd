@@ -46,12 +46,13 @@ scale. Updated in \code{\link[=create_gp_data]{create_gp_data()}} to be the leng
 this is smaller.}
 
 \item{alpha_mean}{Numeric, defaults to 0. The mean of the magnitude parameter
-of the Gaussian process kernel. Should be approximately the expected variance
-of the logged Rt.}
+of the Gaussian process kernel. Should be approximately the expected standard
+deviation of the Gaussian process (logged Rt in case of the renewal model,
+logged infections in case of the nonmechanistic model).}
 
-\item{alpha_sd}{Numeric, defaults to 0.01. The standard deviation of the
-magnitude parameter of the Gaussian process kernel. Should be approximately
-the expected standard deviation of the logged Rt.}
+\item{alpha_sd}{Numeric, defaults to 0.1. The standard deviation of the
+magnitude parameter of the Gaussian process kernel. Can be tuned to adjust
+how far alpha is allowed to deviate form its prior mean (\code{alpha_mean}).}
 
 \item{kernel}{Character string, the type of kernel required. Currently
 supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
