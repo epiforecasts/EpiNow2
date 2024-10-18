@@ -56,9 +56,9 @@ test_that("delay parameters can be specified in different ways", {
   )
   expect_equal(
     tail(round(test_stan_delays(
-      delays = delay_opts(
+      delays = suppressMessages(delay_opts(
         LogNormal(meanlog = 0.5, sdlog = 0.5)
-      ),
+      )),
       params = delay_params
     ), digits = 2), n = -2),
     c(0.08, 0.33, 0.36, 0.16, 0.05, 0.02, 0.01, 0.00, 0.00, 1.00)
