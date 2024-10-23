@@ -22,20 +22,51 @@ vector diagSPD_EQ(real alpha, real rho, real L, int M) {
 }
 
 /**
-  * Spectral density for Matern kernel
+  * Spectral density for 1/2 Matern (Ornstein-Uhlenbeck) kernel
   *
-  * @param nu Smoothness parameter (1/2, 3/2, or 5/2)
   * @param alpha Scaling parameter
   * @param rho Length scale parameter
   * @param L Length of the interval
   * @param M Number of basis functions
   * @return A vector of spectral densities
   */
-vector diagSPD_Matern(real nu, real alpha, real rho, real L, int M) {
+vector diagSPD_Matern12(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
-  real factor = 2 * alpha * pow(sqrt(2 * nu) / rho, nu);
-  vector[M] denom = (sqrt(2 * nu) / rho)^2 + pow((pi() / 2 / L) * indices, nu + 0.5);
+  real factor = 2;
+  vector[M] denom = rho * ((1 / rho)^2 + (pi() / 2 / L) * indices);
+  return alpha * sqrt(factor * inv(denom));
+}
+
+/**
+  * Spectral density for 3/2 Matern kernel
+  *
+  * @param alpha Scaling parameter
+  * @param rho Length scale parameter
+  * @param L Length of the interval
+  * @param M Number of basis functions
+  * @return A vector of spectral densities
+  */
+vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
+  vector[M] indices = linspaced_vector(M, 1, M);
+  real factor = 2 * alpha * pow(sqrt(3) / rho, 1.5);
+  vector[M] denom = (sqrt(3) / rho)^2 + pow((pi() / 2 / L) * indices, 2);
   return factor * inv(denom);
+}
+
+/**
+  * Spectral density for 5/2 Matern kernel
+  *
+  * @param alpha Scaling parameter
+  * @param rho Length scale parameter
+  * @param L Length of the interval
+  * @param M Number of basis functions
+  * @return A vector of spectral densities
+  */
+vector diagSPD_Matern52(real alpha, real rho, real L, int M) {
+  vector[M] indices = linspaced_vector(M, 1, M);
+  real factor = 3 * pow(sqrt(5) / rho, 5);
+  vector[M] denom = 2 * (sqrt(5) / rho)^2 + pow((pi() / 2 / L) * indices, 3);
+  return alpha * sqrt(factor * inv(denom));
 }
 
 /**
@@ -143,7 +174,15 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   } else if (type == 1) {
     diagSPD = diagSPD_Periodic(alpha, rho[1], M);
   } else if (type == 2) {
-    diagSPD = diagSPD_Matern(nu, alpha, rho[1], L, M);
+    if (nu == 0.5) {
+      diagSPD = diagSPD_Matern12(alpha, rho[1], L, M);
+    } else if (nu == 1.5) {
+      diagSPD = diagSPD_Matern32(alpha, rho[1], L, M);
+    } else if (nu == 2.5) {
+      diagSPD = diagSPD_Matern52(alpha, rho[1], L, M);
+    } else {
+      reject("nu must be one of 1/2, 3/2 or 5/2; found nu=", nu);
+    }
   }
   return PHI * (diagSPD .* eta);
 }
