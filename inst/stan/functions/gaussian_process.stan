@@ -54,7 +54,7 @@ vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
 }
 
 /**
-  * Spectral density for 3/2 Matern kernel
+  * Spectral density for 5/2 Matern kernel
   *
   * @param alpha Scaling parameter
   * @param rho Length scale parameter

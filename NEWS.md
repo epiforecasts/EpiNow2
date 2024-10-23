@@ -2,7 +2,7 @@
 
 ## Model changes
 
-- A bug in the spectral densities of Matern kernels of order other than 3/2 has been fixed and the vignette updated accordingly. By @sbfnk in #.
+- A bug in the spectral densities of Matern kernels of order other than 3/2 has been fixed and the vignette updated accordingly. By @sbfnk in #835 and reviewed by @seabbs.
 
 ## Package changes
 
