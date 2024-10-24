@@ -125,7 +125,7 @@ S_k(\omega) =
 In the case of a squared exponential the spectral kernel density is given by
 
 \begin{equation}
-S_k(\omega) = \alpha^2 \sqrt{2\pi} \rho \exp \left( -\frac{1}{2} \rho^2 w^2 \right)
+S_k(\omega) = \alpha^2 \sqrt{2\pi} \rho \exp \left( -\frac{1}{2} \rho^2 \omega^2 \right)
 \end{equation}
 
 The functions $\phi_{j}(x)$ are the eigenfunctions of the Laplace operator,
