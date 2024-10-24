@@ -104,7 +104,7 @@ S_k(x) = \alpha^2 \frac{2 \sqrt{\pi} \Gamma(\nu + 1/2) (2\nu)^\nu}{\Gamma(\nu) \
 For $\nu = 3 / 2$ (the default in `EpiNow2`) this simplifies to
 
 \begin{equation}
-    S_k(x) =
+    S_k(\omega) =
     \alpha^2 \frac{4 \left(\sqrt{3} / \rho \right)^3}{\left(\left(\sqrt{3} / \rho\right)^2 + \omega^2\right)^2} = 
     \left(\frac{2 \alpha \left(\sqrt{3} / \rho \right)^{\frac{3}{2}}}{\left(\sqrt{3} / \rho\right)^2 + \omega^2} \right)^2
 \end{equation}
@@ -112,20 +112,20 @@ For $\nu = 3 / 2$ (the default in `EpiNow2`) this simplifies to
 For $\nu = 1 / 2$ it is
 
 \begin{equation}
-S_k(x) = \alpha^2 \frac{2}{\rho \left(1 / \rho^2 + \omega^2\right)}
+S_k(\omega) = \alpha^2 \frac{2}{\rho \left(1 / \rho^2 + \omega^2\right)}
 \end{equation}
 
 and for $\nu = 5 / 2$ it is
 
 \begin{equation}
-S_k(x) =
+S_k(\omega) =
     \alpha^2 \frac{3 \left(\sqrt{5} / \rho \right)^5}{2 \left(\left(\sqrt{5} / \rho\right)^2 + \omega^2\right)^3}
 \end{equation}
 
 In the case of a squared exponential the spectral kernel density is given by
 
 \begin{equation}
-S_k(x) = \alpha^2 \sqrt{2\pi} \rho \exp \left( -\frac{1}{2} \rho^2 w^2 \right)
+S_k(\omega) = \alpha^2 \sqrt{2\pi} \rho \exp \left( -\frac{1}{2} \rho^2 w^2 \right)
 \end{equation}
 
 The functions $\phi_{j}(x)$ are the eigenfunctions of the Laplace operator,

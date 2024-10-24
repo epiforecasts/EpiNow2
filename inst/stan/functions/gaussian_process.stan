@@ -33,7 +33,7 @@ vector diagSPD_EQ(real alpha, real rho, real L, int M) {
 vector diagSPD_Matern12(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
   real factor = 2;
-  vector[M] denom = rho * ((1 / rho)^2 + (pi() / 2 / L) * indices);
+  vector[M] denom = rho * ((1 / rho)^2 + pow(pi() / 2 / L * indices, 2));
   return alpha * sqrt(factor * inv(denom));
 }
 
@@ -65,7 +65,7 @@ vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
 vector diagSPD_Matern52(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
   real factor = 3 * pow(sqrt(5) / rho, 5);
-  vector[M] denom = 2 * (sqrt(5) / rho)^2 + pow((pi() / 2 / L) * indices, 3);
+  vector[M] denom = 2 * pow((sqrt(5) / rho)^2 + pow((pi() / 2 / L) * indices, 2), 3);
   return alpha * sqrt(factor * inv(denom));
 }
 
