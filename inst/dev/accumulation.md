@@ -10,14 +10,15 @@ If any dates are missing then an error is thrown.
 ### Missing data
 
 Any dates between the minimum date and maximum date in the data that is either absent, or present with an `NA` value (currently called `confirm`) is interpreted as missing and ignored in the likelihood.
+All other data points are used in the likelihood.
 This matches the current default behaviour, introduced in version 1.5.0.
 
 ### Accumulation
 
 If instead modelled values on these days should be accumulated onto the next reporting date, the passed `data.frame` must have an additional logical column, `accumulate`.
-If `accumulate` is TRUE then the modelled value of the observed latent variable on that day is not used in the likelihood and instead added to any existing accumulation and stored for later observation.
-If `accumulate` is FALSE modelled value is added to any stored accumulated variables before being used in the likelihood on that day.
-Subsequently the stored accumulated variable is rest to zero.
+If `accumulate` is TRUE then the modelled value of the observed latent variable on that day is added to any existing accumulation and stored for later observation.
+If `accumulate` is FALSE the modelled value is added to any stored accumulated variables before potentially being used in the likelihood on that day (if not `NA`).
+Subsequently the stored accumulated variable is reset to zero.
 
 ### Example
 
