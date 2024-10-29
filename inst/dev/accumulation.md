@@ -15,7 +15,7 @@ This matches the current default behaviour, introduced in version 1.5.0.
 ### Accumulation
 
 If instead modelled values on these days should be accumulated onto the next reporting date, the passed `data.frame` must have an additional numeric column, `accumulate`.
-If `accumulate` is greater than zero and the value in the data is `NA` then the modelled value of the observe dlatent variable on that day is not used in the likelihood and instead added to any existing accumulation and stored for later observation.
+If `accumulate` is greater than zero and the value in the data is `NA` then the modelled value of the observed latent variable on that day is not used in the likelihood and instead added to any existing accumulation and stored for later observation.
 If the value in the data is not `NA` then the modelled value is multiplied with the value in `accumulate` and added to any stored accumulated variables.
 This is then used in the likelihood.
 
