@@ -4,9 +4,6 @@ We want to support reporting patterns that include *accumulation* (i.e. batch re
 
 ## Proposed interface
 
-`estimate_infections()` and related functions expect data that has no date gaps.
-If any dates are missing then an error is thrown.
-
 ### Missing data
 
 Any dates between the minimum date and maximum date in the data that is either absent, or present with an `NA` value (currently called `confirm`) is interpreted as missing and ignored in the likelihood.
