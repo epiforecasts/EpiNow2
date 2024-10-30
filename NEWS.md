@@ -3,7 +3,7 @@
 ## Model changes
 
 - A bug in the spectral densities of Matern kernels of order other than 3/2 has been fixed and the vignette updated accordingly. By @sbfnk in #835 and reviewed by @seabbs.
-- Changed the prior on the (square root of the) magnitude alpha of the Gaussian Process back to HalfNormal(0, 0.05) based on user feedback of unexpected results. By @sbfnk in #PR and reviewed by.
+- Changed the prior on the (square root of the) magnitude alpha of the Gaussian Process back to HalfNormal(0, 0.05) based on user feedback of unexpected results. By @sbfnk in #840 and reviewed by @jamesmbaazam.
 
 ## Package changes
 
