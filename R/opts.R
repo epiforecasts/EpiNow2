@@ -458,7 +458,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' deviation of the Gaussian process (logged Rt in case of the renewal model,
 #' logged infections in case of the nonmechanistic model).
 #'
-#' @param alpha_sd Numeric, defaults to 0.1. The standard deviation of the
+#' @param alpha_sd Numeric, defaults to 0.05. The standard deviation of the
 #' magnitude parameter of the Gaussian process kernel. Can be tuned to adjust
 #' how far alpha is allowed to deviate form its prior mean (`alpha_mean`).
 #'
@@ -509,7 +509,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_min = 0,
                     ls_max = 60,
                     alpha_mean = 0,
-                    alpha_sd = 0.01,
+                    alpha_sd = 0.05,
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
                     matern_type,
