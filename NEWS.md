@@ -1,4 +1,4 @@
-# EpiNow2 (development version)
+# EpiNow2 1.6.1
 
 ## Model changes
 
