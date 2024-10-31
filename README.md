@@ -32,7 +32,9 @@ infections, and reported cases using the same generative process
 approach as used for estimation.
 
 <details>
+
 <summary>
+
 More details
 </summary>
 
@@ -51,8 +53,11 @@ internally. The time-varying reproduction estimates and the uncertain
 generation time also give time-varying estimates of the rate of growth.
 
 </details>
+
 <details>
+
 <summary>
+
 Models provided
 </summary>
 
@@ -178,7 +183,9 @@ available (see documentation
 ## Resources
 
 <details>
+
 <summary>
+
 Getting Started
 </summary>
 
@@ -195,8 +202,11 @@ disease dynamics”](https://nfidd.github.io/nfidd/), developed by some
 authors of this package.
 
 </details>
+
 <details>
+
 <summary>
+
 Package website
 </summary>
 
@@ -210,8 +220,11 @@ the package. However, the development website may contain experimental
 features and information not yet available in the stable release.
 
 </details>
+
 <details>
+
 <summary>
+
 End-to-end workflows
 </summary>
 
@@ -220,8 +233,11 @@ provides guidance on the end-to-end process of estimating reproduction
 numbers and performing short-term forecasts for a disease spreading in a
 
 </details>
+
 <details>
+
 <summary>
+
 Model definitions
 </summary>
 
@@ -231,8 +247,11 @@ model. For example, the model definition vignette for
 `vignette("estimate_infections")`.
 
 </details>
+
 <details>
+
 <summary>
+
 Example implementations
 </summary>
 
@@ -255,14 +274,15 @@ guide](https://github.com/epiforecasts/EpiNow2/blob/main/.github/CONTRIBUTING.md
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+
 <!-- prettier-ignore-start -->
+
 <!-- markdownlint-disable -->
 
 All contributions to this project are gratefully acknowledged using the
-[`allcontributors`
-package](https://github.com/ropenscilabs/allcontributors) following the
-[all-contributors](https://allcontributors.org) specification.
-Contributions of any kind are welcome!
+[`allcontributors` package](https://github.com/ropensci/allcontributors)
+following the [all-contributors](https://allcontributors.org)
+specification. Contributions of any kind are welcome!
 
 ### Code
 
@@ -271,22 +291,20 @@ Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jamesmbaazam">jamesmbaazam</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=joeHickson">joeHickson</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=hsbadr">hsbadr</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=dependabot[bot]">dependabot\[bot\]</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pitmonticone">pitmonticone</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=github-actions[bot]">github-actions\[bot\]</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=actions-user">actions-user</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=ellisp">ellisp</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jdmunday">jdmunday</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pearsonca">pearsonca</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=JAllen42">JAllen42</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=kaitejohnson">kaitejohnson</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=adamkucharski">adamkucharski</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=andrjohns">andrjohns</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=Bisaloo">Bisaloo</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=LloydChapman">LloydChapman</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=medewitt">medewitt</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=nikosbosse">nikosbosse</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=sophiemeakin">sophiemeakin</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=github-merge-queue[bot]">github-merge-queue\[bot\]</a>
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=sophiemeakin">sophiemeakin</a>
 
 ### Issue Authors
 
@@ -323,8 +341,7 @@ Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Alorenzwalthert">lorenzwalthert</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Anlinton">nlinton</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amartinamcm">martinamcm</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aadrian-lison">adrian-lison</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Akaitejohnson">kaitejohnson</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aadrian-lison">adrian-lison</a>
 
 ### Issue Contributors
 
@@ -335,5 +352,7 @@ Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3ASamuelBrand1">SamuelBrand1</a>
 
 <!-- markdownlint-enable -->
+
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
