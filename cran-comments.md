@@ -1,5 +1,3 @@
-# Resubmission comments
+# Submission comments
 
-DOI typo has been fixed.
-
-Build size has been reduced to 4.1 Mb.
+Patch release to fixing a bug in the previous version.
