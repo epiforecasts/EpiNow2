@@ -163,17 +163,11 @@ you can file an issue [here](https://github.com/epiforecasts/EpiNow2/issues). We
 
 ## Contributors
 
-
-
-
-
-
-
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 
-All contributions to this project are gratefully acknowledged using the [`allcontributors` package](https://github.com/ropenscilabs/allcontributors) following the [all-contributors](https://allcontributors.org) specification. Contributions of any kind are welcome!
+All contributions to this project are gratefully acknowledged using the [`allcontributors` package](https://github.com/ropensci/allcontributors) following the [all-contributors](https://allcontributors.org) specification. Contributions of any kind are welcome!
 
 ### Code
 
@@ -183,22 +177,20 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jamesmbaazam">jamesmbaazam</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=joeHickson">joeHickson</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=hsbadr">hsbadr</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=dependabot[bot]">dependabot[bot]</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pitmonticone">pitmonticone</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=github-actions[bot]">github-actions[bot]</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=actions-user">actions-user</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=ellisp">ellisp</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jdmunday">jdmunday</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pearsonca">pearsonca</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=JAllen42">JAllen42</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=kaitejohnson">kaitejohnson</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=adamkucharski">adamkucharski</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=andrjohns">andrjohns</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=Bisaloo">Bisaloo</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=LloydChapman">LloydChapman</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=medewitt">medewitt</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=nikosbosse">nikosbosse</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=sophiemeakin">sophiemeakin</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=github-merge-queue[bot]">github-merge-queue[bot]</a>
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=sophiemeakin">sophiemeakin</a>
 
 
 
@@ -238,8 +230,7 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Alorenzwalthert">lorenzwalthert</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Anlinton">nlinton</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amartinamcm">martinamcm</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aadrian-lison">adrian-lison</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Akaitejohnson">kaitejohnson</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aadrian-lison">adrian-lison</a>
 
 
 
@@ -256,9 +247,4 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
-
-
-
-
 
