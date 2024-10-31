@@ -598,7 +598,7 @@ rt_crps_full[, epidemic_phase := names(snapshot_date_names)[
 ```
 
 Let's do the same for the infections.
-```{r rt_crps,class.source = 'fold-hide'}
+```{r infections_crps,class.source = 'fold-hide'}
 # Extract estimated infections
 infections_by_snapshot <- get_model_results(results, variable = "infections")
 
@@ -688,7 +688,7 @@ infections_crps_dt_final <- merge(
 Let's first see how the models performed over time for the $R_t$ using the CRPS. We will group the models according to the type of Gaussian process used to estimate $R_t$ (stationary/non-stationary).
 <!-- The default model is highlighted in blue for comparison. The dashed red vertical lines represent, from left to right and in decreasing transparency, the end of estimation with complete data, partial data, and forecasting.   -->
 Let's start by looking at the two broad individual model types (stationary vs non-stationary)
-```{r infections_ns_gp_plot,class.source = 'fold-hide'}
+```{r rt_ns_gp_plot,class.source = 'fold-hide'}
 rt_ns_gp_plot <- ggplot(
   data = rt_crps_dt_final[rt_model_gp == "non_stationary"], # this model has extremely large crps
   # data = infections_crps_dt_final
@@ -714,7 +714,7 @@ rt_ns_gp_plot <- ggplot(
 plot(rt_ns_gp_plot)
 ```
 
-```{r infections_ns_gp_plot,class.source = 'fold-hide'}
+```{r rt_st_gp_plot,class.source = 'fold-hide'}
 rt_st_gp_plot <- ggplot(
   data = rt_crps_dt_final[rt_model_gp == "stationary"],
   ) +
@@ -740,7 +740,7 @@ plot(rt_st_gp_plot)
 ```
 
 We will now plot all the models, grouped by the type of Gaussian process used to estimate $R_t$ (stationary vs non-stationary).
-```{r infections_all_models_plot,class.source = 'fold-hide'}
+```{r rt_all_models_plot,class.source = 'fold-hide'}
 rt_crps_all_models_plot <- ggplot(
   data = rt_crps_dt_final[!is.na(crps)], #remove failed models
   ) +
@@ -838,7 +838,7 @@ infections_ns_gp_plot <- ggplot(
 plot(infections_ns_gp_plot)
 ```
 
-```{r infections_ns_gp_plot,class.source = 'fold-hide'}
+```{r infections_st_gp_plot,class.source = 'fold-hide'}
 infections_st_gp_plot <- ggplot(
   data = infections_crps_dt_final[rt_model_gp == "stationary"],
   ) +
@@ -891,7 +891,7 @@ plot(infections_all_models_plot)
 ```
 
 Let's look at the total CRPS for each model over data snapshot.
-```{r rt_total_crps,class.source = 'fold-hide'}
+```{r infections_total_crps,class.source = 'fold-hide'}
 # We'll calculate the total crps per model, epidemic phase, and estimate type
 # We'll drop the retrospective estimates as we are only interested in the real-time and forecast performance
 infections_total_crps_dt <- infections_crps_dt_final[
