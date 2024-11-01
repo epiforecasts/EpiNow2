@@ -50,7 +50,7 @@ navbar:
       - text: Using epinow() for running in production mode
         href: articles/epinow.html
       - text: Model benchmarks
-        href: articles/speedup_options.html
+        href: articles/benchmarks.html
     casestudies:
       text: Case studies
       menu:
