@@ -1,0 +1,959 @@
+---
+title: "Model benchmarks: speed versus forecast accuracy tradeoffs"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    code_folding: show
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Model benchmarks: speed versus forecast accuracy tradeoffs}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  fig.height = 6.5,
+  fig.width = 6.5,
+  fig.path = "vignettes/speedup_options-"
+)
+set.seed(9876)
+```
+
+```{r packages}
+library(EpiNow2)
+library(scoringutils)
+library(data.table)
+library(rstan)
+library(cmdstanr)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(scales)
+library(posterior)
+```
+
+In using `{EpiNow2}`, users will often be faced with two decision points that will guide their choice of an appropriate model: (i) use case: retrospective vs real-time analysis, and (ii) limited computing resources. `{EpiNow2}` provides a range of customisations of the default model to suit these decision points.
+
+The aim of this vignette is to benchmarks four (4) `{EpiNow2}` model options chosen to cover a range of use cases. We will benchmark the default model, the model with the 7-day random walk prior on $R_t$, the non-mechanistic model, which has no explicit prior on $R_t$, and the non-residual $R_t$ model, which assumes a stationary prior on $R_t$.
+
+We will analyse the estimation and forecasting performance of these models when used with MCMC sampling as well as three (3) approximate sampling methods: variational bayes, pathfinder, and laplace approximation. To achieve this, we will compare the models based on the accuracy of estimates given complete and partial data at 3 time points of a simulated epidemic: (i) epidemic growth phase, (ii) epidemic peak, and (iii) epidemic decline phase.
+
+## The benchmarking data
+
+We will start by setting up the "true" dataset with known trajectories of $R_t$ and infections using `{EpiNow2}`'s `forecast_infections()` function.
+
+`forecast_infections()` requires a fitted estimates object from `epinow()` with `output` set to "fit", the trajectory of the reproduction number, `R`, and the number of samples to simulate. So, we will set these up first.
+
+To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. For the `data`, we will use the first $60$ observations of the `example_confirmed` data set. We will use the `example_generation_time` for the generation time, and the `example_incubation_period`, and `example_reporting_delay` to specify  and delays. These come with the package. For the `rt` model, we will use a 14-day random walk prior, with a mean of $2$ and standard deviation of $0.1$. As we only want to generate estimates, we will turn off forecasting by setting `horizon = 0`.
+
+Throughout this vignette, several argument values, including the observation model options, the rt model prior will be maintained, so we will define them here.
+
+```{r share_inputs}
+# Observation model options
+obs <- obs_opts(
+  scale = list(mean = 0.1, sd = 0.025),
+  return_likelihood = TRUE
+)
+
+rt_prior_default <- list(mean = 2, sd = 0.1)
+```
+
+Now, we can generate the `estimates` object.
+```{r estimates}
+estimates <- epinow(
+  data = example_confirmed[1:60],
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(example_incubation_period + example_reporting_delay),
+  rt = rt_opts(prior = rt_prior_default, rw = 14),
+  gp = NULL,
+  obs = obs,
+  horizon = 0, # no forecasting
+  output = "fit"
+)
+```
+
+For the `R` data, we will set up an arbitrary trajectory and add some Gaussian noise.
+```{r R-data}
+# Arbitrary reproduction number trajectory
+R <- c(
+  rep(1.50, 20),
+  rep(1.25, 10),
+  rep(1, 10),
+  rep(0.5, 10),
+  rep(1, 10),
+  1 + 0.04 * 1:20,
+  rep(1.4, 5),
+  1.4 - 0.02 * 1:20,
+  rep(1.4, 10),
+  rep(0.8, 50),
+  0.8 + 0.02 * 1:20
+)
+# Add Gaussian noise
+R_noisy <- R * rnorm(length(R), 1.1, 0.05)
+# Plot
+ggplot(data = data.frame(R = R_noisy)) +
+  geom_line(aes(x = seq_along(R_noisy), y = R)) +
+  labs(x = "Time")
+```
+
+Let's proceed to simulate the true infections and $R_t$ data by sampling from $10$ posterior samples.
+```{r true-data}
+# Forecast infections and the trajectory of Rt
+forecast <- forecast_infections(
+  estimates$estimates,
+  R = R_noisy,
+  samples = 10
+)
+```
+
+Let's now extract the true data for benchmarking:
+- `R_true`: the median of the simulated $R_t$ values,
+- `infections_true`: the infections by date of infection, and
+- `reported_cases_true`: the reported cases by date of report.
+```{r extract-true-data}
+R_true <- forecast$summarised[variable == "R"]$median
+
+# Get the posterior samples from which to extract the simulated infections and reported cases
+posterior_sample <- forecast$samples[sample == 1]
+
+# Extract the simulated infections
+infections_true <- posterior_sample[variable == "infections"]$value
+
+# Extract the simulated reported cases and rename the "value" column to "confirm" (to match EpiNow2 requirements)
+reported_cases_true <- posterior_sample[
+  variable == "reported_cases", .(date, confirm = value)
+]
+```
+
+Let's see what the cases plot looks like
+```{r plot-cases}
+cases_traj <- ggplot(data = reported_cases_true) +
+  geom_line(aes(x = date, y = confirm)) +
+  scale_y_continuous(label = scales::label_comma()) +
+  scale_x_date(date_labels = "%b %d", date_breaks = "1 month")
+cases_traj
+```
+
+
+We will now proceed to define and run the different model options and evaluate their estimation and forecasting performance alongside their run times using the four sampling methods and time points described in the introduction.
+
+## Models
+
+### Descriptions
+
+Below we describe each model.
+```{r model-descriptions,echo = FALSE}
+model_descriptions <- dplyr::tribble(
+  ~model,  ~description,
+  "default_mcmc",      "Default model (non-stationary prior on $R_t$); fitting with mcmc",
+  "default_vb",  "Default model (non-stationary prior on $R_t$); fitting with variational bayes",
+  "default_pathfinder",  "Default model (non-stationary prior on $R_t$); fitting with pathfinder algorithm",
+  "default_laplace",  "Default model (non-stationary prior on $R_t$); fitting with laplace approximation",
+  "non_mechanistic_mcmc",        "no mechanistic prior on $R_t$; fitting with mcmc",
+  "non_mechanistic_vb",        "no mechanistic prior on $R_t$; fitting with variational bayes",
+  "non_mechanistic_pathfinder",        "no mechanistic prior on $R_t$; fitting with pathfinder algorithm",
+  "non_mechanistic_laplace",        "no mechanistic prior on $R_t$; fitting with laplace approximation",
+  "rw7_mcmc",    "7-day random walk prior on $R_t$; fitting with mcmc",
+  "rw7_vb",    "7-day random walk prior on $R_t$; fitting with variational bayes",
+  "rw7_pathfinder",    "7-day random walk prior on $R_t$; fitting with pathfinder algorithm",
+  "rw7_laplace",    "7-day random walk prior on $R_t$; fitting with laplace approximation",
+  "non_residual_mcmc",    "Stationary prior on $R_t$; fitting with mcmc",
+  "non_residual_vb",    "Stationary prior on $R_t$; fitting with variational bayes",
+  "non_residual_pathfinder",    "Stationary prior on $R_t$; fitting with pathfinder algorithm",
+  "non_residual_laplace",    "Stationary prior on $R_t$; fitting with laplace algorithm"
+)
+  
+knitr::kable(model_descriptions, caption = "Model options")
+```
+
+```{r model-components,echo = FALSE}
+model_components <- dplyr::tribble(
+  ~model,                              ~rt_model_gp,                       ~fitting,                 ~package,
+  "default_mcmc",                        "non_stationary",                  "mcmc",                     "rstan", 
+  "default_vb",                           "non_stationary",                 "variational_bayes",         "rstan", 
+  "default_pathfinder",                    "non_stationary",                "pathfinder",                 "cmdstanr",
+  "default_laplace",                        "non_stationary",               "laplace",                    "cmdstanr",
+  "non_mechanistic_mcmc",                     "stationary",                       "mcmc",                        "rstan",
+  "non_mechanistic_vb",                       "stationary",                       "variational_bayes",            "rstan",
+  "non_mechanistic_pathfinder",               "stationary",                       "pathfinder",                   "cmdstanr",
+  "non_mechanistic_laplace",                   "stationary",                      "laplace",                      "cmdstanr",
+  "rw7_mcmc",                                  "non_stationary",            "mcmc",                          "rstan",
+  "rw7_vb",                                     "non_stationary",            "variational_bayes",             "rstan",
+  "rw7_pathfinder",                              "non_stationary",            "pathfinder",                   "cmdstanr",
+  "rw7_laplace",                                  "non_stationary",            "laplace",                     "cmdstanr",
+  "non_residual_mcmc",                             "stationary",               "mcmc",                        "rstan",
+  "non_residual_vb",                                 "stationary",            "variational_bayes",             "rstan",
+  "non_residual_pathfinder",                           "stationary",            "pathfinder",                  "rstan",
+  "non_residual_laplace",                               "stationary",            "laplace",                     "cmdstanr"
+  )
+  
+knitr::kable(model_components, caption = "Model components")
+```
+
+### Configurations
+
+These are the accompanying configurations for each model, which are modifications of the default model.
+```{r model-configs, results = 'hide'}
+model_configs <- list(
+  # The default model with MCMC fitting
+  default_mcmc = list(
+    rt = rt_opts()
+  ),
+  # The default model with variational bayes fitting
+  default_vb = list(
+    rt = rt_opts(),
+    stan = stan_opts(method = "vb", backend = "rstan")
+  ),
+  # The default model with pathfinder fitting
+  default_pathfinder = list(
+    rt = rt_opts(),
+    stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
+  ),
+  # The default model with laplace fitting
+  default_laplace = list(
+    rt = rt_opts(),
+    stan = stan_opts(method = "laplace", backend = "cmdstanr")
+  ),
+  # The non-mechanistic model with MCMC fitting
+  non_mechanistic_mcmc = list(
+    rt = NULL
+  ),
+  # The non-mechanistic model with variational bayes fitting
+  non_mechanistic_vb = list(
+    rt = NULL,
+    stan = stan_opts(method = "vb", backend = "rstan")
+  ),
+  # The non-mechanistic model with pathfinder fitting
+  non_mechanistic_pathfinder = list(
+    rt = NULL,
+    stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
+  ),
+  # The non-mechanistic model with laplace fitting
+  non_mechanistic_laplace = list(
+    rt = NULL,
+    stan = stan_opts(method = "laplace", backend = "cmdstanr")
+  ),
+  # The 7-day RW Rt model with MCMC fitting
+  rw7_mcmc = list(
+    rt = rt_opts(
+      prior = rt_prior_default,
+      rw = 7
+    )
+  ),
+  # The 7-day RW Rt model with variational bayes fitting
+  rw7_vb = list(
+    rt = rt_opts(
+      prior = rt_prior_default,
+      rw = 7
+    ),
+    stan = stan_opts(method = "vb", backend = "rstan")
+  ),
+  # The 7-day RW Rt model with pathfinder fitting
+  rw7_pathfinder = list(
+    rt = rt_opts(
+      prior = rt_prior_default,
+      rw = 7
+    ),
+    stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
+  ),
+  # The 7-day RW Rt model with laplace fitting
+  rw7_laplace = list(
+    rt = rt_opts(
+      prior = rt_prior_default,
+      rw = 7
+    ),
+    stan = stan_opts(method = "laplace", backend = "cmdstanr")
+  ),
+  # The non_residual model with MCMC fitting
+  non_residual_mcmc = list(
+    rt = rt_opts(
+      prior = rt_prior_default,
+      gp_on = "R0"
+    )
+  ),
+  # The non_residual model with variational bayes fitting
+  non_residual_vb = list(
+    rt = rt_opts(
+      prior = rt_prior_default,
+      gp_on = "R0"
+    ),
+    stan = stan_opts(method = "vb", backend = "rstan")
+  ),
+  # The non_residual model with pathfinder fitting
+  non_residual_pathfinder = list(
+    rt = rt_opts(
+      prior = rt_prior_default,
+      gp_on = "R0"
+    ),
+    stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
+  ),
+  # The non_residual model with laplace fitting
+  non_residual_laplace = list(
+    rt = rt_opts(
+      prior = rt_prior_default,
+      gp_on = "R0"
+    ),
+    stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
+  )
+)
+```
+
+## Running the models
+
+All the models will share the configuration for the generation time, incubation period, reporting delay, and the forecast horizon, so we will define once and pass them to the models.
+
+```{r, constant_inputs}
+# Generation time
+generation_time <- Gamma(
+  shape = Normal(1.3, 0.3),
+  rate = Normal(0.37, 0.09),
+  max = 14
+)
+
+# Incubation period
+incubation_period <- LogNormal(
+  meanlog = Normal(1.6, 0.05),
+  sdlog = Normal(0.5, 0.05),
+  max = 14
+)
+
+# Reporting delay
+reporting_delay <- LogNormal(
+  meanlog = 0.5,
+  sdlog = 0.5,
+  max = 10
+)
+
+# Combine the incubation period and reporting delay into one delay
+delay <- incubation_period + reporting_delay
+
+# 7-day forecast window
+horizon <- 7
+```
+
+Let's combine the shared model inputs into a list for use across all the models.
+```{r model_inputs}
+model_inputs <- list(
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delay),
+  obs = obs,
+  horizon = horizon,
+  verbose = FALSE
+)
+```
+
+Additionally, from the benchmarking data, we choose the following dates to represent the periods of growth, peak, and decline.
+```{r snapshot_dates}
+snapshot_dates <- as.Date(c("2020-05-15", "2020-06-21", "2020-06-28"))
+```
+
+Using the chosen dates, we'll create the data snapshots for fitting.
+```{r data-snapshots}
+data_snaps <- lapply(
+  snapshot_dates,
+  function(snap_date) {
+    reported_cases_true[date <= snap_date]
+  }
+)
+names(data_snaps) <- snapshot_dates
+```
+
+Now, we're ready to run the models. We will use the `epinow()` function and return useful outputs like the timing of model runs. We obtain forecasts for the data excluding the forecast horizon and then compare the forecasts to the data including the horizon in the evaluations.
+```{r run-models, results = 'hide'}
+# Create a version of epinow() that works like base::try() and works even if some models fail.
+safe_epinow <- purrr::safely(epinow)
+# Run the models over the different dates
+results <- lapply(
+  data_snaps, function(data) {
+    lapply(
+      model_configs,
+      function(model) {
+        # Use subset of the data
+        data_to_fit <- data[1:(.N - model_inputs$horizon)]
+        model_inputs <- c(model_inputs, data = list(data_to_fit))
+        do.call(
+          safe_epinow,
+          c(
+            model_inputs,
+            model
+          )
+        )
+      }
+    )
+  }
+)
+```
+
+## Evaluating performance
+
+To start with, we will do a few preparations.
+
+Let's set up a function, `extract_results()` that extracts desired results from the `epinow()` runs per model. This function can be used to extract the "timing", "Rt", and "infections" variables.
+```{r extraction-funcs, class.source = 'fold-hide'}
+# Function to extract the "timing", "Rt", "infections", and "reports" variables from an 
+# epinow() run. It expects a model run, x, which contains a "results" or "error" component.
+# If all went well, "error" should be NULL.
+extract_results <- function(x, variable) {
+  stopifnot(
+    "variable must be one of c(\"timing\", \"R\", \"infections\", \"reports\")" =
+      variable %in% c("timing", "R", "infections", "reports")
+  )
+  # Return NA if there's an error
+  if (!is.null(x$error)) {
+    return(NA)
+  }
+  
+  if(variable == "timing") {
+    return(round(as.duration(x$result$timing), 1))
+  } else {
+    obj <- x$result$estimates$fit 
+  }
+  
+  # Extracting "Rt", "infections", and "reports" is different based on the object's class and 
+  # other settings
+  if (inherits(obj, "stanfit")) {
+    # Depending on rt_opts(use_rt = TRUE/FALSE), R shows up as R or gen_R
+    if (variable == "R") {
+      # The non-mechanistic model returns "gen_R" where as the others sample "R".
+      if ("R[1]" %in% names(obj)) {
+        return(extract(obj, "R")$R)
+      } else {
+        return(extract(obj, "gen_R")$gen_R)
+      }
+    } else {
+      return(extract(obj, variable)[[variable]])
+    }
+  } else {
+    obj_mat <- as_draws_matrix(obj)
+    # Extracting R depends on the value of rt_opts(use_rt = )
+    if (variable == "R") {
+      if ("R[1]" %in% variables(obj_mat)) {
+          return(subset_draws(obj_mat, "R"))
+      } else {
+        return(subset_draws(obj_mat, "gen_R"))
+      }
+    } else {
+        return(subset_draws(obj_mat, variable))
+      }
+    }
+}
+
+# Wrapper for extracting the results and making them into a data.table
+get_model_results <- function(results_by_snapshot, variable) {
+  # Get model results list
+  lapply(
+    results_by_snapshot,
+    function(model_results) {
+      lapply(model_results, extract_results, variable)
+    }
+  )
+}
+```
+
+
+### Run times
+
+Let's see how long each model took to run.
+
+```{r runtimes,class.source = 'fold-hide'}
+# Extract the run times and reshape to dt
+runtimes_by_snapshot <- get_model_results(results, "timing")
+
+runtimes_dt <- lapply(runtimes_by_snapshot, function(x) as.data.table(x)) |>
+  rbindlist(idcol = "snapshot_date", ignore.attr = TRUE)
+
+# Reshape
+runtimes_dt_long <- melt(
+  runtimes_dt,
+  id.vars = "snapshot_date",    # Column to keep as an identifier
+  measure.vars = model_descriptions$model,  # Dynamically select model columns by pattern
+  variable.name = "model",      # Name for the 'model' column
+  value.name = "timing"         # Name for the 'timing' column
+)
+  
+# Add model configurations
+runtimes_dt_detailed <- merge(
+  runtimes_dt_long,
+  model_components,
+  by = "model"
+)
+
+# snapshot dates dictionary
+snapshot_date_names <- c(growth = "2020-05-15", peak = "2020-06-21", decline = "2020-06-28")
+
+# Replace snapshot_date based on the dictionary
+runtimes_dt_detailed[, snapshot_date := names(snapshot_date_names)[match(snapshot_date, snapshot_date_names)]]
+
+# Move some columns around
+setcolorder(runtimes_dt_detailed, "timing", after = "package")
+
+# Make the snapshot_date column a factor
+runtimes_dt_detailed[, snapshot_date := factor(snapshot_date, levels = c("growth", "peak", "decline"))]
+# Plot the timing
+timing_plot <- ggplot(data = runtimes_dt_detailed) +
+  geom_col(aes(x = snapshot_date,
+               y = timing,
+               fill = rt_model_gp),
+           position = position_dodge()
+  ) +
+  scale_fill_brewer(
+    palette = "Dark2",
+    labels = c("stationary" = "stationary",
+               "non_stationary" = "non-stationary",
+               "none" = "non-mechanistic"
+    )
+  ) +
+  labs(x = "Epidemic phase",
+       y = "Runtime (secs)",
+       fill = "Model type",
+       caption = "non-stationary Rt model uses Rt-1 * GP; stationary Rt model uses R0 * GP; non-mechanistic model uses no GP."
+       )
+timing_plot
+```
+
+### Estimation performance
+
+Now, we will evaluate the forecasts using the continuous ranked probability score (CRPS). The CRPS is a proper scoring rule that measures the accuracy of probabilistic forecasts. The smaller the CRPS, the better. We will use the [`crps_sample()`](https://epiforecasts.io/scoringutils/reference/crps_sample.html) function from the [`{scoringutils}`](https://epiforecasts.io/scoringutils/index.html) package.
+
+We will compare the performance of each model based on forecasts with partial data and complete data.
+
+To calculate the CRPS for the estimated $R_t$ and infections, we will first set up a function that ensures the true data and estimates are of the same length and then calls the `crps_sample()` function from the `{scoringutils}` package using log-transformed values of the true and estimated values.
+```{r crps-func}
+# A function to calculate the CRPS
+calc_crps <- function(estimates, truth) {
+  # if the object is not a matrix, then it's an NA (failed run)
+  if (!inherits(estimates, c("matrix"))) return(rep(NA_real_, length(truth)))
+  # Assumes that the estimates object is structured with the samples as rows
+  shortest_obs_length <- min(ncol(estimates), length(truth))
+  reduced_truth <- tail(truth, shortest_obs_length)
+  estimates_transposed <- t(estimates) # transpose to have samples as columns
+  reduced_estimates <- tail(estimates_transposed, shortest_obs_length)
+  return(
+    crps_sample(
+      log10(reduced_truth),
+      log10(reduced_estimates)
+    )
+  )
+}
+```
+
+Now, we will extract the $R_t$ estimates and calculate the CRPS using the `calc_crps()` function above.
+
+```{r rt_crps,class.source = 'fold-hide'}
+# Extract rt values
+rt_by_snapshot <- get_model_results(results, variable = "R")
+
+# Apply function above to calculate CRPS for the estimated Rt
+rt_crps_by_snapshot <- lapply(
+  rt_by_snapshot,
+  function(snapshot_results) {
+    lapply(
+      snapshot_results, function(model_results) {
+        calc_crps(estimates = model_results, truth = R) # compare against true R
+      }
+    )
+  }
+)
+
+# Add dates column based on snapshot length
+rt_crps_with_dates <- lapply(
+  rt_crps_by_snapshot,
+  function(snapshot_results) {
+    lapply(
+      snapshot_results,
+      function (model_results) {
+        data.table(crps = model_results)[,
+          date:= min(reported_cases_true$date) + 0: (.N - 1)
+        ]
+      }
+    )
+  })
+
+# Flatten the results into one dt
+rt_crps_flat <- lapply(
+  rt_crps_with_dates,
+  function(snapshot_results) {
+   rbindlist(snapshot_results, idcol = "model") 
+  }) |> 
+  rbindlist(idcol = "snapshot_date") 
+
+# Add model configurations for facetting
+rt_crps_full <- merge.data.table(
+  rt_crps_flat,
+  model_components,
+  by = "model"
+)
+
+# Replace the snapshot dates with their description
+# Replace snapshot_date based on the dictionary
+rt_crps_full[, epidemic_phase := names(snapshot_date_names)[
+  match(snapshot_date, snapshot_date_names)
+]]
+```
+
+Let's do the same for the infections.
+```{r infections_crps,class.source = 'fold-hide'}
+# Extract estimated infections
+infections_by_snapshot <- get_model_results(results, variable = "infections")
+
+# Apply function above to calculate CRPS for the estimated infections
+infections_crps_by_snapshot <- lapply(
+  infections_by_snapshot,
+  function(snapshot_results) {
+    lapply(
+      snapshot_results, function(model_results) {
+        calc_crps(
+          estimates = model_results,
+          truth = infections_true # compare against true infections
+        )
+      }
+    )
+  }
+)
+
+# Add dates column based on snapshot length
+infections_crps_with_dates <- lapply(
+  infections_crps_by_snapshot,
+  function(snapshot_results) {
+    lapply(
+      snapshot_results,
+      function (model_results) {
+        data.table(crps = model_results)[
+          ,
+          date:= min(reported_cases_true$date) + 0: (.N - 1)
+        ]}
+    )
+  })
+
+# Flatten the results into one dt
+infections_crps_flat <- lapply(
+  infections_crps_with_dates,
+  function(snapshot_results) {
+   rbindlist(snapshot_results, idcol = "model") 
+  }) |> 
+  rbindlist(idcol = "snapshot_date") 
+
+# Add model configurations for facetting
+infections_crps_full <- merge.data.table(
+  infections_crps_flat,
+  model_components,
+  by = "model"
+)
+
+# Replace the snapshot dates with their description
+# Replace snapshot_date based on the dictionary
+infections_crps_full[,epidemic_phase := names(snapshot_date_names)[
+  match(snapshot_date, snapshot_date_names)
+]]
+```
+
+We will now post-process the CRPS results to make them easier to visualise and summarise. We will add the "type" column from the output of the model to indicate which subsets of the estimates are based on complete data, partial data, or are forecasts.
+```{r fit_postprocessing,class.source = 'fold-hide'}
+# Get date and fit type from the default model (the same across model outputs)
+results_by_model <- list_transpose(results)
+
+fit_type_by_dates <- lapply(
+  results_by_model$default_mcmc,
+  function(results_by_snapshot) {
+    results_by_snapshot$result$estimates$summarised[
+      variable == "reported_cases"][
+        ,
+        c("date", "type")
+      ]
+  }
+) |> 
+  rbindlist(idcol = "snapshot_date")
+
+# # Add the "type" column
+rt_crps_dt_final <- merge(
+  rt_crps_full,
+  fit_type_by_dates,
+  by = c("date", "snapshot_date")
+)
+
+# Add the "type" column
+infections_crps_dt_final <- merge(
+  infections_crps_full,
+  fit_type_by_dates,
+  by = c("date", "snapshot_date")
+)
+```
+
+Let's first see how the models performed over time for the $R_t$ using the CRPS. We will group the models according to the type of Gaussian process used to estimate $R_t$ (stationary/non-stationary).
+<!-- The default model is highlighted in blue for comparison. The dashed red vertical lines represent, from left to right and in decreasing transparency, the end of estimation with complete data, partial data, and forecasting.   -->
+Let's start by looking at the two broad individual model types (stationary vs non-stationary)
+```{r rt_ns_gp_plot,class.source = 'fold-hide'}
+rt_ns_gp_plot <- ggplot(
+  data = rt_crps_dt_final[rt_model_gp == "non_stationary"], # this model has extremely large crps
+  # data = infections_crps_dt_final
+  ) +
+  geom_line(
+    aes(x = date,
+        y = crps,
+        color = model
+        )
+  ) +
+  scale_colour_brewer("Model", palette = "Dark2") +
+  # scale_y_log10(labels = label_number_auto()) +
+  labs(
+    x = "Time",
+    y = "CRPS",
+    title = "Performance in estimating Rt (non-stationary models)"
+  ) +
+  ggplot2::theme_minimal() +
+  guides(color = guide_legend(title = "Model")) +
+  theme(legend.position = "bottom") +
+  facet_grid(~factor(epidemic_phase, levels = c("growth", "peak", "decline")))
+
+plot(rt_ns_gp_plot)
+```
+
+```{r rt_st_gp_plot,class.source = 'fold-hide'}
+rt_st_gp_plot <- ggplot(
+  data = rt_crps_dt_final[rt_model_gp == "stationary"],
+  ) +
+  geom_line(
+    aes(x = date,
+        y = crps,
+        color = model
+        )
+  ) +
+  scale_colour_brewer("Model", palette = "Dark2") +
+  # scale_y_log10(labels = label_number_auto()) +
+  labs(
+    x = "Time",
+    y = "CRPS",
+    title = "Performance in estimating Rt (stationary models)"
+  ) +
+  ggplot2::theme_minimal() +
+  guides(color = guide_legend(title = "Model")) +
+  theme(legend.position = "bottom") +
+  facet_grid(~factor(epidemic_phase, levels = c("growth", "peak", "decline")))
+
+plot(rt_st_gp_plot)
+```
+
+We will now plot all the models, grouped by the type of Gaussian process used to estimate $R_t$ (stationary vs non-stationary).
+```{r rt_all_models_plot,class.source = 'fold-hide'}
+rt_crps_all_models_plot <- ggplot(
+  data = rt_crps_dt_final[!is.na(crps)], #remove failed models
+  ) +
+  geom_line(
+    aes(x = date,
+        y = crps,
+        color = rt_model_gp,
+        group = model
+        )
+  ) +
+  scale_colour_brewer("Model", palette = "Dark2") +
+  # scale_y_log10(labels = label_number_auto()) +
+  labs(
+    x = "Time",
+    y = "CRPS",
+    title = "Estimating Rt"
+  ) +
+  ggplot2::theme_minimal() +
+  guides(color = guide_legend(title = "Model type")) +
+  theme(legend.position = "bottom") +
+  facet_grid(rows = vars(factor(epidemic_phase, levels = c("growth", "peak", "decline"))))
+
+plot(rt_crps_all_models_plot)
+```
+
+Let's look at the total CRPS for each model over data snapshot.
+```{r rt_total_crps,class.source = 'fold-hide'}
+# We'll calculate the total crps per model, epidemic phase, and estimate type
+# We'll drop the retrospective estimates as we are only interested in the real-time and forecast performance
+rt_total_crps_dt <- rt_crps_dt_final[
+  ,
+  .(
+    total_crps = sum(crps),
+    rt_model_gp = rt_model_gp[1],
+    fitting = fitting[1],
+    package = package[1]
+  ),
+  by = .(model, epidemic_phase, type)
+][
+  type != "estimate"
+]
+
+rt_total_crps_plot <- ggplot(data = rt_total_crps_dt) +
+  geom_col(
+    aes(
+      x = type,
+      y = total_crps,
+      fill = rt_model_gp
+    ),
+    position = position_dodge()
+  ) +
+  scale_fill_brewer(palette = "Dark2") +
+  labs(
+    x = "Estimate type",
+    y = "Total CRPS",
+    fill = "Model type",
+    title = "Estimating Rt"
+  ) +
+  facet_grid(
+    ~factor(
+      epidemic_phase,
+      levels = c("growth", "peak", "decline")
+    )
+  )
+rt_total_crps_plot
+```
+
+
+Next, let's visualise model performance over time in estimating and forecasting infections.
+
+We'll start by looking at the individual model groups (stationary vs non-stationary)
+```{r infections_ns_gp_plot,class.source = 'fold-hide'}
+infections_ns_gp_plot <- ggplot(
+  data = infections_crps_dt_final[rt_model_gp == "non_stationary"], # this model has extremely large crps
+  # data = infections_crps_dt_final
+  ) +
+  geom_line(
+    aes(x = date,
+        y = crps,
+        color = model
+        )
+  ) +
+  scale_colour_brewer("Model", palette = "Set1") +
+  # scale_y_log10(labels = label_number_auto()) +
+  labs(
+    x = "Time",
+    y = "CRPS (log-transformed)",
+    title = "Estimating and predicting infections (non-stationary models)"
+  ) +
+  ggplot2::theme_minimal() +
+  guides(color = guide_legend(title = "Model")) +
+  theme(legend.position = "bottom") +
+  facet_grid(~factor(epidemic_phase, levels = c("growth", "peak", "decline")))
+
+plot(infections_ns_gp_plot)
+```
+
+```{r infections_st_gp_plot,class.source = 'fold-hide'}
+infections_st_gp_plot <- ggplot(
+  data = infections_crps_dt_final[rt_model_gp == "stationary"],
+  ) +
+  geom_line(
+    aes(x = date,
+        y = crps,
+        color = model
+        )
+  ) +
+  scale_colour_brewer("Model", palette = "Dark2") +
+  # scale_y_log10(labels = label_number_auto()) +
+  labs(
+    x = "Time",
+    y = "CRPS",
+    title = "Estimating and predicting infections (stationary models)"
+  ) +
+  ggplot2::theme_minimal() +
+  guides(color = guide_legend(title = "Model")) +
+  theme(legend.position = "bottom") +
+  facet_grid(~factor(epidemic_phase, levels = c("growth", "peak", "decline")))
+
+plot(infections_st_gp_plot)
+```
+
+We will now plot all the models, grouped by the type of $R_t$ model Gaussian process (stationary/non-stationary/none).
+```{r infections_all_models_plot,class.source = 'fold-hide'}
+infections_all_models_plot <- ggplot(
+  data = infections_crps_dt_final[!is.na(crps)], #remove failed models
+  ) +
+  geom_line(
+    aes(x = date,
+        y = crps,
+        color = rt_model_gp,
+        group = model
+        )
+  ) +
+  scale_colour_brewer("Model", palette = "Dark2") +
+  # scale_y_log10(labels = label_number_auto()) +
+  labs(
+    x = "Time",
+    y = "CRPS",
+    title = "Estimating and predicting infections"
+  ) +
+  ggplot2::theme_minimal() +
+  guides(color = guide_legend(title = "Model type")) +
+  theme(legend.position = "bottom") +
+  facet_grid(~factor(epidemic_phase, levels = c("growth", "peak", "decline")))
+
+plot(infections_all_models_plot)
+```
+
+Let's look at the total CRPS for each model over data snapshot.
+```{r infections_total_crps,class.source = 'fold-hide'}
+# We'll calculate the total crps per model, epidemic phase, and estimate type
+# We'll drop the retrospective estimates as we are only interested in the real-time and forecast performance
+infections_total_crps_dt <- infections_crps_dt_final[
+  ,
+  .(
+    total_crps = sum(crps),
+    rt_model_gp = rt_model_gp[1],
+    fitting = fitting[1],
+    package = package[1]
+  ),
+  by = .(model, epidemic_phase, type)
+][
+  type != "estimate"
+]
+
+infections_total_crps_plot <- ggplot(data = infections_total_crps_dt) +
+  geom_col(
+    aes(
+      x = type,
+      y = total_crps,
+      fill = rt_model_gp
+    ),
+    position = position_dodge()
+  ) +
+  scale_fill_brewer(palette = "Dark2") +
+  labs(
+    x = "Estimate type",
+    y = "Total CRPS",
+    fill = "Model type",
+    title = "Estimating infections"
+  ) +
+  facet_grid(
+    ~factor(
+      epidemic_phase,
+      levels = c("growth", "peak", "decline")
+    )
+  )
+infections_total_crps_plot
+```
+
+From the results of the model run times and CRPS measures, we can see that there is often a trade-off between run times/speed and estimation/forecasting performance, here measured with the CRPS.
+
+These results show that choosing an appropriate model for a task requires carefully considering the use case and appropriate trade-offs. Below are a few considerations.
+
+## Things to consider when interpreting these benchmarks
+
+### Mechanistic vs non-mechanistic models
+
+Estimation in `{EpiNow2}` using the mechanistic approaches (prior on $R_t$) is often much slower than the non-mechanistic approach. The mechanistic model is slower because it models aspects of the processes and mechanisms that drive $R_t$ estimates using the renewal equation. The non-mechanistic model, on the other hand, runs much faster but does not use the renewal equation to generate infections. Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting flexibility. The non-mechanistic model in `{EpiNow2}` is equivalent to that used in the [`{EpiEstim}`](https://mrc-ide.github.io/EpiEstim/index.html) R package as they both use a renewal equation to estimate $R_t$ from case time series and the generation interval distribution.
+
+### Exact vs approximate sampling methods
+
+The default sampling method, set through `stan_opts()`, performs [MCMC sampling](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) using [`{rstan}`](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html). The MCMC sampling method is accurate but is often slow. The Laplace, pathfinder, and variational inference methods are faster because they are approximate (See, for example, a detailed explanation for [automatic variational inference in Stan](https://arxiv.org/abs/1506.03431)). In `{EpiNow2}`, you can use varational inference with an `{rstan}` or [`{cmdstanr}`](https://mc-stan.org/cmdstanr/) backend but you must install the latter to access its functionalities. Additionally, `{EpiNow2}` supports using the [Laplace](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html) and [Pathfinder](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html) approximate samplers through `{cmdstanr}` but these two methods are currently experimental in `{cmdstanr}` and have not been well tested in the wild. The approximate methods may not be as reliable as the default MCMC sampling method and we do not recommend using them in real-world inference.
+
+### Smoothness/granularity of estimates
+
+The random walk method reduces smoothness/granularity of the estimates, compared to the other methods.
+
+## Caveats
+
+The run times measured here use a crude method that compares the start and end times of each simulation. It only measures the time taken for one model run and may not be accurate. For more accurate run time measurements, we recommend using a more sophisticated approach like those provided by packages like [`{bench}`](https://cran.r-project.org/web/packages/bench/index.html) and [`{microbenchmark}`](https://cran.r-project.org/web/packages/microbenchmark/index.html).
+
+Secondly, we used `r getOption("mc.cores", 1L)` cores for the simulations and so using more or fewer cores might change the run time results. We, however, expect the relative rankings to be the same or similar. To speed up the model runs, we recommend checking the number of cores available on your machine using `parallel::detectCores()` and passing a high enough number of cores to `mc.cores` through the `options()` function. See the benchmarking data setup chunk above for an example.
+
+lastly, the `R` trajectory used to generate the data for benchmarking only represents one scenario. This could favour one model type or solver over another.
