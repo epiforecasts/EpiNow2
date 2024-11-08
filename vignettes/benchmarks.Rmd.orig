@@ -177,15 +177,15 @@ knitr::kable(model_descriptions, caption = "Model options")
 
 ```{r model-components,echo = FALSE}
 model_components <- dplyr::tribble(
-  ~model,                              ~rt_model_gp,                       ~fitting,                 ~package,
+  ~model,                              ~rt_gp_prior,                       ~fitting,                 ~package,
   "default_mcmc",                        "non_stationary",                  "mcmc",                     "rstan", 
   "default_vb",                           "non_stationary",                 "variational_bayes",         "rstan", 
   "default_pathfinder",                    "non_stationary",                "pathfinder",                 "cmdstanr",
   "default_laplace",                        "non_stationary",               "laplace",                    "cmdstanr",
-  "non_mechanistic_mcmc",                     "stationary",                       "mcmc",                        "rstan",
-  "non_mechanistic_vb",                       "stationary",                       "variational_bayes",            "rstan",
-  "non_mechanistic_pathfinder",               "stationary",                       "pathfinder",                   "cmdstanr",
-  "non_mechanistic_laplace",                   "stationary",                      "laplace",                      "cmdstanr",
+  "non_mechanistic_mcmc",                     "none",                       "mcmc",                        "rstan",
+  "non_mechanistic_vb",                       "none",                       "variational_bayes",            "rstan",
+  "non_mechanistic_pathfinder",               "none",                       "pathfinder",                   "cmdstanr",
+  "non_mechanistic_laplace",                   "none",                      "laplace",                      "cmdstanr",
   "rw7_mcmc",                                  "non_stationary",            "mcmc",                          "rstan",
   "rw7_vb",                                     "non_stationary",            "variational_bayes",             "rstan",
   "rw7_pathfinder",                              "non_stationary",            "pathfinder",                   "cmdstanr",
