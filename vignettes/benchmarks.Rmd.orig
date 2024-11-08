@@ -60,8 +60,10 @@ obs <- obs_opts(
   scale = list(mean = 0.1, sd = 0.025),
   return_likelihood = TRUE
 )
-
+# Rt prior
 rt_prior_default <- list(mean = 2, sd = 0.1)
+# Number of cores
+options(mc.cores = 6)
 ```
 
 Now, we can generate the `estimates` object.
