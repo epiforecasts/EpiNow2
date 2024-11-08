@@ -138,7 +138,8 @@ Let's see what the cases plot looks like
 cases_traj <- ggplot(data = reported_cases_true) +
   geom_line(aes(x = date, y = confirm)) +
   scale_y_continuous(label = scales::label_comma()) +
-  scale_x_date(date_labels = "%b %d", date_breaks = "1 month")
+  scale_x_date(date_labels = "%b %d", date_breaks = "1 month") +
+  labs(y = "Reported cases", x = "Date")
 cases_traj
 ```
 
