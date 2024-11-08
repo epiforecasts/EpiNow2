@@ -705,7 +705,7 @@ Let's first see how the models performed over time for the $R_t$ using the CRPS.
 Let's start by looking at the two broad individual model types (stationary vs non-stationary)
 ```{r rt_ns_gp_plot,class.source = 'fold-hide'}
 rt_ns_gp_plot <- ggplot(
-  data = rt_crps_dt_final[rt_model_gp == "non_stationary"], # this model has extremely large crps
+  data = rt_crps_dt_final[rt_gp_prior == "non_stationary"],
   # data = infections_crps_dt_final
   ) +
   geom_line(
@@ -731,7 +731,7 @@ plot(rt_ns_gp_plot)
 
 ```{r rt_st_gp_plot,class.source = 'fold-hide'}
 rt_st_gp_plot <- ggplot(
-  data = rt_crps_dt_final[rt_model_gp == "stationary"],
+  data = rt_crps_dt_final[rt_gp_prior == "stationary"],
   ) +
   geom_line(
     aes(x = date,
@@ -829,7 +829,7 @@ Next, let's visualise model performance over time in estimating and forecasting 
 We'll start by looking at the individual model groups (stationary vs non-stationary)
 ```{r infections_ns_gp_plot,class.source = 'fold-hide'}
 infections_ns_gp_plot <- ggplot(
-  data = infections_crps_dt_final[rt_model_gp == "non_stationary"], # this model has extremely large crps
+  data = infections_crps_dt_final[rt_gp_prior == "non_stationary"],
   # data = infections_crps_dt_final
   ) +
   geom_line(
@@ -855,7 +855,7 @@ plot(infections_ns_gp_plot)
 
 ```{r infections_st_gp_plot,class.source = 'fold-hide'}
 infections_st_gp_plot <- ggplot(
-  data = infections_crps_dt_final[rt_model_gp == "stationary"],
+  data = infections_crps_dt_final[rt_gp_prior == "stationary"],
   ) +
   geom_line(
     aes(x = date,
