@@ -491,32 +491,44 @@ runtimes_dt_detailed <- merge(
 snapshot_date_names <- c(growth = "2020-05-15", peak = "2020-06-21", decline = "2020-06-28")
 
 # Replace snapshot_date based on the dictionary
-runtimes_dt_detailed[, snapshot_date := names(snapshot_date_names)[match(snapshot_date, snapshot_date_names)]]
+runtimes_dt_detailed[, epidemic_phase := names(snapshot_date_names)[match(snapshot_date, snapshot_date_names)]]
 
 # Move some columns around
 setcolorder(runtimes_dt_detailed, "timing", after = "package")
 
-# Make the snapshot_date column a factor
-runtimes_dt_detailed[, snapshot_date := factor(snapshot_date, levels = c("growth", "peak", "decline"))]
+# Make all columns except timing a factor
+runtimes_dt_detailed[
+  ,
+  (setdiff(names(runtimes_dt_detailed), "timing")) :=
+    lapply(.SD, as.factor),
+  .SDcols = setdiff(names(runtimes_dt_detailed), "timing")
+]
+
+# Add model descriptions
+runtimes_dt_detailed <- merge(
+  runtimes_dt_detailed,
+  model_descriptions,
+  by = "model"
+)
+
 # Plot the timing
-timing_plot <- ggplot(data = runtimes_dt_detailed) +
-  geom_col(aes(x = snapshot_date,
+timing_plot <- ggplot(data = runtimes_dt_detailed[, fit_type := ifelse(fitting == "mcmc", "mcmc", "approximate")]) +
+  geom_point(aes(x = factor(epidemic_phase, levels = c("growth", "peak", "decline")),
                y = timing,
-               fill = rt_model_gp),
-           position = position_dodge()
+               color = model_basename,
+               shape = rt_gp_prior
+               ),
+             size = 2.2
   ) +
-  scale_fill_brewer(
-    palette = "Dark2",
-    labels = c("stationary" = "stationary",
-               "non_stationary" = "non-stationary",
-               "none" = "non-mechanistic"
-    )
-  ) +
+  # scale_color_brewer(palette = "Dark2") +
   labs(x = "Epidemic phase",
        y = "Runtime (secs)",
-       fill = "Model type",
-       caption = "non-stationary Rt model uses Rt-1 * GP; stationary Rt model uses R0 * GP; non-mechanistic model uses no GP."
-       )
+       shape = "Rt model prior",
+       color = "Base model",
+       caption = "non-stationary Rt = R(t-1) * GP; stationary Rt = R0 * GP; non-mechanistic Rt = no GP prior."
+       ) +
+  theme_minimal() +
+  facet_wrap(~fit_type, scales = "free_y", nrow = 2)
 timing_plot
 ```
 
