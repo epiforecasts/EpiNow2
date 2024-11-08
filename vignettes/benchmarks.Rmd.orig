@@ -789,7 +789,7 @@ rt_total_crps_dt <- rt_crps_dt_final[
   ,
   .(
     total_crps = sum(crps),
-    rt_model_gp = rt_model_gp[1],
+    rt_gp_prior = rt_gp_prior[1],
     fitting = fitting[1],
     package = package[1]
   ),
@@ -803,7 +803,7 @@ rt_total_crps_plot <- ggplot(data = rt_total_crps_dt) +
     aes(
       x = type,
       y = total_crps,
-      fill = rt_model_gp
+      fill = rt_gp_prior
     ),
     position = position_dodge()
   ) +
@@ -914,7 +914,7 @@ infections_total_crps_dt <- infections_crps_dt_final[
   ,
   .(
     total_crps = sum(crps),
-    rt_model_gp = rt_model_gp[1],
+    rt_gp_prior = rt_gp_prior[1],
     fitting = fitting[1],
     package = package[1]
   ),
@@ -928,7 +928,7 @@ infections_total_crps_plot <- ggplot(data = infections_total_crps_dt) +
     aes(
       x = type,
       y = total_crps,
-      fill = rt_model_gp
+      fill = rt_gp_prior
     ),
     position = position_dodge()
   ) +
