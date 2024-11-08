@@ -762,11 +762,11 @@ rt_crps_all_models_plot <- ggplot(
   geom_line(
     aes(x = date,
         y = crps,
-        color = rt_model_gp,
-        group = model
+        linetype = rt_gp_prior,
+        color = model
         )
   ) +
-  scale_colour_brewer("Model", palette = "Dark2") +
+  scale_linetype_manual(values = c(1, 5, 3)) +
   # scale_y_log10(labels = label_number_auto()) +
   labs(
     x = "Time",
@@ -776,7 +776,7 @@ rt_crps_all_models_plot <- ggplot(
   ggplot2::theme_minimal() +
   guides(color = guide_legend(title = "Model type")) +
   theme(legend.position = "bottom") +
-  facet_grid(rows = vars(factor(epidemic_phase, levels = c("growth", "peak", "decline"))))
+  facet_grid(~factor(epidemic_phase, levels = c("growth", "peak", "decline")))
 
 plot(rt_crps_all_models_plot)
 ```
@@ -886,11 +886,12 @@ infections_all_models_plot <- ggplot(
   geom_line(
     aes(x = date,
         y = crps,
-        color = rt_model_gp,
-        group = model
+        color = model,
+        linetype = rt_gp_prior
         )
   ) +
-  scale_colour_brewer("Model", palette = "Dark2") +
+  scale_linetype_manual(values = c(1, 5, 3)) +
+  # scale_colour_brewer("Model", palette = "Blues") +
   # scale_y_log10(labels = label_number_auto()) +
   labs(
     x = "Time",
