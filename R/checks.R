@@ -14,15 +14,14 @@
 #' @param model The EpiNow2 model to be used. Either
 #' "estimate_infections", "estimate_truncation", or "estimate_secondary".
 #' This is used to determine which checks to perform on the data input.
-#' @importFrom checkmate assert_data_frame assert_date assert_names
-#' assert_numeric
+#' @importFrom checkmate assert_data_frame assert_date assert_names assert_numeric
+#' @importFrom purrr walk
 #' @importFrom rlang arg_match
 #' @return Called for its side effects.
 #' @keywords internal
 check_reports_valid <- function(data,
                                 model = c(
                                   "estimate_infections",
-                                  "estimate_truncation",
                                   "estimate_secondary"
                                 )) {
   # Check that the case time series (reports) is a data frame
@@ -30,14 +29,13 @@ check_reports_valid <- function(data,
   # Perform checks depending on the model to the data is meant to be used with
   model <- arg_match(model)
 
+  assert_date(data$date, any.missing = FALSE)
   if (model == "estimate_secondary") {
     # Check that data has the right column names
     assert_names(
       names(data),
       must.include = c("date", "primary", "secondary")
     )
-    # Check that the data data.frame has the right column types
-    assert_date(data$date, any.missing = FALSE)
     assert_numeric(data$primary, lower = 0)
     assert_numeric(data$secondary, lower = 0)
   } else {
@@ -46,10 +44,10 @@ check_reports_valid <- function(data,
       names(data),
       must.include = c("date", "confirm")
     )
-    # Check that the data data.frame has the right column types
-    assert_date(data$date, any.missing = FALSE)
     assert_numeric(data$confirm, lower = 0)
   }
+  assert_logical(data$accumulate, null.ok = TRUE)
+  return(invisible(data))
 }
 
 #' Validate probability distribution for passing to stan
@@ -224,7 +222,7 @@ test_data_complete <- function(data, cols_to_check) {
 
 #' Cross-check treatment of `NA` in obs_opts() against input data
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("deprecated")`
 #'
 #' This function checks the input data for implicit and/or explicit missingness
 #' and checks if the user specified `na = "missing"` in [obs_opts()].
