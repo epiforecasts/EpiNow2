@@ -1,0 +1,132 @@
+##' Fills missing data in a data set to prepare it for use within the package
+##'
+##' @description `r lifecycle::badge("experimental")`
+##'
+##' @param data Data frame with a `date` column. The other columns depend on the
+##'   model that the data are to be used, e.g. [estimate_infections()] or
+##'   [estimate_secondary()]. See the documentation there for the expected
+##'   format.
+##' @param missing Character. Options are "missing" (the default) and
+##'   "accumulate".  This determines how missing dates the data are interpreted.
+##'   If set to "missing", any missing dates in the observation data will be
+##'   interpreted as missing and skipped in the likelihood. If set to
+##'   "accumulate", modelled observations will be accumulated and added to the
+##'   next non-missing data point. This can be used to model incidence data that
+##'   is reported at less than daily intervals. If set to "accumulate", the
+##'   first data point is not included in the likelihood (unless `initial` is
+##'   set to a non-zero value) but used only to reset modelled observations to
+##'   zero.
+##' @param ... A column name that is specified in the same name as `missing`,
+##'   applying to dates that are present in the data but have the column value
+##'   set to `NA`.
+##' @param initial_accumulate Integer. The number of initial dates to accumulate
+##'   if `missing` or a column name is set to `"accumulate"`. This number of
+##'   dates is added to the beginning of the data set to be accumulated onto the
+##'   first data point. This is useful, for example, for modelling weekly
+##'   incidence data, in which case this should be set to 7. If accumulating and
+##'   the first data point is one to accumulate and this is not set, then that
+##'   data point will be removed with a warning.
+##' @return a data.table with an `accumulate` column that indicates whether
+##'   values are accumulated (see the documnetation of the `data` arugment in
+##'   [estiamte_infections()])
+##' @importFrom rlang arg_match
+##' @importFrom data.table as.data.table data.table
+##' @examples
+##' cases <- data.table::copy(reported_cases)
+##' ## calculate weekly sum
+##' cases[, confirm := frollsum(confirm, 7)]
+##' ## limit to dates once a week
+##' cases <- cases[seq(7, nrow(reported_cases_weekly), 7)]
+##' ## set the second observation to missing
+##' cases[2, confirm := NA]
+##' ## fill missing data
+##' fill_missing(cases, confirm = "accumulate", initial_accumulate = 7)
+fill_missing <- function(data,
+                         missing = c("missing", "accumulate"),
+                         initial_accumulate,
+                         ...) {
+  assert_data_frame(data)
+  assert_names(names(data), must.include = "date")
+  assert_date(data$date, any.missing = FALSE)
+
+  data <- as.data.table(data)
+
+  missing <- arg_match(missing)
+  values <- eval(formals()$missing)
+
+  dot_cols <- list(...)
+  matched_cols <- vapply(names(dot_cols), function(x) {
+    y <- dot_cols[[x]]
+    ret <- arg_match(y, values = values)
+    return(ret)
+  }, character(1))
+
+  assert_names(names(data), disjunct.from = "accumulate")
+  data[, accumulate := FALSE]
+
+  initial_add <- ifelse(missing(initial_accumulate), 1, initial_accumulate)
+
+  date_seq <- seq.Date(
+    min(data$date) - initial_add + 1,
+    max(data$date), by = "day"
+  )
+  complete_dates <- data.table(date = date_seq)
+  data <- merge(data, complete_dates, by = "date", all.y = TRUE)
+  for (col in names(matched_cols)) {
+    if (!(col %in% colnames(data))) {
+      cli_abort(c("!" = "Column not present in data: {col}"))
+    }
+    data[is.na(get(col)), accumulate := (matched_cols[[col]] == "accumulate")]
+  }
+  if (missing(initial_accumulate) &&
+      !data$accumulate[1] &&
+      any(data$accumulate)) {
+    #nolint start: duplicate_argument_linter
+    cli_warn(
+      c(
+        "!" =
+          "Initial data point not marked as accumulated but some others are.",
+        "i" =
+          "This means that the first data point will not be included in the
+           likelihood.",
+        "i" =
+          "To change this behaviour, set `initial_accumulate`
+           (including setting it to 1 if the first data point is to be taken
+            as is, i.e. as the first daily data point)."
+      )
+    )
+    data <- data[-1]
+    #nolint end
+  }
+  return(data[])
+}
+
+##' Temporary function to support the transition to full support of missing
+##' data.
+##'
+##' @description `r lifecycle::badge("deprecated")`
+##'
+##' @inheritParams create_stan_data
+##' @return data set with missing dates filled in as na values
+##' @keywords internal
+fill_missing_obs <- function(data, obs, cols) {
+  if (!("accumulate" %in% colnames(data))) {
+    data_rows <- nrow(data)
+    col_args <- rep(
+      ifelse(obs$accumulate, "accumulate", "missing"), length(cols)
+    )
+    names(col_args) <- cols
+    args <- c(list(data = data), as.list(col_args))
+    data <- do.call(fill_missing, args)
+    if (nrow(data) > data_rows && !obs$accumulate) {
+      cli_warn(
+        "!" = "Data contains missing dates.",
+        "i" = "Missing dates are interpreted as truly missing data.
+        In the future, this behaviour will be deprecated and the package
+        functions will expect complete data.",
+        "i" = "Complete data can be created using the `fill_missing` function."
+      )
+    }
+  }
+  return(data)
+}
