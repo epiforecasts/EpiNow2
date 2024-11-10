@@ -1,5 +1,20 @@
 # EpiNow2 (development version)
 
+## Model changes
+
+- The models now supports more complex accumulation patterns, as well as mixtures of accumulation and missingness via the new `fill_missing()` function and a logical `accumulate` column that can be supplied with the data. By @sbfnk in # and reviewed by @.
+
+  ```r
+  # Deprecated
+  data |>
+    estimate_infections(obs_opts(na = "accumulate"))
+
+  # Recommended workflow e.g. for weekly incidence data
+  data |>
+    fill_missing(confirm = "accumulate", initial_accumulate = 7) |>
+    estimate_infections()
+  ```
+
 # EpiNow2 1.6.1
 
 ## Model changes
