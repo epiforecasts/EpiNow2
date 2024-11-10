@@ -202,7 +202,7 @@ estimate_infections <- function(data,
         min(reported_cases$date) - 1,
         by = "days"
       ),
-      confirm = 0, breakpoint = 0
+      confirm = 0, breakpoint = 0, accumulate = FALSE
     ),
     reported_cases
   ))
