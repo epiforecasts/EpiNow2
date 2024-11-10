@@ -13,8 +13,13 @@ forecast.}
 \item{target_date}{Date, defaults to maximum found in the data if not
 specified.}
 
-\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
-(date). \code{confirm} must be numeric and \code{date} must be in date format.}
+\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date (date).
+\code{confirm} must be numeric and \code{date} must be in date format. Optionally
+this can also have a logical \code{accumulate} column which indicates whether
+data should be added to the next data point. This is useful when modelling
+e.g. weekly incidence data. See also the \code{\link[=fill_missing]{fill_missing()}} data which helps
+add the \code{accumulate} column with the desired properties when dealing with
+non-daily data.}
 }
 \value{
 Numeric forecast horizon adjusted for the users intention

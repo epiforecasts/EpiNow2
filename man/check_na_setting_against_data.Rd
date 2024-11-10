@@ -17,7 +17,7 @@ check_na_setting_against_data(data, cols_to_check, obs)
 \code{\link[=obs_opts]{obs_opts()}}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 
 This function checks the input data for implicit and/or explicit missingness
 and checks if the user specified \code{na = "missing"} in \code{\link[=obs_opts]{obs_opts()}}.

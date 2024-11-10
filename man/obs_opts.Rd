@@ -44,15 +44,7 @@ scale) or a list with numeric elements mean (\code{mean}) and standard deviation
 (\code{sd}) defining a normally distributed scaling factor. Defaults to 1, i.e.
 no scaling.}
 
-\item{na}{Character. Options are "missing" (the default) and "accumulate".
-This determines how NA values in the data are interpreted. If set to
-"missing", any NA values in the observation data set will be interpreted as
-missing and skipped in the likelihood. If set to "accumulate", modelled
-observations will be accumulated and added to the next non-NA data point.
-This can be used to model incidence data that is reported at less than
-daily intervals. If set to "accumulate", the first data point is not
-included in the likelihood but used only to reset modelled observations to
-zero.}
+\item{na}{Deprecated; use the \code{\link[=process_missing]{process_missing()}} function instead}
 
 \item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be
 included in the model.}
