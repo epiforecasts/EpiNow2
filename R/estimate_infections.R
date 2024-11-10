@@ -189,6 +189,8 @@ estimate_infections <- function(data,
     zero_threshold = zero_threshold
   )
 
+  # Create clean and complete cases
+  reported_cases <- fill_missing_obs(reported_cases, obs, "confirm")
   # Record earliest date with data
   start_date <- min(reported_cases$date, na.rm = TRUE)
 

@@ -594,15 +594,7 @@ gp_opts <- function(basis_prop = 0.2,
 #'   scale) or a list with numeric elements mean (`mean`) and standard deviation
 #'   (`sd`) defining a normally distributed scaling factor. Defaults to 1, i.e.
 #'   no scaling.
-#' @param na Character. Options are "missing" (the default) and "accumulate".
-#'   This determines how NA values in the data are interpreted. If set to
-#'   "missing", any NA values in the observation data set will be interpreted as
-#'   missing and skipped in the likelihood. If set to "accumulate", modelled
-#'   observations will be accumulated and added to the next non-NA data point.
-#'   This can be used to model incidence data that is reported at less than
-#'   daily intervals. If set to "accumulate", the first data point is not
-#'   included in the likelihood but used only to reset modelled observations to
-#'   zero.
+#' @param na Deprecated; use the [process_missing()] function instead
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #'   included in the model.
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
@@ -631,6 +623,21 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      return_likelihood = FALSE) {
   # NB: This has to be checked first before the na argument is touched anywhere.
   na_default_used <- missing(na)
+  if (!na_default_used) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "obs_opts(na)",
+      "fill_missing()",
+      details =  c(
+        paste0(
+          "If NA values are not to be treated as missing use the ",
+          "`fill_missing()` function instead."
+        ),
+        "This argument will be removed in the next release of EpiNow2."
+      )
+    )
+
+  }
   na <- arg_match(na)
   if (na == "accumulate") {
     #nolint start: duplicate_argument_linter
@@ -641,8 +648,8 @@ obs_opts <- function(family = c("negbin", "poisson"),
         "i" = "This means that the first data point is not included in the
       likelihood but used only to reset modelled observations to zero.",
         "i" = "{col_red('If the first data point should be included in the
-        likelihood this can be achieved by adding a data point of arbitrary
-        value before the first data point.')}"
+        likelihood this can be achieved by using the `fill_missing()` function
+        with a non-zero `initial_missing` argument.')}"
       ),
       .frequency = "regularly",
       .frequency_id = "obs_opts"
