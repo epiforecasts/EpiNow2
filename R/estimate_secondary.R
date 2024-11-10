@@ -225,7 +225,9 @@ estimate_secondary <- function(data,
     obs_time = complete_secondary[lookup > burn_in]$lookup - burn_in,
     lt = sum(complete_secondary$lookup > burn_in),
     burn_in = burn_in,
-    seeding_time = 0
+    seeding_time = 0,
+    any_accumulate = as.integer(any(reports$accumulate > 0)),
+    accumulate = as.integer(reports$accumulate)
   )
   # secondary model options
   stan_data <- c(stan_data, secondary)
