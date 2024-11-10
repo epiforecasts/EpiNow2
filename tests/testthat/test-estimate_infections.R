@@ -65,7 +65,10 @@ test_that("estimate_infections successfully returns estimates when accumulating 
   reported_cases_weekly[, confirm := frollsum(confirm, 7)]
   reported_cases_weekly <-
     reported_cases_weekly[seq(7, nrow(reported_cases_weekly), 7)]
-  test_estimate_infections(reported_cases_weekly, obs = obs_opts(na = "accumulate"))
+  reported_cases_weekly <- fill_missing(
+    reported_cases_weekly, confirm = "accumulate", initial_missing = 7
+  )
+  test_estimate_infections(reported_cases_weekly)
 })
 
 test_that("estimate_infections successfully returns estimates using no delays", {

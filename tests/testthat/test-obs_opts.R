@@ -18,11 +18,7 @@ test_that("obs_opts returns expected messages", {
   # NB: We change the local setting here to throw the message on demand, rather
   # than every 8 hours, for the sake of multiple runs of the test within
   # 8 hours.
-  rlang::local_options(rlib_message_verbosity = "verbose")
-  expect_message(
-    obs_opts(na = "accumulate"),
-    "modelled values that correspond to NA values"
-  )
+  suppressMessages(expect_deprecated(obs_opts(na = "accumulate")))
 })
 
 test_that("obs_opts behaves as expected for user specified na treatment", {
