@@ -199,7 +199,7 @@ model {
     profile("report lp") {
       report_lp(
         cases, cases_time, obs_reports, rep_phi, phi_mean, phi_sd, model_type,
-        obs_weight, accumulate
+        obs_weight, any_accumulate, accumulate
       );
     }
   }

@@ -13,6 +13,8 @@ data {
   array[lt] int obs_time;             // observed secondary data
   vector[t] primary;                 // observed primary data
   int burn_in;                       // time period to not use for fitting
+  int any_accumulate; // Should any missing values be accumulated?
+  array[t] int accumulate;  // Should missing values be accumulated (by time)
 #include data/secondary.stan
 #include data/delays.stan
 #include data/observation_model.stan
@@ -97,7 +99,7 @@ model {
   if (likelihood) {
     report_lp(
       obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
-      rep_phi, phi_mean, phi_sd, model_type, 1, accumulate
+      rep_phi, phi_mean, phi_sd, model_type, 1, any_accumulate, accumulate
     );
   }
 }

@@ -102,33 +102,29 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  * @param phi_sd Real value for standard deviation of reporting overdispersion prior.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
  * @param weight Real value for weighting the log density contribution.
- * @param accumulate Integer flag indicating whether to accumulate reports (1) or not (0).
+ * @param accumulate Array of integers indicating, for each time point, whether
+ * to accumulate reports (1) or not (0).
  */
 void report_lp(array[] int cases, array[] int cases_time, vector reports,
                array[] real rep_phi, real phi_mean, real phi_sd,
-               int model_type, real weight, int accumulate) {
-  int n = num_elements(cases_time) - accumulate; // number of observations
+               int model_type, real weight, int any_accumulate,
+               array[] int accumulate) {
+  int n = num_elements(cases_time); // number of observations
   vector[n] obs_reports; // reports at observation time
   array[n] int obs_cases; // observed cases at observation time
-  if (accumulate) {
-    int t = num_elements(reports);
-    int i = 0;
-    int current_obs = 0;
-    obs_reports = rep_vector(0, n);
-    while (i <= t && current_obs <= n) {
-      if (current_obs > 0) { // first observation gets ignored when accumulating
-        obs_reports[current_obs] += reports[i];
+  if (any_accumulate) {
+    int ot_h = num_elements(reports); // number of reporting time points modelled
+    vector[ot_h] accumulated_reports = reports;
+    for (i in 1:(ot_h - 1)) {
+      if (accumulate[i]) { // first observation gets ignored when accumulating
+        accumulated_reports[i + 1] += accumulated_reports[i];
       }
-      if (i == cases_time[current_obs + 1]) {
-        current_obs += 1;
-      }
-      i += 1;
     }
-    obs_cases = cases[2:(n + 1)];
+    obs_reports = accumulated_reports[cases_time];
   } else {
     obs_reports = reports[cases_time];
-    obs_cases = cases;
   }
+  obs_cases = cases;
   if (model_type) {
     real dispersion = inv_square(phi_sd > 0 ? rep_phi[model_type] : phi_mean);
     if (phi_sd > 0) {
