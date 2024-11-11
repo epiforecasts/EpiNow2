@@ -65,5 +65,5 @@ cases <- cases[seq(7, nrow(reported_cases_weekly), 7)]
 ## set the second observation to missing
 cases[2, confirm := NA]
 ## fill missing data
-fill_missing(cases, confirm = "accumulate", initial_accumulate = 7)
+fill_missing(cases, missing = "accumulate", initial_accumulate = 7)
 }
