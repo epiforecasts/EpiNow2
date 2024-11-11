@@ -55,6 +55,7 @@ fill_missing <- function(data,
   values <- eval(formals()$missing)
 
   dot_cols <- list(...)
+  assert_names(names(dot_cols), subset.of = colnames(data))
   matched_cols <- vapply(names(dot_cols), function(x) {
     y <- dot_cols[[x]]
     ret <- arg_match(y, values = values)
@@ -119,6 +120,7 @@ fill_missing_obs <- function(data, obs, cols) {
     args <- c(list(data = data), as.list(col_args))
     data <- do.call(fill_missing, args)
     if (nrow(data) > data_rows && !obs$accumulate) {
+      #nolint start: duplicate_argument_linter
       cli_warn(
         "!" = "Data contains missing dates.",
         "i" = "Missing dates are interpreted as truly missing data.
@@ -126,6 +128,7 @@ fill_missing_obs <- function(data, obs, cols) {
         functions will expect complete data.",
         "i" = "Complete data can be created using the `fill_missing` function."
       )
+      #nolint end
     }
   }
   return(data)
