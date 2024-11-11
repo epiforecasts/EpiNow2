@@ -190,7 +190,7 @@ estimate_infections <- function(data,
   )
 
   # Create clean and complete cases
-  reported_cases <- fill_missing_obs(reported_cases, obs, "confirm")
+  reported_cases <- default_fill_missing_obs(reported_cases, obs, "confirm")
   # Record earliest date with data
   start_date <- min(reported_cases$date, na.rm = TRUE)
 
@@ -204,7 +204,7 @@ estimate_infections <- function(data,
         min(reported_cases$date) - 1,
         by = "days"
       ),
-      confirm = 0, breakpoint = 0, accumulate = FALSE
+      confirm = 0, accumulate = FALSE, breakpoint = 0
     ),
     reported_cases
   ))

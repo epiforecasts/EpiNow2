@@ -6,9 +6,10 @@
 \usage{
 fill_missing(
   data,
-  missing = c("missing", "accumulate"),
+  missing = c("missing", "accumulate", "zero"),
+  na = c("missing", "accumulate", "zero"),
   initial_accumulate,
-  ...
+  obs_column
 )
 }
 \arguments{
@@ -17,8 +18,8 @@ model that the data are to be used, e.g. \code{\link[=estimate_infections]{estim
 \code{\link[=estimate_secondary]{estimate_secondary()}}. See the documentation there for the expected
 format.}
 
-\item{missing}{Character. Options are "missing" (the default) and
-"accumulate".  This determines how missing dates the data are interpreted.
+\item{missing}{Character. Options are "missing" (the default), "accumulate"
+and "zero". This determines how missing dates the data are interpreted.
 If set to "missing", any missing dates in the observation data will be
 interpreted as missing and skipped in the likelihood. If set to
 "accumulate", modelled observations will be accumulated and added to the
@@ -26,7 +27,11 @@ next non-missing data point. This can be used to model incidence data that
 is reported at less than daily intervals. If set to "accumulate", the
 first data point is not included in the likelihood (unless \code{initial} is
 set to a non-zero value) but used only to reset modelled observations to
-zero.}
+zero. If "zero" then all observations on missing dates will be assumed to
+be of value 0.}
+
+\item{na}{Character. How to process dates that have NA values. The options
+available are the same ones as for the \code{missing} argument.}
 
 \item{initial_accumulate}{Integer. The number of initial dates to accumulate
 if \code{missing} or a column name is set to \code{"accumulate"}. This number of
@@ -36,9 +41,12 @@ incidence data, in which case this should be set to 7. If accumulating and
 the first data point is one to accumulate and this is not set, then that
 data point will be removed with a warning.}
 
-\item{...}{A column name that is specified in the same name as \code{missing},
-applying to dates that are present in the data but have the column value
-set to \code{NA}.}
+\item{obs_column}{Character. If given, only the column specified here will
+be used for checking missingness. This is useful if using a data set that
+has NA values in multiple columns, but only one of them corresponds to
+observations that are to be processed here. By default, all columns will
+be processed and, e.g. \code{accumulate} will be set if any column is NA in any
+given row.}
 }
 \value{
 a data.table with an \code{accumulate} column that indicates whether

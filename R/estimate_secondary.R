@@ -190,7 +190,7 @@ estimate_secondary <- function(data,
     data = reports,
     cols_to_check = c("date", "primary", "secondary")
   )
-  reports <- fill_missing_obs(reports, obs, "secondary")
+  reports <- default_fill_missing_obs(reports, obs, "secondary")
 
   secondary_reports_dirty <- reports[, list(date, confirm = secondary)]
   secondary_reports <- create_clean_reported_cases(
