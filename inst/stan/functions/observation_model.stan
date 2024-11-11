@@ -107,8 +107,7 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  */
 void report_lp(array[] int cases, array[] int cases_time, vector reports,
                array[] real rep_phi, real phi_mean, real phi_sd,
-               int model_type, real weight, int any_accumulate,
-               array[] int accumulate) {
+               int model_type, real weight) {
   int n = num_elements(cases_time); // number of observations
   vector[n] obs_reports = reports[cases_time]; // reports at observation time
   if (model_type) {

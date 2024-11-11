@@ -107,7 +107,7 @@ model {
   if (likelihood) {
     report_lp(
       obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
-      rep_phi, phi_mean, phi_sd, model_type, 1, any_accumulate, accumulate
+      rep_phi, phi_mean, phi_sd, model_type, 1
     );
   }
 }
