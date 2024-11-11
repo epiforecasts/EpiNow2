@@ -37,6 +37,7 @@
 ##'   [estiamte_infections()])
 ##' @importFrom rlang arg_match
 ##' @importFrom data.table as.data.table data.table
+##' @export
 ##' @examples
 ##' cases <- data.table::copy(reported_cases)
 ##' ## calculate weekly sum
