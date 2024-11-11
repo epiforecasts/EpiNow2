@@ -594,7 +594,7 @@ gp_opts <- function(basis_prop = 0.2,
 #'   scale) or a list with numeric elements mean (`mean`) and standard deviation
 #'   (`sd`) defining a normally distributed scaling factor. Defaults to 1, i.e.
 #'   no scaling.
-#' @param na Deprecated; use the [process_missing()] function instead
+#' @param na Deprecated; use the [fill_missing()] function instead
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #'   included in the model.
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood

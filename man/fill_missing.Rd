@@ -51,17 +51,17 @@ given row.}
 \value{
 a data.table with an \code{accumulate} column that indicates whether
 values are accumulated (see the documnetation of the \code{data} arugment in
-\code{\link[=estiamte_infections]{estiamte_infections()}})
+\code{\link[=estimate_infections]{estimate_infections()}})
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \examples{
-cases <- data.table::copy(reported_cases)
+cases <- data.table::copy(example_confirmed)
 ## calculate weekly sum
-cases[, confirm := frollsum(confirm, 7)]
+cases[, confirm := data.table::frollsum(confirm, 7)]
 ## limit to dates once a week
-cases <- cases[seq(7, nrow(reported_cases_weekly), 7)]
+cases <- cases[seq(7, nrow(cases), 7)]
 ## set the second observation to missing
 cases[2, confirm := NA]
 ## fill missing data

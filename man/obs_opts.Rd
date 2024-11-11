@@ -44,7 +44,7 @@ scale) or a list with numeric elements mean (\code{mean}) and standard deviation
 (\code{sd}) defining a normally distributed scaling factor. Defaults to 1, i.e.
 no scaling.}
 
-\item{na}{Deprecated; use the \code{\link[=process_missing]{process_missing()}} function instead}
+\item{na}{Deprecated; use the \code{\link[=fill_missing]{fill_missing()}} function instead}
 
 \item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be
 included in the model.}
