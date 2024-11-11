@@ -11,7 +11,7 @@
 
   # Recommended workflow e.g. for weekly incidence data
   data |>
-    fill_missing(confirm = "accumulate", initial_accumulate = 7) |>
+    fill_missing(missing = "accumulate", initial_accumulate = 7) |>
     estimate_infections()
   ```
 
