@@ -23,5 +23,7 @@ test_that("obs_opts returns expected messages", {
 
 test_that("obs_opts behaves as expected for user specified na treatment", {
 # If user explicitly specifies NA as missing, then don't throw message
-  expect_false(obs_opts(na = "missing")$na_as_missing_default_used)
+  expect_false(
+    suppressWarnings(obs_opts(na = "missing"))$na_as_missing_default_used
+  )
 })
