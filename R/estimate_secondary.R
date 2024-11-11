@@ -192,7 +192,8 @@ estimate_secondary <- function(data,
   )
   reports <- default_fill_missing_obs(reports, obs, "secondary")
 
-  secondary_reports_dirty <- reports[, list(date, confirm = secondary)]
+  secondary_reports_dirty <-
+    reports[, list(date, confirm = secondary, accumulate)]
   secondary_reports <- create_clean_reported_cases(
     secondary_reports_dirty,
     filter_leading_zeros = filter_leading_zeros,

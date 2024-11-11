@@ -77,6 +77,10 @@ create_clean_reported_cases <- function(data, horizon = 0,
   }
   reported_cases[is.na(confirm), confirm := fill]
   reported_cases[, "average_7_day" := NULL]
+  ## set accumulate to FALSE in added rows
+  if ("accumulate" %in% colnames(reported_cases)) {
+    reported_cases[is.na(accumulate), accumulate := FALSE]
+  }
   return(reported_cases)
 }
 
@@ -526,8 +530,8 @@ create_stan_data <- function(data, seeding_time,
                              backcalc, shifted_cases) {
   cases <- data[(seeding_time + 1):(.N - horizon)]
   complete_cases <- create_complete_cases(cases)
-  accumulate <- cases$accumulate
   cases <- cases$confirm
+  accumulate <- data[-(1:seeding_time)]$accumulate
 
   stan_data <- list(
     cases = complete_cases$confirm,

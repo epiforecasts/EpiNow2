@@ -181,16 +181,15 @@ estimate_infections <- function(data,
     data = dirty_reported_cases,
     cols_to_check = c("date", "confirm")
   )
+  # Fill misisng dates
+  reported_cases <- default_fill_missing_obs(data, obs, "confirm")
   # Create clean and complete cases
-  # Order cases
   reported_cases <- create_clean_reported_cases(
-    data, horizon,
+    reported_cases, horizon,
     filter_leading_zeros = filter_leading_zeros,
     zero_threshold = zero_threshold
   )
 
-  # Create clean and complete cases
-  reported_cases <- default_fill_missing_obs(reported_cases, obs, "confirm")
   # Record earliest date with data
   start_date <- min(reported_cases$date, na.rm = TRUE)
 

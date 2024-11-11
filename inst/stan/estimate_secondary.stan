@@ -72,6 +72,14 @@ transformed parameters {
  if (week_effect > 1) {
    secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
  }
+
+ // accumulate reports
+ if (any_accumulate) {
+   profile("accumulate") {
+     secondary = accumulate_reports(secondary, accumulate);
+   }
+ }
+
  // truncate near time cases to observed reports
  if (trunc_id) {
     vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(
