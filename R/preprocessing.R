@@ -7,7 +7,7 @@
 ##'   [estimate_secondary()]. See the documentation there for the expected
 ##'   format.
 ##' @param missing Character. Options are "missing" (the default), "accumulate"
-##'   and "zero". This determines how missing dates the data are interpreted.
+##'   and "zero". This determines how missing dates in the data are interpreted.
 ##'   If set to "missing", any missing dates in the observation data will be
 ##'   interpreted as missing and skipped in the likelihood. If set to
 ##'   "accumulate", modelled observations will be accumulated and added to the
@@ -33,7 +33,7 @@
 ##'   be processed and, e.g. `accumulate` will be set if any column is NA in any
 ##'   given row.
 ##' @return a data.table with an `accumulate` column that indicates whether
-##'   values are accumulated (see the documnetation of the `data` arugment in
+##'   values are accumulated (see the documentation of the `data` argument in
 ##'   [estimate_infections()])
 ##' @importFrom rlang arg_match
 ##' @importFrom data.table as.data.table data.table

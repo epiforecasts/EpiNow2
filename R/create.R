@@ -536,7 +536,7 @@ create_stan_data <- function(data, seeding_time,
   stan_data <- list(
     cases = complete_cases$confirm,
     cases_time = complete_cases$lookup,
-    any_accumulate = as.integer(any(accumulate > 0)),
+    any_accumulate = as.integer(any(accumulate)),
     accumulate = as.integer(accumulate),
     lt = nrow(complete_cases),
     shifted_cases = shifted_cases,

@@ -21,7 +21,7 @@
 #' `confirm` must be numeric and `date` must be in date format. Optionally
 #' this can also have a logical `accumulate` column which indicates whether
 #' data should be added to the next data point. This is useful when modelling
-#' e.g. weekly incidence data. See also the [fill_missing()] data which helps
+#' e.g. weekly incidence data. See also the [fill_missing()] function which helps
 #' add the `accumulate` column with the desired properties when dealing with
 #' non-daily data.
 #'
@@ -181,7 +181,7 @@ estimate_infections <- function(data,
     data = dirty_reported_cases,
     cols_to_check = c("date", "confirm")
   )
-  # Fill misisng dates
+  # Fill missing dates
   reported_cases <- default_fill_missing_obs(data, obs, "confirm")
   # Create clean and complete cases
   reported_cases <- create_clean_reported_cases(
