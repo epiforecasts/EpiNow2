@@ -19,7 +19,7 @@ model that the data are to be used, e.g. \code{\link[=estimate_infections]{estim
 format.}
 
 \item{missing}{Character. Options are "missing" (the default), "accumulate"
-and "zero". This determines how missing dates the data are interpreted.
+and "zero". This determines how missing dates in the data are interpreted.
 If set to "missing", any missing dates in the observation data will be
 interpreted as missing and skipped in the likelihood. If set to
 "accumulate", modelled observations will be accumulated and added to the
@@ -50,7 +50,7 @@ given row.}
 }
 \value{
 a data.table with an \code{accumulate} column that indicates whether
-values are accumulated (see the documnetation of the \code{data} arugment in
+values are accumulated (see the documentation of the \code{data} argument in
 \code{\link[=estimate_infections]{estimate_infections()}})
 }
 \description{

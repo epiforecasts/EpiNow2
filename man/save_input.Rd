@@ -11,9 +11,9 @@ save_input(data, target_folder)
 \code{confirm} must be numeric and \code{date} must be in date format. Optionally
 this can also have a logical \code{accumulate} column which indicates whether
 data should be added to the next data point. This is useful when modelling
-e.g. weekly incidence data. See also the \code{\link[=fill_missing]{fill_missing()}} data which helps
-add the \code{accumulate} column with the desired properties when dealing with
-non-daily data.}
+e.g. weekly incidence data. See also the \code{\link[=fill_missing]{fill_missing()}} function which
+helps add the \code{accumulate} column with the desired properties when dealing
+with non-daily data.}
 
 \item{target_folder}{Character string specifying where to save results (will
 create if not present).}
