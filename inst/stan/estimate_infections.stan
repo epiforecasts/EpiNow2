@@ -139,13 +139,6 @@ transformed parameters {
     }
   }
 
-  // accumulate reports
-  if (any_accumulate) {
-     profile("accumulate") {
-       reports = accumulate_reports(reports, accumulate);
-    }
-  }
-
   // truncate near time cases to observed reports
   if (trunc_id) {
     vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf;
@@ -162,6 +155,13 @@ transformed parameters {
     }
   } else {
     obs_reports = reports[1:ot];
+  }
+
+  // accumulate reports
+  if (any_accumulate) {
+     profile("accumulate") {
+       obs_reports = accumulate_reports(obs_reports, accumulate);
+    }
   }
 }
 
