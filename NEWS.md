@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Model changes
+
+- A bug was fixed where the initial growth was never estimated (i.e. the prior mean was always zero). By @sbfnk in #853 and reviewed by @seabbs.
+
 # EpiNow2 1.6.1
 
 ## Model changes
