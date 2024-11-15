@@ -25,7 +25,7 @@ We make use of Gaussian Processes in several places in `EpiNow2`. For example, t
 
 # Definition
 
-The single dimension Gaussian Processes ($\mathrm{GP}_t$) we use can be written as
+The single dimension Gaussian Processes ($\mathcal{GP}_t$) we use can be written as
 
 \begin{equation}
 \mathcal{GP}(\mu(t), k(t, t'))
@@ -44,10 +44,10 @@ with the following choices available for the kernel $k$
 ## Matérn 3/2 covariance kernel (the default)
 
 \begin{equation}
-k(\Delta t) = \alpha^2 \left( 1 + \frac{\sqrt{3} \Delta t}{l} \right) \exp \left( - \frac{\sqrt{3} \Delta t}{l}\right)
+k(\Delta t) = \alpha^2 \left( 1 + \frac{\sqrt{3} \Delta t}{\rho} \right) \exp \left( - \frac{\sqrt{3} \Delta t}{\rho}\right)
 \end{equation}
 
-with $l>0$ and $\alpha > 0$ the length scale and magnitude, respectively, of the kernel.
+with $\rho>0$ and $\alpha > 0$ the length scale and magnitude, respectively, of the kernel.
 Note that here and later we use a slightly different definition of $\alpha$ compared to Riutort-Mayol et al. [@approxGP], where this is defined as our $\alpha^2$.
 
 ## Squared exponential kernel
@@ -59,13 +59,13 @@ k(\Delta t) = \alpha^2 \exp \left( - \frac{1}{2} \frac{(\Delta t^2)}{l^2} \right
 ## Ornstein-Uhlenbeck (Matérn 1/2) kernel
 
 \begin{equation}
-k(\Delta t) = \alpha^2 \exp{\left( - \frac{\Delta t}{2 l^2}  \right)}
+k(\Delta t) = \alpha^2 \exp{\left( - \frac{\Delta t}{2 \rho^2}  \right)}
 \end{equation}
 
 ## Matérn 5/2 covariance kernel
 
 \begin{equation}
-k(\Delta t) = \alpha \left( 1 + \frac{\sqrt{5} \Delta t}{l} + \frac{5}{3} \left(\frac{\Delta t}{l} \right)^2 \right) \exp \left( - \frac{\sqrt{5} \Delta t}{l}\right)
+k(\Delta t) = \alpha \left( 1 + \frac{\sqrt{5} \Delta t}{\rho} + \frac{5}{3} \left(\frac{\Delta t}{l} \right)^2 \right) \exp \left( - \frac{\sqrt{5} \Delta t}{\rho}\right)
 \end{equation}
 
 # Hilbert space approximation
@@ -73,7 +73,7 @@ k(\Delta t) = \alpha \left( 1 + \frac{\sqrt{5} \Delta t}{l} + \frac{5}{3} \left(
 In order to make our models computationally tractable, we approximate the Gaussian Process using a Hilbert space approximation to the Gaussian Process [@approxGP], centered around mean zero.
 
 \begin{equation}
-\mathcal{GP}(0, k(\Delta t)) \approx \sum_{j=1}^m \left(S_k(\sqrt{\lambda_j}) \right)^\frac{1}{2} \phi_j(t) \beta_j
+\mathrm{GP}(0, k(\Delta t)) \approx \sum_{j=1}^m \left(S_k(\sqrt{\lambda_j}) \right)^\frac{1}{2} \phi_j(t) \beta_j
 \end{equation}
 
 with $m$ the number of basis functions to use in the approximation, which we calculate from the number of time points $t_\mathrm{GP}$ to which the Gaussian Process is being applied (rounded up to give an integer value), as is recommended [@approxGP].
@@ -91,7 +91,7 @@ and values of $\lambda_j$ given by
 where $L$ is a positive number termed boundary condition, and $\beta_{j}$ are regression weights with standard normal prior
 
 \begin{equation}
-\beta_j \sim \mathcal{Normal}(0, 1)
+\beta_j \sim \mathrm{Normal}(0, 1)
 \end{equation}
 
 The function $S_k(x)$ is the spectral density relating to a particular covariance function $k$.
@@ -105,7 +105,7 @@ For $\nu = 3 / 2$ (the default in `EpiNow2`) this simplifies to
 
 \begin{equation}
     S_k(\omega) =
-    \alpha^2 \frac{4 \left(\sqrt{3} / \rho \right)^3}{\left(\left(\sqrt{3} / \rho\right)^2 + \omega^2\right)^2} = 
+    \alpha^2 \frac{4 \left(\sqrt{3} / \rho \right)^3}{\left(\left(\sqrt{3} / \rho\right)^2 + \omega^2\right)^2} =
     \left(\frac{2 \alpha \left(\sqrt{3} / \rho \right)^{\frac{3}{2}}}{\left(\sqrt{3} / \rho\right)^2 + \omega^2} \right)^2
 \end{equation}
 
@@ -143,8 +143,8 @@ t^* = \frac{t - \frac{1}{2}t_\mathrm{GP}}{\frac{1}{2}t_\mathrm{GP}}
 Relevant priors are
 
 \begin{align}
-\alpha &\sim \mathcal{Normal}(\mu_\alpha, \sigma_{\alpha}) \\
-\rho   &\sim \mathcal{LogNormal} (\mu_\rho, \sigma_\rho)\\
+\alpha &\sim \mathrm{Normal}(\mu_\alpha, \sigma_{\alpha}) \\
+\rho   &\sim \mathrm{LogNormal} (\mu_\rho, \sigma_\rho)\\
 \end{align}
 
 with $\rho$ additionally constrained to be between $\rho_\mathrm{min}$ and $\rho_\mathrm{max}$, $\mu_{\rho}$ and $\sigma_\rho$ calculated from given mean $m_{\rho}$ and standard deviation $s_\rho$, and default values (all of which can be changed by the user):

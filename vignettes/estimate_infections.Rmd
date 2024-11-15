@@ -36,8 +36,8 @@ These infections are then mapped to observations via discrete convolutions with 
 The model is initialised before the first observed data point by assuming constant exponential growth for the mean of modelled delays from infection to case report (called `seeding_time` $t_\mathrm{seed}$ in the model):
 
 \begin{align}
-  I_0  &\sim \mathcal{LogNormal}(I_\mathrm{obs}, 0.2) \\
-  r &\sim \mathcal{Normal}(r_\mathrm{obs}, 0.2)\\
+  I_0  &\sim \mathrm{LogNormal}(I_\mathrm{obs}, 0.2) \\
+  r &\sim \mathrm{Normal}(r_\mathrm{obs}, 0.2)\\
   I_{0 < t \leq t_\mathrm{seed}} &= I_0 \exp  \left(r t \right)
 \end{align}
 
@@ -79,8 +79,8 @@ More details on the mathematical form of the GP approximation and implementation
 or, as a specific case of a Gaussian Process, a random walk of arbitrary length $w$.
 
 \begin{align}
-  \log R_{t \div w} &\sim \mathcal{Normal} (R_{t \div (w - 1)}, \sigma_R)\\
-  \sigma_R &\sim \mathcal{HalfNormal}(0, 0.1)
+  \log R_{t \div w} &\sim \mathrm{Normal} (R_{t \div (w - 1)}, \sigma_R)\\
+  \sigma_R &\sim \mathrm{HalfNormal}(0, 0.1)
 \end{align}
 
 where $\div$ indicates interval-valued division (i.e. the floor of the division), such that for example $w=1$ indicates a daily and $w=7$ a weekly random walk.
@@ -90,7 +90,7 @@ The choice of prior for the time-varying reproduction number impact run-time, sm
 The initial reproduction number $R_{0}$ has a log-normal prior with a given log mean $\mu_{R}$ and log standard deviation $\sigma_{R}$, calculated from a given mean (default: 1) and standard deviation (default: 1).
 
 \begin{equation}
-  R_0 \sim \mathcal{LogNormal}(\mu_R, \sigma_R)
+  R_0 \sim \mathrm{LogNormal}(\mu_R, \sigma_R)
 \end{equation}
 
 The simplest possible process model option is to use no time-varying prior and rely on just the intial fixed reproduction number $R_0$.
@@ -185,7 +185,7 @@ The modelled counts $D_{t}$ are related to observations $C_{t}$.
 By default this is assumed to follow a negative binomial distribution with overdispersion $\varphi$ (alternatively it can be modelled as a Poisson, in which case $\varphi$ is not used):
 
 \begin{align}
-  C_t &\sim \mathcal{NegBinom}\left(\omega_{(t \mod n_\omega)}D_t, \varphi\right)
+  C_t &\sim \mathrm{NegBinom}\left(\omega_{(t \mod n_\omega)}D_t, \varphi\right)
 \end{align}
 
 where $\omega_{t \mod n_\omega}$ is a daily reporting effect of cyclicity $n_{\omega}$. If $n_{\omega}=7$ this corresponds to a day-of-the-week reporting effect.
@@ -193,8 +193,8 @@ where $\omega_{t \mod n_\omega}$ is a daily reporting effect of cyclicity $n_{\o
 This model uses the following priors for the observation model,
 
 \begin{align}
-    \frac{\omega}{n_\omega} &\sim \mathcal{Dirichlet}(1, \ldots, 1) \\
-    \frac{1}{\sqrt{\varphi}} &\sim \mathcal{HalfNormal}(0, 1)
+    \frac{\omega}{n_\omega} &\sim \mathrm{Dirichlet}(1, \ldots, 1) \\
+    \frac{1}{\sqrt{\varphi}} &\sim \mathrm{HalfNormal}(0, 1)
 \end{align}
 
 ## Truncation
