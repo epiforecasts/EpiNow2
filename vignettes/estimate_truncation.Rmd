@@ -24,7 +24,7 @@ Given snapshots $C^{i}_{t}$ reflecting reported counts for time $t$ where $i=1\l
 The model assumes that final counts $D_{t}$ are related to observed snapshots via the truncation distribution such that
 
 \begin{equation}
-C^{i < S)_{t}_\sim \mathcal{NegBinom}\left(Z (T_i - t | \mu_{Z}, \sigma_{Z}) D(t) + \sigma, \varphi\right)
+C^{i < S)_{t}_\sim \mathrm{NegBinom}\left(Z (T_i - t | \mu_{Z}, \sigma_{Z}) D(t) + \sigma, \varphi\right)
 \end{equation}
 
 where $T_i$ is the date of the final observation in snapshot $i$, $Z(\tau)$
