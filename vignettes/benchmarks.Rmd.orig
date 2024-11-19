@@ -528,7 +528,7 @@ timing_plot <- ggplot(data = runtimes_dt_detailed[, fit_type := ifelse(fitting =
        caption = "non-stationary Rt = R(t-1) * GP; stationary Rt = R0 * GP; non-mechanistic Rt = no GP prior."
        ) +
   theme_minimal() +
-  facet_wrap(~fit_type, scales = "free_y", nrow = 2)
+  facet_wrap(~fit_type, scales = "free_y", nrow = 2, strip.position = "left")
 timing_plot
 ```
 
@@ -705,14 +705,14 @@ Let's first see how the models performed over time for the $R_t$ using the CRPS.
 Let's start by looking at the two broad individual model types (stationary vs non-stationary)
 ```{r rt_ns_gp_plot,class.source = 'fold-hide'}
 rt_ns_gp_plot <- ggplot(
-  data = rt_crps_dt_final[rt_gp_prior == "non_stationary"],
-  # data = infections_crps_dt_final
+  data = rt_crps_dt_final[rt_gp_prior == "non_stationary"]
   ) +
   geom_line(
-    aes(x = date,
+    aes(x = factor(epidemic_phase, levels = c("growth", "peak", "decline")),
         y = crps,
-        color = model
-        )
+        color = model_basename,
+        linetype = fitting
+    )
   ) +
   scale_colour_brewer("Model", palette = "Dark2") +
   # scale_y_log10(labels = label_number_auto()) +
