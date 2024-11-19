@@ -605,6 +605,12 @@ rt_crps_full <- merge.data.table(
   by = "model"
 )
 
+# Add model descriptions
+rt_crps_full <- merge.data.table(
+  rt_crps_full,
+  model_descriptions,
+  by = "model"
+)
 # Replace the snapshot dates with their description
 # Replace snapshot_date based on the dictionary
 rt_crps_full[, epidemic_phase := names(snapshot_date_names)[
@@ -658,6 +664,13 @@ infections_crps_flat <- lapply(
 infections_crps_full <- merge.data.table(
   infections_crps_flat,
   model_components,
+  by = "model"
+)
+
+# Add model descriptions
+infections_crps_full <- merge.data.table(
+  infections_crps_full,
+  model_descriptions,
   by = "model"
 )
 
