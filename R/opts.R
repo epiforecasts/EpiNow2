@@ -1091,7 +1091,7 @@ filter_opts <- function(opts, region) {
 #'   constrained
 #' @keywords internal
 apply_default_cdf_cutoff <- function(dist, default_cdf_cutoff, cdf_cutoff_set) {
-  if (!is_constrained(dist) && !is.na(sd(dist))) {
+  if (!is_constrained(dist) && !anyNA(sd(dist))) {
     #nolint start: duplicate_argument_linter
     cli_inform(
       c(
