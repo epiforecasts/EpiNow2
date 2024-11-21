@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Documentation
+
+- Brought the docs on `alpha_sd` up to date with the code change from prior PR #853. By @zsusswein in #862 and reviewed by @jamesmbaazam.
+
 ## Model changes
 
 - A bug was fixed where the initial growth was never estimated (i.e. the prior mean was always zero). By @sbfnk in #853 and reviewed by @seabbs.
