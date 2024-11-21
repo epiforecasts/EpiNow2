@@ -1098,7 +1098,7 @@ apply_default_cdf_cutoff <- function(dist, default_cdf_cutoff, cdf_cutoff_set) {
         "i" = "Unconstrained distributon passed as a delay. ",
         "i" = "Constraining with default CDF cutoff {default_cdf_cutoff}.",
         "i" = "To silence this message, specify delay distributions
-      with {.var max} or {.var tolerance}."
+      with {.var max} or {.var default_cdf_cutoff}."
       )
     )
     #nolint end
