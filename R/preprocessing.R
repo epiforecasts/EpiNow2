@@ -31,11 +31,17 @@
 ##'   specified here will be used for checking missingness. This is useful if
 ##'   using a data set that has multiple columns of hwich one of them
 ##'   corresponds to observations that are to be processed here.
+##' @param by Character vector. Name(s) of any additional column(s) where
+##'   missing data should be processed separately for each value in the column.
+##'   This is useful when using data representing e.g. multiple geographies. If
+##'   NULL (default) no such grouping is done.
 ##' @return a data.table with an `accumulate` column that indicates whether
 ##'   values are accumulated (see the documentation of the `data` argument in
 ##'   [estimate_infections()])
 ##' @importFrom rlang arg_match
-##' @importFrom data.table as.data.table data.table
+##' @importFrom data.table as.data.table CJ
+##' @importFrom checkmate assert_data_frame assert_names assert_date
+##'   assert_character
 ##' @export
 ##' @examples
 ##' cases <- data.table::copy(example_confirmed)
@@ -51,33 +57,39 @@ fill_missing <- function(data,
                          missing_dates = c("ignore", "accumulate", "zero"),
                          missing_obs = c("ignore", "accumulate", "zero"),
                          initial_accumulate,
-                         obs_column = "confirm") {
+                         obs_column = "confirm",
+                         by = NULL) {
   assert_data_frame(data)
-  assert_names(names(data), must.include = "date", disjunct.from = "accumulate")
-  if (!missing(obs_column)) {
-    assert_names(names(data), must.include = obs_column)
-  } else {
-    obs_column <- setdiff(colnames(data), "date")
-  }
+  assert_names(
+    colnames(data),
+    must.include = c("date", by, obs_column),
+    disjunct.from = "accumulate"
+  )
   assert_date(data$date, any.missing = FALSE)
+  assert_character(by, null.ok = TRUE)
 
   data <- as.data.table(data)
 
-  missing_dates <- arg_match(missing)
+  missing_dates <- arg_match(missing_dates)
   missing_obs <- arg_match(missing_obs)
 
   ## first, processing missing dates
   initial_add <- ifelse(missing(initial_accumulate), 1, initial_accumulate)
 
-  date_seq <- seq.Date(
-    min(data$date) - initial_add + 1,
-    max(data$date), by = "day"
+  cols <- list(
+    date = seq(min(data$date) - initial_add + 1, max(data$date), by = "day")
   )
+  if (!is.null(by))  {
+    for (by_col in by) {
+      cols[[by_col]] <- unique(data[[by_col]])
+    }
+  }
+
+  complete <- do.call(CJ, cols)
 
   ## mark dates that are present in the data
   data[, ..present := TRUE]
-  complete_dates <- data.table(date = date_seq)
-  data <- merge(data, complete_dates, by = "date", all.y = TRUE)
+  data <- merge(data, complete, by = c("date", by), all.y = TRUE)
 
   data[, accumulate := FALSE]
   for (col in obs_column) {
@@ -104,8 +116,8 @@ fill_missing <- function(data,
             as is, i.e. as the first daily data point)."
       )
     )
-    data <- data[-1]
     #nolint end
+    data <- data[date > min(date)]
   }
 
   ## second, processing missing observations

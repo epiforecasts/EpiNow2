@@ -9,7 +9,8 @@ fill_missing(
   missing_dates = c("ignore", "accumulate", "zero"),
   missing_obs = c("ignore", "accumulate", "zero"),
   initial_accumulate,
-  obs_column = "confirm"
+  obs_column = "confirm",
+  by = NULL
 )
 }
 \arguments{
@@ -46,6 +47,11 @@ data point will be removed with a warning.}
 specified here will be used for checking missingness. This is useful if
 using a data set that has multiple columns of hwich one of them
 corresponds to observations that are to be processed here.}
+
+\item{by}{Character vector. Name(s) of any additional column(s) where
+missing data should be processed separately for each value in the column.
+This is useful when using data representing e.g. multiple geographies. If
+NULL (default) no such grouping is done.}
 }
 \value{
 a data.table with an \code{accumulate} column that indicates whether
