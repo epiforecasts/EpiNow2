@@ -9,7 +9,7 @@ fill_missing(
   missing_dates = c("ignore", "accumulate", "zero"),
   missing_obs = c("ignore", "accumulate", "zero"),
   initial_accumulate,
-  obs_column
+  obs_column = "confirm"
 )
 }
 \arguments{
@@ -42,12 +42,10 @@ incidence data, in which case this should be set to 7. If accumulating and
 the first data point is one to accumulate and this is not set, then that
 data point will be removed with a warning.}
 
-\item{obs_column}{Character. If given, only the column specified here will
-be used for checking missingness. This is useful if using a data set that
-has NA values in multiple columns, but only one of them corresponds to
-observations that are to be processed here. By default, all columns will
-be processed and, e.g. \code{accumulate} will be set if any column is NA in any
-given row.}
+\item{obs_column}{Character (default: "confirm"). If given, only the column
+specified here will be used for checking missingness. This is useful if
+using a data set that has multiple columns of hwich one of them
+corresponds to observations that are to be processed here.}
 }
 \value{
 a data.table with an \code{accumulate} column that indicates whether

@@ -27,12 +27,10 @@
 ##'   incidence data, in which case this should be set to 7. If accumulating and
 ##'   the first data point is one to accumulate and this is not set, then that
 ##'   data point will be removed with a warning.
-##' @param obs_column Character. If given, only the column specified here will
-##'   be used for checking missingness. This is useful if using a data set that
-##'   has NA values in multiple columns, but only one of them corresponds to
-##'   observations that are to be processed here. By default, all columns will
-##'   be processed and, e.g. `accumulate` will be set if any column is NA in any
-##'   given row.
+##' @param obs_column Character (default: "confirm"). If given, only the column
+##'   specified here will be used for checking missingness. This is useful if
+##'   using a data set that has multiple columns of hwich one of them
+##'   corresponds to observations that are to be processed here.
 ##' @return a data.table with an `accumulate` column that indicates whether
 ##'   values are accumulated (see the documentation of the `data` argument in
 ##'   [estimate_infections()])
@@ -53,7 +51,7 @@ fill_missing <- function(data,
                          missing_dates = c("ignore", "accumulate", "zero"),
                          missing_obs = c("ignore", "accumulate", "zero"),
                          initial_accumulate,
-                         obs_column) {
+                         obs_column = "confirm") {
   assert_data_frame(data)
   assert_names(names(data), must.include = "date", disjunct.from = "accumulate")
   if (!missing(obs_column)) {
