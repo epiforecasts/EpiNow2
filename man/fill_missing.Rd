@@ -36,11 +36,14 @@ but have observations with NA values. The options available are the same
 ones as for the \code{missing_dates} argument.}
 
 \item{initial_accumulate}{Integer. The number of initial dates to accumulate
-if \code{missing} or a column name is set to \code{"accumulate"}. This number of
-dates is added to the beginning of the data set to be accumulated onto the
+if \code{missing_dates} or \code{missing_obs} is set to \code{"accumulate"}. This
+argument needs ot have a minimum of 1. If it is set to 1 then no
+accumulation is happening on the first data point. If it is greater than 1
+then dates are added to the beginning of the data set to get be able to
+have a sufficient number of modelled observations accumulated onto the
 first data point. This is useful, for example, for modelling weekly
 incidence data, in which case this should be set to 7. If accumulating and
-the first data point is one to accumulate and this is not set, then that
+the first data point is not NA and this is argument is not set, then that
 data point will be removed with a warning.}
 
 \item{obs_column}{Character (default: "confirm"). If given, only the column
