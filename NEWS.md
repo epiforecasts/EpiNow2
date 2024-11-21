@@ -2,7 +2,7 @@
 
 ## Documentation
 
-- Brought the docs on `alpha_sd` up to date with the code change from prior PR #853. By @zsusswein in #862.
+- Brought the docs on `alpha_sd` up to date with the code change from prior PR #853. By @zsusswein in #862 and reviewed by @jamesmbaazam.
 
 ## Model changes
 
