@@ -6,8 +6,8 @@
 \usage{
 fill_missing(
   data,
-  missing = c("missing", "accumulate", "zero"),
-  na = c("missing", "accumulate", "zero"),
+  missing_dates = c("ignore", "accumulate", "zero"),
+  missing_obs = c("ignore", "accumulate", "zero"),
   initial_accumulate,
   obs_column
 )
@@ -18,20 +18,21 @@ model that the data are to be used, e.g. \code{\link[=estimate_infections]{estim
 \code{\link[=estimate_secondary]{estimate_secondary()}}. See the documentation there for the expected
 format.}
 
-\item{missing}{Character. Options are "missing" (the default), "accumulate"
-and "zero". This determines how missing dates in the data are interpreted.
-If set to "missing", any missing dates in the observation data will be
-interpreted as missing and skipped in the likelihood. If set to
-"accumulate", modelled observations will be accumulated and added to the
-next non-missing data point. This can be used to model incidence data that
-is reported at less than daily intervals. If set to "accumulate", the
-first data point is not included in the likelihood (unless \code{initial} is
-set to a non-zero value) but used only to reset modelled observations to
-zero. If "zero" then all observations on missing dates will be assumed to
-be of value 0.}
+\item{missing_dates}{Character. Options are "ignore" (the default),
+"accumulate" and "zero". This determines how missing dates in the data are
+interpreted.  If set to "ignore", any missing dates in the observation
+data will be interpreted as missing and skipped in the likelihood. If set
+to "accumulate", modelled observations on dates that are missing in the
+data will be accumulated and added to the next non-missing data point.
+This can be used to model incidence data that is reported less frequently
+than daily. In that case, the first data point is not included in the
+likelihood (unless \code{initial_accumulate} is set to a value greater than
+one) but used only to reset modelled observations to zero. If "zero" then
+all observations on missing dates will be assumed to be of value 0.}
 
-\item{na}{Character. How to process dates that have NA values. The options
-available are the same ones as for the \code{missing} argument.}
+\item{missing_obs}{Character. How to process dates that exist in the data
+but have observations with NA values. The options available are the same
+ones as for the \code{missing_dates} argument.}
 
 \item{initial_accumulate}{Integer. The number of initial dates to accumulate
 if \code{missing} or a column name is set to \code{"accumulate"}. This number of

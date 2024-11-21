@@ -6,19 +6,20 @@
 ##'   model that the data are to be used, e.g. [estimate_infections()] or
 ##'   [estimate_secondary()]. See the documentation there for the expected
 ##'   format.
-##' @param missing Character. Options are "missing" (the default), "accumulate"
-##'   and "zero". This determines how missing dates in the data are interpreted.
-##'   If set to "missing", any missing dates in the observation data will be
-##'   interpreted as missing and skipped in the likelihood. If set to
-##'   "accumulate", modelled observations will be accumulated and added to the
-##'   next non-missing data point. This can be used to model incidence data that
-##'   is reported at less than daily intervals. If set to "accumulate", the
-##'   first data point is not included in the likelihood (unless `initial` is
-##'   set to a non-zero value) but used only to reset modelled observations to
-##'   zero. If "zero" then all observations on missing dates will be assumed to
-##'   be of value 0.
-##' @param na Character. How to process dates that have NA values. The options
-##'   available are the same ones as for the `missing` argument.
+##' @param missing_dates Character. Options are "ignore" (the default),
+##'   "accumulate" and "zero". This determines how missing dates in the data are
+##'   interpreted.  If set to "ignore", any missing dates in the observation
+##'   data will be interpreted as missing and skipped in the likelihood. If set
+##'   to "accumulate", modelled observations on dates that are missing in the
+##'   data will be accumulated and added to the next non-missing data point.
+##'   This can be used to model incidence data that is reported less frequently
+##'   than daily. In that case, the first data point is not included in the
+##'   likelihood (unless `initial_accumulate` is set to a value greater than
+##'   one) but used only to reset modelled observations to zero. If "zero" then
+##'   all observations on missing dates will be assumed to be of value 0.
+##' @param missing_obs Character. How to process dates that exist in the data
+##'   but have observations with NA values. The options available are the same
+##'   ones as for the `missing_dates` argument.
 ##' @param initial_accumulate Integer. The number of initial dates to accumulate
 ##'   if `missing` or a column name is set to `"accumulate"`. This number of
 ##'   dates is added to the beginning of the data set to be accumulated onto the
@@ -49,8 +50,8 @@
 ##' ## fill missing data
 ##' fill_missing(cases, missing = "accumulate", initial_accumulate = 7)
 fill_missing <- function(data,
-                         missing = c("missing", "accumulate", "zero"),
-                         na = c("missing", "accumulate", "zero"),
+                         missing_dates = c("ignore", "accumulate", "zero"),
+                         missing_obs = c("ignore", "accumulate", "zero"),
                          initial_accumulate,
                          obs_column) {
   assert_data_frame(data)
@@ -64,8 +65,8 @@ fill_missing <- function(data,
 
   data <- as.data.table(data)
 
-  missing <- arg_match(missing)
-  na <- arg_match(na)
+  missing_dates <- arg_match(missing)
+  missing_obs <- arg_match(missing_obs)
 
   ## first, processing missing dates
   initial_add <- ifelse(missing(initial_accumulate), 1, initial_accumulate)
@@ -82,9 +83,9 @@ fill_missing <- function(data,
 
   data[, accumulate := FALSE]
   for (col in obs_column) {
-    if (missing == "accumulate") {
+    if (missing_dates == "accumulate") {
       data[is.na(..present), accumulate := TRUE]
-    } else if (missing == "zero") {
+    } else if (missing_dates == "zero") {
       data[is.na(..present), paste(col) := 0]
     }
   }
@@ -109,11 +110,11 @@ fill_missing <- function(data,
     #nolint end
   }
 
-  ## second, processing missing dates
+  ## second, processing missing observations
   for (col in obs_column) {
-    if (na == "accumulate") {
+    if (missing_obs == "accumulate") {
       data[is.na(get(col)) & !is.na(..present), accumulate := TRUE]
-    } else if (missing == "zero") {
+    } else if (missing_obs == "zero") {
       data[is.na(get(col)) & !is.na(..present), paste(col) := 0]
     }
   }
