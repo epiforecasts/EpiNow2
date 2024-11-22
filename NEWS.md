@@ -14,6 +14,13 @@
     fill_missing(missing = "accumulate", initial_accumulate = 7) |>
     estimate_infections()
   ```
+  
+  - A bug was fixed where the initial growth was never estimated (i.e. the prior mean was always zero). By @sbfnk in #853 and reviewed by @seabbs.
+  - A bug was fixed where an internal function for applying a default cdf cutoff failed due to a difference a vector length issue. By @jamesmbaazam in #858 and reviewed by @sbfnk.
+
+## Documentation
+
+- Brought the docs on `alpha_sd` up to date with the code change from prior PR #853. By @zsusswein in #862 and reviewed by @jamesmbaazam.
 
 # EpiNow2 1.6.1
 
