@@ -1,4 +1,4 @@
-##' Fills missing data in a data set to prepare it for use within the package
+##' Fill missing data in a data set to prepare it for use within the package
 ##'
 ##' @description `r lifecycle::badge("experimental")`
 ##'
@@ -107,7 +107,7 @@ fill_missing <- function(data,
     }
   }
   if (missing(initial_accumulate) &&
-      !data$accumulate[1] &&
+      isFALSE(data$accumulate[1]) &&
       any(data$accumulate)) {
     #nolint start: duplicate_argument_linter
     cli_warn(
