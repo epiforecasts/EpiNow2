@@ -55,7 +55,7 @@
 ##' ## set the second observation to missing
 ##' cases[2, confirm := NA]
 ##' ## fill missing data
-##' fill_missing(cases, missing = "accumulate", initial_accumulate = 7)
+##' fill_missing(cases, missing_dates = "accumulate", initial_accumulate = 7)
 fill_missing <- function(data,
                          missing_dates = c("ignore", "accumulate", "zero"),
                          missing_obs = c("ignore", "accumulate", "zero"),

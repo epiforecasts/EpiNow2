@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocessing.R
 \name{fill_missing}
 \alias{fill_missing}
-\title{Fills missing data in a data set to prepare it for use within the package}
+\title{Fill missing data in a data set to prepare it for use within the package}
 \usage{
 fill_missing(
   data,
@@ -73,5 +73,5 @@ cases <- cases[seq(7, nrow(cases), 7)]
 ## set the second observation to missing
 cases[2, confirm := NA]
 ## fill missing data
-fill_missing(cases, missing = "accumulate", initial_accumulate = 7)
+fill_missing(cases, missing_dates = "accumulate", initial_accumulate = 7)
 }
