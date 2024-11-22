@@ -115,7 +115,9 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
   cases_weekly <- merge(
     cases[, list(date, primary)], secondary_weekly, by = "date", all.x = TRUE
   )
-  cases_weekly <- fill_missing(cases_weekly, na = "accumulate")
+  cases_weekly <- fill_missing(
+    cases_weekly, missing_obs = "accumulate", obs_column = "secondary"
+  )
   inc_weekly <- estimate_secondary(cases_weekly,
     delays = delay_opts(
       LogNormal(
