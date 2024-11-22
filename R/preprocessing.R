@@ -44,7 +44,7 @@
 ##' @importFrom rlang arg_match
 ##' @importFrom data.table as.data.table CJ
 ##' @importFrom checkmate assert_data_frame assert_names assert_date
-##'   assert_character
+##'   assert_character assert_integerish
 ##' @export
 ##' @examples
 ##' cases <- data.table::copy(example_confirmed)
@@ -63,13 +63,17 @@ fill_missing <- function(data,
                          obs_column = "confirm",
                          by = NULL) {
   assert_data_frame(data)
+  assert_character(missing_dates)
+  assert_character(missing_obs)
+  assert_character(obs_column)
+  assert_character(by, null.ok = TRUE)
+  assert_integerish(initial_accumulate, lower = 1)
   assert_names(
     colnames(data),
     must.include = c("date", by, obs_column),
     disjunct.from = "accumulate"
   )
   assert_date(data$date, any.missing = FALSE)
-  assert_character(by, null.ok = TRUE)
 
   data <- as.data.table(data)
 
