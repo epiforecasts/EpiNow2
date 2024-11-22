@@ -205,7 +205,7 @@ estimate_infections <- function(data,
       ),
       confirm = 0, accumulate = FALSE, breakpoint = 0
     ),
-    reported_cases
+    reported_cases[, .(date, confirm, accumulate, breakpoint)]
   ))
 
   shifted_cases <- create_shifted_cases(
