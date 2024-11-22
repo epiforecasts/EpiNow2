@@ -67,7 +67,9 @@ fill_missing <- function(data,
   assert_character(missing_obs)
   assert_character(obs_column)
   assert_character(by, null.ok = TRUE)
-  assert_integerish(initial_accumulate, lower = 1)
+  if (!missing(initial_accumulate)) {
+    assert_integerish(initial_accumulate, lower = 1)
+  }
   assert_names(
     colnames(data),
     must.include = c("date", by, obs_column),
