@@ -17,7 +17,8 @@ fill_missing(
 \item{data}{Data frame with a \code{date} column. The other columns depend on the
 model that the data are to be used, e.g. \code{\link[=estimate_infections]{estimate_infections()}} or
 \code{\link[=estimate_secondary]{estimate_secondary()}}. See the documentation there for the expected
-format.}
+format. The data must not already have an \code{accumulate} function, otherwise
+the function will fail with an error.}
 
 \item{missing_dates}{Character. Options are "ignore" (the default),
 "accumulate" and "zero". This determines how missing dates in the data are
@@ -41,10 +42,9 @@ argument needs ot have a minimum of 1. If it is set to 1 then no
 accumulation is happening on the first data point. If it is greater than 1
 then dates are added to the beginning of the data set to get be able to
 have a sufficient number of modelled observations accumulated onto the
-first data point. This is useful, for example, for modelling weekly
-incidence data, in which case this should be set to 7. If accumulating and
-the first data point is not NA and this is argument is not set, then that
-data point will be removed with a warning.}
+first data point. For modelling weekly incidence data this should be set
+to 7. If accumulating and the first data point is not NA and this is
+argument is not set, then that data point will be removed with a warning.}
 
 \item{obs_column}{Character (default: "confirm"). If given, only the column
 specified here will be used for checking missingness. This is useful if
@@ -63,6 +63,13 @@ values are accumulated (see the documentation of the \code{data} argument in
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+This function ensures that all days between the first and last date in the
+data are present. It adds an \code{accumulate} column that indicates whether
+modelled observations should be accumulated onto a later data point.
+point. This is useful for modelling data that is reported less frequently
+than daily, e.g. weekly incidence data, as well as other reporting
+artifacts such as delayed weekedn reporting. The function can also be used
+to fill in missing observations with zeros.
 }
 \examples{
 cases <- data.table::copy(example_confirmed)

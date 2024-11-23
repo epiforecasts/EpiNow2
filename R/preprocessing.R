@@ -1,11 +1,19 @@
 ##' Fill missing data in a data set to prepare it for use within the package
 ##'
 ##' @description `r lifecycle::badge("experimental")`
+##' This function ensures that all days between the first and last date in the
+##'   data are present. It adds an `accumulate` column that indicates whether
+##'   modelled observations should be accumulated onto a later data point.
+##'   point. This is useful for modelling data that is reported less frequently
+##'   than daily, e.g. weekly incidence data, as well as other reporting
+##'   artifacts such as delayed weekedn reporting. The function can also be used
+##'   to fill in missing observations with zeros.
 ##'
 ##' @param data Data frame with a `date` column. The other columns depend on the
 ##'   model that the data are to be used, e.g. [estimate_infections()] or
 ##'   [estimate_secondary()]. See the documentation there for the expected
-##'   format.
+##'   format. The data must not already have an `accumulate` function, otherwise
+##'   the function will fail with an error.
 ##' @param missing_dates Character. Options are "ignore" (the default),
 ##'   "accumulate" and "zero". This determines how missing dates in the data are
 ##'   interpreted.  If set to "ignore", any missing dates in the observation
@@ -26,10 +34,9 @@
 ##'   accumulation is happening on the first data point. If it is greater than 1
 ##'   then dates are added to the beginning of the data set to get be able to
 ##'   have a sufficient number of modelled observations accumulated onto the
-##'   first data point. This is useful, for example, for modelling weekly
-##'   incidence data, in which case this should be set to 7. If accumulating and
-##'   the first data point is not NA and this is argument is not set, then that
-##'   data point will be removed with a warning.
+##'   first data point. For modelling weekly incidence data this should be set
+##'   to 7. If accumulating and the first data point is not NA and this is
+##'   argument is not set, then that data point will be removed with a warning.
 ##' @param obs_column Character (default: "confirm"). If given, only the column
 ##'   specified here will be used for checking missingness. This is useful if
 ##'   using a data set that has multiple columns of hwich one of them
