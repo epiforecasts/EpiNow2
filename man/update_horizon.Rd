@@ -19,7 +19,8 @@ this can also have a logical \code{accumulate} column which indicates whether
 data should be added to the next data point. This is useful when modelling
 e.g. weekly incidence data. See also the \code{\link[=fill_missing]{fill_missing()}} function which
 helps add the \code{accumulate} column with the desired properties when dealing
-with non-daily data.}
+with non-daily data. If any accumulation is done this happens after
+truncation as specified by the \code{truncation} argument.}
 }
 \value{
 Numeric forecast horizon adjusted for the users intention

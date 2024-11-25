@@ -26,7 +26,13 @@
 #' respectively on the log scale).
 #'
 #' @param data A `<data.frame>` containing the `date` of report and both
-#' `primary` and `secondary` reports.
+#' `primary` and `secondary` reports. Optionally this can also have a logical
+#' `accumulate` column which indicates whether data should be added to the
+#' next data point. This is useful when modelling e.g. weekly incidence data.
+#' See also the [fill_missing()] function which helps add the `accumulate`
+#' column with the desired properties when dealing with non-daily data. If any
+#' accumulation is done this happens after truncation as specified by the
+#' `truncation` argument.
 #'
 #' @param reports Deprecated; use `data` instead.
 #'

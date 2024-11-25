@@ -26,7 +26,13 @@ estimate_secondary(
 }
 \arguments{
 \item{data}{A \verb{<data.frame>} containing the \code{date} of report and both
-\code{primary} and \code{secondary} reports.}
+\code{primary} and \code{secondary} reports. Optionally this can also have a logical
+\code{accumulate} column which indicates whether data should be added to the
+next data point. This is useful when modelling e.g. weekly incidence data.
+See also the \code{\link[=fill_missing]{fill_missing()}} function which helps add the \code{accumulate}
+column with the desired properties when dealing with non-daily data. If any
+accumulation is done this happens after truncation as specified by the
+\code{truncation} argument.}
 
 \item{secondary}{A call to \code{\link[=secondary_opts]{secondary_opts()}} or a list containing the
 following  binary variables: cumulative, historic, primary_hist_additive,
