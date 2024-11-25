@@ -156,6 +156,13 @@ transformed parameters {
   } else {
     obs_reports = reports[1:ot];
   }
+
+  // accumulate reports
+  if (any_accumulate) {
+     profile("accumulate") {
+       obs_reports = accumulate_reports(obs_reports, accumulate);
+    }
+  }
 }
 
 model {
@@ -199,7 +206,7 @@ model {
     profile("report lp") {
       report_lp(
         cases, cases_time, obs_reports, rep_phi, phi_mean, phi_sd, model_type,
-        obs_weight, accumulate
+        obs_weight
       );
     }
   }

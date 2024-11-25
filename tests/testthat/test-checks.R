@@ -205,7 +205,7 @@ test_that("check_na_setting_against_data works as expected", {
   # expect no message
   expect_no_message(
     check_na_setting_against_data(
-      obs = obs_opts(na = "missing"),
+      obs = suppressWarnings(obs_opts(na = "missing")),
       data = copy(example_confirmed)[c(1, 3), confirm := NA],
       cols_to_check = c("date", "confirm")
     )

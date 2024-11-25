@@ -6,7 +6,7 @@
 \usage{
 check_reports_valid(
   data,
-  model = c("estimate_infections", "estimate_truncation", "estimate_secondary")
+  model = c("estimate_infections", "estimate_secondary")
 )
 }
 \arguments{

@@ -1,0 +1,63 @@
+---
+output: github_document
+---
+
+```{r setup, echo = FALSE}
+library("knitr")
+```
+
+# Supporting missing data
+
+We want to support reporting patterns that include *accumulation* (i.e. batch reporting of data from multiple dates, for example weekly) and *missingness* (dates which are lacking reports) in incidence and prevalence data.
+
+## Proposed interface
+
+### Missing data
+
+Any dates between the minimum date and maximum date in the data that is either absent, or present with an `NA` value (currently called `confirm`) is interpreted as missing and ignored in the likelihood.
+All other data points are used in the likelihood.
+This matches the current default behaviour, introduced in version 1.5.0.
+
+### Accumulation
+
+If instead modelled values on these days should be accumulated onto the next reporting date, the passed `data.frame` must have an additional logical column, `accumulate`.
+If `accumulate` is TRUE then the modelled value of the observed latent variable on that day is added to any existing accumulation and stored for later observation.
+If `accumulate` is FALSE the modelled value is added to any stored accumulated variables before potentially being used in the likelihood on that day (if not `NA`).
+Subsequently the stored accumulated variable is reset to zero.
+
+### Example
+
+```{r results = "asis"}
+df <- data.frame(
+  date = as.Date(c("2024-10-23", "2024-10-24", "2024-10-26", "2024-10-27", "2024-10-28")),
+  confirm = c(NA, 10, NA, NA, 17),
+  accumulate = c(TRUE, FALSE, TRUE, TRUE, FALSE)
+)
+df |>
+  kable(align = "l")
+```
+
+The likelihood is evaluated on two days, 24 October and 28 October.
+On 24 October the data (10) is compared to (modelled value on 23 October) + (modelled value on 24 October).
+On 28 October the data (17) is compared to (modelled value on 26 October) + (modelled value on 27 October) + (modelled value on 28 October).
+
+## Helper functions
+
+A helper function, `fill_missing()` can be used to convert weekly data to the required format, i.e.
+
+```{r, results = "asis"}
+df <- data.frame(
+  date = as.Date(c("2024-10-24", "2024-10-31", "2024-11-07")),
+  confirm = c(10, 17, 11)
+)
+df |>
+  kable(align = "l")
+```
+
+can be converted with `fill_missing(missing_dates = "accumulate", initial_accumulate = 7)` to
+
+```{r, results = "asis"}
+df |>
+  fill_missing(missing_dates = "accumulate", initial_accumulate = 7) |>
+  kable(align = "l")
+```

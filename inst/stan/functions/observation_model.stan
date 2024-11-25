@@ -102,52 +102,54 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  * @param phi_sd Real value for standard deviation of reporting overdispersion prior.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
  * @param weight Real value for weighting the log density contribution.
- * @param accumulate Integer flag indicating whether to accumulate reports (1) or not (0).
+ * @param accumulate Array of integers indicating, for each time point, whether
+ * to accumulate reports (1) or not (0).
  */
 void report_lp(array[] int cases, array[] int cases_time, vector reports,
                array[] real rep_phi, real phi_mean, real phi_sd,
-               int model_type, real weight, int accumulate) {
-  int n = num_elements(cases_time) - accumulate; // number of observations
-  vector[n] obs_reports; // reports at observation time
-  array[n] int obs_cases; // observed cases at observation time
-  if (accumulate) {
-    int t = num_elements(reports);
-    int i = 0;
-    int current_obs = 0;
-    obs_reports = rep_vector(0, n);
-    while (i <= t && current_obs <= n) {
-      if (current_obs > 0) { // first observation gets ignored when accumulating
-        obs_reports[current_obs] += reports[i];
-      }
-      if (i == cases_time[current_obs + 1]) {
-        current_obs += 1;
-      }
-      i += 1;
-    }
-    obs_cases = cases[2:(n + 1)];
-  } else {
-    obs_reports = reports[cases_time];
-    obs_cases = cases;
-  }
+               int model_type, real weight) {
+  int n = num_elements(cases_time); // number of observations
+  vector[n] obs_reports = reports[cases_time]; // reports at observation time
   if (model_type) {
     real dispersion = inv_square(phi_sd > 0 ? rep_phi[model_type] : phi_mean);
     if (phi_sd > 0) {
       rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
     }
     if (weight == 1) {
-      obs_cases ~ neg_binomial_2(obs_reports, dispersion);
+      cases ~ neg_binomial_2(obs_reports, dispersion);
     } else {
       target += neg_binomial_2_lpmf(
-        obs_cases | obs_reports, dispersion
+        cases | obs_reports, dispersion
       ) * weight;
     }
   } else {
     if (weight == 1) {
-      obs_cases ~ poisson(obs_reports);
+      cases ~ poisson(obs_reports);
     } else {
-      target += poisson_lpmf(obs_cases | obs_reports) * weight;
+      target += poisson_lpmf(cases | obs_reports) * weight;
     }
   }
+}
+
+/**
+ * Accumulate reports according to a binary flag at each time point
+ *
+ * This function accumulates reports according to a binary flag at each time point.
+ *
+ * @param reports Vector of expected reports.
+ * @param accumulate Array of integers indicating, for each time point, whether to accumulate or not.
+ *
+ * @return A vector of accumulated reports.
+ */
+vector accumulate_reports(vector reports, array[] int accumulate) {
+  int ot_h = num_elements(reports); // number of reporting time points modelled
+  vector[ot_h] accumulated_reports = reports;
+  for (i in 1:(ot_h - 1)) {
+    if (accumulate[i]) { // first observation gets ignored when accumulating
+      accumulated_reports[i + 1] += accumulated_reports[i];
+    }
+  }
+  return accumulated_reports;
 }
 
 /**

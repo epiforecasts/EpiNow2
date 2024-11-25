@@ -13,6 +13,8 @@ data {
   array[lt] int obs_time;             // observed secondary data
   vector[t] primary;                 // observed primary data
   int burn_in;                       // time period to not use for fitting
+  int any_accumulate; // Should any missing values be accumulated?
+  array[t] int accumulate;  // Should missing values be accumulated (by time)
 #include data/secondary.stan
 #include data/delays.stan
 #include data/observation_model.stan
@@ -70,6 +72,7 @@ transformed parameters {
  if (week_effect > 1) {
    secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
  }
+
  // truncate near time cases to observed reports
  if (trunc_id) {
     vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(
@@ -79,6 +82,13 @@ transformed parameters {
       0, 1, 1
     );
     secondary = truncate_obs(secondary, trunc_rev_cmf, 0);
+ }
+
+ // accumulate reports
+ if (any_accumulate) {
+   profile("accumulate") {
+     secondary = accumulate_reports(secondary, accumulate);
+   }
  }
 }
 
@@ -97,7 +107,7 @@ model {
   if (likelihood) {
     report_lp(
       obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
-      rep_phi, phi_mean, phi_sd, model_type, 1, accumulate
+      rep_phi, phi_mean, phi_sd, model_type, 1
     );
   }
 }

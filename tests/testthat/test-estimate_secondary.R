@@ -73,7 +73,7 @@ test_that("estimate_secondary can return values from simulated data and plot
   expect_equal(
     names(inc$predictions),
     c(
-      "date", "primary", "secondary", "mean", "se_mean", "sd",
+      "date", "primary", "secondary", "accumulate", "mean", "se_mean", "sd",
       "lower_90", "lower_50", "lower_20", "median", "upper_20", "upper_50", "upper_90"
     )
   )
@@ -115,6 +115,9 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
   cases_weekly <- merge(
     cases[, list(date, primary)], secondary_weekly, by = "date", all.x = TRUE
   )
+  cases_weekly <- fill_missing(
+    cases_weekly, missing_obs = "accumulate", obs_column = "secondary"
+  )
   inc_weekly <- estimate_secondary(cases_weekly,
     delays = delay_opts(
       LogNormal(
@@ -122,7 +125,7 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
       )
     ),
     obs = obs_opts(
-      scale = list(mean = 0.4, sd = 0.05), week_effect = FALSE, na = "accumulate"
+      scale = list(mean = 0.4, sd = 0.05), week_effect = FALSE
     ), verbose = FALSE
   )
   expect_true(is.list(inc_weekly$data))
