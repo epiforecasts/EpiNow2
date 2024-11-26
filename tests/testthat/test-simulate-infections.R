@@ -30,7 +30,7 @@ test_that("simulate_infections works as expected with additional parameters", {
   sim <- test_simulate_infections(
     generation_time = gt_opts(fix_parameters(example_generation_time)),
     delays = delay_opts(fix_parameters(example_reporting_delay)),
-    obs = obs_opts(family = "negbin", phi = list(mean = 0.5, sd = 0)),
+    obs = obs_opts(family = "negbin", phi = Normal(mean = 0.5, sd = 0)),
     seeding_time = 10
   )
   expect_equal(nrow(sim), 2 * nrow(R))
@@ -49,7 +49,7 @@ test_that("simulate_infections fails with uncertain parameters", {
   expect_error(
     test_simulate_infections(
       generation_time = gt_opts(Fixed(1)),
-      obs = obs_opts(scale = list(mean = 1, sd = 1))
+      obs = obs_opts(scale = Normal(mean = 1, sd = 1))
     ),
     "uncertain"
   )

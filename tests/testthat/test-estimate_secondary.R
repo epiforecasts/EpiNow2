@@ -23,14 +23,16 @@ inc_cases[
 # fit model to example data specifying a weak prior for fraction reported
 # with a secondary case
 inc <- estimate_secondary(inc_cases[1:60],
-  obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+  obs = obs_opts(
+    scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
+  ),
   verbose = FALSE
 )
 
 # extract posterior variables of interest
 params <- c(
   "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-  "scaling" = "frac_obs[1]"
+  "scaling" = "params[1]"
 )
 
 inc_posterior <- inc$posterior[variable %in% params]
@@ -58,7 +60,7 @@ prev <- estimate_secondary(prev_cases[1:100],
   secondary = secondary_opts(type = "prevalence"),
   obs = obs_opts(
     week_effect = FALSE,
-    scale = list(mean = 0.4, sd = 0.1)
+    scale = Normal(mean = 0.4, sd = 0.1)
   ),
   verbose = FALSE
 )
@@ -90,7 +92,7 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
     delays = delay_opts(
       LogNormal(meanlog = 1.8, sdlog = 0.5, max = 30)
     ),
-    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+    obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     verbose = FALSE
   )
   prev_cases_na <- data.table::copy(prev_cases)
@@ -100,7 +102,7 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
     delays = delay_opts(
       LogNormal(mean = 1.8, sd = 0.5, max = 30)
     ),
-    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+    obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     verbose = FALSE
   )
   expect_true(is.list(inc_na$data))
@@ -122,7 +124,8 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
       )
     ),
     obs = obs_opts(
-      scale = list(mean = 0.4, sd = 0.05), week_effect = FALSE, na = "accumulate"
+      scale = Normal(mean = 0.4, sd = 0.05), week_effect = FALSE,
+      na = "accumulate"
     ), verbose = FALSE
   )
   expect_true(is.list(inc_weekly$data))
@@ -130,7 +133,7 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
 
 test_that("estimate_secondary works when only estimating scaling", {
   inc <- estimate_secondary(inc_cases[1:60],
-    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+    obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     delay = delay_opts(),
     verbose = FALSE
   )
@@ -159,7 +162,7 @@ test_that("estimate_secondary can recover simulated parameters with the
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
     inc_cmdstanr <- estimate_secondary(inc_cases[1:60],
-      obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+      obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
       verbose = FALSE, stan = stan_opts(backend = "cmdstanr")
     )
   )))
@@ -212,7 +215,7 @@ test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
   )
   inc_weigh <- estimate_secondary(
     inc_cases[1:60], delays = delay_opts(delays),
-    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE),
+    obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     weigh_delay_priors = TRUE, verbose = FALSE
   )
   expect_s3_class(inc_weigh, "estimate_secondary")
@@ -222,7 +225,7 @@ test_that("estimate_secondary works with filter_leading_zeros set", {
   modified_data <- inc_cases[1:10, secondary := 0]
   out <- estimate_secondary(
     modified_data,
-    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2),
+    obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2),
     week_effect = FALSE),
     filter_leading_zeros = TRUE,
     verbose = FALSE
@@ -236,7 +239,7 @@ test_that("estimate_secondary works with zero_threshold set", {
   modified_data <- inc_cases[sample(1:30, 10), primary := 0]
   out <- estimate_secondary(
     modified_data,
-    obs = obs_opts(scale = list(mean = 0.2, sd = 0.2),
+    obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2),
                    week_effect = FALSE),
     zero_threshold = 10,
     verbose = FALSE

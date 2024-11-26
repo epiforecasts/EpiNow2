@@ -2,8 +2,6 @@ test_that("create_rt_data returns expected default values", {
   result <- create_rt_data()
   
   expect_type(result, "list")
-  expect_equal(result$r_mean, 1)
-  expect_equal(result$r_sd, 1)
   expect_equal(result$estimate_r, 1)
   expect_equal(result$bp_n, 0)
   expect_equal(result$breakpoints, numeric(0))
@@ -24,7 +22,6 @@ test_that("create_rt_data handles NULL rt input correctly", {
 
 test_that("create_rt_data handles custom rt_opts correctly", {
   custom_rt <- rt_opts(
-    prior = list(mean = 2, sd = 0.5),
     use_rt = FALSE,
     rw = 0,
     use_breakpoints = FALSE,
@@ -35,8 +32,6 @@ test_that("create_rt_data handles custom rt_opts correctly", {
   
   result <- create_rt_data(rt = custom_rt, horizon = 7)
   
-  expect_equal(result$r_mean, 2)
-  expect_equal(result$r_sd, 0.5)
   expect_equal(result$estimate_r, 0)
   expect_equal(result$pop, 1000000)
   expect_equal(result$stationary, 1)
