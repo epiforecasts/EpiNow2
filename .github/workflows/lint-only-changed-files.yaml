@@ -29,6 +29,7 @@ jobs:
             any::gh
             any::lintr
             any::purrr
+            progressr
 
       - name: Add lintr options
         run: |
