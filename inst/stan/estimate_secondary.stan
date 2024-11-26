@@ -4,6 +4,7 @@ functions {
 #include functions/delays.stan
 #include functions/observation_model.stan
 #include functions/secondary.stan
+#include functions/params.stan
 }
 
 data {
@@ -16,6 +17,8 @@ data {
 #include data/secondary.stan
 #include data/delays.stan
 #include data/observation_model.stan
+#include data/params.stan
+#include data/estimate_secondary_params.stan
 }
 
 transformed data{
@@ -29,8 +32,7 @@ parameters{
   // observation model
   vector<lower = delay_params_lower>[delay_params_length] delay_params;
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
-  array[obs_scale] real<lower = 0, upper = 1> frac_obs;   // fraction of cases that are ultimately observed
-  array[model_type] real<lower = 0> rep_phi;   // overdispersion of the reporting process
+  vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
 }
 
 transformed parameters {
@@ -43,7 +45,11 @@ transformed parameters {
 
     // scaling of primary reports by fraction observed
     if (obs_scale) {
-      scaled = scale_obs(primary, obs_scale_sd > 0 ? frac_obs[1] : obs_scale_mean);
+      real frac_obs = get_param(
+        frac_obs_id, params_fixed_lookup, params_variable_lookup, params_value,
+        params
+      );
+      scaled = scale_obs(primary, frac_obs);
     } else {
       scaled = primary;
     }
@@ -89,15 +95,21 @@ model {
     delay_dist, delay_weight
   );
 
-  // prior primary report scaling
-  if (obs_scale) {
-    frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];
-   }
+  // parameter priors
+  profile("param lp") {
+    params_lp(
+      params, prior_dist, prior_dist_params, params_lower, params_upper
+    );
+  }
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
+    real rep_phi = get_param(
+      rep_phi_id, params_fixed_lookup, params_variable_lookup, params_value,
+      params
+    );
     report_lp(
       obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
-      rep_phi, phi_mean, phi_sd, model_type, 1, accumulate
+      rep_phi, model_type, 1, accumulate
     );
   }
 }
@@ -105,11 +117,17 @@ model {
 generated quantities {
   array[t - burn_in] int sim_secondary;
   vector[return_likelihood > 1 ? t - burn_in : 0] log_lik;
-  // simulate secondary reports
-  sim_secondary = report_rng(secondary[(burn_in + 1):t], rep_phi, model_type);
-  // log likelihood of model
-  if (return_likelihood) {
-    log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-                             rep_phi, model_type, obs_weight);
+  {
+    real rep_phi = get_param(
+      rep_phi_id, params_fixed_lookup, params_variable_lookup, params_value,
+      params
+    );
+    // simulate secondary reports
+    sim_secondary = report_rng(secondary[(burn_in + 1):t], rep_phi, model_type);
+    // log likelihood of model
+    if (return_likelihood) {
+      log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
+                               rep_phi, model_type, obs_weight);
+    }
   }
 }

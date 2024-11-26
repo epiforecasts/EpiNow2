@@ -4,7 +4,7 @@
  * process.
  *
  * @param t Length of the time series
- * @param log_R Logarithm of the base reproduction number
+ * @param R0 Initial reproduction number
  * @param noise Vector of Gaussian process noise values
  * @param bps Array of breakpoint indices
  * @param bp_effects Vector of breakpoint effects
@@ -12,19 +12,19 @@
  * (1) or non-stationary (0)
  * @return A vector of length t containing the updated Rt values
  */
-vector update_Rt(int t, real log_R, vector noise, array[] int bps,
+vector update_Rt(int t, real R0, vector noise, array[] int bps,
                  vector bp_effects, int stationary) {
   // define control parameters
   int bp_n = num_elements(bp_effects);
   int gp_n = num_elements(noise);
   // initialise intercept
-  vector[t] R = rep_vector(log_R, t);
+  vector[t] logR = rep_vector(log(R0), t);
   //initialise breakpoints + rw
   if (bp_n) {
     vector[bp_n + 1] bp0;
     bp0[1] = 0;
     bp0[2:(bp_n + 1)] = cumulative_sum(bp_effects);
-    R = R + bp0[bps];
+    logR = logR + bp0[bps];
   }
   //initialise gaussian process
   if (gp_n) {
@@ -39,32 +39,27 @@ vector update_Rt(int t, real log_R, vector noise, array[] int bps,
       gp[2:(gp_n + 1)] = noise;
       gp = cumulative_sum(gp);
     }
-    R = R + gp;
+    logR = logR + gp;
   }
   
-  return exp(R);
+  return exp(logR);
 }
 
 /**
  * Calculate the log-probability of the reproduction number (Rt) priors
  *
- * @param log_R Logarithm of the base reproduction number
  * @param initial_infections Array of initial infection values
  * @param initial_growth Array of initial growth rates
  * @param bp_effects Vector of breakpoint effects
  * @param bp_sd Array of breakpoint standard deviations
  * @param bp_n Number of breakpoints
  * @param seeding_time Time point at which seeding occurs
- * @param r_logmean Log-mean of the prior distribution for the base reproduction number
- * @param r_logsd Log-standard deviation of the prior distribution for the base reproduction number
  * @param prior_infections Prior mean for initial infections
  * @param prior_growth Prior mean for initial growth rates
  */
-void rt_lp(vector log_R, array[] real initial_infections, array[] real initial_growth,
+void rt_lp(array[] real initial_infections, array[] real initial_growth,
            vector bp_effects, array[] real bp_sd, int bp_n, int seeding_time,
-           real r_logmean, real r_logsd, real prior_infections,
-           real prior_growth) {
-  log_R ~ normal(r_logmean, r_logsd);
+           real prior_infections, real prior_growth) {
   //breakpoint effects on Rt
   if (bp_n > 0) {
     bp_sd[1] ~ normal(0, 0.1) T[0,];

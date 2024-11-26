@@ -7,6 +7,7 @@ functions {
 #include functions/infections.stan
 #include functions/observation_model.stan
 #include functions/generated_quantities.stan
+#include functions/params.stan
 }
 
 data {
@@ -16,6 +17,8 @@ data {
 #include data/rt.stan
 #include data/backcalc.stan
 #include data/observation_model.stan
+#include data/params.stan
+#include data/estimate_infections_params.stan
 }
 
 transformed data {
@@ -27,9 +30,6 @@ transformed data {
     ot_h, t, horizon, estimate_r, stationary, future_fixed, fixed_from
   );
   matrix[noise_terms, gp_type == 1 ? 2*M : M] PHI = setup_gp(M, L, noise_terms, gp_type == 1, w0);  // basis function
-  // Rt
-  real r_logmean = log(r_mean^2 / sqrt(r_sd^2 + r_mean^2));
-  real r_logsd = sqrt(log(1 + (r_sd^2 / r_mean^2)));
 
   array[delay_types] int delay_type_max;
   profile("assign max") {
@@ -41,12 +41,11 @@ transformed data {
 }
 
 parameters {
+  vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
   // gaussian process
   array[fixed ? 0 : 1] real<lower = ls_min, upper = ls_max> rescaled_rho;  // length scale of noise GP
-  array[fixed ? 0 : 1] real<lower = 0> alpha;    // scale of noise GP
   vector[fixed ? 0 : gp_type == 1 ? 2*M : M] eta;               // unconstrained noise
   // Rt
-  vector[estimate_r] log_R;                // baseline reproduction number estimate (log)
   array[estimate_r] real initial_infections;    // seed infections
   array[estimate_r && seeding_time > 1 ? 1 : 0] real initial_growth; // seed growth rate
   array[bp_n > 0 ? 1 : 0] real<lower = 0> bp_sd; // standard deviation of breakpoint effect
@@ -54,8 +53,6 @@ parameters {
   // observation model
   vector<lower = delay_params_lower>[delay_params_length] delay_params; // delay parameters
   simplex[week_effect] day_of_week_simplex; // day of week reporting effect
-  array[obs_scale_sd > 0 ? 1 : 0] real<lower = 0, upper = 1> frac_obs; // fraction of cases that are ultimately observed
-  array[model_type] real<lower = 0> rep_phi; // overdispersion of the reporting process
 }
 
 transformed parameters {
@@ -69,8 +66,12 @@ transformed parameters {
   // GP in noise - spectral densities
   profile("update gp") {
     if (!fixed) {
+      real alpha = get_param(
+        alpha_id, params_fixed_lookup, params_variable_lookup, params_value,
+        params
+      );
       noise = update_gp(
-        PHI, M, L, alpha[1], rescaled_rho, eta, gp_type, nu
+        PHI, M, L, alpha, rescaled_rho, eta, gp_type, nu
       );
     }
   }
@@ -85,9 +86,12 @@ transformed parameters {
         1, 1, 0
       );
     }
-    profile("R") {
+    profile("R0") {
+      real R0 = get_param(
+        R0_id, params_fixed_lookup, params_variable_lookup, params_value, params
+      );
       R = update_Rt(
-        ot_h, log_R[estimate_r], noise, breakpoints, bp_effects, stationary
+        ot_h, R0, noise, breakpoints, bp_effects, stationary
       );
     }
     profile("infections") {
@@ -133,9 +137,11 @@ transformed parameters {
   // scaling of reported cases by fraction observed
   if (obs_scale) {
     profile("scale") {
-      reports = scale_obs(
-        reports, obs_scale_sd > 0 ? frac_obs[1] : obs_scale_mean
+      real frac_obs = get_param(
+        frac_obs_id, params_fixed_lookup, params_variable_lookup, params_value,
+        params
       );
+      reports = scale_obs(reports, frac_obs);
     }
   }
 
@@ -162,7 +168,7 @@ model {
   // priors for noise GP
   if (!fixed) {
     profile("gp lp") {
-      gaussian_process_lp(alpha[1], eta, alpha_mean, alpha_sd);
+      gaussian_process_lp(eta);
       if (gp_type != 3) {
         lengthscale_lp(rescaled_rho[1], ls_meanlog, ls_sdlog, ls_min, ls_max);
       }
@@ -177,29 +183,33 @@ model {
     );
   }
 
+  // parameter priors
+  profile("param lp") {
+    params_lp(
+      params, prior_dist, prior_dist_params, params_lower, params_upper
+    );
+  }
+
   if (estimate_r) {
     // priors on Rt
     profile("rt lp") {
       rt_lp(
-        log_R, initial_infections, initial_growth, bp_effects, bp_sd, bp_n,
-        seeding_time, r_logmean, r_logsd, prior_infections, prior_growth
+        initial_infections, initial_growth, bp_effects, bp_sd, bp_n,
+        seeding_time, prior_infections, prior_growth
       );
-    }
-  }
-
-  // prior observation scaling
-  if (obs_scale_sd > 0) {
-    profile("scale lp") {
-      frac_obs[1] ~ normal(obs_scale_mean, obs_scale_sd) T[0, 1];
     }
   }
 
   // observed reports from mean of reports (update likelihood)
   if (likelihood) {
     profile("report lp") {
+      real rep_phi = get_param(
+        rep_phi_id, params_fixed_lookup, params_variable_lookup, params_value,
+        params
+      );
       report_lp(
-        cases, cases_time, obs_reports, rep_phi, phi_mean, phi_sd, model_type,
-        obs_weight, accumulate
+        cases, cases_time, obs_reports, rep_phi, model_type, obs_weight,
+        accumulate
       );
     }
   }
@@ -213,6 +223,10 @@ generated quantities {
   vector[fixed ? 0 : 1] rho;
 
   profile("generated quantities") {
+    real rep_phi = get_param(
+      rep_phi_id, params_fixed_lookup, params_variable_lookup, params_value,
+      params
+    );
     if (!fixed && gp_type != 3) {
       vector[noise_terms] x = linspaced_vector(noise_terms, 1, noise_terms);
       rho[1] = rescaled_rho[1] * sd(x);
