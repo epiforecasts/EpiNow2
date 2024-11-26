@@ -1,14 +1,27 @@
 # EpiNow2 (development version)
 
-## Documentation
-
-- Brought the docs on `alpha_sd` up to date with the code change from prior PR #853. By @zsusswein in #862 and reviewed by @jamesmbaazam.
-
 ## Model changes
 
+- The models now support more complex patterns of aggregating reported cases by accumulating them over multiple time points, as well as mixtures of accumulation and missingness via the new `fill_missing()` function and a logical `accumulate` column that can be supplied with the data. By @sbfnk in #851 and reviewed by @seabbs and @jamesmbaazam..
+
+  ```r
+  # Deprecated
+  data |>
+    estimate_infections(obs_opts(na = "accumulate"))
+
+  # Recommended workflow e.g. for weekly incidence data
+  data |>
+    fill_missing(missing = "accumulate", initial_accumulate = 7) |>
+    estimate_infections()
+  ```
+  
 - A bug was fixed where the initial growth was never estimated (i.e. the prior mean was always zero). By @sbfnk in #853 and reviewed by @seabbs.
 - A bug was fixed where an internal function for applying a default cdf cutoff failed due to a difference a vector length issue. By @jamesmbaazam in #858 and reviewed by @sbfnk.
 - All parameters have been changed to the new parameter interface. By @sbfnk in # and reviewed by @.
+
+## Documentation
+
+- Brought the docs on `alpha_sd` up to date with the code change from prior PR #853. By @zsusswein in #862 and reviewed by @jamesmbaazam.
 
 # EpiNow2 1.6.1
 

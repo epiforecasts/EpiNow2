@@ -77,6 +77,10 @@ create_clean_reported_cases <- function(data, horizon = 0,
   }
   reported_cases[is.na(confirm), confirm := fill]
   reported_cases[, "average_7_day" := NULL]
+  ## set accumulate to FALSE in added rows
+  if ("accumulate" %in% colnames(reported_cases)) {
+    reported_cases[is.na(accumulate), accumulate := FALSE]
+  }
   return(reported_cases)
 }
 
@@ -476,7 +480,6 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
     obs_scale = as.integer(obs$scale != Fixed(1)),
-    accumulate = obs$accumulate,
     likelihood = as.numeric(obs$likelihood),
     return_likelihood = as.numeric(obs$return_likelihood)
   )
@@ -517,14 +520,16 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 create_stan_data <- function(data, seeding_time,
                              rt, gp, obs, horizon,
                              backcalc, shifted_cases) {
-
   cases <- data[(seeding_time + 1):(.N - horizon)]
   complete_cases <- create_complete_cases(cases)
   cases <- cases$confirm
+  accumulate <- data[-(1:seeding_time)]$accumulate
 
   stan_data <- list(
     cases = complete_cases$confirm,
     cases_time = complete_cases$lookup,
+    any_accumulate = as.integer(any(accumulate)),
+    accumulate = as.integer(accumulate),
     lt = nrow(complete_cases),
     shifted_cases = shifted_cases,
     t = length(data$date),

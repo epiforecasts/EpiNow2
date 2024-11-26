@@ -26,7 +26,13 @@
 #' respectively on the log scale).
 #'
 #' @param data A `<data.frame>` containing the `date` of report and both
-#' `primary` and `secondary` reports.
+#' `primary` and `secondary` reports. Optionally this can also have a logical
+#' `accumulate` column which indicates whether data should be added to the
+#' next data point. This is useful when modelling e.g. weekly incidence data.
+#' See also the [fill_missing()] function which helps add the `accumulate`
+#' column with the desired properties when dealing with non-daily data. If any
+#' accumulation is done this happens after truncation as specified by the
+#' `truncation` argument.
 #'
 #' @param reports Deprecated; use `data` instead.
 #'
@@ -190,7 +196,10 @@ estimate_secondary <- function(data,
     data = reports,
     cols_to_check = c("date", "primary", "secondary")
   )
-  secondary_reports_dirty <- reports[, list(date, confirm = secondary)]
+  reports <- default_fill_missing_obs(reports, obs, "secondary")
+
+  secondary_reports_dirty <-
+    reports[, list(date, confirm = secondary, accumulate)]
   secondary_reports <- create_clean_reported_cases(
     secondary_reports_dirty,
     filter_leading_zeros = filter_leading_zeros,
@@ -225,7 +234,9 @@ estimate_secondary <- function(data,
     obs_time = complete_secondary[lookup > burn_in]$lookup - burn_in,
     lt = sum(complete_secondary$lookup > burn_in),
     burn_in = burn_in,
-    seeding_time = 0
+    seeding_time = 0,
+    any_accumulate = as.integer(any(reports$accumulate > 0)),
+    accumulate = as.integer(reports$accumulate)
   )
   # secondary model options
   stan_data <- c(stan_data, secondary)

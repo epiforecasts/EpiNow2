@@ -17,8 +17,14 @@
 #' for an example of using `estimate_infections` within the `epinow` wrapper to
 #' estimate Rt for Covid-19 in a country from the ECDC data source.
 #'
-#' @param data A `<data.frame>` of confirmed cases (confirm) by date
-#' (date). `confirm` must be numeric and `date` must be in date format.
+#' @param data A `<data.frame>` of confirmed cases (confirm) by date (date).
+#' `confirm` must be numeric and `date` must be in date format. Optionally
+#' this can also have a logical `accumulate` column which indicates whether
+#' data should be added to the next data point. This is useful when modelling
+#' e.g. weekly incidence data. See also the [fill_missing()] function which
+#' helps add the `accumulate` column with the desired properties when dealing
+#' with non-daily data. If any accumulation is done this happens after
+#' truncation as specified by the `truncation` argument.
 #'
 #' @param reported_cases Deprecated; use `data` instead.
 #'
@@ -176,10 +182,11 @@ estimate_infections <- function(data,
     data = dirty_reported_cases,
     cols_to_check = c("date", "confirm")
   )
+  # Fill missing dates
+  reported_cases <- default_fill_missing_obs(data, obs, "confirm")
   # Create clean and complete cases
-  # Order cases
   reported_cases <- create_clean_reported_cases(
-    data, horizon,
+    reported_cases, horizon,
     filter_leading_zeros = filter_leading_zeros,
     zero_threshold = zero_threshold
   )
@@ -197,9 +204,9 @@ estimate_infections <- function(data,
         min(reported_cases$date) - 1,
         by = "days"
       ),
-      confirm = 0, breakpoint = 0
+      confirm = 0, accumulate = FALSE, breakpoint = 0
     ),
-    reported_cases
+    reported_cases[, .(date, confirm, accumulate, breakpoint)]
   ))
 
   shifted_cases <- create_shifted_cases(

@@ -44,15 +44,7 @@ will be enforced automatically. If setting to a prior distribution and no
 overreporting is expected, it might be sensible to set a maximum of 1 via
 the \code{max} option when declaring the distribution.}
 
-\item{na}{Character. Options are "missing" (the default) and "accumulate".
-This determines how NA values in the data are interpreted. If set to
-"missing", any NA values in the observation data set will be interpreted as
-missing and skipped in the likelihood. If set to "accumulate", modelled
-observations will be accumulated and added to the next non-NA data point.
-This can be used to model incidence data that is reported at less than
-daily intervals. If set to "accumulate", the first data point is not
-included in the likelihood but used only to reset modelled observations to
-zero.}
+\item{na}{Deprecated; use the \code{\link[=fill_missing]{fill_missing()}} function instead}
 
 \item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be
 included in the model.}

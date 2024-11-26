@@ -3,9 +3,9 @@ dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
 
 test_that("create_obs_model works with default settings", {
   obs <- create_obs_model(dates = dates)
-  expect_equal(length(obs), 8)
+  expect_equal(length(obs), 7)
   expect_equal(names(obs), c(
-    "model_type", "week_effect", "obs_weight", "obs_scale", "accumulate",
+    "model_type", "week_effect", "obs_weight", "obs_scale",
     "likelihood", "return_likelihood", "day_of_week"
   ))
   expect_equal(obs$model_type, 1)
