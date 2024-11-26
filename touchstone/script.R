@@ -11,7 +11,7 @@ touchstone::benchmark_run(
     data = reported_cases,
     generation_time = generation_time_opts(fixed_generation_time),
     delays = delay_opts(fixed_delays),
-    rt = rt_opts(prior = Normal(mean = 2, sd = 0.2)),
+    rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
@@ -27,7 +27,7 @@ touchstone::benchmark_run(
     data = reported_cases,
     generation_time = generation_time_opts(example_generation_time),
     delays = delays,
-    rt = rt_opts(prior = Normal(mean = 2, sd = 0.2)),
+    rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
@@ -42,7 +42,7 @@ touchstone::benchmark_run(
   no_delays = { epinow(
     data = reported_cases,
     generation_time = generation_time_opts(fixed_generation_time),
-    rt = rt_opts(prior = Normal(mean = 2, sd = 0.2)),
+    rt = rt_opts(prior = list(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
@@ -58,7 +58,7 @@ touchstone::benchmark_run(
     data = reported_cases,
     generation_time = generation_time_opts(fixed_generation_time),
     delays = delay_opts(fixed_delays),
-    rt = rt_opts(prior = Normal(mean = 2, sd = 0.2), gp_on = "R0"),
+    rt = rt_opts(prior = list(mean = 2, sd = 0.2), gp_on = "R0"),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
@@ -74,7 +74,7 @@ touchstone::benchmark_run(
     data = reported_cases,
     generation_time = generation_time_opts(fixed_generation_time),
     delays = delay_opts(fixed_delays),
-    rt = rt_opts(prior = Normal(mean = 2, sd = 0.2), rw = 7),
+    rt = rt_opts(prior = list(mean = 2, sd = 0.2), rw = 7),
     gp = NULL,
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
