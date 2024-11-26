@@ -125,6 +125,57 @@ discrete_pmf <- function(distribution =
   c(e1, e2)
 }
 
+##' Compares two delay distributions
+##'
+##' @param e1 The first delay distribution (of type <dist_spec>) to
+##' combine.
+##'
+##' @param e2 The second delay distribution (of type <dist_spec>) to
+##' combine.
+##' @method == dist_spec
+##' @return TRUE or FALSE
+##' @export
+##' @examples
+##' Fixed(1) == Normal(1, 0.5)
+## nolint start: cyclocomp_linter
+`==.dist_spec` <- function(e1, e2) {
+  ## both must have same number of distributions
+  if (ndist(e1) != ndist(e2)) return(FALSE)
+  ## loop over constituent distributions
+  for (i in seq_len(ndist(e1))) {
+    ## distributions need to be the same
+    if (get_distribution(e1, i) != get_distribution(e2, i)) return(FALSE)
+    if (get_distribution(e1, i) == "nonparametric") {
+      ## if nonparametric then PMFs need to be the same
+      if (!identical(get_pmf(e1, i), get_pmf(e2, i))) return(FALSE)
+    } else {
+      ## if parametric then all parameters need to be the same
+      params1 <- get_parameters(e1, i)
+      params2 <- get_parameters(e2, i)
+      for (param in names(params1)) {
+        ## all parameters must be the same type
+        if ((is(params1[[param]], "dist_spec") &&
+             is(params2[[param]], "dist_spec")) ||
+            (is.numeric(params1[[param]]) && is.numeric(params2[[param]]))) {
+          ## if parameters are the same type they need to be same value
+          if (!(params1[[param]] == params2[[param]])) return(FALSE)
+        } else {
+          return(FALSE)
+        }
+      }
+    }
+  }
+  return(TRUE)
+}
+## nolint end: cyclocomp_linter
+
+##' @rdname equals-.dist_spec
+##' @method != dist_spec
+##' @export
+`!=.dist_spec` <- function(e1, e2) {
+  !(e1 == e2)
+}
+
 #' Combines multiple delay distributions for further processing
 #'
 #' @description `r lifecycle::badge("experimental")`

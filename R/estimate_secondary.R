@@ -239,6 +239,15 @@ estimate_secondary <- function(data,
   # observation model data
   stan_data <- c(stan_data, create_obs_model(obs, dates = reports$date))
 
+  stan_data <- c(stan_data, create_stan_params(
+    frac_obs = obs$scale,
+    rep_phi = obs$phi,
+    lower_bounds = c(
+      frac_obs = 0,
+      rep_phi = 0
+    )
+  ))
+
   # update data to use specified priors rather than defaults
   stan_data <- update_secondary_args(stan_data,
     priors = priors, verbose = verbose
@@ -663,7 +672,7 @@ forecast_secondary <- function(estimate,
 
   # allocate empty parameters
   data <- allocate_empty(
-    data, c("frac_obs", "delay_params", "rep_phi"),
+    data, c("params", "delay_params"),
     n = data$n
   )
   data$all_dates <- as.integer(all_dates)
