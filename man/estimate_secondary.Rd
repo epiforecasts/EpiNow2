@@ -136,7 +136,7 @@ cases <- convolve_and_scale(cases, type = "incidence")
 # fit model to example data specifying a weak prior for fraction reported
 # with a secondary case
 inc <- estimate_secondary(cases[1:60],
-  obs = obs_opts(scale = list(mean = 0.2, sd = 0.2), week_effect = FALSE)
+  obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE)
 )
 plot(inc, primary = TRUE)
 
@@ -164,7 +164,7 @@ prev <- estimate_secondary(cases[1:100],
   secondary = secondary_opts(type = "prevalence"),
   obs = obs_opts(
     week_effect = FALSE,
-    scale = list(mean = 0.4, sd = 0.1)
+    scale = Normal(mean = 0.4, sd = 0.1)
   )
 )
 plot(prev, primary = TRUE)

@@ -464,7 +464,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #'
 #' # Applying a observation scaling to the data
 #' create_obs_model(
-#'  obs_opts(scale = list(mean = 0.4, sd = 0.01)), dates = dates
+#'  obs_opts(scale = Normal(mean = 0.4, sd = 0.01)), dates = dates
 #' )
 #'
 #' # Apply a custom week week length

@@ -97,7 +97,7 @@ example_generation_time
 Lastly we need to choose a prior for the initial value of the reproduction number. This is assumed by the model to be normally distributed and we can set the mean and the standard deviation. We decide to set the mean to 2 and the standard deviation to 1.
 
 ```{r initial_r}
-rt_prior <- list(mean = 2, sd = 0.1)
+rt_prior <- Normal(mean = 2, sd = 0.1)
 ```
 
 # Running the model

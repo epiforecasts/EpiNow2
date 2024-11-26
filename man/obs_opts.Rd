@@ -76,5 +76,5 @@ obs_opts()
 obs_opts(week_effect = TRUE)
 
 # Scale reported data
-obs_opts(scale = list(mean = 0.2, sd = 0.02))
+obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
 }

@@ -340,7 +340,7 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' rt_opts()
 #'
 #' # add a custom length scale
-#' rt_opts(prior = list(mean = 2, sd = 1))
+#' rt_opts(prior = Normal(mean = 2, sd = 1))
 #'
 #' # add a weekly random walk
 #' rt_opts(rw = 7)
@@ -653,7 +653,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' obs_opts(week_effect = TRUE)
 #'
 #' # Scale reported data
-#' obs_opts(scale = list(mean = 0.2, sd = 0.02))
+#' obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
 obs_opts <- function(family = c("negbin", "poisson"),
                      phi = Normal(mean = 0, sd = 0.25),
                      weight = 1,
