@@ -5,7 +5,7 @@
 \title{Time-Varying Reproduction Number Options}
 \usage{
 rt_opts(
-  prior = list(mean = 1, sd = 1),
+  prior = LogNormal(mean = 1, sd = 1),
   use_rt = TRUE,
   rw = 0,
   use_breakpoints = TRUE,
@@ -15,9 +15,10 @@ rt_opts(
 )
 }
 \arguments{
-\item{prior}{List containing named numeric elements "mean" and "sd". The
-mean and standard deviation of the log normal Rt prior. Defaults to mean of
-1 and standard deviation of 1.}
+\item{prior}{A \verb{<dist_spec>} giving the prior of the initial reproduciton
+number. Ignored if \code{use_rt} is \code{FALSE}. Defaults to a LogNormal distributin
+with mean of 1 and standard deviation of 1: \code{LogNormal(mean = 1, sd = 1)}.
+A lower limit of 0 will be enforced automatically.}
 
 \item{use_rt}{Logical, defaults to \code{TRUE}. Should Rt be used to generate
 infections and hence reported cases.}
