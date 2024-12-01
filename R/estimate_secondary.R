@@ -172,6 +172,20 @@ estimate_secondary <- function(data,
       "estimate_secondary(data)"
     )
   }
+  if (!missing(filter_leading_zeros)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "estimate_secondary(filter_leading_zeros)",
+      "filter_leading_zeros()"
+    )
+  }
+  if (!missing(zero_threshold)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "estimate_secondary(zero_threshold)",
+      "apply_zero_threshold()"
+    )
+  }
   # Validate the inputs
   check_reports_valid(data, model = "estimate_secondary")
   assert_class(secondary, "secondary_opts")
@@ -200,6 +214,15 @@ estimate_secondary <- function(data,
 
   secondary_reports_dirty <-
     reports[, list(date, confirm = secondary, accumulate)]
+  if (secondary_reports_dirty[date == min(date), "confirm"] == 0) {
+    cli_warn(
+      "!" = "Filtering initial zero observations in the data. This
+      functionality will be removed in future versions of EpiNow2. In order
+      to retain the default behaviour and filter initial zero observations
+      use the {.fn filter_leading_zeros()} function on the data before
+      calling {.fn estimate_secondary()."
+    )
+  }
   secondary_reports <- create_clean_reported_cases(
     secondary_reports_dirty,
     filter_leading_zeros = filter_leading_zeros,

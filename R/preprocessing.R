@@ -42,7 +42,7 @@
 ##'   using a data set that has multiple columns of hwich one of them
 ##'   corresponds to observations that are to be processed here.
 ##' @param by Character vector. Name(s) of any additional column(s) where
-##'   missing data should be processed separately for each value in the column.
+##'   data processing should be done separately for each value in the column.
 ##'   This is useful when using data representing e.g. multiple geographies. If
 ##'   NULL (default) no such grouping is done.
 ##' @return a data.table with an `accumulate` column that indicates whether
@@ -176,4 +176,155 @@ default_fill_missing_obs <- function(data, obs, obs_column) {
     }
   }
   return(data)
+}
+
+##' Add missing values for future dates
+##'
+##' @param accumulate The number of days to accumulate when generating posterior
+##'   prediction, e.g. 7 for weekly accumulated forecasts.
+##' @inheritParams add_horizon
+##' @inheritParams estimate_infections
+##' @importFrom data.table copy merge.data.table setDT
+##' @return A data.table with missing values for future dates
+##' @keywords internal
+add_horizon <- function(data, horizon, accumulate = 1L,
+                        obs_column = "confirm", by = NULL) {
+  assert_data_frame(data)
+  assert_character(obs_column)
+  assert_character(by, null.ok = TRUE)
+  assert_names(
+    colnames(data),
+    must.include = c("date", by, obs_column)
+  )
+  assert_integerish(horizon, lower = 0)
+  assert_integerish(accumulate, lower = 1)
+  assert_date(data$date, any.missing = FALSE)
+
+  reported_cases <- data.table::setDT(data)
+  if (horizon > 0) {
+    reported_cases_grid <- data.table::copy(reported_cases)[,
+      .(date = seq(max(date) + 1, max(date) + horizon, by = "days")),
+      by = by
+    ]
+    ## if we accumulate add the column
+    if (accumulate > 1 || "accumulate" %in% colnames(data)) {
+      reported_cases_grid[, accumulate := TRUE]
+      ## set accumulation to FALSE where appropriate
+      if (horizon >= accumulate) {
+        reported_cases_grid[
+          as.integer(date - min(date) - 1) %% accumulate == 0,
+          accumulate := FALSE
+        ]
+      }
+    }
+    ## fill any missing columns
+    reported_cases_grid <- data.table::merge.data.table(
+      reported_cases, reported_cases_grid,
+      by = "date", all.y = TRUE
+    )
+  }
+  return(reported_cases[])
+}
+
+##' Add breakpoints to certain dates in a data set.
+##'
+##' @param dates A vector of dates to use as breakpoints.
+##' @inheritParams estimate_infections
+##' @return A data.table with `breakpoint` set to 1 on each of the specified
+##'   dates.
+##' @export
+##' @importFrom data.table setDT
+##' @examples
+##' reported_cases <- add_breakpoints(example_confirmed, as.Date("2020-03-26"))
+add_breakpoints <- function(data, dates = as.Date(character(0))) {
+  assert_data_frame(data)
+  assert_names(colnames(data), must.include = "date")
+  assert_date(dates)
+  assert_date(data$date, any.missing = FALSE)
+  reported_cases <- data.table::setDT(data)
+  if (is.null(reported_cases$breakpoint)) {
+    reported_cases$breakpoint <- 0
+  }
+  missing_dates <- setdiff(dates, data$date)
+  if (length(missing_dates) > 0) {
+    cli_abort("Breakpoint date{?s} not found in data: {.var {missing_dates}}")
+  }
+  reported_cases[date %in% dates, breakpoint := 1]
+  return(reported_cases)
+}
+
+##' Filter leading zeros from a data set.
+##'
+##' @inheritParams estimate_infections
+##' @inheritParams fill_missing
+##' @return A data.table with leading zeros removed.
+##' @export
+##' @importFrom data.table setDT
+##' @examples
+##' cases <- data.table(
+##'   date = as.Date("2020-01-01") + 0:10,
+##'   confirm = c(0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+##' )
+##' filter_leading_zeros(cases)
+filter_leading_zeros <- function(data, obs_column = "confirm", by = NULL) {
+  assert_data_frame(data)
+  assert_character(obs_column)
+  assert_character(by, null.ok = TRUE)
+  assert_names(
+    colnames(data),
+    must.include = c("date", by, obs_column)
+  )
+  reported_cases <- data.table::setDT(data)
+  reported_cases <- reported_cases[order(date)][
+    date >= min(date[get(obs_column)[!is.na(get(obs_column))] > 0])
+  ]
+  return(reported_cases[])
+}
+
+##' Converts zero case counts to NA (missing) if the 7-day average is above a
+##' threshold.
+##'
+##' This function aims to detect spurious zeroes by comparing the 7-day average
+##' of the case counts to a threshold. If the 7-day average is above the
+##' threshold, the zero case count is replaced with NA.
+##'
+##' @param threshold Numeric, defaults to Inf. Indicates if detected zero cases
+##'   are meaningful by using a threshold number of cases based on the 7-day
+##'   average. If the average is above this threshold at the time of a zero
+##'   observation count then the zero is replaced with a missing (`NA`) count
+##'   and thus ignored in the likelihood.
+##'
+##' @inheritParams estimate_infections
+##' @inheritParams fill_missing
+##' @importFrom data.table setDT frollsum
+##' @return A data.table with the zero threshold applied.
+##' @author Sebastian Funk
+apply_zero_threshold <- function(data, threshold = Inf,
+                                 obs_column = "confirm") {
+  assert_data_frame(data)
+  assert_numeric(threshold)
+  reported_cases <- data.table::setDT(data)
+
+  # Calculate `average_7_day` which for rows with `confirm == 0`
+  # (the only instance where this is being used) equates to the 7-day
+  # right-aligned moving average at the previous data point.
+  reported_cases <-
+    reported_cases[
+      ,
+      `:=`(average_7_day = (
+          data.table::frollsum(get(obs_column), n = 8, na.rm = TRUE)
+        ) / 7
+      )
+    ]
+  # Check case counts preceding zero case counts and set to 7 day average if
+  # average over last 7 days is greater than a threshold
+  if (!is.infinite(threshold)) {
+    reported_cases <- reported_cases[
+      get(obs_column) == 0 & average_7_day > threshold,
+      paste(obs_column) := NA_integer_
+    ]
+  }
+  reported_cases[is.na(get(obs_column)), paste(obs_column) := NA_integer_]
+  reported_cases[, "average_7_day" := NULL]
+  return(reported_cases[])
 }
