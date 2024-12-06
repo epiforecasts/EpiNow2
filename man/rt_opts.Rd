@@ -70,7 +70,7 @@ defaults.
 rt_opts()
 
 # add a custom length scale
-rt_opts(prior = Normal(mean = 2, sd = 1))
+rt_opts(prior = LogNormal(mean = 2, sd = 1))
 
 # add a weekly random walk
 rt_opts(rw = 7)

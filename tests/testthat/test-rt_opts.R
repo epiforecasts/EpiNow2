@@ -13,7 +13,7 @@ test_that("rt_opts returns expected default values", {
 
 test_that("rt_opts handles custom inputs correctly", {
   result <- suppressWarnings(rt_opts(
-    prior = Normal(mean = 2, sd = 0.5),
+    prior = LogNormal(mean = 2, sd = 0.5),
     use_rt = FALSE,
     rw = 7,
     use_breakpoints = FALSE,

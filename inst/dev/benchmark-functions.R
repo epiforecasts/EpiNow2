@@ -17,7 +17,7 @@ create_profiles <- function(dir = file.path("inst", "stan"),
       data = reported_cases,
       generation_time = gt_opts(fixed_generation_time),
       delays = delay_opts(delays),
-      rt = rt_opts(prior = Normal(mean = 2, sd = 0.2)),
+      rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
       stan = stan_opts(
         samples = 1000, chains = 2, object = compiled_model,
         cores = 2
