@@ -264,7 +264,7 @@ For example, if we think that 40% (with standard deviation 1%) of infections end
 
 
 ``` r
-obs_scale <- list(mean = 0.4, sd = 0.01)
+obs_scale <- Normal(mean = 0.4, sd = 0.01)
 obs_opts(scale = obs_scale)
 ```
 
@@ -278,7 +278,7 @@ For example, if the user believes that at the very start of the data the reprodu
 
 
 ``` r
-rt_prior <- list(mean =  2, sd = 1)
+rt_prior <- LogNormal(mean =  2, sd = 1)
 rt_opts(prior = rt_prior)
 ```
 
