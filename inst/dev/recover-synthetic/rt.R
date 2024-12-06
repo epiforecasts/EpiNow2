@@ -7,14 +7,14 @@ old_opts <- options()
 options(mc.cores = 4)
 
 #' get example delays
-obs <- obs_opts(scale = list(mean = 0.1, sd = 0.025), return_likelihood = TRUE)
+obs <- obs_opts(scale = Normal(mean = 0.1, sd = 0.025), return_likelihood = TRUE)
 
 # fit model to data to recover realistic parameter estimates and define settings
 # shared simulation settings
 init <- estimate_infections(example_confirmed[1:100],
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + example_reporting_delay),
-  rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 14),
+  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1), rw = 14),
   gp = NULL, horizon = 0,
   obs = obs
 )
@@ -59,7 +59,7 @@ for (method in c("nuts")) {
     estimate_infections(sim_cases,
       generation_time = gt_opts(example_generation_time),
       delays = delay_opts(example_incubation_period + example_reporting_delay),
-      rt = rt_opts(prior = list(mean = 2, sd = 0.25)),
+      rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.25)),
       stan = stanopts,
       obs = obs,
       horizon = 0
@@ -90,7 +90,7 @@ for (method in c("nuts")) {
       generation_time = gt_opts(example_generation_time),
       delays = delay_opts(example_incubation_period + example_reporting_delay),
       rt = rt_opts(
-        prior = list(mean = 2, sd = 0.25),
+        prior = LogNormal(mean = 2, sd = 0.25),
         rw = 7
       ),
       gp = NULL,
@@ -109,7 +109,7 @@ for (method in c("nuts")) {
       generation_time = gt_opts(example_generation_time),
       delays = delay_opts(example_incubation_period + example_reporting_delay),
       rt = rt_opts(
-        prior = list(mean = 2, sd = 0.25), rw = 14, gp_on = "R0"
+        prior = LogNormal(mean = 2, sd = 0.25), rw = 14, gp_on = "R0"
       ),
       stan = stanopts,
       obs = obs,
@@ -130,7 +130,7 @@ for (method in c("nuts")) {
           example_incubation_period + example_reporting_delay
         ),
         rt = rt_opts(
-          prior = list(mean = 2, sd = 0.25),
+          prior = LogNormal(mean = 2, sd = 0.25),
           rw = 1
         ),
         gp = NULL,

@@ -319,8 +319,6 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 
   # map settings to underlying gp stan requirements
   rt_data <- list(
-    r_mean = rt$prior$mean,
-    r_sd = rt$prior$sd,
     estimate_r = as.numeric(rt$use_rt),
     bp_n = ifelse(rt$use_breakpoints, max(breakpoints) - 1, 0),
     breakpoints = breakpoints,
@@ -433,8 +431,6 @@ create_gp_data <- function(gp = gp_opts(), data) {
     ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
     ls_min = gp$ls_min,
     ls_max = gp$ls_max,
-    alpha_mean = gp$alpha_mean,
-    alpha_sd = gp$alpha_sd,
     gp_type = data.table::fcase(
       gp$kernel == "se", 0,
       gp$kernel == "periodic", 1,
@@ -472,7 +468,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #'
 #' # Applying a observation scaling to the data
 #' create_obs_model(
-#'  obs_opts(scale = list(mean = 0.4, sd = 0.01)), dates = dates
+#'  obs_opts(scale = Normal(mean = 0.4, sd = 0.01)), dates = dates
 #' )
 #'
 #' # Apply a custom week week length
@@ -481,13 +477,9 @@ create_gp_data <- function(gp = gp_opts(), data) {
 create_obs_model <- function(obs = obs_opts(), dates) {
   data <- list(
     model_type = as.numeric(obs$family == "negbin"),
-    phi_mean = obs$phi$mean,
-    phi_sd = obs$phi$sd,
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
-    obs_scale = as.integer(obs$scale$sd > 0 || obs$scale$mean != 1),
-    obs_scale_mean = obs$scale$mean,
-    obs_scale_sd = obs$scale$sd,
+    obs_scale = as.integer(obs$scale != Fixed(1)),
     likelihood = as.numeric(obs$likelihood),
     return_likelihood = as.numeric(obs$return_likelihood)
   )
@@ -589,15 +581,30 @@ create_stan_data <- function(data, seeding_time,
     )
   )
 
+  # parameters
+  stan_data <- c(
+    stan_data,
+    create_stan_params(
+      alpha = gp$alpha,
+      R0 = rt$prior,
+      frac_obs = obs$scale,
+      rep_phi = obs$phi,
+      lower_bounds = c(
+        alpha = 0,
+        R0 = 0,
+        frac_obs = 0,
+        rep_phi = 0
+      )
+    )
+  )
+
   # rescale mean shifted prior for back calculation if observation scaling is
   # used
-  if (stan_data$obs_scale == 1) {
-    stan_data$shifted_cases <-
-      stan_data$shifted_cases / stan_data$obs_scale_mean
-    stan_data$prior_infections <- log(
-      exp(stan_data$prior_infections) / stan_data$obs_scale_mean
-    )
-  }
+  stan_data$shifted_cases <-
+    stan_data$shifted_cases / mean(obs$scale)
+  stan_data$prior_infections <- log(
+    exp(stan_data$prior_infections) / mean(obs$scale)
+  )
   return(stan_data)
 }
 
@@ -647,34 +654,15 @@ create_initial_conditions <- function(data) {
         out$rescaled_rho < data$ls_min, data$ls_min + 0.001,
         default = out$rescaled_rho
       ))
-
-      out$alpha <- array(
-        truncnorm::rtruncnorm(
-          1, a = 0, mean = data$alpha_mean, sd = data$alpha_sd
-        )
-      )
     } else {
       out$eta <- array(numeric(0))
       out$rescaled_rho <- array(numeric(0))
-      out$alpha <- array(numeric(0))
-    }
-    if (data$model_type == 1) {
-      out$rep_phi <- array(
-        truncnorm::rtruncnorm(
-          1,
-          a = 0, mean = data$phi_mean, sd = data$phi_sd
-        )
-      )
     }
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1, data$prior_infections, 0.2))
       if (data$seeding_time > 1) {
         out$initial_growth <- array(rnorm(1, data$prior_growth, 0.02))
       }
-      out$log_R <- array(rnorm(
-        n = 1, mean = convert_to_logmean(data$r_mean, data$r_sd),
-        sd = convert_to_logsd(data$r_mean, data$r_sd)
-      ))
     }
 
     if (data$bp_n > 0) {
@@ -684,20 +672,17 @@ create_initial_conditions <- function(data) {
       out$bp_sd <- array(numeric(0))
       out$bp_effects <- array(numeric(0))
     }
-    if (data$obs_scale_sd > 0) {
-      out$frac_obs <- array(truncnorm::rtruncnorm(1,
-        a = 0, b = 1,
-        mean = data$obs_scale_mean,
-        sd = data$obs_scale_sd
-      ))
-    } else {
-      out$frac_obs <- array(numeric(0))
-    }
     if (data$week_effect > 0) {
       out$day_of_week_simplex <- array(
         rep(1 / data$week_effect, data$week_effect)
       )
     }
+    out$params <- array(truncnorm::rtruncnorm(
+      data$n_params_variable,
+      a = data$params_lower,
+      b = data$params_upper,
+      mean = 0, sd = 1
+    ))
     return(out)
   }
   return(init_fun)
@@ -875,5 +860,96 @@ create_stan_delays <- function(..., time_points = 1L) {
   names(ret) <- paste("delay", names(ret), sep = "_")
   ret <- c(ret, ids)
 
+  return(ret)
+}
+
+##' Create parameters for stan
+##'
+##' @param ... Named delay distributions. The names are assigned to IDs
+##' @param lower_bounds Named vector of lower bounds for any delay(s). The names
+##' have to correspond to the names given to the delay distributions passed.
+##' If `NULL` (default) no parameters are given a lower bound.
+##' @return A list of variables as expected by the stan model
+##' @importFrom data.table fcase
+##' @keywords internal
+create_stan_params <- function(..., lower_bounds = NULL) {
+  params <- list(...)
+
+  ## set IDs of any parameters that is NULL to 0 and remove
+  null_params <- vapply(params, is.null, logical(1))
+  null_ids <- rep(0, sum(null_params))
+  if (length(null_ids) > 0) {
+    names(null_ids) <- paste(names(null_params)[null_params], "id", sep = "_")
+    params <- params[!null_params]
+  }
+
+  ## initialise variables
+  params_fixed_lookup <- rep(0L, length(params))
+  params_variable_lookup <- rep(0L, length(params))
+
+  ## identify fixed/variable parameters
+  fixed <- vapply(params, get_distribution, character(1)) == "fixed"
+  params_fixed_lookup[fixed] <- seq_along(which(fixed))
+  params_variable_lookup[!fixed] <- seq_along(which(!fixed))
+
+  ## lower bounds
+  params_lower <- rep(-Inf, length(params[!fixed]))
+  names(params_lower) <- names(params[!fixed])
+  lower_bounds <- lower_bounds[names(params_lower)]
+  params_lower[names(lower_bounds)] <- lower_bounds
+
+  ## upper bounds
+  params_upper <- vapply(params[!fixed], max, numeric(1))
+
+  ## prior distributions
+  prior_dist_name <- vapply(params[!fixed], get_distribution, character(1))
+  prior_dist <- fcase(
+    prior_dist_name == "lognormal", 0L,
+    prior_dist_name == "gamma", 1L,
+    prior_dist_name == "normal", 2L
+  )
+  ## parameters
+  prior_dist_params <- lapply(params[!fixed], get_parameters)
+  prior_dist_params_lengths <- lengths(prior_dist_params)
+
+  ## check none of the parameters are uncertain
+  prior_uncertain <- vapply(prior_dist_params, function(x) {
+    !all(vapply(x, is.numeric, logical(1)))
+  }, logical(1))
+  if (any(prior_uncertain)) {
+    uncertain_priors <- names(params[!fixed])[prior_uncertain] # nolint: object_usage_linter
+    cli_abort(
+      c(
+        "!" = "Parameter prior distribution{?s} for {.var {uncertain_priors}}
+        cannot have uncertain parameters."
+      )
+    )
+  }
+
+  prior_dist_params <- unlist(prior_dist_params)
+  if (is.null(prior_dist_params)) {
+    prior_dist_params <- numeric(0)
+  }
+
+  ## extract distributions and parameters
+  ret <- list(
+    n_params_variable = length(params) - sum(fixed),
+    n_params_fixed = sum(fixed),
+    params_lower = array(params_lower),
+    params_upper = array(params_upper),
+    params_fixed_lookup = array(params_fixed_lookup),
+    params_variable_lookup = array(params_variable_lookup),
+    params_value = array(vapply(
+      params[fixed], \(x) get_parameters(x)$value, numeric(1)
+    )),
+    prior_dist = array(prior_dist),
+    prior_dist_params_length = sum(prior_dist_params_lengths),
+    prior_dist_params = array(prior_dist_params)
+  )
+  ids <- seq_along(params)
+  if (length(ids) > 0) {
+    names(ids) <- paste(names(params), "id", sep = "_")
+  }
+  ret <- c(ret, as.list(ids), as.list(null_ids))
   return(ret)
 }

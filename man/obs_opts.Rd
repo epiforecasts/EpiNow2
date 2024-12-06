@@ -6,11 +6,11 @@
 \usage{
 obs_opts(
   family = c("negbin", "poisson"),
-  phi = list(mean = 0, sd = 0.25),
+  phi = Normal(mean = 0, sd = 0.25),
   weight = 1,
   week_effect = TRUE,
   week_length = 7,
-  scale = 1,
+  scale = Fixed(1),
   na = c("missing", "accumulate"),
   likelihood = TRUE,
   return_likelihood = FALSE
@@ -20,13 +20,12 @@ obs_opts(
 \item{family}{Character string defining the observation model. Options are
 Negative binomial ("negbin"), the default, and Poisson.}
 
-\item{phi}{Overdispersion parameter of the reporting process, used only if
-\code{familiy} is "negbin". Can be supplied either as a single numeric value
-(fixed overdispersion) or a list with numeric elements mean (\code{mean}) and
-standard deviation (\code{sd}) defining a normally distributed prior.
-Internally parameterised such that the overdispersion is one over the
-square of this prior overdispersion. Defaults to a list with elements
-\code{mean = 0} and \code{sd = 0.25}.}
+\item{phi}{A \verb{<dist_spec>} specifying a prior on the overdispersion parameter
+of the reporting process, used only if \code{familiy} is "negbin". Internally
+parameterised such that the overdispersion is one over the square of this
+prior overdispersion phi. Defaults to a half-normal distribution with mean
+of 0 and standard deviation of 0.25: \code{Normal(mean = 0, sd = 0.25)}. A lower
+limit of zero will be enforced automatically.}
 
 \item{weight}{Numeric, defaults to 1. Weight to give the observed data in the
 log density.}
@@ -38,11 +37,12 @@ effect be used in the observation model.}
 7 days. This can be modified if data aggregated over a period other than a
 week or if data has a non-weekly periodicity.}
 
-\item{scale}{Scaling factor to be applied to map latent infections (convolved
-to date of report). Can be supplied either as a single numeric value (fixed
-scale) or a list with numeric elements mean (\code{mean}) and standard deviation
-(\code{sd}) defining a normally distributed scaling factor. Defaults to 1, i.e.
-no scaling.}
+\item{scale}{A \verb{<dist_spec>} specifying a prior on the scaling factor to be
+applied to map latent infections (convolved to date of report).  Defaults
+to a fixed value of 1, i.e. no scaling: \code{Fixed(1)}. A lower limit of zero
+will be enforced automatically. If setting to a prior distribution and no
+overreporting is expected, it might be sensible to set a maximum of 1 via
+the \code{max} option when declaring the distribution.}
 
 \item{na}{Deprecated; use the \code{\link[=fill_missing]{fill_missing()}} function instead}
 
@@ -68,5 +68,5 @@ obs_opts()
 obs_opts(week_effect = TRUE)
 
 # Scale reported data
-obs_opts(scale = list(mean = 0.2, sd = 0.02))
+obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
 }

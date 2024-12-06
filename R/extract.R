@@ -46,10 +46,12 @@ extract_parameter <- function(param, samples, dates) {
 #' value
 #' @keywords internal
 extract_static_parameter <- function(param, samples) {
+  id <- samples[[paste(param, "id", sep = "_")]]
+  lookup <- samples[["params_variable_lookup"]][id]
   data.table::data.table(
     parameter = param,
-    sample = seq_along(samples[[param]]),
-    value = samples[[param]]
+    sample = seq_along(samples[["params"]][, lookup]),
+    value = samples[["params"]][, lookup]
   )
 }
 
@@ -239,16 +241,9 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
   }
   if (data$model_type == 1) {
     out$reporting_overdispersion <- extract_static_parameter("rep_phi", samples)
-    out$reporting_overdispersion <- out$reporting_overdispersion[,
-     value := value.V1][,
-      value.V1 := NULL
-    ]
   }
   if ("obs_scale_sd" %in% names(data) && data$obs_scale_sd > 0) {
     out$fraction_observed <- extract_static_parameter("frac_obs", samples)
-    out$fraction_observed <- out$fraction_observed[, value := value.V1][,
-      value.V1 := NULL
-    ]
   }
   return(out)
 }

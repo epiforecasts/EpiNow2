@@ -11,12 +11,13 @@ gp_opts(
   ls_sd = 7,
   ls_min = 0,
   ls_max = 60,
-  alpha_mean = 0,
-  alpha_sd = 0.01,
+  alpha = Normal(mean = 0, sd = 0.01),
   kernel = c("matern", "se", "ou", "periodic"),
   matern_order = 3/2,
   matern_type,
-  w0 = 1
+  w0 = 1,
+  alpha_mean,
+  alpha_sd
 )
 }
 \arguments{
@@ -45,14 +46,13 @@ process length scale will be used with recommended parameters
 scale. Updated in \code{\link[=create_gp_data]{create_gp_data()}} to be the length of the input data if
 this is smaller.}
 
-\item{alpha_mean}{Numeric, defaults to 0. The mean of the magnitude parameter
-of the Gaussian process kernel. Should be approximately the expected standard
-deviation of the Gaussian process (logged Rt in case of the renewal model,
-logged infections in case of the nonmechanistic model).}
-
-\item{alpha_sd}{Numeric, defaults to 0.01. The standard deviation of the
-magnitude parameter of the Gaussian process kernel. Can be tuned to adjust
-how far alpha is allowed to deviate form its prior mean (\code{alpha_mean}).}
+\item{alpha}{A \verb{<dist_spec>} giving the prior distribution of the magnitude
+parameter of the Gaussian process kernel. Should be approximately the
+expected standard deviation of the Gaussian process (logged Rt in case of
+the renewal model, logged infections in case of the nonmechanistic model).
+Defaults to a half-normal distribution with mean 0 and sd 0.01:
+\code{Normal(mean = 0, sd = 0.01)} (a lower limit of 0 will be enforced
+automatically to ensure positivity)}
 
 \item{kernel}{Character string, the type of kernel required. Currently
 supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
@@ -69,6 +69,10 @@ Kernel to use. Currently, the orders 1/2, 3/2, 5/2 and Inf are supported.}
 
 \item{w0}{Numeric, defaults to 1.0. Fundamental frequency for periodic
 kernel. They are only used if \code{kernel} is set to "periodic".}
+
+\item{alpha_mean}{Deprecated; use \code{alpha} instead.}
+
+\item{alpha_sd}{Deprecated; use \code{alpha} instead.}
 }
 \value{
 A \verb{<gp_opts>} object of settings defining the Gaussian process

@@ -22,7 +22,7 @@ test_that("simulate_secondary works as expected with additional parameters", {
   set.seed(123)
   sim <- test_simulate_secondary(
     delays = delay_opts(fix_parameters(example_reporting_delay)),
-    obs = obs_opts(family = "negbin", phi = list(mean = 0.5, sd = 0))
+    obs = obs_opts(family = "negbin", phi = Fixed(0.5))
   )
   expect_equal(nrow(sim), nrow(cases))
   expect_snapshot_output(sim)
@@ -36,7 +36,7 @@ test_that("simulate_secondary fails with uncertain parameters", {
   )
   expect_error(
     test_simulate_secondary(
-      obs = obs_opts(scale = list(mean = 1, sd = 1))
+      obs = obs_opts(scale = Normal(mean = 1, sd = 1))
     ),
     "uncertain"
   )

@@ -94,7 +94,7 @@ simulate_secondary <- function(primary,
     obs, dates = primary$date
   ))
 
-  if (data$obs_scale_sd > 0) {
+  if (get_distribution(obs$scale) != "fixed") {
     cli_abort(
       c(
         "!" = "Cannot simulate from uncertain observation scaling.",
@@ -102,16 +102,9 @@ simulate_secondary <- function(primary,
       )
     )
   }
-  if (data$obs_scale) {
-    data$frac_obs <- array(data$obs_scale_mean, dim = c(1, 1))
-  } else {
-    data$frac_obs <- array(dim = c(1, 0))
-  }
-  data$obs_scale_mean <- NULL
-  data$obs_scale_sd <- NULL
 
   if (obs$family == "negbin") {
-    if (data$phi_sd > 0) {
+    if (get_distribution(obs$phi) != "fixed") {
       cli_abort(
         c(
           "!" = "Cannot simulate from uncertain overdispersion.",
@@ -119,12 +112,17 @@ simulate_secondary <- function(primary,
         )
       )
     }
-    data$rep_phi <- array(data$phi_mean, dim = c(1, 1))
   } else {
-    data$rep_phi <- array(dim = c(1, 0))
+    obs$phi <- NULL
   }
-  data$phi_mean <- NULL
-  data$phi_sd <- NULL
+
+  data <- c(data, create_stan_params(
+    frac_obs = obs$scale,
+    rep_phi = obs$phi
+  ))
+
+  ## set empty params matrix - variable parameters not supported here
+  data$params <- array(dim = c(1, 0))
 
   ## day of week effect
   if (is.null(day_of_week_effect)) {

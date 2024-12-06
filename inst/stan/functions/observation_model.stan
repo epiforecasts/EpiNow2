@@ -97,24 +97,18 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  * @param cases Array of integer observed cases.
  * @param cases_time Array of integer time indices for observed cases.
  * @param reports Vector of expected reports.
- * @param rep_phi Array of real values for reporting overdispersion.
- * @param phi_mean Real value for mean of reporting overdispersion prior.
- * @param phi_sd Real value for standard deviation of reporting overdispersion prior.
+ * @param rep_phi Real values for reporting overdispersion.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
  * @param weight Real value for weighting the log density contribution.
  * @param accumulate Array of integers indicating, for each time point, whether
  * to accumulate reports (1) or not (0).
  */
 void report_lp(array[] int cases, array[] int cases_time, vector reports,
-               array[] real rep_phi, real phi_mean, real phi_sd,
-               int model_type, real weight) {
+               real rep_phi, int model_type, real weight) {
   int n = num_elements(cases_time); // number of observations
   vector[n] obs_reports = reports[cases_time]; // reports at observation time
   if (model_type) {
-    real dispersion = inv_square(phi_sd > 0 ? rep_phi[model_type] : phi_mean);
-    if (phi_sd > 0) {
-      rep_phi[model_type] ~ normal(phi_mean, phi_sd) T[0,];
-    }
+    real dispersion = inv_square(rep_phi);
     if (weight == 1) {
       cases ~ neg_binomial_2(obs_reports, dispersion);
     } else {
@@ -166,7 +160,7 @@ vector accumulate_reports(vector reports, array[] int accumulate) {
  * @return A vector of log likelihoods for each time point.
  */
 vector report_log_lik(array[] int cases, vector reports,
-                      array[] real rep_phi, int model_type, real weight) {
+                      real rep_phi, int model_type, real weight) {
   int t = num_elements(reports);
   vector[t] log_lik;
 
@@ -176,7 +170,7 @@ vector report_log_lik(array[] int cases, vector reports,
       log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;
     }
   } else {
-    real dispersion = inv_square(rep_phi[model_type]);
+    real dispersion = inv_square(rep_phi);
     for (i in 1:t) {
       log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], dispersion) * weight;
     }
@@ -190,17 +184,17 @@ vector report_log_lik(array[] int cases, vector reports,
  * This function generates random samples of reported cases based on the specified model type.
  *
  * @param reports Vector of expected reports.
- * @param rep_phi Array of real values for reporting overdispersion.
+ * @param rep_phi Real value for reporting overdispersion.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
  *
  * @return An array of integer sampled reports.
  */
-array[] int report_rng(vector reports, array[] real rep_phi, int model_type) {
+array[] int report_rng(vector reports, real rep_phi, int model_type) {
   int t = num_elements(reports);
   array[t] int sampled_reports;
   real dispersion = 1e5;
   if (model_type) {
-    dispersion = inv_square(rep_phi[model_type]);
+    dispersion = inv_square(rep_phi);
   }
 
   for (s in 1:t) {

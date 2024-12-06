@@ -152,7 +152,7 @@ simulate_infections <- function(estimates, R, initial_infections,
     obs, dates = R$date
   ))
 
-  if (data$obs_scale_sd > 0) {
+  if (get_distribution(obs$scale) != "fixed") {
     cli_abort(
       c(
         "!" = "Cannot simulate from uncertain observation scaling.",
@@ -160,16 +160,9 @@ simulate_infections <- function(estimates, R, initial_infections,
       )
     )
   }
-  if (data$obs_scale) {
-    data$frac_obs <- array(data$obs_scale_mean, dim = c(1, 1))
-  } else {
-    data$frac_obs <- array(dim = c(1, 0))
-  }
-  data$obs_scale_mean <- NULL
-  data$obs_scale_sd <- NULL
 
   if (obs$family == "negbin") {
-    if (data$phi_sd > 0) {
+    if (get_distribution(obs$phi) != "fixed") {
       cli_abort(
         c(
           "!" = "Cannot simulate from uncertain overdispersion.",
@@ -177,12 +170,18 @@ simulate_infections <- function(estimates, R, initial_infections,
         )
       )
     }
-    data$rep_phi <- array(data$phi_mean, dim = c(1, 1))
   } else {
-    data$rep_phi <- array(dim = c(1, 0))
+    obs$phi <- NULL
   }
-  data$phi_mean <- NULL
-  data$phi_sd <- NULL
+
+  data <- c(data, create_stan_params(
+    alpha = NULL,
+    R0 = NULL,
+    frac_obs = obs$scale,
+    rep_phi = obs$phi
+  ))
+  ## set empty params matrix - variable parameters not supported here
+  data$params <- array(dim = c(1, 0))
 
   ## day of week effect
   if (is.null(day_of_week_effect)) {
@@ -278,8 +277,8 @@ simulate_infections <- function(estimates, R, initial_infections,
 #' est <- estimate_infections(reported_cases,
 #'   generation_time = generation_time_opts(example_generation_time),
 #'   delays = delay_opts(example_incubation_period + example_reporting_delay),
-#'   rt = rt_opts(prior = list(mean = 2, sd = 0.1), rw = 7),
-#'   obs = obs_opts(scale = list(mean = 0.1, sd = 0.01)),
+#'   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1), rw = 7),
+#'   obs = obs_opts(scale = Normal(mean = 0.1, sd = 0.01)),
 #'   gp = NULL, horizon = 0
 #' )
 #'
@@ -436,7 +435,7 @@ forecast_infections <- function(estimates,
 
     ## allocate empty parameters
     data <- allocate_empty(
-      data, c("frac_obs", "delay_params", "rep_phi"),
+      data, c("delay_params", "params"),
       n = data$n
     )
 

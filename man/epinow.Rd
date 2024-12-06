@@ -166,7 +166,7 @@ reported_cases <- example_confirmed[1:40]
 out <- epinow(
   data = reported_cases,
   generation_time = gt_opts(generation_time),
-  rt = rt_opts(prior = list(mean = 2, sd = 0.1)),
+  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1)),
   delays = delay_opts(incubation_period + reporting_delay)
 )
 # summary of the latest estimates

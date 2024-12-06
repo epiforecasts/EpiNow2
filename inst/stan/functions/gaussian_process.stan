@@ -208,13 +208,8 @@ void lengthscale_lp(real rho, real ls_meanlog, real ls_sdlog,
 /**
   * Priors for Gaussian process (excluding length scale)
   *
-  * @param alpha Scaling parameter
   * @param eta Vector of noise terms
-  * @param alpha_mean Mean of alpha
-  * @param alpha_sd Standard deviation of alpha
   */
-void gaussian_process_lp(real alpha, vector eta, real alpha_mean, 
-                         real alpha_sd) {
-  alpha ~ normal(alpha_mean, alpha_sd) T[0,];
+void gaussian_process_lp(vector eta) {
   eta ~ std_normal();
 }

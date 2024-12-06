@@ -297,9 +297,10 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' reproduction number. Custom settings can be supplied which override the
 #' defaults.
 #'
-#' @param prior List containing named numeric elements "mean" and "sd". The
-#' mean and standard deviation of the log normal Rt prior. Defaults to mean of
-#' 1 and standard deviation of 1.
+#' @param prior A `<dist_spec>` giving the prior of the initial reproduciton
+#' number. Ignored if `use_rt` is `FALSE`. Defaults to a LogNormal distributin
+#' with mean of 1 and standard deviation of 1: `LogNormal(mean = 1, sd = 1)`.
+#' A lower limit of 0 will be enforced automatically.
 #'
 #' @param use_rt Logical, defaults to `TRUE`. Should Rt be used to generate
 #' infections and hence reported cases.
@@ -339,11 +340,11 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' rt_opts()
 #'
 #' # add a custom length scale
-#' rt_opts(prior = list(mean = 2, sd = 1))
+#' rt_opts(prior = LogNormal(mean = 2, sd = 1))
 #'
 #' # add a weekly random walk
 #' rt_opts(rw = 7)
-rt_opts <- function(prior = list(mean = 1, sd = 1),
+rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     use_rt = TRUE,
                     rw = 0,
                     use_breakpoints = TRUE,
@@ -351,7 +352,6 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
                     gp_on = c("R_t-1", "R0"),
                     pop = 0) {
   rt <- list(
-    prior = prior,
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
@@ -365,15 +365,37 @@ rt_opts <- function(prior = list(mean = 1, sd = 1),
     rt$use_breakpoints <- TRUE
   }
 
-  if (!("mean" %in% names(rt$prior) && "sd" %in% names(rt$prior))) {
-    cli_abort(
+  if (is.list(prior) && !is(prior, "dist_spec")) {
+    cli_warn(
       c(
-        "!" = "{.var prior} must have both {.var mean} and {.var sd}
-        specified.",
-        "i" = "Did you forget to specify {.var mean} and/or {.var sd}?"
+        "!" = "Specifying {.var prior} as a list is deprecated.",
+        "i" = "Use a {.cls dist_spec} instead."
       )
     )
+    if (!("mean" %in% names(prior) && "sd" %in% names(prior))) {
+      cli_abort(
+        c(
+          "!" = "{.var prior} must have both {.var mean} and {.var sd}
+          specified.",
+          "i" = "Did you forget to specify {.var mean} and/or {.var sd}?"
+        )
+      )
+    }
+    prior <- LogNormal(mean = prior$mean, sd = prior$sd)
   }
+
+  if (rt$use_rt) {
+    rt$prior <- prior
+  } else {
+    if (!missing(prior)) {
+      cli_warn(
+        c(
+          "!" = "Rt {.var prior} is ignored if {.var use_rt} is FALSE."
+        )
+      )
+    }
+  }
+
   attr(rt, "class") <- c("rt_opts", class(rt))
   return(rt)
 }
@@ -453,14 +475,17 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' scale. Updated in [create_gp_data()] to be the length of the input data if
 #' this is smaller.
 #'
-#' @param alpha_mean Numeric, defaults to 0. The mean of the magnitude parameter
-#' of the Gaussian process kernel. Should be approximately the expected standard
-#' deviation of the Gaussian process (logged Rt in case of the renewal model,
-#' logged infections in case of the nonmechanistic model).
+#' @param alpha A `<dist_spec>` giving the prior distribution of the magnitude
+#' parameter of the Gaussian process kernel. Should be approximately the
+#' expected standard deviation of the Gaussian process (logged Rt in case of
+#' the renewal model, logged infections in case of the nonmechanistic model).
+#' Defaults to a half-normal distribution with mean 0 and sd 0.01:
+#' `Normal(mean = 0, sd = 0.01)` (a lower limit of 0 will be enforced
+#' automatically to ensure positivity)
 #'
-#' @param alpha_sd Numeric, defaults to 0.01. The standard deviation of the
-#' magnitude parameter of the Gaussian process kernel. Can be tuned to adjust
-#' how far alpha is allowed to deviate form its prior mean (`alpha_mean`).
+#' @param alpha_mean Deprecated; use `alpha` instead.
+#'
+#' @param alpha_sd Deprecated; use `alpha` instead.
 #'
 #' @param kernel Character string, the type of kernel required. Currently
 #' supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
@@ -508,16 +533,26 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_sd = 7,
                     ls_min = 0,
                     ls_max = 60,
-                    alpha_mean = 0,
-                    alpha_sd = 0.01,
+                    alpha = Normal(mean = 0, sd = 0.01),
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
                     matern_type,
-                    w0 = 1.0) {
+                    w0 = 1.0,
+                    alpha_mean, alpha_sd) {
 
   if (!missing(matern_type)) {
     lifecycle::deprecate_warn(
       "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
+    )
+  }
+  if (!missing(alpha_mean)) {
+    lifecycle::deprecate_warn(
+      "1.7.0", "gp_opts(alpha_mean)", "gp_opts(alpha)"
+    )
+  }
+  if (!missing(alpha_sd)) {
+    lifecycle::deprecate_warn(
+      "1.7.0", "gp_opts(alpha_sd)", "gp_opts(alpha)"
     )
   }
 
@@ -557,8 +592,7 @@ gp_opts <- function(basis_prop = 0.2,
     ls_sd = ls_sd,
     ls_min = ls_min,
     ls_max = ls_max,
-    alpha_mean = alpha_mean,
-    alpha_sd = alpha_sd,
+    alpha = alpha,
     kernel = kernel,
     matern_order = matern_order,
     w0 = w0
@@ -575,13 +609,12 @@ gp_opts <- function(basis_prop = 0.2,
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
 #'   Negative binomial ("negbin"), the default, and Poisson.
-#' @param phi Overdispersion parameter of the reporting process, used only if
-#'   `familiy` is "negbin". Can be supplied either as a single numeric value
-#'   (fixed overdispersion) or a list with numeric elements mean (`mean`) and
-#'   standard deviation (`sd`) defining a normally distributed prior.
-#'   Internally parameterised such that the overdispersion is one over the
-#'   square of this prior overdispersion. Defaults to a list with elements
-#'   `mean = 0` and `sd = 0.25`.
+#' @param phi A `<dist_spec>` specifying a prior on the overdispersion parameter
+#'   of the reporting process, used only if `familiy` is "negbin". Internally
+#'   parameterised such that the overdispersion is one over the square of this
+#'   prior overdispersion phi. Defaults to a half-normal distribution with mean
+#'   of 0 and standard deviation of 0.25: `Normal(mean = 0, sd = 0.25)`. A lower
+#'   limit of zero will be enforced automatically.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in the
 #'   log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week
@@ -589,11 +622,12 @@ gp_opts <- function(basis_prop = 0.2,
 #' @param week_length Numeric assumed length of the week in days, defaulting to
 #'   7 days. This can be modified if data aggregated over a period other than a
 #'   week or if data has a non-weekly periodicity.
-#' @param scale Scaling factor to be applied to map latent infections (convolved
-#'   to date of report). Can be supplied either as a single numeric value (fixed
-#'   scale) or a list with numeric elements mean (`mean`) and standard deviation
-#'   (`sd`) defining a normally distributed scaling factor. Defaults to 1, i.e.
-#'   no scaling.
+#' @param scale A `<dist_spec>` specifying a prior on the scaling factor to be
+#'   applied to map latent infections (convolved to date of report).  Defaults
+#'   to a fixed value of 1, i.e. no scaling: `Fixed(1)`. A lower limit of zero
+#'   will be enforced automatically. If setting to a prior distribution and no
+#'   overreporting is expected, it might be sensible to set a maximum of 1 via
+#'   the `max` option when declaring the distribution.
 #' @param na Deprecated; use the [fill_missing()] function instead
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #'   included in the model.
@@ -611,13 +645,13 @@ gp_opts <- function(basis_prop = 0.2,
 #' obs_opts(week_effect = TRUE)
 #'
 #' # Scale reported data
-#' obs_opts(scale = list(mean = 0.2, sd = 0.02))
+#' obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
 obs_opts <- function(family = c("negbin", "poisson"),
-                     phi = list(mean = 0, sd = 0.25),
+                     phi = Normal(mean = 0, sd = 0.25),
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
-                     scale = 1,
+                     scale = Fixed(1),
                      na = c("missing", "accumulate"),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
@@ -679,16 +713,32 @@ obs_opts <- function(family = c("negbin", "poisson"),
 
   for (param in c("phi", "scale")) {
     if (is.numeric(obs[[param]])) {
-      obs[[param]] <- list(mean = obs[[param]], sd = 0)
-    }
-    if (!(all(c("mean", "sd") %in% names(obs[[param]])))) {
-      cli_abort(
+      cli_warn(
         c(
-          "!" = "Both a {.var mean} and {.var sd} are needed if specifying
-        {.strong {param}} as list.",
-          "i" = "Did you forget to specify {.var mean} and/or {.var sd}?"
+          "!" = "Specifying {.var {param}} as a numeric value is deprecated.",
+          "i" = "Use a {.cls dist_spec} instead using {.fn Fixed()}."
         )
       )
+      obs[[param]] <- Fixed(obs[[param]])
+    } else if (is.list(obs[[param]]) && !is(obs[[param]], "dist_spec")) {
+      cli_warn(
+        c(
+          "!" = "Specifying {.var {param}} as a list is deprecated.",
+          "i" = "Use a {.cls dist_spec} instead."
+        )
+      )
+      if (!(all(c("mean", "sd") %in% names(obs[[param]])))) {
+        cli_abort(
+          c(
+            "!" = "Both a {.var mean} and {.var sd} are needed if specifying
+            {.var {param}} as list.",
+            "i" = "Did you forget to specify {.var mean} and/or {.var sd}?"
+          )
+        )
+      }
+      obs[[param]] <- Normal(mean = obs[[param]]$mean, sd = obs[[param]]$sd)
+    } else {
+      assert_class(obs[[param]], "dist_spec")
     }
   }
 
