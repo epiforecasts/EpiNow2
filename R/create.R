@@ -1,5 +1,5 @@
 #' Create Clean Reported Cases
-#' @description `r lifecycle::badge("stable")`
+#' @description `r lifecycle::badge("deprecated")`
 #' Filters leading zeros, completes dates, and applies an optional threshold at
 #' which point 0 cases are replaced with a user supplied value (defaults to
 #' `NA`).
@@ -12,16 +12,12 @@
 #' number of cases based on the 7-day average. If the average is above this
 #' threshold then the zero is replaced using `fill`.
 #'
-#' @param fill Numeric, defaults to NA. Value to use to replace NA values or
-#' zeroes that are flagged because the 7-day average is above the
-#' `zero_threshold`. If the default NA is used then dates with NA values or with
-#' 7-day averages above the `zero_threshold` will be skipped in model fitting.
-#' If this is set to 0 then the only effect is to replace NA values with 0.
+#' @param fill Deprecated; zero dates with  7-day averages above the
+#'   `zero_threshold` will be skipped in model fitting.
 #' @param add_breakpoints Logical, defaults to TRUE. Should a breakpoint column
 #' be added to the data frame if it does not exist.
 #'
 #' @inheritParams estimate_infections
-#' @importFrom data.table copy merge.data.table setorder setDT frollsum
 #' @return A cleaned data frame of reported cases
 #' @keywords internal
 #' @examples
@@ -33,55 +29,15 @@ create_clean_reported_cases <- function(data, horizon = 0,
                                         zero_threshold = Inf,
                                         fill = NA_integer_,
                                         add_breakpoints = TRUE) {
-  reported_cases <- data.table::setDT(data)
-  reported_cases_grid <- data.table::copy(reported_cases)[,
-   .(date = seq(min(date), max(date) + horizon, by = "days"))
-  ]
-
-  reported_cases <- data.table::merge.data.table(
-    reported_cases, reported_cases_grid,
-    by = "date", all.y = TRUE
-  )
-
-  if (is.null(reported_cases$breakpoint) && add_breakpoints) {
-    reported_cases$breakpoint <- 0
+  reported_cases <- add_horizon(data, horizon = horizon)
+  if (add_breakpoints) {
+    reported_cases <- add_breakpoints(reported_cases)
   }
-  if (!is.null(reported_cases$breakpoint)) {
-    reported_cases[is.na(breakpoint), breakpoint := 0]
-  }
-  reported_cases <- data.table::setorder(reported_cases, date)
-  ## Filter out 0 reported cases from the beginning of the data
   if (filter_leading_zeros) {
-    reported_cases <- reported_cases[order(date)][
-      date >= min(date[confirm[!is.na(confirm)] > 0])
-    ]
+    reported_cases <- filter_leading_zeros(reported_cases)
   }
-  # Calculate `average_7_day` which for rows with `confirm == 0`
-  # (the only instance where this is being used) equates to the 7-day
-  # right-aligned moving average at the previous data point.
-  reported_cases <-
-    reported_cases[
-      ,
-      `:=`(average_7_day = (
-          data.table::frollsum(confirm, n = 8, na.rm = TRUE)
-        ) / 7
-      )
-    ]
-  # Check case counts preceding zero case counts and set to 7 day average if
-  # average over last 7 days is greater than a threshold
-  if (!is.infinite(zero_threshold)) {
-    reported_cases <- reported_cases[
-      confirm == 0 & average_7_day > zero_threshold,
-      confirm := NA_integer_
-    ]
-  }
-  reported_cases[is.na(confirm), confirm := fill]
-  reported_cases[, "average_7_day" := NULL]
-  ## set accumulate to FALSE in added rows
-  if ("accumulate" %in% colnames(reported_cases)) {
-    reported_cases[is.na(accumulate), accumulate := FALSE]
-  }
-  return(reported_cases)
+  reported_cases <- apply_zero_threshold(reported_cases, zero_threshold)
+  return(reported_cases[])
 }
 
 #' Create complete cases

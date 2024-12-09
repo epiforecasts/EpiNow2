@@ -78,6 +78,13 @@ reference:
     contents:
       - contains("_opts")
       - opts_list
+  - title: Preprocess data
+    desc: Functions used for prepropcessing data
+    contents:
+      - fill_missing
+      - add_breakpoints
+      - filter_leading_zeros
+      - apply_zero_threshold
   - title: Summarise Across Regions
     desc: Functions used for summarising across regions (designed for use with regional_epinow)
     contents:
