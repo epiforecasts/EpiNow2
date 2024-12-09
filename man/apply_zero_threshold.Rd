@@ -36,6 +36,3 @@ This function aims to detect spurious zeroes by comparing the 7-day average
 of the case counts to a threshold. If the 7-day average is above the
 threshold, the zero case count is replaced with NA.
 }
-\author{
-Sebastian Funk
-}

@@ -33,7 +33,7 @@ A data.table with leading zeros removed.
 Filter leading zeros from a data set.
 }
 \examples{
-cases <- data.table(
+cases <- data.frame(
   date = as.Date("2020-01-01") + 0:10,
   confirm = c(0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 )
