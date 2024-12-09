@@ -202,25 +202,25 @@ add_horizon <- function(data, horizon, accumulate = 1L,
 
   reported_cases <- data.table::setDT(data)
   if (horizon > 0) {
-    reported_cases_grid <- data.table::copy(reported_cases)[,
+    reported_cases_future <- data.table::copy(reported_cases)[,
       .(date = seq(max(date) + 1, max(date) + horizon, by = "days")),
       by = by
     ]
     ## if we accumulate add the column
     if (accumulate > 1 || "accumulate" %in% colnames(data)) {
-      reported_cases_grid[, accumulate := TRUE]
+      reported_cases_future[, accumulate := TRUE]
       ## set accumulation to FALSE where appropriate
       if (horizon >= accumulate) {
-        reported_cases_grid[
+        reported_cases_future[
           as.integer(date - min(date) - 1) %% accumulate == 0,
           accumulate := FALSE
         ]
       }
     }
     ## fill any missing columns
-    reported_cases_grid <- data.table::merge.data.table(
-      reported_cases, reported_cases_grid,
-      by = "date", all.y = TRUE
+    reported_cases <- rbind(
+      reported_cases, reported_cases_future,
+      fill = TRUE
     )
   }
   return(reported_cases[])
