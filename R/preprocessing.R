@@ -298,7 +298,6 @@ filter_leading_zeros <- function(data, obs_column = "confirm", by = NULL) {
 ##' @inheritParams fill_missing
 ##' @importFrom data.table setDT frollsum
 ##' @return A data.table with the zero threshold applied.
-##' @author Sebastian Funk
 apply_zero_threshold <- function(data, threshold = Inf,
                                  obs_column = "confirm") {
   assert_data_frame(data)
