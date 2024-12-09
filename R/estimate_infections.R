@@ -199,7 +199,8 @@ estimate_infections <- function(data,
   # Fill missing dates
   reported_cases <- default_fill_missing_obs(data, obs, "confirm")
   # Check initial zeros to check for deprecated filter zero functionality
-  if (reported_cases[date == min(date), "confirm"] == 0) {
+  if (filter_leading_zeros &&
+      reported_cases[date == min(date), "confirm"] == 0) {
     cli_warn(c(
       "!" = "Filtering initial zero observations in the data. This
       functionality will be removed in future versions of EpiNow2. In order
