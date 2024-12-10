@@ -282,14 +282,14 @@ filter_leading_zeros <- function(data, obs_column = "confirm", by = NULL) {
   return(reported_cases[])
 }
 
-##' Converts zero case counts to NA (missing) if the 7-day average is above a
+##' Convert zero case counts to `NA` (missing) if the 7-day average is above a
 ##' threshold.
 ##'
 ##' This function aims to detect spurious zeroes by comparing the 7-day average
 ##' of the case counts to a threshold. If the 7-day average is above the
-##' threshold, the zero case count is replaced with NA.
+##' threshold, the zero case count is replaced with `NA`.
 ##'
-##' @param threshold Numeric, defaults to Inf. Indicates if detected zero cases
+##' @param threshold Numeric, defaults to `Inf`. Indicates if detected zero cases
 ##'   are meaningful by using a threshold number of cases based on the 7-day
 ##'   average. If the average is above this threshold at the time of a zero
 ##'   observation count then the zero is replaced with a missing (`NA`) count
