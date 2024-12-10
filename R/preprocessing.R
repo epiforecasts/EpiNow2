@@ -250,6 +250,7 @@ add_breakpoints <- function(data, dates = as.Date(character(0))) {
     cli_abort("Breakpoint date{?s} not found in data: {.var {missing_dates}}")
   }
   reported_cases[date %in% dates, breakpoint := 1]
+  reported_cases[is.na(breakpoint), breakpoint := 0]
   return(reported_cases)
 }
 
