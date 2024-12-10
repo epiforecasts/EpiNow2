@@ -224,6 +224,8 @@ test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
 })
 
 test_that("estimate_secondary works with filter_leading_zeros set", {
+  ## testing deprecated functionality
+  withr::local_options(lifecycle_verbosity = "quiet")
   modified_data <- inc_cases[1:10, secondary := 0]
   out <- estimate_secondary(
     modified_data,
@@ -238,6 +240,8 @@ test_that("estimate_secondary works with filter_leading_zeros set", {
 })
 
 test_that("estimate_secondary works with zero_threshold set", {
+  ## testing deprecated functionality
+  withr::local_options(lifecycle_verbosity = "quiet")
   modified_data <- inc_cases[sample(1:30, 10), primary := 0]
   out <- estimate_secondary(
     modified_data,
