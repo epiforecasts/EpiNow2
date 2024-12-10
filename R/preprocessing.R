@@ -180,9 +180,13 @@ default_fill_missing_obs <- function(data, obs, obs_column) {
 
 ##' Add missing values for future dates
 ##'
+##' @param data Data frame with a `date` column. The other columns depend on the
+##'   model that the data are to be used, e.g. [estimate_infections()] or
+##'   [estimate_secondary()]. See the documentation there for the expected
+##'   format.
 ##' @param accumulate The number of days to accumulate when generating posterior
 ##'   prediction, e.g. 7 for weekly accumulated forecasts.
-##' @inheritParams add_horizon
+##' @inheritParams fill_missing
 ##' @inheritParams estimate_infections
 ##' @importFrom data.table copy merge.data.table setDT
 ##' @return A data.table with missing values for future dates

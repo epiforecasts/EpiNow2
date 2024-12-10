@@ -7,20 +7,26 @@
 add_horizon(data, horizon, accumulate = 1L, obs_column = "confirm", by = NULL)
 }
 \arguments{
-\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date (date).
-\code{confirm} must be numeric and \code{date} must be in date format. Optionally
-this can also have a logical \code{accumulate} column which indicates whether
-data should be added to the next data point. This is useful when modelling
-e.g. weekly incidence data. See also the \code{\link[=fill_missing]{fill_missing()}} function which
-helps add the \code{accumulate} column with the desired properties when dealing
-with non-daily data. If any accumulation is done this happens after
-truncation as specified by the \code{truncation} argument.}
+\item{data}{Data frame with a \code{date} column. The other columns depend on the
+model that the data are to be used, e.g. \code{\link[=estimate_infections]{estimate_infections()}} or
+\code{\link[=estimate_secondary]{estimate_secondary()}}. See the documentation there for the expected
+format.}
 
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to
 forecast.}
 
 \item{accumulate}{The number of days to accumulate when generating posterior
 prediction, e.g. 7 for weekly accumulated forecasts.}
+
+\item{obs_column}{Character (default: "confirm"). If given, only the column
+specified here will be used for checking missingness. This is useful if
+using a data set that has multiple columns of hwich one of them
+corresponds to observations that are to be processed here.}
+
+\item{by}{Character vector. Name(s) of any additional column(s) where
+data processing should be done separately for each value in the column.
+This is useful when using data representing e.g. multiple geographies. If
+NULL (default) no such grouping is done.}
 }
 \value{
 A data.table with missing values for future dates
