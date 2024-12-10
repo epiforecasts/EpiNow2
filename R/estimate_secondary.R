@@ -217,12 +217,12 @@ estimate_secondary <- function(data,
   if (filter_leading_zeros &&
       !is.na(secondary_reports_dirty[date == min(date), "confirm"]) &&
       secondary_reports_dirty[date == min(date), "confirm"] == 0) {
-    cli_warn(
+    cli_warn(c(
       "!" = "Filtering initial zero observations in the data. This
       functionality will be removed in future versions of EpiNow2. In order
       to filter initial zero observations use the {.fn filter_leading_zeros()}
       function on the data before calling {.fn estimate_secondary()."
-    )
+    ))
   }
   secondary_reports <- create_clean_reported_cases(
     secondary_reports_dirty,
