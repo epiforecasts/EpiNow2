@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocessing.R
 \name{apply_zero_threshold}
 \alias{apply_zero_threshold}
-\title{Converts zero case counts to NA (missing) if the 7-day average is above a
+\title{Convert zero case counts to \code{NA} (missing) if the 7-day average is above a
 threshold.}
 \usage{
 apply_zero_threshold(data, threshold = Inf, obs_column = "confirm")
@@ -17,11 +17,11 @@ helps add the \code{accumulate} column with the desired properties when dealing
 with non-daily data. If any accumulation is done this happens after
 truncation as specified by the \code{truncation} argument.}
 
-\item{threshold}{Numeric, defaults to Inf. Indicates if detected zero cases
-are meaningful by using a threshold number of cases based on the 7-day
-average. If the average is above this threshold at the time of a zero
-observation count then the zero is replaced with a missing (\code{NA}) count
-and thus ignored in the likelihood.}
+\item{threshold}{Numeric, defaults to \code{Inf}. Indicates if detected zero
+cases are meaningful by using a threshold number of cases based on the
+7-day average. If the average is above this threshold at the time of a
+zero observation count then the zero is replaced with a missing (\code{NA})
+count and thus ignored in the likelihood.}
 
 \item{obs_column}{Character (default: "confirm"). If given, only the column
 specified here will be used for checking missingness. This is useful if
@@ -34,5 +34,5 @@ A data.table with the zero threshold applied.
 \description{
 This function aims to detect spurious zeroes by comparing the 7-day average
 of the case counts to a threshold. If the 7-day average is above the
-threshold, the zero case count is replaced with NA.
+threshold, the zero case count is replaced with \code{NA}.
 }
