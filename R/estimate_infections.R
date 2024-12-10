@@ -140,6 +140,20 @@ estimate_infections <- function(data,
       "estimate_infections(data)"
     )
   }
+  if (!missing(filter_leading_zeros)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "estimate_infections(filter_leading_zeros)",
+      "filter_leading_zeros()"
+    )
+  }
+  if (!missing(zero_threshold)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "estimate_infections(zero_threshold)",
+      "apply_zero_threshold()"
+    )
+  }
   # Validate inputs
   check_reports_valid(data, model = "estimate_infections")
   assert_class(generation_time, "generation_time_opts")
@@ -184,6 +198,19 @@ estimate_infections <- function(data,
   )
   # Fill missing dates
   reported_cases <- default_fill_missing_obs(data, obs, "confirm")
+  # Check initial zeros to check for deprecated filter zero functionality
+  if (filter_leading_zeros &&
+      !is.na(reported_cases[date == min(date), "confirm"]) &&
+      reported_cases[date == min(date), "confirm"] == 0) {
+    cli_warn(c(
+      "!" = "Filtering initial zero observations in the data. This
+      functionality will be removed in future versions of EpiNow2. In order
+      to retain the default behaviour and filter initial zero observations
+      use the {.fn filter_leading_zeros()} function on the data before
+      calling {.fn estimate_infections()}."
+    ))
+  }
+
   # Create clean and complete cases
   reported_cases <- create_clean_reported_cases(
     reported_cases, horizon,

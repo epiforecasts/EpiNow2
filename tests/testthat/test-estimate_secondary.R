@@ -224,6 +224,8 @@ test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
 })
 
 test_that("estimate_secondary works with filter_leading_zeros set", {
+  ## testing deprecated functionality
+  withr::local_options(lifecycle_verbosity = "quiet")
   modified_data <- inc_cases[1:10, secondary := 0]
   out <- estimate_secondary(
     modified_data,
@@ -238,6 +240,8 @@ test_that("estimate_secondary works with filter_leading_zeros set", {
 })
 
 test_that("estimate_secondary works with zero_threshold set", {
+  ## testing deprecated functionality
+  withr::local_options(lifecycle_verbosity = "quiet")
   modified_data <- inc_cases[sample(1:30, 10), primary := 0]
   out <- estimate_secondary(
     modified_data,
@@ -248,4 +252,13 @@ test_that("estimate_secondary works with zero_threshold set", {
   )
   expect_s3_class(out, "estimate_secondary")
   expect_named(out, c("predictions", "posterior", "data", "fit"))
+})
+
+test_that("a warning is thrown when using deprecated functionality", {
+  suppressWarnings(expect_deprecated(estimate_secondary(
+    inc_cases, filter_leading_zeros = TRUE, verbose = FALSE
+  ), "filter_leading_zeros"))
+  suppressWarnings(expect_deprecated(estimate_secondary(
+    inc_cases, zero_threshold = 50, verbose = FALSE
+  ), "zero_threshold"))
 })

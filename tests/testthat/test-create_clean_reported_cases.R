@@ -1,8 +1,3 @@
-
-test_that("create_clean_reported_cases runs without errors", {
-  expect_no_error(create_clean_reported_cases(example_confirmed, 7))
-})
-
 test_that("create_clean_reported_cases returns a data table", {
   result <- create_clean_reported_cases(example_confirmed, 7)
   expect_s3_class(result, "data.table")

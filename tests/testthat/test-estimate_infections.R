@@ -164,3 +164,12 @@ test_that("estimate_infections works as expected with failing chains", {
     )
   ))
 })
+
+test_that("a warning is thrown when using deprecated functionality", {
+  suppressWarnings(expect_deprecated(estimate_infections(
+    reported_cases, filter_leading_zeros = TRUE, verbose = FALSE
+  ), "filter_leading_zeros"))
+  suppressWarnings(expect_deprecated(estimate_infections(
+    reported_cases, zero_threshold = 50, verbose = FALSE
+  ), "zero_threshold"))
+})
