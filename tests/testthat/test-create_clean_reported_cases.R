@@ -1,4 +1,3 @@
-
 test_that("create_clean_reported_cases runs without errors", {
   expect_no_error(create_clean_reported_cases(example_confirmed, 7))
 })
