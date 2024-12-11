@@ -501,28 +501,10 @@ create_stan_data <- function(data, seeding_time,
       delay = stan_data$seeding_time, horizon = stan_data$horizon
     )
   )
-  # initial estimate of growth
-  first_week <- data.table::data.table(
-    confirm = cases[seq_len(min(7, length(cases)))],
-    t = seq_len(min(7, length(cases)))
-  )[!is.na(confirm)]
-  stan_data$prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
-  stan_data$prior_infections <- ifelse(
-    is.na(stan_data$prior_infections) || is.null(stan_data$prior_infections),
-    0, stan_data$prior_infections
-  )
-  if (stan_data$seeding_time > 1 && nrow(first_week) > 1) {
-    safe_lm <- purrr::safely(stats::lm)
-    stan_data$prior_growth <- safe_lm(log(confirm) ~ t,
-      data = first_week
-    )[[1]]
-    stan_data$prior_growth <- ifelse(is.null(stan_data$prior_growth), 0,
-      stan_data$prior_growth$coefficients[2]
-    )
-  } else {
-    stan_data$prior_growth <- 0
-  }
-
+  # Calculate prior infections and growth
+  prior_estimates <- calculate_prior_estimates(cases, seeding_time)
+  stan_data$prior_infections <- prior_estimates$prior_infections
+  stan_data$prior_growth <- prior_estimates$prior_growth
   # backcalculation settings
   stan_data <- c(stan_data, create_backcalc_data(backcalc))
   # gaussian process data
