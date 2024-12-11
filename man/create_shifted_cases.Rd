@@ -56,16 +56,16 @@ smoothing_window <- 14
 cases <- create_clean_reported_cases(example_confirmed, horizon = horizon)
 ## add zeroes initially
 cases <- data.table::rbindlist(list(
-   data.table::data.table(
-     date = seq(
-       min(cases$date) - smoothing_window,
-       min(cases$date) - 1,
-       by = "days"
-     ),
-     confirm = 0, breakpoint = 0
-   ),
-   cases
- ))
+  data.table::data.table(
+    date = seq(
+      min(cases$date) - smoothing_window,
+      min(cases$date) - 1,
+      by = "days"
+    ),
+    confirm = 0, breakpoint = 0
+  ),
+  cases
+))
 create_shifted_cases(cases, shift, smoothing_window, horizon)
 }
 }

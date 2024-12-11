@@ -7,7 +7,7 @@
 create_stan_params(..., lower_bounds = NULL)
 }
 \arguments{
-\item{...}{Named delay distributions. The names are assigned to IDs}
+\item{...}{Named parameter distributions. The names are assigned to IDs}
 
 \item{lower_bounds}{Named vector of lower bounds for any delay(s). The names
 have to correspond to the names given to the delay distributions passed.

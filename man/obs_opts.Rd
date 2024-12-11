@@ -21,7 +21,7 @@ obs_opts(
 Negative binomial ("negbin"), the default, and Poisson.}
 
 \item{phi}{A \verb{<dist_spec>} specifying a prior on the overdispersion parameter
-of the reporting process, used only if \code{familiy} is "negbin". Internally
+of the reporting process, used only if \code{family} is "negbin". Internally
 parameterised such that the overdispersion is one over the square of this
 prior overdispersion phi. Defaults to a half-normal distribution with mean
 of 0 and standard deviation of 0.25: \code{Normal(mean = 0, sd = 0.25)}. A lower

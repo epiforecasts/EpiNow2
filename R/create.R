@@ -98,16 +98,16 @@ create_complete_cases <- function(cases) {
 #' cases <- create_clean_reported_cases(example_confirmed, horizon = horizon)
 #' ## add zeroes initially
 #' cases <- data.table::rbindlist(list(
-#'    data.table::data.table(
-#'      date = seq(
-#'        min(cases$date) - smoothing_window,
-#'        min(cases$date) - 1,
-#'        by = "days"
-#'      ),
-#'      confirm = 0, breakpoint = 0
-#'    ),
-#'    cases
-#'  ))
+#'   data.table::data.table(
+#'     date = seq(
+#'       min(cases$date) - smoothing_window,
+#'       min(cases$date) - 1,
+#'       by = "days"
+#'     ),
+#'     confirm = 0, breakpoint = 0
+#'   ),
+#'   cases
+#' ))
 #' create_shifted_cases(cases, shift, smoothing_window, horizon)
 #' }
 create_shifted_cases <- function(data, shift,
@@ -121,7 +121,8 @@ create_shifted_cases <- function(data, shift,
   ][
     ,
     confirm := runner::mean_run(
-      confirm, k = smoothing_window, lag = -floor(smoothing_window / 2)
+      confirm,
+      k = smoothing_window, lag = -floor(smoothing_window / 2)
     )
   ]
 
@@ -131,7 +132,8 @@ create_shifted_cases <- function(data, shift,
       shifted_reported_cases[!is.na(confirm)][
         max(1, .N - smoothing_window):.N
       ]$confirm
-  )[,
+  )[
+    ,
     t := seq_len(.N)
   ]
   lm_model <- stats::lm(log(confirm + 1) ~ t, data = final_period)
@@ -152,8 +154,9 @@ create_shifted_cases <- function(data, shift,
   ][, t := NULL]
 
   ## Drop median generation interval initial values
-  shifted_reported_cases <- shifted_reported_cases[,
-   confirm := ceiling(confirm)
+  shifted_reported_cases <- shifted_reported_cases[
+    ,
+    confirm := ceiling(confirm)
   ]
   shifted_reported_cases <- shifted_reported_cases[-(1:smoothing_window)]
   return(shifted_reported_cases)
@@ -230,7 +233,6 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' }
 create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
                            delay = 0, horizon = 0) {
-
   # Define if GP is on or off
   if (is.null(rt)) {
     rt <- rt_opts(
@@ -263,7 +265,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
         breakpoints[(max_bps + 1):length(breakpoints)] <- breakpoints[max_bps]
       }
     }
-  }else {
+  } else {
     breakpoints <- cumsum(breakpoints)
   }
 
@@ -278,10 +280,10 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     estimate_r = as.numeric(rt$use_rt),
     bp_n = ifelse(rt$use_breakpoints, max(breakpoints) - 1, 0),
     breakpoints = breakpoints,
-    future_fixed =  as.numeric(future_rt$fixed),
+    future_fixed = as.numeric(future_rt$fixed),
     fixed_from = future_rt$from,
     pop = rt$pop,
-    stationary =  as.numeric(rt$gp_on == "R0"),
+    stationary = as.numeric(rt$gp_on == "R0"),
     future_time = horizon - future_rt$from
   )
   return(rt_data)
@@ -301,15 +303,15 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #' @keywords internal
 create_backcalc_data <- function(backcalc = backcalc_opts()) {
   data <- list(
-   rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
-   backcalc_prior = data.table::fcase(
-     backcalc$prior == "none", 0,
-     backcalc$prior == "reports", 1,
-     backcalc$prior == "infections", 2,
-     default = 0
-   )
- )
- return(data)
+    rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
+    backcalc_prior = data.table::fcase(
+      backcalc$prior == "none", 0,
+      backcalc$prior == "reports", 1,
+      backcalc$prior == "infections", 2,
+      default = 0
+    )
+  )
+  return(data)
 }
 
 #' Create Gaussian Process Data
@@ -373,7 +375,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
   gp$ls_mean <- gp$ls_mean / sd(times)
   gp$ls_sd <- gp$ls_sd / sd(times)
   gp$ls_min <- gp$ls_min / sd(times)
-  gp$ls_max <- gp$ls_max /  sd(times)
+  gp$ls_max <- gp$ls_max / sd(times)
 
   # basis functions
   M <- ceiling(time * gp$basis_prop)
@@ -424,7 +426,8 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #'
 #' # Applying a observation scaling to the data
 #' create_obs_model(
-#'  obs_opts(scale = Normal(mean = 0.4, sd = 0.01)), dates = dates
+#'   obs_opts(scale = Normal(mean = 0.4, sd = 0.01)),
+#'   dates = dates
 #' )
 #'
 #' # Apply a custom week week length
@@ -469,8 +472,8 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @examples
 #' \dontrun{
 #' create_stan_data(
-#'  example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
-#'  backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
+#'   example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
+#'   backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
 #' )
 #' }
 create_stan_data <- function(data, seeding_time,
@@ -600,7 +603,9 @@ create_initial_conditions <- function(data) {
 
     if (data$fixed == 0) {
       out$eta <- array(rnorm(
-        ifelse(data$gp_type == 1, data$M * 2, data$M), mean = 0, sd = 0.1))
+        ifelse(data$gp_type == 1, data$M * 2, data$M),
+        mean = 0, sd = 0.1
+      ))
       out$rescaled_rho <- array(rlnorm(1,
         meanlog = data$ls_meanlog,
         sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog, 0.01)
@@ -704,7 +709,7 @@ create_stan_args <- function(stan = stan_opts(),
   }
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&
-      inherits(stan$object, "CmdStanModel")) {
+    inherits(stan$object, "CmdStanModel")) {
     init <- 2
   }
   # set up shared default arguments
@@ -806,7 +811,8 @@ create_stan_delays <- function(..., time_points = 1L) {
   ))))
   ## assign prior weights
   weight_priors <- vapply(
-    delays[parametric], attr, "weight_prior", FUN.VALUE = logical(1)
+    delays[parametric], attr, "weight_prior",
+    FUN.VALUE = logical(1)
   )
   ret$weight <- array(rep(1, ret$n_p))
   ret$weight[weight_priors] <- time_points
@@ -821,7 +827,7 @@ create_stan_delays <- function(..., time_points = 1L) {
 
 ##' Create parameters for stan
 ##'
-##' @param ... Named delay distributions. The names are assigned to IDs
+##' @param ... Named parameter distributions. The names are assigned to IDs
 ##' @param lower_bounds Named vector of lower bounds for any delay(s). The names
 ##' have to correspond to the names given to the delay distributions passed.
 ##' If `NULL` (default) no parameters are given a lower bound.
