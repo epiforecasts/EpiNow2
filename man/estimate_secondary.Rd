@@ -20,7 +20,6 @@ estimate_secondary(
   model = NULL,
   weigh_delay_priors = FALSE,
   verbose = interactive(),
-  ...,
   reports
 )
 }
@@ -90,8 +89,6 @@ parameters.}
 
 \item{verbose}{Logical, should model fitting progress be returned. Defaults
 to \code{\link[=interactive]{interactive()}}.}
-
-\item{...}{Additional parameters to pass to \code{\link[=stan_opts]{stan_opts()}}.}
 
 \item{reports}{Deprecated; use \code{data} instead.}
 }
