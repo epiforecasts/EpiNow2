@@ -461,19 +461,20 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' Defines a list specifying the structure of the approximate Gaussian
 #' process. Custom settings can be supplied which override the defaults.
 #'
-#' @param ls_mean Numeric, defaults to 21 days. The mean of the lognormal
-#' length scale.
+#' @param ls_mean Deprecated; use `ls` instead.
 #'
-#' @param ls_sd Numeric, defaults to 7 days. The standard deviation of the log
-#' normal length scale. If \code{ls_sd = 0}, inverse-gamma prior on Gaussian
-#' process length scale will be used with recommended parameters
-#' \code{inv_gamma(1.499007, 0.057277 * ls_max)}.
+#' @param ls_sd Deprecated; use `ls` instead.
 #'
-#' @param ls_min Numeric, defaults to 0. The minimum value of the length scale.
+#' @param ls_min Deprecated; use `ls` instead.
 #'
-#' @param ls_max Numeric, defaults to 60. The maximum value of the length
-#' scale. Updated in [create_gp_data()] to be the length of the input data if
-#' this is smaller.
+#' @param ls_max Deprecated; use `ls` instead.
+#'
+#' @param ls A `<dist_spec>` giving the prior distribution of the lengthscale
+#' parameter of the Gaussian process kernel. This is scaled with half the
+#' length of the time scale such that 2 corresponds to the length of the time
+#' series. Defaults to a half-normal distribution with mean 0.5, sd 0.1 and
+#' maximum 1: `Normal(mean = 0.5, sd = 0.1, max = 1)` (a lower limit of 0 will
+#' be enforced automatically to ensure positivity)
 #'
 #' @param alpha A `<dist_spec>` giving the prior distribution of the magnitude
 #' parameter of the Gaussian process kernel. Should be approximately the

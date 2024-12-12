@@ -11,6 +11,7 @@ gp_opts(
   ls_sd = 7,
   ls_min = 0,
   ls_max = 60,
+  ls = Normal(mean = 0.5, sd = 0.1, max = 1),
   alpha = Normal(mean = 0, sd = 0.01),
   kernel = c("matern", "se", "ou", "periodic"),
   matern_order = 3/2,
@@ -32,19 +33,20 @@ proportion of basis functions. See (Riutort-Mayol et al. 2020
 approximate Gaussian process. See (Riutort-Mayol et al. 2020
 \url{https://arxiv.org/abs/2004.11408}) for advice on updating this default.}
 
-\item{ls_mean}{Numeric, defaults to 21 days. The mean of the lognormal
-length scale.}
+\item{ls_mean}{Deprecated; use \code{ls} instead.}
 
-\item{ls_sd}{Numeric, defaults to 7 days. The standard deviation of the log
-normal length scale. If \code{ls_sd = 0}, inverse-gamma prior on Gaussian
-process length scale will be used with recommended parameters
-\code{inv_gamma(1.499007, 0.057277 * ls_max)}.}
+\item{ls_sd}{Deprecated; use \code{ls} instead.}
 
-\item{ls_min}{Numeric, defaults to 0. The minimum value of the length scale.}
+\item{ls_min}{Deprecated; use \code{ls} instead.}
 
-\item{ls_max}{Numeric, defaults to 60. The maximum value of the length
-scale. Updated in \code{\link[=create_gp_data]{create_gp_data()}} to be the length of the input data if
-this is smaller.}
+\item{ls_max}{Deprecated; use \code{ls} instead.}
+
+\item{ls}{A \verb{<dist_spec>} giving the prior distribution of the lengthscale
+parameter of the Gaussian process kernel. This is scaled with half the
+length of the time scale such that 2 corresponds to the length of the time
+series. Defaults to a half-normal distribution with mean 0.5, sd 0.1 and
+maximum 1: \code{Normal(mean = 0.5, sd = 0.1, max = 1)} (a lower limit of 0 will
+be enforced automatically to ensure positivity)}
 
 \item{alpha}{A \verb{<dist_spec>} giving the prior distribution of the magnitude
 parameter of the Gaussian process kernel. Should be approximately the
