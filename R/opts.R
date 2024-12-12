@@ -533,6 +533,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_sd = 7,
                     ls_min = 0,
                     ls_max = 60,
+                    ls = Normal(mean = 0.5, sd = 0.1, max = 1),
                     alpha = Normal(mean = 0, sd = 0.01),
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
@@ -555,6 +556,37 @@ gp_opts <- function(basis_prop = 0.2,
       "1.7.0", "gp_opts(alpha_sd)", "gp_opts(alpha)"
     )
   }
+  if (!missing(ls_mean) || !missing(ls_sd) || !missing(ls_min) ||
+      !missing(ls_max)) {
+    if (!missing(ls)) {
+      cli_abort(
+        c(
+          "!" = "Both {.var ls} and at least one legacy argument
+          ({.var ls_mean}, {.var ls_sd}, {.var ls_min}, {.var ls_max}) have been
+          specified.",
+          "i" = "Only one of the should be used."
+        )
+      )
+    }
+    cli_warn(c(
+      "!" = "Specifying lengthscale priors via the {.var ls_mean}, {.var ls_sd},
+      {.var ls_min}, and {.var ls_max} arguments is deprecated.",
+      "i" = "Use the {.var ls} argument instead."
+    ))
+    if (ls_min > 0) {
+      cli_abort(
+        c(
+          "!" = "Lower lengthscale bounds of greater than 0 are no longer
+          supported. If this is a feature you need please open an Issue on the
+          EpiNow2 GitHub repository."
+        )
+      )
+    }
+    legacy_arguments <- TRUE
+  } else {
+    legacy_arguments <- FALSE
+  }
+
 
   if (!missing(matern_type)) {
     if (!missing(matern_order) && matern_type != matern_order) {
@@ -592,10 +624,12 @@ gp_opts <- function(basis_prop = 0.2,
     ls_sd = ls_sd,
     ls_min = ls_min,
     ls_max = ls_max,
+    ls = ls,
     alpha = alpha,
     kernel = kernel,
     matern_order = matern_order,
-    w0 = w0
+    w0 = w0,
+    legacy_arguments = legacy_arguments
   )
 
   attr(gp, "class") <- c("gp_opts", class(gp))
