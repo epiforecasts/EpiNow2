@@ -205,7 +205,7 @@ It can be changed using the `rt_opts()` function.
 For example, if the user believes that at the very start of the data the reproduction number was 2, with uncertainty in this belief represented by a standard deviation of 1, they would use
 
 ```{r results = 'hide'}
-rt_prior <- LogNormal(meanlog = Fixed(2), sdlog = Fixed(1))
+rt_prior <- LogNormal(meanlog = 2, sdlog = 1)
 rt_opts(prior = rt_prior)
 ```
 

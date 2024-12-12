@@ -74,8 +74,8 @@ Note that the mean and standard deviation must be converted to the log scale, wh
 
 ```{r reporting_delay}
 reporting_delay <- LogNormal(
-  meanlog = Fixed(2),
-  sdlog = Fixed(1),
+  meanlog = 2,
+  sdlog = 1,
   max = 10
 )
 reporting_delay
@@ -102,8 +102,8 @@ Lastly we need to choose a prior for the initial value of the reproduction numbe
 
 ```{r initial_r}
 rt_prior <- LogNormal(
-  meanlog = Fixed(2),
-  sdlog = Fixed(0.1)
+  meanlog = 2,
+  sdlog = 0.1
 )
 ```
 
