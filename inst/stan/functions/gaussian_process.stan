@@ -143,7 +143,7 @@ int setup_noise(int ot_h, int t, int horizon, int estimate_r,
   */
 matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
   vector[dimension] x = linspaced_vector(dimension, 1, dimension);
-  x = (x - mean(x)) / sd(x);
+  x = 2 * (x - mean(x)) / (max(x) - 1);
   if (is_periodic) {
     return PHI_periodic(dimension, M, w0, x);
   } else {
@@ -165,44 +165,26 @@ matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
   * @return A vector of updated noise terms
   */
 vector update_gp(matrix PHI, int M, real L, real alpha,
-                  array[] real rho, vector eta, int type, real nu) {
+                 real rho, vector eta, int type, real nu) {
   vector[type == 1 ? 2 * M : M] diagSPD;    // spectral density
 
   // GP in noise - spectral densities
   if (type == 0) {
-    diagSPD = diagSPD_EQ(alpha, rho[1], L, M);
+    diagSPD = diagSPD_EQ(alpha, rho, L, M);
   } else if (type == 1) {
-    diagSPD = diagSPD_Periodic(alpha, rho[1], M);
+    diagSPD = diagSPD_Periodic(alpha, rho, M);
   } else if (type == 2) {
     if (nu == 0.5) {
-      diagSPD = diagSPD_Matern12(alpha, rho[1], L, M);
+      diagSPD = diagSPD_Matern12(alpha, rho, L, M);
     } else if (nu == 1.5) {
-      diagSPD = diagSPD_Matern32(alpha, rho[1], L, M);
+      diagSPD = diagSPD_Matern32(alpha, rho, L, M);
     } else if (nu == 2.5) {
-      diagSPD = diagSPD_Matern52(alpha, rho[1], L, M);
+      diagSPD = diagSPD_Matern52(alpha, rho, L, M);
     } else {
       reject("nu must be one of 1/2, 3/2 or 5/2; found nu=", nu);
     }
   }
   return PHI * (diagSPD .* eta);
-}
-
-/**
-  * Prior for Gaussian process length scale
-  *
-  * @param rho Length scale parameter
-  * @param ls_meanlog Mean of the log of the length scale
-  * @param ls_sdlog Standard deviation of the log of the length scale
-  * @param ls_min Minimum length scale
-  * @param ls_max Maximum length scale
-  */
-void lengthscale_lp(real rho, real ls_meanlog, real ls_sdlog,
-                    real ls_min, real ls_max) {
-  if (ls_sdlog > 0) {
-    rho ~ lognormal(ls_meanlog, ls_sdlog) T[ls_min, ls_max];
-  } else {
-    rho ~ inv_gamma(1.499007, 0.057277 * ls_max) T[ls_min, ls_max];
-  }
 }
 
 /**
