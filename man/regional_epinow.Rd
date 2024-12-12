@@ -160,12 +160,12 @@ def <- regional_epinow(
     prior = LogNormal(
       meanlog = 2,
       sdlog = 0.2
-    ),
-    stan = stan_opts(
-      samples = 100, warmup = 200
-    ),
-    verbose = interactive()
-  )
+    )
+  ),
+  stan = stan_opts(
+    samples = 100, warmup = 200
+  ),
+  verbose = interactive()
 )
 options(old_opts)
 }
