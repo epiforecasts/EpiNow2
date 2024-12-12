@@ -718,7 +718,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
         cdf_cutoff <- 0
       }
       pmf_dt <- lapply(dists, function(y) {
-        if (is.infinite(attr(y, "max"))) {
+        if (is.infinite(max(y))) {
           cli_abort(
             c(
               "!" = "All distributions in {.var x} must have a finite
