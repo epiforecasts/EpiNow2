@@ -1,6 +1,6 @@
-test_that("calculate_prior_estimates works", {
+test_that("estimate_early_dynamics works", {
   cases <- EpiNow2::example_confirmed[1:30]
-  prior_estimates <- calculate_prior_estimates(cases$confirm, 7)
+  prior_estimates <- estimate_early_dynamics(cases$confirm, 7)
   # Check dimensions
   expect_identical(
     names(prior_estimates),
@@ -18,9 +18,9 @@ test_that("calculate_prior_estimates works", {
   )
 })
 
-test_that("calculate_prior_estimates handles NA values correctly", {
+test_that("estimate_early_dynamics handles NA values correctly", {
   cases <- c(10, 20, NA, 40, 50, NA, 70)
-  prior_estimates <- calculate_prior_estimates(cases, 7)
+  prior_estimates <- estimate_early_dynamics(cases, 7)
   expect_equal(
     prior_estimates$prior_infections,
     log(mean(c(10, 20, 40, 50, 70), na.rm = TRUE))
@@ -28,22 +28,22 @@ test_that("calculate_prior_estimates handles NA values correctly", {
   expect_true(!is.na(prior_estimates$prior_growth))
 })
 
-test_that("calculate_prior_estimates handles exponential growth", {
+test_that("estimate_early_dynamics handles exponential growth", {
   cases <- 2^(c(0:6)) # Exponential growth
-  prior_estimates <- calculate_prior_estimates(cases, 7)
+  prior_estimates <- estimate_early_dynamics(cases, 7)
   expect_equal(prior_estimates$prior_infections, log(mean(cases[1:7])))
   expect_true(prior_estimates$prior_growth > 0) # Growth should be positive
 })
 
-test_that("calculate_prior_estimates handles exponential decline", {
+test_that("estimate_early_dynamics handles exponential decline", {
   cases <- rev(2^(c(0:6))) # Exponential decline
-  prior_estimates <- calculate_prior_estimates(cases, 7)
+  prior_estimates <- estimate_early_dynamics(cases, 7)
   expect_equal(prior_estimates$prior_infections, log(mean(cases[1:7])))
   expect_true(prior_estimates$prior_growth < 0) # Growth should be negative
 })
 
-test_that("calculate_prior_estimates correctly handles seeding time less than 2", {
+test_that("estimate_early_dynamics correctly handles seeding time less than 2", {
   cases <- c(5, 10, 20) # Less than 7 days of data
-  prior_estimates <- calculate_prior_estimates(cases, 1)
+  prior_estimates <- estimate_early_dynamics(cases, 1)
   expect_equal(prior_estimates$prior_growth, 0) # Growth should be 0 if seeding time is <= 1
 })
