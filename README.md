@@ -171,9 +171,6 @@ Mac users can [follow these
 steps](https://github.com/stan-dev/rstan/wiki/Configuring-C---Toolchain-for-Mac),
 and Linux users can use [this
 guide](https://github.com/stan-dev/rstan/wiki/Configuring-C-Toolchain-for-Linux).
-For simple deployment/development a prebuilt docker image is also
-available (see documentation
-[here](https://github.com/epiforecasts/EpiNow2/wiki/Docker)).
 
 ## Resources
 
