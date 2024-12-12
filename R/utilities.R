@@ -417,45 +417,6 @@ lapply_func <- function(..., backend = "rstan", future.opts = list()) {
   }
 }
 
-#' Calculate prior infections and growth
-#'
-#' @description Calculates the prior infections and growth rate based on the
-#' first week's data.
-#'
-#' @param cases Numeric vector; the case counts from the input data.
-#' @inheritParams create_stan_data
-#' @return A list containing `prior_infections` and `prior_growth`.
-#' @keywords internal
-calculate_prior_estimates <- function(cases, seeding_time) {
-  first_week <- data.table::data.table(
-    confirm = cases[seq_len(min(7, length(cases)))],
-    t = seq_len(min(7, length(cases)))
-  )[!is.na(confirm)]
-  
-  # Calculate prior infections
-  prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
-  prior_infections <- ifelse(
-    is.na(prior_infections) || is.null(prior_infections),
-    0, prior_infections
-  )
-  
-  # Calculate prior growth
-  if (seeding_time > 1 && nrow(first_week) > 1) {
-    safe_lm <- purrr::safely(stats::lm)
-    prior_growth <- safe_lm(log(confirm) ~ t, data = first_week)[[1]]
-    prior_growth <- ifelse(
-      is.null(prior_growth), 0, prior_growth$coefficients[2]
-    )
-  } else {
-    prior_growth <- 0
-  }
-  
-  return(list(
-    prior_infections = prior_infections,
-    prior_growth = prior_growth
-  ))
-}
-
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
 #' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
 globalVariables(
