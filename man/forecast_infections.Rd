@@ -65,7 +65,12 @@ reported_cases <- example_confirmed[1:50]
 est <- estimate_infections(reported_cases,
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + example_reporting_delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1), rw = 7),
+  rt = rt_opts(prior = LogNormal(
+     meanlog = Fixed(2),
+     sdlog = Fixed(0.1)
+   ),
+   rw = 7
+  ),
   obs = obs_opts(scale = Normal(mean = 0.1, sd = 0.01)),
   gp = NULL, horizon = 0
 )
