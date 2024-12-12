@@ -1,0 +1,17 @@
+pandoc: 3.1.11
+pkgdown: 2.1.1
+pkgdown_sha: ~
+articles:
+  case-studies: case-studies.html
+  epinow: epinow.html
+  EpiNow2: EpiNow2.html
+  estimate_infections_options: estimate_infections_options.html
+  estimate_infections_workflow: estimate_infections_workflow.html
+  estimate_infections: estimate_infections.html
+  estimate_secondary: estimate_secondary.html
+  estimate_truncation: estimate_truncation.html
+  gaussian_process_implementation_details: gaussian_process_implementation_details.html
+last_built: 2024-10-31T14:52Z
+urls:
+  reference: https://epiforecasts.io/EpiNow2/reference
+  article: https://epiforecasts.io/EpiNow2/articles
