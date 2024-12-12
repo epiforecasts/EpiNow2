@@ -58,8 +58,6 @@
 #' @param verbose Logical, should model fitting progress be returned. Defaults
 #' to [interactive()].
 #'
-#' @param ... Additional parameters to pass to [stan_opts()].
-#'
 #' @return A list containing: `predictions` (a `<data.frame>` ordered by date
 #' with the primary, and secondary observations, and a summary of the model
 #' estimated secondary observations), `posterior` which contains a summary of
@@ -162,7 +160,6 @@ estimate_secondary <- function(data,
                                model = NULL,
                                weigh_delay_priors = FALSE,
                                verbose = interactive(),
-                               ...,
                                reports) {
   # Deprecate reported_cases in favour of data
   if (!missing(reports)) {
