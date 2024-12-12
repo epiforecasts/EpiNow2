@@ -158,8 +158,8 @@ def <- regional_epinow(
   delays = delay_opts(example_incubation_period + example_reporting_delay),
   rt = rt_opts(
     prior = LogNormal(
-      meanlog = Fixed(2),
-      sdlog = Fixed(0.2)
+      meanlog = 2,
+      sdlog = 0.2
     ),
     stan = stan_opts(
       samples = 100, warmup = 200
