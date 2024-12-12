@@ -26,6 +26,7 @@
 ## Documentation
 
 - Brought the docs on `alpha_sd` up to date with the code change from prior PR #853. By @zsusswein in #862 and reviewed by @jamesmbaazam.
+- All examples now use the natural parameters of distributions rather than the mean and standard deviation to remove warnings and encourage best practice. By @jamesmbaazam in #893 and reviewed by @.
 
 # EpiNow2 1.6.1
 
