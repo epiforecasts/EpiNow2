@@ -73,7 +73,11 @@ For the reporting delay, we use a lognormal distribution with mean of 2 days and
 Note that the mean and standard deviation must be converted to the log scale, which can be done using the `convert_log_logmean()` function.
 
 ```{r reporting_delay}
-reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
+reporting_delay <- LogNormal(
+  meanlog = Fixed(2),
+  sdlog = Fixed(1),
+  max = 10
+)
 reporting_delay
 ```
 
@@ -97,7 +101,10 @@ example_generation_time
 Lastly we need to choose a prior for the initial value of the reproduction number. This is assumed by the model to be normally distributed and we can set the mean and the standard deviation. We decide to set the mean to 2 and the standard deviation to 1.
 
 ```{r initial_r}
-rt_prior <- LogNormal(mean = 2, sd = 0.1)
+rt_prior <- LogNormal(
+  meanlog = Fixed(2),
+  sdlog = Fixed(0.1)
+)
 ```
 
 # Running the model
@@ -172,8 +179,8 @@ Here, instead of doing so we assume that we know about truncation with mean of 1
 
 ```{r define_truncation}
 trunc_dist <- LogNormal(
-  mean = Normal(0.5, 0.1),
-  sd = Normal(0.5, 0.1),
+  meanlog = Normal(0.5, 0.1),
+  sdlog = Normal(0.5, 0.1),
   max = 3
 )
 trunc_dist

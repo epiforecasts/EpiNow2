@@ -146,7 +146,11 @@ incubation_period <- LogNormal(
 )
 # set an example reporting delay. In practice this should use an estimate
 # from the literature or be estimated from data
-reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
+reporting_delay <- LogNormal(
+  meanlog = Fixed(2),
+  sdlog = Fixed(1),
+  max = 10
+)
 
 # for more examples, see the "estimate_infections examples" vignette
 def <- estimate_infections(reported_cases,

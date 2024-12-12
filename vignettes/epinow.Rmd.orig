@@ -38,9 +38,16 @@ This should be replaced with parameters relevant to the system that is being stu
 library("EpiNow2")
 options(mc.cores = 4)
 reported_cases <- example_confirmed[1:60]
-reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
+reporting_delay <- LogNormal(
+  meanlog = Fixed(2),
+  sdlog = Fixed(1),
+  max = 10
+)
 delay <- example_incubation_period + reporting_delay
-rt_prior <- LogNormal(mean = 2, sd = 0.1)
+rt_prior <- LogNormal(
+  meanlog = Fixed(2),
+  sdlog = Fixed(0.1)
+)
 ```
 
 We can then run the `epinow()` function with the same arguments as `estimate_infections()`.

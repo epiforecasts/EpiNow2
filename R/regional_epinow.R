@@ -79,11 +79,16 @@
 #'   data = cases,
 #'   generation_time = gt_opts(example_generation_time),
 #'   delays = delay_opts(example_incubation_period + example_reporting_delay),
-#'   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
-#'   stan = stan_opts(
-#'     samples = 100, warmup = 200
-#'   ),
-#'   verbose = interactive()
+#'   rt = rt_opts(
+#'     prior = LogNormal(
+#'       meanlog = Fixed(2),
+#'       sdlog = Fixed(0.2)
+#'     ),
+#'     stan = stan_opts(
+#'       samples = 100, warmup = 200
+#'     ),
+#'     verbose = interactive()
+#'   )
 #' )
 #' options(old_opts)
 #' }
