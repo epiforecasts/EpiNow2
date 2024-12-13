@@ -173,7 +173,7 @@ Here, instead of doing so we assume that we know about truncation with mean of 1
 ```{r define_truncation}
 trunc_dist <- LogNormal(
   mean = 0.5,
-  sd = 0.1,
+  sd = 0.5,
   max = 3
 )
 trunc_dist
