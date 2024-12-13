@@ -25,8 +25,13 @@ in the <dist_spec>.
 # A fixed gamma distribution with mean 5 and sd 1.
 dist1 <- Gamma(mean = 5, sd = 1, max = 20)
 
-# An uncertain lognormal distribution with mean 3 and sd 2
-dist2 <- LogNormal(mean = 3, sd = 2, max = 20)
+# An uncertain lognormal distribution with meanlog and sdlog normally
+# distributed as Normal(3, 0.5) and Normal(2, 0.5) respectively
+dist2 <- LogNormal(
+  meanlog = Normal(3, 0.5),
+  sdlog = Normal(2, 0.5),
+  max = 20
+)
 
 # The maxf the sum of two distributions
 collapse(discretise(dist1 + dist2))

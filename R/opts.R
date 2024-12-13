@@ -42,8 +42,8 @@
 #' # An uncertain gamma distributed generation time
 #' generation_time_opts(
 #'   Gamma(
-#'     mean = Normal(mean = 3, sd = 1),
-#'     sd = Normal(mean = 2, sd = 0.5),
+#'     shape = Normal(mean = 3, sd = 1),
+#'     rate = Normal(mean = 2, sd = 0.5),
 #'     max = 14
 #'   )
 #' )
@@ -186,7 +186,11 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' delay_opts()
 #'
 #' # A single delay that has uncertainty
-#' delay <- LogNormal(mean = Normal(1, 0.2), sd = Normal(0.5, 0.1), max = 14)
+#' delay <- LogNormal(
+#'   meanlog = Normal(1, 0.2),
+#'   sdlog = Normal(0.5, 0.1),
+#'   max = 14
+#' )
 #' delay_opts(delay)
 #'
 #' # A single delay without uncertainty
