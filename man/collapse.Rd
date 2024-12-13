@@ -34,5 +34,5 @@ dist2 <- LogNormal(
 )
 
 # The maxf the sum of two distributions
-collapse(discretise(dist1 + dist2))
+collapse(discretise(dist1 + dist2, strict = FALSE))
 }
