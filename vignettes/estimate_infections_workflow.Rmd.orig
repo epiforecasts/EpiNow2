@@ -79,7 +79,7 @@ In all cases, the distributions given can be *fixed* (i.e. have no uncertainty) 
 For example, to define a fixed gamma distribution with mean 3, standard deviation (sd) 1 and maximum value 10, you would write
 
 ```{r}
-fixed_gamma <- Gamma(shape = 3, rate = 1, max = 10)
+fixed_gamma <- Gamma(mean = 3, sd = 1, max = 10)
 fixed_gamma
 ```
 
@@ -205,7 +205,7 @@ It can be changed using the `rt_opts()` function.
 For example, if the user believes that at the very start of the data the reproduction number was 2, with uncertainty in this belief represented by a standard deviation of 1, they would use
 
 ```{r results = 'hide'}
-rt_prior <- LogNormal(meanlog = 2, sdlog = 1)
+rt_prior <- LogNormal(mean = 2, sd = 1)
 rt_opts(prior = rt_prior)
 ```
 
