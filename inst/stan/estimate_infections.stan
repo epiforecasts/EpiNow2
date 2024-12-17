@@ -43,7 +43,6 @@ transformed data {
 parameters {
   vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
   // gaussian process
-  array[fixed ? 0 : 1] real<lower = ls_min, upper = ls_max> rescaled_rho;  // length scale of noise GP
   vector[fixed ? 0 : gp_type == 1 ? 2*M : M] eta;               // unconstrained noise
   // Rt
   array[estimate_r] real initial_infections;    // seed infections
@@ -70,6 +69,10 @@ transformed parameters {
         alpha_id, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
+      real rescaled_rho = 2 * get_param(
+        rho_id, params_fixed_lookup, params_variable_lookup,
+        params_value, params
+      ) / noise_terms;
       noise = update_gp(
         PHI, M, L, alpha, rescaled_rho, eta, gp_type, nu
       );
@@ -176,9 +179,6 @@ model {
   if (!fixed) {
     profile("gp lp") {
       gaussian_process_lp(eta);
-      if (gp_type != 3) {
-        lengthscale_lp(rescaled_rho[1], ls_meanlog, ls_sdlog, ls_min, ls_max);
-      }
     }
   }
 
@@ -226,16 +226,18 @@ generated quantities {
   vector[estimate_r > 0 ? 0 : ot_h] gen_R;
   vector[ot_h - 1] r;
   vector[return_likelihood ? ot : 0] log_lik;
-  vector[fixed ? 0 : 1] rho;
 
   profile("generated quantities") {
     real rep_phi = get_param(
       rep_phi_id, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
-    if (!fixed && gp_type != 3) {
+    if (!fixed) {
+      real rescaled_rho = 2 * get_param(
+        rho_id, params_fixed_lookup, params_variable_lookup,
+        params_value, params
+      ) / noise_terms;
       vector[noise_terms] x = linspaced_vector(noise_terms, 1, noise_terms);
-      rho[1] = rescaled_rho[1] * sd(x);
     }
 
     if (estimate_r == 0) {

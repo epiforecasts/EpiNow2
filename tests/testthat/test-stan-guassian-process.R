@@ -126,7 +126,7 @@ test_that("setup_gp returns correct dimensions and values", {
   expect_equal(dim(result), c(dimension, M))
   # Compare with direct PHI call
   x <- linspaced_vector(dimension, 1, dimension)
-  x <- (x - mean(x)) / sd(x)
+  x <- 2 * (x - mean(x)) / (max(x) - 1)
   expected_result <- PHI(dimension, M, L, x)
   expect_equal(result, expected_result, tolerance = 1e-8)
 })
@@ -141,7 +141,7 @@ test_that("setup_gp with periodic basis functions returns correct dimensions and
   expect_equal(dim(result), c(dimension, 2 * M))  # Cosine and sine terms
   # Compare with direct PHI_periodic call
   x <- linspaced_vector(dimension, 1, dimension)
-  x <- (x - mean(x)) / sd(x)
+  x <- 2 * (x - mean(x)) / (max(x) - 1)
   expected_result <- PHI_periodic(dimension, M, w0, x)
   expect_equal(result, expected_result, tolerance = 1e-8)
 })

@@ -362,19 +362,6 @@ create_gp_data <- function(gp = gp_opts(), data) {
     time <- time - 1
   }
 
-  obs_time <- data$t - data$seeding_time
-  if (gp$ls_max > obs_time) {
-    gp$ls_max <- obs_time
-  }
-
-  times <- seq_len(time)
-
-  rescaled_times <- (times - mean(times)) / sd(times)
-  gp$ls_mean <- gp$ls_mean / sd(times)
-  gp$ls_sd <- gp$ls_sd / sd(times)
-  gp$ls_min <- gp$ls_min / sd(times)
-  gp$ls_max <- gp$ls_max /  sd(times)
-
   # basis functions
   M <- ceiling(time * gp$basis_prop)
 
@@ -382,11 +369,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
   gp_data <- list(
     fixed = as.numeric(fixed),
     M = M,
-    L = gp$boundary_scale * max(rescaled_times),
-    ls_meanlog = convert_to_logmean(gp$ls_mean, gp$ls_sd),
-    ls_sdlog = convert_to_logsd(gp$ls_mean, gp$ls_sd),
-    ls_min = gp$ls_min,
-    ls_max = gp$ls_max,
+    L = gp$boundary_scale,
     gp_type = data.table::fcase(
       gp$kernel == "se", 0,
       gp$kernel == "periodic", 1,
@@ -564,11 +547,13 @@ create_stan_data <- function(data, seeding_time,
     stan_data,
     create_stan_params(
       alpha = gp$alpha,
+      rho = gp$ls,
       R0 = rt$prior,
       frac_obs = obs$scale,
       rep_phi = obs$phi,
       lower_bounds = c(
         alpha = 0,
+        rho = 0,
         R0 = 0,
         frac_obs = 0,
         rep_phi = 0
@@ -623,18 +608,8 @@ create_initial_conditions <- function(data) {
     if (data$fixed == 0) {
       out$eta <- array(rnorm(
         ifelse(data$gp_type == 1, data$M * 2, data$M), mean = 0, sd = 0.1))
-      out$rescaled_rho <- array(rlnorm(1,
-        meanlog = data$ls_meanlog,
-        sdlog = ifelse(data$ls_sdlog > 0, data$ls_sdlog, 0.01)
-      ))
-      out$rescaled_rho <- array(data.table::fcase(
-        out$rescaled_rho > data$ls_max, data$ls_max - 0.001,
-        out$rescaled_rho < data$ls_min, data$ls_min + 0.001,
-        default = out$rescaled_rho
-      ))
     } else {
       out$eta <- array(numeric(0))
-      out$rescaled_rho <- array(numeric(0))
     }
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1, data$prior_infections, 0.2))
