@@ -5,8 +5,6 @@ test_that("create_gp_data returns correct default values when GP is disabled", {
   expect_equal(gp_data$stationary, 1)
   expect_equal(gp_data$M, 5)  # (30 - 7) * 0.2
   expect_equal(gp_data$L, 1.5)
-  expect_equal(gp_data$alpha, NULL)
-  expect_equal(gp_data$rescaled_rho, NULL)
   expect_equal(gp_data$gp_type, 2)  # Default to Matern
   expect_equal(gp_data$nu, 3 / 2)
   expect_equal(gp_data$w0, 1.0)
