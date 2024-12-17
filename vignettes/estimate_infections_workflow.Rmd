@@ -107,31 +107,25 @@ plot(fixed_gamma)
 ![plot of chunk plot_fixed_gamma](estimate_infections_workflow-plot_fixed_gamma-1.png)
 
 If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by _EpiNow2_, i.e. they are estimated as part of the inference.
-For example, to define a variable gamma distribution where uncertainty in the mean is given by a normal distribution with mean 3 and sd 2, and uncertainty in the standard deviation is given by a normal distribution with mean 1 and sd 0.1, with a maximum value 10, you would write
+For example, to define a variable gamma distribution where uncertainty in the shape is given by a normal distribution with mean 3 and sd 2, and uncertainty in the rate is given by a normal distribution with mean 1 and sd 0.1, with a maximum value 10, you would write
 
 
 ``` r
-uncertain_gamma <- Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
-#> Warning: ! Uncertain gamma distribution specified in terms of parameters that are not
-#>   the "natural" parameters of the distribution shape and rate.
-#> ℹ Converting using a crude and very approximate method that is likely to
-#>   produce biased results.
-#> ℹ If possible it is preferable to specify the distribution directly in terms of
-#>   the natural parameters.
+uncertain_gamma <- Gamma(shape = Normal(3, 2), rate = Normal(1, 0.1), max = 10)
 uncertain_gamma
 #> - gamma distribution (max: 10):
 #>   shape:
 #>     - normal distribution:
 #>       mean:
-#>         9
+#>         3
 #>       sd:
-#>         2.5
+#>         2
 #>   rate:
 #>     - normal distribution:
 #>       mean:
-#>         3
+#>         1
 #>       sd:
-#>         1.4
+#>         0.1
 ```
 
 which looks like this when plotted
@@ -142,10 +136,6 @@ plot(uncertain_gamma)
 ```
 
 ![plot of chunk plot_uncertain_gamma](estimate_infections_workflow-plot_uncertain_gamma-1.png)
-
-Note the warning about parameters.
-We used the mean and standard deviation to define this distribution with uncertain parameters, but it would be better to use the "natural" parameters of the gamma distribution, shape and rate, for example using the values estimate and reported back after calling the previous command.
-
 There are various ways the specific delay distributions mentioned below might be obtained.
 Often, they will come directly from the existing literature reviewed by the user and studies conducted elsewhere.
 Sometimes it might be possible to obtain them from existing databases, e.g. using the [epiparameter](https://github.com/epiverse-trace/epiparameter) R package.
@@ -278,7 +268,7 @@ For example, if the user believes that at the very start of the data the reprodu
 
 
 ``` r
-rt_prior <- LogNormal(mean =  2, sd = 1)
+rt_prior <- LogNormal(mean = 2, sd = 1)
 rt_opts(prior = rt_prior)
 ```
 
