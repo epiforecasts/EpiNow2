@@ -211,6 +211,7 @@ simulate_infections <- function(estimates, R, initial_infections,
   out <- extract_parameter_samples(sim, data,
     reported_inf_dates = dates,
     reported_dates = dates[-(1:seeding_time)],
+    imputed_dates = dates[-(1:seeding_time)],
     drop_length_1 = TRUE
   )
 
@@ -450,6 +451,7 @@ forecast_infections <- function(estimates,
     out <- extract_parameter_samples(sims, data,
       reported_inf_dates = dates,
       reported_dates = dates[-(1:shift)],
+      imputed_dates = dates[-(1:shift)],
       drop_length_1 = TRUE, merge = TRUE
     )
     return(out)

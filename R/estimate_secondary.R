@@ -227,7 +227,8 @@ estimate_secondary <- function(data,
     zero_threshold = zero_threshold
   )
   ## fill in missing data (required if fitting to prevalence)
-  complete_secondary <- create_complete_cases(secondary_reports)
+  secondary_reports[, lookup := seq_len(.N)]
+  complete_secondary <- secondary_reports[!is.na(confirm)]
   ## fill down
   secondary_reports[, confirm := nafill(confirm, type = "locf")]
   ## fill any early data up

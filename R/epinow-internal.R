@@ -5,6 +5,8 @@
 #' beyond the target date.
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
+#' @param horizon Numeric, defaults to 7. Number of days into the future to
+#' forecast.
 #' @return Numeric forecast horizon adjusted for the users intention
 #' @keywords internal
 update_horizon <- function(horizon, target_date, data) {
