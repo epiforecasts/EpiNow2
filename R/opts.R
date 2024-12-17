@@ -470,11 +470,10 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' @param ls_max Deprecated; use `ls` instead.
 #'
 #' @param ls A `<dist_spec>` giving the prior distribution of the lengthscale
-#' parameter of the Gaussian process kernel. This is scaled with half the
-#' length of the time scale such that 2 corresponds to the length of the time
-#' series. Defaults to a half-normal distribution with mean 0.5, sd 0.1 and
-#' maximum 1: `Normal(mean = 0.5, sd = 0.1, max = 1)` (a lower limit of 0 will
-#' be enforced automatically to ensure positivity)
+#' parameter of the Gaussian process kernel on the scale of days. Defaults to
+#' a Lognormal distribution with mean 21 days, sd 7 days and maximum 60 days:
+#' `LogNormal(mean = 21, sd = 7, max = 60)` (a lower limit of 0 will be
+#' enforced automatically to ensure positivity)
 #'
 #' @param alpha A `<dist_spec>` giving the prior distribution of the magnitude
 #' parameter of the Gaussian process kernel. Should be approximately the
@@ -534,7 +533,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_sd = 7,
                     ls_min = 0,
                     ls_max = 60,
-                    ls = Normal(mean = 0.5, sd = 0.1, max = 1),
+                    ls = LogNormal(mean = 21, sd = 7, max = 60),
                     alpha = Normal(mean = 0, sd = 0.01),
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
@@ -583,11 +582,8 @@ gp_opts <- function(basis_prop = 0.2,
         )
       )
     }
-    legacy_arguments <- TRUE
-  } else {
-    legacy_arguments <- FALSE
+    ls <- LogNormal(mean = ls_mean, sd = ls_sd, max = ls_max)
   }
-
 
   if (!missing(matern_type)) {
     if (!missing(matern_order) && matern_type != matern_order) {
@@ -621,16 +617,11 @@ gp_opts <- function(basis_prop = 0.2,
   gp <- list(
     basis_prop = basis_prop,
     boundary_scale = boundary_scale,
-    ls_mean = ls_mean,
-    ls_sd = ls_sd,
-    ls_min = ls_min,
-    ls_max = ls_max,
     ls = ls,
     alpha = alpha,
     kernel = kernel,
     matern_order = matern_order,
-    w0 = w0,
-    legacy_arguments = legacy_arguments
+    w0 = w0
   )
 
   attr(gp, "class") <- c("gp_opts", class(gp))

@@ -511,16 +511,6 @@ create_stan_data <- function(data, seeding_time,
   # gaussian process data
   stan_data <- create_gp_data(gp, stan_data)
 
-  ## process legacy GP arguments (deprecated and will be removed)
-  if (!is.null(gp) && gp$legacy_arguments) {
-    scale <- 0.5 * (time - 1)
-    ls_meanlog <- convert_to_logmean(gp$ls_mean, gp$ls_sd) / scale
-    ls_sdlog <- convert_to_logsd(gp$ls_mean, gp$ls_sd) / scale
-    ls_max <- gp$ls_max / scale
-
-    gp$ls <- LogNormal(ls_meanlog, ls_sdlog, max = ls_max)
-  }
-
   # observation model data
   stan_data <- c(
     stan_data,
@@ -535,13 +525,13 @@ create_stan_data <- function(data, seeding_time,
     stan_data,
     create_stan_params(
       alpha = gp$alpha,
-      rescaled_rho = gp$ls,
+      rho = gp$ls,
       R0 = rt$prior,
       frac_obs = obs$scale,
       rep_phi = obs$phi,
       lower_bounds = c(
         alpha = 0,
-        rescaled_rho = 0,
+        rho = 0,
         R0 = 0,
         frac_obs = 0,
         rep_phi = 0

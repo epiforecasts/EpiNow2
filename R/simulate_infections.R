@@ -176,7 +176,7 @@ simulate_infections <- function(estimates, R, initial_infections,
 
   data <- c(data, create_stan_params(
     alpha = NULL,
-    rescaled_rho = NULL,
+    rho = NULL,
     R0 = NULL,
     frac_obs = obs$scale,
     rep_phi = obs$phi

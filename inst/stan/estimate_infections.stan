@@ -69,10 +69,10 @@ transformed parameters {
         alpha_id, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
-      real rescaled_rho = get_param(
-        rescaled_rho_id, params_fixed_lookup, params_variable_lookup,
+      real rescaled_rho = 2 * get_param(
+        rho_id, params_fixed_lookup, params_variable_lookup,
         params_value, params
-      );
+      ) / noise_terms;
       noise = update_gp(
         PHI, M, L, alpha, rescaled_rho, eta, gp_type, nu
       );
@@ -226,7 +226,6 @@ generated quantities {
   vector[estimate_r > 0 ? 0 : ot_h] gen_R;
   vector[ot_h - 1] r;
   vector[return_likelihood ? ot : 0] log_lik;
-  vector[fixed ? 0 : 1] rho;
 
   profile("generated quantities") {
     real rep_phi = get_param(
@@ -234,12 +233,11 @@ generated quantities {
       params
     );
     if (!fixed) {
-      real rescaled_rho = get_param(
-        rescaled_rho_id, params_fixed_lookup, params_variable_lookup,
+      real rescaled_rho = 2 * get_param(
+        rho_id, params_fixed_lookup, params_variable_lookup,
         params_value, params
-      );
+      ) / noise_terms;
       vector[noise_terms] x = linspaced_vector(noise_terms, 1, noise_terms);
-      rho[1] = rescaled_rho * 0.5 * (max(x) - 1);
     }
 
     if (estimate_r == 0) {

@@ -11,7 +11,7 @@ gp_opts(
   ls_sd = 7,
   ls_min = 0,
   ls_max = 60,
-  ls = Normal(mean = 0.5, sd = 0.1, max = 1),
+  ls = LogNormal(mean = 21, sd = 7, max = 60),
   alpha = Normal(mean = 0, sd = 0.01),
   kernel = c("matern", "se", "ou", "periodic"),
   matern_order = 3/2,
@@ -42,11 +42,10 @@ approximate Gaussian process. See (Riutort-Mayol et al. 2020
 \item{ls_max}{Deprecated; use \code{ls} instead.}
 
 \item{ls}{A \verb{<dist_spec>} giving the prior distribution of the lengthscale
-parameter of the Gaussian process kernel. This is scaled with half the
-length of the time scale such that 2 corresponds to the length of the time
-series. Defaults to a half-normal distribution with mean 0.5, sd 0.1 and
-maximum 1: \code{Normal(mean = 0.5, sd = 0.1, max = 1)} (a lower limit of 0 will
-be enforced automatically to ensure positivity)}
+parameter of the Gaussian process kernel on the scale of days. Defaults to
+a Lognormal distribution with mean 21 days, sd 7 days and maximum 60 days:
+\code{LogNormal(mean = 21, sd = 7, max = 60)} (a lower limit of 0 will be
+enforced automatically to ensure positivity)}
 
 \item{alpha}{A \verb{<dist_spec>} giving the prior distribution of the magnitude
 parameter of the Gaussian process kernel. Should be approximately the
