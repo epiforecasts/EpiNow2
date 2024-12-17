@@ -222,7 +222,7 @@ model {
 }
 
 generated quantities {
-  array[ot_h] int imputed_reports;
+  array[it] int imputed_reports;
   vector[estimate_r > 0 ? 0 : ot_h] gen_R;
   vector[ot_h - 1] r;
   vector[return_likelihood ? ot : 0] log_lik;
@@ -259,7 +259,15 @@ generated quantities {
     r = calculate_growth(infections, seeding_time + 1);
 
     // simulate reported cases
-    imputed_reports = report_rng(reports, rep_phi, model_type);
+    if (any_accumulate) {
+      vector[ot_h] accumulated_reports =
+        accumulate_reports(reports, accumulate);
+      imputed_reports = report_rng(
+        accumulated_reports[imputed_time], rep_phi, model_type
+      );
+    } else {
+      imputed_reports = report_rng(reports, rep_phi, model_type);
+    }
 
     // log likelihood of model
     if (return_likelihood) {
