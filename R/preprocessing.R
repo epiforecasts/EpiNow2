@@ -165,13 +165,13 @@ default_fill_missing_obs <- function(data, obs, obs_column) {
     data <- fill_missing(data = data, obs_column = obs_column)
     if (nrow(data) > data_rows && !obs$accumulate) {
       #nolint start: duplicate_argument_linter
-      cli_warn(
+      cli_warn(c(
         "!" = "Data contains missing dates.",
         "i" = "Missing dates are interpreted as truly missing data.
         In the future, this behaviour will be deprecated and the package
         functions will expect complete data.",
         "i" = "Complete data can be created using the `fill_missing` function."
-      )
+      ))
       #nolint end
     }
   }
