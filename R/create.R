@@ -427,6 +427,45 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 
   return(data)
 }
+
+#' Calculate prior infections and fit early growth
+#'
+#' @description Calculates the prior infections and growth rate based on the
+#' first week's data.
+#'
+#' @param cases Numeric vector; the case counts from the input data.
+#' @inheritParams create_stan_data
+#' @return A list containing `prior_infections` and `prior_growth`.
+#' @keywords internal
+estimate_early_dynamics <- function(cases, seeding_time) {
+  first_week <- data.table::data.table(
+    confirm = cases[seq_len(min(7, length(cases)))],
+    t = seq_len(min(7, length(cases)))
+  )[!is.na(confirm)]
+
+  # Calculate prior infections
+  prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
+  prior_infections <- ifelse(
+    is.na(prior_infections) || is.null(prior_infections),
+    0, prior_infections
+  )
+
+  # Calculate prior growth
+  if (seeding_time > 1 && nrow(first_week) > 1) {
+    safe_lm <- purrr::safely(stats::lm)
+    prior_growth <- safe_lm(log(confirm) ~ t, data = first_week)[[1]]
+    prior_growth <- ifelse(
+      is.null(prior_growth), 0, prior_growth$coefficients[2]
+    )
+  } else {
+    prior_growth <- 0
+  }
+  return(list(
+    prior_infections = prior_infections,
+    prior_growth = prior_growth
+  ))
+}
+
 #' Create Stan Data Required for estimate_infections
 #'
 #' @description`r lifecycle::badge("stable")`
@@ -484,28 +523,11 @@ create_stan_data <- function(data, seeding_time,
       delay = stan_data$seeding_time, horizon = stan_data$horizon
     )
   )
-  # initial estimate of growth
-  first_week <- data.table::data.table(
-    confirm = cases[seq_len(min(7, length(cases)))],
-    t = seq_len(min(7, length(cases)))
-  )[!is.na(confirm)]
-  stan_data$prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
-  stan_data$prior_infections <- ifelse(
-    is.na(stan_data$prior_infections) || is.null(stan_data$prior_infections),
-    0, stan_data$prior_infections
+  # calculate prior infections and fit early growth
+  stan_data <- c(
+    stan_data,
+    estimate_early_dynamics(cases, seeding_time)
   )
-  if (stan_data$seeding_time > 1 && nrow(first_week) > 1) {
-    safe_lm <- purrr::safely(stats::lm)
-    stan_data$prior_growth <- safe_lm(log(confirm) ~ t,
-      data = first_week
-    )[[1]]
-    stan_data$prior_growth <- ifelse(is.null(stan_data$prior_growth), 0,
-      stan_data$prior_growth$coefficients[2]
-    )
-  } else {
-    stan_data$prior_growth <- 0
-  }
-
   # backcalculation settings
   stan_data <- c(stan_data, create_backcalc_data(backcalc))
   # gaussian process data

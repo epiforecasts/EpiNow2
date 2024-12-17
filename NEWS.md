@@ -19,14 +19,17 @@
 - A bug was fixed where an internal function for applying a default cdf cutoff failed due to a difference a vector length issue. By @jamesmbaazam in #858 and reviewed by @sbfnk.
 - All parameters have been changed to the new parameter interface. By @sbfnk in #871 and #890 and reviewed by @seabbs.
 - The Gaussian Process lengthscale is now scaled internally by half the length of the time series. By @sbfnk in #890 and reviewed by #seabbs.
+- A bug was fixed where `plot.dist_spec()` wasn't throwing an informative error due to an incomplete check for the max of the specified delay. By @jamesmbaazam in #858 and reviewed by @.
 
 ## Package changes
 
 - The internal functions `create_clean_reported_cases()` has been broken up into several functions, with relevant ones `filter_leading_zeros()`, `add_breakpoints()` and `apply_zero_threshold()` exposed to the user. By @sbfnk in #884 and reviewed by @seabbs and @jamesmbaazam.
+- The step of estimating early infections and growth in the internal function `create_stan_data()` has been separated into a new internal function `estimate_early_dynamics()`. By @jamesmbaazam in #888 and reviewed by @sbfnk.
 
 ## Documentation
 
 - Brought the docs on `alpha_sd` up to date with the code change from prior PR #853. By @zsusswein in #862 and reviewed by @jamesmbaazam.
+- The `...` argument in `estimate_secondary()` has been removed because it was not used. By @jamesmbaazam in #894 and reviewed by @.
 
 # EpiNow2 1.6.1
 
