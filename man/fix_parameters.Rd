@@ -25,9 +25,12 @@ If the given \verb{<dist_spec>} has any uncertainty, it is removed and the
 corresponding distribution converted into a fixed one.
 }
 \examples{
-# An uncertain gamma distribution with mean 3 and sd 2
-dist <- LogNormal(
-  meanlog = Normal(3, 0.5), sdlog = Normal(2, 0.5), max = 20
+# An uncertain gamma distribution with shape and rate normally distributed
+# as Normal(3, 0.5) and Normal(2, 0.5) respectively
+dist <- Gamma(
+  shape = Normal(3, 0.5),
+  rate = Normal(2, 0.5),
+  max = 20
 )
 
 fix_parameters(dist)
