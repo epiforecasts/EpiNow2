@@ -992,7 +992,7 @@ is_constrained.multi_dist_spec <- function(x, ...) {
 #' LogNormal(mean = 4, sd = 1)
 #' LogNormal(mean = 4, sd = 1, max = 10)
 #' # If specifying uncertain parameters, use the natural parameters
-#' LogNormal(meanlog = Normal(4, 1), sdlog = 1, max = 10)
+#' LogNormal(meanlog = Normal(1.5, 0.5), sdlog = 0.25, max = 10)
 LogNormal <- function(meanlog, sdlog, mean, sd, ...) {
   params <- as.list(environment())
   return(new_dist_spec(params, "lognormal", ...))
