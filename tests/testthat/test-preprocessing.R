@@ -33,3 +33,10 @@ test_that("fill_missing warns about initial data points", {
     "Initial data point not marked as accumulated"
   )
 })
+
+test_that("add_horizon works", {
+  expect_warning(
+    fill_missing(cases, missing_dates = "accumulate"),
+    "Initial data point not marked as accumulated"
+  )
+})
