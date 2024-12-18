@@ -65,8 +65,8 @@ observation model. Defaults to \code{\link[=obs_opts]{obs_opts()}}.}
 to \code{\link[=stan_opts]{stan_opts()}}. Can be used to override \code{data}, \code{init}, and \code{verbose}
 settings if desired.}
 
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to
-forecast.}
+\item{horizon}{Deprecated; use \code{forecast} instead to specify the predictive
+horizon}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 

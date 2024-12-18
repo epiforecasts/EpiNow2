@@ -6,7 +6,6 @@
 \usage{
 create_clean_reported_cases(
   data,
-  horizon = 0,
   filter_leading_zeros = TRUE,
   zero_threshold = Inf,
   fill = NA_integer_,
@@ -22,9 +21,6 @@ e.g. weekly incidence data. See also the \code{\link[=fill_missing]{fill_missing
 helps add the \code{accumulate} column with the desired properties when dealing
 with non-daily data. If any accumulation is done this happens after
 truncation as specified by the \code{truncation} argument.}
-
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to
-forecast.}
 
 \item{filter_leading_zeros}{Logical, defaults to TRUE. Should zeros at the
 start of the time series be filtered out.}

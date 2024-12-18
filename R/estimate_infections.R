@@ -43,8 +43,8 @@
 #' used as the `truncation` argument here, thereby propagating the uncertainty
 #' in the estimate.
 #'
-#' @param horizon Numeric, defaults to 7. Number of days into the future to
-#' forecast.
+#' @param horizon Deprecated; use `forecast` instead to specify the predictive
+#'   horizon
 #'
 #' @param weigh_delay_priors Logical. If TRUE (default), all delay distribution
 #' priors will be weighted by the number of observation data points, in doing so
@@ -65,7 +65,7 @@
 #' [estimate_truncation()]
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
-#' @inheritParams create_stan_data
+#' @inheritParams create_forecast_data
 #' @inheritParams create_gp_data
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams create_clean_reported_cases
@@ -123,8 +123,9 @@ estimate_infections <- function(data,
                                 backcalc = backcalc_opts(),
                                 gp = gp_opts(),
                                 obs = obs_opts(),
+                                forecast = forecast_opts(),
                                 stan = stan_opts(),
-                                horizon = 7,
+                                horizon,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 filter_leading_zeros = TRUE,
                                 zero_threshold = Inf,
@@ -154,6 +155,15 @@ estimate_infections <- function(data,
       "apply_zero_threshold()"
     )
   }
+  if (!missing(horizon)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "estimate_infections(horizon)",
+      "estimate_infections(forecast)",
+      details = "The `horizon` argument passed to `estimate_infections()` will
+        override any `horizon` argument passed via `forecast_opts()`."
+    )
+  }
   # Validate inputs
   check_reports_valid(data, model = "estimate_infections")
   assert_class(generation_time, "generation_time_opts")
@@ -163,8 +173,13 @@ estimate_infections <- function(data,
   assert_class(backcalc, "backcalc_opts")
   assert_class(gp, "gp_opts", null.ok = TRUE)
   assert_class(obs, "obs_opts")
+  assert_class(forecast, "forecast_opts", null.ok = TRUE)
   assert_class(stan, "stan_opts")
-  assert_numeric(horizon, lower = 0)
+  ## deprecated
+  if (!missing(horizon)) {
+    assert_numeric(horizon, lower = 0)
+    forecast$horizon <- horizon
+  }
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_logical(filter_leading_zeros)
   assert_numeric(zero_threshold, lower = 0)
@@ -211,9 +226,16 @@ estimate_infections <- function(data,
     ))
   }
 
+  ## add forecast horizon
+  if (!is.null(forecast)) {
+    reported_cases <- add_horizon(
+      reported_cases, forecast$horizon, forecast$accumulate
+    )
+  }
+
   # Create clean and complete cases
   reported_cases <- create_clean_reported_cases(
-    reported_cases, horizon,
+    reported_cases,
     filter_leading_zeros = filter_leading_zeros,
     zero_threshold = zero_threshold
   )
@@ -240,7 +262,7 @@ estimate_infections <- function(data,
     reported_cases,
     seeding_time,
     backcalc$prior_window,
-    horizon
+    forecast$horizon
   )
   reported_cases <- reported_cases[-(1:backcalc$prior_window)]
 
@@ -253,7 +275,7 @@ estimate_infections <- function(data,
     obs = obs,
     backcalc = backcalc,
     shifted_cases = shifted_cases$confirm,
-    horizon = horizon
+    forecast = forecast
   )
 
   stan_data <- c(stan_data, create_stan_delays(
@@ -293,7 +315,9 @@ estimate_infections <- function(data,
   # Extract parameters of interest from the fit
   out <- extract_parameter_samples(fit, stan_data,
     reported_inf_dates = reported_cases$date,
-    reported_dates = reported_cases$date[-(1:stan_data$seeding_time)]
+    reported_dates = reported_cases$date[-(1:stan_data$seeding_time)],
+    imputed_dates =
+      reported_cases$date[-(1:stan_data$seeding_time)][stan_data$imputed_time]
   )
 
   ## Add prior infections
@@ -309,7 +333,7 @@ estimate_infections <- function(data,
   # Format output
   format_out <- format_fit(
     posterior_samples = out,
-    horizon = horizon,
+    horizon = stan_data$horizon,
     shift = stan_data$seeding_time,
     burn_in = 0,
     start_date = start_date,
