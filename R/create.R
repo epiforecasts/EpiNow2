@@ -453,28 +453,34 @@ create_forecast_data <- function(forecast = forecast_opts(), data) {
 #' @return A list containing `prior_infections` and `prior_growth`.
 #' @keywords internal
 estimate_early_dynamics <- function(cases, seeding_time) {
-  first_week <- data.table::data.table(
-    confirm = cases[seq_len(min(7, length(cases)))],
-    t = seq_len(min(7, length(cases)))
+  initial_period <- data.table::data.table(
+    confirm = cases[seq_len(min(7, seeding_time, length(cases)))],
+    t = seq_len(min(7, seeding_time, length(cases))) - 1
   )[!is.na(confirm)]
 
-  # Calculate prior infections
-  prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
-  prior_infections <- ifelse(
-    is.na(prior_infections) || is.null(prior_infections),
-    0, prior_infections
-  )
-
+  prior_infections <- 0
   # Calculate prior growth
-  if (seeding_time > 1 && nrow(first_week) > 1) {
+  if (seeding_time > 1 && nrow(initial_period) > 1) {
     safe_lm <- purrr::safely(stats::lm)
-    prior_growth <- safe_lm(log(confirm) ~ t, data = first_week)[[1]]
+    prior_growth <- safe_lm(log(confirm) ~ t, data = initial_period)[[1]]
+    prior_infections <- ifelse(
+      is.null(prior_growth), 0, prior_growth$coefficients[1]
+    )
     prior_growth <- ifelse(
       is.null(prior_growth), 0, prior_growth$coefficients[2]
     )
   } else {
     prior_growth <- 0
   }
+
+  # Calculate prior infections
+  if (prior_infections == 0) {
+    prior_infections <- log(mean(initial_period$confirm, na.rm = TRUE))
+    if (is.na(prior_infections) || is.null(prior_infections)) {
+      prior_infections <- 0
+    }
+  }
+
   return(list(
     prior_infections = prior_infections,
     prior_growth = prior_growth
