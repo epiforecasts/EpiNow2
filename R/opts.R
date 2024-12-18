@@ -1077,7 +1077,6 @@ stan_opts <- function(object = NULL,
 #'   the data used for fitting then the same accumulation will be used in
 #'   forecasts unless set explicitly here.
 #' @return A `<forecast_opts>` object of forecast setting.
-#' rstan functions.
 #' @seealso fill_missing
 #' @export
 #' @examples
