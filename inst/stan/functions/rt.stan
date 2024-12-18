@@ -66,7 +66,7 @@ void rt_lp(array[] real initial_infections, array[] real initial_growth,
     bp_effects ~ normal(0, bp_sd[1]);
   }
   // initial infections
-  initial_infections ~ normal(prior_infections, 0.2);
+  initial_infections ~ normal(prior_infections, sqrt(prior_infections));
   
   if (seeding_time > 1) {
     initial_growth ~ normal(prior_growth, 0.2);
