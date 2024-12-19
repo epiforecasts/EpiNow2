@@ -66,7 +66,7 @@ test_that("estimate_infections successfully returns estimates when accumulating 
   reported_cases_weekly <-
     reported_cases_weekly[seq(7, nrow(reported_cases_weekly), 7)]
   reported_cases_weekly <- fill_missing(
-    reported_cases_weekly, missing_obs = "accumulate", initial_accumulate = 7
+    reported_cases_weekly, missing_dates = "accumulate", initial_accumulate = 7
   )
   test_estimate_infections(reported_cases_weekly)
 })
@@ -172,4 +172,7 @@ test_that("a warning is thrown when using deprecated functionality", {
   suppressWarnings(expect_deprecated(estimate_infections(
     reported_cases, zero_threshold = 50, verbose = FALSE
   ), "zero_threshold"))
+  suppressWarnings(expect_deprecated(estimate_infections(
+    reported_cases, horizon = 7, verbose = FALSE
+  ), "horizon"))
 })

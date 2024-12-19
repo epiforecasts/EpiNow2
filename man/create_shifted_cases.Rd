@@ -21,8 +21,8 @@ truncation as specified by the \code{truncation} argument.}
 \item{smoothing_window}{Numeric, the rolling average smoothing window
 to apply. Must be odd in order to be defined as a centred average.}
 
-\item{horizon}{Numeric, defaults to 7. Number of days into the future to
-forecast.}
+\item{horizon}{Deprecated; use \code{forecast} instead to specify the predictive
+horizon}
 }
 \value{
 A \verb{<data.frame>} for shifted reported cases

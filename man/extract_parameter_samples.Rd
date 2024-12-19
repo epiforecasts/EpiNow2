@@ -8,6 +8,7 @@ extract_parameter_samples(
   stan_fit,
   data,
   reported_dates,
+  imputed_dates,
   reported_inf_dates,
   drop_length_1 = FALSE,
   merge = FALSE
@@ -20,6 +21,8 @@ extract_parameter_samples(
 \item{data}{A list of the data supplied to the \code{\link[=fit_model]{fit_model()}} call.}
 
 \item{reported_dates}{A vector of dates to report estimates for.}
+
+\item{imputed_dates}{A vector of dates to report imputed reports for.}
 
 \item{reported_inf_dates}{A vector of dates to report infection estimates
 for.}

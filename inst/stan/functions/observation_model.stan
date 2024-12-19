@@ -95,7 +95,7 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  * This function updates the log density for reported cases based on the specified model type.
  *
  * @param cases Array of integer observed cases.
- * @param cases_time Array of integer time indices for observed cases.
+ * @param case_times Array of integer time indices for observed cases.
  * @param reports Vector of expected reports.
  * @param rep_phi Real values for reporting overdispersion.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
@@ -103,10 +103,10 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  * @param accumulate Array of integers indicating, for each time point, whether
  * to accumulate reports (1) or not (0).
  */
-void report_lp(array[] int cases, array[] int cases_time, vector reports,
+void report_lp(array[] int cases, array[] int case_times, vector reports,
                real rep_phi, int model_type, real weight) {
-  int n = num_elements(cases_time); // number of observations
-  vector[n] obs_reports = reports[cases_time]; // reports at observation time
+  int n = num_elements(case_times); // number of observations
+  vector[n] obs_reports = reports[case_times]; // reports at observation time
   if (model_type) {
     real dispersion = inv_square(rep_phi);
     if (weight == 1) {

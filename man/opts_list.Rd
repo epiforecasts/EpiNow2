@@ -2,7 +2,7 @@
 % Please edit documentation in R/opts.R
 \name{opts_list}
 \alias{opts_list}
-\title{Return an _opts List per Region}
+\title{Forecast optiong}
 \usage{
 opts_list(opts, reported_cases, ...)
 }

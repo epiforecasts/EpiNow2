@@ -95,8 +95,9 @@ regional_epinow <- function(data,
                             backcalc = backcalc_opts(),
                             gp = gp_opts(),
                             obs = obs_opts(),
+                            forecast = forecast_opts(),
                             stan = stan_opts(),
-                            horizon = 7,
+                            horizon,
                             CrIs = c(0.2, 0.5, 0.9),
                             target_folder = NULL,
                             target_date,
@@ -117,6 +118,16 @@ regional_epinow <- function(data,
       "regional_epinow(data)"
     )
   }
+  if (!missing(horizon)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "regional_epinow(horizon)",
+      "regional_epinow(forecast)",
+      details = "The `horizon` argument passed to `regional_epinow()` will
+        override any `horizon` argument passed via `forecast_opts()`."
+    )
+  }
+
   # supported output
   output <- match_output_arguments(output,
     supported_args = c(
@@ -126,6 +137,11 @@ regional_epinow <- function(data,
     ),
     logger = "EpiNow2"
   )
+  ## deprecated
+  if (!missing(horizon)) {
+    assert_numeric(horizon, lower = 0)
+    forecast$horizon <- horizon
+  }
   # make timing compulsory
   output["timing"] <- TRUE
   if (missing(target_date)) {
@@ -168,8 +184,8 @@ regional_epinow <- function(data,
       backcalc = backcalc,
       gp = gp,
       obs = obs,
+      forecast = forecast,
       stan = stan,
-      horizon = horizon,
       CrIs = CrIs,
       data = reported_cases,
       target_folder = target_folder,

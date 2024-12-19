@@ -87,8 +87,9 @@ epinow <- function(data,
                    backcalc = backcalc_opts(),
                    gp = gp_opts(),
                    obs = obs_opts(),
+                   forecast = forecast_opts(),
                    stan = stan_opts(),
-                   horizon = 7,
+                   horizon,
                    CrIs = c(0.2, 0.5, 0.9),
                    filter_leading_zeros = TRUE,
                    zero_threshold = Inf,
@@ -105,7 +106,21 @@ epinow <- function(data,
       "epinow(data)"
     )
   }
+  if (!missing(horizon)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "epinow(horizon)",
+      "epinow(forecast)",
+      details = "The `horizon` argument passed to `epinow()` will
+        override any `horizon` argument passed via `forecast_opts()`."
+    )
+  }
   # Check inputs
+  ## deprecated
+  if (!missing(horizon)) {
+    assert_numeric(horizon, lower = 0)
+    forecast$horizon <- horizon
+  }
   assert_logical(return_output)
   stopifnot("target_folder is not a directory" =
               !is.null(target_folder) || isDirectory(target_folder)
@@ -174,7 +189,7 @@ epinow <- function(data,
     save_input(reported_cases, target_folder)
 
     # make sure the horizon is as specified from the target date --------------
-    horizon <- update_horizon(horizon, target_date, reported_cases)
+    horizon <- update_horizon(forecast$horizon, target_date, reported_cases)
 
     # estimate infections and Reproduction no ---------------------------------
     estimates <- estimate_infections(
@@ -186,11 +201,11 @@ epinow <- function(data,
       backcalc = backcalc,
       gp = gp,
       obs = obs,
+      forecast = forecast,
       stan = stan,
       CrIs = CrIs,
       filter_leading_zeros = filter_leading_zeros,
       zero_threshold = zero_threshold,
-      horizon = horizon,
       verbose = verbose,
       id = id
     )
