@@ -215,7 +215,7 @@ model {
         params
       );
       report_lp(
-        cases, cases_time, obs_reports, rep_phi, model_type, obs_weight
+        cases, case_times, obs_reports, rep_phi, model_type, obs_weight
       );
     }
   }
@@ -272,7 +272,7 @@ generated quantities {
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
-        cases, obs_reports[cases_time], rep_phi, model_type, obs_weight
+        cases, obs_reports[case_times], rep_phi, model_type, obs_weight
       );
     }
   }
