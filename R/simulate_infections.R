@@ -86,7 +86,6 @@ simulate_infections <- function(estimates, R, initial_infections,
   assert_numeric(R$R, lower = 0)
   assert_numeric(initial_infections, lower = 0)
   assert_numeric(day_of_week_effect, lower = 0, null.ok = TRUE)
-  assert_numeric(pop, lower = 0)
   if (!is.null(seeding_time)) {
     assert_integerish(seeding_time, lower = 1)
   }
@@ -94,6 +93,7 @@ simulate_infections <- function(estimates, R, initial_infections,
   assert_class(truncation, "trunc_opts")
   assert_class(obs, "obs_opts")
   assert_class(generation_time, "generation_time_opts")
+  assert_class(pop, "dist_spec")
 
   ## create R for all dates modelled
   all_dates <- data.table(date = seq.Date(min(R$date), max(R$date), by = "day"))
@@ -179,7 +179,8 @@ simulate_infections <- function(estimates, R, initial_infections,
     rho = NULL,
     R0 = NULL,
     frac_obs = obs$scale,
-    rep_phi = obs$phi
+    rep_phi = obs$phi,
+    pop = pop
   ))
   ## set empty params matrix - variable parameters not supported here
   data$params <- array(dim = c(1, 0))
