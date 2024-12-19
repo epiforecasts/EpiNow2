@@ -7,7 +7,7 @@ test_that("create_rt_data returns expected default values", {
   expect_equal(result$breakpoints, numeric(0))
   expect_equal(result$future_fixed, 1)
   expect_equal(result$fixed_from, 0)
-  expect_equal(result$pop, 0)
+  expect_equal(result$use_pop, 0)
   expect_equal(result$stationary, 0)
   expect_equal(result$future_time, 0)
 })
