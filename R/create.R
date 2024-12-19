@@ -263,7 +263,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     breakpoints = breakpoints,
     future_fixed =  as.numeric(future_rt$fixed),
     fixed_from = future_rt$from,
-    pop = rt$pop,
+    pop = as.integer(rt$pop != Fixed(0)),
     stationary =  as.numeric(rt$gp_on == "R0"),
     future_time = horizon - future_rt$from
   )
