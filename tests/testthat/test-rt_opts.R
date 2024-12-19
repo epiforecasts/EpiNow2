@@ -19,7 +19,7 @@ test_that("rt_opts handles custom inputs correctly", {
     use_breakpoints = FALSE,
     future = "project",
     gp_on = "R0",
-    pop = 1000000
+    pop = Normal(mean = 1000000, sd = 100)
   ))
   
   expect_null(result$prior)
@@ -27,8 +27,15 @@ test_that("rt_opts handles custom inputs correctly", {
   expect_equal(result$rw, 7)
   expect_true(result$use_breakpoints)  # Should be TRUE when rw > 0
   expect_equal(result$future, "project")
-  expect_equal(result$pop, 1000000)
+  expect_equal(result$pop, Normal(mean = 1000000, sd = 100))
   expect_equal(result$gp_on, "R0")
+})
+
+test_that("rt_opts warns when pop is passed as numeric", {
+  expect_warning(
+    rt_opts(pop = 1000),
+    "Specifying `pop` as a numeric value is deprecated"
+  )
 })
 
 test_that("rt_opts sets use_breakpoints to TRUE when rw > 0", {
@@ -59,8 +66,7 @@ test_that("rt_opts returns object of correct class", {
 })
 
 test_that("rt_opts handles edge cases correctly", {
-  result <- rt_opts(rw = 0.1, pop = -1)
+  result <- rt_opts(rw = 0.1)
   expect_equal(result$rw, 0.1)
-  expect_equal(result$pop, -1)
   expect_true(result$use_breakpoints)
 })
