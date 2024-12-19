@@ -95,9 +95,13 @@ transformed parameters {
       );
     }
     profile("infections") {
+      real pop = get_param(
+        pop_id, params_fixed_lookup, params_variable_lookup, params_value,
+        params
+      );
       infections = generate_infections(
         R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,
-        future_time
+        use_pop, future_time
       );
     }
   } else {
