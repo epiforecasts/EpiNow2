@@ -50,6 +50,12 @@ generated quantities {
       frac_obs_id, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
+
+    real pop = get_param(
+      pop_id, params_fixed_lookup, params_variable_lookup,
+      params_value, params
+    );
+
     for (i in 1:n) {
       // generate infections from Rt trace
       vector[delay_type_max[gt_id] + 1] gt_rev_pmf;
@@ -62,7 +68,7 @@ generated quantities {
 
       infections[i] = to_row_vector(generate_infections(
         to_vector(R[i]), seeding_time, gt_rev_pmf, initial_infections[i],
-        initial_growth[i], pop, future_time, obs_scale, frac_obs[i]
+        initial_growth[i], pop, use_pop, future_time, obs_scale, frac_obs[i]
       ));
 
       if (delay_id) {
