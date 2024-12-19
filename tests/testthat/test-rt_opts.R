@@ -7,7 +7,7 @@ test_that("rt_opts returns expected default values", {
   expect_equal(result$rw, 0)
   expect_true(result$use_breakpoints)
   expect_equal(result$future, "latest")
-  expect_equal(result$pop, 0)
+  expect_equal(result$pop, Fixed(0))
   expect_equal(result$gp_on, "R_t-1")
 })
 
